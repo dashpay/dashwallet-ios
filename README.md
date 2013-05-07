@@ -1,0 +1,4 @@
+zincwallet
+==========
+
+zinc bitcoin wallet
