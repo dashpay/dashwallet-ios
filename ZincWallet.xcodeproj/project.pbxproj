@@ -1,0 +1,505 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		75D8F382173ABE3C0080D95E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F381173ABE3C0080D95E /* UIKit.framework */; };
+		75D8F384173ABE3C0080D95E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
+		75D8F386173ABE3C0080D95E /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F385173ABE3C0080D95E /* CoreGraphics.framework */; };
+		75D8F38C173ABE3C0080D95E /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F38A173ABE3C0080D95E /* InfoPlist.strings */; };
+		75D8F38E173ABE3C0080D95E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F38D173ABE3C0080D95E /* main.m */; };
+		75D8F392173ABE3C0080D95E /* ZNAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F391173ABE3C0080D95E /* ZNAppDelegate.m */; };
+		75D8F394173ABE3C0080D95E /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F393173ABE3C0080D95E /* Default.png */; };
+		75D8F396173ABE3C0080D95E /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F395173ABE3C0080D95E /* Default@2x.png */; };
+		75D8F398173ABE3C0080D95E /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F397173ABE3C0080D95E /* Default-568h@2x.png */; };
+		75D8F39B173ABE3C0080D95E /* MainStoryboard_iPhone.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F399173ABE3C0080D95E /* MainStoryboard_iPhone.storyboard */; };
+		75D8F39E173ABE3C0080D95E /* MainStoryboard_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F39C173ABE3C0080D95E /* MainStoryboard_iPad.storyboard */; };
+		75D8F3A1173ABE3C0080D95E /* ZNFirstViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3A0173ABE3C0080D95E /* ZNFirstViewController.m */; };
+		75D8F3A3173ABE3C0080D95E /* first.png in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F3A2173ABE3C0080D95E /* first.png */; };
+		75D8F3A5173ABE3D0080D95E /* first@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F3A4173ABE3C0080D95E /* first@2x.png */; };
+		75D8F3A8173ABE3D0080D95E /* ZNSecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3A7173ABE3D0080D95E /* ZNSecondViewController.m */; };
+		75D8F3AA173ABE3D0080D95E /* second.png in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F3A9173ABE3D0080D95E /* second.png */; };
+		75D8F3AC173ABE3D0080D95E /* second@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F3AB173ABE3D0080D95E /* second@2x.png */; };
+		75D8F3B4173ABE3D0080D95E /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F3B3173ABE3D0080D95E /* SenTestingKit.framework */; };
+		75D8F3B5173ABE3D0080D95E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F381173ABE3C0080D95E /* UIKit.framework */; };
+		75D8F3B6173ABE3D0080D95E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
+		75D8F3BE173ABE3D0080D95E /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F3BC173ABE3D0080D95E /* InfoPlist.strings */; };
+		75D8F3C1173ABE3D0080D95E /* ZincWalletTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3C0173ABE3D0080D95E /* ZincWalletTests.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		75D8F3B7173ABE3D0080D95E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 75D8F376173ABE3C0080D95E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 75D8F37D173ABE3C0080D95E;
+			remoteInfo = ZincWallet;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		75D8F37E173ABE3C0080D95E /* ZincWallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZincWallet.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		75D8F381173ABE3C0080D95E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		75D8F383173ABE3C0080D95E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		75D8F385173ABE3C0080D95E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		75D8F389173ABE3C0080D95E /* ZincWallet-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ZincWallet-Info.plist"; sourceTree = "<group>"; };
+		75D8F38B173ABE3C0080D95E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		75D8F38D173ABE3C0080D95E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		75D8F38F173ABE3C0080D95E /* ZincWallet-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ZincWallet-Prefix.pch"; sourceTree = "<group>"; };
+		75D8F390173ABE3C0080D95E /* ZNAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNAppDelegate.h; sourceTree = "<group>"; };
+		75D8F391173ABE3C0080D95E /* ZNAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZNAppDelegate.m; sourceTree = "<group>"; };
+		75D8F393173ABE3C0080D95E /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
+		75D8F395173ABE3C0080D95E /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
+		75D8F397173ABE3C0080D95E /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
+		75D8F39A173ABE3C0080D95E /* en */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = en; path = en.lproj/MainStoryboard_iPhone.storyboard; sourceTree = "<group>"; };
+		75D8F39D173ABE3C0080D95E /* en */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = en; path = en.lproj/MainStoryboard_iPad.storyboard; sourceTree = "<group>"; };
+		75D8F39F173ABE3C0080D95E /* ZNFirstViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNFirstViewController.h; sourceTree = "<group>"; };
+		75D8F3A0173ABE3C0080D95E /* ZNFirstViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZNFirstViewController.m; sourceTree = "<group>"; };
+		75D8F3A2173ABE3C0080D95E /* first.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = first.png; sourceTree = "<group>"; };
+		75D8F3A4173ABE3C0080D95E /* first@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "first@2x.png"; sourceTree = "<group>"; };
+		75D8F3A6173ABE3D0080D95E /* ZNSecondViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNSecondViewController.h; sourceTree = "<group>"; };
+		75D8F3A7173ABE3D0080D95E /* ZNSecondViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZNSecondViewController.m; sourceTree = "<group>"; };
+		75D8F3A9173ABE3D0080D95E /* second.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = second.png; sourceTree = "<group>"; };
+		75D8F3AB173ABE3D0080D95E /* second@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "second@2x.png"; sourceTree = "<group>"; };
+		75D8F3B2173ABE3D0080D95E /* ZincWalletTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZincWalletTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
+		75D8F3B3173ABE3D0080D95E /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
+		75D8F3BB173ABE3D0080D95E /* ZincWalletTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ZincWalletTests-Info.plist"; sourceTree = "<group>"; };
+		75D8F3BD173ABE3D0080D95E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		75D8F3BF173ABE3D0080D95E /* ZincWalletTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZincWalletTests.h; sourceTree = "<group>"; };
+		75D8F3C0173ABE3D0080D95E /* ZincWalletTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZincWalletTests.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		75D8F37B173ABE3C0080D95E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				75D8F382173ABE3C0080D95E /* UIKit.framework in Frameworks */,
+				75D8F384173ABE3C0080D95E /* Foundation.framework in Frameworks */,
+				75D8F386173ABE3C0080D95E /* CoreGraphics.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		75D8F3AE173ABE3D0080D95E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				75D8F3B4173ABE3D0080D95E /* SenTestingKit.framework in Frameworks */,
+				75D8F3B5173ABE3D0080D95E /* UIKit.framework in Frameworks */,
+				75D8F3B6173ABE3D0080D95E /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		75D8F375173ABE3C0080D95E = {
+			isa = PBXGroup;
+			children = (
+				75D8F387173ABE3C0080D95E /* ZincWallet */,
+				75D8F3B9173ABE3D0080D95E /* ZincWalletTests */,
+				75D8F380173ABE3C0080D95E /* Frameworks */,
+				75D8F37F173ABE3C0080D95E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		75D8F37F173ABE3C0080D95E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				75D8F37E173ABE3C0080D95E /* ZincWallet.app */,
+				75D8F3B2173ABE3D0080D95E /* ZincWalletTests.octest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		75D8F380173ABE3C0080D95E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				75D8F381173ABE3C0080D95E /* UIKit.framework */,
+				75D8F383173ABE3C0080D95E /* Foundation.framework */,
+				75D8F385173ABE3C0080D95E /* CoreGraphics.framework */,
+				75D8F3B3173ABE3D0080D95E /* SenTestingKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		75D8F387173ABE3C0080D95E /* ZincWallet */ = {
+			isa = PBXGroup;
+			children = (
+				75D8F390173ABE3C0080D95E /* ZNAppDelegate.h */,
+				75D8F391173ABE3C0080D95E /* ZNAppDelegate.m */,
+				75D8F399173ABE3C0080D95E /* MainStoryboard_iPhone.storyboard */,
+				75D8F39C173ABE3C0080D95E /* MainStoryboard_iPad.storyboard */,
+				75D8F39F173ABE3C0080D95E /* ZNFirstViewController.h */,
+				75D8F3A0173ABE3C0080D95E /* ZNFirstViewController.m */,
+				75D8F3A2173ABE3C0080D95E /* first.png */,
+				75D8F3A4173ABE3C0080D95E /* first@2x.png */,
+				75D8F3A6173ABE3D0080D95E /* ZNSecondViewController.h */,
+				75D8F3A7173ABE3D0080D95E /* ZNSecondViewController.m */,
+				75D8F3A9173ABE3D0080D95E /* second.png */,
+				75D8F3AB173ABE3D0080D95E /* second@2x.png */,
+				75D8F388173ABE3C0080D95E /* Supporting Files */,
+			);
+			path = ZincWallet;
+			sourceTree = "<group>";
+		};
+		75D8F388173ABE3C0080D95E /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				75D8F389173ABE3C0080D95E /* ZincWallet-Info.plist */,
+				75D8F38A173ABE3C0080D95E /* InfoPlist.strings */,
+				75D8F38D173ABE3C0080D95E /* main.m */,
+				75D8F38F173ABE3C0080D95E /* ZincWallet-Prefix.pch */,
+				75D8F393173ABE3C0080D95E /* Default.png */,
+				75D8F395173ABE3C0080D95E /* Default@2x.png */,
+				75D8F397173ABE3C0080D95E /* Default-568h@2x.png */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		75D8F3B9173ABE3D0080D95E /* ZincWalletTests */ = {
+			isa = PBXGroup;
+			children = (
+				75D8F3BF173ABE3D0080D95E /* ZincWalletTests.h */,
+				75D8F3C0173ABE3D0080D95E /* ZincWalletTests.m */,
+				75D8F3BA173ABE3D0080D95E /* Supporting Files */,
+			);
+			path = ZincWalletTests;
+			sourceTree = "<group>";
+		};
+		75D8F3BA173ABE3D0080D95E /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				75D8F3BB173ABE3D0080D95E /* ZincWalletTests-Info.plist */,
+				75D8F3BC173ABE3D0080D95E /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		75D8F37D173ABE3C0080D95E /* ZincWallet */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 75D8F3C4173ABE3D0080D95E /* Build configuration list for PBXNativeTarget "ZincWallet" */;
+			buildPhases = (
+				75D8F37A173ABE3C0080D95E /* Sources */,
+				75D8F37B173ABE3C0080D95E /* Frameworks */,
+				75D8F37C173ABE3C0080D95E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ZincWallet;
+			productName = ZincWallet;
+			productReference = 75D8F37E173ABE3C0080D95E /* ZincWallet.app */;
+			productType = "com.apple.product-type.application";
+		};
+		75D8F3B1173ABE3D0080D95E /* ZincWalletTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 75D8F3C7173ABE3D0080D95E /* Build configuration list for PBXNativeTarget "ZincWalletTests" */;
+			buildPhases = (
+				75D8F3AD173ABE3D0080D95E /* Sources */,
+				75D8F3AE173ABE3D0080D95E /* Frameworks */,
+				75D8F3AF173ABE3D0080D95E /* Resources */,
+				75D8F3B0173ABE3D0080D95E /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				75D8F3B8173ABE3D0080D95E /* PBXTargetDependency */,
+			);
+			name = ZincWalletTests;
+			productName = ZincWalletTests;
+			productReference = 75D8F3B2173ABE3D0080D95E /* ZincWalletTests.octest */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		75D8F376173ABE3C0080D95E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				CLASSPREFIX = ZN;
+				LastUpgradeCheck = 0460;
+				ORGANIZATIONNAME = zinc;
+			};
+			buildConfigurationList = 75D8F379173ABE3C0080D95E /* Build configuration list for PBXProject "ZincWallet" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 75D8F375173ABE3C0080D95E;
+			productRefGroup = 75D8F37F173ABE3C0080D95E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				75D8F37D173ABE3C0080D95E /* ZincWallet */,
+				75D8F3B1173ABE3D0080D95E /* ZincWalletTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		75D8F37C173ABE3C0080D95E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				75D8F38C173ABE3C0080D95E /* InfoPlist.strings in Resources */,
+				75D8F394173ABE3C0080D95E /* Default.png in Resources */,
+				75D8F396173ABE3C0080D95E /* Default@2x.png in Resources */,
+				75D8F398173ABE3C0080D95E /* Default-568h@2x.png in Resources */,
+				75D8F39B173ABE3C0080D95E /* MainStoryboard_iPhone.storyboard in Resources */,
+				75D8F39E173ABE3C0080D95E /* MainStoryboard_iPad.storyboard in Resources */,
+				75D8F3A3173ABE3C0080D95E /* first.png in Resources */,
+				75D8F3A5173ABE3D0080D95E /* first@2x.png in Resources */,
+				75D8F3AA173ABE3D0080D95E /* second.png in Resources */,
+				75D8F3AC173ABE3D0080D95E /* second@2x.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		75D8F3AF173ABE3D0080D95E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				75D8F3BE173ABE3D0080D95E /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		75D8F3B0173ABE3D0080D95E /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		75D8F37A173ABE3C0080D95E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				75D8F38E173ABE3C0080D95E /* main.m in Sources */,
+				75D8F392173ABE3C0080D95E /* ZNAppDelegate.m in Sources */,
+				75D8F3A1173ABE3C0080D95E /* ZNFirstViewController.m in Sources */,
+				75D8F3A8173ABE3D0080D95E /* ZNSecondViewController.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		75D8F3AD173ABE3D0080D95E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				75D8F3C1173ABE3D0080D95E /* ZincWalletTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		75D8F3B8173ABE3D0080D95E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 75D8F37D173ABE3C0080D95E /* ZincWallet */;
+			targetProxy = 75D8F3B7173ABE3D0080D95E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		75D8F38A173ABE3C0080D95E /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				75D8F38B173ABE3C0080D95E /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		75D8F399173ABE3C0080D95E /* MainStoryboard_iPhone.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				75D8F39A173ABE3C0080D95E /* en */,
+			);
+			name = MainStoryboard_iPhone.storyboard;
+			sourceTree = "<group>";
+		};
+		75D8F39C173ABE3C0080D95E /* MainStoryboard_iPad.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				75D8F39D173ABE3C0080D95E /* en */,
+			);
+			name = MainStoryboard_iPad.storyboard;
+			sourceTree = "<group>";
+		};
+		75D8F3BC173ABE3D0080D95E /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				75D8F3BD173ABE3D0080D95E /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		75D8F3C2173ABE3D0080D95E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		75D8F3C3173ABE3D0080D95E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
+				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		75D8F3C5173ABE3D0080D95E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "ZincWallet/ZincWallet-Prefix.pch";
+				INFOPLIST_FILE = "ZincWallet/ZincWallet-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		75D8F3C6173ABE3D0080D95E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "ZincWallet/ZincWallet-Prefix.pch";
+				INFOPLIST_FILE = "ZincWallet/ZincWallet-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		75D8F3C8173ABE3D0080D95E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/ZincWallet.app/ZincWallet";
+				FRAMEWORK_SEARCH_PATHS = (
+					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
+					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "ZincWallet/ZincWallet-Prefix.pch";
+				INFOPLIST_FILE = "ZincWalletTests/ZincWalletTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = octest;
+			};
+			name = Debug;
+		};
+		75D8F3C9173ABE3D0080D95E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/ZincWallet.app/ZincWallet";
+				FRAMEWORK_SEARCH_PATHS = (
+					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
+					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "ZincWallet/ZincWallet-Prefix.pch";
+				INFOPLIST_FILE = "ZincWalletTests/ZincWalletTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = octest;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		75D8F379173ABE3C0080D95E /* Build configuration list for PBXProject "ZincWallet" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				75D8F3C2173ABE3D0080D95E /* Debug */,
+				75D8F3C3173ABE3D0080D95E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		75D8F3C4173ABE3D0080D95E /* Build configuration list for PBXNativeTarget "ZincWallet" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				75D8F3C5173ABE3D0080D95E /* Debug */,
+				75D8F3C6173ABE3D0080D95E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		75D8F3C7173ABE3D0080D95E /* Build configuration list for PBXNativeTarget "ZincWalletTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				75D8F3C8173ABE3D0080D95E /* Debug */,
+				75D8F3C9173ABE3D0080D95E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 75D8F376173ABE3C0080D95E /* Project object */;
+}
