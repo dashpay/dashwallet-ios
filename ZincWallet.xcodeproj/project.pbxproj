@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		75CBEAD0173ABFA500978DBA /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75CBEACF173ABFA500978DBA /* GameKit.framework */; };
 		75CBEAD2173C3F2900978DBA /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75CBEAD1173C3F2900978DBA /* CoreBluetooth.framework */; };
+		75CBEADC173C5FB500978DBA /* icon72.png in Resources */ = {isa = PBXBuildFile; fileRef = 75CBEADB173C5FB500978DBA /* icon72.png */; };
+		75CBEADE173C5FEF00978DBA /* icon144.png in Resources */ = {isa = PBXBuildFile; fileRef = 75CBEADD173C5FEF00978DBA /* icon144.png */; };
+		75CBEAE0173C601D00978DBA /* icon57.png in Resources */ = {isa = PBXBuildFile; fileRef = 75CBEADF173C601D00978DBA /* icon57.png */; };
+		75CBEAE2173C603800978DBA /* icon114.png in Resources */ = {isa = PBXBuildFile; fileRef = 75CBEAE1173C603800978DBA /* icon114.png */; };
 		75D8F382173ABE3C0080D95E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F381173ABE3C0080D95E /* UIKit.framework */; };
 		75D8F384173ABE3C0080D95E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		75D8F386173ABE3C0080D95E /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F385173ABE3C0080D95E /* CoreGraphics.framework */; };
@@ -46,6 +50,10 @@
 /* Begin PBXFileReference section */
 		75CBEACF173ABFA500978DBA /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
 		75CBEAD1173C3F2900978DBA /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
+		75CBEADB173C5FB500978DBA /* icon72.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon72.png; path = ../icon72.png; sourceTree = "<group>"; };
+		75CBEADD173C5FEF00978DBA /* icon144.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon144.png; path = ../icon144.png; sourceTree = "<group>"; };
+		75CBEADF173C601D00978DBA /* icon57.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon57.png; path = ../icon57.png; sourceTree = "<group>"; };
+		75CBEAE1173C603800978DBA /* icon114.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon114.png; path = ../icon114.png; sourceTree = "<group>"; };
 		75D8F37E173ABE3C0080D95E /* ZincWallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZincWallet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		75D8F381173ABE3C0080D95E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		75D8F383173ABE3C0080D95E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -165,6 +173,10 @@
 				75D8F393173ABE3C0080D95E /* Default.png */,
 				75D8F395173ABE3C0080D95E /* Default@2x.png */,
 				75D8F397173ABE3C0080D95E /* Default-568h@2x.png */,
+				75CBEADF173C601D00978DBA /* icon57.png */,
+				75CBEADB173C5FB500978DBA /* icon72.png */,
+				75CBEAE1173C603800978DBA /* icon114.png */,
+				75CBEADD173C5FEF00978DBA /* icon144.png */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -270,6 +282,10 @@
 				75D8F3A5173ABE3D0080D95E /* first@2x.png in Resources */,
 				75D8F3AA173ABE3D0080D95E /* second.png in Resources */,
 				75D8F3AC173ABE3D0080D95E /* second@2x.png in Resources */,
+				75CBEADC173C5FB500978DBA /* icon72.png in Resources */,
+				75CBEADE173C5FEF00978DBA /* icon144.png in Resources */,
+				75CBEAE0173C601D00978DBA /* icon57.png in Resources */,
+				75CBEAE2173C603800978DBA /* icon114.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
