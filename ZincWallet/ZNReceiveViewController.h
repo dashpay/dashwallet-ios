@@ -7,7 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <GameKit/GameKit.h>
 
-@interface ZNSecondViewController : UIViewController
+@interface ZNReceiveViewController : UIViewController <GKSessionDelegate>
 
 @end

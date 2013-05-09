@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		75CBEAD0173ABFA500978DBA /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75CBEACF173ABFA500978DBA /* GameKit.framework */; };
+		75CBEAD2173C3F2900978DBA /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75CBEAD1173C3F2900978DBA /* CoreBluetooth.framework */; };
 		75D8F382173ABE3C0080D95E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F381173ABE3C0080D95E /* UIKit.framework */; };
 		75D8F384173ABE3C0080D95E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		75D8F386173ABE3C0080D95E /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F385173ABE3C0080D95E /* CoreGraphics.framework */; };
@@ -18,10 +20,10 @@
 		75D8F398173ABE3C0080D95E /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F397173ABE3C0080D95E /* Default-568h@2x.png */; };
 		75D8F39B173ABE3C0080D95E /* MainStoryboard_iPhone.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F399173ABE3C0080D95E /* MainStoryboard_iPhone.storyboard */; };
 		75D8F39E173ABE3C0080D95E /* MainStoryboard_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F39C173ABE3C0080D95E /* MainStoryboard_iPad.storyboard */; };
-		75D8F3A1173ABE3C0080D95E /* ZNFirstViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3A0173ABE3C0080D95E /* ZNFirstViewController.m */; };
+		75D8F3A1173ABE3C0080D95E /* ZNPayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3A0173ABE3C0080D95E /* ZNPayViewController.m */; };
 		75D8F3A3173ABE3C0080D95E /* first.png in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F3A2173ABE3C0080D95E /* first.png */; };
 		75D8F3A5173ABE3D0080D95E /* first@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F3A4173ABE3C0080D95E /* first@2x.png */; };
-		75D8F3A8173ABE3D0080D95E /* ZNSecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3A7173ABE3D0080D95E /* ZNSecondViewController.m */; };
+		75D8F3A8173ABE3D0080D95E /* ZNReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3A7173ABE3D0080D95E /* ZNReceiveViewController.m */; };
 		75D8F3AA173ABE3D0080D95E /* second.png in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F3A9173ABE3D0080D95E /* second.png */; };
 		75D8F3AC173ABE3D0080D95E /* second@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F3AB173ABE3D0080D95E /* second@2x.png */; };
 		75D8F3B4173ABE3D0080D95E /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F3B3173ABE3D0080D95E /* SenTestingKit.framework */; };
@@ -42,6 +44,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		75CBEACF173ABFA500978DBA /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
+		75CBEAD1173C3F2900978DBA /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
 		75D8F37E173ABE3C0080D95E /* ZincWallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZincWallet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		75D8F381173ABE3C0080D95E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		75D8F383173ABE3C0080D95E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -57,12 +61,12 @@
 		75D8F397173ABE3C0080D95E /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		75D8F39A173ABE3C0080D95E /* en */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = en; path = en.lproj/MainStoryboard_iPhone.storyboard; sourceTree = "<group>"; };
 		75D8F39D173ABE3C0080D95E /* en */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = en; path = en.lproj/MainStoryboard_iPad.storyboard; sourceTree = "<group>"; };
-		75D8F39F173ABE3C0080D95E /* ZNFirstViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNFirstViewController.h; sourceTree = "<group>"; };
-		75D8F3A0173ABE3C0080D95E /* ZNFirstViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZNFirstViewController.m; sourceTree = "<group>"; };
+		75D8F39F173ABE3C0080D95E /* ZNPayViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNPayViewController.h; sourceTree = "<group>"; };
+		75D8F3A0173ABE3C0080D95E /* ZNPayViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZNPayViewController.m; sourceTree = "<group>"; };
 		75D8F3A2173ABE3C0080D95E /* first.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = first.png; sourceTree = "<group>"; };
 		75D8F3A4173ABE3C0080D95E /* first@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "first@2x.png"; sourceTree = "<group>"; };
-		75D8F3A6173ABE3D0080D95E /* ZNSecondViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNSecondViewController.h; sourceTree = "<group>"; };
-		75D8F3A7173ABE3D0080D95E /* ZNSecondViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZNSecondViewController.m; sourceTree = "<group>"; };
+		75D8F3A6173ABE3D0080D95E /* ZNReceiveViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNReceiveViewController.h; sourceTree = "<group>"; };
+		75D8F3A7173ABE3D0080D95E /* ZNReceiveViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZNReceiveViewController.m; sourceTree = "<group>"; };
 		75D8F3A9173ABE3D0080D95E /* second.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = second.png; sourceTree = "<group>"; };
 		75D8F3AB173ABE3D0080D95E /* second@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "second@2x.png"; sourceTree = "<group>"; };
 		75D8F3B2173ABE3D0080D95E /* ZincWalletTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZincWalletTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -78,6 +82,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				75CBEAD2173C3F2900978DBA /* CoreBluetooth.framework in Frameworks */,
+				75CBEAD0173ABFA500978DBA /* GameKit.framework in Frameworks */,
 				75D8F382173ABE3C0080D95E /* UIKit.framework in Frameworks */,
 				75D8F384173ABE3C0080D95E /* Foundation.framework in Frameworks */,
 				75D8F386173ABE3C0080D95E /* CoreGraphics.framework in Frameworks */,
@@ -119,6 +125,8 @@
 		75D8F380173ABE3C0080D95E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				75CBEAD1173C3F2900978DBA /* CoreBluetooth.framework */,
+				75CBEACF173ABFA500978DBA /* GameKit.framework */,
 				75D8F381173ABE3C0080D95E /* UIKit.framework */,
 				75D8F383173ABE3C0080D95E /* Foundation.framework */,
 				75D8F385173ABE3C0080D95E /* CoreGraphics.framework */,
@@ -134,12 +142,12 @@
 				75D8F391173ABE3C0080D95E /* ZNAppDelegate.m */,
 				75D8F399173ABE3C0080D95E /* MainStoryboard_iPhone.storyboard */,
 				75D8F39C173ABE3C0080D95E /* MainStoryboard_iPad.storyboard */,
-				75D8F39F173ABE3C0080D95E /* ZNFirstViewController.h */,
-				75D8F3A0173ABE3C0080D95E /* ZNFirstViewController.m */,
+				75D8F39F173ABE3C0080D95E /* ZNPayViewController.h */,
+				75D8F3A0173ABE3C0080D95E /* ZNPayViewController.m */,
 				75D8F3A2173ABE3C0080D95E /* first.png */,
 				75D8F3A4173ABE3C0080D95E /* first@2x.png */,
-				75D8F3A6173ABE3D0080D95E /* ZNSecondViewController.h */,
-				75D8F3A7173ABE3D0080D95E /* ZNSecondViewController.m */,
+				75D8F3A6173ABE3D0080D95E /* ZNReceiveViewController.h */,
+				75D8F3A7173ABE3D0080D95E /* ZNReceiveViewController.m */,
 				75D8F3A9173ABE3D0080D95E /* second.png */,
 				75D8F3AB173ABE3D0080D95E /* second@2x.png */,
 				75D8F388173ABE3C0080D95E /* Supporting Files */,
@@ -298,8 +306,8 @@
 			files = (
 				75D8F38E173ABE3C0080D95E /* main.m in Sources */,
 				75D8F392173ABE3C0080D95E /* ZNAppDelegate.m in Sources */,
-				75D8F3A1173ABE3C0080D95E /* ZNFirstViewController.m in Sources */,
-				75D8F3A8173ABE3D0080D95E /* ZNSecondViewController.m in Sources */,
+				75D8F3A1173ABE3C0080D95E /* ZNPayViewController.m in Sources */,
+				75D8F3A8173ABE3D0080D95E /* ZNReceiveViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -490,6 +498,7 @@
 				75D8F3C6173ABE3D0080D95E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		75D8F3C7173ABE3D0080D95E /* Build configuration list for PBXNativeTarget "ZincWalletTests" */ = {
 			isa = XCConfigurationList;
@@ -498,6 +507,7 @@
 				75D8F3C9173ABE3D0080D95E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

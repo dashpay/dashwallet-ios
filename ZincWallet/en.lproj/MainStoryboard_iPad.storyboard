@@ -4,10 +4,10 @@
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="2083"/>
     </dependencies>
     <scenes>
-        <!--First View Controller - pay-->
+        <!--Pay View Controller - pay-->
         <scene sceneID="11">
             <objects>
-                <viewController id="2" customClass="ZNFirstViewController" sceneMemberID="viewController">
+                <viewController id="2" customClass="ZNPayViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="17">
                         <rect key="frame" x="0.0" y="20" width="768" height="955"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -48,48 +48,85 @@
             </objects>
             <point key="canvasLocation" x="3041" y="150"/>
         </scene>
-        <!--Second View Controller - receive-->
+        <!--Receive View Controller - receive-->
         <scene sceneID="13">
             <objects>
-                <viewController id="3" customClass="ZNSecondViewController" sceneMemberID="viewController">
+                <viewController id="3" customClass="ZNReceiveViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="16">
                         <rect key="frame" x="0.0" y="20" width="768" height="955"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" text="Second View" textAlignment="center" lineBreakMode="tailTruncation" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="21">
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.0" contentMode="scaleToFill" text="Waiting for payment." textAlignment="center" lineBreakMode="tailTruncation" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="21">
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <fontDescription key="fontDescription" name="Helvetica" family="Helvetica" pointSize="36"/>
                                 <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <textView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" userInteractionEnabled="NO" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" delaysContentTouches="NO" canCancelContentTouches="NO" minimumZoomScale="0.0" maximumZoomScale="0.0" bouncesZoom="NO" editable="NO" text="Loaded by the Second View Controller — an instance of ZNSecondViewController — specified in the app delegate." textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="22">
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="70" id="39I-E8-1dg"/>
-                                    <constraint firstAttribute="width" constant="297" id="F6J-XU-KBh"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" type="system" size="system"/>
-                                <textInputTraits key="textInputTraits"/>
-                            </textView>
                             <navigationBar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="23">
                                 <items>
                                     <navigationItem id="24"/>
                                 </items>
                             </navigationBar>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bfV-ao-qxc">
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="150" id="9zO-m3-QKF"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
+                                <state key="normal" title="request payment">
+                                    <color key="titleColor" red="0.19607843459999999" green="0.30980393290000002" blue="0.52156865600000002" alpha="1" colorSpace="calibratedRGB"/>
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <state key="highlighted">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="issueRequest:" destination="3" eventType="touchUpInside" id="Ji7-Gb-jzw"/>
+                                </connections>
+                            </button>
+                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="0.01" textAlignment="right" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Q0e-6y-KUq">
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="636" id="AiQ-nA-AxB"/>
+                                    <constraint firstAttribute="height" constant="60" id="QGd-yf-qbJ"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="36"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
+                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Alice's Coffee Shop" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="1iP-FO-iq8">
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="44" id="Clu-Rb-bdt"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
+                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="D1L-O4-crZ"/>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
+                            <constraint firstItem="1iP-FO-iq8" firstAttribute="leading" secondItem="Q0e-6y-KUq" secondAttribute="leading" type="default" id="3dH-Y0-fDG"/>
+                            <constraint firstItem="D1L-O4-crZ" firstAttribute="top" secondItem="1iP-FO-iq8" secondAttribute="bottom" constant="8" symbolic="YES" type="default" id="4Uu-Yf-24l"/>
                             <constraint firstItem="21" firstAttribute="leading" secondItem="16" secondAttribute="leading" constant="20" symbolic="YES" type="default" id="7D6-ef-UU9"/>
-                            <constraint firstItem="22" firstAttribute="top" secondItem="16" secondAttribute="top" constant="350" id="Gbp-Dd-WCJ"/>
-                            <constraint firstItem="22" firstAttribute="leading" secondItem="16" secondAttribute="leading" constant="235" id="Xcq-Zb-R4f"/>
+                            <constraint firstItem="bfV-ao-qxc" firstAttribute="centerY" secondItem="16" secondAttribute="centerY" type="default" id="Eiv-W9-MNk"/>
+                            <constraint firstItem="D1L-O4-crZ" firstAttribute="centerX" secondItem="1iP-FO-iq8" secondAttribute="centerX" type="default" id="I31-F6-GB8"/>
+                            <constraint firstItem="21" firstAttribute="top" secondItem="Q0e-6y-KUq" secondAttribute="bottom" constant="8" symbolic="YES" type="default" id="S9h-bQ-she"/>
                             <constraint firstItem="23" firstAttribute="top" secondItem="16" secondAttribute="top" type="default" id="YQd-P8-ET5"/>
+                            <constraint firstItem="1iP-FO-iq8" firstAttribute="centerX" secondItem="21" secondAttribute="centerX" type="default" id="acG-mL-zVC"/>
+                            <constraint firstItem="Q0e-6y-KUq" firstAttribute="top" secondItem="16" secondAttribute="top" constant="182" id="cfn-wg-zko"/>
                             <constraint firstItem="23" firstAttribute="trailing" secondItem="16" secondAttribute="trailing" type="default" id="eH6-Me-VTD"/>
+                            <constraint firstItem="D1L-O4-crZ" firstAttribute="centerX" secondItem="bfV-ao-qxc" secondAttribute="centerX" type="default" id="fWo-hR-1RX"/>
                             <constraint firstItem="23" firstAttribute="leading" secondItem="16" secondAttribute="leading" type="default" id="kTD-uS-vbp"/>
-                            <constraint firstItem="21" firstAttribute="top" secondItem="16" secondAttribute="top" constant="250" id="mE7-QV-f5n"/>
+                            <constraint firstItem="1iP-FO-iq8" firstAttribute="top" secondItem="16" secondAttribute="top" constant="279" id="lIF-UT-uPV"/>
+                            <constraint firstItem="Q0e-6y-KUq" firstAttribute="trailing" secondItem="1iP-FO-iq8" secondAttribute="trailing" type="default" id="s5T-Fd-3Az"/>
                             <constraint firstAttribute="trailing" secondItem="21" secondAttribute="trailing" constant="20" symbolic="YES" type="default" id="v87-JO-j7C"/>
                         </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="receive" image="second" id="6"/>
+                    <connections>
+                        <outlet property="amountField" destination="Q0e-6y-KUq" id="YeF-sN-ALq"/>
+                        <outlet property="messageField" destination="1iP-FO-iq8" id="OVl-6t-lCV"/>
+                        <outlet property="requestButton" destination="bfV-ao-qxc" id="ptI-7Z-Pq4"/>
+                        <outlet property="spinner" destination="D1L-O4-crZ" id="KKM-wm-KyR"/>
+                        <outlet property="waitingLabel" destination="21" id="bBu-HZ-FZg"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="12" sceneMemberID="firstResponder"/>
             </objects>
@@ -123,11 +160,25 @@
         <class className="NSLayoutConstraint" superclassName="NSObject">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/NSLayoutConstraint.h"/>
         </class>
-        <class className="ZNFirstViewController" superclassName="UIViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNFirstViewController.h"/>
+        <class className="ZNPayViewController" superclassName="UIViewController">
+            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNPayViewController.h"/>
+            <relationships>
+                <relationship kind="action" name="doIt:"/>
+                <relationship kind="outlet" name="spinner" candidateClass="UIActivityIndicatorView"/>
+                <relationship kind="outlet" name="waitingLabel" candidateClass="UILabel"/>
+            </relationships>
         </class>
-        <class className="ZNSecondViewController" superclassName="UIViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNSecondViewController.h"/>
+        <class className="ZNReceiveViewController" superclassName="UIViewController">
+            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNReceiveViewController.h"/>
+            <relationships>
+                <relationship kind="action" name="cancelRequest:"/>
+                <relationship kind="action" name="issueRequest:"/>
+                <relationship kind="outlet" name="amountField" candidateClass="UITextField"/>
+                <relationship kind="outlet" name="messageField" candidateClass="UITextField"/>
+                <relationship kind="outlet" name="requestButton" candidateClass="UIButton"/>
+                <relationship kind="outlet" name="spinner" candidateClass="UIActivityIndicatorView"/>
+                <relationship kind="outlet" name="waitingLabel" candidateClass="UILabel"/>
+            </relationships>
         </class>
     </classes>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">

@@ -13,6 +13,12 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
+
+    // this will force a bluetooth reqeust
+    CBCentralManager *cbManager = [[CBCentralManager alloc] initWithDelegate:self queue:dispatch_get_main_queue()];
+    
+    [self centralManagerDidUpdateState:cbManager]; // Show initial state
+    
     return YES;
 }
 							
@@ -43,4 +49,15 @@
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
 
+- (void)centralManagerDidUpdateState:(CBCentralManager *)cbManager
+{
+    switch (cbManager.state) {
+        case CBCentralManagerStateResetting: NSLog(@"system BT connection momentarily lost."); break;
+        case CBCentralManagerStateUnsupported: NSLog(@"BT Low Energy not suppoerted."); break;
+        case CBCentralManagerStateUnauthorized: NSLog(@"BT Low Energy not authorized."); break;
+        case CBCentralManagerStatePoweredOff: NSLog(@"BT off."); break;
+        case CBCentralManagerStatePoweredOn: NSLog(@"BT on."); break;
+        default: NSLog(@"BT State unknown."); break;
+    }    
+}
 @end

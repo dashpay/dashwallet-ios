@@ -7,8 +7,9 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <CoreBluetooth/CoreBluetooth.h>
 
-@interface ZNAppDelegate : UIResponder <UIApplicationDelegate>
+@interface ZNAppDelegate : UIResponder <UIApplicationDelegate, CBCentralManagerDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
 
