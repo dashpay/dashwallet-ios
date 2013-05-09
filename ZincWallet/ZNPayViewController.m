@@ -20,7 +20,7 @@
 
 @property (nonatomic, strong) GKSession *session;
 @property (nonatomic, strong) NSMutableArray *peers, *requestButtons;
-@property (nonatomic, strong) NSData *unsignedRequest;
+@property (nonatomic, strong) NSMutableDictionary *unsignedRequests;
 @property (nonatomic, strong) NSString *selectedPeer;
 
 @end
@@ -34,6 +34,7 @@
     
     self.peers = [NSMutableArray array];
     self.requestButtons = [NSMutableArray array];
+    self.unsignedRequests = [NSMutableDictionary dictionary];
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -117,9 +118,19 @@
     return true;
 }
 
-- (NSData *)signRequest
+- (void)confirmRequest
 {
-    NSString *signedRequest = [[[NSString alloc] initWithData:self.unsignedRequest encoding:NSUTF8StringEncoding]
+    //XXX these should be read from the request, not displayName (security!)
+    NSString *name = [self.session displayNameForPeer:self.selectedPeer];
+    double amount = [[name componentsSeparatedByString:BTC].lastObject doubleValue];
+    
+    [[[UIAlertView alloc] initWithTitle:@"Confirm Payment" message:name delegate:self cancelButtonTitle:@"cancel"
+      otherButtonTitles:[NSString stringWithFormat:@"%@%f", BTC, amount], nil] show];
+}
+
+- (NSData *)signRequest:(NSData *)unsignedRequest
+{
+    NSString *signedRequest = [[[NSString alloc] initWithData:unsignedRequest encoding:NSUTF8StringEncoding]
                                stringByAppendingString:@" - X"];
     
     return [signedRequest dataUsingEncoding:NSUTF8StringEncoding];
@@ -137,8 +148,10 @@
     }
     
     self.selectedPeer = self.peers[idx];
-    [self.session connectToPeer:self.selectedPeer withTimeout:CONNECT_TIMEOUT];
+    //[self.session connectToPeer:self.selectedPeer withTimeout:CONNECT_TIMEOUT];
     [sender setEnabled:NO];
+    
+    if (self.unsignedRequests[self.selectedPeer]) [self confirmRequest];
 }
 
 #pragma mark - GKSessionDelegate
@@ -156,6 +169,9 @@
     if (state == GKPeerStateAvailable) {
         if (! [self.peers containsObject:peerID]) {
             [self.peers addObject:peerID];
+            
+            [session connectToPeer:peerID withTimeout:CONNECT_TIMEOUT];
+            
             [self layoutButtons];
         }
     }
@@ -208,10 +224,6 @@
 
 - (void)receiveData:(NSData *)data fromPeer:(NSString *)peer inSession:(GKSession *)session context:(void *)context
 {
-    //XXX these should be read from the request, not displayName (security!)
-    NSString *name = [session displayNameForPeer:peer];
-    double amount = [[name componentsSeparatedByString:BTC].lastObject doubleValue];
-
     if (! [self requestIsValid:data]) {
         [[[UIAlertView alloc] initWithTitle:@"Couldn't validate payment request"
           message:@"The payment reqeust did not contain a valid merchant signature" delegate:self
@@ -227,10 +239,10 @@
         return;
     }
     
-    self.unsignedRequest = data;
+    NSLog(@"got payment reqeust for %@", peer);
+    [self.unsignedRequests setObject:data forKey:peer];
     
-    [[[UIAlertView alloc] initWithTitle:@"Confirm Payment" message:name delegate:self cancelButtonTitle:@"cancel"
-      otherButtonTitles:[NSString stringWithFormat:@"%@%f", BTC, amount], nil] show];
+    if ([self.selectedPeer isEqual:peer]) [self confirmRequest];
 }
 
 #pragma mark - UIAlertViewDelegate
@@ -247,9 +259,10 @@
         return;
     }
     
-    NSData *signedRequest = [self signRequest];
+    NSData *signedRequest = [self signRequest:self.unsignedRequests[self.selectedPeer]];
     NSError *error;
     
+    NSLog(@"sending signed request to %@", self.selectedPeer);
     [self.session sendData:signedRequest toPeers:@[self.selectedPeer] withDataMode:GKSendDataReliable error:&error];
     
     if (error) {
