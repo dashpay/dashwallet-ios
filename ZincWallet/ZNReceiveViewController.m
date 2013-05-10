@@ -7,6 +7,7 @@
 //
 
 #import "ZNReceiveViewController.h"
+#import "ZNPaymentRequest.h"
 
 @interface ZNReceiveViewController ()
 
@@ -28,22 +29,37 @@
     // Do any additional setup after loading the view, typically from a nib.
 }
 
+- (NSString *)paymentAddress
+{
+    return @"1T7cQHDFLuMVx77cDBn9jKkRQDuasXqt2";
+}
+
 - (NSString *)message
 {
-    return @"Alice's Coffee Shop";
+    return self.messageField.text;
+}
+
+- (NSString *)label
+{
+    return nil;//@"register #1";
 }
 
 - (double)amount
 {
-    return 0.01;
+    return ((UInt64)([self.amountField.text doubleValue]*SATOSHIS))/SATOSHIS;
 }
 
-- (NSData *)paymentRequest
+- (ZNPaymentRequest *)paymentRequest
 {
     // This should use official payment request protocol when finalized
 
-    return [[NSString stringWithFormat:@"1T7cQHDFLuMVx77cDBn9jKkRQDuasXqt2?amount=%f", self.amount]
-            dataUsingEncoding:NSUTF8StringEncoding];
+    ZNPaymentRequest *req = [[ZNPaymentRequest alloc] init];
+    req.amount = self.amount;
+    req.paymentAddress = self.paymentAddress;
+    req.message = self.message;
+    req.label = self.label;
+
+    return req;
 }
 
 #pragma mark - IBAction
@@ -56,7 +72,7 @@
     }
 
     self.session = [[GKSession alloc] initWithSessionID:GK_SESSION_ID
-                    displayName:[NSString stringWithFormat:@"%@ - %@%f", self.message, BTC, self.amount]
+                    displayName:[NSString stringWithFormat:@"%@ - %@%.18g", self.message, BTC, self.amount]
                     sessionMode:GKSessionModeServer];
     self.session.delegate = self;
     [self.session setDataReceiveHandler:self withContext:nil];
@@ -101,7 +117,8 @@
         NSError *error = nil;
         
         NSLog(@"connected... sending payment reqeust");
-        [session sendData:[self paymentRequest] toPeers:@[self.peer] withDataMode:GKSendDataReliable error:&error];
+        [session sendData:[[self paymentRequest] data] toPeers:@[self.peer] withDataMode:GKSendDataReliable
+         error:&error];
     }
     if (state == GKPeerStateDisconnected) {
         [self cancelRequest:nil];
@@ -147,10 +164,11 @@
 
 - (void)receiveData:(NSData *)data fromPeer:(NSString *)peer inSession:(GKSession *)session context:(void *)context
 {
-    NSString *tx = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-
-    [[[UIAlertView alloc] initWithTitle:@"Got Signed Transaction" message:tx delegate:nil
-      cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+    [[[UIAlertView alloc] initWithTitle:@"Got Signed Transaction"
+      message:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] delegate:nil cancelButtonTitle:@"OK"
+      otherButtonTitles:nil] show];
+    
+    // XXX transmit the transaction
     
     [self.session disconnectFromAllPeers];
     self.session = nil;

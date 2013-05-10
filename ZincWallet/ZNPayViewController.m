@@ -7,6 +7,7 @@
 //
 
 #import "ZNPayViewController.h"
+#import "ZNPaymentRequest.h"
 
 #define BUTTON_HEIGHT 44
 #define BUTTON_MARGIN 5
@@ -111,29 +112,13 @@
     }];
 }
 
-- (BOOL)requestIsValid:(NSData *)reqeust
-{
-    //XXX validate X.509 certificate here (hopefully even if offline?)
-    
-    return true;
-}
-
 - (void)confirmRequest
 {
-    //XXX these should be read from the request, not displayName (security!)
-    NSString *name = [self.session displayNameForPeer:self.selectedPeer];
-    double amount = [[name componentsSeparatedByString:BTC].lastObject doubleValue];
+    ZNPaymentRequest *req = self.unsignedRequests[self.selectedPeer];
     
-    [[[UIAlertView alloc] initWithTitle:@"Confirm Payment" message:name delegate:self cancelButtonTitle:@"cancel"
-      otherButtonTitles:[NSString stringWithFormat:@"%@%f", BTC, amount], nil] show];
-}
-
-- (NSData *)signRequest:(NSData *)unsignedRequest
-{
-    NSString *signedRequest = [[[NSString alloc] initWithData:unsignedRequest encoding:NSUTF8StringEncoding]
-                               stringByAppendingString:@" - X"];
-    
-    return [signedRequest dataUsingEncoding:NSUTF8StringEncoding];
+    if (req) [[[UIAlertView alloc] initWithTitle:@"Confirm Payment" message:req.message delegate:self
+               cancelButtonTitle:@"cancel"
+               otherButtonTitles:[NSString stringWithFormat:@"%@%.18g", BTC, req.amount], nil] show];
 }
 
 #pragma mark - IBAction
@@ -148,10 +133,10 @@
     }
     
     self.selectedPeer = self.peers[idx];
-    //[self.session connectToPeer:self.selectedPeer withTimeout:CONNECT_TIMEOUT];
+
     [sender setEnabled:NO];
     
-    if (self.unsignedRequests[self.selectedPeer]) [self confirmRequest];
+    [self confirmRequest];
 }
 
 #pragma mark - GKSessionDelegate
@@ -224,7 +209,9 @@
 
 - (void)receiveData:(NSData *)data fromPeer:(NSString *)peer inSession:(GKSession *)session context:(void *)context
 {
-    if (! [self requestIsValid:data]) {
+    ZNPaymentRequest *req = [ZNPaymentRequest requestWithData:data];
+
+    if (! req.valid) {
         [[[UIAlertView alloc] initWithTitle:@"Couldn't validate payment request"
           message:@"The payment reqeust did not contain a valid merchant signature" delegate:self
           cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
@@ -240,7 +227,7 @@
     }
     
     NSLog(@"got payment reqeust for %@", peer);
-    [self.unsignedRequests setObject:data forKey:peer];
+    [self.unsignedRequests setObject:req forKey:peer];
     
     if ([self.selectedPeer isEqual:peer]) [self confirmRequest];
 }
@@ -259,7 +246,7 @@
         return;
     }
     
-    NSData *signedRequest = [self signRequest:self.unsignedRequests[self.selectedPeer]];
+    NSData *signedRequest = [self.unsignedRequests[self.selectedPeer] signedTransaction];
     NSError *error;
     
     NSLog(@"sending signed request to %@", self.selectedPeer);
@@ -268,6 +255,11 @@
     if (error) {
         [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription delegate:nil
           cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        
+        [self.peers removeObject:self.selectedPeer];
+        self.selectedPeer = nil;
+        
+        [self layoutButtons];
     }
 }
 

@@ -13,6 +13,7 @@
 		75CBEADE173C5FEF00978DBA /* icon144.png in Resources */ = {isa = PBXBuildFile; fileRef = 75CBEADD173C5FEF00978DBA /* icon144.png */; };
 		75CBEAE0173C601D00978DBA /* icon57.png in Resources */ = {isa = PBXBuildFile; fileRef = 75CBEADF173C601D00978DBA /* icon57.png */; };
 		75CBEAE2173C603800978DBA /* icon114.png in Resources */ = {isa = PBXBuildFile; fileRef = 75CBEAE1173C603800978DBA /* icon114.png */; };
+		75CBEAE9173C80AD00978DBA /* ZNPaymentRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 75CBEAE8173C80AD00978DBA /* ZNPaymentRequest.m */; };
 		75D8F382173ABE3C0080D95E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F381173ABE3C0080D95E /* UIKit.framework */; };
 		75D8F384173ABE3C0080D95E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		75D8F386173ABE3C0080D95E /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F385173ABE3C0080D95E /* CoreGraphics.framework */; };
@@ -54,6 +55,8 @@
 		75CBEADD173C5FEF00978DBA /* icon144.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon144.png; path = ../icon144.png; sourceTree = "<group>"; };
 		75CBEADF173C601D00978DBA /* icon57.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon57.png; path = ../icon57.png; sourceTree = "<group>"; };
 		75CBEAE1173C603800978DBA /* icon114.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon114.png; path = ../icon114.png; sourceTree = "<group>"; };
+		75CBEAE7173C80AD00978DBA /* ZNPaymentRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNPaymentRequest.h; sourceTree = "<group>"; };
+		75CBEAE8173C80AD00978DBA /* ZNPaymentRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNPaymentRequest.m; sourceTree = "<group>"; };
 		75D8F37E173ABE3C0080D95E /* ZincWallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZincWallet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		75D8F381173ABE3C0080D95E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		75D8F383173ABE3C0080D95E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -111,6 +114,54 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		75CBEAE3173C800F00978DBA /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				75D8F399173ABE3C0080D95E /* MainStoryboard_iPhone.storyboard */,
+				75D8F39C173ABE3C0080D95E /* MainStoryboard_iPad.storyboard */,
+				75CBEAE4173C801900978DBA /* Images */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		75CBEAE4173C801900978DBA /* Images */ = {
+			isa = PBXGroup;
+			children = (
+				75D8F3A2173ABE3C0080D95E /* first.png */,
+				75D8F3A4173ABE3C0080D95E /* first@2x.png */,
+				75D8F3A9173ABE3D0080D95E /* second.png */,
+				75D8F3AB173ABE3D0080D95E /* second@2x.png */,
+				75D8F393173ABE3C0080D95E /* Default.png */,
+				75D8F395173ABE3C0080D95E /* Default@2x.png */,
+				75D8F397173ABE3C0080D95E /* Default-568h@2x.png */,
+				75CBEADF173C601D00978DBA /* icon57.png */,
+				75CBEADB173C5FB500978DBA /* icon72.png */,
+				75CBEAE1173C603800978DBA /* icon114.png */,
+				75CBEADD173C5FEF00978DBA /* icon144.png */,
+			);
+			name = Images;
+			sourceTree = "<group>";
+		};
+		75CBEAE5173C806E00978DBA /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				75D8F39F173ABE3C0080D95E /* ZNPayViewController.h */,
+				75D8F3A0173ABE3C0080D95E /* ZNPayViewController.m */,
+				75D8F3A6173ABE3D0080D95E /* ZNReceiveViewController.h */,
+				75D8F3A7173ABE3D0080D95E /* ZNReceiveViewController.m */,
+			);
+			name = Controllers;
+			sourceTree = "<group>";
+		};
+		75CBEAE6173C807E00978DBA /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				75CBEAE7173C80AD00978DBA /* ZNPaymentRequest.h */,
+				75CBEAE8173C80AD00978DBA /* ZNPaymentRequest.m */,
+			);
+			name = Models;
+			sourceTree = "<group>";
+		};
 		75D8F375173ABE3C0080D95E = {
 			isa = PBXGroup;
 			children = (
@@ -146,18 +197,11 @@
 		75D8F387173ABE3C0080D95E /* ZincWallet */ = {
 			isa = PBXGroup;
 			children = (
+				75CBEAE6173C807E00978DBA /* Models */,
+				75CBEAE5173C806E00978DBA /* Controllers */,
 				75D8F390173ABE3C0080D95E /* ZNAppDelegate.h */,
 				75D8F391173ABE3C0080D95E /* ZNAppDelegate.m */,
-				75D8F399173ABE3C0080D95E /* MainStoryboard_iPhone.storyboard */,
-				75D8F39C173ABE3C0080D95E /* MainStoryboard_iPad.storyboard */,
-				75D8F39F173ABE3C0080D95E /* ZNPayViewController.h */,
-				75D8F3A0173ABE3C0080D95E /* ZNPayViewController.m */,
-				75D8F3A2173ABE3C0080D95E /* first.png */,
-				75D8F3A4173ABE3C0080D95E /* first@2x.png */,
-				75D8F3A6173ABE3D0080D95E /* ZNReceiveViewController.h */,
-				75D8F3A7173ABE3D0080D95E /* ZNReceiveViewController.m */,
-				75D8F3A9173ABE3D0080D95E /* second.png */,
-				75D8F3AB173ABE3D0080D95E /* second@2x.png */,
+				75CBEAE3173C800F00978DBA /* Resources */,
 				75D8F388173ABE3C0080D95E /* Supporting Files */,
 			);
 			path = ZincWallet;
@@ -170,13 +214,6 @@
 				75D8F38A173ABE3C0080D95E /* InfoPlist.strings */,
 				75D8F38D173ABE3C0080D95E /* main.m */,
 				75D8F38F173ABE3C0080D95E /* ZincWallet-Prefix.pch */,
-				75D8F393173ABE3C0080D95E /* Default.png */,
-				75D8F395173ABE3C0080D95E /* Default@2x.png */,
-				75D8F397173ABE3C0080D95E /* Default-568h@2x.png */,
-				75CBEADF173C601D00978DBA /* icon57.png */,
-				75CBEADB173C5FB500978DBA /* icon72.png */,
-				75CBEAE1173C603800978DBA /* icon114.png */,
-				75CBEADD173C5FEF00978DBA /* icon144.png */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -324,6 +361,7 @@
 				75D8F392173ABE3C0080D95E /* ZNAppDelegate.m in Sources */,
 				75D8F3A1173ABE3C0080D95E /* ZNPayViewController.m in Sources */,
 				75D8F3A8173ABE3D0080D95E /* ZNReceiveViewController.m in Sources */,
+				75CBEAE9173C80AD00978DBA /* ZNPaymentRequest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
