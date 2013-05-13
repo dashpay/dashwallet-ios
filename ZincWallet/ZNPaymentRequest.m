@@ -24,6 +24,7 @@
     return self;
 }
 
+// this should also handle bitcoin payment messages per: https://gist.github.com/gavinandresen/4120476
 - (void)setData:(NSData *)data
 {
     NSURL *url = [NSURL URLWithString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];

@@ -31,7 +31,8 @@
 
 - (NSString *)paymentAddress
 {
-    return @"1T7cQHDFLuMVx77cDBn9jKkRQDuasXqt2";
+    // XXX hard coded for testing
+    return @"1JA9nMhjJcUL9nFcrm7ftXXA7PAbyZC5DB";
 }
 
 - (NSString *)message

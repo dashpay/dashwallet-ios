@@ -7,6 +7,7 @@
 //
 
 #import "ZNPayViewController.h"
+#import "ZNWallet.h"
 #import "ZNPaymentRequest.h"
 
 #define BUTTON_HEIGHT 44
@@ -36,6 +37,10 @@
     self.peers = [NSMutableArray array];
     self.requestButtons = [NSMutableArray array];
     self.unsignedRequests = [NSMutableDictionary dictionary];
+    
+    ZNWallet *w = [[ZNWallet alloc] init];
+    
+    NSLog(@"wallet balance: %.18g", w.balance);
 }
 
 - (void)viewDidAppear:(BOOL)animated
