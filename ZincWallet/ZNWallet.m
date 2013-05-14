@@ -8,9 +8,12 @@
 
 #import "ZNWallet.h"
 #import "AFNetworking.h"
+#import "NSString+Base58.h"
 
 #define UNSPENT_URL @"http://blockchain.info/unspent?active="
 #define ADDRESS_URL @"http://blockchain.info/multiaddr?active="
+#define SCRIPT_PREFIX @"76a914" // OP_DUP OP_HASH160 20bytes
+#define SCRIPT_SUFFIX @"88ac" // OP_EQUALVERIFY OP_CHECKSIG
 
 @interface ZNWallet ()
 
@@ -34,21 +37,23 @@
     [[AFJSONRequestOperation JSONRequestOperationWithRequest:[NSURLRequest requestWithURL:url]
       success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
         [JSON[@"addresses"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            if (obj[@"address"] == nil) return;
+            NSString *address = obj[@"address"];
+            
+            if (! address) return;
             
             if ([obj[@"n_tx"] longLongValue] > 0) {
                 if ([obj[@"final_balance"] longLongValue] > 0) {
-                    [self.fundedAddresses addObject:obj[@"address"]];
+                    [self.fundedAddresses addObject:address];
                 }
                 else {
-                    [self.spentAddresses addObject:obj[@"address"]];
+                    [self.spentAddresses addObject:address];
                 }
             }
             else {
-                [self.receiveAddresses addObject:obj[@"address"]];
+                [self.receiveAddresses addObject:address];
             }
             
-            self.addressBalances[obj[@"address"]] = obj[@"final_balance"];
+            self.addressBalances[address] = obj[@"final_balance"];
         }];
         
         [self queryUnspentOutputs:self.fundedAddresses];
@@ -67,8 +72,13 @@
     [[AFJSONRequestOperation JSONRequestOperationWithRequest:[NSURLRequest requestWithURL:url]
       success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
           [JSON[@"unspent_outputs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-              NSString *address = obj[@"script"]; //XXX how to get the address from the script?
-              self.unspentOutputs[address] = obj;
+              NSString *script = obj[@"script"];
+              
+              if (! [script hasPrefix:SCRIPT_PREFIX] || ! [script hasSuffix:SCRIPT_SUFFIX]) return;
+
+              NSString *hexAddress = [script substringWithRange:NSMakeRange(SCRIPT_PREFIX.length,40)];
+
+              self.unspentOutputs[[hexAddress hexToBase58check]] = obj;
           }];
     } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
         NSLog(@"%@", error.localizedDescription);
