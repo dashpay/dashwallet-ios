@@ -76,7 +76,8 @@
               
               if (! [script hasPrefix:SCRIPT_PREFIX] || ! [script hasSuffix:SCRIPT_SUFFIX]) return;
 
-              NSString *hexAddress = [script substringWithRange:NSMakeRange(SCRIPT_PREFIX.length,40)];
+              NSString *hexAddress =
+                  [@"00" stringByAppendingString:[script substringWithRange:NSMakeRange(SCRIPT_PREFIX.length, 40)]];
 
               self.unspentOutputs[[hexAddress hexToBase58check]] = obj;
           }];

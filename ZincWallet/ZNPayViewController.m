@@ -39,11 +39,11 @@
     self.requestButtons = [NSMutableArray array];
     self.unsignedRequests = [NSMutableDictionary dictionary];
     
-    //ZNWallet *w = [[ZNWallet alloc] init];
+    ZNWallet *w = [[ZNWallet alloc] init];
     
-    //NSLog(@"wallet balance: %.18g", w.balance);
+    NSLog(@"wallet balance: %.18g", w.balance);
     
-    NSLog(@"%@", [@"04f05543b270f96547c950a2b3ed3afe83d03869" hexToBase58check]);    
+    //NSLog(@"%@", [@"0004f05543b270f96547c950a2b3ed3afe83d03869" hexToBase58check]);
 }
 
 - (void)viewDidAppear:(BOOL)animated

@@ -1,3 +1,6 @@
 [submodule "AFNetowrking"]
 	path = AFNetowrking
 	url = git://github.com/AFNetworking/AFNetworking.git
+[submodule "bitcoin"]
+	path = bitcoin
+	url = git://github.com/bitcoin/bitcoin.git
