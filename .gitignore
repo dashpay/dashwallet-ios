@@ -16,5 +16,9 @@ profile
 *.moved-aside
 DerivedData
 .idea/
-openssl*
-boost*
+openssl
+openssl-*
+boost
+boost_*
+db
+db-*

@@ -15,12 +15,10 @@
     #import <MobileCoreServices/MobileCoreServices.h>
 #endif
 
-#ifdef __ARM_ARCH_7S__
-#define __ARM_ARCH__ 7
-#endif
-
 #define OPENSSL_NO_HW
 #define OPENSSL_NO_GOST
+
+#define HAVE_CXX_STDHEADERS
 
 #define GK_SESSION_ID @"cc.zinc.ZincWallet"
 #define BTC @"Ƀ"
