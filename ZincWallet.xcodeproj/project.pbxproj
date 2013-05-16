@@ -7,13 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		752A3F4A17432CD100C0632D /* libboost.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7573F080174313910037A109 /* libboost.a */; };
-		752A3F4B17432CD500C0632D /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 752C2FFD1742ACFB0033F636 /* libcrypto.a */; };
-		752A3F4C17432CD800C0632D /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 752C300D1742AD060033F636 /* libssl.a */; };
 		752A3F4E17432D1F00C0632D /* key.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 752A3F4D17432D1F00C0632D /* key.cpp */; };
 		752A3F5017432D4600C0632D /* script.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 752A3F4F17432D4600C0632D /* script.cpp */; };
 		752A3F5217432D6000C0632D /* util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 752A3F5117432D6000C0632D /* util.cpp */; };
-		752A3F5317432D6A00C0632D /* libbitcoin.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7573F0631742C5F80037A109 /* libbitcoin.a */; };
 		752A3F5D17436A6000C0632D /* hash.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 752A3F5B17436A5F00C0632D /* hash.cpp */; };
 		752A3F7C1744852D00C0632D /* bitcoinrpc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 752A3F7A1744852D00C0632D /* bitcoinrpc.cpp */; };
 		752A3F7D1744852D00C0632D /* rpcrawtransaction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 752A3F7B1744852D00C0632D /* rpcrawtransaction.cpp */; };
@@ -1037,6 +1033,14 @@
 		75D8F3B6173ABE3D0080D95E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		75D8F3BE173ABE3D0080D95E /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F3BC173ABE3D0080D95E /* InfoPlist.strings */; };
 		75D8F3C1173ABE3D0080D95E /* ZincWalletTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3C0173ABE3D0080D95E /* ZincWalletTests.m */; };
+		75F17C251744BB5700D9F228 /* version.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75F17C231744BB5700D9F228 /* version.cpp */; };
+		75F17C2C1744CB2400D9F228 /* libbitcoin.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7573F0631742C5F80037A109 /* libbitcoin.a */; };
+		75F17C2E1744CB2E00D9F228 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 752C2FFD1742ACFB0033F636 /* libcrypto.a */; };
+		75F17C2F1744CB3400D9F228 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 752C300D1742AD060033F636 /* libssl.a */; };
+		75F17C311744CBAE00D9F228 /* libboost.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7573F080174313910037A109 /* libboost.a */; };
+		75F17C351744CC2100D9F228 /* ZNTransaction.mm in Sources */ = {isa = PBXBuildFile; fileRef = 75F17C341744CC2100D9F228 /* ZNTransaction.mm */; };
+		75F17C4317455F2D00D9F228 /* deletetoleft.png in Resources */ = {isa = PBXBuildFile; fileRef = 75F17C4117455F2D00D9F228 /* deletetoleft.png */; };
+		75F17C4417455F2D00D9F228 /* deletetoleft-inv.png in Resources */ = {isa = PBXBuildFile; fileRef = 75F17C4217455F2D00D9F228 /* deletetoleft-inv.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -2330,6 +2334,12 @@
 		75D8F3BD173ABE3D0080D95E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		75D8F3BF173ABE3D0080D95E /* ZincWalletTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZincWalletTests.h; sourceTree = "<group>"; };
 		75D8F3C0173ABE3D0080D95E /* ZincWalletTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZincWalletTests.m; sourceTree = "<group>"; };
+		75F17C231744BB5700D9F228 /* version.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = version.cpp; path = bitcoin/src/version.cpp; sourceTree = SOURCE_ROOT; };
+		75F17C241744BB5700D9F228 /* version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = version.h; path = bitcoin/src/version.h; sourceTree = SOURCE_ROOT; };
+		75F17C331744CC2100D9F228 /* ZNTransaction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNTransaction.h; sourceTree = "<group>"; };
+		75F17C341744CC2100D9F228 /* ZNTransaction.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ZNTransaction.mm; sourceTree = "<group>"; };
+		75F17C4117455F2D00D9F228 /* deletetoleft.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = deletetoleft.png; sourceTree = "<group>"; };
+		75F17C4217455F2D00D9F228 /* deletetoleft-inv.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "deletetoleft-inv.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2377,10 +2387,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				752A3F5317432D6A00C0632D /* libbitcoin.a in Frameworks */,
-				752A3F4C17432CD800C0632D /* libssl.a in Frameworks */,
-				752A3F4B17432CD500C0632D /* libcrypto.a in Frameworks */,
-				752A3F4A17432CD100C0632D /* libboost.a in Frameworks */,
+				75F17C311744CBAE00D9F228 /* libboost.a in Frameworks */,
+				75F17C2F1744CB3400D9F228 /* libssl.a in Frameworks */,
+				75F17C2E1744CB2E00D9F228 /* libcrypto.a in Frameworks */,
+				75F17C2C1744CB2400D9F228 /* libbitcoin.a in Frameworks */,
 				752C2FAB174091DD0033F636 /* MobileCoreServices.framework in Frameworks */,
 				752C2F8917406FF70033F636 /* SystemConfiguration.framework in Frameworks */,
 				75CBEAD2173C3F2900978DBA /* CoreBluetooth.framework in Frameworks */,
@@ -4282,6 +4292,8 @@
 				752A3F5E17436A7E00C0632D /* uint256.h */,
 				7573F0781742C6400037A109 /* util.h */,
 				752A3F5117432D6000C0632D /* util.cpp */,
+				75F17C241744BB5700D9F228 /* version.h */,
+				75F17C231744BB5700D9F228 /* version.cpp */,
 			);
 			name = bitcoin;
 			sourceTree = "<group>";
@@ -4373,6 +4385,8 @@
 		75CBEAE4173C801900978DBA /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				75F17C4117455F2D00D9F228 /* deletetoleft.png */,
+				75F17C4217455F2D00D9F228 /* deletetoleft-inv.png */,
 				75D8F3A2173ABE3C0080D95E /* first.png */,
 				75D8F3A4173ABE3C0080D95E /* first@2x.png */,
 				75D8F3A9173ABE3D0080D95E /* second.png */,
@@ -4406,6 +4420,8 @@
 				752C2F8B174071520033F636 /* ZNWallet.m */,
 				75CBEAE7173C80AD00978DBA /* ZNPaymentRequest.h */,
 				75CBEAE8173C80AD00978DBA /* ZNPaymentRequest.m */,
+				75F17C331744CC2100D9F228 /* ZNTransaction.h */,
+				75F17C341744CC2100D9F228 /* ZNTransaction.mm */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -4678,6 +4694,8 @@
 				75CBEADE173C5FEF00978DBA /* icon144.png in Resources */,
 				75CBEAE0173C601D00978DBA /* icon57.png in Resources */,
 				75CBEAE2173C603800978DBA /* icon114.png in Resources */,
+				75F17C4317455F2D00D9F228 /* deletetoleft.png in Resources */,
+				75F17C4417455F2D00D9F228 /* deletetoleft-inv.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5495,6 +5513,7 @@
 				752A3F5D17436A6000C0632D /* hash.cpp in Sources */,
 				752A3F7C1744852D00C0632D /* bitcoinrpc.cpp in Sources */,
 				752A3F7D1744852D00C0632D /* rpcrawtransaction.cpp in Sources */,
+				75F17C251744BB5700D9F228 /* version.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5784,6 +5803,7 @@
 				752C38C91742BC4D0033F636 /* AFURLConnectionOperation.m in Sources */,
 				752C38CA1742BC4D0033F636 /* AFXMLRequestOperation.m in Sources */,
 				752C38CB1742BC4D0033F636 /* UIImageView+AFNetworking.m in Sources */,
+				75F17C351744CC2100D9F228 /* ZNTransaction.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5993,6 +6013,7 @@
 					"$(SRCROOT)/openssl/include",
 					"$(SRCROOT)/boost",
 					"$(SRCROOT)/db/build_unix",
+					"$(SRCROOT)/bitcoin/src/leveldb/include",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -6012,6 +6033,7 @@
 					"$(SRCROOT)/openssl/include",
 					"$(SRCROOT)/boost",
 					"$(SRCROOT)/db/build_unix",
+					"$(SRCROOT)/bitcoin/src/leveldb/include",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -6099,7 +6121,8 @@
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				COPY_PHASE_STRIP = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -6107,6 +6130,8 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
@@ -6126,6 +6151,7 @@
 					"$(SRCROOT)/boost",
 				);
 				INFOPLIST_FILE = "ZincWallet/ZincWallet-Info.plist";
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -6143,6 +6169,7 @@
 					"$(SRCROOT)/boost",
 				);
 				INFOPLIST_FILE = "ZincWallet/ZincWallet-Info.plist";
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};

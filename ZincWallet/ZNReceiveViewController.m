@@ -18,6 +18,7 @@
 
 @property (nonatomic, strong) GKSession *session;
 @property (nonatomic, strong) NSString *peer;
+@property (nonatomic, strong) NSNumberFormatter *format;
 
 @end
 
@@ -27,6 +28,10 @@
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
+    
+    self.format = [NSNumberFormatter new];
+    self.format.numberStyle = NSNumberFormatterCurrencyStyle;
+    self.format.currencySymbol = BTC;
 }
 
 - (NSString *)paymentAddress
@@ -104,6 +109,43 @@
         self.messageField.alpha = 1.0;
         self.waitingLabel.alpha = 0.0;
     }];
+}
+
+- (IBAction)number:(id)sender
+{
+    [self textField:self.amountField shouldChangeCharactersInRange:NSMakeRange(self.amountField.text.length, 0)
+     replacementString:[(UIButton *)sender titleLabel].text];
+}
+
+- (IBAction)del:(id)sender
+{
+    if (! self.amountField.text.length) return;
+    
+    [self textField:self.amountField shouldChangeCharactersInRange:NSMakeRange(self.amountField.text.length - 1, 1)
+     replacementString:@""];
+}
+
+#pragma mark - UITextFieldDelegate
+
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range
+replacementString:(NSString *)string
+{
+    if (! string.length && textField.text.length)
+        textField.text = [textField.text substringToIndex:textField.text.length - 1];
+
+        NSInteger amount = [[[[textField.text
+                               stringByReplacingOccurrencesOfString:_format.currencySymbol withString:@""]
+                              stringByReplacingOccurrencesOfString:_format.currencyGroupingSeparator withString:@""]
+                             stringByReplacingOccurrencesOfString:_format.currencyDecimalSeparator withString:@""]
+                            integerValue];
+        
+        if (amount > 99999999) string = @"";
+        
+        for (int i = 0; i < string.length; i++) amount = amount*10 + string.integerValue;
+        
+        textField.text = amount ? [_format stringFromNumber:@(amount/100.0)] : nil;
+    
+    return NO;
 }
 
 #pragma mark - GKSessionDelegate

@@ -1,5 +1,5 @@
 //
-//  NSString+Base58.m
+//  NSString+Base58.mm
 //  ZincWallet
 //
 //  Created by Aaron Voisine on 5/13/13.
@@ -7,6 +7,7 @@
 //
 
 #import "NSString+Base58.h"
+
 #include "base58.h"
 
 @implementation NSString (Base58)

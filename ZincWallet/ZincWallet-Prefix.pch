@@ -20,6 +20,8 @@
 
 #define HAVE_CXX_STDHEADERS
 
+#define MSG_NOSIGNAL SO_NOSIGPIPE
+
 #define GK_SESSION_ID @"cc.zinc.ZincWallet"
 #define BTC @"Ƀ"
 #define SATOSHIS 100000000.0
