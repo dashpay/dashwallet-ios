@@ -39,9 +39,9 @@
     self.requestButtons = [NSMutableArray array];
     self.unsignedRequests = [NSMutableDictionary dictionary];
     
-    ZNWallet *w = [[ZNWallet alloc] init];
+    double balance = [[ZNWallet singleton] balance];
     
-    NSLog(@"wallet balance: %.18g", w.balance);
+    NSLog(@"wallet balance: %.17g", balance);
     
     //NSLog(@"%@", [@"0004f05543b270f96547c950a2b3ed3afe83d03869" hexToBase58check]);
 }
@@ -126,7 +126,7 @@
     
     if (req) [[[UIAlertView alloc] initWithTitle:@"Confirm Payment" message:req.message delegate:self
                cancelButtonTitle:@"cancel"
-               otherButtonTitles:[NSString stringWithFormat:@"%@%.18g", BTC, req.amount], nil] show];
+               otherButtonTitles:[NSString stringWithFormat:@"%@%.17g", BTC, req.amount], nil] show];
 }
 
 #pragma mark - IBAction
@@ -235,6 +235,8 @@
     }
     
     NSLog(@"got payment reqeust for %@", peer);
+    NSLog(@"%@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+    
     [self.unsignedRequests setObject:req forKey:peer];
     
     if ([self.selectedPeer isEqual:peer]) [self confirmRequest];
@@ -263,12 +265,12 @@
     if (error) {
         [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription delegate:nil
           cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-        
-        [self.peers removeObject:self.selectedPeer];
-        self.selectedPeer = nil;
-        
-        [self layoutButtons];
     }
+    
+    [self.peers removeObject:self.selectedPeer];
+    self.selectedPeer = nil;
+    
+    [self layoutButtons];
 }
 
 @end

@@ -52,7 +52,10 @@
 
 - (double)amount
 {
-    return ((UInt64)([self.amountField.text doubleValue]*SATOSHIS))/SATOSHIS;
+    return ((UInt64)([[[self.amountField.text
+                        stringByReplacingOccurrencesOfString:_format.currencySymbol withString:@""]
+                       stringByReplacingOccurrencesOfString:_format.currencyGroupingSeparator withString:@""]
+                      doubleValue]*SATOSHIS))/SATOSHIS;
 }
 
 - (ZNPaymentRequest *)paymentRequest
@@ -78,7 +81,8 @@
     }
 
     self.session = [[GKSession alloc] initWithSessionID:GK_SESSION_ID
-                    displayName:[NSString stringWithFormat:@"%@ - %@%.18g", self.message, BTC, self.amount]
+                    displayName:[NSString stringWithFormat:@"%@ - %@%.17g", self.message, BTC, self.amount]
+                    //displayName:[NSString stringWithFormat:@"%@ - %@", self.message, self.amountField.text]
                     sessionMode:GKSessionModeServer];
     self.session.delegate = self;
     [self.session setDataReceiveHandler:self withContext:nil];
@@ -133,17 +137,19 @@ replacementString:(NSString *)string
     if (! string.length && textField.text.length)
         textField.text = [textField.text substringToIndex:textField.text.length - 1];
 
-        NSInteger amount = [[[[textField.text
-                               stringByReplacingOccurrencesOfString:_format.currencySymbol withString:@""]
-                              stringByReplacingOccurrencesOfString:_format.currencyGroupingSeparator withString:@""]
-                             stringByReplacingOccurrencesOfString:_format.currencyDecimalSeparator withString:@""]
-                            integerValue];
+    NSInteger amount = [[[[textField.text
+                           stringByReplacingOccurrencesOfString:_format.currencySymbol withString:@""]
+                          stringByReplacingOccurrencesOfString:_format.currencyGroupingSeparator withString:@""]
+                         stringByReplacingOccurrencesOfString:_format.currencyDecimalSeparator withString:@""]
+                        integerValue];
         
-        if (amount > 99999999) string = @"";
-        
-        for (int i = 0; i < string.length; i++) amount = amount*10 + string.integerValue;
-        
-        textField.text = amount ? [_format stringFromNumber:@(amount/100.0)] : nil;
+    if (amount > 99999999) string = @"";
+    
+    for (int i = 0; i < string.length; i++) amount = amount*10 + string.integerValue;
+    
+    textField.text = amount ? [_format stringFromNumber:@(amount/100.0)] : nil;
+    
+    self.requestButton.enabled = (textField.text != nil);
     
     return NO;
 }
@@ -219,6 +225,9 @@ replacementString:(NSString *)string
     
     [self.spinner stopAnimating];
     [self.requestButton setTitle:@"request payment" forState:UIControlStateNormal];
+    
+    self.requestButton.enabled = NO;
+    self.amountField.text = nil;
     
     [UIView animateWithDuration:0.2 animations:^{
         self.amountField.alpha = 1.0;

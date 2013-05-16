@@ -7,6 +7,7 @@
 //
 
 #import "ZNPaymentRequest.h"
+#import "ZNWallet.h"
 
 @implementation ZNPaymentRequest
 
@@ -29,6 +30,10 @@
 {
     NSURL *url = [NSURL URLWithString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
     
+    if (! url.host && url.resourceSpecifier) {
+        url = [NSURL URLWithString:[NSString stringWithFormat:@"%@://%@", url.scheme, url.resourceSpecifier]];
+    }
+        
     self.paymentAddress = url.host;
     
     [[url.query componentsSeparatedByString:@"&"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
@@ -45,15 +50,15 @@
 
 - (NSData *)data
 {
-    NSMutableString *s = [NSMutableString stringWithFormat:@"bitcoin:%@?amount=%.18g", self.paymentAddress,
+    NSMutableString *s = [NSMutableString stringWithFormat:@"bitcoin:%@?amount=%.17g", self.paymentAddress,
                           self.amount];
     
     if (self.label.length) {
-        [s appendFormat:@"label=%@", [self.label stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+        [s appendFormat:@"&label=%@", [self.label stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
     }
     
     if (self.message.length) {
-        [s appendFormat:@"message=%@", [self.message stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+        [s appendFormat:@"&message=%@", [self.message stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
     }
     
     return [s dataUsingEncoding:NSUTF8StringEncoding];
@@ -62,9 +67,11 @@
 - (NSData *)signedTransaction
 {
     //XXX actually sign a transaction here
-
-    return [[[[NSString alloc] initWithData:self.data encoding:NSUTF8StringEncoding] stringByAppendingString:@" - X"]
+    return [[[ZNWallet singleton] transactionFor:self.amount to:self.paymentAddress]
             dataUsingEncoding:NSUTF8StringEncoding];
+
+//    return [[[[NSString alloc] initWithData:self.data encoding:NSUTF8StringEncoding] stringByAppendingString:@" - X"]
+//            dataUsingEncoding:NSUTF8StringEncoding];
 }
 
 - (BOOL)isValid

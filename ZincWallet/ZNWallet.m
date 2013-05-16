@@ -35,6 +35,18 @@
 
 @implementation ZNWallet
 
++ (ZNWallet *)singleton
+{
+    static ZNWallet *singleton = nil;
+    static dispatch_once_t onceToken = 0;
+    
+    dispatch_once(&onceToken, ^{
+        singleton = [[ZNWallet alloc] init];
+    });
+
+    return singleton;
+}
+
 // query blockchain for the given addresses
 - (void)queryAddresses:(NSArray *)addresses
 {
@@ -185,27 +197,17 @@
                 @"hash":@"4a89561dee3662fbb45a76626ac8e2fc9190d5716a082177231589edbf99a5a2",
                 @"n":@0
             },
-            @"scriptSig":@"30440220134660b4124984f9a6de9b503252b32e3bb71edc3a00a86cec09ddef15b2d0bb0220478ca4e135692e8f9eaec908abece107ec2fa95a323e1dd2c910d4aef8d5648301 0462e841467e9a3cf122ef47846a5570ace550bcabe87ce28a0d8e546741c3df185bacecda840ba08e161d221833cdee49842ccc7ef2bb3f3d0796deaae662ef70"
+            //@"scriptSig":@"30440220134660b4124984f9a6de9b503252b32e3bb71edc3a00a86cec09ddef15b2d0bb0220478ca4e135692e8f9eaec908abece107ec2fa95a323e1dd2c910d4aef8d5648301 0462e841467e9a3cf122ef47846a5570ace550bcabe87ce28a0d8e546741c3df185bacecda840ba08e161d221833cdee49842ccc7ef2bb3f3d0796deaae662ef70"
         },
-        @{
-            @"prev_out":@{
-                @"hash":@"86b8d94a542df7f9660f855c5152a62639bdd3e75216217a91658925069334cf",
-                @"n":@0
-            },
-            @"scriptSig":@"3046022100fd63b1d55982df669f67d255c90e111d21b1212eec6f6935020c787002687f04022100cc0b3bf3ca18371661e13fd1b69287854ff95cf945bcdb2d97233dc2345aff7a01 046b747ab57d936b9fdcaf52ee2d3fa7fcb0e3f04dc7c0e61d0e1f42f70213a3d991eef23320410cc85060d885278aabb0f80fe9ad3f81e116a60ba397f3c7faf9"
-        }
     ];
 
     NSArray *outputs =
     @[
         @{
-            @"value":@"0.04888263",
-            @"scriptPubKey":@"OP_DUP OP_HASH160 e4ae3e8a99f8b44a5032f92a42e80458376033d4 OP_EQUALVERIFY OP_CHECKSIG"
+            @"value":@(amount),
+            @"scriptPubKey":[NSString stringWithFormat:@"OP_DUP OP_HASH160 %@ OP_EQUALVERIFY OP_CHECKSIG",
+                             [[address base58checkToHex] substringFromIndex:2]]
         },
-        @{
-            @"value":@"52.16780000",
-            @"scriptPubKey":@"OP_DUP OP_HASH160 4c493309671c0d7faf273e2ecf50606327e3fc7f OP_EQUALVERIFY OP_CHECKSIG"
-        }
     ];
 
     NSDictionary *tx =
@@ -222,7 +224,7 @@
 
     NSLog(@"%@", tx);
 
-    return nil;
+    return [tx description];
 }
 
 @end
