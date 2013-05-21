@@ -11,8 +11,15 @@
 @interface ZNTransaction : NSObject
 
 - (id)initWithInputHashes:(NSArray *)inputHashes inputIndexes:(NSArray *)inputIndexes
-  outputAddresses:(NSArray *)outputAddresses andOutputAmounts:(NSArray *)outputAmounts;
+inputScripts:(NSArray *)inputScripts outputAddresses:(NSArray *)outputAddresses
+andOutputAmounts:(NSArray *)outputAmounts;
+
+- (BOOL)isSigned;
 
 - (BOOL)signWithPrivateKeys:(NSArray *)privateKeys;
+
+- (NSData *)toData;
+
+- (NSString *)toHex;
 
 @end

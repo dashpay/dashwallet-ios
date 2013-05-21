@@ -11,6 +11,8 @@
 #import "ZNPaymentRequest.h"
 #import "NSString+Base58.h"
 
+#import "ZNTransaction.h"
+
 #define BUTTON_HEIGHT 44
 #define BUTTON_MARGIN 5
 
@@ -42,6 +44,8 @@
     double balance = [[ZNWallet singleton] balance];
     
     NSLog(@"wallet balance: %.17g", balance);
+    
+    NSLog(@"tx: %@", [[[ZNTransaction alloc] init] toHex]);
     
     //NSLog(@"%@", [@"0004f05543b270f96547c950a2b3ed3afe83d03869" hexToBase58check]);
 }

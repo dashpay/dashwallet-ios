@@ -9,6 +9,9 @@
 #import "NSString+Base58.h"
 
 #include "base58.h"
+#include "ui_interface.h"
+
+CClientUIInterface uiInterface; // hack to avoid having to build and link bitcoin/src/init.cpp
 
 @implementation NSString (Base58)
 
@@ -26,5 +29,13 @@
     return [NSString stringWithUTF8String:HexStr(vchRet).c_str()];
 }
 
+- (NSData *)base58checkToData
+{
+    std::vector<unsigned char>vchRet;
+    
+    if (! DecodeBase58Check(self.UTF8String, vchRet)) return nil;
+    
+    return [NSData dataWithBytes:&vchRet.front() length:vchRet.size()];
+}
 
 @end
