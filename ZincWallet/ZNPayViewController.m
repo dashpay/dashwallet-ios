@@ -45,7 +45,10 @@
     
     NSLog(@"wallet balance: %.17g", balance);
     
-    NSLog(@"tx: %@", [[[ZNTransaction alloc] init] toHex]);
+    uint64_t amt = 2100000000000001ull;
+    NSLog(@"uint64_t test: %llu", amt);
+    
+    //NSLog(@"tx: %@", [[[ZNTransaction alloc] init] toHex]);
     
     //NSLog(@"%@", [@"0004f05543b270f96547c950a2b3ed3afe83d03869" hexToBase58check]);
 }

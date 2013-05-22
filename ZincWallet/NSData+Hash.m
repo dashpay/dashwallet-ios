@@ -8,14 +8,59 @@
 
 #import "NSData+Hash.h"
 //#import "rmd160.h"
+#import <openssl/ripemd.h>
 #import <CommonCrypto/CommonDigest.h>
 
 //#define RMDsize 160
 
 @implementation NSData (Hash)
 
-//- (NSData *)RMD160
-//{
++ (id)dataWithHex:(NSString *)hex
+{
+    return [[self alloc] initWithHex:hex];
+}
+
+- (id)initWithHex:(NSString *)hex
+{
+    if (hex.length % 2) return nil;
+        
+    NSMutableData *d = [NSMutableData dataWithCapacity:hex.length/2];
+    const char *s = [hex UTF8String];
+    uint8_t b = 0;
+        
+    for (NSUInteger i = 0; i < hex.length; i++) {
+        switch (s[i]) {
+            case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+                b += s[i] - '0';
+                break;
+            case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
+                b += s[i] + 10 - 'A';
+                break;
+            case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
+                b += s[i] + 10 - 'a';
+                break;
+            default:
+                return [self initWithData:d];
+        }
+        
+        if (i % 2) {
+            [d appendBytes:&b length:1];
+            b = 0;
+        }
+        else b *= 16;
+    }
+    
+    return [self initWithData:d];
+}
+
+- (NSData *)RMD160
+{
+    uint8_t hash[RIPEMD160_DIGEST_LENGTH];
+
+    RIPEMD160(self.bytes, self.length, hash);
+    
+    return [NSData dataWithBytes:hash length:RIPEMD160_DIGEST_LENGTH];
+    
 //    byte*         message = (byte *)self.bytes;
 //    dword         MDbuf[RMDsize/32];   /* contains (A, B, C, D(, E))   */
 //    static byte   hashcode[RMDsize/8]; /* for final hash-value         */
@@ -48,7 +93,7 @@
 //    }
 //    
 //    return [NSData dataWithBytes:hashcode length:RMDsize/8];
-//}
+}
 
 - (NSData *)SHA256
 {
@@ -68,5 +113,16 @@
     
     return [NSData dataWithBytes:hash2 length:CC_SHA256_DIGEST_LENGTH];
 }
+
+- (NSData *)ECCPubKey
+{
+    return nil;
+}
+
+- (NSData *)ECCSignatureWithKey:(NSData *)key
+{
+    return nil;
+}
+
 
 @end

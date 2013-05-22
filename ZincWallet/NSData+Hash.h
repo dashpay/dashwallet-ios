@@ -10,8 +10,16 @@
 
 @interface NSData (Hash)
 
-//- (NSData *)RMD160;
++ (id)dataWithHex:(NSString *)hex;
+
+- (id)initWithHex:(NSString *)hex;
+
+- (NSData *)RMD160;
 - (NSData *)SHA256;
 - (NSData *)SHA256_2;
+
+- (NSData *)ECCPubKey;
+- (NSData *)ECCSignatureWithKey:(NSData *)key;
+
 
 @end

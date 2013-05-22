@@ -17,5 +17,6 @@
 - (void)appendHash:(NSData *)hash;
 - (void)appendScriptPubKeyForHash:(NSData *)hash;
 - (BOOL)appendScriptPubKeyForAddress:(NSString *)address;
+- (void)appendScriptPushData:(NSData *)d;
 
 @end

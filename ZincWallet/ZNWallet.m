@@ -7,8 +7,10 @@
 //
 
 #import "ZNWallet.h"
-#import "AFNetworking.h"
+#import "ZNTransaction.h"
+#import "NSData+Hash.h"
 #import "NSString+Base58.h"
+#import "AFNetworking.h"
 
 #define UNSPENT_URL @"http://blockchain.info/unspent?active="
 #define ADDRESS_URL @"http://blockchain.info/multiaddr?active="
@@ -21,6 +23,8 @@
 #define ADDRESS_BALANCES_KEY @"ADDRESS_BALANCES"
 #define UNSPENT_OUTPUTS_KEY @"UNSPENT_OUTPUTS"
 
+#define TX_FEE_07 // 0.7 reference implementation tx fees
+
 @interface ZNWallet ()
 
 @property (nonatomic, strong) NSUserDefaults *defs;
@@ -29,6 +33,7 @@
 @property (nonatomic, strong) NSMutableArray *receiveAddresses;
 @property (nonatomic, strong) NSMutableDictionary *unspentOutputs;
 @property (nonatomic, strong) NSMutableDictionary *addressBalances;
+@property (nonatomic, strong) NSMutableDictionary *privateKeys;
 
 @end
 
@@ -44,6 +49,48 @@
     });
 
     return singleton;
+}
+
+- (id)init
+{
+    if (! (self = [super init])) return nil;
+    
+    self.defs = [NSUserDefaults standardUserDefaults];
+    
+    self.fundedAddresses = [NSMutableArray arrayWithArray:[_defs arrayForKey:FUNDED_ADDRESSES_KEY]];
+    self.spentAddresses = [NSMutableArray arrayWithArray:[_defs arrayForKey:SPENT_ADDRESSES_KEY]];
+    self.receiveAddresses = [NSMutableArray arrayWithArray:[_defs arrayForKey:RECEIVE_ADDRESSES_KEY]];
+    self.addressBalances = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:ADDRESS_BALANCES_KEY]];
+    self.unspentOutputs = [NSMutableDictionary dictionary];
+    [[_defs dictionaryForKey:UNSPENT_OUTPUTS_KEY] enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        self.unspentOutputs[key] = [NSMutableArray arrayWithArray:obj];
+    }];
+    
+    self.privateKeys = [NSMutableDictionary dictionary];
+    [self queryAddresses:@[@"1T7cQHDFLuMVx77cDBn9jKkRQDuasXqt2", @"18WsLH7MjjrGE5LgyZHZVwwdRoSKLunYKk"]];
+    
+    return self;
+}
+
+- (id)initWithSeed:(NSString *)seed
+{
+    return [self init];
+}
+
+- (double)balance
+{
+    __block uint64_t balance = 0;
+    
+    [self.addressBalances enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        balance += [obj unsignedLongLongValue];
+    }];
+    
+    return balance/SATOSHIS;
+}
+
+- (NSString *)receiveAddress
+{
+    return self.receiveAddresses.lastObject;
 }
 
 // query blockchain for the given addresses
@@ -67,8 +114,8 @@
 
             self.addressBalances[address] = obj[@"final_balance"];
             
-            if ([obj[@"n_tx"] longLongValue] > 0) {
-                if ([obj[@"final_balance"] longLongValue] > 0) {
+            if ([obj[@"n_tx"] unsignedLongLongValue] > 0) {
+                if ([obj[@"final_balance"] unsignedLongLongValue] > 0) {
                     [self.fundedAddresses addObject:address];
                 }
                 else {
@@ -125,74 +172,60 @@
         NSLog(@"%@", error.localizedDescription);
     }] start];
 }
-
-- (id)init
-{
-    if (! (self = [super init])) return nil;
-    
-    self.defs = [NSUserDefaults standardUserDefaults];
-    
-    self.fundedAddresses = [NSMutableArray arrayWithArray:[_defs arrayForKey:FUNDED_ADDRESSES_KEY]];
-    self.spentAddresses = [NSMutableArray arrayWithArray:[_defs arrayForKey:SPENT_ADDRESSES_KEY]];
-    self.receiveAddresses = [NSMutableArray arrayWithArray:[_defs arrayForKey:RECEIVE_ADDRESSES_KEY]];
-    self.addressBalances = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:ADDRESS_BALANCES_KEY]];
-    self.unspentOutputs = [NSMutableDictionary dictionary];
-    [[_defs dictionaryForKey:UNSPENT_OUTPUTS_KEY] enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        self.unspentOutputs[key] = [NSMutableArray arrayWithArray:obj];
-    }];
-    
-    [self queryAddresses:@[@"1T7cQHDFLuMVx77cDBn9jKkRQDuasXqt2", @"18WsLH7MjjrGE5LgyZHZVwwdRoSKLunYKk"]];
-    
-    return self;
-}
-
-- (id)initWithSeed:(NSString *)seed
-{
-    return [self init];
-}
  
 - (NSString *)transactionFor:(double)amount to:(NSString *)address
 {
-    long long amt = amount*SATOSHIS;
-    long long balance = 0;
+    __block uint64_t amt = amount*SATOSHIS, balance = 0;
+    __block NSMutableSet *inKeys = [NSMutableSet set];
+    __block NSMutableArray *inHashes = [NSMutableArray array], *inIndexes = [NSMutableArray array],
+                           *inScripts = [NSMutableArray array];
+    NSMutableArray *outAddresses = [NSMutableArray arrayWithObject:address],
+                   *outAmounts = [NSMutableArray arrayWithObject:@(amt)];
 
-    NSArray *inputs =
-    @[
-        @{
-            @"hash":@"4a89561dee3662fbb45a76626ac8e2fc9190d5716a082177231589edbf99a5a2",
-            @"n":@0,
-            //@"scriptSig":@"30440220134660b4124984f9a6de9b503252b32e3bb71edc3a00a86cec09ddef15b2d0bb0220478ca4e135692e8f9eaec908abece107ec2fa95a323e1dd2c910d4aef8d5648301 0462e841467e9a3cf122ef47846a5570ace550bcabe87ce28a0d8e546741c3df185bacecda840ba08e161d221833cdee49842ccc7ef2bb3f3d0796deaae662ef70",
-            @"sequence_no":@(0xFFFFFFFF)
-        },
-    ];
 
-    NSArray *outputs =
-    @[
-        @{
-            @"value":@(amt),
-            @"scriptPubKey":[NSString stringWithFormat:@"OP_DUP OP_HASH160 %@ OP_EQUALVERIFY OP_CHECKSIG",
-                             [[address base58checkToHex] substringFromIndex:2]]
-        },
-        @{
-            @"value":@(balance - amt),
-            @"scriptPubKey":[NSString stringWithFormat:@"OP_DUP OP_HASH160 %@ OP_EQUALVERIFY OP_CHECKSIG",
-                             [[self.receiveAddress base58checkToHex] substringFromIndex:2]]
-        },
-    ];
+    //XXX we should optimize for free transactions (watch out for performance issues, nothing O(n^2) please)
+    // this is a nieve implementation to just get it functional
+    [self.unspentOutputs enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        if (! self.privateKeys[key]) return;
 
-    NSDictionary *tx =
-    @{
-        @"ver":@1,
-        @"vin_sz":@(inputs.count),
-        @"in":inputs,
-        @"vout_sz":@(outputs.count),
-        @"out":outputs,
-        @"lock_time":@0
-    };
+        [inKeys addObject:self.privateKeys[key]];
+        
+        [obj enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            [inHashes addObject:[NSData dataWithHex:obj[@"tx_hash"]]];
+            [inIndexes addObject:obj[@"tx_output_n"]];
+            [inScripts addObject:[NSData dataWithHex:obj[@"script"]]];
+            balance += [obj[@"value"] unsignedLongLongValue];
+            
+            if (balance >= amt) *stop = YES;
+        }];
+        
+        if (balance >= amt) *stop = YES;
+    }];
+    
+    if (balance < amt) { // insufficent funds
+        NSLog(@"Insufficient funds. Balance:%llu is less than transaction amount:%llu", balance, amt);
+        return nil;
+    }
+    
+    //XXX need to calculate tx fees
+    if (balance > amt) {
+        [outAddresses addObject:self.receiveAddress]; // change address
+        [outAmounts addObject:@(balance - amt)];
+    }
+    
+    ZNTransaction *tx = [[ZNTransaction alloc] initWithInputHashes:inHashes inputIndexes:inIndexes
+                         inputScripts:inScripts outputAddresses:outAddresses andOutputAmounts:outAmounts];
 
-    NSLog(@"%@", tx);
+    
+    [tx signWithPrivateKeys:inKeys.allObjects];
+    
+    if (! [tx isSigned]) {
+        NSLog(@"this should never happen");
+        return nil;
+    }
+    
+    return [tx toHex];
 
-    return [tx description];
 }
 
 @end
