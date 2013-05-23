@@ -35,7 +35,7 @@ CClientUIInterface uiInterface; // hack to avoid having to build and link bitcoi
     
     if (! DecodeBase58Check(self.UTF8String, vchRet)) return nil;
     
-    return [NSData dataWithBytes:&vchRet.front() length:vchRet.size()];
+    return [NSData dataWithBytes:&vchRet[0] length:vchRet.size()];
 }
 
 @end

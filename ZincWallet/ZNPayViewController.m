@@ -11,6 +11,7 @@
 #import "ZNPaymentRequest.h"
 #import "NSString+Base58.h"
 
+#import "ZNKey.h"
 #import "ZNTransaction.h"
 
 #define BUTTON_HEIGHT 44
@@ -47,7 +48,7 @@
     
     uint64_t amt = 2100000000000001ull;
     NSLog(@"uint64_t test: %llu", amt);
-    
+        
     //NSLog(@"tx: %@", [[[ZNTransaction alloc] init] toHex]);
     
     //NSLog(@"%@", [@"0004f05543b270f96547c950a2b3ed3afe83d03869" hexToBase58check]);
@@ -63,7 +64,6 @@
     self.session.delegate = self;
     [self.session setDataReceiveHandler:self withContext:nil];
     self.session.available = YES;
-
 }
 
 - (void)viewWillDisappear:(BOOL)animated

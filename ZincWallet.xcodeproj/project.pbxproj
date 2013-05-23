@@ -698,6 +698,7 @@
 		752C38C91742BC4D0033F636 /* AFURLConnectionOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 752C38BE1742BC4D0033F636 /* AFURLConnectionOperation.m */; };
 		752C38CA1742BC4D0033F636 /* AFXMLRequestOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 752C38C01742BC4D0033F636 /* AFXMLRequestOperation.m */; };
 		752C38CB1742BC4D0033F636 /* UIImageView+AFNetworking.m in Sources */ = {isa = PBXBuildFile; fileRef = 752C38C21742BC4D0033F636 /* UIImageView+AFNetworking.m */; };
+		7559FBA7174D8B1F0000E809 /* ZNKey.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7559FBA6174D8B1F0000E809 /* ZNKey.mm */; };
 		75737A04174316F80037A109 /* chrono.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75731C1F174316B40037A109 /* chrono.cpp */; };
 		75737A05174316F80037A109 /* process_cpu_clocks.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75731C20174316B40037A109 /* process_cpu_clocks.cpp */; };
 		75737A06174316F80037A109 /* thread_clock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75731C21174316B40037A109 /* thread_clock.cpp */; };
@@ -1040,7 +1041,7 @@
 		75F17C2E1744CB2E00D9F228 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 752C2FFD1742ACFB0033F636 /* libcrypto.a */; };
 		75F17C2F1744CB3400D9F228 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 752C300D1742AD060033F636 /* libssl.a */; };
 		75F17C311744CBAE00D9F228 /* libboost.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7573F080174313910037A109 /* libboost.a */; };
-		75F17C351744CC2100D9F228 /* ZNTransaction.mm in Sources */ = {isa = PBXBuildFile; fileRef = 75F17C341744CC2100D9F228 /* ZNTransaction.mm */; };
+		75F17C351744CC2100D9F228 /* ZNTransaction.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F17C341744CC2100D9F228 /* ZNTransaction.m */; };
 		75F17C4317455F2D00D9F228 /* deletetoleft.png in Resources */ = {isa = PBXBuildFile; fileRef = 75F17C4117455F2D00D9F228 /* deletetoleft.png */; };
 		75F17C4417455F2D00D9F228 /* deletetoleft-inv.png in Resources */ = {isa = PBXBuildFile; fileRef = 75F17C4217455F2D00D9F228 /* deletetoleft-inv.png */; };
 /* End PBXBuildFile section */
@@ -1974,6 +1975,8 @@
 		752C38C01742BC4D0033F636 /* AFXMLRequestOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFXMLRequestOperation.m; sourceTree = "<group>"; };
 		752C38C11742BC4D0033F636 /* UIImageView+AFNetworking.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImageView+AFNetworking.h"; sourceTree = "<group>"; };
 		752C38C21742BC4D0033F636 /* UIImageView+AFNetworking.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImageView+AFNetworking.m"; sourceTree = "<group>"; };
+		7559FBA5174D8B1F0000E809 /* ZNKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNKey.h; sourceTree = "<group>"; };
+		7559FBA6174D8B1F0000E809 /* ZNKey.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ZNKey.mm; sourceTree = "<group>"; };
 		75731C1F174316B40037A109 /* chrono.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = chrono.cpp; sourceTree = "<group>"; };
 		75731C20174316B40037A109 /* process_cpu_clocks.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = process_cpu_clocks.cpp; sourceTree = "<group>"; };
 		75731C21174316B40037A109 /* thread_clock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = thread_clock.cpp; sourceTree = "<group>"; };
@@ -2344,7 +2347,7 @@
 		75F17C231744BB5700D9F228 /* version.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = version.cpp; path = bitcoin/src/version.cpp; sourceTree = SOURCE_ROOT; };
 		75F17C241744BB5700D9F228 /* version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = version.h; path = bitcoin/src/version.h; sourceTree = SOURCE_ROOT; };
 		75F17C331744CC2100D9F228 /* ZNTransaction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNTransaction.h; sourceTree = "<group>"; };
-		75F17C341744CC2100D9F228 /* ZNTransaction.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ZNTransaction.mm; sourceTree = "<group>"; };
+		75F17C341744CC2100D9F228 /* ZNTransaction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNTransaction.m; sourceTree = "<group>"; };
 		75F17C4117455F2D00D9F228 /* deletetoleft.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = deletetoleft.png; sourceTree = "<group>"; };
 		75F17C4217455F2D00D9F228 /* deletetoleft-inv.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "deletetoleft-inv.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -4428,12 +4431,14 @@
 		75CBEAE6173C807E00978DBA /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				7559FBA5174D8B1F0000E809 /* ZNKey.h */,
+				7559FBA6174D8B1F0000E809 /* ZNKey.mm */,
 				752C2F8A174071520033F636 /* ZNWallet.h */,
 				752C2F8B174071520033F636 /* ZNWallet.m */,
 				75CBEAE7173C80AD00978DBA /* ZNPaymentRequest.h */,
 				75CBEAE8173C80AD00978DBA /* ZNPaymentRequest.m */,
 				75F17C331744CC2100D9F228 /* ZNTransaction.h */,
-				75F17C341744CC2100D9F228 /* ZNTransaction.mm */,
+				75F17C341744CC2100D9F228 /* ZNTransaction.m */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -5816,8 +5821,9 @@
 				752C38C91742BC4D0033F636 /* AFURLConnectionOperation.m in Sources */,
 				752C38CA1742BC4D0033F636 /* AFXMLRequestOperation.m in Sources */,
 				752C38CB1742BC4D0033F636 /* UIImageView+AFNetworking.m in Sources */,
-				75F17C351744CC2100D9F228 /* ZNTransaction.mm in Sources */,
+				75F17C351744CC2100D9F228 /* ZNTransaction.m in Sources */,
 				75920F86174AB82100C1C03D /* NSMutableData+Bitcoin.m in Sources */,
+				7559FBA7174D8B1F0000E809 /* ZNKey.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

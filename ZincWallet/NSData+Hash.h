@@ -14,12 +14,8 @@
 
 - (id)initWithHex:(NSString *)hex;
 
-- (NSData *)RMD160;
+//- (NSData *)RMD160;
 - (NSData *)SHA256;
 - (NSData *)SHA256_2;
-
-- (NSData *)ECCPubKey;
-- (NSData *)ECCSignatureWithKey:(NSData *)key;
-
 
 @end

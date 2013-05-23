@@ -1,5 +1,5 @@
 //
-//  ZNTransaction.mm
+//  ZNTransaction.m
 //  ZincWallet
 //
 //  Created by Aaron Voisine on 5/16/13.
@@ -9,8 +9,7 @@
 #import "ZNTransaction.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSData+Hash.h"
-
-//#include "bitcoinrpc.h"
+#import "ZNKey.h"
 
 #define TX_VERSION      0x00000001u
 #define TX_LOCKTIME     0x00000000u
@@ -58,10 +57,16 @@ andOutputAmounts:(NSArray *)outputAmounts
 
 - (BOOL)signWithPrivateKeys:(NSArray *)privateKeys
 {
-    NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:privateKeys.count];
+    NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:privateKeys.count],
+                   *keys = [NSMutableArray arrayWithCapacity:privateKeys.count];
     
     [privateKeys enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        [addresses addObject:[[[obj ECCPubKey] SHA256] RMD160]];
+        ZNKey *key = [[ZNKey alloc] initWithPrivateKey:obj];
+
+        if (! key) return;
+ 
+        [keys addObject:key];
+        [addresses addObject:key.address];
     }];
 
     for (NSUInteger i = 0; i < self.inputHashes.count; i++) {
@@ -71,11 +76,12 @@ andOutputAmounts:(NSArray *)outputAmounts
         if (keyIdx == NSNotFound) continue;
     
         NSData *txhash = [[self toDataWithSubscriptIndex:i] SHA256_2];
-        
-        NSMutableData *sig = [NSMutableData data];
-        [sig appendScriptPushData:[privateKeys[i] ECCPubKey]];
-        [sig appendScriptPushData:[txhash ECCSignatureWithKey:privateKeys[i]]];
-        
+        NSMutableData *sig = [NSMutableData data], *s = [NSMutableData dataWithData:[keys[i] sign:txhash]];
+
+        [s appendUInt8:SIGHASH_ALL];
+        [sig appendScriptPushData:s];
+        [sig appendScriptPushData:[keys[i] publicKey]];
+
         [self.signatures replaceObjectAtIndex:i withObject:sig];
     }
     
@@ -84,8 +90,7 @@ andOutputAmounts:(NSArray *)outputAmounts
 
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex
 {
-    // 180 or 148?
-    NSMutableData *d = [NSMutableData dataWithCapacity:10 + 180*self.inputHashes.count + 34*self.outputAddresses.count];
+    NSMutableData *d = [NSMutableData dataWithCapacity:10 + 148*self.inputHashes.count + 34*self.outputAddresses.count];
 
     [d appendUInt32:TX_VERSION];
 
