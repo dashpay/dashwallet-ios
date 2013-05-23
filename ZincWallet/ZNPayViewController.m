@@ -44,11 +44,14 @@
     
     double balance = [[ZNWallet singleton] balance];
     
-    NSLog(@"wallet balance: %.17g", balance);
+    NSLog(@"wallet balance: %.16g", balance);
     
     uint64_t amt = 2100000000000001ull;
     NSLog(@"uint64_t test: %llu", amt);
-        
+    
+    //ZNKey *k = [[ZNKey alloc] initWithPrivateKey:@"7yZt5MTHK1UBeAbFfgAkphuH95ZNWPjoLkgfG7RbLaqV"];
+    //NSLog(@"addr: %@", k.address);
+
     //NSLog(@"tx: %@", [[[ZNTransaction alloc] init] toHex]);
     
     //NSLog(@"%@", [@"0004f05543b270f96547c950a2b3ed3afe83d03869" hexToBase58check]);
@@ -133,7 +136,7 @@
     
     if (req) [[[UIAlertView alloc] initWithTitle:@"Confirm Payment" message:req.message delegate:self
                cancelButtonTitle:@"cancel"
-               otherButtonTitles:[NSString stringWithFormat:@"%@%.17g", BTC, req.amount], nil] show];
+               otherButtonTitles:[NSString stringWithFormat:@"%@%.16g", BTC, req.amount], nil] show];
 }
 
 #pragma mark - IBAction

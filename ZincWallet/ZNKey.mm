@@ -74,12 +74,7 @@
 
 - (NSString *)address
 {
-    CKeyID keyID = _key->GetPubKey().GetID();
-    std::vector<unsigned char>vch(1, 0x00);
-
-    vch.insert(vch.end(), (unsigned char *)&keyID, (unsigned char *)&keyID + 20);
-    
-    return [NSString stringWithUTF8String:EncodeBase58Check(vch).c_str()];
+    return [NSString stringWithUTF8String:CBitcoinAddress(_key->GetPubKey().GetID()).ToString().c_str()];
 }
 
 - (NSData *)sign:(NSData *)d

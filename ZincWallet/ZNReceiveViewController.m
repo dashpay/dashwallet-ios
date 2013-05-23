@@ -81,7 +81,7 @@
     }
 
     self.session = [[GKSession alloc] initWithSessionID:GK_SESSION_ID
-                    displayName:[NSString stringWithFormat:@"%@ - %@%.17g", self.message, BTC, self.amount]
+                    displayName:[NSString stringWithFormat:@"%@ - %@%.16g", self.message, BTC, self.amount]
                     //displayName:[NSString stringWithFormat:@"%@ - %@", self.message, self.amountField.text]
                     sessionMode:GKSessionModeServer];
     self.session.delegate = self;

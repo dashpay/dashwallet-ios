@@ -50,7 +50,7 @@
 
 - (NSData *)data
 {
-    NSMutableString *s = [NSMutableString stringWithFormat:@"bitcoin:%@?amount=%.17g", self.paymentAddress,
+    NSMutableString *s = [NSMutableString stringWithFormat:@"bitcoin:%@?amount=%.16g", self.paymentAddress,
                           self.amount];
     
     if (self.label.length) {

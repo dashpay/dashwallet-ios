@@ -699,6 +699,7 @@
 		752C38CA1742BC4D0033F636 /* AFXMLRequestOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 752C38C01742BC4D0033F636 /* AFXMLRequestOperation.m */; };
 		752C38CB1742BC4D0033F636 /* UIImageView+AFNetworking.m in Sources */ = {isa = PBXBuildFile; fileRef = 752C38C21742BC4D0033F636 /* UIImageView+AFNetworking.m */; };
 		7559FBA7174D8B1F0000E809 /* ZNKey.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7559FBA6174D8B1F0000E809 /* ZNKey.mm */; };
+		7559FBA9174E85B10000E809 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7559FBA8174E85B10000E809 /* Security.framework */; };
 		75737A04174316F80037A109 /* chrono.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75731C1F174316B40037A109 /* chrono.cpp */; };
 		75737A05174316F80037A109 /* process_cpu_clocks.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75731C20174316B40037A109 /* process_cpu_clocks.cpp */; };
 		75737A06174316F80037A109 /* thread_clock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75731C21174316B40037A109 /* thread_clock.cpp */; };
@@ -1977,6 +1978,7 @@
 		752C38C21742BC4D0033F636 /* UIImageView+AFNetworking.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImageView+AFNetworking.m"; sourceTree = "<group>"; };
 		7559FBA5174D8B1F0000E809 /* ZNKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNKey.h; sourceTree = "<group>"; };
 		7559FBA6174D8B1F0000E809 /* ZNKey.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ZNKey.mm; sourceTree = "<group>"; };
+		7559FBA8174E85B10000E809 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		75731C1F174316B40037A109 /* chrono.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = chrono.cpp; sourceTree = "<group>"; };
 		75731C20174316B40037A109 /* process_cpu_clocks.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = process_cpu_clocks.cpp; sourceTree = "<group>"; };
 		75731C21174316B40037A109 /* thread_clock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = thread_clock.cpp; sourceTree = "<group>"; };
@@ -2269,12 +2271,10 @@
 		7597D45C17449C8600A7090D /* cxx_multi.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cxx_multi.cpp; sourceTree = "<group>"; };
 		7597D45D17449C8600A7090D /* cxx_seq.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cxx_seq.cpp; sourceTree = "<group>"; };
 		7597D45E17449C8600A7090D /* cxx_txn.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cxx_txn.cpp; sourceTree = "<group>"; };
-		7597D46B17449CA700A7090D /* crdel.src */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = crdel.src; sourceTree = "<group>"; };
 		7597D46C17449CA700A7090D /* crdel_auto.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = crdel_auto.c; sourceTree = "<group>"; };
 		7597D46D17449CA700A7090D /* crdel_autop.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = crdel_autop.c; sourceTree = "<group>"; };
 		7597D46E17449CA700A7090D /* crdel_rec.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = crdel_rec.c; sourceTree = "<group>"; };
 		7597D46F17449CA700A7090D /* db.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = db.c; sourceTree = "<group>"; };
-		7597D47017449CA700A7090D /* db.src */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = db.src; sourceTree = "<group>"; };
 		7597D47117449CA700A7090D /* db_am.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = db_am.c; sourceTree = "<group>"; };
 		7597D47217449CA700A7090D /* db_auto.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = db_auto.c; sourceTree = "<group>"; };
 		7597D47317449CA700A7090D /* db_autop.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = db_autop.c; sourceTree = "<group>"; };
@@ -2401,6 +2401,7 @@
 				75F17C2F1744CB3400D9F228 /* libssl.a in Frameworks */,
 				75F17C2E1744CB2E00D9F228 /* libcrypto.a in Frameworks */,
 				75F17C2C1744CB2400D9F228 /* libbitcoin.a in Frameworks */,
+				7559FBA9174E85B10000E809 /* Security.framework in Frameworks */,
 				752C2FAB174091DD0033F636 /* MobileCoreServices.framework in Frameworks */,
 				752C2F8917406FF70033F636 /* SystemConfiguration.framework in Frameworks */,
 				75CBEAD2173C3F2900978DBA /* CoreBluetooth.framework in Frameworks */,
@@ -4344,12 +4345,10 @@
 		7597D46A17449CA700A7090D /* db */ = {
 			isa = PBXGroup;
 			children = (
-				7597D46B17449CA700A7090D /* crdel.src */,
 				7597D46C17449CA700A7090D /* crdel_auto.c */,
 				7597D46D17449CA700A7090D /* crdel_autop.c */,
 				7597D46E17449CA700A7090D /* crdel_rec.c */,
 				7597D46F17449CA700A7090D /* db.c */,
-				7597D47017449CA700A7090D /* db.src */,
 				7597D47117449CA700A7090D /* db_am.c */,
 				7597D47217449CA700A7090D /* db_auto.c */,
 				7597D47317449CA700A7090D /* db_autop.c */,
@@ -4470,6 +4469,7 @@
 		75D8F380173ABE3C0080D95E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				7559FBA8174E85B10000E809 /* Security.framework */,
 				752C2FAA174091DD0033F636 /* MobileCoreServices.framework */,
 				752C2F8817406FF70033F636 /* SystemConfiguration.framework */,
 				75CBEAD1173C3F2900978DBA /* CoreBluetooth.framework */,
