@@ -9,7 +9,7 @@
 #import "NSData+Hash.h"
 //#import "rmd160.h"
 #import <CommonCrypto/CommonDigest.h>
-//#import <openssl/ripemd.h>
+#import <openssl/ripemd.h>
 
 //#define RMDsize 160
 
@@ -53,15 +53,26 @@
     return [self initWithData:d];
 }
 
-//- (NSData *)RMD160
-//{
-///////////////
-//    // openssl implementation
-//    uint8_t hash[RIPEMD160_DIGEST_LENGTH];
-//
-//    RIPEMD160(self.bytes, self.length, hash);
-//    
-//    return [NSData dataWithBytes:hash length:RIPEMD160_DIGEST_LENGTH];
+- (NSString *)toHex
+{
+    NSMutableString *hex = [NSMutableString stringWithCapacity:self.length*2];
+    uint8_t *bytes = (uint8_t *)self.bytes;
+    
+    for (NSUInteger i = 0; i < self.length; i++) {
+        [hex appendFormat:@"%02x", bytes[i]];
+    }
+    
+    return hex;
+}
+
+- (NSData *)RMD160
+{
+    // openssl implementation
+    uint8_t hash[RIPEMD160_DIGEST_LENGTH];
+
+    RIPEMD160(self.bytes, self.length, hash);
+    
+    return [NSData dataWithBytes:hash length:RIPEMD160_DIGEST_LENGTH];
 ///////////////
 //    // standalone rmd160.c implementation
 //    byte*         message = (byte *)self.bytes;
@@ -96,7 +107,7 @@
 //    }
 //    
 //    return [NSData dataWithBytes:hashcode length:RMDsize/8];
-//}
+}
 
 - (NSData *)SHA256
 {

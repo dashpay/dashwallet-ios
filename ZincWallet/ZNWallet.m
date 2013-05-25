@@ -70,7 +70,7 @@
         self.unspentOutputs[key] = [NSMutableArray arrayWithArray:obj];
     }];
     
-    //XXX for testing only!
+    //XXX for testing only! these should be generated from backup passphrase    
     self.privateKeys = [NSMutableDictionary dictionary];
     
     [[self getKeychainObjectForKey:@"pkeys"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
@@ -203,15 +203,16 @@
         [inKeys addObject:self.privateKeys[key]];
         
         [obj enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            // tx_hash is already in little endian
             [inHashes addObject:[NSData dataWithHex:obj[@"tx_hash"]]];
             [inIndexes addObject:obj[@"tx_output_n"]];
             [inScripts addObject:[NSData dataWithHex:obj[@"script"]]];
             balance += [obj[@"value"] unsignedLongLongValue];
             
-            if (balance >= amt) *stop = YES;
+            if (balance == amt || balance >= amt + 0.01) *stop = YES;
         }];
         
-        if (balance >= amt) *stop = YES;
+        if (balance == amt || balance >= amt + 0.01) *stop = YES;
     }];
     
     if (balance < amt) { // insufficent funds
@@ -219,7 +220,7 @@
         return nil;
     }
     
-    //XXX need to calculate tx fees
+    //XXX need to calculate tx fees, especially if change is less than 0.01
     if (balance > amt) {
         [outAddresses addObject:self.receiveAddress]; // change address
         [outAmounts addObject:@(balance - amt)];
@@ -227,7 +228,6 @@
     
     ZNTransaction *tx = [[ZNTransaction alloc] initWithInputHashes:inHashes inputIndexes:inIndexes
                          inputScripts:inScripts outputAddresses:outAddresses andOutputAmounts:outAmounts];
-
     
     [tx signWithPrivateKeys:inKeys.allObjects];
     

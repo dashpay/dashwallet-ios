@@ -49,9 +49,10 @@
     uint64_t amt = 2100000000000001ull;
     NSLog(@"uint64_t test: %llu", amt);
     
-    //ZNKey *k = [[ZNKey alloc] initWithPrivateKey:@"7yZt5MTHK1UBeAbFfgAkphuH95ZNWPjoLkgfG7RbLaqV"];
-    //NSLog(@"addr: %@", k.address);
-
+    NSString *tx = [[ZNWallet singleton] transactionFor:0.01 to:[ZNWallet singleton].receiveAddress];
+    
+    NSLog(@"tx hex:\n%@", tx);
+    
     //NSLog(@"tx: %@", [[[ZNTransaction alloc] init] toHex]);
     
     //NSLog(@"%@", [@"0004f05543b270f96547c950a2b3ed3afe83d03869" hexToBase58check]);

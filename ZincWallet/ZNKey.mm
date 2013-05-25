@@ -67,9 +67,14 @@
 {
     std::vector<unsigned char>raw = _key->GetPubKey().Raw();
     
-    [NSData dataWithBytes:&raw[0] length:raw.size()];
+    return [NSData dataWithBytes:&raw[0] length:raw.size()];
+}
+
+- (NSData *)hash160
+{
+    CKeyID hash = _key->GetPubKey().GetID();
     
-    return nil;
+    return [NSData dataWithBytes:&hash length:20];
 }
 
 - (NSString *)address
@@ -86,7 +91,15 @@
         return nil;
     }
 
-    _key->Sign(Hash((unsigned char *)d.bytes, (unsigned char *)d.bytes + d.length), sig);
+    std::vector<unsigned char>vch((unsigned char *)d.bytes, (unsigned char *)d.bytes + d.length);
+    uint256 hash(vch);
+
+    _key->Sign(hash, sig);
+
+//    if (! _key->Verify(Hash((unsigned char *)d.bytes, (unsigned char *)d.bytes + d.length), sig)) {
+//        NSLog(@"Verify failed");
+//        return nil;
+//    }
 
     return [NSData dataWithBytes:&sig[0] length:sig.size()];
 }

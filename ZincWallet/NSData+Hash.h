@@ -13,8 +13,9 @@
 + (id)dataWithHex:(NSString *)hex;
 
 - (id)initWithHex:(NSString *)hex;
+- (NSString *)toHex;
 
-//- (NSData *)RMD160;
+- (NSData *)RMD160;
 - (NSData *)SHA256;
 - (NSData *)SHA256_2;
 

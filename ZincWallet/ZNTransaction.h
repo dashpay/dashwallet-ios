@@ -10,6 +10,7 @@
 
 @interface ZNTransaction : NSObject
 
+// inputHashes are expected to already be little endian
 - (id)initWithInputHashes:(NSArray *)inputHashes inputIndexes:(NSArray *)inputIndexes
 inputScripts:(NSArray *)inputScripts outputAddresses:(NSArray *)outputAddresses
 andOutputAmounts:(NSArray *)outputAmounts;

@@ -15,7 +15,7 @@
 - (void)appendUInt64:(uint64_t)i;
 - (void)appendVarInt:(uint64_t)i;
 - (void)appendString:(NSString *)s;
-- (void)appendHash:(NSData *)hash;
+//- (void)appendHash:(NSData *)hash;
 - (void)appendScriptPubKeyForHash:(NSData *)hash;
 - (BOOL)appendScriptPubKeyForAddress:(NSString *)address;
 - (void)appendScriptPushData:(NSData *)d;

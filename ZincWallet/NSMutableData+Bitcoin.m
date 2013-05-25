@@ -87,19 +87,6 @@
     [self appendBytes:s.UTF8String length:l];
 }
 
-- (void)appendHash:(NSData *)hash
-{
-    const uint8_t *be = hash.bytes;
-    uint8_t le[hash.length];
-
-    // the bitcoin protocol expects hashes in little endian order
-    for (NSUInteger i = hash.length - 1, j = 0; i != NSNotFound;) {
-        le[j++] = be[i--];
-    }
-    
-    [self appendBytes:le length:hash.length];
-}
-
 - (void)appendScriptPushData:(NSData *)d
 {
     if (! d.length) {
@@ -121,7 +108,7 @@
         [self appendUInt32:d.length];
     }
 
-    [self appendBytes:d.bytes length:d.length];
+    [self appendData:d];
 }
 
 - (void)appendScriptPubKeyForHash:(NSData *)hash
@@ -139,7 +126,7 @@
 
     if (! d) return NO;
 
-    [self appendScriptPubKeyForHash:[NSData dataWithBytes:d.bytes + 1 length:d.length - 1]];
+    [self appendScriptPubKeyForHash:[d subdataWithRange:NSMakeRange(1, d.length - 1)]];
     
     return YES;
 }

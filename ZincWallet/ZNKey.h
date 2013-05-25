@@ -13,6 +13,7 @@
 @property (nonatomic, assign) NSString *privateKey;
 @property (nonatomic, readonly) NSData *publicKey;
 @property (nonatomic, readonly) NSString *address;
+@property (nonatomic, readonly) NSData *hash160;
 
 - (id)initWithPrivateKey:(NSString *)privateKey;
 

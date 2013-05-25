@@ -66,7 +66,7 @@ andOutputAmounts:(NSArray *)outputAmounts
         if (! key) return;
  
         [keys addObject:key];
-        [addresses addObject:key.address];
+        [addresses addObject:key.hash160];
     }];
 
     for (NSUInteger i = 0; i < self.inputHashes.count; i++) {
@@ -76,11 +76,12 @@ andOutputAmounts:(NSArray *)outputAmounts
         if (keyIdx == NSNotFound) continue;
     
         NSData *txhash = [[self toDataWithSubscriptIndex:i] SHA256_2];
-        NSMutableData *sig = [NSMutableData data], *s = [NSMutableData dataWithData:[keys[i] sign:txhash]];
+        NSMutableData *sig = [NSMutableData data];
+        NSMutableData *s = [NSMutableData dataWithData:[keys[keyIdx] sign:txhash]];
 
         [s appendUInt8:SIGHASH_ALL];
         [sig appendScriptPushData:s];
-        [sig appendScriptPushData:[keys[i] publicKey]];
+        [sig appendScriptPushData:[keys[keyIdx] publicKey]];
 
         [self.signatures replaceObjectAtIndex:i withObject:sig];
     }
@@ -97,14 +98,14 @@ andOutputAmounts:(NSArray *)outputAmounts
     [d appendVarInt:self.inputHashes.count];
 
     for (NSUInteger i = 0; i < self.inputHashes.count; i++) {
-        [d appendHash:self.inputHashes[i]];
+        [d appendData:self.inputHashes[i]];
         [d appendUInt32:[self.inputIndexes[i] unsignedIntValue]];
 
         if ([self isSigned] && subscriptIndex == NSNotFound) {
             [d appendVarInt:[self.signatures[i] length]];
             [d appendData:self.signatures[i]];
         }
-        else if (i == subscriptIndex || subscriptIndex == NSNotFound) {
+        else if (i == subscriptIndex) {// || subscriptIndex == NSNotFound) {
             //XXX to fully match the reference implementation, OP_CODESEPARATOR related checksig logic should go here
             [d appendVarInt:[self.inputScripts[i] length]];
             [d appendData:self.inputScripts[i]];
@@ -139,15 +140,7 @@ andOutputAmounts:(NSArray *)outputAmounts
 
 - (NSString *)toHex
 {
-    NSData *d = [self toData];
-    NSMutableString *s = [NSMutableString stringWithCapacity:d.length*2];
-    UInt8 *bytes = (UInt8 *)d.bytes;
-    
-    for (NSUInteger i = 0; i < d.length; i++) {
-        [s appendFormat:@"%02x", bytes[i]];
-    }
-
-    return d ? s : nil;
+    return [[self toData] toHex];
 }
 
 @end
