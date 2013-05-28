@@ -84,6 +84,59 @@
 
 - (id)initWithSeed:(NSString *)seed
 {
+    //# Note about US patent no 5892470: Here each word does not represent a given digit.
+    //# Instead, the digit represented by a word is variable, it depends on the previous word.
+    //
+    //def mn_encode( message ):
+    //    out = []
+    //    for i in range(len(message)/8):
+    //        word = message[8*i:8*i+8]
+    //        x = int(word, 16)
+    //        w1 = (x%n)
+    //        w2 = ((x/n) + w1)%n
+    //        w3 = ((x/n/n) + w2)%n
+    //        out += [ words[w1], words[w2], words[w3] ]
+    //        return out
+    //
+    //def mn_decode( wlist ):
+    //    out = ''
+    //    for i in range(len(wlist)/3):
+    //        word1, word2, word3 = wlist[3*i:3*i+3]
+    //        w1 =  words.index(word1)
+    //        w2 = (words.index(word2))%n
+    //        w3 = (words.index(word3))%n
+    //        x = w1 +n*((w2-w1)%n) +n*n*((w3-w2)%n)
+    //        out += '%08x'%x
+    //        return out
+
+    NSArray *list = [seed componentsSeparatedByString:@" "];
+    NSArray *words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"ElectrumSeedWords"
+                      ofType:@"plist"]];
+    NSMutableData *dseed = [NSMutableData dataWithCapacity:list.count*4/3];
+    uint32_t n = words.count;
+    
+    if (list.count != 12) {
+        NSLog(@"seed should be 12 words, found %d instead", list.count);
+        return nil;
+    }
+
+    for (NSUInteger i = 0; i < list.count; i += 3) {
+        uint32_t w1 = [words indexOfObject:list[i]], w2 = [words indexOfObject:list[i + 1]],
+                 w3 = [words indexOfObject:list[i + 2]];
+        
+        if (w1 == NSNotFound || w2 == NSNotFound || w3 == NSNotFound) {
+            NSLog(@"seed contained unknown word: %@", list[i + (w1 == NSNotFound ? 0 : w2 == NSNotFound ? 1 : 2)]);
+            return nil;
+        }
+        
+        uint32_t x = w1 + n*((w2 - w1) % n) + n*n*((w3 - w2) % n);
+        
+        x = CFSwapInt32HostToBig(x);
+        [dseed appendBytes:&x length:sizeof(x)];
+    }
+
+    words = nil;
+    
     return [self init];
 }
 
@@ -172,19 +225,19 @@
                                  hexToBase58check];
 
             if (! addresses) return;
-              
+            
             if (! self.unspentOutputs[address]) self.unspentOutputs[address] = [NSMutableArray arrayWithObject:obj];
             else [self.unspentOutputs[address] addObject:obj];
         }];
         
         [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
         [_defs synchronize];
-          
+        
     } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
         NSLog(@"%@", error.localizedDescription);
     }] start];
 }
- 
+
 - (NSString *)transactionFor:(double)amount to:(NSString *)address
 {
     __block uint64_t amt = amount*SATOSHIS, balance = 0;
@@ -243,7 +296,7 @@
 #pragma mark - keychain services
 
 - (BOOL)setKeychainObject:(id)obj forKey:(NSString *)key
-{    
+{
     NSDictionary *query = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
                             (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
                             (__bridge id)kSecAttrAccount:key,

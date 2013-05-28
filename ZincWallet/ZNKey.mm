@@ -34,9 +34,22 @@
     delete _key;
 }
 
+- (id)initWithSecret:(NSData *)secret compressed:(BOOL)compressed
+{
+    if (! (self = [self init])) return nil;
+    
+    if (secret.length != 32) return nil;
+    
+    CSecret s((unsigned char *)secret.bytes, (unsigned char *)secret.bytes + secret.length);
+    
+    _key->SetSecret(s, compressed);
+    
+    return _key->IsNull() ? nil : self;
+}
+
 - (id)initWithPrivateKey:(NSString *)privateKey
 {
-    if (! [self init]) return nil;
+    if (! (self = [self init])) return nil;
     
     self.privateKey = privateKey;
     

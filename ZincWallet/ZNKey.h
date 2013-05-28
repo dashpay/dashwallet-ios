@@ -16,6 +16,7 @@
 @property (nonatomic, readonly) NSData *hash160;
 
 - (id)initWithPrivateKey:(NSString *)privateKey;
+- (id)initWithSecret:(NSData *)secret compressed:(BOOL)compressed;
 
 - (NSData *)sign:(NSData *)d;
 

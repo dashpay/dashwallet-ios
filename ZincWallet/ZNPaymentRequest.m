@@ -66,12 +66,8 @@
 
 - (NSData *)signedTransaction
 {
-    //XXX actually sign a transaction here
     return [[[ZNWallet singleton] transactionFor:self.amount to:self.paymentAddress]
             dataUsingEncoding:NSUTF8StringEncoding];
-
-//    return [[[[NSString alloc] initWithData:self.data encoding:NSUTF8StringEncoding] stringByAppendingString:@" - X"]
-//            dataUsingEncoding:NSUTF8StringEncoding];
 }
 
 - (BOOL)isValid
