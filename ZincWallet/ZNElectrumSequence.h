@@ -12,5 +12,6 @@
 @interface ZNElectrumSequence : NSObject<ZNKeySequence>
 
 - (NSData *)masterPublicKeyFromSeed:(NSData *)seed;
+- (NSData *)publicKey:(NSUInteger)n forChange:(BOOL)forChange masterPublicKey:(NSData *)masterPublicKey;
 
 @end
