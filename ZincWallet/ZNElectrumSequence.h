@@ -14,4 +14,7 @@
 - (NSData *)masterPublicKeyFromSeed:(NSData *)seed;
 - (NSData *)publicKey:(NSUInteger)n forChange:(BOOL)forChange masterPublicKey:(NSData *)masterPublicKey;
 
+- (NSString *)privateKey:(NSUInteger)n forChange:(BOOL)forChange fromSeed:(NSData *)seed;
+- (NSArray *)privateKeys:(NSArray *)n forChange:(BOOL)forChange fromSeed:(NSData *)seed;
+
 @end

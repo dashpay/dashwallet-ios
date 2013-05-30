@@ -10,6 +10,8 @@
 
 @interface NSString (Base58)
 
++ (NSString *)base58checkWithData:(NSData *)d;
+
 - (NSString *)hexToBase58check;
 - (NSString *)base58checkToHex;
 - (NSData *)base58checkToData;

@@ -9,6 +9,7 @@
 #import "ZNElectrumSequence.h"
 #import "ZNKey.h"
 #import "NSData+Hash.h"
+#import "NSString+Base58.h"
 
 #import <CommonCrypto/CommonDigest.h>
 #import <openssl/ecdsa.h>
@@ -65,9 +66,9 @@
 
 - (NSData *)publicKey:(NSUInteger)n forChange:(BOOL)forChange masterPublicKey:(NSData *)masterPublicKey
 {
-    BN_CTX *ctx = BN_CTX_new();
     NSData *z = [self sequence:n forChange:forChange masterPublicKey:masterPublicKey];
     BIGNUM *zbn = BN_bin2bn(z.bytes, z.length, NULL);
+    BN_CTX *ctx = BN_CTX_new();
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
     EC_POINT *masterPubKeyPoint = EC_POINT_new(group), *pubKeyPoint = EC_POINT_new(group),
              *zPoint = EC_POINT_new(group);
@@ -84,31 +85,51 @@
     EC_POINT_free(pubKeyPoint);
     EC_POINT_free(masterPubKeyPoint);
     EC_GROUP_free(group);
-    BN_free(zbn);
     BN_CTX_free(ctx);
-
+    BN_free(zbn);
+    
     return d;
 }
 
-- (NSData *)privateKey:(NSUInteger)n forChange:(BOOL)forChange fromSeed:(NSData *)seed
+- (NSString *)privateKey:(NSUInteger)n forChange:(BOOL)forChange fromSeed:(NSData *)seed
 {
     return [[self privateKeys:@[@(n)] forChange:forChange fromSeed:seed] lastObject];
 }
 
 - (NSArray *)privateKeys:(NSArray *)n forChange:(BOOL)forChange fromSeed:(NSData *)seed
 {
-//    def get_private_key_from_stretched_exponent(self, sequence, secexp):
-//        order = generator_secp256k1.order()
-//        secexp = ( secexp + self.get_sequence(sequence, self.mpk) ) % order
-//        pk = number_to_string( secexp, generator_secp256k1.order() )
-//        compressed = False
-//        return SecretToASecret( pk, compressed )
-//        
-//    def get_private_key(self, sequence, seed):
-//        secexp = self.stretch_key(seed)
-//        return self.get_private_key_from_stretched_exponent(sequence, secexp)
+    NSMutableArray *ret = [NSMutableArray arrayWithCapacity:n.count];
+    NSData *secexp = [self stretchKey:seed];
+    NSData *mpk = [[[ZNKey alloc] initWithSecret:secexp compressed:NO] publicKey];
+    BN_CTX *ctx = BN_CTX_new();
+    EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
+    __block BIGNUM *order = BN_new(), *sequencebn = nil, *secexpbn = nil;
 
-    return nil;
+    mpk = [NSData dataWithBytes:(uint8_t *)mpk.bytes + 1 length:mpk.length - 1]; // trim leading 0x04 byte
+    EC_GROUP_get_order(group, order, ctx);
+    
+    [n enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        NSData *sequence = [self sequence:[obj unsignedIntegerValue] forChange:forChange masterPublicKey:mpk];
+        NSMutableData *pk = [NSMutableData dataWithLength:33];
+
+        sequencebn = BN_bin2bn(sequence.bytes, sequence.length, sequencebn);
+        secexpbn = BN_bin2bn(secexp.bytes, secexp.length, secexpbn);
+        
+        BN_mod_add(secexpbn, secexpbn, sequencebn, order, ctx);
+
+        *(unsigned char *)pk.mutableBytes = 0x80;
+        BN_bn2bin(secexpbn, (unsigned char *)pk.mutableBytes + pk.length - BN_num_bytes(secexpbn));
+        
+        [ret addObject:[NSString base58checkWithData:pk]];
+    }];
+    
+    BN_free(secexpbn);
+    BN_free(sequencebn);
+    BN_free(order);
+    EC_GROUP_free(group);
+    BN_CTX_free(ctx);
+
+    return ret;
 }
 
 @end

@@ -15,6 +15,13 @@ CClientUIInterface uiInterface; // hack to avoid having to build and link bitcoi
 
 @implementation NSString (Base58)
 
++ (NSString *)base58checkWithData:(NSData *)d
+{
+    std::vector<unsigned char>vch((unsigned char *)d.bytes, (unsigned char *)d.bytes + d.length);
+
+    return [NSString stringWithUTF8String:EncodeBase58Check(vch).c_str()];
+}
+
 - (NSString *)hexToBase58check
 {
     return [NSString stringWithUTF8String:EncodeBase58Check(ParseHex(self.UTF8String)).c_str()];
