@@ -20,6 +20,21 @@
 
 @implementation ZNKey
 
++ (id)keyWithPrivateKey:(NSString *)privateKey
+{
+    return [[self alloc] initWithPrivateKey:privateKey];
+}
+
++ (id)keyWithSecret:(NSData *)secret compressed:(BOOL)compressed
+{
+    return [[self alloc] initWithSecret:secret compressed:compressed];
+}
+
++ (id)keyWithPublicKey:(NSData *)publicKey
+{
+    return [[self alloc] initWithPublicKey:publicKey];
+}
+
 - (id)init
 {
     if (! (self = [super init])) return nil;
@@ -56,6 +71,15 @@
     return _key->IsNull() ? nil : self;
 }
 
+- (id)initWithPublicKey:(NSData *)publicKey
+{
+    if (! (self = [self init])) return nil;
+    
+    self.publicKey = publicKey;
+    
+    return _key->IsNull() ? nil : self;
+}
+
 - (void)setPrivateKey:(NSString *)privateKey
 {
     std::vector<unsigned char>v;
@@ -74,6 +98,13 @@
     
         _key->SetSecret(secret, v.size() == 34);
     }
+}
+
+- (void)setPublicKey:(NSData *)publicKey
+{
+    std::vector<unsigned char>v((unsigned char *)publicKey.bytes, (unsigned char *)publicKey.bytes + publicKey.length);
+
+    _key->SetPubKey(v);
 }
 
 - (NSData *)publicKey

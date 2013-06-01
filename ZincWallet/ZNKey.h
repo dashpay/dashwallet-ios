@@ -11,12 +11,17 @@
 @interface ZNKey : NSObject
 
 @property (nonatomic, assign) NSString *privateKey;
-@property (nonatomic, readonly) NSData *publicKey;
+@property (nonatomic, assign) NSData *publicKey;
 @property (nonatomic, readonly) NSString *address;
 @property (nonatomic, readonly) NSData *hash160;
 
++ (id)keyWithPrivateKey:(NSString *)privateKey;
++ (id)keyWithSecret:(NSData *)secret compressed:(BOOL)compressed;
++ (id)keyWithPublicKey:(NSData *)publicKey;
+
 - (id)initWithPrivateKey:(NSString *)privateKey;
 - (id)initWithSecret:(NSData *)secret compressed:(BOOL)compressed;
+- (id)initWithPublicKey:(NSData *)publicKey;
 
 - (NSData *)sign:(NSData *)d;
 

@@ -61,7 +61,7 @@ andOutputAmounts:(NSArray *)outputAmounts
                    *keys = [NSMutableArray arrayWithCapacity:privateKeys.count];
     
     [privateKeys enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        ZNKey *key = [[ZNKey alloc] initWithPrivateKey:obj];
+        ZNKey *key = [ZNKey keyWithPrivateKey:obj];
 
         if (! key) return;
  

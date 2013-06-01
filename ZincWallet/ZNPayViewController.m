@@ -41,17 +41,28 @@
     self.peers = [NSMutableArray array];
     self.requestButtons = [NSMutableArray array];
     self.unsignedRequests = [NSMutableDictionary dictionary];
+
+    ZNWallet *w = [ZNWallet sharedInstance];
+
+    [w synchronizeWithCompletionBlock:^(BOOL success) {
+        if (! success) {
+            NSLog(@"syncronize failed :(");
+        }
+        else {
+            NSLog(@"wallet balance: %.16g", w.balance);
+        }
+    }];
     
-    double balance = [[ZNWallet singleton] balance];
-    
-    NSLog(@"wallet balance: %.16g", balance);
-    
-    uint64_t amt = 2100000000000001ull;
-    NSLog(@"uint64_t test: %llu", amt);
-    
-    NSString *tx = [[ZNWallet singleton] transactionFor:0.01 to:[ZNWallet singleton].receiveAddress];
-    
-    NSLog(@"tx hex:\n%@", tx);
+//    double balance = [[ZNWallet sharedInstance] balance];
+//    
+//    NSLog(@"wallet balance: %.16g", balance);
+//    
+//    uint64_t amt = 2100000000000001ull;
+//    NSLog(@"uint64_t test: %llu", amt);
+//    
+//    NSString *tx = [[ZNWallet sharedInstance] transactionFor:0.01 to:[ZNWallet sharedInstance].receiveAddress];
+//    
+//    NSLog(@"tx hex:\n%@", tx);
     
     //NSLog(@"tx: %@", [[[ZNTransaction alloc] init] toHex]);
     

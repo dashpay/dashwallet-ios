@@ -66,7 +66,7 @@
 
 - (NSData *)signedTransaction
 {
-    return [[[ZNWallet singleton] transactionFor:self.amount to:self.paymentAddress]
+    return [[[ZNWallet sharedInstance] transactionFor:self.amount to:self.paymentAddress]
             dataUsingEncoding:NSUTF8StringEncoding];
 }
 

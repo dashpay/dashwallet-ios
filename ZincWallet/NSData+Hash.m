@@ -68,11 +68,11 @@
 - (NSData *)RMD160
 {
     // openssl implementation
-    uint8_t hash[RIPEMD160_DIGEST_LENGTH];
+    NSMutableData *d = [NSMutableData dataWithLength:RIPEMD160_DIGEST_LENGTH];
 
-    RIPEMD160(self.bytes, self.length, hash);
+    RIPEMD160(self.bytes, self.length, d.mutableBytes);
     
-    return [NSData dataWithBytes:hash length:RIPEMD160_DIGEST_LENGTH];
+    return d;
 ///////////////
 //    // standalone rmd160.c implementation
 //    byte*         message = (byte *)self.bytes;
@@ -111,21 +111,21 @@
 
 - (NSData *)SHA256
 {
-    uint8_t hash[CC_SHA256_DIGEST_LENGTH];
+    NSMutableData *d = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH];
     
-    CC_SHA256(self.bytes, self.length, hash);
+    CC_SHA256(self.bytes, self.length, d.mutableBytes);
     
-    return [NSData dataWithBytes:hash length:CC_SHA256_DIGEST_LENGTH];
+    return d;
 }
 
 - (NSData *)SHA256_2
 {
-    uint8_t hash[CC_SHA256_DIGEST_LENGTH], hash2[CC_SHA256_DIGEST_LENGTH];
+    NSMutableData *d = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH];
     
-    CC_SHA256(self.bytes, self.length, hash);
-    CC_SHA256(hash, CC_SHA256_DIGEST_LENGTH, hash2);
+    CC_SHA256(self.bytes, self.length, d.mutableBytes);
+    CC_SHA256(d.bytes, d.length, d.mutableBytes);
     
-    return [NSData dataWithBytes:hash2 length:CC_SHA256_DIGEST_LENGTH];
+    return d;
 }
 
 @end

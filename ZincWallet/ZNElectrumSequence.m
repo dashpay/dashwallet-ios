@@ -19,7 +19,7 @@
 
 - (NSData *)masterPublicKeyFromSeed:(NSData *)seed
 {
-    NSData *pubkey = [[[ZNKey alloc] initWithSecret:[self stretchKey:seed] compressed:NO] publicKey];
+    NSData *pubkey = [[ZNKey keyWithSecret:[self stretchKey:seed] compressed:NO] publicKey];
 
     // uncompressed pubkeys are prepended with 0x04... some sort of openssl key encapsulation
     return [NSData dataWithBytes:(uint8_t *)pubkey.bytes + 1 length:pubkey.length - 1];
@@ -100,7 +100,7 @@
 {
     NSMutableArray *ret = [NSMutableArray arrayWithCapacity:n.count];
     NSData *secexp = [self stretchKey:seed];
-    NSData *mpk = [[[ZNKey alloc] initWithSecret:secexp compressed:NO] publicKey];
+    NSData *mpk = [[ZNKey keyWithSecret:secexp compressed:NO] publicKey];
     BN_CTX *ctx = BN_CTX_new();
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
     __block BIGNUM *order = BN_new(), *sequencebn = nil, *secexpbn = nil;

@@ -8,6 +8,7 @@
 
 #import "ZincWalletTests.h"
 
+#import "ZNWallet.h"
 #import "ZNElectrumSequence.h"
 #import "NSData+Hash.h"
 
@@ -27,11 +28,40 @@
     [super tearDown];
 }
 
+#pragma mark - testWallet
+
+- (void)testWalletDecodePhrase
+{
+    NSData *d = [[ZNWallet sharedInstance] performSelector:@selector(decodePhrase:)
+                 withObject:@"like just love know never want time out there make look eye"];
+    
+    NSLog(@"like just love know never want time out there make look eye = 0x%@", [d toHex]);
+    
+    STAssertEqualObjects(d, [@"00285dfe00285e0100285e0400285e07" dataUsingEncoding:NSUTF8StringEncoding],
+                         @"[ZNWallet decodePhrase:]");
+    
+    d = [[ZNWallet sharedInstance] performSelector:@selector(decodePhrase:)
+         withObject:@"kick chair mask master passion quick raise smooth unless wander actually broke"];
+    
+    NSLog(@"kick chair mask master passion quick raise smooth unless wander actually broke = 0x%@", [d toHex]);
+    
+    STAssertEqualObjects(d, [@"fea983ac0028608e0028609100286094" dataUsingEncoding:NSUTF8StringEncoding],
+                         @"[ZNWallet decodePhrase:]");
+    
+    d = [[ZNWallet sharedInstance] performSelector:@selector(decodePhrase:)
+         withObject:@"kick quiet student ignore cruel danger describe accident eager darkness embrace suppose"];
+    
+    NSLog(@"kick quiet student ignore cruel danger describe accident eager darkness embrace suppose = 0x%@", [d toHex]);
+    
+    STAssertEqualObjects(d, [@"8d02be487e1953ce2dd6c186fcc97e65" dataUsingEncoding:NSUTF8StringEncoding],
+                         @"[ZNWallet decodePhrase:]");
+}
+
 #pragma mark - testElectrumSequence
 
 - (void)testElectrumSequenceStretchKey
 {
-    ZNElectrumSequence *seq = [[ZNElectrumSequence alloc] init];    
+    ZNElectrumSequence *seq = [[ZNElectrumSequence alloc] init];
     NSData *sk = [(id)seq performSelector:@selector(stretchKey:)
                   withObject:[NSData dataWithBytes:"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" length:16]];
 

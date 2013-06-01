@@ -13,9 +13,11 @@
 @property (nonatomic, readonly) double balance;
 @property (nonatomic, readonly) NSString *receiveAddress;
 
-+ (ZNWallet *)singleton;
++ (ZNWallet *)sharedInstance;
 
-- (id)initWithSeed:(NSString *)seed;
+- (id)initWithSeedPhrase:(NSString *)phrase;
+- (id)initWithSeed:(NSData *)seed;
+- (void)synchronizeWithCompletionBlock:(void (^)(BOOL success))completion;
 - (NSString *)transactionFor:(double)amount to:(NSString *)address;
 
 @end
