@@ -17,9 +17,9 @@ CClientUIInterface uiInterface; // hack to avoid having to build and link bitcoi
 
 + (NSString *)base58checkWithData:(NSData *)d
 {
-    std::vector<unsigned char>vch((unsigned char *)d.bytes, (unsigned char *)d.bytes + d.length);
+    std::vector<unsigned char>v((unsigned char *)d.bytes, (unsigned char *)d.bytes + d.length);
 
-    return [NSString stringWithUTF8String:EncodeBase58Check(vch).c_str()];
+    return [NSString stringWithUTF8String:EncodeBase58Check(v).c_str()];
 }
 
 - (NSString *)hexToBase58check
@@ -29,20 +29,25 @@ CClientUIInterface uiInterface; // hack to avoid having to build and link bitcoi
 
 - (NSString *)base58checkToHex
 {
-    std::vector<unsigned char>vchRet;
+    std::vector<unsigned char>v;
 
-    if (! DecodeBase58Check(self.UTF8String, vchRet)) return nil;
+    if (! DecodeBase58Check(self.UTF8String, v)) return nil;
 
-    return [NSString stringWithUTF8String:HexStr(vchRet).c_str()];
+    return [NSString stringWithUTF8String:HexStr(v).c_str()];
 }
 
 - (NSData *)base58checkToData
 {
-    std::vector<unsigned char>vchRet;
+    std::vector<unsigned char>v;
     
-    if (! DecodeBase58Check(self.UTF8String, vchRet)) return nil;
+    if (! DecodeBase58Check(self.UTF8String, v)) return nil;
     
-    return [NSData dataWithBytes:&vchRet[0] length:vchRet.size()];
+    return [NSData dataWithBytes:&v[0] length:v.size()];
+}
+
+- (BOOL)isValidBitcoinAddress
+{
+    return CBitcoinAddress(self.UTF8String).IsValid();
 }
 
 @end

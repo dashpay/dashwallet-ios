@@ -61,7 +61,7 @@
 
 - (void)testElectrumSequenceStretchKey
 {
-    ZNElectrumSequence *seq = [[ZNElectrumSequence alloc] init];
+    ZNElectrumSequence *seq = [ZNElectrumSequence new];
     NSData *sk = [(id)seq performSelector:@selector(stretchKey:)
                   withObject:[NSData dataWithBytes:"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" length:16]];
 
@@ -73,7 +73,7 @@
 
 - (void)testElectrumSequenceMasterPublicKeyFromSeed
 {
-    ZNElectrumSequence *seq = [[ZNElectrumSequence alloc] init];    
+    ZNElectrumSequence *seq = [ZNElectrumSequence new];
     NSData *mpk = [seq masterPublicKeyFromSeed:[NSData dataWithBytes:"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" length:16]];
     
     NSLog(@"mpk from 0x00000000000000000000000000000000 = 0x%@", [mpk toHex]);
@@ -85,7 +85,7 @@
 
 - (void)testElectrumSequencePublicKey
 {
-    ZNElectrumSequence *seq = [[ZNElectrumSequence alloc] init];
+    ZNElectrumSequence *seq = [ZNElectrumSequence new];
     NSData *mpk = [seq masterPublicKeyFromSeed:[NSData dataWithBytes:"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" length:16]];
     NSData *pk = [seq publicKey:0 forChange:NO masterPublicKey:mpk];
     
@@ -98,7 +98,7 @@
 
 - (void)testElectrumSequencePrivateKey
 {
-    ZNElectrumSequence *seq = [[ZNElectrumSequence alloc] init];
+    ZNElectrumSequence *seq = [ZNElectrumSequence new];
     NSString *privkey = [seq privateKey:0 forChange:NO
                          fromSeed:[NSData dataWithBytes:"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" length:16]];
     

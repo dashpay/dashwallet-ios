@@ -63,7 +63,7 @@
 {
     // This should use official payment request protocol when finalized
 
-    ZNPaymentRequest *req = [[ZNPaymentRequest alloc] init];
+    ZNPaymentRequest *req = [ZNPaymentRequest new];
     req.amount = self.amount;
     req.paymentAddress = self.paymentAddress;
     req.message = self.message;

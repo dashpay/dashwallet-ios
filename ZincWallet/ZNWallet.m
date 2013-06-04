@@ -59,7 +59,7 @@
     static dispatch_once_t onceToken = 0;
     
     dispatch_once(&onceToken, ^{
-        singleton = [[ZNWallet alloc] init];
+        singleton = [ZNWallet new];
     });
 
     return singleton;
@@ -84,7 +84,7 @@
     
     self.outdatedAddresses = [NSMutableSet set];
     
-    self.sequence = [[ZNElectrumSequence alloc] init];
+    self.sequence = [ZNElectrumSequence new];
     
     //XXX wallet should auto-syncronize on some schedule
     
@@ -212,6 +212,12 @@ completion:(void (^)(BOOL success))completion
     while (newAddresses.count < gapLimit) {
         NSString *a = [(ZNKey *)[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ forChange:forChange
                        masterPublicKey:self.mpk]] address];
+
+        if (! a) {
+            NSLog(@"error generating keys");
+            if (completion) completion(NO);
+            return;
+        }
         
         if (! [self.spentAddresses containsObject:a] && ! [self.fundedAddresses containsObject:a]) {
             [newAddresses addObject:a];

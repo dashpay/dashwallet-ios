@@ -448,10 +448,6 @@
         </class>
         <class className="ZNPayViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNPayViewController.h"/>
-            <relationships>
-                <relationship kind="outlet" name="spinner" candidateClass="UIActivityIndicatorView"/>
-                <relationship kind="outlet" name="waitingLabel" candidateClass="UILabel"/>
-            </relationships>
         </class>
         <class className="ZNReceiveViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNReceiveViewController.h"/>

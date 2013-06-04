@@ -20,6 +20,8 @@
 - (NSData *)masterPublicKeyFromSeed:(NSData *)seed
 {
     NSData *pubkey = [[ZNKey keyWithSecret:[self stretchKey:seed] compressed:NO] publicKey];
+    
+    if (! pubkey) return nil;
 
     // uncompressed pubkeys are prepended with 0x04... some sort of openssl key encapsulation
     return [NSData dataWithBytes:(uint8_t *)pubkey.bytes + 1 length:pubkey.length - 1];

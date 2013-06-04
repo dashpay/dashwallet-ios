@@ -15,6 +15,7 @@
 @interface ZNKey ()
 
 @property (nonatomic, readonly) CKey *key;
+@property (nonatomic, readonly) CPubKey *pubKey;
 
 @end
 
@@ -40,6 +41,7 @@
     if (! (self = [super init])) return nil;
     
     _key = new CKey();
+    _pubKey = new CPubKey();
     
     return self;
 }
@@ -47,19 +49,16 @@
 - (void)dealloc
 {
     delete _key;
+    delete _pubKey;
 }
 
 - (id)initWithSecret:(NSData *)secret compressed:(BOOL)compressed
 {
     if (! (self = [self init])) return nil;
+        
+    _key->Set((unsigned char *)secret.bytes, (unsigned char *)secret.bytes + secret.length, compressed);
     
-    if (secret.length != 32) return nil;
-    
-    CSecret s((unsigned char *)secret.bytes, (unsigned char *)secret.bytes + secret.length);
-    
-    _key->SetSecret(s, compressed);
-    
-    return _key->IsNull() ? nil : self;
+    return _key->IsValid() ? self : nil;
 }
 
 - (id)initWithPrivateKey:(NSString *)privateKey
@@ -68,7 +67,7 @@
     
     self.privateKey = privateKey;
     
-    return _key->IsNull() ? nil : self;
+    return _key->IsValid() ? self : nil;
 }
 
 - (id)initWithPublicKey:(NSData *)publicKey
@@ -77,7 +76,7 @@
     
     self.publicKey = publicKey;
     
-    return _key->IsNull() ? nil : self;
+    return _pubKey->IsValid() ? self : nil;
 }
 
 - (void)setPrivateKey:(NSString *)privateKey
@@ -89,41 +88,45 @@
     }
     
     if (v.size() == 32) {
-        CSecret secret(&v[0], &v[32]);
-        
-        _key->SetSecret(secret, TRUE);
+        _key->Set(&v[0], &v[32], TRUE);
     }
     else if ((v.size() == 33 || v.size() == 34) && v[0] == 0x80) {
-        CSecret secret(&v[1], &v[33]);
-    
-        _key->SetSecret(secret, v.size() == 34);
+        _key->Set(&v[1], &v[33], v.size() == 34);
     }
 }
 
 - (void)setPublicKey:(NSData *)publicKey
 {
-    std::vector<unsigned char>v((unsigned char *)publicKey.bytes, (unsigned char *)publicKey.bytes + publicKey.length);
-
-    _key->SetPubKey(v);
+    _pubKey->Set((unsigned char *)publicKey.bytes, (unsigned char *)publicKey.bytes + publicKey.length);
 }
 
 - (NSData *)publicKey
 {
-    std::vector<unsigned char>raw = _key->GetPubKey().Raw();
+    CPubKey p = _key->IsValid() ? _key->GetPubKey() : *_pubKey;
     
-    return [NSData dataWithBytes:&raw[0] length:raw.size()];
+    if (! p.IsValid()) return nil;
+    
+    return [NSData dataWithBytes:&p[0] length:p.size()];
 }
 
 - (NSData *)hash160
 {
-    CKeyID hash = _key->GetPubKey().GetID();
+    CPubKey p = _key->IsValid() ? _key->GetPubKey() : *_pubKey;
+
+    if (! p.IsValid()) return nil;
+
+    CKeyID hash = p.GetID();
     
     return [NSData dataWithBytes:&hash length:20];
 }
 
 - (NSString *)address
 {
-    return [NSString stringWithUTF8String:CBitcoinAddress(_key->GetPubKey().GetID()).ToString().c_str()];
+    CPubKey p = _key->IsValid() ? _key->GetPubKey() : *_pubKey;
+    
+    if (! p.IsValid()) return nil;
+    
+    return [NSString stringWithUTF8String:CBitcoinAddress(p.GetID()).ToString().c_str()];
 }
 
 - (NSData *)sign:(NSData *)d
@@ -135,8 +138,8 @@
         return nil;
     }
 
-    std::vector<unsigned char>vch((unsigned char *)d.bytes, (unsigned char *)d.bytes + d.length);
-    uint256 hash(vch);
+    std::vector<unsigned char>v((unsigned char *)d.bytes, (unsigned char *)d.bytes + d.length);
+    uint256 hash(v);
 
     _key->Sign(hash, sig);
 

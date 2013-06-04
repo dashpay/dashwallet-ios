@@ -19,7 +19,11 @@
 @property (nonatomic, readonly, getter=isValid) BOOL valid;
 
 + (id)requestWithData:(NSData *)data;
++ (id)requestWithString:(NSString *)string;
++ (id)requestWithURL:(NSURL *)url;
 
 - (id)initWithData:(NSData *)data;
+- (id)initWithString:(NSString *)string;
+- (id)initWithURL:(NSURL *)url;
 
 @end

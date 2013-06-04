@@ -8,13 +8,35 @@
 
 #import "ZNPaymentRequest.h"
 #import "ZNWallet.h"
+#import "NSString+Base58.h"
 
 @implementation ZNPaymentRequest
+
++ (id)requestWithString:(NSString *)string
+{
+    return [[self alloc] initWithString:string];
+}
+
++ (id)requestWithURL:(NSURL *)url
+{
+    return [[self alloc] initWithURL:url];
+}
 
 + (id)requestWithData:(NSData *)data
 {
     return [[self alloc] initWithData:data];
 }
+
+- (id)initWithString:(NSString *)string
+{
+    return [self initWithData:[string dataUsingEncoding:NSUTF8StringEncoding]];
+}
+
+- (id)initWithURL:(NSURL *)url
+{
+    return [self initWithData:[url.absoluteString dataUsingEncoding:NSUTF8StringEncoding]];
+}
+
 
 - (id)initWithData:(NSData *)data
 {
@@ -28,9 +50,21 @@
 // this should also handle bitcoin payment messages per: https://gist.github.com/gavinandresen/4120476
 - (void)setData:(NSData *)data
 {
-    NSURL *url = [NSURL URLWithString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
+    if (! data) {
+        self.paymentAddress = nil;
+        self.label = nil;
+        self.message = nil;
+        self.amount = 0;
+        return;
+    }
+
+    NSString *s = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    NSURL *url = [NSURL URLWithString:s];
     
-    if (! url.host && url.resourceSpecifier) {
+    if (! url) {
+        url = [NSURL URLWithString:[NSString stringWithFormat:@"bitcoin://%@", s]];
+    }
+    else if (! url.host && url.resourceSpecifier) {
         url = [NSURL URLWithString:[NSString stringWithFormat:@"%@://%@", url.scheme, url.resourceSpecifier]];
     }
         
@@ -48,17 +82,35 @@
     }];
 }
 
+- (void)setPaymentAddress:(NSString *)paymentAddress
+{
+    _paymentAddress = [paymentAddress isValidBitcoinAddress] ? paymentAddress : nil;
+}
+
 - (NSData *)data
 {
-    NSMutableString *s = [NSMutableString stringWithFormat:@"bitcoin:%@?amount=%.16g", self.paymentAddress,
-                          self.amount];
+    if (! self.paymentAddress) return nil;
+
+    NSMutableString *s = [NSMutableString stringWithFormat:@"bitcoin:%@", self.paymentAddress];
+    NSMutableArray *q = [NSMutableArray array];
+    
+    if (self.amount > 0) {
+        [q addObject:[NSString stringWithFormat:@"amount=%.16g", self.amount]];
+    }
     
     if (self.label.length) {
-        [s appendFormat:@"&label=%@", [self.label stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+        [q addObject:[NSString stringWithFormat:@"label=%@",
+         [self.label stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
     }
     
     if (self.message.length) {
-        [s appendFormat:@"&message=%@", [self.message stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+        [q addObject:[NSString stringWithFormat:@"message=%@",
+         [self.message stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+    }
+    
+    if (q.count) {
+        [s appendString:@"?"];
+        [s appendString:[q componentsJoinedByString:@"&"]];
     }
     
     return [s dataUsingEncoding:NSUTF8StringEncoding];
@@ -72,9 +124,11 @@
 
 - (BOOL)isValid
 {
+    if (! self.paymentAddress) return NO;
+    
     // XXX validate X.509 certificate, hopefully offline
 
-    return true;
+    return YES;
 }
 
 @end
