@@ -7,19 +7,21 @@
 //
 
 #import "ZNPayViewController.h"
+#import "ZNAmountViewController.h"
 #import "ZNWallet.h"
 #import "ZNPaymentRequest.h"
 #import "NSString+Base58.h"
-
 #import "ZNKey.h"
 #import "ZNTransaction.h"
+#import "ZBarReaderViewController.h"
 
 #define BUTTON_HEIGHT 44
 #define BUTTON_MARGIN 5
 
 #define CONNECT_TIMEOUT 5.0
 
-#define NO_PEERID @""
+#define CLIPBOARD_ID @"clipboard"
+#define QR_ID @"qr"
 
 @interface ZNPayViewController ()
 
@@ -31,6 +33,8 @@
 @property (nonatomic, strong) NSMutableArray *requestIDs;
 @property (nonatomic, strong) NSMutableArray *requestButtons;
 @property (nonatomic, assign) NSUInteger selectedIndex;
+
+@property (nonatomic, strong) IBOutlet UIScrollView *scrollView;
 
 @end
 
@@ -57,6 +61,11 @@
         }
     }];
     
+    ZNPaymentRequest *req = [ZNPaymentRequest new];
+    
+    req.label = @"scan QR";
+    [self.requestIDs addObject:QR_ID];
+    [self.requests addObject:req];
 
 //    [[UINavigationBar appearance] setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor greenColor],
 //     UITextAttributeTextShadowColor:[UIColor redColor],
@@ -96,16 +105,10 @@
         if (req.paymentAddress) {
             if (! req.label.length) req.label = @"pay address from clipboard";
             [self.requests addObject:req];
-            [self.requestIDs addObject:NO_PEERID];
+            [self.requestIDs addObject:CLIPBOARD_ID];
         }
     }
-    
-    ZNPaymentRequest *req = [ZNPaymentRequest new];
-
-    req.label = @"scan QR";
-    [self.requestIDs addObject:NO_PEERID];
-    [self.requests addObject:req];
-    
+        
     [self layoutButtons];
 }
 
@@ -123,9 +126,9 @@
     while (self.requests.count > self.requestButtons.count) {
         UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
 
-        button.frame = CGRectMake(BUTTON_MARGIN*2, self.view.frame.size.height/2 +
+        button.frame = CGRectMake(BUTTON_MARGIN*4, self.view.frame.size.height/2 +
                                   (BUTTON_HEIGHT + 2*BUTTON_MARGIN)*(self.requestButtons.count - self.requests.count/2),
-                                  self.view.frame.size.width - BUTTON_MARGIN*4, BUTTON_HEIGHT);
+                                  self.view.frame.size.width - BUTTON_MARGIN*8, BUTTON_HEIGHT);
         button.alpha = 0;
         [button addTarget:self action:@selector(doIt:) forControlEvents:UIControlEventTouchUpInside];
 
@@ -185,10 +188,19 @@
         NSLog(@"this shouldn't happen");
         return;
     }
-
-    [sender setEnabled:NO];
     
-    [self confirmRequest];
+    if ([self.requestIDs[self.selectedIndex] isEqual:QR_ID]) {
+        ZBarReaderViewController *c = [ZBarReaderViewController new];
+
+        c.readerDelegate = self;
+        [self.navigationController presentViewController:c animated:YES completion:^{
+            NSLog(@"present qr reader complete");
+        }];
+    }
+    else {
+        [sender setEnabled:NO];
+        [self confirmRequest];
+    }
 }
 
 #pragma mark - GKSessionDelegate
@@ -260,12 +272,13 @@
  */
 - (void)session:(GKSession *)session didFailWithError:(NSError *)error
 {
-    if (self.selectedIndex != NSNotFound && ! [self.requestIDs[self.selectedIndex] isEqual:NO_PEERID]) {
+    if (self.selectedIndex != NSNotFound && ! [self.requestIDs[self.selectedIndex] isEqual:CLIPBOARD_ID] &&
+        ! [self.requestIDs[self.selectedIndex] isEqual:QR_ID]) {
         self.selectedIndex = NSNotFound;
     }
 
     NSIndexSet *indexes = [self.requestIDs indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-        return ! [obj isEqual:NO_PEERID];
+        return ! [obj isEqual:CLIPBOARD_ID] && ! [obj isEqual:QR_ID];
     }];
 
     [self.requestIDs removeObjectsAtIndexes:indexes];
@@ -343,6 +356,28 @@
     self.selectedIndex = NSNotFound;
     
     [self layoutButtons];
+}
+
+#pragma mark - UIImagePickerControllerDelegate
+
+- (void)imagePickerController:(UIImagePickerController *)reader didFinishPickingMediaWithInfo:(NSDictionary *)info
+{
+    ZNPaymentRequest *req = self.requests[self.selectedIndex];
+
+    req.data = [(NSString *)[[info objectForKey:ZBarReaderControllerResults][0] data]
+                dataUsingEncoding:NSUTF8StringEncoding];
+    
+    [reader dismissViewControllerAnimated:YES completion:nil];
+    
+    //XXX would be cooler to display an error message without closing scan window on non-bitcoin qr
+    if (! req.paymentAddress) {
+        [[[UIAlertView alloc] initWithTitle:@"not a bitcoin qr" message:nil delegate:nil cancelButtonTitle:@"OK"
+          otherButtonTitles:nil] show];
+    }
+    else {
+        [self.requestButtons[self.selectedIndex] setEnabled:NO];
+        [self confirmRequest];
+    }
 }
 
 @end

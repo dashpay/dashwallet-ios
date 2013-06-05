@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="2.0" toolsVersion="3084" systemVersion="12D78" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="4">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="2.0" toolsVersion="3084" systemVersion="12D78" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="dNo-Sm-bI0">
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="2083"/>
     </dependencies>
@@ -9,91 +9,106 @@
             <objects>
                 <viewController title="First" id="2" customClass="ZNPayViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="16">
-                        <rect key="frame" x="0.0" y="94" width="320" height="425"/>
+                        <rect key="frame" x="0.0" y="64" width="320" height="504"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="oGm-se-3Va">
-                                <color key="backgroundColor" white="0.84999999999999998" alpha="1" colorSpace="calibratedWhite"/>
-                            </view>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" directionalLockEnabled="YES" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FiH-S7-Ich">
+                                <color key="backgroundColor" white="0.95000000000000007" alpha="1" colorSpace="calibratedWhite"/>
+                            </scrollView>
+                            <pageControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" numberOfPages="2" translatesAutoresizingMaskIntoConstraints="NO" id="kTQ-jN-pAH">
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="38" id="IB4-vq-rqP"/>
+                                </constraints>
+                                <color key="pageIndicatorTintColor" white="0.80000000000000004" alpha="1" colorSpace="calibratedWhite"/>
+                                <color key="currentPageIndicatorTintColor" white="0.5" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                            </pageControl>
                         </subviews>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                        <color key="backgroundColor" white="0.95000000000000007" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstItem="oGm-se-3Va" firstAttribute="leading" secondItem="16" secondAttribute="leading" type="default" id="Z7c-NU-2EG"/>
-                            <constraint firstAttribute="bottom" secondItem="oGm-se-3Va" secondAttribute="bottom" constant="361" id="aa0-xj-7hr"/>
-                            <constraint firstItem="oGm-se-3Va" firstAttribute="top" secondItem="16" secondAttribute="top" constant="64" id="dFV-AW-oFJ"/>
-                            <constraint firstItem="oGm-se-3Va" firstAttribute="trailing" secondItem="16" secondAttribute="trailing" type="default" id="q35-iu-VY8"/>
+                            <constraint firstItem="FiH-S7-Ich" firstAttribute="leading" secondItem="16" secondAttribute="leading" type="default" id="1Iw-qy-ZTz"/>
+                            <constraint firstItem="FiH-S7-Ich" firstAttribute="trailing" secondItem="16" secondAttribute="trailing" type="default" id="89h-JU-qDq"/>
+                            <constraint firstItem="FiH-S7-Ich" firstAttribute="centerX" secondItem="kTQ-jN-pAH" secondAttribute="centerX" type="default" id="Krq-b6-OzD"/>
+                            <constraint firstItem="FiH-S7-Ich" firstAttribute="top" secondItem="16" secondAttribute="top" type="default" id="LOp-JZ-dgw"/>
+                            <constraint firstAttribute="bottom" secondItem="FiH-S7-Ich" secondAttribute="bottom" constant="25" id="RM5-HD-8HO"/>
+                            <constraint firstItem="kTQ-jN-pAH" firstAttribute="bottom" secondItem="16" secondAttribute="bottom" type="default" id="rg1-Tv-E5m"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="0.00000" prompt="balance (mɃ)" id="TF6-YO-yee"/>
+                    <navigationItem key="navigationItem" title="mɃ 0.00000" id="TF6-YO-yee">
+                        <barButtonItem key="leftBarButtonItem" title="settings" id="KKr-sB-LsJ"/>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="scrollView" destination="FiH-S7-Ich" id="s4z-cB-6sY"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="10" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="832" y="-349"/>
         </scene>
-        <!--Receive View Controller - Second-->
-        <scene sceneID="13">
+        <!--Amount View Controller - mɃ 0.00000-->
+        <scene sceneID="6VG-zW-rjY">
             <objects>
-                <viewController title="Second" id="3" customClass="ZNReceiveViewController" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="17">
-                        <rect key="frame" x="0.0" y="20" width="320" height="499"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                <viewController id="asW-9a-XhX" customClass="ZNAmountViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="eUy-Ub-KH0">
+                        <rect key="frame" x="0.0" y="20" width="320" height="548"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" text="Second View" textAlignment="center" lineBreakMode="tailTruncation" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="22">
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
-                                <fontDescription key="fontDescription" name="Helvetica" family="Helvetica" pointSize="36"/>
+                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="mɃ 0.00000" textAlignment="right" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="U70-Jh-YtO">
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="30" id="HSm-CI-YuQ"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="27"/>
+                                <textInputTraits key="textInputTraits" keyboardType="phonePad"/>
+                            </textField>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="pay to:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2Hb-Bj-uBt">
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                                 <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <textView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" userInteractionEnabled="NO" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" delaysContentTouches="NO" canCancelContentTouches="NO" minimumZoomScale="0.0" maximumZoomScale="0.0" bouncesZoom="NO" editable="NO" text="Loaded by the second view controller — an instance of ZNSecondViewController — specified in the app delegate." textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="23">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="faJ-wX-3WR">
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="88" id="cQR-IW-sY8"/>
+                                    <constraint firstAttribute="width" constant="93" id="wPw-rx-Jgy"/>
                                 </constraints>
-                                <fontDescription key="fontDescription" type="system" size="system"/>
-                                <textInputTraits key="textInputTraits"/>
-                            </textView>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="15"/>
+                                <state key="normal" title="pay">
+                                    <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <state key="highlighted">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                            </button>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MRu-fi-aaD">
+                                <color key="backgroundColor" white="0.80000000000000004" alpha="1" colorSpace="calibratedWhite"/>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstItem="22" firstAttribute="leading" secondItem="17" secondAttribute="leading" constant="20" symbolic="YES" type="default" id="0q6-IA-e8m"/>
-                            <constraint firstAttribute="trailing" secondItem="23" secondAttribute="trailing" constant="20" symbolic="YES" type="default" id="fR4-wH-Ih7"/>
-                            <constraint firstItem="23" firstAttribute="leading" secondItem="17" secondAttribute="leading" constant="20" symbolic="YES" type="default" id="fzb-YA-SeR"/>
-                            <constraint firstAttribute="centerY" secondItem="23" secondAttribute="centerY" type="user" id="llH-eD-iPS"/>
-                            <constraint firstAttribute="trailing" secondItem="22" secondAttribute="trailing" constant="20" symbolic="YES" type="default" id="pc3-9Y-W42"/>
-                            <constraint firstItem="23" firstAttribute="top" secondItem="22" secondAttribute="bottom" constant="40" type="user" id="yUx-Ee-KEk"/>
+                            <constraint firstItem="2Hb-Bj-uBt" firstAttribute="top" secondItem="eUy-Ub-KH0" secondAttribute="top" constant="166" id="2kW-m6-Iz8"/>
+                            <constraint firstAttribute="trailing" secondItem="MRu-fi-aaD" secondAttribute="trailing" constant="20" symbolic="YES" type="default" id="4Qg-jf-fUk"/>
+                            <constraint firstAttribute="trailing" secondItem="2Hb-Bj-uBt" secondAttribute="trailing" constant="20" symbolic="YES" type="default" id="8Wx-9a-gQH"/>
+                            <constraint firstItem="U70-Jh-YtO" firstAttribute="top" secondItem="eUy-Ub-KH0" secondAttribute="top" constant="95" id="Ca6-t5-wuU"/>
+                            <constraint firstAttribute="trailing" secondItem="U70-Jh-YtO" secondAttribute="trailing" constant="20" symbolic="YES" type="default" id="RmU-A8-Q0q"/>
+                            <constraint firstItem="2Hb-Bj-uBt" firstAttribute="leading" secondItem="eUy-Ub-KH0" secondAttribute="leading" constant="20" symbolic="YES" type="default" id="TFA-2h-hrf"/>
+                            <constraint firstItem="U70-Jh-YtO" firstAttribute="leading" secondItem="eUy-Ub-KH0" secondAttribute="leading" constant="20" symbolic="YES" type="default" id="WXt-gP-5uw"/>
+                            <constraint firstItem="faJ-wX-3WR" firstAttribute="centerY" secondItem="eUy-Ub-KH0" secondAttribute="centerY" type="default" id="YgY-eh-DBL"/>
+                            <constraint firstAttribute="trailing" secondItem="faJ-wX-3WR" secondAttribute="trailing" constant="20" symbolic="YES" type="default" id="f9q-dh-dSX"/>
+                            <constraint firstAttribute="bottom" secondItem="MRu-fi-aaD" secondAttribute="bottom" constant="404" id="gIw-AB-bjC"/>
+                            <constraint firstItem="MRu-fi-aaD" firstAttribute="leading" secondItem="eUy-Ub-KH0" secondAttribute="leading" constant="20" symbolic="YES" type="default" id="pJ2-ao-wJQ"/>
+                            <constraint firstItem="MRu-fi-aaD" firstAttribute="top" secondItem="eUy-Ub-KH0" secondAttribute="top" constant="143" id="sT6-vP-aXp"/>
                         </constraints>
                     </view>
-                    <tabBarItem key="tabBarItem" title="receive" image="second" id="6"/>
+                    <navigationItem key="navigationItem" title="mɃ 0.00000" id="Ufy-kA-8Fw"/>
                 </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="12" sceneMemberID="firstResponder"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="nX0-2Q-BsY" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="415" y="306"/>
+            <point key="canvasLocation" x="1217" y="-349"/>
         </scene>
-        <!--Tab Bar Controller-->
-        <scene sceneID="15">
-            <objects>
-                <tabBarController id="4" sceneMemberID="viewController">
-                    <nil key="simulatedBottomBarMetrics"/>
-                    <tabBar key="tabBar" contentMode="scaleToFill" id="5">
-                        <rect key="frame" x="0.0" y="431" width="320" height="49"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                    </tabBar>
-                    <connections>
-                        <segue destination="dNo-Sm-bI0" kind="relationship" relationship="viewControllers" id="wYd-gI-fy8"/>
-                        <segue destination="3" kind="relationship" relationship="viewControllers" id="nor-BI-Ajn"/>
-                    </connections>
-                </tabBarController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="14" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="-42" y="-38"/>
-        </scene>
-        <!--Navigation Controller - pay-->
+        <!--Navigation Controller-->
         <scene sceneID="cpQ-Xn-G9w">
             <objects>
                 <navigationController definesPresentationContext="YES" id="dNo-Sm-bI0" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="pay" image="first" id="5nT-FZ-uhl"/>
-                    <simulatedTabBarMetrics key="simulatedBottomBarMetrics"/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" barStyle="blackOpaque" id="2le-zU-AuV">
+                    <nil key="simulatedBottomBarMetrics"/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="2le-zU-AuV">
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <connections>
@@ -105,25 +120,19 @@
             <point key="canvasLocation" x="415" y="-349"/>
         </scene>
     </scenes>
-    <resources>
-        <image name="first" width="16" height="16"/>
-        <image name="second" width="16" height="16"/>
-    </resources>
     <classes>
         <class className="NSLayoutConstraint" superclassName="NSObject">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/NSLayoutConstraint.h"/>
         </class>
+        <class className="ZNAmountViewController" superclassName="UIViewController">
+            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNAmountViewController.h"/>
+        </class>
         <class className="ZNPayViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNPayViewController.h"/>
-        </class>
-        <class className="ZNReceiveViewController" superclassName="UIViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNReceiveViewController.h"/>
             <relationships>
-                <relationship kind="outlet" name="amountField" candidateClass="UITextField"/>
-                <relationship kind="outlet" name="messageField" candidateClass="UITextField"/>
-                <relationship kind="outlet" name="requestButton" candidateClass="UIButton"/>
-                <relationship kind="outlet" name="spinner" candidateClass="UIActivityIndicatorView"/>
-                <relationship kind="outlet" name="waitingLabel" candidateClass="UILabel"/>
+                <relationship kind="action" name="doIt:"/>
+                <relationship kind="outlet" name="amountController" candidateClass="ZNAmountViewController"/>
+                <relationship kind="outlet" name="scrollView" candidateClass="UIScrollView"/>
             </relationships>
         </class>
     </classes>

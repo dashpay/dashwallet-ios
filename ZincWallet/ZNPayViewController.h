@@ -8,7 +8,8 @@
 
 #import <UIKit/UIKit.h>
 #import <GameKit/GameKit.h>
+#import "ZBarReaderController.h"
 
-@interface ZNPayViewController : UIViewController <GKSessionDelegate, UIAlertViewDelegate>
+@interface ZNPayViewController : UIViewController <GKSessionDelegate, UIAlertViewDelegate, ZBarReaderDelegate>
 
 @end
