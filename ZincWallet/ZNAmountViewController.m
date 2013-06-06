@@ -10,7 +10,7 @@
 
 @interface ZNAmountViewController ()
 
-@property (nonatomic, strong) UILabel *addressLabel;
+@property (nonatomic, strong) IBOutlet UILabel *addressLabel;
 
 @end
 
@@ -42,7 +42,7 @@
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range
 replacementString:(NSString *)string
 {
-    
+    return YES;
 }
 
 @end

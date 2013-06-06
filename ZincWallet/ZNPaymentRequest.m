@@ -61,7 +61,7 @@
     NSString *s = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
     NSURL *url = [NSURL URLWithString:s];
     
-    if (! url) {
+    if (! url || ! url.scheme) {
         url = [NSURL URLWithString:[NSString stringWithFormat:@"bitcoin://%@", s]];
     }
     else if (! url.host && url.resourceSpecifier) {

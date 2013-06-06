@@ -15,8 +15,8 @@
 #import "ZNTransaction.h"
 #import "ZBarReaderViewController.h"
 
-#define BUTTON_HEIGHT 44
-#define BUTTON_MARGIN 5
+#define BUTTON_HEIGHT 44.0
+#define BUTTON_MARGIN 5.0
 
 #define CONNECT_TIMEOUT 5.0
 
@@ -35,6 +35,7 @@
 @property (nonatomic, assign) NSUInteger selectedIndex;
 
 @property (nonatomic, strong) IBOutlet UIScrollView *scrollView;
+@property (nonatomic, strong) IBOutlet UIPageControl *pageControl;
 
 @end
 
@@ -63,15 +64,10 @@
     
     ZNPaymentRequest *req = [ZNPaymentRequest new];
     
-    req.label = @"scan QR";
+    req.label = @"QR code";
     [self.requestIDs addObject:QR_ID];
     [self.requests addObject:req];
-
-//    [[UINavigationBar appearance] setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor greenColor],
-//     UITextAttributeTextShadowColor:[UIColor redColor],
-//     UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0f, 1.0f)],
-//     UITextAttributeFont:[UIFont fontWithName:@"Helvetica Neue" size:20.0f]}];
-    
+     
 //    double balance = [[ZNWallet sharedInstance] balance];
 //    
 //    NSLog(@"wallet balance: %.16g", balance);
@@ -108,7 +104,9 @@
             [self.requestIDs addObject:CLIPBOARD_ID];
         }
     }
-        
+    
+    self.scrollView.contentSize = CGSizeMake(self.scrollView.frame.size.width*2, self.scrollView.frame.size.height);
+    
     [self layoutButtons];
 }
 
@@ -124,23 +122,24 @@
 - (void)layoutButtons
 {
     while (self.requests.count > self.requestButtons.count) {
-        UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+        UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
 
-        button.frame = CGRectMake(BUTTON_MARGIN*4, self.view.frame.size.height/2 +
-                                  (BUTTON_HEIGHT + 2*BUTTON_MARGIN)*(self.requestButtons.count - self.requests.count/2),
-                                  self.view.frame.size.width - BUTTON_MARGIN*8, BUTTON_HEIGHT);
+        button.frame = CGRectMake(BUTTON_MARGIN*4, self.scrollView.frame.size.height/2 +
+                                  (BUTTON_HEIGHT + 2*BUTTON_MARGIN)*(self.requestButtons.count-self.requests.count/2.0),
+                                  self.scrollView.frame.size.width - BUTTON_MARGIN*8, BUTTON_HEIGHT);
         button.alpha = 0;
+        button.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:15];
         [button addTarget:self action:@selector(doIt:) forControlEvents:UIControlEventTouchUpInside];
 
-        [self.view addSubview:button];
+        [self.scrollView addSubview:button];
 
         [self.requestButtons addObject:button];
     }
     
     [UIView animateWithDuration:0.2 animations:^{
         [self.requestButtons enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            [obj setCenter:CGPointMake([obj center].x, self.view.frame.size.height/2 + BUTTON_HEIGHT/2 + BUTTON_MARGIN +
-                                       (BUTTON_HEIGHT + 2*BUTTON_MARGIN)*(idx - self.requests.count/2))];
+            [obj setCenter:CGPointMake([obj center].x, self.scrollView.frame.size.height/2 + BUTTON_HEIGHT/2 +
+                                       BUTTON_MARGIN + (BUTTON_HEIGHT+2*BUTTON_MARGIN)*(idx-self.requests.count/2.0))];
             if (idx < self.requests.count) {
                 [obj setTitle:[self.requests[idx] label] forState:UIControlStateNormal];
             }
@@ -163,19 +162,20 @@
     }];
 }
 
-- (void)confirmRequest
-{
-    if (self.selectedIndex == NSNotFound) {
-        NSLog(@"this should never happen");
-        return;
+- (void)confirmRequest:(ZNPaymentRequest *)request
+{    
+    if (request && request.isValid) {
+        if (! request.amount) {
+            [self.navigationController
+             pushViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"ZNAmountViewController"]
+             animated:YES];
+        }
+        else {
+            [[[UIAlertView alloc] initWithTitle:@"Confirm Payment" message:request.message delegate:self
+              cancelButtonTitle:@"cancel"
+              otherButtonTitles:[NSString stringWithFormat:@"%@%.16g", BTC, request.amount], nil] show];
+        }
     }
-    
-    ZNPaymentRequest *req = self.requests[self.selectedIndex];
-    
-    if (req && req.isValid)
-        [[[UIAlertView alloc] initWithTitle:@"Confirm Payment" message:req.message delegate:self
-          cancelButtonTitle:@"cancel"
-          otherButtonTitles:[NSString stringWithFormat:@"%@%.16g", BTC, req.amount], nil] show];
 }
 
 #pragma mark - IBAction
@@ -190,6 +190,15 @@
     }
     
     if ([self.requestIDs[self.selectedIndex] isEqual:QR_ID]) {
+        //XXX just for testing
+        [self.requests[self.selectedIndex]
+         setData:[@"1JA9nMhjJcUL9nFcrm7ftXXA7PAbyZC5DB" dataUsingEncoding:NSUTF8StringEncoding]];
+        [self confirmRequest:self.requests[self.selectedIndex]];
+        self.selectedIndex = NSNotFound;
+        return;
+
+        self.selectedIndex = NSNotFound;
+        
         ZBarReaderViewController *c = [ZBarReaderViewController new];
 
         c.readerDelegate = self;
@@ -199,8 +208,25 @@
     }
     else {
         [sender setEnabled:NO];
-        [self confirmRequest];
+        [self confirmRequest:self.requests[self.selectedIndex]];
     }
+}
+
+- (IBAction)page:(id)sender
+{
+    if (! [self.scrollView isTracking] && ! [self.scrollView isDecelerating] &&
+        self.pageControl.currentPage != self.scrollView.contentOffset.x/self.scrollView.frame.size.width + 0.5) {
+        
+        [self.scrollView setContentOffset:CGPointMake(self.pageControl.currentPage*self.scrollView.frame.size.width, 0)
+         animated:YES];
+    }
+}
+
+#pragma mark - UIScrollViewDelegate
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+{
+    self.pageControl.currentPage = scrollView.contentOffset.x/scrollView.frame.size.width + 0.5;
 }
 
 #pragma mark - GKSessionDelegate
@@ -322,7 +348,7 @@
     NSLog(@"got payment reqeust for %@", peer);
     NSLog(@"%@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
     
-    if (self.selectedIndex == idx) [self confirmRequest];
+    if (self.selectedIndex == idx) [self confirmRequest:req];
 }
 
 #pragma mark - UIAlertViewDelegate
@@ -371,12 +397,12 @@
     
     //XXX would be cooler to display an error message without closing scan window on non-bitcoin qr
     if (! req.paymentAddress) {
-        [[[UIAlertView alloc] initWithTitle:@"not a bitcoin qr" message:nil delegate:nil cancelButtonTitle:@"OK"
+        [[[UIAlertView alloc] initWithTitle:@"not a bitcoin QR code" message:nil delegate:nil cancelButtonTitle:@"OK"
           otherButtonTitles:nil] show];
     }
     else {
         [self.requestButtons[self.selectedIndex] setEnabled:NO];
-        [self confirmRequest];
+        [self confirmRequest:req];
     }
 }
 

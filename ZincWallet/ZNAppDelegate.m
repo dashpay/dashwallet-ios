@@ -13,6 +13,30 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
+    
+    //XXX icon idea, super stylized qr code/camera guide
+    
+    // Application wide appearance settings
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque];
+
+    [[UIButton appearance] setBackgroundImage:[[UIImage imageNamed:@"button-bg.png"]
+     resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)] forState:UIControlStateNormal];
+    [[UIButton appearance] setBackgroundImage:[[UIImage imageNamed:@"button-bg-pressed.png"]
+     resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)] forState:UIControlStateHighlighted];
+    [[UIButton appearance] setBackgroundImage:[[UIImage imageNamed:@"button-bg-disabled.png"]
+     resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)] forState:UIControlStateDisabled];
+
+    [[UINavigationBar appearance] setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor darkGrayColor],
+     UITextAttributeTextShadowColor:[UIColor whiteColor],
+     UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
+     UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0]}];
+    
+    [[UINavigationBar appearance] setTintColor:[UIColor colorWithWhite:0.95 alpha:1.0]];
+
+    [[UIBarButtonItem appearance] setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor darkGrayColor],
+     UITextAttributeTextShadowColor:[UIColor whiteColor],
+     UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
+     UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:13.0]} forState:UIControlStateNormal];
 
     // this will notify user if bluetooth is disabled (on 4S and newer devices that support BTLE)
     CBCentralManager *cbManager = [[CBCentralManager alloc] initWithDelegate:self queue:dispatch_get_main_queue()];
