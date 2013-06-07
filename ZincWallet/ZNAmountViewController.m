@@ -13,6 +13,8 @@
 
 @property (nonatomic, strong) IBOutlet UITextField *amountField;
 @property (nonatomic, strong) IBOutlet UILabel *addressLabel;
+@property (nonatomic, strong) IBOutletCollection(UIButton) NSArray *buttons, *buttonRow1, *buttonRow2, *buttonRow3;
+
 @property (nonatomic, strong) NSNumberFormatter *format;
 
 @end
@@ -22,7 +24,22 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	// Do any additional setup after loading the view.
+    // Do any additional setup after loading the view.
+    
+    if ([[UIScreen mainScreen]bounds].size.height < 500) { // 3.5" screen
+        [self.buttons enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            CGFloat y = self.view.frame.size.height - 122;
+
+            if ([self.buttonRow1 containsObject:obj]) y = self.view.frame.size.height - 344.0;
+            else if ([self.buttonRow2 containsObject:obj]) y = self.view.frame.size.height - 270.0;
+            else if ([self.buttonRow3 containsObject:obj]) y = self.view.frame.size.height - 196.0;
+
+            [obj setFrame:CGRectMake([obj frame].origin.x, y, [obj frame].size.width, 66.0)];
+            [obj setImageEdgeInsets:UIEdgeInsetsMake(20.0, [obj imageEdgeInsets].left,
+                                                     20.0, [obj imageEdgeInsets].right)];
+        }];
+        
+    }
     
     self.format = [NSNumberFormatter new];
     self.format.numberStyle = NSNumberFormatterCurrencyStyle;
