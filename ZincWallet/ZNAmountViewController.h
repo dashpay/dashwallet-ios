@@ -8,6 +8,10 @@
 
 #import <UIKit/UIKit.h>
 
+@class ZNPaymentRequest;
+
 @interface ZNAmountViewController : UIViewController <UITextFieldDelegate>
+
+@property (nonatomic, strong) ZNPaymentRequest *request;
 
 @end

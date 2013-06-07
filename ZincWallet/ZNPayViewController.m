@@ -46,21 +46,19 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
+    // if iOS 6, we can customize the appearance of the pageControl and don't need the black bar behind it.
+    if ([self.pageControl respondsToSelector:@selector(pageIndicatorTintColor)]) {
+        self.pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:0.85 alpha:1.0];
+        self.pageControl.currentPageIndicatorTintColor = [UIColor grayColor];
+        self.view.backgroundColor = self.scrollView.backgroundColor;
+    }
+    
     self.requests = [NSMutableArray array];
     self.requestIDs = [NSMutableArray array];
     self.requestButtons = [NSMutableArray array];
     self.selectedIndex = NSNotFound;
 
-    ZNWallet *w = [ZNWallet sharedInstance];
-
-    [w synchronizeWithCompletionBlock:^(BOOL success) {
-        if (! success) {
-            NSLog(@"syncronize failed :(");
-        }
-        else {
-            NSLog(@"wallet balance: %.16g", w.balance);
-        }
-    }];
+    [self refresh:nil];
     
     ZNPaymentRequest *req = [ZNPaymentRequest new];
     
@@ -142,6 +140,13 @@
                                        BUTTON_MARGIN + (BUTTON_HEIGHT+2*BUTTON_MARGIN)*(idx-self.requests.count/2.0))];
             if (idx < self.requests.count) {
                 [obj setTitle:[self.requests[idx] label] forState:UIControlStateNormal];
+                
+//                if ([self.requestIDs[idx] isEqual:QR_ID]) {
+//                    [obj setImage:[UIImage imageNamed:@"qr.png"] forState:UIControlStateNormal];
+//                }
+//                else {
+//                    [obj setImage:nil forState:UIControlStateNormal];
+//                }
             }
             
             if (self.selectedIndex != NSNotFound) {
@@ -166,9 +171,11 @@
 {    
     if (request && request.isValid) {
         if (! request.amount) {
-            [self.navigationController
-             pushViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"ZNAmountViewController"]
-             animated:YES];
+            ZNAmountViewController *c =
+                [self.storyboard instantiateViewControllerWithIdentifier:@"ZNAmountViewController"];
+            
+            c.request = request;
+            [self.navigationController pushViewController:c animated:YES];
         }
         else {
             [[[UIAlertView alloc] initWithTitle:@"Confirm Payment" message:request.message delegate:self
@@ -210,6 +217,18 @@
         [sender setEnabled:NO];
         [self confirmRequest:self.requests[self.selectedIndex]];
     }
+}
+
+- (IBAction)refresh:(id)sender
+{
+    [[ZNWallet sharedInstance] synchronizeWithCompletionBlock:^(BOOL success) {
+        if (! success) {
+            NSLog(@"syncronize failed :(");
+        }
+        else {
+            NSLog(@"wallet balance: %.16g", [ZNWallet sharedInstance].balance);
+        }
+    }];   
 }
 
 - (IBAction)page:(id)sender
