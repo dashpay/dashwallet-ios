@@ -66,9 +66,9 @@
     [self.requestIDs addObject:QR_ID];
     [self.requests addObject:req];
      
-//    double balance = [[ZNWallet sharedInstance] balance];
+//    uint64_t balance = [[ZNWallet sharedInstance] balance];
 //    
-//    NSLog(@"wallet balance: %.16g", balance);
+//    NSLog(@"wallet balance: %.16g", (doubld)balance/SATOSHIS);
 //    
 //    uint64_t amt = 2100000000000001ull;
 //    NSLog(@"uint64_t test: %llu", amt);
@@ -126,7 +126,9 @@
                                   (BUTTON_HEIGHT + 2*BUTTON_MARGIN)*(self.requestButtons.count-self.requests.count/2.0),
                                   self.scrollView.frame.size.width - BUTTON_MARGIN*8, BUTTON_HEIGHT);
         button.alpha = 0;
-        button.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:15];
+        button.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Medium" size:15];
+        button.titleLabel.shadowOffset = CGSizeMake(0.0, 1.0);
+
         [button addTarget:self action:@selector(doIt:) forControlEvents:UIControlEventTouchUpInside];
 
         [self.scrollView addSubview:button];
@@ -169,8 +171,8 @@
 
 - (void)confirmRequest:(ZNPaymentRequest *)request
 {    
-    if (request && request.isValid) {
-        if (! request.amount) {
+    if (request.isValid) {
+        if (request.amount == 0) {
             ZNAmountViewController *c =
                 [self.storyboard instantiateViewControllerWithIdentifier:@"ZNAmountViewController"];
             
@@ -179,8 +181,8 @@
         }
         else {
             [[[UIAlertView alloc] initWithTitle:@"Confirm Payment" message:request.message delegate:self
-              cancelButtonTitle:@"cancel"
-              otherButtonTitles:[NSString stringWithFormat:@"%@%.16g", BTC, request.amount], nil] show];
+             cancelButtonTitle:@"cancel"
+             otherButtonTitles:[NSString stringWithFormat:@"%@%.16g", BTC, (double)request.amount/SATOSHIS], nil] show];
         }
     }
 }
@@ -226,7 +228,7 @@
             NSLog(@"syncronize failed :(");
         }
         else {
-            NSLog(@"wallet balance: %.16g", [ZNWallet sharedInstance].balance);
+            NSLog(@"wallet balance: %.16g", (double)[ZNWallet sharedInstance].balance/SATOSHIS);
         }
     }];   
 }

@@ -951,6 +951,7 @@
 		757395DE174317510037A109 /* wave_config_constant.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 757376B8174316F60037A109 /* wave_config_constant.cpp */; };
 		7573F0641742C5F80037A109 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		7573F081174313910037A109 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
+		758D21181762E96800BE69E3 /* refresh@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 758D21171762E96800BE69E3 /* refresh@2x.png */; };
 		75920F7F174AAE5F00C1C03D /* netbase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75920F7D174AAE5F00C1C03D /* netbase.cpp */; };
 		75920F86174AB82100C1C03D /* NSMutableData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 75920F85174AB82100C1C03D /* NSMutableData+Bitcoin.m */; };
 		7597D45F17449C8600A7090D /* cxx_db.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7597D45417449C8600A7090D /* cxx_db.cpp */; };
@@ -2252,6 +2253,7 @@
 		7573F0761742C6400037A109 /* script.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = script.h; path = bitcoin/src/script.h; sourceTree = SOURCE_ROOT; };
 		7573F0781742C6400037A109 /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = util.h; path = bitcoin/src/util.h; sourceTree = SOURCE_ROOT; };
 		7573F080174313910037A109 /* libboost.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libboost.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		758D21171762E96800BE69E3 /* refresh@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "refresh@2x.png"; sourceTree = "<group>"; };
 		75920F7D174AAE5F00C1C03D /* netbase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = netbase.cpp; path = ../../bitcoin/src/netbase.cpp; sourceTree = "<group>"; };
 		75920F7E174AAE5F00C1C03D /* netbase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = netbase.h; path = ../../bitcoin/src/netbase.h; sourceTree = "<group>"; };
 		75920F83174AAF5300C1C03D /* ui_interface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ui_interface.h; path = ../../bitcoin/src/ui_interface.h; sourceTree = "<group>"; };
@@ -4493,6 +4495,7 @@
 				7545424E17606C7500638B95 /* button-bg-pressed@2x.png */,
 				7545424C17606C7500638B95 /* button-bg-disabled@2x.png */,
 				75454254176072EF00638B95 /* gear@2x.png */,
+				758D21171762E96800BE69E3 /* refresh@2x.png */,
 				754542561760775900638B95 /* qr@2x.png */,
 				75F17C4117455F2D00D9F228 /* deletetoleft.png */,
 				75F17C4217455F2D00D9F228 /* deletetoleft-inv.png */,
@@ -4830,6 +4833,7 @@
 				7545425117606C7500638B95 /* button-bg-pressed@2x.png in Resources */,
 				75454255176072EF00638B95 /* gear@2x.png in Resources */,
 				754542571760775900638B95 /* qr@2x.png in Resources */,
+				758D21181762E96800BE69E3 /* refresh@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

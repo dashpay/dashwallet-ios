@@ -10,14 +10,15 @@
 
 @interface ZNWallet : NSObject
 
-@property (nonatomic, readonly) double balance;
+@property (nonatomic, readonly) uint64_t balance;
 @property (nonatomic, readonly) NSString *receiveAddress;
+@property (nonatomic, strong) NSNumberFormatter *format;
 
 + (ZNWallet *)sharedInstance;
 
 - (id)initWithSeedPhrase:(NSString *)phrase;
 - (id)initWithSeed:(NSData *)seed;
 - (void)synchronizeWithCompletionBlock:(void (^)(BOOL success))completion;
-- (NSString *)transactionFor:(double)amount to:(NSString *)address;
+- (NSString *)transactionFor:(uint64_t)amount to:(NSString *)address;
 
 @end

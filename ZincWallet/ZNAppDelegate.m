@@ -68,7 +68,11 @@
     
     [[UIButton appearance] setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
     [[UIButton appearance] setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
-    [[UIButton appearance] setTitleColor:[UIColor whiteColor] forState:UIControlStateDisabled];
+    [[UIButton appearance] setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
+
+    [[UIButton appearance] setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [[UIButton appearance] setTitleShadowColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
+    [[UIButton appearance] setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateDisabled];
     
     [[UINavigationBar appearance] setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor darkGrayColor],
      UITextAttributeTextShadowColor:[UIColor whiteColor],
@@ -81,6 +85,8 @@
      UITextAttributeTextShadowColor:[UIColor whiteColor],
      UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
      UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:13.0]} forState:UIControlStateNormal];
+    
+    //XXX need a custom back button bg image
 }
 
 #pragma mark - CBCentralManagerDelegate

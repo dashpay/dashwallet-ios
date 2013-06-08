@@ -8,14 +8,15 @@
 
 #import "ZNAmountViewController.h"
 #import "ZNPaymentRequest.h"
+#import "ZNWallet.h"
 
 @interface ZNAmountViewController ()
 
 @property (nonatomic, strong) IBOutlet UITextField *amountField;
 @property (nonatomic, strong) IBOutlet UILabel *addressLabel;
+@property (nonatomic, strong) IBOutlet UIActivityIndicatorView *spinner;
+@property (nonatomic, strong) IBOutlet UIButton *payButton;
 @property (nonatomic, strong) IBOutletCollection(UIButton) NSArray *buttons, *buttonRow1, *buttonRow2, *buttonRow3;
-
-@property (nonatomic, strong) NSNumberFormatter *format;
 
 @end
 
@@ -38,16 +39,7 @@
             [obj setImageEdgeInsets:UIEdgeInsetsMake(20.0, [obj imageEdgeInsets].left,
                                                      20.0, [obj imageEdgeInsets].right)];
         }];
-        
-    }
-    
-    self.format = [NSNumberFormatter new];
-    self.format.numberStyle = NSNumberFormatterCurrencyStyle;
-    self.format.currencySymbol = @"m"BTC@" ";
-    self.format.minimumFractionDigits = 0;
-    self.format.maximumFractionDigits = 5;
-    self.format.maximum = @21000000000.0;
-    [self.format setLenient:YES];
+    }    
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -55,6 +47,7 @@
     [super viewWillAppear:animated];
     
     self.addressLabel.text = [@"to: " stringByAppendingString:self.request.paymentAddress];
+    self.payButton.enabled = self.amountField.text.length ? YES : NO;
 }
 
 #pragma mark - IBAction
@@ -62,7 +55,7 @@
 - (IBAction)number:(id)sender
 {
     [self textField:self.amountField shouldChangeCharactersInRange:NSMakeRange(self.amountField.text.length, 0)
-  replacementString:[(UIButton *)sender titleLabel].text];
+     replacementString:[(UIButton *)sender titleLabel].text];
 }
 
 - (IBAction)del:(id)sender
@@ -70,23 +63,39 @@
     if (! self.amountField.text.length) return;
     
     [self textField:self.amountField shouldChangeCharactersInRange:NSMakeRange(self.amountField.text.length - 1, 1)
-  replacementString:@""];
+     replacementString:@""];
 }
 
+- (IBAction)pay:(id)sender
+{
+    ZNWallet *w = [ZNWallet sharedInstance];
+    double factor = pow(10, (double)w.format.maximumFractionDigits);
+
+    self.request.amount =
+        [[w.format numberFromString:self.amountField.text] doubleValue]*factor;
+
+    if (self.request.isValid) {
+        [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
+          message:self.request.message ? self.request.message : self.request.paymentAddress delegate:self
+          cancelButtonTitle:@"cancel"
+          otherButtonTitles:[w.format stringFromNumber:@((double)self.request.amount/factor)], nil] show];
+    }
+}
 
 #pragma mark - UITextFieldDelegate
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range
 replacementString:(NSString *)string
 {
+    ZNWallet *w = [ZNWallet sharedInstance];
     NSUInteger point = [textField.text rangeOfString:@"."].location;
     NSString *t = textField.text ? [textField.text stringByReplacingCharactersInRange:range withString:string] : string;
 
-    t = [self.format stringFromNumber:[self.format numberFromString:t]];
+    t = [w.format stringFromNumber:[w.format numberFromString:t]];
 
-    if (! string.length && point != NSNotFound) {
+    if (! string.length && point != NSNotFound) { // delete trailing char
         t = [textField.text stringByReplacingCharactersInRange:range withString:string];
-        if ([t isEqual:[self.format stringFromNumber:@0]]) t = @"";
+        if ([t isEqual:[w.format stringFromNumber:@0]]) t = @"";
     }
     else if ((string.length && textField.text.length && t == nil) ||
              (point != NSNotFound && textField.text.length - point > 5)) {
@@ -94,16 +103,14 @@ replacementString:(NSString *)string
     }
     else if ([string isEqual:@"."] && (! textField.text.length || point == NSNotFound)) {
         if (! textField.text.length) {
-            t = [self.format stringFromNumber:@1];
-            t = [[t substringToIndex:t.length - 1] stringByAppendingString:@"0"];
+            t = [w.format stringFromNumber:@0];
         }
         
         t = [t stringByAppendingString:@"."];
     }
     else if ([string isEqual:@"0"]) {
         if (! textField.text.length) {
-            t = [self.format stringFromNumber:@1];
-            t = [[t substringToIndex:t.length - 1] stringByAppendingString:@"0."];            
+            t = [[w.format stringFromNumber:@0] stringByAppendingString:@"."];
         }
         else if (point != NSNotFound) { // handle multiple zeros after period....
             t = [textField.text stringByAppendingString:@"0"];
@@ -111,8 +118,20 @@ replacementString:(NSString *)string
     }
 
     textField.text = t;
+    self.payButton.enabled = t.length ? YES : NO;
 
     return NO;
+}
+
+#pragma mark - UIAlertViewDelegate
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == alertView.cancelButtonIndex) {
+        return;
+    }
+    
+    NSData *signedTx = [self.request signedTransaction];    
 }
 
 @end

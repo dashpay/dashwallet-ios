@@ -32,6 +32,7 @@
     self.format = [NSNumberFormatter new];
     self.format.numberStyle = NSNumberFormatterCurrencyStyle;
     self.format.currencySymbol = BTC;
+    [self.format setLenient:YES];
 }
 
 - (NSString *)paymentAddress
@@ -51,12 +52,9 @@
     return nil;//@"register #1";
 }
 
-- (double)amount
+- (uint64_t)amount
 {
-    return ((UInt64)([[[self.amountField.text
-                        stringByReplacingOccurrencesOfString:_format.currencySymbol withString:@""]
-                       stringByReplacingOccurrencesOfString:_format.currencyGroupingSeparator withString:@""]
-                      doubleValue]*SATOSHIS))/SATOSHIS;
+    return [[self.format numberFromString:self.amountField.text] doubleValue]*SATOSHIS;
 }
 
 - (ZNPaymentRequest *)paymentRequest
@@ -82,9 +80,8 @@
     }
 
     self.session = [[GKSession alloc] initWithSessionID:GK_SESSION_ID
-                    displayName:[NSString stringWithFormat:@"%@ - %@%.16g", self.message, BTC, self.amount]
-                    //displayName:[NSString stringWithFormat:@"%@ - %@", self.message, self.amountField.text]
-                    sessionMode:GKSessionModeServer];
+                    displayName:[NSString stringWithFormat:@"%@ - %@%.16g", self.message, BTC,
+                                 (double)self.amount/SATOSHIS] sessionMode:GKSessionModeServer];
     self.session.delegate = self;
     [self.session setDataReceiveHandler:self withContext:nil];
     self.session.available = YES;
@@ -138,11 +135,7 @@ replacementString:(NSString *)string
     if (! string.length && textField.text.length)
         textField.text = [textField.text substringToIndex:textField.text.length - 1];
 
-    NSInteger amount = [[[[textField.text
-                           stringByReplacingOccurrencesOfString:_format.currencySymbol withString:@""]
-                          stringByReplacingOccurrencesOfString:_format.currencyGroupingSeparator withString:@""]
-                         stringByReplacingOccurrencesOfString:_format.currencyDecimalSeparator withString:@""]
-                        integerValue];
+    NSInteger amount = [[self.format numberFromString:textField.text] integerValue];
         
     if (amount > 99999999) string = @"";
     

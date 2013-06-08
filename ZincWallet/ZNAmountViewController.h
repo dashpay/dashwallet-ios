@@ -10,7 +10,7 @@
 
 @class ZNPaymentRequest;
 
-@interface ZNAmountViewController : UIViewController <UITextFieldDelegate>
+@interface ZNAmountViewController : UIViewController <UITextFieldDelegate, UIAlertViewDelegate>
 
 @property (nonatomic, strong) ZNPaymentRequest *request;
 

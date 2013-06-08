@@ -29,6 +29,8 @@
 
 #define TX_FEE_07 // 0.7 reference implementation tx fees
 
+#define TX_FREE_MIN_OUTPUT 1000000 // no tx output can be below this amount without a tx fee
+
 #define ELECTURM_GAP_LIMIT 5
 #define ELECTURM_GAP_LIMIT_FOR_CHANGE 3 // this is hard coded in the electrum client
 
@@ -85,6 +87,14 @@
     self.outdatedAddresses = [NSMutableSet set];
     
     self.sequence = [ZNElectrumSequence new];
+    
+    self.format = [NSNumberFormatter new];
+    self.format.numberStyle = NSNumberFormatterCurrencyStyle;
+    self.format.currencySymbol = @"m"BTC@" ";
+    self.format.minimumFractionDigits = 0;
+    self.format.maximumFractionDigits = 5;
+    self.format.maximum = @21000000000.0;
+    [self.format setLenient:YES];
     
     //XXX wallet should auto-syncronize on some schedule
     
@@ -178,7 +188,7 @@
     return [[seed toHex] dataUsingEncoding:NSUTF8StringEncoding];
 }
 
-- (double)balance
+- (uint64_t)balance
 {
     __block uint64_t balance = 0;
     
@@ -186,7 +196,7 @@
         balance += [obj unsignedLongLongValue];
     }];
     
-    return balance/SATOSHIS;
+    return balance;
 }
 
 - (NSString *)receiveAddress
@@ -373,14 +383,14 @@ completion:(void (^)(BOOL success))completion
     }] start];
 }
 
-- (NSString *)transactionFor:(double)amount to:(NSString *)address
+- (NSString *)transactionFor:(uint64_t)amount to:(NSString *)address
 {
-    __block uint64_t amt = amount*SATOSHIS, balance = 0;
+    __block uint64_t balance = 0;
     __block NSMutableSet *inKeys = [NSMutableSet set];
     __block NSMutableArray *inHashes = [NSMutableArray array], *inIndexes = [NSMutableArray array],
                            *inScripts = [NSMutableArray array];
     NSMutableArray *outAddresses = [NSMutableArray arrayWithObject:address],
-                   *outAmounts = [NSMutableArray arrayWithObject:@(amt)];
+                   *outAmounts = [NSMutableArray arrayWithObject:@(amount)];
 
 
     //XXX we should optimize for free transactions (watch out for performance issues, nothing O(n^2) please)
@@ -397,21 +407,21 @@ completion:(void (^)(BOOL success))completion
             [inScripts addObject:[NSData dataWithHex:obj[@"script"]]];
             balance += [obj[@"value"] unsignedLongLongValue];
             
-            if (balance == amt || balance >= amt + 0.01) *stop = YES;
+            if (balance == amount || balance >= amount + 1000000) *stop = YES;
         }];
         
-        if (balance == amt || balance >= amt + 0.01) *stop = YES;
+        if (balance == amount || balance >= amount + 1000000) *stop = YES;
     }];
     
-    if (balance < amt) { // insufficent funds
-        NSLog(@"Insufficient funds. Balance:%llu is less than transaction amount:%llu", balance, amt);
+    if (balance < amount) { // insufficent funds
+        NSLog(@"Insufficient funds. Balance:%llu is less than transaction amount:%llu", balance, amount);
         return nil;
     }
     
     //XXX need to calculate tx fees, especially if change is less than 0.01
-    if (balance > amt) {
+    if (balance > amount) {
         [outAddresses addObject:self.receiveAddress]; // change address
-        [outAmounts addObject:@(balance - amt)];
+        [outAmounts addObject:@(balance - amount)];
     }
     
     ZNTransaction *tx = [[ZNTransaction alloc] initWithInputHashes:inHashes inputIndexes:inIndexes

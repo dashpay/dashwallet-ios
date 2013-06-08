@@ -74,7 +74,7 @@
         NSArray *pair = [obj componentsSeparatedByString:@"="];
         if (pair.count != 2) return;
         
-        if ([pair[0] isEqual:@"amount"]) self.amount = [pair[1] doubleValue];
+        if ([pair[0] isEqual:@"amount"]) self.amount = [pair[1] doubleValue]*SATOSHIS;
         else if ([pair[0] isEqual:@"label"])
             self.label = [pair[1] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
         else if ([pair[0] isEqual:@"message"])
@@ -95,7 +95,7 @@
     NSMutableArray *q = [NSMutableArray array];
     
     if (self.amount > 0) {
-        [q addObject:[NSString stringWithFormat:@"amount=%.16g", self.amount]];
+        [q addObject:[NSString stringWithFormat:@"amount=%.16g", (double)self.amount/SATOSHIS]];
     }
     
     if (self.label.length) {
