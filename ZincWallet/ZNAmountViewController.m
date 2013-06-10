@@ -9,6 +9,7 @@
 #import "ZNAmountViewController.h"
 #import "ZNPaymentRequest.h"
 #import "ZNWallet.h"
+#import "NSData+Hash.h"
 
 @interface ZNAmountViewController ()
 
@@ -131,7 +132,9 @@ replacementString:(NSString *)string
         return;
     }
     
-    NSData *signedTx = [self.request signedTransaction];    
+    NSData *signedTx = [self.request signedTransaction];
+    
+    NSLog(@"signed transaction:\n%@", [signedTx toHex]);
 }
 
 @end

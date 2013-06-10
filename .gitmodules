@@ -4,3 +4,6 @@
 [submodule "bitcoin"]
 	path = bitcoin
 	url = git://github.com/bitcoin/bitcoin.git
+[submodule "ZBar"]
+	path = ZBar
+	url = git://github.com/ZBar/ZBar.git
