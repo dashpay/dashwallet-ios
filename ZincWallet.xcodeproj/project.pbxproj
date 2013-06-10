@@ -960,6 +960,10 @@
 		759CB23B175E8D4900AFA559 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB23A175E8D4900AFA559 /* AVFoundation.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		759CB23D175E8D6300AFA559 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB23C175E8D6300AFA559 /* CoreMedia.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		759CB240175F03BF00AFA559 /* ZNAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759CB23F175F03BF00AFA559 /* ZNAmountViewController.m */; };
+		75AF36D8176675D3004AA912 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
+		75AF36EC17667E43004AA912 /* DataMatrix.mm in Sources */ = {isa = PBXBuildFile; fileRef = 75AF36E517667E43004AA912 /* DataMatrix.mm */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		75AF36ED17667E43004AA912 /* QR_Encode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75AF36E617667E43004AA912 /* QR_Encode.cpp */; };
+		75AF36EE17667E43004AA912 /* QREncoder.mm in Sources */ = {isa = PBXBuildFile; fileRef = 75AF36EB17667E43004AA912 /* QREncoder.mm */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		75CBEAD0173ABFA500978DBA /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75CBEACF173ABFA500978DBA /* GameKit.framework */; };
 		75CBEAD2173C3F2900978DBA /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75CBEAD1173C3F2900978DBA /* CoreBluetooth.framework */; };
 		75CBEADC173C5FB500978DBA /* icon72.png in Resources */ = {isa = PBXBuildFile; fileRef = 75CBEADB173C5FB500978DBA /* icon72.png */; };
@@ -1066,6 +1070,13 @@
 			remoteGlobalIDString = 752C300C1742AD060033F636;
 			remoteInfo = ssl;
 		};
+		75AF36EF17667F0B004AA912 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 75D8F376173ABE3C0080D95E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 75AF36D6176675D3004AA912;
+			remoteInfo = qrencoder;
+		};
 		75D8F3B7173ABE3D0080D95E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 75D8F376173ABE3C0080D95E /* Project object */;
@@ -1111,6 +1122,15 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		7573F07E174313910037A109 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "include/${PRODUCT_NAME}";
+			dstSubfolderSpec = 16;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		75AF36D5176675D3004AA912 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "include/${PRODUCT_NAME}";
@@ -2249,6 +2269,15 @@
 		759CB23C175E8D6300AFA559 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		759CB23E175F03BF00AFA559 /* ZNAmountViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNAmountViewController.h; sourceTree = "<group>"; };
 		759CB23F175F03BF00AFA559 /* ZNAmountViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNAmountViewController.m; sourceTree = "<group>"; };
+		75AF36D7176675D3004AA912 /* libqrencoder.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libqrencoder.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		75AF36E417667E43004AA912 /* DataMatrix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataMatrix.h; sourceTree = "<group>"; };
+		75AF36E517667E43004AA912 /* DataMatrix.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DataMatrix.mm; sourceTree = "<group>"; };
+		75AF36E617667E43004AA912 /* QR_Encode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = QR_Encode.cpp; sourceTree = "<group>"; };
+		75AF36E717667E43004AA912 /* QR_Encode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QR_Encode.h; sourceTree = "<group>"; };
+		75AF36E817667E43004AA912 /* QRCodeEncoderObjectiveCAtGithub-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "QRCodeEncoderObjectiveCAtGithub-Prefix.pch"; sourceTree = "<group>"; };
+		75AF36E917667E43004AA912 /* QREncoder-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "QREncoder-Prefix.pch"; sourceTree = "<group>"; };
+		75AF36EA17667E43004AA912 /* QREncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QREncoder.h; sourceTree = "<group>"; };
+		75AF36EB17667E43004AA912 /* QREncoder.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = QREncoder.mm; sourceTree = "<group>"; };
 		75CBEACF173ABFA500978DBA /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
 		75CBEAD1173C3F2900978DBA /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
 		75CBEADB173C5FB500978DBA /* icon72.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon72.png; path = ../icon72.png; sourceTree = "<group>"; };
@@ -2404,6 +2433,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		75AF36D4176675D3004AA912 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				75AF36D8176675D3004AA912 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		75D8F37B173ABE3C0080D95E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -2457,6 +2494,7 @@
 				752C2F8617406EEA0033F636 /* Reachability.m */,
 				752C38AF1742BC4D0033F636 /* AFNetworking */,
 				75FD9C0E17664FE600307894 /* zbar */,
+				75AF36E317667E43004AA912 /* QRCodeEncoderObjectiveCAtGithub */,
 				7573F06F1742C6120037A109 /* bitcoin */,
 				752C301C1742AD9A0033F636 /* openssl */,
 				7573180B174316900037A109 /* boost */,
@@ -4326,6 +4364,22 @@
 			name = bitcoin;
 			sourceTree = "<group>";
 		};
+		75AF36E317667E43004AA912 /* QRCodeEncoderObjectiveCAtGithub */ = {
+			isa = PBXGroup;
+			children = (
+				75AF36E417667E43004AA912 /* DataMatrix.h */,
+				75AF36E517667E43004AA912 /* DataMatrix.mm */,
+				75AF36E617667E43004AA912 /* QR_Encode.cpp */,
+				75AF36E717667E43004AA912 /* QR_Encode.h */,
+				75AF36E817667E43004AA912 /* QRCodeEncoderObjectiveCAtGithub-Prefix.pch */,
+				75AF36E917667E43004AA912 /* QREncoder-Prefix.pch */,
+				75AF36EA17667E43004AA912 /* QREncoder.h */,
+				75AF36EB17667E43004AA912 /* QREncoder.mm */,
+			);
+			name = QRCodeEncoderObjectiveCAtGithub;
+			path = "QR-Code-Encoder-for-Objective-C/QRCodeEncoderObjectiveCAtGithub";
+			sourceTree = SOURCE_ROOT;
+		};
 		75CBEAE3173C800F00978DBA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -4413,6 +4467,7 @@
 				7573F0631742C5F80037A109 /* libbitcoin.a */,
 				7573F080174313910037A109 /* libboost.a */,
 				75FD9C0217664F3000307894 /* libzbar.a */,
+				75AF36D7176675D3004AA912 /* libqrencoder.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -4681,6 +4736,23 @@
 			productReference = 7573F080174313910037A109 /* libboost.a */;
 			productType = "com.apple.product-type.library.static";
 		};
+		75AF36D6176675D3004AA912 /* qrencoder */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 75AF36E2176675D3004AA912 /* Build configuration list for PBXNativeTarget "qrencoder" */;
+			buildPhases = (
+				75AF36D3176675D3004AA912 /* Sources */,
+				75AF36D4176675D3004AA912 /* Frameworks */,
+				75AF36D5176675D3004AA912 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = qrencoder;
+			productName = qrencoder;
+			productReference = 75AF36D7176675D3004AA912 /* libqrencoder.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 		75D8F37D173ABE3C0080D95E /* ZincWallet */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 75D8F3C4173ABE3D0080D95E /* Build configuration list for PBXNativeTarget "ZincWallet" */;
@@ -4692,6 +4764,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				75AF36F017667F0B004AA912 /* PBXTargetDependency */,
 				75FD9D69176658EB00307894 /* PBXTargetDependency */,
 				7573F091174314CA0037A109 /* PBXTargetDependency */,
 			);
@@ -4765,6 +4838,7 @@
 				7573F07F174313910037A109 /* boost */,
 				7573F0621742C5F80037A109 /* bitcoin */,
 				75FD9C0117664F3000307894 /* zbar */,
+				75AF36D6176675D3004AA912 /* qrencoder */,
 			);
 		};
 /* End PBXProject section */
@@ -5802,6 +5876,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		75AF36D3176675D3004AA912 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				75AF36EC17667E43004AA912 /* DataMatrix.mm in Sources */,
+				75AF36ED17667E43004AA912 /* QR_Encode.cpp in Sources */,
+				75AF36EE17667E43004AA912 /* QREncoder.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		75D8F37A173ABE3C0080D95E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -5904,6 +5988,11 @@
 			isa = PBXTargetDependency;
 			target = 752C300C1742AD060033F636 /* ssl */;
 			targetProxy = 7597D451174498B300A7090D /* PBXContainerItemProxy */;
+		};
+		75AF36F017667F0B004AA912 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 75AF36D6176675D3004AA912 /* qrencoder */;
+			targetProxy = 75AF36EF17667F0B004AA912 /* PBXContainerItemProxy */;
 		};
 		75D8F3B8173ABE3D0080D95E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -6101,6 +6190,35 @@
 					"$(SRCROOT)/boost",
 					"$(SRCROOT)/boost/libs/math/src/tr1",
 				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		75AF36E0176675D3004AA912 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				DSTROOT = /tmp/qrencoder.dst;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "QR-Code-Encoder-for-Objective-C/QRCodeEncoderObjectiveCAtGithub/QRCodeEncoderObjectiveCAtGithub-Prefix.pch";
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		75AF36E1176675D3004AA912 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				DSTROOT = /tmp/qrencoder.dst;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "QR-Code-Encoder-for-Objective-C/QRCodeEncoderObjectiveCAtGithub/QRCodeEncoderObjectiveCAtGithub-Prefix.pch";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -6329,6 +6447,15 @@
 			buildConfigurations = (
 				7573F08A174313910037A109 /* Debug */,
 				7573F08B174313910037A109 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		75AF36E2176675D3004AA912 /* Build configuration list for PBXNativeTarget "qrencoder" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				75AF36E0176675D3004AA912 /* Debug */,
+				75AF36E1176675D3004AA912 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

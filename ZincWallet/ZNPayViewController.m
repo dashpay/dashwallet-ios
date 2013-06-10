@@ -62,7 +62,7 @@
     
     ZNPaymentRequest *req = [ZNPaymentRequest new];
     
-    req.label = @"QR code";
+    req.label = @"scan QR code";
     [self.requestIDs addObject:QR_ID];
     [self.requests addObject:req];
      
