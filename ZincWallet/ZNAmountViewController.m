@@ -76,10 +76,12 @@
         [[w.format numberFromString:self.amountField.text] doubleValue]*factor;
 
     if (self.request.isValid) {
+        w.format.minimumFractionDigits = w.format.maximumFractionDigits;
         [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
           message:self.request.message ? self.request.message : self.request.paymentAddress delegate:self
           cancelButtonTitle:@"cancel"
           otherButtonTitles:[w.format stringFromNumber:@((double)self.request.amount/factor)], nil] show];
+        w.format.minimumFractionDigits = 0;
     }
 }
 
