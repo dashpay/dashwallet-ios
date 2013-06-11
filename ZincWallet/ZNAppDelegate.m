@@ -65,7 +65,7 @@
      resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)] forState:UIControlStateHighlighted];
     [[UIButton appearance] setBackgroundImage:[[UIImage imageNamed:@"button-bg-disabled.png"]
      resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)] forState:UIControlStateDisabled];
-    
+
     [[UIButton appearance] setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
     [[UIButton appearance] setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
     [[UIButton appearance] setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
@@ -77,14 +77,14 @@
     [[UINavigationBar appearance] setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor darkGrayColor],
      UITextAttributeTextShadowColor:[UIColor whiteColor],
      UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
-     UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0]}];
+     UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0]}]; // -Medium is missing the BTC char :(
     
     [[UINavigationBar appearance] setTintColor:[UIColor colorWithWhite:0.95 alpha:1.0]];
     
     [[UIBarButtonItem appearance] setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor darkGrayColor],
      UITextAttributeTextShadowColor:[UIColor whiteColor],
      UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
-     UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:13.0]} forState:UIControlStateNormal];
+     UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Medium" size:13.0]} forState:UIControlStateNormal];
     
     //XXX need a custom back button bg image
 }
