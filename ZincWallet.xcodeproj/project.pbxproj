@@ -952,6 +952,7 @@
 		7573F081174313910037A109 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		7579C5DF17665B5300E89497 /* libzbar.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75FD9C0217664F3000307894 /* libzbar.a */; };
 		758D21181762E96800BE69E3 /* refresh@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 758D21171762E96800BE69E3 /* refresh@2x.png */; };
+		758F2D8217669D6800102AF1 /* libqrencoder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75AF36D7176675D3004AA912 /* libqrencoder.a */; };
 		75920F7F174AAE5F00C1C03D /* netbase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75920F7D174AAE5F00C1C03D /* netbase.cpp */; };
 		75920F86174AB82100C1C03D /* NSMutableData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 75920F85174AB82100C1C03D /* NSMutableData+Bitcoin.m */; };
 		759CB235175E8A1200AFA559 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB234175E8A1200AFA559 /* QuartzCore.framework */; };
@@ -985,7 +986,7 @@
 		75D8F3A1173ABE3C0080D95E /* ZNPayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3A0173ABE3C0080D95E /* ZNPayViewController.m */; };
 		75D8F3A3173ABE3C0080D95E /* first.png in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F3A2173ABE3C0080D95E /* first.png */; };
 		75D8F3A5173ABE3D0080D95E /* first@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F3A4173ABE3C0080D95E /* first@2x.png */; };
-		75D8F3A8173ABE3D0080D95E /* ZNReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3A7173ABE3D0080D95E /* ZNReceiveViewController.m */; };
+		75D8F3A8173ABE3D0080D95E /* ZNReceiveViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3A7173ABE3D0080D95E /* ZNReceiveViewController.mm */; };
 		75D8F3AA173ABE3D0080D95E /* second.png in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F3A9173ABE3D0080D95E /* second.png */; };
 		75D8F3AC173ABE3D0080D95E /* second@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F3AB173ABE3D0080D95E /* second@2x.png */; };
 		75D8F3B4173ABE3D0080D95E /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F3B3173ABE3D0080D95E /* SenTestingKit.framework */; };
@@ -2306,7 +2307,7 @@
 		75D8F3A2173ABE3C0080D95E /* first.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = first.png; sourceTree = "<group>"; };
 		75D8F3A4173ABE3C0080D95E /* first@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "first@2x.png"; sourceTree = "<group>"; };
 		75D8F3A6173ABE3D0080D95E /* ZNReceiveViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNReceiveViewController.h; sourceTree = "<group>"; };
-		75D8F3A7173ABE3D0080D95E /* ZNReceiveViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZNReceiveViewController.m; sourceTree = "<group>"; };
+		75D8F3A7173ABE3D0080D95E /* ZNReceiveViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ZNReceiveViewController.mm; sourceTree = "<group>"; };
 		75D8F3A9173ABE3D0080D95E /* second.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = second.png; sourceTree = "<group>"; };
 		75D8F3AB173ABE3D0080D95E /* second@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "second@2x.png"; sourceTree = "<group>"; };
 		75D8F3B2173ABE3D0080D95E /* ZincWalletTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZincWalletTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -2445,6 +2446,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				758F2D8217669D6800102AF1 /* libqrencoder.a in Frameworks */,
 				7579C5DF17665B5300E89497 /* libzbar.a in Frameworks */,
 				75F17C311744CBAE00D9F228 /* libboost.a in Frameworks */,
 				75F17C2F1744CB3400D9F228 /* libssl.a in Frameworks */,
@@ -4424,7 +4426,7 @@
 				759CB23E175F03BF00AFA559 /* ZNAmountViewController.h */,
 				759CB23F175F03BF00AFA559 /* ZNAmountViewController.m */,
 				75D8F3A6173ABE3D0080D95E /* ZNReceiveViewController.h */,
-				75D8F3A7173ABE3D0080D95E /* ZNReceiveViewController.m */,
+				75D8F3A7173ABE3D0080D95E /* ZNReceiveViewController.mm */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -5893,7 +5895,7 @@
 				75D8F38E173ABE3C0080D95E /* main.m in Sources */,
 				75D8F392173ABE3C0080D95E /* ZNAppDelegate.m in Sources */,
 				75D8F3A1173ABE3C0080D95E /* ZNPayViewController.m in Sources */,
-				75D8F3A8173ABE3D0080D95E /* ZNReceiveViewController.m in Sources */,
+				75D8F3A8173ABE3D0080D95E /* ZNReceiveViewController.mm in Sources */,
 				75CBEAE9173C80AD00978DBA /* ZNPaymentRequest.m in Sources */,
 				752C2F8717406EEA0033F636 /* Reachability.m in Sources */,
 				752C2F8C174071520033F636 /* ZNWallet.m in Sources */,

@@ -8,6 +8,7 @@
 
 #import "ZNPayViewController.h"
 #import "ZNAmountViewController.h"
+#import "ZNReceiveViewController.h"
 #import "ZNWallet.h"
 #import "ZNPaymentRequest.h"
 #import "NSString+Base58.h"
@@ -65,7 +66,7 @@
     req.label = @"scan QR code";
     [self.requestIDs addObject:QR_ID];
     [self.requests addObject:req];
-     
+    
 //    uint64_t balance = [[ZNWallet sharedInstance] balance];
 //    
 //    NSLog(@"wallet balance: %.16g", (doubld)balance/SATOSHIS);
@@ -104,6 +105,20 @@
     }
     
     self.scrollView.contentSize = CGSizeMake(self.scrollView.frame.size.width*2, self.scrollView.frame.size.height);
+    
+    static dispatch_once_t onceToken = 0;
+
+    //XXX sould have a main viewcontroller that contains the scrollview, with both pay and receive as subviews
+    // having payviewcontroller instantiate receiveviewcontroller like this is ugly
+    dispatch_once(&onceToken, ^{
+        ZNReceiveViewController *c =
+            [self.storyboard instantiateViewControllerWithIdentifier:@"ZNReceiveViewController"];
+        CGRect f = self.scrollView.frame;
+    
+        c.view.frame = CGRectMake(f.origin.x + f.size.width, f.origin.y, f.size.width, f.size.height);
+        [c viewWillAppear:NO];
+        [self.scrollView addSubview:c.view];
+    });
     
     [self layoutButtons];
 }

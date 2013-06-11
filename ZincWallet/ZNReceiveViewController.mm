@@ -8,8 +8,13 @@
 
 #import "ZNReceiveViewController.h"
 #import "ZNPaymentRequest.h"
+#import "ZNWallet.h"
+#import "QREncoder.h"
 
 @interface ZNReceiveViewController ()
+
+@property (nonatomic, strong) IBOutlet UIImageView *qrView;
+@property (nonatomic, strong) IBOutlet UILabel *addressLabel;
 
 @property (nonatomic, strong) IBOutlet UIActivityIndicatorView *spinner;
 @property (nonatomic, strong) IBOutlet UILabel *waitingLabel;
@@ -35,11 +40,26 @@
     [self.format setLenient:YES];
 }
 
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    
+    NSString *s = [[NSString alloc] initWithData:[self paymentRequest].data encoding:NSUTF8StringEncoding];
+    
+    self.addressLabel.text = [self paymentAddress];
+    self.qrView.image = [QREncoder renderDataMatrix:[QREncoder encodeWithECLevel:1 version:1 string:s]
+                         imageDimension:self.qrView.frame.size.width];
+}
+
 - (NSString *)paymentAddress
 {
+    ZNWallet *w = [ZNWallet sharedInstance];
+    
+    return w.receiveAddress;
+
     // XXX hard coded for testing
     // should be retreived from bitpay/coinbase/blockchain or our own bip32 receive only wallet
-    return @"1JA9nMhjJcUL9nFcrm7ftXXA7PAbyZC5DB";
+    //return @"1JA9nMhjJcUL9nFcrm7ftXXA7PAbyZC5DB";
 }
 
 - (NSString *)message

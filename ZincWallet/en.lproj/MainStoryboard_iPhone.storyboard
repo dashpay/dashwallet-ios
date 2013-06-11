@@ -45,13 +45,45 @@
             </objects>
             <point key="canvasLocation" x="832" y="-349"/>
         </scene>
+        <!--Receive View Controller-->
+        <scene sceneID="8v2-cF-YM5">
+            <objects>
+                <viewController storyboardIdentifier="ZNReceiveViewController" id="toP-Vb-grN" customClass="ZNReceiveViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Fln-In-Cdh">
+                        <rect key="frame" x="0.0" y="64" width="320" height="504"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" id="ckp-Du-ZrM">
+                                <rect key="frame" x="35" y="127" width="250" height="250"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            </imageView>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="9" id="Ygt-Lv-0vh">
+                                <rect key="frame" x="20" y="385" width="280" height="21"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                    </view>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
+                    <connections>
+                        <outlet property="addressLabel" destination="Ygt-Lv-0vh" id="p22-VO-oWN"/>
+                        <outlet property="qrView" destination="ckp-Du-ZrM" id="ZZX-Ms-xWf"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="u7S-5E-6vw" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="832" y="326"/>
+        </scene>
         <!--Amount View Controller - mɃ 0.00000-->
         <scene sceneID="6VG-zW-rjY">
             <objects>
                 <viewController storyboardIdentifier="ZNAmountViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="asW-9a-XhX" customClass="ZNAmountViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="eUy-Ub-KH0">
                         <rect key="frame" x="0.0" y="64" width="320" height="504"/>
-                        <autoresizingMask key="autoresizingMask"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <textField opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="mɃ 0.00000" textAlignment="right" adjustsFontSizeToFit="NO" minimumFontSize="24" id="U70-Jh-YtO">
                                 <rect key="frame" x="20" y="5" width="280" height="54.75"/>
@@ -427,6 +459,47 @@
         <image name="gear.png" width="16" height="16"/>
         <image name="refresh.png" width="16" height="16"/>
     </resources>
+    <classes>
+        <class className="ZNAmountViewController" superclassName="UIViewController">
+            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNAmountViewController.h"/>
+            <relationships>
+                <relationship kind="outlet" name="addressLabel" candidateClass="UILabel"/>
+                <relationship kind="outlet" name="amountField" candidateClass="UITextField"/>
+                <relationship kind="outlet" name="payButton" candidateClass="UIButton"/>
+                <relationship kind="outlet" name="spinner" candidateClass="UIActivityIndicatorView"/>
+                <relationship kind="outletCollection" name="buttonRow1" candidateClass="UIButton"/>
+                <relationship kind="outletCollection" name="buttonRow2" candidateClass="UIButton"/>
+                <relationship kind="outletCollection" name="buttonRow3" candidateClass="UIButton"/>
+                <relationship kind="outletCollection" name="buttons" candidateClass="UIButton"/>
+            </relationships>
+        </class>
+        <class className="ZNPayViewController" superclassName="UIViewController">
+            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNPayViewController.h"/>
+            <relationships>
+                <relationship kind="action" name="doIt:"/>
+                <relationship kind="action" name="page:"/>
+                <relationship kind="action" name="refresh:"/>
+                <relationship kind="outlet" name="pageControl" candidateClass="UIPageControl"/>
+                <relationship kind="outlet" name="scrollView" candidateClass="UIScrollView"/>
+            </relationships>
+        </class>
+        <class className="ZNReceiveViewController" superclassName="UIViewController">
+            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNReceiveViewController.h"/>
+            <relationships>
+                <relationship kind="action" name="cancelRequest:"/>
+                <relationship kind="action" name="del:"/>
+                <relationship kind="action" name="issueRequest:"/>
+                <relationship kind="action" name="number:"/>
+                <relationship kind="outlet" name="addressLabel" candidateClass="UILabel"/>
+                <relationship kind="outlet" name="amountField" candidateClass="UITextField"/>
+                <relationship kind="outlet" name="messageField" candidateClass="UITextField"/>
+                <relationship kind="outlet" name="qrView" candidateClass="UIImageView"/>
+                <relationship kind="outlet" name="requestButton" candidateClass="UIButton"/>
+                <relationship kind="outlet" name="spinner" candidateClass="UIActivityIndicatorView"/>
+                <relationship kind="outlet" name="waitingLabel" candidateClass="UILabel"/>
+            </relationships>
+        </class>
+    </classes>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>
         <simulatedOrientationMetrics key="orientation"/>
