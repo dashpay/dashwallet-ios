@@ -166,6 +166,21 @@
     while (self.requests.count > self.requestButtons.count) {
         UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
 
+        [button setBackgroundImage:[[UIImage imageNamed:@"button-bg.png"]
+         resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)] forState:UIControlStateNormal];
+        [button setBackgroundImage:[[UIImage imageNamed:@"button-bg-pressed.png"]
+         resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)] forState:UIControlStateHighlighted];
+        [button setBackgroundImage:[[UIImage imageNamed:@"button-bg-disabled.png"]
+         resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)] forState:UIControlStateDisabled];
+        
+        [button setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
+        [button setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
+        [button setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
+        
+        [button setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        [button setTitleShadowColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
+        [button setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateDisabled];
+
         button.frame = CGRectMake(BUTTON_MARGIN*4, self.scrollView.frame.size.height/2 +
                                   (BUTTON_HEIGHT + 2*BUTTON_MARGIN)*(self.requestButtons.count-self.requests.count/2.0),
                                   self.scrollView.frame.size.width - BUTTON_MARGIN*8, BUTTON_HEIGHT);
@@ -238,7 +253,8 @@
     self.selectedIndex = [self.requestButtons indexOfObject:sender];
     
     if (self.selectedIndex == NSNotFound) {
-        NSLog(@"this shouldn't happen");
+        NSAssert(FALSE, @"[%s %s] line %d: selectedIndex = NSNotFound", object_getClassName(self), sel_getName(_cmd),
+                 __LINE__);
         return;
     }
     
@@ -334,7 +350,10 @@
  */
 - (void)session:(GKSession *)session didReceiveConnectionRequestFromPeer:(NSString *)peerID
 {
-    NSLog(@"this shouldn't happen");
+    NSAssert(FALSE, @"[%s %s] line %d: recieved connection request (should be in client mode)",
+             object_getClassName(self), sel_getName(_cmd), __LINE__);
+    return;
+
     
     [session denyConnectionFromPeer:peerID];
 }
@@ -386,7 +405,7 @@
     NSUInteger idx = [self.requestIDs indexOfObject:peer];
     
     if (idx == NSNotFound) {
-        NSLog(@"this should never happen");
+        NSAssert(FALSE, @"[%s %s] line %d: idx = NSNotFound", object_getClassName(self), sel_getName(_cmd), __LINE__);
         return;
     }
 

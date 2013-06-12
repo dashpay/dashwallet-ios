@@ -430,7 +430,7 @@ completion:(void (^)(BOOL success))completion
     [tx signWithPrivateKeys:inKeys.allObjects];
     
     if (! [tx isSigned]) {
-        NSLog(@"this should never happen");
+        NSAssert(FALSE, @"[%s %s] line %d: tx signing failed", object_getClassName(self), sel_getName(_cmd), __LINE__);
         return nil;
     }
     

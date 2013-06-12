@@ -47,7 +47,8 @@
     return self;
 }
 
-// this should also handle bitcoin payment messages per: https://gist.github.com/gavinandresen/4120476
+//XXX this should also handle bitcoin payment messages per: https://gist.github.com/gavinandresen/4120476
+//XXX also should offer to sweep balance into wallet if it's a private key not already in wallet.
 - (void)setData:(NSData *)data
 {
     if (! data) {
@@ -84,8 +85,6 @@
 
 - (void)setPaymentAddress:(NSString *)paymentAddress
 {
-    //XXX What if it's a private key? Should offer to sweep balance into wallet if it's not an existing wallet address.
-
     _paymentAddress = [paymentAddress isValidBitcoinAddress] ? paymentAddress : nil;
 }
 
