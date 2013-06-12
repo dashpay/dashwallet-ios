@@ -84,6 +84,8 @@
 
 - (void)setPaymentAddress:(NSString *)paymentAddress
 {
+    //XXX What if it's a private key? Should offer to sweep balance into wallet if it's not an existing wallet address.
+
     _paymentAddress = [paymentAddress isValidBitcoinAddress] ? paymentAddress : nil;
 }
 
