@@ -23,6 +23,7 @@
 
 #define CLIPBOARD_ID @"clipboard"
 #define QR_ID @"qr"
+#define URL_ID @"url"
 
 @interface ZNPayViewController ()
 
@@ -34,9 +35,11 @@
 @property (nonatomic, strong) NSMutableArray *requestIDs;
 @property (nonatomic, strong) NSMutableArray *requestButtons;
 @property (nonatomic, assign) NSUInteger selectedIndex;
+@property (nonatomic, strong) id urlObserver;
 
 @property (nonatomic, strong) IBOutlet UIScrollView *scrollView;
 @property (nonatomic, strong) IBOutlet UIPageControl *pageControl;
+
 
 @end
 
@@ -58,6 +61,18 @@
     self.requestIDs = [NSMutableArray array];
     self.requestButtons = [NSMutableArray array];
     self.selectedIndex = NSNotFound;
+
+    self.urlObserver =
+    [[NSNotificationCenter defaultCenter] addObserverForName:bitcoinURLNotification object:nil queue:nil
+    usingBlock:^(NSNotification *note) {
+        ZNPaymentRequest *req = [ZNPaymentRequest requestWithURL:note.userInfo[@"url"]];
+    
+        if (req.isValid) {
+            [self.requests insertObject:req atIndex:0];
+            [self.requestIDs insertObject:URL_ID atIndex:0];
+            [self layoutButtons];
+        }
+    }];
 
     [self refresh:nil];
     
@@ -83,6 +98,13 @@
     //NSLog(@"%@", [@"0004f05543b270f96547c950a2b3ed3afe83d03869" hexToBase58check]);
 }
 
+- (void)viewWillUnload
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self.urlObserver];
+
+    [super viewWillUnload];
+}
+
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
@@ -98,6 +120,13 @@
         ZNPaymentRequest *req = [ZNPaymentRequest requestWithString:[[UIPasteboard generalPasteboard] string]];
 
         if (req.paymentAddress) {
+            if (! req.label) {
+                NSNumberFormatter *f = [ZNWallet sharedInstance].format;
+
+                req.label = [NSString stringWithFormat:@"%@ - %@", req.paymentAddress,
+                             [f stringFromNumber:@(req.amount/pow(10, f.maximumFractionDigits))]];
+            }
+        
             if (! req.label.length) req.label = @"pay address from clipboard";
             [self.requests addObject:req];
             [self.requestIDs addObject:CLIPBOARD_ID];
@@ -214,12 +243,12 @@
     }
     
     if ([self.requestIDs[self.selectedIndex] isEqual:QR_ID]) {
-        //XXX just for testing
-        [self.requests[self.selectedIndex]
-         setData:[@"1JA9nMhjJcUL9nFcrm7ftXXA7PAbyZC5DB" dataUsingEncoding:NSUTF8StringEncoding]];
-        [self confirmRequest:self.requests[self.selectedIndex]];
-        self.selectedIndex = NSNotFound;
-        return;
+//        //XXX just for testing
+//        [self.requests[self.selectedIndex]
+//         setData:[@"1JA9nMhjJcUL9nFcrm7ftXXA7PAbyZC5DB" dataUsingEncoding:NSUTF8StringEncoding]];
+//        [self confirmRequest:self.requests[self.selectedIndex]];
+//        self.selectedIndex = NSNotFound;
+//        return;
 
         self.selectedIndex = NSNotFound;
         
