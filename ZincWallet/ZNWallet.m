@@ -26,6 +26,7 @@
 #define ADDRESS_BALANCES_KEY @"ADDRESS_BALANCES"
 #define ADDRESS_TX_COUNT_KEY @"ADDRESS_TX_COUNT"
 #define UNSPENT_OUTPUTS_KEY @"UNSPENT_OUTPUTS"
+#define TRANSACTIONS_KEY @"TRANSACTIONS"
 
 #define TX_FEE_07 // 0.7 reference implementation tx fees
 
@@ -45,6 +46,7 @@
 @property (nonatomic, strong) NSMutableDictionary *unspentOutputs;
 @property (nonatomic, strong) NSMutableDictionary *addressBalances;
 @property (nonatomic, strong) NSMutableDictionary *addressTxCount;
+@property (nonatomic, strong) NSMutableDictionary *transactions;
 
 @property (nonatomic, strong) NSMutableSet *outdatedAddresses;
 @property (nonatomic, strong) NSMutableDictionary *privateKeys;
@@ -77,6 +79,7 @@
     self.fundedAddresses = [NSMutableArray arrayWithArray:[_defs arrayForKey:FUNDED_ADDRESSES_KEY]];
     self.spentAddresses = [NSMutableArray arrayWithArray:[_defs arrayForKey:SPENT_ADDRESSES_KEY]];
     self.receiveAddresses = [NSMutableArray arrayWithArray:[_defs arrayForKey:RECEIVE_ADDRESSES_KEY]];
+    self.transactions = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:TRANSACTIONS_KEY]];
     self.addressBalances = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:ADDRESS_BALANCES_KEY]];
     self.addressTxCount = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:ADDRESS_TX_COUNT_KEY]];
     self.unspentOutputs = [NSMutableDictionary dictionary];
@@ -115,6 +118,7 @@
         [_defs removeObjectForKey:ADDRESS_BALANCES_KEY];
         [_defs removeObjectForKey:ADDRESS_TX_COUNT_KEY];
         [_defs removeObjectForKey:UNSPENT_OUTPUTS_KEY];
+        [_defs removeObjectForKey:TRANSACTIONS_KEY];
         [_defs synchronize];
     }
     
@@ -202,6 +206,15 @@
 - (NSString *)receiveAddress
 {
     return self.receiveAddresses.lastObject;
+}
+
+- (NSArray *)recentTransactions
+{
+    // sort in descending order by timestamp (using block_height doesn't work for unconfirmed, or multiple tx per block)
+    return [self.transactions.allValues sortedArrayWithOptions:0 usingComparator:^NSComparisonResult(id obj1, id obj2) {
+        return [@([obj2[@"time"] unsignedLongLongValue])
+                compare:@([obj1[@"time"] unsignedLongLongValue])];
+    }];
 }
 
 - (NSData *)mpk
@@ -308,11 +321,16 @@ completion:(void (^)(BOOL success))completion
             }
         }];
         
+        [JSON[@"txs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {            
+            if (obj[@"hash"]) self.transactions[obj[@"hash"]] = obj;
+        }];
+        
         [_defs setObject:self.fundedAddresses forKey:FUNDED_ADDRESSES_KEY];
         [_defs setObject:self.spentAddresses forKey:SPENT_ADDRESSES_KEY];
         [_defs setObject:self.receiveAddresses forKey:RECEIVE_ADDRESSES_KEY];
         [_defs setObject:self.addressBalances forKey:ADDRESS_BALANCES_KEY];
         [_defs setObject:self.addressTxCount forKey:ADDRESS_TX_COUNT_KEY];
+        [_defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
         [_defs synchronize];
         
         //[self queryUnspentOutputs:self.fundedAddresses];
@@ -436,6 +454,12 @@ completion:(void (^)(BOOL success))completion
     
     return [tx toHex];
 
+}
+
+- (BOOL)containsAddress:(NSString *)address
+{
+    return [self.spentAddresses containsObject:address] || [self.fundedAddresses containsObject:address] ||
+           [self.receiveAddresses containsObject:address];
 }
 
 #pragma mark - keychain services

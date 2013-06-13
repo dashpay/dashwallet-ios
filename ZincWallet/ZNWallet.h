@@ -12,6 +12,7 @@
 
 @property (nonatomic, readonly) uint64_t balance;
 @property (nonatomic, readonly) NSString *receiveAddress;
+@property (nonatomic, readonly) NSArray *recentTransactions; // sorted by date, most recent first
 @property (nonatomic, strong) NSNumberFormatter *format;
 
 + (ZNWallet *)sharedInstance;
@@ -20,5 +21,6 @@
 - (id)initWithSeed:(NSData *)seed;
 - (void)synchronizeWithCompletionBlock:(void (^)(BOOL success))completion;
 - (NSString *)transactionFor:(uint64_t)amount to:(NSString *)address;
+- (BOOL)containsAddress:(NSString *)address;
 
 @end

@@ -7,8 +7,11 @@
 //
 
 #import "ZNSettingsViewController.h"
+#import "ZNWallet.h"
 
 @interface ZNSettingsViewController ()
+
+@property (nonatomic, strong) NSArray *transactions;
 
 @end
 
@@ -32,6 +35,13 @@
  
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    
+    self.transactions = [ZNWallet sharedInstance].recentTransactions;
 }
 
 - (void)didReceiveMemoryWarning
@@ -59,7 +69,7 @@
 {
     // Return the number of rows in the section.
     switch (section) {
-        case 0: return 1; //XXX return transaction count
+        case 0: return self.transactions.count ? self.transactions.count : 1;
         case 1: return 2;
         default:
             NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
@@ -79,8 +89,39 @@
     switch (indexPath.section) {
         case 0:
             cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent];
-            cell.textLabel.text = @"bitcoin address";
-            cell.detailTextLabel.text = @"m"BTC" 1.000000";
+            if (! self.transactions.count) {
+                cell.textLabel.text = @"no transactions";
+                cell.detailTextLabel.text = nil;
+            }
+            else {
+                ZNWallet *w = [ZNWallet sharedInstance];
+                NSDictionary *tx = self.transactions[indexPath.row];
+                
+                BOOL sending = ([tx[@"inputs"] indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+                    return [w containsAddress:obj[@"prev_out"][@"addr"]] ? (*stop = YES) : NO;
+                }] != NSNotFound);
+               
+                __block long long value = 0;
+                NSSet *outs = [tx[@"out"] objectsPassingTest:^BOOL(id obj, BOOL *stop) {
+                    value += [obj[@"value"] unsignedLongLongValue];
+                
+                    if (sending) return [w containsAddress:obj[@"addr"]] ? NO : YES;
+                    else return [w containsAddress:obj[@"addr"]] ? YES : NO;
+                }];
+                
+                if (! outs.count) {
+                    cell.textLabel.text = @"moved within wallet";
+                }
+                else {
+                    NSDictionary *o = outs.anyObject;
+
+                    value = [o[@"value"] longLongValue]*(sending ? -1 : 1);
+                    cell.textLabel.text = o[@"addr"];
+                }
+                
+                cell.detailTextLabel.text =
+                    [w.format stringFromNumber:@(value/pow(10, w.format.maximumFractionDigits))];
+            }
             break;
             
         case 1:
@@ -108,6 +149,19 @@
     }
     
     return cell;
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
+{
+    switch (section) {
+        case 0: return @"recent transactions";
+        case 1: return nil;
+        default:
+            NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
+                     __LINE__, section);
+    }
+    
+    return nil;
 }
 
 #pragma mark - Table view delegate
