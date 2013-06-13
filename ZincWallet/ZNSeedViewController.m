@@ -19,21 +19,16 @@
 
 @implementation ZNSeedViewController
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
-{
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    if (self) {
-        // Custom initialization
-    }
-    return self;
-}
-
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
     self.labelFrame.layer.cornerRadius = 10.0;
+    self.labelFrame.layer.shadowColor = [UIColor blackColor].CGColor;
+    self.labelFrame.layer.shadowOffset = CGSizeMake(0.0, 2.0);
+    self.labelFrame.layer.shadowOpacity = 0.25;
+    self.labelFrame.layer.shadowRadius = 3.0;
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -45,8 +40,8 @@
     CGSize s = [self.seedLabel.text sizeWithFont:self.seedLabel.font
                 constrainedToSize:CGSizeMake(self.seedLabel.frame.size.width, 140)];
     
-    self.labelFrame.frame = CGRectMake(self.labelFrame.frame.origin.x, self.view.frame.size.height/2 - s.height/2 - 5,
-                                       self.labelFrame.frame.size.width, s.height + 10);
+    self.labelFrame.frame = CGRectMake(self.labelFrame.frame.origin.x, self.view.frame.size.height/2 - s.height/2 - 10,
+                                       self.labelFrame.frame.size.width, s.height + 20);
 }
 
 - (void)viewWillDisappear:(BOOL)animated
