@@ -8,6 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ZNSettingsViewController : UITableViewController
+@interface ZNSettingsViewController : UITableViewController <UIAlertViewDelegate>
 
 @end

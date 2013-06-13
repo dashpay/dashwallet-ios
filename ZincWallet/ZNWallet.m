@@ -27,6 +27,7 @@
 #define ADDRESS_TX_COUNT_KEY @"ADDRESS_TX_COUNT"
 #define UNSPENT_OUTPUTS_KEY @"UNSPENT_OUTPUTS"
 #define TRANSACTIONS_KEY @"TRANSACTIONS"
+#define SEED_KEY @"seed"
 
 #define TX_FEE_07 // 0.7 reference implementation tx fees
 
@@ -106,10 +107,10 @@
 
 - (id)initWithSeed:(NSData *)seed
 {
-    if (! [[self getKeychainObjectForKey:@"seed"] isEqual:seed]) {
+    if (! [[self getKeychainObjectForKey:SEED_KEY] isEqual:seed]) {
         self.defs = [NSUserDefaults standardUserDefaults];
         
-        [self setKeychainObject:seed forKey:@"seed"];
+        [self setKeychainObject:seed forKey:SEED_KEY];
         
         // flush cached addresses and tx outputs
         [_defs removeObjectForKey:FUNDED_ADDRESSES_KEY];
@@ -130,33 +131,22 @@
     return [self initWithSeed:[self decodePhrase:phrase]];
 }
 
+//# Note about US patent no 5892470: Here each word does not represent a given digit.
+//# Instead, the digit represented by a word is variable, it depends on the previous word.
+//
+//def mn_decode( wlist ):
+//    out = ''
+//    for i in range(len(wlist)/3):
+//        word1, word2, word3 = wlist[3*i:3*i + 3]
+//        w1 =  words.index(word1)
+//        w2 = (words.index(word2)) % n
+//        w3 = (words.index(word3)) % n
+//        x = w1 + n*((w2 - w1) % n) + n*n*((w3 - w2) % n)
+//        out += '%08x'%x
+//    return out
+//
 - (NSData *)decodePhrase:(NSString *)phrase
 {
-    //# Note about US patent no 5892470: Here each word does not represent a given digit.
-    //# Instead, the digit represented by a word is variable, it depends on the previous word.
-    //
-    //def mn_encode( message ):
-    //    out = []
-    //    for i in range(len(message)/8):
-    //        word = message[8*i:8*i+8]
-    //        x = int(word, 16)
-    //        w1 = (x%n)
-    //        w2 = ((x/n) + w1)%n
-    //        w3 = ((x/n/n) + w2)%n
-    //        out += [ words[w1], words[w2], words[w3] ]
-    //        return out
-    //
-    //def mn_decode( wlist ):
-    //    out = ''
-    //    for i in range(len(wlist)/3):
-    //        word1, word2, word3 = wlist[3*i:3*i+3]
-    //        w1 =  words.index(word1)
-    //        w2 = (words.index(word2))%n
-    //        w3 = (words.index(word3))%n
-    //        x = w1 +n*((w2-w1)%n) +n*n*((w3-w2)%n)
-    //        out += '%08x'%x
-    //        return out
-
     NSArray *list = [phrase componentsSeparatedByString:@" "];
     NSArray *words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"ElectrumSeedWords"
                       ofType:@"plist"]];
@@ -192,6 +182,42 @@
     return [[seed toHex] dataUsingEncoding:NSUTF8StringEncoding];
 }
 
+//def mn_encode( message ):
+//    out = []
+//    for i in range(len(message)/8):
+//        word = message[8*i:8*i + 8]
+//        x = int(word, 16)
+//        w1 = (x % n)
+//        w2 = ((x/n) + w1) % n
+//        w3 = ((x/n/n) + w2) % n
+//        out += [ words[w1], words[w2], words[w3] ]
+//    return out
+//
+- (NSString *)seedPhrase
+{
+    NSData *seed = [NSData dataWithHex:[[NSString alloc] initWithData:[self getKeychainObjectForKey:SEED_KEY]
+                    encoding:NSUTF8StringEncoding]];
+    NSMutableArray *list = [NSMutableArray arrayWithCapacity:12];
+    NSArray *words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"ElectrumSeedWords"
+                      ofType:@"plist"]];
+    uint32_t n = words.count;
+
+    for (int i = 0; i*4 < seed.length; i++) {
+        uint32_t x = CFSwapInt32BigToHost(*((uint32_t *)seed.bytes + i));
+        uint32_t w1 = x % n;
+        uint32_t w2 = ((x/n) + w1) % n;
+        uint32_t w3 = ((x/n/n) + w2) % n;
+        
+        [list addObject:words[w1]];
+        [list addObject:words[w2]];
+        [list addObject:words[w3]];
+    }
+
+    words = nil;
+    
+    return [list componentsJoinedByString:@" "];
+}
+
 - (uint64_t)balance
 {
     __block uint64_t balance = 0;
@@ -212,15 +238,14 @@
 {
     // sort in descending order by timestamp (using block_height doesn't work for unconfirmed, or multiple tx per block)
     return [self.transactions.allValues sortedArrayWithOptions:0 usingComparator:^NSComparisonResult(id obj1, id obj2) {
-        return [@([obj2[@"time"] unsignedLongLongValue])
-                compare:@([obj1[@"time"] unsignedLongLongValue])];
+        return [@([obj2[@"time"] unsignedLongLongValue]) compare:@([obj1[@"time"] unsignedLongLongValue])];
     }];
 }
 
 - (NSData *)mpk
 {
     if (! _mpk) {
-        _mpk = [self.sequence masterPublicKeyFromSeed:[self getKeychainObjectForKey:@"seed"]];
+        _mpk = [self.sequence masterPublicKeyFromSeed:[self getKeychainObjectForKey:SEED_KEY]];
     }
     
     return _mpk;

@@ -7,6 +7,7 @@
 //
 
 #import "ZNSettingsViewController.h"
+#import "ZNSeedViewController.h"
 #import "ZNWallet.h"
 
 @interface ZNSettingsViewController ()
@@ -84,7 +85,6 @@
     static NSString *disclosureIdent = @"ZNDisclosureCell", *transactionIdent = @"ZNTransactionCell";
     UITableViewCell *cell = nil;
     
-    
     // Configure the cell...
     switch (indexPath.section) {
         case 0:
@@ -127,7 +127,6 @@
         case 1:
             cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
             
-
             switch (indexPath.row) {
                 case 0:
                     cell.textLabel.text = @"safety tips";
@@ -187,8 +186,8 @@
                     
                 case 1:
                     [[[UIAlertView alloc] initWithTitle:@"WARNING" message:@"DO NOT lose your backup phrase.\nWrite it "
-                      "down. It is the only way to restore your wallet.\n\nDO NOT let anyone see your backup phrase or "
-                      "they can spend your bitcoins." delegate:self cancelButtonTitle:@"cancel"
+                      "down. Lose it and your bitcoins are gone forever.\n\nDO NOT let anyone see your backup phrase "
+                      "or they can spend your bitcoins." delegate:self cancelButtonTitle:@"cancel"
                       otherButtonTitles:@"show", nil] show];
                     break;
                     
@@ -203,6 +202,16 @@
                      sel_getName(_cmd), __LINE__, indexPath.section);
             break;
     }
+}
+
+#pragma mark - UIAlertViewDelegate
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == alertView.cancelButtonIndex) return;
+    
+    ZNSeedViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNSeedViewController"];
+    [self.navigationController pushViewController:c animated:YES];
 }
 
 @end
