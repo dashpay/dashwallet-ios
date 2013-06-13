@@ -10,7 +10,8 @@
 
 @interface ZNWallet : NSObject
 
-@property (nonatomic, readonly) NSString *seedPhrase;
+@property (nonatomic, strong) NSString *seedPhrase;
+@property (nonatomic, strong) NSData *seed;
 @property (nonatomic, readonly) uint64_t balance;
 @property (nonatomic, readonly) NSString *receiveAddress;
 @property (nonatomic, readonly) NSArray *recentTransactions; // sorted by date, most recent first

@@ -687,6 +687,7 @@
 		752C38CB1742BC4D0033F636 /* UIImageView+AFNetworking.m in Sources */ = {isa = PBXBuildFile; fileRef = 752C38C21742BC4D0033F636 /* UIImageView+AFNetworking.m */; };
 		753007EC17684A8C00C7BB60 /* ZNSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007EB17684A8C00C7BB60 /* ZNSettingsViewController.m */; };
 		753007EF1769899B00C7BB60 /* ZNSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007EE1769899B00C7BB60 /* ZNSeedViewController.m */; };
+		753007F2176A48DA00C7BB60 /* ZNRestoreViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007F1176A48DA00C7BB60 /* ZNRestoreViewController.m */; };
 		7545424F17606C7500638B95 /* button-bg-disabled@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7545424C17606C7500638B95 /* button-bg-disabled@2x.png */; };
 		7545425017606C7500638B95 /* button-bg@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7545424D17606C7500638B95 /* button-bg@2x.png */; };
 		7545425117606C7500638B95 /* button-bg-pressed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7545424E17606C7500638B95 /* button-bg-pressed@2x.png */; };
@@ -1980,6 +1981,8 @@
 		753007EB17684A8C00C7BB60 /* ZNSettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNSettingsViewController.m; sourceTree = "<group>"; };
 		753007ED1769899B00C7BB60 /* ZNSeedViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNSeedViewController.h; sourceTree = "<group>"; };
 		753007EE1769899B00C7BB60 /* ZNSeedViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNSeedViewController.m; sourceTree = "<group>"; };
+		753007F0176A48DA00C7BB60 /* ZNRestoreViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNRestoreViewController.h; sourceTree = "<group>"; };
+		753007F1176A48DA00C7BB60 /* ZNRestoreViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNRestoreViewController.m; sourceTree = "<group>"; };
 		7545424C17606C7500638B95 /* button-bg-disabled@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-disabled@2x.png"; sourceTree = "<group>"; };
 		7545424D17606C7500638B95 /* button-bg@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg@2x.png"; sourceTree = "<group>"; };
 		7545424E17606C7500638B95 /* button-bg-pressed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-pressed@2x.png"; sourceTree = "<group>"; };
@@ -4437,6 +4440,8 @@
 				753007EB17684A8C00C7BB60 /* ZNSettingsViewController.m */,
 				753007ED1769899B00C7BB60 /* ZNSeedViewController.h */,
 				753007EE1769899B00C7BB60 /* ZNSeedViewController.m */,
+				753007F0176A48DA00C7BB60 /* ZNRestoreViewController.h */,
+				753007F1176A48DA00C7BB60 /* ZNRestoreViewController.m */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -5927,6 +5932,7 @@
 				759CB240175F03BF00AFA559 /* ZNAmountViewController.m in Sources */,
 				753007EC17684A8C00C7BB60 /* ZNSettingsViewController.m in Sources */,
 				753007EF1769899B00C7BB60 /* ZNSeedViewController.m in Sources */,
+				753007F2176A48DA00C7BB60 /* ZNRestoreViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

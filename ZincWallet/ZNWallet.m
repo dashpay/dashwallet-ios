@@ -105,11 +105,32 @@
     return self;
 }
 
+- (id)initWithSeedPhrase:(NSString *)phrase
+{
+    if (! (self = [self init])) return nil;
+    
+    self.seedPhrase = phrase;
+    
+    return self;
+}
+
 - (id)initWithSeed:(NSData *)seed
 {
-    if (! [[self getKeychainObjectForKey:SEED_KEY] isEqual:seed]) {
-        self.defs = [NSUserDefaults standardUserDefaults];
-        
+    if (! (self = [self init])) return nil;
+    
+    self.seed = seed;
+    
+    return self;
+}
+
+- (NSData *)seed
+{
+    return [self getKeychainObjectForKey:SEED_KEY];
+}
+
+- (void)setSeed:(NSData *)seed
+{
+    if (! [self.seed isEqual:seed]) {        
         [self setKeychainObject:seed forKey:SEED_KEY];
         
         // flush cached addresses and tx outputs
@@ -122,66 +143,11 @@
         [_defs removeObjectForKey:TRANSACTIONS_KEY];
         [_defs synchronize];
     }
-    
-    return [self init];
-}
-
-- (id)initWithSeedPhrase:(NSString *)phrase
-{
-    return [self initWithSeed:[self decodePhrase:phrase]];
 }
 
 //# Note about US patent no 5892470: Here each word does not represent a given digit.
 //# Instead, the digit represented by a word is variable, it depends on the previous word.
 //
-//def mn_decode( wlist ):
-//    out = ''
-//    for i in range(len(wlist)/3):
-//        word1, word2, word3 = wlist[3*i:3*i + 3]
-//        w1 =  words.index(word1)
-//        w2 = (words.index(word2)) % n
-//        w3 = (words.index(word3)) % n
-//        x = w1 + n*((w2 - w1) % n) + n*n*((w3 - w2) % n)
-//        out += '%08x'%x
-//    return out
-//
-- (NSData *)decodePhrase:(NSString *)phrase
-{
-    NSArray *list = [phrase componentsSeparatedByString:@" "];
-    NSArray *words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"ElectrumSeedWords"
-                      ofType:@"plist"]];
-    NSMutableData *seed = [NSMutableData dataWithCapacity:list.count*4/3];
-    int32_t n = words.count;
-    
-    if (list.count != 12) {
-        NSLog(@"seed should be 12 words, found %d instead", list.count);
-        return nil;
-    }
-
-    for (NSUInteger i = 0; i < list.count; i += 3) {
-        int32_t w1 = [words indexOfObject:list[i]], w2 = [words indexOfObject:list[i + 1]],
-                w3 = [words indexOfObject:list[i + 2]];
-        
-        if (w1 == NSNotFound || w2 == NSNotFound || w3 == NSNotFound) {
-            NSLog(@"seed contained unknown word: %@", list[i + (w1 == NSNotFound ? 0 : w2 == NSNotFound ? 1 : 2)]);
-            return nil;
-        }
-        
-        // python's modulo behaves differently than C when dealing with negative numbers
-        // the C equivalent of n % M in python is ((n % M) + M) % M
-        int32_t x = w1 + n*((((w2 - w1) % n) + n) % n) + n*n*((((w3 - w2) % n) + n) % n);
-        
-        x = CFSwapInt32HostToBig(x);
-        
-        [seed appendBytes:&x length:sizeof(x)];
-    }
-
-    words = nil;
-    
-    // Electurm uses a hex representation of the decoded seed instead of the seed itself
-    return [[seed toHex] dataUsingEncoding:NSUTF8StringEncoding];
-}
-
 //def mn_encode( message ):
 //    out = []
 //    for i in range(len(message)/8):
@@ -195,14 +161,13 @@
 //
 - (NSString *)seedPhrase
 {
-    NSData *seed = [NSData dataWithHex:[[NSString alloc] initWithData:[self getKeychainObjectForKey:SEED_KEY]
-                    encoding:NSUTF8StringEncoding]];
-    NSMutableArray *list = [NSMutableArray arrayWithCapacity:12];
+    NSData *seed = [NSData dataWithHex:[[NSString alloc] initWithData:self.seed encoding:NSUTF8StringEncoding]];
+    NSMutableArray *list = [NSMutableArray arrayWithCapacity:seed.length*3/4];
     NSArray *words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"ElectrumSeedWords"
                       ofType:@"plist"]];
     uint32_t n = words.count;
-
-    for (int i = 0; i*4 < seed.length; i++) {
+    
+    for (int i = 0; i*sizeof(uint32_t) < seed.length; i++) {
         uint32_t x = CFSwapInt32BigToHost(*((uint32_t *)seed.bytes + i));
         uint32_t w1 = x % n;
         uint32_t w2 = ((x/n) + w1) % n;
@@ -212,10 +177,58 @@
         [list addObject:words[w2]];
         [list addObject:words[w3]];
     }
-
+    
     words = nil;
     
     return [list componentsJoinedByString:@" "];
+}
+
+//def mn_decode( wlist ):
+//    out = ''
+//    for i in range(len(wlist)/3):
+//        word1, word2, word3 = wlist[3*i:3*i + 3]
+//        w1 =  words.index(word1)
+//        w2 = (words.index(word2)) % n
+//        w3 = (words.index(word3)) % n
+//        x = w1 + n*((w2 - w1) % n) + n*n*((w3 - w2) % n)
+//        out += '%08x'%x
+//    return out
+//
+- (void)setSeedPhrase:(NSString *)seedPhrase
+{
+    NSArray *list = [seedPhrase componentsSeparatedByString:@" "];
+    NSArray *words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"ElectrumSeedWords"
+                      ofType:@"plist"]];
+    NSMutableData *seed = [NSMutableData dataWithCapacity:list.count*4/3];
+    int32_t n = words.count;
+    
+    if (list.count != 12) {
+        NSLog(@"seed should be 12 words, found %d instead", list.count);
+        return;
+    }
+
+    for (NSUInteger i = 0; i < list.count; i += 3) {
+        int32_t w1 = [words indexOfObject:list[i]], w2 = [words indexOfObject:list[i + 1]],
+                w3 = [words indexOfObject:list[i + 2]];
+        
+        if (w1 == NSNotFound || w2 == NSNotFound || w3 == NSNotFound) {
+            NSLog(@"seed contained unknown word: %@", list[i + (w1 == NSNotFound ? 0 : w2 == NSNotFound ? 1 : 2)]);
+            return;
+        }
+        
+        // python's modulo behaves differently than C when dealing with negative numbers
+        // the equivalent of python's (n % M) in C is (((n % M) + M) % M)
+        int32_t x = w1 + n*((((w2 - w1) % n) + n) % n) + n*n*((((w3 - w2) % n) + n) % n);
+        
+        x = CFSwapInt32HostToBig(x);
+        
+        [seed appendBytes:&x length:sizeof(x)];
+    }
+
+    words = nil;
+    
+    // Electurm uses a hex representation of the decoded seed instead of the seed itself
+    self.seed = [[seed toHex] dataUsingEncoding:NSUTF8StringEncoding];
 }
 
 - (uint64_t)balance
@@ -245,7 +258,7 @@
 - (NSData *)mpk
 {
     if (! _mpk) {
-        _mpk = [self.sequence masterPublicKeyFromSeed:[self getKeychainObjectForKey:SEED_KEY]];
+        _mpk = [self.sequence masterPublicKeyFromSeed:self.seed];
     }
     
     return _mpk;

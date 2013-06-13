@@ -82,6 +82,11 @@
     [self.requestIDs addObject:QR_ID];
     [self.requests addObject:req];
     
+    if (! [[ZNWallet sharedInstance] seed]) { // first launch
+        UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNNewWalletNav"];
+        [self.navigationController presentModalViewController:c animated:NO];
+    }
+    
 //    uint64_t balance = [[ZNWallet sharedInstance] balance];
 //    
 //    NSLog(@"wallet balance: %.16g", (doubld)balance/SATOSHIS);
