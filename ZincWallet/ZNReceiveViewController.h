@@ -9,6 +9,6 @@
 #import <UIKit/UIKit.h>
 #import <GameKit/GameKit.h>
 
-@interface ZNReceiveViewController : UIViewController <GKSessionDelegate, UITextFieldDelegate>
+@interface ZNReceiveViewController : UIViewController <GKSessionDelegate, UITextFieldDelegate, UIActionSheetDelegate>
 
 @end

@@ -34,6 +34,11 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+ 
+    // remove done button if we're not the root of the nav stack
+    if (self.navigationController.viewControllers[0] != self) {
+        self.navigationItem.leftBarButtonItem = nil;
+    }
     
     self.seedLabel.text = [[ZNWallet sharedInstance] seedPhrase];
     
@@ -50,6 +55,22 @@
 
     // don't leave the seed phrase laying around in memory any longer than necessary
     self.seedLabel.text = @"";
+}
+
+#pragma mark - IBAction
+
+- (IBAction)done:(id)sender
+{
+    [[[UIAlertView alloc] initWithTitle:nil message:@"You can see your backup phrase again under settings" delegate:self
+      cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+}
+
+#pragma mark - UIAlertViewDelegate
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    [self.navigationController.presentingViewController.presentingViewController
+     dismissModalViewControllerAnimated:YES];
 }
 
 @end

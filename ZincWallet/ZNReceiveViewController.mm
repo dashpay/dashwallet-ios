@@ -14,7 +14,7 @@
 @interface ZNReceiveViewController ()
 
 @property (nonatomic, strong) IBOutlet UIImageView *qrView;
-@property (nonatomic, strong) IBOutlet UILabel *addressLabel;
+@property (nonatomic, strong) IBOutlet UIButton *addressButton;
 
 @property (nonatomic, strong) IBOutlet UIActivityIndicatorView *spinner;
 @property (nonatomic, strong) IBOutlet UILabel *waitingLabel;
@@ -46,7 +46,7 @@
     
     NSString *s = [[NSString alloc] initWithData:[self paymentRequest].data encoding:NSUTF8StringEncoding];
     
-    self.addressLabel.text = [self paymentAddress];
+    [self.addressButton setTitle:[self paymentAddress] forState:UIControlStateNormal];
     self.qrView.image = [QREncoder renderDataMatrix:[QREncoder encodeWithECLevel:1 version:1 string:s]
                          imageDimension:self.qrView.frame.size.width];
 }
@@ -91,6 +91,14 @@
 }
 
 #pragma mark - IBAction
+
+- (IBAction)address:(id)sender
+{
+    NSString *title = [@"This is your bitcoin address " stringByAppendingString:self.paymentAddress];
+
+    [[[UIActionSheet alloc] initWithTitle:title delegate:self cancelButtonTitle:@"cancel" destructiveButtonTitle:nil
+      otherButtonTitles:@"copy", @"email", @"sms", nil] showInView:[UIApplication sharedApplication].keyWindow];
+}
 
 - (IBAction)issueRequest:(id)sender
 {
@@ -166,6 +174,13 @@ replacementString:(NSString *)string
     self.requestButton.enabled = (textField.text != nil);
     
     return NO;
+}
+
+#pragma mark - UIActionSheetDelegate
+
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    
 }
 
 #pragma mark - GKSessionDelegate

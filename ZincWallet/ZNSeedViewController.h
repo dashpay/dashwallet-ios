@@ -8,6 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ZNSeedViewController : UIViewController
+@interface ZNSeedViewController : UIViewController <UIAlertViewDelegate>
 
 @end

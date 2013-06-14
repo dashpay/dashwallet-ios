@@ -69,20 +69,27 @@
     
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque];
     
-//    [[UIButton appearance] setBackgroundImage:[[UIImage imageNamed:@"button-bg.png"]
-//     resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)] forState:UIControlStateNormal];
-//    [[UIButton appearance] setBackgroundImage:[[UIImage imageNamed:@"button-bg-pressed.png"]
-//     resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)] forState:UIControlStateHighlighted];
-//    [[UIButton appearance] setBackgroundImage:[[UIImage imageNamed:@"button-bg-disabled.png"]
-//     resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)] forState:UIControlStateDisabled];
-//
-//    [[UIButton appearance] setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
-//    [[UIButton appearance] setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
-//    [[UIButton appearance] setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
-//
-//    [[UIButton appearance] setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateNormal];
-//    [[UIButton appearance] setTitleShadowColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
-//    [[UIButton appearance] setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateDisabled];
+    [[UIButton appearance] setBackgroundImage:[[UIImage imageNamed:@"button-bg.png"]
+     resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)] forState:UIControlStateNormal];
+    [[UIButton appearance] setBackgroundImage:[[UIImage imageNamed:@"button-bg-pressed.png"]
+     resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)] forState:UIControlStateHighlighted];
+    [[UIButton appearance] setBackgroundImage:[[UIImage imageNamed:@"button-bg-disabled.png"]
+     resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)] forState:UIControlStateDisabled];
+
+    [[UIButton appearance] setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
+    [[UIButton appearance] setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
+    [[UIButton appearance] setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
+
+    [[UIButton appearance] setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [[UIButton appearance] setTitleShadowColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
+    [[UIButton appearance] setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateDisabled];
+    
+    [[UIButton appearanceWhenContainedIn:[UITableViewCell class], nil] setBackgroundImage:nil
+     forState:UIControlStateNormal];
+    [[UIButton appearanceWhenContainedIn:[UITableViewCell class], nil] setBackgroundImage:nil
+     forState:UIControlStateHighlighted];
+    [[UIButton appearanceWhenContainedIn:[UITableViewCell class], nil] setBackgroundImage:nil
+     forState:UIControlStateDisabled];
     
     [[UINavigationBar appearance] setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor darkGrayColor],
      UITextAttributeTextShadowColor:[UIColor whiteColor],

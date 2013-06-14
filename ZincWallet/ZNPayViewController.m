@@ -40,6 +40,7 @@
 @property (nonatomic, strong) IBOutlet UIScrollView *scrollView;
 @property (nonatomic, strong) IBOutlet UIPageControl *pageControl;
 
+@property (nonatomic, strong) ZNReceiveViewController *receiveController;
 
 @end
 
@@ -140,19 +141,13 @@
     
     self.scrollView.contentSize = CGSizeMake(self.scrollView.frame.size.width*2, self.scrollView.frame.size.height);
     
-    static dispatch_once_t onceToken = 0;
-
     //XXX sould have a main viewcontroller that contains the scrollview, with both pay and receive as subviews
     // having payviewcontroller instantiate receiveviewcontroller like this is ugly
-    dispatch_once(&onceToken, ^{
-        ZNReceiveViewController *c =
-            [self.storyboard instantiateViewControllerWithIdentifier:@"ZNReceiveViewController"];
-        CGRect f = self.scrollView.frame;
+    CGRect f = self.scrollView.frame;
     
-        c.view.frame = CGRectMake(f.origin.x + f.size.width, f.origin.y, f.size.width, f.size.height);
-        [c viewWillAppear:NO];
-        [self.scrollView addSubview:c.view];
-    });
+    self.receiveController.view.frame = CGRectMake(f.origin.x + f.size.width, f.origin.y, f.size.width, f.size.height);
+    [self.receiveController viewWillAppear:NO];
+    [self.scrollView addSubview:self.receiveController.view];
     
     [self layoutButtons];
 }
@@ -166,25 +161,19 @@
     self.session = nil;
 }
 
+- (ZNReceiveViewController *)receiveController
+{
+    if (! _receiveController) {
+        _receiveController = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNReceiveViewController"];
+    }
+    
+    return _receiveController;
+}
+
 - (void)layoutButtons
 {
     while (self.requests.count > self.requestButtons.count) {
         UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
-
-        [button setBackgroundImage:[[UIImage imageNamed:@"button-bg.png"]
-         resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)] forState:UIControlStateNormal];
-        [button setBackgroundImage:[[UIImage imageNamed:@"button-bg-pressed.png"]
-         resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)] forState:UIControlStateHighlighted];
-        [button setBackgroundImage:[[UIImage imageNamed:@"button-bg-disabled.png"]
-         resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)] forState:UIControlStateDisabled];
-        
-        [button setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
-        [button setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
-        [button setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
-        
-        [button setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateNormal];
-        [button setTitleShadowColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
-        [button setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateDisabled];
 
         button.frame = CGRectMake(BUTTON_MARGIN*4, self.scrollView.frame.size.height/2 +
                                   (BUTTON_HEIGHT + 2*BUTTON_MARGIN)*(self.requestButtons.count-self.requests.count/2.0),
@@ -234,7 +223,8 @@
 }
 
 - (void)confirmRequest:(ZNPaymentRequest *)request
-{    
+{
+    //XXX need to handle the situation when the user's own receive address is the payment address
     if (request.isValid) {
         if (request.amount == 0) {
             ZNAmountViewController *c =
