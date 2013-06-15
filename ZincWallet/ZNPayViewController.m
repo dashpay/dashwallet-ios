@@ -15,6 +15,7 @@
 #import "ZNKey.h"
 #import "ZNTransaction.h"
 #import "ZBarReaderViewController.h"
+#import "ZNButton.h"
 
 #define BUTTON_HEIGHT 44.0
 #define BUTTON_MARGIN 5.0
@@ -85,7 +86,7 @@
     
     if (! [[ZNWallet sharedInstance] seed]) { // first launch
         UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNNewWalletNav"];
-        [self.navigationController presentModalViewController:c animated:NO];
+        [self.navigationController presentViewController:c animated:NO completion:nil];
     }
     
 //    uint64_t balance = [[ZNWallet sharedInstance] balance];
@@ -122,7 +123,8 @@
     [self.session setDataReceiveHandler:self withContext:nil];
     self.session.available = YES;
     
-    if ([[UIPasteboard generalPasteboard] string]) {
+    if ([[[UIPasteboard generalPasteboard] string] length] &&
+        ! [[[UIPasteboard generalPasteboard] string] isEqual:[[ZNWallet sharedInstance] receiveAddress]]) {
         ZNPaymentRequest *req = [ZNPaymentRequest requestWithString:[[UIPasteboard generalPasteboard] string]];
 
         if (req.paymentAddress) {
@@ -165,6 +167,7 @@
 {
     if (! _receiveController) {
         _receiveController = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNReceiveViewController"];
+        _receiveController.navController = self.navigationController;
     }
     
     return _receiveController;
@@ -173,15 +176,12 @@
 - (void)layoutButtons
 {
     while (self.requests.count > self.requestButtons.count) {
-        UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+        UIButton *button = [ZNButton buttonWithType:UIButtonTypeCustom];
 
         button.frame = CGRectMake(BUTTON_MARGIN*4, self.scrollView.frame.size.height/2 +
                                   (BUTTON_HEIGHT + 2*BUTTON_MARGIN)*(self.requestButtons.count-self.requests.count/2.0),
                                   self.scrollView.frame.size.width - BUTTON_MARGIN*8, BUTTON_HEIGHT);
         button.alpha = 0;
-        button.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Medium" size:15];
-        button.titleLabel.shadowOffset = CGSizeMake(0.0, 1.0);
-
         [button addTarget:self action:@selector(doIt:) forControlEvents:UIControlEventTouchUpInside];
 
         [self.scrollView addSubview:button];
@@ -213,7 +213,6 @@
                 [obj setAlpha:idx < self.requests.count ? 1 : 0];
             }
         }];
-        
     } completion:^(BOOL finished) {
         while (self.requestButtons.count > self.requests.count) {
             [self.requestButtons.lastObject removeFromSuperview];

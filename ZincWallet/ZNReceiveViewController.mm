@@ -46,9 +46,14 @@
     
     NSString *s = [[NSString alloc] initWithData:[self paymentRequest].data encoding:NSUTF8StringEncoding];
     
-    [self.addressButton setTitle:[self paymentAddress] forState:UIControlStateNormal];
     self.qrView.image = [QREncoder renderDataMatrix:[QREncoder encodeWithECLevel:1 version:1 string:s]
                          imageDimension:self.qrView.frame.size.width];
+    
+    [self.addressButton setTitle:[self paymentAddress] forState:UIControlStateNormal];
+    self.addressButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:15];
+    self.addressButton.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.addressButton.titleLabel.numberOfLines = 1;
+    self.addressButton.titleLabel.lineBreakMode = NSLineBreakByClipping;
 }
 
 - (NSString *)paymentAddress
@@ -94,10 +99,17 @@
 
 - (IBAction)address:(id)sender
 {
-    NSString *title = [@"This is your bitcoin address " stringByAppendingString:self.paymentAddress];
-
-    [[[UIActionSheet alloc] initWithTitle:title delegate:self cancelButtonTitle:@"cancel" destructiveButtonTitle:nil
-      otherButtonTitles:@"copy", @"email", @"sms", nil] showInView:[UIApplication sharedApplication].keyWindow];
+    UIActionSheet *a = [UIActionSheet new];
+    
+    a.title = [@"Receive bitcoins at this address: " stringByAppendingString:self.paymentAddress];
+    a.delegate = self;
+    [a addButtonWithTitle:@"copy"];
+    if ([MFMailComposeViewController canSendMail]) [a addButtonWithTitle:@"email"];
+    if ([MFMessageComposeViewController canSendText]) [a addButtonWithTitle:@"sms"];
+    [a addButtonWithTitle:@"cancel"];
+    a.cancelButtonIndex = a.numberOfButtons - 1;
+    
+    [a showInView:[UIApplication sharedApplication].keyWindow];
 }
 
 - (IBAction)issueRequest:(id)sender
@@ -180,7 +192,40 @@ replacementString:(NSString *)string
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
 {
+    NSString *title = [actionSheet buttonTitleAtIndex:buttonIndex];
     
+    if ([title isEqual:@"copy"]) {
+        [[UIPasteboard generalPasteboard] setString:[self paymentAddress]];
+    }
+    else if ([title isEqual:@"email"]) {
+        MFMailComposeViewController *c = [[MFMailComposeViewController alloc] init];
+        [c setSubject:@"Bitcoin address"];
+        [c setMessageBody:[@"bitcoin://" stringByAppendingString:[self paymentAddress]] isHTML:NO];
+        c.mailComposeDelegate = self;
+        [self.navController presentViewController:c animated:YES completion:nil];
+    }
+    else if ([title isEqual:@"sms"]) {
+        MFMessageComposeViewController *c = [[MFMessageComposeViewController alloc] init];
+        c.body = [@"bitcoin://" stringByAppendingString:[self paymentAddress]];
+        c.messageComposeDelegate = self;
+        [self.navController presentViewController:c animated:YES completion:nil];
+    }
+}
+
+#pragma mark - MFMessageComposeViewControllerDelegate
+
+- (void)messageComposeViewController:(MFMessageComposeViewController *)controller
+didFinishWithResult:(MessageComposeResult)result
+{
+    [self.navController dismissViewControllerAnimated:YES completion:nil];
+}
+
+#pragma mark - MFMailComposeViewControllerDelegate
+
+- (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result
+error:(NSError *)error
+{
+    [self.navController dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - GKSessionDelegate

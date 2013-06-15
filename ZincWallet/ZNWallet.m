@@ -142,6 +142,8 @@
         [_defs removeObjectForKey:UNSPENT_OUTPUTS_KEY];
         [_defs removeObjectForKey:TRANSACTIONS_KEY];
         [_defs synchronize];
+        
+        //XXX at this point we need to kick of wallet syncronization
     }
 }
 

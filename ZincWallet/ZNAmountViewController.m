@@ -16,7 +16,7 @@
 @property (nonatomic, strong) IBOutlet UITextField *amountField;
 @property (nonatomic, strong) IBOutlet UILabel *addressLabel;
 @property (nonatomic, strong) IBOutlet UIActivityIndicatorView *spinner;
-@property (nonatomic, strong) IBOutlet UIButton *payButton;
+@property (nonatomic, strong) IBOutlet UIBarButtonItem *payButton;
 @property (nonatomic, strong) IBOutletCollection(UIButton) NSArray *buttons, *buttonRow1, *buttonRow2, *buttonRow3;
 
 @end
@@ -48,7 +48,7 @@
     [super viewWillAppear:animated];
     
     self.addressLabel.text = [@"to: " stringByAppendingString:self.request.paymentAddress];
-    self.payButton.enabled = self.amountField.text.length ? YES : NO;
+    //self.payButton.enabled = self.amountField.text.length ? YES : NO;
 }
 
 #pragma mark - IBAction
@@ -121,7 +121,7 @@ replacementString:(NSString *)string
     }
 
     textField.text = t;
-    self.payButton.enabled = t.length ? YES : NO;
+    //self.payButton.enabled = t.length ? YES : NO;
 
     return NO;
 }

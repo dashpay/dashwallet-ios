@@ -688,6 +688,7 @@
 		753007EC17684A8C00C7BB60 /* ZNSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007EB17684A8C00C7BB60 /* ZNSettingsViewController.m */; };
 		753007EF1769899B00C7BB60 /* ZNSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007EE1769899B00C7BB60 /* ZNSeedViewController.m */; };
 		753007F2176A48DA00C7BB60 /* ZNRestoreViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007F1176A48DA00C7BB60 /* ZNRestoreViewController.m */; };
+		7535CCDF176BE3D2007E29C5 /* ZNButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 7535CCDE176BE3D2007E29C5 /* ZNButton.m */; };
 		7545424F17606C7500638B95 /* button-bg-disabled@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7545424C17606C7500638B95 /* button-bg-disabled@2x.png */; };
 		7545425017606C7500638B95 /* button-bg@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7545424D17606C7500638B95 /* button-bg@2x.png */; };
 		7545425117606C7500638B95 /* button-bg-pressed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7545424E17606C7500638B95 /* button-bg-pressed@2x.png */; };
@@ -954,6 +955,7 @@
 		7573F0641742C5F80037A109 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		7573F081174313910037A109 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		7579C5DF17665B5300E89497 /* libzbar.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75FD9C0217664F3000307894 /* libzbar.a */; };
+		758B585E176BB1DE0069968F /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 758B585D176BB1DE0069968F /* MessageUI.framework */; };
 		758D21181762E96800BE69E3 /* refresh@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 758D21171762E96800BE69E3 /* refresh@2x.png */; };
 		758F2D8217669D6800102AF1 /* libqrencoder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75AF36D7176675D3004AA912 /* libqrencoder.a */; };
 		75920F7F174AAE5F00C1C03D /* netbase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75920F7D174AAE5F00C1C03D /* netbase.cpp */; };
@@ -1983,6 +1985,8 @@
 		753007EE1769899B00C7BB60 /* ZNSeedViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNSeedViewController.m; sourceTree = "<group>"; };
 		753007F0176A48DA00C7BB60 /* ZNRestoreViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNRestoreViewController.h; sourceTree = "<group>"; };
 		753007F1176A48DA00C7BB60 /* ZNRestoreViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNRestoreViewController.m; sourceTree = "<group>"; };
+		7535CCDD176BE3D2007E29C5 /* ZNButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNButton.h; sourceTree = "<group>"; };
+		7535CCDE176BE3D2007E29C5 /* ZNButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNButton.m; sourceTree = "<group>"; };
 		7545424C17606C7500638B95 /* button-bg-disabled@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-disabled@2x.png"; sourceTree = "<group>"; };
 		7545424D17606C7500638B95 /* button-bg@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg@2x.png"; sourceTree = "<group>"; };
 		7545424E17606C7500638B95 /* button-bg-pressed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-pressed@2x.png"; sourceTree = "<group>"; };
@@ -2266,6 +2270,7 @@
 		7573F0761742C6400037A109 /* script.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = script.h; path = bitcoin/src/script.h; sourceTree = SOURCE_ROOT; };
 		7573F0781742C6400037A109 /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = util.h; path = bitcoin/src/util.h; sourceTree = SOURCE_ROOT; };
 		7573F080174313910037A109 /* libboost.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libboost.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		758B585D176BB1DE0069968F /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		758D21171762E96800BE69E3 /* refresh@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "refresh@2x.png"; sourceTree = "<group>"; };
 		75920F7D174AAE5F00C1C03D /* netbase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = netbase.cpp; path = ../../bitcoin/src/netbase.cpp; sourceTree = "<group>"; };
 		75920F7E174AAE5F00C1C03D /* netbase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = netbase.h; path = ../../bitcoin/src/netbase.h; sourceTree = "<group>"; };
@@ -2461,6 +2466,7 @@
 				75F17C2F1744CB3400D9F228 /* libssl.a in Frameworks */,
 				75F17C2E1744CB2E00D9F228 /* libcrypto.a in Frameworks */,
 				75F17C2C1744CB2400D9F228 /* libbitcoin.a in Frameworks */,
+				758B585E176BB1DE0069968F /* MessageUI.framework in Frameworks */,
 				759CB23B175E8D4900AFA559 /* AVFoundation.framework in Frameworks */,
 				759CB237175E8A6E00AFA559 /* CoreVideo.framework in Frameworks */,
 				759CB23D175E8D6300AFA559 /* CoreMedia.framework in Frameworks */,
@@ -3762,6 +3768,15 @@
 			path = AFNetowrking/AFNetworking;
 			sourceTree = SOURCE_ROOT;
 		};
+		7535CCDC176BE376007E29C5 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				7535CCDD176BE3D2007E29C5 /* ZNButton.h */,
+				7535CCDE176BE3D2007E29C5 /* ZNButton.m */,
+			);
+			name = Views;
+			sourceTree = "<group>";
+		};
 		7573180B174316900037A109 /* boost */ = {
 			isa = PBXGroup;
 			children = (
@@ -4492,6 +4507,7 @@
 		75D8F380173ABE3C0080D95E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				758B585D176BB1DE0069968F /* MessageUI.framework */,
 				759CB23C175E8D6300AFA559 /* CoreMedia.framework */,
 				759CB23A175E8D4900AFA559 /* AVFoundation.framework */,
 				759CB236175E8A6E00AFA559 /* CoreVideo.framework */,
@@ -4513,6 +4529,7 @@
 		75D8F387173ABE3C0080D95E /* ZincWallet */ = {
 			isa = PBXGroup;
 			children = (
+				7535CCDC176BE376007E29C5 /* Views */,
 				75CBEAE6173C807E00978DBA /* Models */,
 				75CBEAE5173C806E00978DBA /* Controllers */,
 				752C2FAC17416B360033F636 /* Categories */,
@@ -5933,6 +5950,7 @@
 				753007EC17684A8C00C7BB60 /* ZNSettingsViewController.m in Sources */,
 				753007EF1769899B00C7BB60 /* ZNSeedViewController.m in Sources */,
 				753007F2176A48DA00C7BB60 /* ZNRestoreViewController.m in Sources */,
+				7535CCDF176BE3D2007E29C5 /* ZNButton.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

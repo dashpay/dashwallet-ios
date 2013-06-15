@@ -8,6 +8,7 @@
 
 #import "ZNAppDelegate.h"
 #import "NSString+Base58.h"
+#import <MessageUI/MessageUI.h>
 
 @implementation ZNAppDelegate
 
@@ -69,27 +70,29 @@
     
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque];
     
-    [[UIButton appearance] setBackgroundImage:[[UIImage imageNamed:@"button-bg.png"]
-     resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)] forState:UIControlStateNormal];
-    [[UIButton appearance] setBackgroundImage:[[UIImage imageNamed:@"button-bg-pressed.png"]
-     resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)] forState:UIControlStateHighlighted];
-    [[UIButton appearance] setBackgroundImage:[[UIImage imageNamed:@"button-bg-disabled.png"]
-     resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)] forState:UIControlStateDisabled];
-
-    [[UIButton appearance] setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
-    [[UIButton appearance] setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
-    [[UIButton appearance] setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
-
-    [[UIButton appearance] setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    [[UIButton appearance] setTitleShadowColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
-    [[UIButton appearance] setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateDisabled];
-    
-    [[UIButton appearanceWhenContainedIn:[UITableViewCell class], nil] setBackgroundImage:nil
-     forState:UIControlStateNormal];
-    [[UIButton appearanceWhenContainedIn:[UITableViewCell class], nil] setBackgroundImage:nil
-     forState:UIControlStateHighlighted];
-    [[UIButton appearanceWhenContainedIn:[UITableViewCell class], nil] setBackgroundImage:nil
-     forState:UIControlStateDisabled];
+    //XXX changing the button appearance app wide causes issues... not sure how to turn it off for the contact add
+    //button in the sms compose view
+//    [[UIButton appearance] setBackgroundImage:[[UIImage imageNamed:@"button-bg.png"]
+//     resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)] forState:UIControlStateNormal];
+//    [[UIButton appearance] setBackgroundImage:[[UIImage imageNamed:@"button-bg-pressed.png"]
+//     resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)] forState:UIControlStateHighlighted];
+//    [[UIButton appearance] setBackgroundImage:[[UIImage imageNamed:@"button-bg-disabled.png"]
+//     resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)] forState:UIControlStateDisabled];
+//
+//    [[UIButton appearance] setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
+//    [[UIButton appearance] setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
+//    [[UIButton appearance] setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
+//
+//    [[UIButton appearance] setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateNormal];
+//    [[UIButton appearance] setTitleShadowColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
+//    [[UIButton appearance] setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateDisabled];
+//    
+//    [[UIButton appearanceWhenContainedIn:[UITableViewCell class], nil] setBackgroundImage:nil
+//     forState:UIControlStateNormal];
+//    [[UIButton appearanceWhenContainedIn:[UITableViewCell class], nil] setBackgroundImage:nil
+//     forState:UIControlStateHighlighted];
+//    [[UIButton appearanceWhenContainedIn:[UITableViewCell class], nil] setBackgroundImage:nil
+//     forState:UIControlStateDisabled];
     
     [[UINavigationBar appearance] setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor darkGrayColor],
      UITextAttributeTextShadowColor:[UIColor whiteColor],
@@ -99,7 +102,8 @@
     [[UINavigationBar appearance] setTintColor:[UIColor colorWithWhite:0.95 alpha:1.0]];
     [[UIToolbar appearance] setTintColor:[UIColor colorWithWhite:0.95 alpha:1.0]];
     
-    [[UIBarButtonItem appearance] setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor darkGrayColor],
+    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
+     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor darkGrayColor],
      UITextAttributeTextShadowColor:[UIColor whiteColor],
      UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
      UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Medium" size:13.0]} forState:UIControlStateNormal];

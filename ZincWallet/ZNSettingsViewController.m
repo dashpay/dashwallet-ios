@@ -185,8 +185,7 @@
                     break;
                     
                 case 1:
-                    [[[UIAlertView alloc] initWithTitle:@"WARNING" message:@"DO NOT lose your backup phrase.\nWrite it "
-                      "down. Lose it and your bitcoins are gone forever.\n\nDO NOT let anyone see your backup phrase "
+                    [[[UIAlertView alloc] initWithTitle:@"WARNING" message:@"DO NOT let anyone see your backup phrase "
                       "or they can spend your bitcoins." delegate:self cancelButtonTitle:@"cancel"
                       otherButtonTitles:@"show", nil] show];
                     break;

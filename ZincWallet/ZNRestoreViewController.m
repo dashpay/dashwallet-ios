@@ -7,32 +7,115 @@
 //
 
 #import "ZNRestoreViewController.h"
+#import "ZNWallet.h"
+#import <QuartzCore/QuartzCore.h>
 
 @interface ZNRestoreViewController ()
+
+@property (nonatomic, strong) IBOutlet UITextView *textView;
+@property (nonatomic, strong) NSSet *words;
 
 @end
 
 @implementation ZNRestoreViewController
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
-{
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    if (self) {
-        // Custom initialization
-    }
-    return self;
-}
-
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	// Do any additional setup after loading the view.
+    // Do any additional setup after loading the view.
 }
 
-- (void)didReceiveMemoryWarning
+- (void)viewWillAppear:(BOOL)animated
 {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+    [super viewWillAppear:animated];
+    
+    self.textView.layer.borderColor = [UIColor colorWithWhite:0.85 alpha:1.0].CGColor;
+    self.textView.layer.borderWidth = 1.0;
+    self.textView.layer.cornerRadius = 5.0;
+//    self.textView.layer.shadowColor = [UIColor blackColor].CGColor;
+//    self.textView.layer.shadowOffset = CGSizeMake(0.0, 2.0);
+//    self.textView.layer.shadowOpacity = 0.25;
+//    self.textView.layer.shadowRadius = 3.0;
+
+    [self.textView becomeFirstResponder];
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    
+    self.words = [NSSet setWithArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
+                  pathForResource:@"ElectrumSeedWords" ofType:@"plist"]]];
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    self.words = nil;
+    
+    [super viewWillDisappear:animated];
+}
+
+#pragma mark - UITextViewDelegate
+
+- (void)textViewDidChange:(UITextView *)textView
+{
+    static NSCharacterSet *charset = nil;
+    NSRange selected = textView.selectedRange;
+    NSString *s = [textView.text lowercaseString];
+    BOOL done = ([s rangeOfString:@"\n"].location != NSNotFound);
+
+
+    if (! charset) {
+        charset = [[NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyz "] invertedSet];
+    }
+    
+    while ([s rangeOfCharacterFromSet:charset].location != NSNotFound) {
+        NSRange r = [s rangeOfCharacterFromSet:charset];
+
+        s = [[s substringToIndex:r.location] stringByAppendingString:[s substringFromIndex:r.location + 1]];
+    }
+
+    while ([s rangeOfString:@"  "].location != NSNotFound) {
+        NSRange r = [s rangeOfString:@"  "];
+        
+        if (r.location + 1 == selected.location) selected.location++;
+        s = [[s substringToIndex:r.location] stringByAppendingString:[s substringFromIndex:r.location + 1]];
+    }
+    
+    if ([s hasPrefix:@" "]) s = [s substringFromIndex:1];
+
+    selected.location -= textView.text.length - s.length;
+    textView.text = s;
+    textView.selectedRange = selected;
+    
+    if (done) {
+        if ([s hasSuffix:@" "]) s = [s substringToIndex:s.length - 1];
+
+        NSArray *a = [s componentsSeparatedByString:@" "];
+
+        if (! [[NSSet setWithArray:a] isSubsetOfSet:self.words]) {
+            NSUInteger i = [a indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+                return [self.words containsObject:obj] ? NO : (*stop = YES);
+            }];
+            
+            textView.selectedRange = [textView.text rangeOfString:a[i]];
+            
+            [[[UIAlertView alloc] initWithTitle:nil
+              message:[a[i] stringByAppendingString:@" is not a correct backup phrase word"] delegate:nil
+              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        }
+        else if (a.count != 12) {
+            [[[UIAlertView alloc] initWithTitle:nil message:@"backup phrase must be 12 words" delegate:nil
+                              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        }
+        else {
+            [[ZNWallet sharedInstance] setSeedPhrase:textView.text];
+        
+            textView.text = nil; // don't leave the seed phrase sitting in memory any longer than needed
+            
+            [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+        }
+    }
 }
 
 @end

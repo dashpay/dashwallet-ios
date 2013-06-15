@@ -69,8 +69,8 @@
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    [self.navigationController.presentingViewController.presentingViewController
-     dismissModalViewControllerAnimated:YES];
+    [self.navigationController.presentingViewController.presentingViewController dismissViewControllerAnimated:YES
+     completion:nil];
 }
 
 @end
