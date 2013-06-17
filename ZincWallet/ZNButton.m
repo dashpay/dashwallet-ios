@@ -68,6 +68,12 @@
     
     self.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Medium" size:15];
     self.titleLabel.shadowOffset = CGSizeMake(0.0, 1.0);
+    
+    self.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.titleLabel.numberOfLines = 1;
+    self.titleLabel.lineBreakMode = NSLineBreakByClipping;
+    
+    [self setTitleEdgeInsets:UIEdgeInsetsMake(0, 3, 0, 3)];
 }
 
 /*

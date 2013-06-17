@@ -33,9 +33,6 @@
 
 #define TX_FREE_MIN_OUTPUT 1000000 // no tx output can be below this amount without a tx fee
 
-#define ELECTURM_GAP_LIMIT 5
-#define ELECTURM_GAP_LIMIT_FOR_CHANGE 3 // this is hard coded in the electrum client
-
 #define SEC_ATTR_SERVICE @"cc.zinc.zincwallet"
 
 @interface ZNWallet ()
@@ -233,6 +230,16 @@
     self.seed = [[seed toHex] dataUsingEncoding:NSUTF8StringEncoding];
 }
 
+- (void)generateRandomSeed
+{
+    NSMutableData *seed = [NSMutableData dataWithLength:ELECTRUM_SEED_LENGTH];
+    
+    SecRandomCopyBytes(kSecRandomDefault, seed.length, seed.mutableBytes);
+    
+    // Electurm uses a hex representation of the seed value instead of the seed itself
+    self.seed = [[seed toHex] dataUsingEncoding:NSUTF8StringEncoding];
+}
+
 - (uint64_t)balance
 {
     __block uint64_t balance = 0;
@@ -246,7 +253,19 @@
 
 - (NSString *)receiveAddress
 {
-    return self.receiveAddresses.lastObject;
+    if (! self.receiveAddresses.count) {
+        NSUInteger i = 0;
+        NSString *a = nil;
+        
+        while (! a || [self.spentAddresses containsObject:a] || [self.fundedAddresses containsObject:a]) {
+            a = [(ZNKey *)[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ forChange:NO masterPublicKey:self.mpk]]
+                 address];
+        }
+   
+        [self.receiveAddresses addObject:a];
+    }
+
+    return self.receiveAddresses[0];
 }
 
 - (NSArray *)recentTransactions

@@ -51,16 +51,11 @@
     
     [self.addressButton setTitle:[self paymentAddress] forState:UIControlStateNormal];
     self.addressButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:15];
-    self.addressButton.titleLabel.adjustsFontSizeToFitWidth = YES;
-    self.addressButton.titleLabel.numberOfLines = 1;
-    self.addressButton.titleLabel.lineBreakMode = NSLineBreakByClipping;
 }
 
 - (NSString *)paymentAddress
 {
-    ZNWallet *w = [ZNWallet sharedInstance];
-    
-    return w.receiveAddress;
+    return [[ZNWallet sharedInstance] receiveAddress];
 
     // XXX hard coded for testing
     // should be retreived from bitpay/coinbase/blockchain or our own bip32 receive only wallet

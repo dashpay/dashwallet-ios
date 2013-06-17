@@ -21,6 +21,8 @@
 
 - (id)initWithSeedPhrase:(NSString *)phrase;
 - (id)initWithSeed:(NSData *)seed;
+
+- (void)generateRandomSeed;
 - (void)synchronizeWithCompletionBlock:(void (^)(BOOL success))completion;
 - (NSString *)transactionFor:(uint64_t)amount to:(NSString *)address;
 - (BOOL)containsAddress:(NSString *)address;

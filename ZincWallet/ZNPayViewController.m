@@ -194,14 +194,15 @@
             [obj setCenter:CGPointMake([obj center].x, self.scrollView.frame.size.height/2 + BUTTON_HEIGHT/2 +
                                        BUTTON_MARGIN + (BUTTON_HEIGHT+2*BUTTON_MARGIN)*(idx-self.requests.count/2.0))];
             if (idx < self.requests.count) {
-                [obj setTitle:[self.requests[idx] label] forState:UIControlStateNormal];
+                ZNPaymentRequest *req = self.requests[idx];
+                [obj setTitle:req.label forState:UIControlStateNormal];
                 
-//                if ([self.requestIDs[idx] isEqual:QR_ID]) {
-//                    [obj setImage:[UIImage imageNamed:@"qr.png"] forState:UIControlStateNormal];
-//                }
-//                else {
-//                    [obj setImage:nil forState:UIControlStateNormal];
-//                }
+                if ([req.label rangeOfString:BTC].location != NSNotFound) {
+                    [obj titleLabel].font = [UIFont fontWithName:@"HelveticaNeue" size:15];
+                }
+                else {
+                    [obj titleLabel].font = [UIFont fontWithName:@"HelveticaNeue-Medium" size:15];
+                }                
             }
             
             if (self.selectedIndex != NSNotFound) {

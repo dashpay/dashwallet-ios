@@ -28,6 +28,11 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
+    [self.buttons enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        [obj titleLabel].font = [UIFont fontWithName:@"HelveticaNeue-Light" size:24];
+        [obj setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    }];
+
     if ([[UIScreen mainScreen]bounds].size.height < 500) { // 3.5" screen
         [self.buttons enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             CGFloat y = self.view.frame.size.height - 122;

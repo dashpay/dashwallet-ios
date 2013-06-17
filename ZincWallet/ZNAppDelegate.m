@@ -100,7 +100,7 @@
      UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0]}]; // -Medium is missing the BTC char :(
     
     [[UINavigationBar appearance] setTintColor:[UIColor colorWithWhite:0.95 alpha:1.0]];
-    [[UIToolbar appearance] setTintColor:[UIColor colorWithWhite:0.95 alpha:1.0]];
+//    [[UIToolbar appearance] setTintColor:[UIColor colorWithWhite:0.95 alpha:1.0]];
     
     [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
      setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor darkGrayColor],

@@ -40,6 +40,10 @@
         self.navigationItem.leftBarButtonItem = nil;
     }
     
+    if (! [[ZNWallet sharedInstance] seed]) {
+        [[ZNWallet sharedInstance] generateRandomSeed];
+    }
+    
     self.seedLabel.text = [[ZNWallet sharedInstance] seedPhrase];
     
     CGSize s = [self.seedLabel.text sizeWithFont:self.seedLabel.font

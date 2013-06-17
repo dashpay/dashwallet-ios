@@ -9,6 +9,10 @@
 #import <Foundation/Foundation.h>
 #import "ZNKeySequence.h"
 
+#define ELECTRUM_SEED_LENGTH (128/8)
+#define ELECTURM_GAP_LIMIT 10
+#define ELECTURM_GAP_LIMIT_FOR_CHANGE 3 // this is hard coded in the electrum client
+
 @interface ZNElectrumSequence : NSObject<ZNKeySequence>
 
 - (NSData *)masterPublicKeyFromSeed:(NSData *)seed;
