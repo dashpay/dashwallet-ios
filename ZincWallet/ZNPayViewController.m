@@ -37,6 +37,7 @@
 @property (nonatomic, strong) NSMutableArray *requestButtons;
 @property (nonatomic, assign) NSUInteger selectedIndex;
 @property (nonatomic, strong) id urlObserver;
+@property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 
 @property (nonatomic, strong) IBOutlet UIScrollView *scrollView;
 @property (nonatomic, strong) IBOutlet UIPageControl *pageControl;
@@ -75,6 +76,21 @@
             [self layoutButtons];
         }
     }];
+    
+    self.syncStartedObserver =
+    [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncStartedNotification object:nil queue:nil
+    usingBlock:^(NSNotification *note) {
+    }];
+
+    self.syncFinishedObserver =
+    [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncFinishedNotification object:nil queue:nil
+    usingBlock:^(NSNotification *note) {
+    }];
+
+    self.syncFailedObserver =
+    [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncFailedNotification object:nil queue:nil
+    usingBlock:^(NSNotification *note) {
+    }];
 
     [self refresh:nil];
     
@@ -87,27 +103,15 @@
     if (! [[ZNWallet sharedInstance] seed]) { // first launch
         UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNNewWalletNav"];
         [self.navigationController presentViewController:c animated:NO completion:nil];
-    }
-    
-//    uint64_t balance = [[ZNWallet sharedInstance] balance];
-//    
-//    NSLog(@"wallet balance: %.16g", (doubld)balance/SATOSHIS);
-//    
-//    uint64_t amt = 2100000000000001ull;
-//    NSLog(@"uint64_t test: %llu", amt);
-//    
-//    NSString *tx = [[ZNWallet sharedInstance] transactionFor:0.01 to:[ZNWallet sharedInstance].receiveAddress];
-//    
-//    NSLog(@"tx hex:\n%@", tx);
-    
-    //NSLog(@"tx: %@", [[ZNTransaction new] toHex]);
-    
-    //NSLog(@"%@", [@"0004f05543b270f96547c950a2b3ed3afe83d03869" hexToBase58check]);
+    }    
 }
 
 - (void)viewWillUnload
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self.urlObserver];
+    [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
+    [[NSNotificationCenter defaultCenter] removeObserver:self.syncFinishedObserver];
+    [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
 
     [super viewWillUnload];
 }
@@ -129,10 +133,8 @@
 
         if (req.paymentAddress) {
             if (! req.label) {
-                NSNumberFormatter *f = [ZNWallet sharedInstance].format;
-
                 req.label = [NSString stringWithFormat:@"%@ - %@", req.paymentAddress,
-                             [f stringFromNumber:@(req.amount/pow(10, f.maximumFractionDigits))]];
+                             [[ZNWallet sharedInstance] stringForAmount:req.amount]];
             }
         
             if (! req.label.length) req.label = @"pay address from clipboard";
@@ -278,14 +280,7 @@
 
 - (IBAction)refresh:(id)sender
 {
-    [[ZNWallet sharedInstance] synchronizeWithCompletionBlock:^(BOOL success) {
-        if (! success) {
-            NSLog(@"syncronize failed :(");
-        }
-        else {
-            NSLog(@"wallet balance: %.16g", (double)[ZNWallet sharedInstance].balance/SATOSHIS);
-        }
-    }];   
+    [[ZNWallet sharedInstance] synchronize];   
 }
 
 - (IBAction)page:(id)sender
@@ -444,11 +439,12 @@
         return;
     }
     
-    NSData *signedRequest = [self.requests[self.selectedIndex] signedTransaction];
+    NSString *tx = [[ZNWallet sharedInstance] transactionFor:[self.requests[self.selectedIndex] amount]
+                    to:[self.requests[self.selectedIndex] paymentAddress]];
     NSError *error;
     
     NSLog(@"sending signed request to %@", self.requestIDs[self.selectedIndex]);
-    [self.session sendData:signedRequest toPeers:@[self.requestIDs[self.selectedIndex]]
+    [self.session sendData:[tx dataUsingEncoding:NSUTF8StringEncoding] toPeers:@[self.requestIDs[self.selectedIndex]]
      withDataMode:GKSendDataReliable error:&error];
     
     if (error) {

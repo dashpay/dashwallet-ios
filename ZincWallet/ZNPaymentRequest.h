@@ -15,7 +15,6 @@
 @property (nonatomic, strong) NSString *message;
 @property (nonatomic, assign) uint64_t amount;
 @property (nonatomic, strong) NSData *data;
-@property (nonatomic, readonly) NSData *signedTransaction;
 @property (nonatomic, readonly, getter=isValid) BOOL valid;
 
 + (id)requestWithData:(NSData *)data;

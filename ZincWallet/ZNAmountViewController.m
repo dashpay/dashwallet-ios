@@ -85,7 +85,7 @@
         [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
           message:self.request.message ? self.request.message : self.request.paymentAddress delegate:self
           cancelButtonTitle:@"cancel"
-          otherButtonTitles:[w.format stringFromNumber:@((double)self.request.amount/factor)], nil] show];
+          otherButtonTitles:[w stringForAmount:self.request.amount], nil] show];
         w.format.minimumFractionDigits = 0;
     }
 }
@@ -139,7 +139,8 @@ replacementString:(NSString *)string
         return;
     }
     
-    NSData *signedTx = [self.request signedTransaction];
+    NSData *signedTx = [[[ZNWallet sharedInstance] transactionFor:self.request.amount to:self.request.paymentAddress]
+                        dataUsingEncoding:NSUTF8StringEncoding];
     
     NSLog(@"signed transaction:\n%@", [signedTx toHex]);
 }

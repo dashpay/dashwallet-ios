@@ -8,6 +8,10 @@
 
 #import <Foundation/Foundation.h>
 
+#define walletSyncStartedNotification @"walletSyncStartedNotification"
+#define walletSyncFinishedNotification @"walletSyncFinishedNotification"
+#define walletSyncFailedNotification @"walletSyncFailedNotification"
+
 @interface ZNWallet : NSObject
 
 @property (nonatomic, strong) NSString *seedPhrase;
@@ -23,8 +27,9 @@
 - (id)initWithSeed:(NSData *)seed;
 
 - (void)generateRandomSeed;
-- (void)synchronizeWithCompletionBlock:(void (^)(BOOL success))completion;
+- (void)synchronize;
 - (NSString *)transactionFor:(uint64_t)amount to:(NSString *)address;
 - (BOOL)containsAddress:(NSString *)address;
+- (NSString *)stringForAmount:(uint64_t)amount;
 
 @end

@@ -119,8 +119,7 @@
                     cell.textLabel.text = o[@"addr"];
                 }
                 
-                cell.detailTextLabel.text =
-                    [w.format stringFromNumber:@(value/pow(10, w.format.maximumFractionDigits))];
+                cell.detailTextLabel.text = [w stringForAmount:value];
             }
             break;
             

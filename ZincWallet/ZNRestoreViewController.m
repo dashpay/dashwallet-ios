@@ -113,6 +113,8 @@
         
             textView.text = nil; // don't leave the seed phrase sitting in memory any longer than needed
             
+            [[ZNWallet sharedInstance] synchronize];
+            
             [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
         }
     }

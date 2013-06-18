@@ -29,6 +29,8 @@
 
 - (NSData *)stretchKey:(NSData *)seed
 {
+    if (! seed) return nil;
+
     NSMutableData *d = [NSMutableData dataWithData:seed];
     
     [d appendData:seed];
@@ -57,6 +59,8 @@
 
 - (NSData *)sequence:(NSUInteger)n forChange:(BOOL)forChange masterPublicKey:(NSData *)masterPublicKey
 {
+    if (! masterPublicKey) return nil;
+    
     NSString *s = [NSString stringWithFormat:@"%u:%d:", n, forChange ? 1 : 0];
     NSMutableData *d = [NSMutableData dataWithBytes:s.UTF8String
                         length:[s lengthOfBytesUsingEncoding:NSUTF8StringEncoding]];
@@ -68,6 +72,8 @@
 
 - (NSData *)publicKey:(NSUInteger)n forChange:(BOOL)forChange masterPublicKey:(NSData *)masterPublicKey
 {
+    if (! masterPublicKey) return nil;
+
     NSData *z = [self sequence:n forChange:forChange masterPublicKey:masterPublicKey];
     BIGNUM *zbn = BN_bin2bn(z.bytes, z.length, NULL);
     BN_CTX *ctx = BN_CTX_new();
@@ -100,6 +106,8 @@
 
 - (NSArray *)privateKeys:(NSArray *)n forChange:(BOOL)forChange fromSeed:(NSData *)seed
 {
+    if (! seed) return @[];
+
     NSMutableArray *ret = [NSMutableArray arrayWithCapacity:n.count];
     NSData *secexp = [self stretchKey:seed];
     NSData *mpk = [[ZNKey keyWithSecret:secexp compressed:NO] publicKey];

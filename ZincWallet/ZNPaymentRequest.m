@@ -7,7 +7,6 @@
 //
 
 #import "ZNPaymentRequest.h"
-#import "ZNWallet.h"
 #import "NSString+Base58.h"
 
 @implementation ZNPaymentRequest
@@ -115,12 +114,6 @@
     }
     
     return [s dataUsingEncoding:NSUTF8StringEncoding];
-}
-
-- (NSData *)signedTransaction
-{
-    return [[[ZNWallet sharedInstance] transactionFor:self.amount to:self.paymentAddress]
-            dataUsingEncoding:NSUTF8StringEncoding];
 }
 
 - (BOOL)isValid

@@ -37,24 +37,48 @@
     
     NSLog(@"like just love know never want time out there make look eye = 0x%@", [d toHex]);
     
-    STAssertEqualObjects(d, [@"00285dfe00285e0100285e0400285e07" dataUsingEncoding:NSUTF8StringEncoding],
-                         @"[ZNWallet decodePhrase:]");
+    STAssertEqualObjects(d, [NSData dataWithHex:@"00285dfe00285e0100285e0400285e07"], @"[ZNWallet decodePhrase:]");
     
     d = [[ZNWallet sharedInstance] performSelector:@selector(decodePhrase:)
          withObject:@"kick chair mask master passion quick raise smooth unless wander actually broke"];
     
     NSLog(@"kick chair mask master passion quick raise smooth unless wander actually broke = 0x%@", [d toHex]);
     
-    STAssertEqualObjects(d, [@"fea983ac0028608e0028609100286094" dataUsingEncoding:NSUTF8StringEncoding],
-                         @"[ZNWallet decodePhrase:]");
+    STAssertEqualObjects(d, [NSData dataWithHex:@"fea983ac0028608e0028609100286094"], @"[ZNWallet decodePhrase:]");
     
     d = [[ZNWallet sharedInstance] performSelector:@selector(decodePhrase:)
          withObject:@"kick quiet student ignore cruel danger describe accident eager darkness embrace suppose"];
     
     NSLog(@"kick quiet student ignore cruel danger describe accident eager darkness embrace suppose = 0x%@", [d toHex]);
     
-    STAssertEqualObjects(d, [@"8d02be487e1953ce2dd6c186fcc97e65" dataUsingEncoding:NSUTF8StringEncoding],
-                         @"[ZNWallet decodePhrase:]");
+    STAssertEqualObjects(d, [NSData dataWithHex:@"8d02be487e1953ce2dd6c186fcc97e65"], @"[ZNWallet decodePhrase:]");
+}
+
+- (void)testWalletEncodePhrase
+{
+    NSString *s = [[ZNWallet sharedInstance] performSelector:@selector(encodePhrase:)
+                   withObject:[NSData dataWithHex:@"00285dfe00285e0100285e0400285e07"]];
+    
+    NSLog(@"0x00285dfe00285e0100285e0400285e07 = %@", s);
+    
+    STAssertEqualObjects(s, @"like just love know never want time out there make look eye",
+                         @"[ZNWallet encodePhrase:]");
+    
+    s = [[ZNWallet sharedInstance] performSelector:@selector(encodePhrase:)
+         withObject:[NSData dataWithHex:@"fea983ac0028608e0028609100286094"]];
+    
+    NSLog(@"0x00285dfe00285e0100285e0400285e07 = %@", s);
+    
+    STAssertEqualObjects(s, @"kick chair mask master passion quick raise smooth unless wander actually broke",
+                         @"[ZNWallet encodePhrase:]");
+    
+    s = [[ZNWallet sharedInstance] performSelector:@selector(encodePhrase:)
+         withObject:[NSData dataWithHex:@"8d02be487e1953ce2dd6c186fcc97e65"]];
+    
+    NSLog(@"0x8d02be487e1953ce2dd6c186fcc97e65 = %@", s);
+    
+    STAssertEqualObjects(s, @"kick quiet student ignore cruel danger describe accident eager darkness embrace suppose",
+                         @"[ZNWallet encodePhrase:]");    
 }
 
 #pragma mark - testElectrumSequence

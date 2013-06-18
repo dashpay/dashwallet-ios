@@ -193,14 +193,14 @@ replacementString:(NSString *)string
         [[UIPasteboard generalPasteboard] setString:[self paymentAddress]];
     }
     else if ([title isEqual:@"email"]) {
-        MFMailComposeViewController *c = [[MFMailComposeViewController alloc] init];
+        MFMailComposeViewController *c = [MFMailComposeViewController new];
         [c setSubject:@"Bitcoin address"];
         [c setMessageBody:[@"bitcoin://" stringByAppendingString:[self paymentAddress]] isHTML:NO];
         c.mailComposeDelegate = self;
         [self.navController presentViewController:c animated:YES completion:nil];
     }
     else if ([title isEqual:@"sms"]) {
-        MFMessageComposeViewController *c = [[MFMessageComposeViewController alloc] init];
+        MFMessageComposeViewController *c = [MFMessageComposeViewController new];
         c.body = [@"bitcoin://" stringByAppendingString:[self paymentAddress]];
         c.messageComposeDelegate = self;
         [self.navController presentViewController:c animated:YES completion:nil];

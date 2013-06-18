@@ -38,14 +38,12 @@
 @interface ZNWallet ()
 
 @property (nonatomic, strong) NSUserDefaults *defs;
-@property (nonatomic, strong) NSMutableArray *spentAddresses;
-@property (nonatomic, strong) NSMutableArray *fundedAddresses;
-@property (nonatomic, strong) NSMutableArray *receiveAddresses;
+@property (nonatomic, strong) NSMutableArray *addresses, *changeAddresses;
+@property (nonatomic, strong) NSMutableArray *spentAddresses, *fundedAddresses, *receiveAddresses;
 @property (nonatomic, strong) NSMutableDictionary *unspentOutputs;
 @property (nonatomic, strong) NSMutableDictionary *addressBalances;
 @property (nonatomic, strong) NSMutableDictionary *addressTxCount;
 @property (nonatomic, strong) NSMutableDictionary *transactions;
-
 @property (nonatomic, strong) NSMutableSet *outdatedAddresses;
 @property (nonatomic, strong) NSMutableDictionary *privateKeys;
 @property (nonatomic, strong) ZNElectrumSequence *sequence;
@@ -74,6 +72,8 @@
     self.defs = [NSUserDefaults standardUserDefaults];
     
     //XXX we should be using core data for this... ugh
+    self.addresses = [NSMutableArray array];
+    self.changeAddresses = [NSMutableArray array];
     self.fundedAddresses = [NSMutableArray arrayWithArray:[_defs arrayForKey:FUNDED_ADDRESSES_KEY]];
     self.spentAddresses = [NSMutableArray arrayWithArray:[_defs arrayForKey:SPENT_ADDRESSES_KEY]];
     self.receiveAddresses = [NSMutableArray arrayWithArray:[_defs arrayForKey:RECEIVE_ADDRESSES_KEY]];
@@ -144,6 +144,19 @@
     }
 }
 
+- (NSString *)seedPhrase
+{
+    NSData *seed = [NSData dataWithHex:[[NSString alloc] initWithData:self.seed encoding:NSUTF8StringEncoding]];
+
+    return [self encodePhrase:seed];
+}
+
+- (void)setSeedPhrase:(NSString *)seedPhrase
+{
+    // Electurm uses a hex representation of the decoded seed instead of the seed itself
+    self.seed = [[[self decodePhrase:seedPhrase] toHex] dataUsingEncoding:NSUTF8StringEncoding];
+}
+
 //# Note about US patent no 5892470: Here each word does not represent a given digit.
 //# Instead, the digit represented by a word is variable, it depends on the previous word.
 //
@@ -158,16 +171,15 @@
 //        out += [ words[w1], words[w2], words[w3] ]
 //    return out
 //
-- (NSString *)seedPhrase
+- (NSString *)encodePhrase:(NSData *)d
 {
-    NSData *seed = [NSData dataWithHex:[[NSString alloc] initWithData:self.seed encoding:NSUTF8StringEncoding]];
-    NSMutableArray *list = [NSMutableArray arrayWithCapacity:seed.length*3/4];
+    NSMutableArray *list = [NSMutableArray arrayWithCapacity:d.length*3/4];
     NSArray *words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"ElectrumSeedWords"
                       ofType:@"plist"]];
     uint32_t n = words.count;
     
-    for (int i = 0; i*sizeof(uint32_t) < seed.length; i++) {
-        uint32_t x = CFSwapInt32BigToHost(*((uint32_t *)seed.bytes + i));
+    for (int i = 0; i*sizeof(uint32_t) < d.length; i++) {
+        uint32_t x = CFSwapInt32BigToHost(*((uint32_t *)d.bytes + i));
         uint32_t w1 = x % n;
         uint32_t w2 = ((x/n) + w1) % n;
         uint32_t w3 = ((x/n/n) + w2) % n;
@@ -193,26 +205,26 @@
 //        out += '%08x'%x
 //    return out
 //
-- (void)setSeedPhrase:(NSString *)seedPhrase
+- (NSData *)decodePhrase:(NSString *)phrase
 {
-    NSArray *list = [seedPhrase componentsSeparatedByString:@" "];
+    NSArray *list = [phrase componentsSeparatedByString:@" "];
     NSArray *words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"ElectrumSeedWords"
                       ofType:@"plist"]];
-    NSMutableData *seed = [NSMutableData dataWithCapacity:list.count*4/3];
+    NSMutableData *d = [NSMutableData dataWithCapacity:list.count*4/3];
     int32_t n = words.count;
     
     if (list.count != 12) {
-        NSLog(@"seed should be 12 words, found %d instead", list.count);
-        return;
+        NSLog(@"phrase should be 12 words, found %d instead", list.count);
+        return nil;
     }
-
+    
     for (NSUInteger i = 0; i < list.count; i += 3) {
         int32_t w1 = [words indexOfObject:list[i]], w2 = [words indexOfObject:list[i + 1]],
-                w3 = [words indexOfObject:list[i + 2]];
+        w3 = [words indexOfObject:list[i + 2]];
         
         if (w1 == NSNotFound || w2 == NSNotFound || w3 == NSNotFound) {
-            NSLog(@"seed contained unknown word: %@", list[i + (w1 == NSNotFound ? 0 : w2 == NSNotFound ? 1 : 2)]);
-            return;
+            NSLog(@"phrase contained unknown word: %@", list[i + (w1 == NSNotFound ? 0 : w2 == NSNotFound ? 1 : 2)]);
+            return nil;
         }
         
         // python's modulo behaves differently than C when dealing with negative numbers
@@ -221,13 +233,12 @@
         
         x = CFSwapInt32HostToBig(x);
         
-        [seed appendBytes:&x length:sizeof(x)];
+        [d appendBytes:&x length:sizeof(x)];
     }
-
+    
     words = nil;
     
-    // Electurm uses a hex representation of the decoded seed instead of the seed itself
-    self.seed = [[seed toHex] dataUsingEncoding:NSUTF8StringEncoding];
+    return d;
 }
 
 - (void)generateRandomSeed
@@ -260,12 +271,16 @@
         while (! a || [self.spentAddresses containsObject:a] || [self.fundedAddresses containsObject:a]) {
             a = [(ZNKey *)[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ forChange:NO masterPublicKey:self.mpk]]
                  address];
+            
+            if (self.addresses.count < i) {
+                [self.addresses addObject:a];
+            }
         }
    
         [self.receiveAddresses addObject:a];
     }
 
-    return self.receiveAddresses[0];
+    return [self.addresses firstObjectCommonWithArray:self.receiveAddresses];
 }
 
 - (NSArray *)recentTransactions
@@ -285,6 +300,33 @@
     return _mpk;
 }
 
+- (void)synchronize
+{
+    //XXX after the gap limit is hit, we should go back and check all spent and funded addresses for new transactions
+    //XXX also need to throttle to avoid blockchain.info api limits
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncStartedNotification object:self];
+    
+    [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT forChange:NO completion:^(BOOL success) {
+        if (success) {
+            [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT_FOR_CHANGE forChange:YES completion:^(BOOL success) {
+                if (success) {
+                    [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification
+                     object:self];
+                }
+                else {
+                    [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification
+                     object:self];
+                }
+            }];
+        }
+        else {
+            [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification object:self];
+        }
+    }];
+}
+
+//XXX the completion block should probably accept an NSError instead of a BOOL
 - (void)synchronizeWithGapLimit:(NSUInteger)gapLimit forChange:(BOOL)forChange
 completion:(void (^)(BOOL success))completion
 {    
@@ -299,6 +341,14 @@ completion:(void (^)(BOOL success))completion
             NSLog(@"error generating keys");
             if (completion) completion(NO);
             return;
+        }
+        
+        if (! forChange && self.addresses.count < i) {
+            [self.addresses addObject:a];
+        }
+
+        if (forChange && self.changeAddresses.count < i) {
+            [self.changeAddresses addObject:a];
         }
         
         if (! [self.spentAddresses containsObject:a] && ! [self.fundedAddresses containsObject:a]) {
@@ -321,21 +371,6 @@ completion:(void (^)(BOOL success))completion
         }
         else if (completion) completion(YES);
     }];    
-}
-
-- (void)synchronizeWithCompletionBlock:(void (^)(BOOL success))completion
-{
-    //XXX after the gap limit is hit, we should go back and check all spent and funded addresses for new transactions
-    //XXX need to throttle to avoid blockchain.info api limits
-
-    [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT forChange:NO completion:^(BOOL success) {
-        if (success) {
-            [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT_FOR_CHANGE forChange:YES completion:completion];
-        }
-        else if (completion) {
-            completion(NO);
-        }
-    }];
 }
 
 // query blockchain for the given addresses
@@ -473,6 +508,7 @@ completion:(void (^)(BOOL success))completion
     //XXX we should optimize for free transactions (watch out for performance issues, nothing O(n^2) please)
     // this is a nieve implementation to just get it functional
     [self.unspentOutputs enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        //XXX calculate private keys on the fly
         if (! self.privateKeys[key]) return;
 
         [inKeys addObject:self.privateKeys[key]];
@@ -519,6 +555,11 @@ completion:(void (^)(BOOL success))completion
 {
     return [self.spentAddresses containsObject:address] || [self.fundedAddresses containsObject:address] ||
            [self.receiveAddresses containsObject:address];
+}
+
+- (NSString *)stringForAmount:(uint64_t)amount
+{
+    return [self.format stringFromNumber:@(amount/pow(10, self.format.maximumFractionDigits))];
 }
 
 #pragma mark - keychain services
