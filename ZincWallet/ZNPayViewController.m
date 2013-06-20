@@ -133,9 +133,9 @@
     [super viewWillUnload];
 }
 
-- (void)viewDidAppear:(BOOL)animated
+- (void)viewWillAppear:(BOOL)animated
 {
-    [super viewDidAppear:animated];
+    [super viewWillAppear:animated];
     
     self.session = [[GKSession alloc] initWithSessionID:GK_SESSION_ID
                     displayName:[UIDevice.currentDevice.name stringByAppendingString:@" Wallet"]
@@ -169,6 +169,16 @@
     self.receiveController.view.frame = CGRectMake(f.origin.x + f.size.width, f.origin.y, f.size.width, f.size.height);
     [self.receiveController viewWillAppear:NO];
     [self.scrollView addSubview:self.receiveController.view];
+    
+    static BOOL firstAppearance = YES;
+    
+    if (firstAppearance) {
+        firstAppearance = NO;
+    
+        if ([[ZNWallet sharedInstance] balance] == 0) {
+            [self.scrollView setContentOffset:CGPointMake(self.scrollView.frame.size.width, 0) animated:NO];
+        }
+    }
     
     [self layoutButtonsAnimated:NO];
 }

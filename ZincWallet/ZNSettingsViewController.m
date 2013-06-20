@@ -179,7 +179,7 @@
             switch (indexPath.row) {
                 case 0:
                     //XXX show safety tips
-                    [[[UIAlertView alloc] initWithTitle:@"SAFETY FIRST!" message:@"Don't eat yellow snow." delegate:nil
+                    [[[UIAlertView alloc] initWithTitle:nil message:@"Don't eat yellow snow." delegate:self
                       cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
                     break;
                     
@@ -206,7 +206,10 @@
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    if (buttonIndex == alertView.cancelButtonIndex) return;
+    if (buttonIndex == alertView.cancelButtonIndex) {
+        [self.tableView deselectRowAtIndexPath:[self.tableView indexPathForSelectedRow] animated:YES];
+        return;
+    }
     
     ZNSeedViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNSeedViewController"];
     [self.navigationController pushViewController:c animated:YES];

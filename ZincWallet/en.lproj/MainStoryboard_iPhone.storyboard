@@ -797,6 +797,7 @@
                     </navigationItem>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
                     <connections>
+                        <outlet property="compatiblityLabel" destination="SHe-lM-jN1" id="TnK-9e-fBR"/>
                         <outlet property="labelFrame" destination="rln-83-F8o" id="aCq-6m-usI"/>
                         <outlet property="seedLabel" destination="G6I-gf-wQK" id="xZ9-MU-iLm"/>
                     </connections>
@@ -865,6 +866,9 @@
         <class className="ZNSeedViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNSeedViewController.h"/>
             <relationships>
+                <relationship kind="action" name="done:"/>
+                <relationship kind="action" name="refresh:"/>
+                <relationship kind="outlet" name="compatiblityLabel" candidateClass="UILabel"/>
                 <relationship kind="outlet" name="labelFrame" candidateClass="UIView"/>
                 <relationship kind="outlet" name="seedLabel" candidateClass="UILabel"/>
             </relationships>

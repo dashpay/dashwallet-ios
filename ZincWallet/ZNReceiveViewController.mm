@@ -96,7 +96,9 @@
     a.delegate = self;
     [a addButtonWithTitle:@"copy"];
     if ([MFMailComposeViewController canSendMail]) [a addButtonWithTitle:@"email"];
+#if not TARGET_IPHONE_SIMULATOR
     if ([MFMessageComposeViewController canSendText]) [a addButtonWithTitle:@"sms"];
+#endif
     [a addButtonWithTitle:@"cancel"];
     a.cancelButtonIndex = a.numberOfButtons - 1;
     
@@ -189,18 +191,29 @@ replacementString:(NSString *)string
         [[UIPasteboard generalPasteboard] setString:[self paymentAddress]];
     }
     else if ([title isEqual:@"email"]) {
-        MFMailComposeViewController *c = [MFMailComposeViewController new];
-        [c setSubject:@"Bitcoin address"];
-        [c setMessageBody:[@"bitcoin://" stringByAppendingString:[self paymentAddress]] isHTML:NO];
-        c.mailComposeDelegate = self;
-        [self.navController presentViewController:c animated:YES completion:nil];
+        if ([MFMailComposeViewController canSendMail]) {
+            MFMailComposeViewController *c = [MFMailComposeViewController new];
+            [c setSubject:@"Bitcoin address"];
+            [c setMessageBody:[@"bitcoin://" stringByAppendingString:[self paymentAddress]] isHTML:NO];
+            c.mailComposeDelegate = self;
+            [self.navController presentViewController:c animated:YES completion:nil];
+        }
+        else {
+            [[[UIAlertView alloc] initWithTitle:nil message:@"email not configured on this device" delegate:nil
+              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        }
     }
     else if ([title isEqual:@"sms"]) {
-        //XXX sometimes this is null? happens on the sim
-        MFMessageComposeViewController *c = [MFMessageComposeViewController new];
-        c.body = [@"bitcoin://" stringByAppendingString:[self paymentAddress]];
-        c.messageComposeDelegate = self;
-        [self.navController presentViewController:c animated:YES completion:nil];
+        if ([MFMessageComposeViewController canSendText]) {
+            MFMessageComposeViewController *c = [MFMessageComposeViewController new];
+            c.body = [@"bitcoin://" stringByAppendingString:[self paymentAddress]];
+            c.messageComposeDelegate = self;
+            [self.navController presentViewController:c animated:YES completion:nil];
+        }
+        else {
+            [[[UIAlertView alloc] initWithTitle:nil message:@"sms not currently available on this device" delegate:nil
+              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        }
     }
 }
 

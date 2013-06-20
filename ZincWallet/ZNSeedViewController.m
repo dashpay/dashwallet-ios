@@ -12,7 +12,7 @@
 
 @interface ZNSeedViewController ()
 
-@property (nonatomic, strong) IBOutlet UILabel *seedLabel;
+@property (nonatomic, strong) IBOutlet UILabel *seedLabel, *compatiblityLabel;
 @property (nonatomic, strong) IBOutlet UIView *labelFrame;
 
 @end
@@ -38,13 +38,16 @@
     // remove done button if we're not the root of the nav stack
     if (self.navigationController.viewControllers[0] != self) {
         self.navigationItem.leftBarButtonItem = nil;
-        self.navigationItem.rightBarButtonItem = nil;
     }
-    
+
     if (! [[ZNWallet sharedInstance] seed]) {
         [[ZNWallet sharedInstance] generateRandomSeed];
+        self.compatiblityLabel.hidden = YES;
     }
-    
+    else {
+        self.navigationItem.rightBarButtonItem = nil;
+    }
+
     self.seedLabel.text = [[ZNWallet sharedInstance] seedPhrase];
     
     CGSize s = [self.seedLabel.text sizeWithFont:self.seedLabel.font
