@@ -74,7 +74,7 @@
             if (req.isValid) {
                 [self.requests insertObject:req atIndex:0];
                 [self.requestIDs insertObject:URL_ID atIndex:0];
-                [self layoutButtons];
+                [self layoutButtonsAnimated:YES];
             }
         }];
     
@@ -170,7 +170,7 @@
     [self.receiveController viewWillAppear:NO];
     [self.scrollView addSubview:self.receiveController.view];
     
-    [self layoutButtons];
+    [self layoutButtonsAnimated:NO];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -192,7 +192,7 @@
     return _receiveController;
 }
 
-- (void)layoutButtons
+- (void)layoutButtonsAnimated:(BOOL)animated
 {
     while (self.requests.count > self.requestButtons.count) {
         UIButton *button = [ZNButton buttonWithType:UIButtonTypeCustom];
@@ -200,18 +200,21 @@
         button.frame = CGRectMake(BUTTON_MARGIN*4, self.scrollView.frame.size.height/2 +
                                   (BUTTON_HEIGHT + 2*BUTTON_MARGIN)*(self.requestButtons.count-self.requests.count/2.0),
                                   self.scrollView.frame.size.width - BUTTON_MARGIN*8, BUTTON_HEIGHT);
-        button.alpha = 0;
+        button.alpha = animated ? 0 : 1;
         [button addTarget:self action:@selector(doIt:) forControlEvents:UIControlEventTouchUpInside];
 
         [self.scrollView addSubview:button];
 
         [self.requestButtons addObject:button];
     }
-    
-    [UIView animateWithDuration:0.2 animations:^{
+
+    void (^block)(void) = ^{
         [self.requestButtons enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            [obj setCenter:CGPointMake([obj center].x, self.scrollView.frame.size.height/2 + BUTTON_HEIGHT/2 +
-                                       BUTTON_MARGIN + (BUTTON_HEIGHT+2*BUTTON_MARGIN)*(idx-self.requests.count/2.0))];
+            CGPoint c = CGPointMake([obj center].x, self.scrollView.frame.size.height/2 + BUTTON_HEIGHT/2 +
+                                    BUTTON_MARGIN + (BUTTON_HEIGHT + 2*BUTTON_MARGIN)*(idx - self.requests.count/2.0));
+            
+            [obj setCenter:c];
+            
             if (idx < self.requests.count) {
                 ZNPaymentRequest *req = self.requests[idx];
                 [obj setTitle:req.label forState:UIControlStateNormal];
@@ -221,7 +224,7 @@
                 }
                 else {
                     [obj titleLabel].font = [UIFont fontWithName:@"HelveticaNeue-Medium" size:15];
-                }                
+                }
             }
             
             if (self.selectedIndex != NSNotFound) {
@@ -232,13 +235,25 @@
                 [obj setEnabled:YES];
                 [obj setAlpha:idx < self.requests.count ? 1 : 0];
             }
+        }];        
+    };
+    
+    if (animated) {
+        [UIView animateWithDuration:0.2 animations:block completion:^(BOOL finished) {
+            while (self.requestButtons.count > self.requests.count) {
+                [self.requestButtons.lastObject removeFromSuperview];
+                [self.requestButtons removeLastObject];
+            }
         }];
-    } completion:^(BOOL finished) {
+    }
+    else {
+        block();
+
         while (self.requestButtons.count > self.requests.count) {
             [self.requestButtons.lastObject removeFromSuperview];
             [self.requestButtons removeLastObject];
         }
-    }];
+    }
 }
 
 - (void)confirmRequest:(ZNPaymentRequest *)request
@@ -336,7 +351,7 @@
             
             [session connectToPeer:peerID withTimeout:CONNECT_TIMEOUT];
             
-            [self layoutButtons];
+            [self layoutButtonsAnimated:YES];
         }
     }
     else if (state == GKPeerStateUnavailable || state == GKPeerStateDisconnected) {
@@ -345,7 +360,7 @@
 
             [self.requestIDs removeObjectAtIndex:idx];
             [self.requests removeObjectAtIndex:idx];
-            [self layoutButtons];
+            [self layoutButtonsAnimated:YES];
         }
     }
 }
@@ -381,7 +396,7 @@
         
         [self.requestIDs removeObjectAtIndex:idx];
         [self.requests removeObjectAtIndex:idx];
-        [self layoutButtons];
+        [self layoutButtonsAnimated:YES];
     }
 }
 
@@ -401,7 +416,7 @@
     [self.requestIDs removeObjectsAtIndexes:indexes];
     [self.requests removeObjectsAtIndexes:indexes];
 
-    [self layoutButtons];
+    [self layoutButtonsAnimated:YES];
     
     [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription delegate:nil
       cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
@@ -431,7 +446,7 @@
         
         [self.requestIDs removeObjectAtIndex:idx];
         [self.requests removeObjectAtIndex:idx];
-        [self layoutButtons];
+        [self layoutButtonsAnimated:YES];
         
         return;
     }
@@ -453,7 +468,7 @@
         
         //XXX remove request button?
         
-        [self layoutButtons];
+        [self layoutButtonsAnimated:YES];
 
         return;
     }
@@ -475,7 +490,7 @@
     [self.requests removeObjectAtIndex:self.selectedIndex];
     self.selectedIndex = NSNotFound;
     
-    [self layoutButtons];
+    [self layoutButtonsAnimated:YES];
 }
 
 #pragma mark - UIImagePickerControllerDelegate

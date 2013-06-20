@@ -38,6 +38,7 @@
     // remove done button if we're not the root of the nav stack
     if (self.navigationController.viewControllers[0] != self) {
         self.navigationItem.leftBarButtonItem = nil;
+        self.navigationItem.rightBarButtonItem = nil;
     }
     
     if (! [[ZNWallet sharedInstance] seed]) {
@@ -67,6 +68,26 @@
 {
     [[[UIAlertView alloc] initWithTitle:nil message:@"You can see your backup phrase again under settings" delegate:self
       cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+}
+
+- (IBAction)refresh:(id)sender
+{
+    [[ZNWallet sharedInstance] generateRandomSeed];
+    
+    [UIView animateWithDuration:0.2 animations:^{ self.seedLabel.alpha = 0.0; }
+     completion:^(BOOL finished) {
+        self.seedLabel.text = [[ZNWallet sharedInstance] seedPhrase];
+        
+        CGSize s = [self.seedLabel.text sizeWithFont:self.seedLabel.font
+                    constrainedToSize:CGSizeMake(self.seedLabel.frame.size.width, 140)];
+        
+        self.labelFrame.frame = CGRectMake(self.labelFrame.frame.origin.x,
+                                           self.view.frame.size.height/2 - s.height/2 - 10,
+                                           self.labelFrame.frame.size.width, s.height + 20);
+
+        [UIView animateWithDuration:0.2 animations:^{ self.seedLabel.alpha = 1.0; }];
+    }];
+
 }
 
 #pragma mark - UIAlertViewDelegate
