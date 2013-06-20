@@ -76,9 +76,11 @@
         
         if ([pair[0] isEqual:@"amount"]) self.amount = [pair[1] doubleValue]*SATOSHIS;
         else if ([pair[0] isEqual:@"label"])
-            self.label = [pair[1] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+            self.label = [[pair[1] stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
+                          stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
         else if ([pair[0] isEqual:@"message"])
-            self.message = [pair[1] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+            self.message = [[pair[1] stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
+                            stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     }];
 }
 

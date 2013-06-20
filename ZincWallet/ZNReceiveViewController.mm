@@ -200,6 +200,7 @@ replacementString:(NSString *)string
         [self.navController presentViewController:c animated:YES completion:nil];
     }
     else if ([title isEqual:@"sms"]) {
+        //XXX sometimes this is null? happens on the sim
         MFMessageComposeViewController *c = [MFMessageComposeViewController new];
         c.body = [@"bitcoin://" stringByAppendingString:[self paymentAddress]];
         c.messageComposeDelegate = self;

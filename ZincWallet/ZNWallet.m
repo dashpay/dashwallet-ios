@@ -307,28 +307,29 @@
     
     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncStartedNotification object:self];
     
-    [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT forChange:NO completion:^(BOOL success) {
-        if (success) {
-            [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT_FOR_CHANGE forChange:YES completion:^(BOOL success) {
-                if (success) {
+    [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT forChange:NO completion:^(NSError *error) {
+        if (! error) {
+            [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT_FOR_CHANGE forChange:YES completion:^(NSError *error) {
+                if (! error) {
                     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification
                      object:self];
                 }
                 else {
                     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification
-                     object:self];
+                     object:self userInfo:@{@"error":error}];
                 }
             }];
         }
         else {
-            [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification object:self];
+            [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification object:self
+             userInfo:@{@"error":error}];
         }
     }];
 }
 
 //XXX the completion block should probably accept an NSError instead of a BOOL
 - (void)synchronizeWithGapLimit:(NSUInteger)gapLimit forChange:(BOOL)forChange
-completion:(void (^)(BOOL success))completion
+completion:(void (^)(NSError *error))completion
 {    
     NSUInteger i = 0;
     NSMutableArray *newAddresses = [NSMutableArray array];
@@ -356,7 +357,7 @@ completion:(void (^)(BOOL success))completion
         }
     }
     
-    [self queryAddresses:newAddresses completion:^(BOOL success) {
+    [self queryAddresses:newAddresses completion:^(NSError *error) {
         [newAddresses removeObjectsAtIndexes:[newAddresses
         indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
             return [self.spentAddresses containsObject:obj] || [self.fundedAddresses containsObject:obj];
@@ -369,15 +370,15 @@ completion:(void (^)(BOOL success))completion
             //XXX need to break this up into chunks if too large
             [self queryUnspentOutputs:[self.outdatedAddresses allObjects] completion:completion];
         }
-        else if (completion) completion(YES);
+        else if (completion) completion(error);
     }];    
 }
 
 // query blockchain for the given addresses
-- (void)queryAddresses:(NSArray *)addresses completion:(void (^)(BOOL success))completion
+- (void)queryAddresses:(NSArray *)addresses completion:(void (^)(NSError *error))completion
 {
     if (! addresses.count) {
-        if (completion) completion(YES);
+        if (completion) completion(nil);
         return;
     }
 
@@ -429,11 +430,11 @@ completion:(void (^)(BOOL success))completion
         
         //[self queryUnspentOutputs:self.fundedAddresses];
         
-        if (completion) completion(YES);
+        if (completion) completion(nil);
     } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
         NSLog(@"%@", error.localizedDescription);
         
-        if (completion) completion(NO);
+        if (completion) completion(error);
     }] start];
 }
 
@@ -453,10 +454,10 @@ completion:(void (^)(BOOL success))completion
 //  ]
 //}
 //
-- (void)queryUnspentOutputs:(NSArray *)addresses completion:(void (^)(BOOL success))completion
+- (void)queryUnspentOutputs:(NSArray *)addresses completion:(void (^)(NSError *error))completion
 {
     if (! addresses.count) {
-        if (completion) completion(YES);
+        if (completion) completion(nil);
         return;
     }
     
@@ -488,10 +489,10 @@ completion:(void (^)(BOOL success))completion
         [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
         [_defs synchronize];
 
-        if (completion) completion(YES);
+        if (completion) completion(nil);
     } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
         NSLog(@"%@", error.localizedDescription);
-        if (completion) completion(NO);
+        if (completion) completion(error);
     }] start];
 }
 

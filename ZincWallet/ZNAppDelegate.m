@@ -64,7 +64,11 @@
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication
 annotation:(id)annotation
 {
-    if (! [url.scheme isEqual:@"bitcoin"] || ! [url.host  isValidBitcoinAddress]) return NO;
+    if (! url.host && url.resourceSpecifier) {
+        url = [NSURL URLWithString:[NSString stringWithFormat:@"%@://%@", url.scheme, url.resourceSpecifier]];
+    }
+
+    if (! [url.scheme isEqual:@"bitcoin"] || ! [url.host isValidBitcoinAddress]) return NO;
 
     [[NSNotificationCenter defaultCenter] postNotificationName:bitcoinURLNotification object:self
      userInfo:@{@"url":url}];

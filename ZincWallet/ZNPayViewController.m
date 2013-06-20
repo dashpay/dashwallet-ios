@@ -41,6 +41,7 @@
 
 @property (nonatomic, strong) IBOutlet UIScrollView *scrollView;
 @property (nonatomic, strong) IBOutlet UIPageControl *pageControl;
+@property (nonatomic, strong) IBOutlet UIBarButtonItem *refreshButton;
 
 @property (nonatomic, strong) ZNReceiveViewController *receiveController;
 
@@ -66,33 +67,44 @@
     self.selectedIndex = NSNotFound;
 
     self.urlObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:bitcoinURLNotification object:nil queue:nil
-    usingBlock:^(NSNotification *note) {
-        ZNPaymentRequest *req = [ZNPaymentRequest requestWithURL:note.userInfo[@"url"]];
+        [[NSNotificationCenter defaultCenter] addObserverForName:bitcoinURLNotification object:nil queue:nil
+        usingBlock:^(NSNotification *note) {
+            ZNPaymentRequest *req = [ZNPaymentRequest requestWithURL:note.userInfo[@"url"]];
     
-        if (req.isValid) {
-            [self.requests insertObject:req atIndex:0];
-            [self.requestIDs insertObject:URL_ID atIndex:0];
-            [self layoutButtons];
-        }
-    }];
+            if (req.isValid) {
+                [self.requests insertObject:req atIndex:0];
+                [self.requestIDs insertObject:URL_ID atIndex:0];
+                [self layoutButtons];
+            }
+        }];
     
     self.syncStartedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncStartedNotification object:nil queue:nil
-    usingBlock:^(NSNotification *note) {
-    }];
+        [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncStartedNotification object:nil queue:nil
+        usingBlock:^(NSNotification *note) {
+            UIActivityIndicatorView *spinner = [[UIActivityIndicatorView alloc]
+                                                initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+            CGRect f = spinner.frame;
+
+            f.size.width = 33;
+            spinner.frame = f;
+            [spinner startAnimating];
+            self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:spinner];
+        }];
 
     self.syncFinishedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncFinishedNotification object:nil queue:nil
-    usingBlock:^(NSNotification *note) {
-    }];
+        [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncFinishedNotification object:nil queue:nil
+        usingBlock:^(NSNotification *note) {
+            self.navigationItem.rightBarButtonItem = self.refreshButton;
+        }];
 
     self.syncFailedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncFailedNotification object:nil queue:nil
-    usingBlock:^(NSNotification *note) {
-    }];
-
-    [self refresh:nil];
+        [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncFailedNotification object:nil queue:nil
+        usingBlock:^(NSNotification *note) {
+            self.navigationItem.rightBarButtonItem = self.refreshButton;
+            
+            [[[UIAlertView alloc] initWithTitle:@"Couldn't refresh wallet balance" message:[note.userInfo[@"error"]
+              localizedDescription] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        }];
     
     ZNPaymentRequest *req = [ZNPaymentRequest new];
     
@@ -102,8 +114,13 @@
     
     if (! [[ZNWallet sharedInstance] seed]) { // first launch
         UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNNewWalletNav"];
-        [self.navigationController presentViewController:c animated:NO completion:nil];
-    }    
+        [self.navigationController presentViewController:c animated:NO completion:^{
+            [self refresh:nil];
+        }];
+    }
+    else {
+        [self refresh:nil];
+    }
 }
 
 - (void)viewWillUnload
@@ -228,12 +245,20 @@
 {
     //XXX need to handle the situation when the user's own receive address is the payment address
     if (request.isValid) {
-        if (request.amount == 0) {
+        if ([[ZNWallet sharedInstance] containsAddress:request.paymentAddress]) {
+            [[[UIAlertView alloc] initWithTitle:nil message:@"This payment address is already in your wallet."
+              delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+            
+            self.selectedIndex = NSNotFound;
+        }
+        else if (request.amount == 0) {
             ZNAmountViewController *c =
                 [self.storyboard instantiateViewControllerWithIdentifier:@"ZNAmountViewController"];
             
             c.request = request;
             [self.navigationController pushViewController:c animated:YES];
+            
+            self.selectedIndex = NSNotFound;
         }
         else {
             [[[UIAlertView alloc] initWithTitle:@"Confirm Payment" message:request.message delegate:self
@@ -429,6 +454,8 @@
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
+    //XXX how to handle non-bt requests (url/clipboard/qr)
+
     if (buttonIndex == alertView.cancelButtonIndex || self.selectedIndex == NSNotFound) {
         self.selectedIndex = NSNotFound;
         

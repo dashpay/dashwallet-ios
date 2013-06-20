@@ -38,10 +38,15 @@
                                 <segue destination="wFs-aD-OST" kind="modal" id="TZb-LZ-jmy"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" image="refresh.png" id="Ggn-3r-L4A"/>
+                        <barButtonItem key="rightBarButtonItem" image="refresh.png" id="Ggn-3r-L4A">
+                            <connections>
+                                <action selector="refresh:" destination="2" id="Zo7-Qa-Bhn"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <connections>
                         <outlet property="pageControl" destination="kTQ-jN-pAH" id="xVZ-vN-ELa"/>
+                        <outlet property="refreshButton" destination="Ggn-3r-L4A" id="TxD-ee-2JR"/>
                         <outlet property="scrollView" destination="FiH-S7-Ich" id="s4z-cB-6sY"/>
                     </connections>
                 </viewController>
@@ -822,9 +827,6 @@
         <class className="ZNAmountViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNAmountViewController.h"/>
             <relationships>
-                <relationship kind="action" name="del:"/>
-                <relationship kind="action" name="number:"/>
-                <relationship kind="action" name="pay:"/>
                 <relationship kind="outlet" name="addressLabel" candidateClass="UILabel"/>
                 <relationship kind="outlet" name="amountField" candidateClass="UITextField"/>
                 <relationship kind="outlet" name="payButton" candidateClass="UIBarButtonItem"/>
@@ -841,12 +843,30 @@
         <class className="ZNPayViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNPayViewController.h"/>
             <relationships>
+                <relationship kind="action" name="doIt:"/>
+                <relationship kind="action" name="page:"/>
+                <relationship kind="action" name="refresh:"/>
                 <relationship kind="outlet" name="pageControl" candidateClass="UIPageControl"/>
+                <relationship kind="outlet" name="refreshButton" candidateClass="UIBarButtonItem"/>
                 <relationship kind="outlet" name="scrollView" candidateClass="UIScrollView"/>
             </relationships>
         </class>
         <class className="ZNReceiveViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNReceiveViewController.h"/>
+            <relationships>
+                <relationship kind="action" name="address:"/>
+                <relationship kind="action" name="cancelRequest:"/>
+                <relationship kind="action" name="del:"/>
+                <relationship kind="action" name="issueRequest:"/>
+                <relationship kind="action" name="number:"/>
+                <relationship kind="outlet" name="addressButton" candidateClass="UIButton"/>
+                <relationship kind="outlet" name="amountField" candidateClass="UITextField"/>
+                <relationship kind="outlet" name="messageField" candidateClass="UITextField"/>
+                <relationship kind="outlet" name="qrView" candidateClass="UIImageView"/>
+                <relationship kind="outlet" name="requestButton" candidateClass="UIButton"/>
+                <relationship kind="outlet" name="spinner" candidateClass="UIActivityIndicatorView"/>
+                <relationship kind="outlet" name="waitingLabel" candidateClass="UILabel"/>
+            </relationships>
         </class>
         <class className="ZNRestoreViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNRestoreViewController.h"/>
