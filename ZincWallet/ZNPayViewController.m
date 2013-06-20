@@ -243,7 +243,6 @@
 
 - (void)confirmRequest:(ZNPaymentRequest *)request
 {
-    //XXX need to handle the situation when the user's own receive address is the payment address
     if (request.isValid) {
         if ([[ZNWallet sharedInstance] containsAddress:request.paymentAddress]) {
             [[[UIAlertView alloc] initWithTitle:nil message:@"This payment address is already in your wallet."
@@ -281,13 +280,6 @@
     }
     
     if ([self.requestIDs[self.selectedIndex] isEqual:QR_ID]) {
-//        //XXX just for testing
-//        [self.requests[self.selectedIndex]
-//         setData:[@"1JA9nMhjJcUL9nFcrm7ftXXA7PAbyZC5DB" dataUsingEncoding:NSUTF8StringEncoding]];
-//        [self confirmRequest:self.requests[self.selectedIndex]];
-//        self.selectedIndex = NSNotFound;
-//        return;
-
         self.selectedIndex = NSNotFound;
         
         ZBarReaderViewController *c = [ZBarReaderViewController new];
@@ -495,14 +487,12 @@
     req.data = [(NSString *)[[info objectForKey:ZBarReaderControllerResults][0] data]
                 dataUsingEncoding:NSUTF8StringEncoding];
     
-    [reader dismissViewControllerAnimated:YES completion:nil];
-    
-    //XXX would be cooler to display an error message without closing scan window on non-bitcoin qr
     if (! req.paymentAddress) {
         [[[UIAlertView alloc] initWithTitle:@"not a bitcoin QR code" message:nil delegate:nil cancelButtonTitle:@"OK"
           otherButtonTitles:nil] show];
     }
     else {
+        [reader dismissViewControllerAnimated:YES completion:nil];
         [self.requestButtons[self.selectedIndex] setEnabled:NO];
         [self confirmRequest:req];
     }

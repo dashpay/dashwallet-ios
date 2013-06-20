@@ -97,8 +97,6 @@
     self.format.maximum = @21000000000.0;
     [self.format setLenient:YES];
     
-    //XXX wallet should auto-syncronize on some schedule
-    
     return self;
 }
 
@@ -139,8 +137,6 @@
         [_defs removeObjectForKey:UNSPENT_OUTPUTS_KEY];
         [_defs removeObjectForKey:TRANSACTIONS_KEY];
         [_defs synchronize];
-        
-        //XXX at this point we need to kick of wallet syncronization
     }
 }
 
@@ -327,7 +323,6 @@
     }];
 }
 
-//XXX the completion block should probably accept an NSError instead of a BOOL
 - (void)synchronizeWithGapLimit:(NSUInteger)gapLimit forChange:(BOOL)forChange
 completion:(void (^)(NSError *error))completion
 {    

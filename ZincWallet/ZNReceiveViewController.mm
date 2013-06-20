@@ -56,10 +56,6 @@
 - (NSString *)paymentAddress
 {
     return [[ZNWallet sharedInstance] receiveAddress];
-
-    // XXX hard coded for testing
-    // should be retreived from bitpay/coinbase/blockchain or our own bip32 receive only wallet
-    //return @"1JA9nMhjJcUL9nFcrm7ftXXA7PAbyZC5DB";
 }
 
 - (NSString *)message
