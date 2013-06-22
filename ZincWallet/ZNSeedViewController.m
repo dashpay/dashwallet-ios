@@ -51,10 +51,10 @@
     self.seedLabel.text = [[ZNWallet sharedInstance] seedPhrase];
     
     CGSize s = [self.seedLabel.text sizeWithFont:self.seedLabel.font
-                constrainedToSize:CGSizeMake(self.seedLabel.frame.size.width, 140)];
+                constrainedToSize:CGSizeMake(self.seedLabel.frame.size.width, CGFLOAT_MAX)];
     
-    self.labelFrame.frame = CGRectMake(self.labelFrame.frame.origin.x, self.view.frame.size.height/2 - s.height/2 - 10,
-                                       self.labelFrame.frame.size.width, s.height + 20);
+    self.labelFrame.frame = CGRectMake(self.labelFrame.frame.origin.x, self.view.frame.size.height/2 - s.height/2 - 11,
+                                       self.labelFrame.frame.size.width, s.height + 22);
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -82,11 +82,11 @@
         self.seedLabel.text = [[ZNWallet sharedInstance] seedPhrase];
         
         CGSize s = [self.seedLabel.text sizeWithFont:self.seedLabel.font
-                    constrainedToSize:CGSizeMake(self.seedLabel.frame.size.width, 140)];
+                    constrainedToSize:CGSizeMake(self.seedLabel.frame.size.width, CGFLOAT_MAX)];
         
         self.labelFrame.frame = CGRectMake(self.labelFrame.frame.origin.x,
-                                           self.view.frame.size.height/2 - s.height/2 - 10,
-                                           self.labelFrame.frame.size.width, s.height + 20);
+                                           self.view.frame.size.height/2 - s.height/2 - 11,
+                                           self.labelFrame.frame.size.width, s.height + 22);
 
         [UIView animateWithDuration:0.2 animations:^{ self.seedLabel.alpha = 1.0; }];
     }];

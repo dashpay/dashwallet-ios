@@ -8,6 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ZNRestoreViewController : UIViewController <UITextViewDelegate>
+@interface ZNRestoreViewController : UIViewController <UITextViewDelegate, UIActionSheetDelegate>
 
 @end

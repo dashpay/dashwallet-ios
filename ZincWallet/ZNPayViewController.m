@@ -53,7 +53,16 @@
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
+
+    ZNPaymentRequest *req = [ZNPaymentRequest new];
     
+    req.label = @"scan QR code";
+    
+    self.requests = [NSMutableArray arrayWithObject:req];
+    self.requestIDs = [NSMutableArray arrayWithObject:QR_ID];
+    self.requestButtons = [NSMutableArray array];
+    self.selectedIndex = NSNotFound;
+
     // if iOS 6, we can customize the appearance of the pageControl and don't need the black bar behind it.
     if ([self.pageControl respondsToSelector:@selector(pageIndicatorTintColor)]) {
         self.pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:0.85 alpha:1.0];
@@ -61,11 +70,6 @@
         self.view.backgroundColor = self.scrollView.backgroundColor;
     }
     
-    self.requests = [NSMutableArray array];
-    self.requestIDs = [NSMutableArray array];
-    self.requestButtons = [NSMutableArray array];
-    self.selectedIndex = NSNotFound;
-
     self.urlObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:bitcoinURLNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
@@ -102,25 +106,10 @@
         usingBlock:^(NSNotification *note) {
             self.navigationItem.rightBarButtonItem = self.refreshButton;
             
+            //XXX need a status bar error message that doesn't require user interaction
             [[[UIAlertView alloc] initWithTitle:@"Couldn't refresh wallet balance" message:[note.userInfo[@"error"]
               localizedDescription] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-        }];
-    
-    ZNPaymentRequest *req = [ZNPaymentRequest new];
-    
-    req.label = @"scan QR code";
-    [self.requestIDs addObject:QR_ID];
-    [self.requests addObject:req];
-    
-    if (! [[ZNWallet sharedInstance] seed]) { // first launch
-        UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNNewWalletNav"];
-        [self.navigationController presentViewController:c animated:NO completion:^{
-            [self refresh:nil];
-        }];
-    }
-    else {
-        [self refresh:nil];
-    }
+        }];    
 }
 
 - (void)viewWillUnload
@@ -136,6 +125,13 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+    
+    if (! [[ZNWallet sharedInstance] seed]) {
+        UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNNewWalletNav"];
+        
+        [self.navigationController presentViewController:c animated:NO completion:nil];
+        return;
+    }
     
     self.session = [[GKSession alloc] initWithSessionID:GK_SESSION_ID
                     displayName:[UIDevice.currentDevice.name stringByAppendingString:@" Wallet"]
@@ -174,6 +170,8 @@
     
     if (firstAppearance) {
         firstAppearance = NO;
+    
+        [self refresh:nil];
     
         if ([[ZNWallet sharedInstance] balance] == 0) {
             [self.scrollView setContentOffset:CGPointMake(self.scrollView.frame.size.width, 0) animated:NO];
@@ -307,6 +305,8 @@
     if ([self.requestIDs[self.selectedIndex] isEqual:QR_ID]) {
         self.selectedIndex = NSNotFound;
         
+        //XXX info button on zbarreader doesn't work
+        //XXX also need to add a camera guide
         ZBarReaderViewController *c = [ZBarReaderViewController new];
 
         c.readerDelegate = self;

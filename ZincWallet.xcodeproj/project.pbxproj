@@ -958,6 +958,7 @@
 		758B585E176BB1DE0069968F /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 758B585D176BB1DE0069968F /* MessageUI.framework */; };
 		758D21181762E96800BE69E3 /* refresh@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 758D21171762E96800BE69E3 /* refresh@2x.png */; };
 		758F2D8217669D6800102AF1 /* libqrencoder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75AF36D7176675D3004AA912 /* libqrencoder.a */; };
+		7591EC0E1773DD3700B44340 /* redgradient@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7591EC0D1773DD3700B44340 /* redgradient@2x.png */; };
 		75920F7F174AAE5F00C1C03D /* netbase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75920F7D174AAE5F00C1C03D /* netbase.cpp */; };
 		75920F86174AB82100C1C03D /* NSMutableData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 75920F85174AB82100C1C03D /* NSMutableData+Bitcoin.m */; };
 		759CB235175E8A1200AFA559 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB234175E8A1200AFA559 /* QuartzCore.framework */; };
@@ -2272,6 +2273,7 @@
 		7573F080174313910037A109 /* libboost.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libboost.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		758B585D176BB1DE0069968F /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		758D21171762E96800BE69E3 /* refresh@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "refresh@2x.png"; sourceTree = "<group>"; };
+		7591EC0D1773DD3700B44340 /* redgradient@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "redgradient@2x.png"; sourceTree = "<group>"; };
 		75920F7D174AAE5F00C1C03D /* netbase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = netbase.cpp; path = ../../bitcoin/src/netbase.cpp; sourceTree = "<group>"; };
 		75920F7E174AAE5F00C1C03D /* netbase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = netbase.h; path = ../../bitcoin/src/netbase.h; sourceTree = "<group>"; };
 		75920F83174AAF5300C1C03D /* ui_interface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ui_interface.h; path = ../../bitcoin/src/ui_interface.h; sourceTree = "<group>"; };
@@ -4427,6 +4429,7 @@
 				754542561760775900638B95 /* qr@2x.png */,
 				75F17C4117455F2D00D9F228 /* deletetoleft.png */,
 				75F17C4217455F2D00D9F228 /* deletetoleft-inv.png */,
+				7591EC0D1773DD3700B44340 /* redgradient@2x.png */,
 				75D8F3A2173ABE3C0080D95E /* first.png */,
 				75D8F3A4173ABE3C0080D95E /* first@2x.png */,
 				75D8F3A9173ABE3D0080D95E /* second.png */,
@@ -4905,6 +4908,7 @@
 				75454255176072EF00638B95 /* gear@2x.png in Resources */,
 				754542571760775900638B95 /* qr@2x.png in Resources */,
 				758D21181762E96800BE69E3 /* refresh@2x.png in Resources */,
+				7591EC0E1773DD3700B44340 /* redgradient@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -267,6 +267,8 @@
         while (! a || [self.spentAddresses containsObject:a] || [self.fundedAddresses containsObject:a]) {
             a = [(ZNKey *)[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ forChange:NO masterPublicKey:self.mpk]]
                  address];
+        
+            if (! a) return nil;
             
             if (self.addresses.count < i) {
                 [self.addresses addObject:a];
@@ -301,11 +303,15 @@
     //XXX after the gap limit is hit, we should go back and check all spent and funded addresses for new transactions
     //XXX also need to throttle to avoid blockchain.info api limits
     
+    if (_synchronizing) return;
+    
+    _synchronizing = YES;
     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncStartedNotification object:self];
     
     [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT forChange:NO completion:^(NSError *error) {
         if (! error) {
             [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT_FOR_CHANGE forChange:YES completion:^(NSError *error) {
+                _synchronizing = NO;
                 if (! error) {
                     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification
                      object:self];
@@ -317,6 +323,7 @@
             }];
         }
         else {
+            _synchronizing = NO;
             [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification object:self
              userInfo:@{@"error":error}];
         }

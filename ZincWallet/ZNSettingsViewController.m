@@ -63,7 +63,7 @@
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     // Return the number of sections.
-    return 2;
+    return 3;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -72,6 +72,7 @@
     switch (section) {
         case 0: return self.transactions.count ? self.transactions.count : 1;
         case 1: return 2;
+        case 2: return 1;
         default:
             NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
                      __LINE__, section);
@@ -82,7 +83,8 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *disclosureIdent = @"ZNDisclosureCell", *transactionIdent = @"ZNTransactionCell";
+    static NSString *disclosureIdent = @"ZNDisclosureCell", *transactionIdent = @"ZNTransactionCell",
+                    *actionIdent = @"ZNActionCell";
     UITableViewCell *cell = nil;
     
     // Configure the cell...
@@ -141,6 +143,21 @@
             }
             break;
             
+        case 2:
+            cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
+
+            switch (indexPath.row) {
+                case 0:
+                    cell.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"redgradient.png"]];
+                    cell.textLabel.text = @"erase wallet";
+                    break;
+                                        
+                default:
+                    NSAssert(FALSE, @"[%s %s] line %d: unkown indexPath.row %d", object_getClassName(self),
+                             sel_getName(_cmd), __LINE__, indexPath.row);
+            }
+            break;
+            
         default:
             NSAssert(FALSE, @"[%s %s] line %d: unkown indexPath.section %d", object_getClassName(self),
                      sel_getName(_cmd), __LINE__, indexPath.section);
@@ -154,6 +171,7 @@
     switch (section) {
         case 0: return @"recent transactions";
         case 1: return nil;
+        case 2: return @"caution";
         default:
             NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
                      __LINE__, section);
@@ -163,6 +181,36 @@
 }
 
 #pragma mark - Table view delegate
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    CGFloat h = 0;
+    
+    switch (section) {
+        case 0: return 44;
+        case 1: return 0;
+        case 2:
+            h = tableView.frame.size.height - 44*3 - 33 - (self.transactions.count ? self.transactions.count*44 : 44);
+            return h > 44 ? h : 44;
+        default:
+            NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
+                     __LINE__, section);
+    }
+    
+    return 0;
+}
+
+//- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
+//{
+//    UILabel *l = [UILabel new];
+//    
+//    l.text = [self tableView:tableView titleForHeaderInSection:section];
+//    if (l.text.length) l.text = [@"   " stringByAppendingString:l.text];
+//    l.font = [UIFont fontWithName:@"HelveticaNeue-Medium" size:15];
+//    l.backgroundColor = [UIColor clearColor];
+//    
+//    return l;
+//}
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -195,10 +243,13 @@
             }
             break;
             
+        // section 2 is handled in storyboard
+        case 2:
+            break;
+            
         default:
             NSAssert(FALSE, @"[%s %s] line %d: unkown indexPath.section %d", object_getClassName(self),
                      sel_getName(_cmd), __LINE__, indexPath.section);
-            break;
     }
 }
 

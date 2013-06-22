@@ -32,10 +32,6 @@
     self.textView.layer.borderColor = [UIColor colorWithWhite:0.85 alpha:1.0].CGColor;
     self.textView.layer.borderWidth = 1.0;
     self.textView.layer.cornerRadius = 5.0;
-//    self.textView.layer.shadowColor = [UIColor blackColor].CGColor;
-//    self.textView.layer.shadowOffset = CGSizeMake(0.0, 2.0);
-//    self.textView.layer.shadowOpacity = 0.25;
-//    self.textView.layer.shadowRadius = 3.0;
 
     [self.textView becomeFirstResponder];
 }
@@ -53,6 +49,13 @@
     self.words = nil;
     
     [super viewWillDisappear:animated];
+}
+
+#pragma mark - IBAction
+
+- (IBAction)cancel:(id)sender
+{
+    [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - UITextViewDelegate
@@ -106,15 +109,46 @@
         }
         else if (a.count != 12) {
             [[[UIAlertView alloc] initWithTitle:nil message:@"backup phrase must be 12 words" delegate:nil
-                              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        }
+        else if ([[ZNWallet sharedInstance] seed]) {
+            if ([[[ZNWallet sharedInstance] seedPhrase] isEqual:textView.text]) {
+                [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"cancel"
+                  destructiveButtonTitle:@"erase" otherButtonTitles:nil]
+                 showInView:[[UIApplication sharedApplication] keyWindow]];
+            }
+            else {
+                [[[UIAlertView alloc] initWithTitle:nil message:@"backup phrase doesn't match" delegate:nil
+                  cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+            }
         }
         else {
             [[ZNWallet sharedInstance] setSeedPhrase:textView.text];
         
             textView.text = nil; // don't leave the seed phrase sitting in memory any longer than needed
             
+            [[ZNWallet sharedInstance] synchronize];
+            
             [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
         }
+    }
+}
+
+#pragma mark - UIActionSheetDelegate
+
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == actionSheet.destructiveButtonIndex) {
+        [[ZNWallet sharedInstance] setSeed:nil];
+
+        self.textView.text = nil;
+
+        UIViewController *p = self.navigationController.presentingViewController.presentingViewController;
+
+        [p dismissViewControllerAnimated:NO completion:^{
+            [p presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"ZNNewWalletNav"]
+             animated:NO completion:nil];
+        }];
     }
 }
 

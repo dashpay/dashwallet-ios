@@ -44,6 +44,8 @@
 {
     [super viewWillAppear:animated];
     
+    if (! [[self paymentRequest] isValid]) return;
+    
     NSString *s = [[NSString alloc] initWithData:[self paymentRequest].data encoding:NSUTF8StringEncoding];
     
     self.qrView.image = [QREncoder renderDataMatrix:[QREncoder encodeWithECLevel:1 version:1 string:s]

@@ -20,6 +20,7 @@
 @property (nonatomic, readonly) NSString *receiveAddress;
 @property (nonatomic, readonly) NSArray *recentTransactions; // sorted by date, most recent first
 @property (nonatomic, strong) NSNumberFormatter *format;
+@property (readonly, getter = isSynchronizing) BOOL synchronizing;
 
 + (ZNWallet *)sharedInstance;
 
