@@ -20,14 +20,14 @@
 
 #define SCRIPT_SUFFIX @"88ac" // OP_EQUALVERIFY OP_CHECKSIG
 
-#define FUNDED_ADDRESSES_KEY @"FUNDED_ADDRESSES"
-#define SPENT_ADDRESSES_KEY @"SPENT_ADDRESSES"
+#define FUNDED_ADDRESSES_KEY  @"FUNDED_ADDRESSES"
+#define SPENT_ADDRESSES_KEY   @"SPENT_ADDRESSES"
 #define RECEIVE_ADDRESSES_KEY @"RECEIVE_ADDRESSES"
-#define ADDRESS_BALANCES_KEY @"ADDRESS_BALANCES"
-#define ADDRESS_TX_COUNT_KEY @"ADDRESS_TX_COUNT"
-#define UNSPENT_OUTPUTS_KEY @"UNSPENT_OUTPUTS"
-#define TRANSACTIONS_KEY @"TRANSACTIONS"
-#define SEED_KEY @"seed"
+#define ADDRESS_BALANCES_KEY  @"ADDRESS_BALANCES"
+#define ADDRESS_TX_COUNT_KEY  @"ADDRESS_TX_COUNT"
+#define UNSPENT_OUTPUTS_KEY   @"UNSPENT_OUTPUTS"
+#define TRANSACTIONS_KEY      @"TRANSACTIONS"
+#define SEED_KEY              @"seed"
 
 #define SEC_ATTR_SERVICE @"cc.zinc.zincwallet"
 
@@ -494,7 +494,7 @@ completion:(void (^)(NSError *error))completion
     }] start];
 }
 
-- (NSString *)transactionFor:(uint64_t)amount to:(NSString *)address
+- (ZNTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address
 {
     __block uint64_t balance = 0;
     __block NSMutableSet *inKeys = [NSMutableSet set];
@@ -548,7 +548,7 @@ completion:(void (^)(NSError *error))completion
         return nil;
     }
     
-    return [tx toHex];
+    return tx;
 }
 
 - (BOOL)containsAddress:(NSString *)address

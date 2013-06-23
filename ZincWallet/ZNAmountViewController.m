@@ -147,10 +147,9 @@ replacementString:(NSString *)string
         return;
     }
     
-    NSData *signedTx = [[[ZNWallet sharedInstance] transactionFor:self.request.amount to:self.request.paymentAddress]
-                        dataUsingEncoding:NSUTF8StringEncoding];
+    ZNTransaction *tx = [[ZNWallet sharedInstance] transactionFor:self.request.amount to:self.request.paymentAddress];
     
-    NSLog(@"signed transaction:\n%@", [signedTx toHex]);
+    NSLog(@"signed transaction:\n%@", [tx toHex]);
 }
 
 @end

@@ -23,8 +23,8 @@
 #define CONNECT_TIMEOUT 5.0
 
 #define CLIPBOARD_ID @"clipboard"
-#define QR_ID @"qr"
-#define URL_ID @"url"
+#define QR_ID        @"qr"
+#define URL_ID       @"url"
 
 @interface ZNPayViewController ()
 
@@ -489,13 +489,13 @@
         return;
     }
     
-    NSString *tx = [[ZNWallet sharedInstance] transactionFor:[self.requests[self.selectedIndex] amount]
-                    to:[self.requests[self.selectedIndex] paymentAddress]];
+    ZNTransaction *tx = [[ZNWallet sharedInstance] transactionFor:[self.requests[self.selectedIndex] amount]
+                         to:[self.requests[self.selectedIndex] paymentAddress]];
     NSError *error;
     
     NSLog(@"sending signed request to %@", self.requestIDs[self.selectedIndex]);
-    [self.session sendData:[tx dataUsingEncoding:NSUTF8StringEncoding] toPeers:@[self.requestIDs[self.selectedIndex]]
-     withDataMode:GKSendDataReliable error:&error];
+    [self.session sendData:[[tx toHex] dataUsingEncoding:NSUTF8StringEncoding]
+     toPeers:@[self.requestIDs[self.selectedIndex]] withDataMode:GKSendDataReliable error:&error];
     
     if (error) {
         [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription delegate:nil
