@@ -91,7 +91,7 @@ andOutputAmounts:(NSArray *)outputAmounts
 
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex
 {
-    NSMutableData *d = [NSMutableData dataWithCapacity:10 + 148*self.inputHashes.count + 34*self.outputAddresses.count];
+    NSMutableData *d = [NSMutableData dataWithCapacity:self.size];
 
     [d appendUInt32:TX_VERSION];
 
@@ -142,5 +142,27 @@ andOutputAmounts:(NSArray *)outputAmounts
 {
     return [[self toData] toHex];
 }
+
+- (size_t)size
+{
+    //XXX is this correct? what about compressed vs uncompressed public keys?
+    //XXX also need to take into account varint sizes
+    return 10 + 148*self.inputHashes.count + 34*self.outputAddresses.count;
+}
+
+// priority = sum(input_value_in_satoshis * input_age_in_blocks)/size_in_bytes
+- (uint64_t)priorityFor:(NSArray *)amounts ages:(NSArray *)ages
+{
+    uint64_t p = 0;
+    
+    if (amounts.count != self.inputHashes.count || ages.count != self.inputHashes.count) return 0;
+    
+    for (NSUInteger i = 0; i < amounts.count; i++) {
+        p += [amounts[i] unsignedLongLongValue]*[ages[i] unsignedLongLongValue];
+    }
+    
+    return p/self.size;
+}
+
 
 @end

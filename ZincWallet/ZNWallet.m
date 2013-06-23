@@ -29,10 +29,6 @@
 #define TRANSACTIONS_KEY @"TRANSACTIONS"
 #define SEED_KEY @"seed"
 
-#define TX_FEE_07 // 0.7 reference implementation tx fees
-
-#define TX_FREE_MIN_OUTPUT 1000000 // no tx output can be below this amount without a tx fee
-
 #define SEC_ATTR_SERVICE @"cc.zinc.zincwallet"
 
 @interface ZNWallet ()
@@ -523,10 +519,10 @@ completion:(void (^)(NSError *error))completion
             [inScripts addObject:[NSData dataWithHex:obj[@"script"]]];
             balance += [obj[@"value"] unsignedLongLongValue];
             
-            if (balance == amount || balance >= amount + 1000000) *stop = YES;
+            if (balance == amount || balance >= amount + TX_FREE_MIN_OUTPUT) *stop = YES;
         }];
         
-        if (balance == amount || balance >= amount + 1000000) *stop = YES;
+        if (balance == amount || balance >= amount + TX_FREE_MIN_OUTPUT) *stop = YES;
     }];
     
     if (balance < amount) { // insufficent funds
@@ -543,6 +539,8 @@ completion:(void (^)(NSError *error))completion
     ZNTransaction *tx = [[ZNTransaction alloc] initWithInputHashes:inHashes inputIndexes:inIndexes
                          inputScripts:inScripts outputAddresses:outAddresses andOutputAmounts:outAmounts];
     
+    //XXX check if tx.size >= TX_MAX_SIZE
+    
     [tx signWithPrivateKeys:inKeys.allObjects];
     
     if (! [tx isSigned]) {
@@ -551,7 +549,6 @@ completion:(void (^)(NSError *error))completion
     }
     
     return [tx toHex];
-
 }
 
 - (BOOL)containsAddress:(NSString *)address

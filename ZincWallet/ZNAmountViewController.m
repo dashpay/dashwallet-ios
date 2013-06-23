@@ -9,6 +9,7 @@
 #import "ZNAmountViewController.h"
 #import "ZNPaymentRequest.h"
 #import "ZNWallet.h"
+#import "ZNTransaction.h"
 #import "NSData+Hash.h"
 
 @interface ZNAmountViewController ()
@@ -81,12 +82,19 @@
         [[w.format numberFromString:self.amountField.text] doubleValue]*factor;
 
     if (self.request.isValid) {
-        w.format.minimumFractionDigits = w.format.maximumFractionDigits;
-        [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
-          message:self.request.message ? self.request.message : self.request.paymentAddress delegate:self
-          cancelButtonTitle:@"cancel"
-          otherButtonTitles:[w stringForAmount:self.request.amount], nil] show];
-        w.format.minimumFractionDigits = 0;
+        if (self.request.amount < TX_MIN_OUTPUT_AMOUNT) {
+            [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment"
+              message:[@"Bitcoin payments can't be less than "
+                       stringByAppendingString:[[ZNWallet sharedInstance] stringForAmount:TX_MIN_OUTPUT_AMOUNT]]
+              delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        }
+        else {
+            w.format.minimumFractionDigits = w.format.maximumFractionDigits;
+            [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
+              message:self.request.message ? self.request.message : self.request.paymentAddress delegate:self
+              cancelButtonTitle:@"cancel" otherButtonTitles:[w stringForAmount:self.request.amount], nil] show];
+            w.format.minimumFractionDigits = 0;
+        }
     }
 }
 

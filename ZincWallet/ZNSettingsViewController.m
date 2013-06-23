@@ -18,6 +18,9 @@
 
 @implementation ZNSettingsViewController
 
+//XXX need setting for denomination (BTC, mBTC or uBTC)
+//XXX also for local currency, and exchange rate source
+
 - (id)initWithStyle:(UITableViewStyle)style
 {
     self = [super initWithStyle:style];

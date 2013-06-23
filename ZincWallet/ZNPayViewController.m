@@ -282,10 +282,16 @@
             
             self.selectedIndex = NSNotFound;
         }
+        else if (request.amount < TX_MIN_OUTPUT_AMOUNT) {
+            [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment"
+              message:[@"Bitcoin payments can't be less than "
+                       stringByAppendingString:[[ZNWallet sharedInstance] stringForAmount:TX_MIN_OUTPUT_AMOUNT]]
+              delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        }
         else {
             [[[UIAlertView alloc] initWithTitle:@"Confirm Payment" message:request.message delegate:self
              cancelButtonTitle:@"cancel"
-             otherButtonTitles:[NSString stringWithFormat:@"%@%.16g", BTC, (double)request.amount/SATOSHIS], nil] show];
+             otherButtonTitles:[[ZNWallet sharedInstance] stringForAmount:request.amount], nil] show];
         }
     }
 }
