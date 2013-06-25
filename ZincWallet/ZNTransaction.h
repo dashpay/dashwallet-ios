@@ -40,11 +40,11 @@ andOutputAmounts:(NSArray *)outputAmounts;
 - (NSString *)toHex;
 
 // priority = sum(input_amount_in_satoshis*input_age_in_blocks)/tx_size_in_bytes
-- (uint64_t)priorityFor:(NSArray *)amounts ages:(NSArray *)ages;
+- (uint64_t)priorityForAmounts:(NSArray *)amounts withAges:(NSArray *)ages;
 
 // returns the block height after which the transaction can be confirmed without a fee, given the amounts and block
 // heights of the inputs. returns NSNotFound for never.
-- (NSUInteger)heightUntilFreeFor:(NSArray *)amounts atHeights:(NSArray *)heights;
+- (NSUInteger)heightUntilFreeForAmounts:(NSArray *)amounts atHeights:(NSArray *)heights;
 
 - (uint64_t)standardFee;
 

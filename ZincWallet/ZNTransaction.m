@@ -151,7 +151,7 @@ andOutputAmounts:(NSArray *)outputAmounts
 }
 
 // priority = sum(input_amount_in_satoshis*input_age_in_blocks)/size_in_bytes
-- (uint64_t)priorityFor:(NSArray *)amounts ages:(NSArray *)ages
+- (uint64_t)priorityForAmounts:(NSArray *)amounts withAges:(NSArray *)ages
 {
     uint64_t p = 0;
     
@@ -165,8 +165,8 @@ andOutputAmounts:(NSArray *)outputAmounts
 }
 
 // returns the block height after which the transaction can be confirmed without a fee, given the amounts and block
-// heights of the inputs
-- (NSUInteger)heightUntilFreeFor:(NSArray *)amounts atHeights:(NSArray *)heights
+// heights of the inputs. returns NSNotFound for never.
+- (NSUInteger)heightUntilFreeForAmounts:(NSArray *)amounts atHeights:(NSArray *)heights
 {
     if (amounts.count != self.inputHashes.count || heights.count != self.inputHashes.count) return NSNotFound;
     
@@ -184,7 +184,8 @@ andOutputAmounts:(NSArray *)outputAmounts
     }
     
     //XXX this could possibly overflow a uint64 for very large input amounts and far in the future block heights,
-    // however we should be okay up to the largest current bitcoin balance in existence for the next 40 years or so
+    // however we should be okay up to the largest current bitcoin balance in existence for the next 40 years or so,
+    // and the worst case is paying a transaction fee when it's not needed
     return (TX_FREE_MIN_PRIORITY*self.size + amountsByHeights + amountTotal - 1)/amountTotal;
 }
 

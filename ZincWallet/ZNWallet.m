@@ -20,14 +20,19 @@
 
 #define SCRIPT_SUFFIX @"88ac" // OP_EQUALVERIFY OP_CHECKSIG
 
-#define FUNDED_ADDRESSES_KEY  @"FUNDED_ADDRESSES"
-#define SPENT_ADDRESSES_KEY   @"SPENT_ADDRESSES"
-#define RECEIVE_ADDRESSES_KEY @"RECEIVE_ADDRESSES"
-#define ADDRESS_BALANCES_KEY  @"ADDRESS_BALANCES"
-#define ADDRESS_TX_COUNT_KEY  @"ADDRESS_TX_COUNT"
-#define UNSPENT_OUTPUTS_KEY   @"UNSPENT_OUTPUTS"
-#define TRANSACTIONS_KEY      @"TRANSACTIONS"
-#define SEED_KEY              @"seed"
+#define FUNDED_ADDRESSES_KEY       @"FUNDED_ADDRESSES"
+#define SPENT_ADDRESSES_KEY        @"SPENT_ADDRESSES"
+#define RECEIVE_ADDRESSES_KEY      @"RECEIVE_ADDRESSES"
+#define ADDRESS_BALANCES_KEY       @"ADDRESS_BALANCES"
+#define ADDRESS_TX_COUNT_KEY       @"ADDRESS_TX_COUNT"
+#define UNSPENT_OUTPUTS_KEY        @"UNSPENT_OUTPUTS"
+#define TRANSACTIONS_KEY           @"TRANSACTIONS"
+#define LATEST_BLOCK_HEIGHT_KEY    @"LATEST_BLOCK_HEIGHT"
+#define LATEST_BLOCK_TIMESTAMP_KEY @"LATEST_BLOCK_TIMESTAMP"
+#define SEED_KEY                   @"seed"
+
+#define REFERENCE_BLOCK_HEIGHT 243295
+#define REFERENCE_BLOCK_TIME   1372190977.0
 
 #define SEC_ATTR_SERVICE @"cc.zinc.zincwallet"
 
@@ -256,7 +261,7 @@
 
 - (NSString *)receiveAddress
 {
-    if (! self.receiveAddresses.count) {
+    if (! self.receiveAddresses.count || self.addresses.count < self.receiveAddresses.count) {
         NSUInteger i = 0;
         NSString *a = nil;
         
@@ -271,7 +276,7 @@
             }
         }
    
-        [self.receiveAddresses addObject:a];
+        if (! [self.receiveAddresses containsObject:a]) [self.receiveAddresses addObject:a];
     }
 
     return [self.addresses firstObjectCommonWithArray:self.receiveAddresses];
@@ -283,6 +288,20 @@
     return [self.transactions.allValues sortedArrayWithOptions:0 usingComparator:^NSComparisonResult(id obj1, id obj2) {
         return [@([obj2[@"time"] unsignedLongLongValue]) compare:@([obj1[@"time"] unsignedLongLongValue])];
     }];
+}
+
+- (NSUInteger)estimatedCurrentBlockHeight
+{
+    NSTimeInterval time = [self.defs doubleForKey:LATEST_BLOCK_TIMESTAMP_KEY];
+    NSUInteger height = [self.defs integerForKey:LATEST_BLOCK_HEIGHT_KEY];
+
+    if (! height || time < 1.0) { // use hard coded reference block
+        height = REFERENCE_BLOCK_HEIGHT;
+        time = REFERENCE_BLOCK_TIME;
+    }
+    
+     // average one block every 600 seconds
+    return height + ([NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 - time)/600;
 }
 
 - (NSData *)mpk
@@ -418,12 +437,17 @@ completion:(void (^)(NSError *error))completion
             if (obj[@"hash"]) self.transactions[obj[@"hash"]] = obj;
         }];
         
+        NSInteger height = [JSON[@"info"][@"latest_block"][@"height"] integerValue];
+        NSTimeInterval time = [JSON[@"info"][@"latest_block"][@"time"] doubleValue];
+        
         [_defs setObject:self.fundedAddresses forKey:FUNDED_ADDRESSES_KEY];
         [_defs setObject:self.spentAddresses forKey:SPENT_ADDRESSES_KEY];
         [_defs setObject:self.receiveAddresses forKey:RECEIVE_ADDRESSES_KEY];
         [_defs setObject:self.addressBalances forKey:ADDRESS_BALANCES_KEY];
         [_defs setObject:self.addressTxCount forKey:ADDRESS_TX_COUNT_KEY];
         [_defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
+        if (height) [_defs setInteger:height forKey:LATEST_BLOCK_HEIGHT_KEY];
+        if (time > 1.0) [_defs setDouble:time forKey:LATEST_BLOCK_TIMESTAMP_KEY];
         [_defs synchronize];
         
         //[self queryUnspentOutputs:self.fundedAddresses];

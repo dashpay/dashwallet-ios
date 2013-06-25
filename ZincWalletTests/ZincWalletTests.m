@@ -38,8 +38,8 @@
     ZNTransaction *tx = [[ZNTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@0] inputScripts:@[script]
                          outputAddresses:@[addr, addr] andOutputAmounts:@[@100000000, @4900000000]];
     
-    NSUInteger height = [tx heightUntilFreeFor:@[@5000000000] atHeights:@[@1]];
-    uint64_t priority = [tx priorityFor:@[@5000000000] ages:@[@(height - 1)]];
+    NSUInteger height = [tx heightUntilFreeForAmounts:@[@5000000000] atHeights:@[@1]];
+    uint64_t priority = [tx priorityForAmounts:@[@5000000000] withAges:@[@(height - 1)]];
     
     NSLog(@"height = %d", height);
     NSLog(@"priority = %llu", priority);
@@ -53,13 +53,13 @@
           andOutputAmounts:@[@1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000,
                              @1000000]];
     
-    height = [tx heightUntilFreeFor:@[@1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000,
-                                      @1000000, @1000000]
+    height = [tx heightUntilFreeForAmounts:@[@1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000,
+                                             @1000000, @1000000, @1000000]
               atHeights:@[@1, @2, @3, @4, @5, @6, @7, @8, @9, @10]];
-    priority = [tx priorityFor:@[@1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000,
-                                 @1000000, @1000000, @1000000]
-                ages:@[@(height - 1), @(height - 2), @(height - 3), @(height - 4), @(height - 5), @(height - 6),
-                       @(height - 7), @(height - 8), @(height - 9), @(height - 10)]];
+    priority = [tx priorityForAmounts:@[@1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000,
+                                        @1000000, @1000000]
+                withAges:@[@(height - 1), @(height - 2), @(height - 3), @(height - 4), @(height - 5), @(height - 6),
+                           @(height - 7), @(height - 8), @(height - 9), @(height - 10)]];
     
     NSLog(@"height = %d", height);
     NSLog(@"priority = %llu", priority);

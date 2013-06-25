@@ -63,7 +63,7 @@
     self.requestButtons = [NSMutableArray array];
     self.selectedIndex = NSNotFound;
 
-    // if iOS 6, we can customize the appearance of the pageControl and don't need the black bar behind it.
+    // if > iOS 6, we can customize the appearance of the pageControl and don't need the black bar behind it.
     if ([self.pageControl respondsToSelector:@selector(pageIndicatorTintColor)]) {
         self.pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:0.85 alpha:1.0];
         self.pageControl.currentPageIndicatorTintColor = [UIColor grayColor];
