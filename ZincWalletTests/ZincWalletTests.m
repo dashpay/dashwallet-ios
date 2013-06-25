@@ -10,6 +10,7 @@
 
 #import "ZNWallet.h"
 #import "ZNElectrumSequence.h"
+#import "ZNTransaction.h"
 #import "NSData+Hash.h"
 
 @implementation ZincWalletTests
@@ -26,6 +27,44 @@
     // Tear-down code here.
     
     [super tearDown];
+}
+
+#pragma mark - testTransaction
+
+- (void)testTransactionHeightUntilFree
+{
+    NSData *hash = [NSMutableData dataWithLength:32], *script = [NSMutableData dataWithLength:136];
+    NSString *addr = @"1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa";
+    ZNTransaction *tx = [[ZNTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@0] inputScripts:@[script]
+                         outputAddresses:@[addr, addr] andOutputAmounts:@[@100000000, @4900000000]];
+    
+    NSUInteger height = [tx heightUntilFreeFor:@[@5000000000] atHeights:@[@1]];
+    uint64_t priority = [tx priorityFor:@[@5000000000] ages:@[@(height - 1)]];
+    
+    NSLog(@"height = %d", height);
+    NSLog(@"priority = %llu", priority);
+    
+    STAssertTrue(priority >= TX_FREE_MIN_PRIORITY, @"[ZNTransaction heightUntilFreeFor:atHeights:]");
+
+    tx = [[ZNTransaction alloc] initWithInputHashes:@[hash, hash, hash, hash, hash, hash, hash, hash, hash, hash]
+          inputIndexes:@[@0, @0,@0, @0, @0, @0, @0, @0, @0, @0]
+          inputScripts:@[script, script, script, script, script, script, script, script, script, script]
+          outputAddresses:@[addr, addr, addr, addr, addr, addr, addr, addr, addr, addr]
+          andOutputAmounts:@[@1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000,
+                             @1000000]];
+    
+    height = [tx heightUntilFreeFor:@[@1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000,
+                                      @1000000, @1000000]
+              atHeights:@[@1, @2, @3, @4, @5, @6, @7, @8, @9, @10]];
+    priority = [tx priorityFor:@[@1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000,
+                                 @1000000, @1000000, @1000000]
+                ages:@[@(height - 1), @(height - 2), @(height - 3), @(height - 4), @(height - 5), @(height - 6),
+                       @(height - 7), @(height - 8), @(height - 9), @(height - 10)]];
+    
+    NSLog(@"height = %d", height);
+    NSLog(@"priority = %llu", priority);
+    
+    STAssertTrue(priority >= TX_FREE_MIN_PRIORITY, @"[ZNTransaction heightUntilFreeFor:atHeights:]");
 }
 
 #pragma mark - testWallet
