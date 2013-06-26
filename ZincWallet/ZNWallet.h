@@ -20,6 +20,7 @@
 @property (nonatomic, strong) NSData *seed;
 @property (nonatomic, readonly) uint64_t balance;
 @property (nonatomic, readonly) NSString *receiveAddress;
+@property (nonatomic, readonly) NSString *changeAddress;
 @property (nonatomic, readonly) NSArray *recentTransactions; // sorted by date, most recent first
 @property (nonatomic, readonly) NSUInteger estimatedCurrentBlockHeight;
 @property (nonatomic, strong) NSNumberFormatter *format;

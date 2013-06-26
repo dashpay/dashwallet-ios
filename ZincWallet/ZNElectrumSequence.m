@@ -106,7 +106,7 @@
 
 - (NSArray *)privateKeys:(NSArray *)n forChange:(BOOL)forChange fromSeed:(NSData *)seed
 {
-    if (! seed) return @[];
+    if (! seed || ! n.count) return @[];
 
     NSMutableArray *ret = [NSMutableArray arrayWithCapacity:n.count];
     NSData *secexp = [self stretchKey:seed];

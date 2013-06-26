@@ -46,7 +46,6 @@
 @property (nonatomic, strong) NSMutableDictionary *addressTxCount;
 @property (nonatomic, strong) NSMutableDictionary *transactions;
 @property (nonatomic, strong) NSMutableSet *outdatedAddresses;
-@property (nonatomic, strong) NSMutableDictionary *privateKeys;
 @property (nonatomic, strong) ZNElectrumSequence *sequence;
 @property (nonatomic, strong) NSData *mpk;
 
@@ -261,7 +260,7 @@
 
 - (NSString *)receiveAddress
 {
-    if (! self.receiveAddresses.count || self.addresses.count < self.receiveAddresses.count) {
+    if (! self.receiveAddresses.count || ! self.addresses.count) {
         NSUInteger i = 0;
         NSString *a = nil;
         
@@ -271,15 +270,34 @@
         
             if (! a) return nil;
             
-            if (self.addresses.count < i) {
-                [self.addresses addObject:a];
-            }
+            if (self.addresses.count < i) [self.addresses addObject:a];
         }
    
         if (! [self.receiveAddresses containsObject:a]) [self.receiveAddresses addObject:a];
     }
 
     return [self.addresses firstObjectCommonWithArray:self.receiveAddresses];
+}
+
+- (NSString *)changeAddress
+{
+    if (! self.receiveAddresses.count || ! self.changeAddresses.count) {
+        NSUInteger i = 0;
+        NSString *a = nil;
+        
+        while (! a || [self.spentAddresses containsObject:a] || [self.fundedAddresses containsObject:a]) {
+            a = [(ZNKey *)[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ forChange:YES masterPublicKey:self.mpk]]
+                 address];
+            
+            if (! a) return nil;
+            
+            if (self.changeAddresses.count < i) [self.changeAddresses addObject:a];
+        }
+        
+        if (! [self.receiveAddresses containsObject:a]) [self.receiveAddresses addObject:a];
+    }
+    
+    return [self.changeAddresses firstObjectCommonWithArray:self.receiveAddresses];
 }
 
 - (NSArray *)recentTransactions
@@ -292,15 +310,15 @@
 
 - (NSUInteger)estimatedCurrentBlockHeight
 {
-    NSTimeInterval time = [self.defs doubleForKey:LATEST_BLOCK_TIMESTAMP_KEY];
-    NSUInteger height = [self.defs integerForKey:LATEST_BLOCK_HEIGHT_KEY];
+    NSTimeInterval time = [_defs doubleForKey:LATEST_BLOCK_TIMESTAMP_KEY];
+    NSUInteger height = [_defs integerForKey:LATEST_BLOCK_HEIGHT_KEY];
 
     if (! height || time < 1.0) { // use hard coded reference block
         height = REFERENCE_BLOCK_HEIGHT;
         time = REFERENCE_BLOCK_TIME;
     }
     
-     // average one block every 600 seconds
+    // average one block every 600 seconds
     return height + ([NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 - time)/600;
 }
 
@@ -521,7 +539,7 @@ completion:(void (^)(NSError *error))completion
 - (ZNTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address
 {
     __block uint64_t balance = 0;
-    __block NSMutableSet *inKeys = [NSMutableSet set];
+    __block NSMutableSet *keyIndexes = [NSMutableSet set], *changeKeyIndexes = [NSMutableSet set];
     __block NSMutableArray *inHashes = [NSMutableArray array], *inIndexes = [NSMutableArray array],
                            *inScripts = [NSMutableArray array];
     NSMutableArray *outAddresses = [NSMutableArray arrayWithObject:address],
@@ -531,10 +549,14 @@ completion:(void (^)(NSError *error))completion
     //XXX we should optimize for free transactions (watch out for performance issues, nothing O(n^2) please)
     // this is a nieve implementation to just get it functional
     [self.unspentOutputs enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        //XXX calculate private keys on the fly
-        if (! self.privateKeys[key]) return;
-
-        [inKeys addObject:self.privateKeys[key]];
+        if ([self.addresses indexOfObject:key] == NSNotFound) {
+            if ([self.changeAddresses indexOfObject:key] == NSNotFound) {
+                NSAssert(FALSE, @"[%s %s] line %d: missing key", object_getClassName(self), sel_getName(_cmd),__LINE__);
+                return;
+            }
+            else [changeKeyIndexes addObject:@([self.changeAddresses indexOfObject:key])];
+        }
+        else [keyIndexes addObject:@([self.addresses indexOfObject:key])];
         
         [obj enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             // tx_hash is already in little endian
@@ -555,17 +577,26 @@ completion:(void (^)(NSError *error))completion
     }
     
     //XXX need to calculate tx fees, especially if change is less than 0.01
-    if (balance > amount) {
-        [outAddresses addObject:self.receiveAddress]; // change address
+    if (balance - amount >= TX_MIN_OUTPUT_AMOUNT) {
+        [outAddresses addObject:self.changeAddress];
         [outAmounts addObject:@(balance - amount)];
     }
     
     ZNTransaction *tx = [[ZNTransaction alloc] initWithInputHashes:inHashes inputIndexes:inIndexes
                          inputScripts:inScripts outputAddresses:outAddresses andOutputAmounts:outAmounts];
+
+    @autoreleasepool {
+        NSMutableArray *pkeys = [NSMutableArray arrayWithCapacity:keyIndexes.count + changeKeyIndexes.count];
+        NSData *seed = self.seed;
+        
+        [pkeys addObjectsFromArray:[self.sequence privateKeys:keyIndexes.allObjects forChange:NO fromSeed:seed]];
+        [pkeys addObjectsFromArray:[self.sequence privateKeys:changeKeyIndexes.allObjects forChange:YES fromSeed:seed]];
+
+        [tx signWithPrivateKeys:pkeys];
     
-    //XXX check if tx.size >= TX_MAX_SIZE
-    
-    [tx signWithPrivateKeys:inKeys.allObjects];
+        seed = nil;
+        pkeys = nil;
+    }
     
     if (! [tx isSigned]) {
         NSAssert(FALSE, @"[%s %s] line %d: tx signing failed", object_getClassName(self), sel_getName(_cmd), __LINE__);
