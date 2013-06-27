@@ -11,7 +11,9 @@
 #import "ZNWallet.h"
 #import "ZNElectrumSequence.h"
 #import "ZNTransaction.h"
+#import "ZNKey.h"
 #import "NSData+Hash.h"
+#import "NSString+Base58.h"
 
 @implementation ZincWalletTests
 
@@ -104,6 +106,11 @@
                          @"[ZNWallet encodePhrase:]");
     
     s = [[ZNWallet sharedInstance] performSelector:@selector(encodePhrase:)
+         withObject:[NSData dataWithHex:@"00000000000000000000000000000000"]];
+
+    NSLog(@"0x00285dfe00285e0100285e0400285e07 = %@", s);
+    
+    s = [[ZNWallet sharedInstance] performSelector:@selector(encodePhrase:)
          withObject:[NSData dataWithHex:@"fea983ac0028608e0028609100286094"]];
     
     NSLog(@"0x00285dfe00285e0100285e0400285e07 = %@", s);
@@ -126,51 +133,63 @@
 {
     ZNElectrumSequence *seq = [ZNElectrumSequence new];
     NSData *sk = [(id)seq performSelector:@selector(stretchKey:)
-                  withObject:[NSData dataWithBytes:"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" length:16]];
+                  withObject:[@"00000000000000000000000000000000" dataUsingEncoding:NSUTF8StringEncoding]];
 
     NSLog(@"0x00000000000000000000000000000000 stretched = 0x%@", [sk toHex]);
     
-    STAssertEqualObjects(sk, [NSData dataWithHex:@"7e6003c97739f6c7791837e27b06526d7e16539b6400bcac805fb0b93477c85c"],
+    STAssertEqualObjects(sk, [NSData dataWithHex:@"7c2548ab89ffea8a6579931611969ffc0ed580ccf6048d4230762b981195abe5"],
                          @"[ZNElectrumSequence stretchKey:]");
 }
 
 - (void)testElectrumSequenceMasterPublicKeyFromSeed
 {
     ZNElectrumSequence *seq = [ZNElectrumSequence new];
-    NSData *mpk = [seq masterPublicKeyFromSeed:[NSData dataWithBytes:"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" length:16]];
+    NSData *mpk = [seq masterPublicKeyFromSeed:[@"00000000000000000000000000000000"
+                                                dataUsingEncoding:NSUTF8StringEncoding]];
     
     NSLog(@"mpk from 0x00000000000000000000000000000000 = 0x%@", [mpk toHex]);
     
-    STAssertEqualObjects(mpk, [NSData dataWithHex:@"c0e5ac2152df671bf21cb5c11593a7220c21c6cf4f7f43f08b2a9ea1ba6994f2"
-                                                   "dccc1def89c7221751d3451ee9db222ad281f956979705904ecd9355f7c896df"],
+    STAssertEqualObjects(mpk, [NSData dataWithHex:@"4e13b0f311a55b8a5db9a32e959da9f011b131019d4cebe6141b9e2c93edcbfc"
+                                                   "0954c358b062a9f94111548e50bde5847a3096b8b7872dcffadb0e9579b9017b"],
                          @"[ZNElectrumSequence masterPublicKeyFromSeed:]");
 }
 
 - (void)testElectrumSequencePublicKey
 {
     ZNElectrumSequence *seq = [ZNElectrumSequence new];
-    NSData *mpk = [seq masterPublicKeyFromSeed:[NSData dataWithBytes:"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" length:16]];
+    NSData *mpk = [seq masterPublicKeyFromSeed:[@"00000000000000000000000000000000"
+                                                dataUsingEncoding:NSUTF8StringEncoding]];
     NSData *pk = [seq publicKey:0 forChange:NO masterPublicKey:mpk];
+    NSString *addr = [(ZNKey *)[ZNKey keyWithPublicKey:pk] address];
     
     NSLog(@"publicKey:0 = %@", [pk toHex]);
+    NSLog(@"addr:0 = %@", addr);
     
-    STAssertEqualObjects(pk, [NSData dataWithHex:@"04f1df504ca89c7be051cc175c156689fa8c4be2025490a7fcad05568e5b6861df"
-                                                  "63e949d0d448d8c64571205c61918d1378771151d0d8e3682453d69dcdfdddc7"],
+    STAssertEqualObjects(pk, [NSData dataWithHex:@"040900f07c15d3fa441979e71d7ccdcca1afc30a28de07a0525a3d7655dc49cca"
+                                                  "0f844fb0903b3cccc4604107a9de6a0571c4a39996a9e4bd6ab596138ecae54f5"],
                          @"[ZNElecturmSequence publicKey:forChange:masterPublicKey:]");
+    STAssertEqualObjects(addr, @"1FHsTashEBUNPQwC1CwVjnKUxzwgw73pU4", @"[[ZNKey keyWithPublicKey:] address]");
 }
 
 - (void)testElectrumSequencePrivateKey
 {
     ZNElectrumSequence *seq = [ZNElectrumSequence new];
     NSString *privkey = [seq privateKey:0 forChange:NO
-                         fromSeed:[NSData dataWithBytes:"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" length:16]];
+                         fromSeed:[@"00000000000000000000000000000000" dataUsingEncoding:NSUTF8StringEncoding]];
     
     NSLog(@"privateKey:0 = %@", privkey);
     
-    STAssertEqualObjects(privkey, @"5JB9HJXr1rCL6huhCcJKGAc38Q9eje9fiDiTiZK79YdQZfKPeXh",
+    STAssertEqualObjects(privkey, @"5Khs7w6fBkogoj1v71Mdt4g8m5kaEyRaortmK56YckgTubgnrhz",
                          @"[ZNElecturmSequence privateKey:forChange:fromSeed:]");
-    
-    //XXX need to add a test where the first byte of private key (after the 0x80 prefix) is zero
+
+    // this tests a private key that starts with 0x00
+    privkey = [seq privateKey:64 forChange:NO
+               fromSeed:[@"00000000000000000000000000000000" dataUsingEncoding:NSUTF8StringEncoding]];
+
+    NSLog(@"privateKey:64 = %@ = 0x%@", privkey, [privkey base58checkToHex]);
+
+    STAssertEqualObjects(privkey, @"5HpiKboFc3pPXwWND5SCjPjnojCLLv9i9nTp8HWEZqZsraKmkPu",
+                         @"[ZNElecturmSequence privateKey:forChange:fromSeed:]");    
 }
 
 @end
