@@ -228,7 +228,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     
     if (amounts.count != self.hashes.count || ages.count != self.hashes.count) return 0;
     
-    for (NSUInteger i = 0; i < self.amounts.count; i++) {    
+    for (NSUInteger i = 0; i < amounts.count; i++) {    
         p += [amounts[i] unsignedLongLongValue]*[ages[i] unsignedLongLongValue];
     }
     
