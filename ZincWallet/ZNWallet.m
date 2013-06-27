@@ -536,74 +536,109 @@ completion:(void (^)(NSError *error))completion
     }] start];
 }
 
-- (ZNTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address
+//XXX as block space becomes harder to come by, we can calculate the median of the lowest fee-per-kb that made it into
+// the previous 100 blocks
+- (ZNTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee
 {
-    __block uint64_t balance = 0;
-    __block NSMutableSet *keyIndexes = [NSMutableSet set], *changeKeyIndexes = [NSMutableSet set];
-    __block NSMutableArray *inHashes = [NSMutableArray array], *inIndexes = [NSMutableArray array],
-                           *inScripts = [NSMutableArray array];
-    NSMutableArray *outAddresses = [NSMutableArray arrayWithObject:address],
-                   *outAmounts = [NSMutableArray arrayWithObject:@(amount)];
+    __block uint64_t balance = 0, standardFee = 0;
+    uint64_t minChange = fee ? TX_MIN_OUTPUT_AMOUNT : TX_FREE_MIN_OUTPUT;
+    ZNTransaction *tx = [ZNTransaction new];
 
+    [tx addOutputAddress:address amount:amount];
 
     //XXX we should optimize for free transactions (watch out for performance issues, nothing O(n^2) please)
     // this is a nieve implementation to just get it functional
     [self.unspentOutputs enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        if ([self.addresses indexOfObject:key] == NSNotFound) {
-            if ([self.changeAddresses indexOfObject:key] == NSNotFound) {
-                NSAssert(FALSE, @"[%s %s] line %d: missing key", object_getClassName(self), sel_getName(_cmd),__LINE__);
-                return;
-            }
-            else [changeKeyIndexes addObject:@([self.changeAddresses indexOfObject:key])];
-        }
-        else [keyIndexes addObject:@([self.addresses indexOfObject:key])];
-        
         [obj enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             // tx_hash is already in little endian
-            [inHashes addObject:[NSData dataWithHex:obj[@"tx_hash"]]];
-            [inIndexes addObject:obj[@"tx_output_n"]];
-            [inScripts addObject:[NSData dataWithHex:obj[@"script"]]];
-            balance += [obj[@"value"] unsignedLongLongValue];
+            [tx addInputHash:[NSData dataWithHex:obj[@"tx_hash"]] index:[obj[@"tx_output_n"] unsignedIntegerValue]
+             script:[NSData dataWithHex:obj[@"script"]] ];
             
-            if (balance == amount || balance >= amount + TX_FREE_MIN_OUTPUT) *stop = YES;
+            balance += [obj[@"value"] unsignedLongLongValue];
+
+            // assume we will be adding a change output (additional 34 bytes)
+            if (fee) standardFee = ((tx.size + 34 + 999)/1000)*TX_FEE_PER_KB;
+            
+            if (balance == amount + standardFee || balance >= amount + standardFee + minChange) *stop = YES;
         }];
-        
-        if (balance == amount || balance >= amount + TX_FREE_MIN_OUTPUT) *stop = YES;
+
+        if (balance == amount + standardFee || balance >= amount + standardFee + minChange) *stop = YES;
     }];
     
-    if (balance < amount) { // insufficent funds
-        NSLog(@"Insufficient funds. Balance:%llu is less than transaction amount:%llu", balance, amount);
+    if (balance < amount + standardFee) { // insufficent funds
+        NSLog(@"Insufficient funds. Balance:%llu is less than transaction amount:%llu", balance, amount + standardFee);
         return nil;
     }
     
-    //XXX need to calculate tx fees, especially if change is less than 0.01
-    if (balance - amount >= TX_MIN_OUTPUT_AMOUNT) {
-        [outAddresses addObject:self.changeAddress];
-        [outAmounts addObject:@(balance - amount)];
-    }
-    
-    ZNTransaction *tx = [[ZNTransaction alloc] initWithInputHashes:inHashes inputIndexes:inIndexes
-                         inputScripts:inScripts outputAddresses:outAddresses andOutputAmounts:outAmounts];
-
-    @autoreleasepool {
-        NSMutableArray *pkeys = [NSMutableArray arrayWithCapacity:keyIndexes.count + changeKeyIndexes.count];
-        NSData *seed = self.seed;
-        
-        [pkeys addObjectsFromArray:[self.sequence privateKeys:keyIndexes.allObjects forChange:NO fromSeed:seed]];
-        [pkeys addObjectsFromArray:[self.sequence privateKeys:changeKeyIndexes.allObjects forChange:YES fromSeed:seed]];
-
-        [tx signWithPrivateKeys:pkeys];
-    
-        seed = nil;
-        pkeys = nil;
-    }
-    
-    if (! [tx isSigned]) {
-        NSAssert(FALSE, @"[%s %s] line %d: tx signing failed", object_getClassName(self), sel_getName(_cmd), __LINE__);
-        return nil;
+    //XXX need to handle edge case where fee = NO, but change is between TX_MIN_OUTPUT_AMOUNT and TX_MIN_FREE_OUTPUT
+    if (balance - (amount + standardFee) >= TX_MIN_OUTPUT_AMOUNT) {
+        [tx addOutputAddress:self.changeAddress amount:balance - (amount + standardFee)];
     }
     
     return tx;
+}
+
+// returns the estimated time in seconds until the transaction can be processed without a fee
+- (NSTimeInterval)timeUntilFree:(ZNTransaction *)transaction
+{
+    NSMutableArray *amounts = [NSMutableArray array], *heights = [NSMutableArray array];
+    NSUInteger currentHeight = [_defs integerForKey:LATEST_BLOCK_HEIGHT_KEY];
+    
+    if (! currentHeight) return DBL_MAX;
+    
+    [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        NSArray *outs = self.unspentOutputs[obj];
+        NSString *hash = [transaction.inputHashes[idx] toHex];
+        NSUInteger inputIdx = [transaction.inputIndexes[idx] unsignedIntegerValue];
+
+        NSUInteger i = [outs indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+            return ([obj[@"tx_hash"] isEqual:hash] && [obj[@"tx_output_n"] unsignedIntegerValue] == inputIdx) ?
+            *stop = YES : NO;
+        }];
+        
+        if (i != NSNotFound) {
+            [amounts addObject:outs[i][@"value"]];
+            [heights addObject:@(currentHeight - [outs[i][@"confirmations"] unsignedIntegerValue])];
+        }
+        else *stop = YES;
+    }];
+
+    NSUInteger height = [transaction blockHeightUntilFreeForAmounts:amounts withBlockHeights:heights];
+    
+    if (height == NSNotFound) return DBL_MAX;
+    
+    currentHeight = [self estimatedCurrentBlockHeight];
+    
+    return height > currentHeight + 1 ? (height - currentHeight)*600 : 0;
+}
+
+- (BOOL)signTransaction:(ZNTransaction *)transaction
+{
+    NSMutableSet *keyIndexes = [NSMutableSet set], *changeKeyIndexes = [NSMutableSet set];
+
+    [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        if ([self.addresses indexOfObject:obj] == NSNotFound) {
+            if ([self.changeAddresses indexOfObject:obj] == NSNotFound) {
+                NSLog(@"[%s %s] line %d: missing key", object_getClassName(self), sel_getName(_cmd), __LINE__);
+                *stop = YES;
+            }
+            else [changeKeyIndexes addObject:@([self.changeAddresses indexOfObject:obj])];
+        }
+        else [keyIndexes addObject:@([self.addresses indexOfObject:obj])];
+    }];
+    
+    NSMutableArray *pkeys = [NSMutableArray arrayWithCapacity:keyIndexes.count + changeKeyIndexes.count];
+    NSData *seed = self.seed;
+    
+    [pkeys addObjectsFromArray:[self.sequence privateKeys:keyIndexes.allObjects forChange:NO fromSeed:seed]];
+    [pkeys addObjectsFromArray:[self.sequence privateKeys:changeKeyIndexes.allObjects forChange:YES fromSeed:seed]];
+    
+    [transaction signWithPrivateKeys:pkeys];
+    
+    seed = nil;
+    pkeys = nil;
+    
+    return [transaction isSigned];
 }
 
 - (BOOL)containsAddress:(NSString *)address
@@ -615,6 +650,11 @@ completion:(void (^)(NSError *error))completion
 - (NSString *)stringForAmount:(uint64_t)amount
 {
     return [self.format stringFromNumber:@(amount/pow(10, self.format.maximumFractionDigits))];
+}
+
+- (uint64_t)amountForString:(NSString *)string
+{
+    return [[self.format numberFromString:string] doubleValue]*pow(10, self.format.maximumFractionDigits);
 }
 
 #pragma mark - keychain services

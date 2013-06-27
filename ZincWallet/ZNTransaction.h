@@ -24,28 +24,33 @@
 
 @interface ZNTransaction : NSObject
 
+@property (nonatomic, readonly) NSArray *inputAddresses;
+@property (nonatomic, readonly) NSArray *inputHashes;
+@property (nonatomic, readonly) NSArray *inputIndexes;
+@property (nonatomic, readonly) NSArray *inputScripts;
+@property (nonatomic, readonly) NSArray *outputAddresses;
+@property (nonatomic, readonly) NSArray *outputAmounts;
+
 @property (nonatomic, readonly) size_t size;
+@property (nonatomic, readonly) uint64_t standardFee;
+@property (nonatomic, readonly) BOOL isSigned;
+@property (nonatomic, readonly, getter = toData) NSData *data;
+@property (nonatomic, readonly, getter = toHex) NSString *hex;
 
-// inputHashes are expected to already be little endian
-- (id)initWithInputHashes:(NSArray *)inputHashes inputIndexes:(NSArray *)inputIndexes
-inputScripts:(NSArray *)inputScripts outputAddresses:(NSArray *)outputAddresses
-andOutputAmounts:(NSArray *)outputAmounts;
+// hashes are expected to already be little endian
+- (id)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts
+outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts;
 
-- (BOOL)isSigned;
+- (void)addInputHash:(NSData *)hash index:(NSUInteger)index script:(NSData *)script;
+
+- (void)addOutputAddress:(NSString *)address amount:(uint64_t)amount;
 
 - (BOOL)signWithPrivateKeys:(NSArray *)privateKeys;
-
-- (NSData *)toData;
-
-- (NSString *)toHex;
 
 // priority = sum(input_amount_in_satoshis*input_age_in_blocks)/tx_size_in_bytes
 - (uint64_t)priorityForAmounts:(NSArray *)amounts withAges:(NSArray *)ages;
 
-// returns the block height after which the transaction can be confirmed without a fee, given the amounts and block
-// heights of the inputs. returns NSNotFound for never.
-- (NSUInteger)heightUntilFreeForAmounts:(NSArray *)amounts atHeights:(NSArray *)heights;
-
-- (uint64_t)standardFee;
+// the block height after which the transaction can be confirmed without a fee, or NSNotFound for never
+- (NSUInteger)blockHeightUntilFreeForAmounts:(NSArray *)amounts withBlockHeights:(NSArray *)heights;
 
 @end

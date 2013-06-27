@@ -19,6 +19,7 @@
 @property (nonatomic, strong) IBOutlet UIActivityIndicatorView *spinner;
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *payButton;
 @property (nonatomic, strong) IBOutletCollection(UIButton) NSArray *buttons, *buttonRow1, *buttonRow2, *buttonRow3;
+@property (nonatomic, strong) ZNTransaction *tx, *txWithFee;
 
 @end
 
@@ -87,6 +88,34 @@
               message:[@"Bitcoin payments can't be less than "
                        stringByAppendingString:[[ZNWallet sharedInstance] stringForAmount:TX_MIN_OUTPUT_AMOUNT]]
               delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+            
+            return;
+        }
+
+        self.tx = [w transactionFor:self.request.amount to:self.request.paymentAddress withFee:NO];
+        self.txWithFee = [w transactionFor:self.request.amount to:self.request.paymentAddress withFee:YES];
+
+        NSString *fee = [w stringForAmount:self.txWithFee.standardFee];
+        NSTimeInterval t = [w timeUntilFree:self.tx];
+        
+        if (! self.tx || (t > DBL_EPSILON && ! self.txWithFee)) {
+            [[[UIAlertView alloc] initWithTitle:@"Insuficient Funds" message:nil delegate:nil cancelButtonTitle:@"OK"
+              otherButtonTitles:nil] show];
+        }
+        else if (t > DBL_MAX - DBL_EPSILON) {
+            [[[UIAlertView alloc] initWithTitle:@"transaction fee needed"
+              message:[NSString stringWithFormat:@"the bitcoin network needs a fee of %@ to send this payment", fee]
+              delegate:self cancelButtonTitle:@"cancel" otherButtonTitles:[NSString stringWithFormat:@"+ %@", fee], nil]
+             show];
+        }
+        else if (t > DBL_EPSILON) {
+            NSUInteger minutes = t/60, hours = t/(60*60);
+            NSString *time = [NSString stringWithFormat:@"%d %@%@", hours ? hours : minutes,
+                              hours ? @"hour" : @"minutes", hours > 1 ? @"s" : @""];
+        
+            [[[UIAlertView alloc] initWithTitle:[NSString stringWithFormat:@"%@ transaction fee recommended", fee]
+              message:[NSString stringWithFormat:@"estimated confirmation time with no fee: %@", time] delegate:self
+              cancelButtonTitle:nil otherButtonTitles:@"no fee", [NSString stringWithFormat:@"+ %@", fee], nil] show];
         }
         else {
             w.format.minimumFractionDigits = w.format.maximumFractionDigits;
@@ -147,9 +176,26 @@ replacementString:(NSString *)string
         return;
     }
     
-    ZNTransaction *tx = [[ZNWallet sharedInstance] transactionFor:self.request.amount to:self.request.paymentAddress];
+    ZNWallet *w = [ZNWallet sharedInstance];
+    NSString *title = [alertView buttonTitleAtIndex:buttonIndex];
+    //XXX we should programatically calculate the fee from inputs and outputs as a sanity check
+    uint64_t fee = 0;
     
-    NSLog(@"signed transaction:\n%@", [tx toHex]);
+    if ([title hasPrefix:@"+ "]) {
+        fee = self.txWithFee.standardFee;
+        self.tx = self.txWithFee;
+    }
+    
+    if ([title hasPrefix:@"+ "] || [title isEqual:@"no fee"]) {
+        w.format.minimumFractionDigits = w.format.maximumFractionDigits;
+        [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
+          message:self.request.message ? self.request.message : self.request.paymentAddress delegate:self
+          cancelButtonTitle:@"cancel" otherButtonTitles:[w stringForAmount:self.request.amount + fee], nil] show];
+        w.format.minimumFractionDigits = 0;
+    }
+    else {
+        NSLog(@"signed transaction:\n%@", [self.tx toHex]);
+    }
 }
 
 @end

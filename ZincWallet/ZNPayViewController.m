@@ -266,32 +266,62 @@
 
 - (void)confirmRequest:(ZNPaymentRequest *)request
 {
-    if (request.isValid) {
-        if ([[ZNWallet sharedInstance] containsAddress:request.paymentAddress]) {
-            [[[UIAlertView alloc] initWithTitle:nil message:@"This payment address is already in your wallet."
-              delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+    if (! request.isValid) return;
+    
+    ZNWallet *w = [ZNWallet sharedInstance];
+    
+    if ([w containsAddress:request.paymentAddress]) {
+        [[[UIAlertView alloc] initWithTitle:nil message:@"This payment address is already in your wallet." delegate:nil
+          cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
             
-            self.selectedIndex = NSNotFound;
+        self.selectedIndex = NSNotFound;
+    }
+    else if (request.amount == 0) {
+        ZNAmountViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNAmountViewController"];
+            
+        c.request = request;
+        [self.navigationController pushViewController:c animated:YES];
+            
+        self.selectedIndex = NSNotFound;
+    }
+    else if (request.amount < TX_MIN_OUTPUT_AMOUNT) {
+        [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment"
+          message:[@"Bitcoin payments can't be less than "
+                   stringByAppendingString:[w stringForAmount:TX_MIN_OUTPUT_AMOUNT]]
+          delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+    }
+    else {
+        ZNTransaction *tx = [w transactionFor:request.amount to:request.paymentAddress withFee:NO];
+        ZNTransaction *txWithFee = [w transactionFor:request.amount to:request.paymentAddress withFee:YES];
+        
+        NSString *fee = [w stringForAmount:txWithFee.standardFee];
+        NSTimeInterval t = [w timeUntilFree:tx];
+        
+        if (! tx || (t > DBL_EPSILON && ! txWithFee)) {
+            [[[UIAlertView alloc] initWithTitle:@"Insuficient Funds" message:nil delegate:nil cancelButtonTitle:@"OK"
+              otherButtonTitles:nil] show];
         }
-        else if (request.amount == 0) {
-            ZNAmountViewController *c =
-                [self.storyboard instantiateViewControllerWithIdentifier:@"ZNAmountViewController"];
-            
-            c.request = request;
-            [self.navigationController pushViewController:c animated:YES];
-            
-            self.selectedIndex = NSNotFound;
+        else if (t > DBL_MAX - DBL_EPSILON) {
+            [[[UIAlertView alloc] initWithTitle:@"transaction fee needed"
+              message:[NSString stringWithFormat:@"the bitcoin network needs a fee of %@ to send this payment", fee]
+              delegate:self cancelButtonTitle:@"cancel" otherButtonTitles:[NSString stringWithFormat:@"+ %@", fee], nil]
+             show];
         }
-        else if (request.amount < TX_MIN_OUTPUT_AMOUNT) {
-            [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment"
-              message:[@"Bitcoin payments can't be less than "
-                       stringByAppendingString:[[ZNWallet sharedInstance] stringForAmount:TX_MIN_OUTPUT_AMOUNT]]
-              delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        else if (t > DBL_EPSILON) {
+            NSUInteger minutes = t/60, hours = t/(60*60);
+            NSString *time = [NSString stringWithFormat:@"%d %@%@", hours ? hours : minutes,
+                              hours ? @"hour" : @"minutes", hours > 1 ? @"s" : @""];
+            
+            [[[UIAlertView alloc] initWithTitle:[NSString stringWithFormat:@"%@ transaction fee recommended", fee]
+              message:[NSString stringWithFormat:@"estimated confirmation time with no fee: %@", time] delegate:self
+              cancelButtonTitle:nil otherButtonTitles:@"no fee", [NSString stringWithFormat:@"+ %@", fee], nil] show];
         }
         else {
-            [[[UIAlertView alloc] initWithTitle:@"Confirm Payment" message:request.message delegate:self
-             cancelButtonTitle:@"cancel"
-             otherButtonTitles:[[ZNWallet sharedInstance] stringForAmount:request.amount], nil] show];
+            w.format.minimumFractionDigits = w.format.maximumFractionDigits;
+            [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
+              message:request.message ? request.message : request.paymentAddress delegate:self
+             cancelButtonTitle:@"cancel" otherButtonTitles:[w stringForAmount:request.amount], nil] show];
+            w.format.minimumFractionDigits = 0;
         }
     }
 }
@@ -489,24 +519,45 @@
         return;
     }
     
-    ZNTransaction *tx = [[ZNWallet sharedInstance] transactionFor:[self.requests[self.selectedIndex] amount]
-                         to:[self.requests[self.selectedIndex] paymentAddress]];
-    NSError *error;
+    ZNWallet *w = [ZNWallet sharedInstance];
+    ZNPaymentRequest *request = self.requests[self.selectedIndex];
+    ZNTransaction *tx = [w transactionFor:request.amount to:request.paymentAddress withFee:NO];
+    ZNTransaction *txWithFee = [w transactionFor:request.amount to:request.paymentAddress withFee:YES];
     
-    NSLog(@"sending signed request to %@", self.requestIDs[self.selectedIndex]);
-    [self.session sendData:[[tx toHex] dataUsingEncoding:NSUTF8StringEncoding]
-     toPeers:@[self.requestIDs[self.selectedIndex]] withDataMode:GKSendDataReliable error:&error];
+    NSString *title = [alertView buttonTitleAtIndex:buttonIndex];
+    //XXX we should programatically calculate the fee from inputs and outputs as a sanity check
+    uint64_t fee = 0;
     
-    if (error) {
-        [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription delegate:nil
-          cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+    if ([title hasPrefix:@"+ "]) fee = txWithFee.standardFee;
+    
+    if ([title hasPrefix:@"+ "] || [title isEqual:@"no fee"]) {
+        w.format.minimumFractionDigits = w.format.maximumFractionDigits;
+        [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
+          message:request.message ? request.message : request.paymentAddress delegate:self
+          cancelButtonTitle:@"cancel" otherButtonTitles:[w stringForAmount:request.amount + fee], nil] show];
+        w.format.minimumFractionDigits = 0;
     }
+    else {
+        if ([w amountForString:title] > request.amount) tx = txWithFee;
     
-    [self.requestIDs removeObjectAtIndex:self.selectedIndex];
-    [self.requests removeObjectAtIndex:self.selectedIndex];
-    self.selectedIndex = NSNotFound;
+        NSLog(@"sending signed request to %@", self.requestIDs[self.selectedIndex]);
+        
+        NSError *error = nil;
+
+        [self.session sendData:[[tx toHex] dataUsingEncoding:NSUTF8StringEncoding]
+         toPeers:@[self.requestIDs[self.selectedIndex]] withDataMode:GKSendDataReliable error:&error];
     
-    [self layoutButtonsAnimated:YES];
+        if (error) {
+            [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription delegate:nil
+              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        }
+    
+        [self.requestIDs removeObjectAtIndex:self.selectedIndex];
+        [self.requests removeObjectAtIndex:self.selectedIndex];
+        self.selectedIndex = NSNotFound;
+    
+        [self layoutButtonsAnimated:YES];
+    }
 }
 
 #pragma mark - UIImagePickerControllerDelegate

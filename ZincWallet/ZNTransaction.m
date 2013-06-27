@@ -9,6 +9,7 @@
 #import "ZNTransaction.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSData+Hash.h"
+#import "NSString+Base58.h"
 #import "ZNKey.h"
 
 #define TX_VERSION      0x00000001u
@@ -19,40 +20,104 @@
 
 @interface ZNTransaction ()
 
-@property (nonatomic, strong) NSArray *inputHashes, *inputIndexes, *inputScripts, *outputAddresses, *outputAmounts;
+@property (nonatomic, strong) NSMutableArray *hashes, *indexes, *scripts;
+@property (nonatomic, strong) NSMutableArray *addresses, *amounts;
 @property (nonatomic, strong) NSMutableArray *signatures;
 
 @end
 
 @implementation ZNTransaction
 
-- (id)initWithInputHashes:(NSArray *)inputHashes inputIndexes:(NSArray *)inputIndexes
-inputScripts:(NSArray *)inputScripts outputAddresses:(NSArray *)outputAddresses
-andOutputAmounts:(NSArray *)outputAmounts
+- (id)init
 {
-    if (! inputHashes.count || inputHashes.count != inputIndexes.count || inputHashes.count != inputScripts.count ||
-        ! outputAddresses.count || outputAddresses.count != outputAmounts.count) return nil;
-
-    if (! (self = [self init])) return nil;
+    if (! (self = [super init])) return nil;
         
-    self.inputHashes = inputHashes;
-    self.inputIndexes = inputIndexes;
-    self.inputScripts = inputScripts;
-    self.signatures = [NSMutableArray arrayWithCapacity:inputHashes.count];
-    [self.inputHashes enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        [self.signatures addObject:[NSNull null]];
-    }];
+    self.hashes = [NSMutableArray array];
+    self.indexes = [NSMutableArray array];
+    self.scripts = [NSMutableArray array];
     
-    self.outputAddresses = outputAddresses;
-    self.outputAmounts = outputAmounts;
+    self.addresses = [NSMutableArray array];
+    self.amounts = [NSMutableArray array];
+    
+    self.signatures = [NSMutableArray array];
     
     return self;
 }
 
-- (BOOL)isSigned
+- (id)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts
+outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 {
-    return (self.signatures.count && self.signatures.count == self.inputHashes.count &&
-            ! [self.signatures containsObject:[NSNull null]]);
+    if (hashes.count != indexes.count || hashes.count != scripts.count || addresses.count != amounts.count) return nil;
+
+    if (! (self = [super init])) return nil;
+    
+    self.hashes = [NSMutableArray arrayWithArray:hashes];
+    self.indexes = [NSMutableArray arrayWithArray:indexes];
+    self.scripts = [NSMutableArray arrayWithArray:scripts];
+    
+    self.addresses = [NSMutableArray arrayWithArray:addresses];
+    self.amounts = [NSMutableArray arrayWithArray:amounts];
+    
+    self.signatures = [NSMutableArray arrayWithCapacity:hashes.count];
+    for (int i = 0; i < hashes.count; i++) {
+        [self.signatures addObject:[NSNull null]];
+    }
+    
+    return self;
+}
+
+// hashes are expected to already be little endian
+- (void)addInputHash:(NSData *)hash index:(NSUInteger)index script:(NSData *)script
+{
+    [self.hashes addObject:hash];
+    [self.indexes addObject:@(index)];
+    [self.scripts addObject:script];
+    [self.signatures addObject:[NSNull null]];
+}
+
+- (void)addOutputAddress:(NSString *)address amount:(uint64_t)amount
+{
+    [self.addresses addObject:address];
+    [self.amounts addObject:@(amount)];
+}
+
+- (NSArray *)inputAddresses
+{
+    NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:self.scripts.count];
+
+    [self.scripts enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        NSMutableData *addr = [NSMutableData dataWithBytes:"\0" length:1];
+
+        [addr appendData:[obj subdataWithRange:NSMakeRange([obj length] - 22, 20)]];
+        [addresses addObject:[NSString base58checkWithData:addr]];
+    }];
+
+    return addresses;
+}
+
+- (NSArray *)inputHashes
+{
+    return self.hashes;
+}
+
+- (NSArray *)inputScripts
+{
+    return self.scripts;
+}
+
+- (NSArray *)inputIndexes
+{
+    return self.indexes;
+}
+
+- (NSArray *)outputAddresses
+{
+    return self.addresses;
+}
+
+- (NSArray *)outputAmounts
+{
+    return self.amounts;
 }
 
 - (BOOL)signWithPrivateKeys:(NSArray *)privateKeys
@@ -69,9 +134,9 @@ andOutputAmounts:(NSArray *)outputAmounts
         [addresses addObject:key.hash160];
     }];
 
-    for (NSUInteger i = 0; i < self.inputHashes.count; i++) {
-        NSUInteger keyIdx = [addresses indexOfObject:[self.inputScripts[i]
-                             subdataWithRange:NSMakeRange([self.inputScripts[i] length] - 22, 20)]];
+    for (NSUInteger i = 0; i < self.hashes.count; i++) {
+        NSUInteger keyIdx = [addresses indexOfObject:[self.scripts[i]
+                             subdataWithRange:NSMakeRange([self.scripts[i] length] - 22, 20)]];
 
         if (keyIdx == NSNotFound) continue;
     
@@ -89,17 +154,23 @@ andOutputAmounts:(NSArray *)outputAmounts
     return [self isSigned];
 }
 
+- (BOOL)isSigned
+{
+    return (self.signatures.count && self.signatures.count == self.hashes.count &&
+            ! [self.signatures containsObject:[NSNull null]]);
+}
+
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex
 {
     NSMutableData *d = [NSMutableData dataWithCapacity:self.size];
 
     [d appendUInt32:TX_VERSION];
 
-    [d appendVarInt:self.inputHashes.count];
+    [d appendVarInt:self.hashes.count];
 
-    for (NSUInteger i = 0; i < self.inputHashes.count; i++) {
-        [d appendData:self.inputHashes[i]];
-        [d appendUInt32:[self.inputIndexes[i] unsignedIntValue]];
+    for (NSUInteger i = 0; i < self.hashes.count; i++) {
+        [d appendData:self.hashes[i]];
+        [d appendUInt32:[self.indexes[i] unsignedIntValue]];
 
         if ([self isSigned] && subscriptIndex == NSNotFound) {
             [d appendVarInt:[self.signatures[i] length]];
@@ -107,21 +178,21 @@ andOutputAmounts:(NSArray *)outputAmounts
         }
         else if (i == subscriptIndex) {// || subscriptIndex == NSNotFound) {
             //XXX to fully match the reference implementation, OP_CODESEPARATOR related checksig logic should go here
-            [d appendVarInt:[self.inputScripts[i] length]];
-            [d appendData:self.inputScripts[i]];
+            [d appendVarInt:[self.scripts[i] length]];
+            [d appendData:self.scripts[i]];
         }
         else [d appendVarInt:0];
         
         [d appendUInt32:TXIN_SEQUENCE];
     }
     
-    [d appendVarInt:self.outputAddresses.count];
+    [d appendVarInt:self.addresses.count];
     
-    for (NSUInteger i = 0; i < self.outputAddresses.count; i++) {
-        [d appendUInt64:[self.outputAmounts[i] unsignedLongLongValue]];
+    for (NSUInteger i = 0; i < self.addresses.count; i++) {
+        [d appendUInt64:[self.amounts[i] unsignedLongLongValue]];
         
         [d appendVarInt:TXOUT_PUBKEYLEN]; //XXX this shouldn't be hard coded
-        [d appendScriptPubKeyForAddress:self.outputAddresses[i]];
+        [d appendScriptPubKeyForAddress:self.addresses[i]];
     }
     
     [d appendUInt32:TX_LOCKTIME];
@@ -147,7 +218,7 @@ andOutputAmounts:(NSArray *)outputAmounts
 {
     //XXX is this correct? what about compressed vs uncompressed public keys?
     //XXX also need to take into account varint sizes
-    return 10 + 148*self.inputHashes.count + 34*self.outputAddresses.count;
+    return 10 + 148*self.hashes.count + 34*self.addresses.count;
 }
 
 // priority = sum(input_amount_in_satoshis*input_age_in_blocks)/size_in_bytes
@@ -155,24 +226,23 @@ andOutputAmounts:(NSArray *)outputAmounts
 {
     uint64_t p = 0;
     
-    if (amounts.count != self.inputHashes.count || ages.count != self.inputHashes.count) return 0;
+    if (amounts.count != self.hashes.count || ages.count != self.hashes.count) return 0;
     
-    for (NSUInteger i = 0; i < amounts.count; i++) {
+    for (NSUInteger i = 0; i < self.amounts.count; i++) {    
         p += [amounts[i] unsignedLongLongValue]*[ages[i] unsignedLongLongValue];
     }
     
     return p/self.size;
 }
 
-// returns the block height after which the transaction can be confirmed without a fee, given the amounts and block
-// heights of the inputs. returns NSNotFound for never.
-- (NSUInteger)heightUntilFreeForAmounts:(NSArray *)amounts atHeights:(NSArray *)heights
+// the block height after which the transaction can be confirmed without a fee, or NSNotFound for never
+- (NSUInteger)blockHeightUntilFreeForAmounts:(NSArray *)amounts withBlockHeights:(NSArray *)heights
 {
-    if (amounts.count != self.inputHashes.count || heights.count != self.inputHashes.count) return NSNotFound;
-    
+    if (amounts.count != self.hashes.count || heights.count != self.hashes.count) return NSNotFound;
+
     if (self.size > TX_FREE_MAX_SIZE) return NSNotFound;
     
-    if ([self.outputAmounts indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+    if ([self.amounts indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
         return [obj unsignedLongLongValue] < TX_FREE_MIN_OUTPUT ? (*stop = YES) : NO;
     }] != NSNotFound) return NSNotFound;
 
@@ -193,7 +263,5 @@ andOutputAmounts:(NSArray *)outputAmounts
 {
     return ((self.size + 999)/1000)*TX_FEE_PER_KB;
 }
-
-
 
 @end
