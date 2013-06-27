@@ -726,7 +726,11 @@
                         <color key="backgroundColor" white="0.95000000000000007" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
                     <navigationItem key="navigationItem" title="mɃ 0.00000" id="Ufy-kA-8Fw">
-                        <barButtonItem key="rightBarButtonItem" title="Pay" id="D8w-gf-PFI"/>
+                        <barButtonItem key="rightBarButtonItem" title="Pay" id="D8w-gf-PFI">
+                            <connections>
+                                <action selector="pay:" destination="asW-9a-XhX" id="422-mA-SEl"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
                     <connections>
@@ -914,6 +918,9 @@
         <class className="ZNAmountViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNAmountViewController.h"/>
             <relationships>
+                <relationship kind="action" name="del:"/>
+                <relationship kind="action" name="number:"/>
+                <relationship kind="action" name="pay:"/>
                 <relationship kind="outlet" name="addressLabel" candidateClass="UILabel"/>
                 <relationship kind="outlet" name="amountField" candidateClass="UITextField"/>
                 <relationship kind="outlet" name="payButton" candidateClass="UIBarButtonItem"/>
@@ -940,6 +947,20 @@
         </class>
         <class className="ZNReceiveViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNReceiveViewController.h"/>
+            <relationships>
+                <relationship kind="action" name="address:"/>
+                <relationship kind="action" name="cancelRequest:"/>
+                <relationship kind="action" name="del:"/>
+                <relationship kind="action" name="issueRequest:"/>
+                <relationship kind="action" name="number:"/>
+                <relationship kind="outlet" name="addressButton" candidateClass="UIButton"/>
+                <relationship kind="outlet" name="amountField" candidateClass="UITextField"/>
+                <relationship kind="outlet" name="messageField" candidateClass="UITextField"/>
+                <relationship kind="outlet" name="qrView" candidateClass="UIImageView"/>
+                <relationship kind="outlet" name="requestButton" candidateClass="UIButton"/>
+                <relationship kind="outlet" name="spinner" candidateClass="UIActivityIndicatorView"/>
+                <relationship kind="outlet" name="waitingLabel" candidateClass="UILabel"/>
+            </relationships>
         </class>
         <class className="ZNRestoreViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNRestoreViewController.h"/>

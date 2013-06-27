@@ -77,10 +77,8 @@
 - (IBAction)pay:(id)sender
 {
     ZNWallet *w = [ZNWallet sharedInstance];
-    double factor = pow(10, (double)w.format.maximumFractionDigits);
 
-    self.request.amount =
-        [[w.format numberFromString:self.amountField.text] doubleValue]*factor;
+    self.request.amount = [w amountForString:self.amountField.text];
 
     if (self.request.isValid) {
         if (self.request.amount < TX_MIN_OUTPUT_AMOUNT) {

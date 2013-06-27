@@ -74,11 +74,14 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:bitcoinURLNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             ZNPaymentRequest *req = [ZNPaymentRequest requestWithURL:note.userInfo[@"url"]];
-    
-            if (req.isValid) {
+        
+            if (req.isValid && [self.requests indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+                return [[req data] isEqualToData:[obj data]] ? (*stop = YES) : NO;
+            }] == NSNotFound) {
                 [self.requests insertObject:req atIndex:0];
                 [self.requestIDs insertObject:URL_ID atIndex:0];
                 [self layoutButtonsAnimated:YES];
+                [self.scrollView setContentOffset:CGPointZero animated:YES];
             }
         }];
     
