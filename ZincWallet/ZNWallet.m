@@ -61,17 +61,7 @@
     static dispatch_once_t onceToken = 0;
     
     dispatch_once(&onceToken, ^{
-        singleton = [ZNWallet new];
-        
-        //1HMtWCZ2vW9BroWqHdqgRTfcRw4qUop2kt
-        [singleton queryUnspentOutputs:@[@"1HMtWCZ2vW9BroWqHdqgRTfcRw4qUop2kt"] completion:^(NSError *error) {
-            if (! error) {
-                NSLog(@"no error");
-            }
-            else {
-                NSLog(@"%@", error.localizedDescription);
-            }
-        }];
+        singleton = [ZNWallet new];        
     });
 
     return singleton;
