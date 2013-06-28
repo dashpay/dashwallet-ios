@@ -689,11 +689,9 @@
 		753007EF1769899B00C7BB60 /* ZNSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007EE1769899B00C7BB60 /* ZNSeedViewController.m */; };
 		753007F2176A48DA00C7BB60 /* ZNRestoreViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007F1176A48DA00C7BB60 /* ZNRestoreViewController.m */; };
 		7535CCDF176BE3D2007E29C5 /* ZNButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 7535CCDE176BE3D2007E29C5 /* ZNButton.m */; };
-		7536A2AD177D1A6C00BAC31E /* zbar-back.png in Resources */ = {isa = PBXBuildFile; fileRef = 7536A29C177D1A6C00BAC31E /* zbar-back.png */; };
 		7536A2AF177D1A6C00BAC31E /* zbar-help.html in Resources */ = {isa = PBXBuildFile; fileRef = 7536A29E177D1A6C00BAC31E /* zbar-help.html */; };
 		7536A2B0177D1A6C00BAC31E /* zbar-helpicons.png in Resources */ = {isa = PBXBuildFile; fileRef = 7536A29F177D1A6C00BAC31E /* zbar-helpicons.png */; };
 		7536A2B1177D1A6C00BAC31E /* zbar-samples.png in Resources */ = {isa = PBXBuildFile; fileRef = 7536A2A0177D1A6C00BAC31E /* zbar-samples.png */; };
-		7536A2B2177D1A6C00BAC31E /* ZBarSDK-bg.png in Resources */ = {isa = PBXBuildFile; fileRef = 7536A2A1177D1A6C00BAC31E /* ZBarSDK-bg.png */; };
 		7545424F17606C7500638B95 /* button-bg-disabled@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7545424C17606C7500638B95 /* button-bg-disabled@2x.png */; };
 		7545425017606C7500638B95 /* button-bg@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7545424D17606C7500638B95 /* button-bg@2x.png */; };
 		7545425117606C7500638B95 /* button-bg-pressed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7545424E17606C7500638B95 /* button-bg-pressed@2x.png */; };
@@ -1993,11 +1991,9 @@
 		753007F1176A48DA00C7BB60 /* ZNRestoreViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNRestoreViewController.m; sourceTree = "<group>"; };
 		7535CCDD176BE3D2007E29C5 /* ZNButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNButton.h; sourceTree = "<group>"; };
 		7535CCDE176BE3D2007E29C5 /* ZNButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNButton.m; sourceTree = "<group>"; };
-		7536A29C177D1A6C00BAC31E /* zbar-back.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "zbar-back.png"; sourceTree = "<group>"; };
 		7536A29E177D1A6C00BAC31E /* zbar-help.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "zbar-help.html"; sourceTree = "<group>"; };
 		7536A29F177D1A6C00BAC31E /* zbar-helpicons.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "zbar-helpicons.png"; sourceTree = "<group>"; };
 		7536A2A0177D1A6C00BAC31E /* zbar-samples.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "zbar-samples.png"; sourceTree = "<group>"; };
-		7536A2A1177D1A6C00BAC31E /* ZBarSDK-bg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ZBarSDK-bg.png"; sourceTree = "<group>"; };
 		7545424C17606C7500638B95 /* button-bg-disabled@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-disabled@2x.png"; sourceTree = "<group>"; };
 		7545424D17606C7500638B95 /* button-bg@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg@2x.png"; sourceTree = "<group>"; };
 		7545424E17606C7500638B95 /* button-bg-pressed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-pressed@2x.png"; sourceTree = "<group>"; };
@@ -3792,11 +3788,9 @@
 		7536A293177D1A6C00BAC31E /* res */ = {
 			isa = PBXGroup;
 			children = (
-				7536A29C177D1A6C00BAC31E /* zbar-back.png */,
 				7536A29E177D1A6C00BAC31E /* zbar-help.html */,
 				7536A29F177D1A6C00BAC31E /* zbar-helpicons.png */,
 				7536A2A0177D1A6C00BAC31E /* zbar-samples.png */,
-				7536A2A1177D1A6C00BAC31E /* ZBarSDK-bg.png */,
 			);
 			name = res;
 			path = ZBar/iphone/res;
@@ -4933,11 +4927,9 @@
 				754542571760775900638B95 /* qr@2x.png in Resources */,
 				758D21181762E96800BE69E3 /* refresh@2x.png in Resources */,
 				7591EC0E1773DD3700B44340 /* redgradient@2x.png in Resources */,
-				7536A2AD177D1A6C00BAC31E /* zbar-back.png in Resources */,
 				7536A2AF177D1A6C00BAC31E /* zbar-help.html in Resources */,
 				7536A2B0177D1A6C00BAC31E /* zbar-helpicons.png in Resources */,
 				7536A2B1177D1A6C00BAC31E /* zbar-samples.png in Resources */,
-				7536A2B2177D1A6C00BAC31E /* ZBarSDK-bg.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

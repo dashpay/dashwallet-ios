@@ -260,8 +260,8 @@
 
 - (void)synchronize
 {
-    //XXXX after the gap limit is hit, we should go back and check all spent and funded addresses for new transactions
-    //XXXX also need to throttle to avoid blockchain.info api limits
+
+    //XXXX need to throttle to avoid blockchain.info api limits
     
     if (_synchronizing) return;
     
@@ -269,24 +269,45 @@
     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncStartedNotification object:self];
     
     [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT forChange:NO completion:^(NSError *error) {
-        if (! error) {
-            [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT_FOR_CHANGE forChange:YES completion:^(NSError *error) {
-                _synchronizing = NO;
-                if (! error) {
-                    [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification
-                     object:self];
-                }
-                else {
-                    [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification
-                     object:self userInfo:@{@"error":error}];
-                }
-            }];
-        }
-        else {
+        if (error) {
             _synchronizing = NO;
             [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification object:self
              userInfo:@{@"error":error}];
+            return;
         }
+        
+        [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT_FOR_CHANGE forChange:YES completion:^(NSError *error) {
+            if (error) {
+                _synchronizing = NO;
+                [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification object:self
+                 userInfo:@{@"error":error}];
+                return;
+            }
+
+            //XXX this needs to be chunked, could be thousands of addresses
+            [self queryAddresses:[self.fundedAddresses arrayByAddingObjectsFromArray:self.spentAddresses]
+            completion:^(NSError *error) {
+                if (error) {
+                    _synchronizing = NO;
+                    [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification object:self
+                     userInfo:@{@"error":error}];
+                    return;
+                }
+
+                [self queryUnspentOutputs:self.outdatedAddresses.allObjects completion:^(NSError *error) {
+                    if (error) {
+                        _synchronizing = NO;
+                        [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification
+                         object:self userInfo:@{@"error":error}];
+                        return;
+                    }
+                    
+                    _synchronizing = NO;
+                    [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification
+                     object:self];
+                }];
+            }];
+        }];
     }];
 }
 
@@ -330,7 +351,7 @@ completion:(void (^)(NSError *error))completion
         }
         else if (self.outdatedAddresses.count) {
             //XXXX need to break this up into chunks if too large
-            [self queryUnspentOutputs:[self.outdatedAddresses allObjects] completion:completion];
+            [self queryUnspentOutputs:self.outdatedAddresses.allObjects completion:completion];
         }
         else if (completion) completion(error);
     }];    

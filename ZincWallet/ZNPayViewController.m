@@ -344,7 +344,7 @@
     if ([self.requestIDs[self.selectedIndex] isEqual:QR_ID]) {
         self.selectedIndex = NSNotFound;
         
-        //XXXX info button on zbarreader doesn't work
+        //XXX remove or customize zbar info button
         //XXX also need to add a camera guide
         ZBarReaderViewController *c = [ZBarReaderViewController new];
 
