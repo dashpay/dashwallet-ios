@@ -34,12 +34,13 @@
 - (void)generateRandomSeed;
 - (void)synchronize;
 
-- (ZNTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee;
-- (NSTimeInterval)timeUntilFree:(ZNTransaction *)transaction;
-- (BOOL)signTransaction:(ZNTransaction *)transaction;
-
 - (BOOL)containsAddress:(NSString *)address;
 - (NSString *)stringForAmount:(uint64_t)amount;
 - (uint64_t)amountForString:(NSString *)string;
+
+- (ZNTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee;
+- (NSTimeInterval)timeUntilFree:(ZNTransaction *)transaction;
+- (uint64_t)transactionFee:(ZNTransaction *)transaction;
+- (BOOL)signTransaction:(ZNTransaction *)transaction;
 
 @end

@@ -93,7 +93,7 @@
         self.tx = [w transactionFor:self.request.amount to:self.request.paymentAddress withFee:NO];
         self.txWithFee = [w transactionFor:self.request.amount to:self.request.paymentAddress withFee:YES];
 
-        NSString *fee = [w stringForAmount:self.txWithFee.standardFee];
+        NSString *fee = [w stringForAmount:[w transactionFee:self.txWithFee]];
         NSTimeInterval t = [w timeUntilFree:self.tx];
         
         if (! self.tx || (t > DBL_EPSILON && ! self.txWithFee)) {
@@ -176,13 +176,10 @@ replacementString:(NSString *)string
     
     ZNWallet *w = [ZNWallet sharedInstance];
     NSString *title = [alertView buttonTitleAtIndex:buttonIndex];
-    //XXX we should programatically calculate the fee from inputs and outputs as a sanity check
-    uint64_t fee = 0;
     
-    if ([title hasPrefix:@"+ "]) {
-        fee = self.txWithFee.standardFee;
-        self.tx = self.txWithFee;
-    }
+    if ([title hasPrefix:@"+ "]) self.tx = self.txWithFee;
+
+    uint64_t fee = [w transactionFee:self.tx];
     
     if ([title hasPrefix:@"+ "] || [title isEqual:@"no fee"]) {
         w.format.minimumFractionDigits = w.format.maximumFractionDigits;

@@ -297,7 +297,7 @@
         ZNTransaction *tx = [w transactionFor:request.amount to:request.paymentAddress withFee:NO];
         ZNTransaction *txWithFee = [w transactionFor:request.amount to:request.paymentAddress withFee:YES];
         
-        NSString *fee = [w stringForAmount:txWithFee.standardFee];
+        NSString *fee = [w stringForAmount:[w transactionFee:txWithFee]];
         NSTimeInterval t = [w timeUntilFree:tx];
         
         if (! tx || (t > DBL_EPSILON && ! txWithFee)) {
@@ -528,12 +528,12 @@
     ZNTransaction *txWithFee = [w transactionFor:request.amount to:request.paymentAddress withFee:YES];
     
     NSString *title = [alertView buttonTitleAtIndex:buttonIndex];
-    //XXX we should programatically calculate the fee from inputs and outputs as a sanity check
-    uint64_t fee = 0;
-    
-    if ([title hasPrefix:@"+ "]) fee = txWithFee.standardFee;
     
     if ([title hasPrefix:@"+ "] || [title isEqual:@"no fee"]) {
+        if ([title hasPrefix:@"+ "]) tx = txWithFee;
+        
+        uint64_t fee = [w transactionFee:tx];
+    
         w.format.minimumFractionDigits = w.format.maximumFractionDigits;
         [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
           message:request.message ? request.message : request.paymentAddress delegate:self

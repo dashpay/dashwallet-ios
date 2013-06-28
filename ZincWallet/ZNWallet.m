@@ -247,81 +247,6 @@
     self.seed = [[seed toHex] dataUsingEncoding:NSUTF8StringEncoding];
 }
 
-- (uint64_t)balance
-{
-    __block uint64_t balance = 0;
-    
-    [self.addressBalances enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        balance += [obj unsignedLongLongValue];
-    }];
-    
-    return balance;
-}
-
-- (NSString *)receiveAddress
-{
-    if (! self.receiveAddresses.count || ! self.addresses.count) {
-        NSUInteger i = 0;
-        NSString *a = nil;
-        
-        while (! a || [self.spentAddresses containsObject:a] || [self.fundedAddresses containsObject:a]) {
-            a = [(ZNKey *)[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ forChange:NO masterPublicKey:self.mpk]]
-                 address];
-        
-            if (! a) return nil;
-            
-            if (self.addresses.count < i) [self.addresses addObject:a];
-        }
-   
-        if (! [self.receiveAddresses containsObject:a]) [self.receiveAddresses addObject:a];
-    }
-
-    return [self.addresses firstObjectCommonWithArray:self.receiveAddresses];
-}
-
-- (NSString *)changeAddress
-{
-    if (! self.receiveAddresses.count || ! self.changeAddresses.count) {
-        NSUInteger i = 0;
-        NSString *a = nil;
-        
-        while (! a || [self.spentAddresses containsObject:a] || [self.fundedAddresses containsObject:a]) {
-            a = [(ZNKey *)[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ forChange:YES masterPublicKey:self.mpk]]
-                 address];
-            
-            if (! a) return nil;
-            
-            if (self.changeAddresses.count < i) [self.changeAddresses addObject:a];
-        }
-        
-        if (! [self.receiveAddresses containsObject:a]) [self.receiveAddresses addObject:a];
-    }
-    
-    return [self.changeAddresses firstObjectCommonWithArray:self.receiveAddresses];
-}
-
-- (NSArray *)recentTransactions
-{
-    // sort in descending order by timestamp (using block_height doesn't work for unconfirmed, or multiple tx per block)
-    return [self.transactions.allValues sortedArrayWithOptions:0 usingComparator:^NSComparisonResult(id obj1, id obj2) {
-        return [@([obj2[@"time"] unsignedLongLongValue]) compare:@([obj1[@"time"] unsignedLongLongValue])];
-    }];
-}
-
-- (NSUInteger)estimatedCurrentBlockHeight
-{
-    NSTimeInterval time = [_defs doubleForKey:LATEST_BLOCK_TIMESTAMP_KEY];
-    NSUInteger height = [_defs integerForKey:LATEST_BLOCK_HEIGHT_KEY];
-
-    if (! height || time < 1.0) { // use hard coded reference block
-        height = REFERENCE_BLOCK_HEIGHT;
-        time = REFERENCE_BLOCK_TIME;
-    }
-    
-    // average one block every 600 seconds
-    return height + ([NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 - time)/600;
-}
-
 - (NSData *)mpk
 {
     if (! _mpk) {
@@ -330,6 +255,8 @@
     
     return _mpk;
 }
+
+#pragma mark - synchronization
 
 - (void)synchronize
 {
@@ -536,6 +463,101 @@ completion:(void (^)(NSError *error))completion
     }] start];
 }
 
+#pragma mark - wallet info
+
+- (uint64_t)balance
+{
+    __block uint64_t balance = 0;
+    
+    [self.addressBalances enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        balance += [obj unsignedLongLongValue];
+    }];
+    
+    return balance;
+}
+
+- (NSString *)receiveAddress
+{
+    if (! self.receiveAddresses.count || ! self.addresses.count) {
+        NSUInteger i = 0;
+        NSString *a = nil;
+        
+        while (! a || [self.spentAddresses containsObject:a] || [self.fundedAddresses containsObject:a]) {
+            a = [(ZNKey *)[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ forChange:NO masterPublicKey:self.mpk]]
+                 address];
+            
+            if (! a) return nil;
+            
+            if (self.addresses.count < i) [self.addresses addObject:a];
+        }
+        
+        if (! [self.receiveAddresses containsObject:a]) [self.receiveAddresses addObject:a];
+    }
+    
+    return [self.addresses firstObjectCommonWithArray:self.receiveAddresses];
+}
+
+- (NSString *)changeAddress
+{
+    if (! self.receiveAddresses.count || ! self.changeAddresses.count) {
+        NSUInteger i = 0;
+        NSString *a = nil;
+        
+        while (! a || [self.spentAddresses containsObject:a] || [self.fundedAddresses containsObject:a]) {
+            a = [(ZNKey *)[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ forChange:YES masterPublicKey:self.mpk]]
+                 address];
+            
+            if (! a) return nil;
+            
+            if (self.changeAddresses.count < i) [self.changeAddresses addObject:a];
+        }
+        
+        if (! [self.receiveAddresses containsObject:a]) [self.receiveAddresses addObject:a];
+    }
+    
+    return [self.changeAddresses firstObjectCommonWithArray:self.receiveAddresses];
+}
+
+- (NSArray *)recentTransactions
+{
+    // sort in descending order by timestamp (using block_height doesn't work for unconfirmed, or multiple tx per block)
+    return [self.transactions.allValues sortedArrayWithOptions:0 usingComparator:^NSComparisonResult(id obj1, id obj2) {
+        return [@([obj2[@"time"] unsignedLongLongValue]) compare:@([obj1[@"time"] unsignedLongLongValue])];
+    }];
+}
+
+- (NSUInteger)estimatedCurrentBlockHeight
+{
+    NSTimeInterval time = [_defs doubleForKey:LATEST_BLOCK_TIMESTAMP_KEY];
+    NSUInteger height = [_defs integerForKey:LATEST_BLOCK_HEIGHT_KEY];
+    
+    if (! height || time < 1.0) { // use hard coded reference block
+        height = REFERENCE_BLOCK_HEIGHT;
+        time = REFERENCE_BLOCK_TIME;
+    }
+    
+    // average one block every 600 seconds
+    return height + ([NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 - time)/600;
+}
+
+- (BOOL)containsAddress:(NSString *)address
+{
+    return [self.spentAddresses containsObject:address] || [self.fundedAddresses containsObject:address] ||
+    [self.receiveAddresses containsObject:address];
+}
+
+- (NSString *)stringForAmount:(uint64_t)amount
+{
+    return [self.format stringFromNumber:@(amount/pow(10, self.format.maximumFractionDigits))];
+}
+
+- (uint64_t)amountForString:(NSString *)string
+{
+    return [[self.format numberFromString:string] doubleValue]*pow(10, self.format.maximumFractionDigits);
+}
+
+#pragma mark - ZNTransaction helpers
+
 //XXX as block space becomes harder to come by, we can calculate the median of the lowest fee-per-kb that made it into
 // the previous 100 blocks
 - (ZNTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee
@@ -612,6 +634,36 @@ completion:(void (^)(NSError *error))completion
     return height > currentHeight + 1 ? (height - currentHeight)*600 : 0;
 }
 
+- (uint64_t)transactionFee:(ZNTransaction *)transaction
+{
+    __block uint64_t balance = 0, amount = 0;
+
+    [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        NSArray *outs = self.unspentOutputs[obj];
+        NSString *hash = [transaction.inputHashes[idx] toHex];
+        NSUInteger inputIdx = [transaction.inputIndexes[idx] unsignedIntegerValue];
+        
+        NSUInteger i = [outs indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+            return ([obj[@"tx_hash"] isEqual:hash] && [obj[@"tx_output_n"] unsignedIntegerValue] == inputIdx) ?
+            *stop = YES : NO;
+        }];
+        
+        if (i == NSNotFound) {
+            balance = UINT64_MAX;
+            *stop = YES;
+        }
+        else balance += [outs[i][@"value"] unsignedLongLongValue];
+    }];
+
+    if (balance == UINT64_MAX) return UINT64_MAX;
+    
+    [transaction.outputAmounts enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        amount += [obj unsignedLongLongValue];
+    }];
+    
+    return balance - amount;
+}
+
 - (BOOL)signTransaction:(ZNTransaction *)transaction
 {
     NSMutableSet *keyIndexes = [NSMutableSet set], *changeKeyIndexes = [NSMutableSet set];
@@ -639,22 +691,6 @@ completion:(void (^)(NSError *error))completion
     pkeys = nil;
     
     return [transaction isSigned];
-}
-
-- (BOOL)containsAddress:(NSString *)address
-{
-    return [self.spentAddresses containsObject:address] || [self.fundedAddresses containsObject:address] ||
-           [self.receiveAddresses containsObject:address];
-}
-
-- (NSString *)stringForAmount:(uint64_t)amount
-{
-    return [self.format stringFromNumber:@(amount/pow(10, self.format.maximumFractionDigits))];
-}
-
-- (uint64_t)amountForString:(NSString *)string
-{
-    return [[self.format numberFromString:string] doubleValue]*pow(10, self.format.maximumFractionDigits);
 }
 
 #pragma mark - keychain services
