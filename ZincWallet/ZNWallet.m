@@ -18,6 +18,8 @@
 #define UNSPENT_URL @"http://blockchain.info/unspent?active="
 #define ADDRESS_URL @"http://blockchain.info/multiaddr?active="
 
+#define ADDRESSES_PER_QUERY 100 // maximum number of addresses to request in a single query
+
 #define SCRIPT_SUFFIX @"88ac" // OP_EQUALVERIFY OP_CHECKSIG
 
 #define FUNDED_ADDRESSES_KEY       @"FUNDED_ADDRESSES"
@@ -260,7 +262,6 @@
 
 - (void)synchronize
 {
-
     //XXXX need to throttle to avoid blockchain.info api limits
     
     if (_synchronizing) return;
@@ -350,7 +351,6 @@ completion:(void (^)(NSError *error))completion
             [self synchronizeWithGapLimit:gapLimit forChange:forChange completion:completion];
         }
         else if (self.outdatedAddresses.count) {
-            //XXXX need to break this up into chunks if too large
             [self queryUnspentOutputs:self.outdatedAddresses.allObjects completion:completion];
         }
         else if (completion) completion(error);
@@ -362,6 +362,21 @@ completion:(void (^)(NSError *error))completion
 {
     if (! addresses.count) {
         if (completion) completion(nil);
+        return;
+    }
+    
+    if (addresses.count > ADDRESSES_PER_QUERY) {
+        [self queryAddresses:[addresses subarrayWithRange:NSMakeRange(0, ADDRESSES_PER_QUERY)]
+        completion:^(NSError *error) {
+            if (error) {
+                if (completion) completion(error);
+                return;
+            }
+            
+            [self queryAddresses:[addresses
+             subarrayWithRange:NSMakeRange(ADDRESSES_PER_QUERY, addresses.count - ADDRESSES_PER_QUERY)]
+             completion:completion];
+        }];
         return;
     }
 
@@ -416,6 +431,10 @@ completion:(void (^)(NSError *error))completion
         if (time > 1.0) [_defs setDouble:time forKey:LATEST_BLOCK_TIMESTAMP_KEY];
         [_defs synchronize];
         
+        if (self.outdatedAddresses.count) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:self];
+        }
+        
         //[self queryUnspentOutputs:self.fundedAddresses];
         
         if (completion) completion(nil);
@@ -449,6 +468,21 @@ completion:(void (^)(NSError *error))completion
         return;
     }
     
+    if (addresses.count > ADDRESSES_PER_QUERY) {
+        [self queryUnspentOutputs:[addresses subarrayWithRange:NSMakeRange(0, ADDRESSES_PER_QUERY)]
+        completion:^(NSError *error) {
+            if (error) {
+                if (completion) completion(error);
+                return;
+            }
+            
+            [self queryUnspentOutputs:[addresses
+             subarrayWithRange:NSMakeRange(ADDRESSES_PER_QUERY, addresses.count - ADDRESSES_PER_QUERY)]
+             completion:completion];
+        }];
+        return;
+    }
+    
     NSURL *url = [NSURL URLWithString:[UNSPENT_URL stringByAppendingString:[[addresses componentsJoinedByString:@"|"]
                   stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
     
@@ -479,6 +513,7 @@ completion:(void (^)(NSError *error))completion
 
         if (completion) completion(nil);
     } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
+        //XXXX if it's a 500, that might mean there are no unspent outlets left
         NSLog(@"%@", error.localizedDescription);
         if (completion) completion(error);
     }] start];

@@ -11,6 +11,7 @@
 #define walletSyncStartedNotification  @"walletSyncStartedNotification"
 #define walletSyncFinishedNotification @"walletSyncFinishedNotification"
 #define walletSyncFailedNotification   @"walletSyncFailedNotification"
+#define walletBalanceNotification      @"walletBalanceNotification"
 
 @class ZNTransaction;
 
