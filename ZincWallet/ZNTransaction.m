@@ -216,8 +216,8 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 
 - (size_t)size
 {
-    //XXX is this correct? what about compressed vs uncompressed public keys?
-    //XXX also need to take into account varint sizes
+    //XXXX is this correct? what about compressed vs uncompressed public keys?
+    //XXXX also need to take into account varint sizes
     return 10 + 148*self.hashes.count + 34*self.addresses.count;
 }
 
@@ -253,7 +253,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
         amountsByHeights += [amounts[i] unsignedLongLongValue]*[heights[i] unsignedLongLongValue];
     }
     
-    //XXX this could possibly overflow a uint64 for very large input amounts and far in the future block heights,
+    // this could possibly overflow a uint64 for very large input amounts and far in the future block heights,
     // however we should be okay up to the largest current bitcoin balance in existence for the next 40 years or so,
     // and the worst case is paying a transaction fee when it's not needed
     return (TX_FREE_MIN_PRIORITY*self.size + amountsByHeights + amountTotal - 1)/amountTotal;

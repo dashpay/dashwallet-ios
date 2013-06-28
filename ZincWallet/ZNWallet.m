@@ -71,7 +71,7 @@
     
     self.defs = [NSUserDefaults standardUserDefaults];
     
-    //XXX we should be using core data for this... ugh
+    //XXX we should be using core data for this...
     self.addresses = [NSMutableArray array];
     self.changeAddresses = [NSMutableArray array];
     self.fundedAddresses = [NSMutableArray arrayWithArray:[_defs arrayForKey:FUNDED_ADDRESSES_KEY]];
@@ -260,8 +260,8 @@
 
 - (void)synchronize
 {
-    //XXX after the gap limit is hit, we should go back and check all spent and funded addresses for new transactions
-    //XXX also need to throttle to avoid blockchain.info api limits
+    //XXXX after the gap limit is hit, we should go back and check all spent and funded addresses for new transactions
+    //XXXX also need to throttle to avoid blockchain.info api limits
     
     if (_synchronizing) return;
     
@@ -329,7 +329,7 @@ completion:(void (^)(NSError *error))completion
             [self synchronizeWithGapLimit:gapLimit forChange:forChange completion:completion];
         }
         else if (self.outdatedAddresses.count) {
-            //XXX need to break this up into chunks if too large
+            //XXXX need to break this up into chunks if too large
             [self queryUnspentOutputs:[self.outdatedAddresses allObjects] completion:completion];
         }
         else if (completion) completion(error);
@@ -433,7 +433,7 @@ completion:(void (^)(NSError *error))completion
     
     [[AFJSONRequestOperation JSONRequestOperationWithRequest:[NSURLRequest requestWithURL:url]
     success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
-        //XXX verify response success before clearing out previous unspent outputs
+        //XXXX verify response success before clearing out previous unspent outputs
         [self.unspentOutputs removeObjectsForKeys:addresses];
         
         [JSON[@"unspent_outputs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
@@ -592,7 +592,7 @@ completion:(void (^)(NSError *error))completion
         return nil;
     }
     
-    //XXX need to handle edge case where fee = NO, but change is between TX_MIN_OUTPUT_AMOUNT and TX_MIN_FREE_OUTPUT
+    //XXXX need to handle edge case where fee = NO, but change is between TX_MIN_OUTPUT_AMOUNT and TX_MIN_FREE_OUTPUT
     if (balance - (amount + standardFee) >= TX_MIN_OUTPUT_AMOUNT) {
         [tx addOutputAddress:self.changeAddress amount:balance - (amount + standardFee)];
     }

@@ -229,7 +229,7 @@
         case 1:
             switch (indexPath.row) {
                 case 0:
-                    //XXX show safety tips
+                    //XXXX show safety tips
                     [[[UIAlertView alloc] initWithTitle:nil message:@"Don't eat yellow snow." delegate:self
                       cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
                     break;
