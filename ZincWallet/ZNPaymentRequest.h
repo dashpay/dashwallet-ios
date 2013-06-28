@@ -17,12 +17,12 @@
 @property (nonatomic, strong) NSData *data;
 @property (nonatomic, readonly, getter=isValid) BOOL valid;
 
-+ (id)requestWithData:(NSData *)data;
-+ (id)requestWithString:(NSString *)string;
-+ (id)requestWithURL:(NSURL *)url;
++ (instancetype)requestWithData:(NSData *)data;
++ (instancetype)requestWithString:(NSString *)string;
++ (instancetype)requestWithURL:(NSURL *)url;
 
-- (id)initWithData:(NSData *)data;
-- (id)initWithString:(NSString *)string;
-- (id)initWithURL:(NSURL *)url;
+- (instancetype)initWithData:(NSData *)data;
+- (instancetype)initWithString:(NSString *)string;
+- (instancetype)initWithURL:(NSURL *)url;
 
 @end

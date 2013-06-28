@@ -28,7 +28,7 @@
 
 @implementation ZNTransaction
 
-- (id)init
+- (instancetype)init
 {
     if (! (self = [super init])) return nil;
         
@@ -44,7 +44,7 @@
     return self;
 }
 
-- (id)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts
+- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts
 outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 {
     if (hashes.count != indexes.count || hashes.count != scripts.count || addresses.count != amounts.count) return nil;

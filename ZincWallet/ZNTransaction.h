@@ -38,7 +38,7 @@
 @property (nonatomic, readonly, getter = toHex) NSString *hex;
 
 // hashes are expected to already be little endian
-- (id)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts
+- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts
 outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts;
 
 - (void)addInputHash:(NSData *)hash index:(NSUInteger)index script:(NSData *)script;

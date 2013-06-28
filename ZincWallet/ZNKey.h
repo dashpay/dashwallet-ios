@@ -15,13 +15,13 @@
 @property (nonatomic, readonly) NSString *address;
 @property (nonatomic, readonly) NSData *hash160;
 
-+ (id)keyWithPrivateKey:(NSString *)privateKey;
-+ (id)keyWithSecret:(NSData *)secret compressed:(BOOL)compressed;
-+ (id)keyWithPublicKey:(NSData *)publicKey;
++ (instancetype)keyWithPrivateKey:(NSString *)privateKey;
++ (instancetype)keyWithSecret:(NSData *)secret compressed:(BOOL)compressed;
++ (instancetype)keyWithPublicKey:(NSData *)publicKey;
 
-- (id)initWithPrivateKey:(NSString *)privateKey;
-- (id)initWithSecret:(NSData *)secret compressed:(BOOL)compressed;
-- (id)initWithPublicKey:(NSData *)publicKey;
+- (instancetype)initWithPrivateKey:(NSString *)privateKey;
+- (instancetype)initWithSecret:(NSData *)secret compressed:(BOOL)compressed;
+- (instancetype)initWithPublicKey:(NSData *)publicKey;
 
 - (NSData *)sign:(NSData *)d;
 

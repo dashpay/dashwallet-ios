@@ -11,33 +11,33 @@
 
 @implementation ZNPaymentRequest
 
-+ (id)requestWithString:(NSString *)string
++ (instancetype)requestWithString:(NSString *)string
 {
     return [[self alloc] initWithString:string];
 }
 
-+ (id)requestWithURL:(NSURL *)url
++ (instancetype)requestWithURL:(NSURL *)url
 {
     return [[self alloc] initWithURL:url];
 }
 
-+ (id)requestWithData:(NSData *)data
++ (instancetype)requestWithData:(NSData *)data
 {
     return [[self alloc] initWithData:data];
 }
 
-- (id)initWithString:(NSString *)string
+- (instancetype)initWithString:(NSString *)string
 {
     return [self initWithData:[string dataUsingEncoding:NSUTF8StringEncoding]];
 }
 
-- (id)initWithURL:(NSURL *)url
+- (instancetype)initWithURL:(NSURL *)url
 {
     return [self initWithData:[url.absoluteString dataUsingEncoding:NSUTF8StringEncoding]];
 }
 
 
-- (id)initWithData:(NSData *)data
+- (instancetype)initWithData:(NSData *)data
 {
     if (! (self = [self init])) return nil;
 

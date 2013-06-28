@@ -29,8 +29,8 @@
 
 + (ZNWallet *)sharedInstance;
 
-- (id)initWithSeedPhrase:(NSString *)phrase;
-- (id)initWithSeed:(NSData *)seed;
+- (instancetype)initWithSeedPhrase:(NSString *)phrase;
+- (instancetype)initWithSeed:(NSData *)seed;
 
 - (void)generateRandomSeed;
 - (void)synchronize;

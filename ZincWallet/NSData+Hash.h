@@ -10,9 +10,9 @@
 
 @interface NSData (Hash)
 
-+ (id)dataWithHex:(NSString *)hex;
++ (instancetype)dataWithHex:(NSString *)hex;
 
-- (id)initWithHex:(NSString *)hex;
+- (instancetype)initWithHex:(NSString *)hex;
 - (NSString *)toHex;
 
 - (NSData *)RMD160;

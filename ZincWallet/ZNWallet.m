@@ -62,12 +62,22 @@
     
     dispatch_once(&onceToken, ^{
         singleton = [ZNWallet new];
+        
+        //1HMtWCZ2vW9BroWqHdqgRTfcRw4qUop2kt
+        [singleton queryUnspentOutputs:@[@"1HMtWCZ2vW9BroWqHdqgRTfcRw4qUop2kt"] completion:^(NSError *error) {
+            if (! error) {
+                NSLog(@"no error");
+            }
+            else {
+                NSLog(@"%@", error.localizedDescription);
+            }
+        }];
     });
 
     return singleton;
 }
 
-- (id)init
+- (instancetype)init
 {
     if (! (self = [super init])) return nil;
     
@@ -102,7 +112,7 @@
     return self;
 }
 
-- (id)initWithSeedPhrase:(NSString *)phrase
+- (instancetype)initWithSeedPhrase:(NSString *)phrase
 {
     if (! (self = [self init])) return nil;
     
@@ -111,7 +121,7 @@
     return self;
 }
 
-- (id)initWithSeed:(NSData *)seed
+- (instancetype)initWithSeed:(NSData *)seed
 {
     if (! (self = [self init])) return nil;
     
@@ -262,8 +272,6 @@
 
 - (void)synchronize
 {
-    //XXXX need to throttle to avoid blockchain.info api limits
-    
     if (_synchronizing) return;
     
     _synchronizing = YES;
@@ -486,37 +494,67 @@ completion:(void (^)(NSError *error))completion
     NSURL *url = [NSURL URLWithString:[UNSPENT_URL stringByAppendingString:[[addresses componentsJoinedByString:@"|"]
                   stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
     
-    [[AFJSONRequestOperation JSONRequestOperationWithRequest:[NSURLRequest requestWithURL:url]
-    success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
-        //XXXX verify response success before clearing out previous unspent outputs
-        [self.unspentOutputs removeObjectsForKeys:addresses];
+    __block AFJSONRequestOperation *requestOp =
+        [AFJSONRequestOperation JSONRequestOperationWithRequest:[NSURLRequest requestWithURL:url]
+        success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
+            if ([requestOp.responseString.lowercaseString hasPrefix:@"no free outputs"]) {
+                [self.unspentOutputs removeObjectsForKeys:addresses];
+                [self.outdatedAddresses minusSet:[NSSet setWithArray:addresses]];
+                
+                [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
+                [_defs synchronize];
+                
+                if (completion) completion(nil);
+                return;
+            }
         
-        [JSON[@"unspent_outputs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            NSString *script = obj[@"script"];
-            
-            if (! [script hasSuffix:SCRIPT_SUFFIX] || script.length < SCRIPT_SUFFIX.length + 40) return;
+            if (JSON[@"unspent_outputs"] == nil) {
+                if (completion) {
+                    completion([NSError errorWithDomain:@"ZincWallet" code:500 userInfo:@{
+                                NSLocalizedDescriptionKey:@"Unexpeted server response from blockchain.info"}]);
+                }
+                return;
+            }
 
-            NSString *address = [[@"00" stringByAppendingString:[script
-                                  substringWithRange:NSMakeRange(script.length - SCRIPT_SUFFIX.length - 40, 40)]]
-                                 hexToBase58check];
+            [self.unspentOutputs removeObjectsForKeys:addresses];
+            [self.outdatedAddresses minusSet:[NSSet setWithArray:addresses]];
+            
+            [JSON[@"unspent_outputs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                NSString *script = obj[@"script"];
+            
+                if (! [script hasSuffix:SCRIPT_SUFFIX] || script.length < SCRIPT_SUFFIX.length + 40) return;
 
-            if (! address) return;
+                NSString *address = [[@"00" stringByAppendingString:[script
+                                      substringWithRange:NSMakeRange(script.length - SCRIPT_SUFFIX.length - 40, 40)]]
+                                     hexToBase58check];
+
+                if (! address) return;
+                
+                if (! self.unspentOutputs[address]) self.unspentOutputs[address] = [NSMutableArray arrayWithObject:obj];
+                else [self.unspentOutputs[address] addObject:obj];
+            }];
+        
+            [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
+            [_defs synchronize];
+
+            if (completion) completion(nil);
+        } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
+            if ([requestOp.responseString.lowercaseString hasPrefix:@"no free outputs"]) {
+                [self.unspentOutputs removeObjectsForKeys:addresses];
+                [self.outdatedAddresses minusSet:[NSSet setWithArray:addresses]];
+                
+                [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
+                [_defs synchronize];
             
-            if (! self.unspentOutputs[address]) self.unspentOutputs[address] = [NSMutableArray arrayWithObject:obj];
-            else [self.unspentOutputs[address] addObject:obj];
-            
-            [self.outdatedAddresses removeObject:address];
+                if (completion) completion(nil);
+                return;
+            }
+        
+            NSLog(@"%@", error.localizedDescription);
+            if (completion) completion(error);
         }];
-        
-        [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
-        [_defs synchronize];
-
-        if (completion) completion(nil);
-    } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
-        //XXXX if it's a 500, that might mean there are no unspent outlets left
-        NSLog(@"%@", error.localizedDescription);
-        if (completion) completion(error);
-    }] start];
+    
+    [requestOp start];
 }
 
 #pragma mark - wallet info

@@ -10,7 +10,7 @@
 
 @implementation ZNButton
 
-- (id)init
+- (instancetype)init
 {
     if (! (self = [super init])) return nil;
     
@@ -19,7 +19,7 @@
     return self;
 }
 
-- (id)initWithCoder:(NSCoder *)aDecoder
+- (instancetype)initWithCoder:(NSCoder *)aDecoder
 {
     if (! (self = [super initWithCoder:aDecoder])) return nil;
     
@@ -28,7 +28,7 @@
     return self;
 }
 
-- (id)initWithFrame:(CGRect)frame
+- (instancetype)initWithFrame:(CGRect)frame
 {
     if (! (self = [super initWithFrame:frame])) return nil;
 

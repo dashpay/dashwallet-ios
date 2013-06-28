@@ -21,22 +21,22 @@
 
 @implementation ZNKey
 
-+ (id)keyWithPrivateKey:(NSString *)privateKey
++ (instancetype)keyWithPrivateKey:(NSString *)privateKey
 {
     return [[self alloc] initWithPrivateKey:privateKey];
 }
 
-+ (id)keyWithSecret:(NSData *)secret compressed:(BOOL)compressed
++ (instancetype)keyWithSecret:(NSData *)secret compressed:(BOOL)compressed
 {
     return [[self alloc] initWithSecret:secret compressed:compressed];
 }
 
-+ (id)keyWithPublicKey:(NSData *)publicKey
++ (instancetype)keyWithPublicKey:(NSData *)publicKey
 {
     return [[self alloc] initWithPublicKey:publicKey];
 }
 
-- (id)init
+- (instancetype)init
 {
     if (! (self = [super init])) return nil;
     
@@ -52,7 +52,7 @@
     delete _pubKey;
 }
 
-- (id)initWithSecret:(NSData *)secret compressed:(BOOL)compressed
+- (instancetype)initWithSecret:(NSData *)secret compressed:(BOOL)compressed
 {
     if (! (self = [self init])) return nil;
         
@@ -61,7 +61,7 @@
     return _key->IsValid() ? self : nil;
 }
 
-- (id)initWithPrivateKey:(NSString *)privateKey
+- (instancetype)initWithPrivateKey:(NSString *)privateKey
 {
     if (! (self = [self init])) return nil;
     
@@ -70,7 +70,7 @@
     return _key->IsValid() ? self : nil;
 }
 
-- (id)initWithPublicKey:(NSData *)publicKey
+- (instancetype)initWithPublicKey:(NSData *)publicKey
 {
     if (! (self = [self init])) return nil;
     

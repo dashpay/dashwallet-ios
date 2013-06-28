@@ -15,12 +15,12 @@
 
 @implementation NSData (Hash)
 
-+ (id)dataWithHex:(NSString *)hex
++ (instancetype)dataWithHex:(NSString *)hex
 {
     return [[self alloc] initWithHex:hex];
 }
 
-- (id)initWithHex:(NSString *)hex
+- (instancetype)initWithHex:(NSString *)hex
 {
     if (hex.length % 2) return nil;
         
