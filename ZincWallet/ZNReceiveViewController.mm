@@ -298,7 +298,7 @@ error:(NSError *)error
       message:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] delegate:nil cancelButtonTitle:@"OK"
       otherButtonTitles:nil] show];
     
-    // XXXX transmit the transaction
+    // XXX transmit the transaction
     
     [self.session disconnectFromAllPeers];
     self.session = nil;

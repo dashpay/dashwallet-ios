@@ -510,8 +510,6 @@
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    //XXX how to handle non-bt requests (url/clipboard/qr)
-
     if (buttonIndex == alertView.cancelButtonIndex || self.selectedIndex == NSNotFound) {
         self.selectedIndex = NSNotFound;
         
@@ -543,20 +541,42 @@
     else {
         if ([w amountForString:title] > request.amount) tx = txWithFee;
     
-        NSLog(@"sending signed request to %@", self.requestIDs[self.selectedIndex]);
+        NSLog(@"signing transaction");
+        [w signTransaction:tx];
         
-        NSError *error = nil;
-
-        [self.session sendData:[[tx toHex] dataUsingEncoding:NSUTF8StringEncoding]
-         toPeers:@[self.requestIDs[self.selectedIndex]] withDataMode:GKSendDataReliable error:&error];
-    
-        if (error) {
-            [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription delegate:nil
-              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        if (! [tx isSigned]) {
+            [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:@"error signing bitcoin transaction"
+              delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+            return;
         }
+
+        NSLog(@"signed transaction:\n%@", [tx toHex]);
+        
+        if (self.selectedIndex == NSNotFound || [self.requestIDs[self.selectedIndex] isEqual:QR_ID] ||
+            [self.requestIDs[self.selectedIndex] isEqual:CLIPBOARD_ID]) {
+            
+            //XXXX need some kind of spinner feedback, and MBProgressHUD instead of alert
+            [w publishTransaction:tx completion:^(NSError *error) {
+                [[[UIAlertView alloc] initWithTitle:@"sent!"
+                  message:nil delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+            }];
+        }
+        else {
+            NSLog(@"sending signed request to %@", self.requestIDs[self.selectedIndex]);
+        
+            NSError *error = nil;
+            
+            [self.session sendData:[[tx toHex] dataUsingEncoding:NSUTF8StringEncoding]
+             toPeers:@[self.requestIDs[self.selectedIndex]] withDataMode:GKSendDataReliable error:&error];
     
-        [self.requestIDs removeObjectAtIndex:self.selectedIndex];
-        [self.requests removeObjectAtIndex:self.selectedIndex];
+            if (error) {
+                [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription delegate:nil
+                                  cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+            }
+    
+            [self.requestIDs removeObjectAtIndex:self.selectedIndex];
+            [self.requests removeObjectAtIndex:self.selectedIndex];
+        }
         self.selectedIndex = NSNotFound;
     
         [self layoutButtonsAnimated:YES];

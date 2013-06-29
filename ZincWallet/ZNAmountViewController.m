@@ -178,18 +178,31 @@ replacementString:(NSString *)string
     NSString *title = [alertView buttonTitleAtIndex:buttonIndex];
     
     if ([title hasPrefix:@"+ "]) self.tx = self.txWithFee;
-
-    uint64_t fee = [w transactionFee:self.tx];
     
     if ([title hasPrefix:@"+ "] || [title isEqual:@"no fee"]) {
         w.format.minimumFractionDigits = w.format.maximumFractionDigits;
         [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
           message:self.request.message ? self.request.message : self.request.paymentAddress delegate:self
-          cancelButtonTitle:@"cancel" otherButtonTitles:[w stringForAmount:self.request.amount + fee], nil] show];
+          cancelButtonTitle:@"cancel"
+          otherButtonTitles:[w stringForAmount:self.request.amount + [w transactionFee:self.tx]], nil] show];
         w.format.minimumFractionDigits = 0;
     }
     else {
-        NSLog(@"signed transaction:\n%@", [self.tx toHex]);
+        NSLog(@"signing transaction");
+        [w signTransaction:self.tx];
+        
+        if (! [self.tx isSigned]) {
+            [[[UIAlertView alloc] initWithTitle:@"couldn't send payment" message:@"error signing bitcoin transaction"
+              delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        }
+        else {
+            //XXXX need some kind of spinner feedback, and MBProgressHUD instead of alert
+            NSLog(@"signed transaction:\n%@", [self.tx toHex]);
+            [w publishTransaction:self.tx completion:^(NSError *error) {
+                [[[UIAlertView alloc] initWithTitle:@"sent!"
+                  message:nil delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+            }];
+        }
     }
 }
 

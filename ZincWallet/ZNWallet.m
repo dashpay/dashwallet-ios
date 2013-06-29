@@ -778,7 +778,9 @@ completion:(void (^)(NSError *error))completion
 
 - (void)publishTransaction:(ZNTransaction *)transaction completion:(void (^)(NSError *error))completion
 {
+    //XXXX implement
     
+    //XXXX make sure to update balances, remove unspent outputs
 }
 
 #pragma mark - keychain services
