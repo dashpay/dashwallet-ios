@@ -43,5 +43,6 @@
 - (NSTimeInterval)timeUntilFree:(ZNTransaction *)transaction;
 - (uint64_t)transactionFee:(ZNTransaction *)transaction;
 - (BOOL)signTransaction:(ZNTransaction *)transaction;
+- (void)publishTransaction:(ZNTransaction *)transaction completion:(void (^)(NSError *error))completion;
 
 @end

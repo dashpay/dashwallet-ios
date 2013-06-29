@@ -61,7 +61,7 @@
     static dispatch_once_t onceToken = 0;
     
     dispatch_once(&onceToken, ^{
-        singleton = [ZNWallet new];        
+        singleton = [ZNWallet new];
     });
 
     return singleton;
@@ -675,8 +675,7 @@ completion:(void (^)(NSError *error))completion
         NSLog(@"Insufficient funds. Balance:%llu is less than transaction amount:%llu", balance, amount + standardFee);
         return nil;
     }
-    
-    //XXXX need to handle edge case where fee = NO, but change is between TX_MIN_OUTPUT_AMOUNT and TX_MIN_FREE_OUTPUT
+        
     if (balance - (amount + standardFee) >= TX_MIN_OUTPUT_AMOUNT) {
         [tx addOutputAddress:self.changeAddress amount:balance - (amount + standardFee)];
     }
@@ -775,6 +774,11 @@ completion:(void (^)(NSError *error))completion
     pkeys = nil;
     
     return [transaction isSigned];
+}
+
+- (void)publishTransaction:(ZNTransaction *)transaction completion:(void (^)(NSError *error))completion
+{
+    
 }
 
 #pragma mark - keychain services

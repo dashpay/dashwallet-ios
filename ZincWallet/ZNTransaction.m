@@ -216,9 +216,10 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 
 - (size_t)size
 {
-    //XXXX is this correct? what about compressed vs uncompressed public keys?
-    //XXXX also need to take into account varint sizes
-    return 10 + 148*self.hashes.count + 34*self.addresses.count;
+    //XXX electurm seeds generate uncompressed keys, bip32 probably uses compressed
+    // size is (180+-1)*inputs for uncompressed, (148+-1)*inputs for compressed
+    return 8 + [NSMutableData sizeOfVarInt:self.hashes.count] + [NSMutableData sizeOfVarInt:self.addresses.count] +
+           181*self.hashes.count + 34*self.addresses.count;
 }
 
 // priority = sum(input_amount_in_satoshis*input_age_in_blocks)/size_in_bytes

@@ -23,6 +23,14 @@
 
 @implementation NSMutableData (Bitcoin)
 
++ (size_t)sizeOfVarInt:(uint64_t)i
+{
+    if (i < VAR_INT16_HEADER) return sizeof(uint8_t);
+    else if (i <= UINT16_MAX) return sizeof(uint8_t) + sizeof(uint16_t);
+    else if (i <= UINT32_MAX) return sizeof(uint8_t) + sizeof(uint32_t);
+    else return sizeof(uint8_t) + sizeof(uint64_t);
+}
+
 - (void)appendUInt8:(uint8_t)i
 {
     [self appendBytes:&i length:sizeof(i)];
