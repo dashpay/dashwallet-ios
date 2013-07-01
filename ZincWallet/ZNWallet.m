@@ -31,6 +31,7 @@
 #define TRANSACTIONS_KEY           @"TRANSACTIONS"
 #define LATEST_BLOCK_HEIGHT_KEY    @"LATEST_BLOCK_HEIGHT"
 #define LATEST_BLOCK_TIMESTAMP_KEY @"LATEST_BLOCK_TIMESTAMP"
+#define LAST_SYNC_TIME_KEY         @"LAST_SYNC_TIME"
 #define SEED_KEY                   @"seed"
 
 #define REFERENCE_BLOCK_HEIGHT 243295
@@ -525,6 +526,7 @@ completion:(void (^)(NSError *error))completion
             }];
         
             [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
+            [_defs setDouble:[NSDate timeIntervalSinceReferenceDate] forKey:LAST_SYNC_TIME_KEY];
             [_defs synchronize];
 
             if (completion) completion(nil);
@@ -545,6 +547,11 @@ completion:(void (^)(NSError *error))completion
         }];
     
     [requestOp start];
+}
+
+- (NSTimeInterval)timeSinceLastSync
+{
+    return [NSDate timeIntervalSinceReferenceDate] - [_defs doubleForKey:LAST_SYNC_TIME_KEY];
 }
 
 #pragma mark - wallet info

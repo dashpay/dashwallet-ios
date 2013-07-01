@@ -36,7 +36,7 @@
 @property (nonatomic, strong) NSMutableArray *requestIDs;
 @property (nonatomic, strong) NSMutableArray *requestButtons;
 @property (nonatomic, assign) NSUInteger selectedIndex;
-@property (nonatomic, strong) id urlObserver;
+@property (nonatomic, strong) id urlObserver, activeObserver;
 @property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 
 @property (nonatomic, strong) IBOutlet UIScrollView *scrollView;
@@ -85,6 +85,12 @@
             }
         }];
     
+    self.activeObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
+            if ([[ZNWallet sharedInstance] timeSinceLastSync] > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
+        }];
+    
     self.syncStartedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncStartedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
@@ -118,6 +124,7 @@
 - (void)viewWillUnload
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self.urlObserver];
+    [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
     [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
     [[NSNotificationCenter defaultCenter] removeObserver:self.syncFinishedObserver];
     [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
@@ -174,12 +181,12 @@
     if (firstAppearance) {
         firstAppearance = NO;
     
-        [self refresh:nil];
-    
         if ([[ZNWallet sharedInstance] balance] == 0) {
             [self.scrollView setContentOffset:CGPointMake(self.scrollView.frame.size.width, 0) animated:NO];
         }
     }
+
+    if ([[ZNWallet sharedInstance] timeSinceLastSync] > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
     
     [self layoutButtonsAnimated:NO];
 }

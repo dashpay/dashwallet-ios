@@ -18,6 +18,7 @@
 #define GK_SESSION_ID @"cc.zinc.ZincWallet"
 #define BTC @"Ƀ"
 #define SATOSHIS 100000000.0
+#define DEFAULT_SYNC_INTERVAL 300
 
 #define bitcoinURLNotification @"bitcoinURLNotification"
 
