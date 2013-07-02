@@ -11,12 +11,15 @@
 #import "ZNKey.h"
 #import "ZNElectrumSequence.h"
 #import "NSData+Hash.h"
+#import "NSMutableData+Bitcoin.h"
 #import "NSString+Base58.h"
 #import "AFNetworking.h"
 #import <Security/Security.h>
 
-#define UNSPENT_URL @"http://blockchain.info/unspent?active="
-#define ADDRESS_URL @"http://blockchain.info/multiaddr?active="
+#define BASE_URL    @"https://blockchain.info"
+#define UNSPENT_URL BASE_URL "/unspent?active="
+#define ADDRESS_URL BASE_URL "/multiaddr?active="
+#define PUSHTX_PATH @"/pushtx"
 
 #define ADDRESSES_PER_QUERY 100 // maximum number of addresses to request in a single query
 
@@ -29,6 +32,7 @@
 #define ADDRESS_TX_COUNT_KEY       @"ADDRESS_TX_COUNT"
 #define UNSPENT_OUTPUTS_KEY        @"UNSPENT_OUTPUTS"
 #define TRANSACTIONS_KEY           @"TRANSACTIONS"
+#define UNCONFIRMED_KEY            @"UNCONFIRMED"
 #define LATEST_BLOCK_HEIGHT_KEY    @"LATEST_BLOCK_HEIGHT"
 #define LATEST_BLOCK_TIMESTAMP_KEY @"LATEST_BLOCK_TIMESTAMP"
 #define LAST_SYNC_TIME_KEY         @"LAST_SYNC_TIME"
@@ -45,9 +49,11 @@
 @property (nonatomic, strong) NSMutableArray *addresses, *changeAddresses;
 @property (nonatomic, strong) NSMutableArray *spentAddresses, *fundedAddresses, *receiveAddresses;
 @property (nonatomic, strong) NSMutableDictionary *unspentOutputs;
+@property (nonatomic, strong) NSMutableDictionary *spentOutputs;
 @property (nonatomic, strong) NSMutableDictionary *addressBalances;
 @property (nonatomic, strong) NSMutableDictionary *addressTxCount;
 @property (nonatomic, strong) NSMutableDictionary *transactions;
+@property (nonatomic, strong) NSMutableDictionary *unconfirmed;
 @property (nonatomic, strong) NSMutableSet *outdatedAddresses;
 @property (nonatomic, strong) ZNElectrumSequence *sequence;
 @property (nonatomic, strong) NSData *mpk;
@@ -81,6 +87,7 @@
     self.spentAddresses = [NSMutableArray arrayWithArray:[_defs arrayForKey:SPENT_ADDRESSES_KEY]];
     self.receiveAddresses = [NSMutableArray arrayWithArray:[_defs arrayForKey:RECEIVE_ADDRESSES_KEY]];
     self.transactions = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:TRANSACTIONS_KEY]];
+    self.unconfirmed = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:UNCONFIRMED_KEY]];
     self.addressBalances = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:ADDRESS_BALANCES_KEY]];
     self.addressTxCount = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:ADDRESS_TX_COUNT_KEY]];
     self.unspentOutputs = [NSMutableDictionary dictionary];
@@ -139,6 +146,8 @@
         [_defs removeObjectForKey:ADDRESS_TX_COUNT_KEY];
         [_defs removeObjectForKey:UNSPENT_OUTPUTS_KEY];
         [_defs removeObjectForKey:TRANSACTIONS_KEY];
+        [_defs removeObjectForKey:UNCONFIRMED_KEY];
+        [_defs removeObjectForKey:LAST_SYNC_TIME_KEY];
         [_defs synchronize];
     }
 }
@@ -284,7 +293,6 @@
                 return;
             }
 
-            //XXX this needs to be chunked, could be thousands of addresses
             [self queryAddresses:[self.fundedAddresses arrayByAddingObjectsFromArray:self.spentAddresses]
             completion:^(NSError *error) {
                 if (error) {
@@ -305,6 +313,11 @@
                     _synchronizing = NO;
                     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification
                      object:self];
+
+                    if (self.outdatedAddresses.count) {
+                        [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification
+                         object:self];
+                    }
                 }];
             }];
         }];
@@ -413,12 +426,33 @@ completion:(void (^)(NSError *error))completion
             }
         }];
         
-        [JSON[@"txs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {            
+        [JSON[@"txs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             if (obj[@"hash"]) self.transactions[obj[@"hash"]] = obj;
+//            if (obj[@"hash"]) {
+//                ZNTransaction *tx = [ZNTransaction new];
+//                
+//                tx.hash = [NSData dataWithHex:obj[@"hash"]];
+//                
+//                [obj[@"inputs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+//                    NSDictionary *o = obj[@"prev_out"];
+//                    NSMutableData *script = [NSMutableData data];
+//                    
+//                    [script appendScriptPubKeyForAddress:o[@"addr"]];
+//                    [tx addInputHash:o[@"tx_index"] index:[o[@"n"] unsignedIntegerValue] script:script];
+//                }];
+//                
+//                [obj[@"out"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+//                    [tx addOutputAddress:obj[@"addr"] amount:[obj[@"value"] unsignedLongLongValue]];
+//                }];
+//            
+//                self.transactions[obj[@"hash"]] = [tx toHex]; // no timestamp this way :(
+//            }
         }];
         
         NSInteger height = [JSON[@"info"][@"latest_block"][@"height"] integerValue];
         NSTimeInterval time = [JSON[@"info"][@"latest_block"][@"time"] doubleValue];
+        
+        [self.unconfirmed removeObjectsForKeys:self.transactions.allKeys];
         
         [_defs setObject:self.fundedAddresses forKey:FUNDED_ADDRESSES_KEY];
         [_defs setObject:self.spentAddresses forKey:SPENT_ADDRESSES_KEY];
@@ -426,6 +460,7 @@ completion:(void (^)(NSError *error))completion
         [_defs setObject:self.addressBalances forKey:ADDRESS_BALANCES_KEY];
         [_defs setObject:self.addressTxCount forKey:ADDRESS_TX_COUNT_KEY];
         [_defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
+        [_defs setObject:self.unconfirmed forKey:UNCONFIRMED_KEY];
         if (height) [_defs setInteger:height forKey:LATEST_BLOCK_HEIGHT_KEY];
         if (time > 1.0) [_defs setDouble:time forKey:LATEST_BLOCK_TIMESTAMP_KEY];
         [_defs synchronize];
@@ -523,6 +558,9 @@ completion:(void (^)(NSError *error))completion
                 
                 if (! self.unspentOutputs[address]) self.unspentOutputs[address] = [NSMutableArray arrayWithObject:obj];
                 else [self.unspentOutputs[address] addObject:obj];
+                
+                //XXXX if any inputs from unconfirmed transactions show up as unspent, that transaction needs to be
+                // republished or removed from the unconfrimed list
             }];
         
             [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
@@ -611,10 +649,20 @@ completion:(void (^)(NSError *error))completion
 
 - (NSArray *)recentTransactions
 {
+    NSMutableArray *r = [NSMutableArray arrayWithCapacity:self.unconfirmed.count + self.transactions.count];
+    
     // sort in descending order by timestamp (using block_height doesn't work for unconfirmed, or multiple tx per block)
-    return [self.transactions.allValues sortedArrayWithOptions:0 usingComparator:^NSComparisonResult(id obj1, id obj2) {
-        return [@([obj2[@"time"] unsignedLongLongValue]) compare:@([obj1[@"time"] unsignedLongLongValue])];
-    }];
+    [r addObjectsFromArray:[self.unconfirmed.allValues sortedArrayWithOptions:0
+    usingComparator:^NSComparisonResult(id obj1, id obj2) {
+        return [@([obj2[@"time"] doubleValue]) compare:@([obj1[@"time"] doubleValue])];
+    }]];
+
+    [r addObjectsFromArray:[self.transactions.allValues sortedArrayWithOptions:0
+    usingComparator:^NSComparisonResult(id obj1, id obj2) {
+        return [@([obj2[@"time"] doubleValue]) compare:@([obj1[@"time"] doubleValue])];
+    }]];
+    
+    return r;
 }
 
 - (NSUInteger)estimatedCurrentBlockHeight
@@ -705,7 +753,7 @@ completion:(void (^)(NSError *error))completion
 
         NSUInteger i = [outs indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
             return ([obj[@"tx_hash"] isEqual:hash] && [obj[@"tx_output_n"] unsignedIntegerValue] == inputIdx) ?
-            *stop = YES : NO;
+                   (*stop = YES) : NO;
         }];
         
         if (i != NSNotFound) {
@@ -785,9 +833,78 @@ completion:(void (^)(NSError *error))completion
 
 - (void)publishTransaction:(ZNTransaction *)transaction completion:(void (^)(NSError *error))completion
 {
-    //XXXX implement
+    if (! [transaction isSigned]) {
+        if (completion) {
+            completion([NSError errorWithDomain:@"ZincWallet" code:401
+                        userInfo:@{NSLocalizedDescriptionKey:@"bitcoin transaction not signed"}]);
+        }
+        return;
+    }
     
-    //XXXX make sure to update balances, remove unspent outputs
+    AFHTTPClient *client = [AFHTTPClient clientWithBaseURL:[NSURL URLWithString:BASE_URL]];
+    
+    [client postPath:PUSHTX_PATH parameters:@{@"tx":[transaction toHex]}
+    success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSMutableSet *updated = [NSMutableSet set];
+
+        //XXXX check response data to see if there's anything useful there (like a timestamp)
+
+        NSMutableDictionary *tx = [NSMutableDictionary dictionary];
+        
+        tx[@"hash"] = [transaction.hash toHex];
+        tx[@"time"] = @([NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970);
+        tx[@"inputs"] = [NSMutableArray array];
+        tx[@"out"] = [NSMutableArray array];
+
+        [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            NSArray *outs = self.unspentOutputs[obj];
+            NSString *hash = [transaction.inputHashes[idx] toHex];
+            NSUInteger inputIdx = [transaction.inputIndexes[idx] unsignedIntegerValue];
+            
+            NSUInteger i = [outs indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+                return ([obj[@"tx_hash"] isEqual:hash] && [obj[@"tx_output_n"] unsignedIntegerValue] == inputIdx) ?
+                *stop = YES : NO;
+            }];
+
+            if (i != NSNotFound) {
+                self.addressBalances[obj] =
+                    @([self.addressBalances[obj] unsignedLongLongValue] - [outs[i][@"value"] unsignedLongLongValue]);
+
+                [updated addObject:obj];
+                [self.unspentOutputs[obj] removeObjectAtIndex:i];
+                
+                //XXX for now we don't need to store spent outputs because blockchain.info will not list them as unspent
+                // while there is an unconfirmed tx that spends them. This may change once we have multiple apis for
+                // publishing.
+                
+                [tx[@"inputs"] addObject:@{@"prev_out":@{@"n":@(inputIdx), @"value":outs[i][@"value"], @"addr":obj}}];
+            }
+        }];
+        
+        [transaction.outputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            [tx[@"out"] addObject:@{@"n":@(idx), @"value":transaction.outputAmounts[idx], @"addr":obj}];
+        }];
+        
+        [updated enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
+            self.addressTxCount[obj] = @([self.addressTxCount[obj] unsignedIntegerValue] + 1);
+        }];
+        
+        self.unconfirmed[tx[@"hash"]] = tx;
+        
+        [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
+        [_defs setObject:self.addressBalances forKey:ADDRESS_BALANCES_KEY];
+        [_defs setObject:self.addressTxCount forKey:ADDRESS_TX_COUNT_KEY];
+        [_defs setObject:self.unconfirmed forKey:UNCONFIRMED_KEY];
+        [_defs synchronize];
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:self];
+        
+        if (completion) completion(nil);
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        if (completion) completion(error);
+    }];
+
+    //XXX also publish transactions directly to coinbase and bitpay servers for faster POS experience
 }
 
 #pragma mark - keychain services

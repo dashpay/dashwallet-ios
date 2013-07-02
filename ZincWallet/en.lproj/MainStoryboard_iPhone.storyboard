@@ -736,6 +736,7 @@
                     <connections>
                         <outlet property="addressLabel" destination="2Hb-Bj-uBt" id="3mg-RW-NcY"/>
                         <outlet property="amountField" destination="U70-Jh-YtO" id="PPC-gE-dUn"/>
+                        <outlet property="payButton" destination="D8w-gf-PFI" id="U6a-qQ-dYf"/>
                         <outletCollection property="buttons" destination="GNd-qX-qoG" id="AfP-L4-Yle"/>
                         <outletCollection property="buttonRow1" destination="T4X-DS-NEf" id="jCB-yR-3GW"/>
                         <outletCollection property="buttonRow2" destination="DqD-Vf-9Sm" id="p9k-zM-Lyk"/>
@@ -937,9 +938,6 @@
         <class className="ZNPayViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNPayViewController.h"/>
             <relationships>
-                <relationship kind="action" name="doIt:"/>
-                <relationship kind="action" name="page:"/>
-                <relationship kind="action" name="refresh:"/>
                 <relationship kind="outlet" name="pageControl" candidateClass="UIPageControl"/>
                 <relationship kind="outlet" name="refreshButton" candidateClass="UIBarButtonItem"/>
                 <relationship kind="outlet" name="scrollView" candidateClass="UIScrollView"/>
@@ -949,10 +947,7 @@
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNReceiveViewController.h"/>
             <relationships>
                 <relationship kind="action" name="address:"/>
-                <relationship kind="action" name="cancelRequest:"/>
-                <relationship kind="action" name="del:"/>
                 <relationship kind="action" name="issueRequest:"/>
-                <relationship kind="action" name="number:"/>
                 <relationship kind="outlet" name="addressButton" candidateClass="UIButton"/>
                 <relationship kind="outlet" name="amountField" candidateClass="UITextField"/>
                 <relationship kind="outlet" name="messageField" candidateClass="UITextField"/>

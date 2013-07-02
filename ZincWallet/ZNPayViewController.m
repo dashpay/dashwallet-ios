@@ -28,20 +28,18 @@
 
 @interface ZNPayViewController ()
 
-//@property (nonatomic, strong) IBOutlet UILabel *waitingLabel;
-//@property (nonatomic, strong) IBOutlet UIActivityIndicatorView *spinner;
-
 @property (nonatomic, strong) GKSession *session;
 @property (nonatomic, strong) NSMutableArray *requests;
 @property (nonatomic, strong) NSMutableArray *requestIDs;
 @property (nonatomic, strong) NSMutableArray *requestButtons;
 @property (nonatomic, assign) NSUInteger selectedIndex;
-@property (nonatomic, strong) id urlObserver, activeObserver;
+@property (nonatomic, strong) id urlObserver, activeObserver, balanceObserver;
 @property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 
 @property (nonatomic, strong) IBOutlet UIScrollView *scrollView;
 @property (nonatomic, strong) IBOutlet UIPageControl *pageControl;
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *refreshButton;
+@property (nonatomic, strong) IBOutlet UIActivityIndicatorView *spinner;
 
 @property (nonatomic, strong) ZNReceiveViewController *receiveController;
 
@@ -62,6 +60,11 @@
     self.requestIDs = [NSMutableArray arrayWithObject:QR_ID];
     self.requestButtons = [NSMutableArray array];
     self.selectedIndex = NSNotFound;
+
+    self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    CGRect f = self.spinner.frame;
+    f.size.width = 33;
+    self.spinner.frame = f;
 
     // if > iOS 6, we can customize the appearance of the pageControl and don't need the black bar behind it.
     if ([self.pageControl respondsToSelector:@selector(pageIndicatorTintColor)]) {
@@ -85,34 +88,38 @@
             }
         }];
     
+    //XXXX need a reachability observer, and don't refresh when unreachable
+    
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             if ([[ZNWallet sharedInstance] timeSinceLastSync] > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
         }];
+
+    self.balanceObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:walletBalanceNotification object:nil queue:nil
+        usingBlock:^(NSNotification *note) {
+            self.navigationItem.title = [[ZNWallet sharedInstance] stringForAmount:[[ZNWallet sharedInstance] balance]];
+        }];
     
     self.syncStartedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncStartedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            UIActivityIndicatorView *spinner = [[UIActivityIndicatorView alloc]
-                                                initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-            CGRect f = spinner.frame;
-
-            f.size.width = 33;
-            spinner.frame = f;
-            [spinner startAnimating];
-            self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:spinner];
+            self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
+            [self.spinner startAnimating];
         }];
 
     self.syncFinishedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncFinishedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
+            [self.spinner stopAnimating];
             self.navigationItem.rightBarButtonItem = self.refreshButton;
         }];
 
     self.syncFailedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncFailedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
+            [self.spinner stopAnimating];
             self.navigationItem.rightBarButtonItem = self.refreshButton;
             
             //XXX need a status bar error message that doesn't require user interaction
@@ -125,6 +132,7 @@
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self.urlObserver];
     [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
+    [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
     [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
     [[NSNotificationCenter defaultCenter] removeObserver:self.syncFinishedObserver];
     [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
@@ -290,6 +298,7 @@
         ZNAmountViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNAmountViewController"];
             
         c.request = request;
+        c.navigationItem.title = self.navigationItem.title;
         [self.navigationController pushViewController:c animated:YES];
             
         self.selectedIndex = NSNotFound;
@@ -562,8 +571,20 @@
         if (self.selectedIndex == NSNotFound || [self.requestIDs[self.selectedIndex] isEqual:QR_ID] ||
             [self.requestIDs[self.selectedIndex] isEqual:CLIPBOARD_ID]) {
             
-            //XXXX need some kind of spinner feedback, and MBProgressHUD instead of alert
+            [self.spinner startAnimating];
+            self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
+            
             [w publishTransaction:tx completion:^(NSError *error) {
+                [self.spinner stopAnimating];
+                self.navigationItem.rightBarButtonItem = self.refreshButton;
+            
+                if (error) {
+                    [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription
+                     delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+                    return;
+                }
+            
+                //XXXX use something like MBProgressHUD instead of alert
                 [[[UIAlertView alloc] initWithTitle:@"sent!"
                   message:nil delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
             }];
@@ -577,8 +598,8 @@
              toPeers:@[self.requestIDs[self.selectedIndex]] withDataMode:GKSendDataReliable error:&error];
     
             if (error) {
-                [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription delegate:nil
-                                  cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+                [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription
+                  delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
             }
     
             [self.requestIDs removeObjectAtIndex:self.selectedIndex];

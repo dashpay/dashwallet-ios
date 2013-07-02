@@ -19,7 +19,9 @@
 @property (nonatomic, strong) IBOutlet UIActivityIndicatorView *spinner;
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *payButton;
 @property (nonatomic, strong) IBOutletCollection(UIButton) NSArray *buttons, *buttonRow1, *buttonRow2, *buttonRow3;
+
 @property (nonatomic, strong) ZNTransaction *tx, *txWithFee;
+@property (nonatomic, strong) id balanceObserver;
 
 @end
 
@@ -35,7 +37,12 @@
         [obj setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     }];
 
-    if ([[UIScreen mainScreen]bounds].size.height < 500) { // 3.5" screen
+    self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    CGRect f = self.spinner.frame;
+    f.size.width = 33;
+    self.spinner.frame = f;
+
+    if ([[UIScreen mainScreen] bounds].size.height < 500) { // adjust number buttons for 3.5" screen
         [self.buttons enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             CGFloat y = self.view.frame.size.height - 122;
 
@@ -47,7 +54,20 @@
             [obj setImageEdgeInsets:UIEdgeInsetsMake(20.0, [obj imageEdgeInsets].left,
                                                      20.0, [obj imageEdgeInsets].right)];
         }];
-    }    
+    }
+
+    self.balanceObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:walletBalanceNotification object:nil queue:nil
+        usingBlock:^(NSNotification *note) {
+            self.navigationItem.title = [[ZNWallet sharedInstance] stringForAmount:[[ZNWallet sharedInstance] balance]];
+        }];
+}
+
+- (void)viewWillUnload
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
+
+    [super viewWillUnload];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -196,9 +216,27 @@ replacementString:(NSString *)string
               delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
         }
         else {
-            //XXXX need some kind of spinner feedback, and MBProgressHUD instead of alert
+            self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
+            [self.spinner startAnimating];
+        
             NSLog(@"signed transaction:\n%@", [self.tx toHex]);
+
             [w publishTransaction:self.tx completion:^(NSError *error) {
+                [self.spinner stopAnimating];
+                self.navigationItem.rightBarButtonItem = self.payButton;
+            
+                if (error) {
+                    [[[UIAlertView alloc] initWithTitle:@"couldn't send payment" message:error.localizedDescription
+                      delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+
+                    return;
+                }
+
+                if (self.navigationController.topViewController == self) {
+                    [self.navigationController popViewControllerAnimated:YES];
+                }
+                
+                //XXXX should use something like MBProgressHUD instead of alert
                 [[[UIAlertView alloc] initWithTitle:@"sent!"
                   message:nil delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
             }];

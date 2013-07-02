@@ -102,17 +102,19 @@
                 ZNWallet *w = [ZNWallet sharedInstance];
                 NSDictionary *tx = self.transactions[indexPath.row];
                 
-                BOOL sending = ([tx[@"inputs"] indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-                    return [w containsAddress:obj[@"prev_out"][@"addr"]] ? (*stop = YES) : NO;
-                }] != NSNotFound);
+                BOOL sending =
+                    ([tx[@"inputs"] indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+                        return [w containsAddress:obj[@"prev_out"][@"addr"]] ? (*stop = YES) : NO;
+                    }] != NSNotFound);
                
                 __block long long value = 0;
-                NSSet *outs = [tx[@"out"] objectsPassingTest:^BOOL(id obj, BOOL *stop) {
-                    value += [obj[@"value"] unsignedLongLongValue];
+                NSSet *outs =
+                    [tx[@"out"] objectsPassingTest:^BOOL(id obj, BOOL *stop) {
+                        value += [obj[@"value"] unsignedLongLongValue];
                 
-                    if (sending) return [w containsAddress:obj[@"addr"]] ? NO : YES;
-                    else return [w containsAddress:obj[@"addr"]] ? YES : NO;
-                }];
+                        if (sending) return [w containsAddress:obj[@"addr"]] ? NO : YES;
+                        else return [w containsAddress:obj[@"addr"]] ? YES : NO;
+                    }];
                 
                 if (! outs.count) {
                     cell.textLabel.text = @"moved within wallet";
