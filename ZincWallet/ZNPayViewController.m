@@ -17,6 +17,7 @@
 #import "ZBarReaderViewController.h"
 #import "ZNButton.h"
 #import "MBProgressHUD.h"
+#import <netinet/in.h>
 #import "Reachability.h"
 
 #define BUTTON_HEIGHT 44.0

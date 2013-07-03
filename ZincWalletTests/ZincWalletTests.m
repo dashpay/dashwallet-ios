@@ -31,6 +31,8 @@
     [super tearDown];
 }
 
+#pragma mark - testWallet
+
 #pragma mark - testTransaction
 
 - (void)testTransactionHeightUntilFree

@@ -10,7 +10,6 @@
 #import "ZNKey.h"
 #import "NSData+Hash.h"
 #import "NSString+Base58.h"
-
 #import <CommonCrypto/CommonDigest.h>
 #import <openssl/ecdsa.h>
 #import <openssl/obj_mac.h>

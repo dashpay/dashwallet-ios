@@ -83,6 +83,7 @@
     //XXX we should be using core data for this...
     self.addresses = [NSMutableArray array];
     self.changeAddresses = [NSMutableArray array];
+    self.outdatedAddresses = [NSMutableSet set];
     self.fundedAddresses = [NSMutableArray arrayWithArray:[_defs arrayForKey:FUNDED_ADDRESSES_KEY]];
     self.spentAddresses = [NSMutableArray arrayWithArray:[_defs arrayForKey:SPENT_ADDRESSES_KEY]];
     self.receiveAddresses = [NSMutableArray arrayWithArray:[_defs arrayForKey:RECEIVE_ADDRESSES_KEY]];
@@ -90,12 +91,7 @@
     self.unconfirmed = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:UNCONFIRMED_KEY]];
     self.addressBalances = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:ADDRESS_BALANCES_KEY]];
     self.addressTxCount = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:ADDRESS_TX_COUNT_KEY]];
-    self.unspentOutputs = [NSMutableDictionary dictionary];
-    [[_defs dictionaryForKey:UNSPENT_OUTPUTS_KEY] enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        self.unspentOutputs[key] = [NSMutableArray arrayWithArray:obj];
-    }];
-    
-    self.outdatedAddresses = [NSMutableSet set];
+    self.unspentOutputs = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:UNSPENT_OUTPUTS_KEY]];
     
     self.sequence = [ZNElectrumSequence new];
     
@@ -266,38 +262,6 @@
     }
     
     return _mpk;
-}
-
-// if any of an unconfimred transaction's inputs show up as unspent, that means the tx failed to confirm and needs to be
-// removed from the pending unconfirmed tx list
-- (void)removeUnconfirmedWithUnspentInputs
-{
-    [self.unconfirmed
-     removeObjectsForKeys:[self.unconfirmed keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-        // index of any inputs of the unconfirmed tx that are also in unspentOutputs
-        NSUInteger i =
-        [obj[@"inputs"] indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-            NSDictionary *o = obj[@"prev_out"];
-            NSArray *unspentOutputs = self.unspentOutputs[o[@"addr"]];
-            
-            if (! unspentOutputs) return NO;
-            
-            NSString *hash = o[@"hash"];
-            NSUInteger n = [o[@"n"] unsignedIntegerValue];
-            // index of the unspent output that matches this input, if any
-            NSUInteger i =
-            [unspentOutputs indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-                return ([obj[@"tx_hash"] isEqual:hash] &&
-                        [obj[@"tx_output_n"] unsignedIntegerValue] == n) ? (*stop = YES) : NO;
-            }];
-            
-            return i == NSNotFound ? NO : (*stop = YES);
-        }];
-        
-        return i == NSNotFound ? NO : YES;
-    }].allObjects];
-    
-    [_defs setObject:self.unconfirmed forKey:UNCONFIRMED_KEY];
 }
 
 #pragma mark - synchronization
@@ -471,6 +435,7 @@ completion:(void (^)(NSError *error))completion
         }];
         
         [JSON[@"txs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            //XXX we shouldn't be saving json without sanitizing it... security risk
             if (obj[@"hash"]) self.transactions[obj[@"hash"]] = obj;
         }];
         
@@ -502,21 +467,6 @@ completion:(void (^)(NSError *error))completion
 }
 
 // query blockchain for unspent outputs of the given addresses
-//
-//{
-//  "unspent_outputs": [
-//    {
-//      "tx_hash": "5a94b62fc68b6c158dafa327b6a61606e18f093c421b64ddb617267c430d13dd",
-//      "tx_index": 56887126,
-//      "tx_output_n": 1,
-//      "script": "76a91404f05543b270f96547c950a2b3ed3afe83d0386988ac",
-//      "value": 600000,
-//      "value_hex": "0927c0",
-//      "confirmations": 14946
-//    }
-//  ]
-//}
-//
 - (void)queryUnspentOutputs:(NSArray *)addresses completion:(void (^)(NSError *error))completion
 {
     if (! addresses.count) {
@@ -545,17 +495,8 @@ completion:(void (^)(NSError *error))completion
     __block AFJSONRequestOperation *requestOp =
         [AFJSONRequestOperation JSONRequestOperationWithRequest:[NSURLRequest requestWithURL:url]
         success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
-            if ([requestOp.responseString.lowercaseString hasPrefix:@"no free outputs"]) {
-                [self.unspentOutputs removeObjectsForKeys:addresses];
-                [self.outdatedAddresses minusSet:[NSSet setWithArray:addresses]];
-                
-                [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
-                
-                if (completion) completion(nil);
-                return;
-            }
-        
-            if (JSON[@"unspent_outputs"] == nil) {
+            if (! [requestOp.responseString.lowercaseString hasPrefix:@"no free outputs"] &&
+                JSON[@"unspent_outputs"] == nil) {
                 if (completion) {
                     completion([NSError errorWithDomain:@"ZincWallet" code:500 userInfo:@{
                                 NSLocalizedDescriptionKey:@"Unexpeted server response from blockchain.info"}]);
@@ -563,32 +504,61 @@ completion:(void (^)(NSError *error))completion
                 return;
             }
 
-            [self.unspentOutputs removeObjectsForKeys:addresses];
+            [self.unspentOutputs
+            removeObjectsForKeys:[self.unspentOutputs keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
+                NSString *s = obj[@"script"];
+                
+                if (! [s hasSuffix:SCRIPT_SUFFIX] || s.length < SCRIPT_SUFFIX.length + 40) return YES;
+                
+                NSString *hash160 = [s substringWithRange:NSMakeRange(s.length - SCRIPT_SUFFIX.length - 40, 40)];
+                NSString *address = [[@"00" stringByAppendingString:hash160] hexToBase58check];
+                
+                return (! address || [addresses containsObject:address]) ? YES : NO;
+            }].allObjects];
+
             [self.outdatedAddresses minusSet:[NSSet setWithArray:addresses]];
             
             [JSON[@"unspent_outputs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                NSString *script = obj[@"script"];
-            
-                if (! [script hasSuffix:SCRIPT_SUFFIX] || script.length < SCRIPT_SUFFIX.length + 40) return;
+                NSString *key = [obj[@"tx_hash"] stringByAppendingString:[obj[@"tx_output_n"] description]];
 
-                NSString *address = [[@"00" stringByAppendingString:[script
-                                      substringWithRange:NSMakeRange(script.length - SCRIPT_SUFFIX.length - 40, 40)]]
-                                     hexToBase58check];
-
-                if (! address) return;
-                
-                if (! self.unspentOutputs[address]) self.unspentOutputs[address] = [NSMutableArray arrayWithObject:obj];
-                else [self.unspentOutputs[address] addObject:obj];                
+                //XXX we shouldn't be storing json without sanitizing it... security risk
+                if (key) self.unspentOutputs[key] = obj;
             }];
             
-            [self removeUnconfirmedWithUnspentInputs];
-            
+            // if any of an unconfimred transaction's inputs show up as unspent, that means the tx failed to confirm and
+            // needs to be removed from the pending unconfirmed tx list
+            [self.unconfirmed
+             removeObjectsForKeys:[self.unconfirmed keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
+                // index of any inputs of the unconfirmed tx that are also in unspentOutputs
+                NSUInteger i =
+                    [obj[@"inputs"] indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+                        NSDictionary *o = obj[@"prev_out"];
+                        NSString *key = [o[@"hash"] stringByAppendingString:[o[@"n"] description]];
+                        
+                        return (self.unspentOutputs[key] != nil) ? (*stop = YES) : NO;
+                    }];
+                    
+                return i == NSNotFound ? NO : YES;
+            }].allObjects];
+                
+            [_defs setObject:self.unconfirmed forKey:UNCONFIRMED_KEY];            
             [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
 
             if (completion) completion(nil);
         } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
             if ([requestOp.responseString.lowercaseString hasPrefix:@"no free outputs"]) {
-                [self.unspentOutputs removeObjectsForKeys:addresses];
+                [self.unspentOutputs
+                removeObjectsForKeys:[self.unspentOutputs keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
+                    NSString *s = obj[@"script"];
+                    
+                    if (! [s hasSuffix:SCRIPT_SUFFIX] || s.length < SCRIPT_SUFFIX.length + 40) return YES;
+                    
+                    NSString *hash160 = [s substringWithRange:NSMakeRange(s.length - SCRIPT_SUFFIX.length - 40, 40)];
+                    NSString *address = [[@"00" stringByAppendingString:hash160] hexToBase58check];
+                    
+                    return (! address || [addresses containsObject:address]) ? YES : NO;
+                }].allObjects];
+            
                 [self.outdatedAddresses minusSet:[NSSet setWithArray:addresses]];
                 
                 [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
@@ -613,6 +583,8 @@ completion:(void (^)(NSError *error))completion
 
 - (uint64_t)balance
 {
+    //XXXX do the outputs of unconfirmed transactions show up in the unspent outputs list?
+    //     if not, we need to add them to the balance (and possibly use them when sending new transactions if they are likely to confirm), and if so, we need to not use them for new transactions
     __block uint64_t balance = 0;
     
     [self.addressBalances enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
@@ -725,21 +697,24 @@ completion:(void (^)(NSError *error))completion
     [tx addOutputAddress:address amount:amount];
 
     //XXX we should optimize for free transactions (watch out for performance issues, nothing O(n^2) please)
-    // this is a nieve implementation to just get it functional
-    [self.unspentOutputs enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        [obj enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            // tx_hash is already in little endian
-            [tx addInputHash:[NSData dataWithHex:obj[@"tx_hash"]] index:[obj[@"tx_output_n"] unsignedIntegerValue]
-             script:[NSData dataWithHex:obj[@"script"]] ];
-            
-            balance += [obj[@"value"] unsignedLongLongValue];
-
-            // assume we will be adding a change output (additional 34 bytes)
-            if (fee) standardFee = ((tx.size + 34 + 999)/1000)*TX_FEE_PER_KB;
-            
-            if (balance == amount + standardFee || balance >= amount + standardFee + minChange) *stop = YES;
+    // this is a nieve implementation to just get it functional, sorts unspent outputs by oldest first
+    NSArray *keys =
+        [self.unspentOutputs keysSortedByValueUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+            return [obj1[@"tx_index"] compare:obj2[@"tx_index"]];
         }];
+    
+    [keys enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        NSDictionary *o = self.unspentOutputs[obj];
+        
+        // tx_hash is already in little endian
+        [tx addInputHash:[NSData dataWithHex:o[@"tx_hash"]] index:[o[@"tx_output_n"] unsignedIntegerValue]
+         script:[NSData dataWithHex:o[@"script"]] ];
+            
+        balance += [o[@"value"] unsignedLongLongValue];
 
+        // assume we will be adding a change output (additional 34 bytes)
+        if (fee) standardFee = ((tx.size + 34 + 999)/1000)*TX_FEE_PER_KB;
+            
         if (balance == amount + standardFee || balance >= amount + standardFee + minChange) *stop = YES;
     }];
     
@@ -764,18 +739,13 @@ completion:(void (^)(NSError *error))completion
     if (! currentHeight) return DBL_MAX;
     
     [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        NSArray *outs = self.unspentOutputs[obj];
         NSString *hash = [transaction.inputHashes[idx] toHex];
-        NSUInteger inputIdx = [transaction.inputIndexes[idx] unsignedIntegerValue];
+        NSString *n = [transaction.inputIndexes[idx] description];
+        NSDictionary *o = self.unspentOutputs[[hash stringByAppendingString:n]];
 
-        NSUInteger i = [outs indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-            return ([obj[@"tx_hash"] isEqual:hash] && [obj[@"tx_output_n"] unsignedIntegerValue] == inputIdx) ?
-                   (*stop = YES) : NO;
-        }];
-        
-        if (i != NSNotFound) {
-            [amounts addObject:outs[i][@"value"]];
-            [heights addObject:@(currentHeight - [outs[i][@"confirmations"] unsignedIntegerValue])];
+        if (o) {
+            [amounts addObject:o[@"value"]];
+            [heights addObject:@(currentHeight - [o[@"confirmations"] unsignedIntegerValue])];
         }
         else *stop = YES;
     }];
@@ -794,20 +764,15 @@ completion:(void (^)(NSError *error))completion
     __block uint64_t balance = 0, amount = 0;
 
     [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        NSArray *outs = self.unspentOutputs[obj];
         NSString *hash = [transaction.inputHashes[idx] toHex];
-        NSUInteger inputIdx = [transaction.inputIndexes[idx] unsignedIntegerValue];
+        NSString *n = [transaction.inputIndexes[idx] description];
+        NSDictionary *o = self.unspentOutputs[[hash stringByAppendingString:n]];
         
-        NSUInteger i = [outs indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-            return ([obj[@"tx_hash"] isEqual:hash] && [obj[@"tx_output_n"] unsignedIntegerValue] == inputIdx) ?
-            *stop = YES : NO;
-        }];
-        
-        if (i == NSNotFound) {
+        if (! o) {
             balance = UINT64_MAX;
             *stop = YES;
         }
-        else balance += [outs[i][@"value"] unsignedLongLongValue];
+        else balance += [o[@"value"] unsignedLongLongValue];
     }];
 
     if (balance == UINT64_MAX) return UINT64_MAX;
@@ -874,28 +839,23 @@ completion:(void (^)(NSError *error))completion
         tx[@"out"] = [NSMutableArray array];
 
         [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            NSArray *outs = self.unspentOutputs[obj];
             NSString *hash = [transaction.inputHashes[idx] toHex];
-            NSUInteger inputIdx = [transaction.inputIndexes[idx] unsignedIntegerValue];
+            NSString *n = [transaction.inputIndexes[idx] description];
+            NSDictionary *o = self.unspentOutputs[[hash stringByAppendingString:n]];
             
-            NSUInteger i = [outs indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-                return ([obj[@"tx_hash"] isEqual:hash] && [obj[@"tx_output_n"] unsignedIntegerValue] == inputIdx) ?
-                *stop = YES : NO;
-            }];
-
-            if (i != NSNotFound) {
+            if (o) {
                 self.addressBalances[obj] =
-                    @([self.addressBalances[obj] unsignedLongLongValue] - [outs[i][@"value"] unsignedLongLongValue]);
+                    @([self.addressBalances[obj] unsignedLongLongValue] - [o[@"value"] unsignedLongLongValue]);
 
                 [updated addObject:obj];
-                [self.unspentOutputs[obj] removeObjectAtIndex:i];
+                self.unspentOutputs[[hash stringByAppendingString:n]] = nil;
                 
                 //XXX for now we don't need to store spent outputs because blockchain.info will not list them as unspent
                 // while there is an unconfirmed tx that spends them. This may change once we have multiple apis for
                 // publishing, and a transaction may not show up on blockchain.info immediately.
                 
-                [tx[@"inputs"]
-                 addObject:@{@"prev_out":@{@"hash":hash, @"n":@(inputIdx), @"value":outs[i][@"value"], @"addr":obj}}];
+                [tx[@"inputs"] addObject:@{@"prev_out":@{@"hash":hash, @"n":transaction.inputIndexes[idx],
+                                           @"value":o[@"value"], @"addr":obj}}];
             }
         }];
         
