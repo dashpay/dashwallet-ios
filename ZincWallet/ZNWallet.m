@@ -298,7 +298,6 @@
     }].allObjects];
     
     [_defs setObject:self.unconfirmed forKey:UNCONFIRMED_KEY];
-    //[_defs synchronize]; // skip synchronize for performance, it's called by queryUnspentOutputs
 }
 
 #pragma mark - synchronization
@@ -313,6 +312,9 @@
     [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT forChange:NO completion:^(NSError *error) {
         if (error) {
             _synchronizing = NO;
+            [_defs setDouble:[NSDate timeIntervalSinceReferenceDate] forKey:LAST_SYNC_TIME_KEY];
+            [_defs synchronize];
+
             [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification object:self
              userInfo:@{@"error":error}];
             return;
@@ -321,15 +323,22 @@
         [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT_FOR_CHANGE forChange:YES completion:^(NSError *error) {
             if (error) {
                 _synchronizing = NO;
+                [_defs setDouble:[NSDate timeIntervalSinceReferenceDate] forKey:LAST_SYNC_TIME_KEY];
+                [_defs synchronize];
+
                 [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification object:self
                  userInfo:@{@"error":error}];
                 return;
             }
 
+            // check funded and spent addresses for new transactions
             [self queryAddresses:[self.fundedAddresses arrayByAddingObjectsFromArray:self.spentAddresses]
             completion:^(NSError *error) {
                 if (error) {
                     _synchronizing = NO;
+                    [_defs setDouble:[NSDate timeIntervalSinceReferenceDate] forKey:LAST_SYNC_TIME_KEY];
+                    [_defs synchronize];
+
                     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification object:self
                      userInfo:@{@"error":error}];
                     return;
@@ -338,12 +347,18 @@
                 [self queryUnspentOutputs:self.outdatedAddresses.allObjects completion:^(NSError *error) {
                     if (error) {
                         _synchronizing = NO;
+                        [_defs setDouble:[NSDate timeIntervalSinceReferenceDate] forKey:LAST_SYNC_TIME_KEY];
+                        [_defs synchronize];
+
                         [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification
                          object:self userInfo:@{@"error":error}];
                         return;
                     }
                     
                     _synchronizing = NO;
+                    [_defs setDouble:[NSDate timeIntervalSinceReferenceDate] forKey:LAST_SYNC_TIME_KEY];
+                    [_defs synchronize];
+
                     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification
                      object:self];
 
@@ -473,7 +488,6 @@ completion:(void (^)(NSError *error))completion
         [_defs setObject:self.unconfirmed forKey:UNCONFIRMED_KEY];
         if (height) [_defs setInteger:height forKey:LATEST_BLOCK_HEIGHT_KEY];
         if (time > 1.0) [_defs setDouble:time forKey:LATEST_BLOCK_TIMESTAMP_KEY];
-        [_defs synchronize];
         
         if (self.outdatedAddresses.count) {
             [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:self];
@@ -536,7 +550,6 @@ completion:(void (^)(NSError *error))completion
                 [self.outdatedAddresses minusSet:[NSSet setWithArray:addresses]];
                 
                 [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
-                [_defs synchronize];
                 
                 if (completion) completion(nil);
                 return;
@@ -571,8 +584,6 @@ completion:(void (^)(NSError *error))completion
             [self removeUnconfirmedWithUnspentInputs];
             
             [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
-            [_defs setDouble:[NSDate timeIntervalSinceReferenceDate] forKey:LAST_SYNC_TIME_KEY];
-            [_defs synchronize];
 
             if (completion) completion(nil);
         } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
@@ -581,7 +592,6 @@ completion:(void (^)(NSError *error))completion
                 [self.outdatedAddresses minusSet:[NSSet setWithArray:addresses]];
                 
                 [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
-                [_defs synchronize];
             
                 if (completion) completion(nil);
                 return;

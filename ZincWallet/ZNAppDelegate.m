@@ -22,6 +22,8 @@
     //XXX need a way to recieve pushes when unconfirmed transactions to a wallet address happen
     // (this could obviate the need to walk all the addresses looking for new transactions)
 
+    //XXX need to implement pin code
+    
     //XXX figure what to do about bluetooth
     // this will notify user if bluetooth is disabled (on 4S and newer devices that support BTLE)
     //CBCentralManager *cbManager = [[CBCentralManager alloc] initWithDelegate:self queue:dispatch_get_main_queue()];
@@ -86,6 +88,8 @@ annotation:(id)annotation
 - (void)keepUpAppearances
 {
     //XXX icon idea, super stylized qr code/camera guide
+    
+    //XXX need more graphic design throughout app
     
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque];
     

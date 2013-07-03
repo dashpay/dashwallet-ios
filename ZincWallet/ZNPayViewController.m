@@ -129,7 +129,6 @@
             [self.spinner stopAnimating];
             self.navigationItem.rightBarButtonItem = self.refreshButton;
             
-            //XXX need a status bar error message that doesn't require user interaction
             [[[UIAlertView alloc] initWithTitle:@"Couldn't refresh wallet balance" message:[note.userInfo[@"error"]
               localizedDescription] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
         }];    
