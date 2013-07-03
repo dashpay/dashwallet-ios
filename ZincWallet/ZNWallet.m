@@ -268,6 +268,39 @@
     return _mpk;
 }
 
+// if any of an unconfimred transaction's inputs show up as unspent, that means the tx failed to confirm and needs to be
+// removed from the pending unconfirmed tx list
+- (void)removeUnconfirmedWithUnspentInputs
+{
+    [self.unconfirmed
+     removeObjectsForKeys:[self.unconfirmed keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
+        // index of any inputs of the unconfirmed tx that are also in unspentOutputs
+        NSUInteger i =
+        [obj[@"inputs"] indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+            NSDictionary *o = obj[@"prev_out"];
+            NSArray *unspentOutputs = self.unspentOutputs[o[@"addr"]];
+            
+            if (! unspentOutputs) return NO;
+            
+            NSString *hash = o[@"hash"];
+            NSUInteger n = [o[@"n"] unsignedIntegerValue];
+            // index of the unspent output that matches this input, if any
+            NSUInteger i =
+            [unspentOutputs indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+                return ([obj[@"tx_hash"] isEqual:hash] &&
+                        [obj[@"tx_output_n"] unsignedIntegerValue] == n) ? (*stop = YES) : NO;
+            }];
+            
+            return i == NSNotFound ? NO : (*stop = YES);
+        }];
+        
+        return i == NSNotFound ? NO : YES;
+    }].allObjects];
+    
+    [_defs setObject:self.unconfirmed forKey:UNCONFIRMED_KEY];
+    //[_defs synchronize]; // skip synchronize for performance, it's called by queryUnspentOutputs
+}
+
 #pragma mark - synchronization
 
 - (void)synchronize
@@ -417,36 +450,13 @@ completion:(void (^)(NSError *error))completion
                 if ([obj[@"final_balance"] unsignedLongLongValue] > 0) {
                     [self.fundedAddresses addObject:address];
                 }
-                else {
-                    [self.spentAddresses addObject:address];
-                }
+                else [self.spentAddresses addObject:address];
             }
-            else {
-                [self.receiveAddresses addObject:address];
-            }
+            else [self.receiveAddresses addObject:address];
         }];
         
         [JSON[@"txs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             if (obj[@"hash"]) self.transactions[obj[@"hash"]] = obj;
-//            if (obj[@"hash"]) {
-//                ZNTransaction *tx = [ZNTransaction new];
-//                
-//                tx.hash = [NSData dataWithHex:obj[@"hash"]];
-//                
-//                [obj[@"inputs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-//                    NSDictionary *o = obj[@"prev_out"];
-//                    NSMutableData *script = [NSMutableData data];
-//                    
-//                    [script appendScriptPubKeyForAddress:o[@"addr"]];
-//                    [tx addInputHash:o[@"tx_index"] index:[o[@"n"] unsignedIntegerValue] script:script];
-//                }];
-//                
-//                [obj[@"out"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-//                    [tx addOutputAddress:obj[@"addr"] amount:[obj[@"value"] unsignedLongLongValue]];
-//                }];
-//            
-//                self.transactions[obj[@"hash"]] = [tx toHex]; // no timestamp this way :(
-//            }
         }];
         
         NSInteger height = [JSON[@"info"][@"latest_block"][@"height"] integerValue];
@@ -468,8 +478,6 @@ completion:(void (^)(NSError *error))completion
         if (self.outdatedAddresses.count) {
             [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:self];
         }
-        
-        //[self queryUnspentOutputs:self.fundedAddresses];
         
         if (completion) completion(nil);
     } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
@@ -557,12 +565,11 @@ completion:(void (^)(NSError *error))completion
                 if (! address) return;
                 
                 if (! self.unspentOutputs[address]) self.unspentOutputs[address] = [NSMutableArray arrayWithObject:obj];
-                else [self.unspentOutputs[address] addObject:obj];
-                
-                //XXXX if any inputs from unconfirmed transactions show up as unspent, that transaction needs to be
-                // republished or removed from the unconfrimed list
+                else [self.unspentOutputs[address] addObject:obj];                
             }];
-        
+            
+            [self removeUnconfirmedWithUnspentInputs];
+            
             [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
             [_defs setDouble:[NSDate timeIntervalSinceReferenceDate] forKey:LAST_SYNC_TIME_KEY];
             [_defs synchronize];
@@ -875,9 +882,10 @@ completion:(void (^)(NSError *error))completion
                 
                 //XXX for now we don't need to store spent outputs because blockchain.info will not list them as unspent
                 // while there is an unconfirmed tx that spends them. This may change once we have multiple apis for
-                // publishing.
+                // publishing, and a transaction may not show up on blockchain.info immediately.
                 
-                [tx[@"inputs"] addObject:@{@"prev_out":@{@"n":@(inputIdx), @"value":outs[i][@"value"], @"addr":obj}}];
+                [tx[@"inputs"]
+                 addObject:@{@"prev_out":@{@"hash":hash, @"n":@(inputIdx), @"value":outs[i][@"value"], @"addr":obj}}];
             }
         }];
         

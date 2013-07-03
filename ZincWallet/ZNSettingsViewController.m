@@ -176,7 +176,7 @@
     switch (section) {
         case 0: return @"recent transactions";
         case 1: return nil;
-        case 2: return @"caution";
+        case 2: return @"caution ⇣";
         default:
             NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
                      __LINE__, section);
