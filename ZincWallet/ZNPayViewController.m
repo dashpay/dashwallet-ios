@@ -17,6 +17,7 @@
 #import "ZBarReaderViewController.h"
 #import "ZNButton.h"
 #import "MBProgressHUD.h"
+#import "Reachability.h"
 
 #define BUTTON_HEIGHT 44.0
 #define BUTTON_MARGIN 5.0
@@ -34,7 +35,7 @@
 @property (nonatomic, strong) NSMutableArray *requestIDs;
 @property (nonatomic, strong) NSMutableArray *requestButtons;
 @property (nonatomic, assign) NSUInteger selectedIndex;
-@property (nonatomic, strong) id urlObserver, activeObserver, balanceObserver;
+@property (nonatomic, strong) id urlObserver, activeObserver, balanceObserver, reachabilityObserver;
 @property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 
 @property (nonatomic, strong) IBOutlet UIScrollView *scrollView;
@@ -43,6 +44,7 @@
 @property (nonatomic, strong) IBOutlet UIActivityIndicatorView *spinner;
 
 @property (nonatomic, strong) ZNReceiveViewController *receiveController;
+@property (nonatomic, strong) Reachability *reachability;
 
 @end
 
@@ -89,11 +91,15 @@
             }
         }];
     
-    //XXXX need a reachability observer, and don't refresh when unreachable
-    
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
+            if ([[ZNWallet sharedInstance] timeSinceLastSync] > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
+        }];
+    
+    self.reachabilityObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
+        usingBlock:^(NSNotification *note) {
             if ([[ZNWallet sharedInstance] timeSinceLastSync] > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
         }];
 
@@ -127,12 +133,18 @@
             [[[UIAlertView alloc] initWithTitle:@"Couldn't refresh wallet balance" message:[note.userInfo[@"error"]
               localizedDescription] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
         }];    
+
+    self.reachability = [Reachability reachabilityWithHostName:@"blockchain.info"];
+    [self.reachability startNotifier];
 }
 
 - (void)viewWillUnload
 {
+    [self.reachability stopNotifier];
+
     [[NSNotificationCenter defaultCenter] removeObserver:self.urlObserver];
     [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
+    [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
     [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
     [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
     [[NSNotificationCenter defaultCenter] removeObserver:self.syncFinishedObserver];
@@ -378,7 +390,9 @@
 
 - (IBAction)refresh:(id)sender
 {
-    [[ZNWallet sharedInstance] synchronize];   
+    if (sender || [self.reachability currentReachabilityStatus] != NotReachable) {
+        [[ZNWallet sharedInstance] synchronize];
+    }
 }
 
 - (IBAction)page:(id)sender

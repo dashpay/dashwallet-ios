@@ -8,7 +8,6 @@
 
 #import "ZNAppDelegate.h"
 #import "NSString+Base58.h"
-#import <MessageUI/MessageUI.h>
 
 @implementation ZNAppDelegate
 
