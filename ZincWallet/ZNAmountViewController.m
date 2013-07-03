@@ -11,6 +11,7 @@
 #import "ZNWallet.h"
 #import "ZNTransaction.h"
 #import "NSData+Hash.h"
+#import "MBProgressHUD.h"
 
 @interface ZNAmountViewController ()
 
@@ -236,9 +237,12 @@ replacementString:(NSString *)string
                     [self.navigationController popViewControllerAnimated:YES];
                 }
                 
-                //XXXX should use something like MBProgressHUD instead of alert
-                [[[UIAlertView alloc] initWithTitle:@"sent!"
-                  message:nil delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+                MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
+                
+                hud.mode = MBProgressHUDModeText;
+                hud.labelText = @"sent!";
+                hud.labelFont = [UIFont fontWithName:@"HelveticaNeue-Medium" size:17.0];
+                [hud hide:YES afterDelay:2.0];
             }];
         }
     }

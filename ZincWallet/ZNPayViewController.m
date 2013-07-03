@@ -16,6 +16,7 @@
 #import "ZNTransaction.h"
 #import "ZBarReaderViewController.h"
 #import "ZNButton.h"
+#import "MBProgressHUD.h"
 
 #define BUTTON_HEIGHT 44.0
 #define BUTTON_MARGIN 5.0
@@ -584,9 +585,12 @@
                     return;
                 }
             
-                //XXXX use something like MBProgressHUD instead of alert
-                [[[UIAlertView alloc] initWithTitle:@"sent!"
-                  message:nil delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+                MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+
+                hud.mode = MBProgressHUDModeText;
+                hud.labelText = @"sent!";
+                hud.labelFont = [UIFont fontWithName:@"HelveticaNeue-Medium" size:17.0];
+                [hud hide:YES afterDelay:2.0];
             }];
         }
         else {

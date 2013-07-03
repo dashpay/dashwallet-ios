@@ -981,6 +981,7 @@
 		75CBEAE0173C601D00978DBA /* icon57.png in Resources */ = {isa = PBXBuildFile; fileRef = 75CBEADF173C601D00978DBA /* icon57.png */; };
 		75CBEAE2173C603800978DBA /* icon114.png in Resources */ = {isa = PBXBuildFile; fileRef = 75CBEAE1173C603800978DBA /* icon114.png */; };
 		75CBEAE9173C80AD00978DBA /* ZNPaymentRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 75CBEAE8173C80AD00978DBA /* ZNPaymentRequest.m */; };
+		75D423291783E0B100BDD771 /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D423121783E0B100BDD771 /* MBProgressHUD.m */; };
 		75D8F382173ABE3C0080D95E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F381173ABE3C0080D95E /* UIKit.framework */; };
 		75D8F384173ABE3C0080D95E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		75D8F386173ABE3C0080D95E /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F385173ABE3C0080D95E /* CoreGraphics.framework */; };
@@ -2309,6 +2310,8 @@
 		75CBEAE1173C603800978DBA /* icon114.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon114.png; path = ../icon114.png; sourceTree = "<group>"; };
 		75CBEAE7173C80AD00978DBA /* ZNPaymentRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNPaymentRequest.h; sourceTree = "<group>"; };
 		75CBEAE8173C80AD00978DBA /* ZNPaymentRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNPaymentRequest.m; sourceTree = "<group>"; };
+		75D423111783E0B100BDD771 /* MBProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBProgressHUD.h; sourceTree = "<group>"; };
+		75D423121783E0B100BDD771 /* MBProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBProgressHUD.m; sourceTree = "<group>"; };
 		75D8F37E173ABE3C0080D95E /* ZincWallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZincWallet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		75D8F381173ABE3C0080D95E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		75D8F383173ABE3C0080D95E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -2517,6 +2520,7 @@
 			children = (
 				752C2F8517406EEA0033F636 /* Reachability.h */,
 				752C2F8617406EEA0033F636 /* Reachability.m */,
+				75D422F41783E0B000BDD771 /* MBProgressHUD */,
 				752C38AF1742BC4D0033F636 /* AFNetworking */,
 				75FD9C0E17664FE600307894 /* zbar */,
 				75AF36E317667E43004AA912 /* QRCodeEncoderObjectiveCAtGithub */,
@@ -4500,6 +4504,15 @@
 			name = Models;
 			sourceTree = "<group>";
 		};
+		75D422F41783E0B000BDD771 /* MBProgressHUD */ = {
+			isa = PBXGroup;
+			children = (
+				75D423111783E0B100BDD771 /* MBProgressHUD.h */,
+				75D423121783E0B100BDD771 /* MBProgressHUD.m */,
+			);
+			path = MBProgressHUD;
+			sourceTree = SOURCE_ROOT;
+		};
 		75D8F375173ABE3C0080D95E = {
 			isa = PBXGroup;
 			children = (
@@ -5976,6 +5989,7 @@
 				753007EF1769899B00C7BB60 /* ZNSeedViewController.m in Sources */,
 				753007F2176A48DA00C7BB60 /* ZNRestoreViewController.m in Sources */,
 				7535CCDF176BE3D2007E29C5 /* ZNButton.m in Sources */,
+				75D423291783E0B100BDD771 /* MBProgressHUD.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

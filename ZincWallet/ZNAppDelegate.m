@@ -16,7 +16,7 @@
 {
     // Override point for customization after application launch.
     
-    [self keepupAppearances];
+    [self keepUpAppearances];
 
     //XXX need to upgrade openssl (and other libs) to latest
     
@@ -84,7 +84,7 @@ annotation:(id)annotation
 
 #pragma mark - appearance
 
-- (void)keepupAppearances
+- (void)keepUpAppearances
 {
     //XXX icon idea, super stylized qr code/camera guide
     
