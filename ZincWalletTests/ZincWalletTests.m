@@ -33,6 +33,14 @@
 
 #pragma mark - testWallet
 
+// standard free transaction no change
+// standard free transaction with change
+// transaction with an output below 0.01
+// transaction with change below 0.01
+// transaction over 10k
+// free transaction who's inputs are too new to hit min free priority
+// transaction with change below min allowable output
+
 #pragma mark - testTransaction
 
 - (void)testTransactionHeightUntilFree

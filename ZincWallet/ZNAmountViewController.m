@@ -117,7 +117,9 @@
         NSString *fee = [w stringForAmount:[w transactionFee:self.txWithFee]];
         NSTimeInterval t = [w timeUntilFree:self.tx];
         
-        if (! self.tx || (t > DBL_EPSILON && ! self.txWithFee)) {
+        if (self.tx && ! self.txWithFee) fee = [w stringForAmount:[self.tx standardFee]];
+        
+        if (! self.tx) {
             [[[UIAlertView alloc] initWithTitle:@"Insuficient Funds" message:nil delegate:nil cancelButtonTitle:@"OK"
               otherButtonTitles:nil] show];
         }
@@ -128,9 +130,10 @@
              show];
         }
         else if (t > DBL_EPSILON) {
-            NSUInteger minutes = t/60, hours = t/(60*60);
-            NSString *time = [NSString stringWithFormat:@"%d %@%@", hours ? hours : minutes,
-                              hours ? @"hour" : @"minutes", hours > 1 ? @"s" : @""];
+            NSUInteger minutes = t/60, hours = t/(60*60), days = t/(60*60*24);
+            NSString *time = [NSString stringWithFormat:@"%d %@%@", days ? days : (hours ? hours : minutes),
+                              days ? @"day" : (hours ? @"hour" : @"minutes"),
+                              days > 1 ? @"s" : (days == 0 && hours > 1 ? @"s" : @"")];
         
             [[[UIAlertView alloc] initWithTitle:[NSString stringWithFormat:@"%@ transaction fee recommended", fee]
               message:[NSString stringWithFormat:@"estimated confirmation time with no fee: %@", time] delegate:self
@@ -200,7 +203,11 @@ replacementString:(NSString *)string
     
     if ([title hasPrefix:@"+ "]) self.tx = self.txWithFee;
     
-    if ([title hasPrefix:@"+ "] || [title isEqual:@"no fee"]) {
+    if (! self.tx) {
+        [[[UIAlertView alloc] initWithTitle:@"Insuficient Funds" message:nil delegate:nil cancelButtonTitle:@"OK"
+          otherButtonTitles:nil] show];
+    }
+    else if ([title hasPrefix:@"+ "] || [title isEqual:@"no fee"]) {
         w.format.minimumFractionDigits = w.format.maximumFractionDigits;
         [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
           message:self.request.message ? self.request.message : self.request.paymentAddress delegate:self

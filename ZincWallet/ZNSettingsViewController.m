@@ -108,25 +108,27 @@
                     }] != NSNotFound);
                
                 __block long long value = 0;
-                NSSet *outs =
-                    [tx[@"out"] objectsPassingTest:^BOOL(id obj, BOOL *stop) {
+                NSArray *outs =
+                    [tx[@"out"]
+                    objectsAtIndexes:[tx[@"out"] indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
                         value += [obj[@"value"] unsignedLongLongValue];
                 
                         if (sending) return [w containsAddress:obj[@"addr"]] ? NO : YES;
                         else return [w containsAddress:obj[@"addr"]] ? YES : NO;
-                    }];
+                    }]];
                 
                 if (! outs.count) {
-                    cell.textLabel.text = @"moved within wallet";
+                    cell.detailTextLabel.text = @"moved within wallet";
                 }
                 else {
-                    NSDictionary *o = outs.anyObject;
+                    NSDictionary *o = outs.lastObject;
 
                     value = [o[@"value"] longLongValue]*(sending ? -1 : 1);
-                    cell.textLabel.text = o[@"addr"];
+                    cell.detailTextLabel.text = o[@"addr"];
                 }
                 
-                cell.detailTextLabel.text = [w stringForAmount:value];
+                cell.textLabel.text = [w stringForAmount:value];
+                //XXXX need to indicate unconfirmed, positive and negative
             }
             break;
             

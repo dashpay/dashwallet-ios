@@ -107,7 +107,11 @@
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:walletBalanceNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
+            ZNWallet *w = [ZNWallet sharedInstance];
+            
+            w.format.minimumFractionDigits = w.format.maximumFractionDigits;
             self.navigationItem.title = [[ZNWallet sharedInstance] stringForAmount:[[ZNWallet sharedInstance] balance]];
+            w.format.minimumFractionDigits = 0;
         }];
     
     self.syncStartedObserver =
@@ -136,6 +140,12 @@
 
     self.reachability = [Reachability reachabilityWithHostName:@"blockchain.info"];
     [self.reachability startNotifier];
+    
+    ZNWallet *w = [ZNWallet sharedInstance];
+    
+    w.format.minimumFractionDigits = w.format.maximumFractionDigits;
+    self.navigationItem.title = [[ZNWallet sharedInstance] stringForAmount:[[ZNWallet sharedInstance] balance]];
+    w.format.minimumFractionDigits = 0;
 }
 
 - (void)viewWillUnload
@@ -172,18 +182,25 @@
     self.session.available = YES;
     
     if ([[[UIPasteboard generalPasteboard] string] length] &&
-        ! [[[UIPasteboard generalPasteboard] string] isEqual:[[ZNWallet sharedInstance] receiveAddress]]) {
+        ! [[[UIPasteboard generalPasteboard] string] isEqual:self.receiveController.copiedAddress]) {
         ZNPaymentRequest *req = [ZNPaymentRequest requestWithString:[[UIPasteboard generalPasteboard] string]];
 
         if (req.paymentAddress) {
-            if (! req.label) {
-                req.label = [NSString stringWithFormat:@"%@ - %@", req.paymentAddress,
-                             [[ZNWallet sharedInstance] stringForAmount:req.amount]];
+            if (! req.label.length) {
+                if (req.amount > 0) {
+                    req.label = [NSString stringWithFormat:@"%@ - %@", req.paymentAddress,
+                                 [[ZNWallet sharedInstance] stringForAmount:req.amount]];
+                }
+                else req.label = req.paymentAddress;
             }
         
-            if (! req.label.length) req.label = @"pay address from clipboard";
-            [self.requests addObject:req];
-            [self.requestIDs addObject:CLIPBOARD_ID];
+            NSUInteger i = [self.requestIDs indexOfObject:CLIPBOARD_ID];
+        
+            if (i == NSNotFound) {
+                [self.requests addObject:req];
+                [self.requestIDs addObject:CLIPBOARD_ID];
+            }
+            else [self.requests replaceObjectAtIndex:i withObject:req];
         }
     }
     
@@ -321,6 +338,7 @@
           message:[@"Bitcoin payments can't be less than "
                    stringByAppendingString:[w stringForAmount:TX_MIN_OUTPUT_AMOUNT]]
           delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        self.selectedIndex = NSNotFound;
     }
     else {
         ZNTransaction *tx = [w transactionFor:request.amount to:request.paymentAddress withFee:NO];
@@ -329,9 +347,12 @@
         NSString *fee = [w stringForAmount:[w transactionFee:txWithFee]];
         NSTimeInterval t = [w timeUntilFree:tx];
         
-        if (! tx || (t > DBL_EPSILON && ! txWithFee)) {
+        if (! txWithFee) fee = [w stringForAmount:tx.standardFee];
+        
+        if (! tx) {
             [[[UIAlertView alloc] initWithTitle:@"Insuficient Funds" message:nil delegate:nil cancelButtonTitle:@"OK"
               otherButtonTitles:nil] show];
+            self.selectedIndex = NSNotFound;
         }
         else if (t > DBL_MAX - DBL_EPSILON) {
             [[[UIAlertView alloc] initWithTitle:@"transaction fee needed"
@@ -340,9 +361,10 @@
              show];
         }
         else if (t > DBL_EPSILON) {
-            NSUInteger minutes = t/60, hours = t/(60*60);
-            NSString *time = [NSString stringWithFormat:@"%d %@%@", hours ? hours : minutes,
-                              hours ? @"hour" : @"minutes", hours > 1 ? @"s" : @""];
+            NSUInteger minutes = t/60, hours = t/(60*60), days = t/(60*60*24);
+            NSString *time = [NSString stringWithFormat:@"%d %@%@", days ? days : (hours ? hours : minutes),
+                              days ? @"day" : (hours ? @"hour" : @"minutes"),
+                              days > 1 ? @"s" : (days == 0 && hours > 1 ? @"s" : @"")];
             
             [[[UIAlertView alloc] initWithTitle:[NSString stringWithFormat:@"%@ transaction fee recommended", fee]
               message:[NSString stringWithFormat:@"estimated confirmation time with no fee: %@", time] delegate:self
@@ -561,6 +583,14 @@
     if ([title hasPrefix:@"+ "] || [title isEqual:@"no fee"]) {
         if ([title hasPrefix:@"+ "]) tx = txWithFee;
         
+        if (! tx) {
+            [[[UIAlertView alloc] initWithTitle:@"Insuficient Funds" message:nil delegate:nil cancelButtonTitle:@"OK"
+              otherButtonTitles:nil] show];
+            self.selectedIndex = NSNotFound;
+            [self layoutButtonsAnimated:YES];
+            return;
+        }
+        
         uint64_t fee = [w transactionFee:tx];
     
         w.format.minimumFractionDigits = w.format.maximumFractionDigits;
@@ -578,6 +608,8 @@
         if (! [tx isSigned]) {
             [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:@"error signing bitcoin transaction"
               delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+            self.selectedIndex = NSNotFound;
+            [self layoutButtonsAnimated:YES];
             return;
         }
 
@@ -596,6 +628,8 @@
                 if (error) {
                     [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription
                      delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+                    self.selectedIndex = NSNotFound;
+                    [self layoutButtonsAnimated:YES];
                     return;
                 }
             

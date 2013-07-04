@@ -404,6 +404,8 @@ completion:(void (^)(NSError *error))completion
         return;
     }
 
+    //XXXX need to remove any self.transactions with 0 confirms that fail to show up here
+
     NSURL *url = [NSURL URLWithString:[ADDRESS_URL stringByAppendingString:[[addresses componentsJoinedByString:@"|"]
                   stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
     
@@ -583,8 +585,7 @@ completion:(void (^)(NSError *error))completion
 
 - (uint64_t)balance
 {
-    //XXXX do the outputs of unconfirmed transactions show up in the unspent outputs list?
-    //     if not, we need to add them to the balance (and possibly use them when sending new transactions if they are likely to confirm), and if so, we need to not use them for new transactions
+    // the outputs of unconfirmed transactions will show up in the unspent outputs list even with 0 confirmations
     __block uint64_t balance = 0;
     
     [self.addressBalances enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {

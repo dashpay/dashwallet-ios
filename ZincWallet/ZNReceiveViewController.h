@@ -14,5 +14,6 @@
 MFMessageComposeViewControllerDelegate, MFMailComposeViewControllerDelegate>
 
 @property (nonatomic, strong) UINavigationController *navController;
+@property (nonatomic, readonly) NSString *copiedAddress; // exclude this address from pay to clipboard address
 
 @end

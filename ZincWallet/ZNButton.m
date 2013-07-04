@@ -73,7 +73,7 @@
     self.titleLabel.numberOfLines = 1;
     self.titleLabel.lineBreakMode = NSLineBreakByClipping;
     
-    [self setTitleEdgeInsets:UIEdgeInsetsMake(0, 3, 0, 3)];
+    [self setTitleEdgeInsets:UIEdgeInsetsMake(0, 5, 0, 5)];
 }
 
 /*

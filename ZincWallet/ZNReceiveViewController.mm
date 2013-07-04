@@ -190,6 +190,7 @@ replacementString:(NSString *)string
     NSString *title = [actionSheet buttonTitleAtIndex:buttonIndex];
     
     if ([title isEqual:@"copy"]) {
+        _copiedAddress = [self paymentAddress];
         [[UIPasteboard generalPasteboard] setString:[self paymentAddress]];
     }
     else if ([title isEqual:@"email"]) {
