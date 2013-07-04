@@ -107,7 +107,7 @@
                         return [w containsAddress:obj[@"prev_out"][@"addr"]] ? (*stop = YES) : NO;
                     }] != NSNotFound);
                
-                __block long long value = 0;
+                __block uint64_t value = 0;
                 NSArray *outs =
                     [tx[@"out"]
                     objectsAtIndexes:[tx[@"out"] indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
@@ -123,12 +123,16 @@
                 else {
                     NSDictionary *o = outs.lastObject;
 
-                    value = [o[@"value"] longLongValue]*(sending ? -1 : 1);
+                    value = [o[@"value"] unsignedLongLongValue];
                     cell.detailTextLabel.text = o[@"addr"];
                 }
                 
                 cell.textLabel.text = [w stringForAmount:value];
-                //XXXX need to indicate unconfirmed, positive and negative
+                if (sending) cell.textLabel.text = [NSString stringWithFormat:@"(%@)", cell.textLabel.text];
+                
+                if (! tx[@"block_height"]) {
+                    cell.textLabel.text = [cell.textLabel.text stringByAppendingString:@" unconfirmed"];
+                }
             }
             break;
             

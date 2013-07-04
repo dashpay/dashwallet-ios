@@ -33,6 +33,12 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
+    ZNWallet *w = [ZNWallet sharedInstance];
+    
+    w.format.minimumFractionDigits = w.format.maximumFractionDigits;
+    self.amountField.placeholder = [[ZNWallet sharedInstance] stringForAmount:0];
+    w.format.minimumFractionDigits = 0;
+    
     [self.buttons enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         [obj titleLabel].font = [UIFont fontWithName:@"HelveticaNeue-Light" size:24];
         [obj setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
@@ -60,7 +66,11 @@
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:walletBalanceNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            self.navigationItem.title = [[ZNWallet sharedInstance] stringForAmount:[[ZNWallet sharedInstance] balance]];
+            ZNWallet *w = [ZNWallet sharedInstance];
+            
+            w.format.minimumFractionDigits = w.format.maximumFractionDigits;
+            self.navigationItem.title = [w stringForAmount:w.balance];
+            w.format.minimumFractionDigits = 0;
         }];
 }
 
@@ -123,7 +133,7 @@
             [[[UIAlertView alloc] initWithTitle:@"Insuficient Funds" message:nil delegate:nil cancelButtonTitle:@"OK"
               otherButtonTitles:nil] show];
         }
-        else if (t > DBL_MAX - DBL_EPSILON) {
+        else if (t == DBL_MAX) {
             [[[UIAlertView alloc] initWithTitle:@"transaction fee needed"
               message:[NSString stringWithFormat:@"the bitcoin network needs a fee of %@ to send this payment", fee]
               delegate:self cancelButtonTitle:@"cancel" otherButtonTitles:[NSString stringWithFormat:@"+ %@", fee], nil]
@@ -165,7 +175,7 @@ replacementString:(NSString *)string
         if ([t isEqual:[w.format stringFromNumber:@0]]) t = @"";
     }
     else if ((string.length && textField.text.length && t == nil) ||
-             (point != NSNotFound && textField.text.length - point > 5)) {
+             (point != NSNotFound && textField.text.length - point > w.format.maximumFractionDigits)) {
         return NO;
     }
     else if ([string isEqual:@"."] && (! textField.text.length || point == NSNotFound)) {

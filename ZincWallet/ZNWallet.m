@@ -96,12 +96,15 @@
     self.sequence = [ZNElectrumSequence new];
     
     self.format = [NSNumberFormatter new];
+    self.format.lenient = YES;
     self.format.numberStyle = NSNumberFormatterCurrencyStyle;
-    self.format.currencySymbol = @"m"BTC@" ";
     self.format.minimumFractionDigits = 0;
-    self.format.maximumFractionDigits = 5;
-    self.format.maximum = @21000000000.0;
-    [self.format setLenient:YES];
+    //self.format.currencySymbol = @"m"BTC@" ";
+    //self.format.maximumFractionDigits = 5;
+    //self.format.maximum = @21000000000.0;
+    self.format.currencySymbol = BTC" ";
+    self.format.maximumFractionDigits = 8;
+    self.format.maximum = @21000000.0;
     
     return self;
 }
@@ -731,7 +734,9 @@ completion:(void (^)(NSError *error))completion
     return tx;
 }
 
-// returns the estimated time in seconds until the transaction can be processed without a fee
+// returns the estimated time in seconds until the transaction will be processed without a fee
+//XXX this is based on the default satoshi client settings, but on the real network it's way off. in testing, a 0.01btc
+// transaction with a 90 day time until free was confirmed in under an hour by Eligius pool.
 - (NSTimeInterval)timeUntilFree:(ZNTransaction *)transaction
 {
     NSMutableArray *amounts = [NSMutableArray array], *heights = [NSMutableArray array];
@@ -829,15 +834,16 @@ completion:(void (^)(NSError *error))completion
     [client postPath:PUSHTX_PATH parameters:@{@"tx":[transaction toHex]}
     success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSMutableSet *updated = [NSMutableSet set];
-
-        //XXXX check response data to see if there's anything useful there (like a timestamp)
-
         NSMutableDictionary *tx = [NSMutableDictionary dictionary];
         
         tx[@"hash"] = [transaction.hash toHex];
         tx[@"time"] = @([NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970);
         tx[@"inputs"] = [NSMutableArray array];
         tx[@"out"] = [NSMutableArray array];
+        
+        //XXXX check response data to see if there's anything useful there (like a timestamp)
+        NSLog(@"responseObject: %@", responseObject);
+        NSLog(@"response:\n%@", operation.responseString);
 
         [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             NSString *hash = [transaction.inputHashes[idx] toHex];
@@ -849,7 +855,7 @@ completion:(void (^)(NSError *error))completion
                     @([self.addressBalances[obj] unsignedLongLongValue] - [o[@"value"] unsignedLongLongValue]);
 
                 [updated addObject:obj];
-                self.unspentOutputs[[hash stringByAppendingString:n]] = nil;
+                [self.unspentOutputs removeObjectForKey:[hash stringByAppendingString:n]];
                 
                 //XXX for now we don't need to store spent outputs because blockchain.info will not list them as unspent
                 // while there is an unconfirmed tx that spends them. This may change once we have multiple apis for

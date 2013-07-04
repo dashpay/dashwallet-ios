@@ -56,6 +56,8 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
 
+    //XXX add a field for manually entering a payment address
+
     ZNPaymentRequest *req = [ZNPaymentRequest new];
     
     req.label = @"scan QR code";
@@ -354,7 +356,7 @@
               otherButtonTitles:nil] show];
             self.selectedIndex = NSNotFound;
         }
-        else if (t > DBL_MAX - DBL_EPSILON) {
+        else if (t == DBL_MAX) {
             [[[UIAlertView alloc] initWithTitle:@"transaction fee needed"
               message:[NSString stringWithFormat:@"the bitcoin network needs a fee of %@ to send this payment", fee]
               delegate:self cancelButtonTitle:@"cancel" otherButtonTitles:[NSString stringWithFormat:@"+ %@", fee], nil]
