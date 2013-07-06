@@ -68,9 +68,9 @@
         usingBlock:^(NSNotification *note) {
             ZNWallet *w = [ZNWallet sharedInstance];
             
-            w.format.minimumFractionDigits = w.format.maximumFractionDigits;
+            //w.format.minimumFractionDigits = w.format.maximumFractionDigits;
             self.navigationItem.title = [w stringForAmount:w.balance];
-            w.format.minimumFractionDigits = 0;
+            //w.format.minimumFractionDigits = 0;
         }];
 }
 
@@ -150,11 +150,11 @@
               cancelButtonTitle:nil otherButtonTitles:@"no fee", [NSString stringWithFormat:@"+ %@", fee], nil] show];
         }
         else {
-            w.format.minimumFractionDigits = w.format.maximumFractionDigits;
+            //w.format.minimumFractionDigits = w.format.maximumFractionDigits;
             [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
               message:self.request.message ? self.request.message : self.request.paymentAddress delegate:self
               cancelButtonTitle:@"cancel" otherButtonTitles:[w stringForAmount:self.request.amount], nil] show];
-            w.format.minimumFractionDigits = 0;
+            //w.format.minimumFractionDigits = 0;
         }
     }
 }
@@ -218,12 +218,12 @@ replacementString:(NSString *)string
           otherButtonTitles:nil] show];
     }
     else if ([title hasPrefix:@"+ "] || [title isEqual:@"no fee"]) {
-        w.format.minimumFractionDigits = w.format.maximumFractionDigits;
+        //w.format.minimumFractionDigits = w.format.maximumFractionDigits;
         [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
           message:self.request.message ? self.request.message : self.request.paymentAddress delegate:self
           cancelButtonTitle:@"cancel"
           otherButtonTitles:[w stringForAmount:self.request.amount + [w transactionFee:self.tx]], nil] show];
-        w.format.minimumFractionDigits = 0;
+        //w.format.minimumFractionDigits = 0;
     }
     else {
         NSLog(@"signing transaction");

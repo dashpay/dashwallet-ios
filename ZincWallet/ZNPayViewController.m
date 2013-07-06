@@ -109,11 +109,11 @@
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:walletBalanceNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            ZNWallet *w = [ZNWallet sharedInstance];
+            //ZNWallet *w = [ZNWallet sharedInstance];
             
-            w.format.minimumFractionDigits = w.format.maximumFractionDigits;
+            //w.format.minimumFractionDigits = w.format.maximumFractionDigits;
             self.navigationItem.title = [[ZNWallet sharedInstance] stringForAmount:[[ZNWallet sharedInstance] balance]];
-            w.format.minimumFractionDigits = 0;
+            //w.format.minimumFractionDigits = 0;
         }];
     
     self.syncStartedObserver =
@@ -143,11 +143,11 @@
     self.reachability = [Reachability reachabilityWithHostName:@"blockchain.info"];
     [self.reachability startNotifier];
     
-    ZNWallet *w = [ZNWallet sharedInstance];
+    //ZNWallet *w = [ZNWallet sharedInstance];
     
-    w.format.minimumFractionDigits = w.format.maximumFractionDigits;
+    //w.format.minimumFractionDigits = w.format.maximumFractionDigits;
     self.navigationItem.title = [[ZNWallet sharedInstance] stringForAmount:[[ZNWallet sharedInstance] balance]];
-    w.format.minimumFractionDigits = 0;
+    //w.format.minimumFractionDigits = 0;
 }
 
 - (void)viewWillUnload
@@ -373,11 +373,11 @@
               cancelButtonTitle:nil otherButtonTitles:@"no fee", [NSString stringWithFormat:@"+ %@", fee], nil] show];
         }
         else {
-            w.format.minimumFractionDigits = w.format.maximumFractionDigits;
+            //w.format.minimumFractionDigits = w.format.maximumFractionDigits;
             [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
               message:request.message ? request.message : request.paymentAddress delegate:self
              cancelButtonTitle:@"cancel" otherButtonTitles:[w stringForAmount:request.amount], nil] show];
-            w.format.minimumFractionDigits = 0;
+            //w.format.minimumFractionDigits = 0;
         }
     }
 }
@@ -595,11 +595,11 @@
         
         uint64_t fee = [w transactionFee:tx];
     
-        w.format.minimumFractionDigits = w.format.maximumFractionDigits;
+        //w.format.minimumFractionDigits = w.format.maximumFractionDigits;
         [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
           message:request.message ? request.message : request.paymentAddress delegate:self
           cancelButtonTitle:@"cancel" otherButtonTitles:[w stringForAmount:request.amount + fee], nil] show];
-        w.format.minimumFractionDigits = 0;
+        //w.format.minimumFractionDigits = 0;
     }
     else {
         if ([w amountForString:title] > request.amount) tx = txWithFee;

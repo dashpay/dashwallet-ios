@@ -703,17 +703,18 @@ completion:(void (^)(NSError *error))completion
 - (BOOL)containsAddress:(NSString *)address
 {
     return [self.spentAddresses containsObject:address] || [self.fundedAddresses containsObject:address] ||
-    [self.receiveAddresses containsObject:address];
+           [self.receiveAddresses containsObject:address];
 }
 
 - (NSString *)stringForAmount:(uint64_t)amount
 {
-    return [self.format stringFromNumber:@(amount/pow(10, self.format.maximumFractionDigits))];
+    return [self.format stringFromNumber:@(amount/pow(10.0, self.format.maximumFractionDigits))];
 }
 
 - (uint64_t)amountForString:(NSString *)string
 {
-    return [[self.format numberFromString:string] doubleValue]*pow(10, self.format.maximumFractionDigits);
+    return ([[self.format numberFromString:string] doubleValue] + DBL_EPSILON)*
+           pow(10.0, self.format.maximumFractionDigits);
 }
 
 #pragma mark - ZNTransaction helpers

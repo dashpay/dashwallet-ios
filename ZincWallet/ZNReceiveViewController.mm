@@ -72,7 +72,7 @@
 
 - (uint64_t)amount
 {
-    return [[self.format numberFromString:self.amountField.text] doubleValue]*SATOSHIS;
+    return ([[self.format numberFromString:self.amountField.text] doubleValue] + DBL_EPSILON)*SATOSHIS;
 }
 
 - (ZNPaymentRequest *)paymentRequest

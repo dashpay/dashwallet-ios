@@ -74,7 +74,7 @@
         NSArray *pair = [obj componentsSeparatedByString:@"="];
         if (pair.count != 2) return;
         
-        if ([pair[0] isEqual:@"amount"]) self.amount = [pair[1] doubleValue]*SATOSHIS;
+        if ([pair[0] isEqual:@"amount"]) self.amount = ([pair[1] doubleValue] + DBL_EPSILON)*SATOSHIS;
         else if ([pair[0] isEqual:@"label"])
             self.label = [[pair[1] stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
                           stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
