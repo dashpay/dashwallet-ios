@@ -267,6 +267,41 @@
     return _mpk;
 }
 
+// if any of an unconfimred transaction's inputs show up as unspent, or show up in another transaction, that means the
+// tx failed to confirm and needs to be removed from the pending unconfirmed tx list
+- (void)cleanUnconfirmed
+{
+    //XXX should we remove unconfirmed transactions after 2 days?
+    
+    if (! self.unconfirmed.count) return;
+
+    NSMutableSet *spent = [NSMutableSet set];
+    
+    [self.transactions enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        [obj[@"inputs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            NSDictionary *o = obj[@"prev_out"];
+            [spent addObject:[NSString stringWithFormat:@"%@:%@", o[@"tx_index"], o[@"n"]]];
+        }];
+    }];
+    
+    [self.unconfirmed
+    removeObjectsForKeys:[self.unconfirmed keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
+        // index of any inputs of the unconfirmed tx that are also in unspentOutputs
+        NSUInteger i =
+            [obj[@"inputs"] indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+                NSDictionary *o = obj[@"prev_out"];
+                NSString *key1 = [o[@"hash"] stringByAppendingString:[o[@"n"] description]];
+                NSString *key2 = [NSString stringWithFormat:@"%@:%@", o[@"tx_index"], o[@"n"]];
+            
+                return (self.unspentOutputs[key1] != nil || [spent containsObject:key2]) ? (*stop = YES) : NO;
+            }];
+                
+        return (i == NSNotFound) ? NO : YES;
+    }].allObjects];
+    
+    [_defs setObject:self.unconfirmed forKey:UNCONFIRMED_KEY];
+}
+
 #pragma mark - synchronization
 
 - (void)synchronize
@@ -279,7 +314,6 @@
     [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT forChange:NO completion:^(NSError *error) {
         if (error) {
             _synchronizing = NO;
-            [_defs setDouble:[NSDate timeIntervalSinceReferenceDate] forKey:LAST_SYNC_TIME_KEY];
             [_defs synchronize];
 
             [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification object:self
@@ -290,7 +324,6 @@
         [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT_FOR_CHANGE forChange:YES completion:^(NSError *error) {
             if (error) {
                 _synchronizing = NO;
-                [_defs setDouble:[NSDate timeIntervalSinceReferenceDate] forKey:LAST_SYNC_TIME_KEY];
                 [_defs synchronize];
 
                 [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification object:self
@@ -303,7 +336,6 @@
             completion:^(NSError *error) {
                 if (error) {
                     _synchronizing = NO;
-                    [_defs setDouble:[NSDate timeIntervalSinceReferenceDate] forKey:LAST_SYNC_TIME_KEY];
                     [_defs synchronize];
 
                     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification object:self
@@ -314,7 +346,6 @@
                 [self queryUnspentOutputs:self.outdatedAddresses.allObjects completion:^(NSError *error) {
                     if (error) {
                         _synchronizing = NO;
-                        [_defs setDouble:[NSDate timeIntervalSinceReferenceDate] forKey:LAST_SYNC_TIME_KEY];
                         [_defs synchronize];
 
                         [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification
@@ -323,6 +354,9 @@
                     }
                     
                     _synchronizing = NO;
+                    
+                    [self cleanUnconfirmed];
+                    
                     [_defs setDouble:[NSDate timeIntervalSinceReferenceDate] forKey:LAST_SYNC_TIME_KEY];
                     [_defs synchronize];
 
@@ -530,23 +564,6 @@ completion:(void (^)(NSError *error))completion
                 if (key) self.unspentOutputs[key] = obj;
             }];
             
-            // if any of an unconfimred transaction's inputs show up as unspent, that means the tx failed to confirm and
-            // needs to be removed from the pending unconfirmed tx list
-            [self.unconfirmed
-             removeObjectsForKeys:[self.unconfirmed keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-                // index of any inputs of the unconfirmed tx that are also in unspentOutputs
-                NSUInteger i =
-                    [obj[@"inputs"] indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-                        NSDictionary *o = obj[@"prev_out"];
-                        NSString *key = [o[@"hash"] stringByAppendingString:[o[@"n"] description]];
-                        
-                        return (self.unspentOutputs[key] != nil) ? (*stop = YES) : NO;
-                    }];
-                    
-                return i == NSNotFound ? NO : YES;
-            }].allObjects];
-                
-            [_defs setObject:self.unconfirmed forKey:UNCONFIRMED_KEY];            
             [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
 
             if (completion) completion(nil);
@@ -726,7 +743,8 @@ completion:(void (^)(NSError *error))completion
         NSLog(@"Insufficient funds. Balance:%llu is less than transaction amount:%llu", balance, amount + standardFee);
         return nil;
     }
-        
+    
+    //XXX we should randomly swap order of outputs so the change address isn't publicy known
     if (balance - (amount + standardFee) >= TX_MIN_OUTPUT_AMOUNT) {
         [tx addOutputAddress:self.changeAddress amount:balance - (amount + standardFee)];
     }
@@ -841,7 +859,7 @@ completion:(void (^)(NSError *error))completion
         tx[@"inputs"] = [NSMutableArray array];
         tx[@"out"] = [NSMutableArray array];
         
-        //XXXX check response data to see if there's anything useful there (like a timestamp)
+        //XXX successful response is "Transaction submitted", maybe we should check for that 
         NSLog(@"responseObject: %@", responseObject);
         NSLog(@"response:\n%@", operation.responseString);
 
@@ -860,9 +878,8 @@ completion:(void (^)(NSError *error))completion
                 //XXX for now we don't need to store spent outputs because blockchain.info will not list them as unspent
                 // while there is an unconfirmed tx that spends them. This may change once we have multiple apis for
                 // publishing, and a transaction may not show up on blockchain.info immediately.
-                
-                [tx[@"inputs"] addObject:@{@"prev_out":@{@"hash":hash, @"n":transaction.inputIndexes[idx],
-                                           @"value":o[@"value"], @"addr":obj}}];
+                [tx[@"inputs"] addObject:@{@"prev_out":@{@"hash":o[@"tx_hash"], @"tx_index":o[@"tx_index"],
+                                           @"n":o[@"tx_output_n"], @"value":o[@"value"], @"addr":obj}}];
             }
         }];
         

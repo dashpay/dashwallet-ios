@@ -14,9 +14,12 @@
 
 - (instancetype)initWithHex:(NSString *)hex;
 - (NSString *)toHex;
+- (NSData *)reverse;
 
 - (NSData *)RMD160;
 - (NSData *)SHA256;
 - (NSData *)SHA256_2;
+
+
 
 @end

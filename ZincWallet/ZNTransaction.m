@@ -152,7 +152,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     }
     
     if ([self isSigned]) {
-        self.hash = [[self toData] SHA256_2];
+        self.hash = [[[self toData] SHA256_2] reverse];
         
         return YES;
     }

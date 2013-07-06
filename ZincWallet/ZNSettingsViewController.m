@@ -101,34 +101,28 @@
             else {
                 ZNWallet *w = [ZNWallet sharedInstance];
                 NSDictionary *tx = self.transactions[indexPath.row];
-                
-                BOOL sending =
-                    ([tx[@"inputs"] indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-                        return [w containsAddress:obj[@"prev_out"][@"addr"]] ? (*stop = YES) : NO;
-                    }] != NSNotFound);
-               
-                __block uint64_t value = 0;
-                NSArray *outs =
-                    [tx[@"out"]
-                    objectsAtIndexes:[tx[@"out"] indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-                        value += [obj[@"value"] unsignedLongLongValue];
-                
-                        if (sending) return [w containsAddress:obj[@"addr"]] ? NO : YES;
-                        else return [w containsAddress:obj[@"addr"]] ? YES : NO;
-                    }]];
-                
-                if (! outs.count) {
-                    cell.detailTextLabel.text = @"moved within wallet";
-                }
-                else {
-                    NSDictionary *o = outs.lastObject;
+                __block uint64_t received = 0, spent = 0;
 
-                    value = [o[@"value"] unsignedLongLongValue];
-                    cell.detailTextLabel.text = o[@"addr"];
-                }
+                cell.detailTextLabel.text = @"moved within wallet";
+
+                [tx[@"inputs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                    if ([w containsAddress:obj[@"prev_out"][@"addr"]]) {
+                        spent += [obj[@"prev_out"][@"value"] unsignedLongLongValue];
+                    }
+                }];
+
+                [tx[@"out"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                    if ([w containsAddress:obj[@"addr"]]) {
+                        received += [obj[@"value"] unsignedLongLongValue];
+                        if (spent == 0) cell.detailTextLabel.text = obj[@"addr"];
+                    }
+                    else if (spent > 0) cell.detailTextLabel.text = obj[@"addr"];
+                }];
                 
-                cell.textLabel.text = [w stringForAmount:value];
-                if (sending) cell.textLabel.text = [NSString stringWithFormat:@"(%@)", cell.textLabel.text];
+                if (spent > 0) {
+                    cell.textLabel.text = [NSString stringWithFormat:@"(%@)", [w stringForAmount:spent - received]];
+                }
+                else cell.textLabel.text = [w stringForAmount:received];
                 
                 if (! tx[@"block_height"]) {
                     cell.textLabel.text = [cell.textLabel.text stringByAppendingString:@" unconfirmed"];

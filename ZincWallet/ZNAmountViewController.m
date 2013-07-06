@@ -246,20 +246,20 @@ replacementString:(NSString *)string
                 if (error) {
                     [[[UIAlertView alloc] initWithTitle:@"couldn't send payment" message:error.localizedDescription
                       delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-
                     return;
                 }
-
-                if (self.navigationController.topViewController == self) {
-                    [self.navigationController popViewControllerAnimated:YES];
-                }
                 
+                //XXXX crashed with nil view... why?
                 MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
                 
                 hud.mode = MBProgressHUDModeText;
                 hud.labelText = @"sent!";
                 hud.labelFont = [UIFont fontWithName:@"HelveticaNeue-Medium" size:17.0];
                 [hud hide:YES afterDelay:2.0];
+                
+                if (self.navigationController.topViewController == self) {
+                    [self.navigationController popViewControllerAnimated:YES];
+                }
             }];
         }
     }
