@@ -54,7 +54,7 @@
 @property (nonatomic, strong) NSMutableDictionary *addressTxCount;
 @property (nonatomic, strong) NSMutableDictionary *transactions;
 @property (nonatomic, strong) NSMutableDictionary *unconfirmed;
-@property (nonatomic, strong) NSMutableSet *outdatedAddresses;
+@property (nonatomic, strong) NSMutableSet *outdatedAddresses, *updatedTransactions;
 @property (nonatomic, strong) ZNElectrumSequence *sequence;
 @property (nonatomic, strong) NSData *mpk;
 
@@ -311,6 +311,8 @@
     _synchronizing = YES;
     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncStartedNotification object:self];
     
+    self.updatedTransactions = [NSMutableSet set];
+    
     [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT forChange:NO completion:^(NSError *error) {
         if (error) {
             _synchronizing = NO;
@@ -342,6 +344,14 @@
                      userInfo:@{@"error":error}];
                     return;
                 }
+                
+                // remove unconfirmed transactions that no longer appear in query results
+                [self.transactions
+                removeObjectsForKeys:[self.transactions keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
+                    return (obj[@"block_height"] || [self.updatedTransactions containsObject:obj[@"hash"]]) ? NO : YES;
+                }].allObjects];
+
+                [_defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
 
                 [self queryUnspentOutputs:self.outdatedAddresses.allObjects completion:^(NSError *error) {
                     if (error) {
@@ -440,9 +450,7 @@ completion:(void (^)(NSError *error))completion
         }];
         return;
     }
-
-    //XXXX need to remove any self.transactions with 0 confirms that fail to show up here
-
+    
     NSURL *url = [NSURL URLWithString:[ADDRESS_URL stringByAppendingString:[[addresses componentsJoinedByString:@"|"]
                   stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
     
@@ -472,10 +480,13 @@ completion:(void (^)(NSError *error))completion
             }
             else [self.receiveAddresses addObject:address];
         }];
-        
+                
         [JSON[@"txs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             //XXX we shouldn't be saving json without sanitizing it... security risk
-            if (obj[@"hash"]) self.transactions[obj[@"hash"]] = obj;
+            if (obj[@"hash"]) {
+                self.transactions[obj[@"hash"]] = obj;
+                [self.updatedTransactions addObject:obj[@"hash"]];
+            }
         }];
         
         NSInteger height = [JSON[@"info"][@"latest_block"][@"height"] integerValue];
