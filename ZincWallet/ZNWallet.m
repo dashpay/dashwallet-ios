@@ -137,6 +137,20 @@
     if (! [self.seed isEqual:seed]) {        
         [self setKeychainObject:seed forKey:SEED_KEY];
         
+        _synchronizing = NO;
+        _mpk = nil;
+        [self.addresses removeAllObjects];
+        [self.changeAddresses removeAllObjects];
+        [self.outdatedAddresses removeAllObjects];
+        [self.fundedAddresses removeAllObjects];
+        [self.spentAddresses removeAllObjects];
+        [self.receiveAddresses removeAllObjects];
+        [self.transactions removeAllObjects];
+        [self.unconfirmed removeAllObjects];
+        [self.addressBalances removeAllObjects];
+        [self.addressTxCount removeAllObjects];
+        [self.unspentOutputs removeAllObjects];
+        
         // flush cached addresses and tx outputs
         [_defs removeObjectForKey:FUNDED_ADDRESSES_KEY];
         [_defs removeObjectForKey:SPENT_ADDRESSES_KEY];
@@ -456,6 +470,8 @@ completion:(void (^)(NSError *error))completion
     
     [[AFJSONRequestOperation JSONRequestOperationWithRequest:[NSURLRequest requestWithURL:url]
     success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
+        if (! _synchronizing) return;
+        
         [JSON[@"addresses"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             NSString *address = obj[@"address"];
             
@@ -545,6 +561,8 @@ completion:(void (^)(NSError *error))completion
     __block AFJSONRequestOperation *requestOp =
         [AFJSONRequestOperation JSONRequestOperationWithRequest:[NSURLRequest requestWithURL:url]
         success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
+            if (! _synchronizing) return;
+            
             if (! [requestOp.responseString.lowercaseString hasPrefix:@"no free outputs"] &&
                 JSON[@"unspent_outputs"] == nil) {
                 if (completion) {
