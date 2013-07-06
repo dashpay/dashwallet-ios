@@ -103,23 +103,30 @@
                 NSDictionary *tx = self.transactions[indexPath.row];
                 __block uint64_t received = 0, spent = 0;
 
-                cell.detailTextLabel.text = @"moved within wallet";
-
                 [tx[@"inputs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                     if ([w containsAddress:obj[@"prev_out"][@"addr"]]) {
                         spent += [obj[@"prev_out"][@"value"] unsignedLongLongValue];
                     }
                 }];
 
+                __block BOOL withinWallet = spent > 0 ? YES : NO;
+                
                 [tx[@"out"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                     if ([w containsAddress:obj[@"addr"]]) {
                         received += [obj[@"value"] unsignedLongLongValue];
                         if (spent == 0) cell.detailTextLabel.text = obj[@"addr"];
                     }
-                    else if (spent > 0) cell.detailTextLabel.text = obj[@"addr"];
+                    else if (spent > 0) {
+                        cell.detailTextLabel.text = obj[@"addr"];
+                        withinWallet = NO;
+                    }
                 }];
                 
-                if (spent > 0) {
+                if (withinWallet) {
+                    cell.textLabel.text = [w stringForAmount:spent];
+                    cell.detailTextLabel.text = @"moved within wallet";
+                }
+                else if (spent > 0) {
                     cell.textLabel.text = [NSString stringWithFormat:@"(%@)", [w stringForAmount:spent - received]];
                 }
                 else cell.textLabel.text = [w stringForAmount:received];
