@@ -13,7 +13,7 @@
 #import "ZNPaymentRequest.h"
 #import "ZNKey.h"
 #import "ZNTransaction.h"
-#import <QuartzCore/QuartzCore.h>
+#import "ZNButton.h"
 #import <netinet/in.h>
 #import "Reachability.h"
 #import "NSString+Base58.h"
@@ -253,21 +253,24 @@
 - (void)layoutButtonsAnimated:(BOOL)animated
 {
     while (self.requests.count > self.requestButtons.count) {
-        //UIButton *button = [ZNButton buttonWithType:UIButtonTypeCustom];
-        UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-        
-        button.titleLabel.adjustsFontSizeToFitWidth = YES;
-        button.titleLabel.numberOfLines = 1;
-        button.titleLabel.lineBreakMode = NSLineBreakByClipping;
-        //button.showsTouchWhenHighlighted = YES;
-        button.backgroundColor = [UIColor whiteColor];
-        [button setTitleColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0] forState:UIControlStateNormal];
-        [button setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
-        [button setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
-        button.titleEdgeInsets = UIEdgeInsetsMake(0.0, 8.0, 0.0, 8.0);
-        button.layer.cornerRadius = 7.0;
-        button.layer.borderColor = [[UIColor colorWithWhite:0.95 alpha:1.0] CGColor];
-        button.layer.borderWidth = 3.0;
+        UIButton *button = [ZNButton buttonWithType:UIButtonTypeCustom];
+        //UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+        //
+        //button.titleLabel.adjustsFontSizeToFitWidth = YES;
+        //button.titleLabel.numberOfLines = 1;
+        //button.titleLabel.lineBreakMode = NSLineBreakByClipping;
+        //button.titleEdgeInsets = UIEdgeInsetsMake(0.0, 8.0, 0.0, 8.0);
+        //button.layer.cornerRadius = 6.0;
+        //button.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"bluegradient.png"]];
+        //[button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        //[button setTitleColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0]
+        //                       forState:UIControlStateHighlighted];
+        //[button setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
+        //[button setBackgroundImage:[UIImage imageNamed:@"bluegradient.png"] forState:UIControlStateNormal];
+        //[button setBackgroundImage:[[UIImage imageNamed:@"button-bg-white.png"]
+        // resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 6, 12.5, 6)] forState:UIControlStateHighlighted];
+        //[button setBackgroundImage:[[UIImage imageNamed:@"button-bg-white.png"]
+        // resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 6, 12.5, 6)] forState:UIControlStateDisabled];
 
         button.frame = CGRectMake(BUTTON_MARGIN*2, self.scrollView.frame.size.height/2 +
                                   (BUTTON_HEIGHT + BUTTON_MARGIN*2)*(self.requestButtons.count-self.requests.count/2.0),

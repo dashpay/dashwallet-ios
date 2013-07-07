@@ -10,6 +10,7 @@
 #import "ZNPaymentRequest.h"
 #import "ZNWallet.h"
 #import "ZNTransaction.h"
+#import "ZNButton.h"
 #import "NSData+Hash.h"
 #import "MBProgressHUD.h"
 
@@ -40,6 +41,7 @@
     w.format.minimumFractionDigits = 0;
     
     [self.buttons enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        [(ZNButton *)obj setStyle:ZNButtonStyleGray];
         [obj titleLabel].font = [UIFont fontWithName:@"HelveticaNeue-Light" size:24];
         [obj setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     }];
@@ -111,7 +113,7 @@
 
     self.request.amount = [w amountForString:self.amountField.text];
 
-    if (self.request.isValid) {
+    if (self.request.amount > 0 && self.request.isValid) {
         if (self.request.amount < TX_MIN_OUTPUT_AMOUNT) {
             [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment"
               message:[@"Bitcoin payments can't be less than "

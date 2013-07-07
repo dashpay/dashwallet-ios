@@ -24,7 +24,7 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    self.labelFrame.layer.cornerRadius = 10.0;
+    self.labelFrame.layer.cornerRadius = 5.0;
     self.labelFrame.layer.borderWidth = 0.5;
     self.labelFrame.layer.borderColor = [[UIColor colorWithWhite:0.85 alpha:1.0] CGColor];
     //self.labelFrame.layer.shadowColor = [[UIColor blackColor] CGColor];

@@ -8,6 +8,13 @@
 
 #import <UIKit/UIKit.h>
 
+typedef enum {
+    ZNButtonStyleBlue,
+    ZNButtonStyleGray
+} ZNButtonStyle;
+
 @interface ZNButton : UIButton
+
+- (void)setStyle:(ZNButtonStyle)style;
 
 @end

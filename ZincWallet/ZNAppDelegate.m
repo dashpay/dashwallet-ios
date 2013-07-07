@@ -96,20 +96,28 @@ annotation:(id)annotation
     if ([UIDevice.currentDevice.systemVersion intValue] < 7) {
         // HelveticaNeue-Medium is missing the BTC char :(
         [[UINavigationBar appearance]
-         setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor darkGrayColor],
+         setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor lightGrayColor],
                                   UITextAttributeTextShadowColor:[UIColor whiteColor],
                                   UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
-                                  UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0]}];
+                                  UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:19.0]}];
         
     
         [[UINavigationBar appearance] setTintColor:[UIColor colorWithWhite:0.95 alpha:1.0]];
     
         [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
-         setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor darkGrayColor],
+         setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0],
                                   UITextAttributeTextShadowColor:[UIColor whiteColor],
                                   UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
-                                  UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Medium" size:13.0]}
+                                  UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:13.0]}
          forState:UIControlStateNormal];
+        
+        [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
+         setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0],
+                                  UITextAttributeTextShadowColor:[UIColor whiteColor],
+                                  UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, -1.0)],
+                                  UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:13.0]}
+         forState:UIControlStateHighlighted];
+
     }
     //XXX need a custom back button bg image
 }

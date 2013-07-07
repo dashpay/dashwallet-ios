@@ -13,6 +13,7 @@
 @interface ZNSettingsViewController ()
 
 @property (nonatomic, strong) NSArray *transactions;
+@property (nonatomic, strong) id balanceObserver;
 
 @end
 
@@ -39,6 +40,32 @@
  
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
+
+    ZNWallet *w = [ZNWallet sharedInstance];
+    
+    w.format.minimumFractionDigits = w.balance > 0 ? 1 : w.format.maximumFractionDigits;
+    self.navigationItem.title = [w stringForAmount:w.balance];
+    w.format.minimumFractionDigits = 0;
+    
+    self.balanceObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:walletBalanceNotification object:nil queue:nil
+        usingBlock:^(NSNotification *note) {
+            ZNWallet *w = [ZNWallet sharedInstance];
+            
+            w.format.minimumFractionDigits = w.balance > 0 ? 1 : w.format.maximumFractionDigits;
+            self.navigationItem.title = [w stringForAmount:w.balance];
+            w.format.minimumFractionDigits = 0;
+            
+            self.transactions = [ZNWallet sharedInstance].recentTransactions;
+            
+            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
+             withRowAnimation:UITableViewRowAnimationAutomatic];
+        }];
+}
+
+- (void)viewWillUnload
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -176,6 +203,9 @@
                     cell.textLabel.text = @"start or restore new wallet";
                     cell.textLabel.textColor = [UIColor redColor];
                     cell.textLabel.shadowColor = [UIColor clearColor];
+                    cell.selectedBackgroundView = [[UIView alloc] initWithFrame:cell.frame];
+                    cell.selectedBackgroundView.backgroundColor =
+                        [UIColor colorWithPatternImage:[UIImage imageNamed:@"redgradient.png"]];
                     break;
                                         
                 default:
