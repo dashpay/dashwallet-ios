@@ -114,7 +114,7 @@
         else if ([[ZNWallet sharedInstance] seed]) {
             if ([[[ZNWallet sharedInstance] seedPhrase] isEqual:textView.text]) {
                 [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"cancel"
-                  destructiveButtonTitle:@"erase" otherButtonTitles:nil]
+                  destructiveButtonTitle:@"wipe" otherButtonTitles:nil]
                  showInView:[[UIApplication sharedApplication] keyWindow]];
             }
             else {

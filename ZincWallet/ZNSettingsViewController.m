@@ -76,9 +76,8 @@
         case 0: return self.transactions.count ? self.transactions.count : 1;
         case 1: return 2;
         case 2: return 1;
-        default:
-            NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
-                     __LINE__, section);
+        default: NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
+                          __LINE__, section);
     }
 
     return 0;
@@ -94,8 +93,10 @@
     switch (indexPath.section) {
         case 0:
             cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent];
+
             if (! self.transactions.count) {
                 cell.textLabel.text = @"no transactions";
+                cell.textLabel.textColor = [UIColor lightGrayColor];
                 cell.detailTextLabel.text = nil;
             }
             else {
@@ -114,10 +115,10 @@
                 [tx[@"out"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                     if (obj[@"addr"] && [w containsAddress:obj[@"addr"]]) {
                         received += [obj[@"value"] unsignedLongLongValue];
-                        if (spent == 0) cell.detailTextLabel.text = obj[@"addr"];
+                        if (spent == 0) cell.detailTextLabel.text = [@"to: " stringByAppendingString:obj[@"addr"]];
                     }
                     else if (spent > 0) {
-                        cell.detailTextLabel.text = obj[@"addr"];
+                        if (obj[@"addr"]) cell.detailTextLabel.text = [@"to: " stringByAppendingString:obj[@"addr"]];
                         withinWallet = NO;
                     }
                 }];
@@ -135,6 +136,7 @@
                     cell.textLabel.text = [cell.textLabel.text stringByAppendingString:@" unconfirmed"];
                 }
                 
+                cell.textLabel.textColor = [UIColor darkGrayColor];
                 if (! cell.detailTextLabel.text) cell.detailTextLabel.text = @"can't decode payment address";
             }
             break;
@@ -144,16 +146,23 @@
             
             switch (indexPath.row) {
                 case 0:
-                    cell.textLabel.text = @"safety tips";
-                    break;
-
-                case 1:
+//                    cell.textLabel.text = @"safety tips";
+//                    break;
+//
+//                case 1:
                     cell.textLabel.text = @"backup phrase";
+                    cell.userInteractionEnabled = YES;
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    break;
+                    
+                case 1:
+                    cell.textLabel.text = nil;
+                    cell.userInteractionEnabled = NO;
+                    cell.accessoryType = UITableViewCellAccessoryNone;
                     break;
             
-                default:
-                    NSAssert(FALSE, @"[%s %s] line %d: unkown indexPath.row %d", object_getClassName(self),
-                             sel_getName(_cmd), __LINE__, indexPath.row);
+                default: NSAssert(FALSE, @"[%s %s] line %d: unkown indexPath.row %d", object_getClassName(self),
+                                  sel_getName(_cmd), __LINE__, indexPath.row);
             }
             break;
             
@@ -162,8 +171,11 @@
 
             switch (indexPath.row) {
                 case 0:
-                    cell.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"redgradient.png"]];
-                    cell.textLabel.text = @"erase wallet";
+                    //cell.contentView.backgroundColor =
+                    //    [UIColor colorWithPatternImage:[UIImage imageNamed:@"redgradient.png"]];
+                    cell.textLabel.text = @"start or restore new wallet";
+                    cell.textLabel.textColor = [UIColor redColor];
+                    cell.textLabel.shadowColor = [UIColor clearColor];
                     break;
                                         
                 default:
@@ -184,11 +196,10 @@
 {
     switch (section) {
         case 0: return @"recent transactions";
-        case 1: return nil;
+        case 1: return @"settings";
         case 2: return @"caution ⇣";
-        default:
-            NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
-                     __LINE__, section);
+        default: NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
+                          __LINE__, section);
     }
     
     return nil;
@@ -198,35 +209,56 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    CGFloat h;
+    
     switch (indexPath.section) {
-        case 0: return 60;
-        case 1: return 44;
-        case 2: return 44;
+        case 0:
+            return 60;
+
+        case 1:
+            switch (indexPath.row) {
+                case 0:
+                    return 44;
+
+                case 1:
+                    h = tableView.frame.size.height - 22*3 - self.navigationController.navigationBar.frame.size.height -
+                        (self.transactions.count ? self.transactions.count*60 : 60);
+                    return h > 0 ? h : 0;
+
+                default:
+                    NSAssert(FALSE, @"[%s %s] line %d: unkown indexPath.row %d", object_getClassName(self),
+                             sel_getName(_cmd), __LINE__, indexPath.row);
+            }
+            return 44;
+            
+        case 2:
+            return 44;
+
         default:
-            NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
-                     __LINE__, indexPath.section);
+            NSAssert(FALSE, @"[%s %s] line %d: unkown indexPath.section %d", object_getClassName(self),
+                     sel_getName(_cmd), __LINE__, indexPath.section);
     }
     
     return 44;
 }
 
-- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
-{
-    CGFloat h = 0;
-    
-    switch (section) {
-        case 0: return 44;
-        case 1: return 0;
-        case 2:
-            h = tableView.frame.size.height - 44*3 - 33 - (self.transactions.count ? self.transactions.count*60 : 60);
-            return h > 44 ? h : 44;
-        default:
-            NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
-                     __LINE__, section);
-    }
-    
-    return 0;
-}
+//- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+//{
+//    CGFloat h = 0;
+//    
+//    switch (section) {
+//        case 0: return 44;
+//        case 1: return 44;
+//        case 2:
+//            h = tableView.frame.size.height - 44*3 - 33 - (self.transactions.count ? self.transactions.count*60 : 60);
+//            return h > 44 ? h : 44;
+//        default:
+//            NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
+//                     __LINE__, section);
+//    }
+//    
+//    return 0;
+//}
 
 //- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
 //{
@@ -254,12 +286,12 @@
         case 1:
             switch (indexPath.row) {
                 case 0:
-                    //XXXX show safety tips
-                    [[[UIAlertView alloc] initWithTitle:nil message:@"Don't eat yellow snow." delegate:self
-                      cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-                    break;
-                    
-                case 1:
+//                    //XXX show safety tips
+//                    [[[UIAlertView alloc] initWithTitle:nil message:@"Don't eat yellow snow." delegate:self
+//                      cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+//                    break;
+//                    
+//                case 1:
                     [[[UIAlertView alloc] initWithTitle:@"WARNING" message:@"DO NOT let anyone see your backup phrase "
                       "or they can spend your bitcoins." delegate:self cancelButtonTitle:@"cancel"
                       otherButtonTitles:@"show", nil] show];
