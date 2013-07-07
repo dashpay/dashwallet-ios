@@ -590,7 +590,7 @@ completion:(void (^)(NSError *error))completion
                 NSString *key = [obj[@"tx_hash"] stringByAppendingString:[obj[@"tx_output_n"] description]];
 
                 //XXX we shouldn't be storing json without sanitizing it... security risk
-                if (key) self.unspentOutputs[key] = obj;
+                if (key && [obj[@"value"] unsignedLongLongValue] > 0) self.unspentOutputs[key] = obj;
             }];
             
             [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];

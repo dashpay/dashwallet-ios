@@ -104,7 +104,7 @@
                 __block uint64_t received = 0, spent = 0;
 
                 [tx[@"inputs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                    if ([w containsAddress:obj[@"prev_out"][@"addr"]]) {
+                    if (obj[@"prev_out"][@"addr"] && [w containsAddress:obj[@"prev_out"][@"addr"]]) {
                         spent += [obj[@"prev_out"][@"value"] unsignedLongLongValue];
                     }
                 }];
@@ -112,7 +112,7 @@
                 __block BOOL withinWallet = spent > 0 ? YES : NO;
                 
                 [tx[@"out"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                    if ([w containsAddress:obj[@"addr"]]) {
+                    if (obj[@"addr"] && [w containsAddress:obj[@"addr"]]) {
                         received += [obj[@"value"] unsignedLongLongValue];
                         if (spent == 0) cell.detailTextLabel.text = obj[@"addr"];
                     }
@@ -134,6 +134,8 @@
                 if (! tx[@"block_height"]) {
                     cell.textLabel.text = [cell.textLabel.text stringByAppendingString:@" unconfirmed"];
                 }
+                
+                if (! cell.detailTextLabel.text) cell.detailTextLabel.text = @"can't decode payment address";
             }
             break;
             
@@ -194,6 +196,20 @@
 
 #pragma mark - Table view delegate
 
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    switch (indexPath.section) {
+        case 0: return 60;
+        case 1: return 44;
+        case 2: return 44;
+        default:
+            NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
+                     __LINE__, indexPath.section);
+    }
+    
+    return 44;
+}
+
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
 {
     CGFloat h = 0;
@@ -202,7 +218,7 @@
         case 0: return 44;
         case 1: return 0;
         case 2:
-            h = tableView.frame.size.height - 44*3 - 33 - (self.transactions.count ? self.transactions.count*44 : 44);
+            h = tableView.frame.size.height - 44*3 - 33 - (self.transactions.count ? self.transactions.count*60 : 60);
             return h > 44 ? h : 44;
         default:
             NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
