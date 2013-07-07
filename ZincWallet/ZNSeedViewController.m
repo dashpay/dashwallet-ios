@@ -25,10 +25,12 @@
     // Do any additional setup after loading the view.
     
     self.labelFrame.layer.cornerRadius = 10.0;
-    self.labelFrame.layer.shadowColor = [UIColor blackColor].CGColor;
-    self.labelFrame.layer.shadowOffset = CGSizeMake(0.0, 2.0);
-    self.labelFrame.layer.shadowOpacity = 0.25;
-    self.labelFrame.layer.shadowRadius = 3.0;
+    self.labelFrame.layer.borderWidth = 0.5;
+    self.labelFrame.layer.borderColor = [[UIColor colorWithWhite:0.85 alpha:1.0] CGColor];
+    //self.labelFrame.layer.shadowColor = [[UIColor blackColor] CGColor];
+    //self.labelFrame.layer.shadowOffset = CGSizeMake(0.0, 2.0);
+    //self.labelFrame.layer.shadowOpacity = 0.25;
+    //self.labelFrame.layer.shadowRadius = 3.0;
 }
 
 - (void)viewWillAppear:(BOOL)animated

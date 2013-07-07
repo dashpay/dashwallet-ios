@@ -11,17 +11,17 @@
 #import "ZNReceiveViewController.h"
 #import "ZNWallet.h"
 #import "ZNPaymentRequest.h"
-#import "NSString+Base58.h"
 #import "ZNKey.h"
 #import "ZNTransaction.h"
-#import "ZBarReaderViewController.h"
-#import "ZNButton.h"
-#import "MBProgressHUD.h"
+#import <QuartzCore/QuartzCore.h>
 #import <netinet/in.h>
 #import "Reachability.h"
+#import "NSString+Base58.h"
+#import "ZBarReaderViewController.h"
+#import "MBProgressHUD.h"
 
 #define BUTTON_HEIGHT 44.0
-#define BUTTON_MARGIN 5.0
+#define BUTTON_MARGIN 10.0
 
 #define CONNECT_TIMEOUT 5.0
 
@@ -253,11 +253,25 @@
 - (void)layoutButtonsAnimated:(BOOL)animated
 {
     while (self.requests.count > self.requestButtons.count) {
-        UIButton *button = [ZNButton buttonWithType:UIButtonTypeCustom];
+        //UIButton *button = [ZNButton buttonWithType:UIButtonTypeCustom];
+        UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+        
+        button.titleLabel.adjustsFontSizeToFitWidth = YES;
+        button.titleLabel.numberOfLines = 1;
+        button.titleLabel.lineBreakMode = NSLineBreakByClipping;
+        //button.showsTouchWhenHighlighted = YES;
+        button.backgroundColor = [UIColor whiteColor];
+        [button setTitleColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0] forState:UIControlStateNormal];
+        [button setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
+        [button setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
+        button.titleEdgeInsets = UIEdgeInsetsMake(0.0, 8.0, 0.0, 8.0);
+        button.layer.cornerRadius = 7.0;
+        button.layer.borderColor = [[UIColor colorWithWhite:0.95 alpha:1.0] CGColor];
+        button.layer.borderWidth = 3.0;
 
-        button.frame = CGRectMake(BUTTON_MARGIN*4, self.scrollView.frame.size.height/2 +
-                                  (BUTTON_HEIGHT + 2*BUTTON_MARGIN)*(self.requestButtons.count-self.requests.count/2.0),
-                                  self.scrollView.frame.size.width - BUTTON_MARGIN*8, BUTTON_HEIGHT);
+        button.frame = CGRectMake(BUTTON_MARGIN*2, self.scrollView.frame.size.height/2 +
+                                  (BUTTON_HEIGHT + BUTTON_MARGIN*2)*(self.requestButtons.count-self.requests.count/2.0),
+                                  self.scrollView.frame.size.width - BUTTON_MARGIN*4, BUTTON_HEIGHT);
         button.alpha = animated ? 0 : 1;
         [button addTarget:self action:@selector(doIt:) forControlEvents:UIControlEventTouchUpInside];
 
@@ -281,7 +295,7 @@
                     [obj titleLabel].font = [UIFont fontWithName:@"HelveticaNeue" size:15];
                 }
                 else {
-                    [obj titleLabel].font = [UIFont fontWithName:@"HelveticaNeue-Medium" size:15];
+                    [obj titleLabel].font = [UIFont fontWithName:@"HelveticaNeue-Light" size:15];
                 }
             }
             

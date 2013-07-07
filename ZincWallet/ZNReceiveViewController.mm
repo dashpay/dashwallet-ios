@@ -52,7 +52,7 @@
                          imageDimension:self.qrView.frame.size.width];
     
     [self.addressButton setTitle:[self paymentAddress] forState:UIControlStateNormal];
-    self.addressButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:15];
+    //self.addressButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:15];
 }
 
 - (NSString *)paymentAddress
