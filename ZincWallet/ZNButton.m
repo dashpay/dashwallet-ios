@@ -44,27 +44,27 @@
     
     if (! bg) {
         bg = [[UIImage imageNamed:@"button-bg.png"]
-              resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)];
+              resizableImageWithCapInsets:UIEdgeInsetsMake(12.0, 3.0, 12.0, 3.0)];
     }
     
     if (! pressed) {
         pressed = [[UIImage imageNamed:@"button-bg-pressed.png"]
-                   resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)];
+                   resizableImageWithCapInsets:UIEdgeInsetsMake(12.0, 3.0, 12.0, 3.0)];
     }
     
     if (! disabled) {
         disabled = [[UIImage imageNamed:@"button-bg-disabled.png"]
-                    resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 3.5, 12.5, 3.5)];
+                    resizableImageWithCapInsets:UIEdgeInsetsMake(12.0, 3.0, 12.0, 3.0)];
     }
     
     if (! white) {
         white = [[UIImage imageNamed:@"button-bg-white-pressed.png"]
-                 resizableImageWithCapInsets:UIEdgeInsetsMake(14.5, 5.0, 14.5, 5.0)];
+                 resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 5.0, 15.0, 5.0)];
     }
     
     if (! blue) {
         blue = [[UIImage imageNamed:@"button-bg-blue.png"]
-                resizableImageWithCapInsets:UIEdgeInsetsMake(14.5, 5.0, 14.5, 5.0)];
+                resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 5.0, 15.0, 5.0)];
     }
     
     switch (style) {
@@ -96,6 +96,8 @@
             
             [self setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
             [self setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
+            //[self setTitleColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0]
+            //                     forState:UIControlStateHighlighted];
             [self setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
 
             [self setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateNormal];
