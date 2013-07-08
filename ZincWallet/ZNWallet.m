@@ -327,6 +327,8 @@
     
     self.updatedTransactions = [NSMutableSet set];
     
+    //XXX refactor this to optimize for fewest network reqeusts (should only make two)
+    
     [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT forChange:NO completion:^(NSError *error) {
         if (error) {
             _synchronizing = NO;
