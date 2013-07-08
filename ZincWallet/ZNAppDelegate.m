@@ -112,12 +112,31 @@ annotation:(id)annotation
          forState:UIControlStateNormal];
         
         [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
-         setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0],
+         setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor whiteColor],
                                   UITextAttributeTextShadowColor:[UIColor whiteColor],
-                                  UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, -1.0)],
+                                  UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 0.0)],
                                   UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:13.0]}
          forState:UIControlStateHighlighted];
+        
+        [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
+         setBackButtonBackgroundImage:[[UIImage imageNamed:@"back-bg-white.png"]
+                                       resizableImageWithCapInsets:UIEdgeInsetsMake(5.0, 15.0, 5.0, 5.0)]
+         forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
 
+        [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
+         setBackButtonBackgroundImage:[[UIImage imageNamed:@"back-bg-blue.png"]
+                                       resizableImageWithCapInsets:UIEdgeInsetsMake(5.0, 15.0, 5.0, 5.0)]
+         forState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
+
+        [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
+         setBackgroundImage:[[UIImage imageNamed:@"button-bg-white.png"]
+                             resizableImageWithCapInsets:UIEdgeInsetsMake(5.0, 5.0, 5.0, 5.0)]
+         forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+        
+        [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
+         setBackgroundImage:[[UIImage imageNamed:@"button-bg-blue"]
+                             resizableImageWithCapInsets:UIEdgeInsetsMake(5.0, 5.0, 5.0, 5.0)]
+         forState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
     }
     //XXX need a custom back button bg image
 }

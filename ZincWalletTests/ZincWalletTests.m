@@ -17,6 +17,8 @@
 
 @implementation ZincWalletTests
 
+//XXX remember to test on iOS 5
+
 - (void)setUp
 {
     [super setUp];
@@ -33,6 +35,7 @@
 
 #pragma mark - testWallet
 
+// XXX
 // standard free transaction no change
 // standard free transaction with change
 // transaction with an output below 0.01

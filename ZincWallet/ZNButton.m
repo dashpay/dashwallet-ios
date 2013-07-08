@@ -58,8 +58,8 @@
     }
     
     if (! white) {
-        white = [[UIImage imageNamed:@"button-bg-white.png"]
-                 resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 6.0, 12.5, 6.0)];
+        white = [[UIImage imageNamed:@"button-bg-white-pressed.png"]
+                 resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 5.0, 15.0, 5.0)];
     }
     
     switch (style) {

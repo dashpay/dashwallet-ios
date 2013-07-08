@@ -32,7 +32,7 @@
                         <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                     </view>
                     <navigationItem key="navigationItem" title="mɃ 0.00000" id="TF6-YO-yee">
-                        <barButtonItem key="backBarButtonItem" title=" Back" id="sI0-fv-rOw"/>
+                        <barButtonItem key="backBarButtonItem" title="Back" id="sI0-fv-rOw"/>
                         <barButtonItem key="leftBarButtonItem" image="gear-blue.png" id="KKr-sB-LsJ">
                             <connections>
                                 <segue destination="wFs-aD-OST" kind="modal" id="TZb-LZ-jmy"/>
@@ -130,7 +130,7 @@
                         </prototypes>
                     </tableView>
                     <navigationItem key="navigationItem" title="mɃ 0.00000" id="7N8-Cz-vq3">
-                        <barButtonItem key="backBarButtonItem" title=" Back" id="RaK-k5-PIH"/>
+                        <barButtonItem key="backBarButtonItem" title="Back" id="RaK-k5-PIH"/>
                         <barButtonItem key="leftBarButtonItem" systemItem="done" id="szI-11-pCy">
                             <connections>
                                 <action selector="done:" destination="ONk-2h-AQR" id="9GK-lu-utT"/>
