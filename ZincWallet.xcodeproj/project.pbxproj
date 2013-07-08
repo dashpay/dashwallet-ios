@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		75183B85178B42110032F365 /* wallpaper.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 75183B84178B42110032F365 /* wallpaper.jpg */; };
+		75183B88178B4ABE0032F365 /* ZNWelcomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75183B87178B4ABE0032F365 /* ZNWelcomeViewController.m */; };
 		751E809F1789797500E3CFB2 /* gear-blue@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 751E809D1789797500E3CFB2 /* gear-blue@2x.png */; };
 		751E80A01789797500E3CFB2 /* refresh-blue@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 751E809E1789797500E3CFB2 /* refresh-blue@2x.png */; };
 		752A3F4E17432D1F00C0632D /* key.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 752A3F4D17432D1F00C0632D /* key.cpp */; };
@@ -1167,6 +1169,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		75183B84178B42110032F365 /* wallpaper.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = wallpaper.jpg; sourceTree = "<group>"; };
+		75183B86178B4ABE0032F365 /* ZNWelcomeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNWelcomeViewController.h; sourceTree = "<group>"; };
+		75183B87178B4ABE0032F365 /* ZNWelcomeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNWelcomeViewController.m; sourceTree = "<group>"; };
 		751E809D1789797500E3CFB2 /* gear-blue@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "gear-blue@2x.png"; sourceTree = "<group>"; };
 		751E809E1789797500E3CFB2 /* refresh-blue@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "refresh-blue@2x.png"; sourceTree = "<group>"; };
 		752A3F4D17432D1F00C0632D /* key.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = key.cpp; path = bitcoin/src/key.cpp; sourceTree = SOURCE_ROOT; };
@@ -4453,6 +4458,7 @@
 		75CBEAE4173C801900978DBA /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				75183B84178B42110032F365 /* wallpaper.jpg */,
 				7545424D17606C7500638B95 /* button-bg@2x.png */,
 				7545424E17606C7500638B95 /* button-bg-pressed@2x.png */,
 				7545424C17606C7500638B95 /* button-bg-disabled@2x.png */,
@@ -4497,6 +4503,8 @@
 				753007EE1769899B00C7BB60 /* ZNSeedViewController.m */,
 				753007F0176A48DA00C7BB60 /* ZNRestoreViewController.h */,
 				753007F1176A48DA00C7BB60 /* ZNRestoreViewController.m */,
+				75183B86178B4ABE0032F365 /* ZNWelcomeViewController.h */,
+				75183B87178B4ABE0032F365 /* ZNWelcomeViewController.m */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -4963,6 +4971,7 @@
 				75E111A6178AB4AF0038173E /* back-bg-white-pressed@2x.png in Resources */,
 				75E111A7178AB4AF0038173E /* button-bg-blue@2x.png in Resources */,
 				75E111A8178AB4AF0038173E /* button-bg-white-pressed@2x.png in Resources */,
+				75183B85178B42110032F365 /* wallpaper.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6010,6 +6019,7 @@
 				753007F2176A48DA00C7BB60 /* ZNRestoreViewController.m in Sources */,
 				7535CCDF176BE3D2007E29C5 /* ZNButton.m in Sources */,
 				75D423291783E0B100BDD771 /* MBProgressHUD.m in Sources */,
+				75183B88178B4ABE0032F365 /* ZNWelcomeViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

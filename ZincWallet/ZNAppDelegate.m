@@ -17,6 +17,8 @@
     
     [self keepUpAppearances];
 
+    //XXXX figure out what to do about ipad on ios5
+
     //XXX need to upgrade openssl (and other libs) to latest
     
     //XXX need a way to recieve pushes when unconfirmed transactions to a wallet address happen
@@ -102,7 +104,7 @@ annotation:(id)annotation
                                   UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:19.0]}];
         
     
-        [[UINavigationBar appearance] setTintColor:[UIColor colorWithWhite:0.95 alpha:1.0]];
+        //[[UINavigationBar appearance] setTintColor:[UIColor colorWithWhite:0.95 alpha:1.0]];
     
         [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
          setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0],

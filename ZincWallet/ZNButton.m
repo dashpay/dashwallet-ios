@@ -71,6 +71,11 @@
         case ZNButtonStyleBlue:
             self.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"bluegradient.png"]];
             self.layer.cornerRadius = 6.0;
+            self.layer.shadowColor = [[UIColor blackColor] CGColor];
+            self.layer.shadowRadius = 2.0;
+            self.layer.shadowOpacity = 0.25;
+            self.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+            self.layer.masksToBounds = NO;
 
             [self setBackgroundImage:nil forState:UIControlStateNormal];
             [self setBackgroundImage:white forState:UIControlStateHighlighted];
@@ -89,6 +94,10 @@
         case ZNButtonStyleGray:
             self.backgroundColor = [UIColor clearColor];
             self.layer.cornerRadius = 0.0;
+            self.layer.shadowRadius = 0.0;
+            self.layer.shadowOpacity = 1.0;
+            self.layer.shadowOffset = CGSizeZero;
+            self.layer.masksToBounds = YES;
         
             [self setBackgroundImage:bg forState:UIControlStateNormal];
             [self setBackgroundImage:pressed forState:UIControlStateHighlighted];

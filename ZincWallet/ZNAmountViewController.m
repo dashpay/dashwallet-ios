@@ -251,7 +251,6 @@ replacementString:(NSString *)string
                     return;
                 }
                 
-                //XXXX crashed with nil view... why?
                 MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
                 
                 hud.mode = MBProgressHUDModeText;
