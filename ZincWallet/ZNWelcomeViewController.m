@@ -11,6 +11,7 @@
 @interface ZNWelcomeViewController ()
 
 @property (nonatomic, assign) CGPoint wallpaperStart, paralaxStart, walletStart, restoreStart;
+@property (nonatomic, assign) BOOL hasAppeared;
 
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
 @property (nonatomic, strong) IBOutlet UIView *paralax;
@@ -37,13 +38,9 @@
 
 - (void)viewWillAppear:(BOOL)animated
 {
-    static BOOL firstAppearance = YES;
-    
     [super viewWillAppear:animated];
     
-    if (firstAppearance) {
-        firstAppearance = NO;
-        
+    if (! self.hasAppeared) {
         self.wallpaperStart = self.wallpaper.center;
         self.paralaxStart = self.paralax.center;
         self.walletStart = self.walletButton.center;
@@ -59,12 +56,10 @@
 
 - (void)viewDidAppear:(BOOL)animated
 {
-    static BOOL firstAppearance = YES;
-
     [super viewDidAppear:animated];
     
-    if (firstAppearance) {
-        firstAppearance = NO;
+    if (! self.hasAppeared) {
+        self.hasAppeared = YES;
         
         [UIView animateWithDuration:80.0 delay:0.0
         options:UIViewAnimationOptionCurveLinear|UIViewAnimationOptionRepeat|UIViewAnimationOptionAutoreverse

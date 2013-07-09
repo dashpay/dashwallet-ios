@@ -699,7 +699,6 @@
 		7545424F17606C7500638B95 /* button-bg-disabled@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7545424C17606C7500638B95 /* button-bg-disabled@2x.png */; };
 		7545425017606C7500638B95 /* button-bg@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7545424D17606C7500638B95 /* button-bg@2x.png */; };
 		7545425117606C7500638B95 /* button-bg-pressed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7545424E17606C7500638B95 /* button-bg-pressed@2x.png */; };
-		75454255176072EF00638B95 /* gear@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75454254176072EF00638B95 /* gear@2x.png */; };
 		754542571760775900638B95 /* qr@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 754542561760775900638B95 /* qr@2x.png */; };
 		7559FBA7174D8B1F0000E809 /* ZNKey.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7559FBA6174D8B1F0000E809 /* ZNKey.mm */; };
 		7559FBA9174E85B10000E809 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7559FBA8174E85B10000E809 /* Security.framework */; };
@@ -963,7 +962,6 @@
 		7573F081174313910037A109 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		7579C5DF17665B5300E89497 /* libzbar.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75FD9C0217664F3000307894 /* libzbar.a */; };
 		758B585E176BB1DE0069968F /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 758B585D176BB1DE0069968F /* MessageUI.framework */; };
-		758D21181762E96800BE69E3 /* refresh@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 758D21171762E96800BE69E3 /* refresh@2x.png */; };
 		758F2D8217669D6800102AF1 /* libqrencoder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75AF36D7176675D3004AA912 /* libqrencoder.a */; };
 		7591EC0E1773DD3700B44340 /* redgradient@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7591EC0D1773DD3700B44340 /* redgradient@2x.png */; };
 		75920F7F174AAE5F00C1C03D /* netbase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75920F7D174AAE5F00C1C03D /* netbase.cpp */; };
@@ -2010,7 +2008,6 @@
 		7545424C17606C7500638B95 /* button-bg-disabled@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-disabled@2x.png"; sourceTree = "<group>"; };
 		7545424D17606C7500638B95 /* button-bg@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg@2x.png"; sourceTree = "<group>"; };
 		7545424E17606C7500638B95 /* button-bg-pressed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-pressed@2x.png"; sourceTree = "<group>"; };
-		75454254176072EF00638B95 /* gear@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "gear@2x.png"; sourceTree = "<group>"; };
 		754542561760775900638B95 /* qr@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "qr@2x.png"; sourceTree = "<group>"; };
 		7559FBA5174D8B1F0000E809 /* ZNKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNKey.h; sourceTree = "<group>"; };
 		7559FBA6174D8B1F0000E809 /* ZNKey.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ZNKey.mm; sourceTree = "<group>"; };
@@ -2291,7 +2288,6 @@
 		7573F0781742C6400037A109 /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = util.h; path = bitcoin/src/util.h; sourceTree = SOURCE_ROOT; };
 		7573F080174313910037A109 /* libboost.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libboost.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		758B585D176BB1DE0069968F /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
-		758D21171762E96800BE69E3 /* refresh@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "refresh@2x.png"; sourceTree = "<group>"; };
 		7591EC0D1773DD3700B44340 /* redgradient@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "redgradient@2x.png"; sourceTree = "<group>"; };
 		75920F7D174AAE5F00C1C03D /* netbase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = netbase.cpp; path = ../../bitcoin/src/netbase.cpp; sourceTree = "<group>"; };
 		75920F7E174AAE5F00C1C03D /* netbase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = netbase.h; path = ../../bitcoin/src/netbase.h; sourceTree = "<group>"; };
@@ -4468,8 +4464,6 @@
 				75E1119F178AAA150038173E /* back-bg-white@2x.png */,
 				75E111A2178AB4AF0038173E /* back-bg-white-pressed@2x.png */,
 				75E111A1178AB4AF0038173E /* back-bg-blue@2x.png */,
-				75454254176072EF00638B95 /* gear@2x.png */,
-				758D21171762E96800BE69E3 /* refresh@2x.png */,
 				751E809D1789797500E3CFB2 /* gear-blue@2x.png */,
 				751E809E1789797500E3CFB2 /* refresh-blue@2x.png */,
 				754542561760775900638B95 /* qr@2x.png */,
@@ -4955,9 +4949,7 @@
 				7545424F17606C7500638B95 /* button-bg-disabled@2x.png in Resources */,
 				7545425017606C7500638B95 /* button-bg@2x.png in Resources */,
 				7545425117606C7500638B95 /* button-bg-pressed@2x.png in Resources */,
-				75454255176072EF00638B95 /* gear@2x.png in Resources */,
 				754542571760775900638B95 /* qr@2x.png in Resources */,
-				758D21181762E96800BE69E3 /* refresh@2x.png in Resources */,
 				7591EC0E1773DD3700B44340 /* redgradient@2x.png in Resources */,
 				7536A2AF177D1A6C00BAC31E /* zbar-help.html in Resources */,
 				7536A2B0177D1A6C00BAC31E /* zbar-helpicons.png in Resources */,

@@ -122,22 +122,22 @@ annotation:(id)annotation
         
         [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
          setBackButtonBackgroundImage:[[UIImage imageNamed:@"back-bg-white.png"]
-                                       resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 15.0, 15.0, 5.0)]
+                                       resizableImageWithCapInsets:UIEdgeInsetsMake(16.0, 17.0, 18.0, 7.0)]
          forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
 
         [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
          setBackButtonBackgroundImage:[[UIImage imageNamed:@"back-bg-blue.png"]
-                                       resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 15.0, 15.0, 5.0)]
+                                       resizableImageWithCapInsets:UIEdgeInsetsMake(16.0, 17.0, 18.0, 7.0)]
          forState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
 
         [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
          setBackgroundImage:[[UIImage imageNamed:@"button-bg-white.png"]
-                             resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 5.0, 15.0, 5.0)]
+                             resizableImageWithCapInsets:UIEdgeInsetsMake(16.0, 7.0, 18.0, 7.0)]
          forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
         
         [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
          setBackgroundImage:[[UIImage imageNamed:@"button-bg-blue"]
-                             resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 5.0, 15.0, 5.0)]
+                             resizableImageWithCapInsets:UIEdgeInsetsMake(16.0, 7.0, 18.0, 7.0)]
          forState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
     }
     //XXX need a custom back button bg image
