@@ -9,6 +9,7 @@
 #import "ZNSettingsViewController.h"
 #import "ZNSeedViewController.h"
 #import "ZNWallet.h"
+#import <QuartzCore/QuartzCore.h>
 
 @interface ZNSettingsViewController ()
 
@@ -115,7 +116,7 @@
     static NSString *disclosureIdent = @"ZNDisclosureCell", *transactionIdent = @"ZNCustomTransactionCell",
                     *actionIdent = @"ZNActionCell";
     UITableViewCell *cell = nil;
-    __block UILabel *textLabel, *detailTextLabel;
+    __block UILabel *textLabel, *detailTextLabel, *unconfirmedLabel;
     
     // Configure the cell...
     switch (indexPath.section) {
@@ -123,12 +124,14 @@
             cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent];
             textLabel = (id)[cell viewWithTag:1];
             detailTextLabel = (id)[cell viewWithTag:2];
+            unconfirmedLabel = (id)[cell viewWithTag:3];
 
             if (! self.transactions.count) {
                 textLabel.text = @"no transactions";
                 textLabel.textColor = [UIColor lightGrayColor];
                 textLabel.textAlignment = UITextAlignmentCenter;
                 detailTextLabel.text = nil;
+                unconfirmedLabel.hidden = YES;
             }
             else {
                 ZNWallet *w = [ZNWallet sharedInstance];
@@ -156,27 +159,24 @@
                 
                 if (withinWallet) {
                     textLabel.text = [w stringForAmount:spent];
+                    textLabel.textAlignment = NSTextAlignmentLeft;
                     detailTextLabel.text = @"moved within wallet";
-                    textLabel.textAlignment = UITextAlignmentLeft;
                 }
                 else if (spent > 0) {
                     textLabel.text = [NSString stringWithFormat:@"(%@)", [w stringForAmount:spent - received]];
-                    textLabel.textAlignment = UITextAlignmentRight;
+                    textLabel.textAlignment = NSTextAlignmentRight;
                 }
                 else {
                     textLabel.text = [w stringForAmount:received];
-                    textLabel.textAlignment = UITextAlignmentLeft;
-                }
-                
-                if (! tx[@"block_height"]) {
-                    if (spent > 0) {
-                        textLabel.text = [@"unconfirmed " stringByAppendingString:textLabel.text];
-                    }
-                    else textLabel.text = [textLabel.text stringByAppendingString:@" unconfirmed"];
+                    textLabel.textAlignment = NSTextAlignmentLeft;
                 }
                 
                 textLabel.textColor = [UIColor darkGrayColor];
+                
                 if (! detailTextLabel.text) detailTextLabel.text = @"can't decode payment address";
+                
+                unconfirmedLabel.hidden = (tx[@"block_height"] == nil) ? NO : YES;
+                unconfirmedLabel.layer.cornerRadius = 3.0;
             }
             break;
             
@@ -290,7 +290,7 @@
     UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(10, 0, self.view.frame.size.width - 20, 22.0)];;
     
     l.text = [self tableView:tableView titleForHeaderInSection:section];
-    l.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:15];
+    l.font = [UIFont fontWithName:@"HelveticaNeue-Medium" size:15];
     l.backgroundColor = [UIColor clearColor];
     l.textColor = [UIColor whiteColor];
     l.shadowColor = [UIColor lightGrayColor];

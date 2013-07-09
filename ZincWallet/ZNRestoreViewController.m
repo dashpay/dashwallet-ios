@@ -29,11 +29,12 @@
 {
     [super viewWillAppear:animated];
     
+    //XXXX iOS 5 has a resizing bug, put in a fix here
     self.textView.layer.borderColor = [UIColor colorWithWhite:0.85 alpha:1.0].CGColor;
     self.textView.layer.borderWidth = 0.5;
     self.textView.layer.cornerRadius = 5.0;
 
-    self.textView.layer.shadowColor = [[UIColor blackColor] CGColor];
+    //self.textView.layer.shadowColor = [[UIColor blackColor] CGColor];
     self.textView.layer.shadowRadius = 2.0;
     self.textView.layer.shadowOpacity = 0.1;
     self.textView.layer.shadowOffset = CGSizeMake(0.0, 1.0);

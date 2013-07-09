@@ -63,21 +63,19 @@
     }
     
     if (! blue) {
-        blue = [[UIImage imageNamed:@"button-bg-blue.png"]
-                resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 5.0, 15.0, 5.0)];
+        blue = [[UIImage imageNamed:@"button-bg-bluegradient.png"]
+                resizableImageWithCapInsets:UIEdgeInsetsMake(22.0, 5.0, 22.0, 5.0)];
     }
     
     switch (style) {
         case ZNButtonStyleBlue:
-            self.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"bluegradient.png"]];
-            self.layer.cornerRadius = 6.0;
-            self.layer.shadowColor = [[UIColor blackColor] CGColor];
+            //self.layer.shadowColor = [[UIColor blackColor] CGColor];
             self.layer.shadowRadius = 2.0;
             self.layer.shadowOpacity = 0.25;
             self.layer.shadowOffset = CGSizeMake(0.0, 1.0);
             self.layer.masksToBounds = NO;
 
-            [self setBackgroundImage:nil forState:UIControlStateNormal];
+            [self setBackgroundImage:blue forState:UIControlStateNormal];
             [self setBackgroundImage:white forState:UIControlStateHighlighted];
             [self setBackgroundImage:white forState:UIControlStateDisabled];
 
@@ -92,11 +90,9 @@
             break;
             
         case ZNButtonStyleGray:
-            self.backgroundColor = [UIColor clearColor];
-            self.layer.cornerRadius = 0.0;
-            self.layer.shadowRadius = 0.0;
-            self.layer.shadowOpacity = 1.0;
-            self.layer.shadowOffset = CGSizeZero;
+            self.layer.shadowRadius = 3.0;
+            self.layer.shadowOpacity = 0.0;
+            self.layer.shadowOffset = CGSizeMake(0.0, -3.0);
             self.layer.masksToBounds = YES;
         
             [self setBackgroundImage:bg forState:UIControlStateNormal];
@@ -119,21 +115,11 @@
             break;
     }
     
-    
     self.titleLabel.adjustsFontSizeToFitWidth = YES;
     self.titleLabel.numberOfLines = 1;
     self.titleLabel.lineBreakMode = NSLineBreakByClipping;
     
     [self setTitleEdgeInsets:UIEdgeInsetsMake(0, 5, 0, 5)];
 }
-
-/*
-// Only override drawRect: if you perform custom drawing.
-// An empty implementation adversely affects performance during animation.
-- (void)drawRect:(CGRect)rect
-{
-    // Drawing code
-}
-*/
 
 @end

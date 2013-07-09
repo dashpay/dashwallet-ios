@@ -56,6 +56,9 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
 
+    //XXXX design transition from splash image
+    //XXXX zincwallet title is off by 0.5px ! 
+    
     //XXX add a field for manually entering a payment address
 
     ZNPaymentRequest *req = [ZNPaymentRequest new];
@@ -414,8 +417,10 @@
     if ([self.requestIDs[self.selectedIndex] isEqual:QR_ID]) {
         self.selectedIndex = NSNotFound;
         
-        //XXX remove or customize zbar info button
-        //XXX also need to add a camera guide
+        //XXXX customize look of zbar controller
+        //XXXX remove zbar info button
+        //XXXX also need to add a camera guide
+        //XXXX test how it works with ipod
         ZBarReaderViewController *c = [ZBarReaderViewController new];
 
         c.readerDelegate = self;
