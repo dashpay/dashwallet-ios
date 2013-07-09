@@ -112,19 +112,23 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *disclosureIdent = @"ZNDisclosureCell", *transactionIdent = @"ZNTransactionCell",
+    static NSString *disclosureIdent = @"ZNDisclosureCell", *transactionIdent = @"ZNCustomTransactionCell",
                     *actionIdent = @"ZNActionCell";
     UITableViewCell *cell = nil;
+    __block UILabel *textLabel, *detailTextLabel;
     
     // Configure the cell...
     switch (indexPath.section) {
         case 0:
             cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent];
+            textLabel = (id)[cell viewWithTag:1];
+            detailTextLabel = (id)[cell viewWithTag:2];
 
             if (! self.transactions.count) {
-                cell.textLabel.text = @"no transactions";
-                cell.textLabel.textColor = [UIColor lightGrayColor];
-                cell.detailTextLabel.text = nil;
+                textLabel.text = @"no transactions";
+                textLabel.textColor = [UIColor lightGrayColor];
+                textLabel.textAlignment = UITextAlignmentCenter;
+                detailTextLabel.text = nil;
             }
             else {
                 ZNWallet *w = [ZNWallet sharedInstance];
@@ -142,29 +146,37 @@
                 [tx[@"out"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                     if (obj[@"addr"] && [w containsAddress:obj[@"addr"]]) {
                         received += [obj[@"value"] unsignedLongLongValue];
-                        if (spent == 0) cell.detailTextLabel.text = [@"to: " stringByAppendingString:obj[@"addr"]];
+                        if (spent == 0) detailTextLabel.text = [@"to: " stringByAppendingString:obj[@"addr"]];
                     }
                     else if (spent > 0) {
-                        if (obj[@"addr"]) cell.detailTextLabel.text = [@"to: " stringByAppendingString:obj[@"addr"]];
+                        if (obj[@"addr"]) detailTextLabel.text = [@"to: " stringByAppendingString:obj[@"addr"]];
                         withinWallet = NO;
                     }
                 }];
                 
                 if (withinWallet) {
-                    cell.textLabel.text = [w stringForAmount:spent];
-                    cell.detailTextLabel.text = @"moved within wallet";
+                    textLabel.text = [w stringForAmount:spent];
+                    detailTextLabel.text = @"moved within wallet";
+                    textLabel.textAlignment = UITextAlignmentLeft;
                 }
                 else if (spent > 0) {
-                    cell.textLabel.text = [NSString stringWithFormat:@"(%@)", [w stringForAmount:spent - received]];
+                    textLabel.text = [NSString stringWithFormat:@"(%@)", [w stringForAmount:spent - received]];
+                    textLabel.textAlignment = UITextAlignmentRight;
                 }
-                else cell.textLabel.text = [w stringForAmount:received];
+                else {
+                    textLabel.text = [w stringForAmount:received];
+                    textLabel.textAlignment = UITextAlignmentLeft;
+                }
                 
                 if (! tx[@"block_height"]) {
-                    cell.textLabel.text = [cell.textLabel.text stringByAppendingString:@" unconfirmed"];
+                    if (spent > 0) {
+                        textLabel.text = [@"unconfirmed " stringByAppendingString:textLabel.text];
+                    }
+                    else textLabel.text = [textLabel.text stringByAppendingString:@" unconfirmed"];
                 }
                 
-                cell.textLabel.textColor = [UIColor darkGrayColor];
-                if (! cell.detailTextLabel.text) cell.detailTextLabel.text = @"can't decode payment address";
+                textLabel.textColor = [UIColor darkGrayColor];
+                if (! detailTextLabel.text) detailTextLabel.text = @"can't decode payment address";
             }
             break;
             
@@ -272,35 +284,23 @@
     return 44;
 }
 
-//- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
-//{
-//    CGFloat h = 0;
-//    
-//    switch (section) {
-//        case 0: return 44;
-//        case 1: return 44;
-//        case 2:
-//            h = tableView.frame.size.height - 44*3 - 33 - (self.transactions.count ? self.transactions.count*60 : 60);
-//            return h > 44 ? h : 44;
-//        default:
-//            NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
-//                     __LINE__, section);
-//    }
-//    
-//    return 0;
-//}
-
-//- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
-//{
-//    UILabel *l = [UILabel new];
-//    
-//    l.text = [self tableView:tableView titleForHeaderInSection:section];
-//    if (l.text.length) l.text = [@"   " stringByAppendingString:l.text];
-//    l.font = [UIFont fontWithName:@"HelveticaNeue-Medium" size:15];
-//    l.backgroundColor = [UIColor clearColor];
-//    
-//    return l;
-//}
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
+{
+    UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 22.0)];
+    UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(10, 0, self.view.frame.size.width - 20, 22.0)];;
+    
+    l.text = [self tableView:tableView titleForHeaderInSection:section];
+    l.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:15];
+    l.backgroundColor = [UIColor clearColor];
+    l.textColor = [UIColor whiteColor];
+    l.shadowColor = [UIColor lightGrayColor];
+    l.shadowOffset = CGSizeMake(0.0, 1.0);
+    
+    v.backgroundColor = [UIColor colorWithWhite:0.8 alpha:0.9];
+    [v addSubview:l];
+    
+    return v;
+}
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
