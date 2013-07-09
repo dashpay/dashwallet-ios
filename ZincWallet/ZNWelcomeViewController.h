@@ -8,6 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ZNWelcomeViewController : UIViewController
+@interface ZNWelcomeViewController : UIViewController <UINavigationControllerDelegate>
 
 @end
