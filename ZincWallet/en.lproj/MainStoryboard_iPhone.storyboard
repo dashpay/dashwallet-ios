@@ -276,11 +276,11 @@
                         <nil key="title"/>
                         <barButtonItem key="backBarButtonItem" title="Back" id="JBm-c1-XP7"/>
                         <view key="titleView" contentMode="scaleToFill" id="NH4-nM-d4p">
-                            <rect key="frame" x="118" y="15" width="84" height="15"/>
+                            <rect key="frame" x="117" y="15" width="85" height="15"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                             <subviews>
                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" image="zincwallet.png" id="pHI-xD-A52">
-                                    <rect key="frame" x="0.0" y="0.0" width="84" height="15"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="85" height="15"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 </imageView>
                             </subviews>
@@ -366,11 +366,11 @@
                     <navigationItem key="navigationItem" id="vN1-8b-bI3">
                         <nil key="title"/>
                         <view key="titleView" contentMode="scaleToFill" id="H7R-Mj-2Yh">
-                            <rect key="frame" x="118" y="15" width="84" height="15"/>
+                            <rect key="frame" x="117" y="15" width="85" height="15"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                             <subviews>
                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" image="zincwallet.png" id="G7v-zG-5MJ">
-                                    <rect key="frame" x="0.0" y="0.0" width="84" height="15"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="85" height="15"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 </imageView>
                             </subviews>
@@ -937,11 +937,11 @@
                             </connections>
                         </barButtonItem>
                         <view key="titleView" contentMode="scaleToFill" id="Pq7-Oa-KeQ">
-                            <rect key="frame" x="118" y="15" width="84" height="15"/>
+                            <rect key="frame" x="117" y="15" width="85" height="15"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <subviews>
                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" image="zincwallet.png" id="gZK-WH-4nS">
-                                    <rect key="frame" x="0.0" y="0.0" width="84" height="15"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="85" height="15"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 </imageView>
                             </subviews>

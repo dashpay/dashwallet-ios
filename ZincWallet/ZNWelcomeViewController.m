@@ -11,7 +11,8 @@
 @interface ZNWelcomeViewController ()
 
 @property (nonatomic, assign) CGPoint wallpaperStart, paralaxStart, walletStart, restoreStart;
-@property (nonatomic, assign) BOOL hasAppeared;
+@property (nonatomic, assign) BOOL hasAppeared, animating;
+@property (nonatomic, strong) id activeObserver;
 
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
 @property (nonatomic, strong) IBOutlet UIView *paralax;
@@ -27,11 +28,28 @@
     // Do any additional setup after loading the view.
     
     self.navigationController.delegate = self;
+    
+    self.activeObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
+            if (self.animating) return;
+            
+            self.wallpaper.center = self.wallpaperStart;
+            
+            [UIView animateWithDuration:80.0 delay:0.0
+            options:UIViewAnimationOptionCurveLinear|UIViewAnimationOptionRepeat|UIViewAnimationOptionAutoreverse
+            animations:^{
+                self.animating = YES;
+                self.wallpaper.center = CGPointMake(self.wallpaperStart.x - 240, self.wallpaperStart.y - 45);
+            } completion:^(BOOL finished) { self.animating = NO; }];
+        }];
 }
 
 - (void)viewDidUnload
 {
     self.navigationController.delegate = nil;
+
+    [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
 
     [super viewDidUnload];
 }
@@ -64,8 +82,9 @@
         [UIView animateWithDuration:80.0 delay:0.0
         options:UIViewAnimationOptionCurveLinear|UIViewAnimationOptionRepeat|UIViewAnimationOptionAutoreverse
         animations:^{
+            self.animating = YES;
             self.wallpaper.center = CGPointMake(self.wallpaperStart.x - 240, self.wallpaperStart.y - 45);
-        } completion:nil];
+        } completion:^(BOOL finished) { self.animating = NO; }];
         
         [UIView animateWithDuration:UINavigationControllerHideShowBarDuration*2 animations:^{
             self.walletButton.center = self.walletStart;
