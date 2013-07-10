@@ -180,20 +180,18 @@
         return;
     }
     else if (firstAppearance) {
+        //XXXX somehow the splash screen is showing up when handling url
         UIView *v = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"Default-568h.png"]];
-        CGRect f = v.frame;
 
         v.contentMode = UIViewContentModeBottomLeft;
         v.clipsToBounds = YES;
-        f.size.height -= 20;
-        f.origin.y += 20;
-        v.frame = f;
+        v.frame = CGRectMake(0.0, 20.0, v.frame.size.width, v.frame.size.height - 20.0);
         
         [self.navigationController.view addSubview:v];
         
         [UIView animateWithDuration:UINavigationControllerHideShowBarDuration*2 animations:^{
             v.center = CGPointMake(v.center.x, v.center.y + self.navigationController.view.frame.size.height);
-        }];
+        } completion:^(BOOL finished) { [v removeFromSuperview]; }];
     }
     
     self.session = [[GKSession alloc] initWithSessionID:GK_SESSION_ID
@@ -349,7 +347,8 @@
             
         c.request = request;
         c.navigationItem.title = self.navigationItem.title;
-        [self.navigationController pushViewController:c animated:YES];
+        [self.navigationController pushViewController:c
+         animated:self.navigationController.visibleViewController == self ? YES : NO];
             
         self.selectedIndex = NSNotFound;
     }
@@ -705,9 +704,9 @@
             [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide-green.png"]];
             
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_current_queue(), ^{
+                [self confirmRequest:req];
                 [reader dismissViewControllerAnimated:YES completion:nil];
                 self.zbarController = nil;
-                [self confirmRequest:req];
             });
         }
         

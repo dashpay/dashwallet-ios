@@ -69,7 +69,6 @@
     
     switch (style) {
         case ZNButtonStyleBlue:
-            //self.layer.shadowColor = [[UIColor blackColor] CGColor];
             self.layer.shadowRadius = 2.0;
             self.layer.shadowOpacity = 0.25;
             self.layer.shadowOffset = CGSizeMake(0.0, 1.0);
