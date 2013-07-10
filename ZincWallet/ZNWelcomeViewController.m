@@ -17,7 +17,7 @@
 
 @property (nonatomic, assign) CGPoint wallpaperStart, paralaxStart, walletStart, restoreStart;
 @property (nonatomic, assign) BOOL hasAppeared, animating;
-@property (nonatomic, strong) id activeObserver;
+@property (nonatomic, strong) id activeObserver, resignActiveObserver;
 
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
 @property (nonatomic, strong) IBOutlet UIView *paralax;
@@ -49,6 +49,12 @@
                                                     self.wallpaperStart.y - WALLPAPER_ANIMATION_Y);
             } completion:^(BOOL finished) { self.animating = NO; }];
         }];
+    
+    self.resignActiveObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
+            self.wallpaper.center = self.wallpaperStart;
+        }];
 }
 
 - (void)viewDidUnload
@@ -56,6 +62,7 @@
     self.navigationController.delegate = nil;
 
     [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
+    [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
 
     [super viewDidUnload];
 }
