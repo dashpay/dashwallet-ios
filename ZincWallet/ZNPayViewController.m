@@ -45,6 +45,7 @@
 @property (nonatomic, strong) IBOutlet UIActivityIndicatorView *spinner;
 
 @property (nonatomic, strong) ZNReceiveViewController *receiveController;
+@property (nonatomic, strong) ZBarReaderViewController *zbarController;
 @property (nonatomic, strong) Reachability *reachability;
 
 @end
@@ -257,23 +258,6 @@
 {
     while (self.requests.count > self.requestButtons.count) {
         UIButton *button = [ZNButton buttonWithType:UIButtonTypeCustom];
-        //UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
-        //
-        //button.titleLabel.adjustsFontSizeToFitWidth = YES;
-        //button.titleLabel.numberOfLines = 1;
-        //button.titleLabel.lineBreakMode = NSLineBreakByClipping;
-        //button.titleEdgeInsets = UIEdgeInsetsMake(0.0, 8.0, 0.0, 8.0);
-        //button.layer.cornerRadius = 6.0;
-        //button.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"bluegradient.png"]];
-        //[button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-        //[button setTitleColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0]
-        //                       forState:UIControlStateHighlighted];
-        //[button setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
-        //[button setBackgroundImage:[UIImage imageNamed:@"bluegradient.png"] forState:UIControlStateNormal];
-        //[button setBackgroundImage:[[UIImage imageNamed:@"button-bg-white.png"]
-        // resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 6, 12.5, 6)] forState:UIControlStateHighlighted];
-        //[button setBackgroundImage:[[UIImage imageNamed:@"button-bg-white.png"]
-        // resizableImageWithCapInsets:UIEdgeInsetsMake(12.5, 6, 12.5, 6)] forState:UIControlStateDisabled];
 
         button.frame = CGRectMake(BUTTON_MARGIN*2, self.scrollView.frame.size.height/2 +
                                   (BUTTON_HEIGHT + BUTTON_MARGIN*2)*(self.requestButtons.count-self.requests.count/2.0),
@@ -419,11 +403,14 @@
         
         //XXXX customize look of zbar controller
         //XXXX remove zbar info button
-        //XXXX also need to add a camera guide
-        ZBarReaderViewController *c = [ZBarReaderViewController new];
-
-        c.readerDelegate = self;
-        [self.navigationController presentViewController:c animated:YES completion:^{
+        self.zbarController = [ZBarReaderViewController new];
+        self.zbarController.readerDelegate = self;
+        self.zbarController.cameraOverlayView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"cameraguide.png"]];
+        
+        CGPoint c = self.zbarController.view.center;
+        
+        self.zbarController.cameraOverlayView.center = CGPointMake(c.x, c.y - 22.0);
+        [self.navigationController presentViewController:self.zbarController animated:YES completion:^{
             NSLog(@"present qr reader complete");
         }];
     }
@@ -701,9 +688,13 @@
               cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
         }
         else {
-            //XXXX need some visual feedback here, a camera guide that turns green for 0.5s would be flippin' sweet!
-            [reader dismissViewControllerAnimated:YES completion:nil];
-            [self confirmRequest:req];
+            [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide-green.png"]];
+            
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_current_queue(), ^{
+                [reader dismissViewControllerAnimated:YES completion:nil];
+                self.zbarController = nil;
+                [self confirmRequest:req];
+            });
         }
         
         break;
