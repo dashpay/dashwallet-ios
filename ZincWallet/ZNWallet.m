@@ -13,13 +13,18 @@
 #import "NSData+Hash.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSString+Base58.h"
+#import <AudioToolbox/AudioToolbox.h>
+#import <netinet/in.h>
+#import "Reachability.h"
 #import "AFNetworking.h"
-#import <Security/Security.h>
+#import "WebSocketUIView.h"
+#import "WebSocketNSStream.h"
 
 #define BASE_URL    @"https://blockchain.info"
 #define UNSPENT_URL BASE_URL "/unspent?active="
 #define ADDRESS_URL BASE_URL "/multiaddr?active="
 #define PUSHTX_PATH @"/pushtx"
+#define SOCKET_URL  @"ws://ws.blockchain.info:8335/inv"
 
 #define ADDRESSES_PER_QUERY 100 // maximum number of addresses to request in a single query
 
@@ -45,7 +50,6 @@
 
 @interface ZNWallet ()
 
-@property (nonatomic, strong) NSUserDefaults *defs;
 @property (nonatomic, strong) NSMutableArray *addresses, *changeAddresses;
 @property (nonatomic, strong) NSMutableArray *spentAddresses, *fundedAddresses, *receiveAddresses;
 @property (nonatomic, strong) NSMutableDictionary *unspentOutputs;
@@ -55,8 +59,14 @@
 @property (nonatomic, strong) NSMutableDictionary *transactions;
 @property (nonatomic, strong) NSMutableDictionary *unconfirmed;
 @property (nonatomic, strong) NSMutableSet *outdatedAddresses, *updatedTransactions;
+
 @property (nonatomic, strong) ZNElectrumSequence *sequence;
 @property (nonatomic, strong) NSData *mpk;
+@property (nonatomic, strong) NSUserDefaults *defs;
+@property (nonatomic, strong) id reachabilityObserver, activeObserver;
+
+@property (nonatomic, strong) WebSocket *webSocket;
+@property (nonatomic, assign) int webSocketFails;
 
 @end
 
@@ -106,7 +116,33 @@
     self.format.maximumFractionDigits = 8;
     self.format.maximum = @21000000.0;
     
+    self.reachabilityObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
+        usingBlock:^(NSNotification *note) {
+            if ([(Reachability *)note.object currentReachabilityStatus] != NotReachable && ! self.webSocket) {
+                self.webSocket = [WebSocketUIView new];
+                self.webSocket.delegate = self;
+                [self.webSocket connect:SOCKET_URL];
+            }
+        }];
+
+    self.activeObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
+            if (! self.webSocket) {
+                self.webSocket = [WebSocketUIView new];
+                self.webSocket.delegate = self;
+                [self.webSocket connect:SOCKET_URL];
+            }
+        }];
+    
     return self;
+}
+
+- (void)dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
+    [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
 }
 
 - (instancetype)initWithSeedPhrase:(NSString *)phrase
@@ -138,7 +174,7 @@
         [self setKeychainObject:seed forKey:SEED_KEY];
         
         _synchronizing = NO;
-        _mpk = nil;
+        self.mpk = nil;
         [self.addresses removeAllObjects];
         [self.changeAddresses removeAllObjects];
         [self.outdatedAddresses removeAllObjects];
@@ -274,9 +310,7 @@
 
 - (NSData *)mpk
 {
-    if (! _mpk) {
-        _mpk = [self.sequence masterPublicKeyFromSeed:self.seed];
-    }
+    if (! _mpk) self.mpk = [self.sequence masterPublicKeyFromSeed:self.seed];
     
     return _mpk;
 }
@@ -325,6 +359,12 @@
     
     _synchronizing = YES;
     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncStartedNotification object:self];
+    
+    if (! self.webSocket) {
+        self.webSocket = [WebSocketUIView new];
+        self.webSocket.delegate = self;
+        [self.webSocket connect:SOCKET_URL];
+    }
     
     self.updatedTransactions = [NSMutableSet set];
     
@@ -401,33 +441,47 @@
     }];
 }
 
-- (void)synchronizeWithGapLimit:(NSUInteger)gapLimit forChange:(BOOL)forChange
-completion:(void (^)(NSError *error))completion
-{    
+- (NSArray *)addressesWithGapLimit:(NSUInteger)gapLimit forChange:(BOOL)forChange
+{
     NSUInteger i = 0;
-    NSMutableArray *newAddresses = [NSMutableArray array];
+    NSMutableArray *addresses = [NSMutableArray array];
     
-    while (newAddresses.count < gapLimit) {
+    while (addresses.count < gapLimit) {
         NSString *a = [(ZNKey *)[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ forChange:forChange
-                       masterPublicKey:self.mpk]] address];
-
+                                 masterPublicKey:self.mpk]] address];
+        
         if (! a) {
             NSLog(@"error generating keys");
-            if (completion) completion(NO);
-            return;
+            return nil;
         }
         
         if (! forChange && self.addresses.count < i) {
             [self.addresses addObject:a];
         }
-
+        
         if (forChange && self.changeAddresses.count < i) {
             [self.changeAddresses addObject:a];
         }
         
         if (! [self.spentAddresses containsObject:a] && ! [self.fundedAddresses containsObject:a]) {
-            [newAddresses addObject:a];
+            [addresses addObject:a];
         }
+    }
+    
+    return addresses;
+}
+
+- (void)synchronizeWithGapLimit:(NSUInteger)gapLimit forChange:(BOOL)forChange
+completion:(void (^)(NSError *error))completion
+{    
+    NSMutableArray *newAddresses = [[self addressesWithGapLimit:gapLimit forChange:forChange] mutableCopy];
+    
+    if (! newAddresses) {
+        if (completion) {
+            completion([NSError errorWithDomain:@"ZincWallet" code:500
+                        userInfo:@{NSLocalizedDescriptionKey:@"error generating keys"}]);
+        }
+        return;
     }
     
     [self queryAddresses:newAddresses completion:^(NSError *error) {
@@ -627,6 +681,28 @@ completion:(void (^)(NSError *error))completion
         }];
     
     [requestOp start];
+}
+
+- (void)subscribeToAddresses:(NSArray *)addresses
+{
+    if (! self.webSocket) return;
+    
+    if (addresses.count > ADDRESSES_PER_QUERY) {
+        [self subscribeToAddresses:[addresses subarrayWithRange:NSMakeRange(0, ADDRESSES_PER_QUERY)]];
+        [self subscribeToAddresses:[addresses subarrayWithRange:NSMakeRange(ADDRESSES_PER_QUERY,
+                                                                            addresses.count - ADDRESSES_PER_QUERY)]];
+        return;
+    }
+    
+    NSMutableString *msg = [NSMutableString string];
+    
+    for (NSString *addr in addresses) {
+        [msg appendFormat:@"{\"op\":\"addr_sub\", \"addr\":\"%@\"}", addr];
+    }
+    
+    NSLog(@"%@", msg);
+    
+    [self.webSocket send:msg];
 }
 
 - (NSTimeInterval)timeSinceLastSync
@@ -941,6 +1017,83 @@ completion:(void (^)(NSError *error))completion
     }];
 
     //XXX also publish transactions directly to coinbase and bitpay servers for faster POS experience
+}
+
+#pragma mark - WebSocketDelegate
+
+- (void)webSocketOnOpen:(WebSocket*)webSocket
+{
+    NSLog(@"Websocket on open");
+    
+    self.webSocketFails = 0;
+
+    [self subscribeToAddresses:[self addressesWithGapLimit:ELECTURM_GAP_LIMIT forChange:NO]];
+    [self subscribeToAddresses:[self addressesWithGapLimit:ELECTURM_GAP_LIMIT_FOR_CHANGE forChange:YES]];
+    [self subscribeToAddresses:self.fundedAddresses];
+    [self subscribeToAddresses:self.spentAddresses];
+}
+
+- (void)webSocketOnClose:(WebSocket*)webSocket
+{
+    NSLog(@"Websocket on close");
+    
+    if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateActive && self.webSocketFails < 5) {
+        self.webSocketFails++;
+        [webSocket connect:SOCKET_URL];
+    }
+    else self.webSocket = nil;
+}
+
+- (void)webSocket:(WebSocket*)webSocket onError:(NSError*)error
+{
+    NSLog(@"Websocket on error");
+    
+    if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateActive && self.webSocketFails < 5) {
+        self.webSocketFails++;
+        [webSocket connect:SOCKET_URL];
+   }
+   else self.webSocket = nil;
+}
+
+- (void)webSocket:(WebSocket*)webSocket onReceive:(NSData*)data
+{ //Data is only until this function returns (You cannot retain it!)
+    NSError *error = nil;
+
+    NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+    
+    if (error || ! json) {
+        NSLog(@"webSocket receive error: %@", error ? error.localizedDescription : [data description]);
+        return;
+    }
+    
+    NSString *op = json[@"op"];
+
+    if ([op isEqualToString:@"utx"]) {
+        NSDictionary *x = json[@"x"];
+        
+        if (x[@"hash"]) {
+            self.transactions[x[@"hash"]] = [NSDictionary dictionaryWithDictionary:x];
+            [_defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
+        }
+        
+        for (NSDictionary *o in x[@"out"]) {
+            NSString *addr = o[@"addr"];
+            uint64_t value = [o[@"value"] unsignedLongLongValue];
+            
+            if (! value || ! addr || ! [self containsAddress:addr]) continue;
+            
+            self.addressBalances[addr] = @([self.addressBalances[addr] unsignedLongLongValue] + value);
+            [_defs setObject:self.addressBalances forKey:ADDRESS_BALANCES_KEY];
+            
+            // audio/haptic feedback should be moved to a balance observer
+            AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+            // [self playBeepSound];
+            [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:self];
+
+            //XXXX instead of syncing, we should update based on tx info from socket
+            [self synchronize];
+        }
+    }
 }
 
 #pragma mark - keychain services

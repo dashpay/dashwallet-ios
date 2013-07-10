@@ -13,3 +13,6 @@
 [submodule "MBProgressHUD"]
 	path = MBProgressHUD
 	url = git://github.com/matej/MBProgressHUD.git
+[submodule "iOS-WebSockets"]
+	path = iOS-WebSockets
+	url = git@github.com:zootreeves/iOS-WebSockets.git

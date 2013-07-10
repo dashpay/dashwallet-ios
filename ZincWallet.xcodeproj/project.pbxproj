@@ -696,6 +696,11 @@
 		7536A2AF177D1A6C00BAC31E /* zbar-help.html in Resources */ = {isa = PBXBuildFile; fileRef = 7536A29E177D1A6C00BAC31E /* zbar-help.html */; };
 		7536A2B0177D1A6C00BAC31E /* zbar-helpicons.png in Resources */ = {isa = PBXBuildFile; fileRef = 7536A29F177D1A6C00BAC31E /* zbar-helpicons.png */; };
 		7536A2B1177D1A6C00BAC31E /* zbar-samples.png in Resources */ = {isa = PBXBuildFile; fileRef = 7536A2A0177D1A6C00BAC31E /* zbar-samples.png */; };
+		753A4144178DEB8A003B938D /* README in Resources */ = {isa = PBXBuildFile; fileRef = 753A413D178DEB8A003B938D /* README */; };
+		753A4145178DEB8A003B938D /* WebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 753A413F178DEB8A003B938D /* WebSocket.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		753A4146178DEB8A003B938D /* WebSocketNSStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 753A4141178DEB8A003B938D /* WebSocketNSStream.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		753A4147178DEB8A003B938D /* WebSocketUIView.m in Sources */ = {isa = PBXBuildFile; fileRef = 753A4143178DEB8A003B938D /* WebSocketUIView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		753A4149178E070C003B938D /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 753A4148178E070C003B938D /* AudioToolbox.framework */; };
 		75402996178C88AF00D4F3FD /* button-bg-bluegradient@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75402995178C88AF00D4F3FD /* button-bg-bluegradient@2x.png */; };
 		75402998178CD08C00D4F3FD /* zincwallet@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75402997178CD08C00D4F3FD /* zincwallet@2x.png */; };
 		7545424F17606C7500638B95 /* button-bg-disabled@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7545424C17606C7500638B95 /* button-bg-disabled@2x.png */; };
@@ -2010,6 +2015,14 @@
 		7536A29E177D1A6C00BAC31E /* zbar-help.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "zbar-help.html"; sourceTree = "<group>"; };
 		7536A29F177D1A6C00BAC31E /* zbar-helpicons.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "zbar-helpicons.png"; sourceTree = "<group>"; };
 		7536A2A0177D1A6C00BAC31E /* zbar-samples.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "zbar-samples.png"; sourceTree = "<group>"; };
+		753A413D178DEB8A003B938D /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
+		753A413E178DEB8A003B938D /* WebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebSocket.h; sourceTree = "<group>"; };
+		753A413F178DEB8A003B938D /* WebSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WebSocket.m; sourceTree = "<group>"; };
+		753A4140178DEB8A003B938D /* WebSocketNSStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebSocketNSStream.h; sourceTree = "<group>"; };
+		753A4141178DEB8A003B938D /* WebSocketNSStream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WebSocketNSStream.m; sourceTree = "<group>"; };
+		753A4142178DEB8A003B938D /* WebSocketUIView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebSocketUIView.h; sourceTree = "<group>"; };
+		753A4143178DEB8A003B938D /* WebSocketUIView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WebSocketUIView.m; sourceTree = "<group>"; };
+		753A4148178E070C003B938D /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		75402995178C88AF00D4F3FD /* button-bg-bluegradient@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-bluegradient@2x.png"; sourceTree = "<group>"; };
 		75402997178CD08C00D4F3FD /* zincwallet@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "zincwallet@2x.png"; sourceTree = "<group>"; };
 		7545424C17606C7500638B95 /* button-bg-disabled@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-disabled@2x.png"; sourceTree = "<group>"; };
@@ -2498,6 +2511,7 @@
 				75F17C2F1744CB3400D9F228 /* libssl.a in Frameworks */,
 				75F17C2E1744CB2E00D9F228 /* libcrypto.a in Frameworks */,
 				75F17C2C1744CB2400D9F228 /* libbitcoin.a in Frameworks */,
+				753A4149178E070C003B938D /* AudioToolbox.framework in Frameworks */,
 				758B585E176BB1DE0069968F /* MessageUI.framework in Frameworks */,
 				759CB23B175E8D4900AFA559 /* AVFoundation.framework in Frameworks */,
 				759CB237175E8A6E00AFA559 /* CoreVideo.framework in Frameworks */,
@@ -2541,6 +2555,7 @@
 			children = (
 				752C2F8517406EEA0033F636 /* Reachability.h */,
 				752C2F8617406EEA0033F636 /* Reachability.m */,
+				753A413C178DEB8A003B938D /* iOS-WebSockets */,
 				75D422F41783E0B000BDD771 /* MBProgressHUD */,
 				752C38AF1742BC4D0033F636 /* AFNetworking */,
 				75FD9C0E17664FE600307894 /* zbar */,
@@ -3821,6 +3836,20 @@
 			path = ZBar/iphone/res;
 			sourceTree = SOURCE_ROOT;
 		};
+		753A413C178DEB8A003B938D /* iOS-WebSockets */ = {
+			isa = PBXGroup;
+			children = (
+				753A413D178DEB8A003B938D /* README */,
+				753A413E178DEB8A003B938D /* WebSocket.h */,
+				753A413F178DEB8A003B938D /* WebSocket.m */,
+				753A4140178DEB8A003B938D /* WebSocketNSStream.h */,
+				753A4141178DEB8A003B938D /* WebSocketNSStream.m */,
+				753A4142178DEB8A003B938D /* WebSocketUIView.h */,
+				753A4143178DEB8A003B938D /* WebSocketUIView.m */,
+			);
+			path = "iOS-WebSockets";
+			sourceTree = "<group>";
+		};
 		7573180B174316900037A109 /* boost */ = {
 			isa = PBXGroup;
 			children = (
@@ -4573,6 +4602,7 @@
 		75D8F380173ABE3C0080D95E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				753A4148178E070C003B938D /* AudioToolbox.framework */,
 				758B585D176BB1DE0069968F /* MessageUI.framework */,
 				759CB23C175E8D6300AFA559 /* CoreMedia.framework */,
 				759CB23A175E8D4900AFA559 /* AVFoundation.framework */,
@@ -4984,6 +5014,7 @@
 				75C2F3D4178D3061009F8CD3 /* cameraguide-green@2x.png in Resources */,
 				75C2F3D5178D3061009F8CD3 /* cameraguide-red@2x.png in Resources */,
 				75C2F3D6178D3061009F8CD3 /* cameraguide@2x.png in Resources */,
+				753A4144178DEB8A003B938D /* README in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6032,6 +6063,9 @@
 				7535CCDF176BE3D2007E29C5 /* ZNButton.m in Sources */,
 				75D423291783E0B100BDD771 /* MBProgressHUD.m in Sources */,
 				75183B88178B4ABE0032F365 /* ZNWelcomeViewController.m in Sources */,
+				753A4145178DEB8A003B938D /* WebSocket.m in Sources */,
+				753A4146178DEB8A003B938D /* WebSocketNSStream.m in Sources */,
+				753A4147178DEB8A003B938D /* WebSocketUIView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

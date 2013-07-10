@@ -19,10 +19,14 @@
 
     //XXX need to upgrade openssl (and other libs) to latest
     
+    //XXX switch to socketrocket from zootreves's webview hack
+    
     //XXX need a way to recieve pushes when unconfirmed transactions to a wallet address happen
     // (this could obviate the need to walk all the addresses looking for new transactions)
 
     //XXX need to implement pin code
+
+    //XXX need to have a network status indicator perferrably tied to websocket status
     
     //XXX figure what to do about bluetooth
     // this will notify user if bluetooth is disabled (on 4S and newer devices that support BTLE)

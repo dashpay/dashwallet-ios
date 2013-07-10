@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "WebSocket.h"
 
 #define walletSyncStartedNotification  @"walletSyncStartedNotification"
 #define walletSyncFinishedNotification @"walletSyncFinishedNotification"
@@ -15,7 +16,7 @@
 
 @class ZNTransaction;
 
-@interface ZNWallet : NSObject
+@interface ZNWallet : NSObject<WebSocketDelegate>
 
 @property (nonatomic, strong) NSString *seedPhrase;
 @property (nonatomic, strong) NSData *seed;
