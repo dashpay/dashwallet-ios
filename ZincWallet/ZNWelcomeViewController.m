@@ -8,6 +8,11 @@
 
 #import "ZNWelcomeViewController.h"
 
+#define WALLPAPER_ANIMATION_DURATION 45.0
+#define WALLPAPER_ANIMATION_X 240.0
+#define WALLPAPER_ANIMATION_Y 45.0
+#define PARALAX_RATIO 0.25
+
 @interface ZNWelcomeViewController ()
 
 @property (nonatomic, assign) CGPoint wallpaperStart, paralaxStart, walletStart, restoreStart;
@@ -36,11 +41,12 @@
             
             self.wallpaper.center = self.wallpaperStart;
             
-            [UIView animateWithDuration:80.0 delay:0.0
+            [UIView animateWithDuration:WALLPAPER_ANIMATION_DURATION delay:0.0
             options:UIViewAnimationOptionCurveLinear|UIViewAnimationOptionRepeat|UIViewAnimationOptionAutoreverse
             animations:^{
                 self.animating = YES;
-                self.wallpaper.center = CGPointMake(self.wallpaperStart.x - 240, self.wallpaperStart.y - 45);
+                self.wallpaper.center = CGPointMake(self.wallpaperStart.x - WALLPAPER_ANIMATION_X,
+                                                    self.wallpaperStart.y - WALLPAPER_ANIMATION_Y);
             } completion:^(BOOL finished) { self.animating = NO; }];
         }];
 }
@@ -66,7 +72,8 @@
 
         self.walletButton.center = CGPointMake(self.walletStart.x - self.view.frame.size.width, self.walletStart.y);
         self.restoreButton.center = CGPointMake(self.restoreStart.x - self.view.frame.size.width, self.restoreStart.y);
-        self.paralax.center = CGPointMake(self.paralaxStart.x - self.view.frame.size.width/4, self.paralaxStart.y);
+        self.paralax.center = CGPointMake(self.paralaxStart.x - self.view.frame.size.width*PARALAX_RATIO,
+                                          self.paralaxStart.y);
         
         [self.navigationController.view insertSubview:self.paralax atIndex:0];
     }
@@ -79,11 +86,12 @@
     if (! self.hasAppeared) {
         self.hasAppeared = YES;
         
-        [UIView animateWithDuration:80.0 delay:0.0
+        [UIView animateWithDuration:WALLPAPER_ANIMATION_DURATION delay:0.0
         options:UIViewAnimationOptionCurveLinear|UIViewAnimationOptionRepeat|UIViewAnimationOptionAutoreverse
         animations:^{
             self.animating = YES;
-            self.wallpaper.center = CGPointMake(self.wallpaperStart.x - 240, self.wallpaperStart.y - 45);
+            self.wallpaper.center = CGPointMake(self.wallpaperStart.x - WALLPAPER_ANIMATION_X,
+                                                self.wallpaperStart.y - WALLPAPER_ANIMATION_Y);
         } completion:^(BOOL finished) { self.animating = NO; }];
         
         [UIView animateWithDuration:UINavigationControllerHideShowBarDuration*2 animations:^{
@@ -108,7 +116,8 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
 
     [UIView animateWithDuration:UINavigationControllerHideShowBarDuration*2 animations:^{
         if (viewController != self) {
-            self.paralax.center = CGPointMake(self.paralaxStart.x - self.view.frame.size.width/4, self.paralaxStart.y);
+            self.paralax.center = CGPointMake(self.paralaxStart.x - self.view.frame.size.width*PARALAX_RATIO,
+                                              self.paralaxStart.y);
         }
         else self.paralax.center = self.paralaxStart;
     }];

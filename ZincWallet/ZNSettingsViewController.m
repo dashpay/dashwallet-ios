@@ -113,10 +113,10 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *disclosureIdent = @"ZNDisclosureCell", *transactionIdent = @"ZNCustomTransactionCell",
+    static NSString *disclosureIdent = @"ZNDisclosureCell", *transactionIdent = @"ZNTransactionCell",
                     *actionIdent = @"ZNActionCell";
     UITableViewCell *cell = nil;
-    __block UILabel *textLabel, *detailTextLabel, *unconfirmedLabel;
+    __block UILabel *textLabel, *detailTextLabel, *unconfirmedLabel, *noTxLabel;
     
     // Configure the cell...
     switch (indexPath.section) {
@@ -125,11 +125,11 @@
             textLabel = (id)[cell viewWithTag:1];
             detailTextLabel = (id)[cell viewWithTag:2];
             unconfirmedLabel = (id)[cell viewWithTag:3];
+            noTxLabel = (id)[cell viewWithTag:4];
 
             if (! self.transactions.count) {
-                textLabel.text = @"no transactions";
-                textLabel.textColor = [UIColor lightGrayColor];
-                textLabel.textAlignment = UITextAlignmentCenter;
+                noTxLabel.hidden = NO;
+                textLabel.text = nil;
                 detailTextLabel.text = nil;
                 unconfirmedLabel.hidden = YES;
             }
@@ -171,12 +171,12 @@
                     textLabel.textAlignment = NSTextAlignmentLeft;
                 }
                 
-                textLabel.textColor = [UIColor darkGrayColor];
-                
                 if (! detailTextLabel.text) detailTextLabel.text = @"can't decode payment address";
                 
                 unconfirmedLabel.hidden = (tx[@"block_height"] == nil) ? NO : YES;
                 unconfirmedLabel.layer.cornerRadius = 3.0;
+                
+                noTxLabel.hidden = YES;
             }
             break;
             
@@ -212,7 +212,7 @@
                 case 0:
                     //cell.contentView.backgroundColor =
                     //    [UIColor colorWithPatternImage:[UIImage imageNamed:@"redgradient.png"]];
-                    cell.textLabel.text = @"start or restore new wallet";
+                    cell.textLabel.text = @"restore or start a new wallet";
                     cell.textLabel.textColor = [UIColor redColor];
                     cell.textLabel.shadowColor = [UIColor clearColor];
                     cell.selectedBackgroundView = [[UIView alloc] initWithFrame:cell.frame];

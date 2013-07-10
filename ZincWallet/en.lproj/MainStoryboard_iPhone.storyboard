@@ -34,11 +34,13 @@
                     <navigationItem key="navigationItem" title="mɃ 0.00000" id="TF6-YO-yee">
                         <barButtonItem key="backBarButtonItem" title="Back" id="sI0-fv-rOw"/>
                         <barButtonItem key="leftBarButtonItem" image="gear-blue.png" id="KKr-sB-LsJ">
+                            <color key="tintColor" white="0.94999999999999996" alpha="1" colorSpace="calibratedWhite"/>
                             <connections>
                                 <segue destination="wFs-aD-OST" kind="modal" id="TZb-LZ-jmy"/>
                             </connections>
                         </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" image="refresh-blue.png" id="Ggn-3r-L4A">
+                            <color key="tintColor" white="0.94999999999999996" alpha="1" colorSpace="calibratedWhite"/>
                             <connections>
                                 <action selector="refresh:" destination="2" id="Zo7-Qa-Bhn"/>
                             </connections>
@@ -63,37 +65,8 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="0.94999999999999996" alpha="1" colorSpace="calibratedWhite"/>
                         <prototypes>
-                            <tableViewCell userInteractionEnabled="NO" contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="ZNTransactionCell" textLabel="B5c-5H-qcE" detailTextLabel="2ps-eK-B5c" rowHeight="60" style="IBUITableViewCellStyleSubtitle" id="uvC-a8-MKx">
+                            <tableViewCell userInteractionEnabled="NO" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="ZNTransactionCell" rowHeight="60" id="rkp-bd-k0B">
                                 <rect key="frame" x="0.0" y="22" width="320" height="60"/>
-                                <autoresizingMask key="autoresizingMask"/>
-                                <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                                    <rect key="frame" x="0.0" y="0.0" width="320" height="59"/>
-                                    <autoresizingMask key="autoresizingMask"/>
-                                    <subviews>
-                                        <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="left" text="Title" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="B5c-5H-qcE">
-                                            <rect key="frame" x="10" y="10" width="29" height="21"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
-                                            <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
-                                            <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                                            <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                            <size key="shadowOffset" width="0.0" height="1"/>
-                                        </label>
-                                        <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="left" text="Detail" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" minimumFontSize="8" id="2ps-eK-B5c">
-                                            <rect key="frame" x="10" y="31" width="32" height="18"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="13"/>
-                                            <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
-                                            <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                                            <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                            <size key="shadowOffset" width="0.0" height="1"/>
-                                        </label>
-                                    </subviews>
-                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                </view>
-                            </tableViewCell>
-                            <tableViewCell userInteractionEnabled="NO" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="ZNCustomTransactionCell" rowHeight="60" id="rkp-bd-k0B">
-                                <rect key="frame" x="0.0" y="82" width="320" height="60"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                     <rect key="frame" x="0.0" y="0.0" width="320" height="59"/>
@@ -126,12 +99,21 @@
                                             <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                             <size key="shadowOffset" width="0.0" height="1"/>
                                         </label>
+                                        <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="4" contentMode="left" text="no transactions" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="l3Q-xL-6Rn">
+                                            <rect key="frame" x="108" y="19" width="104" height="21"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
+                                            <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                                            <color key="highlightedColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                            <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                            <size key="shadowOffset" width="0.0" height="1"/>
+                                        </label>
                                     </subviews>
                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 </view>
                             </tableViewCell>
                             <tableViewCell contentMode="scaleToFill" selectionStyle="blue" accessoryType="disclosureIndicator" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="ZNDisclosureCell" textLabel="x9p-Sr-kIY" style="IBUITableViewCellStyleDefault" id="7il-Ku-8re">
-                                <rect key="frame" x="0.0" y="142" width="320" height="44"/>
+                                <rect key="frame" x="0.0" y="82" width="320" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                     <rect key="frame" x="0.0" y="0.0" width="300" height="43"/>
@@ -149,7 +131,7 @@
                                 </view>
                             </tableViewCell>
                             <tableViewCell contentMode="scaleToFill" selectionStyle="blue" indentationWidth="10" reuseIdentifier="ZNActionCell" textLabel="iC8-LM-OiI" style="IBUITableViewCellStyleDefault" id="JhX-8l-b0v">
-                                <rect key="frame" x="0.0" y="186" width="320" height="44"/>
+                                <rect key="frame" x="0.0" y="126" width="320" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                     <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
@@ -174,6 +156,7 @@
                     <navigationItem key="navigationItem" title="mɃ 0.00000" id="7N8-Cz-vq3">
                         <barButtonItem key="backBarButtonItem" title="Back" id="RaK-k5-PIH"/>
                         <barButtonItem key="leftBarButtonItem" systemItem="done" id="szI-11-pCy">
+                            <color key="tintColor" white="0.94999999999999996" alpha="1" colorSpace="calibratedWhite"/>
                             <connections>
                                 <action selector="done:" destination="ONk-2h-AQR" id="9GK-lu-utT"/>
                             </connections>
@@ -845,6 +828,7 @@
                     </view>
                     <navigationItem key="navigationItem" title="mɃ 0.00000" id="Ufy-kA-8Fw">
                         <barButtonItem key="rightBarButtonItem" title="Pay" id="D8w-gf-PFI">
+                            <color key="tintColor" white="0.94999999999999996" alpha="1" colorSpace="calibratedWhite"/>
                             <connections>
                                 <action selector="pay:" destination="asW-9a-XhX" id="422-mA-SEl"/>
                             </connections>
@@ -894,8 +878,10 @@
                                 <rect key="frame" x="20" y="60" width="280" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="17"/>
-                                <color key="textColor" white="0.5" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                                 <nil key="highlightedColor"/>
+                                <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <size key="shadowOffset" width="0.0" height="1"/>
                             </label>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="WRITE IT DOWN and keep it safe. Lose it and your bitcoins are gone forever." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="u8B-dk-OsH">
                                 <rect key="frame" x="20" y="89" width="280" height="42"/>
@@ -903,6 +889,8 @@
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="15"/>
                                 <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
                                 <nil key="highlightedColor"/>
+                                <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <size key="shadowOffset" width="0.0" height="1"/>
                             </label>
                             <view contentMode="scaleToFill" id="rln-83-F8o">
                                 <rect key="frame" x="20" y="171" width="280" height="160"/>
@@ -925,6 +913,8 @@
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="15"/>
                                 <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
                                 <nil key="highlightedColor"/>
+                                <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <size key="shadowOffset" width="0.0" height="1"/>
                             </label>
                         </subviews>
                         <color key="backgroundColor" white="0.95000000000000007" alpha="1" colorSpace="calibratedWhite"/>
@@ -932,6 +922,7 @@
                     <navigationItem key="navigationItem" id="tT3-tW-Sdf">
                         <nil key="title"/>
                         <barButtonItem key="leftBarButtonItem" systemItem="done" id="vUm-Gv-ORP">
+                            <color key="tintColor" white="0.94999999999999996" alpha="1" colorSpace="calibratedWhite"/>
                             <connections>
                                 <action selector="done:" destination="YDc-aF-His" id="3IR-qq-bhw"/>
                             </connections>
@@ -947,7 +938,8 @@
                             </subviews>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         </view>
-                        <barButtonItem key="rightBarButtonItem" image="refresh.png" id="QGO-De-ckJ">
+                        <barButtonItem key="rightBarButtonItem" image="refresh-blue.png" id="QGO-De-ckJ">
+                            <color key="tintColor" white="0.94999999999999996" alpha="1" colorSpace="calibratedWhite"/>
                             <connections>
                                 <action selector="refresh:" destination="YDc-aF-His" id="Jes-6d-lR5"/>
                             </connections>
@@ -997,18 +989,21 @@
                                     <outlet property="delegate" destination="yia-gn-YeR" id="c9q-hc-ngz"/>
                                 </connections>
                             </textView>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Enter your wallet backup phrase to wipe this wallet and start or restore a new one:" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="DYH-TG-7mB">
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Enter your wallet backup phrase to wipe this wallet and restore or start a new one:" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="DYH-TG-7mB">
                                 <rect key="frame" x="20" y="20" width="280" height="60"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="15"/>
                                 <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
                                 <nil key="highlightedColor"/>
+                                <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <size key="shadowOffset" width="0.0" height="1"/>
                             </label>
                         </subviews>
                         <color key="backgroundColor" white="0.95000000000000007" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
                     <navigationItem key="navigationItem" title="confirm wipe" id="HeJ-Db-2RQ">
                         <barButtonItem key="leftBarButtonItem" systemItem="cancel" id="fzo-HD-Vdr">
+                            <color key="tintColor" white="0.94999999999999996" alpha="1" colorSpace="calibratedWhite"/>
                             <connections>
                                 <action selector="cancel:" destination="yia-gn-YeR" id="ye5-ku-vS6"/>
                             </connections>
@@ -1045,7 +1040,6 @@
         <image name="deletetoleft.png" width="120" height="92"/>
         <image name="gear-blue.png" width="19" height="19.501354217529297"/>
         <image name="refresh-blue.png" width="13" height="15.501075744628906"/>
-        <image name="refresh.png" width="13" height="15.501075744628906"/>
         <image name="wallpaper.jpg" width="1024" height="768"/>
         <image name="zincwallet.png" width="16" height="16"/>
     </resources>

@@ -691,19 +691,23 @@
 
 - (void)imagePickerController:(UIImagePickerController *)reader didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
-    ZNPaymentRequest *req = self.requests[self.selectedIndex];
+    ZNPaymentRequest *req = self.requests[[self.requestIDs indexOfObject:QR_ID]];
 
-    req.data = [(NSString *)[[info objectForKey:ZBarReaderControllerResults][0] data]
-                dataUsingEncoding:NSUTF8StringEncoding];
-    
-    if (! req.paymentAddress) {
-        [[[UIAlertView alloc] initWithTitle:@"not a bitcoin QR code" message:nil delegate:nil cancelButtonTitle:@"OK"
-          otherButtonTitles:nil] show];
-    }
-    else {
-        [reader dismissViewControllerAnimated:YES completion:nil];
-        [self.requestButtons[self.selectedIndex] setEnabled:NO];
-        [self confirmRequest:req];
+    for (id result in info[ZBarReaderControllerResults]) {
+        NSString *s = (id)[result data];
+        req.data = [s dataUsingEncoding:NSUTF8StringEncoding];
+        
+        if (! req.paymentAddress) {
+            [[[UIAlertView alloc] initWithTitle:@"not a bitcoin QR code" message:nil delegate:nil
+              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        }
+        else {
+            //XXXX need some visual feedback here, a camera guide that turns green for 0.5s would be flippin' sweet!
+            [reader dismissViewControllerAnimated:YES completion:nil];
+            [self confirmRequest:req];
+        }
+        
+        break;
     }
 }
 
