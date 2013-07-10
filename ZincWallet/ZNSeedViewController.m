@@ -15,6 +15,8 @@
 @property (nonatomic, strong) IBOutlet UILabel *seedLabel, *compatiblityLabel;
 @property (nonatomic, strong) IBOutlet UIView *labelFrame;
 
+@property (nonatomic, strong) id resignActiveObserver;
+
 @end
 
 @implementation ZNSeedViewController
@@ -27,6 +29,21 @@
     self.labelFrame.layer.cornerRadius = 5.0;
     self.labelFrame.layer.borderWidth = 0.5;
     self.labelFrame.layer.borderColor = [[UIColor colorWithWhite:0.85 alpha:1.0] CGColor];
+    
+    self.resignActiveObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
+            if (self.navigationController.viewControllers[0] != self) {
+                [self.navigationController popViewControllerAnimated:NO];
+            }
+        }];
+}
+
+- (void)viewWillUnload
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
+
+    [super viewWillUnload];
 }
 
 - (void)viewWillAppear:(BOOL)animated
