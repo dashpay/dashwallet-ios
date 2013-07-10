@@ -58,7 +58,7 @@
     }
     
     if (! white) {
-        white = [[UIImage imageNamed:@"button-bg-white-pressed.png"]
+        white = [[UIImage imageNamed:@"button-bg-whitegradient.png"]
                  resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 5.0, 15.0, 5.0)];
     }
     

@@ -57,7 +57,6 @@
     // Do any additional setup after loading the view, typically from a nib.
 
     //XXXX design transition from splash image
-    //XXXX zincwallet title is off by 0.5px ! 
     
     //XXX add a field for manually entering a payment address
 
@@ -97,6 +96,7 @@
             }
         }];
     
+    //XXX instead of autosyncing, we should open a socket and listen for transaction broadcasts
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
@@ -420,7 +420,6 @@
         //XXXX customize look of zbar controller
         //XXXX remove zbar info button
         //XXXX also need to add a camera guide
-        //XXXX test how it works with ipod
         ZBarReaderViewController *c = [ZBarReaderViewController new];
 
         c.readerDelegate = self;

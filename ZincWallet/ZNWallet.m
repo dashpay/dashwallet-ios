@@ -286,6 +286,7 @@
 - (void)cleanUnconfirmed
 {
     //XXX should we remove unconfirmed transactions after 2 days?
+    //XXX we should keep a seprate list of failed transactions to display along with the successful ones
     
     if (! self.unconfirmed.count) return;
 
@@ -362,6 +363,7 @@
                 }
                 
                 // remove unconfirmed transactions that no longer appear in query results
+                //XXX we should keep a seprate list of failed transactions to display along with the successful ones
                 [self.transactions
                 removeObjectsForKeys:[self.transactions keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
                     return (obj[@"block_height"] || [self.updatedTransactions containsObject:obj[@"hash"]]) ? NO : YES;
