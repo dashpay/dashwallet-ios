@@ -56,8 +56,6 @@
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
-
-    //XXXX design transition from splash image
     
     //XXX add a field for manually entering a payment address
 
@@ -172,12 +170,30 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+ 
+    static BOOL firstAppearance = YES;
     
     if (! [[ZNWallet sharedInstance] seed]) {
         UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNNewWalletNav"];
         
         [self.navigationController presentViewController:c animated:NO completion:nil];
         return;
+    }
+    else if (firstAppearance) {
+        UIView *v = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"Default-568h.png"]];
+        CGRect f = v.frame;
+
+        v.contentMode = UIViewContentModeBottomLeft;
+        v.clipsToBounds = YES;
+        f.size.height -= 20;
+        f.origin.y += 20;
+        v.frame = f;
+        
+        [self.navigationController.view addSubview:v];
+        
+        [UIView animateWithDuration:UINavigationControllerHideShowBarDuration*2 animations:^{
+            v.center = CGPointMake(v.center.x, v.center.y + self.navigationController.view.frame.size.height);
+        }];
     }
     
     self.session = [[GKSession alloc] initWithSessionID:GK_SESSION_ID
@@ -219,8 +235,6 @@
     self.receiveController.view.frame = CGRectMake(f.origin.x + f.size.width, f.origin.y, f.size.width, f.size.height);
     [self.receiveController viewWillAppear:NO];
     [self.scrollView addSubview:self.receiveController.view];
-    
-    static BOOL firstAppearance = YES;
     
     if (firstAppearance) {
         firstAppearance = NO;

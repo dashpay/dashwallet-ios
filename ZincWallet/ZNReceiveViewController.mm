@@ -104,7 +104,7 @@
     [a addButtonWithTitle:@"cancel"];
     a.cancelButtonIndex = a.numberOfButtons - 1;
     
-    [a showInView:[UIApplication sharedApplication].keyWindow];
+    [a showInView:[[UIApplication sharedApplication] keyWindow]];
 }
 
 - (IBAction)issueRequest:(id)sender
