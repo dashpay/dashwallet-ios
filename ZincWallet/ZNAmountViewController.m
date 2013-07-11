@@ -29,8 +29,6 @@
 
 @implementation ZNAmountViewController
 
-//XXXX need to work on delete to left image
-
 - (void)viewDidLoad
 {
     [super viewDidLoad];
