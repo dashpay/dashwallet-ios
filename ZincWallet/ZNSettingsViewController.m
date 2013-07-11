@@ -57,7 +57,7 @@
             self.navigationItem.title = [w stringForAmount:w.balance];
             w.format.minimumFractionDigits = 0;
             
-            self.transactions = [ZNWallet sharedInstance].recentTransactions;
+            self.transactions = [[ZNWallet sharedInstance] recentTransactions];
             
             [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
              withRowAnimation:UITableViewRowAnimationAutomatic];
@@ -73,7 +73,7 @@
 {
     [super viewWillAppear:animated];
     
-    self.transactions = [ZNWallet sharedInstance].recentTransactions;
+    self.transactions = [[ZNWallet sharedInstance] recentTransactions];
 }
 
 - (void)didReceiveMemoryWarning
@@ -159,16 +159,16 @@
                 
                 if (withinWallet) {
                     textLabel.text = [w stringForAmount:spent];
-                    textLabel.textAlignment = NSTextAlignmentLeft;
+                    textLabel.textAlignment = NSTextAlignmentRight;
                     detailTextLabel.text = @"moved within wallet";
                 }
                 else if (spent > 0) {
                     textLabel.text = [NSString stringWithFormat:@"(%@)", [w stringForAmount:spent - received]];
-                    textLabel.textAlignment = NSTextAlignmentRight;
+                    textLabel.textAlignment = NSTextAlignmentLeft;
                 }
                 else {
                     textLabel.text = [w stringForAmount:received];
-                    textLabel.textAlignment = NSTextAlignmentLeft;
+                    textLabel.textAlignment = NSTextAlignmentRight;
                 }
                 
                 if (! detailTextLabel.text) detailTextLabel.text = @"can't decode payment address";

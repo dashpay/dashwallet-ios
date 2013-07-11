@@ -50,13 +50,12 @@
 //XXX also should offer to sweep balance into wallet if it's a private key not already in wallet.
 - (void)setData:(NSData *)data
 {
-    if (! data) {
-        self.paymentAddress = nil;
-        self.label = nil;
-        self.message = nil;
-        self.amount = 0;
-        return;
-    }
+    self.paymentAddress = nil;
+    self.label = nil;
+    self.message = nil;
+    self.amount = 0;
+
+    if (! data) return;
 
     NSString *s = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
     NSURL *url = [NSURL URLWithString:s];

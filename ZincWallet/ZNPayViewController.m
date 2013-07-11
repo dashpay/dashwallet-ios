@@ -241,10 +241,15 @@
             [self.scrollView setContentOffset:CGPointMake(self.scrollView.frame.size.width, 0) animated:NO];
         }
     }
-
-    if ([[ZNWallet sharedInstance] timeSinceLastSync] > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
     
     [self layoutButtonsAnimated:NO];
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    
+    if ([[ZNWallet sharedInstance] timeSinceLastSync] > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -291,6 +296,7 @@
             
             if (idx < self.requests.count) {
                 ZNPaymentRequest *req = self.requests[idx];
+
                 [obj setTitle:req.label forState:UIControlStateNormal];
                 
                 if ([req.label rangeOfString:BTC].location != NSNotFound) {
@@ -694,7 +700,9 @@
 
     for (id result in info[ZBarReaderControllerResults]) {
         NSString *s = (id)[result data];
+
         req.data = [s dataUsingEncoding:NSUTF8StringEncoding];
+        req.label = @"scan QR code";
         
         if (! req.paymentAddress) {
             [[[UIAlertView alloc] initWithTitle:@"not a bitcoin QR code" message:nil delegate:nil
@@ -704,6 +712,7 @@
             [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide-green.png"]];
             
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_current_queue(), ^{
+                self.selectedIndex = [self.requestIDs indexOfObject:QR_ID];
                 [self confirmRequest:req];
                 [reader dismissViewControllerAnimated:YES completion:nil];
                 self.zbarController = nil;

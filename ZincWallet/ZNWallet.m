@@ -53,7 +53,6 @@
 @property (nonatomic, strong) NSMutableArray *addresses, *changeAddresses;
 @property (nonatomic, strong) NSMutableArray *spentAddresses, *fundedAddresses, *receiveAddresses;
 @property (nonatomic, strong) NSMutableDictionary *unspentOutputs;
-@property (nonatomic, strong) NSMutableDictionary *spentOutputs;
 @property (nonatomic, strong) NSMutableDictionary *addressBalances;
 @property (nonatomic, strong) NSMutableDictionary *addressTxCount;
 @property (nonatomic, strong) NSMutableDictionary *transactions;
@@ -116,12 +115,15 @@
     self.format.maximumFractionDigits = 8;
     self.format.maximum = @21000000.0;
     
+    self.webSocket = [WebSocketUIView new];
+    self.webSocket.delegate = self;
+    [self.webSocket connect:SOCKET_URL];
+    
     self.reachabilityObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if ([(Reachability *)note.object currentReachabilityStatus] != NotReachable && ! self.webSocket) {
-                self.webSocket = [WebSocketUIView new];
-                self.webSocket.delegate = self;
+            if ([(Reachability *)note.object currentReachabilityStatus] != NotReachable &&
+                self.webSocket.readyState != ReadyStateOpen && self.webSocket.readyState != ReadyStateConnecting) {
                 [self.webSocket connect:SOCKET_URL];
             }
         }];
@@ -129,9 +131,7 @@
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (! self.webSocket) {
-                self.webSocket = [WebSocketUIView new];
-                self.webSocket.delegate = self;
+            if (self.webSocket.readyState != ReadyStateOpen && self.webSocket.readyState != ReadyStateConnecting) {
                 [self.webSocket connect:SOCKET_URL];
             }
         }];
@@ -360,9 +360,7 @@
     _synchronizing = YES;
     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncStartedNotification object:self];
     
-    if (! self.webSocket) {
-        self.webSocket = [WebSocketUIView new];
-        self.webSocket.delegate = self;
+    if (self.webSocket.readyState != ReadyStateOpen && self.webSocket.readyState != ReadyStateConnecting) {
         [self.webSocket connect:SOCKET_URL];
     }
     
@@ -445,6 +443,7 @@
 {
     NSUInteger i = 0;
     NSMutableArray *addresses = [NSMutableArray array];
+    NSMutableArray *newaddresses = [NSMutableArray array];
     
     while (addresses.count < gapLimit) {
         NSString *a = [(ZNKey *)[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ forChange:forChange
@@ -457,16 +456,20 @@
         
         if (! forChange && self.addresses.count < i) {
             [self.addresses addObject:a];
+            [newaddresses addObject:a];
         }
         
         if (forChange && self.changeAddresses.count < i) {
             [self.changeAddresses addObject:a];
+            [newaddresses addObject:a];
         }
         
         if (! [self.spentAddresses containsObject:a] && ! [self.fundedAddresses containsObject:a]) {
             [addresses addObject:a];
         }
     }
+    
+    if (newaddresses.count) [self subscribeToAddresses:newaddresses];
     
     return addresses;
 }
@@ -478,8 +481,9 @@ completion:(void (^)(NSError *error))completion
     
     if (! newAddresses) {
         if (completion) {
-            completion([NSError errorWithDomain:@"ZincWallet" code:500
-                        userInfo:@{NSLocalizedDescriptionKey:@"error generating keys"}]);
+            completion(nil);
+            //completion([NSError errorWithDomain:@"ZincWallet" code:500
+            //            userInfo:@{NSLocalizedDescriptionKey:@"error generating keys"}]);
         }
         return;
     }
@@ -683,28 +687,6 @@ completion:(void (^)(NSError *error))completion
     [requestOp start];
 }
 
-- (void)subscribeToAddresses:(NSArray *)addresses
-{
-    if (! self.webSocket) return;
-    
-    if (addresses.count > ADDRESSES_PER_QUERY) {
-        [self subscribeToAddresses:[addresses subarrayWithRange:NSMakeRange(0, ADDRESSES_PER_QUERY)]];
-        [self subscribeToAddresses:[addresses subarrayWithRange:NSMakeRange(ADDRESSES_PER_QUERY,
-                                                                            addresses.count - ADDRESSES_PER_QUERY)]];
-        return;
-    }
-    
-    NSMutableString *msg = [NSMutableString string];
-    
-    for (NSString *addr in addresses) {
-        [msg appendFormat:@"{\"op\":\"addr_sub\", \"addr\":\"%@\"}", addr];
-    }
-    
-    NSLog(@"%@", msg);
-    
-    [self.webSocket send:msg];
-}
-
 - (NSTimeInterval)timeSinceLastSync
 {
     return [NSDate timeIntervalSinceReferenceDate] - [_defs doubleForKey:LAST_SYNC_TIME_KEY];
@@ -768,20 +750,11 @@ completion:(void (^)(NSError *error))completion
 
 - (NSArray *)recentTransactions
 {
-    NSMutableArray *r = [NSMutableArray arrayWithCapacity:self.unconfirmed.count + self.transactions.count];
-    
     // sort in descending order by timestamp (using block_height doesn't work for unconfirmed, or multiple tx per block)
-    [r addObjectsFromArray:[self.unconfirmed.allValues sortedArrayWithOptions:0
-    usingComparator:^NSComparisonResult(id obj1, id obj2) {
-        return [@([obj2[@"time"] doubleValue]) compare:@([obj1[@"time"] doubleValue])];
-    }]];
-
-    [r addObjectsFromArray:[self.transactions.allValues sortedArrayWithOptions:0
-    usingComparator:^NSComparisonResult(id obj1, id obj2) {
-        return [@([obj2[@"time"] doubleValue]) compare:@([obj1[@"time"] doubleValue])];
-    }]];
-    
-    return r;
+    return [[self.transactions.allValues arrayByAddingObjectsFromArray:self.unconfirmed.allValues]
+           sortedArrayWithOptions:0 usingComparator:^NSComparisonResult(id obj1, id obj2) {
+               return [@([obj2[@"time"] doubleValue]) compare:@([obj1[@"time"] doubleValue])];
+           }];
 }
 
 - (NSUInteger)estimatedCurrentBlockHeight
@@ -979,11 +952,18 @@ completion:(void (^)(NSError *error))completion
             NSDictionary *o = self.unspentOutputs[[hash stringByAppendingString:n]];
             
             if (o) {
-                self.addressBalances[obj] =
-                    @([self.addressBalances[obj] unsignedLongLongValue] - [o[@"value"] unsignedLongLongValue]);
+                uint64_t balance = [self.addressBalances[obj] unsignedLongLongValue] -
+                                   [o[@"value"] unsignedLongLongValue];
+
+                self.addressBalances[obj] = @(balance);
 
                 [updated addObject:obj];
                 [self.unspentOutputs removeObjectForKey:[hash stringByAppendingString:n]];
+                
+                if (balance == 0) {
+                    [self.fundedAddresses removeObject:obj];
+                    if (! [self.spentAddresses containsObject:obj]) [self.spentAddresses addObject:obj];
+                }
                 
                 //XXX for now we don't need to store spent outputs because blockchain.info will not list them as unspent
                 // while there is an unconfirmed tx that spends them. This may change once we have multiple apis for
@@ -997,12 +977,15 @@ completion:(void (^)(NSError *error))completion
             [tx[@"out"] addObject:@{@"n":@(idx), @"value":transaction.outputAmounts[idx], @"addr":obj}];
         }];
         
-        [updated enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
-            self.addressTxCount[obj] = @([self.addressTxCount[obj] unsignedIntegerValue] + 1);
-        }];
+        // don't update addressTxCount so the address's unspent outputs will be updated on next sync
+        //[updated enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
+        //    self.addressTxCount[obj] = @([self.addressTxCount[obj] unsignedIntegerValue] + 1);
+        //}];
         
         self.unconfirmed[tx[@"hash"]] = tx;
         
+        [_defs setObject:self.fundedAddresses forKey:FUNDED_ADDRESSES_KEY];
+        [_defs setObject:self.spentAddresses forKey:SPENT_ADDRESSES_KEY];
         [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
         [_defs setObject:self.addressBalances forKey:ADDRESS_BALANCES_KEY];
         [_defs setObject:self.addressTxCount forKey:ADDRESS_TX_COUNT_KEY];
@@ -1013,6 +996,7 @@ completion:(void (^)(NSError *error))completion
         
         if (completion) completion(nil);
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"%@", operation.responseString);
         if (completion) completion(error);
     }];
 
@@ -1021,11 +1005,36 @@ completion:(void (^)(NSError *error))completion
 
 #pragma mark - WebSocketDelegate
 
+- (void)subscribeToAddresses:(NSArray *)addresses
+{
+    if (! addresses.count || self.webSocket.readyState != ReadyStateOpen) return;
+    
+    if (addresses.count > ADDRESSES_PER_QUERY) {
+        [self subscribeToAddresses:[addresses subarrayWithRange:NSMakeRange(0, ADDRESSES_PER_QUERY)]];
+        [self subscribeToAddresses:[addresses subarrayWithRange:NSMakeRange(ADDRESSES_PER_QUERY,
+                                                                            addresses.count - ADDRESSES_PER_QUERY)]];
+        return;
+    }
+    
+    NSMutableString *msg = [NSMutableString string];
+    
+    for (NSString *addr in addresses) {
+        [msg appendFormat:@"{\"op\":\"addr_sub\", \"addr\":\"%@\"}", addr];
+    }
+    
+    NSLog(@"%@", msg);
+    
+    [self.webSocket send:msg];
+}
+
 - (void)webSocketOnOpen:(WebSocket*)webSocket
 {
     NSLog(@"Websocket on open");
-    
+        
     self.webSocketFails = 0;
+
+    NSLog(@"{\"op\":\"blocks_sub\"}");
+    [webSocket send:@"{\"op\":\"blocks_sub\"}"];
 
     [self subscribeToAddresses:[self addressesWithGapLimit:ELECTURM_GAP_LIMIT forChange:NO]];
     [self subscribeToAddresses:[self addressesWithGapLimit:ELECTURM_GAP_LIMIT_FOR_CHANGE forChange:YES]];
@@ -1041,7 +1050,6 @@ completion:(void (^)(NSError *error))completion
         self.webSocketFails++;
         [webSocket connect:SOCKET_URL];
     }
-    else self.webSocket = nil;
 }
 
 - (void)webSocket:(WebSocket*)webSocket onError:(NSError*)error
@@ -1052,7 +1060,6 @@ completion:(void (^)(NSError *error))completion
         self.webSocketFails++;
         [webSocket connect:SOCKET_URL];
    }
-   else self.webSocket = nil;
 }
 
 - (void)webSocket:(WebSocket*)webSocket onReceive:(NSData*)data
@@ -1068,31 +1075,90 @@ completion:(void (^)(NSError *error))completion
     
     NSString *op = json[@"op"];
 
-    if ([op isEqualToString:@"utx"]) {
+    if ([op isEqual:@"utx"]) {
         NSDictionary *x = json[@"x"];
+        NSMutableSet *updated = [NSMutableSet set];
         
         if (x[@"hash"]) {
+            [self.unconfirmed removeObjectForKey:x[@"hash"]];
             self.transactions[x[@"hash"]] = [NSDictionary dictionaryWithDictionary:x];
-            [_defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
         }
         
-        for (NSDictionary *o in x[@"out"]) {
-            NSString *addr = o[@"addr"];
-            uint64_t value = [o[@"value"] unsignedLongLongValue];
+        [x[@"out"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            NSString *addr = obj[@"addr"];
+            uint64_t value = [obj[@"value"] unsignedLongLongValue];
             
-            if (! value || ! addr || ! [self containsAddress:addr]) continue;
+            [updated addObject:addr];
             
-            self.addressBalances[addr] = @([self.addressBalances[addr] unsignedLongLongValue] + value);
-            [_defs setObject:self.addressBalances forKey:ADDRESS_BALANCES_KEY];
+            if (value == 0 || ! addr || ! [self containsAddress:addr]) return;
             
-            // audio/haptic feedback should be moved to a balance observer
-            AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
-            // [self playBeepSound];
-            [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:self];
+            uint64_t balance = [self.addressBalances[addr] unsignedLongLongValue] + value;
+            
+            self.addressBalances[addr] = @(balance);
+            if (! [self.fundedAddresses containsObject:addr]) [self.fundedAddresses addObject:addr];
+            [self.spentAddresses removeObject:addr];
+            [self.receiveAddresses removeObject:addr];
+            
+            NSMutableData *script = [NSMutableData data];
+            
+            [script appendScriptPubKeyForAddress:addr];
+            
+            self.unspentOutputs[[x[@"hash"] stringByAppendingFormat:@"%d", idx]] =
+                @{@"tx_hash":x[@"hash"], @"tx_index":x[@"tx_index"], @"tx_output_n":@(idx), @"script":[script toHex],
+                  @"value":@(value), @"confirmations":@(0)};
+        }];
+        
+        // don't update addressTxCount so the address's unspent outputs will be updated on next sync
+        //[updated enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
+        //    self.addressTxCount[obj] = @([self.addressTxCount[obj] unsignedIntegerValue] + 1);
+        //}];
 
-            //XXXX instead of syncing, we should update based on tx info from socket
-            [self synchronize];
+        [_defs setObject:self.unconfirmed forKey:UNCONFIRMED_KEY];
+        [_defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
+        [_defs setObject:self.addressBalances forKey:ADDRESS_BALANCES_KEY];
+        [_defs setObject:self.fundedAddresses forKey:FUNDED_ADDRESSES_KEY];
+        [_defs setObject:self.spentAddresses forKey:SPENT_ADDRESSES_KEY];
+        [_defs setObject:self.receiveAddress forKey:RECEIVE_ADDRESSES_KEY];
+        [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
+
+        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+        //XXX [self playBeepSound];
+
+        [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:self];
+                
+        [_defs synchronize];
+    }
+    else if ([op isEqual:@"block"]) {
+        NSDictionary *x = json[@"x"];
+        NSUInteger height = [x[@"height"] unsignedIntegerValue];
+        NSTimeInterval time = [x[@"time"] doubleValue];
+        NSArray *txIndexes = x[@"txIndexes"];
+        __block BOOL confirmed = NO;
+        
+        if (height) {
+            [_defs setInteger:height forKey:LATEST_BLOCK_HEIGHT_KEY];
+            [_defs setDouble:time forKey:LATEST_BLOCK_TIMESTAMP_KEY];
         }
+        
+        [[self.transactions keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
+            return [txIndexes containsObject:obj[@"tx_index"]];
+        }] enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
+            NSMutableDictionary *tx = [NSMutableDictionary dictionaryWithDictionary:self.transactions[obj]];
+            
+            tx[@"block_height"] = @(height);
+            self.transactions[obj] = tx;
+            confirmed = YES;
+        }];
+
+        if (confirmed) {
+            [_defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
+            [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:self];
+        }
+        
+        [_defs synchronize];
+    }
+    else if ([op isEqual:@"status"]) {
+        NSLog(@"%@", json[@"msg"]);
     }
 }
 
