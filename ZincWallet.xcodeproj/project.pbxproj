@@ -696,10 +696,6 @@
 		7536A2AF177D1A6C00BAC31E /* zbar-help.html in Resources */ = {isa = PBXBuildFile; fileRef = 7536A29E177D1A6C00BAC31E /* zbar-help.html */; };
 		7536A2B0177D1A6C00BAC31E /* zbar-helpicons.png in Resources */ = {isa = PBXBuildFile; fileRef = 7536A29F177D1A6C00BAC31E /* zbar-helpicons.png */; };
 		7536A2B1177D1A6C00BAC31E /* zbar-samples.png in Resources */ = {isa = PBXBuildFile; fileRef = 7536A2A0177D1A6C00BAC31E /* zbar-samples.png */; };
-		753A4144178DEB8A003B938D /* README in Resources */ = {isa = PBXBuildFile; fileRef = 753A413D178DEB8A003B938D /* README */; };
-		753A4145178DEB8A003B938D /* WebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 753A413F178DEB8A003B938D /* WebSocket.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		753A4146178DEB8A003B938D /* WebSocketNSStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 753A4141178DEB8A003B938D /* WebSocketNSStream.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		753A4147178DEB8A003B938D /* WebSocketUIView.m in Sources */ = {isa = PBXBuildFile; fileRef = 753A4143178DEB8A003B938D /* WebSocketUIView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		753A4149178E070C003B938D /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 753A4148178E070C003B938D /* AudioToolbox.framework */; };
 		75402996178C88AF00D4F3FD /* button-bg-bluegradient@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75402995178C88AF00D4F3FD /* button-bg-bluegradient@2x.png */; };
 		75402998178CD08C00D4F3FD /* zincwallet@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75402997178CD08C00D4F3FD /* zincwallet@2x.png */; };
@@ -971,7 +967,6 @@
 		758B585E176BB1DE0069968F /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 758B585D176BB1DE0069968F /* MessageUI.framework */; };
 		758F2D8217669D6800102AF1 /* libqrencoder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75AF36D7176675D3004AA912 /* libqrencoder.a */; };
 		7591EC0E1773DD3700B44340 /* redgradient@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7591EC0D1773DD3700B44340 /* redgradient@2x.png */; };
-		75920F7F174AAE5F00C1C03D /* netbase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75920F7D174AAE5F00C1C03D /* netbase.cpp */; };
 		75920F86174AB82100C1C03D /* NSMutableData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 75920F85174AB82100C1C03D /* NSMutableData+Bitcoin.m */; };
 		759CB235175E8A1200AFA559 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB234175E8A1200AFA559 /* QuartzCore.framework */; };
 		759CB237175E8A6E00AFA559 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB236175E8A6E00AFA559 /* CoreVideo.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
@@ -1065,6 +1060,10 @@
 		75FD9D511766532D00307894 /* ZBarReaderViewImpl_Capture.m in Sources */ = {isa = PBXBuildFile; fileRef = 75FD9D3B1766532D00307894 /* ZBarReaderViewImpl_Capture.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		75FD9D521766532D00307894 /* ZBarReaderViewImpl_Simulator.m in Sources */ = {isa = PBXBuildFile; fileRef = 75FD9D3C1766532D00307894 /* ZBarReaderViewImpl_Simulator.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		75FD9D531766532D00307894 /* ZBarSymbol.m in Sources */ = {isa = PBXBuildFile; fileRef = 75FD9D3D1766532D00307894 /* ZBarSymbol.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		8461CE541798A42B00DF8E4C /* netbase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8461CE521798A42B00DF8E4C /* netbase.cpp */; };
+		8461CE5B1798A4BC00DF8E4C /* WebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 8461CE561798A4BC00DF8E4C /* WebSocket.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		8461CE5C1798A4BC00DF8E4C /* WebSocketNSStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 8461CE581798A4BC00DF8E4C /* WebSocketNSStream.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		8461CE5D1798A4BC00DF8E4C /* WebSocketUIView.m in Sources */ = {isa = PBXBuildFile; fileRef = 8461CE5A1798A4BC00DF8E4C /* WebSocketUIView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1189,7 +1188,6 @@
 		752A3F5B17436A5F00C0632D /* hash.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = hash.cpp; path = bitcoin/src/hash.cpp; sourceTree = SOURCE_ROOT; };
 		752A3F5C17436A6000C0632D /* hash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = hash.h; path = bitcoin/src/hash.h; sourceTree = SOURCE_ROOT; };
 		752A3F5E17436A7E00C0632D /* uint256.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = uint256.h; path = bitcoin/src/uint256.h; sourceTree = SOURCE_ROOT; };
-		752A3F79174484F200C0632D /* bitcoinrpc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bitcoinrpc.h; path = ../../bitcoin/src/bitcoinrpc.h; sourceTree = "<group>"; };
 		752C2F8517406EEA0033F636 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
 		752C2F8617406EEA0033F636 /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
 		752C2F8817406FF70033F636 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
@@ -2015,13 +2013,6 @@
 		7536A29E177D1A6C00BAC31E /* zbar-help.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "zbar-help.html"; sourceTree = "<group>"; };
 		7536A29F177D1A6C00BAC31E /* zbar-helpicons.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "zbar-helpicons.png"; sourceTree = "<group>"; };
 		7536A2A0177D1A6C00BAC31E /* zbar-samples.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "zbar-samples.png"; sourceTree = "<group>"; };
-		753A413D178DEB8A003B938D /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
-		753A413E178DEB8A003B938D /* WebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebSocket.h; sourceTree = "<group>"; };
-		753A413F178DEB8A003B938D /* WebSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WebSocket.m; sourceTree = "<group>"; };
-		753A4140178DEB8A003B938D /* WebSocketNSStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebSocketNSStream.h; sourceTree = "<group>"; };
-		753A4141178DEB8A003B938D /* WebSocketNSStream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WebSocketNSStream.m; sourceTree = "<group>"; };
-		753A4142178DEB8A003B938D /* WebSocketUIView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebSocketUIView.h; sourceTree = "<group>"; };
-		753A4143178DEB8A003B938D /* WebSocketUIView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WebSocketUIView.m; sourceTree = "<group>"; };
 		753A4148178E070C003B938D /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		75402995178C88AF00D4F3FD /* button-bg-bluegradient@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-bluegradient@2x.png"; sourceTree = "<group>"; };
 		75402997178CD08C00D4F3FD /* zincwallet@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "zincwallet@2x.png"; sourceTree = "<group>"; };
@@ -2309,9 +2300,6 @@
 		7573F080174313910037A109 /* libboost.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libboost.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		758B585D176BB1DE0069968F /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		7591EC0D1773DD3700B44340 /* redgradient@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "redgradient@2x.png"; sourceTree = "<group>"; };
-		75920F7D174AAE5F00C1C03D /* netbase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = netbase.cpp; path = ../../bitcoin/src/netbase.cpp; sourceTree = "<group>"; };
-		75920F7E174AAE5F00C1C03D /* netbase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = netbase.h; path = ../../bitcoin/src/netbase.h; sourceTree = "<group>"; };
-		75920F83174AAF5300C1C03D /* ui_interface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ui_interface.h; path = ../../bitcoin/src/ui_interface.h; sourceTree = "<group>"; };
 		75920F84174AB82100C1C03D /* NSMutableData+Bitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableData+Bitcoin.h"; sourceTree = "<group>"; };
 		75920F85174AB82100C1C03D /* NSMutableData+Bitcoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableData+Bitcoin.m"; sourceTree = "<group>"; };
 		759CB234175E8A1200AFA559 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
@@ -2458,6 +2446,15 @@
 		75FD9D3B1766532D00307894 /* ZBarReaderViewImpl_Capture.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZBarReaderViewImpl_Capture.m; sourceTree = "<group>"; };
 		75FD9D3C1766532D00307894 /* ZBarReaderViewImpl_Simulator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZBarReaderViewImpl_Simulator.m; sourceTree = "<group>"; };
 		75FD9D3D1766532D00307894 /* ZBarSymbol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZBarSymbol.m; sourceTree = "<group>"; };
+		8461CE511798A41300DF8E4C /* ui_interface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ui_interface.h; path = bitcoin/src/ui_interface.h; sourceTree = SOURCE_ROOT; };
+		8461CE521798A42B00DF8E4C /* netbase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = netbase.cpp; path = bitcoin/src/netbase.cpp; sourceTree = SOURCE_ROOT; };
+		8461CE531798A42B00DF8E4C /* netbase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = netbase.h; path = bitcoin/src/netbase.h; sourceTree = SOURCE_ROOT; };
+		8461CE551798A4BC00DF8E4C /* WebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WebSocket.h; path = "iOS-WebSockets/WebSocket.h"; sourceTree = SOURCE_ROOT; };
+		8461CE561798A4BC00DF8E4C /* WebSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WebSocket.m; path = "iOS-WebSockets/WebSocket.m"; sourceTree = SOURCE_ROOT; };
+		8461CE571798A4BC00DF8E4C /* WebSocketNSStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WebSocketNSStream.h; path = "iOS-WebSockets/WebSocketNSStream.h"; sourceTree = SOURCE_ROOT; };
+		8461CE581798A4BC00DF8E4C /* WebSocketNSStream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WebSocketNSStream.m; path = "iOS-WebSockets/WebSocketNSStream.m"; sourceTree = SOURCE_ROOT; };
+		8461CE591798A4BC00DF8E4C /* WebSocketUIView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WebSocketUIView.h; path = "iOS-WebSockets/WebSocketUIView.h"; sourceTree = SOURCE_ROOT; };
+		8461CE5A1798A4BC00DF8E4C /* WebSocketUIView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WebSocketUIView.m; path = "iOS-WebSockets/WebSocketUIView.m"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -3839,13 +3836,12 @@
 		753A413C178DEB8A003B938D /* iOS-WebSockets */ = {
 			isa = PBXGroup;
 			children = (
-				753A413D178DEB8A003B938D /* README */,
-				753A413E178DEB8A003B938D /* WebSocket.h */,
-				753A413F178DEB8A003B938D /* WebSocket.m */,
-				753A4140178DEB8A003B938D /* WebSocketNSStream.h */,
-				753A4141178DEB8A003B938D /* WebSocketNSStream.m */,
-				753A4142178DEB8A003B938D /* WebSocketUIView.h */,
-				753A4143178DEB8A003B938D /* WebSocketUIView.m */,
+				8461CE551798A4BC00DF8E4C /* WebSocket.h */,
+				8461CE561798A4BC00DF8E4C /* WebSocket.m */,
+				8461CE571798A4BC00DF8E4C /* WebSocketNSStream.h */,
+				8461CE581798A4BC00DF8E4C /* WebSocketNSStream.m */,
+				8461CE591798A4BC00DF8E4C /* WebSocketUIView.h */,
+				8461CE5A1798A4BC00DF8E4C /* WebSocketUIView.m */,
 			);
 			path = "iOS-WebSockets";
 			sourceTree = "<group>";
@@ -4443,18 +4439,17 @@
 				7573F0701742C6400037A109 /* allocators.h */,
 				7573F0711742C6400037A109 /* base58.h */,
 				7573F0721742C6400037A109 /* bignum.h */,
-				752A3F79174484F200C0632D /* bitcoinrpc.h */,
 				752A3F5C17436A6000C0632D /* hash.h */,
 				752A3F5B17436A5F00C0632D /* hash.cpp */,
 				7573F0741742C6400037A109 /* key.h */,
 				752A3F4D17432D1F00C0632D /* key.cpp */,
-				75920F7E174AAE5F00C1C03D /* netbase.h */,
-				75920F7D174AAE5F00C1C03D /* netbase.cpp */,
+				8461CE521798A42B00DF8E4C /* netbase.cpp */,
+				8461CE531798A42B00DF8E4C /* netbase.h */,
 				7573F0761742C6400037A109 /* script.h */,
 				752A3F4F17432D4600C0632D /* script.cpp */,
 				752A3F5A17436A3F00C0632D /* serialize.h */,
 				752A3F5E17436A7E00C0632D /* uint256.h */,
-				75920F83174AAF5300C1C03D /* ui_interface.h */,
+				8461CE511798A41300DF8E4C /* ui_interface.h */,
 				7573F0781742C6400037A109 /* util.h */,
 				752A3F5117432D6000C0632D /* util.cpp */,
 				75F17C241744BB5700D9F228 /* version.h */,
@@ -4887,6 +4882,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 75D8F3C4173ABE3D0080D95E /* Build configuration list for PBXNativeTarget "ZincWallet" */;
 			buildPhases = (
+				84D86F4D1798A78800D166B3 /* ShellScript */,
 				75D8F37A173ABE3C0080D95E /* Sources */,
 				75D8F37B173ABE3C0080D95E /* Frameworks */,
 				75D8F37C173ABE3C0080D95E /* Resources */,
@@ -5014,7 +5010,6 @@
 				75C2F3D4178D3061009F8CD3 /* cameraguide-green@2x.png in Resources */,
 				75C2F3D5178D3061009F8CD3 /* cameraguide-red@2x.png in Resources */,
 				75C2F3D6178D3061009F8CD3 /* cameraguide@2x.png in Resources */,
-				753A4144178DEB8A003B938D /* README in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5069,6 +5064,19 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
+		};
+		84D86F4D1798A78800D166B3 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -5753,7 +5761,7 @@
 				752A3F5217432D6000C0632D /* util.cpp in Sources */,
 				752A3F5D17436A6000C0632D /* hash.cpp in Sources */,
 				75F17C251744BB5700D9F228 /* version.cpp in Sources */,
-				75920F7F174AAE5F00C1C03D /* netbase.cpp in Sources */,
+				8461CE541798A42B00DF8E4C /* netbase.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6063,9 +6071,9 @@
 				7535CCDF176BE3D2007E29C5 /* ZNButton.m in Sources */,
 				75D423291783E0B100BDD771 /* MBProgressHUD.m in Sources */,
 				75183B88178B4ABE0032F365 /* ZNWelcomeViewController.m in Sources */,
-				753A4145178DEB8A003B938D /* WebSocket.m in Sources */,
-				753A4146178DEB8A003B938D /* WebSocketNSStream.m in Sources */,
-				753A4147178DEB8A003B938D /* WebSocketUIView.m in Sources */,
+				8461CE5B1798A4BC00DF8E4C /* WebSocket.m in Sources */,
+				8461CE5C1798A4BC00DF8E4C /* WebSocketNSStream.m in Sources */,
+				8461CE5D1798A4BC00DF8E4C /* WebSocketUIView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6450,6 +6458,7 @@
 					"$(SRCROOT)/openssl/include",
 					"$(SRCROOT)/boost",
 					"$(SRCROOT)/ZBar/include",
+					"$(SRCROOT)/iOS-WebSockets",
 				);
 				INFOPLIST_FILE = "ZincWallet/ZincWallet-Info.plist";
 				OTHER_LDFLAGS = "-ObjC";
@@ -6469,6 +6478,7 @@
 					"$(SRCROOT)/openssl/include",
 					"$(SRCROOT)/boost",
 					"$(SRCROOT)/ZBar/include",
+					"$(SRCROOT)/iOS-WebSockets",
 				);
 				INFOPLIST_FILE = "ZincWallet/ZincWallet-Info.plist";
 				OTHER_LDFLAGS = "-ObjC";
