@@ -4882,7 +4882,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 75D8F3C4173ABE3D0080D95E /* Build configuration list for PBXNativeTarget "ZincWallet" */;
 			buildPhases = (
-				84D86F4D1798A78800D166B3 /* ShellScript */,
 				75D8F37A173ABE3C0080D95E /* Sources */,
 				75D8F37B173ABE3C0080D95E /* Frameworks */,
 				75D8F37C173ABE3C0080D95E /* Resources */,
@@ -5064,19 +5063,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
-		};
-		84D86F4D1798A78800D166B3 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "";
 		};
 /* End PBXShellScriptBuildPhase section */
 
