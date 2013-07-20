@@ -1,20 +1,15 @@
 //
-//  ZNElectrumSequence.h
+//  ZNBIP32Sequence.h
 //  ZincWallet
 //
-//  Created by Aaron Voisine on 5/27/13.
+//  Created by Administrator on 7/19/13.
 //  Copyright (c) 2013 zinc. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 #import "ZNKeySequence.h"
 
-#define ELECTRUM_SEED_LENGTH          (128/8)
-#define ELECTURM_GAP_LIMIT            10
-#define ELECTURM_GAP_LIMIT_FOR_CHANGE 3 // this is hard coded in the electrum client
-#define ELECTRUM_WORD_LIST_RESOURCE   @"ElectrumSeedWords"
-
-@interface ZNElectrumSequence : NSObject<ZNKeySequence>
+@interface ZNBIP32Sequence : NSObject<ZNKeySequence>
 
 - (NSData *)masterPublicKeyFromSeed:(NSData *)seed;
 - (NSData *)publicKey:(NSUInteger)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey;

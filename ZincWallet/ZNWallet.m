@@ -9,7 +9,9 @@
 #import "ZNWallet.h"
 #import "ZNTransaction.h"
 #import "ZNKey.h"
+#import "ZNMnemonic.h"
 #import "ZNElectrumSequence.h"
+#import "ZNBIP32Sequence.h"
 #import "NSData+Hash.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSString+Base58.h"
@@ -205,97 +207,16 @@
 {
     NSData *seed = [NSData dataWithHex:[[NSString alloc] initWithData:self.seed encoding:NSUTF8StringEncoding]];
 
-    return [self encodePhrase:seed];
+    return [[ZNMnemonic mnemonicWithWordPlist:ELECTRUM_WORD_LIST_RESOURCE] encodePhrase:seed];
 }
 
 - (void)setSeedPhrase:(NSString *)seedPhrase
 {
+
+    NSData *seed = [[ZNMnemonic mnemonicWithWordPlist:ELECTRUM_WORD_LIST_RESOURCE] decodePhrase:seedPhrase];
+
     // Electurm uses a hex representation of the decoded seed instead of the seed itself
-    self.seed = [[[self decodePhrase:seedPhrase] toHex] dataUsingEncoding:NSUTF8StringEncoding];
-}
-
-//# Note about US patent no 5892470: Here each word does not represent a given digit.
-//# Instead, the digit represented by a word is variable, it depends on the previous word.
-//
-//def mn_encode( message ):
-//    out = []
-//    for i in range(len(message)/8):
-//        word = message[8*i:8*i + 8]
-//        x = int(word, 16)
-//        w1 = (x % n)
-//        w2 = ((x/n) + w1) % n
-//        w3 = ((x/n/n) + w2) % n
-//        out += [ words[w1], words[w2], words[w3] ]
-//    return out
-//
-- (NSString *)encodePhrase:(NSData *)d
-{
-    NSMutableArray *list = [NSMutableArray arrayWithCapacity:d.length*3/4];
-    NSArray *words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"ElectrumSeedWords"
-                      ofType:@"plist"]];
-    uint32_t n = words.count;
-    
-    for (int i = 0; i*sizeof(uint32_t) < d.length; i++) {
-        uint32_t x = CFSwapInt32BigToHost(*((uint32_t *)d.bytes + i));
-        uint32_t w1 = x % n;
-        uint32_t w2 = ((x/n) + w1) % n;
-        uint32_t w3 = ((x/n/n) + w2) % n;
-        
-        [list addObject:words[w1]];
-        [list addObject:words[w2]];
-        [list addObject:words[w3]];
-    }
-    
-    words = nil;
-    
-    return [list componentsJoinedByString:@" "];
-}
-
-//def mn_decode( wlist ):
-//    out = ''
-//    for i in range(len(wlist)/3):
-//        word1, word2, word3 = wlist[3*i:3*i + 3]
-//        w1 =  words.index(word1)
-//        w2 = (words.index(word2)) % n
-//        w3 = (words.index(word3)) % n
-//        x = w1 + n*((w2 - w1) % n) + n*n*((w3 - w2) % n)
-//        out += '%08x'%x
-//    return out
-//
-- (NSData *)decodePhrase:(NSString *)phrase
-{
-    NSArray *list = [phrase componentsSeparatedByString:@" "];
-    NSArray *words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"ElectrumSeedWords"
-                      ofType:@"plist"]];
-    NSMutableData *d = [NSMutableData dataWithCapacity:list.count*4/3];
-    int32_t n = words.count;
-    
-    if (list.count != 12) {
-        NSLog(@"phrase should be 12 words, found %d instead", list.count);
-        return nil;
-    }
-    
-    for (NSUInteger i = 0; i < list.count; i += 3) {
-        int32_t w1 = [words indexOfObject:list[i]], w2 = [words indexOfObject:list[i + 1]],
-        w3 = [words indexOfObject:list[i + 2]];
-        
-        if (w1 == NSNotFound || w2 == NSNotFound || w3 == NSNotFound) {
-            NSLog(@"phrase contained unknown word: %@", list[i + (w1 == NSNotFound ? 0 : w2 == NSNotFound ? 1 : 2)]);
-            return nil;
-        }
-        
-        // python's modulo behaves differently than C when dealing with negative numbers
-        // the equivalent of python's (n % M) in C is (((n % M) + M) % M)
-        int32_t x = w1 + n*((((w2 - w1) % n) + n) % n) + n*n*((((w3 - w2) % n) + n) % n);
-        
-        x = CFSwapInt32HostToBig(x);
-        
-        [d appendBytes:&x length:sizeof(x)];
-    }
-    
-    words = nil;
-    
-    return d;
+    self.seed = [[seed toHex] dataUsingEncoding:NSUTF8StringEncoding];
 }
 
 - (void)generateRandomSeed
@@ -368,7 +289,7 @@
     
     //XXX refactor this to optimize for fewest network reqeusts (should only make two)
     
-    [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT forChange:NO completion:^(NSError *error) {
+    [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT internal:NO completion:^(NSError *error) {
         if (error) {
             _synchronizing = NO;
             [_defs synchronize];
@@ -378,7 +299,7 @@
             return;
         }
         
-        [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT_FOR_CHANGE forChange:YES completion:^(NSError *error) {
+        [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT_FOR_CHANGE internal:YES completion:^(NSError *error) {
             if (error) {
                 _synchronizing = NO;
                 [_defs synchronize];
@@ -439,14 +360,14 @@
     }];
 }
 
-- (NSArray *)addressesWithGapLimit:(NSUInteger)gapLimit forChange:(BOOL)forChange
+- (NSArray *)addressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal
 {
     NSUInteger i = 0;
     NSMutableArray *addresses = [NSMutableArray array];
     NSMutableArray *newaddresses = [NSMutableArray array];
     
     while (addresses.count < gapLimit) {
-        NSString *a = [(ZNKey *)[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ forChange:forChange
+        NSString *a = [(ZNKey *)[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ internal:internal
                                  masterPublicKey:self.mpk]] address];
         
         if (! a) {
@@ -454,12 +375,12 @@
             return nil;
         }
         
-        if (! forChange && self.addresses.count < i) {
+        if (! internal && self.addresses.count < i) {
             [self.addresses addObject:a];
             [newaddresses addObject:a];
         }
         
-        if (forChange && self.changeAddresses.count < i) {
+        if (internal && self.changeAddresses.count < i) {
             [self.changeAddresses addObject:a];
             [newaddresses addObject:a];
         }
@@ -474,10 +395,10 @@
     return addresses;
 }
 
-- (void)synchronizeWithGapLimit:(NSUInteger)gapLimit forChange:(BOOL)forChange
+- (void)synchronizeWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal
 completion:(void (^)(NSError *error))completion
 {    
-    NSMutableArray *newAddresses = [[self addressesWithGapLimit:gapLimit forChange:forChange] mutableCopy];
+    NSMutableArray *newAddresses = [[self addressesWithGapLimit:gapLimit internal:internal] mutableCopy];
     
     if (! newAddresses) {
         if (completion) {
@@ -495,7 +416,7 @@ completion:(void (^)(NSError *error))completion
         }]];
         
         if (newAddresses.count < gapLimit) {
-            [self synchronizeWithGapLimit:gapLimit forChange:forChange completion:completion];
+            [self synchronizeWithGapLimit:gapLimit internal:internal completion:completion];
         }
         else if (self.outdatedAddresses.count) {
             [self queryUnspentOutputs:self.outdatedAddresses.allObjects completion:completion];
@@ -706,6 +627,8 @@ completion:(void (^)(NSError *error))completion
     return balance;
 }
 
+//XXXX recieve/change addresses shouldn't advance until the transaction involving it has 6 confimations
+
 - (NSString *)receiveAddress
 {
     if (! self.receiveAddresses.count || ! self.addresses.count) {
@@ -713,7 +636,7 @@ completion:(void (^)(NSError *error))completion
         NSString *a = nil;
         
         while (! a || [self.spentAddresses containsObject:a] || [self.fundedAddresses containsObject:a]) {
-            a = [(ZNKey *)[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ forChange:NO masterPublicKey:self.mpk]]
+            a = [(ZNKey *)[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ internal:NO masterPublicKey:self.mpk]]
                  address];
             
             if (! a) return nil;
@@ -734,7 +657,7 @@ completion:(void (^)(NSError *error))completion
         NSString *a = nil;
         
         while (! a || [self.spentAddresses containsObject:a] || [self.fundedAddresses containsObject:a]) {
-            a = [(ZNKey *)[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ forChange:YES masterPublicKey:self.mpk]]
+            a = [(ZNKey *)[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ internal:YES masterPublicKey:self.mpk]]
                  address];
             
             if (! a) return nil;
@@ -909,8 +832,8 @@ completion:(void (^)(NSError *error))completion
     NSMutableArray *pkeys = [NSMutableArray arrayWithCapacity:keyIndexes.count + changeKeyIndexes.count];
     NSData *seed = self.seed;
     
-    [pkeys addObjectsFromArray:[self.sequence privateKeys:keyIndexes.allObjects forChange:NO fromSeed:seed]];
-    [pkeys addObjectsFromArray:[self.sequence privateKeys:changeKeyIndexes.allObjects forChange:YES fromSeed:seed]];
+    [pkeys addObjectsFromArray:[self.sequence privateKeys:keyIndexes.allObjects internal:NO fromSeed:seed]];
+    [pkeys addObjectsFromArray:[self.sequence privateKeys:changeKeyIndexes.allObjects internal:YES fromSeed:seed]];
     
     [transaction signWithPrivateKeys:pkeys];
     
@@ -1036,8 +959,8 @@ completion:(void (^)(NSError *error))completion
     NSLog(@"{\"op\":\"blocks_sub\"}");
     [webSocket send:@"{\"op\":\"blocks_sub\"}"];
 
-    [self subscribeToAddresses:[self addressesWithGapLimit:ELECTURM_GAP_LIMIT forChange:NO]];
-    [self subscribeToAddresses:[self addressesWithGapLimit:ELECTURM_GAP_LIMIT_FOR_CHANGE forChange:YES]];
+    [self subscribeToAddresses:[self addressesWithGapLimit:ELECTURM_GAP_LIMIT internal:NO]];
+    [self subscribeToAddresses:[self addressesWithGapLimit:ELECTURM_GAP_LIMIT_FOR_CHANGE internal:YES]];
     [self subscribeToAddresses:self.fundedAddresses];
     [self subscribeToAddresses:self.spentAddresses];
 }
