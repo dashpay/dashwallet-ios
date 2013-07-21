@@ -10,135 +10,221 @@
 #import "ZNKey.h"
 #import "NSData+Hash.h"
 #import "NSString+Base58.h"
-#import <CommonCrypto/CommonDigest.h>
+#import <CommonCrypto/CommonHMAC.h>
 #import <openssl/ecdsa.h>
 #import <openssl/obj_mac.h>
 
+#define BIP32_PRIME 0x80000000
+
 @implementation ZNBIP32Sequence
+
+- (void)CKDForKey:(NSData **)k chain:(NSData **)c n:(uint32_t)n
+{
+//    import hmac
+//    from ecdsa.util import string_to_number, number_to_string
+//    order = generator_secp256k1.order()
+//    keypair = EC_KEY(string_to_number(k))
+//    K = GetPubKey(keypair.pubkey,True)
+//
+//    if n & BIP32_PRIME:
+//        data = chr(0) + k + rev_hex(int_to_hex(n,4)).decode('hex')
+//        I = hmac.new(c, data, hashlib.sha512).digest()
+//    else:
+//        I = hmac.new(c, K + rev_hex(int_to_hex(n,4)).decode('hex'), hashlib.sha512).digest()
+//
+//    k_n = number_to_string( (string_to_number(I[0:32]) + string_to_number(k)) % order , order )
+//    c_n = I[32:]
+//    return k_n, c_n
+
+    NSMutableData *data = [NSMutableData data];
+    NSMutableData *I = [NSMutableData dataWithLength:CC_SHA512_DIGEST_LENGTH];
+
+    BN_CTX *ctx = BN_CTX_new();
+    EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
+    BIGNUM *order = BN_new(), *Ilbn = nil, *kbn = nil, *bn = nil;
+
+    if (n & BIP32_PRIME) {
+        [data appendBytes:"\0" length:1];
+        [data appendData:*k];
+    }
+    else [data appendData:[[ZNKey keyWithSecret:*k compressed:YES] publicKey]];
+
+    n = CFSwapInt32HostToBig(n);
+    [data appendBytes:&n length:sizeof(n)];
+
+    CCHmac(kCCHmacAlgSHA512, [*k bytes], [*k length], data.bytes, data.length, I.mutableBytes);
+
+    EC_GROUP_get_order(group, order, ctx);
+    Ilbn = BN_bin2bn(I.bytes, 32, Ilbn);
+    kbn = BN_bin2bn([*k bytes], [*k length], kbn);
+
+    BN_mod_add(Ilbn, kbn, bn, order, ctx);
+    
+    *k = [NSMutableData dataWithLength:BN_num_bytes(bn)];
+    BN_bn2bin(bn, [(NSMutableData *)*k mutableBytes]);
+    *c = [NSData dataWithBytes:I.bytes + 32 length:32];
+
+    BN_free(bn);
+    BN_free(kbn);
+    BN_free(Ilbn);
+    BN_free(order);
+    EC_GROUP_free(group);
+    BN_CTX_free(ctx);
+}
+
+- (void)CKDPrimeForKey:(NSData **)K chain:(NSData **)c n:(uint32_t)n
+{
+//    import hmac
+//    from ecdsa.util import string_to_number, number_to_string
+//    order = generator_secp256k1.order()
+//
+//    if n & BIP32_PRIME: raise
+//
+//    K_public_key = ecdsa.VerifyingKey.from_string( K, curve = SECP256k1 )
+//    K_compressed = GetPubKey(K_public_key.pubkey,True)
+//
+//    I = hmac.new(c, K_compressed + rev_hex(int_to_hex(n,4)).decode('hex'), hashlib.sha512).digest()
+//
+//    curve = SECP256k1
+//    pubkey_point = string_to_number(I[0:32])*curve.generator + K_public_key.pubkey.point
+//    public_key = ecdsa.VerifyingKey.from_public_point( pubkey_point, curve = SECP256k1 )
+//
+//    K_n = public_key.to_string()
+//    K_n_compressed = GetPubKey(public_key.pubkey,True)
+//    c_n = I[32:]
+//        
+//    return K_n, K_n_compressed, c_n
+}
 
 - (NSData *)masterPublicKeyFromSeed:(NSData *)seed
 {
-    NSData *pubkey = [[ZNKey keyWithSecret:[self stretchKey:seed] compressed:NO] publicKey];
 
-    if (! pubkey) return nil;
 
-    // uncompressed pubkeys are prepended with 0x04... some sort of openssl key encapsulation
-    return [NSData dataWithBytes:(uint8_t *)pubkey.bytes + 1 length:pubkey.length - 1];
+//    NSData *pubkey = [[ZNKey keyWithSecret:[self stretchKey:seed] compressed:NO] publicKey];
+//
+//    if (! pubkey) return nil;
+//
+//    // uncompressed pubkeys are prepended with 0x04... some sort of openssl key encapsulation
+//    return [NSData dataWithBytes:(uint8_t *)pubkey.bytes + 1 length:pubkey.length - 1];
+    return nil;
 }
 
-- (NSData *)stretchKey:(NSData *)seed
-{
-    if (! seed) return nil;
+//- (NSData *)stretchKey:(NSData *)seed
+//{
+//    if (! seed) return nil;
+//
+//    NSMutableData *d = [NSMutableData dataWithData:seed];
+//
+//    [d appendData:seed];
+//    if (d.length < CC_SHA256_DIGEST_LENGTH) d.length = CC_SHA256_DIGEST_LENGTH;
+//
+//    CC_SHA256(d.bytes, seed.length*2, d.mutableBytes);
+//    //SHA256(d.bytes, seed.length*2, d.mutableBytes);
+//
+//    d.length = CC_SHA256_DIGEST_LENGTH;
+//    [d appendData:seed];
+//
+//    CC_LONG l = CC_SHA256_DIGEST_LENGTH + seed.length;
+//    unsigned char *md = d.mutableBytes;
+//
+//    //NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate];
+//
+//    for (NSUInteger i = 1; i < 100000; i++) {
+//        CC_SHA256(md, l, md); // commoncrypto takes about 0.32s on a 4th gen ipod touch
+//        //SHA256(md, l, md);  // openssl takes about 1.95s on a 4th gen ipod touch (not hardware accelerated)
+//    }
+//
+//    //NSLog(@"100000 sha256 rounds took %fs", [NSDate timeIntervalSinceReferenceDate] - t);
+//
+//    return [NSData dataWithBytes:d.bytes length:CC_SHA256_DIGEST_LENGTH];
+//}
 
-    NSMutableData *d = [NSMutableData dataWithData:seed];
-
-    [d appendData:seed];
-    if (d.length < CC_SHA256_DIGEST_LENGTH) d.length = CC_SHA256_DIGEST_LENGTH;
-
-    CC_SHA256(d.bytes, seed.length*2, d.mutableBytes);
-    //SHA256(d.bytes, seed.length*2, d.mutableBytes);
-
-    d.length = CC_SHA256_DIGEST_LENGTH;
-    [d appendData:seed];
-
-    CC_LONG l = CC_SHA256_DIGEST_LENGTH + seed.length;
-    unsigned char *md = d.mutableBytes;
-
-    //NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate];
-
-    for (NSUInteger i = 1; i < 100000; i++) {
-        CC_SHA256(md, l, md); // commoncrypto takes about 0.32s on a 4th gen ipod touch
-                              //SHA256(md, l, md);  // openssl takes about 1.95s on a 4th gen ipod touch (not hardware accelerated)
-    }
-
-    //NSLog(@"100000 sha256 rounds took %fs", [NSDate timeIntervalSinceReferenceDate] - t);
-
-    return [NSData dataWithBytes:d.bytes length:CC_SHA256_DIGEST_LENGTH];
-}
-
-- (NSData *)sequence:(NSUInteger)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
-{
-    if (! masterPublicKey) return nil;
-
-    NSString *s = [NSString stringWithFormat:@"%u:%d:", n, internal ? 1 : 0];
-    NSMutableData *d = [NSMutableData dataWithBytes:s.UTF8String
-                                             length:[s lengthOfBytesUsingEncoding:NSUTF8StringEncoding]];
-
-    [d appendData:masterPublicKey];
-
-    return [d SHA256_2];
-}
+//- (NSData *)sequence:(NSUInteger)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
+//{
+//    if (! masterPublicKey) return nil;
+//
+//    NSString *s = [NSString stringWithFormat:@"%u:%d:", n, internal ? 1 : 0];
+//    NSMutableData *d = [NSMutableData dataWithBytes:s.UTF8String
+//                        length:[s lengthOfBytesUsingEncoding:NSUTF8StringEncoding]];
+//
+//    [d appendData:masterPublicKey];
+//
+//    return [d SHA256_2];
+//}
 
 - (NSData *)publicKey:(NSUInteger)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
 {
-    if (! masterPublicKey) return nil;
-
-    NSData *z = [self sequence:n internal:internal masterPublicKey:masterPublicKey];
-    BIGNUM *zbn = BN_bin2bn(z.bytes, z.length, NULL);
-    BN_CTX *ctx = BN_CTX_new();
-    EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
-    EC_POINT *masterPubKeyPoint = EC_POINT_new(group), *pubKeyPoint = EC_POINT_new(group),
-    *zPoint = EC_POINT_new(group);
-    uint8_t form = EC_GROUP_get_point_conversion_form(group);
-    NSMutableData *d = [NSMutableData dataWithBytes:&form length:1];
-    [d appendData:masterPublicKey];
-
-    EC_POINT_oct2point(group, masterPubKeyPoint, d.bytes, d.length, ctx);
-    EC_POINT_mul(group, zPoint, zbn, NULL, NULL, ctx);
-    EC_POINT_add(group, pubKeyPoint, masterPubKeyPoint, zPoint, ctx);
-    d.length = EC_POINT_point2oct(group, pubKeyPoint, form, d.mutableBytes, d.length, ctx);
-
-    EC_POINT_free(zPoint);
-    EC_POINT_free(pubKeyPoint);
-    EC_POINT_free(masterPubKeyPoint);
-    EC_GROUP_free(group);
-    BN_CTX_free(ctx);
-    BN_free(zbn);
-
-    return d;
+//    if (! masterPublicKey) return nil;
+//
+//    NSData *z = [self sequence:n internal:internal masterPublicKey:masterPublicKey];
+//    BIGNUM *zbn = BN_bin2bn(z.bytes, z.length, NULL);
+//    BN_CTX *ctx = BN_CTX_new();
+//    EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
+//    EC_POINT *masterPubKeyPoint = EC_POINT_new(group), *pubKeyPoint = EC_POINT_new(group),
+//    *zPoint = EC_POINT_new(group);
+//    uint8_t form = EC_GROUP_get_point_conversion_form(group);
+//    NSMutableData *d = [NSMutableData dataWithBytes:&form length:1];
+//    [d appendData:masterPublicKey];
+//
+//    EC_POINT_oct2point(group, masterPubKeyPoint, d.bytes, d.length, ctx);
+//    EC_POINT_mul(group, zPoint, zbn, NULL, NULL, ctx);
+//    EC_POINT_add(group, pubKeyPoint, masterPubKeyPoint, zPoint, ctx);
+//    d.length = EC_POINT_point2oct(group, pubKeyPoint, form, d.mutableBytes, d.length, ctx);
+//
+//    EC_POINT_free(zPoint);
+//    EC_POINT_free(pubKeyPoint);
+//    EC_POINT_free(masterPubKeyPoint);
+//    EC_GROUP_free(group);
+//    BN_CTX_free(ctx);
+//    BN_free(zbn);
+//
+//    return d;
+    return nil;
 }
 
 - (NSString *)privateKey:(NSUInteger)n internal:(BOOL)internal fromSeed:(NSData *)seed
 {
-    return [[self privateKeys:@[@(n)] internal:internal fromSeed:seed] lastObject];
+//    return [[self privateKeys:@[@(n)] internal:internal fromSeed:seed] lastObject];
+    return nil;
 }
 
 - (NSArray *)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed
 {
-    if (! seed || ! n.count) return @[];
-
-    NSMutableArray *ret = [NSMutableArray arrayWithCapacity:n.count];
-    NSData *secexp = [self stretchKey:seed];
-    NSData *mpk = [[ZNKey keyWithSecret:secexp compressed:NO] publicKey];
-    BN_CTX *ctx = BN_CTX_new();
-    EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
-    __block BIGNUM *order = BN_new(), *sequencebn = nil, *secexpbn = nil;
-
-    mpk = [NSData dataWithBytes:(uint8_t *)mpk.bytes + 1 length:mpk.length - 1]; // trim leading 0x04 byte
-    EC_GROUP_get_order(group, order, ctx);
-
-    [n enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        NSData *sequence = [self sequence:[obj unsignedIntegerValue] internal:internal masterPublicKey:mpk];
-        NSMutableData *pk = [NSMutableData dataWithLength:33];
-
-        sequencebn = BN_bin2bn(sequence.bytes, sequence.length, sequencebn);
-        secexpbn = BN_bin2bn(secexp.bytes, secexp.length, secexpbn);
-
-        BN_mod_add(secexpbn, secexpbn, sequencebn, order, ctx);
-
-        *(unsigned char *)pk.mutableBytes = 0x80;
-        BN_bn2bin(secexpbn, (unsigned char *)pk.mutableBytes + pk.length - BN_num_bytes(secexpbn));
-
-        [ret addObject:[NSString base58checkWithData:pk]];
-    }];
-
-    BN_free(secexpbn);
-    BN_free(sequencebn);
-    BN_free(order);
-    EC_GROUP_free(group);
-    BN_CTX_free(ctx);
-    
-    return ret;
+//    if (! seed || ! n.count) return @[];
+//
+//    NSMutableArray *ret = [NSMutableArray arrayWithCapacity:n.count];
+//    NSData *secexp = [self stretchKey:seed];
+//    NSData *mpk = [[ZNKey keyWithSecret:secexp compressed:NO] publicKey];
+//    BN_CTX *ctx = BN_CTX_new();
+//    EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
+//    __block BIGNUM *order = BN_new(), *sequencebn = nil, *secexpbn = nil;
+//
+//    mpk = [NSData dataWithBytes:(uint8_t *)mpk.bytes + 1 length:mpk.length - 1]; // trim leading 0x04 byte
+//    EC_GROUP_get_order(group, order, ctx);
+//
+//    [n enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+//        NSData *sequence = [self sequence:[obj unsignedIntegerValue] internal:internal masterPublicKey:mpk];
+//        NSMutableData *pk = [NSMutableData dataWithLength:33];
+//
+//        sequencebn = BN_bin2bn(sequence.bytes, sequence.length, sequencebn);
+//        secexpbn = BN_bin2bn(secexp.bytes, secexp.length, secexpbn);
+//
+//        BN_mod_add(secexpbn, secexpbn, sequencebn, order, ctx);
+//
+//        *(unsigned char *)pk.mutableBytes = 0x80;
+//        BN_bn2bin(secexpbn, (unsigned char *)pk.mutableBytes + pk.length - BN_num_bytes(secexpbn));
+//
+//        [ret addObject:[NSString base58checkWithData:pk]];
+//    }];
+//
+//    BN_free(secexpbn);
+//    BN_free(sequencebn);
+//    BN_free(order);
+//    EC_GROUP_free(group);
+//    BN_CTX_free(ctx);
+//    
+//    return ret;
+    return nil;
 }
 
 @end
