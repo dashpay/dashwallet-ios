@@ -15,7 +15,7 @@
 #import <openssl/obj_mac.h>
 
 #define BIP32_PRIME 0x80000000
-#define BIP32_MASTER_HMAC_KEY "Bitcoin seed"
+#define BIP32_SEED_KEY "Bitcoin seed"
 
 @implementation ZNBIP32Sequence
 
@@ -37,17 +37,14 @@
 //    c_n = I[32:]
 //    return k_n, c_n
 
-    NSMutableData *data = [NSMutableData data];
+    NSMutableData *data = [NSMutableData dataWithLength:33 - [*k length]];
     NSMutableData *I = [NSMutableData dataWithLength:CC_SHA512_DIGEST_LENGTH];
     BN_CTX *ctx = BN_CTX_new();
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
     BIGNUM *order = BN_new(), *Ilbn = nil, *kbn = nil, *bn = nil;
 
-    if (n & BIP32_PRIME) {
-        [data appendBytes:"\0" length:1];
-        [data appendData:*k];
-    }
-    else [data appendData:[[ZNKey keyWithSecret:*k compressed:YES] publicKey]];
+    if (n & BIP32_PRIME) [data appendData:*k];
+    else [data setData:[[ZNKey keyWithSecret:*k compressed:YES] publicKey]];
 
     n = CFSwapInt32HostToBig(n);
     [data appendBytes:&n length:sizeof(n)];
@@ -60,8 +57,8 @@
 
     BN_mod_add(Ilbn, kbn, bn, order, ctx);
     
-    *k = [NSMutableData dataWithLength:BN_num_bytes(bn)];
-    BN_bn2bin(bn, [(NSMutableData *)*k mutableBytes]);
+    *k = [NSMutableData dataWithLength:32];
+    BN_bn2bin(bn, (unsigned char *)[(NSMutableData *)*k mutableBytes] + 32 - BN_num_bytes(bn));
     *c = [I subdataWithRange:NSMakeRange(32, 32)];
 
     BN_free(bn);
@@ -129,7 +126,7 @@
     BN_CTX_free(ctx);
 }
 
-- (NSData *)masterPublicKeyFromSeed:(NSData *)seed chain:(NSData **)c
+- (NSData *)masterPublicKeyFromSeed:(NSData *)seed
 {
 //    def bip32_init(seed):
 //        import hmac
@@ -147,12 +144,15 @@
 
     NSMutableData *I = [NSMutableData dataWithLength:CC_SHA512_DIGEST_LENGTH];
 
-    CCHmac(kCCHmacAlgSHA512, BIP32_MASTER_HMAC_KEY, strlen(BIP32_MASTER_HMAC_KEY), seed.bytes, seed.length,
-           I.mutableBytes);
+    CCHmac(kCCHmacAlgSHA512, BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length, I.mutableBytes);
 
-    *c = [I subdataWithRange:NSMakeRange(32, 32)];
+    NSData *masterSecret = [I subdataWithRange:NSMakeRange(0, 32)];
+    NSData *masterChain = [I subdataWithRange:NSMakeRange(32, 32)];
+    NSMutableData *mpk = [NSMutableData dataWithData:[[ZNKey keyWithSecret:masterSecret compressed:YES] publicKey]];
 
-    return [[ZNKey keyWithSecret:[I subdataWithRange:NSMakeRange(0, 32)] compressed:YES] publicKey];
+    [mpk appendData:masterChain];
+
+    return mpk;
 
 //    NSData *pubkey = [[ZNKey keyWithSecret:[self stretchKey:seed] compressed:NO] publicKey];
 //
@@ -162,23 +162,19 @@
 //    return [NSData dataWithBytes:(uint8_t *)pubkey.bytes + 1 length:pubkey.length - 1];
 }
 
-//- (NSData *)sequence:(NSUInteger)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
-//{
-//    if (! masterPublicKey) return nil;
-//
-//    NSString *s = [NSString stringWithFormat:@"%u:%d:", n, internal ? 1 : 0];
-//    NSMutableData *d = [NSMutableData dataWithBytes:s.UTF8String
-//                        length:[s lengthOfBytesUsingEncoding:NSUTF8StringEncoding]];
-//
-//    [d appendData:masterPublicKey];
-//
-//    return [d SHA256_2];
-//}
-
 - (NSData *)publicKey:(NSUInteger)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
 {
-//    if (! masterPublicKey) return nil;
-//
+    if (! masterPublicKey) return nil;
+
+    NSData *pubKey = [masterPublicKey subdataWithRange:NSMakeRange(0, masterPublicKey.length - 32)];
+    NSData *chain = [masterPublicKey subdataWithRange:NSMakeRange(masterPublicKey.length - 32, 32)];
+
+    [self CKDPrimeForKey:&pubKey chain:&chain n:0]; // account 0
+    [self CKDPrimeForKey:&pubKey chain:&chain n:internal ? 1 : 0]; // internal or external chain
+    [self CKDPrimeForKey:&pubKey chain:&chain n:n]; // nth key in chain
+
+    return pubKey;
+
 //    NSData *z = [self sequence:n internal:internal masterPublicKey:masterPublicKey];
 //    BIGNUM *zbn = BN_bin2bn(z.bytes, z.length, NULL);
 //    BN_CTX *ctx = BN_CTX_new();
@@ -202,19 +198,40 @@
 //    BN_free(zbn);
 //
 //    return d;
-    return nil;
 }
 
 - (NSString *)privateKey:(NSUInteger)n internal:(BOOL)internal fromSeed:(NSData *)seed
 {
-//    return [[self privateKeys:@[@(n)] internal:internal fromSeed:seed] lastObject];
-    return nil;
+    return [[self privateKeys:@[@(n)] internal:internal fromSeed:seed] lastObject];
 }
 
 - (NSArray *)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed
 {
-//    if (! seed || ! n.count) return @[];
-//
+    if (! seed || ! n.count) return @[];
+
+    NSMutableArray *ret = [NSMutableArray arrayWithCapacity:n.count];
+    NSMutableData *I = [NSMutableData dataWithLength:CC_SHA512_DIGEST_LENGTH];
+
+    CCHmac(kCCHmacAlgSHA512, BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length, I.mutableBytes);
+
+    NSData *secret = [I subdataWithRange:NSMakeRange(0, 32)], *s;
+    NSData *chain = [I subdataWithRange:NSMakeRange(32, 32)], *c;
+
+    [self CKDForKey:&secret chain:&chain n:0]; // account 0
+    [self CKDForKey:&secret chain:&chain n:internal ? 1 : 0]; // internal or external chain
+
+    for (NSNumber *num in n) {
+        NSMutableData *pk = [NSMutableData dataWithBytes:"\x80" length:1];
+
+        s = secret;
+        c = chain;
+        [self CKDForKey:&s chain:&c n:num.unsignedIntegerValue]; // nth key in chain
+        [pk appendData:s];
+        [ret addObject:[NSString base58checkWithData:pk]];
+    }
+
+    return ret;
+
 //    NSMutableArray *ret = [NSMutableArray arrayWithCapacity:n.count];
 //    NSData *secexp = [self stretchKey:seed];
 //    NSData *mpk = [[ZNKey keyWithSecret:secexp compressed:NO] publicKey];
@@ -247,7 +264,6 @@
 //    BN_CTX_free(ctx);
 //    
 //    return ret;
-    return nil;
 }
 
 @end

@@ -9,7 +9,9 @@
 #import "ZNMnemonic.h"
 
 @interface ZNMnemonic ()
-    @property (nonatomic, strong) NSArray *words;
+
+@property (nonatomic, strong) NSArray *words;
+
 @end
 
 @implementation ZNMnemonic

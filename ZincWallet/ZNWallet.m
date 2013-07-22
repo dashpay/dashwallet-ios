@@ -10,6 +10,7 @@
 #import "ZNTransaction.h"
 #import "ZNKey.h"
 #import "ZNMnemonic.h"
+#import "ZNKeySequence.h"
 #import "ZNElectrumSequence.h"
 #import "ZNBIP32Sequence.h"
 #import "NSData+Hash.h"
@@ -61,7 +62,7 @@
 @property (nonatomic, strong) NSMutableDictionary *unconfirmed;
 @property (nonatomic, strong) NSMutableSet *outdatedAddresses, *updatedTransactions;
 
-@property (nonatomic, strong) ZNElectrumSequence *sequence;
+@property (nonatomic, strong) id<ZNKeySequence> sequence;
 @property (nonatomic, strong) NSData *mpk;
 @property (nonatomic, strong) NSUserDefaults *defs;
 @property (nonatomic, strong) id reachabilityObserver, activeObserver;
