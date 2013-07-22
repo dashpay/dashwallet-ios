@@ -10,6 +10,7 @@
 
 #import "ZNWallet.h"
 #import "ZNElectrumSequence.h"
+#import "ZNMnemonic.h"
 #import "ZNTransaction.h"
 #import "ZNKey.h"
 #import "NSData+Hash.h"
@@ -82,57 +83,55 @@
     STAssertTrue(priority >= TX_FREE_MIN_PRIORITY, @"[ZNTransaction heightUntilFreeFor:atHeights:]");
 }
 
-#pragma mark - testWallet
+#pragma mark - testMnemonic
 
-- (void)testWalletDecodePhrase
+- (void)testMnemonicDecodePhrase
 {
-    NSData *d = [[ZNWallet sharedInstance] performSelector:@selector(decodePhrase:)
-                 withObject:@"like just love know never want time out there make look eye"];
-    
+    ZNMnemonic *mnemonic = [ZNMnemonic mnemonicWithWordPlist:ELECTRUM_WORD_LIST_RESOURCE];
+
+    NSData *d = [mnemonic decodePhrase:@"like just love know never want time out there make look eye"];
+
     NSLog(@"like just love know never want time out there make look eye = 0x%@", [d toHex]);
     
     STAssertEqualObjects(d, [NSData dataWithHex:@"00285dfe00285e0100285e0400285e07"], @"[ZNWallet decodePhrase:]");
     
-    d = [[ZNWallet sharedInstance] performSelector:@selector(decodePhrase:)
-         withObject:@"kick chair mask master passion quick raise smooth unless wander actually broke"];
+    d = [mnemonic decodePhrase:@"kick chair mask master passion quick raise smooth unless wander actually broke"];
     
     NSLog(@"kick chair mask master passion quick raise smooth unless wander actually broke = 0x%@", [d toHex]);
     
     STAssertEqualObjects(d, [NSData dataWithHex:@"fea983ac0028608e0028609100286094"], @"[ZNWallet decodePhrase:]");
     
-    d = [[ZNWallet sharedInstance] performSelector:@selector(decodePhrase:)
-         withObject:@"kick quiet student ignore cruel danger describe accident eager darkness embrace suppose"];
+    d = [mnemonic
+         decodePhrase:@"kick quiet student ignore cruel danger describe accident eager darkness embrace suppose"];
     
     NSLog(@"kick quiet student ignore cruel danger describe accident eager darkness embrace suppose = 0x%@", [d toHex]);
     
     STAssertEqualObjects(d, [NSData dataWithHex:@"8d02be487e1953ce2dd6c186fcc97e65"], @"[ZNWallet decodePhrase:]");
 }
 
-- (void)testWalletEncodePhrase
+- (void)testMnemonicEncodePhrase
 {
-    NSString *s = [[ZNWallet sharedInstance] performSelector:@selector(encodePhrase:)
-                   withObject:[NSData dataWithHex:@"00285dfe00285e0100285e0400285e07"]];
+    ZNMnemonic *mnemonic = [ZNMnemonic mnemonicWithWordPlist:ELECTRUM_WORD_LIST_RESOURCE];
+    
+    NSString *s = [mnemonic encodePhrase:[NSData dataWithHex:@"00285dfe00285e0100285e0400285e07"]];
     
     NSLog(@"0x00285dfe00285e0100285e0400285e07 = %@", s);
     
     STAssertEqualObjects(s, @"like just love know never want time out there make look eye",
                          @"[ZNWallet encodePhrase:]");
     
-    s = [[ZNWallet sharedInstance] performSelector:@selector(encodePhrase:)
-         withObject:[NSData dataWithHex:@"00000000000000000000000000000000"]];
+    s = [mnemonic encodePhrase:[NSData dataWithHex:@"00000000000000000000000000000000"]];
 
     NSLog(@"0x00285dfe00285e0100285e0400285e07 = %@", s);
     
-    s = [[ZNWallet sharedInstance] performSelector:@selector(encodePhrase:)
-         withObject:[NSData dataWithHex:@"fea983ac0028608e0028609100286094"]];
+    s = [mnemonic encodePhrase:[NSData dataWithHex:@"fea983ac0028608e0028609100286094"]];
     
     NSLog(@"0x00285dfe00285e0100285e0400285e07 = %@", s);
     
     STAssertEqualObjects(s, @"kick chair mask master passion quick raise smooth unless wander actually broke",
                          @"[ZNWallet encodePhrase:]");
     
-    s = [[ZNWallet sharedInstance] performSelector:@selector(encodePhrase:)
-         withObject:[NSData dataWithHex:@"8d02be487e1953ce2dd6c186fcc97e65"]];
+    s = [mnemonic encodePhrase:[NSData dataWithHex:@"8d02be487e1953ce2dd6c186fcc97e65"]];
     
     NSLog(@"0x8d02be487e1953ce2dd6c186fcc97e65 = %@", s);
     
@@ -172,7 +171,7 @@
     ZNElectrumSequence *seq = [ZNElectrumSequence new];
     NSData *mpk = [seq masterPublicKeyFromSeed:[@"00000000000000000000000000000000"
                                                 dataUsingEncoding:NSUTF8StringEncoding]];
-    NSData *pk = [seq publicKey:0 forChange:NO masterPublicKey:mpk];
+    NSData *pk = [seq publicKey:0 internal:NO masterPublicKey:mpk];
     NSString *addr = [(ZNKey *)[ZNKey keyWithPublicKey:pk] address];
     
     NSLog(@"publicKey:0 = %@", [pk toHex]);
@@ -187,7 +186,7 @@
 - (void)testElectrumSequencePrivateKey
 {
     ZNElectrumSequence *seq = [ZNElectrumSequence new];
-    NSString *privkey = [seq privateKey:0 forChange:NO
+    NSString *privkey = [seq privateKey:0 internal:NO
                          fromSeed:[@"00000000000000000000000000000000" dataUsingEncoding:NSUTF8StringEncoding]];
     
     NSLog(@"privateKey:0 = %@", privkey);
@@ -196,7 +195,7 @@
                          @"[ZNElecturmSequence privateKey:forChange:fromSeed:]");
 
     // this tests a private key that starts with 0x00
-    privkey = [seq privateKey:64 forChange:NO
+    privkey = [seq privateKey:64 internal:NO
                fromSeed:[@"00000000000000000000000000000000" dataUsingEncoding:NSUTF8StringEncoding]];
 
     NSLog(@"privateKey:64 = %@ = 0x%@", privkey, [privkey base58checkToHex]);

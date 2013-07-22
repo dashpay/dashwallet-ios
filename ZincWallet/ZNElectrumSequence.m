@@ -18,12 +18,12 @@
 
 - (NSData *)masterPublicKeyFromSeed:(NSData *)seed
 {
-    NSData *pubkey = [[ZNKey keyWithSecret:[self stretchKey:seed] compressed:NO] publicKey];
+    NSData *pubKey = [[ZNKey keyWithSecret:[self stretchKey:seed] compressed:NO] publicKey];
     
-    if (! pubkey) return nil;
+    if (! pubKey) return nil;
 
     // uncompressed pubkeys are prepended with 0x04... some sort of openssl key encapsulation
-    return [NSData dataWithBytes:(uint8_t *)pubkey.bytes + 1 length:pubkey.length - 1];
+    return [pubKey subdataWithRange:NSMakeRange(1, pubKey.length - 1)];
 }
 
 - (NSData *)stretchKey:(NSData *)seed
@@ -53,14 +53,14 @@
 
     //NSLog(@"100000 sha256 rounds took %fs", [NSDate timeIntervalSinceReferenceDate] - t);
     
-    return [NSData dataWithBytes:d.bytes length:CC_SHA256_DIGEST_LENGTH];
+    return [d subdataWithRange:NSMakeRange(0, CC_SHA256_DIGEST_LENGTH)];
 }
 
-- (NSData *)sequence:(NSUInteger)n forChange:(BOOL)forChange masterPublicKey:(NSData *)masterPublicKey
+- (NSData *)sequence:(NSUInteger)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
 {
     if (! masterPublicKey) return nil;
     
-    NSString *s = [NSString stringWithFormat:@"%u:%d:", n, forChange ? 1 : 0];
+    NSString *s = [NSString stringWithFormat:@"%u:%d:", n, internal ? 1 : 0];
     NSMutableData *d = [NSMutableData dataWithBytes:s.UTF8String
                         length:[s lengthOfBytesUsingEncoding:NSUTF8StringEncoding]];
     
@@ -69,11 +69,11 @@
     return [d SHA256_2];
 }
 
-- (NSData *)publicKey:(NSUInteger)n forChange:(BOOL)forChange masterPublicKey:(NSData *)masterPublicKey
+- (NSData *)publicKey:(NSUInteger)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
 {
     if (! masterPublicKey) return nil;
 
-    NSData *z = [self sequence:n forChange:forChange masterPublicKey:masterPublicKey];
+    NSData *z = [self sequence:n internal:internal masterPublicKey:masterPublicKey];
     BIGNUM *zbn = BN_bin2bn(z.bytes, z.length, NULL);
     BN_CTX *ctx = BN_CTX_new();
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
@@ -98,12 +98,12 @@
     return d;
 }
 
-- (NSString *)privateKey:(NSUInteger)n forChange:(BOOL)forChange fromSeed:(NSData *)seed
+- (NSString *)privateKey:(NSUInteger)n internal:(BOOL)internal fromSeed:(NSData *)seed
 {
-    return [[self privateKeys:@[@(n)] forChange:forChange fromSeed:seed] lastObject];
+    return [[self privateKeys:@[@(n)] internal:internal fromSeed:seed] lastObject];
 }
 
-- (NSArray *)privateKeys:(NSArray *)n forChange:(BOOL)forChange fromSeed:(NSData *)seed
+- (NSArray *)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed
 {
     if (! seed || ! n.count) return @[];
 
@@ -118,7 +118,7 @@
     EC_GROUP_get_order(group, order, ctx);
     
     [n enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        NSData *sequence = [self sequence:[obj unsignedIntegerValue] forChange:forChange masterPublicKey:mpk];
+        NSData *sequence = [self sequence:[obj unsignedIntegerValue] internal:internal masterPublicKey:mpk];
         NSMutableData *pk = [NSMutableData dataWithLength:33];
 
         sequencebn = BN_bin2bn(sequence.bytes, sequence.length, sequencebn);
