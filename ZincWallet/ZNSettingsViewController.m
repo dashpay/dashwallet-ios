@@ -159,16 +159,16 @@
                 
                 if (withinWallet) {
                     textLabel.text = [w stringForAmount:spent];
-                    textLabel.textAlignment = NSTextAlignmentRight;
+                    //textLabel.textAlignment = NSTextAlignmentRight;
                     detailTextLabel.text = @"moved within wallet";
                 }
                 else if (spent > 0) {
-                    textLabel.text = [NSString stringWithFormat:@"(%@)", [w stringForAmount:spent - received]];
-                    textLabel.textAlignment = NSTextAlignmentLeft;
+                    textLabel.text = [w stringForAmount:received - spent];
+                    //textLabel.textAlignment = NSTextAlignmentLeft;
                 }
                 else {
                     textLabel.text = [w stringForAmount:received];
-                    textLabel.textAlignment = NSTextAlignmentRight;
+                    //textLabel.textAlignment = NSTextAlignmentRight;
                 }
                 
                 if (! detailTextLabel.text) detailTextLabel.text = @"can't decode payment address";

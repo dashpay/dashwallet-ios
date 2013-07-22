@@ -38,8 +38,8 @@
 - (void)synchronize;
 
 - (BOOL)containsAddress:(NSString *)address;
-- (NSString *)stringForAmount:(uint64_t)amount;
-- (uint64_t)amountForString:(NSString *)string;
+- (NSString *)stringForAmount:(int64_t)amount;
+- (int64_t)amountForString:(NSString *)string;
 
 - (ZNTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee;
 - (NSTimeInterval)timeUntilFree:(ZNTransaction *)transaction;

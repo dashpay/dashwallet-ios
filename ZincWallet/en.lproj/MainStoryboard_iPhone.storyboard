@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="2.0" toolsVersion="3084" systemVersion="12E55" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" initialViewController="dNo-Sm-bI0">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="4471.1" systemVersion="12E55" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" initialViewController="dNo-Sm-bI0">
     <dependencies>
-        <deployment version="1280" identifier="iOS"/>
-        <development version="4600" identifier="xcode"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="2083"/>
+        <deployment version="1280" defaultVersion="1280" identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3697.3"/>
     </dependencies>
     <scenes>
         <!--Pay View Controller - First-->
@@ -23,7 +22,7 @@
                                 </connections>
                             </scrollView>
                             <pageControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" numberOfPages="2" id="kTQ-jN-pAH">
-                                <rect key="frame" x="141" y="468" width="38" height="36"/>
+                                <rect key="frame" x="140" y="468" width="38" height="36"/>
                                 <connections>
                                     <action selector="page:" destination="2" eventType="valueChanged" id="Ff8-Ps-a2A"/>
                                 </connections>
@@ -68,8 +67,8 @@
                             <tableViewCell userInteractionEnabled="NO" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="ZNTransactionCell" rowHeight="60" id="rkp-bd-k0B">
                                 <rect key="frame" x="0.0" y="22" width="320" height="60"/>
                                 <autoresizingMask key="autoresizingMask"/>
-                                <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                                    <rect key="frame" x="0.0" y="0.0" width="320" height="59"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="rkp-bd-k0B" id="sfN-xG-HQg">
+                                    <rect key="frame" x="0.0" y="0.0" width="322" height="59"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="3" contentMode="left" text="unconfirmed" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="oSk-Zn-uEz">
@@ -82,7 +81,7 @@
                                             <size key="shadowOffset" width="0.0" height="0.0"/>
                                         </label>
                                         <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="left" text="Title" textAlignment="right" lineBreakMode="clip" baselineAdjustment="alignBaselines" minimumFontSize="8" id="eaS-Yc-Vbc">
-                                            <rect key="frame" x="160" y="11" width="140" height="20"/>
+                                            <rect key="frame" x="114" y="10.5" width="188" height="20"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                             <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
                                             <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
@@ -91,7 +90,7 @@
                                             <size key="shadowOffset" width="0.0" height="1"/>
                                         </label>
                                         <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="2" contentMode="left" text="Detail" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" minimumFontSize="8" id="yjF-5a-Mvf">
-                                            <rect key="frame" x="20" y="36" width="280" height="17"/>
+                                            <rect key="frame" x="20" y="34" width="282" height="17"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                             <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="13"/>
                                             <color key="textColor" white="0.75" alpha="1" colorSpace="calibratedWhite"/>
@@ -109,49 +108,46 @@
                                             <size key="shadowOffset" width="0.0" height="1"/>
                                         </label>
                                         <view contentMode="scaleToFill" id="DUf-kW-Cwk">
-                                            <rect key="frame" x="20" y="59" width="280" height="1"/>
+                                            <rect key="frame" x="20" y="57" width="282" height="1"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                                            <color key="backgroundColor" white="0.90000000000000002" alpha="1" colorSpace="calibratedWhite"/>
+                                            <color key="backgroundColor" white="0.84999999999999998" alpha="1" colorSpace="calibratedWhite"/>
                                         </view>
                                     </subviews>
-                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                </view>
+                                </tableViewCellContentView>
                             </tableViewCell>
                             <tableViewCell contentMode="scaleToFill" selectionStyle="blue" accessoryType="disclosureIndicator" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="ZNDisclosureCell" textLabel="x9p-Sr-kIY" style="IBUITableViewCellStyleDefault" id="7il-Ku-8re">
                                 <rect key="frame" x="0.0" y="82" width="320" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
-                                <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                                    <rect key="frame" x="0.0" y="0.0" width="300" height="43"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="7il-Ku-8re" id="XSz-Hw-sss">
+                                    <rect key="frame" x="0.0" y="0.0" width="289" height="43"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="left" text="Title" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="x9p-Sr-kIY">
-                                            <rect key="frame" x="10" y="0.0" width="280" height="43"/>
+                                            <rect key="frame" x="15" y="0.0" width="272" height="43"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
                                             <color key="textColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                             <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                         </label>
                                     </subviews>
-                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                </view>
+                                </tableViewCellContentView>
                             </tableViewCell>
                             <tableViewCell contentMode="scaleToFill" selectionStyle="blue" indentationWidth="10" reuseIdentifier="ZNActionCell" textLabel="iC8-LM-OiI" style="IBUITableViewCellStyleDefault" id="JhX-8l-b0v">
                                 <rect key="frame" x="0.0" y="126" width="320" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
-                                <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                                    <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="JhX-8l-b0v" id="fKC-W2-gdC">
+                                    <rect key="frame" x="0.0" y="0.0" width="322" height="43"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="left" text="Title" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="iC8-LM-OiI">
-                                            <rect key="frame" x="10" y="0.0" width="300" height="43"/>
+                                            <rect key="frame" x="15" y="0.0" width="292" height="43"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
                                             <color key="textColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                             <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                         </label>
                                     </subviews>
-                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                </view>
+                                </tableViewCellContentView>
                                 <connections>
                                     <segue destination="9BH-Hw-65r" kind="modal" id="96y-VA-fPV"/>
                                 </connections>
@@ -211,7 +207,7 @@
             <objects>
                 <viewController id="QxK-Kh-aHV" customClass="ZNWelcomeViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="kX6-xW-Dgi">
-                        <rect key="frame" x="0.0" y="20" width="320" height="548"/>
+                        <rect key="frame" x="0.0" y="64" width="320" height="504"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <view contentMode="scaleToFill" id="buz-Na-3BD">
@@ -226,7 +222,7 @@
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                             </view>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="Dqm-VA-7XD" customClass="ZNButton">
-                                <rect key="frame" x="75" y="173" width="172" height="44"/>
+                                <rect key="frame" x="75" y="158" width="172" height="44"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
                                 <state key="normal" title="new wallet">
@@ -242,7 +238,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="Apw-nM-dbF" customClass="ZNButton">
-                                <rect key="frame" x="76" y="282.5" width="172" height="44"/>
+                                <rect key="frame" x="76" y="257" width="172" height="44"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
                                 <state key="normal" title="restore from backup">
@@ -291,7 +287,7 @@
             <objects>
                 <viewController id="Xvz-1X-lXH" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="nto-zs-Cc4">
-                        <rect key="frame" x="0.0" y="20" width="320" height="548"/>
+                        <rect key="frame" x="0.0" y="64" width="320" height="504"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <view contentMode="scaleToFill" id="DuD-bk-D8U">
@@ -318,7 +314,7 @@
                                 <size key="shadowOffset" width="0.0" height="1"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="p3f-07-GNB" customClass="ZNButton">
-                                <rect key="frame" x="62" y="347" width="197" height="44"/>
+                                <rect key="frame" x="62" y="303" width="197" height="44"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
                                 <state key="normal" title="generate backup phrase">
@@ -375,11 +371,11 @@
             <objects>
                 <viewController id="V5i-az-h7s" customClass="ZNRestoreViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="0Vw-iJ-oHv">
-                        <rect key="frame" x="0.0" y="20" width="320" height="548"/>
+                        <rect key="frame" x="0.0" y="64" width="320" height="504"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" id="TTv-8y-tZs">
-                                <rect key="frame" x="12" y="14" width="296" height="304"/>
+                                <rect key="frame" x="12" y="14" width="296" height="260"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
@@ -421,7 +417,7 @@
             <objects>
                 <viewController storyboardIdentifier="ZNReceiveViewController" id="toP-Vb-grN" customClass="ZNReceiveViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Fln-In-Cdh">
-                        <rect key="frame" x="0.0" y="64" width="320" height="504"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <view contentMode="scaleToFill" id="Sib-FI-j3a">
@@ -496,7 +492,7 @@
             <objects>
                 <viewController storyboardIdentifier="ZNAmountViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="asW-9a-XhX" customClass="ZNAmountViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="eUy-Ub-KH0">
-                        <rect key="frame" x="0.0" y="64" width="320" height="504"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <textField opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="mɃ 0.00000" textAlignment="right" adjustsFontSizeToFit="NO" minimumFontSize="24" id="U70-Jh-YtO">
@@ -1041,69 +1037,13 @@
         </scene>
     </scenes>
     <resources>
-        <image name="deletetoleft-inv.png" width="120" height="92"/>
-        <image name="deletetoleft.png" width="120" height="92"/>
-        <image name="gear-blue.png" width="19" height="19.501354217529297"/>
-        <image name="refresh-blue.png" width="13" height="15.501075744628906"/>
+        <image name="deletetoleft-inv.png" width="60" height="46"/>
+        <image name="deletetoleft.png" width="60" height="46"/>
+        <image name="gear-blue.png" width="19" height="21"/>
+        <image name="refresh-blue.png" width="14" height="16"/>
         <image name="wallpaper.jpg" width="1024" height="768"/>
-        <image name="zincwallet.png" width="16" height="16"/>
+        <image name="zincwallet.png" width="85" height="15"/>
     </resources>
-    <classes>
-        <class className="ZNAmountViewController" superclassName="UIViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNAmountViewController.h"/>
-            <relationships>
-                <relationship kind="outlet" name="addressLabel" candidateClass="UILabel"/>
-                <relationship kind="outlet" name="amountField" candidateClass="UITextField"/>
-                <relationship kind="outlet" name="payButton" candidateClass="UIBarButtonItem"/>
-                <relationship kind="outlet" name="spinner" candidateClass="UIActivityIndicatorView"/>
-                <relationship kind="outletCollection" name="buttonRow1" candidateClass="UIButton"/>
-                <relationship kind="outletCollection" name="buttonRow2" candidateClass="UIButton"/>
-                <relationship kind="outletCollection" name="buttonRow3" candidateClass="UIButton"/>
-                <relationship kind="outletCollection" name="buttons" candidateClass="UIButton"/>
-            </relationships>
-        </class>
-        <class className="ZNButton" superclassName="UIButton">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNButton.h"/>
-        </class>
-        <class className="ZNPayViewController" superclassName="UIViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNPayViewController.h"/>
-            <relationships>
-                <relationship kind="outlet" name="pageControl" candidateClass="UIPageControl"/>
-                <relationship kind="outlet" name="refreshButton" candidateClass="UIBarButtonItem"/>
-                <relationship kind="outlet" name="scrollView" candidateClass="UIScrollView"/>
-                <relationship kind="outlet" name="spinner" candidateClass="UIActivityIndicatorView"/>
-            </relationships>
-        </class>
-        <class className="ZNReceiveViewController" superclassName="UIViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNReceiveViewController.h"/>
-        </class>
-        <class className="ZNRestoreViewController" superclassName="UIViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNRestoreViewController.h"/>
-            <relationships>
-                <relationship kind="outlet" name="textView" candidateClass="UITextView"/>
-            </relationships>
-        </class>
-        <class className="ZNSeedViewController" superclassName="UIViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNSeedViewController.h"/>
-            <relationships>
-                <relationship kind="outlet" name="compatiblityLabel" candidateClass="UILabel"/>
-                <relationship kind="outlet" name="labelFrame" candidateClass="UIView"/>
-                <relationship kind="outlet" name="seedLabel" candidateClass="UILabel"/>
-            </relationships>
-        </class>
-        <class className="ZNSettingsViewController" superclassName="UITableViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNSettingsViewController.h"/>
-        </class>
-        <class className="ZNWelcomeViewController" superclassName="UIViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNWelcomeViewController.h"/>
-            <relationships>
-                <relationship kind="outlet" name="paralax" candidateClass="UIView"/>
-                <relationship kind="outlet" name="restoreButton" candidateClass="UIButton"/>
-                <relationship kind="outlet" name="walletButton" candidateClass="UIButton"/>
-                <relationship kind="outlet" name="wallpaper" candidateClass="UIImageView"/>
-            </relationships>
-        </class>
-    </classes>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>
         <simulatedOrientationMetrics key="orientation"/>

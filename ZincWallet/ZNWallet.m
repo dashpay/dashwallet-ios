@@ -111,7 +111,9 @@
     //self.format.currencySymbol = @"m"BTC@" ";
     //self.format.maximumFractionDigits = 5;
     //self.format.maximum = @21000000000.0;
-    self.format.currencySymbol = BTC" ";
+    self.format.currencySymbol = BTC;
+    self.format.positiveFormat = @"¤ #,##0.00";
+    self.format.negativeFormat = @"¤ -#,##0.00";
     self.format.maximumFractionDigits = 8;
     self.format.maximum = @21000000.0;
     
@@ -777,12 +779,12 @@ completion:(void (^)(NSError *error))completion
            [self.receiveAddresses containsObject:address];
 }
 
-- (NSString *)stringForAmount:(uint64_t)amount
+- (NSString *)stringForAmount:(int64_t)amount
 {
     return [self.format stringFromNumber:@(amount/pow(10.0, self.format.maximumFractionDigits))];
 }
 
-- (uint64_t)amountForString:(NSString *)string
+- (int64_t)amountForString:(NSString *)string
 {
     return ([[self.format numberFromString:string] doubleValue] + DBL_EPSILON)*
            pow(10.0, self.format.maximumFractionDigits);
