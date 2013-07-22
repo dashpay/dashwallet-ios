@@ -18,12 +18,12 @@
 
 - (NSData *)masterPublicKeyFromSeed:(NSData *)seed
 {
-    NSData *pubkey = [[ZNKey keyWithSecret:[self stretchKey:seed] compressed:NO] publicKey];
+    NSData *pubKey = [[ZNKey keyWithSecret:[self stretchKey:seed] compressed:NO] publicKey];
     
-    if (! pubkey) return nil;
+    if (! pubKey) return nil;
 
     // uncompressed pubkeys are prepended with 0x04... some sort of openssl key encapsulation
-    return [NSData dataWithBytes:(uint8_t *)pubkey.bytes + 1 length:pubkey.length - 1];
+    return [pubKey subdataWithRange:NSMakeRange(1, pubKey.length - 1)];
 }
 
 - (NSData *)stretchKey:(NSData *)seed
@@ -53,7 +53,7 @@
 
     //NSLog(@"100000 sha256 rounds took %fs", [NSDate timeIntervalSinceReferenceDate] - t);
     
-    return [NSData dataWithBytes:d.bytes length:CC_SHA256_DIGEST_LENGTH];
+    return [d subdataWithRange:NSMakeRange(0, CC_SHA256_DIGEST_LENGTH)];
 }
 
 - (NSData *)sequence:(NSUInteger)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey

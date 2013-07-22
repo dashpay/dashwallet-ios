@@ -15,6 +15,7 @@
 #import <openssl/obj_mac.h>
 
 #define BIP32_PRIME 0x80000000
+#define BIP32_MASTER_HMAC_KEY "Bitcoin seed"
 
 @implementation ZNBIP32Sequence
 
@@ -38,7 +39,6 @@
 
     NSMutableData *data = [NSMutableData data];
     NSMutableData *I = [NSMutableData dataWithLength:CC_SHA512_DIGEST_LENGTH];
-
     BN_CTX *ctx = BN_CTX_new();
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
     BIGNUM *order = BN_new(), *Ilbn = nil, *kbn = nil, *bn = nil;
@@ -62,7 +62,7 @@
     
     *k = [NSMutableData dataWithLength:BN_num_bytes(bn)];
     BN_bn2bin(bn, [(NSMutableData *)*k mutableBytes]);
-    *c = [NSData dataWithBytes:I.bytes + 32 length:32];
+    *c = [I subdataWithRange:NSMakeRange(32, 32)];
 
     BN_free(bn);
     BN_free(kbn);
@@ -94,11 +94,65 @@
 //    c_n = I[32:]
 //        
 //    return K_n, K_n_compressed, c_n
+
+    if (n & BIP32_PRIME) {
+        @throw [NSException exceptionWithName:@"ZNPrivateCKDException"
+                reason:@"Can't derive private child key from public parent key." userInfo:nil];
+    }
+    
+    NSMutableData *I = [NSMutableData dataWithLength:CC_SHA512_DIGEST_LENGTH];
+    NSMutableData *data = [NSMutableData dataWithData:*K];
+    BN_CTX *ctx = BN_CTX_new();
+    EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
+    uint8_t form = EC_GROUP_get_point_conversion_form(group);
+    EC_POINT *pubKeyPoint = EC_POINT_new(group), *IlPoint = EC_POINT_new(group);
+    BIGNUM *Ilbn = BN_new();
+
+    n = CFSwapInt32HostToBig(n);
+    [data appendBytes:&n length:sizeof(n)];
+
+    CCHmac(kCCHmacAlgSHA512, [*c bytes], [*c length], data.bytes, data.length, I.mutableBytes);
+
+    EC_POINT_oct2point(group, pubKeyPoint, [*K bytes], [*K length], ctx);
+    Ilbn = BN_bin2bn(I.bytes, 32, Ilbn);
+    EC_POINT_mul(group, IlPoint, Ilbn, NULL, NULL, ctx);
+    EC_POINT_add(group, pubKeyPoint, IlPoint, pubKeyPoint, ctx);
+
+    *K = [NSMutableData dataWithLength:EC_POINT_point2oct(group, pubKeyPoint, form, NULL, 0, ctx)];
+    EC_POINT_point2oct(group, pubKeyPoint, form, [(NSMutableData *)*K mutableBytes], [*K length], ctx);
+    *c = [I subdataWithRange:NSMakeRange(32, 32)];
+
+    BN_free(Ilbn);
+    EC_POINT_free(IlPoint);
+    EC_POINT_free(pubKeyPoint);
+    EC_GROUP_free(group);
+    BN_CTX_free(ctx);
 }
 
-- (NSData *)masterPublicKeyFromSeed:(NSData *)seed
+- (NSData *)masterPublicKeyFromSeed:(NSData *)seed chain:(NSData **)c
 {
+//    def bip32_init(seed):
+//        import hmac
+//        seed = seed.decode('hex')
+//        I = hmac.new("Bitcoin seed", seed, hashlib.sha512).digest()
+//
+//        master_secret = I[0:32]
+//        master_chain = I[32:]
+//
+//        K, K_compressed = get_pubkeys_from_secret(master_secret)
+//        return master_secret, master_chain, K, K_compressed
+//
+//    master_secret, master_chain, master_public_key, master_public_key_compressed = bip32_init(seed)
+//    return master_public_key.encode('hex'), master_chain.encode('hex')
 
+    NSMutableData *I = [NSMutableData dataWithLength:CC_SHA512_DIGEST_LENGTH];
+
+    CCHmac(kCCHmacAlgSHA512, BIP32_MASTER_HMAC_KEY, strlen(BIP32_MASTER_HMAC_KEY), seed.bytes, seed.length,
+           I.mutableBytes);
+
+    *c = [I subdataWithRange:NSMakeRange(32, 32)];
+
+    return [[ZNKey keyWithSecret:[I subdataWithRange:NSMakeRange(0, 32)] compressed:YES] publicKey];
 
 //    NSData *pubkey = [[ZNKey keyWithSecret:[self stretchKey:seed] compressed:NO] publicKey];
 //
@@ -106,38 +160,7 @@
 //
 //    // uncompressed pubkeys are prepended with 0x04... some sort of openssl key encapsulation
 //    return [NSData dataWithBytes:(uint8_t *)pubkey.bytes + 1 length:pubkey.length - 1];
-    return nil;
 }
-
-//- (NSData *)stretchKey:(NSData *)seed
-//{
-//    if (! seed) return nil;
-//
-//    NSMutableData *d = [NSMutableData dataWithData:seed];
-//
-//    [d appendData:seed];
-//    if (d.length < CC_SHA256_DIGEST_LENGTH) d.length = CC_SHA256_DIGEST_LENGTH;
-//
-//    CC_SHA256(d.bytes, seed.length*2, d.mutableBytes);
-//    //SHA256(d.bytes, seed.length*2, d.mutableBytes);
-//
-//    d.length = CC_SHA256_DIGEST_LENGTH;
-//    [d appendData:seed];
-//
-//    CC_LONG l = CC_SHA256_DIGEST_LENGTH + seed.length;
-//    unsigned char *md = d.mutableBytes;
-//
-//    //NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate];
-//
-//    for (NSUInteger i = 1; i < 100000; i++) {
-//        CC_SHA256(md, l, md); // commoncrypto takes about 0.32s on a 4th gen ipod touch
-//        //SHA256(md, l, md);  // openssl takes about 1.95s on a 4th gen ipod touch (not hardware accelerated)
-//    }
-//
-//    //NSLog(@"100000 sha256 rounds took %fs", [NSDate timeIntervalSinceReferenceDate] - t);
-//
-//    return [NSData dataWithBytes:d.bytes length:CC_SHA256_DIGEST_LENGTH];
-//}
 
 //- (NSData *)sequence:(NSUInteger)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
 //{
@@ -161,7 +184,7 @@
 //    BN_CTX *ctx = BN_CTX_new();
 //    EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
 //    EC_POINT *masterPubKeyPoint = EC_POINT_new(group), *pubKeyPoint = EC_POINT_new(group),
-//    *zPoint = EC_POINT_new(group);
+//             *zPoint = EC_POINT_new(group);
 //    uint8_t form = EC_GROUP_get_point_conversion_form(group);
 //    NSMutableData *d = [NSMutableData dataWithBytes:&form length:1];
 //    [d appendData:masterPublicKey];

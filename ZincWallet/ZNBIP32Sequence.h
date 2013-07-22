@@ -11,7 +11,7 @@
 
 @interface ZNBIP32Sequence : NSObject<ZNKeySequence>
 
-- (NSData *)masterPublicKeyFromSeed:(NSData *)seed;
+- (NSData *)masterPublicKeyFromSeed:(NSData *)seed chain:(NSData **)c;
 - (NSData *)publicKey:(NSUInteger)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey;
 
 - (NSString *)privateKey:(NSUInteger)n internal:(BOOL)internal fromSeed:(NSData *)seed;
