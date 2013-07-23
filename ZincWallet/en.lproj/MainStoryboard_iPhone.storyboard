@@ -33,13 +33,13 @@
                     </view>
                     <navigationItem key="navigationItem" title="mɃ 0.00000" id="TF6-YO-yee">
                         <barButtonItem key="backBarButtonItem" title="Back" id="sI0-fv-rOw"/>
-                        <barButtonItem key="leftBarButtonItem" image="gear-blue.png" id="KKr-sB-LsJ">
+                        <barButtonItem key="leftBarButtonItem" image="gear.png" id="KKr-sB-LsJ">
                             <color key="tintColor" white="0.94999999999999996" alpha="1" colorSpace="calibratedWhite"/>
                             <connections>
                                 <segue destination="wFs-aD-OST" kind="modal" id="TZb-LZ-jmy"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" image="refresh-blue.png" id="Ggn-3r-L4A">
+                        <barButtonItem key="rightBarButtonItem" image="refresh.png" id="Ggn-3r-L4A">
                             <color key="tintColor" white="0.94999999999999996" alpha="1" colorSpace="calibratedWhite"/>
                             <connections>
                                 <action selector="refresh:" destination="2" id="Zo7-Qa-Bhn"/>
@@ -943,7 +943,7 @@
                             </subviews>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         </view>
-                        <barButtonItem key="rightBarButtonItem" image="refresh-blue.png" id="QGO-De-ckJ">
+                        <barButtonItem key="rightBarButtonItem" image="refresh.png" id="QGO-De-ckJ">
                             <color key="tintColor" white="0.94999999999999996" alpha="1" colorSpace="calibratedWhite"/>
                             <connections>
                                 <action selector="refresh:" destination="YDc-aF-His" id="Jes-6d-lR5"/>
@@ -1043,8 +1043,8 @@
     <resources>
         <image name="deletetoleft-inv.png" width="120" height="92"/>
         <image name="deletetoleft.png" width="120" height="92"/>
-        <image name="gear-blue.png" width="19" height="19.501354217529297"/>
-        <image name="refresh-blue.png" width="13" height="15.501075744628906"/>
+        <image name="gear.png" width="16" height="16"/>
+        <image name="refresh.png" width="16" height="16"/>
         <image name="wallpaper.jpg" width="1024" height="768"/>
         <image name="zincwallet.png" width="16" height="16"/>
     </resources>

@@ -58,12 +58,12 @@
     }
     
     if (! white) {
-        white = [[UIImage imageNamed:@"button-bg-whitegradient.png"]
+        white = [[UIImage imageNamed:@"button-bg-white.png"]
                  resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 5.0, 15.0, 5.0)];
     }
     
     if (! blue) {
-        blue = [[UIImage imageNamed:@"button-bg-bluegradient.png"]
+        blue = [[UIImage imageNamed:@"button-bg-blue.png"]
                 resizableImageWithCapInsets:UIEdgeInsetsMake(22.0, 5.0, 22.0, 5.0)];
     }
     
@@ -75,7 +75,7 @@
 
             [self setBackgroundImage:blue forState:UIControlStateNormal];
             [self setBackgroundImage:white forState:UIControlStateHighlighted];
-            [self setBackgroundImage:bg forState:UIControlStateDisabled];
+            [self setBackgroundImage:disabled forState:UIControlStateDisabled];
 
             [self setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
             [self setTitleColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0]
@@ -91,7 +91,7 @@
             
             [self setBackgroundImage:bg forState:UIControlStateNormal];
             [self setBackgroundImage:pressed forState:UIControlStateHighlighted];
-            [self setBackgroundImage:bg forState:UIControlStateDisabled];
+            [self setBackgroundImage:disabled forState:UIControlStateDisabled];
             
             [self setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
             [self setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];

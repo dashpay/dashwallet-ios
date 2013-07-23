@@ -14,6 +14,7 @@
 #import "ZNKey.h"
 #import "ZNTransaction.h"
 #import "ZNButton.h"
+#import <QuartzCore/QuartzCore.h>
 #import <netinet/in.h>
 #import "Reachability.h"
 #import "NSString+Base58.h"
@@ -276,6 +277,8 @@
     while (self.requests.count > self.requestButtons.count) {
         UIButton *button = [ZNButton buttonWithType:UIButtonTypeCustom];
 
+        button.layer.shadowRadius = 2.0;
+        button.layer.shadowOpacity = 0.1;
         button.frame = CGRectMake(BUTTON_MARGIN*2, self.scrollView.frame.size.height/2 +
                                   (BUTTON_HEIGHT + BUTTON_MARGIN*2)*(self.requestButtons.count-self.requests.count/2.0),
                                   self.scrollView.frame.size.width - BUTTON_MARGIN*4, BUTTON_HEIGHT);
