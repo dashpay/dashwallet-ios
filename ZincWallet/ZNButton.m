@@ -44,17 +44,17 @@
     
     if (! bg) {
         bg = [[UIImage imageNamed:@"button-bg.png"]
-              resizableImageWithCapInsets:UIEdgeInsetsMake(12.0, 3.0, 12.0, 3.0)];
+              resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 5.0, 15.0, 5.0)];
     }
     
     if (! pressed) {
         pressed = [[UIImage imageNamed:@"button-bg-pressed.png"]
-                   resizableImageWithCapInsets:UIEdgeInsetsMake(12.0, 3.0, 12.0, 3.0)];
+                   resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 5.0, 15.0, 5.0)];
     }
     
     if (! disabled) {
         disabled = [[UIImage imageNamed:@"button-bg-disabled.png"]
-                    resizableImageWithCapInsets:UIEdgeInsetsMake(12.0, 3.0, 12.0, 3.0)];
+                    resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 5.0, 15.0, 5.0)];
     }
     
     if (! white) {
@@ -72,48 +72,36 @@
             self.layer.shadowRadius = 2.0;
             self.layer.shadowOpacity = 0.25;
             self.layer.shadowOffset = CGSizeMake(0.0, 1.0);
-            self.layer.masksToBounds = NO;
 
             [self setBackgroundImage:blue forState:UIControlStateNormal];
             [self setBackgroundImage:white forState:UIControlStateHighlighted];
-            [self setBackgroundImage:white forState:UIControlStateDisabled];
+            [self setBackgroundImage:bg forState:UIControlStateDisabled];
 
             [self setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
             [self setTitleColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0]
                                  forState:UIControlStateHighlighted];
             [self setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
             
-            self.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:17];
-            self.titleLabel.shadowOffset = CGSizeMake(0.0, 0.0);
-
             break;
             
         case ZNButtonStyleGray:
             self.layer.shadowRadius = 3.0;
-            self.layer.shadowOpacity = 0.0;
-            self.layer.shadowOffset = CGSizeMake(0.0, -3.0);
-            self.layer.masksToBounds = YES;
-        
+            self.layer.shadowOpacity = 0.05;
+            self.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+            
             [self setBackgroundImage:bg forState:UIControlStateNormal];
             [self setBackgroundImage:pressed forState:UIControlStateHighlighted];
-            [self setBackgroundImage:disabled forState:UIControlStateDisabled];
+            [self setBackgroundImage:bg forState:UIControlStateDisabled];
             
             [self setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
             [self setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
-            //[self setTitleColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0]
-            //                     forState:UIControlStateHighlighted];
             [self setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
-
-            [self setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateNormal];
-            [self setTitleShadowColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
-            [self setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateDisabled];
-
-            self.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Medium" size:15];
-            self.titleLabel.shadowOffset = CGSizeMake(0.0, 1.0);
-
+            
             break;
     }
-    
+
+    self.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:17];
+    self.titleLabel.shadowOffset = CGSizeMake(0.0, 0.0);    
     self.titleLabel.adjustsFontSizeToFitWidth = YES;
     self.titleLabel.numberOfLines = 1;
     self.titleLabel.lineBreakMode = NSLineBreakByClipping;
