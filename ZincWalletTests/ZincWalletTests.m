@@ -142,28 +142,46 @@
 
 #pragma mark - testBIP32Sequence
 
+- (void)testBIP32SequencePrivateKey
+{
+    ZNBIP32Sequence *seq = [ZNBIP32Sequence new];
+    NSData *seed = [NSData dataWithHex:@"000102030405060708090a0b0c0d0e0f"];
+    NSString *pk = [seq privateKey:2 | 0x80000000 internal:YES fromSeed:seed];
+    NSData *d = [pk base58checkToData];
+
+    NSLog(@"000102030405060708090a0b0c0d0e0f/0'/1/2' prv = %@", d.toHex);
+
+    STAssertEqualObjects(d,
+                         [NSData dataWithHex:@"80cbce0d719ecf7431d88e6a89fa1483e02e35092af60c042b1df2ff59fa424dca01"],
+                         @"[ZNBIP32Sequence privateKey:internal:fromSeed:]");
+
+    //NSData *pubKey = [[ZNKey keyWithPrivateKey:pk] publicKey];
+    // should be 0357bfe1e341d01c69fe5654309956cbea516822fba8a601743a012a7896ee8dc2
+}
+
+- (void)testBIP32SequenceMasterPublicKeyFromSeed
+{
+    ZNBIP32Sequence *seq = [ZNBIP32Sequence new];
+    NSData *seed = [NSData dataWithHex:@"000102030405060708090a0b0c0d0e0f"];
+    NSData *mpk = [seq masterPublicKeyFromSeed:seed];
+    
+    NSLog(@"000102030405060708090a0b0c0d0e0f/0' pub+chain = %@", mpk.toHex);
+    
+    STAssertEqualObjects(mpk, [NSData dataWithHex:@"035a784662a4a20a65bf6aab9ae98a6c068a81c52e4b032c0fb5400c706cfccc56"
+                                                   "47fdacbd0f1097043b78c63c20c34ef4ed9a111d980047ad16282c7ae6236141"],
+                         @"[ZNBIP32Sequence masterPublicKeyFromSeed:]");
+}
+
 - (void)testBIP32SequencePublicKey
 {
     ZNBIP32Sequence *seq = [ZNBIP32Sequence new];
-    
     NSData *seed = [NSData dataWithHex:@"000102030405060708090a0b0c0d0e0f"];
-    
-    NSString *pk = [seq privateKey:2 internal:YES fromSeed:seed];
-    NSData *d = [pk base58checkToData];
-    
-    NSLog(@"prv = %@", [d.toHex substringFromIndex:2]);
-    // should be cbce0d719ecf7431d88e6a89fa1483e02e35092af60c042b1df2ff59fa424dca
-    NSLog(@"pub = %@", [[[ZNKey keyWithPrivateKey:pk] publicKey] toHex]);
-    
-    
     NSData *mpk = [seq masterPublicKeyFromSeed:seed];
-    NSData *pubKey = [seq publicKey:2 internal:YES masterPublicKey:mpk];
-    NSLog(@"pub'= %@", pubKey.toHex);
+    NSData *pub = [seq publicKey:0 internal:NO masterPublicKey:mpk];
+
+    NSLog(@"000102030405060708090a0b0c0d0e0f/0'/0/0 pub = %@", pub.toHex);
     
-    //ZNKey *key = [ZNKey keyWithPublicKey:pubKey];
-    
-    // should be 1NjxqbA9aZWnh17q1UW3rB4EPu79wDXj7x
-    //NSLog(@"%@", key.address);
+    //XXXX verify the value of pub using the output of some other bip32 implementation
 }
 
 #pragma mark - testElectrumSequence

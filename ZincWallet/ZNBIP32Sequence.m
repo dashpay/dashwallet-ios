@@ -112,11 +112,14 @@
 
     CCHmac(kCCHmacAlgSHA512, BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length, I.mutableBytes);
 
-    NSData *masterSecret = [I subdataWithRange:NSMakeRange(0, 32)];
-    NSData *masterChain = [I subdataWithRange:NSMakeRange(32, 32)];
-    NSMutableData *mpk = [NSMutableData dataWithData:[[ZNKey keyWithSecret:masterSecret compressed:YES] publicKey]];
+    NSData *secret = [I subdataWithRange:NSMakeRange(0, 32)];
+    NSData *chain = [I subdataWithRange:NSMakeRange(32, 32)];
+    
+    [self CKDForKey:&secret chain:&chain n:0 | BIP32_PRIME]; // account 0'
+    
+    NSMutableData *mpk = [NSMutableData dataWithData:[[ZNKey keyWithSecret:secret compressed:YES] publicKey]];
 
-    [mpk appendData:masterChain];
+    [mpk appendData:chain];
 
     return mpk;
 }
@@ -128,7 +131,6 @@
     NSData *pubKey = [masterPublicKey subdataWithRange:NSMakeRange(0, masterPublicKey.length - 32)];
     NSData *chain = [masterPublicKey subdataWithRange:NSMakeRange(masterPublicKey.length - 32, 32)];
 
-    [self CKDPrimeForKey:&pubKey chain:&chain n:0]; // account 0
     [self CKDPrimeForKey:&pubKey chain:&chain n:internal ? 1 : 0]; // internal or external chain
     [self CKDPrimeForKey:&pubKey chain:&chain n:n]; // nth key in chain
 
@@ -153,7 +155,7 @@
     NSData *secret = [I subdataWithRange:NSMakeRange(0, 32)], *s;
     NSData *chain = [I subdataWithRange:NSMakeRange(32, 32)], *c;
 
-    [self CKDForKey:&secret chain:&chain n:0]; // account 0
+    [self CKDForKey:&secret chain:&chain n:0 | BIP32_PRIME]; // account 0'
     [self CKDForKey:&secret chain:&chain n:(internal ? 1 : 0)]; // internal or external chain
 
     for (NSNumber *num in n) {
