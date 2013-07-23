@@ -151,11 +151,15 @@
     NSString *pk = [seq privateKey:2 internal:YES fromSeed:seed];
     NSData *d = [pk base58checkToData];
     
-    NSLog(@"%@", d.toHex);
+    NSLog(@"prv = %@", [d.toHex substringFromIndex:2]);
     // should be cbce0d719ecf7431d88e6a89fa1483e02e35092af60c042b1df2ff59fa424dca
+    NSLog(@"pub = %@", [[[ZNKey keyWithPrivateKey:pk] publicKey] toHex]);
     
-    //NSData *mpk = [seq masterPublicKeyFromSeed:seed];
-    //NSData *pubKey = [seq publicKey:2 internal:YES masterPublicKey:mpk];
+    
+    NSData *mpk = [seq masterPublicKeyFromSeed:seed];
+    NSData *pubKey = [seq publicKey:2 internal:YES masterPublicKey:mpk];
+    NSLog(@"pub'= %@", pubKey.toHex);
+    
     //ZNKey *key = [ZNKey keyWithPublicKey:pubKey];
     
     // should be 1NjxqbA9aZWnh17q1UW3rB4EPu79wDXj7x
