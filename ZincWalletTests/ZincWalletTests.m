@@ -167,8 +167,9 @@
     
     NSLog(@"000102030405060708090a0b0c0d0e0f/0' pub+chain = %@", mpk.toHex);
     
-    STAssertEqualObjects(mpk, [NSData dataWithHex:@"035a784662a4a20a65bf6aab9ae98a6c068a81c52e4b032c0fb5400c706cfccc56"
-                                                   "47fdacbd0f1097043b78c63c20c34ef4ed9a111d980047ad16282c7ae6236141"],
+    STAssertEqualObjects(mpk, [NSData dataWithHex:@"3442193e"
+                               "47fdacbd0f1097043b78c63c20c34ef4ed9a111d980047ad16282c7ae6236141"
+                               "035a784662a4a20a65bf6aab9ae98a6c068a81c52e4b032c0fb5400c706cfccc56"],
                          @"[ZNBIP32Sequence masterPublicKeyFromSeed:]");
 }
 
@@ -181,7 +182,34 @@
 
     NSLog(@"000102030405060708090a0b0c0d0e0f/0'/0/0 pub = %@", pub.toHex);
     
-    //XXXX verify the value of pub using the output of some other bip32 implementation
+    //XXXX verify the value of pub using the output of some other implementation
+}
+
+- (void)testBIP32SequenceSerializedPrivateMasterFromSeed
+{
+    ZNBIP32Sequence *seq = [ZNBIP32Sequence new];
+    NSData *seed = [NSData dataWithHex:@"000102030405060708090a0b0c0d0e0f"];
+    NSString *xprv = [seq serializedPrivateMasterFromSeed:seed];
+    
+    NSLog(@"000102030405060708090a0b0c0d0e0f xpriv = %@", xprv);
+    
+    STAssertEqualObjects(xprv,
+     @"xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi",
+                         @"[ZNBIP32Sequence serializedPrivateMasterFromSeed:]");
+}
+
+- (void)testBIP32SequenceSerializedMasterPublicKey
+{
+    ZNBIP32Sequence *seq = [ZNBIP32Sequence new];
+    NSData *seed = [NSData dataWithHex:@"000102030405060708090a0b0c0d0e0f"];
+    NSData *mpk = [seq masterPublicKeyFromSeed:seed];
+    NSString *xpub = [seq serializedMasterPublicKey:mpk];
+    
+    NSLog(@"000102030405060708090a0b0c0d0e0f xpub = %@", xpub);
+    
+    STAssertEqualObjects(xpub,
+     @"xpub68Gmy5EdvgibQVfPdqkBBCHxA5htiqg55crXYuXoQRKfDBFA1WEjWgP6LHhwBZeNK1VTsfTFUHCdrfp1bgwQ9xv5ski8PX9rL2dZXvgGDnw",
+                         @"[ZNBIP32Sequence serializedMasterPublicKey:]");
 }
 
 #pragma mark - testElectrumSequence

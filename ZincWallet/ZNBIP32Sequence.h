@@ -16,4 +16,6 @@
 - (NSString *)privateKey:(NSUInteger)n internal:(BOOL)internal fromSeed:(NSData *)seed;
 - (NSArray *)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed;
 
+- (NSString *)serializedPrivateMasterFromSeed:(NSData *)seed;
+- (NSString *)serializedMasterPublicKey:(NSData *)masterPublicKey;
 @end

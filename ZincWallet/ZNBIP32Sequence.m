@@ -8,14 +8,15 @@
 
 #import "ZNBIP32Sequence.h"
 #import "ZNKey.h"
-#import "NSData+Hash.h"
 #import "NSString+Base58.h"
 #import <CommonCrypto/CommonHMAC.h>
 #import <openssl/ecdsa.h>
 #import <openssl/obj_mac.h>
 
-#define BIP32_PRIME 0x80000000
+#define BIP32_PRIME    0x80000000
 #define BIP32_SEED_KEY "Bitcoin seed"
+#define BIP32_XPRV     "\x04\x88\xAD\xE4"
+#define BIP32_XPUB     "\x04\x88\xB2\x1E"
 
 @implementation ZNBIP32Sequence
 
@@ -106,6 +107,8 @@
     BN_CTX_free(ctx);
 }
 
+#pragma mark - ZNKeySequence
+
 - (NSData *)masterPublicKeyFromSeed:(NSData *)seed
 {
     NSMutableData *I = [NSMutableData dataWithLength:CC_SHA512_DIGEST_LENGTH];
@@ -114,12 +117,14 @@
 
     NSData *secret = [I subdataWithRange:NSMakeRange(0, 32)];
     NSData *chain = [I subdataWithRange:NSMakeRange(32, 32)];
+    NSData *pFpr = [[[ZNKey keyWithSecret:secret compressed:YES] hash160] subdataWithRange:NSMakeRange(0, 4)];
     
     [self CKDForKey:&secret chain:&chain n:0 | BIP32_PRIME]; // account 0'
     
-    NSMutableData *mpk = [NSMutableData dataWithData:[[ZNKey keyWithSecret:secret compressed:YES] publicKey]];
+    NSMutableData *mpk = [NSMutableData dataWithData:pFpr];
 
     [mpk appendData:chain];
+    [mpk appendData:[[ZNKey keyWithSecret:secret compressed:YES] publicKey]];
 
     return mpk;
 }
@@ -128,8 +133,8 @@
 {
     if (! masterPublicKey) return nil;
 
-    NSData *pubKey = [masterPublicKey subdataWithRange:NSMakeRange(0, masterPublicKey.length - 32)];
-    NSData *chain = [masterPublicKey subdataWithRange:NSMakeRange(masterPublicKey.length - 32, 32)];
+    NSData *chain = [masterPublicKey subdataWithRange:NSMakeRange(4, 32)];
+    NSData *pubKey = [masterPublicKey subdataWithRange:NSMakeRange(36, masterPublicKey.length - 36)];
 
     [self CKDPrimeForKey:&pubKey chain:&chain n:internal ? 1 : 0]; // internal or external chain
     [self CKDPrimeForKey:&pubKey chain:&chain n:n]; // nth key in chain
@@ -142,7 +147,6 @@
     return [[self privateKeys:@[@(n)] internal:internal fromSeed:seed] lastObject];
 }
 
-//XXXX in what circumstances do we use prime values for n?
 - (NSArray *)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed
 {
     if (! seed || ! n.count) return @[];
@@ -171,5 +175,48 @@
 
     return ret;
 }
+
+#pragma mark - serializations
+
+- (NSString *)serializeDepth:(uint8_t)depth fingerprint:(uint32_t)fingerprint child:(uint32_t)child
+chain:(NSData *)chain key:(NSData *)key
+{
+    NSMutableData *d = [NSMutableData dataWithBytes:key.length < 33 ? BIP32_XPRV : BIP32_XPUB length:4];
+    
+    fingerprint = CFSwapInt32HostToBig(fingerprint);
+    child = CFSwapInt32HostToBig(child);
+    
+    [d appendBytes:&depth length:1];
+    [d appendBytes:&fingerprint length:sizeof(fingerprint)];
+    [d appendBytes:&child length:sizeof(child)];
+    [d appendData:chain];
+    if (key.length < 33) [d appendBytes:"\0" length:1];
+    [d appendData:key];
+    
+    return [NSString base58checkWithData:d];
+}
+
+- (NSString *)serializedPrivateMasterFromSeed:(NSData *)seed
+{
+    NSMutableData *I = [NSMutableData dataWithLength:CC_SHA512_DIGEST_LENGTH];
+    
+    CCHmac(kCCHmacAlgSHA512, BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length, I.mutableBytes);
+    
+    NSData *secret = [I subdataWithRange:NSMakeRange(0, 32)];
+    NSData *chain = [I subdataWithRange:NSMakeRange(32, 32)];
+
+    return [self serializeDepth:0 fingerprint:0 child:0 chain:chain key:secret];
+}
+
+- (NSString *)serializedMasterPublicKey:(NSData *)masterPublicKey
+{
+    NSData *pFpr = [masterPublicKey subdataWithRange:NSMakeRange(0, 4)];
+    NSData *chain = [masterPublicKey subdataWithRange:NSMakeRange(4, 32)];
+    NSData *pubKey = [masterPublicKey subdataWithRange:NSMakeRange(36, masterPublicKey.length - 36)];
+    uint32_t fingerprint = CFSwapInt32BigToHost(*(uint32_t *)pFpr.bytes);
+    
+    return [self serializeDepth:1 fingerprint:fingerprint child:0 | BIP32_PRIME chain:chain key:pubKey];
+}
+
 
 @end
