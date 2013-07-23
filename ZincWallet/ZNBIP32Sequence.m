@@ -19,29 +19,23 @@
 
 @implementation ZNBIP32Sequence
 
+// To define CKD((kpar, cpar), i) -> (ki, ci):
+//
+// - Check whether the highest bit (0x80000000) of i is set:
+//     - If 1, private derivation is used: let I = HMAC-SHA512(Key = cpar, Data = 0x00 || kpar || i)
+//       [Note: The 0x00 pads the private key to make it 33 bytes long.]
+//     - If 0, public derivation is used: let I = HMAC-SHA512(Key = cpar, Data = X(kpar*G) || i)
+// - Split I = Il || Ir into two 32-byte sequences, Il and Ir.
+// - ki = Il + kpar (mod n).
+// - ci = Ir.
+//
 - (void)CKDForKey:(NSData **)k chain:(NSData **)c n:(uint32_t)n
 {
-//    import hmac
-//    from ecdsa.util import string_to_number, number_to_string
-//    order = generator_secp256k1.order()
-//    keypair = EC_KEY(string_to_number(k))
-//    K = GetPubKey(keypair.pubkey,True)
-//
-//    if n & BIP32_PRIME:
-//        data = chr(0) + k + rev_hex(int_to_hex(n,4)).decode('hex')
-//        I = hmac.new(c, data, hashlib.sha512).digest()
-//    else:
-//        I = hmac.new(c, K + rev_hex(int_to_hex(n,4)).decode('hex'), hashlib.sha512).digest()
-//
-//    k_n = number_to_string( (string_to_number(I[0:32]) + string_to_number(k)) % order , order )
-//    c_n = I[32:]
-//    return k_n, c_n
-
     NSMutableData *data = [NSMutableData dataWithLength:33 - [*k length]];
     NSMutableData *I = [NSMutableData dataWithLength:CC_SHA512_DIGEST_LENGTH];
     BN_CTX *ctx = BN_CTX_new();
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
-    BIGNUM *order = BN_new(), *Ilbn = nil, *kbn = nil, *bn = nil;
+    BIGNUM *order = BN_new(), *Ilbn = nil, *kbn = nil;
 
     if (n & BIP32_PRIME) [data appendData:*k];
     else [data setData:[[ZNKey keyWithSecret:*k compressed:YES] publicKey]];
@@ -49,19 +43,18 @@
     n = CFSwapInt32HostToBig(n);
     [data appendBytes:&n length:sizeof(n)];
 
-    CCHmac(kCCHmacAlgSHA512, [*k bytes], [*k length], data.bytes, data.length, I.mutableBytes);
+    CCHmac(kCCHmacAlgSHA512, [*c bytes], [*c length], data.bytes, data.length, I.mutableBytes);
 
     EC_GROUP_get_order(group, order, ctx);
     Ilbn = BN_bin2bn(I.bytes, 32, Ilbn);
     kbn = BN_bin2bn([*k bytes], [*k length], kbn);
 
-    BN_mod_add(Ilbn, kbn, bn, order, ctx);
+    BN_mod_add(kbn, Ilbn, kbn, order, ctx);
     
     *k = [NSMutableData dataWithLength:32];
-    BN_bn2bin(bn, (unsigned char *)[(NSMutableData *)*k mutableBytes] + 32 - BN_num_bytes(bn));
+    BN_bn2bin(kbn, (unsigned char *)[(NSMutableData *)*k mutableBytes] + 32 - BN_num_bytes(kbn));
     *c = [I subdataWithRange:NSMakeRange(32, 32)];
 
-    BN_free(bn);
     BN_free(kbn);
     BN_free(Ilbn);
     BN_free(order);
@@ -69,6 +62,15 @@
     BN_CTX_free(ctx);
 }
 
+// To define CKD'((Kpar, cpar), i) -> (Ki, ci):
+//
+// - Check whether the highest bit (0x80000000) of i is set:
+//     - If 1, return error
+//     - If 0, let I = HMAC-SHA512(Key = cpar, Data = X(Kpar) || i)
+// - Split I = Il || Ir into two 32-byte sequences, Il and Ir.
+// - Ki = (Il + kpar)*G = Il*G + Kpar
+// - ci = Ir.
+//
 - (void)CKDPrimeForKey:(NSData **)K chain:(NSData **)c n:(uint32_t)n
 {
 //    import hmac
@@ -217,15 +219,15 @@
     NSData *secret = [I subdataWithRange:NSMakeRange(0, 32)], *s;
     NSData *chain = [I subdataWithRange:NSMakeRange(32, 32)], *c;
 
-    [self CKDForKey:&secret chain:&chain n:0]; // account 0
-    [self CKDForKey:&secret chain:&chain n:internal ? 1 : 0]; // internal or external chain
+    [self CKDForKey:&secret chain:&chain n:0 | BIP32_PRIME]; // account 0
+    [self CKDForKey:&secret chain:&chain n:(internal ? 1 : 0)]; // internal or external chain
 
     for (NSNumber *num in n) {
         NSMutableData *pk = [NSMutableData dataWithBytes:"\x80" length:1];
 
         s = secret;
         c = chain;
-        [self CKDForKey:&s chain:&c n:num.unsignedIntegerValue]; // nth key in chain
+        [self CKDForKey:&s chain:&c n:num.unsignedIntegerValue | BIP32_PRIME]; // nth key in chain
         [pk appendData:s];
         [ret addObject:[NSString base58checkWithData:pk]];
     }

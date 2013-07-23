@@ -10,6 +10,7 @@
 
 #import "ZNWallet.h"
 #import "ZNElectrumSequence.h"
+#import "ZNBIP32Sequence.h"
 #import "ZNMnemonic.h"
 #import "ZNTransaction.h"
 #import "ZNKey.h"
@@ -137,6 +138,28 @@
     
     STAssertEqualObjects(s, @"kick quiet student ignore cruel danger describe accident eager darkness embrace suppose",
                          @"[ZNWallet encodePhrase:]");    
+}
+
+#pragma mark - testBIP32Sequence
+
+- (void)testBIP32SequencePublicKey
+{
+    ZNBIP32Sequence *seq = [ZNBIP32Sequence new];
+    
+    NSData *seed = [NSData dataWithHex:@"000102030405060708090a0b0c0d0e0f"];
+    
+    NSString *pk = [seq privateKey:2 internal:YES fromSeed:seed];
+    NSData *d = [pk base58checkToData];
+    
+    NSLog(@"%@", d.toHex);
+    // should be cbce0d719ecf7431d88e6a89fa1483e02e35092af60c042b1df2ff59fa424dca
+    
+    //NSData *mpk = [seq masterPublicKeyFromSeed:seed];
+    //NSData *pubKey = [seq publicKey:2 internal:YES masterPublicKey:mpk];
+    //ZNKey *key = [ZNKey keyWithPublicKey:pubKey];
+    
+    // should be 1NjxqbA9aZWnh17q1UW3rB4EPu79wDXj7x
+    //NSLog(@"%@", key.address);
 }
 
 #pragma mark - testElectrumSequence
