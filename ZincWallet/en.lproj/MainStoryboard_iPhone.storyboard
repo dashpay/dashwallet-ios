@@ -15,7 +15,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" directionalLockEnabled="YES" alwaysBounceHorizontal="YES" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" indicatorStyle="white" bouncesZoom="NO" id="FiH-S7-Ich">
-                                <rect key="frame" x="0.0" y="0.0" width="320" height="520"/>
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="476"/>
                                 <autoresizingMask key="autoresizingMask" heightSizable="YES"/>
                                 <color key="backgroundColor" white="0.95000000000000007" alpha="1" colorSpace="calibratedWhite"/>
                                 <connections>
@@ -23,7 +23,7 @@
                                 </connections>
                             </scrollView>
                             <pageControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" numberOfPages="2" id="kTQ-jN-pAH">
-                                <rect key="frame" x="141" y="532" width="38" height="16"/>
+                                <rect key="frame" x="141" y="468" width="38" height="36"/>
                                 <connections>
                                     <action selector="page:" destination="2" eventType="valueChanged" id="Ff8-Ps-a2A"/>
                                 </connections>
@@ -73,7 +73,7 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="3" contentMode="left" text="unconfirmed" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="oSk-Zn-uEz">
-                                            <rect key="frame" x="20" y="10.5" width="85" height="19"/>
+                                            <rect key="frame" x="20" y="10" width="85" height="19"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                             <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                                             <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="13"/>
@@ -82,7 +82,7 @@
                                             <size key="shadowOffset" width="0.0" height="0.0"/>
                                         </label>
                                         <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="left" text="Title" textAlignment="right" lineBreakMode="clip" baselineAdjustment="alignBaselines" minimumFontSize="8" id="eaS-Yc-Vbc">
-                                            <rect key="frame" x="113" y="10.5" width="187" height="21"/>
+                                            <rect key="frame" x="160" y="11" width="140" height="20"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                             <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
                                             <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
@@ -91,7 +91,7 @@
                                             <size key="shadowOffset" width="0.0" height="1"/>
                                         </label>
                                         <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="2" contentMode="left" text="Detail" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" minimumFontSize="8" id="yjF-5a-Mvf">
-                                            <rect key="frame" x="20" y="33.5" width="280" height="21"/>
+                                            <rect key="frame" x="20" y="36" width="280" height="17"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                             <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="13"/>
                                             <color key="textColor" white="0.75" alpha="1" colorSpace="calibratedWhite"/>
@@ -111,7 +111,7 @@
                                         <view contentMode="scaleToFill" id="DUf-kW-Cwk">
                                             <rect key="frame" x="20" y="58" width="280" height="1"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                                            <color key="backgroundColor" white="0.84999999999999998" alpha="1" colorSpace="calibratedWhite"/>
+                                            <color key="backgroundColor" white="0.90000000000000002" alpha="1" colorSpace="calibratedWhite"/>
                                         </view>
                                     </subviews>
                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
@@ -215,18 +215,18 @@
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <view contentMode="scaleToFill" id="buz-Na-3BD">
-                                <rect key="frame" x="0.0" y="0.0" width="640" height="637"/>
+                                <rect key="frame" x="0.0" y="0.0" width="640" height="657"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <subviews>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" image="wallpaper.jpg" id="xh3-CC-wTN">
-                                        <rect key="frame" x="0.0" y="0.0" width="570" height="637"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="570" height="657"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     </imageView>
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                             </view>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="Dqm-VA-7XD" customClass="ZNButton">
-                                <rect key="frame" x="75" y="196" width="172" height="24"/>
+                                <rect key="frame" x="75" y="173" width="172" height="44"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
                                 <state key="normal" title="new wallet">
@@ -242,7 +242,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="Apw-nM-dbF" customClass="ZNButton">
-                                <rect key="frame" x="76" y="318" width="172" height="24"/>
+                                <rect key="frame" x="76" y="282.5" width="172" height="44"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
                                 <state key="normal" title="restore from backup">
@@ -295,12 +295,12 @@
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <view contentMode="scaleToFill" id="DuD-bk-D8U">
-                                <rect key="frame" x="0.0" y="0.0" width="320" height="112"/>
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="132"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.95000000000000007" alpha="0.90000000000000002" colorSpace="calibratedWhite"/>
                             </view>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Start a new wallet by generating a wallet backup phrase." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="re2-4b-32U">
-                                <rect key="frame" x="25" y="20" width="270" height="22"/>
+                                <rect key="frame" x="25" y="20" width="270" height="42"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="17"/>
                                 <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
@@ -309,7 +309,7 @@
                                 <size key="shadowOffset" width="0.0" height="1"/>
                             </label>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="KEEP IT SECRET. Anyone who sees your backup phrase can spend your bitcoins." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="4zT-au-gLS">
-                                <rect key="frame" x="25" y="70" width="270" height="22"/>
+                                <rect key="frame" x="25" y="70" width="270" height="42"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="15"/>
                                 <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
@@ -318,7 +318,7 @@
                                 <size key="shadowOffset" width="0.0" height="1"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="p3f-07-GNB" customClass="ZNButton">
-                                <rect key="frame" x="62" y="411" width="197" height="24"/>
+                                <rect key="frame" x="62" y="347" width="197" height="44"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
                                 <state key="normal" title="generate backup phrase">
@@ -334,17 +334,17 @@
                                 </connections>
                             </button>
                             <view contentMode="scaleToFill" id="Xrm-NH-rhR">
-                                <rect key="frame" x="0.0" y="122" width="320" height="0.0"/>
+                                <rect key="frame" x="0.0" y="132" width="320" height="1"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.10000000000000001" colorSpace="calibratedWhite"/>
                             </view>
                             <view contentMode="scaleToFill" id="XBh-d2-G27">
-                                <rect key="frame" x="0.0" y="123" width="320" height="0.0"/>
+                                <rect key="frame" x="0.0" y="133" width="320" height="1"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.070000000000000007" colorSpace="calibratedWhite"/>
                             </view>
                             <view contentMode="scaleToFill" id="U8G-Aa-HHe">
-                                <rect key="frame" x="0.0" y="124" width="320" height="0.0"/>
+                                <rect key="frame" x="0.0" y="134" width="320" height="1"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.029999999999999999" colorSpace="calibratedWhite"/>
                             </view>
@@ -379,7 +379,7 @@
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" id="TTv-8y-tZs">
-                                <rect key="frame" x="12" y="14" width="296" height="348"/>
+                                <rect key="frame" x="12" y="14" width="296" height="304"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
@@ -425,11 +425,11 @@
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <view contentMode="scaleToFill" id="Sib-FI-j3a">
-                                <rect key="frame" x="0.0" y="73" width="320" height="318"/>
+                                <rect key="frame" x="0.0" y="73" width="320" height="338"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <subviews>
                                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="receive address" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Lel-6K-GPE">
-                                        <rect key="frame" x="19" y="0.0" width="280" height="1"/>
+                                        <rect key="frame" x="19" y="0.0" width="280" height="21"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
                                         <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
@@ -438,11 +438,11 @@
                                         <size key="shadowOffset" width="0.0" height="1"/>
                                     </label>
                                     <view contentMode="scaleToFill" id="PTx-pR-mJh">
-                                        <rect key="frame" x="34" y="37" width="250" height="230"/>
+                                        <rect key="frame" x="34" y="37" width="250" height="250"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" id="XIj-dt-3QU">
-                                                <rect key="frame" x="1" y="1" width="248" height="228"/>
+                                                <rect key="frame" x="1" y="1" width="248" height="248"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                             </view>
@@ -450,11 +450,11 @@
                                         <color key="backgroundColor" white="0.84999999999999998" alpha="1" colorSpace="calibratedWhite"/>
                                     </view>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" id="ckp-Du-ZrM">
-                                        <rect key="frame" x="34" y="37" width="250" height="230"/>
+                                        <rect key="frame" x="34" y="37" width="250" height="250"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     </imageView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="jE8-Jd-YjS">
-                                        <rect key="frame" x="0.0" y="300" width="320" height="13"/>
+                                        <rect key="frame" x="0.0" y="300" width="320" height="33"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="13"/>
                                         <inset key="titleEdgeInsets" minX="3" minY="0.0" maxX="3" maxY="0.0"/>
@@ -500,7 +500,7 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <textField opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="mɃ 0.00000" textAlignment="right" adjustsFontSizeToFit="NO" minimumFontSize="24" id="U70-Jh-YtO">
-                                <rect key="frame" x="20" y="5" width="280" height="35"/>
+                                <rect key="frame" x="20" y="5" width="280" height="55"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="24"/>
@@ -510,27 +510,27 @@
                                 </connections>
                             </textField>
                             <view contentMode="scaleToFill" id="zOV-94-bRb">
-                                <rect key="frame" x="20" y="51.5" width="280" height="0.0"/>
+                                <rect key="frame" x="20" y="61" width="280" height="1"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.84999999999999998" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
                             <view contentMode="scaleToFill" id="9qR-Wg-jDs">
-                                <rect key="frame" x="20" y="52.5" width="280" height="0.0"/>
+                                <rect key="frame" x="20" y="62" width="280" height="1"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
                             <view hidden="YES" contentMode="scaleToFill" id="1ot-Bm-RD2">
-                                <rect key="frame" x="209" y="77" width="1" height="348"/>
+                                <rect key="frame" x="209" y="77" width="1" height="368"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
                             <view hidden="YES" contentMode="scaleToFill" id="c7d-HZ-NHo">
-                                <rect key="frame" x="112" y="77" width="1" height="348"/>
+                                <rect key="frame" x="112" y="77" width="1" height="368"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="DMk-p0-BIS" customClass="ZNButton">
-                                <rect key="frame" x="20" y="77" width="88" height="66"/>
+                                <rect key="frame" x="20" y="77" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <rect key="contentStretch" x="0.0" y="0.0" width="1" height="0.0"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="40"/>
@@ -552,7 +552,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="T4X-DS-NEf" customClass="ZNButton">
-                                <rect key="frame" x="117" y="77" width="88" height="66"/>
+                                <rect key="frame" x="117" y="77" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <rect key="contentStretch" x="0.0" y="0.0" width="1" height="0.0"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="40"/>
@@ -574,7 +574,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="A29-Ez-f23" customClass="ZNButton">
-                                <rect key="frame" x="213" y="77" width="88" height="66"/>
+                                <rect key="frame" x="213" y="77" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                                 <rect key="contentStretch" x="0.0" y="0.0" width="1" height="0.0"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="40"/>
@@ -596,12 +596,12 @@
                                 </connections>
                             </button>
                             <view hidden="YES" contentMode="scaleToFill" id="JHQ-mG-85d">
-                                <rect key="frame" x="20" y="156.5" width="280" height="0.0"/>
+                                <rect key="frame" x="20" y="166" width="280" height="1"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                                 <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="mAR-H3-a5y" customClass="ZNButton">
-                                <rect key="frame" x="20" y="169" width="88" height="66"/>
+                                <rect key="frame" x="20" y="169" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <rect key="contentStretch" x="0.0" y="0.0" width="1" height="0.0"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="40"/>
@@ -623,7 +623,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="se7-1x-8BQ" customClass="ZNButton">
-                                <rect key="frame" x="117" y="169" width="88" height="66"/>
+                                <rect key="frame" x="117" y="169" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <rect key="contentStretch" x="0.0" y="0.0" width="1" height="0.0"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="40"/>
@@ -645,7 +645,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="DqD-Vf-9Sm" customClass="ZNButton">
-                                <rect key="frame" x="213" y="169" width="88" height="66"/>
+                                <rect key="frame" x="213" y="169" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                                 <rect key="contentStretch" x="0.0" y="0.0" width="1" height="0.0"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="40"/>
@@ -667,12 +667,12 @@
                                 </connections>
                             </button>
                             <view hidden="YES" contentMode="scaleToFill" id="PiO-Q3-0et">
-                                <rect key="frame" x="20" y="250.5" width="280" height="0.0"/>
+                                <rect key="frame" x="20" y="260" width="280" height="1"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                                 <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="4Zn-55-Xum" customClass="ZNButton">
-                                <rect key="frame" x="20" y="265" width="88" height="66"/>
+                                <rect key="frame" x="20" y="265" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <rect key="contentStretch" x="0.0" y="0.0" width="1" height="0.0"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="40"/>
@@ -694,7 +694,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="qEC-MP-j7n" customClass="ZNButton">
-                                <rect key="frame" x="117" y="265" width="88" height="66"/>
+                                <rect key="frame" x="117" y="265" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <rect key="contentStretch" x="0.0" y="0.0" width="1" height="0.0"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="40"/>
@@ -716,7 +716,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="CQQ-Pd-hTk" customClass="ZNButton">
-                                <rect key="frame" x="213" y="265" width="88" height="66"/>
+                                <rect key="frame" x="213" y="265" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                                 <rect key="contentStretch" x="0.0" y="0.0" width="1" height="0.0"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="40"/>
@@ -738,12 +738,12 @@
                                 </connections>
                             </button>
                             <view hidden="YES" contentMode="scaleToFill" id="xAt-sn-r0p">
-                                <rect key="frame" x="20" y="344.5" width="280" height="0.0"/>
+                                <rect key="frame" x="20" y="354" width="280" height="1"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                                 <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="GNd-qX-qoG" customClass="ZNButton">
-                                <rect key="frame" x="20" y="357" width="88" height="66"/>
+                                <rect key="frame" x="20" y="357" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <rect key="contentStretch" x="0.0" y="0.0" width="1" height="0.0"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="40"/>
@@ -765,7 +765,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="eOF-v5-TjL" customClass="ZNButton">
-                                <rect key="frame" x="117" y="357" width="88" height="66"/>
+                                <rect key="frame" x="117" y="357" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <rect key="contentStretch" x="0.0" y="0.0" width="1" height="0.0"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="40"/>
@@ -787,7 +787,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="1V7-p4-mo1" customClass="ZNButton">
-                                <rect key="frame" x="213" y="357" width="88" height="66"/>
+                                <rect key="frame" x="213" y="357" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                                 <rect key="contentStretch" x="0.0" y="0.0" width="1" height="0.0"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="40"/>
@@ -810,17 +810,17 @@
                                 </connections>
                             </button>
                             <view contentMode="scaleToFill" id="Yvb-wQ-n9r">
-                                <rect key="frame" x="20" y="447.5" width="280" height="0.0"/>
+                                <rect key="frame" x="20" y="457" width="280" height="1"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                 <color key="backgroundColor" white="0.84999999999999998" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
                             <view contentMode="scaleToFill" id="nI1-PW-zIW">
-                                <rect key="frame" x="20" y="448.5" width="280" height="0.0"/>
+                                <rect key="frame" x="20" y="458" width="280" height="1"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="to: 1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" minimumFontSize="11" id="2Hb-Bj-uBt">
-                                <rect key="frame" x="20" y="461" width="280" height="20"/>
+                                <rect key="frame" x="20" y="461" width="280" height="40"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
                                 <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
@@ -880,7 +880,7 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="This is your wallet backup phrase" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="0Dr-uM-kcV">
-                                <rect key="frame" x="20" y="60" width="280" height="1"/>
+                                <rect key="frame" x="20" y="60" width="280" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="17"/>
                                 <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
@@ -889,7 +889,7 @@
                                 <size key="shadowOffset" width="0.0" height="1"/>
                             </label>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="WRITE IT DOWN and keep it safe. Lose it and your bitcoins are gone forever." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="u8B-dk-OsH">
-                                <rect key="frame" x="20" y="89" width="280" height="22"/>
+                                <rect key="frame" x="20" y="89" width="280" height="42"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="15"/>
                                 <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
@@ -898,11 +898,11 @@
                                 <size key="shadowOffset" width="0.0" height="1"/>
                             </label>
                             <view contentMode="scaleToFill" id="rln-83-F8o">
-                                <rect key="frame" x="20" y="202" width="280" height="140"/>
+                                <rect key="frame" x="20" y="171" width="280" height="160"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <subviews>
                                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Don't make labelFrame width stetchable. It causes a UI bug in iOS 5." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="G6I-gf-wQK">
-                                        <rect key="frame" x="10" y="10" width="260" height="120"/>
+                                        <rect key="frame" x="10" y="10" width="260" height="140"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
@@ -913,7 +913,7 @@
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                             </view>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Wallet backup phrases also work in the Electrum bitcoin client and brainwallet.org/#chains" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="SHe-lM-jN1">
-                                <rect key="frame" x="40" y="455" width="240" height="43"/>
+                                <rect key="frame" x="40" y="391" width="240" height="63"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="15"/>
                                 <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
@@ -985,7 +985,7 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" id="FFW-ZQ-rzj">
-                                <rect key="frame" x="12" y="88" width="296" height="228"/>
+                                <rect key="frame" x="12" y="88" width="296" height="184"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
@@ -995,7 +995,7 @@
                                 </connections>
                             </textView>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Enter your wallet backup phrase to wipe this wallet and restore or start a new one:" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="DYH-TG-7mB">
-                                <rect key="frame" x="20" y="20" width="280" height="40"/>
+                                <rect key="frame" x="20" y="20" width="280" height="60"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="15"/>
                                 <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
@@ -1043,10 +1043,10 @@
     <resources>
         <image name="deletetoleft-inv.png" width="120" height="92"/>
         <image name="deletetoleft.png" width="120" height="92"/>
-        <image name="gear-blue.png" width="19" height="21"/>
-        <image name="refresh-blue.png" width="14" height="16"/>
+        <image name="gear-blue.png" width="19" height="19.501354217529297"/>
+        <image name="refresh-blue.png" width="13" height="15.501075744628906"/>
         <image name="wallpaper.jpg" width="1024" height="768"/>
-        <image name="zincwallet.png" width="85" height="15"/>
+        <image name="zincwallet.png" width="16" height="16"/>
     </resources>
     <classes>
         <class className="ZNAmountViewController" superclassName="UIViewController">
