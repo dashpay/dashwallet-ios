@@ -37,6 +37,7 @@
 @property (nonatomic, strong) NSMutableArray *requestIDs;
 @property (nonatomic, strong) NSMutableArray *requestButtons;
 @property (nonatomic, assign) NSUInteger selectedIndex;
+@property (nonatomic, strong) NSString *addressInWallet;
 @property (nonatomic, strong) id urlObserver, activeObserver, balanceObserver, reachabilityObserver;
 @property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 @property (nonatomic, assign) int syncErrorCount;
@@ -308,19 +309,6 @@
             
             [obj setCenter:c];
             
-            if (idx < self.requests.count) {
-                ZNPaymentRequest *req = self.requests[idx];
-
-                [obj setTitle:req.label forState:UIControlStateNormal];
-                
-                if ([req.label rangeOfString:BTC].location != NSNotFound) {
-                    [obj titleLabel].font = [UIFont fontWithName:@"HelveticaNeue" size:15];
-                }
-                else {
-                    [obj titleLabel].font = [UIFont fontWithName:@"HelveticaNeue-Light" size:15];
-                }
-            }
-            
             if (self.selectedIndex != NSNotFound) {
                 [obj setEnabled:NO];
                 [obj setAlpha:idx < self.requests.count ? 0.5 : 0];
@@ -329,7 +317,20 @@
                 [obj setEnabled:YES];
                 [obj setAlpha:idx < self.requests.count ? 1 : 0];
             }
-        }];        
+
+            if (idx < self.requests.count) {
+                ZNPaymentRequest *req = self.requests[idx];
+
+                [obj setTitle:req.label forState:UIControlStateNormal];
+                
+                if ([req.label rangeOfString:BTC].location != NSNotFound) {
+                    [obj titleLabel].font = [UIFont fontWithName:@"HelveticaNeue" size:15];
+                }
+                else [obj titleLabel].font = [UIFont fontWithName:@"HelveticaNeue-Light" size:15];
+                
+                if ([self.addressInWallet isEqual:req.paymentAddress]) [obj setEnabled:NO];
+            }
+        }];
     };
     
     if (animated) {
@@ -359,7 +360,8 @@
     if ([w containsAddress:request.paymentAddress]) {
         [[[UIAlertView alloc] initWithTitle:nil message:@"This payment address is already in your wallet." delegate:nil
           cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-            
+        
+        self.addressInWallet = request.paymentAddress;
         self.selectedIndex = NSNotFound;
     }
     else if (request.amount == 0) {
@@ -460,7 +462,9 @@
 - (IBAction)refresh:(id)sender
 {
     if (sender || [self.reachability currentReachabilityStatus] != NotReachable) {
-        [[ZNWallet sharedInstance] synchronize];
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
+        [self.spinner startAnimating];
+        [[ZNWallet sharedInstance] performSelector:@selector(synchronize) withObject:nil afterDelay:0.0];
     }
 }
 

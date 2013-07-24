@@ -159,7 +159,7 @@
                 [tx[@"out"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                     if (obj[@"addr"] && [w containsAddress:obj[@"addr"]]) {
                         received += [obj[@"value"] unsignedLongLongValue];
-                        if (spent == 0) detailTextLabel.text = [@"at: " stringByAppendingString:obj[@"addr"]];
+                        if (spent == 0) detailTextLabel.text = [@"to: " stringByAppendingString:obj[@"addr"]];
                     }
                     else if (spent > 0) {
                         if (obj[@"addr"]) detailTextLabel.text = [@"to: " stringByAppendingString:obj[@"addr"]];

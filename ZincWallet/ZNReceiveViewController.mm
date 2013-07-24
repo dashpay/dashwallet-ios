@@ -38,6 +38,9 @@
     self.format.numberStyle = NSNumberFormatterCurrencyStyle;
     self.format.currencySymbol = BTC;
     [self.format setLenient:YES];
+    
+    self.addressButton.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.addressButton.titleLabel.numberOfLines = 1;
 }
 
 - (void)viewWillAppear:(BOOL)animated
