@@ -11,6 +11,8 @@
 #import "ZNWallet.h"
 #import <QuartzCore/QuartzCore.h>
 
+#define TRANSACTION_CELL_HEIGHT 75
+
 @interface ZNSettingsViewController ()
 
 @property (nonatomic, strong) NSArray *transactions;
@@ -45,7 +47,9 @@
     ZNWallet *w = [ZNWallet sharedInstance];
     
     w.format.minimumFractionDigits = w.balance > 0 ? 1 : w.format.maximumFractionDigits;
-    self.navigationItem.title = [w stringForAmount:w.balance];
+    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
+                                 [w localCurrencyStringForAmount:w.balance]];
+        
     w.format.minimumFractionDigits = 0;
     
     self.balanceObserver =
@@ -54,7 +58,8 @@
             ZNWallet *w = [ZNWallet sharedInstance];
             
             w.format.minimumFractionDigits = w.balance > 0 ? 1 : w.format.maximumFractionDigits;
-            self.navigationItem.title = [w stringForAmount:w.balance];
+            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
+                                         [w localCurrencyStringForAmount:w.balance]];
             w.format.minimumFractionDigits = 0;
             
             self.transactions = [[ZNWallet sharedInstance] recentTransactions];
@@ -116,7 +121,7 @@
     static NSString *disclosureIdent = @"ZNDisclosureCell", *transactionIdent = @"ZNTransactionCell",
                     *actionIdent = @"ZNActionCell";
     UITableViewCell *cell = nil;
-    __block UILabel *textLabel, *detailTextLabel, *unconfirmedLabel, *noTxLabel;
+    __block UILabel *textLabel, *detailTextLabel, *unconfirmedLabel, *sentLabel, *noTxLabel, *localCurrencyLabel;
     
     // Configure the cell...
     switch (indexPath.section) {
@@ -126,18 +131,23 @@
             detailTextLabel = (id)[cell viewWithTag:2];
             unconfirmedLabel = (id)[cell viewWithTag:3];
             noTxLabel = (id)[cell viewWithTag:4];
+            localCurrencyLabel = (id)[cell viewWithTag:5];
+            sentLabel = (id)[cell viewWithTag:6];
 
             if (! self.transactions.count) {
                 noTxLabel.hidden = NO;
                 textLabel.text = nil;
+                localCurrencyLabel.text = nil;
                 detailTextLabel.text = nil;
                 unconfirmedLabel.hidden = YES;
+                sentLabel.hidden = YES;
             }
             else {
                 ZNWallet *w = [ZNWallet sharedInstance];
                 NSDictionary *tx = self.transactions[indexPath.row];
                 __block uint64_t received = 0, spent = 0;
-
+                int height = -1;
+                
                 [tx[@"inputs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                     if (obj[@"prev_out"][@"addr"] && [w containsAddress:obj[@"prev_out"][@"addr"]]) {
                         spent += [obj[@"prev_out"][@"value"] unsignedLongLongValue];
@@ -149,7 +159,7 @@
                 [tx[@"out"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                     if (obj[@"addr"] && [w containsAddress:obj[@"addr"]]) {
                         received += [obj[@"value"] unsignedLongLongValue];
-                        if (spent == 0) detailTextLabel.text = [@"to: " stringByAppendingString:obj[@"addr"]];
+                        if (spent == 0) detailTextLabel.text = [@"at: " stringByAppendingString:obj[@"addr"]];
                     }
                     else if (spent > 0) {
                         if (obj[@"addr"]) detailTextLabel.text = [@"to: " stringByAppendingString:obj[@"addr"]];
@@ -157,26 +167,49 @@
                     }
                 }];
                 
+                noTxLabel.hidden = YES;
+                sentLabel.hidden = YES;
+                unconfirmedLabel.hidden = NO;
+                unconfirmedLabel.layer.cornerRadius = 3.0;
+                
+                if (tx[@"block_height"]) height = w.lastBlockHeight - [tx[@"block_height"] unsignedIntegerValue];
+                
+                if (height < 1) unconfirmedLabel.text = @"unconfirmed";
+                else if (height <= 6) {
+                    unconfirmedLabel.text =
+                        [NSString stringWithFormat:@"%d confirmation%@", height, height > 1 ? @"s" : @""];
+                }
+                else {
+                    unconfirmedLabel.hidden = YES;
+                    sentLabel.hidden = NO;
+                }
+
                 if (withinWallet) {
                     textLabel.text = [w stringForAmount:spent];
-                    //textLabel.textAlignment = NSTextAlignmentRight;
-                    detailTextLabel.text = @"moved within wallet";
+                    localCurrencyLabel.text =
+                        [NSString stringWithFormat:@"(%@)", [w localCurrencyStringForAmount:spent]];
+                    detailTextLabel.text = @"within wallet";
+                    sentLabel.text = @"moved";
                 }
                 else if (spent > 0) {
                     textLabel.text = [w stringForAmount:received - spent];
-                    //textLabel.textAlignment = NSTextAlignmentLeft;
+                    localCurrencyLabel.text =
+                        [NSString stringWithFormat:@"(%@)", [w localCurrencyStringForAmount:received - spent]];
+                    sentLabel.text = @"sent";
                 }
                 else {
                     textLabel.text = [w stringForAmount:received];
-                    //textLabel.textAlignment = NSTextAlignmentRight;
+                    localCurrencyLabel.text =
+                       [NSString stringWithFormat:@"(%@)", [w localCurrencyStringForAmount:received]];
+                    sentLabel.text = @"recieved";
                 }
+
+                CGRect f = unconfirmedLabel.frame;
                 
-                if (! detailTextLabel.text) detailTextLabel.text = @"can't decode payment address";
-                
-                unconfirmedLabel.hidden = (tx[@"block_height"] == nil) ? NO : YES;
-                unconfirmedLabel.layer.cornerRadius = 3.0;
-                
-                noTxLabel.hidden = YES;
+                f.size.width = [unconfirmedLabel.text sizeWithFont:unconfirmedLabel.font].width + 10;
+                unconfirmedLabel.frame = f;
+                                
+                if (! detailTextLabel.text) detailTextLabel.text = @"can't decode payment address";                
             }
             break;
             
@@ -255,7 +288,7 @@
     
     switch (indexPath.section) {
         case 0:
-            return 60;
+            return TRANSACTION_CELL_HEIGHT;
 
         case 1:
             switch (indexPath.row) {
@@ -264,7 +297,8 @@
 
                 case 1:
                     h = tableView.frame.size.height - 22*3 - self.navigationController.navigationBar.frame.size.height -
-                        (self.transactions.count ? self.transactions.count*60 : 60);
+                        (self.transactions.count ? self.transactions.count*TRANSACTION_CELL_HEIGHT :
+                         TRANSACTION_CELL_HEIGHT);
                     return h > 0 ? h : 0;
 
                 default:
@@ -296,7 +330,7 @@
     l.shadowColor = [UIColor lightGrayColor];
     l.shadowOffset = CGSizeMake(0.0, 1.0);
     
-    v.backgroundColor = [UIColor colorWithWhite:0.8 alpha:0.9];
+    v.backgroundColor = [UIColor colorWithWhite:0.75 alpha:0.9];
     [v addSubview:l];
     
     return v;

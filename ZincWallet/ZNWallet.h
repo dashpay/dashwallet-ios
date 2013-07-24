@@ -25,6 +25,7 @@
 @property (nonatomic, readonly) NSString *changeAddress;
 @property (nonatomic, readonly) NSArray *recentTransactions; // sorted by date, most recent first
 @property (nonatomic, readonly) NSUInteger estimatedCurrentBlockHeight;
+@property (nonatomic, readonly) NSUInteger lastBlockHeight;
 @property (nonatomic, readonly, getter = isSynchronizing) BOOL synchronizing;
 @property (nonatomic, readonly) NSTimeInterval timeSinceLastSync;
 @property (nonatomic, strong) NSNumberFormatter *format;
@@ -38,8 +39,9 @@
 - (void)synchronize;
 
 - (BOOL)containsAddress:(NSString *)address;
-- (NSString *)stringForAmount:(int64_t)amount;
 - (int64_t)amountForString:(NSString *)string;
+- (NSString *)stringForAmount:(int64_t)amount;
+- (NSString *)localCurrencyStringForAmount:(int64_t)amount;
 
 - (ZNTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee;
 - (NSTimeInterval)timeUntilFree:(ZNTransaction *)transaction;

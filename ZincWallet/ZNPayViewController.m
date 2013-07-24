@@ -39,6 +39,7 @@
 @property (nonatomic, assign) NSUInteger selectedIndex;
 @property (nonatomic, strong) id urlObserver, activeObserver, balanceObserver, reachabilityObserver;
 @property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
+@property (nonatomic, assign) int syncErrorCount;
 
 @property (nonatomic, strong) IBOutlet UIScrollView *scrollView;
 @property (nonatomic, strong) IBOutlet UIPageControl *pageControl;
@@ -96,7 +97,6 @@
             }
         }];
     
-    //XXX instead of autosyncing, we should open a socket and listen for transaction broadcasts
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
@@ -115,7 +115,8 @@
             ZNWallet *w = [ZNWallet sharedInstance];
             
             w.format.minimumFractionDigits = w.balance > 0 ? 1 : w.format.maximumFractionDigits;
-            self.navigationItem.title = [[ZNWallet sharedInstance] stringForAmount:[[ZNWallet sharedInstance] balance]];
+            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
+                                         [w localCurrencyStringForAmount:w.balance]];
             w.format.minimumFractionDigits = 0;
         }];
     
@@ -129,6 +130,7 @@
     self.syncFinishedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncFinishedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
+            self.syncErrorCount = 0;
             [self.spinner stopAnimating];
             self.navigationItem.rightBarButtonItem = self.refreshButton;
         }];
@@ -136,6 +138,14 @@
     self.syncFailedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncFailedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
+            self.syncErrorCount++;
+            if ([note.userInfo[@"error"] code] == 504 && self.syncErrorCount < 3) { // XXXX need an error banner
+                [[[UIAlertView alloc] initWithTitle:@"Couldn't refresh wallet balance" message:@"retrying..."
+                  delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+                [[ZNWallet sharedInstance] synchronize];
+                return;
+            }
+        
             [self.spinner stopAnimating];
             self.navigationItem.rightBarButtonItem = self.refreshButton;
             
@@ -149,7 +159,8 @@
     ZNWallet *w = [ZNWallet sharedInstance];
     
     w.format.minimumFractionDigits = w.balance > 0 ? 1 : w.format.maximumFractionDigits;
-    self.navigationItem.title = [[ZNWallet sharedInstance] stringForAmount:[[ZNWallet sharedInstance] balance]];
+    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
+                                 [w localCurrencyStringForAmount:w.balance]];
     w.format.minimumFractionDigits = 0;
 }
 
@@ -400,9 +411,13 @@
         }
         else {
             w.format.minimumFractionDigits = w.balance > 0 ? 1 : w.format.maximumFractionDigits;
+            
+            NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:request.amount],
+                                [w localCurrencyStringForAmount:request.amount]];
+
             [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
               message:request.message ? request.message : request.paymentAddress delegate:self
-             cancelButtonTitle:@"cancel" otherButtonTitles:[w stringForAmount:request.amount], nil] show];
+             cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
             w.format.minimumFractionDigits = 0;
         }
     }
@@ -623,12 +638,15 @@
             return;
         }
         
-        uint64_t fee = [w transactionFee:tx];
-    
         w.format.minimumFractionDigits = w.balance > 0 ? 1 : w.format.maximumFractionDigits;
+
+        uint64_t total = request.amount + [w transactionFee:tx];
+        NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:total],
+                            [w localCurrencyStringForAmount:total]];
+
         [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
           message:request.message ? request.message : request.paymentAddress delegate:self
-          cancelButtonTitle:@"cancel" otherButtonTitles:[w stringForAmount:request.amount + fee], nil] show];
+          cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
         w.format.minimumFractionDigits = 0;
     }
     else {

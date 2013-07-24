@@ -71,7 +71,8 @@
             ZNWallet *w = [ZNWallet sharedInstance];
             
             w.format.minimumFractionDigits = w.balance > 0 ? 1 : w.format.maximumFractionDigits;
-            self.navigationItem.title = [w stringForAmount:w.balance];
+            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
+                                         [w localCurrencyStringForAmount:w.balance]];
             w.format.minimumFractionDigits = 0;
         }];
 }
@@ -153,9 +154,13 @@
         }
         else {
             w.format.minimumFractionDigits = w.balance > 0 ? 1 : w.format.maximumFractionDigits;
+
+            NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:self.request.amount],
+                                [w localCurrencyStringForAmount:self.request.amount]];
+            
             [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
               message:self.request.message ? self.request.message : self.request.paymentAddress delegate:self
-              cancelButtonTitle:@"cancel" otherButtonTitles:[w stringForAmount:self.request.amount], nil] show];
+              cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
             w.format.minimumFractionDigits = 0;
         }
     }
@@ -221,10 +226,14 @@ replacementString:(NSString *)string
     }
     else if ([title hasPrefix:@"+ "] || [title isEqual:@"no fee"]) {
         w.format.minimumFractionDigits = w.balance > 0 ? 1 : w.format.maximumFractionDigits;
+        
+        uint64_t total = self.request.amount + [w transactionFee:self.tx];
+        NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:total],
+                            [w localCurrencyStringForAmount:total]];
+
         [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
           message:self.request.message ? self.request.message : self.request.paymentAddress delegate:self
-          cancelButtonTitle:@"cancel"
-          otherButtonTitles:[w stringForAmount:self.request.amount + [w transactionFee:self.tx]], nil] show];
+          cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
         w.format.minimumFractionDigits = 0;
     }
     else {

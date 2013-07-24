@@ -43,6 +43,9 @@
 #define UNCONFIRMED_KEY            @"UNCONFIRMED"
 #define LATEST_BLOCK_HEIGHT_KEY    @"LATEST_BLOCK_HEIGHT"
 #define LATEST_BLOCK_TIMESTAMP_KEY @"LATEST_BLOCK_TIMESTAMP"
+#define LOCAL_CURRENCY_SYMBOL_KEY  @"LOCAL_CURRENCY_SYMBOL"
+#define LOCAL_CURRENCY_CODE_KEY    @"LOCAL_CURRENCY_CODE"
+#define LOCAL_CURRENCY_PRICE_KEY   @"LOCAL_CURRENCY_PRICE"
 #define LAST_SYNC_TIME_KEY         @"LAST_SYNC_TIME"
 #define SEED_KEY                   @"seed"
 
@@ -66,6 +69,7 @@
 @property (nonatomic, strong) NSData *mpk;
 @property (nonatomic, strong) NSUserDefaults *defs;
 @property (nonatomic, strong) id reachabilityObserver, activeObserver;
+@property (nonatomic, strong) NSNumberFormatter *localFormat;
 
 @property (nonatomic, strong) WebSocket *webSocket;
 @property (nonatomic, assign) int webSocketFails;
@@ -115,10 +119,18 @@
     //self.format.maximumFractionDigits = 5;
     //self.format.maximum = @21000000000.0;
     self.format.currencySymbol = BTC;
-    self.format.positiveFormat = @"¤ #,##0.00";
-    self.format.negativeFormat = @"¤ -#,##0.00";
+    self.format.negativeFormat =
+        [self.format.positiveFormat stringByReplacingOccurrencesOfString:@"¤" withString:@"¤ -"];
+    self.format.positiveFormat =
+        [self.format.positiveFormat stringByReplacingOccurrencesOfString:@"¤" withString:@"¤ "];
     self.format.maximumFractionDigits = 8;
     self.format.maximum = @21000000.0;
+    
+    self.localFormat = [NSNumberFormatter new];
+    self.localFormat.lenient = YES;
+    self.localFormat.numberStyle = NSNumberFormatterCurrencyStyle;
+    self.localFormat.negativeFormat =
+        [self.localFormat.positiveFormat stringByReplacingOccurrencesOfString:@"¤" withString:@"¤-"];
     
     self.webSocket = [WebSocketUIView new];
     self.webSocket.delegate = self;
@@ -493,6 +505,9 @@ completion:(void (^)(NSError *error))completion
         
         NSInteger height = [JSON[@"info"][@"latest_block"][@"height"] integerValue];
         NSTimeInterval time = [JSON[@"info"][@"latest_block"][@"time"] doubleValue];
+        NSString *symbol = JSON[@"info"][@"symbol_local"][@"symbol"];
+        NSString *code = JSON[@"info"][@"symbol_local"][@"code"];
+        double price = [JSON[@"info"][@"symbol_local"][@"conversion"] doubleValue];
         
         [self.unconfirmed removeObjectsForKeys:self.transactions.allKeys];
         
@@ -505,6 +520,9 @@ completion:(void (^)(NSError *error))completion
         [_defs setObject:self.unconfirmed forKey:UNCONFIRMED_KEY];
         if (height) [_defs setInteger:height forKey:LATEST_BLOCK_HEIGHT_KEY];
         if (time > 1.0) [_defs setDouble:time forKey:LATEST_BLOCK_TIMESTAMP_KEY];
+        if (symbol.length) [_defs setObject:symbol forKey:LOCAL_CURRENCY_SYMBOL_KEY];
+        if (code.length) [_defs setObject:code forKey:LOCAL_CURRENCY_CODE_KEY];
+        if (price > DBL_EPSILON) [_defs setDouble:price forKey:LOCAL_CURRENCY_PRICE_KEY];
         
         if (self.outdatedAddresses.count) {
             [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:self];
@@ -683,18 +701,23 @@ completion:(void (^)(NSError *error))completion
            }];
 }
 
+- (NSUInteger)lastBlockHeight
+{
+    NSUInteger height = [_defs integerForKey:LATEST_BLOCK_HEIGHT_KEY];
+    
+    if (! height) height = REFERENCE_BLOCK_HEIGHT;
+    
+    return height;
+}
+
 - (NSUInteger)estimatedCurrentBlockHeight
 {
     NSTimeInterval time = [_defs doubleForKey:LATEST_BLOCK_TIMESTAMP_KEY];
-    NSUInteger height = [_defs integerForKey:LATEST_BLOCK_HEIGHT_KEY];
     
-    if (! height || time < 1.0) { // use hard coded reference block
-        height = REFERENCE_BLOCK_HEIGHT;
-        time = REFERENCE_BLOCK_TIME;
-    }
+    if (time < 1.0) time = REFERENCE_BLOCK_TIME;
     
     // average one block every 600 seconds
-    return height + ([NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 - time)/600;
+    return self.lastBlockHeight + ([NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 - time)/600;
 }
 
 - (BOOL)containsAddress:(NSString *)address
@@ -703,15 +726,31 @@ completion:(void (^)(NSError *error))completion
            [self.receiveAddresses containsObject:address];
 }
 
+- (int64_t)amountForString:(NSString *)string
+{
+    return ([[self.format numberFromString:string] doubleValue] + DBL_EPSILON)*
+    pow(10.0, self.format.maximumFractionDigits);
+}
+
 - (NSString *)stringForAmount:(int64_t)amount
 {
     return [self.format stringFromNumber:@(amount/pow(10.0, self.format.maximumFractionDigits))];
 }
 
-- (int64_t)amountForString:(NSString *)string
+- (NSString *)localCurrencyStringForAmount:(int64_t)amount
 {
-    return ([[self.format numberFromString:string] doubleValue] + DBL_EPSILON)*
-           pow(10.0, self.format.maximumFractionDigits);
+    if (! amount) return [self.localFormat stringFromNumber:@(0)];
+
+    NSString *symbol = [_defs stringForKey:LOCAL_CURRENCY_SYMBOL_KEY];
+    NSString *code = [_defs stringForKey:LOCAL_CURRENCY_CODE_KEY];
+    double price = [_defs doubleForKey:LOCAL_CURRENCY_PRICE_KEY];
+    
+    if (! symbol.length || price <= DBL_EPSILON) return nil;
+    
+    self.localFormat.currencySymbol = symbol;
+    self.localFormat.currencyCode = code;
+    
+    return [self.localFormat stringFromNumber:@(amount/price)];
 }
 
 #pragma mark - ZNTransaction helpers
