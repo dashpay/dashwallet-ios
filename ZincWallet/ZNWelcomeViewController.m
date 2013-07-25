@@ -15,11 +15,11 @@
 
 @interface ZNWelcomeViewController ()
 
-@property (nonatomic, assign) CGPoint wallpaperStart, paralaxStart, walletStart, restoreStart;
+@property (nonatomic, assign) CGPoint wallpaperStart, paralaxStart, shadowStart, logoStart, walletStart, restoreStart;
 @property (nonatomic, assign) BOOL hasAppeared, animating;
 @property (nonatomic, strong) id activeObserver, resignActiveObserver;
 
-@property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
+@property (nonatomic, strong) IBOutlet UIImageView *wallpaper, *shadow, *logo;
 @property (nonatomic, strong) IBOutlet UIView *paralax;
 @property (nonatomic, strong) IBOutlet UIButton *walletButton, *restoreButton;
 
@@ -73,15 +73,19 @@
     
     if (! self.hasAppeared) {
         self.wallpaperStart = self.wallpaper.center;
+        self.shadowStart = CGPointMake(self.shadow.center.x - self.view.frame.size.width*PARALAX_RATIO*2,
+                                       self.shadow.center.y);
+        self.logoStart = CGPointMake(self.logo.center.x - self.view.frame.size.width, self.logo.center.y);
         self.paralaxStart = self.paralax.center;
         self.walletStart = self.walletButton.center;
         self.restoreStart = self.restoreButton.center;
 
-        self.walletButton.center = CGPointMake(self.walletStart.x - self.view.frame.size.width, self.walletStart.y);
-        self.restoreButton.center = CGPointMake(self.restoreStart.x - self.view.frame.size.width, self.restoreStart.y);
-        self.paralax.center = CGPointMake(self.paralaxStart.x - self.view.frame.size.width*PARALAX_RATIO,
+        self.walletButton.center = CGPointMake(self.walletStart.x + self.view.frame.size.width, self.walletStart.y);
+        self.restoreButton.center = CGPointMake(self.restoreStart.x + self.view.frame.size.width, self.restoreStart.y);
+        self.paralax.center = CGPointMake(self.paralaxStart.x + self.view.frame.size.width*PARALAX_RATIO,
                                           self.paralaxStart.y);
         
+        [self.navigationController.view insertSubview:self.shadow atIndex:0];
         [self.navigationController.view insertSubview:self.paralax atIndex:0];
     }
 }
@@ -104,7 +108,10 @@
         [UIView animateWithDuration:UINavigationControllerHideShowBarDuration*2 animations:^{
             self.walletButton.center = self.walletStart;
             self.restoreButton.center = self.restoreStart;
+            self.logo.center = self.logoStart;
             self.paralax.center = self.paralaxStart;
+            self.shadow.center = self.shadowStart;
+            self.shadow.alpha = 0.5;
         }];
     }
 }
@@ -125,8 +132,13 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
         if (viewController != self) {
             self.paralax.center = CGPointMake(self.paralaxStart.x - self.view.frame.size.width*PARALAX_RATIO,
                                               self.paralaxStart.y);
+            self.shadow.center = CGPointMake(self.shadowStart.x - self.view.frame.size.width*PARALAX_RATIO*2,
+                                             self.shadowStart.y);
         }
-        else self.paralax.center = self.paralaxStart;
+        else {
+            self.paralax.center = self.paralaxStart;
+            self.shadow.center = self.shadowStart;
+        }
     }];
 }
 
