@@ -46,23 +46,16 @@
 
     ZNWallet *w = [ZNWallet sharedInstance];
     
-    w.format.minimumFractionDigits = w.balance > 0 ? 1 : w.format.maximumFractionDigits;
     self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                  [w localCurrencyStringForAmount:w.balance]];
-        
-    w.format.minimumFractionDigits = 0;
     
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:walletBalanceNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            ZNWallet *w = [ZNWallet sharedInstance];
-            
-            w.format.minimumFractionDigits = w.balance > 0 ? 1 : w.format.maximumFractionDigits;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                          [w localCurrencyStringForAmount:w.balance]];
-            w.format.minimumFractionDigits = 0;
             
-            self.transactions = [[ZNWallet sharedInstance] recentTransactions];
+            self.transactions = w.recentTransactions;
             
             [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
              withRowAnimation:UITableViewRowAnimationAutomatic];

@@ -63,6 +63,7 @@
     //XXX add a field for manually entering a payment address
 
     ZNPaymentRequest *req = [ZNPaymentRequest new];
+    ZNWallet *w = [ZNWallet sharedInstance];
     
     req.label = @"scan QR code";
     
@@ -101,24 +102,20 @@
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if ([[ZNWallet sharedInstance] timeSinceLastSync] > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
+            if (w.timeSinceLastSync > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
         }];
     
     self.reachabilityObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if ([[ZNWallet sharedInstance] timeSinceLastSync] > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
+            if (w.timeSinceLastSync > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
         }];
 
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:walletBalanceNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            ZNWallet *w = [ZNWallet sharedInstance];
-            
-            w.format.minimumFractionDigits = w.balance > 0 ? 1 : w.format.maximumFractionDigits;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                          [w localCurrencyStringForAmount:w.balance]];
-            w.format.minimumFractionDigits = 0;
         }];
     
     self.syncStartedObserver =
@@ -143,7 +140,7 @@
             if ([note.userInfo[@"error"] code] == 504 && self.syncErrorCount < 3) { // XXXX need an error banner
                 [[[UIAlertView alloc] initWithTitle:@"Couldn't refresh wallet balance" message:@"retrying..."
                   delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-                [[ZNWallet sharedInstance] synchronize];
+                [w synchronize];
                 return;
             }
         
@@ -157,12 +154,8 @@
     self.reachability = [Reachability reachabilityWithHostName:@"blockchain.info"];
     [self.reachability startNotifier];
     
-    ZNWallet *w = [ZNWallet sharedInstance];
-    
-    w.format.minimumFractionDigits = w.balance > 0 ? 1 : w.format.maximumFractionDigits;
     self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                  [w localCurrencyStringForAmount:w.balance]];
-    w.format.minimumFractionDigits = 0;
 }
 
 - (void)viewWillUnload
@@ -185,8 +178,9 @@
     [super viewWillAppear:animated];
  
     static BOOL firstAppearance = YES;
+    ZNWallet *w = [ZNWallet sharedInstance];
     
-    if (! [[ZNWallet sharedInstance] seed]) {
+    if (! w.seed) {
         UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNNewWalletNav"];
         
         [self.navigationController presentViewController:c animated:NO completion:nil];
@@ -222,7 +216,7 @@
             if (! req.label.length) {
                 if (req.amount > 0) {
                     req.label = [NSString stringWithFormat:@"%@ - %@", req.paymentAddress,
-                                 [[ZNWallet sharedInstance] stringForAmount:req.amount]];
+                                 [w stringForAmount:req.amount]];
                 }
                 else req.label = req.paymentAddress;
             }
@@ -250,7 +244,7 @@
     if (firstAppearance) {
         firstAppearance = NO;
     
-        if ([[ZNWallet sharedInstance] balance] == 0) {
+        if (w.balance == 0) {
             [self.scrollView setContentOffset:CGPointMake(self.scrollView.frame.size.width, 0) animated:NO];
         }
     }
@@ -411,16 +405,13 @@
               message:[NSString stringWithFormat:@"estimated confirmation time with no fee: %@", time] delegate:self
               cancelButtonTitle:nil otherButtonTitles:@"no fee", [NSString stringWithFormat:@"+ %@", fee], nil] show];
         }
-        else {
-            w.format.minimumFractionDigits = w.balance > 0 ? 1 : w.format.maximumFractionDigits;
-            
+        else {            
             NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:request.amount],
                                 [w localCurrencyStringForAmount:request.amount]];
 
             [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
               message:request.message ? request.message : request.paymentAddress delegate:self
              cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
-            w.format.minimumFractionDigits = 0;
         }
     }
 }
@@ -641,8 +632,6 @@
             [self layoutButtonsAnimated:YES];
             return;
         }
-        
-        w.format.minimumFractionDigits = w.balance > 0 ? 1 : w.format.maximumFractionDigits;
 
         uint64_t total = request.amount + [w transactionFee:tx];
         NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:total],
@@ -651,7 +640,6 @@
         [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
           message:request.message ? request.message : request.paymentAddress delegate:self
           cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
-        w.format.minimumFractionDigits = 0;
     }
     else {
         if ([w amountForString:title] > request.amount) tx = txWithFee;

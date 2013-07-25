@@ -36,9 +36,7 @@
     
     ZNWallet *w = [ZNWallet sharedInstance];
     
-    w.format.minimumFractionDigits = w.format.maximumFractionDigits;
-    self.amountField.placeholder = [[ZNWallet sharedInstance] stringForAmount:0];
-    w.format.minimumFractionDigits = 0;
+    self.amountField.placeholder = [w stringForAmount:0];
     
     [self.buttons enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         [(ZNButton *)obj setStyle:ZNButtonStyleGray];
@@ -68,12 +66,8 @@
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:walletBalanceNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            ZNWallet *w = [ZNWallet sharedInstance];
-            
-            w.format.minimumFractionDigits = w.balance > 0 ? 1 : w.format.maximumFractionDigits;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                          [w localCurrencyStringForAmount:w.balance]];
-            w.format.minimumFractionDigits = 0;
         }];
 }
 
@@ -118,8 +112,8 @@
         if (self.request.amount < TX_MIN_OUTPUT_AMOUNT) {
             [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment"
               message:[@"Bitcoin payments can't be less than "
-                       stringByAppendingString:[[ZNWallet sharedInstance] stringForAmount:TX_MIN_OUTPUT_AMOUNT]]
-              delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+                       stringByAppendingString:[w stringForAmount:TX_MIN_OUTPUT_AMOUNT]] delegate:nil
+              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
             
             return;
         }
@@ -153,15 +147,12 @@
               cancelButtonTitle:nil otherButtonTitles:@"no fee", [NSString stringWithFormat:@"+ %@", fee], nil] show];
         }
         else {
-            w.format.minimumFractionDigits = w.balance > 0 ? 1 : w.format.maximumFractionDigits;
-
             NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:self.request.amount],
                                 [w localCurrencyStringForAmount:self.request.amount]];
             
             [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
               message:self.request.message ? self.request.message : self.request.paymentAddress delegate:self
               cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
-            w.format.minimumFractionDigits = 0;
         }
     }
 }
@@ -225,8 +216,6 @@ replacementString:(NSString *)string
           otherButtonTitles:nil] show];
     }
     else if ([title hasPrefix:@"+ "] || [title isEqual:@"no fee"]) {
-        w.format.minimumFractionDigits = w.balance > 0 ? 1 : w.format.maximumFractionDigits;
-        
         uint64_t total = self.request.amount + [w transactionFee:self.tx];
         NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:total],
                             [w localCurrencyStringForAmount:total]];
@@ -234,7 +223,6 @@ replacementString:(NSString *)string
         [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
           message:self.request.message ? self.request.message : self.request.paymentAddress delegate:self
           cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
-        w.format.minimumFractionDigits = 0;
     }
     else {
         NSLog(@"signing transaction");

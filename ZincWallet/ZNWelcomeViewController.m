@@ -105,14 +105,14 @@
                                                 self.wallpaperStart.y - WALLPAPER_ANIMATION_Y);
         } completion:^(BOOL finished) { self.animating = NO; }];
         
-        [UIView animateWithDuration:UINavigationControllerHideShowBarDuration*2 animations:^{
+        [UIView animateWithDuration:UINavigationControllerHideShowBarDuration*2 delay:1.0 options:0 animations:^{
             self.walletButton.center = self.walletStart;
             self.restoreButton.center = self.restoreStart;
             self.logo.center = self.logoStart;
             self.paralax.center = self.paralaxStart;
             self.shadow.center = self.shadowStart;
             self.shadow.alpha = 0.5;
-        }];
+        } completion:nil];
     }
 }
 

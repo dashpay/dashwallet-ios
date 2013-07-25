@@ -729,12 +729,23 @@ completion:(void (^)(NSError *error))completion
 - (int64_t)amountForString:(NSString *)string
 {
     return ([[self.format numberFromString:string] doubleValue] + DBL_EPSILON)*
-    pow(10.0, self.format.maximumFractionDigits);
+           pow(10.0, self.format.maximumFractionDigits);
 }
 
 - (NSString *)stringForAmount:(int64_t)amount
 {
-    return [self.format stringFromNumber:@(amount/pow(10.0, self.format.maximumFractionDigits))];
+    NSUInteger min = self.format.minimumFractionDigits;
+    
+    if (amount == 0) {
+        self.format.minimumFractionDigits =
+            self.format.maximumFractionDigits > 4 ? 4 : self.format.maximumFractionDigits;
+    }
+    
+    NSString *r = [self.format stringFromNumber:@(amount/pow(10.0, self.format.maximumFractionDigits))];
+    
+    self.format.minimumFractionDigits = min;
+    
+    return r;
 }
 
 - (NSString *)localCurrencyStringForAmount:(int64_t)amount
