@@ -107,14 +107,14 @@ annotation:(id)annotation
          setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0],
                                   UITextAttributeTextShadowColor:[UIColor whiteColor],
                                   UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
-                                  UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:15.0]}
+                                  UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
          forState:UIControlStateNormal];
         
         [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
          setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor colorWithRed:0.0 green:0.25 blue:0.5 alpha:1.0],
                                   UITextAttributeTextShadowColor:[UIColor whiteColor],
                                   UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 0.0)],
-                                  UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:15.0]}
+                                  UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
          forState:UIControlStateHighlighted];
         
         [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
@@ -128,7 +128,7 @@ annotation:(id)annotation
          forState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
 
         [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
-         setBackButtonTitlePositionAdjustment:UIOffsetMake(0.0, -3.0) forBarMetrics:UIBarMetricsDefault];
+         setBackButtonTitlePositionAdjustment:UIOffsetMake(0.0, -4.0) forBarMetrics:UIBarMetricsDefault];
 
         [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
          setBackgroundImage:[[UIImage imageNamed:@"button-bg-clear.png"]
