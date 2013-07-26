@@ -88,7 +88,8 @@
 //
 - (NSData *)decodePhrase:(NSString *)phrase
 {
-    NSArray *list = [phrase componentsSeparatedByString:@" "];
+    NSArray *list = [[phrase stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]
+                     componentsSeparatedByString:@" "];
     NSMutableData *d = [NSMutableData dataWithCapacity:list.count*4/3];
     int32_t n = self.words.count;
 

@@ -117,11 +117,11 @@
 
     NSData *secret = [I subdataWithRange:NSMakeRange(0, 32)];
     NSData *chain = [I subdataWithRange:NSMakeRange(32, 32)];
-    NSData *pFpr = [[[ZNKey keyWithSecret:secret compressed:YES] hash160] subdataWithRange:NSMakeRange(0, 4)];
+    NSData *parFingerprint = [[[ZNKey keyWithSecret:secret compressed:YES] hash160] subdataWithRange:NSMakeRange(0, 4)];
     
     [self CKDForKey:&secret chain:&chain n:0 | BIP32_PRIME]; // account 0'
     
-    NSMutableData *mpk = [NSMutableData dataWithData:pFpr];
+    NSMutableData *mpk = [NSMutableData dataWithData:parFingerprint];
 
     [mpk appendData:chain];
     [mpk appendData:[[ZNKey keyWithSecret:secret compressed:YES] publicKey]];
@@ -210,10 +210,10 @@ chain:(NSData *)chain key:(NSData *)key
 
 - (NSString *)serializedMasterPublicKey:(NSData *)masterPublicKey
 {
-    NSData *pFpr = [masterPublicKey subdataWithRange:NSMakeRange(0, 4)];
+    NSData *parFingerprint = [masterPublicKey subdataWithRange:NSMakeRange(0, 4)];
     NSData *chain = [masterPublicKey subdataWithRange:NSMakeRange(4, 32)];
     NSData *pubKey = [masterPublicKey subdataWithRange:NSMakeRange(36, masterPublicKey.length - 36)];
-    uint32_t fingerprint = CFSwapInt32BigToHost(*(uint32_t *)pFpr.bytes);
+    uint32_t fingerprint = CFSwapInt32BigToHost(*(uint32_t *)parFingerprint.bytes);
     
     return [self serializeDepth:1 fingerprint:fingerprint child:0 | BIP32_PRIME chain:chain key:pubKey];
 }

@@ -102,8 +102,9 @@
     
     STAssertEqualObjects(d, [NSData dataWithHex:@"fea983ac0028608e0028609100286094"], @"[ZNWallet decodePhrase:]");
     
+    // test of phrase with trailing space
     d = [mnemonic
-         decodePhrase:@"kick quiet student ignore cruel danger describe accident eager darkness embrace suppose"];
+         decodePhrase:@"kick quiet student ignore cruel danger describe accident eager darkness embrace suppose "];
     
     NSLog(@"kick quiet student ignore cruel danger describe accident eager darkness embrace suppose = 0x%@", [d toHex]);
     

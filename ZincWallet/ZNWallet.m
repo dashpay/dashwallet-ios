@@ -109,6 +109,7 @@
     self.addressTxCount = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:ADDRESS_TX_COUNT_KEY]];
     self.unspentOutputs = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:UNSPENT_OUTPUTS_KEY]];
     
+    //XXXX switch to bip32
     self.sequence = [ZNElectrumSequence new];
     
     self.format = [NSNumberFormatter new];
@@ -227,7 +228,6 @@
 
 - (void)setSeedPhrase:(NSString *)seedPhrase
 {
-    //XXXX something wonky happens if the seedphrase ends in a space (at least using the phrase "woman "x12)
     NSData *seed = [[ZNMnemonic mnemonicWithWordPlist:ELECTRUM_WORD_LIST_RESOURCE] decodePhrase:seedPhrase];
 
     // Electurm uses a hex representation of the decoded seed instead of the seed itself

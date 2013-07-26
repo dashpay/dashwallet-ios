@@ -25,6 +25,8 @@
 //XXX need setting for denomination (BTC, mBTC or uBTC)
 //XXX also for local currency, and exchange rate source
 
+//XXX only show most recent 10-20 transactions and have a separate page for the rest with section headers for each day
+
 - (id)initWithStyle:(UITableViewStyle)style
 {
     self = [super initWithStyle:style];
