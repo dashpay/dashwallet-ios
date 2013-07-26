@@ -968,6 +968,7 @@
 		758F2D8217669D6800102AF1 /* libqrencoder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75AF36D7176675D3004AA912 /* libqrencoder.a */; };
 		7591EC0E1773DD3700B44340 /* redgradient@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7591EC0D1773DD3700B44340 /* redgradient@2x.png */; };
 		75920F86174AB82100C1C03D /* NSMutableData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 75920F85174AB82100C1C03D /* NSMutableData+Bitcoin.m */; };
+		7593BD0A17A24D1500F814F6 /* cameraguide-small@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7593BD0917A24D1500F814F6 /* cameraguide-small@2x.png */; };
 		759CB235175E8A1200AFA559 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB234175E8A1200AFA559 /* QuartzCore.framework */; };
 		759CB237175E8A6E00AFA559 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB236175E8A6E00AFA559 /* CoreVideo.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		759CB239175E8AFE00AFA559 /* libiconv.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB238175E8AFE00AFA559 /* libiconv.dylib */; };
@@ -2303,6 +2304,7 @@
 		7591EC0D1773DD3700B44340 /* redgradient@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "redgradient@2x.png"; sourceTree = "<group>"; };
 		75920F84174AB82100C1C03D /* NSMutableData+Bitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableData+Bitcoin.h"; sourceTree = "<group>"; };
 		75920F85174AB82100C1C03D /* NSMutableData+Bitcoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableData+Bitcoin.m"; sourceTree = "<group>"; };
+		7593BD0917A24D1500F814F6 /* cameraguide-small@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide-small@2x.png"; sourceTree = "<group>"; };
 		759CB234175E8A1200AFA559 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		759CB236175E8A6E00AFA559 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		759CB238175E8AFE00AFA559 /* libiconv.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.dylib; path = usr/lib/libiconv.dylib; sourceTree = SDKROOT; };
@@ -2334,7 +2336,7 @@
 		75CBEAE8173C80AD00978DBA /* ZNPaymentRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNPaymentRequest.m; sourceTree = "<group>"; };
 		75D423111783E0B100BDD771 /* MBProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBProgressHUD.h; sourceTree = "<group>"; };
 		75D423121783E0B100BDD771 /* MBProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBProgressHUD.m; sourceTree = "<group>"; };
-		75D8F37E173ABE3C0080D95E /* zinc wallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "zinc wallet.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		75D8F37E173ABE3C0080D95E /* zinc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = zinc.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		75D8F381173ABE3C0080D95E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		75D8F383173ABE3C0080D95E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		75D8F385173ABE3C0080D95E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -4509,6 +4511,7 @@
 				75C2F3D3178D3061009F8CD3 /* cameraguide@2x.png */,
 				75C2F3D1178D3061009F8CD3 /* cameraguide-green@2x.png */,
 				75C2F3D2178D3061009F8CD3 /* cameraguide-red@2x.png */,
+				7593BD0917A24D1500F814F6 /* cameraguide-small@2x.png */,
 				75F17C4117455F2D00D9F228 /* deletetoleft.png */,
 				75F17C4217455F2D00D9F228 /* deletetoleft-inv.png */,
 				75A857C117895FB3005F6642 /* bluegradient@2x.png */,
@@ -4589,7 +4592,7 @@
 		75D8F37F173ABE3C0080D95E /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				75D8F37E173ABE3C0080D95E /* zinc wallet.app */,
+				75D8F37E173ABE3C0080D95E /* zinc.app */,
 				75D8F3B2173ABE3D0080D95E /* ZincWalletTests.octest */,
 				752C2FFD1742ACFB0033F636 /* libcrypto.a */,
 				752C300D1742AD060033F636 /* libssl.a */,
@@ -4885,9 +4888,9 @@
 			productReference = 75AF36D7176675D3004AA912 /* libqrencoder.a */;
 			productType = "com.apple.product-type.library.static";
 		};
-		75D8F37D173ABE3C0080D95E /* zinc wallet */ = {
+		75D8F37D173ABE3C0080D95E /* zinc */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 75D8F3C4173ABE3D0080D95E /* Build configuration list for PBXNativeTarget "zinc wallet" */;
+			buildConfigurationList = 75D8F3C4173ABE3D0080D95E /* Build configuration list for PBXNativeTarget "zinc" */;
 			buildPhases = (
 				75D8F37A173ABE3C0080D95E /* Sources */,
 				75D8F37B173ABE3C0080D95E /* Frameworks */,
@@ -4900,9 +4903,9 @@
 				75FD9D69176658EB00307894 /* PBXTargetDependency */,
 				7573F091174314CA0037A109 /* PBXTargetDependency */,
 			);
-			name = "zinc wallet";
+			name = zinc;
 			productName = ZincWallet;
-			productReference = 75D8F37E173ABE3C0080D95E /* zinc wallet.app */;
+			productReference = 75D8F37E173ABE3C0080D95E /* zinc.app */;
 			productType = "com.apple.product-type.application";
 		};
 		75D8F3B1173ABE3D0080D95E /* ZincWalletTests */ = {
@@ -4963,7 +4966,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				75D8F37D173ABE3C0080D95E /* zinc wallet */,
+				75D8F37D173ABE3C0080D95E /* zinc */,
 				75D8F3B1173ABE3D0080D95E /* ZincWalletTests */,
 				752C2FFC1742ACFB0033F636 /* crypto */,
 				752C300C1742AD060033F636 /* ssl */,
@@ -5015,6 +5018,7 @@
 				75F9D3E6179F451F00C28B49 /* button-bg-blue@2x.png in Resources */,
 				752327FC17A087A700DDEFBB /* wallpaper-shadow@2x.png in Resources */,
 				752327FE17A088DA00DDEFBB /* zincwallet-big@2x.png in Resources */,
+				7593BD0A17A24D1500F814F6 /* cameraguide-small@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6151,7 +6155,7 @@
 		};
 		75D8F3B8173ABE3D0080D95E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 75D8F37D173ABE3C0080D95E /* zinc wallet */;
+			target = 75D8F37D173ABE3C0080D95E /* zinc */;
 			targetProxy = 75D8F3B7173ABE3D0080D95E /* PBXContainerItemProxy */;
 		};
 		75FD9D69176658EB00307894 /* PBXTargetDependency */ = {
@@ -6626,7 +6630,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		75D8F3C4173ABE3D0080D95E /* Build configuration list for PBXNativeTarget "zinc wallet" */ = {
+		75D8F3C4173ABE3D0080D95E /* Build configuration list for PBXNativeTarget "zinc" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				75D8F3C5173ABE3D0080D95E /* Debug */,

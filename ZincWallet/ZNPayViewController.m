@@ -137,12 +137,12 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncFailedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             self.syncErrorCount++;
-            if ([note.userInfo[@"error"] code] == 504 && self.syncErrorCount < 3) { // XXXX need an error banner
-                [[[UIAlertView alloc] initWithTitle:@"Couldn't refresh wallet balance" message:@"retrying..."
-                  delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-                [w synchronize];
-                return;
-            }
+//            if ([note.userInfo[@"error"] code] == 504 && self.syncErrorCount < 3) { // XXXX need an error banner
+//                [[[UIAlertView alloc] initWithTitle:@"Couldn't refresh wallet balance" message:@"retrying..."
+//                  delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+//                [w synchronize];
+//                return;
+//            }
         
             [self.spinner stopAnimating];
             self.navigationItem.rightBarButtonItem = self.refreshButton;
@@ -285,10 +285,11 @@
 
         button.layer.shadowRadius = 2.0;
         button.layer.shadowOpacity = 0.1;
+        button.alpha = animated ? 0 : 1;
         button.frame = CGRectMake(BUTTON_MARGIN*2, self.scrollView.frame.size.height/2 +
                                   (BUTTON_HEIGHT + BUTTON_MARGIN*2)*(self.requestButtons.count-self.requests.count/2.0),
                                   self.scrollView.frame.size.width - BUTTON_MARGIN*4, BUTTON_HEIGHT);
-        button.alpha = animated ? 0 : 1;
+        [button setImageEdgeInsets:UIEdgeInsetsMake(0, -10, 0, 10)];
         [button addTarget:self action:@selector(doIt:) forControlEvents:UIControlEventTouchUpInside];
 
         [self.scrollView addSubview:button];
@@ -323,6 +324,13 @@
                 else [obj titleLabel].font = [UIFont fontWithName:@"HelveticaNeue-Light" size:15];
                 
                 if ([self.addressInWallet isEqual:req.paymentAddress]) [obj setEnabled:NO];
+            }
+            
+            if ([self.requestIDs[idx] isEqual:QR_ID]) {
+                [obj setImage:[UIImage imageNamed:@"cameraguide-small.png"] forState:UIControlStateNormal];
+            }
+            else {
+                [obj setImage:nil forState:UIControlStateNormal];
             }
         }];
     };
@@ -433,9 +441,11 @@
         
         //XXXX customize look of zbar controller
         //XXXX remove zbar info button
+        //XXX try a slightly gray camera guide that is visible on white
         self.zbarController = [ZBarReaderViewController new];
         self.zbarController.readerDelegate = self;
-        self.zbarController.cameraOverlayView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"cameraguide.png"]];
+        self.zbarController.cameraOverlayView =
+            [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"cameraguide.png"]];
         
         CGPoint c = self.zbarController.view.center;
         

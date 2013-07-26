@@ -21,9 +21,6 @@
     
     //XXX switch to socketrocket from zootreves's webview hack
     
-    //XXX need a way to recieve pushes when unconfirmed transactions to a wallet address happen
-    // (this could obviate the need to walk all the addresses looking for new transactions)
-
     //XXX need to implement pin code
 
     //XXX need to have a network status indicator perferrably tied to websocket status
@@ -91,8 +88,6 @@ annotation:(id)annotation
 
 - (void)keepUpAppearances
 {
-    //XXX icon idea, super stylized qr code/camera guide
-    
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque];
     
     if ([UIDevice.currentDevice.systemVersion intValue] < 7) {
