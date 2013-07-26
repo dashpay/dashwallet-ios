@@ -112,6 +112,7 @@
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
+    self.navigationController.modalTransitionStyle = UIModalTransitionStyleFlipHorizontal;
     [self.navigationController.presentingViewController.presentingViewController dismissViewControllerAnimated:YES
      completion:nil];
 }

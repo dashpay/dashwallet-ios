@@ -186,19 +186,16 @@
         [self.navigationController presentViewController:c animated:NO completion:nil];
         return;
     }
-    else if (firstAppearance) {
-        //XXXX somehow the splash screen is showing up when handling url
-        UIView *v = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"Default-568h.png"]];
+    else if (firstAppearance) { //XXXX somehow the splash screen is showing up when handling url
+        UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNSplashViewController"];
 
-        v.contentMode = UIViewContentModeBottomLeft;
-        v.clipsToBounds = YES;
-        v.frame = CGRectMake(0.0, 20.0, v.frame.size.width, v.frame.size.height - 20.0);
+        if ([[UIScreen mainScreen] bounds].size.height < 500) { // use splash image for 3.5" screen
+            [(UIImageView *)c.view setImage:[UIImage imageNamed:@"Default.png"]];
+        }
         
-        [self.navigationController.view addSubview:v];
-        
-        [UIView animateWithDuration:UINavigationControllerHideShowBarDuration*2 animations:^{
-            v.center = CGPointMake(v.center.x, v.center.y + self.navigationController.view.frame.size.height);
-        } completion:^(BOOL finished) { [v removeFromSuperview]; }];
+        [self.navigationController presentViewController:c animated:NO completion:^{
+            [self.navigationController dismissViewControllerAnimated:YES completion:nil];
+        }];
     }
     
     self.session = [[GKSession alloc] initWithSessionID:GK_SESSION_ID
