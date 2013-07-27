@@ -365,10 +365,11 @@
                     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification
                      object:self];
 
-                    if (self.outdatedAddresses.count) {
+                    // need to send balance notification every time since exchnage rates might be different
+                    //if (self.outdatedAddresses.count) {
                         [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification
                          object:self];
-                    }
+                    //}
                 }];
             }];
         }];
