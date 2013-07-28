@@ -20,6 +20,8 @@
 
 @implementation ZNBIP32Sequence
 
+//XXXX work on memory security, use BN_clear_free() and OPENSSL_cleanse()
+
 // To define CKD((kpar, cpar), i) -> (ki, ci):
 //
 // - Check whether the highest bit (0x80000000) of i is set:
@@ -156,8 +158,8 @@
 
     CCHmac(kCCHmacAlgSHA512, BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length, I.mutableBytes);
 
-    NSData *secret = [I subdataWithRange:NSMakeRange(0, 32)], *s;
-    NSData *chain = [I subdataWithRange:NSMakeRange(32, 32)], *c;
+    NSData *secret = [NSData dataWithBytesNoCopy:I.mutableBytes length:32], *s;
+    NSData *chain = [NSData dataWithBytesNoCopy:(unsigned char *)I.mutableBytes + 32 length:32], *c;
 
     [self CKDForKey:&secret chain:&chain n:0 | BIP32_PRIME]; // account 0'
     [self CKDForKey:&secret chain:&chain n:(internal ? 1 : 0)]; // internal or external chain

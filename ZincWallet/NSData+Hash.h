@@ -19,6 +19,7 @@
 - (NSData *)RMD160;
 - (NSData *)SHA256;
 - (NSData *)SHA256_2;
+- (NSData *)hash160;
 
 
 

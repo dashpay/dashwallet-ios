@@ -10,11 +10,6 @@
 #import "NSData+Hash.h"
 #import <openssl/bn.h>
 
-#define BITCOIN_PUBKEY_ADDRESS 0
-#define BITCOIN_SCRIPT_ADDRESS 5
-#define BITCOIN_PUBKEY_ADDRESS_TEST 111
-#define BITCOIN_SCRIPT_ADDRESS_TEST 196
-
 const char base58chars[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
 @implementation NSString (Base58)
@@ -23,15 +18,18 @@ const char base58chars[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrst
 {
     NSMutableString *s = [NSMutableString stringWithCapacity:d.length*138/100 + 1];
     BN_CTX *ctx = BN_CTX_new();
-    BIGNUM *base = BN_new(), *x = BN_new(), *r = BN_new();
+    BIGNUM base, x, r;
     unichar c;
 
-    BN_set_word(base, 58);
-    BN_bin2bn((unsigned char *)d.bytes, d.length, x);
+    BN_init(&base);
+    BN_init(&x);
+    BN_init(&r);
+    BN_set_word(&base, 58);
+    BN_bin2bn((unsigned char *)d.bytes, d.length, &x);
 
-    while (! BN_is_zero(x)) {
-        BN_div(x, r, x, base, ctx);
-        c = base58chars[BN_get_word(r)];
+    while (! BN_is_zero(&x)) {
+        BN_div(&x, &r, &x, &base, ctx);
+        c = base58chars[BN_get_word(&r)];
         [s insertString:[NSString stringWithCharacters:&c length:1] atIndex:0];
     }
     
@@ -41,9 +39,9 @@ const char base58chars[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrst
         [s insertString:[NSString stringWithCharacters:&c length:1] atIndex:0];
     }
 
-    BN_free(r);
-    BN_free(x);
-    BN_free(base);
+    BN_clear_free(&r);
+    BN_clear_free(&x);
+    BN_free(&base);
     BN_CTX_free(ctx);
     
     return s;
@@ -58,15 +56,18 @@ const char base58chars[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrst
     return [NSString base58WithData:data];
 }
 
-- (NSData *)base58ToData
+- (NSMutableData *)base58ToData
 {
     const char *s = [self UTF8String];
     NSMutableData *d = [NSMutableData dataWithCapacity:self.length*138/100 + 1];
     BN_CTX *ctx = BN_CTX_new();
-    BIGNUM *base = BN_new(), *x = BN_new(), *a = BN_new();
+    BIGNUM base, x, a;
     
-    BN_set_word(base, 58);
-    BN_zero(x);
+    BN_init(&base);
+    BN_init(&x);
+    BN_init(&a);
+    BN_set_word(&base, 58);
+    BN_zero(&x);
     
     for (NSUInteger i = 0; i < self.length && [self characterAtIndex:i] == base58chars[0]; i++) {
         [d appendBytes:"\0" length:1];
@@ -99,18 +100,18 @@ const char base58chars[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrst
                 goto breakout;
         }
         
-        BN_mul(x, x, base, ctx);
-        BN_set_word(a, b);
-        BN_add(x, x, a);
+        BN_mul(&x, &x, &base, ctx);
+        BN_set_word(&a, b);
+        BN_add(&x, &x, &a);
     }
     
 breakout:
-    d.length += BN_num_bytes(x);
-    BN_bn2bin(x, (unsigned char *)d.mutableBytes + d.length - BN_num_bytes(x));
+    d.length += BN_num_bytes(&x);
+    BN_bn2bin(&x, (unsigned char *)d.mutableBytes + d.length - BN_num_bytes(&x));
     
-    BN_free(a);
-    BN_free(x);
-    BN_free(base);
+    BN_clear_free(&a);
+    BN_clear_free(&x);
+    BN_free(&base);
     BN_CTX_free(ctx);
     
     return d;
@@ -126,18 +127,20 @@ breakout:
     return [[self base58ToData] toHex];
 }
 
-- (NSData *)base58checkToData
+- (NSMutableData *)base58checkToData
 {
-    NSData *d = [self base58ToData];
+    NSMutableData *d = [self base58ToData];
     
     if (d.length < 4) return nil;
 
-    NSData *data = [d subdataWithRange:NSMakeRange(0, d.length - 4)];
-    NSData *check = [d subdataWithRange:NSMakeRange(d.length - 4, 4)];
+    NSData *data = [NSData dataWithBytesNoCopy:d.mutableBytes length:d.length - 4];
+    NSData *check = [NSData dataWithBytesNoCopy:(unsigned char *)d.mutableBytes + d.length - 4 length:4];
     
     if (! [[[data SHA256_2] subdataWithRange:NSMakeRange(0, 4)] isEqualToData:check]) return nil;
     
-    return data;
+    OPENSSL_cleanse((unsigned char *)d.mutableBytes + d.length - 4, 4);
+    d.length -= 4;
+    return d;
 }
 
 - (NSString *)hexToBase58check
@@ -147,26 +150,34 @@ breakout:
 
 - (NSString *)base58checkToHex
 {
-    return [[self base58checkToData] toHex];
+    NSMutableData *d = [self base58checkToData];
+    NSString *hex = [d toHex];
+
+    OPENSSL_cleanse(d.mutableBytes, d.length);
+    return hex;
 }
 
 - (BOOL)isValidBitcoinAddress
 {
-    NSData *d = [self base58checkToData];
+    NSMutableData *d = [self base58checkToData];
+    BOOL r = NO;
     
-    if (! d.length == 21) return NO;
-    
-    switch (*(uint8_t *)d.bytes) {
-        case BITCOIN_PUBKEY_ADDRESS:
-        case BITCOIN_SCRIPT_ADDRESS:
-            return ! BITCOIN_TESTNET;
-
-        case BITCOIN_PUBKEY_ADDRESS_TEST:
-        case BITCOIN_SCRIPT_ADDRESS_TEST:
-            return BITCOIN_TESTNET;
+    if (d.length == 21) {
+        switch (*(uint8_t *)d.bytes) {
+            case BITCOIN_PUBKEY_ADDRESS:
+            case BITCOIN_SCRIPT_ADDRESS:
+                r = ! BITCOIN_TESTNET;
+                break;
+                
+            case BITCOIN_PUBKEY_ADDRESS_TEST:
+            case BITCOIN_SCRIPT_ADDRESS_TEST:
+                r = BITCOIN_TESTNET;
+                break;
+        }
     }
     
-    return NO;
+    OPENSSL_cleanse(d.mutableBytes, d.length); // just because you're paranoid doesn't mean they're not out to get you!
+    return r;
 }
 
 @end

@@ -10,8 +10,8 @@
 
 @interface ZNKey : NSObject
 
-@property (nonatomic, assign) NSString *privateKey;
-@property (nonatomic, assign) NSData *publicKey;
+@property (nonatomic, strong) NSString *privateKey;
+@property (nonatomic, strong) NSData *publicKey;
 @property (nonatomic, readonly) NSString *address;
 @property (nonatomic, readonly) NSData *hash160;
 
@@ -24,5 +24,6 @@
 - (instancetype)initWithPublicKey:(NSData *)publicKey;
 
 - (NSData *)sign:(NSData *)d;
+- (BOOL)verify:(NSData *)d signature:(NSData *)sig;
 
 @end
