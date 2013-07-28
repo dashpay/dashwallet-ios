@@ -11,6 +11,9 @@
 
 #include "key.h"
 #include "base58.h"
+#include "ui_interface.h"
+
+CClientUIInterface uiInterface; // hack to avoid having to build and link bitcoin/src/init.cpp
 
 @interface ZNKey ()
 

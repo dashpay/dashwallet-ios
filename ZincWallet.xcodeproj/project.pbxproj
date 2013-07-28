@@ -21,7 +21,7 @@
 		752C2F8917406FF70033F636 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 752C2F8817406FF70033F636 /* SystemConfiguration.framework */; };
 		752C2F8C174071520033F636 /* ZNWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 752C2F8B174071520033F636 /* ZNWallet.m */; };
 		752C2FAB174091DD0033F636 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 752C2FAA174091DD0033F636 /* MobileCoreServices.framework */; };
-		752C2FAF17416C620033F636 /* NSString+Base58.mm in Sources */ = {isa = PBXBuildFile; fileRef = 752C2FAE17416C620033F636 /* NSString+Base58.mm */; };
+		752C2FAF17416C620033F636 /* NSString+Base58.m in Sources */ = {isa = PBXBuildFile; fileRef = 752C2FAE17416C620033F636 /* NSString+Base58.m */; };
 		752C2FB5174171770033F636 /* NSData+Hash.m in Sources */ = {isa = PBXBuildFile; fileRef = 752C2FB4174171760033F636 /* NSData+Hash.m */; };
 		752C2FFE1742ACFC0033F636 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		752C300E1742AD060033F636 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
@@ -1076,6 +1076,13 @@
 			remoteGlobalIDString = 752C2FFC1742ACFB0033F636;
 			remoteInfo = crypto;
 		};
+		753D4F4C17A44674009FFCAE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 75D8F376173ABE3C0080D95E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 752C300C1742AD060033F636;
+			remoteInfo = ssl;
+		};
 		7573F08E174314BA0037A109 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 75D8F376173ABE3C0080D95E /* Project object */;
@@ -1199,7 +1206,7 @@
 		752C2F8B174071520033F636 /* ZNWallet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNWallet.m; sourceTree = "<group>"; };
 		752C2FAA174091DD0033F636 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 		752C2FAD17416C620033F636 /* NSString+Base58.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Base58.h"; sourceTree = "<group>"; };
-		752C2FAE17416C620033F636 /* NSString+Base58.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = "NSString+Base58.mm"; sourceTree = "<group>"; };
+		752C2FAE17416C620033F636 /* NSString+Base58.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Base58.m"; sourceTree = "<group>"; };
 		752C2FB3174171760033F636 /* NSData+Hash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Hash.h"; sourceTree = "<group>"; };
 		752C2FB4174171760033F636 /* NSData+Hash.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+Hash.m"; sourceTree = "<group>"; };
 		752C2FFD1742ACFB0033F636 /* libcrypto.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libcrypto.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -2574,7 +2581,7 @@
 			isa = PBXGroup;
 			children = (
 				752C2FAD17416C620033F636 /* NSString+Base58.h */,
-				752C2FAE17416C620033F636 /* NSString+Base58.mm */,
+				752C2FAE17416C620033F636 /* NSString+Base58.m */,
 				752C2FB3174171760033F636 /* NSData+Hash.h */,
 				752C2FB4174171760033F636 /* NSData+Hash.m */,
 				75920F84174AB82100C1C03D /* NSMutableData+Bitcoin.h */,
@@ -4899,6 +4906,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				753D4F4D17A44674009FFCAE /* PBXTargetDependency */,
 				75AF36F017667F0B004AA912 /* PBXTargetDependency */,
 				75FD9D69176658EB00307894 /* PBXTargetDependency */,
 				7573F091174314CA0037A109 /* PBXTargetDependency */,
@@ -6045,7 +6053,7 @@
 				75CBEAE9173C80AD00978DBA /* ZNPaymentRequest.m in Sources */,
 				752C2F8717406EEA0033F636 /* Reachability.m in Sources */,
 				752C2F8C174071520033F636 /* ZNWallet.m in Sources */,
-				752C2FAF17416C620033F636 /* NSString+Base58.mm in Sources */,
+				752C2FAF17416C620033F636 /* NSString+Base58.m in Sources */,
 				752C2FB5174171770033F636 /* NSData+Hash.m in Sources */,
 				752C38C31742BC4D0033F636 /* AFHTTPClient.m in Sources */,
 				752C38C41742BC4D0033F636 /* AFHTTPRequestOperation.m in Sources */,
@@ -6132,6 +6140,11 @@
 			isa = PBXTargetDependency;
 			target = 752C2FFC1742ACFB0033F636 /* crypto */;
 			targetProxy = 752C383D1742B18D0033F636 /* PBXContainerItemProxy */;
+		};
+		753D4F4D17A44674009FFCAE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 752C300C1742AD060033F636 /* ssl */;
+			targetProxy = 753D4F4C17A44674009FFCAE /* PBXContainerItemProxy */;
 		};
 		7573F08F174314BA0037A109 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;

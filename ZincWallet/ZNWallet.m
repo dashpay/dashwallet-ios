@@ -76,6 +76,8 @@
 
 @end
 
+//XXXX find all the places where buffers need to be cleared out and use OPENSSL_cleanse
+
 @implementation ZNWallet
 
 + (ZNWallet *)sharedInstance

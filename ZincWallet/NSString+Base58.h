@@ -8,13 +8,21 @@
 
 #import <Foundation/Foundation.h>
 
+#define BITCOIN_TESTNET NO
+
 @interface NSString (Base58)
 
++ (NSString *)base58WithData:(NSData *)d;
 + (NSString *)base58checkWithData:(NSData *)d;
 
+- (NSData *)base58ToData;
+- (NSString *)hexToBase58;
+- (NSString *)base58ToHex;
+
+- (NSData *)base58checkToData;
 - (NSString *)hexToBase58check;
 - (NSString *)base58checkToHex;
-- (NSData *)base58checkToData;
+
 - (BOOL)isValidBitcoinAddress;
 
 @end
