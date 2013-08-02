@@ -259,8 +259,7 @@
 - (void)testElectrumSequencePrivateKey
 {
     ZNElectrumSequence *seq = [ZNElectrumSequence new];
-    NSString *privkey =
-        [seq privateKey:0 internal:NO fromSeed:@"00000000000000000000000000000000".hexToData];
+    NSString *privkey = [seq privateKey:0 internal:NO fromSeed:@"00000000000000000000000000000000".hexToData];
     
     NSLog(@"privateKey:0 = %@", privkey);
     

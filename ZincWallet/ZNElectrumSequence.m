@@ -115,7 +115,8 @@
 
     NSMutableArray *ret = [NSMutableArray arrayWithCapacity:n.count];
     NSData *secexp = [self stretchKey:seed];
-    NSData *mpk = [self masterPublicKeyFromSeed:secexp];
+    NSData *_mpk = [[ZNKey keyWithSecret:secexp compressed:NO] publicKey];
+    NSData *mpk = [NSData dataWithBytesNoCopy:(unsigned char *)_mpk.bytes + 1 length:_mpk.length - 1 freeWhenDone:NO];
     BN_CTX *ctx = BN_CTX_new();
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
     __block BIGNUM order, sequencebn, secexpbn;
