@@ -22,6 +22,7 @@
 #import "AFNetworking.h"
 #import "WebSocketUIView.h"
 #import "WebSocketNSStream.h"
+#import <openssl/crypto.h>
 
 #define BASE_URL    @"https://blockchain.info"
 #define UNSPENT_URL BASE_URL "/unspent?active="
@@ -75,8 +76,6 @@
 @property (nonatomic, assign) int webSocketFails;
 
 @end
-
-//XXXX find all the places where buffers need to be cleared out and use OPENSSL_cleanse
 
 @implementation ZNWallet
 
@@ -185,13 +184,13 @@
 
 - (NSData *)seed
 {
-    return [self getKeychainObjectForKey:SEED_KEY];
+    return [self getKeychainDataForKey:SEED_KEY];
 }
 
 - (void)setSeed:(NSData *)seed
 {
     if (! [self.seed isEqual:seed]) {        
-        [self setKeychainObject:seed forKey:SEED_KEY];
+        [self setKeychainData:seed forKey:SEED_KEY];
         
         _synchronizing = NO;
         self.mpk = nil;
@@ -223,33 +222,27 @@
 
 - (NSString *)seedPhrase
 {
-    NSData *seed = [NSData dataWithHex:[[NSString alloc] initWithData:self.seed encoding:NSUTF8StringEncoding]];
-
-    return [[ZNMnemonic mnemonicWithWordPlist:ELECTRUM_WORD_LIST_RESOURCE] encodePhrase:seed];
+    return [[ZNMnemonic mnemonicWithWordPlist:ELECTRUM_WORD_LIST_RESOURCE] encodePhrase:self.seed];
 }
 
 - (void)setSeedPhrase:(NSString *)seedPhrase
 {
-    NSData *seed = [[ZNMnemonic mnemonicWithWordPlist:ELECTRUM_WORD_LIST_RESOURCE] decodePhrase:seedPhrase];
-
-    // Electurm uses a hex representation of the decoded seed instead of the seed itself
-    self.seed = [[seed toHex] dataUsingEncoding:NSUTF8StringEncoding];
+    self.seed = [[ZNMnemonic mnemonicWithWordPlist:ELECTRUM_WORD_LIST_RESOURCE] decodePhrase:seedPhrase];
 }
 
 - (void)generateRandomSeed
 {
-    NSMutableData *seed = [NSMutableData dataWithLength:ELECTRUM_SEED_LENGTH];
-    
+    NSMutableData *seed = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), ELECTRUM_SEED_LENGTH));
+        
+    seed.length = ELECTRUM_SEED_LENGTH;
     SecRandomCopyBytes(kSecRandomDefault, seed.length, seed.mutableBytes);
-    
-    // Electurm uses a hex representation of the seed value instead of the seed itself
-    self.seed = [[seed toHex] dataUsingEncoding:NSUTF8StringEncoding];
+
+    self.seed = seed;
 }
 
 - (NSData *)mpk
 {
     if (! _mpk) self.mpk = [self.sequence masterPublicKeyFromSeed:self.seed];
-    
     return _mpk;
 }
 
@@ -916,7 +909,7 @@ completion:(void (^)(NSError *error))completion
         NSMutableSet *updated = [NSMutableSet set];
         NSMutableDictionary *tx = [NSMutableDictionary dictionary];
         
-        tx[@"hash"] = [transaction.hash toHex];
+        tx[@"hash"] = [NSString hexWithData:transaction.hash];
         tx[@"time"] = @([NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970);
         tx[@"inputs"] = [NSMutableArray array];
         tx[@"out"] = [NSMutableArray array];
@@ -1083,8 +1076,8 @@ completion:(void (^)(NSError *error))completion
             [script appendScriptPubKeyForAddress:addr];
             
             self.unspentOutputs[[x[@"hash"] stringByAppendingFormat:@"%d", idx]] =
-                @{@"tx_hash":x[@"hash"], @"tx_index":x[@"tx_index"], @"tx_output_n":@(idx), @"script":[script toHex],
-                  @"value":@(value), @"confirmations":@(0)};
+                @{@"tx_hash":x[@"hash"], @"tx_index":x[@"tx_index"], @"tx_output_n":@(idx),
+                  @"script":[NSString hexWithData:script], @"value":@(value), @"confirmations":@(0)};
         }];
         
         // don't update addressTxCount so the address's unspent outputs will be updated on next sync
@@ -1143,7 +1136,7 @@ completion:(void (^)(NSError *error))completion
 
 #pragma mark - keychain services
 
-- (BOOL)setKeychainObject:(id)obj forKey:(NSString *)key
+- (BOOL)setKeychainData:(NSData *)data forKey:(NSString *)key
 {
     NSDictionary *query = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
                             (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
@@ -1154,7 +1147,7 @@ completion:(void (^)(NSError *error))completion
                            (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
                            (__bridge id)kSecAttrAccount:key,
                            (__bridge id)kSecAttrAccessible:(__bridge id)kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
-                           (__bridge id)kSecValueData:[NSKeyedArchiver archivedDataWithRootObject:obj]};
+                           (__bridge id)kSecValueData:data};
     
     SecItemDelete((__bridge CFDictionaryRef)query);
     
@@ -1166,7 +1159,7 @@ completion:(void (^)(NSError *error))completion
     return YES;
 }
 
-- (id)getKeychainObjectForKey:(NSString *)key
+- (NSData *)getKeychainDataForKey:(NSString *)key
 {
     NSDictionary *query = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
                             (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
@@ -1178,8 +1171,8 @@ completion:(void (^)(NSError *error))completion
         NSLog(@"SecItemCopyMatching error");
         return nil;
     }
-
-    return [NSKeyedUnarchiver unarchiveObjectWithData:(__bridge_transfer NSData*)result];
+    
+    return CFBridgingRelease(result);
 }
 
 @end

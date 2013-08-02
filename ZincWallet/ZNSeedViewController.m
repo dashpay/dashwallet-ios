@@ -12,6 +12,7 @@
 
 @interface ZNSeedViewController ()
 
+//TODO: create a secure version of UILabel and use it for seedLabel
 @property (nonatomic, strong) IBOutlet UILabel *seedLabel, *compatiblityLabel;
 @property (nonatomic, strong) IBOutlet UIView *labelFrame;
 

@@ -29,31 +29,35 @@
 - (NSData *)stretchKey:(NSData *)seed
 {
     if (! seed) return nil;
-
-    NSMutableData *d = [NSMutableData dataWithData:seed];
     
-    [d appendData:seed];
+    // Electurm uses a hex representation of the seed instead of the seed itself
+    NSString *hex = [NSString hexWithData:seed];
+    NSMutableData *d = [NSMutableData dataWithLength:hex.length*2];
+    
+    [hex getBytes:d.mutableBytes maxLength:hex.length usedLength:NULL encoding:NSUTF8StringEncoding options:0
+     range:NSMakeRange(0, hex.length) remainingRange:NULL];
+    [hex getBytes:(char *)d.mutableBytes + hex.length maxLength:hex.length usedLength:NULL encoding:NSUTF8StringEncoding
+     options:0 range:NSMakeRange(0, hex.length) remainingRange:NULL];
+    
     if (d.length < CC_SHA256_DIGEST_LENGTH) d.length = CC_SHA256_DIGEST_LENGTH;
     
-    CC_SHA256(d.bytes, seed.length*2, d.mutableBytes);
-    //SHA256(d.bytes, seed.length*2, d.mutableBytes);
+    CC_SHA256(d.bytes, d.length, d.mutableBytes);
     
-    d.length = CC_SHA256_DIGEST_LENGTH;
-    [d appendData:seed];
+    d.length = CC_SHA256_DIGEST_LENGTH + hex.length;
+    [hex getBytes:(char *)d.mutableBytes + CC_SHA256_DIGEST_LENGTH maxLength:hex.length usedLength:NULL
+     encoding:NSUTF8StringEncoding options:0 range:NSMakeRange(0, hex.length) remainingRange:NULL];
     
-    CC_LONG l = CC_SHA256_DIGEST_LENGTH + seed.length;
     unsigned char *md = d.mutableBytes;
-
-    //NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate];
+    CC_LONG l = d.length;
     
     for (NSUInteger i = 1; i < 100000; i++) {
-        CC_SHA256(md, l, md); // commoncrypto takes about 0.32s on a 4th gen ipod touch
-        //SHA256(md, l, md);  // openssl takes about 1.95s on a 4th gen ipod touch (not hardware accelerated)
+        CC_SHA256(md, l, md);
     }
-
-    //NSLog(@"100000 sha256 rounds took %fs", [NSDate timeIntervalSinceReferenceDate] - t);
     
-    return [d subdataWithRange:NSMakeRange(0, CC_SHA256_DIGEST_LENGTH)];
+    NSData *ret = CFBridgingRelease(CFDataCreate(SecureAllocator(), d.bytes, CC_SHA256_DIGEST_LENGTH));
+
+    OPENSSL_cleanse(d.mutableBytes, d.length);
+    return ret;
 }
 
 - (NSData *)sequence:(NSUInteger)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
@@ -66,7 +70,10 @@
     
     [d appendData:masterPublicKey];
     
-    return [d SHA256_2];
+    NSData *ret = [d SHA256_2];
+    
+    OPENSSL_cleanse(d.mutableBytes, d.length);
+    return ret;
 }
 
 - (NSData *)publicKey:(NSUInteger)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
@@ -74,27 +81,29 @@
     if (! masterPublicKey) return nil;
 
     NSData *z = [self sequence:n internal:internal masterPublicKey:masterPublicKey];
-    BIGNUM *zbn = BN_bin2bn(z.bytes, z.length, NULL);
     BN_CTX *ctx = BN_CTX_new();
+    BIGNUM zbn;
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
     EC_POINT *masterPubKeyPoint = EC_POINT_new(group), *pubKeyPoint = EC_POINT_new(group),
              *zPoint = EC_POINT_new(group);
     uint8_t form = EC_GROUP_get_point_conversion_form(group);
     NSMutableData *d = [NSMutableData dataWithBytes:&form length:1];
+
     [d appendData:masterPublicKey];
 
+    BN_init(&zbn);
+    BN_bin2bn(z.bytes, z.length, &zbn);
     EC_POINT_oct2point(group, masterPubKeyPoint, d.bytes, d.length, ctx);
-    EC_POINT_mul(group, zPoint, zbn, NULL, NULL, ctx);
+    EC_POINT_mul(group, zPoint, &zbn, NULL, NULL, ctx);
     EC_POINT_add(group, pubKeyPoint, masterPubKeyPoint, zPoint, ctx);
     d.length = EC_POINT_point2oct(group, pubKeyPoint, form, d.mutableBytes, d.length, ctx);
 
-    EC_POINT_free(zPoint);
-    EC_POINT_free(pubKeyPoint);
-    EC_POINT_free(masterPubKeyPoint);
+    EC_POINT_clear_free(zPoint);
+    EC_POINT_clear_free(pubKeyPoint);
+    EC_POINT_clear_free(masterPubKeyPoint);
     EC_GROUP_free(group);
+    BN_clear_free(&zbn);
     BN_CTX_free(ctx);
-    BN_free(zbn);
-    
     return d;
 }
 
@@ -112,29 +121,33 @@
     NSData *mpk = [[ZNKey keyWithSecret:secexp compressed:NO] publicKey];
     BN_CTX *ctx = BN_CTX_new();
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
-    __block BIGNUM *order = BN_new(), *sequencebn = nil, *secexpbn = nil;
+    __block BIGNUM order, sequencebn, secexpbn;
 
-    mpk = [NSData dataWithBytes:(uint8_t *)mpk.bytes + 1 length:mpk.length - 1]; // trim leading 0x04 byte
-    EC_GROUP_get_order(group, order, ctx);
+    BN_init(&order);
+    BN_init(&sequencebn);
+    BN_init(&secexpbn);
+    mpk = [mpk subdataWithRange:NSMakeRange(1, mpk.length - 1)]; // trim leading 0x04 byte
+    EC_GROUP_get_order(group, &order, ctx);
     
     [n enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         NSData *sequence = [self sequence:[obj unsignedIntegerValue] internal:internal masterPublicKey:mpk];
         NSMutableData *pk = [NSMutableData dataWithLength:33];
 
-        sequencebn = BN_bin2bn(sequence.bytes, sequence.length, sequencebn);
-        secexpbn = BN_bin2bn(secexp.bytes, secexp.length, secexpbn);
+        BN_bin2bn(sequence.bytes, sequence.length, &sequencebn);
+        BN_bin2bn(secexp.bytes, secexp.length, &secexpbn);
         
-        BN_mod_add(secexpbn, secexpbn, sequencebn, order, ctx);
+        BN_mod_add(&secexpbn, &secexpbn, &sequencebn, &order, ctx);
 
         *(unsigned char *)pk.mutableBytes = 0x80;
-        BN_bn2bin(secexpbn, (unsigned char *)pk.mutableBytes + pk.length - BN_num_bytes(secexpbn));
+        BN_bn2bin(&secexpbn, (unsigned char *)pk.mutableBytes + pk.length - BN_num_bytes(&secexpbn));
         
         [ret addObject:[NSString base58checkWithData:pk]];
+        OPENSSL_cleanse(pk.mutableBytes, pk.length);
     }];
     
-    BN_free(secexpbn);
-    BN_free(sequencebn);
-    BN_free(order);
+    BN_clear_free(&secexpbn);
+    BN_clear_free(&sequencebn);
+    BN_free(&order);
     EC_GROUP_free(group);
     BN_CTX_free(ctx);
 

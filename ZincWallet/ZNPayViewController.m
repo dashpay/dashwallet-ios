@@ -61,7 +61,6 @@
     // Do any additional setup after loading the view, typically from a nib.
     
     //XXX add a field for manually entering a payment address
-
     ZNPaymentRequest *req = [ZNPaymentRequest new];
     ZNWallet *w = [ZNWallet sharedInstance];
     
@@ -179,7 +178,7 @@
  
     static BOOL firstAppearance = YES;
     ZNWallet *w = [ZNWallet sharedInstance];
-    
+
     if (! w.seed) {
         UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNNewWalletNav"];
         
@@ -197,14 +196,14 @@
             [self.navigationController dismissViewControllerAnimated:YES completion:nil];
         }];
     }
-    
+
     self.session = [[GKSession alloc] initWithSessionID:GK_SESSION_ID
                     displayName:[UIDevice.currentDevice.name stringByAppendingString:@" Wallet"]
                     sessionMode:GKSessionModeClient];
     self.session.delegate = self;
     [self.session setDataReceiveHandler:self withContext:nil];
     self.session.available = YES;
-    
+
     if ([[[UIPasteboard generalPasteboard] string] length] &&
         ! [[[UIPasteboard generalPasteboard] string] isEqual:self.receiveController.copiedAddress]) {
         ZNPaymentRequest *req = [ZNPaymentRequest requestWithString:[[UIPasteboard generalPasteboard] string]];
@@ -233,9 +232,10 @@
     //XXX sould have a main viewcontroller that contains the scrollview, with both pay and receive as subviews
     // having payviewcontroller instantiate receiveviewcontroller like this is ugly
     CGRect f = self.scrollView.frame;
-    
+  
+//XXXX
     self.receiveController.view.frame = CGRectMake(f.origin.x + f.size.width, f.origin.y, f.size.width, f.size.height);
-    [self.receiveController viewWillAppear:NO];
+    //[self.receiveController viewWillAppear:NO];
     [self.scrollView addSubview:self.receiveController.view];
     
     if (firstAppearance) {
@@ -252,7 +252,7 @@
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
-    
+
     if ([[ZNWallet sharedInstance] timeSinceLastSync] > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
 }
 
@@ -485,8 +485,7 @@
 
 #pragma mark - GKSessionDelegate
 
-/* Indicates a state change for the given peer.
- */
+// Indicates a state change for the given peer.
 - (void)session:(GKSession *)session peer:(NSString *)peerID didChangeState:(GKPeerConnectionState)state
 {
     NSLog(@"%@ didChangeState:%@", peerID, state == GKPeerStateAvailable ? @"available" :
@@ -516,11 +515,10 @@
     }
 }
 
-/* Indicates a connection request was received from another peer.
- 
- Accept by calling -acceptConnectionFromPeer:
- Deny by calling -denyConnectionFromPeer:
- */
+// Indicates a connection request was received from another peer.
+//
+// Accept by calling -acceptConnectionFromPeer:
+// Deny by calling -denyConnectionFromPeer:
 - (void)session:(GKSession *)session didReceiveConnectionRequestFromPeer:(NSString *)peerID
 {
     NSAssert(FALSE, @"[%s %s] line %d: recieved connection request (should be in client mode)",
@@ -531,8 +529,7 @@
     [session denyConnectionFromPeer:peerID];
 }
 
-/* Indicates a connection error occurred with a peer, which includes connection request failures, or disconnects due to timeouts.
- */
+// Indicates a connection error occurred with a peer, including connection request failures or timeouts.
 - (void)session:(GKSession *)session connectionWithPeerFailed:(NSString *)peerID withError:(NSError *)error
 {
     [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription delegate:nil
@@ -551,8 +548,7 @@
     }
 }
 
-/* Indicates an error occurred with the session such as failing to make available.
- */
+// Indicates an error occurred with the session such as failing to make available.
 - (void)session:(GKSession *)session didFailWithError:(NSError *)error
 {
     if (self.selectedIndex != NSNotFound && ! [self.requestIDs[self.selectedIndex] isEqual:CLIPBOARD_ID] &&

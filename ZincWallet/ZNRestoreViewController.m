@@ -132,7 +132,7 @@
         else {
             [[ZNWallet sharedInstance] setSeedPhrase:textView.text];
         
-            textView.text = nil; // don't leave the seed phrase sitting in memory any longer than needed
+            textView.text = nil;
                         
             [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
         }

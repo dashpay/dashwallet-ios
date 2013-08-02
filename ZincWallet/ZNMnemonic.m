@@ -7,6 +7,7 @@
 //
 
 #import "ZNMnemonic.h"
+#import "NSString+Base58.h"
 
 @interface ZNMnemonic ()
 
@@ -58,8 +59,9 @@
 //
 - (NSString *)encodePhrase:(NSData *)data
 {
-    NSMutableArray *list = [NSMutableArray arrayWithCapacity:data.length*3/4];
     uint32_t n = self.words.count;
+    NSMutableArray *list =
+        CFBridgingRelease(CFArrayCreateMutable(SecureAllocator(), data.length*3/4, &kCFTypeArrayCallBacks));
 
     for (int i = 0; i*sizeof(uint32_t) < data.length; i++) {
         uint32_t x = CFSwapInt32BigToHost(*((uint32_t *)data.bytes + i));
@@ -72,7 +74,8 @@
         [list addObject:self.words[w3]];
     }
 
-    return [list componentsJoinedByString:@" "];
+    return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (__bridge CFArrayRef)(list),
+                                                              CFSTR(" ")));
 }
 
 //def mn_decode( wlist ):
@@ -88,9 +91,12 @@
 //
 - (NSData *)decodePhrase:(NSString *)phrase
 {
-    NSArray *list = [[phrase stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]
-                     componentsSeparatedByString:@" "];
-    NSMutableData *d = [NSMutableData dataWithCapacity:list.count*4/3];
+    CFMutableStringRef s = CFStringCreateMutableCopy(SecureAllocator(), phrase.length, (__bridge CFStringRef)(phrase));
+
+    CFStringTrimWhitespace(s);
+
+    NSArray *list = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), s, CFSTR(" ")));
+    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), list.count*4/3));
     int32_t n = self.words.count;
 
     if (list.count != 12) {
@@ -99,8 +105,9 @@
     }
 
     for (NSUInteger i = 0; i < list.count; i += 3) {
-        int32_t w1 = [self.words indexOfObject:list[i]], w2 = [self.words indexOfObject:list[i + 1]],
-        w3 = [self.words indexOfObject:list[i + 2]];
+        int32_t w1 = [self.words indexOfObject:list[i]];
+        int32_t w2 = [self.words indexOfObject:list[i + 1]];
+        int32_t w3 = [self.words indexOfObject:list[i + 2]];
 
         if (w1 == NSNotFound || w2 == NSNotFound || w3 == NSNotFound) {
             NSLog(@"phrase contained unknown word: %@", list[i + (w1 == NSNotFound ? 0 : w2 == NSNotFound ? 1 : 2)]);

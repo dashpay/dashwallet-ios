@@ -13,14 +13,11 @@
 + (instancetype)dataWithHex:(NSString *)hex;
 
 - (instancetype)initWithHex:(NSString *)hex;
-- (NSString *)toHex;
 - (NSData *)reverse;
 
 - (NSData *)RMD160;
 - (NSData *)SHA256;
 - (NSData *)SHA256_2;
 - (NSData *)hash160;
-
-
 
 @end

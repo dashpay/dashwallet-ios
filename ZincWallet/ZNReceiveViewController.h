@@ -7,10 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <GameKit/GameKit.h>
+//#import <GameKit/GameKit.h>
 #import <MessageUI/MessageUI.h>
 
-@interface ZNReceiveViewController : UIViewController <GKSessionDelegate, UITextFieldDelegate, UIActionSheetDelegate,
+@interface ZNReceiveViewController : UIViewController <UIActionSheetDelegate, //UITextFieldDelegate, GKSessionDelegate,
 MFMessageComposeViewControllerDelegate, MFMailComposeViewControllerDelegate>
 
 @property (nonatomic, strong) UINavigationController *navController;

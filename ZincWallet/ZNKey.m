@@ -12,6 +12,14 @@
 #import <openssl/ecdsa.h>
 #import <openssl/obj_mac.h>
 
+static void clear_deallocate(void *ptr, void *info)
+{
+    CFAllocatorContext context;
+    
+    CFAllocatorGetContext(NULL, &context);
+    context.deallocate(ptr, info);
+}
+
 @interface ZNKey ()
 
 @property (nonatomic, assign) EC_KEY *key;
@@ -106,21 +114,32 @@
 
 - (void)setPrivateKey:(NSString *)privateKey
 {
-    NSMutableData *d = [privateKey base58checkToData];
+    NSData *d = [privateKey base58checkToData];
 
-    if (! d || d.length == 28) {
-        OPENSSL_cleanse(d.mutableBytes, d.length);
-        d = [privateKey base58ToData];
-    }
+    if (! d || d.length == 28) d = [privateKey base58ToData];
     
     if (d.length == 32) {
         [self setSecret:d compressed:YES];
     }
     else if ((d.length == 33 || d.length == 34) && *(unsigned char *)d.bytes == 0x80) {
-        [self setSecret:[NSData dataWithBytesNoCopy:(char *)d.mutableBytes + 1 length:32] compressed:d.length == 34];
+        [self setSecret:[NSData dataWithBytesNoCopy:(char *)d.bytes + 1 length:32 freeWhenDone:NO]
+         compressed:d.length == 34];
     }
+}
+
+- (NSString *)privateKey
+{
+    const BIGNUM *priv = EC_KEY_get0_private_key(_key);
+    point_conversion_form_t form = EC_KEY_get_conv_form(_key);
+    NSMutableData *d = [NSMutableData dataWithLength:form == POINT_CONVERSION_COMPRESSED ? 34 : 33];
     
+    *(unsigned char *)d.mutableBytes = 0x80;
+    BN_bn2bin(priv, (unsigned char *)d.mutableBytes + 33 - BN_num_bytes(priv));
+
+    NSString *s = [NSString base58checkWithData:d];
+
     OPENSSL_cleanse(d.mutableBytes, d.length);
+    return s;
 }
 
 - (void)setPublicKey:(NSData *)publicKey

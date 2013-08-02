@@ -10,6 +10,8 @@
 #import <CommonCrypto/CommonDigest.h>
 #import <openssl/ripemd.h>
 
+extern CFAllocatorRef SecureAllocator();
+
 @implementation NSData (Hash)
 
 + (instancetype)dataWithHex:(NSString *)hex
@@ -48,18 +50,6 @@
     }
     
     return [self initWithData:d];
-}
-
-- (NSString *)toHex
-{
-    NSMutableString *hex = [NSMutableString stringWithCapacity:self.length*2];
-    uint8_t *bytes = (uint8_t *)self.bytes;
-    
-    for (NSUInteger i = 0; i < self.length; i++) {
-        [hex appendFormat:@"%02x", bytes[i]];
-    }
-    
-    return hex;
 }
 
 - (NSData *)reverse

@@ -216,7 +216,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 
 - (NSString *)toHex
 {
-    return [[self toData] toHex];
+    return [NSString hexWithData:[self toData]];
 }
 
 - (size_t)size
