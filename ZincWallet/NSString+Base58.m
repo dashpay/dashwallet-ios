@@ -94,7 +94,7 @@ CFAllocatorRef SecureAllocator()
     BN_init(&x);
     BN_init(&r);
     BN_set_word(&base, 58);
-    BN_bin2bn((unsigned char *)d.bytes, d.length, &x);
+    BN_bin2bn(d.bytes, d.length, &x);
     s[--i] = '\0';
 
     while (! BN_is_zero(&x)) {
@@ -119,14 +119,12 @@ CFAllocatorRef SecureAllocator()
 
 + (NSString *)base58checkWithData:(NSData *)d
 {
-    NSMutableData *data = [NSMutableData dataWithData:d];
+    NSMutableData *data =
+        CFBridgingRelease(CFDataCreateMutableCopy(SecureAllocator(), d.length + 4, (__bridge CFDataRef)d));
 
-    [data appendData:[[d SHA256_2] subdataWithRange:NSMakeRange(0, 4)]];
+    [data appendBytes:[[d SHA256_2] bytes] length:4];
     
-    NSString *s = [self base58WithData:data];
-
-    OPENSSL_cleanse(data.mutableBytes, d.length);
-    return s;
+    return [self base58WithData:data];
 }
 
 - (NSData *)base58ToData
@@ -207,11 +205,7 @@ breakout:
 
 - (NSString *)hexToBase58
 {
-    NSMutableData *d = [NSMutableData dataWithHex:self];
-    NSString *s = [[self class] base58WithData:d];
-
-    OPENSSL_cleanse(d.mutableBytes, d.length);
-    return s;
+    return [[self class] base58WithData:[self hexToData]];
 }
 
 - (NSString *)base58ToHex
@@ -226,26 +220,55 @@ breakout:
     if (d.length < 4) return nil;
 
     NSData *data = CFBridgingRelease(CFDataCreate(SecureAllocator(), d.bytes, d.length - 4));
-    NSData *check = [NSData dataWithBytesNoCopy:(unsigned char *)d.bytes + d.length - 4 length:4 freeWhenDone:NO];
-    NSData *hash = [data SHA256_2];
     
-    if (! [[hash subdataWithRange:NSMakeRange(0, 4)] isEqualToData:check]) return nil;
+    if (memcmp((const unsigned char *)d.bytes + d.length - 4, [[data SHA256_2] bytes], 4) != 0) return nil;
     
     return data;
 }
 
 - (NSString *)hexToBase58check
 {
-    NSMutableData *d = [NSMutableData dataWithHex:self];
-    NSString *s = [NSString base58checkWithData:d];
-    
-    OPENSSL_cleanse(d.mutableBytes, d.length);
-    return s;
+    return [NSString base58checkWithData:[self hexToData]];
 }
 
 - (NSString *)base58checkToHex
 {
     return [NSString hexWithData:[self base58checkToData]];
+}
+
+
+- (NSData *)hexToData
+{
+    if (self.length % 2) return nil;
+    
+    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), self.length/2));
+    uint8_t b = 0;
+    
+    for (NSUInteger i = 0; i < self.length; i++) {
+        unichar c = [self characterAtIndex:i];
+        
+        switch (c) {
+            case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+                b += c - '0';
+                break;
+            case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
+                b += c + 10 - 'A';
+                break;
+            case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
+                b += c + 10 - 'a';
+                break;
+            default:
+                return d;
+        }
+        
+        if (i % 2) {
+            [d appendBytes:&b length:1];
+            b = 0;
+        }
+        else b *= 16;
+    }
+    
+    return d;
 }
 
 - (BOOL)isValidBitcoinAddress

@@ -12,14 +12,6 @@
 #import <openssl/ecdsa.h>
 #import <openssl/obj_mac.h>
 
-static void clear_deallocate(void *ptr, void *info)
-{
-    CFAllocatorContext context;
-    
-    CFAllocatorGetContext(NULL, &context);
-    context.deallocate(ptr, info);
-}
-
 @interface ZNKey ()
 
 @property (nonatomic, assign) EC_KEY *key;
@@ -98,7 +90,7 @@ static void clear_deallocate(void *ptr, void *info)
     BN_init(&priv);
     
     if (pub && ctx) {
-        BN_bin2bn((unsigned char *)secret.bytes, 32, &priv);
+        BN_bin2bn(secret.bytes, 32, &priv);
         if (EC_POINT_mul(group, pub, &priv, NULL, NULL, ctx)) {
             EC_KEY_set_private_key(_key, &priv);
             EC_KEY_set_public_key(_key, pub);
@@ -122,7 +114,7 @@ static void clear_deallocate(void *ptr, void *info)
         [self setSecret:d compressed:YES];
     }
     else if ((d.length == 33 || d.length == 34) && *(unsigned char *)d.bytes == 0x80) {
-        [self setSecret:[NSData dataWithBytesNoCopy:(char *)d.bytes + 1 length:32 freeWhenDone:NO]
+        [self setSecret:[NSData dataWithBytesNoCopy:(unsigned char *)d.bytes + 1 length:32 freeWhenDone:NO]
          compressed:d.length == 34];
     }
 }
@@ -130,21 +122,18 @@ static void clear_deallocate(void *ptr, void *info)
 - (NSString *)privateKey
 {
     const BIGNUM *priv = EC_KEY_get0_private_key(_key);
-    point_conversion_form_t form = EC_KEY_get_conv_form(_key);
-    NSMutableData *d = [NSMutableData dataWithLength:form == POINT_CONVERSION_COMPRESSED ? 34 : 33];
+    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 34));
     
+    d.length = (EC_KEY_get_conv_form(_key) == POINT_CONVERSION_COMPRESSED ? 34 : 33);
     *(unsigned char *)d.mutableBytes = 0x80;
     BN_bn2bin(priv, (unsigned char *)d.mutableBytes + 33 - BN_num_bytes(priv));
 
-    NSString *s = [NSString base58checkWithData:d];
-
-    OPENSSL_cleanse(d.mutableBytes, d.length);
-    return s;
+    return [NSString base58checkWithData:d];
 }
 
 - (void)setPublicKey:(NSData *)publicKey
 {
-    const unsigned char *bytes = (const unsigned char *)publicKey.bytes;
+    const unsigned char *bytes = publicKey.bytes;
 
     o2i_ECPublicKey(&_key, &bytes, publicKey.length);
 }
@@ -153,8 +142,12 @@ static void clear_deallocate(void *ptr, void *info)
 {
     if (! EC_KEY_check_key(_key)) return nil;
 
-    NSMutableData *pubKey = [NSMutableData dataWithLength:i2o_ECPublicKey(_key, NULL)];
-    unsigned char *bytes = (unsigned char *)pubKey.mutableBytes;
+    size_t l = i2o_ECPublicKey(_key, NULL);
+    NSMutableData *pubKey = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), l));
+    
+    pubKey.length = l;
+    
+    unsigned char *bytes = pubKey.mutableBytes;
     
     if (i2o_ECPublicKey(_key, &bytes) != pubKey.length) return nil;
     
@@ -168,12 +161,14 @@ static void clear_deallocate(void *ptr, void *info)
 
 - (NSString *)address
 {
-    uint8_t version = BITCOIN_TESTNET ? BITCOIN_PUBKEY_ADDRESS_TEST : BITCOIN_PUBKEY_ADDRESS;
-    NSMutableData *d = [NSMutableData dataWithBytes:&version length:1];
     NSData *hash = [self hash160];
     
     if (! hash) return nil;
+
+    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), hash.length + 1));
+    uint8_t version = BITCOIN_TESTNET ? BITCOIN_PUBKEY_ADDRESS_TEST : BITCOIN_PUBKEY_ADDRESS;
     
+    [d appendBytes:&version length:1];
     [d appendData:hash];
 
     return [NSString base58checkWithData:d];
@@ -189,7 +184,7 @@ static void clear_deallocate(void *ptr, void *info)
     unsigned int l = ECDSA_size(_key);
     NSMutableData *sig = [NSMutableData dataWithLength:l];
 
-    ECDSA_sign(0, (const unsigned char *)d.bytes, d.length, (unsigned char *)sig.mutableBytes, &l, _key);
+    ECDSA_sign(0, d.bytes, d.length, sig.mutableBytes, &l, _key);
     sig.length = l;
 
     if (! [self verify:d signature:sig]) {
@@ -203,7 +198,7 @@ static void clear_deallocate(void *ptr, void *info)
 - (BOOL)verify:(NSData *)d signature:(NSData *)sig
 {
     // -1 = error, 0 = bad sig, 1 = good
-    return ECDSA_verify(0, (unsigned char *)d.bytes, d.length, (unsigned char *)sig.bytes, sig.length, _key) == 1;
+    return ECDSA_verify(0, d.bytes, d.length, sig.bytes, sig.length, _key) == 1;
 }
 
 @end

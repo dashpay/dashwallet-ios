@@ -22,7 +22,6 @@
 #import "AFNetworking.h"
 #import "WebSocketUIView.h"
 #import "WebSocketNSStream.h"
-#import <openssl/crypto.h>
 
 #define BASE_URL    @"https://blockchain.info"
 #define UNSPENT_URL BASE_URL "/unspent?active="
@@ -783,8 +782,8 @@ completion:(void (^)(NSError *error))completion
         NSDictionary *o = self.unspentOutputs[obj];
         
         // tx_hash is already in little endian
-        [tx addInputHash:[NSData dataWithHex:o[@"tx_hash"]] index:[o[@"tx_output_n"] unsignedIntegerValue]
-         script:[NSData dataWithHex:o[@"script"]] ];
+        [tx addInputHash:[o[@"tx_hash"] hexToData] index:[o[@"tx_output_n"] unsignedIntegerValue]
+         script:[o[@"script"] hexToData]];
             
         balance += [o[@"value"] unsignedLongLongValue];
 

@@ -32,8 +32,9 @@
     
     // Electurm uses a hex representation of the seed instead of the seed itself
     NSString *hex = [NSString hexWithData:seed];
-    NSMutableData *d = [NSMutableData dataWithLength:hex.length*2];
+    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 0));
     
+    d.length = hex.length*2;
     [hex getBytes:d.mutableBytes maxLength:hex.length usedLength:NULL encoding:NSUTF8StringEncoding options:0
      range:NSMakeRange(0, hex.length) remainingRange:NULL];
     [hex getBytes:(char *)d.mutableBytes + hex.length maxLength:hex.length usedLength:NULL encoding:NSUTF8StringEncoding
@@ -54,10 +55,8 @@
         CC_SHA256(md, l, md);
     }
     
-    NSData *ret = CFBridgingRelease(CFDataCreate(SecureAllocator(), d.bytes, CC_SHA256_DIGEST_LENGTH));
-
-    OPENSSL_cleanse(d.mutableBytes, d.length);
-    return ret;
+    d.length = CC_SHA256_DIGEST_LENGTH;
+    return d;
 }
 
 - (NSData *)sequence:(NSUInteger)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
@@ -65,15 +64,12 @@
     if (! masterPublicKey) return nil;
     
     NSString *s = [NSString stringWithFormat:@"%u:%d:", n, internal ? 1 : 0];
-    NSMutableData *d = [NSMutableData dataWithBytes:s.UTF8String
-                        length:[s lengthOfBytesUsingEncoding:NSUTF8StringEncoding]];
+    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), s.length + masterPublicKey.length));
     
+    [d appendBytes:s.UTF8String length:[s lengthOfBytesUsingEncoding:NSUTF8StringEncoding]];
     [d appendData:masterPublicKey];
     
-    NSData *ret = [d SHA256_2];
-    
-    OPENSSL_cleanse(d.mutableBytes, d.length);
-    return ret;
+    return [d SHA256_2];
 }
 
 - (NSData *)publicKey:(NSUInteger)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
@@ -87,8 +83,9 @@
     EC_POINT *masterPubKeyPoint = EC_POINT_new(group), *pubKeyPoint = EC_POINT_new(group),
              *zPoint = EC_POINT_new(group);
     uint8_t form = EC_GROUP_get_point_conversion_form(group);
-    NSMutableData *d = [NSMutableData dataWithBytes:&form length:1];
+    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 0));
 
+    [d appendBytes:&form length:1];
     [d appendData:masterPublicKey];
 
     BN_init(&zbn);
@@ -131,18 +128,18 @@
     
     [n enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         NSData *sequence = [self sequence:[obj unsignedIntegerValue] internal:internal masterPublicKey:mpk];
-        NSMutableData *pk = [NSMutableData dataWithLength:33];
+        NSMutableData *pk = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 33));
 
         BN_bin2bn(sequence.bytes, sequence.length, &sequencebn);
         BN_bin2bn(secexp.bytes, secexp.length, &secexpbn);
         
         BN_mod_add(&secexpbn, &secexpbn, &sequencebn, &order, ctx);
 
+        pk.length = 33;
         *(unsigned char *)pk.mutableBytes = 0x80;
         BN_bn2bin(&secexpbn, (unsigned char *)pk.mutableBytes + pk.length - BN_num_bytes(&secexpbn));
         
         [ret addObject:[NSString base58checkWithData:pk]];
-        OPENSSL_cleanse(pk.mutableBytes, pk.length);
     }];
     
     BN_clear_free(&secexpbn);

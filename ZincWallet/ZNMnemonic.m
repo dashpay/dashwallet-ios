@@ -74,8 +74,7 @@
         [list addObject:self.words[w3]];
     }
 
-    return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (__bridge CFArrayRef)(list),
-                                                              CFSTR(" ")));
+    return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (__bridge CFArrayRef)list,CFSTR(" ")));
 }
 
 //def mn_decode( wlist ):
@@ -91,7 +90,7 @@
 //
 - (NSData *)decodePhrase:(NSString *)phrase
 {
-    CFMutableStringRef s = CFStringCreateMutableCopy(SecureAllocator(), phrase.length, (__bridge CFStringRef)(phrase));
+    CFMutableStringRef s = CFStringCreateMutableCopy(SecureAllocator(), phrase.length, (__bridge CFStringRef)phrase);
 
     CFStringTrimWhitespace(s);
 

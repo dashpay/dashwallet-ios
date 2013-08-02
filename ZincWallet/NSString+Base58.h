@@ -31,6 +31,8 @@ CFAllocatorRef SecureAllocator();
 - (NSString *)hexToBase58check;
 - (NSString *)base58checkToHex;
 
+- (NSData *)hexToData;
+
 - (BOOL)isValidBitcoinAddress;
 
 @end

@@ -68,7 +68,7 @@
           inputScripts:@[script, script, script, script, script, script, script, script, script, script]
           outputAddresses:@[addr, addr, addr, addr, addr, addr, addr, addr, addr, addr]
           outputAmounts:@[@1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000,
-                             @1000000]];
+                          @1000000]];
     
     height = [tx blockHeightUntilFreeForAmounts:@[@1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000,
                                                   @1000000, @1000000, @1000000]
@@ -94,14 +94,14 @@
 
     NSLog(@"like just love know never want time out there make look eye = 0x%@", [NSString hexWithData:d]);
     
-    STAssertEqualObjects(d, [NSData dataWithHex:@"00285dfe00285e0100285e0400285e07"], @"[ZNWallet decodePhrase:]");
+    STAssertEqualObjects(d, @"00285dfe00285e0100285e0400285e07".hexToData, @"[ZNWallet decodePhrase:]");
     
     d = [mnemonic decodePhrase:@"kick chair mask master passion quick raise smooth unless wander actually broke"];
     
     NSLog(@"kick chair mask master passion quick raise smooth unless wander actually broke = 0x%@",
           [NSString hexWithData:d]);
     
-    STAssertEqualObjects(d, [NSData dataWithHex:@"fea983ac0028608e0028609100286094"], @"[ZNWallet decodePhrase:]");
+    STAssertEqualObjects(d, @"fea983ac0028608e0028609100286094".hexToData, @"[ZNWallet decodePhrase:]");
     
     // test of phrase with trailing space
     d = [mnemonic
@@ -110,32 +110,32 @@
     NSLog(@"kick quiet student ignore cruel danger describe accident eager darkness embrace suppose = 0x%@",
           [NSString hexWithData:d]);
     
-    STAssertEqualObjects(d, [NSData dataWithHex:@"8d02be487e1953ce2dd6c186fcc97e65"], @"[ZNWallet decodePhrase:]");
+    STAssertEqualObjects(d, @"8d02be487e1953ce2dd6c186fcc97e65".hexToData, @"[ZNWallet decodePhrase:]");
 }
 
 - (void)testMnemonicEncodePhrase
 {
     ZNMnemonic *mnemonic = [ZNMnemonic mnemonicWithWordPlist:ELECTRUM_WORD_LIST_RESOURCE];
     
-    NSString *s = [mnemonic encodePhrase:[NSData dataWithHex:@"00285dfe00285e0100285e0400285e07"]];
+    NSString *s = [mnemonic encodePhrase:@"00285dfe00285e0100285e0400285e07".hexToData];
     
     NSLog(@"0x00285dfe00285e0100285e0400285e07 = %@", s);
     
     STAssertEqualObjects(s, @"like just love know never want time out there make look eye",
                          @"[ZNWallet encodePhrase:]");
     
-    s = [mnemonic encodePhrase:[NSData dataWithHex:@"00000000000000000000000000000000"]];
+    s = [mnemonic encodePhrase:@"00000000000000000000000000000000".hexToData];
 
     NSLog(@"0x00285dfe00285e0100285e0400285e07 = %@", s);
     
-    s = [mnemonic encodePhrase:[NSData dataWithHex:@"fea983ac0028608e0028609100286094"]];
+    s = [mnemonic encodePhrase:@"fea983ac0028608e0028609100286094".hexToData];
     
     NSLog(@"0x00285dfe00285e0100285e0400285e07 = %@", s);
     
     STAssertEqualObjects(s, @"kick chair mask master passion quick raise smooth unless wander actually broke",
                          @"[ZNWallet encodePhrase:]");
     
-    s = [mnemonic encodePhrase:[NSData dataWithHex:@"8d02be487e1953ce2dd6c186fcc97e65"]];
+    s = [mnemonic encodePhrase:@"8d02be487e1953ce2dd6c186fcc97e65".hexToData];
     
     NSLog(@"0x8d02be487e1953ce2dd6c186fcc97e65 = %@", s);
     
@@ -148,14 +148,13 @@
 - (void)testBIP32SequencePrivateKey
 {
     ZNBIP32Sequence *seq = [ZNBIP32Sequence new];
-    NSData *seed = [NSData dataWithHex:@"000102030405060708090a0b0c0d0e0f"];
+    NSData *seed = @"000102030405060708090a0b0c0d0e0f".hexToData;
     NSString *pk = [seq privateKey:2 | 0x80000000 internal:YES fromSeed:seed];
     NSData *d = [pk base58checkToData];
 
     NSLog(@"000102030405060708090a0b0c0d0e0f/0'/1/2' prv = %@", [NSString hexWithData:d]);
 
-    STAssertEqualObjects(d,
-                         [NSData dataWithHex:@"80cbce0d719ecf7431d88e6a89fa1483e02e35092af60c042b1df2ff59fa424dca01"],
+    STAssertEqualObjects(d, @"80cbce0d719ecf7431d88e6a89fa1483e02e35092af60c042b1df2ff59fa424dca01".hexToData,
                          @"[ZNBIP32Sequence privateKey:internal:fromSeed:]");
 
     //NSData *pubKey = [[ZNKey keyWithPrivateKey:pk] publicKey];
@@ -165,21 +164,21 @@
 - (void)testBIP32SequenceMasterPublicKeyFromSeed
 {
     ZNBIP32Sequence *seq = [ZNBIP32Sequence new];
-    NSData *seed = [NSData dataWithHex:@"000102030405060708090a0b0c0d0e0f"];
+    NSData *seed = @"000102030405060708090a0b0c0d0e0f".hexToData;
     NSData *mpk = [seq masterPublicKeyFromSeed:seed];
     
     NSLog(@"000102030405060708090a0b0c0d0e0f/0' pub+chain = %@", [NSString hexWithData:mpk]);
     
-    STAssertEqualObjects(mpk, [NSData dataWithHex:@"3442193e"
+    STAssertEqualObjects(mpk, @"3442193e"
                                "47fdacbd0f1097043b78c63c20c34ef4ed9a111d980047ad16282c7ae6236141"
-                               "035a784662a4a20a65bf6aab9ae98a6c068a81c52e4b032c0fb5400c706cfccc56"],
+                               "035a784662a4a20a65bf6aab9ae98a6c068a81c52e4b032c0fb5400c706cfccc56".hexToData,
                          @"[ZNBIP32Sequence masterPublicKeyFromSeed:]");
 }
 
 - (void)testBIP32SequencePublicKey
 {
     ZNBIP32Sequence *seq = [ZNBIP32Sequence new];
-    NSData *seed = [NSData dataWithHex:@"000102030405060708090a0b0c0d0e0f"];
+    NSData *seed = @"000102030405060708090a0b0c0d0e0f".hexToData;
     NSData *mpk = [seq masterPublicKeyFromSeed:seed];
     NSData *pub = [seq publicKey:0 internal:NO masterPublicKey:mpk];
 
@@ -191,7 +190,7 @@
 - (void)testBIP32SequenceSerializedPrivateMasterFromSeed
 {
     ZNBIP32Sequence *seq = [ZNBIP32Sequence new];
-    NSData *seed = [NSData dataWithHex:@"000102030405060708090a0b0c0d0e0f"];
+    NSData *seed = @"000102030405060708090a0b0c0d0e0f".hexToData;
     NSString *xprv = [seq serializedPrivateMasterFromSeed:seed];
     
     NSLog(@"000102030405060708090a0b0c0d0e0f xpriv = %@", xprv);
@@ -204,7 +203,7 @@
 - (void)testBIP32SequenceSerializedMasterPublicKey
 {
     ZNBIP32Sequence *seq = [ZNBIP32Sequence new];
-    NSData *seed = [NSData dataWithHex:@"000102030405060708090a0b0c0d0e0f"];
+    NSData *seed = @"000102030405060708090a0b0c0d0e0f".hexToData;
     NSData *mpk = [seq masterPublicKeyFromSeed:seed];
     NSString *xpub = [seq serializedMasterPublicKey:mpk];
     
@@ -221,40 +220,38 @@
 {
     ZNElectrumSequence *seq = [ZNElectrumSequence new];
     NSData *sk = [(id)seq performSelector:@selector(stretchKey:)
-                  withObject:[@"00000000000000000000000000000000" dataUsingEncoding:NSUTF8StringEncoding]];
+                  withObject:@"00000000000000000000000000000000".hexToData];
 
     NSLog(@"0x00000000000000000000000000000000 stretched = 0x%@", [NSString hexWithData:sk]);
     
-    STAssertEqualObjects(sk, [NSData dataWithHex:@"7c2548ab89ffea8a6579931611969ffc0ed580ccf6048d4230762b981195abe5"],
+    STAssertEqualObjects(sk, @"7c2548ab89ffea8a6579931611969ffc0ed580ccf6048d4230762b981195abe5".hexToData,
                          @"[ZNElectrumSequence stretchKey:]");
 }
 
 - (void)testElectrumSequenceMasterPublicKeyFromSeed
 {
     ZNElectrumSequence *seq = [ZNElectrumSequence new];
-    NSData *mpk = [seq masterPublicKeyFromSeed:[@"00000000000000000000000000000000"
-                                                dataUsingEncoding:NSUTF8StringEncoding]];
+    NSData *mpk = [seq masterPublicKeyFromSeed:@"00000000000000000000000000000000".hexToData];
     
     NSLog(@"mpk from 0x00000000000000000000000000000000 = 0x%@", [NSString hexWithData:mpk]);
     
-    STAssertEqualObjects(mpk, [NSData dataWithHex:@"4e13b0f311a55b8a5db9a32e959da9f011b131019d4cebe6141b9e2c93edcbfc"
-                                                   "0954c358b062a9f94111548e50bde5847a3096b8b7872dcffadb0e9579b9017b"],
+    STAssertEqualObjects(mpk, @"4e13b0f311a55b8a5db9a32e959da9f011b131019d4cebe6141b9e2c93edcbfc"
+                               "0954c358b062a9f94111548e50bde5847a3096b8b7872dcffadb0e9579b9017b".hexToData,
                          @"[ZNElectrumSequence masterPublicKeyFromSeed:]");
 }
 
 - (void)testElectrumSequencePublicKey
 {
     ZNElectrumSequence *seq = [ZNElectrumSequence new];
-    NSData *mpk = [seq masterPublicKeyFromSeed:[@"00000000000000000000000000000000"
-                                                dataUsingEncoding:NSUTF8StringEncoding]];
+    NSData *mpk = [seq masterPublicKeyFromSeed:@"00000000000000000000000000000000".hexToData];
     NSData *pk = [seq publicKey:0 internal:NO masterPublicKey:mpk];
     NSString *addr = [(ZNKey *)[ZNKey keyWithPublicKey:pk] address];
     
     NSLog(@"publicKey:0 = %@", [NSString hexWithData:pk]);
     NSLog(@"addr:0 = %@", addr);
     
-    STAssertEqualObjects(pk, [NSData dataWithHex:@"040900f07c15d3fa441979e71d7ccdcca1afc30a28de07a0525a3d7655dc49cca"
-                                                  "0f844fb0903b3cccc4604107a9de6a0571c4a39996a9e4bd6ab596138ecae54f5"],
+    STAssertEqualObjects(pk, @"040900f07c15d3fa441979e71d7ccdcca1afc30a28de07a0525a3d7655dc49cca"
+                              "0f844fb0903b3cccc4604107a9de6a0571c4a39996a9e4bd6ab596138ecae54f5".hexToData,
                          @"[ZNElecturmSequence publicKey:forChange:masterPublicKey:]");
     STAssertEqualObjects(addr, @"1FHsTashEBUNPQwC1CwVjnKUxzwgw73pU4", @"[[ZNKey keyWithPublicKey:] address]");
 }
@@ -262,8 +259,8 @@
 - (void)testElectrumSequencePrivateKey
 {
     ZNElectrumSequence *seq = [ZNElectrumSequence new];
-    NSString *privkey = [seq privateKey:0 internal:NO
-                         fromSeed:[@"00000000000000000000000000000000" dataUsingEncoding:NSUTF8StringEncoding]];
+    NSString *privkey =
+        [seq privateKey:0 internal:NO fromSeed:@"00000000000000000000000000000000".hexToData];
     
     NSLog(@"privateKey:0 = %@", privkey);
     
@@ -271,8 +268,7 @@
                          @"[ZNElecturmSequence privateKey:forChange:fromSeed:]");
 
     // this tests a private key that starts with 0x00
-    privkey = [seq privateKey:64 internal:NO
-               fromSeed:[@"00000000000000000000000000000000" dataUsingEncoding:NSUTF8StringEncoding]];
+    privkey = [seq privateKey:64 internal:NO fromSeed:@"00000000000000000000000000000000".hexToData];
 
     NSLog(@"privateKey:64 = %@ = 0x%@", privkey, [privkey base58checkToHex]);
 

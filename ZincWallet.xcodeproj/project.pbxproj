@@ -4854,7 +4854,7 @@
 		75D8F3C8173ABE3D0080D95E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/ZincWallet.app/ZincWallet";
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/zinc.app/zinc";
 				FRAMEWORK_SEARCH_PATHS = (
 					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
 					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
@@ -4871,7 +4871,7 @@
 		75D8F3C9173ABE3D0080D95E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/ZincWallet.app/ZincWallet";
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/zinc.app/zinc";
 				FRAMEWORK_SEARCH_PATHS = (
 					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
 					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",

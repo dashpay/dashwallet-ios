@@ -10,14 +10,10 @@
 
 @interface NSData (Hash)
 
-+ (instancetype)dataWithHex:(NSString *)hex;
-
-- (instancetype)initWithHex:(NSString *)hex;
-- (NSData *)reverse;
-
-- (NSData *)RMD160;
 - (NSData *)SHA256;
 - (NSData *)SHA256_2;
+- (NSData *)RMD160;
 - (NSData *)hash160;
+- (NSData *)reverse;
 
 @end

@@ -31,18 +31,20 @@
 // - ci = Ir.
 - (void)CKDForKey:(NSMutableData *)k chain:(NSMutableData *)c n:(uint32_t)n
 {
-    NSMutableData *data = [NSMutableData dataWithLength:33 - k.length];
-    NSMutableData *I = [NSMutableData dataWithLength:CC_SHA512_DIGEST_LENGTH];
+    NSMutableData *I = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), CC_SHA512_DIGEST_LENGTH));
+    NSMutableData *data = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 33 + sizeof(n)));
     BN_CTX *ctx = BN_CTX_new();
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
     BIGNUM order, Ilbn, kbn;
 
+    data.length = 33 - k.length;
     if (n & BIP32_PRIME) [data appendData:k];
     else [data setData:[[ZNKey keyWithSecret:k compressed:YES] publicKey]];
 
     n = CFSwapInt32HostToBig(n);
     [data appendBytes:&n length:sizeof(n)];
 
+    I.length = CC_SHA512_DIGEST_LENGTH;
     CCHmac(kCCHmacAlgSHA512, c.bytes, c.length, data.bytes, data.length, I.mutableBytes);
 
     BN_init(&order);
@@ -56,15 +58,13 @@
     
     k.length = 32;
     BN_bn2bin(&kbn, (unsigned char *)k.mutableBytes + 32 - BN_num_bytes(&kbn));
-    [c replaceBytesInRange:NSMakeRange(0, c.length) withBytes:(unsigned char *)I.bytes + 32 length:32];
+    [c replaceBytesInRange:NSMakeRange(0, c.length) withBytes:(const unsigned char *)I.bytes + 32 length:32];
 
     BN_clear_free(&kbn);
     BN_clear_free(&Ilbn);
     BN_free(&order);
     EC_GROUP_free(group);
     BN_CTX_free(ctx);
-    OPENSSL_cleanse(data.mutableBytes, data.length);
-    OPENSSL_cleanse(I.mutableBytes, I.length);
 }
 
 // To define CKD'((Kpar, cpar), i) -> (Ki, ci):
@@ -82,8 +82,8 @@
                 reason:@"Can't derive private child key from public parent key." userInfo:nil];
     }
     
-    NSMutableData *I = [NSMutableData dataWithLength:CC_SHA512_DIGEST_LENGTH];
-    NSMutableData *data = [NSMutableData dataWithData:K];
+    NSMutableData *I = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), CC_SHA512_DIGEST_LENGTH));
+    NSMutableData *data = CFBridgingRelease(CFDataCreateMutableCopy(SecureAllocator(), 0, (__bridge CFDataRef)K));
     BN_CTX *ctx = BN_CTX_new();
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
     uint8_t form = POINT_CONVERSION_COMPRESSED;
@@ -93,8 +93,10 @@
     n = CFSwapInt32HostToBig(n);
     [data appendBytes:&n length:sizeof(n)];
 
+    I.length = CC_SHA512_DIGEST_LENGTH;
     CCHmac(kCCHmacAlgSHA512, c.bytes, c.length, data.bytes, data.length, I.mutableBytes);
 
+    BN_init(&Ilbn);
     EC_GROUP_set_point_conversion_form(group, form);
     EC_POINT_oct2point(group, pubKeyPoint, K.bytes, K.length, ctx);
     BN_bin2bn(I.bytes, 32, &Ilbn);
@@ -103,59 +105,52 @@
 
     K.length = EC_POINT_point2oct(group, pubKeyPoint, form, NULL, 0, ctx);
     EC_POINT_point2oct(group, pubKeyPoint, form, K.mutableBytes, K.length, ctx);
-    [c replaceBytesInRange:NSMakeRange(0, c.length) withBytes:(unsigned char *)I.bytes + 32 length:32];
+    [c replaceBytesInRange:NSMakeRange(0, c.length) withBytes:(const unsigned char *)I.bytes + 32 length:32];
 
     BN_clear_free(&Ilbn);
     EC_POINT_clear_free(IlPoint);
     EC_POINT_clear_free(pubKeyPoint);
     EC_GROUP_free(group);
     BN_CTX_free(ctx);
-    OPENSSL_cleanse(data.mutableBytes, data.length);
-    OPENSSL_cleanse(I.mutableBytes, I.length);
 }
 
 #pragma mark - ZNKeySequence
 
 - (NSData *)masterPublicKeyFromSeed:(NSData *)seed
 {
-    NSMutableData *I = [NSMutableData dataWithLength:CC_SHA512_DIGEST_LENGTH];
+    NSMutableData *mpk = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 0));
+    NSMutableData *I = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), CC_SHA512_DIGEST_LENGTH));
+    NSMutableData *secret = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 32));
+    NSMutableData *chain = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 32));
 
+    I.length = CC_SHA512_DIGEST_LENGTH;
     CCHmac(kCCHmacAlgSHA512, BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length, I.mutableBytes);
 
-    NSMutableData *secret = [NSMutableData dataWithBytes:I.bytes length:32];
-    NSMutableData *chain = [NSMutableData dataWithBytes:(unsigned char *)I.bytes + 32 length:32];
-    NSData *parFingerprint = [[[ZNKey keyWithSecret:secret compressed:YES] hash160] subdataWithRange:NSMakeRange(0, 4)];
+    [secret appendBytes:I.bytes length:32];
+    [chain appendBytes:(const unsigned char *)I.bytes + 32 length:32];
+    [mpk appendBytes:[[[ZNKey keyWithSecret:secret compressed:YES] hash160] bytes] length:4];
     
     [self CKDForKey:secret chain:chain n:0 | BIP32_PRIME]; // account 0'
-    
-    NSMutableData *mpk =
-        CFBridgingRelease(CFDataCreateMutableCopy(SecureAllocator(), 0, (__bridge CFDataRef)(parFingerprint)));
 
     [mpk appendData:chain];
     [mpk appendData:[[ZNKey keyWithSecret:secret compressed:YES] publicKey]];
 
-    OPENSSL_cleanse(I.mutableBytes, I.length);
-    OPENSSL_cleanse(secret.mutableBytes, secret.length);
-    OPENSSL_cleanse(chain.mutableBytes, chain.length);
     return mpk;
 }
 
 - (NSData *)publicKey:(NSUInteger)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
 {
-    if (! masterPublicKey) return nil;
+    if (masterPublicKey.length < 36) return nil;
 
-    NSMutableData *chain = [NSMutableData dataWithBytes:(unsigned char *)masterPublicKey.bytes + 4 length:32];
-    NSMutableData *pubKey = [NSMutableData dataWithBytes:(unsigned char *)masterPublicKey.bytes + 36
-                             length:masterPublicKey.length - 36];
+    NSMutableData *chain = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 32));
+    NSMutableData *pubKey = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 65));
 
+    [chain appendBytes:(const unsigned char *)masterPublicKey.bytes + 4 length:32];
+    [pubKey appendBytes:(const unsigned char *)masterPublicKey.bytes + 36 length:masterPublicKey.length - 36];
     [self CKDPrimeForKey:pubKey chain:chain n:internal ? 1 : 0]; // internal or external chain
     [self CKDPrimeForKey:pubKey chain:chain n:n]; // nth key in chain
 
-    NSData *ret = CFBridgingRelease(CFDataCreateCopy(SecureAllocator(), (__bridge CFDataRef)(pubKey)));
-
-    OPENSSL_cleanse(chain.mutableBytes, chain.length);
-    OPENSSL_cleanse(pubKey.mutableBytes, pubKey.length);
-    return ret;
+    return pubKey;
 }
 
 - (NSString *)privateKey:(NSUInteger)n internal:(BOOL)internal fromSeed:(NSData *)seed
@@ -168,34 +163,30 @@
     if (! seed || ! n.count) return @[];
 
     NSMutableArray *ret = [NSMutableArray arrayWithCapacity:n.count];
-    NSMutableData *I = [NSMutableData dataWithLength:CC_SHA512_DIGEST_LENGTH];
+    NSMutableData *I = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), CC_SHA512_DIGEST_LENGTH));
+    NSMutableData *secret = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 32));
+    NSMutableData *chain = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 32));
 
+    I.length = CC_SHA512_DIGEST_LENGTH;
     CCHmac(kCCHmacAlgSHA512, BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length, I.mutableBytes);
-
-    NSMutableData *secret = [NSMutableData dataWithBytes:I.mutableBytes length:32];
-    NSMutableData *chain = [NSMutableData dataWithBytes:(unsigned char *)I.mutableBytes + 32 length:32];
-
+    
+    [secret appendBytes:I.bytes length:32];
+    [chain appendBytes:(const unsigned char *)I.bytes + 32 length:32];
     [self CKDForKey:secret chain:chain n:0 | BIP32_PRIME]; // account 0'
     [self CKDForKey:secret chain:chain n:(internal ? 1 : 0)]; // internal or external chain
 
     for (NSNumber *num in n) {
-        NSMutableData *pk = [NSMutableData dataWithBytes:"\x80" length:1];
-        NSMutableData *s = [NSMutableData dataWithData:secret];
-        NSMutableData *c = [NSMutableData dataWithData:chain];
-
+        NSMutableData *pk = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 34));
+        NSMutableData *s = CFBridgingRelease(CFDataCreateMutableCopy(SecureAllocator(), 32,(__bridge CFDataRef)secret));
+        NSMutableData *c = CFBridgingRelease(CFDataCreateMutableCopy(SecureAllocator(), 32, (__bridge CFDataRef)chain));
+        
         [self CKDForKey:s chain:c n:num.unsignedIntegerValue]; // nth key in chain
+        [pk appendBytes:"\x80" length:1];
         [pk appendData:s];
         [pk appendBytes:"\x01" length:1]; // specifies compressed pubkey format
         [ret addObject:[NSString base58checkWithData:pk]];
-
-        OPENSSL_cleanse(pk.mutableBytes, pk.length);
-        OPENSSL_cleanse(s.mutableBytes, s.length);
-        OPENSSL_cleanse(c.mutableBytes, c.length);
     }
 
-    OPENSSL_cleanse(I.mutableBytes, I.length);
-    OPENSSL_cleanse(secret.mutableBytes, secret.length);
-    OPENSSL_cleanse(chain.mutableBytes, chain.length);
     return ret;
 }
 
@@ -204,11 +195,12 @@
 - (NSString *)serializeDepth:(uint8_t)depth fingerprint:(uint32_t)fingerprint child:(uint32_t)child
 chain:(NSData *)chain key:(NSData *)key
 {
-    NSMutableData *d = [NSMutableData dataWithBytes:key.length < 33 ? BIP32_XPRV : BIP32_XPUB length:4];
+    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 14 + key.length + chain.length));
     
     fingerprint = CFSwapInt32HostToBig(fingerprint);
     child = CFSwapInt32HostToBig(child);
     
+    [d appendBytes:key.length < 33 ? BIP32_XPRV : BIP32_XPUB length:4];
     [d appendBytes:&depth length:1];
     [d appendBytes:&fingerprint length:sizeof(fingerprint)];
     [d appendBytes:&child length:sizeof(child)];
@@ -216,25 +208,20 @@ chain:(NSData *)chain key:(NSData *)key
     if (key.length < 33) [d appendBytes:"\0" length:1];
     [d appendData:key];
     
-    NSString *ret = [NSString base58checkWithData:d];
-    
-    OPENSSL_cleanse(d.mutableBytes, d.length);
-    return ret;
+    return [NSString base58checkWithData:d];
 }
 
 - (NSString *)serializedPrivateMasterFromSeed:(NSData *)seed
 {
-    NSMutableData *I = [NSMutableData dataWithLength:CC_SHA512_DIGEST_LENGTH];
+    NSMutableData *I = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), CC_SHA512_DIGEST_LENGTH));
     
+    I.length = CC_SHA512_DIGEST_LENGTH;
     CCHmac(kCCHmacAlgSHA512, BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length, I.mutableBytes);
     
     NSData *secret = [NSData dataWithBytesNoCopy:I.mutableBytes length:32 freeWhenDone:NO];
     NSData *chain = [NSData dataWithBytesNoCopy:(unsigned char *)I.mutableBytes + 32 length:32 freeWhenDone:NO];
 
-    NSString *ret = [self serializeDepth:0 fingerprint:0 child:0 chain:chain key:secret];
-
-    OPENSSL_cleanse(I.mutableBytes, I.length);
-    return ret;
+    return [self serializeDepth:0 fingerprint:0 child:0 chain:chain key:secret];
 }
 
 - (NSString *)serializedMasterPublicKey:(NSData *)masterPublicKey
