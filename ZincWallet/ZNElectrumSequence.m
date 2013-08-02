@@ -20,10 +20,10 @@
 {
     NSData *pubKey = [[ZNKey keyWithSecret:[self stretchKey:seed] compressed:NO] publicKey];
     
-    if (! pubKey) return nil;
+    if (pubKey.length < 1) return nil;
 
     // uncompressed pubkeys are prepended with 0x04... some sort of openssl key encapsulation
-    return [pubKey subdataWithRange:NSMakeRange(1, pubKey.length - 1)];
+    return CFBridgingRelease(CFDataCreate(SecureAllocator(), (const uint8_t *)pubKey.bytes + 1, pubKey.length - 1));
 }
 
 - (NSData *)stretchKey:(NSData *)seed
@@ -115,7 +115,7 @@
 
     NSMutableArray *ret = [NSMutableArray arrayWithCapacity:n.count];
     NSData *secexp = [self stretchKey:seed];
-    NSData *mpk = [[ZNKey keyWithSecret:secexp compressed:NO] publicKey];
+    NSData *mpk = [self masterPublicKeyFromSeed:secexp];
     BN_CTX *ctx = BN_CTX_new();
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
     __block BIGNUM order, sequencebn, secexpbn;
@@ -123,7 +123,6 @@
     BN_init(&order);
     BN_init(&sequencebn);
     BN_init(&secexpbn);
-    mpk = [mpk subdataWithRange:NSMakeRange(1, mpk.length - 1)]; // trim leading 0x04 byte
     EC_GROUP_get_order(group, &order, ctx);
     
     [n enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
