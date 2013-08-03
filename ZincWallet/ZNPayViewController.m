@@ -233,9 +233,8 @@
     // having payviewcontroller instantiate receiveviewcontroller like this is ugly
     CGRect f = self.scrollView.frame;
   
-//XXXX
     self.receiveController.view.frame = CGRectMake(f.origin.x + f.size.width, f.origin.y, f.size.width, f.size.height);
-    //[self.receiveController viewWillAppear:NO];
+    [self.receiveController viewWillAppear:NO];
     [self.scrollView addSubview:self.receiveController.view];
     
     if (firstAppearance) {

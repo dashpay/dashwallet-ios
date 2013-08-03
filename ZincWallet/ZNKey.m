@@ -149,7 +149,7 @@
     
     unsigned char *bytes = pubKey.mutableBytes;
     
-    if (i2o_ECPublicKey(_key, &bytes) != pubKey.length) return nil;
+    if (i2o_ECPublicKey(_key, &bytes) != l) return nil;
     
     return pubKey;
 }

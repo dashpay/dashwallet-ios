@@ -109,8 +109,11 @@
     self.addressTxCount = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:ADDRESS_TX_COUNT_KEY]];
     self.unspentOutputs = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:UNSPENT_OUTPUTS_KEY]];
     
-    //XXXX switch to bip32
-    self.sequence = [ZNElectrumSequence new];
+#if WALLET_BIP32
+    self.sequence = [ZNBIP32Sequence new];
+#else
+     self.sequence = [ZNElectrumSequence new];
+#endif
     
     self.format = [NSNumberFormatter new];
     self.format.lenient = YES;
@@ -183,12 +186,19 @@
 
 - (NSData *)seed
 {
-    return [self getKeychainDataForKey:SEED_KEY];
+    NSData *seed = [self getKeychainDataForKey:SEED_KEY];
+    
+    if (seed.length != 128/8) {
+        self.seed = nil;
+        return nil;
+    }
+    
+    return seed;
 }
 
 - (void)setSeed:(NSData *)seed
 {
-    if (! [self.seed isEqual:seed]) {        
+    if (! seed || ! [self.seed isEqual:seed]) {
         [self setKeychainData:seed forKey:SEED_KEY];
         
         _synchronizing = NO;
@@ -219,6 +229,7 @@
     }
 }
 
+//XXXX switch mnemonic to bip39
 - (NSString *)seedPhrase
 {
     return [[ZNMnemonic mnemonicWithWordPlist:ELECTRUM_WORD_LIST_RESOURCE] encodePhrase:self.seed];
@@ -817,7 +828,7 @@ completion:(void (^)(NSError *error))completion
     if (! currentHeight) return DBL_MAX;
     
     [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        NSString *hash = [transaction.inputHashes[idx] toHex];
+        NSString *hash = [NSString hexWithData:transaction.inputHashes[idx]];
         NSString *n = [transaction.inputIndexes[idx] description];
         NSDictionary *o = self.unspentOutputs[[hash stringByAppendingString:n]];
 
@@ -842,7 +853,7 @@ completion:(void (^)(NSError *error))completion
     __block uint64_t balance = 0, amount = 0;
 
     [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        NSString *hash = [transaction.inputHashes[idx] toHex];
+        NSString *hash = [NSString hexWithData:transaction.inputHashes[idx]];
         NSString *n = [transaction.inputIndexes[idx] description];
         NSDictionary *o = self.unspentOutputs[[hash stringByAppendingString:n]];
         
@@ -918,7 +929,7 @@ completion:(void (^)(NSError *error))completion
         NSLog(@"response:\n%@", operation.responseString);
 
         [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            NSString *hash = [transaction.inputHashes[idx] toHex];
+            NSString *hash = [NSString hexWithData:transaction.inputHashes[idx]];
             NSString *n = [transaction.inputIndexes[idx] description];
             NSDictionary *o = self.unspentOutputs[[hash stringByAppendingString:n]];
             
@@ -1137,10 +1148,16 @@ completion:(void (^)(NSError *error))completion
 
 - (BOOL)setKeychainData:(NSData *)data forKey:(NSString *)key
 {
+    if (! key) return NO;
+
     NSDictionary *query = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
                             (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
                             (__bridge id)kSecAttrAccount:key,
                             (__bridge id)kSecReturnData:(__bridge id)kCFBooleanTrue};
+
+    SecItemDelete((__bridge CFDictionaryRef)query);
+
+    if (! data) return YES;
     
     NSDictionary *item = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
                            (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
@@ -1148,14 +1165,7 @@ completion:(void (^)(NSError *error))completion
                            (__bridge id)kSecAttrAccessible:(__bridge id)kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
                            (__bridge id)kSecValueData:data};
     
-    SecItemDelete((__bridge CFDictionaryRef)query);
-    
-    if (SecItemAdd((__bridge CFDictionaryRef)item, NULL) != noErr) {
-        NSLog(@"SecItemAdd error");
-        return NO;
-    }
-
-    return YES;
+    return SecItemAdd((__bridge CFDictionaryRef)item, NULL) == noErr ? YES : NO;
 }
 
 - (NSData *)getKeychainDataForKey:(NSString *)key

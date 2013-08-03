@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import "WebSocket.h"
 
+#define WALLET_BIP32 YES
+
 #define walletSyncStartedNotification  @"walletSyncStartedNotification"
 #define walletSyncFinishedNotification @"walletSyncFinishedNotification"
 #define walletSyncFailedNotification   @"walletSyncFailedNotification"
