@@ -18,4 +18,5 @@
 
 - (NSString *)serializedPrivateMasterFromSeed:(NSData *)seed;
 - (NSString *)serializedMasterPublicKey:(NSData *)masterPublicKey;
+
 @end

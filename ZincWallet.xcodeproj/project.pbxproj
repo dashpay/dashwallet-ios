@@ -701,6 +701,7 @@
 		7545425117606C7500638B95 /* button-bg-pressed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7545424E17606C7500638B95 /* button-bg-pressed@2x.png */; };
 		7559FBA7174D8B1F0000E809 /* ZNKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 7559FBA6174D8B1F0000E809 /* ZNKey.m */; };
 		7559FBA9174E85B10000E809 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7559FBA8174E85B10000E809 /* Security.framework */; };
+		756E9CD617ACC95D00D316A8 /* ZNWallet+WebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 756E9CD517ACC95D00D316A8 /* ZNWallet+WebSocket.m */; };
 		7579C5DF17665B5300E89497 /* libzbar.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75FD9C0217664F3000307894 /* libzbar.a */; };
 		758B585E176BB1DE0069968F /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 758B585D176BB1DE0069968F /* MessageUI.framework */; };
 		758F2D8217669D6800102AF1 /* libqrencoder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75AF36D7176675D3004AA912 /* libqrencoder.a */; };
@@ -1720,6 +1721,8 @@
 		7559FBA5174D8B1F0000E809 /* ZNKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNKey.h; sourceTree = "<group>"; };
 		7559FBA6174D8B1F0000E809 /* ZNKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNKey.m; sourceTree = "<group>"; };
 		7559FBA8174E85B10000E809 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		756E9CD417ACC95D00D316A8 /* ZNWallet+WebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ZNWallet+WebSocket.h"; sourceTree = "<group>"; };
+		756E9CD517ACC95D00D316A8 /* ZNWallet+WebSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ZNWallet+WebSocket.m"; sourceTree = "<group>"; };
 		758B585D176BB1DE0069968F /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		7591EC0D1773DD3700B44340 /* redgradient@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "redgradient@2x.png"; sourceTree = "<group>"; };
 		75920F84174AB82100C1C03D /* NSMutableData+Bitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableData+Bitcoin.h"; sourceTree = "<group>"; };
@@ -1968,6 +1971,8 @@
 		752C2FAC17416B360033F636 /* Categories */ = {
 			isa = PBXGroup;
 			children = (
+				756E9CD417ACC95D00D316A8 /* ZNWallet+WebSocket.h */,
+				756E9CD517ACC95D00D316A8 /* ZNWallet+WebSocket.m */,
 				752C2FAD17416C620033F636 /* NSString+Base58.h */,
 				752C2FAE17416C620033F636 /* NSString+Base58.m */,
 				752C2FB3174171760033F636 /* NSData+Hash.h */,
@@ -4524,6 +4529,7 @@
 				8461CE5D1798A4BC00DF8E4C /* WebSocketUIView.m in Sources */,
 				84DC139A1799E02800F6ED91 /* ZNBIP32Sequence.m in Sources */,
 				847C2302179A1FD600163CEF /* ZNMnemonic.m in Sources */,
+				756E9CD617ACC95D00D316A8 /* ZNWallet+WebSocket.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

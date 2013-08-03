@@ -461,7 +461,9 @@
     if (sender || [self.reachability currentReachabilityStatus] != NotReachable) {
         self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
         [self.spinner startAnimating];
-        [[ZNWallet sharedInstance] performSelector:@selector(synchronize) withObject:nil afterDelay:0.0];
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            [[ZNWallet sharedInstance] synchronize];
+        });
     }
 }
 

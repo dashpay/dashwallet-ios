@@ -7,9 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "WebSocket.h"
 
 #define WALLET_BIP32 YES
+
+#define ADDRESSES_PER_QUERY 100 // maximum number of addresses to request in a single query
 
 #define walletSyncStartedNotification  @"walletSyncStartedNotification"
 #define walletSyncFinishedNotification @"walletSyncFinishedNotification"
@@ -18,7 +19,7 @@
 
 @class ZNTransaction;
 
-@interface ZNWallet : NSObject<WebSocketDelegate>
+@interface ZNWallet : NSObject
 
 @property (nonatomic, strong) NSString *seedPhrase;
 @property (nonatomic, strong) NSData *seed;

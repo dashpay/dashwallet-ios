@@ -16,16 +16,6 @@
 
 @implementation ZNElectrumSequence
 
-- (NSData *)masterPublicKeyFromSeed:(NSData *)seed
-{
-    NSData *pubKey = [[ZNKey keyWithSecret:[self stretchKey:seed] compressed:NO] publicKey];
-    
-    if (pubKey.length < 1) return nil;
-
-    // uncompressed pubkeys are prepended with 0x04... some sort of openssl key encapsulation
-    return CFBridgingRelease(CFDataCreate(SecureAllocator(), (const uint8_t *)pubKey.bytes + 1, pubKey.length - 1));
-}
-
 - (NSData *)stretchKey:(NSData *)seed
 {
     if (! seed) return nil;
@@ -70,6 +60,18 @@
     [d appendData:masterPublicKey];
     
     return [d SHA256_2];
+}
+
+#pragma mark - ZNKeySequence
+
+- (NSData *)masterPublicKeyFromSeed:(NSData *)seed
+{
+    NSData *pubKey = [[ZNKey keyWithSecret:[self stretchKey:seed] compressed:NO] publicKey];
+    
+    if (pubKey.length < 1) return nil;
+    
+    // uncompressed pubkeys are prepended with 0x04... some sort of openssl key encapsulation
+    return CFBridgingRelease(CFDataCreate(SecureAllocator(), (const uint8_t *)pubKey.bytes + 1, pubKey.length - 1));
 }
 
 - (NSData *)publicKey:(NSUInteger)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
