@@ -57,11 +57,16 @@
                                  [w localCurrencyStringForAmount:w.balance]];
     
     // HelveticaNeue-Medium is missing the BTC char :(
+#if DARK_THEME
+    [self.navigationController.navigationBar
+     setTitleTextAttributes:@{UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:19.0]}];
+#else
     [self.navigationController.navigationBar
      setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor lightGrayColor],
                               UITextAttributeTextShadowColor:[UIColor whiteColor],
                               UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
                               UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:19.0]}];
+#endif
 
     if ([self.navigationController.navigationBar respondsToSelector:@selector(shadowImage)]) {
         [self.navigationController.navigationBar setShadowImage:[UIImage new]];

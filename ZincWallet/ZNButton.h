@@ -11,7 +11,8 @@
 typedef enum {
     ZNButtonStyleWhite,
     ZNButtonStyleBlue,
-    ZNButtonStyleGray
+    ZNButtonStyleGray,
+    ZNButtonStyleNone
 } ZNButtonStyle;
 
 @interface ZNButton : UIButton

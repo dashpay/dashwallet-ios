@@ -15,7 +15,8 @@
 //TODO: create a secure version of UILabel and use it for seedLabel
 @property (nonatomic, strong) IBOutlet UILabel *seedLabel, *compatiblityLabel;
 @property (nonatomic, strong) IBOutlet UIView *labelFrame;
-@property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
+@property (nonatomic, strong) IBOutlet UIImageView *wallpaper, *logo;
+@property (nonatomic, strong) IBOutletCollection(UILabel) NSArray *otherLabels;
 
 @property (nonatomic, strong) id resignActiveObserver;
 
@@ -28,9 +29,23 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    self.labelFrame.layer.cornerRadius = 5.0;
-    self.labelFrame.layer.borderColor = [[UIColor colorWithWhite:0.85 alpha:1.0] CGColor];
+#if DARK_THEME
+    self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"refresh-white.png"];
+
+    self.logo.image = [UIImage imageNamed:@"zincwallet-white.png"];
+    self.logo.contentMode = UIViewContentModeCenter;
+    self.logo.alpha = 0.9;
+    
+    [self.otherLabels enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        [obj setTextColor:[UIColor whiteColor]];
+        [obj setShadowColor:[UIColor colorWithWhite:0.0 alpha:0.15]];
+    }];
+#else
+    self.labelFrame.layer.borderColor = [[UIColor colorWithWhite:0.0 alpha:0.15] CGColor];
     self.labelFrame.layer.borderWidth = 1.0;
+#endif
+    self.labelFrame.layer.cornerRadius = 5.0;
+
     //self.labelFrame.layer.shadowRadius = 15.0;
     //self.labelFrame.layer.shadowOpacity = 0.1;
     //self.labelFrame.layer.shadowOffset = CGSizeMake(0.0, 1.0);

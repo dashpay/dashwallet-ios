@@ -13,6 +13,8 @@
 @interface ZNRestoreViewController ()
 
 @property (nonatomic, strong) IBOutlet UITextView *textView;
+@property (nonatomic, strong) IBOutlet UILabel *label;
+
 @property (nonatomic, strong) NSSet *words;
 
 @end
@@ -31,14 +33,19 @@
     //self.textView.layer.masksToBounds = NO;
     
     if (self.navigationController.viewControllers[0] == self) {
-        self.textView.layer.borderColor = [[UIColor colorWithWhite:0.85 alpha:1.0] CGColor];
+#if ! DARK_THEME
+        self.textView.layer.borderColor = [[UIColor colorWithWhite:0.0 alpha:0.15] CGColor];
         self.textView.layer.borderWidth = 1.0;
 
         [self.navigationController.navigationBar
          setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor lightGrayColor],
                                   UITextAttributeTextShadowColor:[UIColor whiteColor],
                                   UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
-                                  UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:19.0]}];
+                                  UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue" size:19.0]}];
+#else
+        self.label.textColor = [UIColor whiteColor];
+        self.label.shadowColor = [UIColor colorWithWhite:0.0 alpha:0.15];
+#endif
 
         if ([self.navigationController.navigationBar respondsToSelector:@selector(shadowImage)]) {
             [self.navigationController.navigationBar setShadowImage:[UIImage new]];

@@ -111,12 +111,25 @@
             [self setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
             [self setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
             
-            self.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-UltraLight" size:32];
+            self.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-UltraLight" size:40];
 
             break;
+            
+        case ZNButtonStyleNone:
+            self.layer.shadowOpacity = 0.0;
+            [self setBackgroundImage:nil forState:UIControlStateNormal];
+            [self setBackgroundImage:nil forState:UIControlStateHighlighted];
+            [self setBackgroundImage:nil forState:UIControlStateDisabled];
+            
+            [self setTitleColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0] forState:UIControlStateNormal];
+            [self setTitleColor:[UIColor colorWithRed:0.0 green:0.25 blue:0.5 alpha:1.0]
+             forState:UIControlStateHighlighted];
+            [self setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
+            
+            self.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:17];
     }
 
-    self.titleLabel.shadowOffset = CGSizeMake(0.0, 0.0);    
+    self.titleLabel.shadowOffset = CGSizeMake(0.0, 0.0);
     self.titleLabel.adjustsFontSizeToFitWidth = YES;
     self.titleLabel.numberOfLines = 1;
     self.titleLabel.lineBreakMode = NSLineBreakByClipping;

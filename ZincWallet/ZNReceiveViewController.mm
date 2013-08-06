@@ -10,11 +10,13 @@
 #import "ZNPaymentRequest.h"
 #import "ZNWallet.h"
 #import "QREncoder.h"
+#import "ZNButton.h"
 
 @interface ZNReceiveViewController ()
 
 @property (nonatomic, strong) IBOutlet UIImageView *qrView;
-@property (nonatomic, strong) IBOutlet UIButton *addressButton;
+@property (nonatomic, strong) IBOutlet ZNButton *addressButton;
+@property (nonatomic, strong) IBOutlet UILabel *label;
 
 //@property (nonatomic, strong) IBOutlet UIActivityIndicatorView *spinner;
 //@property (nonatomic, strong) IBOutlet UILabel *waitingLabel;
@@ -35,9 +37,14 @@
 
     // Do any additional setup after loading the view, typically from a nib.
     
-    self.addressButton.titleLabel.adjustsFontSizeToFitWidth = YES;
-    self.addressButton.titleLabel.numberOfLines = 1;
-    
+#if DARK_THEME
+    self.label.textColor = [UIColor colorWithWhite:1.0 alpha:0.9];
+    self.label.shadowColor = [UIColor colorWithWhite:0.0 alpha:0.15];
+    self.label.center = CGPointMake(self.label.center.x, self.label.center.y + 5);
+    self.label.font = [UIFont fontWithName:@"HelveticaNueue" size:19.0];
+#else
+    self.addressButton.style = ZNButtonStyleNone;
+#endif
 //    self.format = [NSNumberFormatter new];
 //    self.format.numberStyle = NSNumberFormatterCurrencyStyle;
 //    self.format.currencySymbol = BTC;
@@ -138,12 +145,20 @@
     
     if (nav) {
         [self.navController presentViewController:nav animated:YES completion:nil];
-        nav.view.backgroundColor = [UIColor whiteColor];
+        nav.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default.png"]];
+#if DARK_THEME
+        nav.navigationBar.titleTextAttributes =
+            @{UITextAttributeTextColor:[UIColor whiteColor],
+              UITextAttributeTextShadowColor:[UIColor colorWithWhite:0.0 alpha:0.15],
+              UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
+              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Medium" size:19.0]};
+#else
         nav.navigationBar.titleTextAttributes =
             @{UITextAttributeTextColor:[UIColor lightGrayColor],
               UITextAttributeTextShadowColor:[UIColor whiteColor],
               UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
-              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:19.0]};
+              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Medium" size:19.0]};
+#endif
     }
 }
 

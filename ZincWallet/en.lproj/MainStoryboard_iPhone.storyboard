@@ -452,11 +452,11 @@
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <view contentMode="scaleToFill" id="Sib-FI-j3a">
-                                <rect key="frame" x="0.0" y="136" width="320" height="338"/>
+                                <rect key="frame" x="0.0" y="126" width="320" height="340"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <subviews>
                                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="receive address:" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Lel-6K-GPE">
-                                        <rect key="frame" x="19" y="2" width="280" height="21"/>
+                                        <rect key="frame" x="20" y="2" width="280" height="21"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
                                         <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
@@ -465,7 +465,7 @@
                                         <size key="shadowOffset" width="0.0" height="1"/>
                                     </label>
                                     <view contentMode="scaleToFill" id="PTx-pR-mJh">
-                                        <rect key="frame" x="34" y="37" width="250" height="250"/>
+                                        <rect key="frame" x="35" y="37" width="250" height="250"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" id="XIj-dt-3QU">
@@ -474,14 +474,14 @@
                                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                             </view>
                                         </subviews>
-                                        <color key="backgroundColor" white="0.84999999999999998" alpha="1" colorSpace="calibratedWhite"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                     </view>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" id="ckp-Du-ZrM">
-                                        <rect key="frame" x="34" y="37" width="250" height="250"/>
+                                        <rect key="frame" x="35" y="37" width="250" height="250"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     </imageView>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="jE8-Jd-YjS">
-                                        <rect key="frame" x="0.0" y="300" width="320" height="33"/>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="jE8-Jd-YjS" customClass="ZNButton">
+                                        <rect key="frame" x="20" y="300" width="280" height="40"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="15"/>
                                         <inset key="titleEdgeInsets" minX="10" minY="0.0" maxX="10" maxY="0.0"/>
@@ -495,7 +495,7 @@
                                             <color key="titleShadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         </state>
                                         <state key="highlighted">
-                                            <color key="titleColor" red="0.0" green="0.23921568627450979" blue="0.47843137254901957" alpha="1" colorSpace="calibratedRGB"/>
+                                            <color key="titleColor" red="0.0" green="0.49803921568627452" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                             <color key="titleShadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         </state>
                                         <connections>
@@ -511,6 +511,7 @@
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" barStyle="blackTranslucent" prompted="NO"/>
                     <connections>
                         <outlet property="addressButton" destination="jE8-Jd-YjS" id="1Sm-IF-r4B"/>
+                        <outlet property="label" destination="Lel-6K-GPE" id="9Jk-td-n2G"/>
                         <outlet property="qrView" destination="ckp-Du-ZrM" id="ZZX-Ms-xWf"/>
                     </connections>
                 </viewController>
@@ -539,7 +540,7 @@
                             <view contentMode="scaleToFill" id="zOV-94-bRb">
                                 <rect key="frame" x="20" y="105" width="280" height="1"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                                <color key="backgroundColor" white="0.84999999999999998" alpha="1" colorSpace="calibratedWhite"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
                             </view>
                             <view contentMode="scaleToFill" id="9qR-Wg-jDs">
                                 <rect key="frame" x="20" y="106" width="280" height="1"/>
@@ -839,7 +840,7 @@
                             <view contentMode="scaleToFill" id="Yvb-wQ-n9r">
                                 <rect key="frame" x="20" y="501" width="280" height="1"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                                <color key="backgroundColor" white="0.84999999999999998" alpha="1" colorSpace="calibratedWhite"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
                             </view>
                             <view contentMode="scaleToFill" id="nI1-PW-zIW">
                                 <rect key="frame" x="20" y="502" width="280" height="1"/>
@@ -859,7 +860,7 @@
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                     </view>
                     <navigationItem key="navigationItem" title="mɃ 0.00000" id="Ufy-kA-8Fw">
-                        <barButtonItem key="rightBarButtonItem" title="Pay" id="D8w-gf-PFI">
+                        <barButtonItem key="rightBarButtonItem" title="pay" id="D8w-gf-PFI">
                             <color key="tintColor" white="0.94999999999999996" alpha="1" colorSpace="calibratedWhite"/>
                             <connections>
                                 <action selector="pay:" destination="asW-9a-XhX" id="422-mA-SEl"/>
@@ -870,6 +871,7 @@
                     <connections>
                         <outlet property="addressLabel" destination="2Hb-Bj-uBt" id="3mg-RW-NcY"/>
                         <outlet property="amountField" destination="U70-Jh-YtO" id="PPC-gE-dUn"/>
+                        <outlet property="delButton" destination="1V7-p4-mo1" id="UVB-WS-Sec"/>
                         <outlet property="payButton" destination="D8w-gf-PFI" id="U6a-qQ-dYf"/>
                         <outletCollection property="buttons" destination="GNd-qX-qoG" id="AfP-L4-Yle"/>
                         <outletCollection property="buttonRow1" destination="T4X-DS-NEf" id="jCB-yR-3GW"/>
@@ -922,7 +924,7 @@
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="WRITE IT DOWN and keep it safe. Lose it and your bitcoins are gone forever." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="u8B-dk-OsH">
                                 <rect key="frame" x="20" y="124" width="280" height="42"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="15"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
                                 <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
                                 <nil key="highlightedColor"/>
                                 <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -941,7 +943,7 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                 </subviews>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                <color key="backgroundColor" white="1" alpha="0.67000000000000004" colorSpace="custom" customColorSpace="calibratedWhite"/>
                             </view>
                             <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Wallet backup phrases also work in the Electrum bitcoin client and brainwallet.org/#chains" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="SHe-lM-jN1">
                                 <rect key="frame" x="40" y="450" width="240" height="63"/>
@@ -984,8 +986,12 @@
                     <connections>
                         <outlet property="compatiblityLabel" destination="SHe-lM-jN1" id="TnK-9e-fBR"/>
                         <outlet property="labelFrame" destination="rln-83-F8o" id="aCq-6m-usI"/>
+                        <outlet property="logo" destination="gZK-WH-4nS" id="4Ki-Fi-VKg"/>
                         <outlet property="seedLabel" destination="G6I-gf-wQK" id="xZ9-MU-iLm"/>
                         <outlet property="wallpaper" destination="19u-ww-OAk" id="OCl-Ct-Aq2"/>
+                        <outletCollection property="otherLabels" destination="0Dr-uM-kcV" id="0n9-kY-7eN"/>
+                        <outletCollection property="otherLabels" destination="u8B-dk-OsH" id="QAU-Vd-lER"/>
+                        <outletCollection property="otherLabels" destination="SHe-lM-jN1" id="9fO-1c-Bf8"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="FoE-LD-Loz" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1031,7 +1037,7 @@
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" id="FFW-ZQ-rzj">
                                 <rect key="frame" x="12" y="112" width="296" height="204"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" heightSizable="YES"/>
-                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.67000000000000004" colorSpace="calibratedRGB"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="yes" returnKeyType="done" enablesReturnKeyAutomatically="YES"/>
                                 <connections>
@@ -1050,6 +1056,7 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="label" destination="DYH-TG-7mB" id="iEZ-4u-Hmw"/>
                         <outlet property="textView" destination="FFW-ZQ-rzj" id="deN-Gs-r66"/>
                     </connections>
                 </viewController>
@@ -1090,8 +1097,12 @@
         <class className="ZNAmountViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNAmountViewController.h"/>
             <relationships>
+                <relationship kind="action" name="del:"/>
+                <relationship kind="action" name="number:"/>
+                <relationship kind="action" name="pay:"/>
                 <relationship kind="outlet" name="addressLabel" candidateClass="UILabel"/>
                 <relationship kind="outlet" name="amountField" candidateClass="UITextField"/>
+                <relationship kind="outlet" name="delButton" candidateClass="UIButton"/>
                 <relationship kind="outlet" name="payButton" candidateClass="UIBarButtonItem"/>
                 <relationship kind="outlet" name="spinner" candidateClass="UIActivityIndicatorView"/>
                 <relationship kind="outletCollection" name="buttonRow1" candidateClass="UIButton"/>
@@ -1119,6 +1130,7 @@
         <class className="ZNRestoreViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNRestoreViewController.h"/>
             <relationships>
+                <relationship kind="outlet" name="label" candidateClass="UILabel"/>
                 <relationship kind="outlet" name="textView" candidateClass="UITextView"/>
             </relationships>
         </class>
@@ -1127,8 +1139,10 @@
             <relationships>
                 <relationship kind="outlet" name="compatiblityLabel" candidateClass="UILabel"/>
                 <relationship kind="outlet" name="labelFrame" candidateClass="UIView"/>
+                <relationship kind="outlet" name="logo" candidateClass="UIImageView"/>
                 <relationship kind="outlet" name="seedLabel" candidateClass="UILabel"/>
                 <relationship kind="outlet" name="wallpaper" candidateClass="UIImageView"/>
+                <relationship kind="outletCollection" name="otherLabels" candidateClass="UILabel"/>
             </relationships>
         </class>
         <class className="ZNSettingsViewController" superclassName="UITableViewController">
@@ -1140,7 +1154,6 @@
                 <relationship kind="outlet" name="logo" candidateClass="UIImageView"/>
                 <relationship kind="outlet" name="paralax" candidateClass="UIView"/>
                 <relationship kind="outlet" name="restoreButton" candidateClass="UIButton"/>
-                <relationship kind="outlet" name="shadow" candidateClass="UIImageView"/>
                 <relationship kind="outlet" name="walletButton" candidateClass="UIButton"/>
                 <relationship kind="outlet" name="wallpaper" candidateClass="UIImageView"/>
             </relationships>
