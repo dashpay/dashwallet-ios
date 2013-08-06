@@ -36,6 +36,7 @@
 #if ! DARK_THEME
         self.textView.layer.borderColor = [[UIColor colorWithWhite:0.0 alpha:0.15] CGColor];
         self.textView.layer.borderWidth = 1.0;
+        self.textView.textColor = [UIColor darkGrayColor];
 
         [self.navigationController.navigationBar
          setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor lightGrayColor],

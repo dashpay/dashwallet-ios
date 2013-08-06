@@ -296,10 +296,10 @@
                     //cell.contentView.backgroundColor =
                     //    [UIColor colorWithPatternImage:[UIImage imageNamed:@"redgradient.png"]];
                     cell.textLabel.text = @"restore or start a new wallet";
-#if DARK_THEME
-                    cell.textLabel.textColor = [UIColor whiteColor];
-#else
                     cell.textLabel.textColor = [UIColor redColor];
+#if DARK_THEME
+                    cell.backgroundView = [[UIView alloc] initWithFrame:cell.frame];
+                    cell.backgroundView.backgroundColor = [UIColor colorWithRed:0.75 green:0.87 blue:1.0 alpha:.85];
 #endif
                     cell.textLabel.shadowColor = [UIColor clearColor];
                     cell.selectedBackgroundView = [[UIView alloc] initWithFrame:cell.frame];

@@ -775,8 +775,8 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
     
     [self layoutButtonsAnimated:YES];
     
-    [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription delegate:nil
-                      cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+    //[[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription delegate:nil
+    //                  cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
 }
 
 - (void)receiveData:(NSData *)data fromPeer:(NSString *)peer inSession:(GKSession *)session context:(void *)context

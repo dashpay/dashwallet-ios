@@ -108,7 +108,7 @@
                 constrainedToSize:CGSizeMake(self.seedLabel.frame.size.width, CGFLOAT_MAX)];
     
     self.labelFrame.frame = CGRectMake(self.labelFrame.frame.origin.x, self.view.frame.size.height/2 - s.height/2 - 11,
-                                       self.labelFrame.frame.size.width, s.height + 22);
+                                       self.labelFrame.frame.size.width, s.height + 24);
 }
 
 - (void)viewWillDisappear:(BOOL)animated
