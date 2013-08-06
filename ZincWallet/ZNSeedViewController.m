@@ -36,6 +36,8 @@
     self.logo.contentMode = UIViewContentModeCenter;
     self.logo.alpha = 0.9;
     
+    self.seedLabel.textColor = [UIColor colorWithRed:0.0 green:0.33 blue:0.67 alpha:1.0];
+    
     [self.otherLabels enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         [obj setTextColor:[UIColor whiteColor]];
         [obj setShadowColor:[UIColor colorWithWhite:0.0 alpha:0.15]];

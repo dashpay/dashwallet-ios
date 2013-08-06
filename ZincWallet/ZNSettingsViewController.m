@@ -158,6 +158,26 @@
             localCurrencyLabel = (id)[cell viewWithTag:5];
             sentLabel = (id)[cell viewWithTag:6];
 
+#if DARK_THEME
+            textLabel.textColor = [UIColor whiteColor];
+            textLabel.shadowColor = [UIColor colorWithWhite:0.0 alpha:0.15];
+            
+            localCurrencyLabel.textColor = [UIColor whiteColor];
+            localCurrencyLabel.shadowColor = [UIColor colorWithWhite:0.0 alpha:0.15];
+            
+            detailTextLabel.textColor = [UIColor colorWithWhite:1.0 alpha:0.75];
+            detailTextLabel.shadowColor = [UIColor colorWithWhite:0.0 alpha:0.15];
+            
+            unconfirmedLabel.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.67];
+            unconfirmedLabel.textColor = [UIColor colorWithRed:0 green:0.33 blue:0.67 alpha:1.0];
+            
+            sentLabel.textColor = [UIColor whiteColor];
+            sentLabel.shadowColor = [UIColor colorWithWhite:0.0 alpha:0.15];
+            
+            noTxLabel.textColor = [UIColor colorWithWhite:1.0 alpha:0.67];
+            noTxLabel.shadowColor = [UIColor colorWithWhite:0.0 alpha:0.15];
+#endif
+
             if (! self.transactions.count) {
                 noTxLabel.hidden = NO;
                 textLabel.text = nil;
@@ -233,7 +253,7 @@
                 f.size.width = [unconfirmedLabel.text sizeWithFont:unconfirmedLabel.font].width + 10;
                 unconfirmedLabel.frame = f;
                                 
-                if (! detailTextLabel.text) detailTextLabel.text = @"can't decode payment address";                
+                if (! detailTextLabel.text) detailTextLabel.text = @"can't decode payment address";
             }
             break;
             
@@ -249,6 +269,12 @@
                     cell.textLabel.text = @"backup phrase";
                     cell.userInteractionEnabled = YES;
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+#if DARK_THEME
+                    cell.textLabel.textColor = [UIColor whiteColor];
+                    cell.textLabel.highlightedTextColor = [UIColor colorWithRed:0.0 green:0.33 blue:0.67 alpha:1.0];
+                    cell.selectedBackgroundView = [[UIView alloc] initWithFrame:cell.frame];
+                    cell.selectedBackgroundView.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.67];
+#endif
                     break;
                     
                 case 1:
@@ -270,7 +296,11 @@
                     //cell.contentView.backgroundColor =
                     //    [UIColor colorWithPatternImage:[UIImage imageNamed:@"redgradient.png"]];
                     cell.textLabel.text = @"restore or start a new wallet";
+#if DARK_THEME
+                    cell.textLabel.textColor = [UIColor whiteColor];
+#else
                     cell.textLabel.textColor = [UIColor redColor];
+#endif
                     cell.textLabel.shadowColor = [UIColor clearColor];
                     cell.selectedBackgroundView = [[UIView alloc] initWithFrame:cell.frame];
                     cell.selectedBackgroundView.backgroundColor =
@@ -349,13 +379,21 @@
     UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(10, 0, self.view.frame.size.width - 20, 22.0)];;
     
     l.text = [self tableView:tableView titleForHeaderInSection:section];
-    l.font = [UIFont fontWithName:@"HelveticaNeue-Medium" size:15];
     l.backgroundColor = [UIColor clearColor];
-    l.textColor = [UIColor whiteColor];
-    l.shadowColor = [UIColor lightGrayColor];
-    l.shadowOffset = CGSizeMake(0.0, 1.0);
+#if DARK_THEME
+    l.font = [UIFont fontWithName:@"HelveticaNeue" size:15];
+    l.textColor = [UIColor colorWithRed:0.0 green:0.33 blue:0.67 alpha:1.0];
     
-    v.backgroundColor = [UIColor colorWithWhite:0.75 alpha:0.9];
+    //v.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.67];
+    v.backgroundColor = [UIColor colorWithRed:0.75 green:0.87 blue:1.0 alpha:.85];
+#else
+    l.font = [UIFont fontWithName:@"HelveticaNeue-Medium" size:15];
+    l.textColor = [UIColor whiteColor];
+    l.shadowColor = [UIColor colorWithWhite:0.0 alpha:0.15];
+    l.shadowOffset = CGSizeMake(0.0, 1.0);
+
+    v.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.67];
+#endif
     [v addSubview:l];
     
     return v;

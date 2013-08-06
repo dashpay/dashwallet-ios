@@ -45,6 +45,7 @@
 #else
         self.label.textColor = [UIColor whiteColor];
         self.label.shadowColor = [UIColor colorWithWhite:0.0 alpha:0.15];
+        self.textView.textColor = [UIColor colorWithRed:0.0 green:0.33 blue:0.67 alpha:1.0];
 #endif
 
         if ([self.navigationController.navigationBar respondsToSelector:@selector(shadowImage)]) {
