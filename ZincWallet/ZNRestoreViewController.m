@@ -23,6 +23,27 @@
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+    
+    self.textView.layer.cornerRadius = 5.0;
+    //self.textView.layer.shadowRadius = 15.0;
+    //self.textView.layer.shadowOpacity = 0.1;
+    //self.textView.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+    //self.textView.layer.masksToBounds = NO;
+    
+    if (self.navigationController.viewControllers[0] == self) {
+        self.textView.layer.borderColor = [[UIColor colorWithWhite:0.85 alpha:1.0] CGColor];
+        self.textView.layer.borderWidth = 1.0;
+
+        [self.navigationController.navigationBar
+         setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor lightGrayColor],
+                                  UITextAttributeTextShadowColor:[UIColor whiteColor],
+                                  UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
+                                  UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:19.0]}];
+
+        if ([self.navigationController.navigationBar respondsToSelector:@selector(shadowImage)]) {
+            [self.navigationController.navigationBar setShadowImage:[UIImage new]];
+        }
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -30,15 +51,6 @@
     [super viewWillAppear:animated];
     
     //XXXX iOS 5 has a resizing bug, put in a fix here
-    self.textView.layer.borderColor = [UIColor colorWithWhite:0.85 alpha:1.0].CGColor;
-    self.textView.layer.borderWidth = 0.5;
-    self.textView.layer.cornerRadius = 5.0;
-
-    //self.textView.layer.shadowColor = [[UIColor blackColor] CGColor];
-    self.textView.layer.shadowRadius = 2.0;
-    self.textView.layer.shadowOpacity = 0.1;
-    self.textView.layer.shadowOffset = CGSizeMake(0.0, 1.0);
-    self.textView.layer.masksToBounds = NO;
 
     [self.textView becomeFirstResponder];
 }

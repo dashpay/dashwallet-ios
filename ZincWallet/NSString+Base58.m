@@ -10,9 +10,7 @@
 #import "NSData+Hash.h"
 #import <openssl/bn.h>
 
-const char base58chars[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-
-void *secureAllocate(CFIndex allocSize, CFOptionFlags hint, void *info)
+static void *secureAllocate(CFIndex allocSize, CFOptionFlags hint, void *info)
 {
     NSMutableDictionary *d = (__bridge NSMutableDictionary *)info;
     void *ptr = CFAllocatorAllocate(kCFAllocatorDefault, allocSize, hint);
@@ -24,7 +22,7 @@ void *secureAllocate(CFIndex allocSize, CFOptionFlags hint, void *info)
     else return NULL;
 }
 
-void secureDeallocate(void *ptr, void *info)
+static void secureDeallocate(void *ptr, void *info)
 {
     NSMutableDictionary *d = (__bridge NSMutableDictionary *)info;
     NSValue *key = [NSValue valueWithPointer:ptr];
@@ -37,7 +35,7 @@ void secureDeallocate(void *ptr, void *info)
     }
 }
 
-void *secureReallocate(void *ptr, CFIndex newsize, CFOptionFlags hint, void *info)
+static void *secureReallocate(void *ptr, CFIndex newsize, CFOptionFlags hint, void *info)
 {
     // There's no way to tell ahead of time if there's enough space for the reallocation, or if the original memory
     // will be deallocted, so just cleanse and deallocate every time.
@@ -80,6 +78,8 @@ CFAllocatorRef SecureAllocator()
     
     return alloc;
 }
+
+const char base58chars[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
 @implementation NSString (Base58)
 
@@ -130,6 +130,7 @@ CFAllocatorRef SecureAllocator()
 - (NSData *)base58ToData
 {
     NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), self.length*138/100 + 1));
+    unsigned int b;
     BN_CTX *ctx = BN_CTX_new();
     BIGNUM base, x, y;
     
@@ -144,7 +145,7 @@ CFAllocatorRef SecureAllocator()
     }
         
     for (NSUInteger i = 0; i < self.length; i++) {
-        unsigned int b = [self characterAtIndex:i];
+        b = [self characterAtIndex:i];
 
         switch (b) {
             case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
@@ -183,6 +184,7 @@ breakout:
     d.length += BN_num_bytes(&x);
     BN_bn2bin(&x, (unsigned char *)d.mutableBytes + d.length - BN_num_bytes(&x));
 
+    b = 0;
     BN_clear_free(&y);
     BN_clear_free(&x);
     BN_free(&base);
@@ -235,7 +237,6 @@ breakout:
 {
     return [NSString hexWithData:[self base58checkToData]];
 }
-
 
 - (NSData *)hexToData
 {

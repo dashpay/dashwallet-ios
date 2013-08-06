@@ -8,6 +8,7 @@
 
 #import "ZNAppDelegate.h"
 #import "NSString+Base58.h"
+#import <MessageUI/MessageUI.h>
 
 @implementation ZNAppDelegate
 
@@ -18,8 +19,6 @@
     [self keepUpAppearances];
 
     //XXX need to upgrade openssl (and other libs) to latest
-    
-    //XXX switch to socketrocket from zootreves's webview hack
     
     //XXX need to implement pin code
 
@@ -90,48 +89,58 @@ annotation:(id)annotation
 
 - (void)keepUpAppearances
 {
+    const float mask[6] = { 222, 255, 222, 255, 222, 255 };
+
+    [[UINavigationBar appearance]
+     setBackgroundImage:[UIImage imageWithCGImage:CGImageCreateWithMaskingColors([[UIImage new] CGImage], mask)]
+     forBarMetrics:UIBarMetricsDefault];
+
+    [[UINavigationBar appearance]
+     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor whiteColor],
+                              UITextAttributeTextShadowColor:[UIColor colorWithRed:0 green:0 blue:0 alpha:0.15],
+                              UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
+                              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Medium" size:19.0]}];
+
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque];
     
-    if ([UIDevice.currentDevice.systemVersion intValue] < 7) {
-        // HelveticaNeue-Medium is missing the BTC char :(
-        [[UINavigationBar appearance]
-         setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor lightGrayColor],
-                                  UITextAttributeTextShadowColor:[UIColor whiteColor],
-                                  UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
-                                  UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:19.0]}];
+    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
+     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0],
+                              UITextAttributeTextShadowColor:[UIColor whiteColor],
+                              UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 0.0)],
+                              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
+     forState:UIControlStateNormal];
+        
+    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
+     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor colorWithRed:0.0 green:0.25 blue:0.5 alpha:1.0],
+                              UITextAttributeTextShadowColor:[UIColor whiteColor],
+                              UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 0.0)],
+                              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
+     forState:UIControlStateHighlighted];
+
+    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
+     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor lightGrayColor],
+                              UITextAttributeTextShadowColor:[UIColor whiteColor],
+                              UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 0.0)],
+                              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
+     forState:UIControlStateDisabled];
     
-        [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
-         setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0],
-                                  UITextAttributeTextShadowColor:[UIColor whiteColor],
-                                  UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
-                                  UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
-         forState:UIControlStateNormal];
-        
-        [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
-         setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor colorWithRed:0.0 green:0.25 blue:0.5 alpha:1.0],
-                                  UITextAttributeTextShadowColor:[UIColor whiteColor],
-                                  UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 0.0)],
-                                  UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
-         forState:UIControlStateHighlighted];
-        
-        [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
-         setBackButtonBackgroundImage:[[UIImage imageNamed:@"back-bg.png"]
-                                       resizableImageWithCapInsets:UIEdgeInsetsMake(14.0, 15.0, 16.0, 5.0)]
-         forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
+     setBackButtonBackgroundImage:[[UIImage imageNamed:@"back-bg.png"]
+                                   resizableImageWithCapInsets:UIEdgeInsetsMake(14.0, 15.0, 16.0, 5.0)]
+     forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
 
-        [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
-         setBackButtonBackgroundImage:[[UIImage imageNamed:@"back-bg-pressed.png"]
-                                       resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 15.0, 15.0, 5.0)]
-         forState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
+    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
+     setBackButtonBackgroundImage:[[UIImage imageNamed:@"back-bg-pressed.png"]
+                                   resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 15.0, 15.0, 5.0)]
+     forState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
 
-        [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
-         setBackButtonTitlePositionAdjustment:UIOffsetMake(0.0, -4.0) forBarMetrics:UIBarMetricsDefault];
+    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
+     setBackButtonTitlePositionAdjustment:UIOffsetMake(0.0, -2.0) forBarMetrics:UIBarMetricsDefault];
 
-        [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
-         setBackgroundImage:[[UIImage imageNamed:@"button-bg-clear.png"]
-                             resizableImageWithCapInsets:UIEdgeInsetsMake(14.0, 5.0, 16.0, 5.0)]
-         forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
-    }
+    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
+     setBackgroundImage:[[UIImage imageNamed:@"button-bg-clear.png"]
+                         resizableImageWithCapInsets:UIEdgeInsetsMake(14.0, 5.0, 16.0, 5.0)]
+     forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];    
 }
 
 #pragma mark - CBCentralManagerDelegate

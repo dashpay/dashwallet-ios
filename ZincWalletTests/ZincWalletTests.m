@@ -157,8 +157,14 @@
     STAssertEqualObjects(d, @"80cbce0d719ecf7431d88e6a89fa1483e02e35092af60c042b1df2ff59fa424dca01".hexToData,
                          @"[ZNBIP32Sequence privateKey:internal:fromSeed:]");
 
-    //NSData *pubKey = [[ZNKey keyWithPrivateKey:pk] publicKey];
-    // should be 0357bfe1e341d01c69fe5654309956cbea516822fba8a601743a012a7896ee8dc2
+    // Test for correct zero padding of private keys, a *very* nasty potential bug
+    pk = [seq privateKey:97 internal:NO fromSeed:seed];
+    d = [pk base58checkToData];
+
+    NSLog(@"000102030405060708090a0b0c0d0e0f/0'/0/97 prv = %@", [NSString hexWithData:d]);
+
+    STAssertEqualObjects(d, @"8000136c1ad038f9a00871895322a487ed14f1cdc4d22ad351cfa1a0d235975dd701".hexToData,
+                         @"[ZNBIP32Sequence privateKey:internal:fromSeed:]");
 }
 
 - (void)testBIP32SequenceMasterPublicKeyFromSeed
@@ -259,19 +265,19 @@
 - (void)testElectrumSequencePrivateKey
 {
     ZNElectrumSequence *seq = [ZNElectrumSequence new];
-    NSString *privkey = [seq privateKey:0 internal:NO fromSeed:@"00000000000000000000000000000000".hexToData];
+    NSString *pk = [seq privateKey:0 internal:NO fromSeed:@"00000000000000000000000000000000".hexToData];
     
-    NSLog(@"privateKey:0 = %@", privkey);
+    NSLog(@"privateKey:0 = %@", pk);
     
-    STAssertEqualObjects(privkey, @"5Khs7w6fBkogoj1v71Mdt4g8m5kaEyRaortmK56YckgTubgnrhz",
+    STAssertEqualObjects(pk, @"5Khs7w6fBkogoj1v71Mdt4g8m5kaEyRaortmK56YckgTubgnrhz",
                          @"[ZNElecturmSequence privateKey:forChange:fromSeed:]");
 
-    // this tests a private key that starts with 0x00
-    privkey = [seq privateKey:64 internal:NO fromSeed:@"00000000000000000000000000000000".hexToData];
+    // Test for correct zero padding of private keys
+    pk = [seq privateKey:64 internal:NO fromSeed:@"00000000000000000000000000000000".hexToData];
 
-    NSLog(@"privateKey:64 = %@ = 0x%@", privkey, [privkey base58checkToHex]);
+    NSLog(@"privateKey:64 = %@ = 0x%@", pk, pk.base58checkToHex);
 
-    STAssertEqualObjects(privkey, @"5HpiKboFc3pPXwWND5SCjPjnojCLLv9i9nTp8HWEZqZsraKmkPu",
+    STAssertEqualObjects(pk.base58checkToHex, @"8000f7f216a82f6beb105728dbbc29e2c13446bfa1078b7bef6e0ceff2c8a1e774",
                          @"[ZNElecturmSequence privateKey:forChange:fromSeed:]");    
 }
 

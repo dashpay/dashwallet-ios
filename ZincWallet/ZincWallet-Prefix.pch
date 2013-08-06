@@ -19,6 +19,7 @@
 #define BTC @"Ƀ"
 #define SATOSHIS 100000000.0
 #define DEFAULT_SYNC_INTERVAL 300
+#define PARALAX_RATIO 0.25
 
 #define bitcoinURLNotification @"bitcoinURLNotification"
 
@@ -26,8 +27,4 @@
 
 #define OPENSSL_NO_HW
 #define OPENSSL_NO_GOST
-
-#define HAVE_CXX_STDHEADERS
-
-#define MSG_NOSIGNAL SO_NOSIGPIPE
 

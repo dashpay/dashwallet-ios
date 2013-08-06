@@ -40,8 +40,6 @@
     
     [self.buttons enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         [(ZNButton *)obj setStyle:ZNButtonStyleGray];
-        [obj titleLabel].font = [UIFont fontWithName:@"HelveticaNeue-UltraLight" size:32];
-        [obj setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     }];
 
     self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];

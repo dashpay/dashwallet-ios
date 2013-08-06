@@ -40,48 +40,62 @@
 
 - (void)setStyle:(ZNButtonStyle)style
 {
-    static UIImage *bg = nil, *pressed = nil, *disabled = nil, *white = nil, *blue = nil;
+    static UIImage *bg = nil, *pressed = nil, *disabled = nil;
+    static UIImage *white = nil, *whitepressed = nil, *blue = nil, *bluepressed = nil;
     
     if (! bg) {
         bg = [[UIImage imageNamed:@"button-bg.png"]
               resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 5.0, 15.0, 5.0)];
-    }
-    
-    if (! pressed) {
         pressed = [[UIImage imageNamed:@"button-bg-pressed.png"]
                    resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 5.0, 15.0, 5.0)];
-    }
-    
-    if (! disabled) {
         disabled = [[UIImage imageNamed:@"button-bg-disabled.png"]
                     resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 5.0, 15.0, 5.0)];
-    }
-    
-    if (! white) {
         white = [[UIImage imageNamed:@"button-bg-white.png"]
                  resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 5.0, 15.0, 5.0)];
-    }
-    
-    if (! blue) {
+        whitepressed = [[UIImage imageNamed:@"button-bg-white-pressed.png"]
+                        resizableImageWithCapInsets:UIEdgeInsetsMake(22.0, 5.0, 22.0, 5.0)];
         blue = [[UIImage imageNamed:@"button-bg-blue.png"]
                 resizableImageWithCapInsets:UIEdgeInsetsMake(22.0, 5.0, 22.0, 5.0)];
+        bluepressed = [[UIImage imageNamed:@"button-bg-blue-pressed.png"]
+                       resizableImageWithCapInsets:UIEdgeInsetsMake(22.0, 5.0, 22.0, 5.0)];
     }
     
     switch (style) {
+        case ZNButtonStyleWhite:
+            self.layer.shadowRadius = 3.0;
+            self.layer.shadowOpacity = 0.15;
+            self.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+            
+            [self setBackgroundImage:white forState:UIControlStateNormal];
+            //[self setBackgroundImage:nil forState:UIControlStateNormal];
+            [self setBackgroundImage:whitepressed forState:UIControlStateHighlighted];
+            [self setBackgroundImage:disabled forState:UIControlStateDisabled];
+            
+            [self setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+            //[self setTitleColor:[UIColor colorWithRed:1.0 green:0.5 blue:0.0 alpha:1.0]
+            // forState:UIControlStateHighlighted];
+            [self setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
+            
+            self.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:17];
+            
+            break;
+
         case ZNButtonStyleBlue:
             self.layer.shadowRadius = 2.0;
-            self.layer.shadowOpacity = 0.25;
+            self.layer.shadowOpacity = 0.1;
             self.layer.shadowOffset = CGSizeMake(0.0, 1.0);
 
             [self setBackgroundImage:blue forState:UIControlStateNormal];
-            [self setBackgroundImage:white forState:UIControlStateHighlighted];
+            [self setBackgroundImage:bluepressed forState:UIControlStateHighlighted];
             [self setBackgroundImage:disabled forState:UIControlStateDisabled];
 
             [self setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
             [self setTitleColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0]
-                                 forState:UIControlStateHighlighted];
+             forState:UIControlStateHighlighted];
             [self setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
             
+            self.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:17];
+
             break;
             
         case ZNButtonStyleGray:
@@ -93,20 +107,20 @@
             [self setBackgroundImage:pressed forState:UIControlStateHighlighted];
             [self setBackgroundImage:disabled forState:UIControlStateDisabled];
             
-            [self setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
+            [self setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
             [self setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
             [self setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
             
+            self.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-UltraLight" size:32];
+
             break;
     }
 
-    self.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:17];
     self.titleLabel.shadowOffset = CGSizeMake(0.0, 0.0);    
     self.titleLabel.adjustsFontSizeToFitWidth = YES;
     self.titleLabel.numberOfLines = 1;
     self.titleLabel.lineBreakMode = NSLineBreakByClipping;
-    
-    [self setTitleEdgeInsets:UIEdgeInsetsMake(0, 5, 0, 5)];
+    self.titleEdgeInsets = UIEdgeInsetsMake(0, 5, 0, 5);
 }
 
 @end

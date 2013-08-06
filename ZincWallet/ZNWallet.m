@@ -439,7 +439,7 @@ static NSData *getKeychainData(NSString *key)
         }
     }
     
-    if (newaddresses.count) [self subscribeToAddresses:newaddresses];
+    if (newaddresses.count) dispatch_async(dispatch_get_main_queue(), ^{ [self subscribeToAddresses:newaddresses]; });
     
     return addresses;
 }

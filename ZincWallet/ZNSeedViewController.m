@@ -15,6 +15,7 @@
 //TODO: create a secure version of UILabel and use it for seedLabel
 @property (nonatomic, strong) IBOutlet UILabel *seedLabel, *compatiblityLabel;
 @property (nonatomic, strong) IBOutlet UIView *labelFrame;
+@property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
 
 @property (nonatomic, strong) id resignActiveObserver;
 
@@ -28,8 +29,23 @@
     // Do any additional setup after loading the view.
     
     self.labelFrame.layer.cornerRadius = 5.0;
-    self.labelFrame.layer.borderWidth = 0.5;
     self.labelFrame.layer.borderColor = [[UIColor colorWithWhite:0.85 alpha:1.0] CGColor];
+    self.labelFrame.layer.borderWidth = 1.0;
+    //self.labelFrame.layer.shadowRadius = 15.0;
+    //self.labelFrame.layer.shadowOpacity = 0.1;
+    //self.labelFrame.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+    //self.labelFrame.layer.masksToBounds = NO;
+    
+    if (self.navigationController.viewControllers[0] == self) {
+        self.wallpaper.hidden = NO;
+        
+        if ([self.navigationController.navigationBar respondsToSelector:@selector(shadowImage)]) {
+            [self.navigationController.navigationBar setShadowImage:[UIImage new]];
+        }
+    }
+    else {
+        self.wallpaper.hidden = YES;
+    }
     
     self.resignActiveObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
@@ -62,6 +78,11 @@
     }
     else {
         self.navigationItem.rightBarButtonItem = nil;
+#if WALLET_BIP32
+        self.compatiblityLabel.hidden = YES; // BIP32 isn't compatible with very much yet :(
+#else
+        self.compatiblityLabel.hidden = NO;
+#endif
     }
 
     self.seedLabel.text = [[ZNWallet sharedInstance] seedPhrase];
@@ -113,7 +134,7 @@
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    self.navigationController.modalTransitionStyle = UIModalTransitionStyleFlipHorizontal;
+    self.navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
     [self.navigationController.presentingViewController.presentingViewController dismissViewControllerAnimated:YES
      completion:nil];
 }

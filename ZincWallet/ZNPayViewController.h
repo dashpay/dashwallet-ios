@@ -10,6 +10,7 @@
 #import <GameKit/GameKit.h>
 #import "ZBarReaderController.h"
 
-@interface ZNPayViewController : UIViewController <GKSessionDelegate, UIAlertViewDelegate, ZBarReaderDelegate>
+@interface ZNPayViewController : UIViewController <GKSessionDelegate, UIAlertViewDelegate,
+UINavigationControllerDelegate, ZBarReaderDelegate>
 
 @end

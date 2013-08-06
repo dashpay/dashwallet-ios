@@ -35,13 +35,13 @@
 
     // Do any additional setup after loading the view, typically from a nib.
     
+    self.addressButton.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.addressButton.titleLabel.numberOfLines = 1;
+    
 //    self.format = [NSNumberFormatter new];
 //    self.format.numberStyle = NSNumberFormatterCurrencyStyle;
 //    self.format.currencySymbol = BTC;
 //    [self.format setLenient:YES];
-    
-    self.addressButton.titleLabel.adjustsFontSizeToFitWidth = YES;
-    self.addressButton.titleLabel.numberOfLines = 1;
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -57,6 +57,21 @@
                          imageDimension:self.qrView.frame.size.width];
     
     [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
+}
+
+- (ZNPaymentRequest *)paymentRequest
+{
+    // This should use official payment request protocol when finalized
+    
+    return [ZNPaymentRequest requestWithString:self.paymentAddress];
+
+    //    ZNPaymentRequest *req = [ZNPaymentRequest new];
+    //    req.paymentAddress = self.paymentAddress;
+    //    req.amount = self.amount;
+    //    req.message = self.message;
+    //    req.label = self.label;
+    //
+    //    return req;
 }
 
 - (NSString *)paymentAddress
@@ -79,18 +94,73 @@
 //    return ([[self.format numberFromString:self.amountField.text] doubleValue] + DBL_EPSILON)*SATOSHIS;
 //}
 //
-- (ZNPaymentRequest *)paymentRequest
-{
-    // This should use official payment request protocol when finalized
 
-    return [ZNPaymentRequest requestWithString:self.paymentAddress];
-//    ZNPaymentRequest *req = [ZNPaymentRequest new];
-//    req.paymentAddress = self.paymentAddress;
-//    req.amount = self.amount;
-//    req.message = self.message;
-//    req.label = self.label;
-//
-//    return req;
+#pragma mark - UIActionSheetDelegate
+
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    UINavigationController *nav = nil;
+    NSString *title = [actionSheet buttonTitleAtIndex:buttonIndex];
+    
+    
+    if ([title isEqual:@"copy"]) {
+        _copiedAddress = [self paymentAddress];
+        [[UIPasteboard generalPasteboard] setString:[self paymentAddress]];
+    }
+    else if ([title isEqual:@"email"]) {
+        if ([MFMailComposeViewController canSendMail]) {
+            MFMailComposeViewController *c = [MFMailComposeViewController new];
+            
+            [c setSubject:@"Bitcoin address"];
+            [c setMessageBody:[@"bitcoin://" stringByAppendingString:[self paymentAddress]] isHTML:NO];
+            c.mailComposeDelegate = self;
+            nav = c;
+            [self.navController presentViewController:c animated:YES completion:nil];
+        }
+        else {
+            [[[UIAlertView alloc] initWithTitle:nil message:@"email not configured on this device" delegate:nil
+              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        }
+    }
+    else if ([title isEqual:@"sms"]) {
+        if ([MFMessageComposeViewController canSendText]) {
+            MFMessageComposeViewController *c = [MFMessageComposeViewController new];
+            
+            c.body = [@"bitcoin://" stringByAppendingString:[self paymentAddress]];
+            c.messageComposeDelegate = self;
+            nav = c;
+        }
+        else {
+            [[[UIAlertView alloc] initWithTitle:nil message:@"sms not currently available on this device" delegate:nil
+              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        }
+    }
+    
+    if (nav) {
+        [self.navController presentViewController:nav animated:YES completion:nil];
+        nav.view.backgroundColor = [UIColor whiteColor];
+        nav.navigationBar.titleTextAttributes =
+            @{UITextAttributeTextColor:[UIColor lightGrayColor],
+              UITextAttributeTextShadowColor:[UIColor whiteColor],
+              UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
+              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:19.0]};
+    }
+}
+
+#pragma mark - MFMessageComposeViewControllerDelegate
+
+- (void)messageComposeViewController:(MFMessageComposeViewController *)controller
+didFinishWithResult:(MessageComposeResult)result
+{
+    [self.navController dismissViewControllerAnimated:YES completion:nil];
+}
+
+#pragma mark - MFMailComposeViewControllerDelegate
+
+- (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result
+error:(NSError *)error
+{
+    [self.navController dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - IBAction
@@ -125,10 +195,10 @@
 //    self.session.delegate = self;
 //    [self.session setDataReceiveHandler:self withContext:nil];
 //    self.session.available = YES;
-//    
+//
 //    [self.spinner startAnimating];
 //    [self.requestButton setTitle:@"cancel" forState:UIControlStateNormal];
-//    
+//
 //    [UIView animateWithDuration:0.2 animations:^{
 //        self.amountField.alpha = 0.0;
 //        self.messageField.alpha = 0.0;
@@ -142,10 +212,10 @@
 //    [self.session disconnectFromAllPeers];
 //    self.session = nil;
 //    self.peer = nil;
-//    
+//
 //    [self.spinner stopAnimating];
 //    [self.requestButton setTitle:@"request payment" forState:UIControlStateNormal];
-//    
+//
 //    [UIView animateWithDuration:0.2 animations:^{
 //        self.amountField.alpha = 1.0;
 //        self.messageField.alpha = 1.0;
@@ -162,7 +232,7 @@
 //- (IBAction)del:(id)sender
 //{
 //    if (! self.amountField.text.length) return;
-//    
+//
 //    [self textField:self.amountField shouldChangeCharactersInRange:NSMakeRange(self.amountField.text.length - 1, 1)
 //     replacementString:@""];
 //}
@@ -176,71 +246,18 @@
 //        textField.text = [textField.text substringToIndex:textField.text.length - 1];
 //
 //    NSInteger amount = [[self.format numberFromString:textField.text] integerValue];
-//        
+//
 //    if (amount > 99999999) string = @"";
-//    
+//
 //    for (int i = 0; i < string.length; i++) amount = amount*10 + string.integerValue;
-//    
+//
 //    textField.text = amount ? [_format stringFromNumber:@(amount/100.0)] : nil;
-//    
+//
 //    self.requestButton.enabled = (textField.text != nil);
-//    
+//
 //    return NO;
 //}
-
-#pragma mark - UIActionSheetDelegate
-
-- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-    NSString *title = [actionSheet buttonTitleAtIndex:buttonIndex];
-    
-    if ([title isEqual:@"copy"]) {
-        _copiedAddress = [self paymentAddress];
-        [[UIPasteboard generalPasteboard] setString:[self paymentAddress]];
-    }
-    else if ([title isEqual:@"email"]) {
-        if ([MFMailComposeViewController canSendMail]) {
-            MFMailComposeViewController *c = [MFMailComposeViewController new];
-            [c setSubject:@"Bitcoin address"];
-            [c setMessageBody:[@"bitcoin://" stringByAppendingString:[self paymentAddress]] isHTML:NO];
-            c.mailComposeDelegate = self;
-            [self.navController presentViewController:c animated:YES completion:nil];
-        }
-        else {
-            [[[UIAlertView alloc] initWithTitle:nil message:@"email not configured on this device" delegate:nil
-              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-        }
-    }
-    else if ([title isEqual:@"sms"]) {
-        if ([MFMessageComposeViewController canSendText]) {
-            MFMessageComposeViewController *c = [MFMessageComposeViewController new];
-            c.body = [@"bitcoin://" stringByAppendingString:[self paymentAddress]];
-            c.messageComposeDelegate = self;
-            [self.navController presentViewController:c animated:YES completion:nil];
-        }
-        else {
-            [[[UIAlertView alloc] initWithTitle:nil message:@"sms not currently available on this device" delegate:nil
-              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-        }
-    }
-}
-
-#pragma mark - MFMessageComposeViewControllerDelegate
-
-- (void)messageComposeViewController:(MFMessageComposeViewController *)controller
-didFinishWithResult:(MessageComposeResult)result
-{
-    [self.navController dismissViewControllerAnimated:YES completion:nil];
-}
-
-#pragma mark - MFMailComposeViewControllerDelegate
-
-- (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result
-error:(NSError *)error
-{
-    [self.navController dismissViewControllerAnimated:YES completion:nil];
-}
-
+//
 //#pragma mark - GKSessionDelegate
 //
 //// Indicates a state change for the given peer.

@@ -21,22 +21,22 @@
     if (! seed) return nil;
     
     // Electurm uses a hex representation of the seed instead of the seed itself
-    NSString *hex = [NSString hexWithData:seed];
+    NSString *s = [NSString hexWithData:seed];
     NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 0));
     
-    d.length = hex.length*2;
-    [hex getBytes:d.mutableBytes maxLength:hex.length usedLength:NULL encoding:NSUTF8StringEncoding options:0
-     range:NSMakeRange(0, hex.length) remainingRange:NULL];
-    [hex getBytes:(char *)d.mutableBytes + hex.length maxLength:hex.length usedLength:NULL encoding:NSUTF8StringEncoding
-     options:0 range:NSMakeRange(0, hex.length) remainingRange:NULL];
+    d.length = s.length*2;
+    [s getBytes:d.mutableBytes maxLength:s.length usedLength:NULL encoding:NSUTF8StringEncoding options:0
+     range:NSMakeRange(0, s.length) remainingRange:NULL];
+    [s getBytes:(unsigned char *)d.mutableBytes + s.length maxLength:s.length usedLength:NULL
+     encoding:NSUTF8StringEncoding options:0 range:NSMakeRange(0, s.length) remainingRange:NULL];
     
     if (d.length < CC_SHA256_DIGEST_LENGTH) d.length = CC_SHA256_DIGEST_LENGTH;
     
     CC_SHA256(d.bytes, d.length, d.mutableBytes);
     
-    d.length = CC_SHA256_DIGEST_LENGTH + hex.length;
-    [hex getBytes:(char *)d.mutableBytes + CC_SHA256_DIGEST_LENGTH maxLength:hex.length usedLength:NULL
-     encoding:NSUTF8StringEncoding options:0 range:NSMakeRange(0, hex.length) remainingRange:NULL];
+    d.length = CC_SHA256_DIGEST_LENGTH + s.length;
+    [s getBytes:(unsigned char *)d.mutableBytes + CC_SHA256_DIGEST_LENGTH maxLength:s.length usedLength:NULL
+     encoding:NSUTF8StringEncoding options:0 range:NSMakeRange(0, s.length) remainingRange:NULL];
     
     unsigned char *md = d.mutableBytes;
     CC_LONG l = d.length;
@@ -78,6 +78,7 @@
 {
     if (! masterPublicKey) return nil;
 
+    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 0));
     NSData *z = [self sequence:n internal:internal masterPublicKey:masterPublicKey];
     BN_CTX *ctx = BN_CTX_new();
     BIGNUM zbn;
@@ -85,7 +86,6 @@
     EC_POINT *masterPubKeyPoint = EC_POINT_new(group), *pubKeyPoint = EC_POINT_new(group),
              *zPoint = EC_POINT_new(group);
     uint8_t form = EC_GROUP_get_point_conversion_form(group);
-    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 0));
 
     [d appendBytes:&form length:1];
     [d appendData:masterPublicKey];
@@ -115,17 +115,17 @@
 {
     if (! seed || ! n.count) return @[];
 
-    NSMutableArray *ret = [NSMutableArray arrayWithCapacity:n.count];
+    NSMutableArray *a = [NSMutableArray arrayWithCapacity:n.count];
     NSData *secexp = [self stretchKey:seed];
     NSData *_mpk = [[ZNKey keyWithSecret:secexp compressed:NO] publicKey];
     NSData *mpk = [NSData dataWithBytesNoCopy:(unsigned char *)_mpk.bytes + 1 length:_mpk.length - 1 freeWhenDone:NO];
     BN_CTX *ctx = BN_CTX_new();
+    __block BIGNUM sequencebn, secexpbn, order;
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
-    __block BIGNUM order, sequencebn, secexpbn;
 
-    BN_init(&order);
     BN_init(&sequencebn);
     BN_init(&secexpbn);
+    BN_init(&order);
     EC_GROUP_get_order(group, &order, ctx);
     
     [n enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
@@ -141,16 +141,15 @@
         *(unsigned char *)pk.mutableBytes = 0x80;
         BN_bn2bin(&secexpbn, (unsigned char *)pk.mutableBytes + pk.length - BN_num_bytes(&secexpbn));
         
-        [ret addObject:[NSString base58checkWithData:pk]];
+        [a addObject:[NSString base58checkWithData:pk]];
     }];
     
+    EC_GROUP_free(group);
+    BN_free(&order);
     BN_clear_free(&secexpbn);
     BN_clear_free(&sequencebn);
-    BN_free(&order);
-    EC_GROUP_free(group);
     BN_CTX_free(ctx);
-
-    return ret;
+    return a;
 }
 
 @end

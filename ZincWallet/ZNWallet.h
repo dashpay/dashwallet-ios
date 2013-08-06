@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-#define WALLET_BIP32 YES
+#define WALLET_BIP32 1
 
 #define ADDRESSES_PER_QUERY 100 // maximum number of addresses to request in a single query
 

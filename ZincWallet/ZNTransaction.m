@@ -35,10 +35,8 @@
     self.hashes = [NSMutableArray array];
     self.indexes = [NSMutableArray array];
     self.scripts = [NSMutableArray array];
-    
     self.addresses = [NSMutableArray array];
     self.amounts = [NSMutableArray array];
-    
     self.signatures = [NSMutableArray array];
     
     return self;

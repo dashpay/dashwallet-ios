@@ -17,6 +17,8 @@
 
 @property (nonatomic, strong) NSArray *transactions;
 @property (nonatomic, strong) id balanceObserver;
+@property (nonatomic, strong) UIImageView *wallpaper;
+@property (nonatomic, assign) CGPoint wallpaperStart;
 
 @end
 
@@ -26,15 +28,6 @@
 //XXX also for local currency, and exchange rate source
 
 //XXX only show most recent 10-20 transactions and have a separate page for the rest with section headers for each day
-
-- (id)initWithStyle:(UITableViewStyle)style
-{
-    self = [super initWithStyle:style];
-    if (self) {
-        // Custom initialization
-    }
-    return self;
-}
 
 - (void)viewDidLoad
 {
@@ -47,10 +40,7 @@
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 
     ZNWallet *w = [ZNWallet sharedInstance];
-    
-    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
-                                 [w localCurrencyStringForAmount:w.balance]];
-    
+        
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:walletBalanceNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
@@ -62,6 +52,28 @@
             [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
              withRowAnimation:UITableViewRowAnimationAutomatic];
         }];
+    
+    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
+                                 [w localCurrencyStringForAmount:w.balance]];
+    
+    // HelveticaNeue-Medium is missing the BTC char :(
+    [self.navigationController.navigationBar
+     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor lightGrayColor],
+                              UITextAttributeTextShadowColor:[UIColor whiteColor],
+                              UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
+                              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:19.0]}];
+
+    if ([self.navigationController.navigationBar respondsToSelector:@selector(shadowImage)]) {
+        [self.navigationController.navigationBar setShadowImage:[UIImage new]];
+    }
+    
+    self.navigationController.navigationBar.clipsToBounds = YES;
+    
+    self.wallpaper = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"wallpaper-default.png"]];
+    self.wallpaperStart = self.wallpaper.center = CGPointMake(self.wallpaper.center.x, self.wallpaper.center.y + 20);
+    [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
+    
+    self.navigationController.delegate = self;
 }
 
 - (void)viewWillUnload
@@ -76,12 +88,24 @@
     self.transactions = [[ZNWallet sharedInstance] recentTransactions];
 }
 
-- (void)didReceiveMemoryWarning
+- (void)viewDidAppear:(BOOL)animated
 {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+    [super viewDidAppear:animated];
+    
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"wallpaper-default.png"]
+     forBarMetrics:UIBarMetricsDefault];
 }
 
+- (void)viewWillDisappear:(BOOL)animated
+{
+    const float mask[6] = { 222, 255, 222, 255, 222, 255 };
+    
+    [self.navigationController.navigationBar
+     setBackgroundImage:[UIImage imageWithCGImage:CGImageCreateWithMaskingColors([[UIImage new] CGImage], mask)]
+     forBarMetrics:UIBarMetricsDefault];
+
+    [super viewWillDisappear:animated];
+}
 #pragma mark - IBAction
 
 - (IBAction)done:(id)sender
@@ -291,7 +315,8 @@
                     return 44;
 
                 case 1:
-                    h = tableView.frame.size.height - 22*3 - self.navigationController.navigationBar.frame.size.height -
+                    h = tableView.frame.size.height - 22*3 -
+                        self.navigationController.navigationBar.frame.size.height*2 -
                         (self.transactions.count ? self.transactions.count*TRANSACTION_CELL_HEIGHT :
                          TRANSACTION_CELL_HEIGHT);
                     return h > 0 ? h : 0;
@@ -370,6 +395,27 @@
             NSAssert(FALSE, @"[%s %s] line %d: unkown indexPath.section %d", object_getClassName(self),
                      sel_getName(_cmd), __LINE__, indexPath.section);
     }
+}
+
+#pragma mark - UINavigationControllerDelegate
+
+- (void)navigationController:(UINavigationController *)navigationController
+didShowViewController:(UIViewController *)viewController animated:(BOOL)animated
+{
+}
+
+- (void)navigationController:(UINavigationController *)navigationController
+willShowViewController:(UIViewController *)viewController animated:(BOOL)animated
+{
+    if (! animated) return;
+    
+    [UIView animateWithDuration:UINavigationControllerHideShowBarDuration*2 animations:^{
+        if (viewController != self) {
+            self.wallpaper.center = CGPointMake(self.wallpaperStart.x - self.view.frame.size.width*PARALAX_RATIO,
+                                                self.wallpaperStart.y);
+        }
+        else self.wallpaper.center = self.wallpaperStart;
+    }];
 }
 
 #pragma mark - UIAlertViewDelegate

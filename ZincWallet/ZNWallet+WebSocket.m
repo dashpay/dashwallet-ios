@@ -43,6 +43,8 @@
 
 @end
 
+//XXXX switch to socketrocket from zootreves's webview hack
+
 @implementation ZNWallet (WebSocket)
 
 - (void)openSocket

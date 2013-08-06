@@ -83,25 +83,25 @@
     if (secret.length != 32 || ! _key) return;
     
     BN_CTX *ctx = BN_CTX_new();
+    BIGNUM priv;
     const EC_GROUP *group = EC_KEY_get0_group(_key);
     EC_POINT *pub = EC_POINT_new(group);
-    BIGNUM priv;
     
     BN_init(&priv);
     
     if (pub && ctx) {
         BN_bin2bn(secret.bytes, 32, &priv);
+        
         if (EC_POINT_mul(group, pub, &priv, NULL, NULL, ctx)) {
             EC_KEY_set_private_key(_key, &priv);
             EC_KEY_set_public_key(_key, pub);
+            EC_KEY_set_conv_form(_key, compressed ? POINT_CONVERSION_COMPRESSED : POINT_CONVERSION_UNCOMPRESSED);
         }
     }
     
-    BN_clear_free(&priv);
     if (pub) EC_POINT_free(pub);
+    BN_clear_free(&priv);
     if (ctx) BN_CTX_free(ctx);
-    
-    EC_KEY_set_conv_form(_key, compressed ? POINT_CONVERSION_COMPRESSED : POINT_CONVERSION_UNCOMPRESSED);
 }
 
 - (void)setPrivateKey:(NSString *)privateKey
@@ -115,7 +115,7 @@
     }
     else if ((d.length == 33 || d.length == 34) && *(unsigned char *)d.bytes == 0x80) {
         [self setSecret:[NSData dataWithBytesNoCopy:(unsigned char *)d.bytes + 1 length:32 freeWhenDone:NO]
-         compressed:d.length == 34];
+         compressed:d.length == 34 ? YES : NO];
     }
 }
 
@@ -163,7 +163,7 @@
 {
     NSData *hash = [self hash160];
     
-    if (! hash) return nil;
+    if (! hash.length) return nil;
 
     NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), hash.length + 1));
     uint8_t version = BITCOIN_TESTNET ? BITCOIN_PUBKEY_ADDRESS_TEST : BITCOIN_PUBKEY_ADDRESS;
@@ -198,7 +198,7 @@
 - (BOOL)verify:(NSData *)d signature:(NSData *)sig
 {
     // -1 = error, 0 = bad sig, 1 = good
-    return ECDSA_verify(0, d.bytes, d.length, sig.bytes, sig.length, _key) == 1;
+    return ECDSA_verify(0, d.bytes, d.length, sig.bytes, sig.length, _key) == 1 ? YES : NO;
 }
 
 @end
