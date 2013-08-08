@@ -30,7 +30,7 @@
     // Do any additional setup after loading the view.
     
 #if DARK_THEME
-    self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"refresh-white.png"];
+//    self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"refresh-white.png"];
 
     self.logo.image = [UIImage imageNamed:@"zincwallet-white.png"];
     self.logo.contentMode = UIViewContentModeCenter;

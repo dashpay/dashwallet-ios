@@ -1093,69 +1093,6 @@
         <image name="zincwallet-white@2x.png" width="176" height="36"/>
         <image name="zincwallet@2x.png" width="168" height="30"/>
     </resources>
-    <classes>
-        <class className="ZNAmountViewController" superclassName="UIViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNAmountViewController.h"/>
-            <relationships>
-                <relationship kind="outlet" name="addressLabel" candidateClass="UILabel"/>
-                <relationship kind="outlet" name="amountField" candidateClass="UITextField"/>
-                <relationship kind="outlet" name="delButton" candidateClass="UIButton"/>
-                <relationship kind="outlet" name="payButton" candidateClass="UIBarButtonItem"/>
-                <relationship kind="outlet" name="spinner" candidateClass="UIActivityIndicatorView"/>
-                <relationship kind="outletCollection" name="buttonRow1" candidateClass="UIButton"/>
-                <relationship kind="outletCollection" name="buttonRow2" candidateClass="UIButton"/>
-                <relationship kind="outletCollection" name="buttonRow3" candidateClass="UIButton"/>
-                <relationship kind="outletCollection" name="buttons" candidateClass="UIButton"/>
-            </relationships>
-        </class>
-        <class className="ZNButton" superclassName="UIButton">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNButton.h"/>
-        </class>
-        <class className="ZNPayViewController" superclassName="UIViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNPayViewController.h"/>
-            <relationships>
-                <relationship kind="outlet" name="pageControl" candidateClass="UIPageControl"/>
-                <relationship kind="outlet" name="refreshButton" candidateClass="UIBarButtonItem"/>
-                <relationship kind="outlet" name="scrollView" candidateClass="UIScrollView"/>
-                <relationship kind="outlet" name="spinner" candidateClass="UIActivityIndicatorView"/>
-                <relationship kind="outlet" name="wallpaper" candidateClass="UIImageView"/>
-            </relationships>
-        </class>
-        <class className="ZNReceiveViewController" superclassName="UIViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNReceiveViewController.h"/>
-        </class>
-        <class className="ZNRestoreViewController" superclassName="UIViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNRestoreViewController.h"/>
-            <relationships>
-                <relationship kind="outlet" name="label" candidateClass="UILabel"/>
-                <relationship kind="outlet" name="textView" candidateClass="UITextView"/>
-            </relationships>
-        </class>
-        <class className="ZNSeedViewController" superclassName="UIViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNSeedViewController.h"/>
-            <relationships>
-                <relationship kind="outlet" name="compatiblityLabel" candidateClass="UILabel"/>
-                <relationship kind="outlet" name="labelFrame" candidateClass="UIView"/>
-                <relationship kind="outlet" name="logo" candidateClass="UIImageView"/>
-                <relationship kind="outlet" name="seedLabel" candidateClass="UILabel"/>
-                <relationship kind="outlet" name="wallpaper" candidateClass="UIImageView"/>
-                <relationship kind="outletCollection" name="otherLabels" candidateClass="UILabel"/>
-            </relationships>
-        </class>
-        <class className="ZNSettingsViewController" superclassName="UITableViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNSettingsViewController.h"/>
-        </class>
-        <class className="ZNWelcomeViewController" superclassName="UIViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNWelcomeViewController.h"/>
-            <relationships>
-                <relationship kind="outlet" name="logo" candidateClass="UIImageView"/>
-                <relationship kind="outlet" name="paralax" candidateClass="UIView"/>
-                <relationship kind="outlet" name="restoreButton" candidateClass="UIButton"/>
-                <relationship kind="outlet" name="walletButton" candidateClass="UIButton"/>
-                <relationship kind="outlet" name="wallpaper" candidateClass="UIImageView"/>
-            </relationships>
-        </class>
-    </classes>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>
         <simulatedOrientationMetrics key="orientation"/>

@@ -103,6 +103,13 @@
     //self.payButton.enabled = self.amountField.text.length ? YES : NO;
 }
 
+- (void)viewWillDisappear:(BOOL)animated
+{
+    self.request.amount = 0;
+    
+    [super viewWillDisappear:animated];
+}
+
 #pragma mark - IBAction
 
 - (IBAction)number:(id)sender

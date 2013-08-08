@@ -182,17 +182,19 @@
 #if DARK_THEME
     [self.navigationController.navigationBar
      setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor colorWithWhite:0.9 alpha:1.0],
-     UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:19.0]}];
+                              UITextAttributeTextShadowColor:[UIColor colorWithWhite:0.0 alpha:0.15],
+                              UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
+                              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue" size:19.0]}];
     
     self.spinner.color = [UIColor whiteColor];
-    self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"gear-white.png"];
-    self.navigationItem.rightBarButtonItem.image = [UIImage imageNamed:@"refresh-white.png"];
+//    self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"gear-white.png"];
+//    self.navigationItem.rightBarButtonItem.image = [UIImage imageNamed:@"refresh-white.png"];
 #else
     [self.navigationController.navigationBar
      setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor lightGrayColor],
                               UITextAttributeTextShadowColor:[UIColor whiteColor],
                               UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
-                              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:19.0]}];
+                              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue" size:19.0]}];
 #endif
 
     if ([self.navigationController.navigationBar respondsToSelector:@selector(shadowImage)]) {

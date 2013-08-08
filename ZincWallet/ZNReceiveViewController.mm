@@ -40,11 +40,12 @@
 #if DARK_THEME
     self.label.textColor = [UIColor colorWithWhite:1.0 alpha:0.9];
     self.label.shadowColor = [UIColor colorWithWhite:0.0 alpha:0.15];
-    self.label.center = CGPointMake(self.label.center.x, self.label.center.y + 5);
+//    self.label.center = CGPointMake(self.label.center.x, self.label.center.y + 5);
     self.label.font = [UIFont fontWithName:@"HelveticaNueue" size:19.0];
-#else
-    self.addressButton.style = ZNButtonStyleNone;
+//#else
+
 #endif
+    self.addressButton.style = ZNButtonStyleNone;
 //    self.format = [NSNumberFormatter new];
 //    self.format.numberStyle = NSNumberFormatterCurrencyStyle;
 //    self.format.currencySymbol = BTC;
