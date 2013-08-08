@@ -273,7 +273,11 @@
                     cell.textLabel.textColor = [UIColor whiteColor];
                     cell.textLabel.highlightedTextColor = [UIColor colorWithRed:0.0 green:0.33 blue:0.67 alpha:1.0];
                     cell.selectedBackgroundView = [[UIView alloc] initWithFrame:cell.frame];
-                    cell.selectedBackgroundView.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.67];
+                    cell.selectedBackgroundView.backgroundColor =
+                        [UIColor colorWithRed:0.75 green:0.87 blue:1.0 alpha:.85];
+#else
+                    cell.backgroundView = [[UIView alloc] initWithFrame:cell.frame];
+                    cell.backgroundView.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.67];
 #endif
                     break;
                     
@@ -295,16 +299,19 @@
                 case 0:
                     //cell.contentView.backgroundColor =
                     //    [UIColor colorWithPatternImage:[UIImage imageNamed:@"redgradient.png"]];
+
                     cell.textLabel.text = @"restore or start a new wallet";
                     cell.textLabel.textColor = [UIColor redColor];
-#if DARK_THEME
-                    cell.backgroundView = [[UIView alloc] initWithFrame:cell.frame];
-                    cell.backgroundView.backgroundColor = [UIColor colorWithRed:0.75 green:0.87 blue:1.0 alpha:.85];
-#endif
                     cell.textLabel.shadowColor = [UIColor clearColor];
                     cell.selectedBackgroundView = [[UIView alloc] initWithFrame:cell.frame];
                     cell.selectedBackgroundView.backgroundColor =
                         [UIColor colorWithPatternImage:[UIImage imageNamed:@"redgradient.png"]];
+                    cell.backgroundView = [[UIView alloc] initWithFrame:cell.frame];
+#if DARK_THEME
+                    cell.backgroundView.backgroundColor = [UIColor colorWithRed:0.75 green:0.87 blue:1.0 alpha:.85];
+#else
+                    cell.backgroundView.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.67];
+#endif
                     break;
                                         
                 default:
@@ -388,11 +395,11 @@
     v.backgroundColor = [UIColor colorWithRed:0.75 green:0.87 blue:1.0 alpha:.85];
 #else
     l.font = [UIFont fontWithName:@"HelveticaNeue-Medium" size:15];
-    l.textColor = [UIColor whiteColor];
-    l.shadowColor = [UIColor colorWithWhite:0.0 alpha:0.15];
+    l.textColor = [UIColor lightGrayColor];
+    l.shadowColor = [UIColor colorWithWhite:1.0 alpha:1.0];
     l.shadowOffset = CGSizeMake(0.0, 1.0);
 
-    v.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.67];
+    v.backgroundColor = [UIColor colorWithWhite:0.9 alpha:0.85];
 #endif
     [v addSubview:l];
     

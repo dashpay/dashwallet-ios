@@ -21,7 +21,7 @@
 #define DEFAULT_SYNC_INTERVAL 300
 #define PARALAX_RATIO 0.25
 
-#define DARK_THEME 1
+//#define DARK_THEME 1
 
 #define bitcoinURLNotification @"bitcoinURLNotification"
 
