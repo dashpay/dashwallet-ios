@@ -181,7 +181,7 @@
     // HelveticaNeue-Medium is missing the BTC char :(
 #if DARK_THEME
     [self.navigationController.navigationBar
-     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor colorWithWhite:0.9 alpha:1.0],
+     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor colorWithWhite:1.0 alpha:1.0],
                               UITextAttributeTextShadowColor:[UIColor colorWithWhite:0.0 alpha:0.15],
                               UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
                               UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue" size:19.0]}];
@@ -191,7 +191,7 @@
 //    self.navigationItem.rightBarButtonItem.image = [UIImage imageNamed:@"refresh-white.png"];
 #else
     [self.navigationController.navigationBar
-     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor lightGrayColor],
+     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor grayColor],
                               UITextAttributeTextShadowColor:[UIColor whiteColor],
                               UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
                               UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue" size:19.0]}];
@@ -375,11 +375,12 @@
             }
             
             if ([self.requestIDs[idx] isEqual:QR_ID]) {
-                [obj setImage:[UIImage imageNamed:@"cameraguide-small.png"] forState:UIControlStateNormal];
-                [obj setImage:[UIImage imageNamed:@"cameraguide-blue-small.png"] forState:UIControlStateHighlighted];
+                [obj setImage:[UIImage imageNamed:@"cameraguide-blue-small.png"] forState:UIControlStateNormal];
+                [obj setImage:[UIImage imageNamed:@"cameraguide-small.png"] forState:UIControlStateHighlighted];
             }
             else {
                 [obj setImage:nil forState:UIControlStateNormal];
+                [obj setImage:nil forState:UIControlStateHighlighted];
             }
         }];
     };

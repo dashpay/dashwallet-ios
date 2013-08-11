@@ -52,7 +52,7 @@
     [self.buttons enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         [(ZNButton *)obj setStyle:ZNButtonStyleWhite];
         [[obj titleLabel] setFont:[UIFont fontWithName:@"HelveticaNeue-UltraLight" size:50]];
-        [obj setTitleColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0] forState:UIControlStateHighlighted];
+        [obj setTitleColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0] forState:UIControlStateNormal];
     }];
     
     self.spinner.color = [UIColor whiteColor];

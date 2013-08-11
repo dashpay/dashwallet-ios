@@ -64,7 +64,7 @@
                               UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue" size:19.0]}];
 #else
     [self.navigationController.navigationBar
-     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor lightGrayColor],
+     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor grayColor],
                               UITextAttributeTextShadowColor:[UIColor whiteColor],
                               UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
                               UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue" size:19.0]}];
@@ -217,6 +217,8 @@
                 sentLabel.hidden = YES;
                 unconfirmedLabel.hidden = NO;
                 unconfirmedLabel.layer.cornerRadius = 3.0;
+                sentLabel.layer.cornerRadius = 3.0;
+                sentLabel.layer.borderWidth = 0.5;
                 
                 if (tx[@"block_height"]) height = w.lastBlockHeight - [tx[@"block_height"] unsignedIntegerValue];
                 
@@ -242,19 +244,24 @@
                     localCurrencyLabel.text =
                         [NSString stringWithFormat:@"(%@)", [w localCurrencyStringForAmount:received - spent]];
                     sentLabel.text = @"sent";
+                    sentLabel.textColor = [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.67];
                 }
                 else {
                     textLabel.text = [w stringForAmount:received];
                     localCurrencyLabel.text =
                        [NSString stringWithFormat:@"(%@)", [w localCurrencyStringForAmount:received]];
                     sentLabel.text = @"recieved";
+                    sentLabel.textColor = [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
                 }
 
                 CGRect f = unconfirmedLabel.frame;
                 
                 f.size.width = [unconfirmedLabel.text sizeWithFont:unconfirmedLabel.font].width + 10;
                 unconfirmedLabel.frame = f;
-                                
+                f.size.width = [sentLabel.text sizeWithFont:sentLabel.font].width + 10;
+                sentLabel.frame = f;
+                sentLabel.layer.borderColor = sentLabel.textColor.CGColor;
+                
                 if (! detailTextLabel.text) detailTextLabel.text = @"can't decode payment address";
             }
             break;
@@ -396,8 +403,8 @@
     //v.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.67];
     v.backgroundColor = [UIColor colorWithRed:0.75 green:0.87 blue:1.0 alpha:.85];
 #else
-    l.font = [UIFont fontWithName:@"HelveticaNeue-Medium" size:15];
-    l.textColor = [UIColor lightGrayColor];
+    l.font = [UIFont fontWithName:@"HelveticaNeue" size:15];
+    l.textColor = [UIColor grayColor];
     l.shadowColor = [UIColor colorWithWhite:1.0 alpha:1.0];
     l.shadowOffset = CGSizeMake(0.0, 1.0);
 

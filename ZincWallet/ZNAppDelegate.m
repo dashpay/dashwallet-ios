@@ -138,16 +138,16 @@ annotation:(id)annotation
 //#else
     [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
      setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0],
-     UITextAttributeTextShadowColor:[UIColor whiteColor],
-     UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 0.0)],
-     UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
+                              UITextAttributeTextShadowColor:[UIColor whiteColor],
+                              UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 0.0)],
+                              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
      forState:UIControlStateNormal];
     
     [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
      setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor colorWithRed:0.0 green:0.25 blue:0.5 alpha:1.0],
-     UITextAttributeTextShadowColor:[UIColor whiteColor],
-     UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 0.0)],
-     UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
+                              UITextAttributeTextShadowColor:[UIColor whiteColor],
+                              UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 0.0)],
+                              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
      forState:UIControlStateHighlighted];
 
     [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]

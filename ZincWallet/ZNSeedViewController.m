@@ -43,8 +43,8 @@
         [obj setShadowColor:[UIColor colorWithWhite:0.0 alpha:0.15]];
     }];
 #else
-    self.labelFrame.layer.borderColor = [[UIColor colorWithWhite:0.0 alpha:0.15] CGColor];
-    self.labelFrame.layer.borderWidth = 1.0;
+    self.labelFrame.layer.borderColor = [[UIColor colorWithWhite:0.0 alpha:0.25] CGColor];
+    self.labelFrame.layer.borderWidth = 0.5;
 #endif
     self.labelFrame.layer.cornerRadius = 5.0;
 

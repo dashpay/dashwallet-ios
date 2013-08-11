@@ -155,10 +155,10 @@
               UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Medium" size:19.0]};
 #else
         nav.navigationBar.titleTextAttributes =
-            @{UITextAttributeTextColor:[UIColor lightGrayColor],
+            @{UITextAttributeTextColor:[UIColor grayColor],
               UITextAttributeTextShadowColor:[UIColor whiteColor],
               UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
-              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Medium" size:19.0]};
+              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue" size:19.0]};
 #endif
     }
 }

@@ -34,12 +34,12 @@
     
     if (self.navigationController.viewControllers[0] == self) {
 #if ! DARK_THEME
-        self.textView.layer.borderColor = [[UIColor colorWithWhite:0.0 alpha:0.15] CGColor];
-        self.textView.layer.borderWidth = 1.0;
-        self.textView.textColor = [UIColor darkGrayColor];
+        self.textView.layer.borderColor = [[UIColor colorWithWhite:0.0 alpha:0.25] CGColor];
+        self.textView.layer.borderWidth = 0.5;
+        self.textView.textColor = [UIColor blackColor];
 
         [self.navigationController.navigationBar
-         setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor lightGrayColor],
+         setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor grayColor],
                                   UITextAttributeTextShadowColor:[UIColor whiteColor],
                                   UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
                                   UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue" size:19.0]}];
