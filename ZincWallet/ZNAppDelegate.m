@@ -96,46 +96,18 @@ annotation:(id)annotation
      forBarMetrics:UIBarMetricsDefault];
 
     [[UINavigationBar appearance]
-     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor whiteColor],
-                              UITextAttributeTextShadowColor:[UIColor colorWithRed:0 green:0 blue:0 alpha:0.15],
+     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor grayColor],
+                              UITextAttributeTextShadowColor:[UIColor whiteColor],
                               UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
                               UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue" size:19.0]}];
 
+    // this is broken in iOS 6
+    if ([[UINavigationBar appearance] respondsToSelector:@selector(shadowImage)]) {
+        [[UINavigationBar appearance] setShadowImage:[UIImage new]];
+    }
+
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque];
     
-    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
-     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor lightGrayColor],
-                              UITextAttributeTextShadowColor:[UIColor whiteColor],
-                              UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 0.0)],
-                              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
-     forState:UIControlStateDisabled];
-
-//#if DARK_THEME
-//    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
-//     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor whiteColor],
-//     UITextAttributeTextShadowColor:[UIColor whiteColor],
-//     UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 0.0)],
-//     UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
-//     forState:UIControlStateNormal];
-//    
-//    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
-//     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor colorWithWhite:0.5 alpha:1.0],
-//     UITextAttributeTextShadowColor:[UIColor whiteColor],
-//     UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 0.0)],
-//     UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
-//     forState:UIControlStateHighlighted];
-//
-//    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
-//     setBackgroundImage:[[UIImage imageNamed:@"button-bg-white.png"]
-//                         resizableImageWithCapInsets:UIEdgeInsetsMake(14.0, 5.0, 16.0, 5.0)]
-//     forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
-//    
-//    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
-//     setBackButtonBackgroundImage:[[UIImage imageNamed:@"back-bg-white.png"]
-//                                   resizableImageWithCapInsets:UIEdgeInsetsMake(14.0, 15.0, 16.0, 5.0)]
-//     forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
-//
-//#else
     [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
      setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0],
                               UITextAttributeTextShadowColor:[UIColor whiteColor],
@@ -151,6 +123,13 @@ annotation:(id)annotation
      forState:UIControlStateHighlighted];
 
     [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
+     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor lightGrayColor],
+                              UITextAttributeTextShadowColor:[UIColor whiteColor],
+                              UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 0.0)],
+                              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
+     forState:UIControlStateDisabled];
+
+    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
      setBackgroundImage:[[UIImage imageNamed:@"button-bg-clear.png"]
                          resizableImageWithCapInsets:UIEdgeInsetsMake(14.0, 5.0, 16.0, 5.0)]
      forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
@@ -164,7 +143,6 @@ annotation:(id)annotation
      setBackButtonBackgroundImage:[[UIImage imageNamed:@"back-bg-pressed.png"]
                                    resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 15.0, 15.0, 5.0)]
      forState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
-//#endif
 
     [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
      setBackButtonTitlePositionAdjustment:UIOffsetMake(1.0, -3.0) forBarMetrics:UIBarMetricsDefault];

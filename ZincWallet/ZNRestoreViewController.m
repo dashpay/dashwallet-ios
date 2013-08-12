@@ -27,27 +27,11 @@
     // Do any additional setup after loading the view.
     
     self.textView.layer.cornerRadius = 5.0;
-    //self.textView.layer.shadowRadius = 15.0;
-    //self.textView.layer.shadowOpacity = 0.1;
-    //self.textView.layer.shadowOffset = CGSizeMake(0.0, 1.0);
-    //self.textView.layer.masksToBounds = NO;
     
     if (self.navigationController.viewControllers[0] == self) {
-#if ! DARK_THEME
         self.textView.layer.borderColor = [[UIColor colorWithWhite:0.0 alpha:0.25] CGColor];
         self.textView.layer.borderWidth = 0.5;
         self.textView.textColor = [UIColor blackColor];
-
-        [self.navigationController.navigationBar
-         setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor grayColor],
-                                  UITextAttributeTextShadowColor:[UIColor whiteColor],
-                                  UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
-                                  UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue" size:19.0]}];
-#else
-        self.label.textColor = [UIColor whiteColor];
-        self.label.shadowColor = [UIColor colorWithWhite:0.0 alpha:0.15];
-        self.textView.textColor = [UIColor colorWithRed:0.0 green:0.33 blue:0.67 alpha:1.0];
-#endif
 
         if ([self.navigationController.navigationBar respondsToSelector:@selector(shadowImage)]) {
             [self.navigationController.navigationBar setShadowImage:[UIImage new]];

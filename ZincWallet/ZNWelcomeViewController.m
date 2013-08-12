@@ -10,15 +10,15 @@
 
 #define WALLPAPER_ANIMATION_DURATION 60.0
 #define WALLPAPER_ANIMATION_X 240.0
-#define WALLPAPER_ANIMATION_Y 0.0 //45.0
+#define WALLPAPER_ANIMATION_Y 0.0
 
 @interface ZNWelcomeViewController ()
 
-@property (nonatomic, assign) CGPoint logoStart, walletStart, restoreStart, paralaxStart, wallpaperStart;//, shadowStart;
+@property (nonatomic, assign) CGPoint logoStart, walletStart, restoreStart, paralaxStart, wallpaperStart;
 @property (nonatomic, assign) BOOL hasAppeared, animating;
 @property (nonatomic, strong) id activeObserver, resignActiveObserver;
 
-@property (nonatomic, strong) IBOutlet UIImageView *logo, *wallpaper;//, *shadow;
+@property (nonatomic, strong) IBOutlet UIImageView *logo, *wallpaper;
 @property (nonatomic, strong) IBOutlet UIView *paralax;
 @property (nonatomic, strong) IBOutlet UIButton *walletButton, *restoreButton;
 
@@ -31,8 +31,18 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    self.navigationController.delegate = self;
+    [self.navigationController.navigationBar
+     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor whiteColor],
+                              UITextAttributeTextShadowColor:[UIColor colorWithRed:0 green:0 blue:0 alpha:0.15],
+                              UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
+                              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue" size:19.0]}];
     
+    if ([self.navigationController.navigationBar respondsToSelector:@selector(shadowImage)]) {
+        [self.navigationController.navigationBar setShadowImage:[UIImage new]];
+    }
+    
+    self.navigationController.delegate = self;
+
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
@@ -72,8 +82,6 @@
     
     if (! self.hasAppeared) {
         self.wallpaperStart = self.wallpaper.center;
-//        self.shadowStart = CGPointMake(self.shadow.center.x - self.view.frame.size.width*PARALAX_RATIO*2,
-//                                       self.shadow.center.y);
         self.logoStart = CGPointMake(self.logo.center.x - self.view.frame.size.width, self.logo.center.y);
         self.paralaxStart = self.paralax.center;
         self.walletStart = self.walletButton.center;
@@ -83,17 +91,7 @@
         self.restoreButton.center = CGPointMake(self.restoreStart.x + self.view.frame.size.width, self.restoreStart.y);
         self.paralax.center = CGPointMake(self.paralaxStart.x + self.view.frame.size.width*PARALAX_RATIO,
                                           self.paralaxStart.y);
-        
-//        const float mask[6] = { 222, 255, 222, 255, 222, 255 };
-//        [self.navigationController.navigationBar
-//         setBackgroundImage:[UIImage imageWithCGImage:CGImageCreateWithMaskingColors([[UIImage new] CGImage], mask)]
-//         forBarMetrics:UIBarMetricsDefault];
-        
-        if ([self.navigationController.navigationBar respondsToSelector:@selector(shadowImage)]) {
-            [self.navigationController.navigationBar setShadowImage:[UIImage new]];
-        }
-        
-//        [self.navigationController.view insertSubview:self.shadow atIndex:0];
+                
         [self.navigationController.view insertSubview:self.paralax atIndex:0];
     }
 }
@@ -105,22 +103,22 @@
     if (! self.hasAppeared) {
         self.hasAppeared = YES;
         
-        [UIView animateWithDuration:WALLPAPER_ANIMATION_DURATION delay:0.0
-        options:UIViewAnimationOptionCurveLinear|UIViewAnimationOptionRepeat|UIViewAnimationOptionAutoreverse
-        animations:^{
-            self.animating = YES;
-            self.wallpaper.center = CGPointMake(self.wallpaperStart.x - WALLPAPER_ANIMATION_X,
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [UIView animateWithDuration:WALLPAPER_ANIMATION_DURATION delay:0.0
+            options:UIViewAnimationOptionCurveLinear|UIViewAnimationOptionRepeat|UIViewAnimationOptionAutoreverse
+            animations:^{
+                self.animating = YES;
+                self.wallpaper.center = CGPointMake(self.wallpaperStart.x - WALLPAPER_ANIMATION_X,
                                                 self.wallpaperStart.y - WALLPAPER_ANIMATION_Y);
-        } completion:^(BOOL finished) { self.animating = NO; }];
+            } completion:^(BOOL finished) { self.animating = NO; }];
         
-        [UIView animateWithDuration:UINavigationControllerHideShowBarDuration*2 delay:1.0 options:0 animations:^{
-            self.walletButton.center = self.walletStart;
-            self.restoreButton.center = self.restoreStart;
-            self.logo.center = self.logoStart;
-            self.paralax.center = self.paralaxStart;
-//            self.shadow.center = self.shadowStart;
-//            self.shadow.alpha = 0.5;
-        } completion:nil];
+            [UIView animateWithDuration:UINavigationControllerHideShowBarDuration*2 delay:1.0 options:0 animations:^{
+                self.walletButton.center = self.walletStart;
+                self.restoreButton.center = self.restoreStart;
+                self.logo.center = self.logoStart;
+                self.paralax.center = self.paralaxStart;
+            } completion:nil];
+        });
     }
 }
 
@@ -140,13 +138,8 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
         if (viewController != self) {
             self.paralax.center = CGPointMake(self.paralaxStart.x - self.view.frame.size.width*PARALAX_RATIO,
                                               self.paralaxStart.y);
-//            self.shadow.center = CGPointMake(self.shadowStart.x - self.view.frame.size.width*PARALAX_RATIO*2,
-//                                             self.shadowStart.y);
         }
-        else {
-            self.paralax.center = self.paralaxStart;
-//            self.shadow.center = self.shadowStart;
-        }
+        else self.paralax.center = self.paralaxStart;
     }];
 }
 

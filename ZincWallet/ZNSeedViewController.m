@@ -29,29 +29,9 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-#if DARK_THEME
-//    self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"refresh-white.png"];
-
-    self.logo.image = [UIImage imageNamed:@"zincwallet-white.png"];
-    self.logo.contentMode = UIViewContentModeCenter;
-    self.logo.alpha = 0.9;
-    
-    self.seedLabel.textColor = [UIColor colorWithRed:0.0 green:0.33 blue:0.67 alpha:1.0];
-    
-    [self.otherLabels enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        [obj setTextColor:[UIColor whiteColor]];
-        [obj setShadowColor:[UIColor colorWithWhite:0.0 alpha:0.15]];
-    }];
-#else
     self.labelFrame.layer.borderColor = [[UIColor colorWithWhite:0.0 alpha:0.25] CGColor];
     self.labelFrame.layer.borderWidth = 0.5;
-#endif
     self.labelFrame.layer.cornerRadius = 5.0;
-
-    //self.labelFrame.layer.shadowRadius = 15.0;
-    //self.labelFrame.layer.shadowOpacity = 0.1;
-    //self.labelFrame.layer.shadowOffset = CGSizeMake(0.0, 1.0);
-    //self.labelFrame.layer.masksToBounds = NO;
     
     if (self.navigationController.viewControllers[0] == self) {
         self.wallpaper.hidden = NO;
@@ -60,9 +40,7 @@
             [self.navigationController.navigationBar setShadowImage:[UIImage new]];
         }
     }
-    else {
-        self.wallpaper.hidden = YES;
-    }
+    else self.wallpaper.hidden = YES;
     
     self.resignActiveObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil

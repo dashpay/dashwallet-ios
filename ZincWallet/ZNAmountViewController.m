@@ -40,31 +40,14 @@
     self.amountField.placeholder = [w stringForAmount:0];
     
     [self.buttons enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        [(ZNButton *)obj setStyle:ZNButtonStyleGray];
+        [(ZNButton *)obj setStyle:ZNButtonStyleBlue];
+        [[obj titleLabel] setFont:[UIFont fontWithName:@"HelveticaNeue-UltraLight" size:50]];
     }];
 
     self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     CGRect f = self.spinner.frame;
     f.size.width = 33;
     self.spinner.frame = f;
-
-#if DARK_THEME
-    [self.buttons enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        [(ZNButton *)obj setStyle:ZNButtonStyleWhite];
-        [[obj titleLabel] setFont:[UIFont fontWithName:@"HelveticaNeue-UltraLight" size:50]];
-        [obj setTitleColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0] forState:UIControlStateNormal];
-    }];
-    
-    self.spinner.color = [UIColor whiteColor];
-    
-    [self.delButton setImage:[UIImage imageNamed:@"deletetoleft-inv.png"] forState:UIControlStateNormal];
-    [self.delButton setImage:[UIImage imageNamed:@"deletetoleft-blue.png"] forState:UIControlStateHighlighted];
-    
-    self.addressLabel.shadowColor = [UIColor clearColor];
-    self.addressLabel.textColor = [UIColor whiteColor];
-    
-    self.amountField.textColor = [UIColor whiteColor];
-#endif
 
     if ([[UIScreen mainScreen] bounds].size.height < 500) { // adjust number buttons for 3.5" screen
         [self.buttons enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {

@@ -40,7 +40,7 @@
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 
     ZNWallet *w = [ZNWallet sharedInstance];
-        
+    
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:walletBalanceNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
@@ -56,28 +56,16 @@
     self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                  [w localCurrencyStringForAmount:w.balance]];
     
-    // HelveticaNeue-Medium is missing the BTC char :(
-#if DARK_THEME
-    [self.navigationController.navigationBar
-     setTitleTextAttributes:@{UITextAttributeTextShadowColor:[UIColor colorWithWhite:0.0 alpha:0.15],
-                              UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
-                              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue" size:19.0]}];
-#else
-    [self.navigationController.navigationBar
-     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor grayColor],
-                              UITextAttributeTextShadowColor:[UIColor whiteColor],
-                              UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
-                              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue" size:19.0]}];
-#endif
-
     if ([self.navigationController.navigationBar respondsToSelector:@selector(shadowImage)]) {
         [self.navigationController.navigationBar setShadowImage:[UIImage new]];
     }
     
-    self.navigationController.navigationBar.clipsToBounds = YES;
+    self.navigationController.navigationBar.backgroundColor =
+        [UIColor colorWithPatternImage:[UIImage imageNamed:@"navbar-bg.png"]];
     
     self.wallpaper = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"wallpaper-default.png"]];
     self.wallpaperStart = self.wallpaper.center = CGPointMake(self.wallpaper.center.x, self.wallpaper.center.y + 20);
+    
     [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
     
     self.navigationController.delegate = self;
@@ -95,24 +83,6 @@
     self.transactions = [[ZNWallet sharedInstance] recentTransactions];
 }
 
-- (void)viewDidAppear:(BOOL)animated
-{
-    [super viewDidAppear:animated];
-    
-    [self.navigationController.navigationBar setBackgroundImage:[UIImage imageNamed:@"wallpaper-default.png"]
-     forBarMetrics:UIBarMetricsDefault];
-}
-
-- (void)viewWillDisappear:(BOOL)animated
-{
-    const float mask[6] = { 222, 255, 222, 255, 222, 255 };
-    
-    [self.navigationController.navigationBar
-     setBackgroundImage:[UIImage imageWithCGImage:CGImageCreateWithMaskingColors([[UIImage new] CGImage], mask)]
-     forBarMetrics:UIBarMetricsDefault];
-
-    [super viewWillDisappear:animated];
-}
 #pragma mark - IBAction
 
 - (IBAction)done:(id)sender
@@ -133,7 +103,7 @@
     // Return the number of rows in the section.
     switch (section) {
         case 0: return self.transactions.count ? self.transactions.count : 1;
-        case 1: return 2;
+        case 1: return 1;
         case 2: return 1;
         default: NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
                           __LINE__, section);
@@ -153,32 +123,13 @@
     switch (indexPath.section) {
         case 0:
             cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent];
+            
             textLabel = (id)[cell viewWithTag:1];
             detailTextLabel = (id)[cell viewWithTag:2];
             unconfirmedLabel = (id)[cell viewWithTag:3];
             noTxLabel = (id)[cell viewWithTag:4];
             localCurrencyLabel = (id)[cell viewWithTag:5];
             sentLabel = (id)[cell viewWithTag:6];
-
-#if DARK_THEME
-            textLabel.textColor = [UIColor whiteColor];
-            textLabel.shadowColor = [UIColor colorWithWhite:0.0 alpha:0.15];
-            
-            localCurrencyLabel.textColor = [UIColor whiteColor];
-            localCurrencyLabel.shadowColor = [UIColor colorWithWhite:0.0 alpha:0.15];
-            
-            detailTextLabel.textColor = [UIColor colorWithWhite:1.0 alpha:0.75];
-            detailTextLabel.shadowColor = [UIColor colorWithWhite:0.0 alpha:0.15];
-            
-            unconfirmedLabel.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.67];
-            unconfirmedLabel.textColor = [UIColor colorWithRed:0 green:0.33 blue:0.67 alpha:1.0];
-            
-            sentLabel.textColor = [UIColor whiteColor];
-            sentLabel.shadowColor = [UIColor colorWithWhite:0.0 alpha:0.15];
-            
-            noTxLabel.textColor = [UIColor colorWithWhite:1.0 alpha:0.67];
-            noTxLabel.shadowColor = [UIColor colorWithWhite:0.0 alpha:0.15];
-#endif
 
             if (! self.transactions.count) {
                 noTxLabel.hidden = NO;
@@ -268,6 +219,14 @@
             
         case 1:
             cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
+            if (! cell.backgroundView) {
+                UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0, -1.0, cell.frame.size.width, 1.0)];
+                
+                cell.backgroundView = [[UIView alloc] initWithFrame:cell.frame];
+                cell.backgroundView.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.67];
+                v.backgroundColor = tableView.separatorColor;
+                [cell.backgroundView addSubview:v];
+            }
             
             switch (indexPath.row) {
                 case 0:
@@ -276,26 +235,8 @@
 //
 //                case 1:
                     cell.textLabel.text = @"backup phrase";
-                    cell.userInteractionEnabled = YES;
-                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-#if DARK_THEME
-                    cell.textLabel.textColor = [UIColor whiteColor];
-                    cell.textLabel.highlightedTextColor = [UIColor colorWithRed:0.0 green:0.33 blue:0.67 alpha:1.0];
-                    cell.selectedBackgroundView = [[UIView alloc] initWithFrame:cell.frame];
-                    cell.selectedBackgroundView.backgroundColor =
-                        [UIColor colorWithRed:0.75 green:0.87 blue:1.0 alpha:.85];
-#else
-                    cell.backgroundView = [[UIView alloc] initWithFrame:cell.frame];
-                    cell.backgroundView.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.67];
-#endif
                     break;
                     
-                case 1:
-                    cell.textLabel.text = nil;
-                    cell.userInteractionEnabled = NO;
-                    cell.accessoryType = UITableViewCellAccessoryNone;
-                    break;
-            
                 default: NSAssert(FALSE, @"[%s %s] line %d: unkown indexPath.row %d", object_getClassName(self),
                                   sel_getName(_cmd), __LINE__, indexPath.row);
             }
@@ -303,24 +244,23 @@
             
         case 2:
             cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
+            if (! cell.backgroundView) {
+                UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0, -1.0, cell.frame.size.width, 1.0)];
+                
+                cell.backgroundView = [[UIView alloc] initWithFrame:cell.frame];
+                cell.selectedBackgroundView = [[UIView alloc] initWithFrame:cell.frame];
+                cell.backgroundView.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.67];
+                cell.selectedBackgroundView.backgroundColor =
+                    [UIColor colorWithPatternImage:[UIImage imageNamed:@"redgradient.png"]];
+                v.backgroundColor = tableView.separatorColor;
+                [cell.backgroundView addSubview:v];
+                cell.textLabel.textColor = [UIColor redColor];
+                cell.textLabel.shadowColor = [UIColor clearColor];
+            }
 
             switch (indexPath.row) {
                 case 0:
-                    //cell.contentView.backgroundColor =
-                    //    [UIColor colorWithPatternImage:[UIImage imageNamed:@"redgradient.png"]];
-
                     cell.textLabel.text = @"restore or start a new wallet";
-                    cell.textLabel.textColor = [UIColor redColor];
-                    cell.textLabel.shadowColor = [UIColor clearColor];
-                    cell.selectedBackgroundView = [[UIView alloc] initWithFrame:cell.frame];
-                    cell.selectedBackgroundView.backgroundColor =
-                        [UIColor colorWithPatternImage:[UIImage imageNamed:@"redgradient.png"]];
-                    cell.backgroundView = [[UIView alloc] initWithFrame:cell.frame];
-#if DARK_THEME
-                    cell.backgroundView.backgroundColor = [UIColor colorWithRed:0.75 green:0.87 blue:1.0 alpha:.85];
-#else
-                    cell.backgroundView.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.67];
-#endif
                     break;
                                         
                 default:
@@ -340,8 +280,8 @@
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
     switch (section) {
-        case 0: return @"recent transactions";
-        case 1: return @"settings";
+        case 0: return nil;//@"recent transactions";
+        case 1: return nil;//@"settings";
         case 2: return @"caution ⇣";
         default: NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
                           __LINE__, section);
@@ -354,8 +294,6 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    CGFloat h;
-    
     switch (indexPath.section) {
         case 0:
             return TRANSACTION_CELL_HEIGHT;
@@ -364,13 +302,6 @@
             switch (indexPath.row) {
                 case 0:
                     return 44;
-
-                case 1:
-                    h = tableView.frame.size.height - 22*3 -
-                        self.navigationController.navigationBar.frame.size.height*2 -
-                        (self.transactions.count ? self.transactions.count*TRANSACTION_CELL_HEIGHT :
-                         TRANSACTION_CELL_HEIGHT);
-                    return h > 0 ? h : 0;
 
                 default:
                     NSAssert(FALSE, @"[%s %s] line %d: unkown indexPath.row %d", object_getClassName(self),
@@ -389,27 +320,52 @@
     return 44;
 }
 
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    CGFloat h = 0;
+    
+    switch (section) {
+        case 0:
+            return 35;
+            
+        case 1:
+            return 35;
+            
+        case 2:
+            h = tableView.frame.size.height - self.navigationController.navigationBar.frame.size.height;
+            
+            for (int s = 0; s < section; s++) {
+                h -= [self tableView:tableView heightForHeaderInSection:s];
+
+                for (int r = 0; r < [self tableView:tableView numberOfRowsInSection:s]; r++) {
+                    h -= [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:r inSection:s]];
+                }
+            }
+
+            return h > 35 ? h : 35;
+        
+        default:
+            NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
+                     __LINE__, section);
+    }
+
+    return 35;
+}
+
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
 {
-    UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 22.0)];
-    UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(10, 0, self.view.frame.size.width - 20, 22.0)];;
+    UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width,
+                                                         [self tableView:tableView heightForHeaderInSection:section])];
+    UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(10, v.frame.size.height - 22.0,
+                                                           self.view.frame.size.width - 20, 22.0)];;
     
     l.text = [self tableView:tableView titleForHeaderInSection:section];
     l.backgroundColor = [UIColor clearColor];
-#if DARK_THEME
-    l.font = [UIFont fontWithName:@"HelveticaNeue" size:15];
-    l.textColor = [UIColor colorWithRed:0.0 green:0.33 blue:0.67 alpha:1.0];
-    
-    //v.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.67];
-    v.backgroundColor = [UIColor colorWithRed:0.75 green:0.87 blue:1.0 alpha:.85];
-#else
     l.font = [UIFont fontWithName:@"HelveticaNeue" size:15];
     l.textColor = [UIColor grayColor];
     l.shadowColor = [UIColor colorWithWhite:1.0 alpha:1.0];
     l.shadowOffset = CGSizeMake(0.0, 1.0);
-
-    v.backgroundColor = [UIColor colorWithWhite:0.9 alpha:0.85];
-#endif
+    v.backgroundColor = [UIColor clearColor];
     [v addSubview:l];
     
     return v;

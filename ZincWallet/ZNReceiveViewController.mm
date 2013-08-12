@@ -37,14 +37,6 @@
 
     // Do any additional setup after loading the view, typically from a nib.
     
-#if DARK_THEME
-    self.label.textColor = [UIColor colorWithWhite:1.0 alpha:0.9];
-    self.label.shadowColor = [UIColor colorWithWhite:0.0 alpha:0.15];
-//    self.label.center = CGPointMake(self.label.center.x, self.label.center.y + 5);
-    self.label.font = [UIFont fontWithName:@"HelveticaNueue" size:19.0];
-//#else
-
-#endif
     self.addressButton.style = ZNButtonStyleNone;
 //    self.format = [NSNumberFormatter new];
 //    self.format.numberStyle = NSNumberFormatterCurrencyStyle;
@@ -107,9 +99,7 @@
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    UINavigationController *nav = nil;
     NSString *title = [actionSheet buttonTitleAtIndex:buttonIndex];
-    
     
     if ([title isEqual:@"copy"]) {
         _copiedAddress = [self paymentAddress];
@@ -122,8 +112,8 @@
             [c setSubject:@"Bitcoin address"];
             [c setMessageBody:[@"bitcoin://" stringByAppendingString:[self paymentAddress]] isHTML:NO];
             c.mailComposeDelegate = self;
-            nav = c;
             [self.navController presentViewController:c animated:YES completion:nil];
+            c.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default.png"]];
         }
         else {
             [[[UIAlertView alloc] initWithTitle:nil message:@"email not configured on this device" delegate:nil
@@ -136,31 +126,14 @@
             
             c.body = [@"bitcoin://" stringByAppendingString:[self paymentAddress]];
             c.messageComposeDelegate = self;
-            nav = c;
+            [self.navController presentViewController:c animated:YES completion:nil];
+            c.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default.png"]];
         }
         else {
             [[[UIAlertView alloc] initWithTitle:nil message:@"sms not currently available on this device" delegate:nil
               cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
         }
-    }
-    
-    if (nav) {
-        [self.navController presentViewController:nav animated:YES completion:nil];
-        nav.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default.png"]];
-#if DARK_THEME
-        nav.navigationBar.titleTextAttributes =
-            @{UITextAttributeTextColor:[UIColor whiteColor],
-              UITextAttributeTextShadowColor:[UIColor colorWithWhite:0.0 alpha:0.15],
-              UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
-              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Medium" size:19.0]};
-#else
-        nav.navigationBar.titleTextAttributes =
-            @{UITextAttributeTextColor:[UIColor grayColor],
-              UITextAttributeTextShadowColor:[UIColor whiteColor],
-              UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
-              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue" size:19.0]};
-#endif
-    }
+    }    
 }
 
 #pragma mark - MFMessageComposeViewControllerDelegate

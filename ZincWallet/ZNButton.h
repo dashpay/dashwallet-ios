@@ -11,7 +11,6 @@
 typedef enum {
     ZNButtonStyleWhite,
     ZNButtonStyleBlue,
-    ZNButtonStyleGray,
     ZNButtonStyleNone
 } ZNButtonStyle;
 

@@ -83,10 +83,8 @@
 
     // if > iOS 6, we can customize the appearance of the pageControl and don't need the black bar behind it.
     if ([self.pageControl respondsToSelector:@selector(pageIndicatorTintColor)]) {
-#if ! DARK_THEME
         self.pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:0.85 alpha:1.0];
         self.pageControl.currentPageIndicatorTintColor = [UIColor grayColor];
-#endif
         self.pageControl.superview.backgroundColor = [UIColor clearColor];
     }
     
@@ -172,31 +170,12 @@
     [self.reachability startNotifier];
     
     self.navigationController.delegate = self;
-    
+
     [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
     
     self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                  [w localCurrencyStringForAmount:w.balance]];
     
-    // HelveticaNeue-Medium is missing the BTC char :(
-#if DARK_THEME
-    [self.navigationController.navigationBar
-     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor colorWithWhite:1.0 alpha:1.0],
-                              UITextAttributeTextShadowColor:[UIColor colorWithWhite:0.0 alpha:0.15],
-                              UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
-                              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue" size:19.0]}];
-    
-    self.spinner.color = [UIColor whiteColor];
-//    self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"gear-white.png"];
-//    self.navigationItem.rightBarButtonItem.image = [UIImage imageNamed:@"refresh-white.png"];
-#else
-    [self.navigationController.navigationBar
-     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor grayColor],
-                              UITextAttributeTextShadowColor:[UIColor whiteColor],
-                              UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
-                              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue" size:19.0]}];
-#endif
-
     if ([self.navigationController.navigationBar respondsToSelector:@selector(shadowImage)]) {
         [self.navigationController.navigationBar setShadowImage:[UIImage new]];
     }
@@ -324,13 +303,7 @@
     while (self.requests.count > self.requestButtons.count) {
         ZNButton *button = [ZNButton buttonWithType:UIButtonTypeCustom];
 
-#if DARK_THEME
-        button.style = ZNButtonStyleWhite;
-        [button setTitleColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0]
-         forState:UIControlStateHighlighted];
-#else
         button.style = ZNButtonStyleBlue;
-#endif
         button.imageEdgeInsets = UIEdgeInsetsMake(0, -10, 0, 10);
         button.alpha = animated ? 0 : 1;
         button.frame = CGRectMake(BUTTON_MARGIN*2, self.scrollView.frame.size.height/2 +
@@ -364,12 +337,10 @@
 
                 [obj setTitle:req.label forState:UIControlStateNormal];
                 
-#if ! DARK_THEME
                 if ([req.label rangeOfString:BTC].location != NSNotFound) {
                     [obj titleLabel].font = [UIFont fontWithName:@"HelveticaNeue" size:15];
                 }
                 else [obj titleLabel].font = [UIFont fontWithName:@"HelveticaNeue-Light" size:15];
-#endif
 
                 if ([self.addressInWallet isEqual:req.paymentAddress]) [obj setEnabled:NO];
             }
