@@ -9,8 +9,9 @@
 #import "ZNReceiveViewController.h"
 #import "ZNPaymentRequest.h"
 #import "ZNWallet.h"
-#import "QREncoder.h"
 #import "ZNButton.h"
+#import "QREncoder.h"
+#import "MBProgressHUD.h"
 
 @interface ZNReceiveViewController ()
 
@@ -105,7 +106,13 @@
         _copiedAddress = [self paymentAddress];
         [[UIPasteboard generalPasteboard] setString:[self paymentAddress]];
         
-        //XXXX show a hud indicator
+        MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+        
+        hud.yOffset = -130;
+        hud.mode = MBProgressHUDModeText;
+        hud.labelText = @"coppied";
+        hud.labelFont = [UIFont fontWithName:@"HelveticaNeue-Medium" size:17.0];
+        [hud hide:YES afterDelay:2.0];
     }
     else if ([title isEqual:@"email"]) {
         if ([MFMailComposeViewController canSendMail]) {

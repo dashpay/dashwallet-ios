@@ -110,8 +110,7 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             if (w.timeSinceLastSync > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
-            
-            //XXXX check for new info on the clipboard
+            [self layoutButtonsAnimated:YES]; // check the clipboard for changes
         }];
     
     self.reachabilityObserver =
@@ -229,29 +228,6 @@
     self.session.delegate = self;
     [self.session setDataReceiveHandler:self withContext:nil];
     self.session.available = YES;
-
-    if ([[[UIPasteboard generalPasteboard] string] length] &&
-        ! [[[UIPasteboard generalPasteboard] string] isEqual:self.receiveController.copiedAddress]) {
-        ZNPaymentRequest *req = [ZNPaymentRequest requestWithString:[[UIPasteboard generalPasteboard] string]];
-
-        if (req.paymentAddress) {
-            if (! req.label.length) {
-                if (req.amount > 0) {
-                    req.label = [NSString stringWithFormat:@"%@ - %@", req.paymentAddress,
-                                 [w stringForAmount:req.amount]];
-                }
-                else req.label = req.paymentAddress;
-            }
-        
-            NSUInteger i = [self.requestIDs indexOfObject:CLIPBOARD_ID];
-        
-            if (i == NSNotFound) {
-                [self.requests addObject:req];
-                [self.requestIDs addObject:CLIPBOARD_ID];
-            }
-            else [self.requests replaceObjectAtIndex:i withObject:req];
-        }
-    }
     
     self.scrollView.contentSize = CGSizeMake(self.scrollView.frame.size.width*2, self.scrollView.frame.size.height);
     
@@ -302,6 +278,29 @@
 
 - (void)layoutButtonsAnimated:(BOOL)animated
 {
+    if ([[[UIPasteboard generalPasteboard] string] length] &&
+        ! [[[UIPasteboard generalPasteboard] string] isEqual:self.receiveController.copiedAddress]) {
+        ZNPaymentRequest *req = [ZNPaymentRequest requestWithString:[[UIPasteboard generalPasteboard] string]];
+        
+        if (req.paymentAddress) {
+            if (! req.label.length) {
+                if (req.amount > 0) {
+                    req.label = [NSString stringWithFormat:@"%@ - %@", req.paymentAddress,
+                                 [[ZNWallet sharedInstance] stringForAmount:req.amount]];
+                }
+                else req.label = req.paymentAddress;
+            }
+            
+            NSUInteger i = [self.requestIDs indexOfObject:CLIPBOARD_ID];
+            
+            if (i == NSNotFound) {
+                [self.requests addObject:req];
+                [self.requestIDs addObject:CLIPBOARD_ID];
+            }
+            else [self.requests replaceObjectAtIndex:i withObject:req];
+        }
+    }
+
     while (self.requests.count > self.requestButtons.count) {
         ZNButton *button = [ZNButton buttonWithType:UIButtonTypeCustom];
 

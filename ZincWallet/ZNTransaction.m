@@ -7,6 +7,7 @@
 //
 
 #import "ZNTransaction.h"
+#import "ZNWallet.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSData+Hash.h"
 #import "NSString+Base58.h"
@@ -219,10 +220,14 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 
 - (size_t)size
 {
-    //XXXX electurm seeds generate uncompressed keys, bip32 uses compressed
-    // size is (180+-1)*inputs for uncompressed, (148+-1)*inputs for compressed
+#if WALLET_BIP32
+    size_t sigSize = 149; // electurm seeds generate uncompressed keys, bip32 uses compressed
+#else
+    size_t sigSize = 181;
+#endif
+
     return 8 + [NSMutableData sizeOfVarInt:self.hashes.count] + [NSMutableData sizeOfVarInt:self.addresses.count] +
-           181*self.hashes.count + 34*self.addresses.count;
+           sigSize*self.hashes.count + 34*self.addresses.count;
 }
 
 // priority = sum(input_amount_in_satoshis*input_age_in_blocks)/size_in_bytes
