@@ -110,6 +110,8 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             if (w.timeSinceLastSync > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
+            
+            //XXXX check for new info on the clipboard
         }];
     
     self.reachabilityObserver =

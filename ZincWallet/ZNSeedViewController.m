@@ -8,7 +8,8 @@
 
 #import "ZNSeedViewController.h"
 #import "ZNWallet.h"
-#import <QuartzCore/QuartzCore.h>
+
+#define LABEL_MARGIN 20
 
 @interface ZNSeedViewController ()
 
@@ -28,10 +29,6 @@
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    
-    self.labelFrame.layer.borderColor = [[UIColor colorWithWhite:0.0 alpha:0.25] CGColor];
-    self.labelFrame.layer.borderWidth = 0.5;
-    self.labelFrame.layer.cornerRadius = 5.0;
     
     if (self.navigationController.viewControllers[0] == self) {
         self.wallpaper.hidden = NO;
@@ -82,11 +79,12 @@
 
     self.seedLabel.text = [[ZNWallet sharedInstance] seedPhrase];
     
+    CGFloat m = self.labelFrame.frame.size.height - self.seedLabel.frame.size.height;
     CGSize s = [self.seedLabel.text sizeWithFont:self.seedLabel.font
                 constrainedToSize:CGSizeMake(self.seedLabel.frame.size.width, CGFLOAT_MAX)];
     
-    self.labelFrame.frame = CGRectMake(self.labelFrame.frame.origin.x, self.view.frame.size.height/2 - s.height/2 - 11,
-                                       self.labelFrame.frame.size.width, s.height + 24);
+    self.labelFrame.frame = CGRectMake(self.labelFrame.frame.origin.x, self.view.frame.size.height/2 - s.height/2 - m/2,
+                                       self.labelFrame.frame.size.width, s.height + m);
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -110,15 +108,16 @@
     [[ZNWallet sharedInstance] generateRandomSeed];
     
     [UIView animateWithDuration:0.2 animations:^{ self.seedLabel.alpha = 0.0; }
-     completion:^(BOOL finished) {
+    completion:^(BOOL finished) {
         self.seedLabel.text = [[ZNWallet sharedInstance] seedPhrase];
         
+        CGFloat m = self.labelFrame.frame.size.height - self.seedLabel.frame.size.height;
         CGSize s = [self.seedLabel.text sizeWithFont:self.seedLabel.font
                     constrainedToSize:CGSizeMake(self.seedLabel.frame.size.width, CGFLOAT_MAX)];
         
         self.labelFrame.frame = CGRectMake(self.labelFrame.frame.origin.x,
-                                           self.view.frame.size.height/2 - s.height/2 - 11,
-                                           self.labelFrame.frame.size.width, s.height + 22);
+                                           self.view.frame.size.height/2 - s.height/2 - m/2,
+                                           self.labelFrame.frame.size.width, s.height + m);
 
         [UIView animateWithDuration:0.2 animations:^{ self.seedLabel.alpha = 1.0; }];
     }];

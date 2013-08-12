@@ -48,9 +48,9 @@
         whitepressed = [[UIImage imageNamed:@"button-bg-white-pressed.png"]
                         resizableImageWithCapInsets:UIEdgeInsetsMake(22.0, 5.0, 22.0, 5.0)];
         blue = [[UIImage imageNamed:@"button-bg-blue.png"]
-                resizableImageWithCapInsets:UIEdgeInsetsMake(38.0, 5.0, 5.0, 5.0)];
+                resizableImageWithCapInsets:UIEdgeInsetsMake(22.0, 5.0, 22.0, 5.0)];
         bluepressed = [[UIImage imageNamed:@"button-bg-blue-pressed.png"]
-                       resizableImageWithCapInsets:UIEdgeInsetsMake(22.0, 5.0, 22.0, 5.0)];
+                       resizableImageWithCapInsets:UIEdgeInsetsMake(38.0, 5.0, 5.0, 5.0)];
         disabled = [[UIImage imageNamed:@"button-bg-disabled.png"]
                     resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 5.0, 15.0, 5.0)];
     }

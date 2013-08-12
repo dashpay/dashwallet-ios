@@ -326,10 +326,10 @@
     
     switch (section) {
         case 0:
-            return 35;
+            return 22;
             
         case 1:
-            return 35;
+            return 22;
             
         case 2:
             h = tableView.frame.size.height - self.navigationController.navigationBar.frame.size.height;
@@ -342,14 +342,14 @@
                 }
             }
 
-            return h > 35 ? h : 35;
+            return h > 55 ? h : 55;
         
         default:
             NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
                      __LINE__, section);
     }
 
-    return 35;
+    return 22;
 }
 
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section

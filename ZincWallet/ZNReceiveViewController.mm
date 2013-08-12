@@ -104,6 +104,8 @@
     if ([title isEqual:@"copy"]) {
         _copiedAddress = [self paymentAddress];
         [[UIPasteboard generalPasteboard] setString:[self paymentAddress]];
+        
+        //XXXX show a hud indicator
     }
     else if ([title isEqual:@"email"]) {
         if ([MFMailComposeViewController canSendMail]) {
