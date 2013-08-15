@@ -717,6 +717,7 @@
 		759CB23D175E8D6300AFA559 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB23C175E8D6300AFA559 /* CoreMedia.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		759CB240175F03BF00AFA559 /* ZNAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759CB23F175F03BF00AFA559 /* ZNAmountViewController.m */; };
 		75A6ECDD17B88F370043E52D /* navbar-bg@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75A6ECDC17B88F360043E52D /* navbar-bg@2x.png */; };
+		75A6ECE317BD464A0043E52D /* ZNBIP39Mnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = 75A6ECE217BD464A0043E52D /* ZNBIP39Mnemonic.m */; };
 		75A857C417896584005F6642 /* button-bg-clear@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75A857C317896584005F6642 /* button-bg-clear@2x.png */; };
 		75ADF1FE17B0EC0D006B1336 /* deletetoleft-blue.png in Resources */ = {isa = PBXBuildFile; fileRef = 75ADF1FD17B0EC0C006B1336 /* deletetoleft-blue.png */; };
 		75AF36D8176675D3004AA912 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
@@ -801,7 +802,7 @@
 		8461CE5B1798A4BC00DF8E4C /* WebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 8461CE561798A4BC00DF8E4C /* WebSocket.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		8461CE5C1798A4BC00DF8E4C /* WebSocketNSStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 8461CE581798A4BC00DF8E4C /* WebSocketNSStream.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		8461CE5D1798A4BC00DF8E4C /* WebSocketUIView.m in Sources */ = {isa = PBXBuildFile; fileRef = 8461CE5A1798A4BC00DF8E4C /* WebSocketUIView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		847C2302179A1FD600163CEF /* ZNMnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = 847C2301179A1FD600163CEF /* ZNMnemonic.m */; };
+		847C2302179A1FD600163CEF /* ZNElecturmMnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = 847C2301179A1FD600163CEF /* ZNElecturmMnemonic.m */; };
 		84DC139A1799E02800F6ED91 /* ZNBIP32Sequence.m in Sources */ = {isa = PBXBuildFile; fileRef = 84DC13991799E02800F6ED91 /* ZNBIP32Sequence.m */; };
 /* End PBXBuildFile section */
 
@@ -1740,6 +1741,9 @@
 		759CB23E175F03BF00AFA559 /* ZNAmountViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNAmountViewController.h; sourceTree = "<group>"; };
 		759CB23F175F03BF00AFA559 /* ZNAmountViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNAmountViewController.m; sourceTree = "<group>"; };
 		75A6ECDC17B88F360043E52D /* navbar-bg@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "navbar-bg@2x.png"; sourceTree = "<group>"; };
+		75A6ECE117BD464A0043E52D /* ZNBIP39Mnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNBIP39Mnemonic.h; sourceTree = "<group>"; };
+		75A6ECE217BD464A0043E52D /* ZNBIP39Mnemonic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNBIP39Mnemonic.m; sourceTree = "<group>"; };
+		75A6ECE517BD4CF60043E52D /* ZNMnemonic.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNMnemonic.h; sourceTree = "<group>"; };
 		75A857C317896584005F6642 /* button-bg-clear@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-clear@2x.png"; sourceTree = "<group>"; };
 		75ADF1FD17B0EC0C006B1336 /* deletetoleft-blue.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "deletetoleft-blue.png"; sourceTree = "<group>"; };
 		75AF36D7176675D3004AA912 /* libqrencoder.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libqrencoder.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1879,8 +1883,8 @@
 		8461CE581798A4BC00DF8E4C /* WebSocketNSStream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WebSocketNSStream.m; path = "iOS-WebSockets/WebSocketNSStream.m"; sourceTree = SOURCE_ROOT; };
 		8461CE591798A4BC00DF8E4C /* WebSocketUIView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WebSocketUIView.h; path = "iOS-WebSockets/WebSocketUIView.h"; sourceTree = SOURCE_ROOT; };
 		8461CE5A1798A4BC00DF8E4C /* WebSocketUIView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WebSocketUIView.m; path = "iOS-WebSockets/WebSocketUIView.m"; sourceTree = SOURCE_ROOT; };
-		847C2300179A1FD600163CEF /* ZNMnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNMnemonic.h; sourceTree = "<group>"; };
-		847C2301179A1FD600163CEF /* ZNMnemonic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNMnemonic.m; sourceTree = "<group>"; };
+		847C2300179A1FD600163CEF /* ZNElecturmMnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNElecturmMnemonic.h; sourceTree = "<group>"; };
+		847C2301179A1FD600163CEF /* ZNElecturmMnemonic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNElecturmMnemonic.m; sourceTree = "<group>"; };
 		84DC13981799E02800F6ED91 /* ZNBIP32Sequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNBIP32Sequence.h; sourceTree = "<group>"; };
 		84DC13991799E02800F6ED91 /* ZNBIP32Sequence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNBIP32Sequence.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -3354,12 +3358,15 @@
 				75F17C331744CC2100D9F228 /* ZNTransaction.h */,
 				75F17C341744CC2100D9F228 /* ZNTransaction.m */,
 				75EAE8441753E8E300FDB2D2 /* ZNKeySequence.h */,
-				75EAE8451753E93A00FDB2D2 /* ZNElectrumSequence.h */,
-				75EAE8461753E93A00FDB2D2 /* ZNElectrumSequence.m */,
 				84DC13981799E02800F6ED91 /* ZNBIP32Sequence.h */,
 				84DC13991799E02800F6ED91 /* ZNBIP32Sequence.m */,
-				847C2300179A1FD600163CEF /* ZNMnemonic.h */,
-				847C2301179A1FD600163CEF /* ZNMnemonic.m */,
+				75EAE8451753E93A00FDB2D2 /* ZNElectrumSequence.h */,
+				75EAE8461753E93A00FDB2D2 /* ZNElectrumSequence.m */,
+				75A6ECE517BD4CF60043E52D /* ZNMnemonic.h */,
+				75A6ECE117BD464A0043E52D /* ZNBIP39Mnemonic.h */,
+				75A6ECE217BD464A0043E52D /* ZNBIP39Mnemonic.m */,
+				847C2300179A1FD600163CEF /* ZNElecturmMnemonic.h */,
+				847C2301179A1FD600163CEF /* ZNElecturmMnemonic.m */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -4536,8 +4543,9 @@
 				8461CE5C1798A4BC00DF8E4C /* WebSocketNSStream.m in Sources */,
 				8461CE5D1798A4BC00DF8E4C /* WebSocketUIView.m in Sources */,
 				84DC139A1799E02800F6ED91 /* ZNBIP32Sequence.m in Sources */,
-				847C2302179A1FD600163CEF /* ZNMnemonic.m in Sources */,
+				847C2302179A1FD600163CEF /* ZNElecturmMnemonic.m in Sources */,
 				756E9CD617ACC95D00D316A8 /* ZNWallet+WebSocket.m in Sources */,
+				75A6ECE317BD464A0043E52D /* ZNBIP39Mnemonic.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

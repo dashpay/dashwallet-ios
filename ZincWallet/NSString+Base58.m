@@ -85,7 +85,7 @@ const char base58chars[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrst
 
 + (NSString *)base58WithData:(NSData *)d
 {
-    int i = d.length*138/100 + 2;
+    NSUInteger i = d.length*138/100 + 2;
     char s[i];
     BN_CTX *ctx = BN_CTX_new();
     BIGNUM base, x, r;

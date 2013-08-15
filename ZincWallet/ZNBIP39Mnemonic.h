@@ -1,5 +1,5 @@
 //
-//  ZNMnemonic.h
+//  ZNBIP39Mnemonic.h
 //  ZincWallet
 //
 //  Created by Aaron Voisine on 8/15/13.
@@ -7,9 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "ZNMnemonic.h"
 
-@protocol ZNMnemonic <NSObject>
-@required
+@interface ZNBIP39Mnemonic : NSObject<ZNMnemonic>
 
 - (NSString *)encodePhrase:(NSData *)data;
 - (NSData *)decodePhrase:(NSString *)phrase;

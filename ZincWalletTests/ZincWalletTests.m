@@ -11,7 +11,8 @@
 #import "ZNWallet.h"
 #import "ZNElectrumSequence.h"
 #import "ZNBIP32Sequence.h"
-#import "ZNMnemonic.h"
+#import "ZNElecturmMnemonic.h"
+#import "ZNBIP39Mnemonic.h"
 #import "ZNTransaction.h"
 #import "ZNKey.h"
 #import "NSData+Hash.h"
@@ -84,11 +85,15 @@
     STAssertTrue(priority >= TX_FREE_MIN_PRIORITY, @"[ZNTransaction heightUntilFreeFor:atHeights:]");
 }
 
-#pragma mark - testMnemonic
+#pragma mark - testBIP39Mnemonic
 
-- (void)testMnemonicDecodePhrase
+//XXXX testBIP39Mnemonic
+
+#pragma mark - testElectrumMnemonic
+
+- (void)testElectrumMnemonicDecodePhrase
 {
-    ZNMnemonic *mnemonic = [ZNMnemonic mnemonicWithWordPlist:ELECTRUM_WORD_LIST_RESOURCE];
+    id<ZNMnemonic> mnemonic = [ZNElecturmMnemonic mnemonicWithWordPlist:ELECTRUM_WORD_LIST_RESOURCE];
 
     NSData *d = [mnemonic decodePhrase:@"like just love know never want time out there make look eye"];
 
@@ -113,9 +118,9 @@
     STAssertEqualObjects(d, @"8d02be487e1953ce2dd6c186fcc97e65".hexToData, @"[ZNWallet decodePhrase:]");
 }
 
-- (void)testMnemonicEncodePhrase
+- (void)testElectrumMnemonicEncodePhrase
 {
-    ZNMnemonic *mnemonic = [ZNMnemonic mnemonicWithWordPlist:ELECTRUM_WORD_LIST_RESOURCE];
+    id<ZNMnemonic> mnemonic = [ZNElecturmMnemonic mnemonicWithWordPlist:ELECTRUM_WORD_LIST_RESOURCE];
     
     NSString *s = [mnemonic encodePhrase:@"00285dfe00285e0100285e0400285e07".hexToData];
     

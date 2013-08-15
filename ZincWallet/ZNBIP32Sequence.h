@@ -2,7 +2,7 @@
 //  ZNBIP32Sequence.h
 //  ZincWallet
 //
-//  Created by Administrator on 7/19/13.
+//  Created by Aaron Voisine on 7/19/13.
 //  Copyright (c) 2013 zinc. All rights reserved.
 //
 

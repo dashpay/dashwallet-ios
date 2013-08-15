@@ -119,8 +119,8 @@
     NSLog(@"{\"op\":\"blocks_sub\"}");
     [webSocket send:@"{\"op\":\"blocks_sub\"}"];
     
-    [self subscribeToAddresses:[self addressesWithGapLimit:ELECTURM_GAP_LIMIT internal:NO]];
-    [self subscribeToAddresses:[self addressesWithGapLimit:ELECTURM_GAP_LIMIT_FOR_CHANGE internal:YES]];
+    [self subscribeToAddresses:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
+    [self subscribeToAddresses:[self addressesWithGapLimit:GAP_LIMIT_INTERNAL internal:YES]];
     [self subscribeToAddresses:self.fundedAddresses];
     [self subscribeToAddresses:self.spentAddresses];
 }

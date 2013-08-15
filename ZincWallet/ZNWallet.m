@@ -9,15 +9,25 @@
 #import "ZNWallet.h"
 #import "ZNTransaction.h"
 #import "ZNKey.h"
-#import "ZNMnemonic.h"
-#import "ZNKeySequence.h"
-#import "ZNElectrumSequence.h"
-#import "ZNBIP32Sequence.h"
 #import "ZNWallet+WebSocket.h"
 #import "NSData+Hash.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSString+Base58.h"
 #import "AFNetworking.h"
+
+#import "ZNMnemonic.h"
+#if WALLET_BIP39
+    #import "ZNBIP39Mnemonic.h"
+#else
+    #import "ZNElecturmMnemonic.h"
+#endif
+
+#import "ZNKeySequence.h"
+#if WALLET_BIP32
+    #import "ZNBIP32Sequence.h"
+#else
+#import "ZNElectrumSequence.h"
+#endif
 
 #define BASE_URL    @"https://blockchain.info"
 #define UNSPENT_URL BASE_URL "/unspent?active="
@@ -240,22 +250,33 @@ static NSData *getKeychainData(NSString *key)
     }
 }
 
-//XXXX switch mnemonic to bip39
 - (NSString *)seedPhrase
 {
-    return [[ZNMnemonic mnemonicWithWordPlist:ELECTRUM_WORD_LIST_RESOURCE] encodePhrase:self.seed];
+#if WALLET_BIP39
+    id<ZNMnemonic> mnemonic = [ZNBIP39Mnemonic new];
+#else
+    id<ZNMnemonic> mnemonic = [ZNElecturmMnemonic mnemonicWithWordPlist:ELECTRUM_WORD_LIST_RESOURCE];
+#endif
+
+    return [mnemonic encodePhrase:self.seed];
 }
 
 - (void)setSeedPhrase:(NSString *)seedPhrase
 {
-    self.seed = [[ZNMnemonic mnemonicWithWordPlist:ELECTRUM_WORD_LIST_RESOURCE] decodePhrase:seedPhrase];
+#if WALLET_BIP39
+    id<ZNMnemonic> mnemonic = [ZNBIP39Mnemonic new];
+#else
+    id<ZNMnemonic> mnemonic = [ZNElecturmMnemonic mnemonicWithWordPlist:ELECTRUM_WORD_LIST_RESOURCE];
+#endif
+
+    self.seed = [mnemonic decodePhrase:seedPhrase];
 }
 
 - (void)generateRandomSeed
 {
-    NSMutableData *seed = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), ELECTRUM_SEED_LENGTH));
+    NSMutableData *seed = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), SEED_LENGTH));
         
-    seed.length = ELECTRUM_SEED_LENGTH;
+    seed.length = SEED_LENGTH;
     SecRandomCopyBytes(kSecRandomDefault, seed.length, seed.mutableBytes);
 
     self.seed = seed;
@@ -322,7 +343,7 @@ static NSData *getKeychainData(NSString *key)
     //XXX refactor this to optimize for fewest network reqeusts (should only make two)
     //XXX also figure out why it's blocking the main thread for so long
     
-    [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT internal:NO completion:^(NSError *error) {
+    [self synchronizeWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO completion:^(NSError *error) {
         if (error) {
             _synchronizing = NO;
             [_defs synchronize];
@@ -334,7 +355,7 @@ static NSData *getKeychainData(NSString *key)
             return;
         }
         
-        [self synchronizeWithGapLimit:ELECTURM_GAP_LIMIT_FOR_CHANGE internal:YES completion:^(NSError *error) {
+        [self synchronizeWithGapLimit:GAP_LIMIT_INTERNAL internal:YES completion:^(NSError *error) {
             if (error) {
                 _synchronizing = NO;
                 [_defs synchronize];

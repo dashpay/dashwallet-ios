@@ -1,28 +1,28 @@
 //
-//  ZNMnemonic.m
+//  ZNElecturmMnemonic.m
 //  ZincWallet
 //
-//  Created by Administrator on 7/19/13.
+//  Created by Aaron Voisine on 7/19/13.
 //  Copyright (c) 2013 zinc. All rights reserved.
 //
 
-#import "ZNMnemonic.h"
+#import "ZNElecturmMnemonic.h"
 #import "NSString+Base58.h"
 
-@interface ZNMnemonic ()
+@interface ZNElecturmMnemonic ()
 
 @property (nonatomic, strong) NSArray *words;
 
 @end
 
-@implementation ZNMnemonic
+@implementation ZNElecturmMnemonic
 
-+ (ZNMnemonic *)mnemonicWithWords:(NSArray *)words
++ (instancetype)mnemonicWithWords:(NSArray *)words
 {
     return [[self alloc] initWithWords:words];
 }
 
-+ (ZNMnemonic *)mnemonicWithWordPlist:(NSString *)plist
++ (instancetype)mnemonicWithWordPlist:(NSString *)plist
 {
     return [[self alloc] initWithWordPlist:plist];
 }
@@ -114,7 +114,7 @@
             return nil;
         }
 
-        // python's modulo behaves differently than C when dealing with negative numbers
+        // python's modulo behaves differently than C's when dealing with negative numbers
         // the equivalent of python's (n % M) in C is (((n % M) + M) % M)
         x = CFSwapInt32HostToBig(w1 + n*((((w2 - w1) % n) + n) % n) + n*n*((((w3 - w2) % n) + n) % n));
         
