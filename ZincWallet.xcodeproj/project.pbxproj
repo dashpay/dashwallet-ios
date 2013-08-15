@@ -3714,7 +3714,7 @@
 			attributes = {
 				CLASSPREFIX = ZN;
 				LastUpgradeCheck = 0460;
-				ORGANIZATIONNAME = zinc;
+				ORGANIZATIONNAME = "Aaron Voisine";
 			};
 			buildConfigurationList = 75D8F379173ABE3C0080D95E /* Build configuration list for PBXProject "ZincWallet" */;
 			compatibilityVersion = "Xcode 3.2";
