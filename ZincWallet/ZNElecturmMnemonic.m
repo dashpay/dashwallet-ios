@@ -26,38 +26,17 @@
 #import "ZNElecturmMnemonic.h"
 #import "NSString+Base58.h"
 
-@interface ZNElecturmMnemonic ()
-
-@property (nonatomic, strong) NSArray *words;
-
-@end
+#define WORDS @"ElectrumSeedWords"
 
 @implementation ZNElecturmMnemonic
 
-+ (instancetype)mnemonicWithWords:(NSArray *)words
++ (instancetype)sharedInstance
 {
-    return [[self alloc] initWithWords:words];
-}
-
-+ (instancetype)mnemonicWithWordPlist:(NSString *)plist
-{
-    return [[self alloc] initWithWordPlist:plist];
-}
-
-- (instancetype)initWithWords:(NSArray *)words
-{
-    if (! (self = [self init])) return nil;
-
-    self.words = words;
-
-    return self;
-}
-
-- (instancetype)initWithWordPlist:(NSString *)plist
-{
-    NSArray *words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:plist ofType:@"plist"]];
-
-    return [self initWithWords:words];
+    static id singleton = nil;
+    static dispatch_once_t onceToken = 0;
+    
+    dispatch_once(&onceToken, ^{ singleton = [self new]; });
+    return singleton;
 }
 
 //# Note about US patent no 5892470: Here each word does not represent a given digit.
@@ -76,8 +55,9 @@
 //
 - (NSString *)encodePhrase:(NSData *)data
 {
-    uint32_t n = self.words.count, x, w1, w2, w3;
-    NSMutableArray *list =
+    NSArray *words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:WORDS ofType:@"plist"]];
+    uint32_t n = words.count, x, w1, w2, w3;
+    NSMutableArray *a =
         CFBridgingRelease(CFArrayCreateMutable(SecureAllocator(), data.length*3/4, &kCFTypeArrayCallBacks));
 
     for (int i = 0; i*sizeof(uint32_t) < data.length; i++) {
@@ -86,13 +66,13 @@
         w2 = ((x/n) + w1) % n;
         w3 = ((x/n/n) + w2) % n;
 
-        [list addObject:self.words[w1]];
-        [list addObject:self.words[w2]];
-        [list addObject:self.words[w3]];
+        [a addObject:words[w1]];
+        [a addObject:words[w2]];
+        [a addObject:words[w3]];
     }
 
     x = w1 = w2 = w3 = 0;
-    return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (__bridge CFArrayRef)list,CFSTR(" ")));
+    return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (__bridge CFArrayRef)a, CFSTR(" ")));
 }
 
 //def mn_decode( wlist ):
@@ -108,26 +88,27 @@
 //
 - (NSData *)decodePhrase:(NSString *)phrase
 {
+    NSArray *words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:WORDS ofType:@"plist"]];
     CFMutableStringRef s = CFStringCreateMutableCopy(SecureAllocator(), phrase.length, (__bridge CFStringRef)phrase);
 
     CFStringTrimWhitespace(s);
 
-    NSArray *list = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), s, CFSTR(" ")));
-    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), list.count*4/3));
-    int32_t n = self.words.count, x, w1, w2, w3;
+    NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), s, CFSTR(" ")));
+    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), a.count*4/3));
+    int32_t n = words.count, x, w1, w2, w3;
 
-    if (list.count != 12) {
-        NSLog(@"phrase should be 12 words, found %d instead", list.count);
+    if (a.count != 12) {
+        NSLog(@"phrase should be 12 words, found %d instead", a.count);
         return nil;
     }
 
-    for (NSUInteger i = 0; i < list.count; i += 3) {
-        w1 = [self.words indexOfObject:list[i]];
-        w2 = [self.words indexOfObject:list[i + 1]];
-        w3 = [self.words indexOfObject:list[i + 2]];
+    for (NSUInteger i = 0; i < a.count; i += 3) {
+        w1 = [words indexOfObject:a[i]];
+        w2 = [words indexOfObject:a[i + 1]];
+        w3 = [words indexOfObject:a[i + 2]];
 
         if (w1 == NSNotFound || w2 == NSNotFound || w3 == NSNotFound) {
-            NSLog(@"phrase contained unknown word: %@", list[i + (w1 == NSNotFound ? 0 : w2 == NSNotFound ? 1 : 2)]);
+            NSLog(@"phrase contained unknown word: %@", a[i + (w1 == NSNotFound ? 0 : w2 == NSNotFound ? 1 : 2)]);
             return nil;
         }
 

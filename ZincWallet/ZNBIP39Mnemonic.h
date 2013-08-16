@@ -28,6 +28,8 @@
 
 @interface ZNBIP39Mnemonic : NSObject<ZNMnemonic>
 
++ (instancetype)sharedInstance;
+
 - (NSString *)encodePhrase:(NSData *)data;
 - (NSData *)decodePhrase:(NSString *)phrase;
 

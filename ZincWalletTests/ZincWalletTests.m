@@ -110,7 +110,7 @@
 
 - (void)testElectrumMnemonicDecodePhrase
 {
-    id<ZNMnemonic> mnemonic = [ZNElecturmMnemonic mnemonicWithWordPlist:ELECTRUM_WORD_LIST_RESOURCE];
+    id<ZNMnemonic> mnemonic = [ZNElecturmMnemonic sharedInstance];
 
     NSData *d = [mnemonic decodePhrase:@"like just love know never want time out there make look eye"];
 
@@ -137,7 +137,7 @@
 
 - (void)testElectrumMnemonicEncodePhrase
 {
-    id<ZNMnemonic> mnemonic = [ZNElecturmMnemonic mnemonicWithWordPlist:ELECTRUM_WORD_LIST_RESOURCE];
+    id<ZNMnemonic> mnemonic = [ZNElecturmMnemonic sharedInstance];
     
     NSString *s = [mnemonic encodePhrase:@"00285dfe00285e0100285e0400285e07".hexToData];
     

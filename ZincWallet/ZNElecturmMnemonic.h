@@ -30,11 +30,7 @@
 
 @interface ZNElecturmMnemonic : NSObject<ZNMnemonic>
 
-+ (instancetype)mnemonicWithWords:(NSArray *)words;
-+ (instancetype)mnemonicWithWordPlist:(NSString *)plist;
-
-- (instancetype)initWithWords:(NSArray *)words;
-- (instancetype)initWithWordPlist:(NSString *)plist;
++ (instancetype)sharedInstance;
 
 - (NSString *)encodePhrase:(NSData *)data;
 - (NSData *)decodePhrase:(NSString *)phrase;

@@ -52,7 +52,7 @@
 @property (nonatomic, readonly) NSTimeInterval timeSinceLastSync;
 @property (nonatomic, strong) NSNumberFormatter *format;
 
-+ (ZNWallet *)sharedInstance;
++ (instancetype)sharedInstance;
 
 - (instancetype)initWithSeedPhrase:(NSString *)phrase;
 - (instancetype)initWithSeed:(NSData *)seed;

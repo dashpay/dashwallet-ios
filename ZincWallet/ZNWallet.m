@@ -133,15 +133,12 @@ static NSData *getKeychainData(NSString *key)
 
 @implementation ZNWallet
 
-+ (ZNWallet *)sharedInstance
++ (instancetype)sharedInstance
 {
-    static ZNWallet *singleton = nil;
+    static id singleton = nil;
     static dispatch_once_t onceToken = 0;
     
-    dispatch_once(&onceToken, ^{
-        singleton = [ZNWallet new];
-    });
-
+    dispatch_once(&onceToken, ^{ singleton = [self new]; });
     return singleton;
 }
 
@@ -270,9 +267,9 @@ static NSData *getKeychainData(NSString *key)
 - (NSString *)seedPhrase
 {
 #if WALLET_BIP39
-    id<ZNMnemonic> mnemonic = [ZNBIP39Mnemonic new];
+    id<ZNMnemonic> mnemonic = [ZNBIP39Mnemonic sharedInstance];
 #else
-    id<ZNMnemonic> mnemonic = [ZNElecturmMnemonic mnemonicWithWordPlist:ELECTRUM_WORD_LIST_RESOURCE];
+    id<ZNMnemonic> mnemonic = [ZNElecturmMnemonic sharedInstance];
 #endif
 
     return [mnemonic encodePhrase:self.seed];
@@ -281,9 +278,9 @@ static NSData *getKeychainData(NSString *key)
 - (void)setSeedPhrase:(NSString *)seedPhrase
 {
 #if WALLET_BIP39
-    id<ZNMnemonic> mnemonic = [ZNBIP39Mnemonic new];
+    id<ZNMnemonic> mnemonic = [ZNBIP39Mnemonic sharedInstance];
 #else
-    id<ZNMnemonic> mnemonic = [ZNElecturmMnemonic mnemonicWithWordPlist:ELECTRUM_WORD_LIST_RESOURCE];
+    id<ZNMnemonic> mnemonic = [ZNElecturmMnemonic sharedInstance];
 #endif
 
     self.seed = [mnemonic decodePhrase:seedPhrase];
