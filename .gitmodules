@@ -1,9 +1,6 @@
 [submodule "AFNetowrking"]
 	path = AFNetowrking
 	url = git://github.com/AFNetworking/AFNetworking.git
-[submodule "bitcoin"]
-	path = bitcoin
-	url = git://github.com/bitcoin/bitcoin.git
 [submodule "ZBar"]
 	path = ZBar
 	url = git://github.com/ZBar/ZBar.git
@@ -13,6 +10,6 @@
 [submodule "MBProgressHUD"]
 	path = MBProgressHUD
 	url = git://github.com/matej/MBProgressHUD.git
-[submodule "iOS-WebSockets"]
-	path = iOS-WebSockets
-	url = git@github.com:zootreeves/iOS-WebSockets.git
+[submodule "SocketRocket"]
+	path = SocketRocket
+	url = git@github.com:square/SocketRocket.git
