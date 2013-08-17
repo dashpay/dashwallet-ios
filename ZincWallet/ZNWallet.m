@@ -125,7 +125,7 @@ static NSData *getKeychainData(NSString *key)
 @property (nonatomic, strong) NSUserDefaults *defs;
 @property (nonatomic, strong) NSNumberFormatter *localFormat;
 
-@property (nonatomic, strong) WebSocket *webSocket;
+@property (nonatomic, strong) SRWebSocket *webSocket;
 @property (nonatomic, assign) int connectFailCount;
 @property (nonatomic, strong) id reachabilityObserver, activeObserver;
 
@@ -354,8 +354,7 @@ static NSData *getKeychainData(NSString *key)
     
     self.updatedTransactions = [NSMutableSet set];
     
-    //XXX refactor this to optimize for fewest network reqeusts (should only make two)
-    //XXX also figure out why it's blocking the main thread for so long
+    //XXXX refactor this to optimize for fewest network reqeusts (should only make two)
     
     [self synchronizeWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO completion:^(NSError *error) {
         if (error) {
@@ -474,7 +473,11 @@ static NSData *getKeychainData(NSString *key)
         }
     }
     
-    if (newaddresses.count) dispatch_async(dispatch_get_main_queue(), ^{ [self subscribeToAddresses:newaddresses]; });
+    if (newaddresses.count) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            [self subscribeToAddresses:newaddresses];
+        });
+    }
     
     return addresses;
 }

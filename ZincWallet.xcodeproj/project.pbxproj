@@ -710,6 +710,11 @@
 		7591EC0E1773DD3700B44340 /* redgradient@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7591EC0D1773DD3700B44340 /* redgradient@2x.png */; };
 		75920F86174AB82100C1C03D /* NSMutableData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 75920F85174AB82100C1C03D /* NSMutableData+Bitcoin.m */; };
 		7593BD0A17A24D1500F814F6 /* cameraguide-small@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7593BD0917A24D1500F814F6 /* cameraguide-small@2x.png */; };
+		759B779317BECFCF0000510F /* base64.c in Sources */ = {isa = PBXBuildFile; fileRef = 759B778C17BECFCF0000510F /* base64.c */; };
+		759B779417BECFCF0000510F /* NSData+SRB64Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = 759B778F17BECFCF0000510F /* NSData+SRB64Additions.m */; };
+		759B779517BECFCF0000510F /* SRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 759B779217BECFCF0000510F /* SRWebSocket.m */; };
+		759B779717BF46AD0000510F /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759B779617BF46AD0000510F /* CFNetwork.framework */; };
+		759B779917BF46FE0000510F /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 759B779817BF46FE0000510F /* libicucore.dylib */; };
 		759CB235175E8A1200AFA559 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB234175E8A1200AFA559 /* QuartzCore.framework */; };
 		759CB237175E8A6E00AFA559 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB236175E8A6E00AFA559 /* CoreVideo.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		759CB239175E8AFE00AFA559 /* libiconv.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB238175E8AFE00AFA559 /* libiconv.dylib */; };
@@ -799,9 +804,6 @@
 		75FD9D511766532D00307894 /* ZBarReaderViewImpl_Capture.m in Sources */ = {isa = PBXBuildFile; fileRef = 75FD9D3B1766532D00307894 /* ZBarReaderViewImpl_Capture.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		75FD9D521766532D00307894 /* ZBarReaderViewImpl_Simulator.m in Sources */ = {isa = PBXBuildFile; fileRef = 75FD9D3C1766532D00307894 /* ZBarReaderViewImpl_Simulator.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		75FD9D531766532D00307894 /* ZBarSymbol.m in Sources */ = {isa = PBXBuildFile; fileRef = 75FD9D3D1766532D00307894 /* ZBarSymbol.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		8461CE5B1798A4BC00DF8E4C /* WebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 8461CE561798A4BC00DF8E4C /* WebSocket.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		8461CE5C1798A4BC00DF8E4C /* WebSocketNSStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 8461CE581798A4BC00DF8E4C /* WebSocketNSStream.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		8461CE5D1798A4BC00DF8E4C /* WebSocketUIView.m in Sources */ = {isa = PBXBuildFile; fileRef = 8461CE5A1798A4BC00DF8E4C /* WebSocketUIView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		847C2302179A1FD600163CEF /* ZNElecturmMnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = 847C2301179A1FD600163CEF /* ZNElecturmMnemonic.m */; };
 		84DC139A1799E02800F6ED91 /* ZNBIP32Sequence.m in Sources */ = {isa = PBXBuildFile; fileRef = 84DC13991799E02800F6ED91 /* ZNBIP32Sequence.m */; };
 /* End PBXBuildFile section */
@@ -1733,6 +1735,15 @@
 		75920F84174AB82100C1C03D /* NSMutableData+Bitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableData+Bitcoin.h"; sourceTree = "<group>"; };
 		75920F85174AB82100C1C03D /* NSMutableData+Bitcoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableData+Bitcoin.m"; sourceTree = "<group>"; };
 		7593BD0917A24D1500F814F6 /* cameraguide-small@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide-small@2x.png"; sourceTree = "<group>"; };
+		759B778C17BECFCF0000510F /* base64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = base64.c; sourceTree = "<group>"; };
+		759B778D17BECFCF0000510F /* base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = base64.h; sourceTree = "<group>"; };
+		759B778E17BECFCF0000510F /* NSData+SRB64Additions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+SRB64Additions.h"; sourceTree = "<group>"; };
+		759B778F17BECFCF0000510F /* NSData+SRB64Additions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+SRB64Additions.m"; sourceTree = "<group>"; };
+		759B779017BECFCF0000510F /* SocketRocket-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SocketRocket-Prefix.pch"; sourceTree = "<group>"; };
+		759B779117BECFCF0000510F /* SRWebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SRWebSocket.h; sourceTree = "<group>"; };
+		759B779217BECFCF0000510F /* SRWebSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SRWebSocket.m; sourceTree = "<group>"; };
+		759B779617BF46AD0000510F /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
+		759B779817BF46FE0000510F /* libicucore.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.dylib; path = usr/lib/libicucore.dylib; sourceTree = SDKROOT; };
 		759CB234175E8A1200AFA559 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		759CB236175E8A6E00AFA559 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		759CB238175E8AFE00AFA559 /* libiconv.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.dylib; path = usr/lib/libiconv.dylib; sourceTree = SDKROOT; };
@@ -1877,12 +1888,6 @@
 		75FD9D3B1766532D00307894 /* ZBarReaderViewImpl_Capture.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZBarReaderViewImpl_Capture.m; sourceTree = "<group>"; };
 		75FD9D3C1766532D00307894 /* ZBarReaderViewImpl_Simulator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZBarReaderViewImpl_Simulator.m; sourceTree = "<group>"; };
 		75FD9D3D1766532D00307894 /* ZBarSymbol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZBarSymbol.m; sourceTree = "<group>"; };
-		8461CE551798A4BC00DF8E4C /* WebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WebSocket.h; path = "iOS-WebSockets/WebSocket.h"; sourceTree = SOURCE_ROOT; };
-		8461CE561798A4BC00DF8E4C /* WebSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WebSocket.m; path = "iOS-WebSockets/WebSocket.m"; sourceTree = SOURCE_ROOT; };
-		8461CE571798A4BC00DF8E4C /* WebSocketNSStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WebSocketNSStream.h; path = "iOS-WebSockets/WebSocketNSStream.h"; sourceTree = SOURCE_ROOT; };
-		8461CE581798A4BC00DF8E4C /* WebSocketNSStream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WebSocketNSStream.m; path = "iOS-WebSockets/WebSocketNSStream.m"; sourceTree = SOURCE_ROOT; };
-		8461CE591798A4BC00DF8E4C /* WebSocketUIView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WebSocketUIView.h; path = "iOS-WebSockets/WebSocketUIView.h"; sourceTree = SOURCE_ROOT; };
-		8461CE5A1798A4BC00DF8E4C /* WebSocketUIView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WebSocketUIView.m; path = "iOS-WebSockets/WebSocketUIView.m"; sourceTree = SOURCE_ROOT; };
 		847C2300179A1FD600163CEF /* ZNElecturmMnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNElecturmMnemonic.h; sourceTree = "<group>"; };
 		847C2301179A1FD600163CEF /* ZNElecturmMnemonic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNElecturmMnemonic.m; sourceTree = "<group>"; };
 		84DC13981799E02800F6ED91 /* ZNBIP32Sequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNBIP32Sequence.h; sourceTree = "<group>"; };
@@ -1922,6 +1927,7 @@
 				7579C5DF17665B5300E89497 /* libzbar.a in Frameworks */,
 				75F17C2F1744CB3400D9F228 /* libssl.a in Frameworks */,
 				75F17C2E1744CB2E00D9F228 /* libcrypto.a in Frameworks */,
+				759B779717BF46AD0000510F /* CFNetwork.framework in Frameworks */,
 				753A4149178E070C003B938D /* AudioToolbox.framework in Frameworks */,
 				758B585E176BB1DE0069968F /* MessageUI.framework in Frameworks */,
 				759CB23B175E8D4900AFA559 /* AVFoundation.framework in Frameworks */,
@@ -1936,6 +1942,7 @@
 				75D8F382173ABE3C0080D95E /* UIKit.framework in Frameworks */,
 				75D8F384173ABE3C0080D95E /* Foundation.framework in Frameworks */,
 				75D8F386173ABE3C0080D95E /* CoreGraphics.framework in Frameworks */,
+				759B779917BF46FE0000510F /* libicucore.dylib in Frameworks */,
 				759CB239175E8AFE00AFA559 /* libiconv.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1966,7 +1973,7 @@
 			children = (
 				752C2F8517406EEA0033F636 /* Reachability.h */,
 				752C2F8617406EEA0033F636 /* Reachability.m */,
-				753A413C178DEB8A003B938D /* iOS-WebSockets */,
+				759B778B17BECFCF0000510F /* SocketRocket */,
 				75D422F41783E0B000BDD771 /* MBProgressHUD */,
 				752C38AF1742BC4D0033F636 /* AFNetworking */,
 				75FD9C0E17664FE600307894 /* zbar */,
@@ -3247,18 +3254,20 @@
 			path = ZBar/iphone/res;
 			sourceTree = SOURCE_ROOT;
 		};
-		753A413C178DEB8A003B938D /* iOS-WebSockets */ = {
+		759B778B17BECFCF0000510F /* SocketRocket */ = {
 			isa = PBXGroup;
 			children = (
-				8461CE551798A4BC00DF8E4C /* WebSocket.h */,
-				8461CE561798A4BC00DF8E4C /* WebSocket.m */,
-				8461CE571798A4BC00DF8E4C /* WebSocketNSStream.h */,
-				8461CE581798A4BC00DF8E4C /* WebSocketNSStream.m */,
-				8461CE591798A4BC00DF8E4C /* WebSocketUIView.h */,
-				8461CE5A1798A4BC00DF8E4C /* WebSocketUIView.m */,
+				759B778C17BECFCF0000510F /* base64.c */,
+				759B778D17BECFCF0000510F /* base64.h */,
+				759B778E17BECFCF0000510F /* NSData+SRB64Additions.h */,
+				759B778F17BECFCF0000510F /* NSData+SRB64Additions.m */,
+				759B779017BECFCF0000510F /* SocketRocket-Prefix.pch */,
+				759B779117BECFCF0000510F /* SRWebSocket.h */,
+				759B779217BECFCF0000510F /* SRWebSocket.m */,
 			);
-			path = "iOS-WebSockets";
-			sourceTree = "<group>";
+			name = SocketRocket;
+			path = SocketRocket/SocketRocket;
+			sourceTree = SOURCE_ROOT;
 		};
 		75AF36E317667E43004AA912 /* QRCodeEncoderObjectiveCAtGithub */ = {
 			isa = PBXGroup;
@@ -3406,6 +3415,7 @@
 		75D8F380173ABE3C0080D95E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				759B779617BF46AD0000510F /* CFNetwork.framework */,
 				753A4148178E070C003B938D /* AudioToolbox.framework */,
 				758B585D176BB1DE0069968F /* MessageUI.framework */,
 				759CB23C175E8D6300AFA559 /* CoreMedia.framework */,
@@ -3421,6 +3431,7 @@
 				75D8F383173ABE3C0080D95E /* Foundation.framework */,
 				75D8F385173ABE3C0080D95E /* CoreGraphics.framework */,
 				75D8F3B3173ABE3D0080D95E /* SenTestingKit.framework */,
+				759B779817BF46FE0000510F /* libicucore.dylib */,
 				759CB238175E8AFE00AFA559 /* libiconv.dylib */,
 			);
 			name = Frameworks;
@@ -4539,13 +4550,13 @@
 				7535CCDF176BE3D2007E29C5 /* ZNButton.m in Sources */,
 				75D423291783E0B100BDD771 /* MBProgressHUD.m in Sources */,
 				75183B88178B4ABE0032F365 /* ZNWelcomeViewController.m in Sources */,
-				8461CE5B1798A4BC00DF8E4C /* WebSocket.m in Sources */,
-				8461CE5C1798A4BC00DF8E4C /* WebSocketNSStream.m in Sources */,
-				8461CE5D1798A4BC00DF8E4C /* WebSocketUIView.m in Sources */,
 				84DC139A1799E02800F6ED91 /* ZNBIP32Sequence.m in Sources */,
 				847C2302179A1FD600163CEF /* ZNElecturmMnemonic.m in Sources */,
 				756E9CD617ACC95D00D316A8 /* ZNWallet+WebSocket.m in Sources */,
 				75A6ECE317BD464A0043E52D /* ZNBIP39Mnemonic.m in Sources */,
+				759B779317BECFCF0000510F /* base64.c in Sources */,
+				759B779417BECFCF0000510F /* NSData+SRB64Additions.m in Sources */,
+				759B779517BECFCF0000510F /* SRWebSocket.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

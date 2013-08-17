@@ -24,11 +24,9 @@
 //  THE SOFTWARE.
 
 #import "ZNWallet+WebSocket.h"
-#import "ZNElectrumSequence.h"
+#import "ZNKeySequence.h"
 #import "NSString+Base58.h"
 #import "NSMutableData+Bitcoin.h"
-#import "WebSocketUIView.h"
-#import "WebSocketNSStream.h"
 #import <AudioToolbox/AudioToolbox.h>
 #import <netinet/in.h>
 #import "Reachability.h"
@@ -52,7 +50,7 @@
 @property (nonatomic, strong) NSMutableDictionary *transactions, *unconfirmed;
 @property (nonatomic, strong) NSMutableDictionary *unspentOutputs, *addressBalances;
 
-@property (nonatomic, strong) WebSocket *webSocket;
+@property (nonatomic, strong) SRWebSocket *webSocket;
 @property (nonatomic, assign) int connectFailCount;
 @property (nonatomic, strong) id reachabilityObserver, activeObserver;
 
@@ -60,37 +58,42 @@
 
 @end
 
-//XXXX switch to socketrocket from zootreves's webview hack
-
 @implementation ZNWallet (WebSocket)
 
 - (void)openSocket
 {
     if (! self.webSocket) {
-        self.webSocket = [WebSocketUIView new];
+        self.webSocket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:SOCKET_URL]];
         self.webSocket.delegate = self;
         
         self.reachabilityObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
-                if ([(Reachability *)note.object currentReachabilityStatus] != NotReachable &&
-                    self.webSocket.readyState != ReadyStateOpen && self.webSocket.readyState != ReadyStateConnecting) {
-                    [self.webSocket connect:SOCKET_URL];
+                if ([(Reachability *)note.object currentReachabilityStatus] != NotReachable && self.webSocket &&
+                    self.webSocket.readyState != SR_OPEN && self.webSocket.readyState != SR_CONNECTING) {
+                    self.webSocket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:SOCKET_URL]];
+                    self.webSocket.delegate = self;
+                    [self.webSocket open];
                 }
             }];
         
         self.activeObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
-                if (self.webSocket.readyState != ReadyStateOpen && self.webSocket.readyState != ReadyStateConnecting) {
-                    [self.webSocket connect:SOCKET_URL];
+                if (self.webSocket && self.webSocket.readyState != SR_OPEN &&
+                    self.webSocket.readyState != SR_CONNECTING) {
+                    self.webSocket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:SOCKET_URL]];
+                    self.webSocket.delegate = self;
+                    [self.webSocket open];
                 }
             }];
         
-        [self.webSocket connect:SOCKET_URL];
+        [self.webSocket open];
     }
-    else if (self.webSocket.readyState != ReadyStateOpen && self.webSocket.readyState != ReadyStateConnecting) {
-        [self.webSocket connect:SOCKET_URL];
+    else if (self.webSocket.readyState != SR_OPEN && self.webSocket.readyState != SR_CONNECTING) {
+        self.webSocket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:SOCKET_URL]];
+        self.webSocket.delegate = self;
+        [self.webSocket open];
     }
 }
 
@@ -99,15 +102,14 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
     [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
 
-    [self.webSocket disconnect];
+    self.connectFailCount = 0;
+    [self.webSocket close];
     self.webSocket = nil;
 }
 
-#pragma mark - WebSocketDelegate
-
 - (void)subscribeToAddresses:(NSArray *)addresses
 {
-    if (! addresses.count || self.webSocket.readyState != ReadyStateOpen) return;
+    if (! addresses.count || self.webSocket.readyState != SR_OPEN) return;
     
     if (addresses.count > ADDRESSES_PER_QUERY) {
         [self subscribeToAddresses:[addresses subarrayWithRange:NSMakeRange(0, ADDRESSES_PER_QUERY)]];
@@ -127,46 +129,58 @@
     [self.webSocket send:msg];
 }
 
-- (void)webSocketOnOpen:(WebSocket*)webSocket
+#pragma mark - SRWebSocketDelegate
+
+- (void)webSocketDidOpen:(SRWebSocket *)webSocket
 {
     NSLog(@"Websocket on open");
     
     self.connectFailCount = 0;
     
     NSLog(@"{\"op\":\"blocks_sub\"}");
-    [webSocket send:@"{\"op\":\"blocks_sub\"}"];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [webSocket send:@"{\"op\":\"blocks_sub\"}"];
     
-    [self subscribeToAddresses:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
-    [self subscribeToAddresses:[self addressesWithGapLimit:GAP_LIMIT_INTERNAL internal:YES]];
-    [self subscribeToAddresses:self.fundedAddresses];
-    [self subscribeToAddresses:self.spentAddresses];
+        [self subscribeToAddresses:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
+        [self subscribeToAddresses:[self addressesWithGapLimit:GAP_LIMIT_INTERNAL internal:YES]];
+        [self subscribeToAddresses:self.fundedAddresses];
+        [self subscribeToAddresses:self.spentAddresses];
+    });
 }
 
-- (void)webSocketOnClose:(WebSocket*)webSocket
+- (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean
 {
     NSLog(@"Websocket on close");
     
     if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateActive && self.connectFailCount < 5) {
         self.connectFailCount++;
-        [webSocket connect:SOCKET_URL];
+        self.webSocket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:SOCKET_URL]];
+        self.webSocket.delegate = self;
+        [self.webSocket open];
     }
 }
 
-- (void)webSocket:(WebSocket*)webSocket onError:(NSError*)error
+- (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error;
 {
     NSLog(@"Websocket on error");
     
     if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateActive && self.connectFailCount < 5) {
         self.connectFailCount++;
-        [webSocket connect:SOCKET_URL];
+        self.webSocket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:SOCKET_URL]];
+        self.webSocket.delegate = self;
+        [self.webSocket open];
     }
 }
 
-- (void)webSocket:(WebSocket*)webSocket onReceive:(NSData*)data
-{ //Data is only until this function returns (You cannot retain it!)
+// message will either be an NSString if the server is using text
+// or NSData if the server is using binary.
+- (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)msg;
+//- (void)webSocket:(WebSocket*)webSocket onReceive:(NSData*)data
+{
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
         NSError *error = nil;
+        NSData *data = [msg isKindOfClass:[NSString class]] ? [msg dataUsingEncoding:NSUTF8StringEncoding] : msg;
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
         
         if (error || ! json) {

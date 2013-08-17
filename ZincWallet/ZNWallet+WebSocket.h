@@ -24,9 +24,9 @@
 //  THE SOFTWARE.
 
 #import "ZNWallet.h"
-#import "WebSocket.h"
+#import "SRWebSocket.h"
 
-@interface ZNWallet (WebSocket)<WebSocketDelegate>
+@interface ZNWallet (WebSocket)<SRWebSocketDelegate>
 
 - (void)openSocket;
 - (void)closeSocket;
