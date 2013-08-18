@@ -25,7 +25,7 @@
 
 #import <Foundation/Foundation.h>
 
-//#define WALLET_BIP32 1
+#define WALLET_BIP32 1
 //XXXX switch mnemonic to bip39
 //#define WALLET_BIP39 1
 
