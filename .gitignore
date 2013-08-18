@@ -18,5 +18,3 @@ DerivedData
 .idea/
 openssl
 openssl-*
-boost
-boost_*

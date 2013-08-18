@@ -27,6 +27,7 @@
 #import "ZNAmountViewController.h"
 #import "ZNReceiveViewController.h"
 #import "ZNWallet.h"
+#import "ZNWallet+WebSocket.h"
 #import "ZNPaymentRequest.h"
 #import "ZNKey.h"
 #import "ZNTransaction.h"
@@ -127,6 +128,8 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             if (w.timeSinceLastSync > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
+            else [w openSocket];
+
             [self layoutButtonsAnimated:YES]; // check the clipboard for changes
         }];
     
@@ -134,6 +137,7 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             if (w.timeSinceLastSync > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
+            else [w openSocket];
         }];
 
     self.balanceObserver =
@@ -161,6 +165,8 @@
             
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                          [w localCurrencyStringForAmount:w.balance]];
+            
+            [w openSocket];
         }];
 
     self.syncFailedObserver =
@@ -272,6 +278,7 @@
     [super viewDidAppear:animated];
 
     if ([[ZNWallet sharedInstance] timeSinceLastSync] > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
+    else [[ZNWallet sharedInstance] openSocket];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -504,9 +511,7 @@
     if (sender || [self.reachability currentReachabilityStatus] != NotReachable) {
         self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
         [self.spinner startAnimating];
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            [[ZNWallet sharedInstance] synchronize];
-        });
+        [[ZNWallet sharedInstance] synchronize];
     }
 }
 

@@ -104,7 +104,64 @@
 
 #pragma mark - testBIP39Mnemonic
 
-//XXXX testBIP39Mnemonic
+//XXXX test bip39
+- (void)testBIP39MnemonicDecodePhrase
+{
+    id<ZNMnemonic> mnemonic = [ZNBIP39Mnemonic sharedInstance];
+    
+    NSData *d = [mnemonic decodePhrase:@"like just love know never want time out there make look eye"];
+    
+    NSLog(@"like just love know never want time out there make look eye = 0x%@", [NSString hexWithData:d]);
+    
+    //STAssertEqualObjects(d, @"00285dfe00285e0100285e0400285e07".hexToData, @"[ZNWallet decodePhrase:]");
+    
+    d = [mnemonic decodePhrase:@"kick chair mask master passion quick raise smooth unless wander actually broke"];
+    
+    NSLog(@"kick chair mask master passion quick raise smooth unless wander actually broke = 0x%@",
+          [NSString hexWithData:d]);
+    
+    //STAssertEqualObjects(d, @"fea983ac0028608e0028609100286094".hexToData, @"[ZNWallet decodePhrase:]");
+    
+    // test of phrase with trailing space
+    d = [mnemonic
+         decodePhrase:@"kick quiet student ignore cruel danger describe accident eager darkness embrace suppose "];
+    
+    NSLog(@"kick quiet student ignore cruel danger describe accident eager darkness embrace suppose = 0x%@",
+          [NSString hexWithData:d]);
+    
+    //STAssertEqualObjects(d, @"8d02be487e1953ce2dd6c186fcc97e65".hexToData, @"[ZNWallet decodePhrase:]");
+}
+
+- (void)testBIP39MnemonicEncodePhrase
+{
+    id<ZNMnemonic> mnemonic = [ZNBIP39Mnemonic sharedInstance];
+    
+    NSString *s = [mnemonic encodePhrase:@"00285dfe00285e0100285e0400285e07".hexToData];
+    
+    NSLog(@"0x00285dfe00285e0100285e0400285e07 = %@", s);
+    
+    //STAssertEqualObjects(s, @"like just love know never want time out there make look eye",
+    //                     @"[ZNWallet encodePhrase:]");
+    
+    s = [mnemonic encodePhrase:@"00000000000000000000000000000000".hexToData];
+    
+    NSLog(@"0x00285dfe00285e0100285e0400285e07 = %@", s);
+    
+    s = [mnemonic encodePhrase:@"fea983ac0028608e0028609100286094".hexToData];
+    
+    NSLog(@"0x00285dfe00285e0100285e0400285e07 = %@", s);
+    
+    //STAssertEqualObjects(s, @"kick chair mask master passion quick raise smooth unless wander actually broke",
+    //                     @"[ZNWallet encodePhrase:]");
+    
+    s = [mnemonic encodePhrase:@"8d02be487e1953ce2dd6c186fcc97e65".hexToData];
+    
+    NSLog(@"0x8d02be487e1953ce2dd6c186fcc97e65 = %@", s);
+    
+    //STAssertEqualObjects(s, @"kick quiet student ignore cruel danger describe accident eager darkness embrace suppose",
+    //                     @"[ZNWallet encodePhrase:]");
+}
+
 
 #pragma mark - testElectrumMnemonic
 

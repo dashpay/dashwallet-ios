@@ -187,15 +187,8 @@ static NSData *getKeychainData(NSString *key)
     self.localFormat.numberStyle = NSNumberFormatterCurrencyStyle;
     self.localFormat.negativeFormat =
         [self.localFormat.positiveFormat stringByReplacingOccurrencesOfString:@"¤" withString:@"¤-"];
-
-    [self openSocket];
     
     return self;
-}
-
-- (void)dealloc
-{
-    [self closeSocket];
 }
 
 - (instancetype)initWithSeedPhrase:(NSString *)phrase
@@ -349,95 +342,88 @@ static NSData *getKeychainData(NSString *key)
     _synchronizing = YES;
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncStartedNotification object:self];
-        [self openSocket];
     });
     
-    self.updatedTransactions = [NSMutableSet set];
+    NSMutableArray *newAddresses = [NSMutableArray arrayWithCapacity:GAP_LIMIT_EXTERNAL + GAP_LIMIT_INTERNAL +
+                                    self.fundedAddresses.count + self.spentAddresses.count];
     
-    //XXXX refactor this to optimize for fewest network reqeusts (should only make two)
+    [newAddresses addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
+    [newAddresses addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_INTERNAL internal:YES]];
+    [newAddresses addObjectsFromArray:self.fundedAddresses];
+    [newAddresses addObjectsFromArray:self.spentAddresses];
     
-    [self synchronizeWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO completion:^(NSError *error) {
+    // An ARC retain loop when using block recursion is avoided here by passing the block to itself as an argument
+    void (^completion)(NSError *, id) = ^(NSError *error, id completion) {
         if (error) {
             _synchronizing = NO;
             [_defs synchronize];
-
+            
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification object:self
                  userInfo:@{@"error":error}];
             });
             return;
         }
+    
+        [newAddresses removeObjectsAtIndexes:[newAddresses
+        indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+            return [self.spentAddresses containsObject:obj] || [self.fundedAddresses containsObject:obj];
+        }]];
         
-        [self synchronizeWithGapLimit:GAP_LIMIT_INTERNAL internal:YES completion:^(NSError *error) {
-            if (error) {
-                _synchronizing = NO;
-                [_defs synchronize];
+        if (newAddresses.count < GAP_LIMIT_EXTERNAL + GAP_LIMIT_INTERNAL) {
+            [newAddresses setArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
+            [newAddresses addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_INTERNAL internal:YES]];
+            if (newAddresses.count) {
+                [self queryAddresses:newAddresses completion:^(NSError *error) {
+                    ((void (^)(NSError *, id))completion)(error, completion);
+                }];
+            }
+            return;
+        }
+        
+        @synchronized(self) {
+            // remove unconfirmed transactions that no longer appear in query results
+            //XXX we should keep a seprate list of failed transactions to display along with the successful ones
+            [self.transactions
+             removeObjectsForKeys:[self.transactions keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
+                return ! obj[@"block_height"] && ! [self.updatedTransactions containsObject:obj[@"hash"]];
+            }].allObjects];
+            
+            [_defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
+        }
 
+        [self queryUnspentOutputs:self.outdatedAddresses.allObjects completion:^(NSError *error) {
+            _synchronizing = NO;
+            
+            if (error) {
+                [_defs synchronize];
+                
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification object:self
                      userInfo:@{@"error":error}];
                 });
                 return;
             }
-
-            // check funded and spent addresses for new transactions
-            [self queryAddresses:[self.fundedAddresses arrayByAddingObjectsFromArray:self.spentAddresses]
-            completion:^(NSError *error) {
-                if (error) {
-                    _synchronizing = NO;
-                    [_defs synchronize];
-
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification
-                         object:self userInfo:@{@"error":error}];
-                    });
-                    return;
-                }
+            
+            [self cleanUnconfirmed];
+            
+            [_defs setDouble:[NSDate timeIntervalSinceReferenceDate] forKey:LAST_SYNC_TIME_KEY];
+            [_defs synchronize];
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:self];
                 
-                @synchronized(self) {
-                    // remove unconfirmed transactions that no longer appear in query results
-                    //XXX we should keep a seprate list of failed transactions to display along with the successful ones
-                    [self.transactions removeObjectsForKeys:[self.transactions
-                    keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-                        return ! obj[@"block_height"] && ! [self.updatedTransactions containsObject:obj[@"hash"]];
-                    }].allObjects];
-
-                    [_defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
-                }
-
-                [self queryUnspentOutputs:self.outdatedAddresses.allObjects completion:^(NSError *error) {
-                    if (error) {
-                        _synchronizing = NO;
-                        [_defs synchronize];
-
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification
-                             object:self userInfo:@{@"error":error}];
-                        });
-                        return;
-                    }
-                    
-                    _synchronizing = NO;
-                    
-                    [self cleanUnconfirmed];
-                    
-                    [_defs setDouble:[NSDate timeIntervalSinceReferenceDate] forKey:LAST_SYNC_TIME_KEY];
-                    [_defs synchronize];
-
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification
-                         object:self];
-
-                        // need to send balance notification every time since exchnage rates might be different
-                        //if (self.outdatedAddresses.count) {
-                            [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification
-                             object:self];
-                        //}
-                    });
-                }];
-            }];
+                // send balance notification every time since exchnage rates might have changed
+                [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:self];
+            });
         }];
-    }];
+    };
+    
+    self.updatedTransactions = [NSMutableSet set];
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [self queryAddresses:newAddresses completion:^(NSError *error) { completion(error, completion); }];
+    });
 }
 
 - (NSArray *)addressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal
@@ -482,36 +468,6 @@ static NSData *getKeychainData(NSString *key)
     return addresses;
 }
 
-- (void)synchronizeWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal
-completion:(void (^)(NSError *error))completion
-{    
-    NSMutableArray *newAddresses = [[self addressesWithGapLimit:gapLimit internal:internal] mutableCopy];
-    
-    if (! newAddresses) {
-        if (completion) {
-            completion(nil);
-            //completion([NSError errorWithDomain:@"ZincWallet" code:500
-            //            userInfo:@{NSLocalizedDescriptionKey:@"error generating keys"}]);
-        }
-        return;
-    }
-    
-    [self queryAddresses:newAddresses completion:^(NSError *error) {
-        [newAddresses removeObjectsAtIndexes:[newAddresses
-        indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-            return [self.spentAddresses containsObject:obj] || [self.fundedAddresses containsObject:obj];
-        }]];
-        
-        if (newAddresses.count < gapLimit) {
-            [self synchronizeWithGapLimit:gapLimit internal:internal completion:completion];
-        }
-        else if (self.outdatedAddresses.count) {
-            [self queryUnspentOutputs:self.outdatedAddresses.allObjects completion:completion];
-        }
-        else if (completion) completion(error);
-    }];    
-}
-
 // query blockchain for the given addresses
 - (void)queryAddresses:(NSArray *)addresses completion:(void (^)(NSError *error))completion
 {
@@ -537,7 +493,6 @@ completion:(void (^)(NSError *error))completion
     
     NSURL *url = [NSURL URLWithString:[ADDRESS_URL stringByAppendingString:[[addresses componentsJoinedByString:@"|"]
                   stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
-
     __block dispatch_queue_t q = dispatch_get_current_queue();
     __block AFJSONRequestOperation *requestOp =
         [AFJSONRequestOperation JSONRequestOperationWithRequest:[NSURLRequest requestWithURL:url]
@@ -601,10 +556,6 @@ completion:(void (^)(NSError *error))completion
                 if (price > DBL_EPSILON) [_defs setDouble:price forKey:LOCAL_CURRENCY_PRICE_KEY];
             }
             
-            if (self.outdatedAddresses.count) {
-                [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:self];
-            }
-            
             if (completion) dispatch_async(q, ^{ completion(nil); });
         } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
             NSLog(@"%@", error.localizedDescription);
@@ -612,6 +563,7 @@ completion:(void (^)(NSError *error))completion
             if (completion) dispatch_async(q, ^{ completion(error); });
         }];
     
+    NSLog(@"%@", url.absoluteString);
     requestOp.successCallbackQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
     requestOp.failureCallbackQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
     [requestOp start];
@@ -711,6 +663,7 @@ completion:(void (^)(NSError *error))completion
             if (completion) dispatch_async(q, ^{ completion(nil); });
         }];
 
+    NSLog(@"%@", url.absoluteString);
     requestOp.successCallbackQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
     requestOp.failureCallbackQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
     [requestOp start];
