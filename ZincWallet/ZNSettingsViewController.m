@@ -237,10 +237,13 @@
         case 1:
             cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
             if (! cell.backgroundView) {
-                UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0, -1.0, cell.frame.size.width, 1.0)];
+                UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0, -1, cell.frame.size.width, 1)];
                 
                 cell.backgroundView = [[UIView alloc] initWithFrame:cell.frame];
                 cell.backgroundView.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.67];
+                v.backgroundColor = tableView.separatorColor;
+                [cell.backgroundView addSubview:v];
+                v = [[UIView alloc] initWithFrame:CGRectMake(0, cell.frame.size.height - 1, cell.frame.size.width, 1)];
                 v.backgroundColor = tableView.separatorColor;
                 [cell.backgroundView addSubview:v];
             }
