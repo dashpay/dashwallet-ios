@@ -223,38 +223,38 @@ static NSData *getKeychainData(NSString *key)
 
 - (void)setSeed:(NSData *)seed
 {
-    if (! seed || ! [self.seed isEqual:seed]) {
-        @synchronized(self) {
-            setKeychainData(seed, SEED_KEY);
+    if (seed && [self.seed isEqual:seed]) return;
+    
+    @synchronized(self) {
+        setKeychainData(seed, SEED_KEY);
         
-            _synchronizing = NO;
-            self.mpk = nil;
-            [self.addresses removeAllObjects];
-            [self.changeAddresses removeAllObjects];
-            [self.outdatedAddresses removeAllObjects];
-            [self.fundedAddresses removeAllObjects];
-            [self.spentAddresses removeAllObjects];
-            [self.receiveAddresses removeAllObjects];
-            [self.transactions removeAllObjects];
-            [self.unconfirmed removeAllObjects];
-            [self.addressBalances removeAllObjects];
-            [self.addressTxCount removeAllObjects];
-            [self.unspentOutputs removeAllObjects];
-            
-            // flush cached addresses and tx outputs
-            [_defs removeObjectForKey:FUNDED_ADDRESSES_KEY];
-            [_defs removeObjectForKey:SPENT_ADDRESSES_KEY];
-            [_defs removeObjectForKey:RECEIVE_ADDRESSES_KEY];
-            [_defs removeObjectForKey:ADDRESS_BALANCES_KEY];
-            [_defs removeObjectForKey:ADDRESS_TX_COUNT_KEY];
-            [_defs removeObjectForKey:UNSPENT_OUTPUTS_KEY];
-            [_defs removeObjectForKey:TRANSACTIONS_KEY];
-            [_defs removeObjectForKey:UNCONFIRMED_KEY];
-            [_defs removeObjectForKey:LAST_SYNC_TIME_KEY];
-        }
-
-        [_defs synchronize];
+        _synchronizing = NO;
+        self.mpk = nil;
+        [self.addresses removeAllObjects];
+        [self.changeAddresses removeAllObjects];
+        [self.outdatedAddresses removeAllObjects];
+        [self.fundedAddresses removeAllObjects];
+        [self.spentAddresses removeAllObjects];
+        [self.receiveAddresses removeAllObjects];
+        [self.transactions removeAllObjects];
+        [self.unconfirmed removeAllObjects];
+        [self.addressBalances removeAllObjects];
+        [self.addressTxCount removeAllObjects];
+        [self.unspentOutputs removeAllObjects];
+        
+        // flush cached addresses and tx outputs
+        [_defs removeObjectForKey:FUNDED_ADDRESSES_KEY];
+        [_defs removeObjectForKey:SPENT_ADDRESSES_KEY];
+        [_defs removeObjectForKey:RECEIVE_ADDRESSES_KEY];
+        [_defs removeObjectForKey:ADDRESS_BALANCES_KEY];
+        [_defs removeObjectForKey:ADDRESS_TX_COUNT_KEY];
+        [_defs removeObjectForKey:UNSPENT_OUTPUTS_KEY];
+        [_defs removeObjectForKey:TRANSACTIONS_KEY];
+        [_defs removeObjectForKey:UNCONFIRMED_KEY];
+        [_defs removeObjectForKey:LAST_SYNC_TIME_KEY];
     }
+
+    [_defs synchronize];
 }
 
 - (NSString *)seedPhrase
@@ -291,7 +291,9 @@ static NSData *getKeychainData(NSString *key)
 
 - (NSData *)mpk
 {
-    if (! _mpk) self.mpk = [self.sequence masterPublicKeyFromSeed:self.seed];
+    if (_mpk) return _mpk;
+    
+    self.mpk = [self.sequence masterPublicKeyFromSeed:self.seed];
     return _mpk;
 }
 
@@ -352,7 +354,8 @@ static NSData *getKeychainData(NSString *key)
     [newAddresses addObjectsFromArray:self.fundedAddresses];
     [newAddresses addObjectsFromArray:self.spentAddresses];
     
-    // An ARC retain loop when using block recursion is avoided here by passing the block to itself as an argument
+    // An ARC retain loop when using block recursion is avoided here by passing the block to itself as an argument...
+    // Please, just shoot me now
     void (^completion)(NSError *, id) = ^(NSError *error, id completion) {
         if (error) {
             _synchronizing = NO;
@@ -692,45 +695,47 @@ static NSData *getKeychainData(NSString *key)
 
 - (NSString *)receiveAddress
 {
-    if (! self.receiveAddresses.count || ! self.addresses.count) {
-        NSUInteger i = 0;
-        NSString *a = nil;
-        
-        @synchronized(self) {
-            while (! a || [self.spentAddresses containsObject:a] || [self.fundedAddresses containsObject:a]) {
-                a = [[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ internal:NO masterPublicKey:self.mpk]]
-                     address];
-                
-                if (! a) return nil;
-                
-                if (self.addresses.count < i) [self.addresses addObject:a];
-            }
-        
-            if (! [self.receiveAddresses containsObject:a]) [self.receiveAddresses addObject:a];
-        }
+    if (self.receiveAddresses.count && self.addresses.count) {
+        return [self.addresses firstObjectCommonWithArray:self.receiveAddresses];
     }
-    
+
+    NSUInteger i = 0;
+    NSString *a = nil;
+        
+    @synchronized(self) {
+        while (! a || [self.spentAddresses containsObject:a] || [self.fundedAddresses containsObject:a]) {
+            a = [[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ internal:NO masterPublicKey:self.mpk]] address];
+                
+            if (! a) return nil;
+            
+            if (self.addresses.count < i) [self.addresses addObject:a];
+        }
+        
+        if (! [self.receiveAddresses containsObject:a]) [self.receiveAddresses addObject:a];
+    }
+
     return [self.addresses firstObjectCommonWithArray:self.receiveAddresses];
 }
 
 - (NSString *)changeAddress
 {
-    if (! self.receiveAddresses.count || ! self.changeAddresses.count) {
-        NSUInteger i = 0;
-        NSString *a = nil;
-        
-        @synchronized(self) {
-            while (! a || [self.spentAddresses containsObject:a] || [self.fundedAddresses containsObject:a]) {
-                a = [[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ internal:YES masterPublicKey:self.mpk]]
-                     address];
+    if (self.receiveAddresses.count && self.changeAddresses.count) {
+        return [self.changeAddresses firstObjectCommonWithArray:self.receiveAddresses];
+    }
+    
+    NSUInteger i = 0;
+    NSString *a = nil;
+    
+    @synchronized(self) {
+        while (! a || [self.spentAddresses containsObject:a] || [self.fundedAddresses containsObject:a]) {
+            a = [[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ internal:YES masterPublicKey:self.mpk]] address];
             
-                if (! a) return nil;
+            if (! a) return nil;
             
-                if (self.changeAddresses.count < i) [self.changeAddresses addObject:a];
-            }
-        
-            if (! [self.receiveAddresses containsObject:a]) [self.receiveAddresses addObject:a];
+            if (self.changeAddresses.count < i) [self.changeAddresses addObject:a];
         }
+        
+        if (! [self.receiveAddresses containsObject:a]) [self.receiveAddresses addObject:a];
     }
     
     return [self.changeAddresses firstObjectCommonWithArray:self.receiveAddresses];

@@ -292,11 +292,10 @@
 
 - (ZNReceiveViewController *)receiveController
 {
-    if (! _receiveController) {
-        _receiveController = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNReceiveViewController"];
-        _receiveController.navController = self.navigationController;
-    }
+    if (_receiveController) return _receiveController;
     
+    _receiveController = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNReceiveViewController"];
+    _receiveController.navController = self.navigationController;    
     return _receiveController;
 }
 
@@ -508,23 +507,22 @@
 
 - (IBAction)refresh:(id)sender
 {
-    if (sender || [self.reachability currentReachabilityStatus] != NotReachable) {
-        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
-        [self.spinner startAnimating];
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            [[ZNWallet sharedInstance] synchronize];
-        });
-    }
+    if (! sender && [self.reachability currentReachabilityStatus] == NotReachable) return;
+    
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
+    [self.spinner startAnimating];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [[ZNWallet sharedInstance] synchronize];
+    });
 }
 
 - (IBAction)page:(id)sender
 {
-    if (! [self.scrollView isTracking] && ! [self.scrollView isDecelerating] &&
-        self.pageControl.currentPage != self.scrollView.contentOffset.x/self.scrollView.frame.size.width + 0.5) {
+    if ([self.scrollView isTracking] || [self.scrollView isDecelerating] ||
+        self.pageControl.currentPage == self.scrollView.contentOffset.x/self.scrollView.frame.size.width + 0.5) return;
         
-        [self.scrollView setContentOffset:CGPointMake(self.pageControl.currentPage*self.scrollView.frame.size.width, 0)
-         animated:YES];
-    }
+    [self.scrollView setContentOffset:CGPointMake(self.pageControl.currentPage*self.scrollView.frame.size.width, 0)
+     animated:YES];
 }
 
 #pragma mark - UIScrollViewDelegate
@@ -619,6 +617,7 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
             [self.spinner startAnimating];
             self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
             
+            //XXX check for duplicate transactions
             [w publishTransaction:tx completion:^(NSError *error) {
                 [self.spinner stopAnimating];
                 self.navigationItem.rightBarButtonItem = self.refreshButton;

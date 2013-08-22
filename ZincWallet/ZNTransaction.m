@@ -167,12 +167,11 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
         [self.signatures replaceObjectAtIndex:i withObject:sig];
     }
     
-    if ([self isSigned]) {
-        self.hash = [[[self toData] SHA256_2] reverse];
+    if (! [self isSigned]) return NO;
+    
+    self.hash = [[[self toData] SHA256_2] reverse];
         
-        return YES;
-    }
-    else return NO;
+    return YES;
 }
 
 - (BOOL)isSigned

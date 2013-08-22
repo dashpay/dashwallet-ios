@@ -46,14 +46,14 @@
     
     self.textView.layer.cornerRadius = 5.0;
     
-    if (self.navigationController.viewControllers[0] == self) {
-        self.textView.layer.borderColor = [[UIColor colorWithWhite:0.0 alpha:0.25] CGColor];
-        self.textView.layer.borderWidth = 0.5;
-        self.textView.textColor = [UIColor blackColor];
+    if (self.navigationController.viewControllers[0] != self) return;
+    
+    self.textView.layer.borderColor = [[UIColor colorWithWhite:0.0 alpha:0.25] CGColor];
+    self.textView.layer.borderWidth = 0.5;
+    self.textView.textColor = [UIColor blackColor];
 
-        if ([self.navigationController.navigationBar respondsToSelector:@selector(shadowImage)]) {
-            [self.navigationController.navigationBar setShadowImage:[UIImage new]];
-        }
+    if ([self.navigationController.navigationBar respondsToSelector:@selector(shadowImage)]) {
+        [self.navigationController.navigationBar setShadowImage:[UIImage new]];
     }
 }
 
@@ -137,73 +137,73 @@
     textView.text = s;
     textView.selectedRange = selected;
     
-    if (done) {
-        s = [[[[s stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]
-               stringByReplacingOccurrencesOfString:@"." withString:@" "]
-              stringByReplacingOccurrencesOfString:@"," withString:@" "]
-             lowercaseString];
+    if (! done) return;
+    
+    s = [[[[s stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]
+           stringByReplacingOccurrencesOfString:@"." withString:@" "]
+          stringByReplacingOccurrencesOfString:@"," withString:@" "]
+         lowercaseString];
         
-        while ([s rangeOfString:@"  "].location != NSNotFound) {
-            s = [s stringByReplacingOccurrencesOfString:@"  " withString:@" "];
-        }
-        
-        NSArray *a = [s componentsSeparatedByString:@" "];
+    while ([s rangeOfString:@"  "].location != NSNotFound) {
+        s = [s stringByReplacingOccurrencesOfString:@"  " withString:@" "];
+    }
+    
+    NSArray *a = [s componentsSeparatedByString:@" "];
         
 #if WALLET_BIP39
-        NSString *incorrect = nil;
+    NSString *incorrect = nil;
         
-        for (NSUInteger i = 0; i < 12; i += 6) {
-            if (i < a.count && ! [self.adjs containsObject:a[i]]) incorrect = a[i];
-            else if (i + 1 < a.count && ! [self.nouns containsObject:a[i + 1]]) incorrect = a[i + 1];
-            else if (i + 2 < a.count && ! [self.advs containsObject:a[i + 2]]) incorrect = a[i + 2];
-            else if (i + 3 < a.count && ! [self.verbs containsObject:a[i + 3]]) incorrect = a[i + 3];
-            else if (i + 4 < a.count && ! [self.adjs containsObject:a[i + 4]]) incorrect = a[i + 4];
-            else if (i + 5 < a.count && ! [self.nouns containsObject:a[i + 5]]) incorrect = a[i + 5];
-        }
+    for (NSUInteger i = 0; i < 12; i += 6) {
+        if (i < a.count && ! [self.adjs containsObject:a[i]]) incorrect = a[i];
+        else if (i + 1 < a.count && ! [self.nouns containsObject:a[i + 1]]) incorrect = a[i + 1];
+        else if (i + 2 < a.count && ! [self.advs containsObject:a[i + 2]]) incorrect = a[i + 2];
+        else if (i + 3 < a.count && ! [self.verbs containsObject:a[i + 3]]) incorrect = a[i + 3];
+        else if (i + 4 < a.count && ! [self.adjs containsObject:a[i + 4]]) incorrect = a[i + 4];
+        else if (i + 5 < a.count && ! [self.nouns containsObject:a[i + 5]]) incorrect = a[i + 5];
+    }
 
-        if (incorrect) {
-            //XXX the range should be set by word count, not string match
-            textView.selectedRange = [[textView.text lowercaseString] rangeOfString:incorrect];
-            
-            [[[UIAlertView alloc] initWithTitle:nil
-              message:[incorrect stringByAppendingString:@" is not the correct backup phrase word"] delegate:nil
-              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-        }
+    if (incorrect) {
+        //XXX the range should be set by word count, not string match
+        textView.selectedRange = [[textView.text lowercaseString] rangeOfString:incorrect];
+        
+        [[[UIAlertView alloc] initWithTitle:nil
+          message:[incorrect stringByAppendingString:@" is not the correct backup phrase word"] delegate:nil
+          cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+    }
 #else
-        if (! [[NSSet setWithArray:a] isSubsetOfSet:self.words]) {
-            NSUInteger i = [a indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-                return [self.words containsObject:obj] ? NO : (*stop = YES);
-            }];
+    if (! [[NSSet setWithArray:a] isSubsetOfSet:self.words]) {
+        NSUInteger i = [a indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+            return [self.words containsObject:obj] ? NO : (*stop = YES);
+        }];
+        
+        textView.selectedRange = [textView.text rangeOfString:a[i]];
             
-            textView.selectedRange = [textView.text rangeOfString:a[i]];
-            
-            [[[UIAlertView alloc] initWithTitle:nil
-              message:[a[i] stringByAppendingString:@" is not a correct backup phrase word"] delegate:nil
-              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-        }
+        [[[UIAlertView alloc] initWithTitle:nil
+          message:[a[i] stringByAppendingString:@" is not a correct backup phrase word"] delegate:nil
+          cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+    }
 #endif
-        else if (a.count != 12) {
-            [[[UIAlertView alloc] initWithTitle:nil message:@"backup phrase must be 12 words" delegate:nil
-              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-        }
-        else if ([[ZNWallet sharedInstance] seed]) {
-            if ([[[ZNWallet sharedInstance] seedPhrase] isEqual:textView.text]) {
-                [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"cancel"
-                  destructiveButtonTitle:@"wipe" otherButtonTitles:nil]
-                 showInView:[[UIApplication sharedApplication] keyWindow]];
-            }
-            else {
-                [[[UIAlertView alloc] initWithTitle:nil message:@"backup phrase doesn't match" delegate:nil
-                  cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-            }
+    else if (a.count != 12) {
+        [[[UIAlertView alloc] initWithTitle:nil message:@"backup phrase must be 12 words" delegate:nil
+          cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+    }
+    else if ([[ZNWallet sharedInstance] seed]) {
+        if ([[[ZNWallet sharedInstance] seedPhrase] isEqual:textView.text]) {
+            [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"cancel"
+              destructiveButtonTitle:@"wipe" otherButtonTitles:nil]
+             showInView:[[UIApplication sharedApplication] keyWindow]];
         }
         else {
-            [[ZNWallet sharedInstance] setSeedPhrase:textView.text];
-        
-            textView.text = nil;
-                        
-            [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+            [[[UIAlertView alloc] initWithTitle:nil message:@"backup phrase doesn't match" delegate:nil
+              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
         }
+    }
+    else {
+        [[ZNWallet sharedInstance] setSeedPhrase:textView.text];
+        
+        textView.text = nil;
+        
+        [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
     }
 }
 
@@ -211,18 +211,18 @@
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    if (buttonIndex == actionSheet.destructiveButtonIndex) {
-        [[ZNWallet sharedInstance] setSeed:nil];
+    if (buttonIndex != actionSheet.destructiveButtonIndex) return;
+    
+    [[ZNWallet sharedInstance] setSeed:nil];
 
-        self.textView.text = nil;
-
-        UIViewController *p = self.navigationController.presentingViewController.presentingViewController;
-
-        [p dismissViewControllerAnimated:NO completion:^{
-            [p presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"ZNNewWalletNav"]
-             animated:NO completion:nil];
-        }];
-    }
+    self.textView.text = nil;
+    
+    UIViewController *p = self.navigationController.presentingViewController.presentingViewController;
+    
+    [p dismissViewControllerAnimated:NO completion:^{
+        [p presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"ZNNewWalletNav"]
+         animated:NO completion:nil];
+    }];
 }
 
 @end

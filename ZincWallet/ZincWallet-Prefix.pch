@@ -11,6 +11,7 @@
 #ifdef __OBJC__
     #import <UIKit/UIKit.h>
     #import <Foundation/Foundation.h>
+    #import <CoreData/CoreData.h>
     #import <SystemConfiguration/SystemConfiguration.h>
     #import <MobileCoreServices/MobileCoreServices.h>
 #endif
@@ -25,7 +26,7 @@
 
 #define bitcoinURLNotification @"bitcoinURLNotification"
 
-// defines for third party libs
+// defines for building third party libs
 
 #define OPENSSL_NO_HW
 #define OPENSSL_NO_GOST

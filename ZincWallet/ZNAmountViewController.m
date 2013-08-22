@@ -132,52 +132,52 @@
 
     self.request.amount = [w amountForString:self.amountField.text];
 
-    if (self.request.amount > 0 && self.request.isValid) {
-        if (self.request.amount < TX_MIN_OUTPUT_AMOUNT) {
-            [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment"
-              message:[@"Bitcoin payments can't be less than "
-                       stringByAppendingString:[w stringForAmount:TX_MIN_OUTPUT_AMOUNT]] delegate:nil
-              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+    if (self.request.amount == 0 || ! self.request.isValid) return;
+    
+    if (self.request.amount < TX_MIN_OUTPUT_AMOUNT) {
+        [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment"
+          message:[@"Bitcoin payments can't be less than "
+                   stringByAppendingString:[w stringForAmount:TX_MIN_OUTPUT_AMOUNT]] delegate:nil
+                   cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
             
-            return;
-        }
+        return;
+    }
 
-        self.tx = [w transactionFor:self.request.amount to:self.request.paymentAddress withFee:NO];
-        self.txWithFee = [w transactionFor:self.request.amount to:self.request.paymentAddress withFee:YES];
-
-        NSString *fee = [w stringForAmount:[w transactionFee:self.txWithFee]];
-        NSTimeInterval t = [w timeUntilFree:self.tx];
+    self.tx = [w transactionFor:self.request.amount to:self.request.paymentAddress withFee:NO];
+    self.txWithFee = [w transactionFor:self.request.amount to:self.request.paymentAddress withFee:YES];
+    
+    NSString *fee = [w stringForAmount:[w transactionFee:self.txWithFee]];
+    NSTimeInterval t = [w timeUntilFree:self.tx];
+    
+    if (self.tx && ! self.txWithFee) fee = [w stringForAmount:[self.tx standardFee]];
+    
+    if (! self.tx) {
+        [[[UIAlertView alloc] initWithTitle:@"Insuficient Funds" message:nil delegate:nil cancelButtonTitle:@"OK"
+          otherButtonTitles:nil] show];
+    }
+    else if (t == DBL_MAX) {
+        [[[UIAlertView alloc] initWithTitle:@"transaction fee needed"
+          message:[NSString stringWithFormat:@"the bitcoin network needs a fee of %@ to send this payment", fee]
+          delegate:self cancelButtonTitle:@"cancel" otherButtonTitles:[NSString stringWithFormat:@"+ %@", fee], nil]
+         show];
+    }
+    else if (t > DBL_EPSILON) {
+        NSUInteger minutes = t/60, hours = t/(60*60), days = t/(60*60*24);
+        NSString *time = [NSString stringWithFormat:@"%d %@%@", days ? days : (hours ? hours : minutes),
+                          days ? @"day" : (hours ? @"hour" : @"minutes"),
+                          days > 1 ? @"s" : (days == 0 && hours > 1 ? @"s" : @"")];
         
-        if (self.tx && ! self.txWithFee) fee = [w stringForAmount:[self.tx standardFee]];
+        [[[UIAlertView alloc] initWithTitle:[NSString stringWithFormat:@"%@ transaction fee recommended", fee]
+          message:[NSString stringWithFormat:@"estimated confirmation time with no fee: %@", time] delegate:self
+          cancelButtonTitle:nil otherButtonTitles:@"no fee", [NSString stringWithFormat:@"+ %@", fee], nil] show];
+    }
+    else {
+        NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:self.request.amount],
+                            [w localCurrencyStringForAmount:self.request.amount]];
         
-        if (! self.tx) {
-            [[[UIAlertView alloc] initWithTitle:@"Insuficient Funds" message:nil delegate:nil cancelButtonTitle:@"OK"
-              otherButtonTitles:nil] show];
-        }
-        else if (t == DBL_MAX) {
-            [[[UIAlertView alloc] initWithTitle:@"transaction fee needed"
-              message:[NSString stringWithFormat:@"the bitcoin network needs a fee of %@ to send this payment", fee]
-              delegate:self cancelButtonTitle:@"cancel" otherButtonTitles:[NSString stringWithFormat:@"+ %@", fee], nil]
-             show];
-        }
-        else if (t > DBL_EPSILON) {
-            NSUInteger minutes = t/60, hours = t/(60*60), days = t/(60*60*24);
-            NSString *time = [NSString stringWithFormat:@"%d %@%@", days ? days : (hours ? hours : minutes),
-                              days ? @"day" : (hours ? @"hour" : @"minutes"),
-                              days > 1 ? @"s" : (days == 0 && hours > 1 ? @"s" : @"")];
-        
-            [[[UIAlertView alloc] initWithTitle:[NSString stringWithFormat:@"%@ transaction fee recommended", fee]
-              message:[NSString stringWithFormat:@"estimated confirmation time with no fee: %@", time] delegate:self
-              cancelButtonTitle:nil otherButtonTitles:@"no fee", [NSString stringWithFormat:@"+ %@", fee], nil] show];
-        }
-        else {
-            NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:self.request.amount],
-                                [w localCurrencyStringForAmount:self.request.amount]];
-            
-            [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
-              message:self.request.message ? self.request.message : self.request.paymentAddress delegate:self
-              cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
-        }
+        [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
+          message:self.request.message ? self.request.message : self.request.paymentAddress delegate:self
+          cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
     }
 }
 
@@ -262,6 +262,7 @@ replacementString:(NSString *)string
         
             NSLog(@"signed transaction:\n%@", [self.tx toHex]);
 
+            //XXX check for duplicate transactions
             [w publishTransaction:self.tx completion:^(NSError *error) {
                 [self.spinner stopAnimating];
                 self.navigationItem.rightBarButtonItem = self.payButton;

@@ -716,10 +716,9 @@
 		759B779717BF46AD0000510F /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759B779617BF46AD0000510F /* CFNetwork.framework */; };
 		759B779917BF46FE0000510F /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 759B779817BF46FE0000510F /* libicucore.dylib */; };
 		759CB235175E8A1200AFA559 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB234175E8A1200AFA559 /* QuartzCore.framework */; };
-		759CB237175E8A6E00AFA559 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB236175E8A6E00AFA559 /* CoreVideo.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		759CB239175E8AFE00AFA559 /* libiconv.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB238175E8AFE00AFA559 /* libiconv.dylib */; };
-		759CB23B175E8D4900AFA559 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB23A175E8D4900AFA559 /* AVFoundation.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		759CB23D175E8D6300AFA559 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB23C175E8D6300AFA559 /* CoreMedia.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		759CB23B175E8D4900AFA559 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB23A175E8D4900AFA559 /* AVFoundation.framework */; settings = {ATTRIBUTES = (Required, ); }; };
+		759CB23D175E8D6300AFA559 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB23C175E8D6300AFA559 /* CoreMedia.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		759CB240175F03BF00AFA559 /* ZNAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759CB23F175F03BF00AFA559 /* ZNAmountViewController.m */; };
 		75A6ECDD17B88F370043E52D /* navbar-bg@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75A6ECDC17B88F360043E52D /* navbar-bg@2x.png */; };
 		75A6ECE317BD464A0043E52D /* ZNBIP39Mnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = 75A6ECE217BD464A0043E52D /* ZNBIP39Mnemonic.m */; };
@@ -771,6 +770,9 @@
 		75F17C2F1744CB3400D9F228 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 752C300D1742AD060033F636 /* libssl.a */; };
 		75F17C351744CC2100D9F228 /* ZNTransaction.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F17C341744CC2100D9F228 /* ZNTransaction.m */; };
 		75F17C4417455F2D00D9F228 /* deletetoleft-inv.png in Resources */ = {isa = PBXBuildFile; fileRef = 75F17C4217455F2D00D9F228 /* deletetoleft-inv.png */; };
+		75F1B85A17C6CA9B00680E1B /* ZincWallet.xcdatamodel in Sources */ = {isa = PBXBuildFile; fileRef = 75F1B85917C6CA9B00680E1B /* ZincWallet.xcdatamodel */; };
+		75F1B85D17C6CC0B00680E1B /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75F1B85B17C6CC0B00680E1B /* CoreData.framework */; };
+		75F1B85E17C6CC0B00680E1B /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75F1B85C17C6CC0B00680E1B /* CoreVideo.framework */; };
 		75F9D3E6179F451F00C28B49 /* button-bg-blue-pressed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75F9D3E5179F451E00C28B49 /* button-bg-blue-pressed@2x.png */; };
 		75FD9C0317664F3000307894 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		75FD9C6817664FE700307894 /* config.c in Sources */ = {isa = PBXBuildFile; fileRef = 75FD9C0F17664FE600307894 /* config.c */; };
@@ -1749,7 +1751,6 @@
 		759B779617BF46AD0000510F /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		759B779817BF46FE0000510F /* libicucore.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.dylib; path = usr/lib/libicucore.dylib; sourceTree = SDKROOT; };
 		759CB234175E8A1200AFA559 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
-		759CB236175E8A6E00AFA559 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		759CB238175E8AFE00AFA559 /* libiconv.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.dylib; path = usr/lib/libiconv.dylib; sourceTree = SDKROOT; };
 		759CB23A175E8D4900AFA559 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		759CB23C175E8D6300AFA559 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
@@ -1822,6 +1823,9 @@
 		75F17C331744CC2100D9F228 /* ZNTransaction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNTransaction.h; sourceTree = "<group>"; };
 		75F17C341744CC2100D9F228 /* ZNTransaction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNTransaction.m; sourceTree = "<group>"; };
 		75F17C4217455F2D00D9F228 /* deletetoleft-inv.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "deletetoleft-inv.png"; sourceTree = "<group>"; };
+		75F1B85917C6CA9B00680E1B /* ZincWallet.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ZincWallet.xcdatamodel; sourceTree = "<group>"; };
+		75F1B85B17C6CC0B00680E1B /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		75F1B85C17C6CC0B00680E1B /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		75F9D3E5179F451E00C28B49 /* button-bg-blue-pressed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-blue-pressed@2x.png"; sourceTree = "<group>"; };
 		75FD9C0217664F3000307894 /* libzbar.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libzbar.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		75FD9C0F17664FE600307894 /* config.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = config.c; sourceTree = "<group>"; };
@@ -1935,11 +1939,12 @@
 				7579C5DF17665B5300E89497 /* libzbar.a in Frameworks */,
 				75F17C2F1744CB3400D9F228 /* libssl.a in Frameworks */,
 				75F17C2E1744CB2E00D9F228 /* libcrypto.a in Frameworks */,
+				75F1B85D17C6CC0B00680E1B /* CoreData.framework in Frameworks */,
+				75F1B85E17C6CC0B00680E1B /* CoreVideo.framework in Frameworks */,
 				759B779717BF46AD0000510F /* CFNetwork.framework in Frameworks */,
 				753A4149178E070C003B938D /* AudioToolbox.framework in Frameworks */,
 				758B585E176BB1DE0069968F /* MessageUI.framework in Frameworks */,
 				759CB23B175E8D4900AFA559 /* AVFoundation.framework in Frameworks */,
-				759CB237175E8A6E00AFA559 /* CoreVideo.framework in Frameworks */,
 				759CB23D175E8D6300AFA559 /* CoreMedia.framework in Frameworks */,
 				759CB235175E8A1200AFA559 /* QuartzCore.framework in Frameworks */,
 				7559FBA9174E85B10000E809 /* Security.framework in Frameworks */,
@@ -3423,12 +3428,13 @@
 		75D8F380173ABE3C0080D95E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				75F1B85B17C6CC0B00680E1B /* CoreData.framework */,
+				75F1B85C17C6CC0B00680E1B /* CoreVideo.framework */,
 				759B779617BF46AD0000510F /* CFNetwork.framework */,
 				753A4148178E070C003B938D /* AudioToolbox.framework */,
 				758B585D176BB1DE0069968F /* MessageUI.framework */,
 				759CB23C175E8D6300AFA559 /* CoreMedia.framework */,
 				759CB23A175E8D4900AFA559 /* AVFoundation.framework */,
-				759CB236175E8A6E00AFA559 /* CoreVideo.framework */,
 				759CB234175E8A1200AFA559 /* QuartzCore.framework */,
 				7559FBA8174E85B10000E809 /* Security.framework */,
 				752C2FAA174091DD0033F636 /* MobileCoreServices.framework */,
@@ -3454,6 +3460,7 @@
 				752C2FAC17416B360033F636 /* Categories */,
 				75D8F390173ABE3C0080D95E /* ZNAppDelegate.h */,
 				75D8F391173ABE3C0080D95E /* ZNAppDelegate.m */,
+				75F1B85917C6CA9B00680E1B /* ZincWallet.xcdatamodel */,
 				752C2F8417406ED40033F636 /* ThirdParty */,
 				75CBEAE3173C800F00978DBA /* Resources */,
 				75D8F388173ABE3C0080D95E /* Supporting Files */,
@@ -4573,6 +4580,7 @@
 				759B779317BECFCF0000510F /* base64.c in Sources */,
 				759B779417BECFCF0000510F /* NSData+SRB64Additions.m in Sources */,
 				759B779517BECFCF0000510F /* SRWebSocket.m in Sources */,
+				75F1B85A17C6CA9B00680E1B /* ZincWallet.xcdatamodel in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

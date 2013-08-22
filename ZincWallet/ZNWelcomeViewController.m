@@ -97,46 +97,46 @@
 {
     [super viewWillAppear:animated];
     
-    if (! self.hasAppeared) {
-        self.wallpaperStart = self.wallpaper.center;
-        self.logoStart = CGPointMake(self.logo.center.x - self.view.frame.size.width, self.logo.center.y);
-        self.paralaxStart = self.paralax.center;
-        self.walletStart = self.walletButton.center;
-        self.restoreStart = self.restoreButton.center;
-
-        self.walletButton.center = CGPointMake(self.walletStart.x + self.view.frame.size.width, self.walletStart.y);
-        self.restoreButton.center = CGPointMake(self.restoreStart.x + self.view.frame.size.width, self.restoreStart.y);
-        self.paralax.center = CGPointMake(self.paralaxStart.x + self.view.frame.size.width*PARALAX_RATIO,
-                                          self.paralaxStart.y);
+    if (self.hasAppeared) return;
+    
+    self.wallpaperStart = self.wallpaper.center;
+    self.logoStart = CGPointMake(self.logo.center.x - self.view.frame.size.width, self.logo.center.y);
+    self.paralaxStart = self.paralax.center;
+    self.walletStart = self.walletButton.center;
+    self.restoreStart = self.restoreButton.center;
+    
+    self.walletButton.center = CGPointMake(self.walletStart.x + self.view.frame.size.width, self.walletStart.y);
+    self.restoreButton.center = CGPointMake(self.restoreStart.x + self.view.frame.size.width, self.restoreStart.y);
+    self.paralax.center = CGPointMake(self.paralaxStart.x + self.view.frame.size.width*PARALAX_RATIO,
+                                      self.paralaxStart.y);
                 
-        [self.navigationController.view insertSubview:self.paralax atIndex:0];
-    }
+    [self.navigationController.view insertSubview:self.paralax atIndex:0];
 }
 
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
     
-    if (! self.hasAppeared) {
-        self.hasAppeared = YES;
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [UIView animateWithDuration:WALLPAPER_ANIMATION_DURATION delay:0.0
-            options:UIViewAnimationOptionCurveLinear|UIViewAnimationOptionRepeat|UIViewAnimationOptionAutoreverse
-            animations:^{
-                self.animating = YES;
-                self.wallpaper.center = CGPointMake(self.wallpaperStart.x - WALLPAPER_ANIMATION_X,
+    if (self.hasAppeared) return;
+    
+    self.hasAppeared = YES;
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [UIView animateWithDuration:WALLPAPER_ANIMATION_DURATION delay:0.0
+        options:UIViewAnimationOptionCurveLinear|UIViewAnimationOptionRepeat|UIViewAnimationOptionAutoreverse
+        animations:^{
+            self.animating = YES;
+            self.wallpaper.center = CGPointMake(self.wallpaperStart.x - WALLPAPER_ANIMATION_X,
                                                 self.wallpaperStart.y - WALLPAPER_ANIMATION_Y);
-            } completion:^(BOOL finished) { self.animating = NO; }];
+        } completion:^(BOOL finished) { self.animating = NO; }];
         
-            [UIView animateWithDuration:UINavigationControllerHideShowBarDuration*2 delay:1.0 options:0 animations:^{
-                self.walletButton.center = self.walletStart;
-                self.restoreButton.center = self.restoreStart;
-                self.logo.center = self.logoStart;
-                self.paralax.center = self.paralaxStart;
-            } completion:nil];
-        });
-    }
+        [UIView animateWithDuration:UINavigationControllerHideShowBarDuration*2 delay:1.0 options:0 animations:^{
+            self.walletButton.center = self.walletStart;
+            self.restoreButton.center = self.restoreStart;
+            self.logo.center = self.logoStart;
+            self.paralax.center = self.paralaxStart;
+        } completion:nil];
+    });
 }
 
 #pragma mark - UINavigationControllerDelegate
