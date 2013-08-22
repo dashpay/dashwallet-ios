@@ -26,10 +26,10 @@
 #import "ZNBIP39Mnemonic.h"
 #import "NSString+Base58.h"
 
-#define ADJS  @"BIP39-adjs"
-#define NOUNS @"BIP39-nouns"
-#define ADVS  @"BIP39-advs"
-#define VERBS @"BIP39-verbs"
+#define ADJS  @"BIP39adjs"
+#define NOUNS @"BIP39nouns"
+#define ADVS  @"BIP39advs"
+#define VERBS @"BIP39verbs"
 
 @implementation ZNBIP39Mnemonic
 
@@ -46,33 +46,33 @@
 {
     if (data.length != 128/8) return nil;
     
-    NSArray *adj = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:ADJS ofType:@"plist"]];
-    NSArray *noun = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:NOUNS ofType:@"plist"]];
-    NSArray *adv = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:ADVS ofType:@"plist"]];
-    NSArray *verb = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:VERBS ofType:@"plist"]];
+    NSArray *adjs = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:ADJS ofType:@"plist"]];
+    NSArray *nouns = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:NOUNS ofType:@"plist"]];
+    NSArray *advs = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:ADVS ofType:@"plist"]];
+    NSArray *verbs = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:VERBS ofType:@"plist"]];
     NSMutableArray *a =
         CFBridgingRelease(CFArrayCreateMutable(SecureAllocator(), data.length*3/4, &kCFTypeArrayCallBacks));
-    uint8_t *b = (uint8_t *)data.bytes;
-    uint16_t i;
+    const uint8_t *b = data.bytes;
+    NSUInteger x;
     
-    for (int j = 0; j < 128/8; j += 64/8) {
-        i = ((b[j] << 3) | (b[j + 1] >> 5)) & ((1 << 11) - 1);
-        [a addObject:adj[i]];
+    for (int i = 0; i < 128/8; i += 64/8) {
+        x = (((uint16_t)b[i] << 3) | ((uint16_t)b[i + 1] >> 5)) & ((1 << 11) - 1);
+        [a addObject:adjs[x]];
 
-        i = ((b[j + 1] << 6) | (b[j + 2] >> 2)) & ((1 << 11) - 1);
-        [a addObject:noun[i]];
+        x = (((uint16_t)b[i + 1] << 6) | ((uint16_t)b[i + 2] >> 2)) & ((1 << 11) - 1);
+        [a addObject:nouns[x]];
 
-        i = ((b[j + 2] << 8) | b[j + 3]) & ((1 << 10) - 1);
-        [a addObject:adv[i]];
+        x = (((uint16_t)b[i + 2] << 8) | (uint16_t)b[i + 3]) & ((1 << 10) - 1);
+        [a addObject:advs[x]];
 
-        i = ((b[j + 4] << 2) | b[j + 5] >> 6) & ((1 << 10) - 1);
-        [a addObject:verb[i]];
+        x = (((uint16_t)b[i + 4] << 2) | (uint16_t)b[i + 5] >> 6) & ((1 << 10) - 1);
+        [a addObject:verbs[x]];
 
-        i = ((b[j + 5] << 5) | (b[j + 6] >> 3)) & ((1 << 11) - 1);
-        [a addObject:adj[i]];
+        x = (((uint16_t)b[i + 5] << 5) | ((uint16_t)b[i + 6] >> 3)) & ((1 << 11) - 1);
+        [a addObject:adjs[x]];
 
-        i = ((b[j + 7] << 8) | b[j + 7]) & ((1 << 11) - 1);
-        [a addObject:noun[i]];
+        x = (((uint16_t)b[i + 6] << 8) | (uint16_t)b[i + 7]) & ((1 << 11) - 1);
+        [a addObject:nouns[x]];
     }
     
     return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (__bridge CFArrayRef)a, CFSTR(" ")));
@@ -80,54 +80,48 @@
  
 - (NSData *)decodePhrase:(NSString *)phrase
 {
-    NSArray *adj = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:ADJS ofType:@"plist"]];
-    NSArray *noun = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:NOUNS ofType:@"plist"]];
-    NSArray *adv = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:ADVS ofType:@"plist"]];
-    NSArray *verb = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:VERBS ofType:@"plist"]];
+    NSArray *adjs = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:ADJS ofType:@"plist"]];
+    NSArray *nouns = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:NOUNS ofType:@"plist"]];
+    NSArray *advs = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:ADVS ofType:@"plist"]];
+    NSArray *verbs = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:VERBS ofType:@"plist"]];
     CFMutableStringRef s = CFStringCreateMutableCopy(SecureAllocator(), phrase.length, (__bridge CFStringRef)phrase);
     
     CFStringTrimWhitespace(s);
     
     NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), s, CFSTR(" ")));
     NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 128/8));
-    NSUInteger i;
+    NSUInteger x, y;
     uint8_t b;
     
     if (a.count != 12) return nil;
 
-    for (int j = 0; j < 12; j += 6) {
-        if ((i = [adj indexOfObject:a[j]]) == NSNotFound) return nil;
-        b = i >> 3;
+    for (int i = 0; i < 12; i += 6) {
+        if ((x = [adjs indexOfObject:a[i]]) == NSNotFound) return nil;
+        b = (x >> 3) & 0xff;
+        [d appendBytes:&b length:1];
+        
+        if ((y = [nouns indexOfObject:a[i + 1]]) == NSNotFound) return nil;
+        b = ((x << 5) | (y >> 6)) & 0xff;
+        [d appendBytes:&b length:1];
+        
+        if ((x = [advs indexOfObject:a[i + 2]]) == NSNotFound) return nil;
+        b = ((y << 2) | (x >> 8)) & 0xff;
+        [d appendBytes:&b length:1];
+        b = x & 0xff;
         [d appendBytes:&b length:1];
 
-        b = i << 5;
-        if ((i = [noun indexOfObject:a[j + 1]]) == NSNotFound) return nil;
-        b |= i >> 6;
+        if ((y = [verbs indexOfObject:a[i + 3]]) == NSNotFound) return nil;
+        b = (y >> 2) & 0xff;
         [d appendBytes:&b length:1];
-
-        b = i << 2;
-        if ((i = [adv indexOfObject:a[j + 2]]) == NSNotFound) return nil;
-        b |= i >> 8;
+        
+        if ((x = [adjs indexOfObject:a[i + 4]]) == NSNotFound) return nil;
+        b = ((y << 6) | (x >> 5)) & 0xff;
         [d appendBytes:&b length:1];
-
-        b = i;
+        
+        if ((y = [nouns indexOfObject:a[i + 5]]) == NSNotFound) return nil;
+        b = ((x << 3) | (y >> 8)) & 0xff;
         [d appendBytes:&b length:1];
-
-        if ((i == [verb indexOfObject:a[j + 3]]) == NSNotFound) return nil;
-        b = i >> 2;
-        [d appendBytes:&b length:1];
-
-        b = i << 6;
-        if ((i == [adj indexOfObject:a[j + 4]]) == NSNotFound) return nil;
-        b |= i >> 5;
-        [d appendBytes:&b length:1];
-
-        b = i << 3;
-        if ((i == [noun indexOfObject:a[j + 5]]) == NSNotFound) return nil;
-        b |= i >> 8;
-        [d appendBytes:&b length:1];
-
-        b = i;
+        b = y & 0xff;
         [d appendBytes:&b length:1];
     }
         

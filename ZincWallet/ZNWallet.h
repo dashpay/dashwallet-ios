@@ -26,8 +26,7 @@
 #import <Foundation/Foundation.h>
 
 #define WALLET_BIP32 1
-//XXXX switch mnemonic to bip39
-//#define WALLET_BIP39 1
+#define WALLET_BIP39 1
 
 #define ADDRESSES_PER_QUERY 100 // maximum number of addresses to request in a single query
 

@@ -729,6 +729,10 @@
 		75AF36EC17667E43004AA912 /* DataMatrix.mm in Sources */ = {isa = PBXBuildFile; fileRef = 75AF36E517667E43004AA912 /* DataMatrix.mm */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		75AF36ED17667E43004AA912 /* QR_Encode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75AF36E617667E43004AA912 /* QR_Encode.cpp */; };
 		75AF36EE17667E43004AA912 /* QREncoder.mm in Sources */ = {isa = PBXBuildFile; fileRef = 75AF36EB17667E43004AA912 /* QREncoder.mm */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		75B4941B17C43ACA003A3FCA /* BIP39adjs.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75B4941A17C43ACA003A3FCA /* BIP39adjs.plist */; };
+		75B4941D17C43BCE003A3FCA /* BIP39nouns.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75B4941C17C43BCE003A3FCA /* BIP39nouns.plist */; };
+		75B4941F17C43C58003A3FCA /* BIP39advs.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75B4941E17C43C58003A3FCA /* BIP39advs.plist */; };
+		75B4942117C43CAC003A3FCA /* BIP39verbs.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75B4942017C43CAC003A3FCA /* BIP39verbs.plist */; };
 		75C2F3D4178D3061009F8CD3 /* cameraguide-green@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75C2F3D1178D3061009F8CD3 /* cameraguide-green@2x.png */; };
 		75C2F3D5178D3061009F8CD3 /* cameraguide-red@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75C2F3D2178D3061009F8CD3 /* cameraguide-red@2x.png */; };
 		75C2F3D6178D3061009F8CD3 /* cameraguide@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75C2F3D3178D3061009F8CD3 /* cameraguide@2x.png */; };
@@ -1766,6 +1770,10 @@
 		75AF36E917667E43004AA912 /* QREncoder-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "QREncoder-Prefix.pch"; sourceTree = "<group>"; };
 		75AF36EA17667E43004AA912 /* QREncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QREncoder.h; sourceTree = "<group>"; };
 		75AF36EB17667E43004AA912 /* QREncoder.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = QREncoder.mm; sourceTree = "<group>"; };
+		75B4941A17C43ACA003A3FCA /* BIP39adjs.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = BIP39adjs.plist; sourceTree = "<group>"; };
+		75B4941C17C43BCE003A3FCA /* BIP39nouns.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = BIP39nouns.plist; sourceTree = "<group>"; };
+		75B4941E17C43C58003A3FCA /* BIP39advs.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = BIP39advs.plist; sourceTree = "<group>"; };
+		75B4942017C43CAC003A3FCA /* BIP39verbs.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = BIP39verbs.plist; sourceTree = "<group>"; };
 		75C2F3D1178D3061009F8CD3 /* cameraguide-green@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide-green@2x.png"; sourceTree = "<group>"; };
 		75C2F3D2178D3061009F8CD3 /* cameraguide-red@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide-red@2x.png"; sourceTree = "<group>"; };
 		75C2F3D3178D3061009F8CD3 /* cameraguide@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide@2x.png"; sourceTree = "<group>"; };
@@ -3461,6 +3469,10 @@
 				75D8F38A173ABE3C0080D95E /* InfoPlist.strings */,
 				75D8F38D173ABE3C0080D95E /* main.m */,
 				75D8F38F173ABE3C0080D95E /* ZincWallet-Prefix.pch */,
+				75B4941A17C43ACA003A3FCA /* BIP39adjs.plist */,
+				75B4941C17C43BCE003A3FCA /* BIP39nouns.plist */,
+				75B4941E17C43C58003A3FCA /* BIP39advs.plist */,
+				75B4942017C43CAC003A3FCA /* BIP39verbs.plist */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -3792,6 +3804,10 @@
 				757B1DDA17AEFCAD00AA6CAB /* wallpaper-default@2x.png in Resources */,
 				75ADF1FE17B0EC0D006B1336 /* deletetoleft-blue.png in Resources */,
 				75A6ECDD17B88F370043E52D /* navbar-bg@2x.png in Resources */,
+				75B4941B17C43ACA003A3FCA /* BIP39adjs.plist in Resources */,
+				75B4941D17C43BCE003A3FCA /* BIP39nouns.plist in Resources */,
+				75B4941F17C43C58003A3FCA /* BIP39advs.plist in Resources */,
+				75B4942117C43CAC003A3FCA /* BIP39verbs.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
