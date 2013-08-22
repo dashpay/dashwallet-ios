@@ -38,6 +38,7 @@
 
 @implementation ZNRestoreViewController
 
+// TODO: create secure versions of keyboard and UILabel and use in place of UITextView
 - (void)viewDidLoad
 {
     [super viewDidLoad];

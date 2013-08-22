@@ -41,8 +41,6 @@
 
     //XXX need to have a network status indicator perferrably tied to websocket status
     
-    //XXX change all file headers to MIT license
-    
     //XXX figure what to do about bluetooth
     // this will notify user if bluetooth is disabled (on 4S and newer devices that support BTLE)
     //CBCentralManager *cbManager = [[CBCentralManager alloc] initWithDelegate:self queue:dispatch_get_main_queue()];

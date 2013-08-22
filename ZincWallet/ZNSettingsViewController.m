@@ -120,7 +120,7 @@
     // Return the number of rows in the section.
     switch (section) {
         case 0: return self.transactions.count ? self.transactions.count : 1;
-        case 1: return 1;
+        case 1: return 2;
         case 2: return 1;
         default: NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
                           __LINE__, section);
@@ -250,10 +250,10 @@
             
             switch (indexPath.row) {
                 case 0:
-//                    cell.textLabel.text = @"safety tips";
-//                    break;
-//
-//                case 1:
+                    cell.textLabel.text = @"about";
+                    break;
+
+                case 1:
                     cell.textLabel.text = @"backup phrase";
                     break;
                     
@@ -323,6 +323,9 @@
                 case 0:
                     return 44;
 
+                case 1:
+                    return 44;
+                    
                 default:
                     NSAssert(FALSE, @"[%s %s] line %d: unkown indexPath.row %d", object_getClassName(self),
                              sel_getName(_cmd), __LINE__, indexPath.row);
@@ -404,13 +407,12 @@
             
         case 1:
             switch (indexPath.row) {
-                case 0:
-//                    //XXX show safety tips
-//                    [[[UIAlertView alloc] initWithTitle:nil message:@"Don't eat yellow snow." delegate:self
-//                      cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-//                    break;
-//                    
-//                case 1:
+                case 0:                    
+                    [self.navigationController pushViewController:[self.storyboard
+                     instantiateViewControllerWithIdentifier:@"ZNAboutViewController"] animated:YES];
+                    break;
+                    
+                case 1:
                     [[[UIAlertView alloc] initWithTitle:@"WARNING" message:@"DO NOT let anyone see your backup phrase "
                       "or they can spend your bitcoins." delegate:self cancelButtonTitle:@"cancel"
                       otherButtonTitles:@"show", nil] show];
@@ -463,6 +465,7 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
     }
     
     ZNSeedViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNSeedViewController"];
+
     [self.navigationController pushViewController:c animated:YES];
 }
 

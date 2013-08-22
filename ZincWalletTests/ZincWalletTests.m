@@ -37,8 +37,6 @@
 
 @implementation ZincWalletTests
 
-//XXX remember to test on iOS 5
-
 - (void)setUp
 {
     [super setUp];

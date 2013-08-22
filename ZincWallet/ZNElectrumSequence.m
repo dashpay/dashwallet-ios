@@ -132,7 +132,8 @@
 
 - (NSArray *)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed
 {
-    if (! seed || ! n.count) return @[];
+    if (! seed || ! n) return nil;
+    if (! n.count) return @[];
 
     NSMutableArray *a = [NSMutableArray arrayWithCapacity:n.count];
     NSData *secexp = [self stretchKey:seed];

@@ -27,7 +27,7 @@
 
 #define SEED_LENGTH (128/8)
 #define GAP_LIMIT_EXTERNAL 10
-#define GAP_LIMIT_INTERNAL 3
+#define GAP_LIMIT_INTERNAL 10
 
 @protocol ZNKeySequence <NSObject>
 @required

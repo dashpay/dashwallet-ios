@@ -527,7 +527,7 @@ static NSData *getKeychainData(NSString *key)
                 }];
                 
                 [JSON[@"txs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                    //XXX we shouldn't be saving json without sanitizing it... security risk
+                    //XXXX we shouldn't be saving json without sanitizing it... security risk
                     if (obj[@"hash"]) {
                         self.transactions[obj[@"hash"]] = obj;
                         [self.updatedTransactions addObject:obj[@"hash"]];
@@ -627,7 +627,7 @@ static NSData *getKeychainData(NSString *key)
                 [JSON[@"unspent_outputs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                     NSString *key = [obj[@"tx_hash"] stringByAppendingString:[obj[@"tx_output_n"] description]];
 
-                    //XXX we shouldn't be storing json without sanitizing it... security risk
+                    //XXXX we shouldn't be storing json without sanitizing it... security risk
                     if (key && [obj[@"value"] unsignedLongLongValue] > 0) self.unspentOutputs[key] = obj;
                 }];
             
