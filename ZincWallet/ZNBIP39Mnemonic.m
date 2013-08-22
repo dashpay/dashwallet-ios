@@ -52,12 +52,15 @@
     NSArray *verbs = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:VERBS ofType:@"plist"]];
     NSMutableArray *a =
         CFBridgingRelease(CFArrayCreateMutable(SecureAllocator(), data.length*3/4, &kCFTypeArrayCallBacks));
-    const uint8_t *b = data.bytes;
+    NSMutableString *s = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), 0));
     NSUInteger x;
+    const uint8_t *b = data.bytes;
     
     for (int i = 0; i < 128/8; i += 64/8) {
         x = (((uint16_t)b[i] << 3) | ((uint16_t)b[i + 1] >> 5)) & ((1 << 11) - 1);
-        [a addObject:adjs[x]];
+        [s setString:adjs[x]];
+        CFStringCapitalize((__bridge CFMutableStringRef)s, CFLocaleGetSystem());
+        [a addObject:CFBridgingRelease(CFStringCreateCopy(SecureAllocator(), (__bridge CFStringRef)s))];
 
         x = (((uint16_t)b[i + 1] << 6) | ((uint16_t)b[i + 2] >> 2)) & ((1 << 11) - 1);
         [a addObject:nouns[x]];
@@ -72,7 +75,9 @@
         [a addObject:adjs[x]];
 
         x = (((uint16_t)b[i + 6] << 8) | (uint16_t)b[i + 7]) & ((1 << 11) - 1);
-        [a addObject:nouns[x]];
+        [s setString:nouns[x]];
+        [s appendString:@"."];
+        [a addObject:CFBridgingRelease(CFStringCreateCopy(SecureAllocator(), (__bridge CFStringRef)s))];
     }
     
     return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (__bridge CFArrayRef)a, CFSTR(" ")));
@@ -80,14 +85,19 @@
  
 - (NSData *)decodePhrase:(NSString *)phrase
 {
+    CFMutableStringRef s = CFStringCreateMutableCopy(SecureAllocator(), phrase.length, (__bridge CFStringRef)phrase);
+    
+    CFStringLowercase(s, CFLocaleGetSystem());
+    CFStringFindAndReplace(s, CFSTR("."), CFSTR(" "), CFRangeMake(0, CFStringGetLength(s)), 0);
+    CFStringFindAndReplace(s, CFSTR(","), CFSTR(" "), CFRangeMake(0, CFStringGetLength(s)), 0);
+    CFStringFindAndReplace(s, CFSTR("\n"), CFSTR(" "), CFRangeMake(0, CFStringGetLength(s)), 0);
+    CFStringTrimWhitespace(s);
+    while (CFStringFindAndReplace(s, CFSTR("  "), CFSTR(" "), CFRangeMake(0, CFStringGetLength(s)), 0) != 0);
+
     NSArray *adjs = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:ADJS ofType:@"plist"]];
     NSArray *nouns = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:NOUNS ofType:@"plist"]];
     NSArray *advs = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:ADVS ofType:@"plist"]];
     NSArray *verbs = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:VERBS ofType:@"plist"]];
-    CFMutableStringRef s = CFStringCreateMutableCopy(SecureAllocator(), phrase.length, (__bridge CFStringRef)phrase);
-    
-    CFStringTrimWhitespace(s);
-    
     NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), s, CFSTR(" ")));
     NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 128/8));
     NSUInteger x, y;

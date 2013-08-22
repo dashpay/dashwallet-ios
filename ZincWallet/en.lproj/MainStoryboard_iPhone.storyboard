@@ -410,7 +410,7 @@
                                 <color key="backgroundColor" white="1" alpha="0.67000000000000004" colorSpace="calibratedWhite"/>
                                 <color key="textColor" red="1" green="0.49803921568627452" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
-                                <textInputTraits key="textInputTraits" autocorrectionType="yes" returnKeyType="done" enablesReturnKeyAutomatically="YES"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences" autocorrectionType="yes" returnKeyType="done" enablesReturnKeyAutomatically="YES"/>
                                 <connections>
                                     <outlet property="delegate" destination="V5i-az-h7s" id="cIN-oL-V8R"/>
                                 </connections>
@@ -1055,7 +1055,7 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.67000000000000004" colorSpace="calibratedRGB"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
-                                <textInputTraits key="textInputTraits" autocorrectionType="yes" returnKeyType="done" enablesReturnKeyAutomatically="YES"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences" autocorrectionType="yes" returnKeyType="done" enablesReturnKeyAutomatically="YES"/>
                                 <connections>
                                     <outlet property="delegate" destination="yia-gn-YeR" id="c9q-hc-ngz"/>
                                 </connections>
@@ -1130,6 +1130,9 @@
         <class className="ZNPayViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNPayViewController.h"/>
             <relationships>
+                <relationship kind="action" name="doIt:"/>
+                <relationship kind="action" name="page:"/>
+                <relationship kind="action" name="refresh:"/>
                 <relationship kind="outlet" name="pageControl" candidateClass="UIPageControl"/>
                 <relationship kind="outlet" name="refreshButton" candidateClass="UIBarButtonItem"/>
                 <relationship kind="outlet" name="scrollView" candidateClass="UIScrollView"/>
@@ -1143,6 +1146,7 @@
         <class className="ZNRestoreViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNRestoreViewController.h"/>
             <relationships>
+                <relationship kind="action" name="cancel:"/>
                 <relationship kind="outlet" name="label" candidateClass="UILabel"/>
                 <relationship kind="outlet" name="textView" candidateClass="UITextView"/>
             </relationships>
@@ -1150,6 +1154,8 @@
         <class className="ZNSeedViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNSeedViewController.h"/>
             <relationships>
+                <relationship kind="action" name="done:"/>
+                <relationship kind="action" name="refresh:"/>
                 <relationship kind="outlet" name="compatiblityLabel" candidateClass="UILabel"/>
                 <relationship kind="outlet" name="labelFrame" candidateClass="UIView"/>
                 <relationship kind="outlet" name="logo" candidateClass="UIImageView"/>
@@ -1160,6 +1166,9 @@
         </class>
         <class className="ZNSettingsViewController" superclassName="UITableViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNSettingsViewController.h"/>
+            <relationships>
+                <relationship kind="action" name="done:"/>
+            </relationships>
         </class>
         <class className="ZNWelcomeViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNWelcomeViewController.h"/>

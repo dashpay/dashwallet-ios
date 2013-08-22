@@ -120,7 +120,7 @@
                 [self.scrollView setContentOffset:CGPointZero animated:YES];
                 
                 [self.navigationController popToRootViewControllerAnimated:NO];
-                if (w.seed) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
+                if (w.masterPublicKey) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
             }
         }];
     
@@ -227,7 +227,7 @@
     static BOOL firstAppearance = YES;
     ZNWallet *w = [ZNWallet sharedInstance];
 
-    if (! w.seed) {
+    if (! w.masterPublicKey) {
         UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNNewWalletNav"];
         
         [self.navigationController presentViewController:c animated:NO completion:nil];

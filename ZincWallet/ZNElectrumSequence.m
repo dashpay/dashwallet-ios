@@ -83,6 +83,8 @@
 
 - (NSData *)masterPublicKeyFromSeed:(NSData *)seed
 {
+    if (! seed) return nil;
+
     NSData *pubKey = [[ZNKey keyWithSecret:[self stretchKey:seed] compressed:NO] publicKey];
     
     if (pubKey.length < 1) return nil;
@@ -125,7 +127,7 @@
 
 - (NSString *)privateKey:(NSUInteger)n internal:(BOOL)internal fromSeed:(NSData *)seed
 {
-    return [[self privateKeys:@[@(n)] internal:internal fromSeed:seed] lastObject];
+    return seed ? [[self privateKeys:@[@(n)] internal:internal fromSeed:seed] lastObject] : nil;
 }
 
 - (NSArray *)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed

@@ -141,6 +141,8 @@
 // the values are taken from BIP32 account m/0'
 - (NSData *)masterPublicKeyFromSeed:(NSData *)seed
 {
+    if (! seed) return nil;
+
     NSMutableData *mpk = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 0));
     NSMutableData *I = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), CC_SHA512_DIGEST_LENGTH));
     NSMutableData *secret = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 32));
@@ -179,7 +181,7 @@
 
 - (NSString *)privateKey:(NSUInteger)n internal:(BOOL)internal fromSeed:(NSData *)seed
 {
-    return [[self privateKeys:@[@(n)] internal:internal fromSeed:seed] lastObject];
+    return seed ? [[self privateKeys:@[@(n)] internal:internal fromSeed:seed] lastObject] : nil;
 }
 
 - (NSArray *)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed
@@ -239,6 +241,8 @@ chain:(NSData *)chain key:(NSData *)key
 
 - (NSString *)serializedPrivateMasterFromSeed:(NSData *)seed
 {
+    if (! seed) return nil;
+
     NSMutableData *I = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), CC_SHA512_DIGEST_LENGTH));
     
     I.length = CC_SHA512_DIGEST_LENGTH;

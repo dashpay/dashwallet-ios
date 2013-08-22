@@ -32,7 +32,7 @@
 @property (nonatomic, strong) IBOutlet UITextView *textView;
 @property (nonatomic, strong) IBOutlet UILabel *label;
 
-@property (nonatomic, strong) NSSet *words;
+@property (nonatomic, strong) NSSet *words, *adjs, *nouns, *advs, *verbs;
 
 @end
 
@@ -69,8 +69,19 @@
 {
     [super viewDidAppear:animated];
     
+#if WALLET_BIP39
+    self.adjs = [NSSet setWithArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
+                 pathForResource:@"BIP39adjs" ofType:@"plist"]]];
+    self.nouns = [NSSet setWithArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
+                  pathForResource:@"BIP39nouns" ofType:@"plist"]]];
+    self.advs = [NSSet setWithArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
+                 pathForResource:@"BIP39advs" ofType:@"plist"]]];
+    self.verbs = [NSSet setWithArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
+                  pathForResource:@"BIP39verbs" ofType:@"plist"]]];
+#else
     self.words = [NSSet setWithArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
                   pathForResource:@"ElectrumSeedWords" ofType:@"plist"]]];
+#endif
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -93,12 +104,14 @@
 {
     static NSCharacterSet *charset = nil;
     NSRange selected = textView.selectedRange;
-    NSString *s = [textView.text lowercaseString];
+    NSString *s = textView.text;
     BOOL done = ([s rangeOfString:@"\n"].location != NSNotFound);
 
 
     if (! charset) {
-        charset = [[NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyz "] invertedSet];
+        charset = [[NSCharacterSet
+                    characterSetWithCharactersInString:@"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz., "]
+                   invertedSet];
     }
     
     while ([s rangeOfCharacterFromSet:charset].location != NSNotFound) {
@@ -108,10 +121,13 @@
     }
 
     while ([s rangeOfString:@"  "].location != NSNotFound) {
-        NSRange r = [s rangeOfString:@"  "];
-        
-        if (r.location + 1 == selected.location) selected.location++;
-        s = [[s substringToIndex:r.location] stringByAppendingString:[s substringFromIndex:r.location + 1]];
+        NSRange r = [s rangeOfString:@".  "];
+    
+        if (r.location != NSNotFound) {
+            if (r.location + 2 == selected.location) selected.location++;
+            s = [[s substringToIndex:r.location + 1] stringByAppendingString:[s substringFromIndex:r.location + 2]];
+        }
+        else s = [s stringByReplacingOccurrencesOfString:@"  " withString:@". "];
     }
     
     if ([s hasPrefix:@" "]) s = [s substringFromIndex:1];
@@ -121,10 +137,38 @@
     textView.selectedRange = selected;
     
     if (done) {
-        if ([s hasSuffix:@" "]) s = [s substringToIndex:s.length - 1];
-
+        s = [[[[s stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]
+               stringByReplacingOccurrencesOfString:@"." withString:@" "]
+              stringByReplacingOccurrencesOfString:@"," withString:@" "]
+             lowercaseString];
+        
+        while ([s rangeOfString:@"  "].location != NSNotFound) {
+            s = [s stringByReplacingOccurrencesOfString:@"  " withString:@" "];
+        }
+        
         NSArray *a = [s componentsSeparatedByString:@" "];
+        
+#if WALLET_BIP39
+        NSString *incorrect = nil;
+        
+        for (NSUInteger i = 0; i < 12; i += 6) {
+            if (i < a.count && ! [self.adjs containsObject:a[i]]) incorrect = a[i];
+            else if (i + 1 < a.count && ! [self.nouns containsObject:a[i + 1]]) incorrect = a[i + 1];
+            else if (i + 2 < a.count && ! [self.advs containsObject:a[i + 2]]) incorrect = a[i + 2];
+            else if (i + 3 < a.count && ! [self.verbs containsObject:a[i + 3]]) incorrect = a[i + 3];
+            else if (i + 4 < a.count && ! [self.adjs containsObject:a[i + 4]]) incorrect = a[i + 4];
+            else if (i + 5 < a.count && ! [self.nouns containsObject:a[i + 5]]) incorrect = a[i + 5];
+        }
 
+        if (incorrect) {
+            //XXX the range should be set by word count, not string match
+            textView.selectedRange = [[textView.text lowercaseString] rangeOfString:incorrect];
+            
+            [[[UIAlertView alloc] initWithTitle:nil
+              message:[incorrect stringByAppendingString:@" is not the correct backup phrase word"] delegate:nil
+              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        }
+#else
         if (! [[NSSet setWithArray:a] isSubsetOfSet:self.words]) {
             NSUInteger i = [a indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
                 return [self.words containsObject:obj] ? NO : (*stop = YES);
@@ -136,6 +180,7 @@
               message:[a[i] stringByAppendingString:@" is not a correct backup phrase word"] delegate:nil
               cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
         }
+#endif
         else if (a.count != 12) {
             [[[UIAlertView alloc] initWithTitle:nil message:@"backup phrase must be 12 words" delegate:nil
               cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
