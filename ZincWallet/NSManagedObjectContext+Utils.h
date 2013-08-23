@@ -1,8 +1,8 @@
 //
-//  ZNAppDelegate.h
+//  NSManagedObjectContext+Utils.h
 //  ZincWallet
 //
-//  Created by Aaron Voisine on 5/8/13.
+//  Created by Aaron Voisine on 8/22/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,11 +23,12 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <UIKit/UIKit.h>
-#import <CoreBluetooth/CoreBluetooth.h>
+#import <CoreData/CoreData.h>
 
-@interface ZNAppDelegate : UIResponder <UIApplicationDelegate, CBCentralManagerDelegate>
+@interface NSManagedObjectContext (Utils)
 
-@property (strong, nonatomic) UIWindow *window;
++ (instancetype)sharedInstance;
+
+- (void)saveContext:(void (^)(NSError *error))completion;
 
 @end
