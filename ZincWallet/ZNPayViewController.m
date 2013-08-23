@@ -364,7 +364,7 @@
                 if ([req.label rangeOfString:BTC].location != NSNotFound) {
                     [obj titleLabel].font = [UIFont fontWithName:@"HelveticaNeue" size:15];
                 }
-                else [obj titleLabel].font = [UIFont fontWithName:@"HelveticaNeue-Light" size:15];
+                else [obj titleLabel].font = [UIFont fontWithName:@"HelveticaNeue-Light" size:17];
 
                 if ([self.addressInWallet isEqual:req.paymentAddress]) [obj setEnabled:NO];
             }

@@ -773,6 +773,10 @@
 		75F1B85A17C6CA9B00680E1B /* ZincWallet.xcdatamodel in Sources */ = {isa = PBXBuildFile; fileRef = 75F1B85917C6CA9B00680E1B /* ZincWallet.xcdatamodel */; };
 		75F1B85D17C6CC0B00680E1B /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75F1B85B17C6CC0B00680E1B /* CoreData.framework */; };
 		75F1B85E17C6CC0B00680E1B /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75F1B85C17C6CC0B00680E1B /* CoreVideo.framework */; };
+		75F1B86317C7179000680E1B /* ZNAddressEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F1B86217C7179000680E1B /* ZNAddressEntity.m */; };
+		75F1B86917C7186E00680E1B /* ZNTransactionEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F1B86817C7186E00680E1B /* ZNTransactionEntity.m */; };
+		75F1B86F17C7193900680E1B /* ZNOutputEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F1B86E17C7193900680E1B /* ZNOutputEntity.m */; };
+		75F1B87217C7198B00680E1B /* ZNUnspentOutputEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F1B87117C7198B00680E1B /* ZNUnspentOutputEntity.m */; };
 		75F9D3E6179F451F00C28B49 /* button-bg-blue-pressed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75F9D3E5179F451E00C28B49 /* button-bg-blue-pressed@2x.png */; };
 		75FD9C0317664F3000307894 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		75FD9C6817664FE700307894 /* config.c in Sources */ = {isa = PBXBuildFile; fileRef = 75FD9C0F17664FE600307894 /* config.c */; };
@@ -1826,6 +1830,14 @@
 		75F1B85917C6CA9B00680E1B /* ZincWallet.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ZincWallet.xcdatamodel; sourceTree = "<group>"; };
 		75F1B85B17C6CC0B00680E1B /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		75F1B85C17C6CC0B00680E1B /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		75F1B86117C7179000680E1B /* ZNAddressEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNAddressEntity.h; sourceTree = "<group>"; };
+		75F1B86217C7179000680E1B /* ZNAddressEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNAddressEntity.m; sourceTree = "<group>"; };
+		75F1B86717C7186E00680E1B /* ZNTransactionEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNTransactionEntity.h; sourceTree = "<group>"; };
+		75F1B86817C7186E00680E1B /* ZNTransactionEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNTransactionEntity.m; sourceTree = "<group>"; };
+		75F1B86D17C7193800680E1B /* ZNOutputEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNOutputEntity.h; sourceTree = "<group>"; };
+		75F1B86E17C7193900680E1B /* ZNOutputEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNOutputEntity.m; sourceTree = "<group>"; };
+		75F1B87017C7198B00680E1B /* ZNUnspentOutputEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNUnspentOutputEntity.h; sourceTree = "<group>"; };
+		75F1B87117C7198B00680E1B /* ZNUnspentOutputEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNUnspentOutputEntity.m; sourceTree = "<group>"; };
 		75F9D3E5179F451E00C28B49 /* button-bg-blue-pressed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-blue-pressed@2x.png"; sourceTree = "<group>"; };
 		75FD9C0217664F3000307894 /* libzbar.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libzbar.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		75FD9C0F17664FE600307894 /* config.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = config.c; sourceTree = "<group>"; };
@@ -3371,6 +3383,7 @@
 		75CBEAE6173C807E00978DBA /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				75F1B86017C7164300680E1B /* Entities */,
 				7559FBA5174D8B1F0000E809 /* ZNKey.h */,
 				7559FBA6174D8B1F0000E809 /* ZNKey.m */,
 				752C2F8A174071520033F636 /* ZNWallet.h */,
@@ -3501,6 +3514,21 @@
 				75D8F3BC173ABE3D0080D95E /* InfoPlist.strings */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		75F1B86017C7164300680E1B /* Entities */ = {
+			isa = PBXGroup;
+			children = (
+				75F1B86117C7179000680E1B /* ZNAddressEntity.h */,
+				75F1B86217C7179000680E1B /* ZNAddressEntity.m */,
+				75F1B86D17C7193800680E1B /* ZNOutputEntity.h */,
+				75F1B86E17C7193900680E1B /* ZNOutputEntity.m */,
+				75F1B87017C7198B00680E1B /* ZNUnspentOutputEntity.h */,
+				75F1B87117C7198B00680E1B /* ZNUnspentOutputEntity.m */,
+				75F1B86717C7186E00680E1B /* ZNTransactionEntity.h */,
+				75F1B86817C7186E00680E1B /* ZNTransactionEntity.m */,
+			);
+			name = Entities;
 			sourceTree = "<group>";
 		};
 		75FD9C0E17664FE600307894 /* zbar */ = {
@@ -4581,6 +4609,10 @@
 				759B779417BECFCF0000510F /* NSData+SRB64Additions.m in Sources */,
 				759B779517BECFCF0000510F /* SRWebSocket.m in Sources */,
 				75F1B85A17C6CA9B00680E1B /* ZincWallet.xcdatamodel in Sources */,
+				75F1B86317C7179000680E1B /* ZNAddressEntity.m in Sources */,
+				75F1B86917C7186E00680E1B /* ZNTransactionEntity.m in Sources */,
+				75F1B86F17C7193900680E1B /* ZNOutputEntity.m in Sources */,
+				75F1B87217C7198B00680E1B /* ZNUnspentOutputEntity.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
