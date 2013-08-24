@@ -308,4 +308,13 @@ breakout:
     return NO;
 }
 
+- (NSString *)scriptToAddress
+{
+    if (! [self hasSuffix:BITCOIN_SCRIPT_SUFFIX] || self.length < BITCOIN_SCRIPT_SUFFIX.length + 40) return nil;
+    
+    NSString *hash160 = [self substringWithRange:NSMakeRange(self.length - BITCOIN_SCRIPT_SUFFIX.length - 40, 40)];
+
+    return [[@"00" stringByAppendingString:hash160] hexToBase58check];
+}
+
 @end

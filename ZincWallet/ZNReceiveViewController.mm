@@ -60,6 +60,9 @@
 //    self.format.numberStyle = NSNumberFormatterCurrencyStyle;
 //    self.format.currencySymbol = BTC;
 //    [self.format setLenient:YES];
+
+    //XXXX
+    //TODO: update recieve address on balance notification
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -136,7 +139,7 @@
             MFMailComposeViewController *c = [MFMailComposeViewController new];
             
             [c setSubject:@"Bitcoin address"];
-            [c setMessageBody:[@"bitcoin://" stringByAppendingString:[self paymentAddress]] isHTML:NO];
+            [c setMessageBody:[@"bitcoin:" stringByAppendingString:[self paymentAddress]] isHTML:NO];
             c.mailComposeDelegate = self;
             [self.navController presentViewController:c animated:YES completion:nil];
             c.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default.png"]];
@@ -150,7 +153,7 @@
         if ([MFMessageComposeViewController canSendText]) {
             MFMessageComposeViewController *c = [MFMessageComposeViewController new];
             
-            c.body = [@"bitcoin://" stringByAppendingString:[self paymentAddress]];
+            c.body = [@"bitcoin:" stringByAppendingString:[self paymentAddress]];
             c.messageComposeDelegate = self;
             [self.navController presentViewController:c animated:YES completion:nil];
             c.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default.png"]];

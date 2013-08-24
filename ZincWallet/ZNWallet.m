@@ -51,12 +51,6 @@
 #define ADDRESS_URL BASE_URL "/multiaddr?active="
 #define PUSHTX_PATH @"/pushtx"
 
-#define SCRIPT_SUFFIX @"88ac" // OP_EQUALVERIFY OP_CHECKSIG
-
-#define FUNDED_ADDRESSES_KEY       @"FUNDED_ADDRESSES"
-#define SPENT_ADDRESSES_KEY        @"SPENT_ADDRESSES"
-#define RECEIVE_ADDRESSES_KEY      @"RECEIVE_ADDRESSES"
-#define ADDRESS_BALANCES_KEY       @"ADDRESS_BALANCES"
 #define ADDRESS_TX_COUNT_KEY       @"ADDRESS_TX_COUNT"
 #define UNSPENT_OUTPUTS_KEY        @"UNSPENT_OUTPUTS"
 #define TRANSACTIONS_KEY           @"TRANSACTIONS"
@@ -115,8 +109,7 @@ static NSData *getKeychainData(NSString *key)
 @interface ZNWallet ()
 
 @property (nonatomic, strong) NSMutableArray *addresses, *changeAddresses;
-@property (nonatomic, strong) NSMutableArray *spentAddresses, *fundedAddresses, *receiveAddresses;
-@property (nonatomic, strong) NSMutableDictionary *unspentOutputs, *addressBalances, *addressTxCount;
+@property (nonatomic, strong) NSMutableDictionary *unspentOutputs, *addressTxCount;
 @property (nonatomic, strong) NSMutableDictionary *transactions, *unconfirmed;
 @property (nonatomic, strong) NSMutableSet *outdatedAddresses, *updatedTransactions;
 
@@ -148,16 +141,11 @@ static NSData *getKeychainData(NSString *key)
     
     self.defs = [NSUserDefaults standardUserDefaults];
     
-    //XXX we should be using core data for this...
     self.addresses = [NSMutableArray array];
     self.changeAddresses = [NSMutableArray array];
     self.outdatedAddresses = [NSMutableSet set];
-    self.fundedAddresses = [NSMutableArray arrayWithArray:[_defs arrayForKey:FUNDED_ADDRESSES_KEY]];
-    self.spentAddresses = [NSMutableArray arrayWithArray:[_defs arrayForKey:SPENT_ADDRESSES_KEY]];
-    self.receiveAddresses = [NSMutableArray arrayWithArray:[_defs arrayForKey:RECEIVE_ADDRESSES_KEY]];
     self.transactions = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:TRANSACTIONS_KEY]];
     self.unconfirmed = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:UNCONFIRMED_KEY]];
-    self.addressBalances = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:ADDRESS_BALANCES_KEY]];
     self.addressTxCount = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:ADDRESS_TX_COUNT_KEY]];
     self.unspentOutputs = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:UNSPENT_OUTPUTS_KEY]];
     
@@ -233,20 +221,12 @@ static NSData *getKeychainData(NSString *key)
         [self.addresses removeAllObjects];
         [self.changeAddresses removeAllObjects];
         [self.outdatedAddresses removeAllObjects];
-        [self.fundedAddresses removeAllObjects];
-        [self.spentAddresses removeAllObjects];
-        [self.receiveAddresses removeAllObjects];
         [self.transactions removeAllObjects];
         [self.unconfirmed removeAllObjects];
-        [self.addressBalances removeAllObjects];
         [self.addressTxCount removeAllObjects];
         [self.unspentOutputs removeAllObjects];
         
         // flush cached addresses and tx outputs
-        [_defs removeObjectForKey:FUNDED_ADDRESSES_KEY];
-        [_defs removeObjectForKey:SPENT_ADDRESSES_KEY];
-        [_defs removeObjectForKey:RECEIVE_ADDRESSES_KEY];
-        [_defs removeObjectForKey:ADDRESS_BALANCES_KEY];
         [_defs removeObjectForKey:ADDRESS_TX_COUNT_KEY];
         [_defs removeObjectForKey:UNSPENT_OUTPUTS_KEY];
         [_defs removeObjectForKey:TRANSACTIONS_KEY];
@@ -301,9 +281,8 @@ static NSData *getKeychainData(NSString *key)
 // tx failed to confirm and needs to be removed from the pending unconfirmed tx list
 - (void)cleanUnconfirmed
 {
-    //XXX should we remove unconfirmed transactions after 2 days?
-    //XXX we should keep a seprate list of failed transactions to display along with the successful ones
-    
+    //TODO: remove unconfirmed transactions after 2 days?
+    //TODO: keep a seprate list of failed transactions to display along with the successful ones
     if (! self.unconfirmed.count) return;
 
     NSMutableSet *spent = [NSMutableSet set];
@@ -345,17 +324,24 @@ static NSData *getKeychainData(NSString *key)
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncStartedNotification object:self];
     });
+        
+    NSMutableArray *a = [NSMutableArray array];
     
-    NSMutableArray *newAddresses = [NSMutableArray arrayWithCapacity:GAP_LIMIT_EXTERNAL + GAP_LIMIT_INTERNAL +
-                                    self.fundedAddresses.count + self.spentAddresses.count];
+    [a addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
+
+    // use external gap limit when syncing inernal chain to produce fewer api calls
+    [a addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:YES]];
+
+    [self.addresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        if ([a indexOfObject:obj] == NSNotFound) [a addObject:obj];
+    }];
+
+    [self.changeAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        if ([a indexOfObject:obj] == NSNotFound) [a addObject:obj];
+    }];
     
-    [newAddresses addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
-    [newAddresses addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_INTERNAL internal:YES]];
-    [newAddresses addObjectsFromArray:self.fundedAddresses];
-    [newAddresses addObjectsFromArray:self.spentAddresses];
-    
-    // An ARC retain loop when using block recursion is avoided here by passing the block to itself as an argument...
-    // Please, just shoot me now
+    // An ARC retain loop is avoided here when using block recursion by passing the block to itself as an argument...
+    // just shoot me now... please
     void (^completion)(NSError *, id) = ^(NSError *error, id completion) {
         if (error) {
             _synchronizing = NO;
@@ -368,16 +354,16 @@ static NSData *getKeychainData(NSString *key)
             return;
         }
     
-        [newAddresses removeObjectsAtIndexes:[newAddresses
+        [a removeObjectsAtIndexes:[a
         indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-            return [self.spentAddresses containsObject:obj] || [self.fundedAddresses containsObject:obj];
+            return [self.addressTxCount[obj] unsignedIntegerValue] > 0;
         }]];
         
-        if (newAddresses.count < GAP_LIMIT_EXTERNAL + GAP_LIMIT_INTERNAL) {
-            [newAddresses setArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
-            [newAddresses addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_INTERNAL internal:YES]];
-            if (newAddresses.count) {
-                [self queryAddresses:newAddresses completion:^(NSError *error) {
+        if (a.count < GAP_LIMIT_EXTERNAL + GAP_LIMIT_EXTERNAL) {
+            [a setArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
+            [a addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:YES]];
+            if (a.count) {
+                [self queryAddresses:a completion:^(NSError *error) {
                     ((void (^)(NSError *, id))completion)(error, completion);
                 }];
             }
@@ -386,7 +372,7 @@ static NSData *getKeychainData(NSString *key)
         
         @synchronized(self) {
             // remove unconfirmed transactions that no longer appear in query results
-            //XXX we should keep a seprate list of failed transactions to display along with the successful ones
+            //TODO: keep a seprate list of failed transactions to display along with the successful ones
             [self.transactions
              removeObjectsForKeys:[self.transactions keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
                 return ! obj[@"block_height"] && ! [self.updatedTransactions containsObject:obj[@"hash"]];
@@ -425,7 +411,7 @@ static NSData *getKeychainData(NSString *key)
     self.updatedTransactions = [NSMutableSet set];
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [self queryAddresses:newAddresses completion:^(NSError *error) { completion(error, completion); }];
+        [self queryAddresses:a completion:^(NSError *error) { completion(error, completion); }];
     });
 }
 
@@ -436,6 +422,7 @@ static NSData *getKeychainData(NSString *key)
     NSMutableArray *addresses = [NSMutableArray array];
     NSMutableArray *newaddresses = [NSMutableArray array];
     
+    //XXXX this is hella slow... make it quick
     @synchronized(self) {
         while (addresses.count < gapLimit) {
             a = [[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ internal:internal masterPublicKey:self.mpk]]
@@ -456,9 +443,7 @@ static NSData *getKeychainData(NSString *key)
                 [newaddresses addObject:a];
             }
         
-            if (! [self.spentAddresses containsObject:a] && ! [self.fundedAddresses containsObject:a]) {
-                [addresses addObject:a];
-            }
+            if ([self.addressTxCount[a] unsignedIntegerValue] == 0) [addresses addObject:a];
         }
     }
     
@@ -504,29 +489,14 @@ static NSData *getKeychainData(NSString *key)
         
             @synchronized(self) {
                 [JSON[@"addresses"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                    NSString *address = obj[@"address"];
-            
-                    if (! address) return;
-                    
-                    [self.fundedAddresses removeObject:address];
-                    [self.spentAddresses removeObject:address];
-                    [self.receiveAddresses removeObject:address];
-            
-                    if ([obj[@"n_tx"] unsignedLongLongValue] > 0) {
+                    if (obj[@"address"] && [obj[@"n_tx"] unsignedLongLongValue] > 0) {
                         if ([obj[@"n_tx"] unsignedIntegerValue] !=
-                            [self.addressTxCount[address] unsignedIntegerValue]) {
-                            [self.outdatedAddresses addObject:address];
+                            [self.addressTxCount[obj[@"address"]] unsignedIntegerValue]) {
+                            [self.outdatedAddresses addObject:obj[@"address"]];
                         }
             
-                        self.addressBalances[address] = obj[@"final_balance"];
-                        self.addressTxCount[address] = obj[@"n_tx"];
-                        
-                        if ([obj[@"final_balance"] unsignedLongLongValue] > 0) {
-                            [self.fundedAddresses addObject:address];
-                        }
-                        else [self.spentAddresses addObject:address];
+                        self.addressTxCount[obj[@"address"]] = obj[@"n_tx"];
                     }
-                    else [self.receiveAddresses addObject:address];
                 }];
                 
                 [JSON[@"txs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
@@ -545,10 +515,6 @@ static NSData *getKeychainData(NSString *key)
         
                 [self.unconfirmed removeObjectsForKeys:self.transactions.allKeys];
                 
-                [_defs setObject:self.fundedAddresses forKey:FUNDED_ADDRESSES_KEY];
-                [_defs setObject:self.spentAddresses forKey:SPENT_ADDRESSES_KEY];
-                [_defs setObject:self.receiveAddresses forKey:RECEIVE_ADDRESSES_KEY];
-                [_defs setObject:self.addressBalances forKey:ADDRESS_BALANCES_KEY];
                 [_defs setObject:self.addressTxCount forKey:ADDRESS_TX_COUNT_KEY];
                 [_defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
                 [_defs setObject:self.unconfirmed forKey:UNCONFIRMED_KEY];
@@ -615,14 +581,9 @@ static NSData *getKeychainData(NSString *key)
             @synchronized(self) {
                 [self.unspentOutputs
                 removeObjectsForKeys:[self.unspentOutputs keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-                    NSString *s = obj[@"script"];
-                
-                    if (! [s hasSuffix:SCRIPT_SUFFIX] || s.length < SCRIPT_SUFFIX.length + 40) return YES;
+                    NSString *addr = [obj[@"script"] scriptToAddress];
                     
-                    NSString *hash160 = [s substringWithRange:NSMakeRange(s.length - SCRIPT_SUFFIX.length - 40, 40)];
-                    NSString *address = [[@"00" stringByAppendingString:hash160] hexToBase58check];
-                    
-                    return (! address || [addresses containsObject:address]) ? YES : NO;
+                    return (! addr || [addresses containsObject:addr]) ? YES : NO;
                 }].allObjects];
 
                 [self.outdatedAddresses minusSet:[NSSet setWithArray:addresses]];
@@ -648,14 +609,9 @@ static NSData *getKeychainData(NSString *key)
             @synchronized(self) {
                 [self.unspentOutputs
                 removeObjectsForKeys:[self.unspentOutputs keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-                    NSString *s = obj[@"script"];
+                    NSString *addr = [obj[@"script"] scriptToAddress];
                     
-                    if (! [s hasSuffix:SCRIPT_SUFFIX] || s.length < SCRIPT_SUFFIX.length + 40) return YES;
-                    
-                    NSString *hash160 = [s substringWithRange:NSMakeRange(s.length - SCRIPT_SUFFIX.length - 40, 40)];
-                    NSString *address = [[@"00" stringByAppendingString:hash160] hexToBase58check];
-                    
-                    return (! address || [addresses containsObject:address]) ? YES : NO;
+                    return (! addr || [addresses containsObject:addr]) ? YES : NO;
                 }].allObjects];
             
                 [self.outdatedAddresses minusSet:[NSSet setWithArray:addresses]];
@@ -684,61 +640,65 @@ static NSData *getKeychainData(NSString *key)
     // the outputs of unconfirmed transactions will show up in the unspent outputs list even with 0 confirmations
     __block uint64_t balance = 0;
     
-    [self.addressBalances enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        balance += [obj unsignedLongLongValue];
+    [self.unspentOutputs enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        balance += [obj[@"value"] unsignedLongLongValue];
     }];
     
     return balance;
 }
 
-//XXXX recieve/change addresses shouldn't advance until the transaction involving it has 6 confimations
-
 - (NSString *)receiveAddress
 {
-    if (self.receiveAddresses.count && self.addresses.count) {
-        return [self.addresses firstObjectCommonWithArray:self.receiveAddresses];
-    }
+    __block NSString *addr = nil;
 
-    NSUInteger i = 0;
-    NSString *a = nil;
-        
-    @synchronized(self) {
-        while (! a || [self.spentAddresses containsObject:a] || [self.fundedAddresses containsObject:a]) {
-            a = [[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ internal:NO masterPublicKey:self.mpk]] address];
-                
-            if (! a) return nil;
+    [self.addresses enumerateObjectsWithOptions:NSEnumerationReverse
+    usingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        if ([self.addressTxCount[obj] unsignedIntegerValue] > 0) {
+            NSMutableSet *txIndexes = [NSMutableSet set];
             
-            if (self.addresses.count < i) [self.addresses addObject:a];
+            [self.unspentOutputs enumerateKeysAndObjectsUsingBlock:^(id k, id o, BOOL *stop) {
+                if ([[o[@"script"] scriptToAddress] isEqual:obj] && [o[@"confirmations"] unsignedIntegerValue] < 6) {
+                    [txIndexes addObject:o[@"tx_index"]];
+                }
+            }];
+            
+            if (txIndexes.count < [self.addressTxCount[obj] unsignedIntegerValue]) {
+                *stop = YES;
+                return;
+            }
         }
         
-        if (! [self.receiveAddresses containsObject:a]) [self.receiveAddresses addObject:a];
-    }
+        addr = obj;
+    }];
 
-    return [self.addresses firstObjectCommonWithArray:self.receiveAddresses];
+    return addr ? addr : [self addressesWithGapLimit:1 internal:NO].lastObject;
 }
 
 - (NSString *)changeAddress
 {
-    if (self.receiveAddresses.count && self.changeAddresses.count) {
-        return [self.changeAddresses firstObjectCommonWithArray:self.receiveAddresses];
-    }
+    __block NSString *addr = nil;
     
-    NSUInteger i = 0;
-    NSString *a = nil;
-    
-    @synchronized(self) {
-        while (! a || [self.spentAddresses containsObject:a] || [self.fundedAddresses containsObject:a]) {
-            a = [[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ internal:YES masterPublicKey:self.mpk]] address];
+    [self.changeAddresses enumerateObjectsWithOptions:NSEnumerationReverse
+    usingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        if ([self.addressTxCount[obj] unsignedIntegerValue] > 0) {
+            NSMutableSet *txIndexes = [NSMutableSet set];
             
-            if (! a) return nil;
+            [self.unspentOutputs enumerateKeysAndObjectsUsingBlock:^(id k, id o, BOOL *stop) {
+                if ([[o[@"script"] scriptToAddress] isEqual:obj] && [o[@"confirmations"] unsignedIntegerValue] < 6) {
+                    [txIndexes addObject:o[@"tx_index"]];
+                }
+            }];
             
-            if (self.changeAddresses.count < i) [self.changeAddresses addObject:a];
+            if (txIndexes.count < [self.addressTxCount[obj] unsignedIntegerValue]) {
+                *stop = YES;
+                return;
+            }
         }
         
-        if (! [self.receiveAddresses containsObject:a]) [self.receiveAddresses addObject:a];
-    }
-    
-    return [self.changeAddresses firstObjectCommonWithArray:self.receiveAddresses];
+        addr = obj;
+    }];
+
+    return addr ? addr : [self addressesWithGapLimit:1 internal:YES].lastObject;    
 }
 
 - (NSArray *)recentTransactions
@@ -771,8 +731,7 @@ static NSData *getKeychainData(NSString *key)
 
 - (BOOL)containsAddress:(NSString *)address
 {
-    return [self.spentAddresses containsObject:address] || [self.fundedAddresses containsObject:address] ||
-           [self.receiveAddresses containsObject:address];
+    return [self.addresses containsObject:address] || [self.changeAddresses containsObject:address];
 }
 
 - (int64_t)amountForString:(NSString *)string
@@ -815,8 +774,8 @@ static NSData *getKeychainData(NSString *key)
 
 #pragma mark - ZNTransaction helpers
 
-//XXX as block space becomes harder to come by, we can calculate the median of the lowest fee-per-kb that made it into
-// the previous 100 blocks
+// as block space becomes harder to come by, we can calculate the median of the lowest fee-per-kb that made it into the
+// previous 144 blocks (24hrs)
 - (ZNTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee
 {
     __block uint64_t balance = 0, standardFee = 0;
@@ -826,7 +785,7 @@ static NSData *getKeychainData(NSString *key)
     [tx addOutputAddress:address amount:amount];
 
     @synchronized(self) {
-        //XXX we should optimize for free transactions (watch out for performance issues, nothing O(n^2) please)
+        //TODO: optimize for free transactions (watch out for performance issues, nothing O(n^2) please)
         // this is a nieve implementation to just get it functional, sorts unspent outputs by oldest first
         NSArray *keys =
             [self.unspentOutputs keysSortedByValueUsingComparator:^NSComparisonResult(id obj1, id obj2) {
@@ -853,7 +812,7 @@ static NSData *getKeychainData(NSString *key)
             return nil;
         }
     
-        //XXX we should randomly swap order of outputs so the change address isn't publicy known
+        //TODO: randomly swap order of outputs so the change address isn't publicy known
         if (balance - (amount + standardFee) >= TX_MIN_OUTPUT_AMOUNT) {
             [tx addOutputAddress:self.changeAddress amount:balance - (amount + standardFee)];
         }
@@ -863,8 +822,9 @@ static NSData *getKeychainData(NSString *key)
 }
 
 // returns the estimated time in seconds until the transaction will be processed without a fee
-//XXX this is based on the default satoshi client settings, but on the real network it's way off. in testing, a 0.01btc
+// this is based on the default satoshi client settings, but on the real network it's way off. in testing, a 0.01btc
 // transaction with a 90 day time until free was confirmed in under an hour by Eligius pool.
+// TODO: calculate estimated time based on the median priority of free transactions in last 144 blocks (24hrs)
 - (NSTimeInterval)timeUntilFree:(ZNTransaction *)transaction
 {
     NSMutableArray *amounts = [NSMutableArray array], *heights = [NSMutableArray array];
@@ -976,7 +936,7 @@ static NSData *getKeychainData(NSString *key)
         tx[@"inputs"] = [NSMutableArray array];
         tx[@"out"] = [NSMutableArray array];
         
-        //XXX successful response is "Transaction submitted", maybe we should check for that 
+        //NOTE: successful response is "Transaction submitted", maybe we should check for that
         NSLog(@"responseObject: %@", responseObject);
         NSLog(@"response:\n%@", operation.responseString);
         
@@ -987,20 +947,10 @@ static NSData *getKeychainData(NSString *key)
                 NSDictionary *o = self.unspentOutputs[[hash stringByAppendingString:n]];
             
                 if (o) {
-                    uint64_t balance = [self.addressBalances[obj] unsignedLongLongValue] -
-                                       [o[@"value"] unsignedLongLongValue];
-
-                    self.addressBalances[obj] = @(balance);
-
                     [updated addObject:obj];
                     [self.unspentOutputs removeObjectForKey:[hash stringByAppendingString:n]];
                 
-                    if (balance == 0) {
-                        [self.fundedAddresses removeObject:obj];
-                        if (! [self.spentAddresses containsObject:obj]) [self.spentAddresses addObject:obj];
-                    }
-                
-                    //XXX for now we don't need to store spent outputs because blockchain.info will not list them as
+                    //NOTE: for now we don't need to store spent outputs because blockchain.info will not list them as
                     // unspent while there is an unconfirmed tx that spends them. This may change once we have multiple
                     // apis for publishing, and a transaction may not show up on blockchain.info immediately.
                     [tx[@"inputs"] addObject:@{@"prev_out":@{@"hash":o[@"tx_hash"], @"tx_index":o[@"tx_index"],
@@ -1019,10 +969,7 @@ static NSData *getKeychainData(NSString *key)
         
             self.unconfirmed[tx[@"hash"]] = tx;
         
-            [_defs setObject:self.fundedAddresses forKey:FUNDED_ADDRESSES_KEY];
-            [_defs setObject:self.spentAddresses forKey:SPENT_ADDRESSES_KEY];
             [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
-            [_defs setObject:self.addressBalances forKey:ADDRESS_BALANCES_KEY];
             [_defs setObject:self.addressTxCount forKey:ADDRESS_TX_COUNT_KEY];
             [_defs setObject:self.unconfirmed forKey:UNCONFIRMED_KEY];
         }
@@ -1039,7 +986,7 @@ static NSData *getKeychainData(NSString *key)
         if (completion) dispatch_async(q, ^{ completion(error); });
     }];
 
-    //XXX also publish transactions directly to coinbase and bitpay servers for faster POS experience
+    //TODO: also publish transactions directly to coinbase and bitpay servers for faster POS experience
 }
 
 @end

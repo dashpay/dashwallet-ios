@@ -31,13 +31,8 @@
 #import <netinet/in.h>
 #import "Reachability.h"
 
-
 #define SOCKET_URL @"ws://ws.blockchain.info:8335/inv"
 
-#define FUNDED_ADDRESSES_KEY       @"FUNDED_ADDRESSES"
-#define SPENT_ADDRESSES_KEY        @"SPENT_ADDRESSES"
-#define RECEIVE_ADDRESSES_KEY      @"RECEIVE_ADDRESSES"
-#define ADDRESS_BALANCES_KEY       @"ADDRESS_BALANCES"
 #define UNSPENT_OUTPUTS_KEY        @"UNSPENT_OUTPUTS"
 #define TRANSACTIONS_KEY           @"TRANSACTIONS"
 #define UNCONFIRMED_KEY            @"UNCONFIRMED"
@@ -46,9 +41,9 @@
 
 @interface ZNWallet ()
 
-@property (nonatomic, strong) NSMutableArray *spentAddresses, *fundedAddresses, *receiveAddresses;
+@property (nonatomic, strong) NSMutableArray *addresses, *changeAddresses;
 @property (nonatomic, strong) NSMutableDictionary *transactions, *unconfirmed;
-@property (nonatomic, strong) NSMutableDictionary *unspentOutputs, *addressBalances;
+@property (nonatomic, strong) NSMutableDictionary *unspentOutputs;
 
 @property (nonatomic, strong) SRWebSocket *webSocket;
 @property (nonatomic, assign) int connectFailCount;
@@ -141,10 +136,18 @@
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [webSocket send:@"{\"op\":\"blocks_sub\"}"];
     
-        [self subscribeToAddresses:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
-        [self subscribeToAddresses:[self addressesWithGapLimit:GAP_LIMIT_INTERNAL internal:YES]];
-        [self subscribeToAddresses:self.fundedAddresses];
-        [self subscribeToAddresses:self.spentAddresses];
+        NSMutableArray *a = [NSMutableArray array];
+        
+        [a addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
+        [a addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_INTERNAL internal:YES]];
+        [self.addresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            if ([a indexOfObject:obj] == NSNotFound) [a addObject:obj];
+        }];
+        [self.changeAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            if ([a indexOfObject:obj] == NSNotFound) [a addObject:obj];
+        }];
+        
+        [self subscribeToAddresses:a];        
     });
 }
 
@@ -175,7 +178,6 @@
 // message will either be an NSString if the server is using text
 // or NSData if the server is using binary.
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)msg;
-//- (void)webSocket:(WebSocket*)webSocket onReceive:(NSData*)data
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
@@ -209,21 +211,14 @@
                     [updated addObject:addr];
                     
                     if (value == 0 || ! addr || ! [self containsAddress:addr]) return;
-                    
-                    uint64_t balance = [self.addressBalances[addr] unsignedLongLongValue] + value;
-                    
-                    self.addressBalances[addr] = @(balance);
-                    if (! [self.fundedAddresses containsObject:addr]) [self.fundedAddresses addObject:addr];
-                    [self.spentAddresses removeObject:addr];
-                    [self.receiveAddresses removeObject:addr];
-                    
+                                        
                     NSMutableData *script = [NSMutableData data];
                     
                     [script appendScriptPubKeyForAddress:addr];
                     
                     self.unspentOutputs[[x[@"hash"] stringByAppendingFormat:@"%d", idx]] =
-                    @{@"tx_hash":x[@"hash"], @"tx_index":x[@"tx_index"], @"tx_output_n":@(idx),
-                      @"script":[NSString hexWithData:script], @"value":@(value), @"confirmations":@(0)};
+                        @{@"tx_hash":x[@"hash"], @"tx_index":x[@"tx_index"], @"tx_output_n":@(idx),
+                          @"script":[NSString hexWithData:script], @"value":@(value), @"confirmations":@(0)};
                 }];
                 
                 // don't update addressTxCount so the address's unspent outputs will be updated on next sync
@@ -233,10 +228,6 @@
                 
                 [defs setObject:self.unconfirmed forKey:UNCONFIRMED_KEY];
                 [defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
-                [defs setObject:self.addressBalances forKey:ADDRESS_BALANCES_KEY];
-                [defs setObject:self.fundedAddresses forKey:FUNDED_ADDRESSES_KEY];
-                [defs setObject:self.spentAddresses forKey:SPENT_ADDRESSES_KEY];
-                [defs setObject:self.receiveAddress forKey:RECEIVE_ADDRESSES_KEY];
                 [defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
             }
             
