@@ -41,7 +41,7 @@
 
 @interface ZNWallet ()
 
-@property (nonatomic, strong) NSMutableArray *addresses, *changeAddresses;
+@property (nonatomic, strong) NSMutableArray *externalAddresses, *internalAddresses;
 @property (nonatomic, strong) NSMutableDictionary *transactions, *unconfirmed;
 @property (nonatomic, strong) NSMutableDictionary *unspentOutputs;
 
@@ -140,10 +140,10 @@
         
         [a addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
         [a addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_INTERNAL internal:YES]];
-        [self.addresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        [self.externalAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             if ([a indexOfObject:obj] == NSNotFound) [a addObject:obj];
         }];
-        [self.changeAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        [self.internalAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             if ([a indexOfObject:obj] == NSNotFound) [a addObject:obj];
         }];
         
@@ -151,7 +151,8 @@
     });
 }
 
-- (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean
+- (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason
+wasClean:(BOOL)wasClean
 {
     NSLog(@"Websocket on close");
     

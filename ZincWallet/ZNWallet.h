@@ -54,9 +54,6 @@
 
 + (instancetype)sharedInstance;
 
-- (instancetype)initWithSeedPhrase:(NSString *)phrase;
-- (instancetype)initWithSeed:(NSData *)seed;
-
 - (void)generateRandomSeed;
 - (void)synchronize;
 

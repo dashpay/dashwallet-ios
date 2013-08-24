@@ -108,7 +108,7 @@ static NSData *getKeychainData(NSString *key)
 
 @interface ZNWallet ()
 
-@property (nonatomic, strong) NSMutableArray *addresses, *changeAddresses;
+@property (nonatomic, strong) NSMutableArray *externalAddresses, *internalAddresses;
 @property (nonatomic, strong) NSMutableDictionary *unspentOutputs, *addressTxCount;
 @property (nonatomic, strong) NSMutableDictionary *transactions, *unconfirmed;
 @property (nonatomic, strong) NSMutableSet *outdatedAddresses, *updatedTransactions;
@@ -141,8 +141,8 @@ static NSData *getKeychainData(NSString *key)
     
     self.defs = [NSUserDefaults standardUserDefaults];
     
-    self.addresses = [NSMutableArray array];
-    self.changeAddresses = [NSMutableArray array];
+    self.externalAddresses = [NSMutableArray array];
+    self.internalAddresses = [NSMutableArray array];
     self.outdatedAddresses = [NSMutableSet set];
     self.transactions = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:TRANSACTIONS_KEY]];
     self.unconfirmed = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:UNCONFIRMED_KEY]];
@@ -179,24 +179,6 @@ static NSData *getKeychainData(NSString *key)
     return self;
 }
 
-- (instancetype)initWithSeedPhrase:(NSString *)phrase
-{
-    if (! (self = [self init])) return nil;
-    
-    self.seedPhrase = phrase;
-    
-    return self;
-}
-
-- (instancetype)initWithSeed:(NSData *)seed
-{
-    if (! (self = [self init])) return nil;
-    
-    self.seed = seed;
-    
-    return self;
-}
-
 - (NSData *)seed
 {
     NSData *seed = getKeychainData(SEED_KEY);
@@ -218,8 +200,8 @@ static NSData *getKeychainData(NSString *key)
         
         _synchronizing = NO;
         self.mpk = nil;
-        [self.addresses removeAllObjects];
-        [self.changeAddresses removeAllObjects];
+        [self.externalAddresses removeAllObjects];
+        [self.internalAddresses removeAllObjects];
         [self.outdatedAddresses removeAllObjects];
         [self.transactions removeAllObjects];
         [self.unconfirmed removeAllObjects];
@@ -232,6 +214,9 @@ static NSData *getKeychainData(NSString *key)
         [_defs removeObjectForKey:TRANSACTIONS_KEY];
         [_defs removeObjectForKey:UNCONFIRMED_KEY];
         [_defs removeObjectForKey:LAST_SYNC_TIME_KEY];
+        
+        [self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO];
+        [self addressesWithGapLimit:GAP_LIMIT_INTERNAL internal:YES];
     }
 
     [_defs synchronize];
@@ -332,11 +317,11 @@ static NSData *getKeychainData(NSString *key)
     // use external gap limit when syncing inernal chain to produce fewer api calls
     [a addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:YES]];
 
-    [self.addresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+    [self.externalAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         if ([a indexOfObject:obj] == NSNotFound) [a addObject:obj];
     }];
 
-    [self.changeAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+    [self.internalAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         if ([a indexOfObject:obj] == NSNotFound) [a addObject:obj];
     }];
     
@@ -417,12 +402,21 @@ static NSData *getKeychainData(NSString *key)
 
 - (NSArray *)addressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal
 {
-    NSUInteger i = 0;
-    NSString *a = nil;
-    NSMutableArray *addresses = [NSMutableArray array];
+    NSMutableArray *addresses =
+        [NSMutableArray arrayWithArray:internal ? self.internalAddresses : self.externalAddresses];
     NSMutableArray *newaddresses = [NSMutableArray array];
+    NSUInteger i = addresses.count;
+    NSString *a = nil;
     
-    //XXXX this is hella slow... make it quick
+    [addresses removeObjectsAtIndexes:[addresses indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+        return [self.addressTxCount[obj] unsignedIntegerValue] > 0 ? YES : NO;
+    }]];
+    
+    if (addresses.count >= gapLimit) {
+        [addresses removeObjectsInRange:NSMakeRange(gapLimit, addresses.count - gapLimit)];
+        return addresses;
+    }
+    
     @synchronized(self) {
         while (addresses.count < gapLimit) {
             a = [[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ internal:internal masterPublicKey:self.mpk]]
@@ -432,18 +426,17 @@ static NSData *getKeychainData(NSString *key)
                 NSLog(@"error generating keys");
                 return nil;
             }
-        
-            if (! internal && self.addresses.count < i) {
-                [self.addresses addObject:a];
-                [newaddresses addObject:a];
-            }
-        
-            if (internal && self.changeAddresses.count < i) {
-                [self.changeAddresses addObject:a];
-                [newaddresses addObject:a];
-            }
-        
+            
             if ([self.addressTxCount[a] unsignedIntegerValue] == 0) [addresses addObject:a];
+            
+            if (! internal && self.externalAddresses.count < i) {
+                [self.externalAddresses addObject:a];
+                [newaddresses addObject:a];
+            }
+            else if (internal && self.internalAddresses.count < i) {
+                [self.internalAddresses addObject:a];
+                [newaddresses addObject:a];
+            }
         }
     }
     
@@ -649,9 +642,9 @@ static NSData *getKeychainData(NSString *key)
 
 - (NSString *)receiveAddress
 {
-    __block NSString *addr = nil;
+    __block NSString *addr = [self addressesWithGapLimit:1 internal:NO].lastObject;
 
-    [self.addresses enumerateObjectsWithOptions:NSEnumerationReverse
+    [self.externalAddresses enumerateObjectsWithOptions:NSEnumerationReverse
     usingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         if ([self.addressTxCount[obj] unsignedIntegerValue] > 0) {
             NSMutableSet *txIndexes = [NSMutableSet set];
@@ -671,14 +664,14 @@ static NSData *getKeychainData(NSString *key)
         addr = obj;
     }];
 
-    return addr ? addr : [self addressesWithGapLimit:1 internal:NO].lastObject;
+    return addr;
 }
 
 - (NSString *)changeAddress
 {
-    __block NSString *addr = nil;
+    __block NSString *addr = [self addressesWithGapLimit:1 internal:YES].lastObject;
     
-    [self.changeAddresses enumerateObjectsWithOptions:NSEnumerationReverse
+    [self.internalAddresses enumerateObjectsWithOptions:NSEnumerationReverse
     usingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         if ([self.addressTxCount[obj] unsignedIntegerValue] > 0) {
             NSMutableSet *txIndexes = [NSMutableSet set];
@@ -698,7 +691,7 @@ static NSData *getKeychainData(NSString *key)
         addr = obj;
     }];
 
-    return addr ? addr : [self addressesWithGapLimit:1 internal:YES].lastObject;    
+    return addr;
 }
 
 - (NSArray *)recentTransactions
@@ -731,7 +724,10 @@ static NSData *getKeychainData(NSString *key)
 
 - (BOOL)containsAddress:(NSString *)address
 {
-    return [self.addresses containsObject:address] || [self.changeAddresses containsObject:address];
+    if (self.externalAddresses.count < GAP_LIMIT_EXTERNAL) [self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO];
+    if (self.internalAddresses.count < GAP_LIMIT_INTERNAL) [self addressesWithGapLimit:GAP_LIMIT_INTERNAL internal:YES];
+
+    return [self.externalAddresses containsObject:address] || [self.internalAddresses containsObject:address];
 }
 
 - (int64_t)amountForString:(NSString *)string
@@ -888,14 +884,14 @@ static NSData *getKeychainData(NSString *key)
 
     @synchronized(self) {
         [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            if ([self.addresses indexOfObject:obj] == NSNotFound) {
-                if ([self.changeAddresses indexOfObject:obj] == NSNotFound) {
+            if ([self.externalAddresses indexOfObject:obj] == NSNotFound) {
+                if ([self.internalAddresses indexOfObject:obj] == NSNotFound) {
                     NSLog(@"[%s %s] line %d: missing key", object_getClassName(self), sel_getName(_cmd), __LINE__);
                     *stop = YES;
                 }
-                else [changeKeyIndexes addObject:@([self.changeAddresses indexOfObject:obj])];
+                else [changeKeyIndexes addObject:@([self.internalAddresses indexOfObject:obj])];
             }
-            else [keyIndexes addObject:@([self.addresses indexOfObject:obj])];
+            else [keyIndexes addObject:@([self.externalAddresses indexOfObject:obj])];
         }];
     }
     
