@@ -36,13 +36,15 @@
 
     [self keepUpAppearances];
 
-    //XXX need to upgrade openssl (and other libs) to latest
+    //TODO: digitally sign every source release
     
-    //XXX need to implement pin code
+    //TODO: need to upgrade openssl (and other libs) to latest
+    
+    //TODO: need to implement pin code
 
-    //XXX need to have a network status indicator perferrably tied to websocket status
+    //TODO: need to have a network status indicator perferrably tied to websocket status
     
-    //XXX figure what to do about bluetooth
+    //TODO: figure what to do about bluetooth
     // this will notify user if bluetooth is disabled (on 4S and newer devices that support BTLE)
     //CBCentralManager *cbManager = [[CBCentralManager alloc] initWithDelegate:self queue:dispatch_get_main_queue()];
     

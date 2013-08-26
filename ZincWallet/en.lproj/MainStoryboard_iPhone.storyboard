@@ -221,7 +221,7 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" id="61a-av-Tj6">
-                                <rect key="frame" x="0.0" y="147" width="320" height="230"/>
+                                <rect key="frame" x="0.0" y="132" width="320" height="240"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" id="qVy-JO-nVM">
@@ -230,19 +230,20 @@
                                         <color key="backgroundColor" white="0.75" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                     </view>
                                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Cl2-sB-zuB">
-                                        <rect key="frame" x="20" y="0.0" width="280" height="230"/>
+                                        <rect key="frame" x="20" y="0.0" width="280" height="240"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <string key="text">zinc wallet v0.2
 Copyright © 2013 Aaron Voisine
 
-This app is open source: https://github.com/voisine/zincwallet
+This app is open source:
+https://github.com/voisine/zincwallet
 
 v0.2 relies on blockchain.info for blockchain data. More data sources coming soon!</string>
-                                        <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
+                                        <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <view contentMode="scaleToFill" id="yax-ki-WWt">
-                                        <rect key="frame" x="0.0" y="229" width="320" height="1"/>
+                                        <rect key="frame" x="0.0" y="239" width="320" height="1"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                         <color key="backgroundColor" white="0.75" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                     </view>
@@ -1194,9 +1195,6 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
         <class className="ZNPayViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNPayViewController.h"/>
             <relationships>
-                <relationship kind="action" name="doIt:"/>
-                <relationship kind="action" name="page:"/>
-                <relationship kind="action" name="refresh:"/>
                 <relationship kind="outlet" name="pageControl" candidateClass="UIPageControl"/>
                 <relationship kind="outlet" name="refreshButton" candidateClass="UIBarButtonItem"/>
                 <relationship kind="outlet" name="scrollView" candidateClass="UIScrollView"/>

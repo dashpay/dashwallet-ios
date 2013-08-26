@@ -417,6 +417,7 @@ static NSData *getKeychainData(NSString *key)
         return addresses;
     }
     
+    // TODO: generating addresses is noticably slow, cache them in coredata
     @synchronized(self) {
         while (addresses.count < gapLimit) {
             a = [[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ internal:internal masterPublicKey:self.mpk]]
