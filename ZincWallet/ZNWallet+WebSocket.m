@@ -127,7 +127,7 @@
 
 - (void)webSocketDidOpen:(SRWebSocket *)webSocket
 {
-    NSLog(@"Websocket on open");
+    NSLog(@"Websocket did open");
     
     self.connectFailCount = 0;
     
@@ -153,7 +153,7 @@
 - (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason
 wasClean:(BOOL)wasClean
 {
-    NSLog(@"Websocket on close");
+    NSLog(@"Websocket did close");
     
     if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateActive && self.connectFailCount < 5) {
         self.connectFailCount++;
@@ -165,7 +165,7 @@ wasClean:(BOOL)wasClean
 
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error;
 {
-    NSLog(@"Websocket on error");
+    NSLog(@"Websocket did fail");
     
     if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateActive && self.connectFailCount < 5) {
         self.connectFailCount++;

@@ -1,6 +1,5 @@
 //
-//  NSManagedObjectContext+Utils.m
-//  ZincWallet
+//  NSManagedObject+Utils.m
 //
 //  Created by Aaron Voisine on 8/22/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
@@ -23,31 +22,20 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "NSManagedObjectContext+Utils.h"
+#import "NSManagedObject+Utils.h"
 
-@implementation NSManagedObjectContext (Utils)
+@implementation NSManagedObject (Utils)
 
-- (void)saveContext:(void (^)(NSError *error))completion;
++ (instancetype)managedObject
 {
-    [self performBlock:^{
-        NSError *error = nil;
-
-        if ([self hasChanges] && ! [self save:&error]) {
-            NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
-            //abort();
-        }
-        
-        if (completion) completion(error);
-    }];
+    return [[self alloc] initWithEntity:[self entity] insertIntoManagedObjectContext:[self managedObjectContext]];
 }
-
-#pragma mark - Core Data stack
 
 // Returns the managed object context for the application. If the context doesn't already exist, it is created and bound
 // to the persistent store coordinator for the application.
-+ (instancetype)sharedInstance
++ (NSManagedObjectContext *)managedObjectContext
 {
-    static id singleton = nil;
+    static id context = nil;
     static dispatch_once_t onceToken = 0;
     
     dispatch_once(&onceToken, ^{
@@ -56,33 +44,82 @@
         NSURL *modelURL = [NSBundle.mainBundle URLsForResourcesWithExtension:@"momd" subdirectory:nil].lastObject;
         NSString *projName = [[modelURL lastPathComponent] stringByDeletingPathExtension];
         NSURL *storeURL = [[docURL URLByAppendingPathComponent:projName] URLByAppendingPathExtension:@"sqlite"];
-        NSPersistentStoreCoordinator *coordinator =
-            [[NSPersistentStoreCoordinator alloc]
-             initWithManagedObjectModel:[[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL]];
+        NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
+        NSPersistentStoreCoordinator *coordinator = [[NSPersistentStoreCoordinator alloc]
+                                                     initWithManagedObjectModel:model];
         NSError *error = nil;
         
         if (! [coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil
                error:&error]) {
-            NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
-            
+            NSLog(@"[%s %s] line %d: %@, %@", object_getClassName(self), sel_getName(_cmd), __LINE__, error,
+                  error.userInfo);
+
+#if DEBUG
+            abort();
+#else       // if this is a not a debug build, attempt to delete and create a new persisent data store
             if (! [[NSFileManager defaultManager] removeItemAtURL:storeURL error:&error]) {
-                NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+                NSLog(@"[%s %s] line %d: %@, %@", object_getClassName(self), sel_getName(_cmd), __LINE__, error,
+                      error.userInfo);
             }
             
             if (! [coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil
                    error:&error]) {
-                NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+                NSLog(@"[%s %s] line %d: %@, %@", object_getClassName(self), sel_getName(_cmd), __LINE__, error,
+                      error.userInfo);
                 abort();
             }
+#endif
         }
 
         if (coordinator) {
-            singleton = [NSManagedObjectContext new];
-            [singleton setPersistentStoreCoordinator:coordinator];
+            context = [NSManagedObjectContext new];
+            [context setPersistentStoreCoordinator:coordinator];
         }
     });
     
-    return singleton;
+    return context;
+}
+
++ (void)saveContext
+{
+    [self saveContext:nil];
+}
+
++ (void)saveContext:(void (^)(NSError *error))completion
+{
+    [[self managedObjectContext] performBlock:^{
+        NSError *error = nil;
+        
+        if ([[self managedObjectContext] hasChanges] && ! [[self managedObjectContext] save:&error]) {
+            NSLog(@"[%s %s] line %d: %@, %@", object_getClassName(self), sel_getName(_cmd), __LINE__, error,
+                  error.userInfo);
+#if DEBUG
+            abort();
+#endif
+        }
+        
+        if (completion) completion(error);
+    }];
+}
+
++ (NSString *)entityName
+{
+    return NSStringFromClass(self);
+}
+
++ (NSEntityDescription *)entity
+{
+    return [NSEntityDescription entityForName:[self entityName] inManagedObjectContext:[self managedObjectContext]];
+}
+
++ (NSFetchRequest *)fetchRequest
+{
+    return [NSFetchRequest fetchRequestWithEntityName:[self entityName]];
+}
+
++ (NSFetchedResultsController *)fetchedResultsController {
+    return [[NSFetchedResultsController alloc] initWithFetchRequest:[self fetchRequest]
+            managedObjectContext:[self managedObjectContext] sectionNameKeyPath:nil cacheName:[self entityName]];
 }
 
 @end

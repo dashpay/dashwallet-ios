@@ -1,6 +1,5 @@
 //
-//  NSManagedObjectContext+Utils.h
-//  ZincWallet
+//  NSManagedObject+Utils.h
 //
 //  Created by Aaron Voisine on 8/22/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
@@ -25,10 +24,15 @@
 
 #import <CoreData/CoreData.h>
 
-@interface NSManagedObjectContext (Utils)
+@interface NSManagedObject (Utils)
 
-+ (instancetype)sharedInstance;
-
-- (void)saveContext:(void (^)(NSError *error))completion;
++ (instancetype)managedObject;
++ (NSManagedObjectContext *)managedObjectContext;
++ (void)saveContext;
++ (void)saveContext:(void (^)(NSError *error))completion;
++ (NSString *)entityName;
++ (NSEntityDescription *)entity;
++ (NSFetchRequest *)fetchRequest;
++ (NSFetchedResultsController *)fetchedResultsController;
 
 @end

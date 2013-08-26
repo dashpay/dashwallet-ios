@@ -85,7 +85,7 @@
 - (void)applicationWillTerminate:(UIApplication *)application
 {
     // Saves changes in the application's managed object context before the application terminates.
-    [[NSManagedObjectContext sharedInstance] saveContext:nil];
+    [[NSManagedObjectContext sharedInstance] saveContext];
 }
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication

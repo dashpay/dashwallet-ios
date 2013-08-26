@@ -28,8 +28,8 @@
 @implementation ZNAddressEntity
 
 @dynamic address;
-@dynamic internal;
 @dynamic index;
+@dynamic internal;
 @dynamic txCount;
 
 @end

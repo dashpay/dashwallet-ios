@@ -24,7 +24,6 @@
 //  THE SOFTWARE.
 
 #import "ZNOutputEntity.h"
-#import "ZNTransactionEntity.h"
 
 @implementation ZNOutputEntity
 
@@ -32,6 +31,5 @@
 @dynamic n;
 @dynamic txIndex;
 @dynamic value;
-@dynamic transaction;
 
 @end

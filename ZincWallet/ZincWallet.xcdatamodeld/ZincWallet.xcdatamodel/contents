@@ -1,42 +1,42 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model name="" userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="2061" systemVersion="12E55" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
-    <entity name="AddressEntity" representedClassName="ZNAddressEntity" syncable="YES">
+    <entity name="ZNAddressEntity" representedClassName="ZNAddressEntity" syncable="YES">
         <attribute name="address" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="index" optional="YES" attributeType="Integer 32" defaultValueString="0" indexed="YES" syncable="YES"/>
         <attribute name="internal" optional="YES" attributeType="Boolean" defaultValueString="0" indexed="YES" syncable="YES"/>
         <attribute name="txCount" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
     </entity>
-    <entity name="OutputEntity" representedClassName="ZNOutputEntity" isAbstract="YES" syncable="YES">
+    <entity name="ZNOutputEntity" representedClassName="ZNOutputEntity" isAbstract="YES" syncable="YES">
         <attribute name="address" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="n" optional="YES" attributeType="Integer 32" defaultValueString="0" indexed="YES" syncable="YES"/>
         <attribute name="txIndex" optional="YES" attributeType="Integer 64" defaultValueString="0" indexed="YES" syncable="YES"/>
         <attribute name="value" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
     </entity>
-    <entity name="TransactionEntity" representedClassName="ZNTransactionEntity" syncable="YES">
+    <entity name="ZNTransactionEntity" representedClassName="ZNTransactionEntity" syncable="YES">
         <attribute name="blockHeight" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <attribute name="timeStamp" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="txHash" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
         <attribute name="txIndex" optional="YES" attributeType="Integer 64" defaultValueString="0" indexed="YES" syncable="YES"/>
-        <relationship name="inputs" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="TxInputEntity" inverseName="transaction" inverseEntity="TxInputEntity" syncable="YES"/>
-        <relationship name="outputs" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="TxOutputEntity" inverseName="transaction" inverseEntity="TxOutputEntity" syncable="YES"/>
+        <relationship name="inputs" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="ZNTxInputEntity" inverseName="transaction" inverseEntity="ZNTxInputEntity" syncable="YES"/>
+        <relationship name="outputs" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="ZNTxOutputEntity" inverseName="transaction" inverseEntity="ZNTxOutputEntity" syncable="YES"/>
     </entity>
-    <entity name="TxInputEntity" representedClassName="ZNOutputEntity" parentEntity="OutputEntity" syncable="YES">
-        <relationship name="transaction" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="TransactionEntity" inverseName="inputs" inverseEntity="TransactionEntity" syncable="YES"/>
+    <entity name="ZNTxInputEntity" representedClassName="ZNTxInputEntity" parentEntity="ZNOutputEntity" syncable="YES">
+        <relationship name="transaction" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="ZNTransactionEntity" inverseName="inputs" inverseEntity="ZNTransactionEntity" syncable="YES"/>
     </entity>
-    <entity name="TxOutputEntity" representedClassName="ZNOutputEntity" parentEntity="OutputEntity" syncable="YES">
-        <relationship name="transaction" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="TransactionEntity" inverseName="outputs" inverseEntity="TransactionEntity" syncable="YES"/>
+    <entity name="ZNTxOutputEntity" representedClassName="ZNTxOutputEntity" parentEntity="ZNOutputEntity" syncable="YES">
+        <relationship name="transaction" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="ZNTransactionEntity" inverseName="outputs" inverseEntity="ZNTransactionEntity" syncable="YES"/>
     </entity>
-    <entity name="UnspentOutputEntity" representedClassName="ZNUnspentOutputEntity" parentEntity="OutputEntity" syncable="YES">
+    <entity name="ZNUnspentOutputEntity" representedClassName="ZNUnspentOutputEntity" parentEntity="ZNOutputEntity" syncable="YES">
         <attribute name="confirmations" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <attribute name="script" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="txHash" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
     </entity>
     <elements>
-        <element name="AddressEntity" positionX="-1766" positionY="-2997" width="128" height="105"/>
-        <element name="OutputEntity" positionX="-1953" positionY="-2853" width="128" height="103"/>
-        <element name="TransactionEntity" positionX="-1962" positionY="-2934" width="128" height="133"/>
-        <element name="TxInputEntity" positionX="-2187" positionY="-2988" width="128" height="58"/>
-        <element name="TxOutputEntity" positionX="-2187" positionY="-2844" width="128" height="58"/>
-        <element name="UnspentOutputEntity" positionX="-1766" positionY="-2871" width="128" height="88"/>
+        <element name="ZNAddressEntity" positionX="-1766" positionY="-2997" width="128" height="105"/>
+        <element name="ZNOutputEntity" positionX="-1953" positionY="-2853" width="128" height="105"/>
+        <element name="ZNTransactionEntity" positionX="-1962" positionY="-2934" width="128" height="135"/>
+        <element name="ZNTxInputEntity" positionX="-2187" positionY="-2988" width="128" height="60"/>
+        <element name="ZNTxOutputEntity" positionX="-2187" positionY="-2844" width="128" height="60"/>
+        <element name="ZNUnspentOutputEntity" positionX="-1766" positionY="-2871" width="128" height="90"/>
     </elements>
 </model>

@@ -29,8 +29,8 @@
 @interface ZNAddressEntity : NSManagedObject
 
 @property (nonatomic, retain) NSString *address;
-@property (nonatomic) BOOL internal;
 @property (nonatomic) int32_t index;
+@property (nonatomic) BOOL internal;
 @property (nonatomic) int32_t txCount;
 
 @end

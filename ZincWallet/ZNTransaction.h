@@ -25,10 +25,10 @@
 
 #import <Foundation/Foundation.h>
 
-#ifndef TX_FEE_07_RULES
-#define TX_FEE_PER_KB 10000llu // standard tx fee per kb of tx size, rounded up to the nearest kb
-#else
+#if TX_FEE_07_RULES
 #define TX_FEE_PER_KB 50000llu // standard tx fee per kb of tx size, rounded up to the nearest kb (0.7 rules)
+#else
+#define TX_FEE_PER_KB 10000llu // standard tx fee per kb of tx size, rounded up to the nearest kb
 #endif
 
 #define TX_FREE_MIN_OUTPUT   1000000llu  // no tx output can be below this amount without a fee

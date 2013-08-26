@@ -34,14 +34,14 @@
 
 #import "ZNMnemonic.h"
 #if WALLET_BIP39
-    #import "ZNBIP39Mnemonic.h"
+#import "ZNBIP39Mnemonic.h"
 #else
-    #import "ZNElecturmMnemonic.h"
+#import "ZNElecturmMnemonic.h"
 #endif
 
 #import "ZNKeySequence.h"
 #if WALLET_BIP32
-    #import "ZNBIP32Sequence.h"
+#import "ZNBIP32Sequence.h"
 #else
 #import "ZNElectrumSequence.h"
 #endif
@@ -778,8 +778,6 @@ static NSData *getKeychainData(NSString *key)
 
 #pragma mark - ZNTransaction helpers
 
-// as block space becomes harder to come by, we can calculate the median of the lowest fee-per-kb that made it into the
-// previous 144 blocks (24hrs)
 - (ZNTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee
 {
     __block uint64_t balance = 0, standardFee = 0;
@@ -806,6 +804,7 @@ static NSData *getKeychainData(NSString *key)
             balance += [o[@"value"] unsignedLongLongValue];
 
             // assume we will be adding a change output (additional 34 bytes)
+            //TODO: calculate the median of the lowest fee-per-kb that made it into the previous 144 blocks (24hrs)
             if (fee) standardFee = ((tx.size + 34 + 999)/1000)*TX_FEE_PER_KB;
             
             if (balance == amount + standardFee || balance >= amount + standardFee + minChange) *stop = YES;
@@ -825,7 +824,7 @@ static NSData *getKeychainData(NSString *key)
     return tx;
 }
 
-// returns the estimated time in seconds until the transaction will be processed without a fee
+// returns the estimated time in seconds until the transaction will be processed without a fee.
 // this is based on the default satoshi client settings, but on the real network it's way off. in testing, a 0.01btc
 // transaction with a 90 day time until free was confirmed in under an hour by Eligius pool.
 // TODO: calculate estimated time based on the median priority of free transactions in last 144 blocks (24hrs)
@@ -932,7 +931,6 @@ static NSData *getKeychainData(NSString *key)
 
     [client postPath:PUSHTX_PATH parameters:@{@"tx":[transaction toHex]}
     success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSMutableSet *updated = [NSMutableSet set];
         NSMutableDictionary *tx = [NSMutableDictionary dictionary];
         
         tx[@"hash"] = [NSString hexWithData:transaction.hash];
@@ -951,14 +949,13 @@ static NSData *getKeychainData(NSString *key)
                 NSDictionary *o = self.unspentOutputs[[hash stringByAppendingString:n]];
             
                 if (o) {
-                    [updated addObject:obj];
                     [self.unspentOutputs removeObjectForKey:[hash stringByAppendingString:n]];
                 
                     //NOTE: for now we don't need to store spent outputs because blockchain.info will not list them as
                     // unspent while there is an unconfirmed tx that spends them. This may change once we have multiple
                     // apis for publishing, and a transaction may not show up on blockchain.info immediately.
-                    [tx[@"inputs"] addObject:@{@"prev_out":@{@"hash":o[@"tx_hash"], @"tx_index":o[@"tx_index"],
-                                               @"n":o[@"tx_output_n"], @"value":o[@"value"], @"addr":obj}}];
+                    [tx[@"inputs"] addObject:@{@"prev_out":@{@"tx_index":o[@"tx_index"], @"n":o[@"tx_output_n"],
+                                                             @"value":o[@"value"], @"addr":obj}}];
                 }
             }];
         

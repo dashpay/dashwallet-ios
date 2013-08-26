@@ -194,7 +194,8 @@
 - (NSData *)sign:(NSData *)d
 {
     if (d.length != 256/8) {
-        NSLog(@"Only 256 bit hashes can be signed");
+        NSLog(@"[%s %s] line %d: Only 256 bit hashes can be signed", object_getClassName(self), sel_getName(_cmd),
+              __LINE__);
         return nil;
     }
 
@@ -205,7 +206,7 @@
     sig.length = l;
 
     if (! [self verify:d signature:sig]) {
-        NSLog(@"Verify failed");
+        NSLog(@"[%s %s] line %d: Verify failed", object_getClassName(self), sel_getName(_cmd), __LINE__);
         return nil;
     }
 
