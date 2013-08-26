@@ -51,10 +51,10 @@
 #define ADDRESS_URL BASE_URL "/multiaddr?active="
 #define PUSHTX_PATH @"/pushtx"
 
-#define ADDRESS_TX_COUNT_KEY       @"ADDRESS_TX_COUNT"
-#define UNSPENT_OUTPUTS_KEY        @"UNSPENT_OUTPUTS"
 #define TRANSACTIONS_KEY           @"TRANSACTIONS"
-#define UNCONFIRMED_KEY            @"UNCONFIRMED"
+#define UNSPENT_OUTPUTS_KEY        @"UNSPENT_OUTPUTS"
+#define ADDRESS_TX_COUNT_KEY       @"ADDRESS_TX_COUNT"
+
 #define LATEST_BLOCK_HEIGHT_KEY    @"LATEST_BLOCK_HEIGHT"
 #define LATEST_BLOCK_TIMESTAMP_KEY @"LATEST_BLOCK_TIMESTAMP"
 #define LOCAL_CURRENCY_SYMBOL_KEY  @"LOCAL_CURRENCY_SYMBOL"
@@ -109,8 +109,7 @@ static NSData *getKeychainData(NSString *key)
 @interface ZNWallet ()
 
 @property (nonatomic, strong) NSMutableArray *externalAddresses, *internalAddresses;
-@property (nonatomic, strong) NSMutableDictionary *unspentOutputs, *addressTxCount;
-@property (nonatomic, strong) NSMutableDictionary *transactions, *unconfirmed;
+@property (nonatomic, strong) NSMutableDictionary *transactions, *unspentOutputs, *addressTxCount;
 @property (nonatomic, strong) NSMutableSet *outdatedAddresses, *updatedTransactions;
 
 @property (nonatomic, strong) id<ZNKeySequence> sequence;
@@ -145,10 +144,9 @@ static NSData *getKeychainData(NSString *key)
     self.internalAddresses = [NSMutableArray array];
     self.outdatedAddresses = [NSMutableSet set];
     self.transactions = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:TRANSACTIONS_KEY]];
-    self.unconfirmed = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:UNCONFIRMED_KEY]];
-    self.addressTxCount = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:ADDRESS_TX_COUNT_KEY]];
     self.unspentOutputs = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:UNSPENT_OUTPUTS_KEY]];
-    
+    self.addressTxCount = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:ADDRESS_TX_COUNT_KEY]];
+
 #if WALLET_BIP32
     self.sequence = [ZNBIP32Sequence new];
 #else
@@ -204,15 +202,13 @@ static NSData *getKeychainData(NSString *key)
         [self.internalAddresses removeAllObjects];
         [self.outdatedAddresses removeAllObjects];
         [self.transactions removeAllObjects];
-        [self.unconfirmed removeAllObjects];
         [self.addressTxCount removeAllObjects];
         [self.unspentOutputs removeAllObjects];
         
         // flush cached addresses and tx outputs
-        [_defs removeObjectForKey:ADDRESS_TX_COUNT_KEY];
-        [_defs removeObjectForKey:UNSPENT_OUTPUTS_KEY];
         [_defs removeObjectForKey:TRANSACTIONS_KEY];
-        [_defs removeObjectForKey:UNCONFIRMED_KEY];
+        [_defs removeObjectForKey:UNSPENT_OUTPUTS_KEY];
+        [_defs removeObjectForKey:ADDRESS_TX_COUNT_KEY];
         [_defs removeObjectForKey:LAST_SYNC_TIME_KEY];
         
         [self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO];
@@ -262,40 +258,51 @@ static NSData *getKeychainData(NSString *key)
     return _mpk;
 }
 
-// if any of an unconfimred transaction's inputs show up as unspent, or show up in another transaction, that means the
-// tx failed to confirm and needs to be removed from the pending unconfirmed tx list
+// if any of an unconfimred transaction's inputs show up as unspent, or show up in confirmed transaction, that means the
+// tx failed to confirm and needs to be removed from the tx list
 - (void)cleanUnconfirmed
 {
     //TODO: remove unconfirmed transactions after 2 days?
     //TODO: keep a seprate list of failed transactions to display along with the successful ones
-    if (! self.unconfirmed.count) return;
-
-    NSMutableSet *spent = [NSMutableSet set];
     
-    @synchronized(self) {
-        [self.transactions enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+    NSMutableSet *s = [NSMutableSet set];
+    __block NSUInteger unconfirmed = 0;
+
+    [self.transactions enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        if (obj[@"block_height"] != nil) {
             [obj[@"inputs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                 NSDictionary *o = obj[@"prev_out"];
-                [spent addObject:[NSString stringWithFormat:@"%@:%@", o[@"tx_index"], o[@"n"]]];
+
+                [s addObject:[NSString stringWithFormat:@"%@:%@", o[@"tx_index"], o[@"n"]]];
             }];
+        }
+        else unconfirmed++;
+    }];
+    
+    if (! unconfirmed) return;
+    
+    @synchronized(self) {
+        [self.unspentOutputs enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+            [s addObject:[NSString stringWithFormat:@"%@:%@", obj[@"tx_index"], obj[@"tx_output_n"]]];
         }];
     
-        [self.unconfirmed
-         removeObjectsForKeys:[self.unconfirmed keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-            // index of any inputs of the unconfirmed tx that are also in unspentOutputs
+        [self.transactions
+        removeObjectsForKeys:[self.transactions keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
+            if (obj[@"block_height"] != nil) return NO;
+
+            // index of any inputs of the unconfirmed tx that are already spent or in unspentOutputs
             NSUInteger i =
                 [obj[@"inputs"] indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
                     NSDictionary *o = obj[@"prev_out"];
-                    NSString *key1 = [o[@"hash"] stringByAppendingString:[o[@"n"] description]];
-                    NSString *key2 = [NSString stringWithFormat:@"%@:%@", o[@"tx_index"], o[@"n"]];
+                    NSString *key = [NSString stringWithFormat:@"%@:%@", o[@"tx_index"], o[@"n"]];
                     
-                    return (self.unspentOutputs[key1] != nil || [spent containsObject:key2]) ? (*stop = YES) : NO;
+                    return [s containsObject:key] ? (*stop = YES) : NO;
                 }];
                 
             return (i == NSNotFound) ? NO : YES;
         }].allObjects];
-    
-        [_defs setObject:self.unconfirmed forKey:UNCONFIRMED_KEY];
+        
+        [_defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
     }
 }
 
@@ -339,8 +346,7 @@ static NSData *getKeychainData(NSString *key)
             return;
         }
     
-        [a removeObjectsAtIndexes:[a
-        indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+        [a removeObjectsAtIndexes:[a indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
             return [self.addressTxCount[obj] unsignedIntegerValue] > 0;
         }]];
         
@@ -359,7 +365,7 @@ static NSData *getKeychainData(NSString *key)
             // remove unconfirmed transactions that no longer appear in query results
             //TODO: keep a seprate list of failed transactions to display along with the successful ones
             [self.transactions
-             removeObjectsForKeys:[self.transactions keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
+            removeObjectsForKeys:[self.transactions keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
                 return ! obj[@"block_height"] && ! [self.updatedTransactions containsObject:obj[@"hash"]];
             }].allObjects];
             
@@ -402,41 +408,40 @@ static NSData *getKeychainData(NSString *key)
 
 - (NSArray *)addressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal
 {
-    NSMutableArray *addresses =
-        [NSMutableArray arrayWithArray:internal ? self.internalAddresses : self.externalAddresses];
+    NSMutableArray *a = [NSMutableArray arrayWithArray:internal ? self.internalAddresses : self.externalAddresses];
     NSMutableArray *newaddresses = [NSMutableArray array];
-    NSUInteger i = addresses.count;
-    NSString *a = nil;
+    NSUInteger i = a.count;
+    NSString *addr = nil;
     
-    [addresses removeObjectsAtIndexes:[addresses indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+    [a removeObjectsAtIndexes:[a indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
         return [self.addressTxCount[obj] unsignedIntegerValue] > 0 ? YES : NO;
     }]];
     
-    if (addresses.count >= gapLimit) {
-        [addresses removeObjectsInRange:NSMakeRange(gapLimit, addresses.count - gapLimit)];
-        return addresses;
+    if (a.count >= gapLimit) {
+        [a removeObjectsInRange:NSMakeRange(gapLimit, a.count - gapLimit)];
+        return a;
     }
     
     // TODO: generating addresses is noticably slow, cache them in coredata
     @synchronized(self) {
-        while (addresses.count < gapLimit) {
-            a = [[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ internal:internal masterPublicKey:self.mpk]]
-                 address];
+        while (a.count < gapLimit) {
+            addr = [[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ internal:internal masterPublicKey:self.mpk]]
+                    address];
         
-            if (! a) {
+            if (! addr) {
                 NSLog(@"error generating keys");
                 return nil;
             }
             
-            if ([self.addressTxCount[a] unsignedIntegerValue] == 0) [addresses addObject:a];
+            if ([self.addressTxCount[addr] unsignedIntegerValue] == 0) [a addObject:addr];
             
             if (! internal && self.externalAddresses.count < i) {
-                [self.externalAddresses addObject:a];
-                [newaddresses addObject:a];
+                [self.externalAddresses addObject:addr];
+                [newaddresses addObject:addr];
             }
             else if (internal && self.internalAddresses.count < i) {
-                [self.internalAddresses addObject:a];
-                [newaddresses addObject:a];
+                [self.internalAddresses addObject:addr];
+                [newaddresses addObject:addr];
             }
         }
     }
@@ -447,7 +452,7 @@ static NSData *getKeychainData(NSString *key)
         });
     }
     
-    return addresses;
+    return a;
 }
 
 // query blockchain for the given addresses
@@ -501,17 +506,20 @@ static NSData *getKeychainData(NSString *key)
                     }
                 }];
         
+                // remove unconfirmed transactions that didn't show up in the updated list, they failed to confirm
+                [self.transactions
+                removeObjectsForKeys:[self.transactions keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
+                    return (! [self.updatedTransactions containsObject:obj[@"hash"]] && ! obj[@"block_height"]);
+                }].allObjects];
+        
                 NSInteger height = [JSON[@"info"][@"latest_block"][@"height"] integerValue];
                 NSTimeInterval time = [JSON[@"info"][@"latest_block"][@"time"] doubleValue];
                 NSString *symbol = JSON[@"info"][@"symbol_local"][@"symbol"];
                 NSString *code = JSON[@"info"][@"symbol_local"][@"code"];
                 double price = [JSON[@"info"][@"symbol_local"][@"conversion"] doubleValue];
-        
-                [self.unconfirmed removeObjectsForKeys:self.transactions.allKeys];
                 
                 [_defs setObject:self.addressTxCount forKey:ADDRESS_TX_COUNT_KEY];
                 [_defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
-                [_defs setObject:self.unconfirmed forKey:UNCONFIRMED_KEY];
                 if (height) [_defs setInteger:height forKey:LATEST_BLOCK_HEIGHT_KEY];
                 if (time > 1.0) [_defs setDouble:time forKey:LATEST_BLOCK_TIMESTAMP_KEY];
                 if (symbol.length) [_defs setObject:symbol forKey:LOCAL_CURRENCY_SYMBOL_KEY];
@@ -698,8 +706,7 @@ static NSData *getKeychainData(NSString *key)
 - (NSArray *)recentTransactions
 {
     // sort in descending order by timestamp (using block_height doesn't work for unconfirmed, or multiple tx per block)
-    return [[self.transactions.allValues arrayByAddingObjectsFromArray:self.unconfirmed.allValues]
-           sortedArrayWithOptions:0 usingComparator:^NSComparisonResult(id obj1, id obj2) {
+    return [self.transactions.allValues sortedArrayWithOptions:0 usingComparator:^NSComparisonResult(id obj1, id obj2) {
                return [@([obj2[@"time"] doubleValue]) compare:@([obj1[@"time"] doubleValue])];
            }];
 }
@@ -964,11 +971,11 @@ static NSData *getKeychainData(NSString *key)
             //    self.addressTxCount[obj] = @([self.addressTxCount[obj] unsignedIntegerValue] + 1);
             //}];
         
-            self.unconfirmed[tx[@"hash"]] = tx;
+            self.transactions[tx[@"hash"]] = tx;
         
             [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
             [_defs setObject:self.addressTxCount forKey:ADDRESS_TX_COUNT_KEY];
-            [_defs setObject:self.unconfirmed forKey:UNCONFIRMED_KEY];
+            [_defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
         }
         
         [_defs synchronize];

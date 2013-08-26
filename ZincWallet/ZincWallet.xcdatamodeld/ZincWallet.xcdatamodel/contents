@@ -2,7 +2,8 @@
 <model name="" userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="2061" systemVersion="12E55" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
     <entity name="AddressEntity" representedClassName="ZNAddressEntity" syncable="YES">
         <attribute name="address" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
-        <attribute name="balance" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
+        <attribute name="index" optional="YES" attributeType="Integer 32" defaultValueString="0" indexed="YES" syncable="YES"/>
+        <attribute name="internal" optional="YES" attributeType="Boolean" defaultValueString="0" indexed="YES" syncable="YES"/>
         <attribute name="txCount" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
     </entity>
     <entity name="OutputEntity" representedClassName="ZNOutputEntity" isAbstract="YES" syncable="YES">
@@ -31,11 +32,11 @@
         <attribute name="txHash" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
     </entity>
     <elements>
-        <element name="TransactionEntity" positionX="-1962" positionY="-2934" width="128" height="133"/>
-        <element name="UnspentOutputEntity" positionX="-1766" positionY="-2871" width="128" height="88"/>
-        <element name="AddressEntity" positionX="-1766" positionY="-2997" width="128" height="88"/>
-        <element name="TxOutputEntity" positionX="-2187" positionY="-2844" width="128" height="58"/>
-        <element name="TxInputEntity" positionX="-2187" positionY="-2988" width="128" height="58"/>
+        <element name="AddressEntity" positionX="-1766" positionY="-2997" width="128" height="105"/>
         <element name="OutputEntity" positionX="-1953" positionY="-2853" width="128" height="103"/>
+        <element name="TransactionEntity" positionX="-1962" positionY="-2934" width="128" height="133"/>
+        <element name="TxInputEntity" positionX="-2187" positionY="-2988" width="128" height="58"/>
+        <element name="TxOutputEntity" positionX="-2187" positionY="-2844" width="128" height="58"/>
+        <element name="UnspentOutputEntity" positionX="-1766" positionY="-2871" width="128" height="88"/>
     </elements>
 </model>

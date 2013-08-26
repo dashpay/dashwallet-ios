@@ -35,14 +35,13 @@
 
 #define UNSPENT_OUTPUTS_KEY        @"UNSPENT_OUTPUTS"
 #define TRANSACTIONS_KEY           @"TRANSACTIONS"
-#define UNCONFIRMED_KEY            @"UNCONFIRMED"
 #define LATEST_BLOCK_HEIGHT_KEY    @"LATEST_BLOCK_HEIGHT"
 #define LATEST_BLOCK_TIMESTAMP_KEY @"LATEST_BLOCK_TIMESTAMP"
 
 @interface ZNWallet ()
 
 @property (nonatomic, strong) NSMutableArray *externalAddresses, *internalAddresses;
-@property (nonatomic, strong) NSMutableDictionary *transactions, *unconfirmed;
+@property (nonatomic, strong) NSMutableDictionary *transactions;
 @property (nonatomic, strong) NSMutableDictionary *unspentOutputs;
 
 @property (nonatomic, strong) SRWebSocket *webSocket;
@@ -198,13 +197,12 @@ wasClean:(BOOL)wasClean
         if ([op isEqual:@"utx"]) {
             NSDictionary *x = json[@"x"];
             NSMutableSet *updated = [NSMutableSet set];
+            NSMutableSet *spent = [NSMutableSet set];
             
             @synchronized(self) {
-                if (x[@"hash"]) {
-                    [self.unconfirmed removeObjectForKey:x[@"hash"]];
-                    self.transactions[x[@"hash"]] = [NSDictionary dictionaryWithDictionary:x];
-                }
+                if (x[@"hash"]) self.transactions[x[@"hash"]] = [NSDictionary dictionaryWithDictionary:x];
                 
+                // add outputs sent to wallet addresses to unspent outputs
                 [x[@"out"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                     NSString *addr = obj[@"addr"];
                     uint64_t value = [obj[@"value"] unsignedLongLongValue];
@@ -222,12 +220,24 @@ wasClean:(BOOL)wasClean
                           @"script":[NSString hexWithData:script], @"value":@(value), @"confirmations":@(0)};
                 }];
                 
+                [x[@"inputs"] enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+                    NSDictionary *o = obj[@"prev_out"];
+                    
+                    [spent addObject:[NSString stringWithFormat:@"%@:%@", o[@"tx_index"], o[@"n"]]];
+                }];
+                
+                // remove spent inputs from unspent outputs
+                [self.unspentOutputs
+                removeObjectsForKeys:[self.unspentOutputs keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
+                    return [spent containsObject:[NSString stringWithFormat:@"%@:%@", obj[@"tx_index"],
+                                                  obj[@"tx_output_n"]]];
+                }].allObjects];
+                
                 // don't update addressTxCount so the address's unspent outputs will be updated on next sync
                 //[updated enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
                 //    self.addressTxCount[obj] = @([self.addressTxCount[obj] unsignedIntegerValue] + 1);
                 //}];
                 
-                [defs setObject:self.unconfirmed forKey:UNCONFIRMED_KEY];
                 [defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
                 [defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
             }

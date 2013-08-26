@@ -268,8 +268,8 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     if (self.size > TX_FREE_MAX_SIZE) return NSNotFound;
     
     if ([self.amounts indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-        return [obj unsignedLongLongValue] < TX_FREE_MIN_OUTPUT ? (*stop = YES) : NO;
-    }] != NSNotFound) return NSNotFound;
+            return [obj unsignedLongLongValue] < TX_FREE_MIN_OUTPUT ? (*stop = YES) : NO;
+        }] != NSNotFound) return NSNotFound;
 
     uint64_t amountTotal = 0, amountsByHeights = 0;
     

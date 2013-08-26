@@ -111,9 +111,10 @@
         usingBlock:^(NSNotification *note) {
             ZNPaymentRequest *req = [ZNPaymentRequest requestWithURL:note.userInfo[@"url"]];
         
-            if (req.isValid && [self.requests indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-                return [[req data] isEqualToData:[obj data]] ? (*stop = YES) : NO;
-            }] == NSNotFound) {
+            if (req.isValid &&
+                [self.requests indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+                    return [[req data] isEqualToData:[obj data]] ? (*stop = YES) : NO;
+                }] == NSNotFound) {
                 [self.requests insertObject:req atIndex:0];
                 [self.requestIDs insertObject:URL_ID atIndex:0];
                 [self layoutButtonsAnimated:YES];
@@ -764,9 +765,10 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
         self.selectedIndex = NSNotFound;
     }
     
-    NSIndexSet *indexes = [self.requestIDs indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-        return ! [obj isEqual:CLIPBOARD_ID] && ! [obj isEqual:QR_ID];
-    }];
+    NSIndexSet *indexes =
+        [self.requestIDs indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+            return ! [obj isEqual:CLIPBOARD_ID] && ! [obj isEqual:QR_ID];
+        }];
     
     [self.requestIDs removeObjectsAtIndexes:indexes];
     [self.requests removeObjectsAtIndexes:indexes];

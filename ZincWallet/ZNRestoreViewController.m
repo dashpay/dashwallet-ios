@@ -172,9 +172,10 @@
     }
 #else
     if (! [[NSSet setWithArray:a] isSubsetOfSet:self.words]) {
-        NSUInteger i = [a indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-            return [self.words containsObject:obj] ? NO : (*stop = YES);
-        }];
+        NSUInteger i =
+            [a indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+                return [self.words containsObject:obj] ? NO : (*stop = YES);
+            }];
         
         textView.selectedRange = [textView.text rangeOfString:a[i]];
             

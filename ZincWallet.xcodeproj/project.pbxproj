@@ -3316,6 +3316,7 @@
 		75CBEAE3173C800F00978DBA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				75F1B87B17C7506100680E1B /* ZincWallet.xcdatamodeld */,
 				75D8F399173ABE3C0080D95E /* MainStoryboard_iPhone.storyboard */,
 				75D8F39C173ABE3C0080D95E /* MainStoryboard_iPad.storyboard */,
 				7536A293177D1A6C00BAC31E /* res */,
@@ -3478,7 +3479,6 @@
 				752C2FAC17416B360033F636 /* Categories */,
 				75D8F390173ABE3C0080D95E /* ZNAppDelegate.h */,
 				75D8F391173ABE3C0080D95E /* ZNAppDelegate.m */,
-				75F1B87B17C7506100680E1B /* ZincWallet.xcdatamodeld */,
 				752C2F8417406ED40033F636 /* ThirdParty */,
 				75CBEAE3173C800F00978DBA /* Resources */,
 				75D8F388173ABE3C0080D95E /* Supporting Files */,
