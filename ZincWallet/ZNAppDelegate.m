@@ -38,11 +38,11 @@
 
     //TODO: digitally sign every source release
     
-    //TODO: need to upgrade openssl (and other libs) to latest
+    //TODO: upgrade openssl (and other libs) to latest
     
-    //TODO: need to implement pin code
+    //TODO: implement pin code
 
-    //TODO: need to have a network status indicator perferrably tied to websocket status
+    //TODO: network status indicator perferrably tied to websocket status
     
     //TODO: figure what to do about bluetooth
     // this will notify user if bluetooth is disabled (on 4S and newer devices that support BTLE)

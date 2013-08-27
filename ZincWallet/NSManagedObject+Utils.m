@@ -56,7 +56,7 @@
 
 #if DEBUG
             abort();
-#else       // if this is a not a debug build, attempt to delete and create a new persisent data store
+#else       // if this is a not a debug build, attempt to delete and create a new persisent data store before crashing
             if (! [[NSFileManager defaultManager] removeItemAtURL:storeURL error:&error]) {
                 NSLog(@"[%s %s] line %d: %@, %@", object_getClassName(self), sel_getName(_cmd), __LINE__, error,
                       error.userInfo);
@@ -66,7 +66,7 @@
                    error:&error]) {
                 NSLog(@"[%s %s] line %d: %@, %@", object_getClassName(self), sel_getName(_cmd), __LINE__, error,
                       error.userInfo);
-                abort();
+                abort(); // forsooth, I am slain
             }
 #endif
         }
