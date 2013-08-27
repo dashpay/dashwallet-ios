@@ -583,7 +583,7 @@ static NSData *getKeychainData(NSString *key)
             @synchronized(self) {
                 [self.unspentOutputs
                 removeObjectsForKeys:[self.unspentOutputs keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-                    NSString *addr = [obj[@"script"] scriptToAddress];
+                    NSString *addr = [NSString addressWithScript:[obj[@"script"] hexToData]];
                     
                     return (! addr || [addresses containsObject:addr]) ? YES : NO;
                 }].allObjects];
@@ -611,7 +611,7 @@ static NSData *getKeychainData(NSString *key)
             @synchronized(self) {
                 [self.unspentOutputs
                 removeObjectsForKeys:[self.unspentOutputs keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-                    NSString *addr = [obj[@"script"] scriptToAddress];
+                    NSString *addr = [NSString addressWithScript:[obj[@"script"] hexToData]];
                     
                     return (! addr || [addresses containsObject:addr]) ? YES : NO;
                 }].allObjects];
@@ -659,7 +659,9 @@ static NSData *getKeychainData(NSString *key)
             NSMutableSet *txIndexes = [NSMutableSet set];
             
             [self.unspentOutputs enumerateKeysAndObjectsUsingBlock:^(id k, id o, BOOL *stop) {
-                if ([[o[@"script"] scriptToAddress] isEqual:obj] && [o[@"confirmations"] unsignedIntegerValue] < 6) {
+                NSString *a = [NSString addressWithScript:[o[@"script"] hexToData]];
+
+                if ([a isEqual:obj] && [o[@"confirmations"] unsignedIntegerValue] < 6) {
                     [txIndexes addObject:o[@"tx_index"]];
                 }
             }];
@@ -686,7 +688,9 @@ static NSData *getKeychainData(NSString *key)
             NSMutableSet *txIndexes = [NSMutableSet set];
             
             [self.unspentOutputs enumerateKeysAndObjectsUsingBlock:^(id k, id o, BOOL *stop) {
-                if ([[o[@"script"] scriptToAddress] isEqual:obj] && [o[@"confirmations"] unsignedIntegerValue] < 6) {
+                NSString *a = [NSString addressWithScript:[o[@"script"] hexToData]];
+                
+                if ([a isEqual:obj] && [o[@"confirmations"] unsignedIntegerValue] < 6) {
                     [txIndexes addObject:o[@"tx_index"]];
                 }
             }];

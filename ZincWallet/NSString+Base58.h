@@ -31,7 +31,7 @@
 #define BITCOIN_SCRIPT_ADDRESS      5
 #define BITCOIN_PUBKEY_ADDRESS_TEST 111
 #define BITCOIN_SCRIPT_ADDRESS_TEST 196
-#define BITCOIN_SCRIPT_SUFFIX       @"88ac" // OP_EQUALVERIFY OP_CHECKSIG
+#define BITCOIN_SCRIPT_SUFFIX       "\x88\xac" // OP_EQUALVERIFY OP_CHECKSIG
 
 CFAllocatorRef SecureAllocator();
 
@@ -40,6 +40,7 @@ CFAllocatorRef SecureAllocator();
 + (NSString *)base58WithData:(NSData *)d;
 + (NSString *)base58checkWithData:(NSData *)d;
 + (NSString *)hexWithData:(NSData *)d;
++ (NSString *)addressWithScript:(NSData *)script;
 
 - (NSData *)base58ToData;
 - (NSString *)hexToBase58;
@@ -52,6 +53,5 @@ CFAllocatorRef SecureAllocator();
 - (NSData *)hexToData;
 
 - (BOOL)isValidBitcoinAddress;
-- (NSString *)scriptToAddress;
 
 @end

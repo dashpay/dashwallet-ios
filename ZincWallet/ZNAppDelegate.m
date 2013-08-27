@@ -25,7 +25,7 @@
 
 #import "ZNAppDelegate.h"
 #import "NSString+Base58.h"
-#import "NSManagedObjectContext+Utils.h"
+#import "NSManagedObject+Utils.h"
 #import <MessageUI/MessageUI.h>
 
 @implementation ZNAppDelegate
@@ -85,7 +85,7 @@
 - (void)applicationWillTerminate:(UIApplication *)application
 {
     // Saves changes in the application's managed object context before the application terminates.
-    [[NSManagedObjectContext sharedInstance] saveContext];
+    [NSManagedObject saveContext];
 }
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication

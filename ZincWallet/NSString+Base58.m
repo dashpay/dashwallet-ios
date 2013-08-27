@@ -222,6 +222,25 @@ breakout:
     return hex;
 }
 
++ (NSString *)addressWithScript:(NSData *)script
+{
+    static NSData *suffix = nil;
+    
+    if (! suffix) suffix = [NSData dataWithBytes:BITCOIN_SCRIPT_SUFFIX length:strlen(BITCOIN_SCRIPT_SUFFIX)];
+
+    if (script.length < suffix.length + 20 ||
+        ! [[script subdataWithRange:NSMakeRange(script.length - suffix.length, suffix.length)] isEqualToData:suffix]) {
+        return nil;
+    }
+    
+    NSMutableData *d = [NSMutableData dataWithBytes:"\0" length:1];
+    
+    [d appendBytes:(const unsigned char *)script.bytes + script.length - suffix.length - 20 length:20];
+    
+    return [self base58checkWithData:d];
+}
+
+
 - (NSString *)hexToBase58
 {
     return [[self class] base58WithData:[self hexToData]];
@@ -306,15 +325,6 @@ breakout:
     }
         
     return NO;
-}
-
-- (NSString *)scriptToAddress
-{
-    if (! [self hasSuffix:BITCOIN_SCRIPT_SUFFIX] || self.length < BITCOIN_SCRIPT_SUFFIX.length + 40) return nil;
-    
-    NSString *hash160 = [self substringWithRange:NSMakeRange(self.length - BITCOIN_SCRIPT_SUFFIX.length - 40, 40)];
-
-    return [[@"00" stringByAppendingString:hash160] hexToBase58check];
 }
 
 @end
