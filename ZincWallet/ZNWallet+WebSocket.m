@@ -25,15 +25,16 @@
 
 #import "ZNWallet+WebSocket.h"
 #import "ZNKeySequence.h"
+#import "ZNUnspentOutputEntity.h"
 #import "NSString+Base58.h"
 #import "NSMutableData+Bitcoin.h"
+#import "NSManagedObject+Utils.h"
 #import <AudioToolbox/AudioToolbox.h>
 #import <netinet/in.h>
 #import "Reachability.h"
 
 #define SOCKET_URL @"ws://ws.blockchain.info:8335/inv"
 
-#define UNSPENT_OUTPUTS_KEY        @"UNSPENT_OUTPUTS"
 #define TRANSACTIONS_KEY           @"TRANSACTIONS"
 #define LATEST_BLOCK_HEIGHT_KEY    @"LATEST_BLOCK_HEIGHT"
 #define LATEST_BLOCK_TIMESTAMP_KEY @"LATEST_BLOCK_TIMESTAMP"
@@ -42,7 +43,6 @@
 
 @property (nonatomic, strong) NSMutableArray *externalAddresses, *internalAddresses;
 @property (nonatomic, strong) NSMutableDictionary *transactions;
-@property (nonatomic, strong) NSMutableDictionary *unspentOutputs;
 
 @property (nonatomic, strong) SRWebSocket *webSocket;
 @property (nonatomic, assign) int connectFailCount;
@@ -115,7 +115,7 @@
     NSMutableString *msg = [NSMutableString string];
     
     for (NSString *addr in addresses) {
-        [msg appendFormat:@"{\"op\":\"addr_sub\", \"addr\":\"%@\"}", addr];
+        if ([addr isValidBitcoinAddress]) [msg appendFormat:@"{\"op\":\"addr_sub\", \"addr\":\"%@\"}", addr];
     }
     
     NSLog(@"%@", msg);
@@ -183,55 +183,40 @@ wasClean:(BOOL)wasClean
         NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
         NSError *error = nil;
         NSData *data = [msg isKindOfClass:[NSString class]] ? [msg dataUsingEncoding:NSUTF8StringEncoding] : msg;
-        NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        NSDictionary *JSON = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
         
-        if (error || ! json) {
+        if (error || ! [JSON isKindOfClass:[NSDictionary class]]) {
             NSLog(@"webSocket receive error: %@", error ? error.localizedDescription : [data description]);
             return;
         }
         
-        NSLog(@"%@", json);
+        NSLog(@"%@", JSON);
         
-        NSString *op = json[@"op"];
+        NSString *op = JSON[@"op"];
         
         if ([op isEqual:@"utx"]) {
-            NSDictionary *x = json[@"x"];
-            NSMutableSet *updated = [NSMutableSet set];
-            NSMutableSet *spent = [NSMutableSet set];
+            NSDictionary *x = JSON[@"x"];
             
             @synchronized(self) {
                 if (x[@"hash"]) self.transactions[x[@"hash"]] = [NSDictionary dictionaryWithDictionary:x];
                 
                 // add outputs sent to wallet addresses to unspent outputs
                 [x[@"out"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                    NSString *addr = obj[@"addr"];
-                    uint64_t value = [obj[@"value"] unsignedLongLongValue];
-                    
-                    [updated addObject:addr];
-                    
-                    if (value == 0 || ! addr || ! [self containsAddress:addr]) return;
-                                        
+                    ZNUnspentOutputEntity *o = [ZNUnspentOutputEntity entityWithJSON:obj];
                     NSMutableData *script = [NSMutableData data];
+
+                    [script appendScriptPubKeyForAddress:o.address];
+                    o.script = script;
                     
-                    [script appendScriptPubKeyForAddress:addr];
-                    
-                    self.unspentOutputs[[x[@"hash"] stringByAppendingFormat:@"%d", idx]] =
-                        @{@"tx_hash":x[@"hash"], @"tx_index":x[@"tx_index"], @"tx_output_n":@(idx),
-                          @"script":[NSString hexWithData:script], @"value":@(value), @"confirmations":@(0)};
+                    if (o.value == 0 || ! [self containsAddress:o.address]) [o deleteObject];
                 }];
                 
-                [x[@"inputs"] enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+                [x[@"inputs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                     NSDictionary *o = obj[@"prev_out"];
                     
-                    [spent addObject:[NSString stringWithFormat:@"%@:%@", o[@"tx_index"], o[@"n"]]];
+                    [[ZNUnspentOutputEntity objectsMatching:@"txIndex = %lld AND n = %d",
+                      [o[@"tx_index"] longLongValue], [o[@"n"] intValue]].lastObject deleteObject];
                 }];
-                
-                // remove spent inputs from unspent outputs
-                [self.unspentOutputs
-                removeObjectsForKeys:[self.unspentOutputs keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-                    return [spent containsObject:[NSString stringWithFormat:@"%@:%@", obj[@"tx_index"],
-                                                  obj[@"tx_output_n"]]];
-                }].allObjects];
                 
                 // don't update addressTxCount so the address's unspent outputs will be updated on next sync
                 //[updated enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
@@ -239,7 +224,6 @@ wasClean:(BOOL)wasClean
                 //}];
                 
                 [defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
-                [defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
             }
             
             AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
@@ -252,7 +236,7 @@ wasClean:(BOOL)wasClean
             [defs synchronize];
         }
         else if ([op isEqual:@"block"]) {
-            NSDictionary *x = json[@"x"];
+            NSDictionary *x = JSON[@"x"];
             NSUInteger height = [x[@"height"] unsignedIntegerValue];
             NSTimeInterval time = [x[@"time"] doubleValue];
             NSArray *txIndexes = x[@"txIndexes"];
@@ -284,7 +268,7 @@ wasClean:(BOOL)wasClean
             [defs synchronize];
         }
         else if ([op isEqual:@"status"]) {
-            NSLog(@"%@", json[@"msg"]);
+            NSLog(@"%@", JSON[@"msg"]);
         }
     });
 }

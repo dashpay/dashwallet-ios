@@ -24,6 +24,7 @@
 //  THE SOFTWARE.
 
 #import "ZNOutputEntity.h"
+#import "NSManagedObject+Utils.h"
 
 @implementation ZNOutputEntity
 
@@ -31,5 +32,19 @@
 @dynamic n;
 @dynamic txIndex;
 @dynamic value;
+
++ (instancetype)entityWithJSON:(NSDictionary *)JSON
+{
+    if (! [JSON isKindOfClass:[NSDictionary class]]) return nil;
+
+    ZNOutputEntity *e = [self managedObject];
+                         
+    if ([JSON[@"addr"] isKindOfClass:[NSString class]]) e.address = [NSString stringWithString:JSON[@"addr"]];
+    if ([JSON[@"n"] isKindOfClass:[NSNumber class]]) e.n = [JSON[@"n"] intValue];
+    if ([JSON[@"tx_index"] isKindOfClass:[NSNumber class]]) e.txIndex = [JSON[@"tx_index"] longLongValue];
+    if ([JSON[@"value"] isKindOfClass:[NSNumber class]]) e.value = [JSON[@"value"] longLongValue];
+    
+    return e;
+}
 
 @end

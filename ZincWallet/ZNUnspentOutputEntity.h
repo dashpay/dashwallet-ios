@@ -27,10 +27,14 @@
 #import <CoreData/CoreData.h>
 #import "ZNOutputEntity.h"
 
+@class ZNTxOutputEntity;
+
 @interface ZNUnspentOutputEntity : ZNOutputEntity
 
 @property (nonatomic, retain) NSData *txHash;
 @property (nonatomic, retain) NSData *script;
 @property (nonatomic) int32_t confirmations;
+
++ (instancetype)entityWithTxOutput:(ZNTxOutputEntity *)output;
 
 @end

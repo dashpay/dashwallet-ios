@@ -33,4 +33,6 @@
 @property (nonatomic) int64_t txIndex;
 @property (nonatomic) int64_t value;
 
++ (instancetype)entityWithJSON:(NSDictionary *)JSON;
+
 @end

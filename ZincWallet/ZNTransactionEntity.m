@@ -35,4 +35,9 @@
 @dynamic inputs;
 @dynamic outputs;
 
++ (instancetype)entityWithJSON:(NSDictionary *)JSON
+{
+    return nil;
+}
+
 @end

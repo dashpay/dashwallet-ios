@@ -27,12 +27,19 @@
 @interface NSManagedObject (Utils)
 
 + (instancetype)managedObject;
-+ (NSManagedObjectContext *)managedObjectContext;
++ (NSArray *)allObjects;
++ (NSArray *)objectsMatching:(NSString *)predicateFormat, ...;
++ (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)argList;
++ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending;
+
++ (NSManagedObjectContext *)context;
 + (void)saveContext;
-+ (void)saveContext:(void (^)(NSError *error))completion;
+
 + (NSString *)entityName;
 + (NSEntityDescription *)entity;
 + (NSFetchRequest *)fetchRequest;
 + (NSFetchedResultsController *)fetchedResultsController;
+
+- (void)deleteObject;
 
 @end

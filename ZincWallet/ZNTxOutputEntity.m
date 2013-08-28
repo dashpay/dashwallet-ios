@@ -14,4 +14,9 @@
 
 @dynamic transaction;
 
++ (instancetype)entityWithJSON:(NSDictionary *)JSON;
+{
+    return nil;
+}
+
 @end

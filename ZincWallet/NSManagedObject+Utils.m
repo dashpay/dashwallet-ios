@@ -26,16 +26,69 @@
 
 @implementation NSManagedObject (Utils)
 
+#pragma mark - Object Creation
+
 + (instancetype)managedObject
 {
-    return [[self alloc] initWithEntity:[self entity] insertIntoManagedObjectContext:[self managedObjectContext]];
+    return [[self alloc] initWithEntity:[self entity] insertIntoManagedObjectContext:[self context]];
 }
+
++ (NSArray *)allObjects
+{
+    NSError *error = nil;
+    NSArray *r = [[self context] executeFetchRequest:[self fetchRequest] error:&error];
+
+    if (r) return r;
+    NSLog(@"[%s %s] line %d: %@, %@", object_getClassName(self), sel_getName(_cmd), __LINE__, error, error.userInfo);
+    return r;
+}
+
++ (NSArray *)objectsMatching:(NSString *)predicateFormat, ...
+{
+    NSArray *r = nil;
+    va_list args;
+    
+    va_start(args, predicateFormat);
+    r = [self objectsMatching:predicateFormat arguments:args];
+    va_end(args);
+    return r;
+}
+
++ (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)argList
+{
+    NSError *error = nil;
+    NSFetchRequest *req = [self fetchRequest];
+    
+    req.predicate = [NSPredicate predicateWithFormat:predicateFormat arguments:argList];
+    
+    NSArray *r = [[self context] executeFetchRequest:req error:&error];
+   
+    if (r) return r;
+    NSLog(@"[%s %s] line %d: %@, %@", object_getClassName(self), sel_getName(_cmd), __LINE__, error, error.userInfo);
+    return r;
+}
+
++ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending
+{
+    NSError *error = nil;
+    NSFetchRequest *req = [self fetchRequest];
+    
+    req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:key ascending:ascending]];
+    
+    NSArray *r = [[self context] executeFetchRequest:req error:&error];
+    
+    if (r) return r;
+    NSLog(@"[%s %s] line %d: %@, %@", object_getClassName(self), sel_getName(_cmd), __LINE__, error, error.userInfo);
+    return r;    
+}
+
+#pragma mark - Core Data stack
 
 // Returns the managed object context for the application. If the context doesn't already exist, it is created and bound
 // to the persistent store coordinator for the application.
-+ (NSManagedObjectContext *)managedObjectContext
++ (NSManagedObjectContext *)context
 {
-    static id context = nil;
+    static NSManagedObjectContext *context = nil;
     static dispatch_once_t onceToken = 0;
     
     dispatch_once(&onceToken, ^{
@@ -47,7 +100,7 @@
         NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
         NSPersistentStoreCoordinator *coordinator = [[NSPersistentStoreCoordinator alloc]
                                                      initWithManagedObjectModel:model];
-        NSError *error = nil;
+        __block NSError *error = nil;
         
         if (! [coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil
                error:&error]) {
@@ -56,7 +109,8 @@
 
 #if DEBUG
             abort();
-#else       // if this is a not a debug build, attempt to delete and create a new persisent data store before crashing
+#else
+            // if this is a not a debug build, attempt to delete and create a new persisent data store before crashing
             if (! [[NSFileManager defaultManager] removeItemAtURL:storeURL error:&error]) {
                 NSLog(@"[%s %s] line %d: %@, %@", object_getClassName(self), sel_getName(_cmd), __LINE__, error,
                       error.userInfo);
@@ -74,6 +128,12 @@
         if (coordinator) {
             context = [NSManagedObjectContext new];
             [context setPersistentStoreCoordinator:coordinator];
+            
+            // Saves changes in the application's managed object context before the application terminates.
+            [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillTerminateNotification object:nil
+            queue:nil usingBlock:^(NSNotification *note) {
+                [self saveContext];
+            }];
         }
     });
     
@@ -82,25 +142,20 @@
 
 + (void)saveContext
 {
-    [self saveContext:nil];
-}
-
-+ (void)saveContext:(void (^)(NSError *error))completion
-{
-    [[self managedObjectContext] performBlock:^{
+    [[self context] performBlock:^{
         NSError *error = nil;
-        
-        if ([[self managedObjectContext] hasChanges] && ! [[self managedObjectContext] save:&error]) {
+
+        if ([[self context] hasChanges] && ! [[self context] save:&error]) {
             NSLog(@"[%s %s] line %d: %@, %@", object_getClassName(self), sel_getName(_cmd), __LINE__, error,
                   error.userInfo);
 #if DEBUG
             abort();
 #endif
         }
-        
-        if (completion) completion(error);
     }];
 }
+
+#pragma mark - Entity methods
 
 + (NSString *)entityName
 {
@@ -109,7 +164,7 @@
 
 + (NSEntityDescription *)entity
 {
-    return [NSEntityDescription entityForName:[self entityName] inManagedObjectContext:[self managedObjectContext]];
+    return [NSEntityDescription entityForName:[self entityName] inManagedObjectContext:[self context]];
 }
 
 + (NSFetchRequest *)fetchRequest
@@ -119,7 +174,12 @@
 
 + (NSFetchedResultsController *)fetchedResultsController {
     return [[NSFetchedResultsController alloc] initWithFetchRequest:[self fetchRequest]
-            managedObjectContext:[self managedObjectContext] sectionNameKeyPath:nil cacheName:[self entityName]];
+            managedObjectContext:[self context] sectionNameKeyPath:nil cacheName:[self entityName]];
+}
+
+- (void)deleteObject
+{
+    [[self managedObjectContext] deleteObject:self];
 }
 
 @end

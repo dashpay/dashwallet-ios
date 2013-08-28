@@ -27,9 +27,11 @@
 #import "ZNTransaction.h"
 #import "ZNKey.h"
 #import "ZNWallet+WebSocket.h"
+#import "ZNUnspentOutputEntity.h"
 #import "NSData+Hash.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSString+Base58.h"
+#import "NSManagedObject+Utils.h"
 #import "AFNetworking.h"
 
 #import "ZNMnemonic.h"
@@ -52,7 +54,6 @@
 #define PUSHTX_PATH @"/pushtx"
 
 #define TRANSACTIONS_KEY           @"TRANSACTIONS"
-#define UNSPENT_OUTPUTS_KEY        @"UNSPENT_OUTPUTS"
 #define ADDRESS_TX_COUNT_KEY       @"ADDRESS_TX_COUNT"
 
 #define LATEST_BLOCK_HEIGHT_KEY    @"LATEST_BLOCK_HEIGHT"
@@ -109,7 +110,7 @@ static NSData *getKeychainData(NSString *key)
 @interface ZNWallet ()
 
 @property (nonatomic, strong) NSMutableArray *externalAddresses, *internalAddresses;
-@property (nonatomic, strong) NSMutableDictionary *transactions, *unspentOutputs, *addressTxCount;
+@property (nonatomic, strong) NSMutableDictionary *transactions, *addressTxCount;//, *unspentOutputs;
 @property (nonatomic, strong) NSMutableSet *outdatedAddresses, *updatedTransactions;
 
 @property (nonatomic, strong) id<ZNKeySequence> sequence;
@@ -144,7 +145,6 @@ static NSData *getKeychainData(NSString *key)
     self.internalAddresses = [NSMutableArray array];
     self.outdatedAddresses = [NSMutableSet set];
     self.transactions = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:TRANSACTIONS_KEY]];
-    self.unspentOutputs = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:UNSPENT_OUTPUTS_KEY]];
     self.addressTxCount = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:ADDRESS_TX_COUNT_KEY]];
 
 #if WALLET_BIP32
@@ -203,16 +203,12 @@ static NSData *getKeychainData(NSString *key)
         [self.outdatedAddresses removeAllObjects];
         [self.transactions removeAllObjects];
         [self.addressTxCount removeAllObjects];
-        [self.unspentOutputs removeAllObjects];
+        [[ZNUnspentOutputEntity allObjects] makeObjectsPerformSelector:@selector(deleteObject)];
         
         // flush cached addresses and tx outputs
         [_defs removeObjectForKey:TRANSACTIONS_KEY];
-        [_defs removeObjectForKey:UNSPENT_OUTPUTS_KEY];
         [_defs removeObjectForKey:ADDRESS_TX_COUNT_KEY];
-        [_defs removeObjectForKey:LAST_SYNC_TIME_KEY];
-        
-        [self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO];
-        [self addressesWithGapLimit:GAP_LIMIT_INTERNAL internal:YES];
+        [_defs removeObjectForKey:LAST_SYNC_TIME_KEY];        
     }
 
     [_defs synchronize];
@@ -282,10 +278,6 @@ static NSData *getKeychainData(NSString *key)
     if (! unconfirmed) return;
     
     @synchronized(self) {
-        [self.unspentOutputs enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-            [s addObject:[NSString stringWithFormat:@"%@:%@", obj[@"tx_index"], obj[@"tx_output_n"]]];
-        }];
-    
         [self.transactions
         removeObjectsForKeys:[self.transactions keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
             if (obj[@"block_height"] != nil) return NO;
@@ -294,9 +286,9 @@ static NSData *getKeychainData(NSString *key)
             NSUInteger i =
                 [obj[@"inputs"] indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
                     NSDictionary *o = obj[@"prev_out"];
-                    NSString *key = [NSString stringWithFormat:@"%@:%@", o[@"tx_index"], o[@"n"]];
                     
-                    return [s containsObject:key] ? (*stop = YES) : NO;
+                    return ([ZNUnspentOutputEntity objectsMatching:@"txIndex = %lld AND n = %d",
+                             [o[@"tx_index"] longLongValue], [o[@"n"] intValue]].count > 0) ? (*stop = YES) : NO;
                 }];
                 
             return (i == NSNotFound) ? NO : YES;
@@ -572,7 +564,7 @@ static NSData *getKeychainData(NSString *key)
             if (! _synchronizing) return;
             
             if (! [requestOp.responseString.lowercaseString hasPrefix:@"no free outputs"] &&
-                JSON[@"unspent_outputs"] == nil) {
+                ! [JSON[@"unspent_outputs"] isKindOfClass:[NSArray class]]) {
                 NSError *error = [NSError errorWithDomain:@"ZincWallet" code:500 userInfo:@{
                                   NSLocalizedDescriptionKey:@"Unexpeted server response from blockchain.info"}];
 
@@ -581,23 +573,17 @@ static NSData *getKeychainData(NSString *key)
             }
 
             @synchronized(self) {
-                [self.unspentOutputs
-                removeObjectsForKeys:[self.unspentOutputs keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-                    NSString *addr = [NSString addressWithScript:[obj[@"script"] hexToData]];
-                    
-                    return (! addr || [addresses containsObject:addr]) ? YES : NO;
-                }].allObjects];
+                // remove any previously stored unspentOutputs for the queried addresses
+                [[ZNUnspentOutputEntity objectsMatching:@"address IN %@", addresses]
+                 makeObjectsPerformSelector:@selector(deleteObject)];
 
                 [self.outdatedAddresses minusSet:[NSSet setWithArray:addresses]];
             
                 [JSON[@"unspent_outputs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                    NSString *key = [obj[@"tx_hash"] stringByAppendingString:[obj[@"tx_output_n"] description]];
-
-                    //XXXX we shouldn't be storing json without sanitizing it... security risk
-                    if (key && [obj[@"value"] unsignedLongLongValue] > 0) self.unspentOutputs[key] = obj;
-                }];
-            
-                [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
+                    ZNUnspentOutputEntity *o = [ZNUnspentOutputEntity entityWithJSON:obj];
+                    
+                    if (o.value == 0 || ! [addresses containsObject:o.address]) [o deleteObject];
+                }];                
             }
 
             if (completion) dispatch_async(q, ^{ completion(nil); });
@@ -609,16 +595,10 @@ static NSData *getKeychainData(NSString *key)
             }
             
             @synchronized(self) {
-                [self.unspentOutputs
-                removeObjectsForKeys:[self.unspentOutputs keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-                    NSString *addr = [NSString addressWithScript:[obj[@"script"] hexToData]];
-                    
-                    return (! addr || [addresses containsObject:addr]) ? YES : NO;
-                }].allObjects];
-            
+                [[ZNUnspentOutputEntity objectsMatching:@"address IN %@", addresses]
+                 makeObjectsPerformSelector:@selector(deleteObject)];
+
                 [self.outdatedAddresses minusSet:[NSSet setWithArray:addresses]];
-                
-                [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
             }
             
             if (completion) dispatch_async(q, ^{ completion(nil); });
@@ -642,8 +622,8 @@ static NSData *getKeychainData(NSString *key)
     // the outputs of unconfirmed transactions will show up in the unspent outputs list even with 0 confirmations
     __block uint64_t balance = 0;
     
-    [self.unspentOutputs enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        balance += [obj[@"value"] unsignedLongLongValue];
+    [[ZNUnspentOutputEntity allObjects] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        balance += [(ZNUnspentOutputEntity *)obj value];
     }];
     
     return balance;
@@ -658,14 +638,11 @@ static NSData *getKeychainData(NSString *key)
         if ([self.addressTxCount[obj] unsignedIntegerValue] > 0) {
             NSMutableSet *txIndexes = [NSMutableSet set];
             
-            [self.unspentOutputs enumerateKeysAndObjectsUsingBlock:^(id k, id o, BOOL *stop) {
-                NSString *a = [NSString addressWithScript:[o[@"script"] hexToData]];
-
-                if ([a isEqual:obj] && [o[@"confirmations"] unsignedIntegerValue] < 6) {
-                    [txIndexes addObject:o[@"tx_index"]];
-                }
+            [[ZNUnspentOutputEntity objectsMatching:@"address = %@ AND confirmations < 6", obj]
+            enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                [txIndexes addObject:@([obj txIndex])];
             }];
-            
+
             if (txIndexes.count < [self.addressTxCount[obj] unsignedIntegerValue]) {
                 *stop = YES;
                 return;
@@ -687,13 +664,10 @@ static NSData *getKeychainData(NSString *key)
         if ([self.addressTxCount[obj] unsignedIntegerValue] > 0) {
             NSMutableSet *txIndexes = [NSMutableSet set];
             
-            [self.unspentOutputs enumerateKeysAndObjectsUsingBlock:^(id k, id o, BOOL *stop) {
-                NSString *a = [NSString addressWithScript:[o[@"script"] hexToData]];
-                
-                if ([a isEqual:obj] && [o[@"confirmations"] unsignedIntegerValue] < 6) {
-                    [txIndexes addObject:o[@"tx_index"]];
-                }
-            }];
+            [[ZNUnspentOutputEntity objectsMatching:@"address = %@ AND confirmations < 6", obj]
+            enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                [txIndexes addObject:@([obj txIndex])];
+            }];            
             
             if (txIndexes.count < [self.addressTxCount[obj] unsignedIntegerValue]) {
                 *stop = YES;
@@ -793,19 +767,14 @@ static NSData *getKeychainData(NSString *key)
     @synchronized(self) {
         //TODO: optimize for free transactions (watch out for performance issues, nothing O(n^2) please)
         // this is a nieve implementation to just get it functional, sorts unspent outputs by oldest first
-        NSArray *keys =
-            [self.unspentOutputs keysSortedByValueUsingComparator:^NSComparisonResult(id obj1, id obj2) {
-                return [obj1[@"tx_index"] compare:obj2[@"tx_index"]];
-            }];
-    
-        [keys enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            NSDictionary *o = self.unspentOutputs[obj];
+        [[ZNUnspentOutputEntity objectsSortedBy:@"txIndex" ascending:YES]
+        enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            ZNUnspentOutputEntity *o = obj;
         
-            // tx_hash is already in little endian
-            [tx addInputHash:[o[@"tx_hash"] hexToData] index:[o[@"tx_output_n"] unsignedIntegerValue]
-                      script:[o[@"script"] hexToData]];
+            // txHash is already in little endian
+            [tx addInputHash:o.txHash index:o.n script:o.script];
             
-            balance += [o[@"value"] unsignedLongLongValue];
+            balance += o.value;
 
             // assume we will be adding a change output (additional 34 bytes)
             //TODO: calculate the median of the lowest fee-per-kb that made it into the previous 144 blocks (24hrs)
@@ -841,13 +810,13 @@ static NSData *getKeychainData(NSString *key)
     
     @synchronized(self) {
         [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            NSString *hash = [NSString hexWithData:transaction.inputHashes[idx]];
-            NSString *n = [transaction.inputIndexes[idx] description];
-            NSDictionary *o = self.unspentOutputs[[hash stringByAppendingString:n]];
+            ZNUnspentOutputEntity *o =
+                [ZNUnspentOutputEntity objectsMatching:@"txHash = %@ AND n = %d", transaction.inputHashes[idx],
+                 [transaction.inputIndexes[idx] intValue]].lastObject;
 
             if (o) {
-                [amounts addObject:o[@"value"]];
-                [heights addObject:@(currentHeight - [o[@"confirmations"] unsignedIntegerValue])];
+                [amounts addObject:@(o.value)];
+                [heights addObject:@(currentHeight - o.confirmations)];
             }
             else *stop = YES;
         }];
@@ -868,15 +837,15 @@ static NSData *getKeychainData(NSString *key)
 
     @synchronized(self) {
         [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            NSString *hash = [NSString hexWithData:transaction.inputHashes[idx]];
-            NSString *n = [transaction.inputIndexes[idx] description];
-            NSDictionary *o = self.unspentOutputs[[hash stringByAppendingString:n]];
+            ZNUnspentOutputEntity *o =
+                [ZNUnspentOutputEntity objectsMatching:@"txHash = %@ AND n = %d", transaction.inputHashes[idx],
+                 [transaction.inputIndexes[idx] intValue]].lastObject;
         
             if (! o) {
                 balance = UINT64_MAX;
                 *stop = YES;
             }
-            else balance += [o[@"value"] unsignedLongLongValue];
+            else balance += o.value;
         }];
     }
 
@@ -948,18 +917,17 @@ static NSData *getKeychainData(NSString *key)
         
         @synchronized(self) {
             [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                NSString *hash = [NSString hexWithData:transaction.inputHashes[idx]];
-                NSString *n = [transaction.inputIndexes[idx] description];
-                NSDictionary *o = self.unspentOutputs[[hash stringByAppendingString:n]];
-            
+                ZNUnspentOutputEntity *o =
+                    [ZNUnspentOutputEntity objectsMatching:@"txHash = %@ AND n = %d", transaction.inputHashes[idx],
+                     [transaction.inputIndexes[idx] intValue]].lastObject;
+
                 if (o) {
-                    [self.unspentOutputs removeObjectForKey:[hash stringByAppendingString:n]];
-                
                     //NOTE: for now we don't need to store spent outputs because blockchain.info will not list them as
                     // unspent while there is an unconfirmed tx that spends them. This may change once we have multiple
                     // apis for publishing, and a transaction may not show up on blockchain.info immediately.
-                    [tx[@"inputs"] addObject:@{@"prev_out":@{@"tx_index":o[@"tx_index"], @"n":o[@"tx_output_n"],
-                                                             @"value":o[@"value"], @"addr":obj}}];
+                    [tx[@"inputs"] addObject:@{@"prev_out":@{@"tx_index":@(o.txIndex), @"n":@(o.n), @"value":@(o.value),
+                                                             @"addr":obj}}];
+                    [o deleteObject];
                 }
             }];
         
@@ -973,8 +941,7 @@ static NSData *getKeychainData(NSString *key)
             //}];
         
             self.transactions[tx[@"hash"]] = tx;
-        
-            [_defs setObject:self.unspentOutputs forKey:UNSPENT_OUTPUTS_KEY];
+
             [_defs setObject:self.addressTxCount forKey:ADDRESS_TX_COUNT_KEY];
             [_defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
         }

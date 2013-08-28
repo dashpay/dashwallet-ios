@@ -24,11 +24,48 @@
 //  THE SOFTWARE.
 
 #import "ZNUnspentOutputEntity.h"
+#import "ZNTransactionEntity.h"
+#import "ZNTxOutputEntity.h"
+#import "NSString+Base58.h"
+#import "NSManagedObject+Utils.h"
+#import "NSMutableData+Bitcoin.h"
 
 @implementation ZNUnspentOutputEntity
 
 @dynamic txHash;
 @dynamic script;
 @dynamic confirmations;
+
++ (instancetype)entityWithJSON:(NSDictionary *)JSON
+{
+    ZNUnspentOutputEntity *e = [super entityWithJSON:JSON];
+    
+    if (! e) return nil;
+        
+    if ([JSON[@"tx_hash"] isKindOfClass:[NSString class]]) e.txHash = [JSON[@"tx_hash"] hexToData];
+    if ([JSON[@"tx_output_n"] isKindOfClass:[NSNumber class]]) e.n = [JSON[@"tx_output_n"] intValue];
+    if ([JSON[@"script"] isKindOfClass:[NSString class]]) e.script = [JSON[@"script"] hexToData];
+    if ([JSON[@"confirmations"] isKindOfClass:[NSNumber class]]) e.confirmations = [JSON[@"confirmations"] intValue];
+    e.address = [NSString addressWithScript:e.script];
+    
+    return e;
+}
+
++ (instancetype)entityWithTxOutput:(ZNTxOutputEntity *)output
+{
+    ZNUnspentOutputEntity *e = [self managedObject];
+    NSMutableData *script = [NSMutableData data];
+    
+    e.address = output.address;
+    e.n = output.n;
+    e.txIndex = output.txIndex;
+    e.value = output.value;
+    e.txHash = output.transaction.txHash;
+    e.confirmations = 0;
+    [script appendScriptPubKeyForAddress:e.address];
+    e.script = script;
+    
+    return e;
+}
 
 @end

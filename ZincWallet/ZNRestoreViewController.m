@@ -139,9 +139,9 @@
     
     if (! done) return;
     
-    s = [[[[s stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]
-           stringByReplacingOccurrencesOfString:@"." withString:@" "]
-          stringByReplacingOccurrencesOfString:@"," withString:@" "]
+    s = [[[[s stringByReplacingOccurrencesOfString:@"." withString:@" "]
+           stringByReplacingOccurrencesOfString:@"," withString:@" "]
+          stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]
          lowercaseString];
         
     while ([s rangeOfString:@"  "].location != NSNotFound) {
