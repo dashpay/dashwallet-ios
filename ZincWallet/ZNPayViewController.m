@@ -477,8 +477,7 @@
     self.selectedIndex = [self.requestButtons indexOfObject:sender];
     
     if (self.selectedIndex == NSNotFound) {
-        NSAssert(FALSE, @"[%s %s] line %d: selectedIndex = NSNotFound", object_getClassName(self), sel_getName(_cmd),
-                 __LINE__);
+        NSAssert(FALSE, @"%s:%d %s: selectedIndex = NSNotFound", __FILE__, __LINE__,  __func__);
         return;
     }
     
@@ -730,8 +729,7 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
 // Deny by calling -denyConnectionFromPeer:
 - (void)session:(GKSession *)session didReceiveConnectionRequestFromPeer:(NSString *)peerID
 {
-    NSAssert(FALSE, @"[%s %s] line %d: recieved connection request (should be in client mode)",
-             object_getClassName(self), sel_getName(_cmd), __LINE__);
+    NSAssert(FALSE, @"%s:%d %s: recieved connection request (not in client mode)", __FILE__, __LINE__,  __func__);
     return;
     
     
@@ -784,7 +782,7 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
     NSUInteger idx = [self.requestIDs indexOfObject:peer];
     
     if (idx == NSNotFound) {
-        NSAssert(FALSE, @"[%s %s] line %d: idx = NSNotFound", object_getClassName(self), sel_getName(_cmd), __LINE__);
+        NSAssert(FALSE, @"%s:%d %s: idx = NSNotFound", __FILE__, __LINE__,  __func__);
         return;
     }
     

@@ -123,8 +123,7 @@
         case 0: return self.transactions.count ? self.transactions.count : 1;
         case 1: return 2;
         case 2: return 1;
-        default: NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
-                          __LINE__, section);
+        default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, section);
     }
 
     return 0;
@@ -258,8 +257,8 @@
                     cell.textLabel.text = @"backup phrase";
                     break;
                     
-                default: NSAssert(FALSE, @"[%s %s] line %d: unkown indexPath.row %d", object_getClassName(self),
-                                  sel_getName(_cmd), __LINE__, indexPath.row);
+                default:
+                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__, indexPath.row);
             }
             break;
             
@@ -285,14 +284,12 @@
                     break;
                                         
                 default:
-                    NSAssert(FALSE, @"[%s %s] line %d: unkown indexPath.row %d", object_getClassName(self),
-                             sel_getName(_cmd), __LINE__, indexPath.row);
+                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__, indexPath.row);
             }
             break;
             
         default:
-            NSAssert(FALSE, @"[%s %s] line %d: unkown indexPath.section %d", object_getClassName(self),
-                     sel_getName(_cmd), __LINE__, indexPath.section);
+            NSAssert(FALSE, @"%s:%d %s: unkown indexPath.section %d", __FILE__, __LINE__,  __func__, indexPath.section);
     }
     
     return cell;
@@ -304,8 +301,7 @@
         case 0: return nil;//@"recent transactions";
         case 1: return nil;//@"settings";
         case 2: return @"caution ⇣";
-        default: NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
-                          __LINE__, section);
+        default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, section);
     }
     
     return nil;
@@ -328,8 +324,7 @@
                     return 44;
                     
                 default:
-                    NSAssert(FALSE, @"[%s %s] line %d: unkown indexPath.row %d", object_getClassName(self),
-                             sel_getName(_cmd), __LINE__, indexPath.row);
+                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__, indexPath.row);
             }
             return 44;
             
@@ -337,8 +332,7 @@
             return 44;
 
         default:
-            NSAssert(FALSE, @"[%s %s] line %d: unkown indexPath.section %d", object_getClassName(self),
-                     sel_getName(_cmd), __LINE__, indexPath.section);
+            NSAssert(FALSE, @"%s:%d %s: unkown indexPath.section %d", __FILE__, __LINE__,  __func__, indexPath.section);
     }
     
     return 44;
@@ -369,8 +363,7 @@
             return h > 55 ? h : 55;
         
         default:
-            NSAssert(FALSE, @"[%s %s] line %d: unkown section %d", object_getClassName(self), sel_getName(_cmd),
-                     __LINE__, section);
+            NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, section);
     }
 
     return 22;
@@ -420,8 +413,7 @@
                     break;
                     
                 default:
-                    NSAssert(FALSE, @"[%s %s] line %d: unkown indexPath.row %d", object_getClassName(self),
-                             sel_getName(_cmd), __LINE__, indexPath.row);
+                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__, indexPath.row);
             }
             break;
             
@@ -430,8 +422,7 @@
             break;
             
         default:
-            NSAssert(FALSE, @"[%s %s] line %d: unkown indexPath.section %d", object_getClassName(self),
-                     sel_getName(_cmd), __LINE__, indexPath.section);
+            NSAssert(FALSE, @"%s:%d %s: unkown indexPath.section %d", __FILE__, __LINE__,  __func__, indexPath.section);
     }
 }
 

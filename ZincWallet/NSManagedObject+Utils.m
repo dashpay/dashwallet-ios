@@ -26,8 +26,6 @@
 
 @implementation NSManagedObject (Utils)
 
-#pragma mark - Object Creation
-
 + (instancetype)managedObject
 {
     return [[self alloc] initWithEntity:[self entity] insertIntoManagedObjectContext:[self context]];
@@ -38,8 +36,7 @@
     NSError *error = nil;
     NSArray *r = [[self context] executeFetchRequest:[self fetchRequest] error:&error];
 
-    if (r) return r;
-    NSLog(@"[%s %s] line %d: %@, %@", object_getClassName(self), sel_getName(_cmd), __LINE__, error, error.userInfo);
+    if (! r) NSLog(@"%s:%d: %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
     return r;
 }
 
@@ -63,29 +60,34 @@
     
     NSArray *r = [[self context] executeFetchRequest:req error:&error];
    
-    if (r) return r;
-    NSLog(@"[%s %s] line %d: %@, %@", object_getClassName(self), sel_getName(_cmd), __LINE__, error, error.userInfo);
+    if (! r) NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
     return r;
 }
 
-+ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending
++ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)asc
+{
+    return [self objectsSortedBy:key ascending:asc offset:0 limit:0];
+}
+
++ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)asc offset:(NSUInteger)offset limit:(NSUInteger)limit
 {
     NSError *error = nil;
     NSFetchRequest *req = [self fetchRequest];
     
-    req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:key ascending:ascending]];
+    req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:key ascending:asc]];
+    req.fetchOffset = offset;
+    req.fetchLimit = limit;
     
     NSArray *r = [[self context] executeFetchRequest:req error:&error];
     
-    if (r) return r;
-    NSLog(@"[%s %s] line %d: %@, %@", object_getClassName(self), sel_getName(_cmd), __LINE__, error, error.userInfo);
-    return r;    
+    if (! r) NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
+    return r;
 }
 
 #pragma mark - Core Data stack
 
-// Returns the managed object context for the application. If the context doesn't already exist, it is created and bound
-// to the persistent store coordinator for the application.
+// Returns the managed object context for the application. If the context doesn't already exist,
+// it is created and bound to the persistent store coordinator for the application.
 + (NSManagedObjectContext *)context
 {
     static NSManagedObjectContext *context = nil;
@@ -104,23 +106,19 @@
         
         if (! [coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil
                error:&error]) {
-            NSLog(@"[%s %s] line %d: %@, %@", object_getClassName(self), sel_getName(_cmd), __LINE__, error,
-                  error.userInfo);
-
+            NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
 #if DEBUG
             abort();
 #else
             // if this is a not a debug build, attempt to delete and create a new persisent data store before crashing
             if (! [[NSFileManager defaultManager] removeItemAtURL:storeURL error:&error]) {
-                NSLog(@"[%s %s] line %d: %@, %@", object_getClassName(self), sel_getName(_cmd), __LINE__, error,
-                      error.userInfo);
+                NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
             }
             
             if (! [coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil
                    error:&error]) {
-                NSLog(@"[%s %s] line %d: %@, %@", object_getClassName(self), sel_getName(_cmd), __LINE__, error,
-                      error.userInfo);
-                abort(); // forsooth, I am slain
+                NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
+                abort(); // Forsooth, I am slain!
             }
 #endif
         }
@@ -146,8 +144,7 @@
         NSError *error = nil;
 
         if ([[self context] hasChanges] && ! [[self context] save:&error]) {
-            NSLog(@"[%s %s] line %d: %@, %@", object_getClassName(self), sel_getName(_cmd), __LINE__, error,
-                  error.userInfo);
+            NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
 #if DEBUG
             abort();
 #endif

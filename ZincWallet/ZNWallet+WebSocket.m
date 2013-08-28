@@ -118,7 +118,7 @@
         if ([addr isValidBitcoinAddress]) [msg appendFormat:@"{\"op\":\"addr_sub\", \"addr\":\"%@\"}", addr];
     }
     
-    NSLog(@"%@", msg);
+    NSLog(@"Websocket: %@", msg);
     
     [self.webSocket send:msg];
 }
@@ -186,7 +186,7 @@ wasClean:(BOOL)wasClean
         NSDictionary *JSON = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
         
         if (error || ! [JSON isKindOfClass:[NSDictionary class]]) {
-            NSLog(@"webSocket receive error: %@", error ? error.localizedDescription : [data description]);
+            NSLog(@"webSocket receive error: %@", error ? error : [data description]);
             return;
         }
         

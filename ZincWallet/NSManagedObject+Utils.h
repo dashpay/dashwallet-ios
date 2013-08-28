@@ -30,7 +30,8 @@
 + (NSArray *)allObjects;
 + (NSArray *)objectsMatching:(NSString *)predicateFormat, ...;
 + (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)argList;
-+ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending;
++ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)asc;
++ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)asc offset:(NSUInteger)offset limit:(NSUInteger)limit;
 
 + (NSManagedObjectContext *)context;
 + (void)saveContext;

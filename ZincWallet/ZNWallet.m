@@ -521,7 +521,7 @@ static NSData *getKeychainData(NSString *key)
             
             if (completion) dispatch_async(q, ^{ completion(nil); });
         } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
-            NSLog(@"%@", error.localizedDescription);
+            NSLog(@"%@", error);
         
             if (completion) dispatch_async(q, ^{ completion(error); });
         }];
@@ -589,7 +589,7 @@ static NSData *getKeychainData(NSString *key)
             if (completion) dispatch_async(q, ^{ completion(nil); });
         } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
             if (! [requestOp.responseString.lowercaseString hasPrefix:@"no free outputs"]) {
-                NSLog(@"%@", error.localizedDescription);
+                NSLog(@"%@", error);
                 if (completion) dispatch_async(q, ^{ completion(error); });
                 return;
             }
@@ -866,7 +866,7 @@ static NSData *getKeychainData(NSString *key)
         [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             if ([self.externalAddresses indexOfObject:obj] == NSNotFound) {
                 if ([self.internalAddresses indexOfObject:obj] == NSNotFound) {
-                    NSLog(@"[%s %s] line %d: missing key", object_getClassName(self), sel_getName(_cmd), __LINE__);
+                    NSLog(@"%s:%d %s: missing key", __FILE__, __LINE__,  __func__);
                     *stop = YES;
                 }
                 else [changeKeyIndexes addObject:@([self.internalAddresses indexOfObject:obj])];
