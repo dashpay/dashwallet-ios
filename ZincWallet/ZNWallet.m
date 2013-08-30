@@ -26,8 +26,10 @@
 #import "ZNWallet.h"
 #import "ZNTransaction.h"
 #import "ZNKey.h"
-#import "ZNWallet+WebSocket.h"
+#import "ZNAddressEntity.h"
+#import "ZNTransactionEntity.h"
 #import "ZNUnspentOutputEntity.h"
+#import "ZNWallet+WebSocket.h"
 #import "NSData+Hash.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSString+Base58.h"
@@ -54,7 +56,6 @@
 #define PUSHTX_PATH @"/pushtx"
 
 #define TRANSACTIONS_KEY           @"TRANSACTIONS"
-#define ADDRESS_TX_COUNT_KEY       @"ADDRESS_TX_COUNT"
 
 #define LATEST_BLOCK_HEIGHT_KEY    @"LATEST_BLOCK_HEIGHT"
 #define LATEST_BLOCK_TIMESTAMP_KEY @"LATEST_BLOCK_TIMESTAMP"
@@ -109,9 +110,8 @@ static NSData *getKeychainData(NSString *key)
 
 @interface ZNWallet ()
 
-@property (nonatomic, strong) NSMutableArray *externalAddresses, *internalAddresses;
-@property (nonatomic, strong) NSMutableDictionary *transactions, *addressTxCount;//, *unspentOutputs;
-@property (nonatomic, strong) NSMutableSet *outdatedAddresses, *updatedTransactions;
+@property (nonatomic, strong) NSMutableDictionary *transactions;
+@property (nonatomic, strong) NSMutableSet *updatedTransactions;
 
 @property (nonatomic, strong) id<ZNKeySequence> sequence;
 @property (nonatomic, strong) NSData *mpk;
@@ -141,11 +141,7 @@ static NSData *getKeychainData(NSString *key)
     
     self.defs = [NSUserDefaults standardUserDefaults];
     
-    self.externalAddresses = [NSMutableArray array];
-    self.internalAddresses = [NSMutableArray array];
-    self.outdatedAddresses = [NSMutableSet set];
     self.transactions = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:TRANSACTIONS_KEY]];
-    self.addressTxCount = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:ADDRESS_TX_COUNT_KEY]];
 
 #if WALLET_BIP32
     self.sequence = [ZNBIP32Sequence new];
@@ -198,19 +194,16 @@ static NSData *getKeychainData(NSString *key)
         
         _synchronizing = NO;
         self.mpk = nil;
-        [self.externalAddresses removeAllObjects];
-        [self.internalAddresses removeAllObjects];
-        [self.outdatedAddresses removeAllObjects];
         [self.transactions removeAllObjects];
-        [self.addressTxCount removeAllObjects];
+        [[ZNTransactionEntity allObjects] makeObjectsPerformSelector:@selector(deleteObject)];
+        [[ZNAddressEntity allObjects] makeObjectsPerformSelector:@selector(deleteObject)];
         [[ZNUnspentOutputEntity allObjects] makeObjectsPerformSelector:@selector(deleteObject)];
         
-        // flush cached addresses and tx outputs
         [_defs removeObjectForKey:TRANSACTIONS_KEY];
-        [_defs removeObjectForKey:ADDRESS_TX_COUNT_KEY];
         [_defs removeObjectForKey:LAST_SYNC_TIME_KEY];        
     }
 
+    [NSManagedObject saveContext];
     [_defs synchronize];
 }
 
@@ -287,7 +280,7 @@ static NSData *getKeychainData(NSString *key)
                 [obj[@"inputs"] indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
                     NSDictionary *o = obj[@"prev_out"];
                     
-                    return ([ZNUnspentOutputEntity objectsMatching:@"txIndex = %lld AND n = %d",
+                    return ([ZNUnspentOutputEntity objectsMatching:@"txIndex == %lld && n == %d",
                              [o[@"tx_index"] longLongValue], [o[@"n"] intValue]].count > 0) ? (*stop = YES) : NO;
                 }];
                 
@@ -309,26 +302,19 @@ static NSData *getKeychainData(NSString *key)
         [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncStartedNotification object:self];
     });
         
-    NSMutableArray *a = [NSMutableArray array];
+    NSMutableArray *gap = [NSMutableArray array];
     
-    [a addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
+    // use external gap limit for the inernal chain to produce fewer network requests
+    [gap addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
+    [gap addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:YES]];
 
-    // use external gap limit when syncing inernal chain to produce fewer api calls
-    [a addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:YES]];
-
-    [self.externalAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        if ([a indexOfObject:obj] == NSNotFound) [a addObject:obj];
-    }];
-
-    [self.internalAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        if ([a indexOfObject:obj] == NSNotFound) [a addObject:obj];
-    }];
+    NSArray *used = [ZNAddressEntity objectsMatching:@"NOT (address IN %@)", [gap valueForKey:@"address"]];
     
-    // An ARC retain loop is avoided here when using block recursion by passing the block to itself as an argument...
-    // just shoot me now... please
+    // a recursive block ARC retain loop is avoided by passing the block as an argument to itself... just shoot me now
     void (^completion)(NSError *, id) = ^(NSError *error, id completion) {
         if (error) {
             _synchronizing = NO;
+            [NSManagedObject saveContext];
             [_defs synchronize];
             
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -337,19 +323,17 @@ static NSData *getKeychainData(NSString *key)
             });
             return;
         }
-    
-        [a removeObjectsAtIndexes:[a indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-            return [self.addressTxCount[obj] unsignedIntegerValue] > 0;
-        }]];
         
-        if (a.count < GAP_LIMIT_EXTERNAL + GAP_LIMIT_EXTERNAL) {
-            [a setArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
-            [a addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:YES]];
-            if (a.count) {
-                [self queryAddresses:a completion:^(NSError *error) {
-                    ((void (^)(NSError *, id))completion)(error, completion);
-                }];
-            }
+        [gap filterUsingPredicate:[NSPredicate predicateWithFormat:@"txCount > 0"]];
+        
+        if (gap.count > 0) {
+            [gap setArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
+            [gap addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:YES]];
+            if (! gap.count) return;
+
+            [self queryAddresses:gap completion:^(NSError *error) {
+                ((void (^)(NSError *, id))completion)(error, completion);
+            }];
             return;
         }
         
@@ -364,10 +348,11 @@ static NSData *getKeychainData(NSString *key)
             [_defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
         }
 
-        [self queryUnspentOutputs:self.outdatedAddresses.allObjects completion:^(NSError *error) {
+        [self queryUnspentOutputs:[ZNAddressEntity objectsMatching:@"newTx == YES"] completion:^(NSError *error) {
             _synchronizing = NO;
             
             if (error) {
+                [NSManagedObject saveContext];
                 [_defs synchronize];
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
@@ -379,6 +364,7 @@ static NSData *getKeychainData(NSString *key)
             
             [self cleanUnconfirmed];
             
+            [NSManagedObject saveContext];
             [_defs setDouble:[NSDate timeIntervalSinceReferenceDate] forKey:LAST_SYNC_TIME_KEY];
             [_defs synchronize];
             
@@ -394,47 +380,55 @@ static NSData *getKeychainData(NSString *key)
     self.updatedTransactions = [NSMutableSet set];
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [self queryAddresses:a completion:^(NSError *error) { completion(error, completion); }];
+        [self queryAddresses:[gap arrayByAddingObjectsFromArray:used] completion:^(NSError *error) {
+            completion(error, completion);
+        }];
     });
 }
 
 - (NSArray *)addressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal
 {
-    NSMutableArray *a = [NSMutableArray arrayWithArray:internal ? self.internalAddresses : self.externalAddresses];
     NSMutableArray *newaddresses = [NSMutableArray array];
-    NSUInteger i = a.count;
-    NSString *addr = nil;
+    NSFetchRequest *req = [ZNAddressEntity fetchRequest];
     
-    [a removeObjectsAtIndexes:[a indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-        return [self.addressTxCount[obj] unsignedIntegerValue] > 0 ? YES : NO;
-    }]];
+    req.predicate = [NSPredicate predicateWithFormat:@"txCount == 0 && internal == %@", @(internal)];
+    req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"index" ascending:YES]];
+    
+    NSMutableArray *a = [NSMutableArray arrayWithArray:[ZNAddressEntity fetchObjects:req]];
+    NSUInteger i = a.count > 0 ? a.count - 1 : 0;
+
+    // keep only the trailing contiguous block of addresses with sequential indexes
+    while (i > 0 && [a[i] index] - 1 == [a[i - 1] index]) i--;
+    if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
     
     if (a.count >= gapLimit) {
         [a removeObjectsInRange:NSMakeRange(gapLimit, a.count - gapLimit)];
         return a;
     }
-    
-    // TODO: generating addresses is noticably slow, cache them in coredata
+
     @synchronized(self) {
+        req.predicate = [NSPredicate predicateWithFormat:@"internal == %@ && index > %d", @(internal),
+                         a.count ? [a.lastObject index] : 0];
+        req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"index" ascending:YES]];
+        [a addObjectsFromArray:[ZNAddressEntity fetchObjects:req]];
+    
         while (a.count < gapLimit) {
-            addr = [[ZNKey keyWithPublicKey:[self.sequence publicKey:i++ internal:internal masterPublicKey:self.mpk]]
-                    address];
-        
+            int32_t index = a.count ? [a.lastObject index] + 1 : 0;
+            NSData *pubKey = [self.sequence publicKey:index internal:internal masterPublicKey:self.mpk];
+            NSString *addr = [[ZNKey keyWithPublicKey:pubKey] address];
+
             if (! addr) {
                 NSLog(@"error generating keys");
                 return nil;
             }
+
+            ZNAddressEntity *address = [ZNAddressEntity managedObject];
             
-            if ([self.addressTxCount[addr] unsignedIntegerValue] == 0) [a addObject:addr];
-            
-            if (! internal && self.externalAddresses.count < i) {
-                [self.externalAddresses addObject:addr];
-                [newaddresses addObject:addr];
-            }
-            else if (internal && self.internalAddresses.count < i) {
-                [self.internalAddresses addObject:addr];
-                [newaddresses addObject:addr];
-            }
+            address.internal = internal;
+            address.index = index;
+            address.address = addr;
+            [a addObject:address];
+            [newaddresses addObject:address];
         }
     }
     
@@ -444,7 +438,7 @@ static NSData *getKeychainData(NSString *key)
         });
     }
     
-    return a;
+    return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
 }
 
 // query blockchain for the given addresses
@@ -470,24 +464,24 @@ static NSData *getKeychainData(NSString *key)
         return;
     }
     
-    NSURL *url = [NSURL URLWithString:[ADDRESS_URL stringByAppendingString:[[addresses componentsJoinedByString:@"|"]
-                  stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+    NSURL *url = [NSURL URLWithString:[ADDRESS_URL stringByAppendingString:[[[addresses valueForKey:@"address"]
+                  componentsJoinedByString:@"|"] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
     __block dispatch_queue_t q = dispatch_get_current_queue();
     __block AFJSONRequestOperation *requestOp =
         [AFJSONRequestOperation JSONRequestOperationWithRequest:[NSURLRequest requestWithURL:url]
         success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
             if (! _synchronizing) return;
+            
+            if (! [JSON isKindOfClass:[NSDictionary class]] || ! [JSON[@"addresses"] isKindOfClass:[NSArray class]] ||
+                ! [JSON[@"txs"] isKindOfClass:[NSArray class]]) {
+                NSError *error = [NSError errorWithDomain:@"ZincWallet" code:500 userInfo:@{
+                                  NSLocalizedDescriptionKey:@"Unexpeted server response from blockchain.info"}];
+                if (completion) dispatch_async(q, ^{ completion(error); });
+            }
         
             @synchronized(self) {
                 [JSON[@"addresses"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                    if (obj[@"address"] && [obj[@"n_tx"] unsignedLongLongValue] > 0) {
-                        if ([obj[@"n_tx"] unsignedIntegerValue] !=
-                            [self.addressTxCount[obj[@"address"]] unsignedIntegerValue]) {
-                            [self.outdatedAddresses addObject:obj[@"address"]];
-                        }
-            
-                        self.addressTxCount[obj[@"address"]] = obj[@"n_tx"];
-                    }
+                    [ZNAddressEntity updateWithJSON:obj];
                 }];
                 
                 [JSON[@"txs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
@@ -510,7 +504,6 @@ static NSData *getKeychainData(NSString *key)
                 NSString *code = JSON[@"info"][@"symbol_local"][@"code"];
                 double price = [JSON[@"info"][@"symbol_local"][@"conversion"] doubleValue];
                 
-                [_defs setObject:self.addressTxCount forKey:ADDRESS_TX_COUNT_KEY];
                 [_defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
                 if (height) [_defs setInteger:height forKey:LATEST_BLOCK_HEIGHT_KEY];
                 if (time > 1.0) [_defs setDouble:time forKey:LATEST_BLOCK_TIMESTAMP_KEY];
@@ -555,8 +548,8 @@ static NSData *getKeychainData(NSString *key)
         return;
     }
     
-    NSURL *url = [NSURL URLWithString:[UNSPENT_URL stringByAppendingString:[[addresses componentsJoinedByString:@"|"]
-                  stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+    NSURL *url = [NSURL URLWithString:[UNSPENT_URL stringByAppendingString:[[[addresses valueForKey:@"address"]
+                  componentsJoinedByString:@"|"] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
     __block dispatch_queue_t q = dispatch_get_current_queue();
     __block AFJSONRequestOperation *requestOp =
         [AFJSONRequestOperation JSONRequestOperationWithRequest:[NSURLRequest requestWithURL:url]
@@ -573,17 +566,19 @@ static NSData *getKeychainData(NSString *key)
             }
 
             @synchronized(self) {
+                NSArray *addrs = [addresses valueForKey:@"address"];
+            
                 // remove any previously stored unspentOutputs for the queried addresses
-                [[ZNUnspentOutputEntity objectsMatching:@"address IN %@", addresses]
+                [[ZNUnspentOutputEntity objectsMatching:@"address IN %@", addrs]
                  makeObjectsPerformSelector:@selector(deleteObject)];
-
-                [self.outdatedAddresses minusSet:[NSSet setWithArray:addresses]];
             
                 [JSON[@"unspent_outputs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                     ZNUnspentOutputEntity *o = [ZNUnspentOutputEntity entityWithJSON:obj];
                     
-                    if (o.value == 0 || ! [addresses containsObject:o.address]) [o deleteObject];
-                }];                
+                    if (o.value == 0 || ! [addrs containsObject:o.address]) [o deleteObject];
+                }];
+                
+                [addresses setValue:@(NO) forKey:@"primitiveNewTx"];
             }
 
             if (completion) dispatch_async(q, ^{ completion(nil); });
@@ -595,10 +590,10 @@ static NSData *getKeychainData(NSString *key)
             }
             
             @synchronized(self) {
-                [[ZNUnspentOutputEntity objectsMatching:@"address IN %@", addresses]
+                [[ZNUnspentOutputEntity objectsMatching:@"address IN %@", [addresses valueForKey:@"address"]]
                  makeObjectsPerformSelector:@selector(deleteObject)];
 
-                [self.outdatedAddresses minusSet:[NSSet setWithArray:addresses]];
+                [addresses setValue:@(NO) forKey:@"primitiveNewTx"];
             }
             
             if (completion) dispatch_async(q, ^{ completion(nil); });
@@ -629,56 +624,36 @@ static NSData *getKeychainData(NSString *key)
     return balance;
 }
 
+- (NSString *)addressFromInternal:(BOOL)internal
+{
+    ZNAddressEntity *addr = [self addressesWithGapLimit:1 internal:internal].lastObject;
+    int32_t i = addr.index;
+    
+    // use previous address in chain if none of its transactions have at least 6 confimations
+    while (i > 0) {
+        ZNAddressEntity *a =
+            [ZNAddressEntity objectsMatching:@"internal == %@ && index == %d", @(internal), --i].lastObject;
+        
+        if (a.txCount > 0) {
+            NSArray *unspent = [ZNUnspentOutputEntity objectsMatching:@"address == %@ && confirmations < 6", a.address];
+    
+            if ([[NSSet setWithArray:[unspent valueForKey:@"primitiveTxIndex"]] count] < a.txCount) break;
+        }
+
+        if (a) addr = a;
+    }
+    
+    return addr.address;
+}
+
 - (NSString *)receiveAddress
 {
-    __block NSString *addr = [self addressesWithGapLimit:1 internal:NO].lastObject;
-
-    [self.externalAddresses enumerateObjectsWithOptions:NSEnumerationReverse
-    usingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        if ([self.addressTxCount[obj] unsignedIntegerValue] > 0) {
-            NSMutableSet *txIndexes = [NSMutableSet set];
-            
-            [[ZNUnspentOutputEntity objectsMatching:@"address = %@ AND confirmations < 6", obj]
-            enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                [txIndexes addObject:@([obj txIndex])];
-            }];
-
-            if (txIndexes.count < [self.addressTxCount[obj] unsignedIntegerValue]) {
-                *stop = YES;
-                return;
-            }
-        }
-        
-        addr = obj;
-    }];
-
-    return addr;
+    return [self addressFromInternal:NO];
 }
 
 - (NSString *)changeAddress
 {
-    __block NSString *addr = [self addressesWithGapLimit:1 internal:YES].lastObject;
-    
-    [self.internalAddresses enumerateObjectsWithOptions:NSEnumerationReverse
-    usingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        if ([self.addressTxCount[obj] unsignedIntegerValue] > 0) {
-            NSMutableSet *txIndexes = [NSMutableSet set];
-            
-            [[ZNUnspentOutputEntity objectsMatching:@"address = %@ AND confirmations < 6", obj]
-            enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                [txIndexes addObject:@([obj txIndex])];
-            }];            
-            
-            if (txIndexes.count < [self.addressTxCount[obj] unsignedIntegerValue]) {
-                *stop = YES;
-                return;
-            }
-        }
-        
-        addr = obj;
-    }];
-
-    return addr;
+    return [self addressFromInternal:YES];
 }
 
 - (NSArray *)recentTransactions
@@ -710,11 +685,10 @@ static NSData *getKeychainData(NSString *key)
 
 - (BOOL)containsAddress:(NSString *)address
 {
-    if (self.externalAddresses.count < GAP_LIMIT_EXTERNAL) [self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO];
-    if (self.internalAddresses.count < GAP_LIMIT_INTERNAL) [self addressesWithGapLimit:GAP_LIMIT_INTERNAL internal:YES];
-
-    return [self.externalAddresses containsObject:address] || [self.internalAddresses containsObject:address];
+    return [ZNAddressEntity countObjectsMatching:@"address == %@", address] > 0;
 }
+
+#pragma mark - string helpers
 
 - (int64_t)amountForString:(NSString *)string
 {
@@ -811,7 +785,7 @@ static NSData *getKeychainData(NSString *key)
     @synchronized(self) {
         [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             ZNUnspentOutputEntity *o =
-                [ZNUnspentOutputEntity objectsMatching:@"txHash = %@ AND n = %d", transaction.inputHashes[idx],
+                [ZNUnspentOutputEntity objectsMatching:@"txHash == %@ && n == %d", transaction.inputHashes[idx],
                  [transaction.inputIndexes[idx] intValue]].lastObject;
 
             if (o) {
@@ -838,7 +812,7 @@ static NSData *getKeychainData(NSString *key)
     @synchronized(self) {
         [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             ZNUnspentOutputEntity *o =
-                [ZNUnspentOutputEntity objectsMatching:@"txHash = %@ AND n = %d", transaction.inputHashes[idx],
+                [ZNUnspentOutputEntity objectsMatching:@"txHash == %@ && n == %d", transaction.inputHashes[idx],
                  [transaction.inputIndexes[idx] intValue]].lastObject;
         
             if (! o) {
@@ -860,26 +834,15 @@ static NSData *getKeychainData(NSString *key)
 
 - (BOOL)signTransaction:(ZNTransaction *)transaction
 {
-    NSMutableSet *keyIndexes = [NSMutableSet set], *changeKeyIndexes = [NSMutableSet set];
-
-    @synchronized(self) {
-        [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            if ([self.externalAddresses indexOfObject:obj] == NSNotFound) {
-                if ([self.internalAddresses indexOfObject:obj] == NSNotFound) {
-                    NSLog(@"%s:%d %s: missing key", __FILE__, __LINE__,  __func__);
-                    *stop = YES;
-                }
-                else [changeKeyIndexes addObject:@([self.internalAddresses indexOfObject:obj])];
-            }
-            else [keyIndexes addObject:@([self.externalAddresses indexOfObject:obj])];
-        }];
-    }
-    
-    NSMutableArray *pkeys = [NSMutableArray arrayWithCapacity:keyIndexes.count + changeKeyIndexes.count];
+    NSArray *externalIndexes = [[ZNAddressEntity objectsMatching:@"internal == NO && address IN %@",
+                                 transaction.inputAddresses] valueForKey:@"primitiveIndex"];
+    NSArray *internalIndexes = [[ZNAddressEntity objectsMatching:@"internal == YES && address IN %@",
+                                 transaction.inputAddresses] valueForKey:@"primitiveIndex"];
+    NSMutableArray *pkeys = [NSMutableArray arrayWithCapacity:externalIndexes.count + internalIndexes.count];
     NSData *seed = self.seed;
     
-    [pkeys addObjectsFromArray:[self.sequence privateKeys:keyIndexes.allObjects internal:NO fromSeed:seed]];
-    [pkeys addObjectsFromArray:[self.sequence privateKeys:changeKeyIndexes.allObjects internal:YES fromSeed:seed]];
+    [pkeys addObjectsFromArray:[self.sequence privateKeys:externalIndexes internal:NO fromSeed:seed]];
+    [pkeys addObjectsFromArray:[self.sequence privateKeys:internalIndexes internal:YES fromSeed:seed]];
     
     [transaction signWithPrivateKeys:pkeys];
     
@@ -918,7 +881,7 @@ static NSData *getKeychainData(NSString *key)
         @synchronized(self) {
             [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                 ZNUnspentOutputEntity *o =
-                    [ZNUnspentOutputEntity objectsMatching:@"txHash = %@ AND n = %d", transaction.inputHashes[idx],
+                    [ZNUnspentOutputEntity objectsMatching:@"txHash == %@ && n == %d", transaction.inputHashes[idx],
                      [transaction.inputIndexes[idx] intValue]].lastObject;
 
                 if (o) {
@@ -934,18 +897,13 @@ static NSData *getKeychainData(NSString *key)
             [transaction.outputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                 [tx[@"out"] addObject:@{@"n":@(idx), @"value":transaction.outputAmounts[idx], @"addr":obj}];
             }];
-        
-            // don't update addressTxCount so the address's unspent outputs will be updated on next sync
-            //[updated enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
-            //    self.addressTxCount[obj] = @([self.addressTxCount[obj] unsignedIntegerValue] + 1);
-            //}];
-        
+            
             self.transactions[tx[@"hash"]] = tx;
 
-            [_defs setObject:self.addressTxCount forKey:ADDRESS_TX_COUNT_KEY];
             [_defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
         }
         
+        [NSManagedObject saveContext];
         [_defs synchronize];
         
         dispatch_async(dispatch_get_main_queue(), ^{

@@ -35,6 +35,8 @@
 
     [self keepUpAppearances];
 
+    //TODO: implement testnet build
+    
     //TODO: digitally sign every source release
     
     //TODO: upgrade openssl (and other libs) to latest

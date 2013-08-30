@@ -61,6 +61,7 @@
 // transaction over 10k
 // free transaction who's inputs are too new to hit min free priority
 // transaction with change below min allowable output
+// test gap limit with gaps in chain less than the limit
 
 #pragma mark - testTransaction
 

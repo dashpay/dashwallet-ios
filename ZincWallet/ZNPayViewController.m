@@ -81,7 +81,7 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-    //XXX add a field for manually entering a payment address
+    //TODO: add a field for manually entering a payment address
     ZNPaymentRequest *req = [ZNPaymentRequest new];
     ZNWallet *w = [ZNWallet sharedInstance];
     
@@ -255,12 +255,11 @@
     
     self.scrollView.contentSize = CGSizeMake(self.scrollView.frame.size.width*2, self.scrollView.frame.size.height);
     
-    //XXX sould have a main viewcontroller that contains the scrollview, with both pay and receive as subviews
+    //TODO: switch to a main viewcontroller that contains the scrollview, with both pay and receive as subviews
     // having payviewcontroller instantiate receiveviewcontroller like this is ugly
     CGRect f = self.scrollView.frame;
   
     self.receiveController.view.frame = CGRectMake(f.origin.x + f.size.width, f.origin.y, f.size.width, f.size.height);
-    [self.receiveController viewWillAppear:NO];
     [self.scrollView addSubview:self.receiveController.view];
     
     if (firstAppearance) {
@@ -296,7 +295,7 @@
     if (_receiveController) return _receiveController;
     
     _receiveController = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNReceiveViewController"];
-    _receiveController.navController = self.navigationController;    
+    _receiveController.navController = self.navigationController;
     return _receiveController;
 }
 
@@ -617,7 +616,7 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
             [self.spinner startAnimating];
             self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
             
-            //XXX check for duplicate transactions
+            //TODO: check for duplicate transactions
             [w publishTransaction:tx completion:^(NSError *error) {
                 [self.spinner stopAnimating];
                 self.navigationItem.rightBarButtonItem = self.refreshButton;

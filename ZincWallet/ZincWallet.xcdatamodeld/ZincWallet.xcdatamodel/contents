@@ -2,15 +2,16 @@
 <model name="" userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="2061" systemVersion="12E55" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
     <entity name="ZNAddressEntity" representedClassName="ZNAddressEntity" syncable="YES">
         <attribute name="address" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
-        <attribute name="index" optional="YES" attributeType="Integer 32" defaultValueString="0" indexed="YES" syncable="YES"/>
-        <attribute name="internal" optional="YES" attributeType="Boolean" defaultValueString="0" indexed="YES" syncable="YES"/>
-        <attribute name="txCount" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="index" attributeType="Integer 32" defaultValueString="0" indexed="YES" syncable="YES"/>
+        <attribute name="internal" attributeType="Boolean" defaultValueString="0" indexed="YES" syncable="YES"/>
+        <attribute name="newTx" attributeType="Boolean" defaultValueString="NO" indexed="YES" syncable="YES"/>
+        <attribute name="txCount" attributeType="Integer 32" defaultValueString="0" indexed="YES" syncable="YES"/>
     </entity>
     <entity name="ZNOutputEntity" representedClassName="ZNOutputEntity" isAbstract="YES" syncable="YES">
         <attribute name="address" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
-        <attribute name="n" optional="YES" attributeType="Integer 32" defaultValueString="0" indexed="YES" syncable="YES"/>
+        <attribute name="n" attributeType="Integer 32" defaultValueString="0" indexed="YES" syncable="YES"/>
         <attribute name="txIndex" optional="YES" attributeType="Integer 64" defaultValueString="0" indexed="YES" syncable="YES"/>
-        <attribute name="value" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
+        <attribute name="value" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
     </entity>
     <entity name="ZNTransactionEntity" representedClassName="ZNTransactionEntity" syncable="YES">
         <attribute name="blockHeight" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
@@ -32,7 +33,7 @@
         <attribute name="txHash" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
     </entity>
     <elements>
-        <element name="ZNAddressEntity" positionX="-1766" positionY="-2997" width="128" height="105"/>
+        <element name="ZNAddressEntity" positionX="-1766" positionY="-2997" width="128" height="120"/>
         <element name="ZNOutputEntity" positionX="-1953" positionY="-2853" width="128" height="105"/>
         <element name="ZNTransactionEntity" positionX="-1962" positionY="-2934" width="128" height="135"/>
         <element name="ZNTxInputEntity" positionX="-2187" positionY="-2988" width="128" height="60"/>

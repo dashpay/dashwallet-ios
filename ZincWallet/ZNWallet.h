@@ -58,6 +58,7 @@
 - (void)synchronize;
 
 - (BOOL)containsAddress:(NSString *)address;
+
 - (int64_t)amountForString:(NSString *)string;
 - (NSString *)stringForAmount:(int64_t)amount;
 - (NSString *)localCurrencyStringForAmount:(int64_t)amount;

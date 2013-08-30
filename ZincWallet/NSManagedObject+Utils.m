@@ -26,42 +26,40 @@
 
 @implementation NSManagedObject (Utils)
 
+#pragma mark - create object
+
 + (instancetype)managedObject
 {
-    return [[self alloc] initWithEntity:[self entity] insertIntoManagedObjectContext:[self context]];
+    @synchronized([self context]) {
+        return [[self alloc] initWithEntity:[NSEntityDescription entityForName:[self entityName]
+                inManagedObjectContext:[self context]] insertIntoManagedObjectContext:[self context]];
+    }
 }
+
+#pragma mark - fetch existing objects
 
 + (NSArray *)allObjects
 {
-    NSError *error = nil;
-    NSArray *r = [[self context] executeFetchRequest:[self fetchRequest] error:&error];
-
-    if (! r) NSLog(@"%s:%d: %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
-    return r;
+    return [self fetchObjects:[self fetchRequest]];
 }
 
 + (NSArray *)objectsMatching:(NSString *)predicateFormat, ...
 {
-    NSArray *r = nil;
+    NSArray *a;
     va_list args;
-    
+
     va_start(args, predicateFormat);
-    r = [self objectsMatching:predicateFormat arguments:args];
+    a = [self objectsMatching:predicateFormat arguments:args];
     va_end(args);
-    return r;
+    return a;
 }
 
-+ (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)argList
++ (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args
 {
-    NSError *error = nil;
     NSFetchRequest *req = [self fetchRequest];
     
-    req.predicate = [NSPredicate predicateWithFormat:predicateFormat arguments:argList];
-    
-    NSArray *r = [[self context] executeFetchRequest:req error:&error];
-   
-    if (! r) NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
-    return r;
+    req.predicate = [NSPredicate predicateWithFormat:predicateFormat arguments:args];
+    return [self fetchObjects:req];
 }
 
 + (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)asc
@@ -69,22 +67,82 @@
     return [self objectsSortedBy:key ascending:asc offset:0 limit:0];
 }
 
-+ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)asc offset:(NSUInteger)offset limit:(NSUInteger)limit
++ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)asc offset:(NSUInteger)off limit:(NSUInteger)lim
 {
-    NSError *error = nil;
     NSFetchRequest *req = [self fetchRequest];
     
     req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:key ascending:asc]];
-    req.fetchOffset = offset;
-    req.fetchLimit = limit;
+    req.fetchOffset = off;
+    req.fetchLimit = lim;
     
-    NSArray *r = [[self context] executeFetchRequest:req error:&error];
-    
-    if (! r) NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
-    return r;
+    return [self fetchObjects:req];
 }
 
-#pragma mark - Core Data stack
++ (NSArray *)fetchObjects:(NSFetchRequest *)req
+{
+    @synchronized([self context]) {
+        NSError *err = nil;
+        NSArray *a = [[self context] executeFetchRequest:req error:&err];
+
+        if (! a) NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, err);
+        return a;
+    }
+}
+
+#pragma mark - count exising objects
+
++ (NSUInteger)countAllObjects
+{
+    return [self countObjects:[self fetchRequest]];
+}
+
++ (NSUInteger)countObjectsMatching:(NSString *)predicateFormat, ...
+{
+    NSUInteger count;
+    va_list args;
+    
+    va_start(args, predicateFormat);
+    count = [self countObjectsMatching:predicateFormat arguments:args];
+    va_end(args);
+    return count;
+}
+
++ (NSUInteger)countObjectsMatching:(NSString *)predicateFormat arguments:(va_list)args
+{
+    NSFetchRequest *req = [self fetchRequest];
+    
+    req.predicate = [NSPredicate predicateWithFormat:predicateFormat arguments:args];
+    return [self countObjects:req];
+}
+
++ (NSUInteger)countObjectsSortedBy:(NSString *)key ascending:(BOOL)asc
+{
+    return [self countObjectsSortedBy:key ascending:asc offset:0 limit:0];
+}
+
++ (NSUInteger)countObjectsSortedBy:(NSString *)key ascending:(BOOL)asc offset:(NSUInteger)off limit:(NSUInteger)lim
+{
+    NSFetchRequest *req = [self fetchRequest];
+    
+    req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:key ascending:asc]];
+    req.fetchOffset = off;
+    req.fetchLimit = lim;
+    
+    return [self countObjects:req];
+}
+
++ (NSUInteger)countObjects:(NSFetchRequest *)req
+{
+    @synchronized([self context]) {
+        NSError *err = nil;
+        NSUInteger count = [[self context] countForFetchRequest:req error:&err];
+        
+        if (count == NSNotFound) NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, err);
+        return count;
+    }    
+}
+
+#pragma mark - core data stack
 
 // Returns the managed object context for the application. If the context doesn't already exist,
 // it is created and bound to the persistent store coordinator for the application.
@@ -94,42 +152,41 @@
     static dispatch_once_t onceToken = 0;
     
     dispatch_once(&onceToken, ^{
-        NSURL *docURL = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory
-                          inDomains:NSUserDomainMask] lastObject];
+        NSURL *docURL =
+            [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
         NSURL *modelURL = [NSBundle.mainBundle URLsForResourcesWithExtension:@"momd" subdirectory:nil].lastObject;
         NSString *projName = [[modelURL lastPathComponent] stringByDeletingPathExtension];
         NSURL *storeURL = [[docURL URLByAppendingPathComponent:projName] URLByAppendingPathExtension:@"sqlite"];
         NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
-        NSPersistentStoreCoordinator *coordinator = [[NSPersistentStoreCoordinator alloc]
-                                                     initWithManagedObjectModel:model];
-        __block NSError *error = nil;
+        NSPersistentStoreCoordinator *coord = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:model];
+        NSError *err = nil;
         
-        if (! [coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil
-               error:&error]) {
-            NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
+        if (! [coord addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil
+               error:&err]) {
+            NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, err);
 #if DEBUG
             abort();
 #else
             // if this is a not a debug build, attempt to delete and create a new persisent data store before crashing
-            if (! [[NSFileManager defaultManager] removeItemAtURL:storeURL error:&error]) {
-                NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
+            if (! [[NSFileManager defaultManager] removeItemAtURL:storeURL error:&err]) {
+                NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, err);
             }
             
-            if (! [coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil
-                   error:&error]) {
-                NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
+            if (! [coord addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil
+                   error:&err]) {
+                NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, err);
                 abort(); // Forsooth, I am slain!
             }
 #endif
         }
 
-        if (coordinator) {
-            context = [NSManagedObjectContext new];
-            [context setPersistentStoreCoordinator:coordinator];
+        if (coord) {
+            context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSConfinementConcurrencyType];
+            [context setPersistentStoreCoordinator:coord];
             
             // Saves changes in the application's managed object context before the application terminates.
             [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillTerminateNotification object:nil
-            queue:nil usingBlock:^(NSNotification *note) {
+             queue:nil usingBlock:^(NSNotification *note) {
                 [self saveContext];
             }];
         }
@@ -140,7 +197,7 @@
 
 + (void)saveContext
 {
-    [[self context] performBlock:^{
+    @synchronized([self context]) {
         NSError *error = nil;
 
         if ([[self context] hasChanges] && ! [[self context] save:&error]) {
@@ -149,19 +206,14 @@
             abort();
 #endif
         }
-    }];
+    }
 }
 
-#pragma mark - Entity methods
+#pragma mark - entity methods
 
 + (NSString *)entityName
 {
-    return NSStringFromClass(self);
-}
-
-+ (NSEntityDescription *)entity
-{
-    return [NSEntityDescription entityForName:[self entityName] inManagedObjectContext:[self context]];
+    return NSStringFromClass([self class]);
 }
 
 + (NSFetchRequest *)fetchRequest
@@ -169,14 +221,19 @@
     return [NSFetchRequest fetchRequestWithEntityName:[self entityName]];
 }
 
-+ (NSFetchedResultsController *)fetchedResultsController {
-    return [[NSFetchedResultsController alloc] initWithFetchRequest:[self fetchRequest]
-            managedObjectContext:[self context] sectionNameKeyPath:nil cacheName:[self entityName]];
++ (NSFetchedResultsController *)fetchedResultsControllerWithFetchRequest:(NSFetchRequest *)req
+{
+    @synchronized([self context]) {
+        return [[NSFetchedResultsController alloc] initWithFetchRequest:req managedObjectContext:[self context]
+                sectionNameKeyPath:nil cacheName:req.entityName];
+    }
 }
 
 - (void)deleteObject
 {
-    [[self managedObjectContext] deleteObject:self];
+    @synchronized([self managedObjectContext]) {
+        [[self managedObjectContext] deleteObject:self];
+    }
 }
 
 @end

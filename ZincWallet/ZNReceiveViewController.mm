@@ -69,7 +69,6 @@
 {
     [super viewWillAppear:animated];
     
-    [self paymentRequest];
     if (! [[self paymentRequest] isValid]) return;
     
     NSString *s = [[NSString alloc] initWithData:self.paymentRequest.data encoding:NSUTF8StringEncoding];

@@ -24,17 +24,29 @@
 //  THE SOFTWARE.
 
 #import "ZNAddressEntity.h"
+#import "NSManagedObject+Utils.h"
 
 @implementation ZNAddressEntity
 
 @dynamic address;
 @dynamic index;
 @dynamic internal;
+@dynamic newTx;
 @dynamic txCount;
 
-+ (instancetype)entityWithJSON:(NSDictionary *)JSON
+// updates the appropriate entity from JSON, returns the updated entity or nil if no updates were made or on error
++ (instancetype)updateWithJSON:(NSDictionary *)JSON
 {
-    return nil;
+    if (! [JSON isKindOfClass:[NSDictionary class]] || ! [JSON[@"address"] isKindOfClass:[NSString class]]) return nil;
+    
+    ZNAddressEntity *address = [self objectsMatching:@"address == %@", JSON[@"address"]].lastObject;
+    
+    if (address && [JSON[@"n_tx"] isKindOfClass:[NSNumber class]] && [JSON[@"n_tx"] intValue] != address.txCount) {
+        address.txCount = [JSON[@"n_tx"] intValue];
+        address.newTx = YES;
+        return address;
+    }
+    else return nil;
 }
 
 @end

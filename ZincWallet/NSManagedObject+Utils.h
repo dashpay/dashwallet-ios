@@ -27,19 +27,27 @@
 @interface NSManagedObject (Utils)
 
 + (instancetype)managedObject;
+
 + (NSArray *)allObjects;
 + (NSArray *)objectsMatching:(NSString *)predicateFormat, ...;
-+ (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)argList;
++ (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args;
 + (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)asc;
-+ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)asc offset:(NSUInteger)offset limit:(NSUInteger)limit;
++ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)asc offset:(NSUInteger)off limit:(NSUInteger)lim;
++ (NSArray *)fetchObjects:(NSFetchRequest *)req;
+
++ (NSUInteger)countAllObjects;
++ (NSUInteger)countObjectsMatching:(NSString *)predicateFormat, ...;
++ (NSUInteger)countObjectsMatching:(NSString *)predicateFormat arguments:(va_list)args;
++ (NSUInteger)countObjectsSortedBy:(NSString *)key ascending:(BOOL)asc;
++ (NSUInteger)countObjectsSortedBy:(NSString *)key ascending:(BOOL)asc offset:(NSUInteger)off limit:(NSUInteger)lim;
++ (NSUInteger)countObjects:(NSFetchRequest *)req;
 
 + (NSManagedObjectContext *)context;
 + (void)saveContext;
 
 + (NSString *)entityName;
-+ (NSEntityDescription *)entity;
 + (NSFetchRequest *)fetchRequest;
-+ (NSFetchedResultsController *)fetchedResultsController;
++ (NSFetchedResultsController *)fetchedResultsControllerWithFetchRequest:(NSFetchRequest *)req;
 
 - (void)deleteObject;
 

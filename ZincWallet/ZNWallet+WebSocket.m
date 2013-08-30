@@ -25,6 +25,7 @@
 
 #import "ZNWallet+WebSocket.h"
 #import "ZNKeySequence.h"
+#import "ZNAddressEntity.h"
 #import "ZNUnspentOutputEntity.h"
 #import "NSString+Base58.h"
 #import "NSMutableData+Bitcoin.h"
@@ -41,7 +42,6 @@
 
 @interface ZNWallet ()
 
-@property (nonatomic, strong) NSMutableArray *externalAddresses, *internalAddresses;
 @property (nonatomic, strong) NSMutableDictionary *transactions;
 
 @property (nonatomic, strong) SRWebSocket *webSocket;
@@ -114,8 +114,8 @@
     
     NSMutableString *msg = [NSMutableString string];
     
-    for (NSString *addr in addresses) {
-        if ([addr isValidBitcoinAddress]) [msg appendFormat:@"{\"op\":\"addr_sub\", \"addr\":\"%@\"}", addr];
+    for (ZNAddressEntity *a in addresses) {
+        [msg appendFormat:@"{\"op\":\"addr_sub\", \"addr\":\"%@\"}", a.address];
     }
     
     NSLog(@"Websocket: %@", msg);
@@ -139,12 +139,7 @@
         
         [a addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
         [a addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_INTERNAL internal:YES]];
-        [self.externalAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            if ([a indexOfObject:obj] == NSNotFound) [a addObject:obj];
-        }];
-        [self.internalAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            if ([a indexOfObject:obj] == NSNotFound) [a addObject:obj];
-        }];
+        [a addObjectsFromArray:[ZNAddressEntity objectsMatching:@"NOT (address IN %@)", [a valueForKey:@"address"]]];
         
         [self subscribeToAddresses:a];        
     });
@@ -214,15 +209,10 @@ wasClean:(BOOL)wasClean
                 [x[@"inputs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                     NSDictionary *o = obj[@"prev_out"];
                     
-                    [[ZNUnspentOutputEntity objectsMatching:@"txIndex = %lld AND n = %d",
+                    [[ZNUnspentOutputEntity objectsMatching:@"txIndex == %lld && n == %d",
                       [o[@"tx_index"] longLongValue], [o[@"n"] intValue]].lastObject deleteObject];
                 }];
-                
-                // don't update addressTxCount so the address's unspent outputs will be updated on next sync
-                //[updated enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
-                //    self.addressTxCount[obj] = @([self.addressTxCount[obj] unsignedIntegerValue] + 1);
-                //}];
-                
+                                
                 [defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
             }
             
@@ -233,6 +223,7 @@ wasClean:(BOOL)wasClean
                 [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:self];
             });
             
+            [NSManagedObject saveContext];
             [defs synchronize];
         }
         else if ([op isEqual:@"block"]) {
@@ -265,6 +256,7 @@ wasClean:(BOOL)wasClean
                 [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:self];
             });
             
+            [NSManagedObject saveContext];
             [defs synchronize];
         }
         else if ([op isEqual:@"status"]) {

@@ -1195,6 +1195,9 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
         <class className="ZNPayViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNPayViewController.h"/>
             <relationships>
+                <relationship kind="action" name="doIt:"/>
+                <relationship kind="action" name="page:"/>
+                <relationship kind="action" name="refresh:"/>
                 <relationship kind="outlet" name="pageControl" candidateClass="UIPageControl"/>
                 <relationship kind="outlet" name="refreshButton" candidateClass="UIBarButtonItem"/>
                 <relationship kind="outlet" name="scrollView" candidateClass="UIScrollView"/>
