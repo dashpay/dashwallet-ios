@@ -156,9 +156,9 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 
         if (keyIdx == NSNotFound) continue;
     
-        NSData *txhash = [[self toDataWithSubscriptIndex:i] SHA256_2];
+        NSData *txHash = [[self toDataWithSubscriptIndex:i] SHA256_2];
         NSMutableData *sig = [NSMutableData data];
-        NSMutableData *s = [NSMutableData dataWithData:[keys[keyIdx] sign:txhash]];
+        NSMutableData *s = [NSMutableData dataWithData:[keys[keyIdx] sign:txHash]];
 
         [s appendUInt8:SIGHASH_ALL];
         [sig appendScriptPushData:s];
@@ -169,7 +169,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     
     if (! [self isSigned]) return NO;
     
-    self.hash = [[[self toData] SHA256_2] reverse];
+    self.txHash = [[[self toData] SHA256_2] reverse];
         
     return YES;
 }
@@ -196,7 +196,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
             [d appendVarInt:[self.signatures[i] length]];
             [d appendData:self.signatures[i]];
         }
-        else if (i == subscriptIndex) {// || subscriptIndex == NSNotFound) {
+        else if (i == subscriptIndex) {
             //XXX to fully match the reference implementation, OP_CODESEPARATOR related checksig logic should go here
             [d appendVarInt:[self.scripts[i] length]];
             [d appendData:self.scripts[i]];

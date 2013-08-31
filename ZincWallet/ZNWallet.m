@@ -28,8 +28,8 @@
 #import "ZNKey.h"
 #import "ZNAddressEntity.h"
 #import "ZNTransactionEntity.h"
+#import "ZNTxInputEntity.h"
 #import "ZNUnspentOutputEntity.h"
-#import "ZNWallet+WebSocket.h"
 #import "NSData+Hash.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSString+Base58.h"
@@ -54,8 +54,6 @@
 #define UNSPENT_URL BASE_URL "/unspent?active="
 #define ADDRESS_URL BASE_URL "/multiaddr?active="
 #define PUSHTX_PATH @"/pushtx"
-
-#define TRANSACTIONS_KEY           @"TRANSACTIONS"
 
 #define LATEST_BLOCK_HEIGHT_KEY    @"LATEST_BLOCK_HEIGHT"
 #define LATEST_BLOCK_TIMESTAMP_KEY @"LATEST_BLOCK_TIMESTAMP"
@@ -110,8 +108,7 @@ static NSData *getKeychainData(NSString *key)
 
 @interface ZNWallet ()
 
-@property (nonatomic, strong) NSMutableDictionary *transactions;
-@property (nonatomic, strong) NSMutableSet *updatedTransactions;
+@property (nonatomic, strong) NSMutableSet *updatedTxHashes;
 
 @property (nonatomic, strong) id<ZNKeySequence> sequence;
 @property (nonatomic, strong) NSData *mpk;
@@ -131,17 +128,19 @@ static NSData *getKeychainData(NSString *key)
     static id singleton = nil;
     static dispatch_once_t onceToken = 0;
     
-    dispatch_once(&onceToken, ^{ singleton = [self new]; });
+    dispatch_once(&onceToken, ^{
+        singleton = [self new];
+    });
     return singleton;
 }
+
+//XXXX check for any possibility of duplicate core data entries
 
 - (instancetype)init
 {
     if (! (self = [super init])) return nil;
     
     self.defs = [NSUserDefaults standardUserDefaults];
-    
-    self.transactions = [NSMutableDictionary dictionaryWithDictionary:[_defs dictionaryForKey:TRANSACTIONS_KEY]];
 
 #if WALLET_BIP32
     self.sequence = [ZNBIP32Sequence new];
@@ -153,14 +152,14 @@ static NSData *getKeychainData(NSString *key)
     self.format.lenient = YES;
     self.format.numberStyle = NSNumberFormatterCurrencyStyle;
     self.format.minimumFractionDigits = 0;
+    self.format.positiveFormat =
+        [self.format.positiveFormat stringByReplacingOccurrencesOfString:@"¤" withString:@"¤ "];
+    self.format.negativeFormat =
+        [self.format.positiveFormat stringByReplacingOccurrencesOfString:@"¤" withString:@"¤ -"];
     //self.format.currencySymbol = @"m"BTC@" ";
     //self.format.maximumFractionDigits = 5;
     //self.format.maximum = @21000000000.0;
     self.format.currencySymbol = BTC;
-    self.format.negativeFormat =
-        [self.format.positiveFormat stringByReplacingOccurrencesOfString:@"¤" withString:@"¤ -"];
-    self.format.positiveFormat =
-        [self.format.positiveFormat stringByReplacingOccurrencesOfString:@"¤" withString:@"¤ "];
     self.format.maximumFractionDigits = 8;
     self.format.maximum = @21000000.0;
     
@@ -194,13 +193,12 @@ static NSData *getKeychainData(NSString *key)
         
         _synchronizing = NO;
         self.mpk = nil;
-        [self.transactions removeAllObjects];
+
         [[ZNTransactionEntity allObjects] makeObjectsPerformSelector:@selector(deleteObject)];
         [[ZNAddressEntity allObjects] makeObjectsPerformSelector:@selector(deleteObject)];
         [[ZNUnspentOutputEntity allObjects] makeObjectsPerformSelector:@selector(deleteObject)];
         
-        [_defs removeObjectForKey:TRANSACTIONS_KEY];
-        [_defs removeObjectForKey:LAST_SYNC_TIME_KEY];        
+        [_defs removeObjectForKey:LAST_SYNC_TIME_KEY];
     }
 
     [NSManagedObject saveContext];
@@ -247,47 +245,30 @@ static NSData *getKeychainData(NSString *key)
     return _mpk;
 }
 
-// if any of an unconfimred transaction's inputs show up as unspent, or show up in confirmed transaction, that means the
+// if any of an unconfimred transaction's inputs show up as unspent, or spent by a confirmed transaction, that means the
 // tx failed to confirm and needs to be removed from the tx list
 - (void)cleanUnconfirmed
 {
     //TODO: remove unconfirmed transactions after 2 days?
     //TODO: keep a seprate list of failed transactions to display along with the successful ones
-    
-    NSMutableSet *s = [NSMutableSet set];
-    __block NSUInteger unconfirmed = 0;
+    if ([ZNTransactionEntity countObjectsMatching:@"blockHeight == 0"] == 0) return;
 
-    [self.transactions enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        if (obj[@"block_height"] != nil) {
-            [obj[@"inputs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                NSDictionary *o = obj[@"prev_out"];
-
-                [s addObject:[NSString stringWithFormat:@"%@:%@", o[@"tx_index"], o[@"n"]]];
-            }];
-        }
-        else unconfirmed++;
-    }];
-    
-    if (! unconfirmed) return;
-    
     @synchronized(self) {
-        [self.transactions
-        removeObjectsForKeys:[self.transactions keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-            if (obj[@"block_height"] != nil) return NO;
+        [[ZNTransactionEntity objectsMatching:@"blockHeight == 0"]
+        enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            ZNTransactionEntity *tx = obj;
+            
+            [tx.inputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                ZNTxInputEntity *i = obj;
 
-            // index of any inputs of the unconfirmed tx that are already spent or in unspentOutputs
-            NSUInteger i =
-                [obj[@"inputs"] indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-                    NSDictionary *o = obj[@"prev_out"];
-                    
-                    return ([ZNUnspentOutputEntity objectsMatching:@"txIndex == %lld && n == %d",
-                             [o[@"tx_index"] longLongValue], [o[@"n"] intValue]].count > 0) ? (*stop = YES) : NO;
-                }];
-                
-            return (i == NSNotFound) ? NO : YES;
-        }].allObjects];
-        
-        [_defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
+                if ([ZNUnspentOutputEntity countObjectsMatching:@"txIndex == %lld && n == %d", i.txIndex, i.n] > 0 ||
+                    [ZNTxInputEntity countObjectsMatching:@"txIndex == %lld && n == %d && transaction.blockHeight > 0",
+                     i.txIndex, i.n] > 0) {
+                    [tx deleteObject];
+                    *stop = YES;
+                }
+            }];
+        }];
     }
 }
 
@@ -308,7 +289,7 @@ static NSData *getKeychainData(NSString *key)
     [gap addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
     [gap addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:YES]];
 
-    NSArray *used = [ZNAddressEntity objectsMatching:@"NOT (address IN %@)", [gap valueForKey:@"address"]];
+    NSArray *used = [ZNAddressEntity objectsMatching:@"! (address IN %@)", [gap valueForKey:@"address"]];
     
     // a recursive block ARC retain loop is avoided by passing the block as an argument to itself... just shoot me now
     void (^completion)(NSError *, id) = ^(NSError *error, id completion) {
@@ -340,12 +321,8 @@ static NSData *getKeychainData(NSString *key)
         @synchronized(self) {
             // remove unconfirmed transactions that no longer appear in query results
             //TODO: keep a seprate list of failed transactions to display along with the successful ones
-            [self.transactions
-            removeObjectsForKeys:[self.transactions keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-                return ! obj[@"block_height"] && ! [self.updatedTransactions containsObject:obj[@"hash"]];
-            }].allObjects];
-            
-            [_defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
+            [[ZNTransactionEntity objectsMatching:@"blockHeight == 0 && ! (txHash IN %@)", self.updatedTxHashes]
+             makeObjectsPerformSelector:@selector(deleteObject)];
         }
 
         [self queryUnspentOutputs:[ZNAddressEntity objectsMatching:@"newTx == YES"] completion:^(NSError *error) {
@@ -377,7 +354,7 @@ static NSData *getKeychainData(NSString *key)
         }];
     };
     
-    self.updatedTransactions = [NSMutableSet set];
+    self.updatedTxHashes = [NSMutableSet set];
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [self queryAddresses:[gap arrayByAddingObjectsFromArray:used] completion:^(NSError *error) {
@@ -399,6 +376,7 @@ static NSData *getKeychainData(NSString *key)
 
     // keep only the trailing contiguous block of addresses with sequential indexes
     while (i > 0 && [a[i] index] - 1 == [a[i - 1] index]) i--;
+
     if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
     
     if (a.count >= gapLimit) {
@@ -407,6 +385,7 @@ static NSData *getKeychainData(NSString *key)
     }
 
     @synchronized(self) {
+        // include any new addresses that may have been added while we were waiting for a mutex lock
         req.predicate = [NSPredicate predicateWithFormat:@"internal == %@ && index > %d", @(internal),
                          a.count ? [a.lastObject index] : 0];
         req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"index" ascending:YES]];
@@ -422,11 +401,8 @@ static NSData *getKeychainData(NSString *key)
                 return nil;
             }
 
-            ZNAddressEntity *address = [ZNAddressEntity managedObject];
+            ZNAddressEntity *address = [ZNAddressEntity entityWithAddress:addr index:index internal:internal];
             
-            address.internal = internal;
-            address.index = index;
-            address.address = addr;
             [a addObject:address];
             [newaddresses addObject:address];
         }
@@ -485,31 +461,30 @@ static NSData *getKeychainData(NSString *key)
                 }];
                 
                 [JSON[@"txs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                    //XXXX we shouldn't be saving json without sanitizing it... security risk
-                    if (obj[@"hash"]) {
-                        self.transactions[obj[@"hash"]] = obj;
-                        [self.updatedTransactions addObject:obj[@"hash"]];
-                    }
+                    ZNTransactionEntity *tx = [ZNTransactionEntity updateOrCreateWithJSON:obj];
+
+                    if (tx.txHash) [self.updatedTxHashes addObject:tx.txHash];
                 }];
         
-                // remove unconfirmed transactions that didn't show up in the updated list, they failed to confirm
-                [self.transactions
-                removeObjectsForKeys:[self.transactions keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-                    return (! [self.updatedTransactions containsObject:obj[@"hash"]] && ! obj[@"block_height"]);
-                }].allObjects];
-        
-                NSInteger height = [JSON[@"info"][@"latest_block"][@"height"] integerValue];
-                NSTimeInterval time = [JSON[@"info"][@"latest_block"][@"time"] doubleValue];
-                NSString *symbol = JSON[@"info"][@"symbol_local"][@"symbol"];
-                NSString *code = JSON[@"info"][@"symbol_local"][@"code"];
-                double price = [JSON[@"info"][@"symbol_local"][@"conversion"] doubleValue];
+                if ([JSON[@"info"] isKindOfClass:[NSDictionary class]] &&
+                    [JSON[@"info"][@"latest_block"] isKindOfClass:[NSDictionary class]] &&
+                    [JSON[@"info"][@"symbol_local"] isKindOfClass:[NSDictionary class]]) {
                 
-                [_defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
-                if (height) [_defs setInteger:height forKey:LATEST_BLOCK_HEIGHT_KEY];
-                if (time > 1.0) [_defs setDouble:time forKey:LATEST_BLOCK_TIMESTAMP_KEY];
-                if (symbol.length) [_defs setObject:symbol forKey:LOCAL_CURRENCY_SYMBOL_KEY];
-                if (code.length) [_defs setObject:code forKey:LOCAL_CURRENCY_CODE_KEY];
-                if (price > DBL_EPSILON) [_defs setDouble:price forKey:LOCAL_CURRENCY_PRICE_KEY];
+                    NSDictionary *b = JSON[@"info"][@"latest_block"];
+                    NSDictionary *l = JSON[@"info"][@"symbol_local"];
+                    int height = [b[@"height"] isKindOfClass:[NSNumber class]] ? [b[@"height"] intValue] : 0;
+                    NSTimeInterval time = [b[@"time"] isKindOfClass:[NSNumber class]] ? [b[@"time"] doubleValue] : 0;
+                    NSString *symbol = [l[@"symbol"] isKindOfClass:[NSString class]] ? l[@"symbol"] : nil;
+                    NSString *code = [l[@"code"] isKindOfClass:[NSString class]] ? l[@"code"] : nil;
+                    double price =
+                        [l[@"conversion"] isKindOfClass:[NSNumber class]] ? [l[@"conversion"] doubleValue] : 0;
+                    
+                    if (height > 0) [_defs setInteger:height forKey:LATEST_BLOCK_HEIGHT_KEY];
+                    if (time > 1.0) [_defs setDouble:time forKey:LATEST_BLOCK_TIMESTAMP_KEY];
+                    if (symbol.length > 0) [_defs setObject:symbol forKey:LOCAL_CURRENCY_SYMBOL_KEY];
+                    if (code.length > 0) [_defs setObject:code forKey:LOCAL_CURRENCY_CODE_KEY];
+                    if (price > DBL_EPSILON) [_defs setDouble:price forKey:LOCAL_CURRENCY_PRICE_KEY];
+                }
             }
             
             if (completion) dispatch_async(q, ^{ completion(nil); });
@@ -659,9 +634,7 @@ static NSData *getKeychainData(NSString *key)
 - (NSArray *)recentTransactions
 {
     // sort in descending order by timestamp (using block_height doesn't work for unconfirmed, or multiple tx per block)
-    return [self.transactions.allValues sortedArrayWithOptions:0 usingComparator:^NSComparisonResult(id obj1, id obj2) {
-               return [@([obj2[@"time"] doubleValue]) compare:@([obj1[@"time"] doubleValue])];
-           }];
+    return [ZNTransactionEntity objectsSortedBy:@"timeStamp" ascending:NO];
 }
 
 - (NSUInteger)lastBlockHeight
@@ -743,12 +716,9 @@ static NSData *getKeychainData(NSString *key)
         // this is a nieve implementation to just get it functional, sorts unspent outputs by oldest first
         [[ZNUnspentOutputEntity objectsSortedBy:@"txIndex" ascending:YES]
         enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            ZNUnspentOutputEntity *o = obj;
-        
-            // txHash is already in little endian
-            [tx addInputHash:o.txHash index:o.n script:o.script];
+            [tx addInputHash:[obj txHash] index:[obj n] script:[obj script]]; // txHash is already in little endian
             
-            balance += o.value;
+            balance += [(ZNUnspentOutputEntity *)obj value];
 
             // assume we will be adding a change output (additional 34 bytes)
             //TODO: calculate the median of the lowest fee-per-kb that made it into the previous 144 blocks (24hrs)
@@ -774,9 +744,9 @@ static NSData *getKeychainData(NSString *key)
 // returns the estimated time in seconds until the transaction will be processed without a fee.
 // this is based on the default satoshi client settings, but on the real network it's way off. in testing, a 0.01btc
 // transaction with a 90 day time until free was confirmed in under an hour by Eligius pool.
-// TODO: calculate estimated time based on the median priority of free transactions in last 144 blocks (24hrs)
 - (NSTimeInterval)timeUntilFree:(ZNTransaction *)transaction
 {
+    // TODO: calculate estimated time based on the median priority of free transactions in last 144 blocks (24hrs)
     NSMutableArray *amounts = [NSMutableArray array], *heights = [NSMutableArray array];
     NSUInteger currentHeight = [_defs integerForKey:LATEST_BLOCK_HEIGHT_KEY];
     
@@ -866,41 +836,30 @@ static NSData *getKeychainData(NSString *key)
     AFHTTPClient *client = [AFHTTPClient clientWithBaseURL:[NSURL URLWithString:BASE_URL]];
 
     [client postPath:PUSHTX_PATH parameters:@{@"tx":[transaction toHex]}
-    success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSMutableDictionary *tx = [NSMutableDictionary dictionary];
-        
-        tx[@"hash"] = [NSString hexWithData:transaction.hash];
-        tx[@"time"] = @([NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970);
-        tx[@"inputs"] = [NSMutableArray array];
-        tx[@"out"] = [NSMutableArray array];
-        
+    success:^(AFHTTPRequestOperation *operation, id responseObject) {        
         //NOTE: successful response is "Transaction submitted", maybe we should check for that
         NSLog(@"responseObject: %@", responseObject);
         NSLog(@"response:\n%@", operation.responseString);
         
         @synchronized(self) {
-            [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                ZNUnspentOutputEntity *o =
-                    [ZNUnspentOutputEntity objectsMatching:@"txHash == %@ && n == %d", transaction.inputHashes[idx],
-                     [transaction.inputIndexes[idx] intValue]].lastObject;
-
-                if (o) {
-                    //NOTE: for now we don't need to store spent outputs because blockchain.info will not list them as
-                    // unspent while there is an unconfirmed tx that spends them. This may change once we have multiple
-                    // apis for publishing, and a transaction may not show up on blockchain.info immediately.
-                    [tx[@"inputs"] addObject:@{@"prev_out":@{@"tx_index":@(o.txIndex), @"n":@(o.n), @"value":@(o.value),
-                                                             @"addr":obj}}];
-                    [o deleteObject];
-                }
-            }];
-        
-            [transaction.outputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                [tx[@"out"] addObject:@{@"n":@(idx), @"value":transaction.outputAmounts[idx], @"addr":obj}];
+            // delete any unspent outputs that are now spent
+            [transaction.inputHashes enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                [[ZNUnspentOutputEntity objectsMatching:@"txHash == %@ && n == %d", obj,
+                  [transaction.inputIndexes[idx] intValue]].lastObject deleteObject];
             }];
             
-            self.transactions[tx[@"hash"]] = tx;
-
-            [_defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
+            // add change to unspent outputs
+            [transaction.outputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                if (! [self containsAddress:obj]) return;
+                    
+                [ZNUnspentOutputEntity entityWithAddress:obj txHash:transaction.txHash n:idx
+                 value:[transaction.outputAmounts[idx] longLongValue]];
+            }];
+            
+            // add the transaction to the tx list
+            if ([ZNTransactionEntity countObjectsMatching:@"txHash == %@", transaction.txHash] == 0) {
+                [[ZNTransactionEntity managedObject] setAttributesFromTx:transaction];
+            }
         }
         
         [NSManagedObject saveContext];

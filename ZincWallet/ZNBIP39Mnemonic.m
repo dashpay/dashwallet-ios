@@ -38,7 +38,9 @@
     static id singleton = nil;
     static dispatch_once_t onceToken = 0;
     
-    dispatch_once(&onceToken, ^{ singleton = [self new]; });
+    dispatch_once(&onceToken, ^{
+        singleton = [self new];
+    });
     return singleton;
 }
 

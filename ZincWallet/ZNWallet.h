@@ -24,6 +24,7 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
+#import "SRWebSocket.h"
 
 #define WALLET_BIP32 1
 #define WALLET_BIP39 1
@@ -45,7 +46,7 @@
 @property (nonatomic, readonly) uint64_t balance;
 @property (nonatomic, readonly) NSString *receiveAddress;
 @property (nonatomic, readonly) NSString *changeAddress;
-@property (nonatomic, readonly) NSArray *recentTransactions; // sorted by date, most recent first
+@property (nonatomic, readonly) NSArray *recentTransactions; // ZNTransactionEntities sorted by date, most recent first
 @property (nonatomic, readonly) NSUInteger estimatedCurrentBlockHeight;
 @property (nonatomic, readonly) NSUInteger lastBlockHeight;
 @property (nonatomic, readonly, getter = isSynchronizing) BOOL synchronizing;
@@ -68,5 +69,13 @@
 - (uint64_t)transactionFee:(ZNTransaction *)transaction;
 - (BOOL)signTransaction:(ZNTransaction *)transaction;
 - (void)publishTransaction:(ZNTransaction *)transaction completion:(void (^)(NSError *error))completion;
+
+@end
+
+@interface ZNWallet (WebSocket)<SRWebSocketDelegate>
+
+- (void)openSocket;
+- (void)closeSocket;
+- (void)subscribeToAddresses:(NSArray *)addresses;
 
 @end

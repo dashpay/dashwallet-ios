@@ -31,23 +31,21 @@
 + (NSArray *)allObjects;
 + (NSArray *)objectsMatching:(NSString *)predicateFormat, ...;
 + (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args;
-+ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)asc;
-+ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)asc offset:(NSUInteger)off limit:(NSUInteger)lim;
-+ (NSArray *)fetchObjects:(NSFetchRequest *)req;
++ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending;
++ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending offset:(NSUInteger)offset limit:(NSUInteger)lim;
++ (NSArray *)fetchObjects:(NSFetchRequest *)request;
 
 + (NSUInteger)countAllObjects;
 + (NSUInteger)countObjectsMatching:(NSString *)predicateFormat, ...;
 + (NSUInteger)countObjectsMatching:(NSString *)predicateFormat arguments:(va_list)args;
-+ (NSUInteger)countObjectsSortedBy:(NSString *)key ascending:(BOOL)asc;
-+ (NSUInteger)countObjectsSortedBy:(NSString *)key ascending:(BOOL)asc offset:(NSUInteger)off limit:(NSUInteger)lim;
-+ (NSUInteger)countObjects:(NSFetchRequest *)req;
++ (NSUInteger)countObjects:(NSFetchRequest *)request;
 
 + (NSManagedObjectContext *)context;
 + (void)saveContext;
 
 + (NSString *)entityName;
 + (NSFetchRequest *)fetchRequest;
-+ (NSFetchedResultsController *)fetchedResultsControllerWithFetchRequest:(NSFetchRequest *)req;
++ (NSFetchedResultsController *)fetchedResultsControllerWithFetchRequest:(NSFetchRequest *)request;
 
 - (void)deleteObject;
 

@@ -189,6 +189,7 @@
           cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
     }
     else if ([[ZNWallet sharedInstance] seed]) {
+        //XXXX BUG: phrases don't need to match exactly, normalize first
         if ([[[ZNWallet sharedInstance] seedPhrase] isEqual:textView.text]) {
             [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"cancel"
               destructiveButtonTitle:@"wipe" otherButtonTitles:nil]

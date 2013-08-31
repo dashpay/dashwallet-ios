@@ -26,38 +26,49 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class ZNOutputEntity;
+@class ZNTxInputEntity;
+@class ZNTxOutputEntity;
+@class ZNTransaction;
 
 @interface ZNTransactionEntity : NSManagedObject
 
-@property (nonatomic, retain) NSData *txHash;
+@property (nonatomic, retain) NSData *txHash; // little endian
 @property (nonatomic) int32_t blockHeight;
 @property (nonatomic) NSTimeInterval timeStamp;
 @property (nonatomic) int64_t txIndex;
 @property (nonatomic, retain) NSOrderedSet *inputs;
 @property (nonatomic, retain) NSOrderedSet *outputs;
+
++ (instancetype)updateOrCreateWithJSON:(NSDictionary *)JSON;
+
+- (instancetype)setAttributesFromJSON:(NSDictionary *)JSON;
+- (instancetype)setAttributesFromTx:(ZNTransaction *)tx;
+
 @end
 
+// These generated accessors are all broken because NSOrderedSet is not a subclass of NSSet.
+// This known core data bug has remained unaddressed for over two years: http://openradar.appspot.com/10114310
+// Per core data release notes, use [NSObject<NSKeyValueCoding> mutableOrderedSetValueForKey:] instead.
 @interface ZNTransactionEntity (CoreDataGeneratedAccessors)
 
-- (void)insertObject:(ZNOutputEntity *)value inInputsAtIndex:(NSUInteger)idx;
+- (void)insertObject:(ZNTxInputEntity *)value inInputsAtIndex:(NSUInteger)idx;
 - (void)removeObjectFromInputsAtIndex:(NSUInteger)idx;
 - (void)insertInputs:(NSArray *)value atIndexes:(NSIndexSet *)indexes;
 - (void)removeInputsAtIndexes:(NSIndexSet *)indexes;
-- (void)replaceObjectInInputsAtIndex:(NSUInteger)idx withObject:(ZNOutputEntity *)value;
+- (void)replaceObjectInInputsAtIndex:(NSUInteger)idx withObject:(ZNTxInputEntity *)value;
 - (void)replaceInputsAtIndexes:(NSIndexSet *)indexes withInputs:(NSArray *)values;
-- (void)addInputsObject:(ZNOutputEntity *)value;
-- (void)removeInputsObject:(ZNOutputEntity *)value;
+- (void)addInputsObject:(ZNTxInputEntity *)value;
+- (void)removeInputsObject:(ZNTxInputEntity *)value;
 - (void)addInputs:(NSOrderedSet *)values;
 - (void)removeInputs:(NSOrderedSet *)values;
-- (void)insertObject:(ZNOutputEntity *)value inOutputsAtIndex:(NSUInteger)idx;
+- (void)insertObject:(ZNTxOutputEntity *)value inOutputsAtIndex:(NSUInteger)idx;
 - (void)removeObjectFromOutputsAtIndex:(NSUInteger)idx;
 - (void)insertOutputs:(NSArray *)value atIndexes:(NSIndexSet *)indexes;
 - (void)removeOutputsAtIndexes:(NSIndexSet *)indexes;
-- (void)replaceObjectInOutputsAtIndex:(NSUInteger)idx withObject:(ZNOutputEntity *)value;
+- (void)replaceObjectInOutputsAtIndex:(NSUInteger)idx withObject:(ZNTxOutputEntity *)value;
 - (void)replaceOutputsAtIndexes:(NSIndexSet *)indexes withOutputs:(NSArray *)values;
-- (void)addOutputsObject:(ZNOutputEntity *)value;
-- (void)removeOutputsObject:(ZNOutputEntity *)value;
+- (void)addOutputsObject:(ZNTxOutputEntity *)value;
+- (void)removeOutputsObject:(ZNTxOutputEntity *)value;
 - (void)addOutputs:(NSOrderedSet *)values;
 - (void)removeOutputs:(NSOrderedSet *)values;
 @end

@@ -27,7 +27,6 @@
 #import "ZNAmountViewController.h"
 #import "ZNReceiveViewController.h"
 #import "ZNWallet.h"
-#import "ZNWallet+WebSocket.h"
 #import "ZNPaymentRequest.h"
 #import "ZNKey.h"
 #import "ZNTransaction.h"

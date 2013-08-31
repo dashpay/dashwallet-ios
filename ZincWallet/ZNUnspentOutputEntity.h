@@ -36,5 +36,6 @@
 @property (nonatomic) int32_t confirmations;
 
 + (instancetype)entityWithTxOutput:(ZNTxOutputEntity *)output;
++ (instancetype)entityWithAddress:(NSString *)address txHash:(NSData *)txHash n:(int32_t)n value:(int64_t)value;
 
 @end

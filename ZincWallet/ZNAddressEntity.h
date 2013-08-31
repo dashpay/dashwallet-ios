@@ -34,6 +34,8 @@
 @property (nonatomic) BOOL newTx;
 @property (nonatomic) int32_t txCount;
 
++ (instancetype)entityWithAddress:(NSString *)address index:(int32_t)index internal:(BOOL)internal;
+
 // updates the appropriate entity from JSON, returns the updated entity or nil if no updates were made or on error
 + (instancetype)updateWithJSON:(NSDictionary *)JSON;
 

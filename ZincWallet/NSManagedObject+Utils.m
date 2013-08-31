@@ -31,8 +31,10 @@
 + (instancetype)managedObject
 {
     @synchronized([self context]) {
-        return [[self alloc] initWithEntity:[NSEntityDescription entityForName:[self entityName]
-                inManagedObjectContext:[self context]] insertIntoManagedObjectContext:[self context]];
+        NSEntityDescription *entity =
+            [NSEntityDescription entityForName:[self entityName] inManagedObjectContext:[self context]];
+    
+        return [[self alloc] initWithEntity:entity insertIntoManagedObjectContext:[self context]];
     }
 }
 
@@ -56,35 +58,35 @@
 
 + (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args
 {
-    NSFetchRequest *req = [self fetchRequest];
+    NSFetchRequest *request = [self fetchRequest];
     
-    req.predicate = [NSPredicate predicateWithFormat:predicateFormat arguments:args];
-    return [self fetchObjects:req];
+    request.predicate = [NSPredicate predicateWithFormat:predicateFormat arguments:args];
+    return [self fetchObjects:request];
 }
 
-+ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)asc
++ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending
 {
-    return [self objectsSortedBy:key ascending:asc offset:0 limit:0];
+    return [self objectsSortedBy:key ascending:ascending offset:0 limit:0];
 }
 
-+ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)asc offset:(NSUInteger)off limit:(NSUInteger)lim
++ (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending offset:(NSUInteger)offset limit:(NSUInteger)limit
 {
-    NSFetchRequest *req = [self fetchRequest];
+    NSFetchRequest *request = [self fetchRequest];
     
-    req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:key ascending:asc]];
-    req.fetchOffset = off;
-    req.fetchLimit = lim;
+    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:key ascending:ascending]];
+    request.fetchOffset = offset;
+    request.fetchLimit = limit;
     
-    return [self fetchObjects:req];
+    return [self fetchObjects:request];
 }
 
-+ (NSArray *)fetchObjects:(NSFetchRequest *)req
++ (NSArray *)fetchObjects:(NSFetchRequest *)request
 {
     @synchronized([self context]) {
-        NSError *err = nil;
-        NSArray *a = [[self context] executeFetchRequest:req error:&err];
+        NSError *error = nil;
+        NSArray *a = [[self context] executeFetchRequest:request error:&error];
 
-        if (! a) NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, err);
+        if (! a) NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
         return a;
     }
 }
@@ -109,35 +111,19 @@
 
 + (NSUInteger)countObjectsMatching:(NSString *)predicateFormat arguments:(va_list)args
 {
-    NSFetchRequest *req = [self fetchRequest];
+    NSFetchRequest *request = [self fetchRequest];
     
-    req.predicate = [NSPredicate predicateWithFormat:predicateFormat arguments:args];
-    return [self countObjects:req];
+    request.predicate = [NSPredicate predicateWithFormat:predicateFormat arguments:args];
+    return [self countObjects:request];
 }
 
-+ (NSUInteger)countObjectsSortedBy:(NSString *)key ascending:(BOOL)asc
-{
-    return [self countObjectsSortedBy:key ascending:asc offset:0 limit:0];
-}
-
-+ (NSUInteger)countObjectsSortedBy:(NSString *)key ascending:(BOOL)asc offset:(NSUInteger)off limit:(NSUInteger)lim
-{
-    NSFetchRequest *req = [self fetchRequest];
-    
-    req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:key ascending:asc]];
-    req.fetchOffset = off;
-    req.fetchLimit = lim;
-    
-    return [self countObjects:req];
-}
-
-+ (NSUInteger)countObjects:(NSFetchRequest *)req
++ (NSUInteger)countObjects:(NSFetchRequest *)request
 {
     @synchronized([self context]) {
-        NSError *err = nil;
-        NSUInteger count = [[self context] countForFetchRequest:req error:&err];
+        NSError *error = nil;
+        NSUInteger count = [[self context] countForFetchRequest:request error:&error];
         
-        if (count == NSNotFound) NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, err);
+        if (count == NSNotFound) NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
         return count;
     }    
 }
@@ -158,31 +144,32 @@
         NSString *projName = [[modelURL lastPathComponent] stringByDeletingPathExtension];
         NSURL *storeURL = [[docURL URLByAppendingPathComponent:projName] URLByAppendingPathExtension:@"sqlite"];
         NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
-        NSPersistentStoreCoordinator *coord = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:model];
-        NSError *err = nil;
+        NSPersistentStoreCoordinator *coordinator =
+            [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:model];
+        NSError *error = nil;
         
-        if (! [coord addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil
-               error:&err]) {
-            NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, err);
+        if (! [coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil
+               error:&error]) {
+            NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
 #if DEBUG
             abort();
 #else
             // if this is a not a debug build, attempt to delete and create a new persisent data store before crashing
-            if (! [[NSFileManager defaultManager] removeItemAtURL:storeURL error:&err]) {
-                NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, err);
+            if (! [[NSFileManager defaultManager] removeItemAtURL:storeURL error:&error]) {
+                NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
             }
             
-            if (! [coord addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil
-                   error:&err]) {
-                NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, err);
+            if (! [coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil
+                   error:&error]) {
+                NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
                 abort(); // Forsooth, I am slain!
             }
 #endif
         }
 
-        if (coord) {
+        if (coordinator) {
             context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSConfinementConcurrencyType];
-            [context setPersistentStoreCoordinator:coord];
+            [context setPersistentStoreCoordinator:coordinator];
             
             // Saves changes in the application's managed object context before the application terminates.
             [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillTerminateNotification object:nil
@@ -221,11 +208,11 @@
     return [NSFetchRequest fetchRequestWithEntityName:[self entityName]];
 }
 
-+ (NSFetchedResultsController *)fetchedResultsControllerWithFetchRequest:(NSFetchRequest *)req
++ (NSFetchedResultsController *)fetchedResultsControllerWithFetchRequest:(NSFetchRequest *)request
 {
     @synchronized([self context]) {
-        return [[NSFetchedResultsController alloc] initWithFetchRequest:req managedObjectContext:[self context]
-                sectionNameKeyPath:nil cacheName:req.entityName];
+        return [[NSFetchedResultsController alloc] initWithFetchRequest:request managedObjectContext:[self context]
+                sectionNameKeyPath:nil cacheName:nil];
     }
 }
 

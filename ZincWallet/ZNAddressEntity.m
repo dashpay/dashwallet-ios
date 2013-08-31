@@ -34,6 +34,19 @@
 @dynamic newTx;
 @dynamic txCount;
 
++ (instancetype)entityWithAddress:(NSString *)address index:(int32_t)index internal:(BOOL)internal
+{
+    ZNAddressEntity *e = [self managedObject];
+
+    e.address = address;
+    e.index = index;
+    e.internal = internal;
+    e.newTx = NO;
+    e.txCount = 0;
+    
+    return e;
+}
+
 // updates the appropriate entity from JSON, returns the updated entity or nil if no updates were made or on error
 + (instancetype)updateWithJSON:(NSDictionary *)JSON
 {

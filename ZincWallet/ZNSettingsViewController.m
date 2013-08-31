@@ -26,6 +26,9 @@
 #import "ZNSettingsViewController.h"
 #import "ZNSeedViewController.h"
 #import "ZNWallet.h"
+#import "ZNTransactionEntity.h"
+#import "ZNTxInputEntity.h"
+#import "ZNTxOutputEntity.h"
 #import <QuartzCore/QuartzCore.h>
 
 #define TRANSACTION_CELL_HEIGHT 75
@@ -158,25 +161,27 @@
             }
             else {
                 ZNWallet *w = [ZNWallet sharedInstance];
-                NSDictionary *tx = self.transactions[indexPath.row];
+                ZNTransactionEntity *tx = self.transactions[indexPath.row];
                 __block uint64_t received = 0, spent = 0;
                 int height = -1;
                 
-                [tx[@"inputs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                    if (obj[@"prev_out"][@"addr"] && [w containsAddress:obj[@"prev_out"][@"addr"]]) {
-                        spent += [obj[@"prev_out"][@"value"] unsignedLongLongValue];
-                    }
+                [tx.inputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                    ZNTxInputEntity *i = obj;
+
+                    if (i.address && [w containsAddress:i.address]) spent += i.value;
                 }];
 
                 __block BOOL withinWallet = spent > 0 ? YES : NO;
                 
-                [tx[@"out"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                    if (obj[@"addr"] && [w containsAddress:obj[@"addr"]]) {
-                        received += [obj[@"value"] unsignedLongLongValue];
-                        if (spent == 0) detailTextLabel.text = [@"to: " stringByAppendingString:obj[@"addr"]];
+                [tx.outputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                    ZNTxOutputEntity *o = obj;
+                    
+                    if (o.address && [w containsAddress:o.address]) {
+                        received += o.value;
+                        if (spent == 0) detailTextLabel.text = [@"to: " stringByAppendingString:o.address];
                     }
                     else if (spent > 0) {
-                        if (obj[@"addr"]) detailTextLabel.text = [@"to: " stringByAppendingString:obj[@"addr"]];
+                        if (o.address) detailTextLabel.text = [@"to: " stringByAppendingString:o.address];
                         withinWallet = NO;
                     }
                 }];
@@ -188,7 +193,7 @@
                 sentLabel.layer.cornerRadius = 3.0;
                 sentLabel.layer.borderWidth = 0.5;
                 
-                if (tx[@"block_height"]) height = w.lastBlockHeight - [tx[@"block_height"] unsignedIntegerValue];
+                if (tx.blockHeight) height = w.lastBlockHeight - tx.blockHeight;
                 
                 if (height < 1) unconfirmedLabel.text = @"unconfirmed";
                 else if (height <= 6) {

@@ -47,7 +47,7 @@
 @property (nonatomic, readonly) NSArray *outputAddresses;
 @property (nonatomic, readonly) NSArray *outputAmounts;
 
-@property (nonatomic, strong) NSData *hash; // hash of the signed transaction, little endian
+@property (nonatomic, strong) NSData *txHash; // hash of the signed transaction, little endian
 @property (nonatomic, readonly) size_t size;
 @property (nonatomic, readonly) uint64_t standardFee;
 @property (nonatomic, readonly) BOOL isSigned;

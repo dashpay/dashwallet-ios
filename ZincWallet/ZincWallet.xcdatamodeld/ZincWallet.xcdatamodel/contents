@@ -14,7 +14,7 @@
         <attribute name="value" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
     </entity>
     <entity name="ZNTransactionEntity" representedClassName="ZNTransactionEntity" syncable="YES">
-        <attribute name="blockHeight" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="blockHeight" optional="YES" attributeType="Integer 32" defaultValueString="0" indexed="YES" syncable="YES"/>
         <attribute name="timeStamp" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="txHash" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
         <attribute name="txIndex" optional="YES" attributeType="Integer 64" defaultValueString="0" indexed="YES" syncable="YES"/>

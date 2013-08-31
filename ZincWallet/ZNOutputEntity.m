@@ -37,14 +37,29 @@
 {
     if (! [JSON isKindOfClass:[NSDictionary class]]) return nil;
 
-    ZNOutputEntity *e = [self managedObject];
-                         
-    if ([JSON[@"addr"] isKindOfClass:[NSString class]]) e.address = [NSString stringWithString:JSON[@"addr"]];
-    if ([JSON[@"n"] isKindOfClass:[NSNumber class]]) e.n = [JSON[@"n"] intValue];
-    if ([JSON[@"tx_index"] isKindOfClass:[NSNumber class]]) e.txIndex = [JSON[@"tx_index"] longLongValue];
-    if ([JSON[@"value"] isKindOfClass:[NSNumber class]]) e.value = [JSON[@"value"] longLongValue];
+    return [[self managedObject] setAttributesFromJSON:JSON];
+}
+
+- (instancetype)setAttributesFromJSON:(NSDictionary *)JSON
+{
+    if (! [JSON isKindOfClass:[NSDictionary class]]) return self;
     
-    return e;
+    if ([JSON[@"addr"] isKindOfClass:[NSString class]]) self.address = [NSString stringWithString:JSON[@"addr"]];
+    if ([JSON[@"n"] isKindOfClass:[NSNumber class]]) self.n = [JSON[@"n"] intValue];
+    if ([JSON[@"tx_index"] isKindOfClass:[NSNumber class]]) self.txIndex = [JSON[@"tx_index"] longLongValue];
+    if ([JSON[@"value"] isKindOfClass:[NSNumber class]]) self.value = [JSON[@"value"] longLongValue];
+    
+    return self;
+}
+
+- (instancetype)setAddress:(NSString *)address txIndex:(int64_t)txIndex n:(int32_t)n value:(int64_t)value
+{
+    if (address.length) self.address = address;
+    if (txIndex > 0) self.txIndex = txIndex;
+    if (n >= 0 && n != NSNotFound) self.n = n;
+    if (value > 0) self.value = value;
+    
+    return self;
 }
 
 @end

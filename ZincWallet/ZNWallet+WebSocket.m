@@ -23,9 +23,12 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "ZNWallet+WebSocket.h"
+#import "ZNWallet.h"
 #import "ZNKeySequence.h"
 #import "ZNAddressEntity.h"
+#import "ZNTransactionEntity.h"
+#import "ZNTxInputEntity.h"
+#import "ZNTxOutputEntity.h"
 #import "ZNUnspentOutputEntity.h"
 #import "NSString+Base58.h"
 #import "NSMutableData+Bitcoin.h"
@@ -36,13 +39,10 @@
 
 #define SOCKET_URL @"ws://ws.blockchain.info:8335/inv"
 
-#define TRANSACTIONS_KEY           @"TRANSACTIONS"
 #define LATEST_BLOCK_HEIGHT_KEY    @"LATEST_BLOCK_HEIGHT"
 #define LATEST_BLOCK_TIMESTAMP_KEY @"LATEST_BLOCK_TIMESTAMP"
 
 @interface ZNWallet ()
-
-@property (nonatomic, strong) NSMutableDictionary *transactions;
 
 @property (nonatomic, strong) SRWebSocket *webSocket;
 @property (nonatomic, assign) int connectFailCount;
@@ -139,7 +139,7 @@
         
         [a addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
         [a addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_INTERNAL internal:YES]];
-        [a addObjectsFromArray:[ZNAddressEntity objectsMatching:@"NOT (address IN %@)", [a valueForKey:@"address"]]];
+        [a addObjectsFromArray:[ZNAddressEntity objectsMatching:@"! (address IN %@)", [a valueForKey:@"address"]]];
         
         [self subscribeToAddresses:a];        
     });
@@ -181,7 +181,7 @@ wasClean:(BOOL)wasClean
         NSDictionary *JSON = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
         
         if (error || ! [JSON isKindOfClass:[NSDictionary class]]) {
-            NSLog(@"webSocket receive error: %@", error ? error : [data description]);
+            NSLog(@"webSocket receive error: %@", error ? error : msg);
             return;
         }
         
@@ -190,30 +190,22 @@ wasClean:(BOOL)wasClean
         NSString *op = JSON[@"op"];
         
         if ([op isEqual:@"utx"]) {
-            NSDictionary *x = JSON[@"x"];
-            
             @synchronized(self) {
-                if (x[@"hash"]) self.transactions[x[@"hash"]] = [NSDictionary dictionaryWithDictionary:x];
+                ZNTransactionEntity *tx = [ZNTransactionEntity updateOrCreateWithJSON:JSON[@"x"]];
+
+                // delete any unspent outputs that are now spent
+                [tx.inputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                    [[ZNUnspentOutputEntity objectsMatching:@"txIndex == %lld && n == %d", [obj txIndex],
+                      [obj n]].lastObject deleteObject];
+                }];
                 
                 // add outputs sent to wallet addresses to unspent outputs
-                [x[@"out"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                    ZNUnspentOutputEntity *o = [ZNUnspentOutputEntity entityWithJSON:obj];
-                    NSMutableData *script = [NSMutableData data];
-
-                    [script appendScriptPubKeyForAddress:o.address];
-                    o.script = script;
-                    
-                    if (o.value == 0 || ! [self containsAddress:o.address]) [o deleteObject];
-                }];
-                
-                [x[@"inputs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                    NSDictionary *o = obj[@"prev_out"];
-                    
-                    [[ZNUnspentOutputEntity objectsMatching:@"txIndex == %lld && n == %d",
-                      [o[@"tx_index"] longLongValue], [o[@"n"] intValue]].lastObject deleteObject];
-                }];
-                                
-                [defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
+                [tx.outputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                    if ([self containsAddress:(id)[obj address]] &&
+                        [ZNUnspentOutputEntity countObjectsMatching:@"txHash == %@ && n == %d", tx.txHash, idx] == 0) {
+                        [ZNUnspentOutputEntity entityWithTxOutput:obj];
+                    }
+                }];                
             }
             
             AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
@@ -227,11 +219,17 @@ wasClean:(BOOL)wasClean
             [defs synchronize];
         }
         else if ([op isEqual:@"block"]) {
-            NSDictionary *x = JSON[@"x"];
-            NSUInteger height = [x[@"height"] unsignedIntegerValue];
-            NSTimeInterval time = [x[@"time"] doubleValue];
-            NSArray *txIndexes = x[@"txIndexes"];
-            __block BOOL confirmed = NO;
+            if (! [JSON[@"x"] isKindOfClass:[NSDictionary class]] ||
+                ! [JSON[@"x"][@"height"] isKindOfClass:[NSNumber class]] ||
+                ! [JSON[@"x"][@"time"] isKindOfClass:[NSNumber class]] ||
+                ! [JSON[@"x"][@"txIndexes"] isKindOfClass:[NSArray class]]) {
+                NSLog(@"webSocket receive error: %@", msg);
+                return;
+            }
+        
+            int height = [JSON[@"x"][@"height"] intValue];
+            NSTimeInterval time = [JSON[@"x"][@"time"] doubleValue];
+            NSArray *txIndexes = JSON[@"x"][@"txIndexes"];
             
             @synchronized(self) {
                 if (height) {
@@ -239,17 +237,11 @@ wasClean:(BOOL)wasClean
                     [defs setDouble:time forKey:LATEST_BLOCK_TIMESTAMP_KEY];
                 }
                 
-                [[self.transactions keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-                    return [txIndexes containsObject:obj[@"tx_index"]];
-                }] enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
-                    NSMutableDictionary *tx = [NSMutableDictionary dictionaryWithDictionary:self.transactions[obj]];
-                    
-                    tx[@"block_height"] = @(height);
-                    self.transactions[obj] = tx;
-                    confirmed = YES;
+                // set the block height for transactions included in the new block
+                [[ZNTransactionEntity objectsMatching:@"txIndex IN %@", txIndexes]
+                enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                    [obj setBlockHeight:height];
                 }];
-                
-                if (confirmed) [defs setObject:self.transactions forKey:TRANSACTIONS_KEY];
             }
             
             dispatch_async(dispatch_get_main_queue(), ^{

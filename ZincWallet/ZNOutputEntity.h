@@ -35,4 +35,7 @@
 
 + (instancetype)entityWithJSON:(NSDictionary *)JSON;
 
+- (instancetype)setAttributesFromJSON:(NSDictionary *)JSON;
+- (instancetype)setAddress:(NSString *)address txIndex:(int64_t)txIndex n:(int32_t)n value:(int64_t)value;
+
 @end
