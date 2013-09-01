@@ -178,8 +178,7 @@ wasClean:(BOOL)wasClean
     }
 }
 
-// message will either be an NSString if the server is using text
-// or NSData if the server is using binary.
+// message will either be an NSString if the server is using text or NSData if the server is using binary.
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)msg;
 {
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];

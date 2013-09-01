@@ -110,7 +110,6 @@ static NSData *getKeychainData(NSString *key)
 @interface ZNWallet ()
 
 @property (nonatomic, strong) NSMutableSet *updatedTxHashes;
-
 @property (nonatomic, strong) id<ZNKeySequence> sequence;
 @property (nonatomic, strong) NSData *mpk;
 @property (nonatomic, strong) NSUserDefaults *defs;
@@ -130,8 +129,6 @@ static NSData *getKeychainData(NSString *key)
     });
     return singleton;
 }
-
-//XXXX check for any possibility of duplicate core data entries
 
 - (instancetype)init
 {
@@ -190,8 +187,8 @@ static NSData *getKeychainData(NSString *key)
     _synchronizing = NO;
     self.mpk = nil;
 
-    [[ZNTransactionEntity allObjects] makeObjectsPerformSelector:@selector(deleteObject)];
     [[ZNAddressEntity allObjects] makeObjectsPerformSelector:@selector(deleteObject)];
+    [[ZNTransactionEntity allObjects] makeObjectsPerformSelector:@selector(deleteObject)];
     [[ZNUnspentOutputEntity allObjects] makeObjectsPerformSelector:@selector(deleteObject)];
         
     [_defs removeObjectForKey:LAST_SYNC_TIME_KEY];
@@ -240,14 +237,12 @@ static NSData *getKeychainData(NSString *key)
     return _mpk;
 }
 
-// if any of an unconfimred transaction's inputs show up as unspent, or spent by a confirmed transaction, that means the
-// tx failed to confirm and needs to be removed from the tx list
+// if any of an unconfimred transaction's inputs show up as unspent, or spent by a confirmed transaction,
+// that means the tx failed to confirm and needs to be removed from the tx list
 - (void)cleanUnconfirmed
 {
     //TODO: remove unconfirmed transactions after 2 days?
     //TODO: keep a seprate list of failed transactions to display along with the successful ones
-    if ([ZNTransactionEntity countObjectsMatching:@"blockHeight == 0"] == 0) return;
-
     [[ZNTransactionEntity objectsMatching:@"blockHeight == 0"]
     enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         ZNTransactionEntity *tx = obj;
@@ -332,7 +327,7 @@ static NSData *getKeychainData(NSString *key)
             
             [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
                 
-            // send balance notification every time since exchnage rates might have changed
+            // send balance notification every time since exchange rates might have changed
             [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:nil];
         }];
     };
@@ -344,6 +339,7 @@ static NSData *getKeychainData(NSString *key)
     }];
 }
 
+// returns array of gapLimit unused ZNAddressEntity objects following the last used address
 - (NSArray *)addressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal
 {
     NSMutableArray *newaddresses = [NSMutableArray array];
@@ -381,11 +377,9 @@ static NSData *getKeychainData(NSString *key)
         [newaddresses addObject:address];
     }
     
-    if (newaddresses.count) {
-        [[ZNSocketListener sharedInstance] subscribeToAddresses:newaddresses];
-    }
+    if (newaddresses.count) [[ZNSocketListener sharedInstance] subscribeToAddresses:newaddresses];
     
-    return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
+    return a;
 }
 
 // query blockchain for the given addresses
@@ -396,7 +390,7 @@ static NSData *getKeychainData(NSString *key)
         return;
     }
     
-    if (addresses.count > ADDRESSES_PER_QUERY) {
+    if (addresses.count > ADDRESSES_PER_QUERY) { // break up into multiple network queries if needed
         [self queryAddresses:[addresses subarrayWithRange:NSMakeRange(0, ADDRESSES_PER_QUERY)]
         completion:^(NSError *error) {
             if (error) {
@@ -473,7 +467,7 @@ static NSData *getKeychainData(NSString *key)
         return;
     }
     
-    if (addresses.count > ADDRESSES_PER_QUERY) {
+    if (addresses.count > ADDRESSES_PER_QUERY) { // break up into multiple network queries if needed
         [self queryUnspentOutputs:[addresses subarrayWithRange:NSMakeRange(0, ADDRESSES_PER_QUERY)]
         completion:^(NSError *error) {
             if (error) {
@@ -516,7 +510,7 @@ static NSData *getKeychainData(NSString *key)
                 if (o.value == 0 || ! [addrs containsObject:o.address]) [o deleteObject];
             }];
             
-            [addresses setValue:@(NO) forKey:@"primitiveNewTx"];
+            [addresses setValue:@(NO) forKey:@"primitiveNewTx"]; // tx successfully synced, reset new tx flag
 
             if (completion) completion(nil);
         } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
@@ -526,10 +520,11 @@ static NSData *getKeychainData(NSString *key)
                 return;
             }
             
+            // all outputs have been spent for the requested addresses
             [[ZNUnspentOutputEntity objectsMatching:@"address IN %@", [addresses valueForKey:@"address"]]
              makeObjectsPerformSelector:@selector(deleteObject)];
 
-            [addresses setValue:@(NO) forKey:@"primitiveNewTx"];
+            [addresses setValue:@(NO) forKey:@"primitiveNewTx"]; // tx successfully synced, reset new tx flag
             
             if (completion) completion(nil);
         }];
@@ -570,6 +565,7 @@ static NSData *getKeychainData(NSString *key)
         if (a.txCount > 0) {
             NSArray *unspent = [ZNUnspentOutputEntity objectsMatching:@"address == %@ && confirmations < 6", a.address];
     
+            // if the unique txIndexes with < 6 confirms equals the txCount, then all tx have < 6 confirms
             if ([[NSSet setWithArray:[unspent valueForKey:@"primitiveTxIndex"]] count] < a.txCount) break;
         }
 

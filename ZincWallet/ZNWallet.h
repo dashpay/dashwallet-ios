@@ -58,6 +58,8 @@
 - (void)synchronize;
 
 - (BOOL)containsAddress:(NSString *)address;
+
+// returns array of gapLimit unused ZNAddressEntity objects following the last used address
 - (NSArray *)addressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
 
 - (int64_t)amountForString:(NSString *)string;
