@@ -339,6 +339,9 @@
         <image name="second" width="16" height="16"/>
     </resources>
     <classes>
+        <class className="ZNButton" superclassName="UIButton">
+            <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNButton.h"/>
+        </class>
         <class className="ZNPayViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNPayViewController.h"/>
             <relationships>
@@ -351,6 +354,11 @@
         </class>
         <class className="ZNReceiveViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNReceiveViewController.h"/>
+            <relationships>
+                <relationship kind="action" name="address:"/>
+                <relationship kind="outlet" name="addressButton" candidateClass="ZNButton"/>
+                <relationship kind="outlet" name="qrView" candidateClass="UIImageView"/>
+            </relationships>
         </class>
     </classes>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
