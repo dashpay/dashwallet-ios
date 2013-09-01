@@ -121,7 +121,7 @@
     
     self.hasAppeared = YES;
     
-    dispatch_async(dispatch_get_main_queue(), ^{
+    dispatch_async(dispatch_get_main_queue(), ^{ // animation sometimes doesn't work if run directly in viewDidAppear
         [UIView animateWithDuration:WALLPAPER_ANIMATION_DURATION delay:0.0
         options:UIViewAnimationOptionCurveLinear|UIViewAnimationOptionRepeat|UIViewAnimationOptionAutoreverse
         animations:^{

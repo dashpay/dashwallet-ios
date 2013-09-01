@@ -1,5 +1,5 @@
 //
-//  ZNWallet+WebSocket.m
+//  ZNSocketListener.m
 //  ZincWallet
 //
 //  Created by Aaron Voisine on 8/2/13.
@@ -23,6 +23,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+#import "ZNSocketListener.h"
 #import "ZNWallet.h"
 #import "ZNKeySequence.h"
 #import "ZNAddressEntity.h"
@@ -42,17 +43,26 @@
 #define LATEST_BLOCK_HEIGHT_KEY    @"LATEST_BLOCK_HEIGHT"
 #define LATEST_BLOCK_TIMESTAMP_KEY @"LATEST_BLOCK_TIMESTAMP"
 
-@interface ZNWallet ()
+@interface ZNSocketListener ()
 
 @property (nonatomic, strong) SRWebSocket *webSocket;
 @property (nonatomic, assign) int connectFailCount;
 @property (nonatomic, strong) id reachabilityObserver, activeObserver;
 
-- (NSArray *)addressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
-
 @end
 
-@implementation ZNWallet (WebSocket)
+@implementation ZNSocketListener
+
++ (instancetype)sharedInstance
+{
+    static id singleton = nil;
+    static dispatch_once_t onceToken = 0;
+    
+    dispatch_once(&onceToken, ^{
+        singleton = [self new];
+    });
+    return singleton;
+}
 
 - (void)openSocket
 {
@@ -132,17 +142,15 @@
     self.connectFailCount = 0;
     
     NSLog(@"{\"op\":\"blocks_sub\"}");
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [webSocket send:@"{\"op\":\"blocks_sub\"}"];
+    [webSocket send:@"{\"op\":\"blocks_sub\"}"];
     
-        NSMutableArray *a = [NSMutableArray array];
-        
-        [a addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
-        [a addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_INTERNAL internal:YES]];
-        [a addObjectsFromArray:[ZNAddressEntity objectsMatching:@"! (address IN %@)", [a valueForKey:@"address"]]];
-        
-        [self subscribeToAddresses:a];        
-    });
+    NSMutableArray *a = [NSMutableArray array];
+    
+    [a addObjectsFromArray:[[ZNWallet sharedInstance] addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
+    [a addObjectsFromArray:[[ZNWallet sharedInstance] addressesWithGapLimit:GAP_LIMIT_INTERNAL internal:YES]];
+    [a addObjectsFromArray:[ZNAddressEntity objectsMatching:@"! (address IN %@)", [a valueForKey:@"address"]]];
+    
+    [self subscribeToAddresses:a];
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason
@@ -174,87 +182,77 @@ wasClean:(BOOL)wasClean
 // or NSData if the server is using binary.
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)msg;
 {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-        NSError *error = nil;
-        NSData *data = [msg isKindOfClass:[NSString class]] ? [msg dataUsingEncoding:NSUTF8StringEncoding] : msg;
-        NSDictionary *JSON = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+    NSError *error = nil;
+    NSData *data = [msg isKindOfClass:[NSString class]] ? [msg dataUsingEncoding:NSUTF8StringEncoding] : msg;
+    NSDictionary *JSON = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
         
-        if (error || ! [JSON isKindOfClass:[NSDictionary class]]) {
-            NSLog(@"webSocket receive error: %@", error ? error : msg);
+    if (error || ! [JSON isKindOfClass:[NSDictionary class]]) {
+        NSLog(@"webSocket receive error: %@", error ? error : msg);
+        return;
+    }
+    
+    NSLog(@"%@", JSON);
+    
+    NSString *op = JSON[@"op"];
+    
+    if ([op isEqual:@"utx"]) {
+        ZNTransactionEntity *tx = [ZNTransactionEntity updateOrCreateWithJSON:JSON[@"x"]];
+
+        // delete any unspent outputs that are now spent
+        [tx.inputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            [[ZNUnspentOutputEntity objectsMatching:@"txIndex == %lld && n == %d", [obj txIndex], [obj n]].lastObject
+             deleteObject];
+        }];
+        
+        // add outputs sent to wallet addresses to unspent outputs
+        [tx.outputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            if ([[ZNWallet sharedInstance] containsAddress:(id)[obj address]] &&
+                [ZNUnspentOutputEntity countObjectsMatching:@"txHash == %@ && n == %d", tx.txHash, idx] == 0) {
+                [ZNUnspentOutputEntity entityWithTxOutput:obj];
+            }
+        }];
+        
+        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+        //XXX [self playBeepSound];
+            
+        [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:nil];
+        
+        [NSManagedObject saveContext];
+        [defs synchronize];
+    }
+    else if ([op isEqual:@"block"]) {
+        if (! [JSON[@"x"] isKindOfClass:[NSDictionary class]] ||
+            ! [JSON[@"x"][@"height"] isKindOfClass:[NSNumber class]] ||
+            ! [JSON[@"x"][@"time"] isKindOfClass:[NSNumber class]] ||
+            ! [JSON[@"x"][@"txIndexes"] isKindOfClass:[NSArray class]]) {
+            NSLog(@"webSocket receive error: %@", msg);
             return;
         }
         
-        NSLog(@"%@", JSON);
+        int height = [JSON[@"x"][@"height"] intValue];
+        NSTimeInterval time = [JSON[@"x"][@"time"] doubleValue];
+        NSArray *txIndexes = JSON[@"x"][@"txIndexes"];
         
-        NSString *op = JSON[@"op"];
+        if (height) {
+            [defs setInteger:height forKey:LATEST_BLOCK_HEIGHT_KEY];
+            [defs setDouble:time forKey:LATEST_BLOCK_TIMESTAMP_KEY];
+        }
         
-        if ([op isEqual:@"utx"]) {
-            @synchronized(self) {
-                ZNTransactionEntity *tx = [ZNTransactionEntity updateOrCreateWithJSON:JSON[@"x"]];
-
-                // delete any unspent outputs that are now spent
-                [tx.inputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                    [[ZNUnspentOutputEntity objectsMatching:@"txIndex == %lld && n == %d", [obj txIndex],
-                      [obj n]].lastObject deleteObject];
-                }];
-                
-                // add outputs sent to wallet addresses to unspent outputs
-                [tx.outputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                    if ([self containsAddress:(id)[obj address]] &&
-                        [ZNUnspentOutputEntity countObjectsMatching:@"txHash == %@ && n == %d", tx.txHash, idx] == 0) {
-                        [ZNUnspentOutputEntity entityWithTxOutput:obj];
-                    }
-                }];                
-            }
-            
-            AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
-            //XXX [self playBeepSound];
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:self];
-            });
-            
-            [NSManagedObject saveContext];
-            [defs synchronize];
-        }
-        else if ([op isEqual:@"block"]) {
-            if (! [JSON[@"x"] isKindOfClass:[NSDictionary class]] ||
-                ! [JSON[@"x"][@"height"] isKindOfClass:[NSNumber class]] ||
-                ! [JSON[@"x"][@"time"] isKindOfClass:[NSNumber class]] ||
-                ! [JSON[@"x"][@"txIndexes"] isKindOfClass:[NSArray class]]) {
-                NSLog(@"webSocket receive error: %@", msg);
-                return;
-            }
+        // set the block height for transactions included in the new block
+        [[ZNTransactionEntity objectsMatching:@"txIndex IN %@", txIndexes]
+        enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            [obj setBlockHeight:height];
+        }];
         
-            int height = [JSON[@"x"][@"height"] intValue];
-            NSTimeInterval time = [JSON[@"x"][@"time"] doubleValue];
-            NSArray *txIndexes = JSON[@"x"][@"txIndexes"];
-            
-            @synchronized(self) {
-                if (height) {
-                    [defs setInteger:height forKey:LATEST_BLOCK_HEIGHT_KEY];
-                    [defs setDouble:time forKey:LATEST_BLOCK_TIMESTAMP_KEY];
-                }
-                
-                // set the block height for transactions included in the new block
-                [[ZNTransactionEntity objectsMatching:@"txIndex IN %@", txIndexes]
-                enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                    [obj setBlockHeight:height];
-                }];
-            }
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:self];
-            });
-            
-            [NSManagedObject saveContext];
-            [defs synchronize];
-        }
-        else if ([op isEqual:@"status"]) {
-            NSLog(@"%@", JSON[@"msg"]);
-        }
-    });
+        [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:nil];
+        
+        [NSManagedObject saveContext];
+        [defs synchronize];
+    }
+    else if ([op isEqual:@"status"]) {
+        NSLog(@"%@", JSON[@"msg"]);
+    }
 }
 
 

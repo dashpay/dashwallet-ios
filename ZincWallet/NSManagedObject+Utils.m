@@ -30,12 +30,15 @@
 
 + (instancetype)managedObject
 {
-    @synchronized([self context]) {
-        NSEntityDescription *entity =
-            [NSEntityDescription entityForName:[self entityName] inManagedObjectContext:[self context]];
+    __block NSEntityDescription *entity = nil;
+    __block NSManagedObject *obj = nil;
     
-        return [[self alloc] initWithEntity:entity insertIntoManagedObjectContext:[self context]];
-    }
+    [[self context] performBlockAndWait:^{
+        entity = [NSEntityDescription entityForName:[self entityName] inManagedObjectContext:[self context]];
+        obj = [[self alloc] initWithEntity:entity insertIntoManagedObjectContext:[self context]];
+    }];
+    
+    return obj;
 }
 
 #pragma mark - fetch existing objects
@@ -82,13 +85,15 @@
 
 + (NSArray *)fetchObjects:(NSFetchRequest *)request
 {
-    @synchronized([self context]) {
-        NSError *error = nil;
-        NSArray *a = [[self context] executeFetchRequest:request error:&error];
+    __block NSArray *a = nil;
+    __block NSError *error = nil;
 
+    [[self context] performBlockAndWait:^{
+        a = [[self context] executeFetchRequest:request error:&error];
         if (! a) NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
-        return a;
-    }
+    }];
+     
+    return a;
 }
 
 #pragma mark - count exising objects
@@ -119,13 +124,15 @@
 
 + (NSUInteger)countObjects:(NSFetchRequest *)request
 {
-    @synchronized([self context]) {
-        NSError *error = nil;
-        NSUInteger count = [[self context] countForFetchRequest:request error:&error];
-        
+    __block NSUInteger count = 0;
+    __block NSError *error = nil;
+
+    [[self context] performBlockAndWait:^{
+        count = [[self context] countForFetchRequest:request error:&error];
         if (count == NSNotFound) NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
-        return count;
-    }    
+    }];
+    
+    return count;
 }
 
 #pragma mark - core data stack
@@ -134,7 +141,7 @@
 // it is created and bound to the persistent store coordinator for the application.
 + (NSManagedObjectContext *)context
 {
-    static NSManagedObjectContext *context = nil;
+    static NSManagedObjectContext *moc = nil;
     static dispatch_once_t onceToken = 0;
     
     dispatch_once(&onceToken, ^{
@@ -168,8 +175,8 @@
         }
 
         if (coordinator) {
-            context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSConfinementConcurrencyType];
-            [context setPersistentStoreCoordinator:coordinator];
+            moc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
+            [moc setPersistentStoreCoordinator:coordinator];
             
             // Saves changes in the application's managed object context before the application terminates.
             [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillTerminateNotification object:nil
@@ -179,12 +186,12 @@
         }
     });
     
-    return context;
+    return moc;
 }
 
 + (void)saveContext
 {
-    @synchronized([self context]) {
+    [[self context] performBlock:^{
         NSError *error = nil;
 
         if ([[self context] hasChanges] && ! [[self context] save:&error]) {
@@ -193,7 +200,7 @@
             abort();
 #endif
         }
-    }
+    }];
 }
 
 #pragma mark - entity methods
@@ -210,17 +217,21 @@
 
 + (NSFetchedResultsController *)fetchedResultsControllerWithFetchRequest:(NSFetchRequest *)request
 {
-    @synchronized([self context]) {
-        return [[NSFetchedResultsController alloc] initWithFetchRequest:request managedObjectContext:[self context]
-                sectionNameKeyPath:nil cacheName:nil];
-    }
+    __block NSFetchedResultsController *c = nil;
+
+    [[self context] performBlockAndWait:^{
+        c = [[NSFetchedResultsController alloc] initWithFetchRequest:request managedObjectContext:[self context]
+             sectionNameKeyPath:nil cacheName:nil];
+    }];
+    
+    return c;
 }
 
 - (void)deleteObject
 {
-    @synchronized([self managedObjectContext]) {
+    [[self managedObjectContext] performBlockAndWait:^{
         [[self managedObjectContext] deleteObject:self];
-    }
+    }];
 }
 
 @end

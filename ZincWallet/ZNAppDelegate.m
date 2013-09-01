@@ -63,7 +63,7 @@ annotation:(id)annotation
 
     if (! [url.scheme isEqual:@"bitcoin"] || ! [url.host isValidBitcoinAddress]) return NO;
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:bitcoinURLNotification object:self
+    [[NSNotificationCenter defaultCenter] postNotificationName:bitcoinURLNotification object:nil
      userInfo:@{@"url":url}];
     
     return YES;

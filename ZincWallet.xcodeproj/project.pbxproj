@@ -697,7 +697,7 @@
 		7545424F17606C7500638B95 /* button-bg-disabled@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7545424C17606C7500638B95 /* button-bg-disabled@2x.png */; };
 		7559FBA7174D8B1F0000E809 /* ZNKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 7559FBA6174D8B1F0000E809 /* ZNKey.m */; };
 		7559FBA9174E85B10000E809 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7559FBA8174E85B10000E809 /* Security.framework */; };
-		756E9CD617ACC95D00D316A8 /* ZNWallet+WebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 756E9CD517ACC95D00D316A8 /* ZNWallet+WebSocket.m */; };
+		756E9CD617ACC95D00D316A8 /* ZNSocketListener.m in Sources */ = {isa = PBXBuildFile; fileRef = 756E9CD517ACC95D00D316A8 /* ZNSocketListener.m */; };
 		756E9CD817AD802700D316A8 /* wallpaper-welcome@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 756E9CD717AD802700D316A8 /* wallpaper-welcome@2x.png */; };
 		7579C5DF17665B5300E89497 /* libzbar.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75FD9C0217664F3000307894 /* libzbar.a */; };
 		757B1DCE17ADD53C00AA6CAB /* button-bg-blue@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 757B1DCD17ADD53C00AA6CAB /* button-bg-blue@2x.png */; };
@@ -1732,10 +1732,11 @@
 		753A4148178E070C003B938D /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		75402997178CD08C00D4F3FD /* zincwallet@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "zincwallet@2x.png"; sourceTree = "<group>"; };
 		7545424C17606C7500638B95 /* button-bg-disabled@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-disabled@2x.png"; sourceTree = "<group>"; };
+		7555F61217D2DAF4000415E3 /* ZNSocketListener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNSocketListener.h; sourceTree = "<group>"; };
 		7559FBA5174D8B1F0000E809 /* ZNKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNKey.h; sourceTree = "<group>"; };
 		7559FBA6174D8B1F0000E809 /* ZNKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNKey.m; sourceTree = "<group>"; };
 		7559FBA8174E85B10000E809 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
-		756E9CD517ACC95D00D316A8 /* ZNWallet+WebSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ZNWallet+WebSocket.m"; sourceTree = "<group>"; };
+		756E9CD517ACC95D00D316A8 /* ZNSocketListener.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNSocketListener.m; sourceTree = "<group>"; };
 		756E9CD717AD802700D316A8 /* wallpaper-welcome@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "wallpaper-welcome@2x.png"; sourceTree = "<group>"; };
 		757B1DCD17ADD53C00AA6CAB /* button-bg-blue@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-blue@2x.png"; sourceTree = "<group>"; };
 		757B1DCF17ADD79D00AA6CAB /* button-bg-white-pressed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-white-pressed@2x.png"; sourceTree = "<group>"; };
@@ -3397,7 +3398,8 @@
 				7559FBA6174D8B1F0000E809 /* ZNKey.m */,
 				752C2F8A174071520033F636 /* ZNWallet.h */,
 				752C2F8B174071520033F636 /* ZNWallet.m */,
-				756E9CD517ACC95D00D316A8 /* ZNWallet+WebSocket.m */,
+				7555F61217D2DAF4000415E3 /* ZNSocketListener.h */,
+				756E9CD517ACC95D00D316A8 /* ZNSocketListener.m */,
 				75CBEAE7173C80AD00978DBA /* ZNPaymentRequest.h */,
 				75CBEAE8173C80AD00978DBA /* ZNPaymentRequest.m */,
 				75F17C331744CC2100D9F228 /* ZNTransaction.h */,
@@ -4616,7 +4618,7 @@
 				75183B88178B4ABE0032F365 /* ZNWelcomeViewController.m in Sources */,
 				84DC139A1799E02800F6ED91 /* ZNBIP32Sequence.m in Sources */,
 				847C2302179A1FD600163CEF /* ZNElecturmMnemonic.m in Sources */,
-				756E9CD617ACC95D00D316A8 /* ZNWallet+WebSocket.m in Sources */,
+				756E9CD617ACC95D00D316A8 /* ZNSocketListener.m in Sources */,
 				75A6ECE317BD464A0043E52D /* ZNBIP39Mnemonic.m in Sources */,
 				759B779317BECFCF0000510F /* base64.c in Sources */,
 				759B779417BECFCF0000510F /* NSData+SRB64Additions.m in Sources */,
