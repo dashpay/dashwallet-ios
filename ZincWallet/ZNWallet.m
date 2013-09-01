@@ -349,14 +349,14 @@ static NSData *getKeychainData(NSString *key)
     NSMutableArray *newaddresses = [NSMutableArray array];
     NSFetchRequest *req = [ZNAddressEntity fetchRequest];
     
-    req.predicate = [NSPredicate predicateWithFormat:@"txCount == 0 && internal == %@", @(internal)];
+    req.predicate = [NSPredicate predicateWithFormat:@"internal == %@", @(internal)];
     req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"index" ascending:YES]];
     
     NSMutableArray *a = [NSMutableArray arrayWithArray:[ZNAddressEntity fetchObjects:req]];
-    NSUInteger i = a.count > 0 ? a.count - 1 : 0;
+    NSUInteger count = a.count, i = a.count;
 
-    // keep only the trailing contiguous block of addresses with sequential indexes
-    while (i > 0 && [a[i] index] - 1 == [a[i - 1] index]) i--;
+    // keep only the trailing contiguous block of addresses with no transactions
+    while (i > 0 && [a[i - 1] txCount] == 0) i--;
 
     if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
     
@@ -366,7 +366,7 @@ static NSData *getKeychainData(NSString *key)
     }
     
     while (a.count < gapLimit) {
-        int32_t index = a.count ? [a.lastObject index] + 1 : 0;
+        int32_t index = a.count ? [a.lastObject index] + 1 : count;
         NSData *pubKey = [self.sequence publicKey:index internal:internal masterPublicKey:self.mpk];
         NSString *addr = [[ZNKey keyWithPublicKey:pubKey] address];
 
