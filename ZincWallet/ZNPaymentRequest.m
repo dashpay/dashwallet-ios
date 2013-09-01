@@ -63,8 +63,8 @@
     return self;
 }
 
-//XXX this should also handle bitcoin payment messages per: https://gist.github.com/gavinandresen/4120476
-//XXX also should offer to sweep balance into wallet if it's a private key not already in wallet.
+//TODO: handle bitcoin payment messages per: https://gist.github.com/gavinandresen/4120476
+//TODO: offer to sweep balance into wallet if it's a private key not already in wallet.
 - (void)setData:(NSData *)data
 {
     self.paymentAddress = nil;
@@ -138,7 +138,7 @@
 {
     if (! self.paymentAddress) return NO;
     
-    // XXX validate X.509 certificate, hopefully offline
+    // TODO: validate bitcoin payment request X.509 certificate, hopefully offline
 
     return YES;
 }

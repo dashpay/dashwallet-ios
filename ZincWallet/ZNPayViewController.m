@@ -170,11 +170,12 @@
             [[ZNSocketListener sharedInstance] openSocket];
         }];
 
+    //TODO: create an error banner instead of using an alert
     self.syncFailedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncFailedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             self.syncErrorCount++;
-//            if ([note.userInfo[@"error"] code] == 504 && self.syncErrorCount < 3) { // XXXX need an error banner
+//            if ([note.userInfo[@"error"] code] == 504 && self.syncErrorCount < 3) {
 //                [[[UIAlertView alloc] initWithTitle:@"Couldn't refresh wallet balance" message:@"retrying..."
 //                  delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
 //                [w synchronize];
@@ -234,7 +235,7 @@
         [self.navigationController presentViewController:c animated:NO completion:nil];
         return;
     }
-    else if (firstAppearance) { //XXXX somehow the splash screen is showing up when handling url
+    else if (firstAppearance) { // BUG: somehow the splash screen is showing up when handling url
         UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNSplashViewController"];
 
         if ([[UIScreen mainScreen] bounds].size.height < 500) { // use splash image for 3.5" screen
@@ -483,9 +484,8 @@
     if ([self.requestIDs[self.selectedIndex] isEqual:QR_ID]) {
         self.selectedIndex = NSNotFound;
         
-        //XXXX customize look of zbar controller
-        //XXXX remove zbar info button
-        //XXX try a slightly gray camera guide that is visible on white
+        //TODO: customize look of zbar controller
+        //TODO: remove zbar info button
         self.zbarController = [ZBarReaderViewController new];
         self.zbarController.readerDelegate = self;
         self.zbarController.cameraOverlayView =
@@ -558,11 +558,7 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
 {
     if (buttonIndex == alertView.cancelButtonIndex || self.selectedIndex == NSNotFound) {
         self.selectedIndex = NSNotFound;
-        
-        //XXX remove request button?
-        
         [self layoutButtonsAnimated:YES];
-
         return;
     }
     

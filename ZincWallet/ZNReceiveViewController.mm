@@ -61,7 +61,6 @@
 //    self.format.currencySymbol = BTC;
 //    [self.format setLenient:YES];
 
-    //XXXX
     //TODO: update recieve address on balance notification
 }
 
@@ -334,7 +333,7 @@ error:(NSError *)error
 //      message:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] delegate:nil cancelButtonTitle:@"OK"
 //      otherButtonTitles:nil] show];
 //    
-//    // XXX transmit the transaction
+//    // transmit the transaction here
 //    
 //    [self.session disconnectFromAllPeers];
 //    self.session = nil;

@@ -47,18 +47,12 @@
 //TODO: need settings for denomination (BTC, mBTC or uBTC), local currency, and exchange rate source
 //TODO: only show most recent 10-20 transactions and have a separate page for the rest with section headers for each day
 
-//XXXX BUG: breifly saw double transactions immediately after sending a payment (probably from websocket and tx publish)
-// corrected itself on wallet sync
+// BUG: breifly saw double transactions immediately after sending a payment (probably from websocket and tx publish)
+// it corrected itself on wallet sync
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-
-    // Uncomment the following line to preserve selection between presentations.
-    // self.clearsSelectionOnViewWillAppear = NO;
- 
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 
     ZNWallet *w = [ZNWallet sharedInstance];
     
@@ -115,13 +109,11 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    // Return the number of sections.
     return 3;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    // Return the number of rows in the section.
     switch (section) {
         case 0: return self.transactions.count ? self.transactions.count : 1;
         case 1: return 2;
@@ -139,7 +131,6 @@
     UITableViewCell *cell = nil;
     __block UILabel *textLabel, *detailTextLabel, *unconfirmedLabel, *sentLabel, *noTxLabel, *localCurrencyLabel;
     
-    // Configure the cell...
     switch (indexPath.section) {
         case 0:
             cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent];
@@ -395,13 +386,11 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    // Navigation logic may go here. Create and push another view controller.
-
-    //XXX should have some option to generate a new wallet and sweep old balance if backup may be compromized
+    //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
 
     switch (indexPath.section) {
         case 0:
-            //XXX show transaction details
+            //TODO: show transaction details
             break;
             
         case 1:

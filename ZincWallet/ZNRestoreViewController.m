@@ -61,7 +61,7 @@
 {
     [super viewWillAppear:animated];
     
-    //XXXX iOS 5 has a resizing bug, put in a fix here
+    //BUG: iOS 5 has a resizing bug, put in a fix here
 
     [self.textView becomeFirstResponder];
 }
@@ -163,7 +163,7 @@
     }
 
     if (incorrect) {
-        //XXX the range should be set by word count, not string match
+        //BUG: the range should be set by word count, not string match
         textView.selectedRange = [[textView.text lowercaseString] rangeOfString:incorrect];
         
         [[[UIAlertView alloc] initWithTitle:nil
@@ -189,7 +189,7 @@
           cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
     }
     else if ([[ZNWallet sharedInstance] seed]) {
-        //XXXX BUG: phrases don't need to match exactly, normalize first
+        // BUG: phrases don't need to match exactly, normalize first
         if ([[[ZNWallet sharedInstance] seedPhrase] isEqual:textView.text]) {
             [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"cancel"
               destructiveButtonTitle:@"wipe" otherButtonTitles:nil]

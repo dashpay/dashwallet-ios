@@ -262,7 +262,7 @@ replacementString:(NSString *)string
         
             NSLog(@"signed transaction:\n%@", [self.tx toHex]);
 
-            //XXX check for duplicate transactions
+            //TODO: check for duplicate transactions and warn user
             [w publishTransaction:self.tx completion:^(NSError *error) {
                 [self.spinner stopAnimating];
                 self.navigationItem.rightBarButtonItem = self.payButton;

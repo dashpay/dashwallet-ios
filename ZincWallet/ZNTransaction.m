@@ -197,7 +197,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
             [d appendData:self.signatures[i]];
         }
         else if (i == subscriptIndex) {
-            //XXX to fully match the reference implementation, OP_CODESEPARATOR related checksig logic should go here
+            //TODO: to fully match the reference implementation, OP_CODESEPARATOR related checksig logic should go here
             [d appendVarInt:[self.scripts[i] length]];
             [d appendData:self.scripts[i]];
         }
@@ -211,7 +211,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     for (NSUInteger i = 0; i < self.addresses.count; i++) {
         [d appendUInt64:[self.amounts[i] unsignedLongLongValue]];
         
-        [d appendVarInt:TXOUT_PUBKEYLEN]; //XXX this shouldn't be hard coded
+        [d appendVarInt:TXOUT_PUBKEYLEN]; // this shouldn't be hard coded
         [d appendScriptPubKeyForAddress:self.addresses[i]];
     }
     

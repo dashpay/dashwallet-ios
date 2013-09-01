@@ -213,7 +213,7 @@ wasClean:(BOOL)wasClean
         }];
         
         AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
-        //XXX [self playBeepSound];
+        //TODO: play a beep sound
             
         [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:nil];
         
