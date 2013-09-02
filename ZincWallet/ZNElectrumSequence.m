@@ -37,7 +37,7 @@
 {
     if (! seed) return nil;
     
-    // Electurm uses a hex representation of the seed instead of the seed itself
+    // Electrum uses a hex representation of the seed instead of the seed itself
     NSString *s = [NSString hexWithData:seed];
     NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 0));
     

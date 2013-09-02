@@ -237,7 +237,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 - (size_t)size
 {
 #if WALLET_BIP32
-    size_t sigSize = 149; // electurm seeds generate uncompressed keys, bip32 uses compressed
+    size_t sigSize = 149; // electrum seeds generate uncompressed keys, bip32 uses compressed
 #else
     size_t sigSize = 181;
 #endif

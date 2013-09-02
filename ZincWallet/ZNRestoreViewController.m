@@ -25,14 +25,23 @@
 
 #import "ZNRestoreViewController.h"
 #import "ZNWallet.h"
+#if WALLET_BIP39
+#import "ZNBIP39Mnemonic.h"
+#else
+#import "ZNElectrumMnemonic.h"
+#endif
 #import <QuartzCore/QuartzCore.h>
 
 @interface ZNRestoreViewController ()
 
 @property (nonatomic, strong) IBOutlet UITextView *textView;
 @property (nonatomic, strong) IBOutlet UILabel *label;
-
-@property (nonatomic, strong) NSSet *words, *adjs, *nouns, *advs, *verbs;
+@property (nonatomic, strong) id<ZNMnemonic> mnemonic;
+#if WALLET_BIP39
+@property (nonatomic, strong) NSSet *adjs, *nouns, *advs, *verbs;
+#else
+@property (nonatomic, strong) NSSet *words;
+#endif
 
 @end
 
@@ -55,6 +64,12 @@
     if ([self.navigationController.navigationBar respondsToSelector:@selector(shadowImage)]) {
         [self.navigationController.navigationBar setShadowImage:[UIImage new]];
     }
+
+#if WALLET_BIP39
+    self.mnemonic = [ZNBIP39Mnemonic new];
+#else
+    self.mnemonic = [ZNElectrumMnemonic new];
+#endif
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -87,7 +102,11 @@
 
 - (void)viewWillDisappear:(BOOL)animated
 {
+#if WALLET_BIP39
+    self.adjs = self.nouns = self.advs = self.verbs = nil;
+#else
     self.words = nil;
+#endif
     
     [super viewWillDisappear:animated];
 }
@@ -189,8 +208,7 @@
           cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
     }
     else if ([[ZNWallet sharedInstance] seed]) {
-        // BUG: phrases don't need to match exactly, normalize first
-        if ([[[ZNWallet sharedInstance] seedPhrase] isEqual:textView.text]) {
+        if ([[[ZNWallet sharedInstance] seed] isEqual:[self.mnemonic decodePhrase:textView.text]]) {
             [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"cancel"
               destructiveButtonTitle:@"wipe" otherButtonTitles:nil]
              showInView:[[UIApplication sharedApplication] keyWindow]];

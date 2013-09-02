@@ -28,7 +28,7 @@
 #import "ZNWallet.h"
 #import "ZNElectrumSequence.h"
 #import "ZNBIP32Sequence.h"
-#import "ZNElecturmMnemonic.h"
+#import "ZNElectrumMnemonic.h"
 #import "ZNBIP39Mnemonic.h"
 #import "ZNTransaction.h"
 #import "ZNKey.h"
@@ -53,15 +53,14 @@
 
 #pragma mark - testWallet
 
-// XXX
-// standard free transaction no change
-// standard free transaction with change
-// transaction with an output below 0.01
-// transaction with change below 0.01
-// transaction over 10k
-// free transaction who's inputs are too new to hit min free priority
-// transaction with change below min allowable output
-// test gap limit with gaps in chain less than the limit
+//TODO: standard free transaction no change
+//TODO: standard free transaction with change
+//TODO: transaction with an output below 0.01
+//TODO: transaction with change below 0.01
+//TODO: transaction over 10k
+//TODO: free transaction who's inputs are too new to hit min free priority
+//TODO: transaction with change below min allowable output
+//TODO: test gap limit with gaps in chain less than the limit
 
 #pragma mark - testTransaction
 
@@ -103,7 +102,7 @@
 
 #pragma mark - testBIP39Mnemonic
 
-//XXXX test bip39
+//TODO: test bip39
 //- (void)testBIP39MnemonicDecodePhrase
 //{
 //    id<ZNMnemonic> mnemonic = [ZNBIP39Mnemonic sharedInstance];
@@ -169,7 +168,7 @@
 
 - (void)testElectrumMnemonicDecodePhrase
 {
-    id<ZNMnemonic> mnemonic = [ZNElecturmMnemonic sharedInstance];
+    id<ZNMnemonic> mnemonic = [ZNElectrumMnemonic sharedInstance];
 
     NSData *d = [mnemonic decodePhrase:@"like just love know never want time out there make look eye"];
 
@@ -196,7 +195,7 @@
 
 - (void)testElectrumMnemonicEncodePhrase
 {
-    id<ZNMnemonic> mnemonic = [ZNElecturmMnemonic sharedInstance];
+    id<ZNMnemonic> mnemonic = [ZNElectrumMnemonic sharedInstance];
     
     NSString *s = [mnemonic encodePhrase:@"00285dfe00285e0100285e0400285e07".hexToData];
     
@@ -238,7 +237,7 @@
     STAssertEqualObjects(d, @"80cbce0d719ecf7431d88e6a89fa1483e02e35092af60c042b1df2ff59fa424dca01".hexToData,
                          @"[ZNBIP32Sequence privateKey:internal:fromSeed:]");
 
-    // Test for correct zero padding of private keys, a *very* nasty potential bug
+    // Test for correct zero padding of private keys, a nasty potential bug
     pk = [seq privateKey:97 internal:NO fromSeed:seed];
     d = [pk base58checkToData];
 
@@ -271,7 +270,7 @@
 
     NSLog(@"000102030405060708090a0b0c0d0e0f/0'/0/0 pub = %@", [NSString hexWithData:pub]);
     
-    //XXXX verify the value of pub using the output of some other implementation
+    //TODO: verify the value of pub using the output of some other implementation
 }
 
 - (void)testBIP32SequenceSerializedPrivateMasterFromSeed
@@ -339,7 +338,7 @@
     
     STAssertEqualObjects(pk, @"040900f07c15d3fa441979e71d7ccdcca1afc30a28de07a0525a3d7655dc49cca"
                               "0f844fb0903b3cccc4604107a9de6a0571c4a39996a9e4bd6ab596138ecae54f5".hexToData,
-                         @"[ZNElecturmSequence publicKey:forChange:masterPublicKey:]");
+                         @"[ZNElectrumSequence publicKey:forChange:masterPublicKey:]");
     STAssertEqualObjects(addr, @"1FHsTashEBUNPQwC1CwVjnKUxzwgw73pU4", @"[[ZNKey keyWithPublicKey:] address]");
 }
 
@@ -351,7 +350,7 @@
     NSLog(@"privateKey:0 = %@", pk);
     
     STAssertEqualObjects(pk, @"5Khs7w6fBkogoj1v71Mdt4g8m5kaEyRaortmK56YckgTubgnrhz",
-                         @"[ZNElecturmSequence privateKey:forChange:fromSeed:]");
+                         @"[ZNElectrumSequence privateKey:forChange:fromSeed:]");
 
     // Test for correct zero padding of private keys
     pk = [seq privateKey:64 internal:NO fromSeed:@"00000000000000000000000000000000".hexToData];
@@ -359,7 +358,7 @@
     NSLog(@"privateKey:64 = %@ = 0x%@", pk, pk.base58checkToHex);
 
     STAssertEqualObjects(pk.base58checkToHex, @"8000f7f216a82f6beb105728dbbc29e2c13446bfa1078b7bef6e0ceff2c8a1e774",
-                         @"[ZNElecturmSequence privateKey:forChange:fromSeed:]");    
+                         @"[ZNElectrumSequence privateKey:forChange:fromSeed:]");    
 }
 
 @end

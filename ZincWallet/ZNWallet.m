@@ -41,7 +41,7 @@
 #if WALLET_BIP39
 #import "ZNBIP39Mnemonic.h"
 #else
-#import "ZNElecturmMnemonic.h"
+#import "ZNElectrumMnemonic.h"
 #endif
 
 #import "ZNKeySequence.h"
@@ -202,7 +202,7 @@ static NSData *getKeychainData(NSString *key)
 #if WALLET_BIP39
     id<ZNMnemonic> mnemonic = [ZNBIP39Mnemonic sharedInstance];
 #else
-    id<ZNMnemonic> mnemonic = [ZNElecturmMnemonic sharedInstance];
+    id<ZNMnemonic> mnemonic = [ZNElectrumMnemonic sharedInstance];
 #endif
 
     return [mnemonic encodePhrase:self.seed];
@@ -213,7 +213,7 @@ static NSData *getKeychainData(NSString *key)
 #if WALLET_BIP39
     id<ZNMnemonic> mnemonic = [ZNBIP39Mnemonic sharedInstance];
 #else
-    id<ZNMnemonic> mnemonic = [ZNElecturmMnemonic sharedInstance];
+    id<ZNMnemonic> mnemonic = [ZNElectrumMnemonic sharedInstance];
 #endif
 
     self.seed = [mnemonic decodePhrase:seedPhrase];

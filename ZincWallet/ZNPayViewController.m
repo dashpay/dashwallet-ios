@@ -134,6 +134,7 @@
             [self layoutButtonsAnimated:YES]; // check the clipboard for changes
         }];
     
+    // TODO: switch to AFNetworkingReachability
     self.reachabilityObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
@@ -256,7 +257,7 @@
     
     self.scrollView.contentSize = CGSizeMake(self.scrollView.frame.size.width*2, self.scrollView.frame.size.height);
     
-    //TODO: switch to a main viewcontroller that contains the scrollview, with both pay and receive as subviews
+    //TODO: switch to a main viewcontroller that contains the scrollview, with both pay and receive as subviews.
     // having payviewcontroller instantiate receiveviewcontroller like this is ugly
     CGRect f = self.scrollView.frame;
   

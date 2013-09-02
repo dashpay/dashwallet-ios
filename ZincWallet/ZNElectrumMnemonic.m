@@ -1,5 +1,5 @@
 //
-//  ZNElecturmMnemonic.m
+//  ZNElectrumMnemonic.m
 //  ZincWallet
 //
 //  Created by Aaron Voisine on 7/19/13.
@@ -23,12 +23,12 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "ZNElecturmMnemonic.h"
+#import "ZNElectrumMnemonic.h"
 #import "NSString+Base58.h"
 
 #define WORDS @"ElectrumSeedWords"
 
-@implementation ZNElecturmMnemonic
+@implementation ZNElectrumMnemonic
 
 + (instancetype)sharedInstance
 {

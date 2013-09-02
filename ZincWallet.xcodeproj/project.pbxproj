@@ -817,7 +817,7 @@
 		75FD9D511766532D00307894 /* ZBarReaderViewImpl_Capture.m in Sources */ = {isa = PBXBuildFile; fileRef = 75FD9D3B1766532D00307894 /* ZBarReaderViewImpl_Capture.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		75FD9D521766532D00307894 /* ZBarReaderViewImpl_Simulator.m in Sources */ = {isa = PBXBuildFile; fileRef = 75FD9D3C1766532D00307894 /* ZBarReaderViewImpl_Simulator.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		75FD9D531766532D00307894 /* ZBarSymbol.m in Sources */ = {isa = PBXBuildFile; fileRef = 75FD9D3D1766532D00307894 /* ZBarSymbol.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		847C2302179A1FD600163CEF /* ZNElecturmMnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = 847C2301179A1FD600163CEF /* ZNElecturmMnemonic.m */; };
+		847C2302179A1FD600163CEF /* ZNElectrumMnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = 847C2301179A1FD600163CEF /* ZNElectrumMnemonic.m */; };
 		84DC139A1799E02800F6ED91 /* ZNBIP32Sequence.m in Sources */ = {isa = PBXBuildFile; fileRef = 84DC13991799E02800F6ED91 /* ZNBIP32Sequence.m */; };
 /* End PBXBuildFile section */
 
@@ -1921,8 +1921,8 @@
 		75FD9D3B1766532D00307894 /* ZBarReaderViewImpl_Capture.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZBarReaderViewImpl_Capture.m; sourceTree = "<group>"; };
 		75FD9D3C1766532D00307894 /* ZBarReaderViewImpl_Simulator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZBarReaderViewImpl_Simulator.m; sourceTree = "<group>"; };
 		75FD9D3D1766532D00307894 /* ZBarSymbol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZBarSymbol.m; sourceTree = "<group>"; };
-		847C2300179A1FD600163CEF /* ZNElecturmMnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNElecturmMnemonic.h; sourceTree = "<group>"; };
-		847C2301179A1FD600163CEF /* ZNElecturmMnemonic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNElecturmMnemonic.m; sourceTree = "<group>"; };
+		847C2300179A1FD600163CEF /* ZNElectrumMnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNElectrumMnemonic.h; sourceTree = "<group>"; };
+		847C2301179A1FD600163CEF /* ZNElectrumMnemonic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNElectrumMnemonic.m; sourceTree = "<group>"; };
 		84DC13981799E02800F6ED91 /* ZNBIP32Sequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNBIP32Sequence.h; sourceTree = "<group>"; };
 		84DC13991799E02800F6ED91 /* ZNBIP32Sequence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNBIP32Sequence.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -3412,8 +3412,8 @@
 				75A6ECE517BD4CF60043E52D /* ZNMnemonic.h */,
 				75A6ECE117BD464A0043E52D /* ZNBIP39Mnemonic.h */,
 				75A6ECE217BD464A0043E52D /* ZNBIP39Mnemonic.m */,
-				847C2300179A1FD600163CEF /* ZNElecturmMnemonic.h */,
-				847C2301179A1FD600163CEF /* ZNElecturmMnemonic.m */,
+				847C2300179A1FD600163CEF /* ZNElectrumMnemonic.h */,
+				847C2301179A1FD600163CEF /* ZNElectrumMnemonic.m */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -4617,7 +4617,7 @@
 				75D423291783E0B100BDD771 /* MBProgressHUD.m in Sources */,
 				75183B88178B4ABE0032F365 /* ZNWelcomeViewController.m in Sources */,
 				84DC139A1799E02800F6ED91 /* ZNBIP32Sequence.m in Sources */,
-				847C2302179A1FD600163CEF /* ZNElecturmMnemonic.m in Sources */,
+				847C2302179A1FD600163CEF /* ZNElectrumMnemonic.m in Sources */,
 				756E9CD617ACC95D00D316A8 /* ZNSocketListener.m in Sources */,
 				75A6ECE317BD464A0043E52D /* ZNBIP39Mnemonic.m in Sources */,
 				759B779317BECFCF0000510F /* base64.c in Sources */,

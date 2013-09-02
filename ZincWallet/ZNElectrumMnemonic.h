@@ -1,5 +1,5 @@
 //
-//  ZNElecturmMnemonic.h
+//  ZNElectrumMnemonic.h
 //  ZincWallet
 //
 //  Created by Aaron Voisine on 7/19/13.
@@ -28,7 +28,7 @@
 
 #define ELECTRUM_WORD_LIST_RESOURCE   @"ElectrumSeedWords"
 
-@interface ZNElecturmMnemonic : NSObject<ZNMnemonic>
+@interface ZNElectrumMnemonic : NSObject<ZNMnemonic>
 
 + (instancetype)sharedInstance;
 

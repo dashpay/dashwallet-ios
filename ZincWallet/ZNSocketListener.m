@@ -70,6 +70,7 @@
         self.webSocket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:SOCKET_URL]];
         self.webSocket.delegate = self;
         
+        // TODO: switch to AFNetworkingReachability
         self.reachabilityObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
