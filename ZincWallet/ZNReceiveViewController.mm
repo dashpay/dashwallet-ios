@@ -45,8 +45,6 @@
     [super viewDidLoad];
     
     self.addressButton.style = ZNButtonStyleNone;
-
-    //TODO: update recieve address on balance notification
 }
 
 - (void)viewWillAppear:(BOOL)animated

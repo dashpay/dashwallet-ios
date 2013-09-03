@@ -147,6 +147,9 @@
         usingBlock:^(NSNotification *note) {
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                          [w localCurrencyStringForAmount:w.balance]];
+            
+            // update receive qr code if it's not on screen
+            if (self.pageControl.currentPage != 1) [[self receiveController] viewWillAppear:NO];
         }];
     
     self.syncStartedObserver =
@@ -434,7 +437,9 @@
         ZNTransaction *tx = [w transactionFor:request.amount to:request.paymentAddress withFee:NO];
         ZNTransaction *txWithFee = [w transactionFor:request.amount to:request.paymentAddress withFee:YES];
         
-        NSString *fee = [w stringForAmount:[w transactionFee:txWithFee]];
+        uint64_t txFee = [w transactionFee:txWithFee];
+        NSString *fee = [w stringForAmount:txFee];
+        NSString *localCurrencyFee = [w localCurrencyStringForAmount:txFee];
         NSTimeInterval t = [w timeUntilFree:tx];
         
         if (! txWithFee) fee = [w stringForAmount:tx.standardFee];
@@ -446,9 +451,9 @@
         }
         else if (t == DBL_MAX) {
             [[[UIAlertView alloc] initWithTitle:@"transaction fee needed"
-              message:[NSString stringWithFormat:@"the bitcoin network needs a fee of %@ to send this payment", fee]
-              delegate:self cancelButtonTitle:@"cancel" otherButtonTitles:[NSString stringWithFormat:@"+ %@", fee], nil]
-             show];
+              message:[NSString stringWithFormat:@"the bitcoin network needs a fee of %@ (%@) to send this payment",
+                       fee, localCurrencyFee] delegate:self cancelButtonTitle:@"cancel"
+              otherButtonTitles:[NSString stringWithFormat:@"+ %@ (%@)", fee, localCurrencyFee], nil] show];
         }
         else if (t > DBL_EPSILON) {
             NSUInteger minutes = t/60, hours = t/(60*60), days = t/(60*60*24);
@@ -456,9 +461,11 @@
                               days ? @"day" : (hours ? @"hour" : @"minutes"),
                               days > 1 ? @"s" : (days == 0 && hours > 1 ? @"s" : @"")];
             
-            [[[UIAlertView alloc] initWithTitle:[NSString stringWithFormat:@"%@ transaction fee recommended", fee]
+            [[[UIAlertView alloc]
+              initWithTitle:[NSString stringWithFormat:@"%@ (%@) transaction fee recommended", fee, localCurrencyFee]
               message:[NSString stringWithFormat:@"estimated confirmation time with no fee: %@", time] delegate:self
-              cancelButtonTitle:nil otherButtonTitles:@"no fee", [NSString stringWithFormat:@"+ %@", fee], nil] show];
+              cancelButtonTitle:nil otherButtonTitles:@"no fee",
+              [NSString stringWithFormat:@"+ %@ (%@)", fee, localCurrencyFee], nil] show];
         }
         else {            
             NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:request.amount],

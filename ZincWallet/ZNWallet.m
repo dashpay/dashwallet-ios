@@ -167,6 +167,8 @@ static NSData *getKeychainData(NSString *key)
         [self.localFormat.positiveFormat stringByReplacingOccurrencesOfString:CURRENCY_SIGN
          withString:CURRENCY_SIGN @"-"];
     
+    NSLog(@"(%@)", [self localCurrencyStringForAmount:-0.00001*SATOSHIS]);
+    
     return self;
 }
 
@@ -691,7 +693,15 @@ static NSData *getKeychainData(NSString *key)
     self.localFormat.currencySymbol = symbol;
     self.localFormat.currencyCode = code;
     
-    return [self.localFormat stringFromNumber:@(amount/price)];
+    NSString *ret = [self.localFormat stringFromNumber:@(amount/price)];
+    
+    // if the amount is too small to be represented in local currency (but is != 0) then return a string like "<$0.01"
+    if (amount != 0 && [[self.localFormat numberFromString:ret] isEqual:@(0.0)]) {
+        ret = [@"<" stringByAppendingString:[self.localFormat
+               stringFromNumber:@(1.0/pow(10.0, self.localFormat.maximumFractionDigits))]];
+    }
+    
+    return ret;
 }
 
 #pragma mark - ZNTransaction helpers

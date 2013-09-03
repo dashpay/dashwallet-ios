@@ -146,7 +146,9 @@
     self.tx = [w transactionFor:self.request.amount to:self.request.paymentAddress withFee:NO];
     self.txWithFee = [w transactionFor:self.request.amount to:self.request.paymentAddress withFee:YES];
     
-    NSString *fee = [w stringForAmount:[w transactionFee:self.txWithFee]];
+    uint64_t txFee = [w transactionFee:self.txWithFee];
+    NSString *fee = [w stringForAmount:txFee];
+    NSString *localCurrencyFee = [w localCurrencyStringForAmount:txFee];
     NSTimeInterval t = [w timeUntilFree:self.tx];
     
     if (self.tx && ! self.txWithFee) fee = [w stringForAmount:[self.tx standardFee]];
@@ -157,9 +159,9 @@
     }
     else if (t == DBL_MAX) {
         [[[UIAlertView alloc] initWithTitle:@"transaction fee needed"
-          message:[NSString stringWithFormat:@"the bitcoin network needs a fee of %@ to send this payment", fee]
-          delegate:self cancelButtonTitle:@"cancel" otherButtonTitles:[NSString stringWithFormat:@"+ %@", fee], nil]
-         show];
+          message:[NSString stringWithFormat:@"the bitcoin network needs a fee of %@ (%@) to send this payment", fee,
+                   localCurrencyFee] delegate:self cancelButtonTitle:@"cancel"
+          otherButtonTitles:[NSString stringWithFormat:@"+ %@ (%@)", fee, localCurrencyFee], nil] show];
     }
     else if (t > DBL_EPSILON) {
         NSUInteger minutes = t/60, hours = t/(60*60), days = t/(60*60*24);
@@ -167,9 +169,11 @@
                           days ? @"day" : (hours ? @"hour" : @"minutes"),
                           days > 1 ? @"s" : (days == 0 && hours > 1 ? @"s" : @"")];
         
-        [[[UIAlertView alloc] initWithTitle:[NSString stringWithFormat:@"%@ transaction fee recommended", fee]
+        [[[UIAlertView alloc]
+          initWithTitle:[NSString stringWithFormat:@"%@ (%@) transaction fee recommended", fee, localCurrencyFee]
           message:[NSString stringWithFormat:@"estimated confirmation time with no fee: %@", time] delegate:self
-          cancelButtonTitle:nil otherButtonTitles:@"no fee", [NSString stringWithFormat:@"+ %@", fee], nil] show];
+          cancelButtonTitle:nil otherButtonTitles:@"no fee",
+          [NSString stringWithFormat:@"+ %@ (%@)", fee, localCurrencyFee], nil] show];
     }
     else {
         NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:self.request.amount],
