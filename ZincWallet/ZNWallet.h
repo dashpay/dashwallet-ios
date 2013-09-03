@@ -70,6 +70,8 @@
 - (NSTimeInterval)timeUntilFree:(ZNTransaction *)transaction;
 - (uint64_t)transactionFee:(ZNTransaction *)transaction;
 - (BOOL)signTransaction:(ZNTransaction *)transaction;
+- (void)sweepPrivateAddress:(NSString *)privKey withFee:(BOOL)fee
+completion:(void (^)(ZNTransaction *tx, NSError *error))completion;
 - (void)publishTransaction:(ZNTransaction *)transaction completion:(void (^)(NSError *error))completion;
 
 @end
