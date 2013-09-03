@@ -126,7 +126,7 @@
          [self.message stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
     }
     
-    if (q.count) {
+    if (q.count > 0) {
         [s appendString:@"?"];
         [s appendString:[q componentsJoinedByString:@"&"]];
     }

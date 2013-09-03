@@ -298,7 +298,7 @@ static NSData *getKeychainData(NSString *key)
             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
                 [gap setArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
                 [gap addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:YES]];
-                if (! gap.count) return;
+                if (gap.count == 0) return;
 
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [self queryAddresses:gap completion:^(NSError *error) {
@@ -341,7 +341,7 @@ static NSData *getKeychainData(NSString *key)
         }];
     };
 
-    // check all the addresses in the wallet for transactions (generating addresses as needed)
+    // check all the addresses in the wallet for transactions (generating new addresses as needed)
     // generating addresses is slow, but addressesWithGapLimit is thread safe, so we can do that in a separate thread
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         // use external gap limit for the inernal chain to produce fewer network requests
@@ -362,7 +362,7 @@ static NSData *getKeychainData(NSString *key)
 }
 
 // Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
-// found that haven't been used in any transactions. This method returns array of <gapLimit> unused ZNAddressEntity
+// found that haven't been used in any transactions. This method returns an array of <gapLimit> unused ZNAddressEntity
 // objects following the last used address in the chain. The internal chain is used for change address and the external
 // chain for receive addresses.
 - (NSArray *)addressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal
@@ -383,36 +383,43 @@ static NSData *getKeychainData(NSString *key)
 
     if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
     
-    if (a.count >= gapLimit) {
+    if (a.count >= gapLimit) { // no new addresses need to be generated
         [a removeObjectsInRange:NSMakeRange(gapLimit, a.count - gapLimit)];
         return a;
     }
     
-    while (a.count < gapLimit) {
-        int32_t index = a.count ? [a.lastObject index] + 1 : count;
-        NSData *pubKey = [self.sequence publicKey:index internal:internal masterPublicKey:self.mpk];
-        NSString *addr = [[ZNKey keyWithPublicKey:pubKey] address];
+    @synchronized(self) {
+        // add any new addresses that were generated while waiting for mutex lock
+        req.predicate = [NSPredicate predicateWithFormat:@"internal == %@ && index >= %d", @(internal), count];
+        [a addObjectsFromArray:[ZNAddressEntity fetchObjects:req]];
+    
+        while (a.count < gapLimit) { // generate new addresses up to gapLimit
+            int32_t index = a.count ? [a.lastObject index] + 1 : count;
+            NSData *pubKey = [self.sequence publicKey:index internal:internal masterPublicKey:self.mpk];
+            NSString *addr = [[ZNKey keyWithPublicKey:pubKey] address];
 
-        if (! addr) {
-            NSLog(@"error generating keys");
-            return nil;
-        }
+            if (! addr) {
+                NSLog(@"error generating keys");
+                return nil;
+            }
 
-        ZNAddressEntity *address = [ZNAddressEntity entityWithAddress:addr index:index internal:internal];
+            // store new address in core data
+            ZNAddressEntity *address = [ZNAddressEntity entityWithAddress:addr index:index internal:internal];
             
-        [a addObject:address];
-        [newaddresses addObject:address];
+            [a addObject:address];
+            [newaddresses addObject:address];
+        }
     }
     
-    if (newaddresses.count) [[ZNSocketListener sharedInstance] subscribeToAddresses:newaddresses];
+    if (newaddresses.count > 0) [[ZNSocketListener sharedInstance] subscribeToAddresses:newaddresses];
     
-    return a;
+    return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
 }
 
 // query blockchain for transactions involving the given addresses
 - (void)queryAddresses:(NSArray *)addresses completion:(void (^)(NSError *error))completion
 {
-    if (! addresses.count) {
+    if (addresses.count == 0) {
         if (completion) completion(nil);
         return;
     }
@@ -453,7 +460,7 @@ static NSData *getKeychainData(NSString *key)
             
             [JSON[@"txs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                 // updateOrCreateWithJSON will return nil if the tx exists and no updates were made
-                ZNTransactionEntity *tx = [ZNTransactionEntity updateOrCreateWithJSON:obj];
+                ZNTransactionEntity *tx = [ZNTransactionEntity updateOrCreateWithJSON:obj]; // update core data tx objs
                 
                 if (tx.txHash) [self.updatedTxHashes addObject:tx.txHash];
             }];
@@ -491,7 +498,7 @@ static NSData *getKeychainData(NSString *key)
 // query blockchain for unspent outputs for the given addresses
 - (void)queryUnspentOutputs:(NSArray *)addresses completion:(void (^)(NSError *error))completion
 {
-    if (! addresses.count) {
+    if (addresses.count == 0) {
         if (completion) completion(nil);
         return;
     }
@@ -590,15 +597,14 @@ static NSData *getKeychainData(NSString *key)
     ZNAddressEntity *addr = [self addressesWithGapLimit:1 internal:internal].lastObject;
     int32_t i = addr.index;
     
-    // use previous address in chain if none of its transactions have at least 6 confimations
-    while (i > 0) {
+    while (i > 0) { // consider an address still unused if none of its transactions have at least 6 confimations
         ZNAddressEntity *a =
             [ZNAddressEntity objectsMatching:@"internal == %@ && index == %d", @(internal), --i].lastObject;
         
         if (a.txCount > 0) {
             NSArray *unspent = [ZNUnspentOutputEntity objectsMatching:@"address == %@ && confirmations < 6", a.address];
     
-            // if the unique txIndexes with < 6 confirms equals the txCount, then all tx have < 6 confirms
+            // if number of unique txIndexes with < 6 confirms is less than txCount, at least one tx has > 6 confirms
             if ([[NSSet setWithArray:[unspent valueForKey:@"primitiveTxIndex"]] count] < a.txCount) break;
         }
 

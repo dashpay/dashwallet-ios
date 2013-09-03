@@ -142,7 +142,7 @@
             localCurrencyLabel = (id)[cell viewWithTag:5];
             sentLabel = (id)[cell viewWithTag:6];
 
-            if (! self.transactions.count) {
+            if (self.transactions.count == 0) {
                 noTxLabel.hidden = NO;
                 textLabel.text = nil;
                 localCurrencyLabel.text = nil;
@@ -291,17 +291,17 @@
     return cell;
 }
 
-- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
-{
-    switch (section) {
-        case 0: return nil;//@"recent transactions";
-        case 1: return nil;//@"settings";
-        case 2: return @"caution";
-        default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, section);
-    }
-    
-    return nil;
-}
+//- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
+//{
+//    switch (section) {
+//        case 0: return nil;//@"recent transactions";
+//        case 1: return nil;//@"settings";
+//        case 2: return nil;//@"caution";
+//        default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, section);
+//    }
+//    
+//    return nil;
+//}
 
 #pragma mark - Table view delegate
 

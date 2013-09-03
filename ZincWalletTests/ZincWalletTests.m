@@ -53,14 +53,14 @@
 
 #pragma mark - testWallet
 
-//TODO: standard free transaction no change
-//TODO: standard free transaction with change
-//TODO: transaction with an output below 0.01
-//TODO: transaction with change below 0.01
-//TODO: transaction over 10k
-//TODO: free transaction who's inputs are too new to hit min free priority
-//TODO: transaction with change below min allowable output
-//TODO: test gap limit with gaps in chain less than the limit
+//TODO: test standard free transaction no change
+//TODO: test standard free transaction with change
+//TODO: test transaction with an output below 0.01
+//TODO: test transaction with change below 0.01
+//TODO: test transaction over 10k bytes
+//TODO: test free transaction who's inputs are too new to hit min free priority
+//TODO: test transaction with change below min allowable output
+//TODO: test gap limit with gaps in address chain less than the limit
 
 #pragma mark - testTransaction
 
@@ -162,7 +162,6 @@
     STAssertEqualObjects([mnemonic decodePhrase:s], @"8d02be487e1953ce2dd6c186fcc97e65".hexToData,
                          @"[ZNWallet encodePhrase:]");
 }
-
 
 #pragma mark - testElectrumMnemonic
 
