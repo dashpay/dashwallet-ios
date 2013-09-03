@@ -38,23 +38,27 @@
 
 + (instancetype)entityWithTxOutput:(ZNTxOutputEntity *)output
 {
-    ZNUnspentOutputEntity *e =
+    __block ZNUnspentOutputEntity *e =
         [self entityWithAddress:output.address txHash:output.transaction.txHash n:output.n value:output.value];
     
-    e.txIndex = output.txIndex;
-    
+    [[e managedObjectContext] performBlockAndWait:^{
+        e.txIndex = output.txIndex;
+    }];
+
     return e;
 }
 
 + (instancetype)entityWithAddress:(NSString *)address txHash:(NSData *)txHash n:(int32_t)n value:(int64_t)value
 {
-    ZNUnspentOutputEntity *e = [self managedObject];
-    NSMutableData *script = [NSMutableData data];
+    __block ZNUnspentOutputEntity *e = [self managedObject];
+    __block NSMutableData *script = [NSMutableData data];
     
-    [script appendScriptPubKeyForAddress:address];
-    [e setAddress:address txIndex:0 n:n value:value];
-    e.txHash = txHash;
-    e.script = script;
+    [[e managedObjectContext] performBlockAndWait:^{
+        [script appendScriptPubKeyForAddress:address];
+        [e setAddress:address txIndex:0 n:n value:value];
+        e.txHash = txHash;
+        e.script = script;
+    }];
     
     return e;
 }
@@ -65,11 +69,15 @@
     
     [super setAttributesFromJSON:JSON];
     
-    if ([JSON[@"tx_hash"] isKindOfClass:[NSString class]]) self.txHash = [JSON[@"tx_hash"] hexToData];
-    if ([JSON[@"tx_output_n"] isKindOfClass:[NSNumber class]]) self.n = [JSON[@"tx_output_n"] intValue];
-    if ([JSON[@"script"] isKindOfClass:[NSString class]]) self.script = [JSON[@"script"] hexToData];
-    if ([JSON[@"confirmations"] isKindOfClass:[NSNumber class]]) self.confirmations = [JSON[@"confirmations"] intValue];
-    self.address = [NSString addressWithScript:self.script];
+    [[self managedObjectContext] performBlockAndWait:^{
+        if ([JSON[@"tx_hash"] isKindOfClass:[NSString class]]) self.txHash = [JSON[@"tx_hash"] hexToData];
+        if ([JSON[@"tx_output_n"] isKindOfClass:[NSNumber class]]) self.n = [JSON[@"tx_output_n"] intValue];
+        if ([JSON[@"script"] isKindOfClass:[NSString class]]) self.script = [JSON[@"script"] hexToData];
+        if ([JSON[@"confirmations"] isKindOfClass:[NSNumber class]]) {
+            self.confirmations = [JSON[@"confirmations"] intValue];
+        }
+        self.address = [NSString addressWithScript:self.script];
+    }];
 
     return self;
 }

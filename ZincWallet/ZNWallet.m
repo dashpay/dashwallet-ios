@@ -51,10 +51,13 @@
 #import "ZNElectrumSequence.h"
 #endif
 
-#define BASE_URL    @"https://blockchain.info"
-#define UNSPENT_URL BASE_URL "/unspent?active="
-#define ADDRESS_URL BASE_URL "/multiaddr?active="
-#define PUSHTX_PATH @"/pushtx"
+#define BASE_URL       @"https://blockchain.info"
+#define UNSPENT_URL   BASE_URL "/unspent?active="
+#define ADDRESS_URL   BASE_URL "/multiaddr?active="
+#define PUSHTX_PATH   @"/pushtx"
+#define CURRENCY_SIGN @"\xC2\xA4"
+#define NBSP          @"\xC2\xA0"     // no-break space
+#define NARROW_NBSP   @"\xE2\x80\xAF" // narrow no-break space
 
 #define LATEST_BLOCK_HEIGHT_KEY    @"LATEST_BLOCK_HEIGHT"
 #define LATEST_BLOCK_TIMESTAMP_KEY @"LATEST_BLOCK_TIMESTAMP"
@@ -146,10 +149,10 @@ static NSData *getKeychainData(NSString *key)
     self.format.lenient = YES;
     self.format.numberStyle = NSNumberFormatterCurrencyStyle;
     self.format.minimumFractionDigits = 0;
-    self.format.positiveFormat =
-        [self.format.positiveFormat stringByReplacingOccurrencesOfString:@"¤" withString:@"¤ "];
-    self.format.negativeFormat =
-        [self.format.positiveFormat stringByReplacingOccurrencesOfString:@"¤" withString:@"¤ -"];
+    self.format.positiveFormat = [self.format.positiveFormat stringByReplacingOccurrencesOfString:CURRENCY_SIGN
+                                  withString:CURRENCY_SIGN NARROW_NBSP];
+    self.format.negativeFormat = [self.format.positiveFormat stringByReplacingOccurrencesOfString:CURRENCY_SIGN
+                                  withString:CURRENCY_SIGN NARROW_NBSP @"-"];
     //self.format.currencySymbol = @"m"BTC@" ";
     //self.format.maximumFractionDigits = 5;
     //self.format.maximum = @21000000000.0;
@@ -161,7 +164,8 @@ static NSData *getKeychainData(NSString *key)
     self.localFormat.lenient = YES;
     self.localFormat.numberStyle = NSNumberFormatterCurrencyStyle;
     self.localFormat.negativeFormat =
-        [self.localFormat.positiveFormat stringByReplacingOccurrencesOfString:@"¤" withString:@"¤-"];
+        [self.localFormat.positiveFormat stringByReplacingOccurrencesOfString:CURRENCY_SIGN
+         withString:CURRENCY_SIGN @"-"];
     
     return self;
 }
@@ -269,16 +273,10 @@ static NSData *getKeychainData(NSString *key)
     _synchronizing = YES;
     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncStartedNotification object:nil];
         
-    NSMutableArray *gap = [NSMutableArray array];
-    
-    // use external gap limit for the inernal chain to produce fewer network requests
-    [gap addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
-    [gap addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:YES]];
-
-    NSArray *used = [ZNAddressEntity objectsMatching:@"! (address IN %@)", [gap valueForKey:@"address"]];
+    __block NSMutableArray *gap = [NSMutableArray array];
     
     // a recursive block ARC retain loop is avoided by passing the block as an argument to itself... just shoot me now
-    void (^completion)(NSError *, id) = ^(NSError *error, id completion) {
+    __block void (^completion)(NSError *, id) = ^(NSError *error, id completion) {
         if (error) {
             _synchronizing = NO;
             [NSManagedObject saveContext];
@@ -332,11 +330,21 @@ static NSData *getKeychainData(NSString *key)
         }];
     };
     
-    self.updatedTxHashes = [NSMutableSet set];
-    
-    [self queryAddresses:[gap arrayByAddingObjectsFromArray:used] completion:^(NSError *error) {
-        completion(error, completion);
-    }];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        // use external gap limit for the inernal chain to produce fewer network requests
+        [gap addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
+        [gap addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:YES]];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSArray *used = [ZNAddressEntity objectsMatching:@"! (address IN %@)", [gap valueForKey:@"address"]];
+            
+            self.updatedTxHashes = [NSMutableSet set];
+            
+            [self queryAddresses:[gap arrayByAddingObjectsFromArray:used] completion:^(NSError *error) {
+                completion(error, completion);
+            }];
+        });
+    });
 }
 
 // returns array of gapLimit unused ZNAddressEntity objects following the last used address
@@ -348,11 +356,13 @@ static NSData *getKeychainData(NSString *key)
     req.predicate = [NSPredicate predicateWithFormat:@"internal == %@", @(internal)];
     req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"index" ascending:YES]];
     
-    NSMutableArray *a = [NSMutableArray arrayWithArray:[ZNAddressEntity fetchObjects:req]];
-    NSUInteger count = a.count, i = a.count;
+    __block NSMutableArray *a = [NSMutableArray arrayWithArray:[ZNAddressEntity fetchObjects:req]];
+    __block NSUInteger count = a.count, i = a.count;
 
     // keep only the trailing contiguous block of addresses with no transactions
-    while (i > 0 && [a[i - 1] txCount] == 0) i--;
+    [[NSManagedObject context] performBlockAndWait:^{
+        while (i > 0 && [a[i - 1] txCount] == 0) i--;
+    }];
 
     if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
     

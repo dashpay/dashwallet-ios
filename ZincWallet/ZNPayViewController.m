@@ -279,6 +279,7 @@
 {
     [super viewDidAppear:animated];
 
+    //TODO: on first sync, wallet must generate keys which takes several seconds even on an iPhone 5
     if ([[ZNWallet sharedInstance] timeSinceLastSync] > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
     else [[ZNSocketListener sharedInstance] openSocket];
 }
@@ -511,7 +512,12 @@
     
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
     [self.spinner startAnimating];
-    [[ZNWallet sharedInstance] synchronize];
+
+    if ([[ZNWallet sharedInstance] balance] == 0) self.navigationItem.title = @"syncing...";
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[ZNWallet sharedInstance] synchronize];
+    });
 }
 
 - (IBAction)page:(id)sender
@@ -632,7 +638,7 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
                 [hud hide:YES afterDelay:2.0];
             }];
         }
-        else {
+        else { // this should be wrapped in #ifdef for bluetooth support
             NSLog(@"sending signed request to %@", self.requestIDs[self.selectedIndex]);
         
             NSError *error = nil;

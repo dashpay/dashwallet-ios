@@ -9,7 +9,7 @@
         <!--Pay View Controller - First-->
         <scene sceneID="11">
             <objects>
-                <viewController title="First" id="2" customClass="ZNPayViewController" sceneMemberID="viewController">
+                <viewController title="First" wantsFullScreenLayout="YES" id="2" customClass="ZNPayViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="16">
                         <rect key="frame" x="0.0" y="20" width="320" height="548"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -18,7 +18,7 @@
                                 <rect key="frame" x="-40" y="20" width="480" height="548"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </imageView>
-                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" directionalLockEnabled="YES" alwaysBounceHorizontal="YES" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" indicatorStyle="white" bouncesZoom="NO" id="FiH-S7-Ich">
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" directionalLockEnabled="YES" alwaysBounceHorizontal="YES" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" indicatorStyle="white" delaysContentTouches="NO" bouncesZoom="NO" id="FiH-S7-Ich">
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="520"/>
                                 <autoresizingMask key="autoresizingMask" heightSizable="YES"/>
                                 <color key="backgroundColor" white="1" alpha="0.0" colorSpace="custom" customColorSpace="calibratedWhite"/>
@@ -71,7 +71,7 @@
         <!--Settings View Controller - mɃ 0.00000-->
         <scene sceneID="IWH-Ws-QLh">
             <objects>
-                <tableViewController id="ONk-2h-AQR" customClass="ZNSettingsViewController" sceneMemberID="viewController">
+                <tableViewController wantsFullScreenLayout="YES" id="ONk-2h-AQR" customClass="ZNSettingsViewController" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" directionalLockEnabled="YES" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" dataMode="prototypes" style="plain" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="SJ8-DJ-3aR">
                         <rect key="frame" x="0.0" y="20" width="320" height="548"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -215,13 +215,13 @@
         <!--View Controller-->
         <scene sceneID="6tF-9l-hjv">
             <objects>
-                <viewController storyboardIdentifier="ZNAboutViewController" id="b2e-Yj-tnf" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ZNAboutViewController" wantsFullScreenLayout="YES" id="b2e-Yj-tnf" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Caj-Y4-4Ch">
                         <rect key="frame" x="0.0" y="20" width="320" height="548"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" id="61a-av-Tj6">
-                                <rect key="frame" x="0.0" y="132" width="320" height="240"/>
+                                <rect key="frame" x="0.0" y="152" width="320" height="240"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" id="qVy-JO-nVM">
@@ -276,7 +276,7 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
         <!--Navigation Controller-->
         <scene sceneID="s6E-a9-Gyw">
             <objects>
-                <navigationController definesPresentationContext="YES" id="wFs-aD-OST" sceneMemberID="viewController">
+                <navigationController wantsFullScreenLayout="YES" definesPresentationContext="YES" id="wFs-aD-OST" sceneMemberID="viewController">
                     <navigationItem key="navigationItem" id="BD4-0j-VHW"/>
                     <simulatedStatusBarMetrics key="simulatedStatusBarMetrics" statusBarStyle="blackTranslucent"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" barStyle="blackTranslucent" id="SIy-7t-6Bs">
@@ -294,7 +294,7 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
         <!--Navigation Controller-->
         <scene sceneID="qFS-wE-zrI">
             <objects>
-                <navigationController storyboardIdentifier="ZNNewWalletNav" definesPresentationContext="YES" modalTransitionStyle="flipHorizontal" id="0YK-DC-haY" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="ZNNewWalletNav" wantsFullScreenLayout="YES" definesPresentationContext="YES" modalTransitionStyle="flipHorizontal" id="0YK-DC-haY" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" barStyle="blackTranslucent" id="4la-fh-n1o">
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
@@ -311,7 +311,7 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
         <!--Welcome View Controller-->
         <scene sceneID="cBw-L4-R3S">
             <objects>
-                <viewController id="QxK-Kh-aHV" customClass="ZNWelcomeViewController" sceneMemberID="viewController">
+                <viewController wantsFullScreenLayout="YES" id="QxK-Kh-aHV" customClass="ZNWelcomeViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="kX6-xW-Dgi">
                         <rect key="frame" x="0.0" y="20" width="320" height="548"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -391,7 +391,7 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
         <!--View Controller-->
         <scene sceneID="okc-fX-F97">
             <objects>
-                <viewController id="Xvz-1X-lXH" sceneMemberID="viewController">
+                <viewController wantsFullScreenLayout="YES" id="Xvz-1X-lXH" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="nto-zs-Cc4">
                         <rect key="frame" x="0.0" y="20" width="320" height="548"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -461,7 +461,7 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
         <!--Restore View Controller - backup phrase:-->
         <scene sceneID="eyO-J6-B3x">
             <objects>
-                <viewController id="V5i-az-h7s" customClass="ZNRestoreViewController" sceneMemberID="viewController">
+                <viewController wantsFullScreenLayout="YES" id="V5i-az-h7s" customClass="ZNRestoreViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="0Vw-iJ-oHv">
                         <rect key="frame" x="0.0" y="20" width="320" height="548"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -492,7 +492,7 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
         <!--Navigation Controller-->
         <scene sceneID="d5q-zo-uy4">
             <objects>
-                <navigationController definesPresentationContext="YES" modalTransitionStyle="flipHorizontal" id="jaw-AS-YG5" sceneMemberID="viewController">
+                <navigationController wantsFullScreenLayout="YES" definesPresentationContext="YES" modalTransitionStyle="flipHorizontal" id="jaw-AS-YG5" sceneMemberID="viewController">
                     <simulatedStatusBarMetrics key="simulatedStatusBarMetrics" statusBarStyle="blackTranslucent"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" barStyle="blackTranslucent" id="QD8-9d-Z2F">
                         <autoresizingMask key="autoresizingMask"/>
@@ -508,7 +508,7 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
         <!--View Controller-->
         <scene sceneID="rAN-mf-8lr">
             <objects>
-                <viewController storyboardIdentifier="ZNSplashViewController" modalTransitionStyle="flipHorizontal" id="dsx-Q5-pFS" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ZNSplashViewController" wantsFullScreenLayout="YES" modalTransitionStyle="flipHorizontal" id="dsx-Q5-pFS" sceneMemberID="viewController">
                     <imageView key="view" userInteractionEnabled="NO" contentMode="bottom" image="Default-568h.png" id="Gk0-vW-9Mh">
                         <rect key="frame" x="0.0" y="20" width="320" height="548"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -521,13 +521,13 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
         <!--Receive View Controller-->
         <scene sceneID="8v2-cF-YM5">
             <objects>
-                <viewController storyboardIdentifier="ZNReceiveViewController" id="toP-Vb-grN" customClass="ZNReceiveViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ZNReceiveViewController" wantsFullScreenLayout="YES" id="toP-Vb-grN" customClass="ZNReceiveViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Fln-In-Cdh">
                         <rect key="frame" x="0.0" y="20" width="320" height="548"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <view contentMode="scaleToFill" id="Sib-FI-j3a">
-                                <rect key="frame" x="0.0" y="130" width="320" height="340"/>
+                                <rect key="frame" x="0.0" y="146" width="320" height="340"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <subviews>
                                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="receive address:" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Lel-6K-GPE">
@@ -595,13 +595,13 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
         <!--Amount View Controller - mɃ 0.00000-->
         <scene sceneID="6VG-zW-rjY">
             <objects>
-                <viewController storyboardIdentifier="ZNAmountViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="asW-9a-XhX" customClass="ZNAmountViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ZNAmountViewController" wantsFullScreenLayout="YES" useStoryboardIdentifierAsRestorationIdentifier="YES" id="asW-9a-XhX" customClass="ZNAmountViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="eUy-Ub-KH0">
                         <rect key="frame" x="0.0" y="20" width="320" height="548"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <textField opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.67000000000000004" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="mɃ 0.00000" textAlignment="right" adjustsFontSizeToFit="NO" minimumFontSize="24" id="U70-Jh-YtO">
-                                <rect key="frame" x="20" y="49" width="280" height="55"/>
+                                <rect key="frame" x="20" y="69" width="280" height="55"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="24"/>
                                 <textInputTraits key="textInputTraits" keyboardType="numberPad"/>
@@ -610,7 +610,7 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
                                 </connections>
                             </textField>
                             <view contentMode="scaleToFill" id="zOV-94-bRb">
-                                <rect key="frame" x="20" y="105" width="280" height="1"/>
+                                <rect key="frame" x="20" y="125" width="280" height="1"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
                             </view>
@@ -975,7 +975,7 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
         <!--Seed View Controller-->
         <scene sceneID="YlC-6d-aqm">
             <objects>
-                <viewController storyboardIdentifier="ZNSeedViewController" id="YDc-aF-His" customClass="ZNSeedViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ZNSeedViewController" wantsFullScreenLayout="YES" id="YDc-aF-His" customClass="ZNSeedViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="DI1-iM-mIf">
                         <rect key="frame" x="0.0" y="20" width="320" height="548"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -984,25 +984,32 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="548"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </imageView>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="This is your wallet backup phrase" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="0Dr-uM-kcV">
-                                <rect key="frame" x="20" y="95" width="280" height="21"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-Medium" family="Helvetica Neue" pointSize="17"/>
-                                <color key="textColor" white="0.40000000000000002" alpha="1" colorSpace="calibratedWhite"/>
-                                <nil key="highlightedColor"/>
-                                <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                <size key="shadowOffset" width="0.0" height="1"/>
-                            </label>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="WRITE IT DOWN and keep it safe. Lose it and your bitcoins are gone forever." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="u8B-dk-OsH">
-                                <rect key="frame" x="20" y="124" width="280" height="42"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
-                                <nil key="highlightedColor"/>
-                                <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                <size key="shadowOffset" width="0.0" height="1"/>
-                            </label>
+                            <view contentMode="scaleToFill" id="wfg-uQ-Gfo">
+                                <rect key="frame" x="0.0" y="115" width="320" height="71"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                <subviews>
+                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="This is your wallet backup phrase" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="0Dr-uM-kcV">
+                                        <rect key="frame" x="20" y="0.0" width="280" height="21"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <fontDescription key="fontDescription" name="HelveticaNeue-Medium" family="Helvetica Neue" pointSize="17"/>
+                                        <color key="textColor" white="0.40000000000000002" alpha="1" colorSpace="calibratedWhite"/>
+                                        <nil key="highlightedColor"/>
+                                        <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        <size key="shadowOffset" width="0.0" height="1"/>
+                                    </label>
+                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="WRITE IT DOWN and keep it safe. Lose it and your bitcoins are gone forever." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="u8B-dk-OsH">
+                                        <rect key="frame" x="20" y="29" width="280" height="42"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
+                                        <nil key="highlightedColor"/>
+                                        <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        <size key="shadowOffset" width="0.0" height="1"/>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                            </view>
                             <view contentMode="scaleToFill" id="rln-83-F8o">
-                                <rect key="frame" x="0.0" y="193" width="320" height="160"/>
+                                <rect key="frame" x="0.0" y="233" width="320" height="160"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" id="RyL-1R-UD2">
@@ -1069,9 +1076,9 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
                         <outlet property="logo" destination="gZK-WH-4nS" id="4Ki-Fi-VKg"/>
                         <outlet property="seedLabel" destination="G6I-gf-wQK" id="xZ9-MU-iLm"/>
                         <outlet property="wallpaper" destination="19u-ww-OAk" id="OCl-Ct-Aq2"/>
+                        <outletCollection property="otherLabels" destination="SHe-lM-jN1" id="9fO-1c-Bf8"/>
                         <outletCollection property="otherLabels" destination="0Dr-uM-kcV" id="0n9-kY-7eN"/>
                         <outletCollection property="otherLabels" destination="u8B-dk-OsH" id="QAU-Vd-lER"/>
-                        <outletCollection property="otherLabels" destination="SHe-lM-jN1" id="9fO-1c-Bf8"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="FoE-LD-Loz" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1081,7 +1088,7 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
         <!--Navigation Controller-->
         <scene sceneID="qbV-Kl-jGa">
             <objects>
-                <navigationController storyboardIdentifier="ZNEraseNav" definesPresentationContext="YES" id="9BH-Hw-65r" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="ZNEraseNav" wantsFullScreenLayout="YES" definesPresentationContext="YES" id="9BH-Hw-65r" sceneMemberID="viewController">
                     <simulatedStatusBarMetrics key="simulatedStatusBarMetrics" statusBarStyle="blackTranslucent"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" barStyle="blackTranslucent" id="2Ct-UV-mSm">
                         <autoresizingMask key="autoresizingMask"/>
@@ -1097,7 +1104,7 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
         <!--Restore View Controller - confirm wipe-->
         <scene sceneID="nsy-lO-eMP">
             <objects>
-                <viewController id="yia-gn-YeR" customClass="ZNRestoreViewController" sceneMemberID="viewController">
+                <viewController wantsFullScreenLayout="YES" id="yia-gn-YeR" customClass="ZNRestoreViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="7Xr-Fc-cgr">
                         <rect key="frame" x="0.0" y="20" width="320" height="548"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -1107,7 +1114,7 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </imageView>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Enter your wallet backup phrase to wipe this wallet and restore or start a new one:" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="DYH-TG-7mB">
-                                <rect key="frame" x="15" y="44" width="289" height="60"/>
+                                <rect key="frame" x="15" y="64" width="289" height="60"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
                                 <nil key="highlightedColor"/>
@@ -1115,7 +1122,7 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
                                 <size key="shadowOffset" width="0.0" height="1"/>
                             </label>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" id="FFW-ZQ-rzj">
-                                <rect key="frame" x="12" y="112" width="296" height="204"/>
+                                <rect key="frame" x="12" y="132" width="296" height="184"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.67000000000000004" colorSpace="calibratedRGB"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
@@ -1147,7 +1154,7 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
         <!--Navigation Controller-->
         <scene sceneID="cpQ-Xn-G9w">
             <objects>
-                <navigationController definesPresentationContext="YES" id="dNo-Sm-bI0" sceneMemberID="viewController">
+                <navigationController wantsFullScreenLayout="YES" definesPresentationContext="YES" id="dNo-Sm-bI0" sceneMemberID="viewController">
                     <simulatedStatusBarMetrics key="simulatedStatusBarMetrics" statusBarStyle="blackTranslucent"/>
                     <nil key="simulatedBottomBarMetrics"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" barStyle="blackTranslucent" id="2le-zU-AuV">
@@ -1195,9 +1202,6 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
         <class className="ZNPayViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/ZNPayViewController.h"/>
             <relationships>
-                <relationship kind="action" name="doIt:"/>
-                <relationship kind="action" name="page:"/>
-                <relationship kind="action" name="refresh:"/>
                 <relationship kind="outlet" name="pageControl" candidateClass="UIPageControl"/>
                 <relationship kind="outlet" name="refreshButton" candidateClass="UIBarButtonItem"/>
                 <relationship kind="outlet" name="scrollView" candidateClass="UIScrollView"/>

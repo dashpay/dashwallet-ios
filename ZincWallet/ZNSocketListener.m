@@ -123,11 +123,13 @@
         return;
     }
     
-    NSMutableString *msg = [NSMutableString string];
+    __block NSMutableString *msg = [NSMutableString string];
     
-    for (ZNAddressEntity *a in addresses) {
-        [msg appendFormat:@"{\"op\":\"addr_sub\", \"addr\":\"%@\"}", a.address];
-    }
+    [[NSManagedObject context] performBlockAndWait:^{
+        for (ZNAddressEntity *a in addresses) {
+            [msg appendFormat:@"{\"op\":\"addr_sub\", \"addr\":\"%@\"}", a.address];
+        }
+    }];
     
     NSLog(@"Websocket: %@", msg);
     

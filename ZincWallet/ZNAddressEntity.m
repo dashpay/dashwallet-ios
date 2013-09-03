@@ -38,11 +38,13 @@
 {
     ZNAddressEntity *e = [self managedObject];
 
-    e.address = address;
-    e.index = index;
-    e.internal = internal;
-    e.newTx = NO;
-    e.txCount = 0;
+    [e.managedObjectContext performBlockAndWait:^{
+        e.address = address;
+        e.index = index;
+        e.internal = internal;
+        e.newTx = NO;
+        e.txCount = 0;
+    }];
     
     return e;
 }
@@ -52,14 +54,18 @@
 {
     if (! [JSON isKindOfClass:[NSDictionary class]] || ! [JSON[@"address"] isKindOfClass:[NSString class]]) return nil;
     
-    ZNAddressEntity *address = [self objectsMatching:@"address == %@", JSON[@"address"]].lastObject;
+    __block ZNAddressEntity *address = [self objectsMatching:@"address == %@", JSON[@"address"]].lastObject, *ret;
     
-    if (address && [JSON[@"n_tx"] isKindOfClass:[NSNumber class]] && [JSON[@"n_tx"] intValue] != address.txCount) {
-        address.txCount = [JSON[@"n_tx"] intValue];
-        address.newTx = YES;
-        return address;
-    }
-    else return nil;
+    [[address managedObjectContext] performBlockAndWait:^{
+        if (address && [JSON[@"n_tx"] isKindOfClass:[NSNumber class]] && [JSON[@"n_tx"] intValue] != address.txCount) {
+            address.txCount = [JSON[@"n_tx"] intValue];
+            address.newTx = YES;
+            ret = address;
+        }
+        else ret = nil;
+    }];
+    
+    return ret;
 }
 
 @end

@@ -61,81 +61,86 @@
 {
     if (! [JSON isKindOfClass:[NSDictionary class]]) return self;
     
-    if ([JSON[@"hash"] isKindOfClass:[NSString class]]) self.txHash = [JSON[@"hash"] hexToData];
-    if ([JSON[@"block_height"] isKindOfClass:[NSNumber class]]) self.blockHeight = [JSON[@"block_height"] intValue];
-    if ([JSON[@"time"] isKindOfClass:[NSNumber class]]) self.timeStamp = [JSON[@"time"] doubleValue];
-    if ([JSON[@"tx_index"] isKindOfClass:[NSNumber class]]) self.txIndex = [JSON[@"tx_index"] longLongValue];
-
-    if ([JSON[@"inputs"] isKindOfClass:[NSArray class]]) {
-        NSMutableOrderedSet *inputs = [self mutableOrderedSetValueForKey:@"inputs"];
+    [[self managedObjectContext] performBlockAndWait:^{
+        if ([JSON[@"hash"] isKindOfClass:[NSString class]]) self.txHash = [JSON[@"hash"] hexToData];
+        if ([JSON[@"block_height"] isKindOfClass:[NSNumber class]]) self.blockHeight = [JSON[@"block_height"] intValue];
+        if ([JSON[@"time"] isKindOfClass:[NSNumber class]]) self.timeStamp = [JSON[@"time"] doubleValue];
+        if ([JSON[@"tx_index"] isKindOfClass:[NSNumber class]]) self.txIndex = [JSON[@"tx_index"] longLongValue];
+        
+        if ([JSON[@"inputs"] isKindOfClass:[NSArray class]]) {
+            NSMutableOrderedSet *inputs = [self mutableOrderedSetValueForKey:@"inputs"];
     
-        while ([JSON[@"inputs"] count] >= inputs.count) {
-            [inputs addObject:[ZNTxInputEntity managedObject]];
-        }
+            while ([JSON[@"inputs"] count] >= inputs.count) {
+                [inputs addObject:[ZNTxInputEntity managedObject]];
+            }
 
-        [[JSON[@"inputs"] valueForKey:@"prev_out"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            [inputs[idx] setAttributesFromJSON:obj];
-        }];
+            [[JSON[@"inputs"] valueForKey:@"prev_out"]
+            enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                [inputs[idx] setAttributesFromJSON:obj];
+            }];
         
-        while (inputs.count > [JSON[@"inputs"] count]) {
-            [inputs removeObjectAtIndex:inputs.count - 1];
+            while (inputs.count > [JSON[@"inputs"] count]) {
+                [inputs removeObjectAtIndex:inputs.count - 1];
+            }
         }
-    }
     
-    if ([JSON[@"out"] isKindOfClass:[NSArray class]]) {
-        NSMutableOrderedSet *outputs = [self mutableOrderedSetValueForKey:@"outputs"];
-        
-        while ([JSON[@"out"] count] >= outputs.count) {
-            [outputs addObject:[ZNTxOutputEntity managedObject]];
-        }
+        if ([JSON[@"out"] isKindOfClass:[NSArray class]]) {
+            NSMutableOrderedSet *outputs = [self mutableOrderedSetValueForKey:@"outputs"];
+            
+            while ([JSON[@"out"] count] >= outputs.count) {
+                [outputs addObject:[ZNTxOutputEntity managedObject]];
+            }
 
-        [JSON[@"out"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            [outputs[idx] setAttributesFromJSON:obj];
-        }];
+            [JSON[@"out"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                [outputs[idx] setAttributesFromJSON:obj];
+            }];
         
-        while (outputs.count > [JSON[@"out"] count]) {
-            [outputs removeObjectAtIndex:outputs.count - 1];
+            while (outputs.count > [JSON[@"out"] count]) {
+                [outputs removeObjectAtIndex:outputs.count - 1];
+            }
         }
-    }
+    }];
     
     return self;
 }
 
 - (instancetype)setAttributesFromTx:(ZNTransaction *)tx
 {
-    NSMutableOrderedSet *inputs = [self mutableOrderedSetValueForKey:@"inputs"];
-    NSMutableOrderedSet *outputs = [self mutableOrderedSetValueForKey:@"outputs"];
-    
-    self.txHash = tx.txHash;
-    if (self.timeStamp < 1.0) self.timeStamp = [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970;
-    
-    while (inputs.count < tx.inputHashes.count) {
-        [inputs addObject:[ZNTxInputEntity managedObject]];
-    }
-    
-    while (inputs.count > tx.inputHashes.count) {
-        [inputs removeObjectAtIndex:inputs.count - 1];
-    }
-    
-    [inputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        ZNUnspentOutputEntity *o = [ZNUnspentOutputEntity objectsMatching:@"txHash == %@ && n == %d",
-                                    tx.inputHashes[idx], [tx.inputIndexes[idx] intValue]].lastObject;
+    [[self managedObjectContext] performBlockAndWait:^{
+        NSMutableOrderedSet *inputs = [self mutableOrderedSetValueForKey:@"inputs"];
+        NSMutableOrderedSet *outputs = [self mutableOrderedSetValueForKey:@"outputs"];
         
-        if (o) [obj setAddress:o.address txIndex:o.txIndex n:o.n value:o.value];
-        else [obj setAddress:tx.inputAddresses[idx] txIndex:0 n:[tx.inputIndexes[idx] intValue] value:0];
-    }];
-
-    while (outputs.count < tx.outputAddresses.count) {
-        [outputs addObject:[ZNTxOutputEntity managedObject]];
-    }
+        self.txHash = tx.txHash;
+        if (self.timeStamp < 1.0) self.timeStamp = [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970;
     
-    while (outputs.count > tx.outputAddresses.count) {
-        [self removeObjectFromOutputsAtIndex:outputs.count - 1];
-    }
+        while (inputs.count < tx.inputHashes.count) {
+            [inputs addObject:[ZNTxInputEntity managedObject]];
+        }
+    
+        while (inputs.count > tx.inputHashes.count) {
+            [inputs removeObjectAtIndex:inputs.count - 1];
+        }
+    
+        [inputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            ZNUnspentOutputEntity *o = [ZNUnspentOutputEntity objectsMatching:@"txHash == %@ && n == %d",
+                                        tx.inputHashes[idx], [tx.inputIndexes[idx] intValue]].lastObject;
+        
+            if (o) [obj setAddress:o.address txIndex:o.txIndex n:o.n value:o.value];
+            else [obj setAddress:tx.inputAddresses[idx] txIndex:0 n:[tx.inputIndexes[idx] intValue] value:0];
+        }];
 
-    [outputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        [(ZNTxOutputEntity *)obj setAddress:tx.outputAddresses[idx] txIndex:0 n:idx
-         value:[tx.outputAmounts[idx] longLongValue]];
+        while (outputs.count < tx.outputAddresses.count) {
+            [outputs addObject:[ZNTxOutputEntity managedObject]];
+        }
+    
+        while (outputs.count > tx.outputAddresses.count) {
+            [self removeObjectFromOutputsAtIndex:outputs.count - 1];
+        }
+
+        [outputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            [(ZNTxOutputEntity *)obj setAddress:tx.outputAddresses[idx] txIndex:0 n:idx
+             value:[tx.outputAmounts[idx] longLongValue]];
+        }];
     }];
     
     return self;

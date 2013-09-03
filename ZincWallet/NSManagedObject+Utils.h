@@ -45,7 +45,7 @@
 
 + (NSString *)entityName;
 + (NSFetchRequest *)fetchRequest;
-+ (NSFetchedResultsController *)fetchedResultsControllerWithFetchRequest:(NSFetchRequest *)request;
++ (NSFetchedResultsController *)fetchedResultsController:(NSFetchRequest *)request;
 
 - (void)deleteObject;
 

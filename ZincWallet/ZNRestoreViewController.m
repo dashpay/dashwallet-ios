@@ -47,11 +47,13 @@
 
 @implementation ZNRestoreViewController
 
-// TODO: create secure versions of keyboard and UILabel and use in place of UITextView
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+ 
+    // TODO: create secure versions of keyboard and UILabel and use in place of UITextView
+    // TODO: autocomplete based on 4 letter prefixes of BIP39 words
     
     self.textView.layer.cornerRadius = 5.0;
     

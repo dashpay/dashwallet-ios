@@ -79,7 +79,6 @@
     request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:key ascending:ascending]];
     request.fetchOffset = offset;
     request.fetchLimit = limit;
-    
     return [self fetchObjects:request];
 }
 
@@ -215,7 +214,7 @@
     return [NSFetchRequest fetchRequestWithEntityName:[self entityName]];
 }
 
-+ (NSFetchedResultsController *)fetchedResultsControllerWithFetchRequest:(NSFetchRequest *)request
++ (NSFetchedResultsController *)fetchedResultsController:(NSFetchRequest *)request
 {
     __block NSFetchedResultsController *c = nil;
 

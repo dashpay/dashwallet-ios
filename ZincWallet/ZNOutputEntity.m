@@ -43,21 +43,25 @@
 - (instancetype)setAttributesFromJSON:(NSDictionary *)JSON
 {
     if (! [JSON isKindOfClass:[NSDictionary class]]) return self;
-    
-    if ([JSON[@"addr"] isKindOfClass:[NSString class]]) self.address = [NSString stringWithString:JSON[@"addr"]];
-    if ([JSON[@"n"] isKindOfClass:[NSNumber class]]) self.n = [JSON[@"n"] intValue];
-    if ([JSON[@"tx_index"] isKindOfClass:[NSNumber class]]) self.txIndex = [JSON[@"tx_index"] longLongValue];
-    if ([JSON[@"value"] isKindOfClass:[NSNumber class]]) self.value = [JSON[@"value"] longLongValue];
+ 
+    [[self managedObjectContext] performBlockAndWait:^{
+        if ([JSON[@"addr"] isKindOfClass:[NSString class]]) self.address = [NSString stringWithString:JSON[@"addr"]];
+        if ([JSON[@"n"] isKindOfClass:[NSNumber class]]) self.n = [JSON[@"n"] intValue];
+        if ([JSON[@"tx_index"] isKindOfClass:[NSNumber class]]) self.txIndex = [JSON[@"tx_index"] longLongValue];
+        if ([JSON[@"value"] isKindOfClass:[NSNumber class]]) self.value = [JSON[@"value"] longLongValue];
+    }];
     
     return self;
 }
 
 - (instancetype)setAddress:(NSString *)address txIndex:(int64_t)txIndex n:(int32_t)n value:(int64_t)value
 {
-    if (address.length) self.address = address;
-    if (txIndex > 0) self.txIndex = txIndex;
-    if (n >= 0 && n != NSNotFound) self.n = n;
-    if (value > 0) self.value = value;
+    [[self managedObjectContext] performBlockAndWait:^{
+        if (address.length) self.address = address;
+        if (txIndex > 0) self.txIndex = txIndex;
+        if (n >= 0 && n != NSNotFound) self.n = n;
+        if (value > 0) self.value = value;
+    }];
     
     return self;
 }
