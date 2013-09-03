@@ -276,7 +276,7 @@
 
             switch (indexPath.row) {
                 case 0:
-                    cell.textLabel.text = @"restore or start a new wallet";
+                    cell.textLabel.text = @"start/restore another wallet";
                     break;
                                         
                 default:
@@ -296,7 +296,7 @@
     switch (section) {
         case 0: return nil;//@"recent transactions";
         case 1: return nil;//@"settings";
-        case 2: return @"caution ⇣";
+        case 2: return @"caution";
         default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, section);
     }
     
@@ -346,8 +346,8 @@
             return 22;
             
         case 2:
-            h = tableView.frame.size.height - self.navigationController.navigationBar.frame.size.height;
-            
+            h = tableView.frame.size.height - self.navigationController.navigationBar.frame.size.height - 20.0 - 44.0;
+
             for (int s = 0; s < section; s++) {
                 h -= [self tableView:tableView heightForHeaderInSection:s];
 

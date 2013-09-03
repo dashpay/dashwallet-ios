@@ -54,18 +54,19 @@
 {
     if (! [JSON isKindOfClass:[NSDictionary class]] || ! [JSON[@"address"] isKindOfClass:[NSString class]]) return nil;
     
-    __block ZNAddressEntity *address = [self objectsMatching:@"address == %@", JSON[@"address"]].lastObject, *ret;
+    __block ZNAddressEntity *address = [self objectsMatching:@"address == %@", JSON[@"address"]].lastObject;
+    
+    if (! address) return nil;
     
     [[address managedObjectContext] performBlockAndWait:^{
-        if (address && [JSON[@"n_tx"] isKindOfClass:[NSNumber class]] && [JSON[@"n_tx"] intValue] != address.txCount) {
+        if ([JSON[@"n_tx"] isKindOfClass:[NSNumber class]] && [JSON[@"n_tx"] intValue] != address.txCount) {
             address.txCount = [JSON[@"n_tx"] intValue];
             address.newTx = YES;
-            ret = address;
         }
-        else ret = nil;
+        else address = nil;
     }];
     
-    return ret;
+    return address;
 }
 
 @end

@@ -988,8 +988,8 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
                                 <rect key="frame" x="0.0" y="115" width="320" height="71"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <subviews>
-                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="This is your wallet backup phrase" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="0Dr-uM-kcV">
-                                        <rect key="frame" x="20" y="0.0" width="280" height="21"/>
+                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="This is your wallet backup phrase." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="0Dr-uM-kcV">
+                                        <rect key="frame" x="19" y="0.0" width="282" height="21"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Medium" family="Helvetica Neue" pointSize="17"/>
                                         <color key="textColor" white="0.40000000000000002" alpha="1" colorSpace="calibratedWhite"/>
@@ -997,8 +997,8 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
                                         <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         <size key="shadowOffset" width="0.0" height="1"/>
                                     </label>
-                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="WRITE IT DOWN and keep it safe. Lose it and your bitcoins are gone forever." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="u8B-dk-OsH">
-                                        <rect key="frame" x="20" y="29" width="280" height="42"/>
+                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="WRITE IT DOWN and keep it safe. Lose it and you may lose your bitcoins forever." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="u8B-dk-OsH">
+                                        <rect key="frame" x="20" y="29" width="282" height="43"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
                                         <nil key="highlightedColor"/>
@@ -1101,7 +1101,7 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
             </objects>
             <point key="canvasLocation" x="1676" y="326"/>
         </scene>
-        <!--Restore View Controller - confirm wipe-->
+        <!--Restore View Controller - confirm-->
         <scene sceneID="nsy-lO-eMP">
             <objects>
                 <viewController wantsFullScreenLayout="YES" id="yia-gn-YeR" customClass="ZNRestoreViewController" sceneMemberID="viewController">
@@ -1113,16 +1113,16 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="548"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </imageView>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Enter your wallet backup phrase to wipe this wallet and restore or start a new one:" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="DYH-TG-7mB">
-                                <rect key="frame" x="15" y="64" width="289" height="60"/>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Enter this wallet's backup phrase to wipe it and start/restore another. Your current balance remains on this phrase." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="DYH-TG-7mB">
+                                <rect key="frame" x="15" y="64" width="290" height="67"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
                                 <nil key="highlightedColor"/>
                                 <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <size key="shadowOffset" width="0.0" height="1"/>
                             </label>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" id="FFW-ZQ-rzj">
-                                <rect key="frame" x="12" y="132" width="296" height="184"/>
+                                <rect key="frame" x="12" y="144" width="296" height="175"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.67000000000000004" colorSpace="calibratedRGB"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
@@ -1134,7 +1134,7 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                     </view>
-                    <navigationItem key="navigationItem" title="confirm wipe" id="HeJ-Db-2RQ">
+                    <navigationItem key="navigationItem" title="confirm" id="HeJ-Db-2RQ">
                         <barButtonItem key="leftBarButtonItem" title="cancel" id="fzo-HD-Vdr">
                             <color key="tintColor" white="0.94999999999999996" alpha="1" colorSpace="calibratedWhite"/>
                             <connections>

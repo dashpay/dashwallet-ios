@@ -125,7 +125,7 @@
     
     __block NSMutableString *msg = [NSMutableString string];
     
-    [[NSManagedObject context] performBlockAndWait:^{
+    [[addresses.lastObject managedObjectContext] performBlockAndWait:^{
         for (ZNAddressEntity *a in addresses) {
             [msg appendFormat:@"{\"op\":\"addr_sub\", \"addr\":\"%@\"}", a.address];
         }

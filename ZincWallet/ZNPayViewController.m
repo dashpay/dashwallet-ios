@@ -279,7 +279,6 @@
 {
     [super viewDidAppear:animated];
 
-    //TODO: on first sync, wallet must generate keys which takes several seconds even on an iPhone 5
     if ([[ZNWallet sharedInstance] timeSinceLastSync] > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
     else [[ZNSocketListener sharedInstance] openSocket];
 }

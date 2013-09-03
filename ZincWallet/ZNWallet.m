@@ -187,14 +187,16 @@ static NSData *getKeychainData(NSString *key)
     if (seed && [self.seed isEqual:seed]) return;
     
     setKeychainData(seed, SEED_KEY);
-        
+    
     _synchronizing = NO;
-    self.mpk = nil;
+    self.mpk = nil; // reset master public key
 
+    // remove all core data wallet data
     [[ZNAddressEntity allObjects] makeObjectsPerformSelector:@selector(deleteObject)];
     [[ZNTransactionEntity allObjects] makeObjectsPerformSelector:@selector(deleteObject)];
     [[ZNUnspentOutputEntity allObjects] makeObjectsPerformSelector:@selector(deleteObject)];
-        
+    
+    // clean out wallet values in user defaults
     [_defs removeObjectForKey:LAST_SYNC_TIME_KEY];
 
     [NSManagedObject saveContext];
@@ -250,10 +252,12 @@ static NSData *getKeychainData(NSString *key)
     [[ZNTransactionEntity objectsMatching:@"blockHeight == 0"]
     enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         ZNTransactionEntity *tx = obj;
-            
+        
+        // check each tx input
         [tx.inputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             ZNTxInputEntity *i = obj;
             
+            // if the input is unspent, or spent by a confirmed transaction, delete the unconfirmed tx
             if ([ZNUnspentOutputEntity countObjectsMatching:@"txIndex == %lld && n == %d", i.txIndex, i.n] > 0 ||
                 [ZNTxInputEntity countObjectsMatching:@"txIndex == %lld && n == %d && transaction.blockHeight > 0",
                 i.txIndex, i.n] > 0) {
@@ -287,16 +291,21 @@ static NSData *getKeychainData(NSString *key)
             return;
         }
         
+        // check for previously empty addresses that now have transactions
         [gap filterUsingPredicate:[NSPredicate predicateWithFormat:@"txCount > 0"]];
         
-        if (gap.count > 0) {
-            [gap setArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
-            [gap addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:YES]];
-            if (! gap.count) return;
+        if (gap.count > 0) { // take the next set of empty addresses and check them for transactions
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                [gap setArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
+                [gap addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:YES]];
+                if (! gap.count) return;
 
-            [self queryAddresses:gap completion:^(NSError *error) {
-                ((void (^)(NSError *, id))completion)(error, completion);
-            }];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self queryAddresses:gap completion:^(NSError *error) {
+                        ((void (^)(NSError *, id))completion)(error, completion);
+                    }];
+                });
+            });
             return;
         }
         
@@ -305,6 +314,7 @@ static NSData *getKeychainData(NSString *key)
         [[ZNTransactionEntity objectsMatching:@"blockHeight == 0 && ! (txHash IN %@)", self.updatedTxHashes]
          makeObjectsPerformSelector:@selector(deleteObject)];
 
+        // update the unspent outputs for addresses that have new transactions
         [self queryUnspentOutputs:[ZNAddressEntity objectsMatching:@"newTx == YES"] completion:^(NSError *error) {
             _synchronizing = NO;
             
@@ -317,6 +327,7 @@ static NSData *getKeychainData(NSString *key)
                 return;
             }
             
+            // remove any transactions that failed
             [self cleanUnconfirmed];
             
             [NSManagedObject saveContext];
@@ -329,7 +340,9 @@ static NSData *getKeychainData(NSString *key)
             [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:nil];
         }];
     };
-    
+
+    // check all the addresses in the wallet for transactions (generating addresses as needed)
+    // generating addresses is slow, but addressesWithGapLimit is thread safe, so we can do that in a separate thread
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         // use external gap limit for the inernal chain to produce fewer network requests
         [gap addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
@@ -338,8 +351,9 @@ static NSData *getKeychainData(NSString *key)
         dispatch_async(dispatch_get_main_queue(), ^{
             NSArray *used = [ZNAddressEntity objectsMatching:@"! (address IN %@)", [gap valueForKey:@"address"]];
             
-            self.updatedTxHashes = [NSMutableSet set];
+            self.updatedTxHashes = [NSMutableSet set]; // reset the updated tx set
             
+            // query addresses for transactons, unused addresses first
             [self queryAddresses:[gap arrayByAddingObjectsFromArray:used] completion:^(NSError *error) {
                 completion(error, completion);
             }];
@@ -347,7 +361,10 @@ static NSData *getKeychainData(NSString *key)
     });
 }
 
-// returns array of gapLimit unused ZNAddressEntity objects following the last used address
+// Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
+// found that haven't been used in any transactions. This method returns array of <gapLimit> unused ZNAddressEntity
+// objects following the last used address in the chain. The internal chain is used for change address and the external
+// chain for receive addresses.
 - (NSArray *)addressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal
 {
     NSMutableArray *newaddresses = [NSMutableArray array];
@@ -392,7 +409,7 @@ static NSData *getKeychainData(NSString *key)
     return a;
 }
 
-// query blockchain for the given addresses
+// query blockchain for transactions involving the given addresses
 - (void)queryAddresses:(NSArray *)addresses completion:(void (^)(NSError *error))completion
 {
     if (! addresses.count) {
@@ -431,15 +448,17 @@ static NSData *getKeychainData(NSString *key)
             }
         
             [JSON[@"addresses"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                [ZNAddressEntity updateWithJSON:obj];
+                [ZNAddressEntity updateWithJSON:obj]; // update core data address objects
             }];
             
             [JSON[@"txs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                // updateOrCreateWithJSON will return nil if the tx exists and no updates were made
                 ZNTransactionEntity *tx = [ZNTransactionEntity updateOrCreateWithJSON:obj];
                 
                 if (tx.txHash) [self.updatedTxHashes addObject:tx.txHash];
             }];
         
+            // store other useful information from the query result in user defaults
             if ([JSON[@"info"] isKindOfClass:[NSDictionary class]] &&
                 [JSON[@"info"][@"latest_block"] isKindOfClass:[NSDictionary class]] &&
                 [JSON[@"info"][@"symbol_local"] isKindOfClass:[NSDictionary class]]) {
@@ -469,7 +488,7 @@ static NSData *getKeychainData(NSString *key)
     [requestOp start];
 }
 
-// query blockchain for unspent outputs of the given addresses
+// query blockchain for unspent outputs for the given addresses
 - (void)queryUnspentOutputs:(NSArray *)addresses completion:(void (^)(NSError *error))completion
 {
     if (! addresses.count) {
@@ -499,6 +518,7 @@ static NSData *getKeychainData(NSString *key)
         success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
             if (! _synchronizing) return;
             
+            // if all outputs have been spent, blockchain.info returns the non-JSON string "no free outputs"
             if (! [requestOp.responseString.lowercaseString hasPrefix:@"no free outputs"] &&
                 ! [JSON[@"unspent_outputs"] isKindOfClass:[NSArray class]]) {
                 NSError *error = [NSError errorWithDomain:@"ZincWallet" code:500 userInfo:@{
@@ -510,10 +530,11 @@ static NSData *getKeychainData(NSString *key)
 
             NSArray *addrs = [addresses valueForKey:@"address"];
             
-            // remove any previously stored unspentOutputs for the queried addresses
+            // remove any previously stored unspent outputs for the queried addresses
             [[ZNUnspentOutputEntity objectsMatching:@"address IN %@", addrs]
              makeObjectsPerformSelector:@selector(deleteObject)];
             
+            // store any unspent outputs in core data
             [JSON[@"unspent_outputs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                 ZNUnspentOutputEntity *o = [ZNUnspentOutputEntity entityWithJSON:obj];
                     
@@ -524,6 +545,7 @@ static NSData *getKeychainData(NSString *key)
 
             if (completion) completion(nil);
         } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
+            // if the error is "no free outputs", that's not actually an error
             if (! [requestOp.responseString.lowercaseString hasPrefix:@"no free outputs"]) {
                 NSLog(@"%@", error);
                 if (completion) completion(error);
@@ -562,6 +584,7 @@ static NSData *getKeychainData(NSString *key)
     return balance;
 }
 
+// returns the next unused address on the requested chain
 - (NSString *)addressFromInternal:(BOOL)internal
 {
     ZNAddressEntity *addr = [self addressesWithGapLimit:1 internal:internal].lastObject;
@@ -714,6 +737,7 @@ static NSData *getKeychainData(NSString *key)
     
     if (! currentHeight) return DBL_MAX;
     
+    // get the heights (which block in the blockchain it's in) of all the transaction inputs
     [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         ZNUnspentOutputEntity *o = [ZNUnspentOutputEntity objectsMatching:@"txHash == %@ && n == %d",
                                     transaction.inputHashes[idx], [transaction.inputIndexes[idx] intValue]].lastObject;
@@ -734,6 +758,7 @@ static NSData *getKeychainData(NSString *key)
     return height > currentHeight + 1 ? (height - currentHeight)*600 : 0;
 }
 
+// returns the standard transaction fee for the given transaction
 - (uint64_t)transactionFee:(ZNTransaction *)transaction
 {
     __block uint64_t balance = 0, amount = 0;
