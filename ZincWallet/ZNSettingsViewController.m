@@ -47,9 +47,6 @@
 //TODO: need settings for denomination (BTC, mBTC or uBTC), local currency, and exchange rate source
 //TODO: only show most recent 10-20 transactions and have a separate page for the rest with section headers for each day
 
-// BUG: breifly saw double transactions immediately after sending a payment (probably from websocket and tx publish)
-// it corrected itself on wallet sync
-
 - (void)viewDidLoad
 {
     [super viewDidLoad];

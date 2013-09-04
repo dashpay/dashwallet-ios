@@ -55,9 +55,9 @@
 #define UNSPENT_URL   BASE_URL "/unspent?active="
 #define ADDRESS_URL   BASE_URL "/multiaddr?active="
 #define PUSHTX_PATH   @"/pushtx"
-#define CURRENCY_SIGN @"\xC2\xA4"
-#define NBSP          @"\xC2\xA0"     // no-break space
-#define NARROW_NBSP   @"\xE2\x80\xAF" // narrow no-break space
+#define CURRENCY_SIGN @"\xC2\xA4"     // currency sign (utf-8)
+#define NBSP          @"\xC2\xA0"     // no-break space (utf-8)
+#define NARROW_NBSP   @"\xE2\x80\xAF" // narrow no-break space (utf-8)
 
 #define LATEST_BLOCK_HEIGHT_KEY    @"LATEST_BLOCK_HEIGHT"
 #define LATEST_BLOCK_TIMESTAMP_KEY @"LATEST_BLOCK_TIMESTAMP"
@@ -67,8 +67,8 @@
 #define LAST_SYNC_TIME_KEY         @"LAST_SYNC_TIME"
 #define SEED_KEY                   @"seed"
 
-#define REFERENCE_BLOCK_HEIGHT 243295
-#define REFERENCE_BLOCK_TIME   1372190977.0
+#define REFERENCE_BLOCK_HEIGHT 250000
+#define REFERENCE_BLOCK_TIME   1375533383.0
 
 #define SEC_ATTR_SERVICE @"cc.zinc.zincwallet"
 
@@ -923,10 +923,11 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
         
         // add change to unspent outputs
         [transaction.outputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            if (! [self containsAddress:obj]) return;
-                    
-            [ZNUnspentOutputEntity entityWithAddress:obj txHash:transaction.txHash n:idx
-             value:[transaction.outputAmounts[idx] longLongValue]];
+            if ([self containsAddress:obj] &&
+                [ZNUnspentOutputEntity countObjectsMatching:@"txHash == %@ && n == %d", transaction.txHash, idx] == 0) {
+                [ZNUnspentOutputEntity entityWithAddress:obj txHash:transaction.txHash n:idx
+                 value:[transaction.outputAmounts[idx] longLongValue]];
+            }
         }];
         
         // add the transaction to the tx list

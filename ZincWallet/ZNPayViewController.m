@@ -647,7 +647,6 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
         [self.spinner startAnimating];
         self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
         
-        //BUG: after private key sweep, the additional balance was somehow doubled briefly until wallet sync
         [w publishTransaction:self.sweepTx completion:^(NSError *error) {
             [self.spinner stopAnimating];
             self.navigationItem.rightBarButtonItem = self.refreshButton;
@@ -671,7 +670,6 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
         self.sweepTx = nil;
         return;
     }
-
 
     if ([w amountForString:title] > request.amount) tx = txWithFee;
     
