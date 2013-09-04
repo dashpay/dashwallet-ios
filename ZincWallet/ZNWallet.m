@@ -55,7 +55,7 @@
 #define UNSPENT_URL   BASE_URL "/unspent?active="
 #define ADDRESS_URL   BASE_URL "/multiaddr?active="
 #define PUSHTX_PATH   @"/pushtx"
-#define CURRENCY_SIGN @"\xC2\xA4"     // currency sign (utf-8)
+#define CURRENCY_SIGN @"\xC2\xA4"     // generic currency sign (utf-8)
 #define NBSP          @"\xC2\xA0"     // no-break space (utf-8)
 #define NARROW_NBSP   @"\xE2\x80\xAF" // narrow no-break space (utf-8)
 

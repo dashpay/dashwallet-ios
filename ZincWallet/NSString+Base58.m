@@ -340,7 +340,7 @@ breakout:
                 return BITCOIN_TESTNET;
         }
     }
-    else if (self.length == 30 && [self characterAtIndex:0] == 'S') { // mini private key format
+    else if ((self.length == 30 || self.length == 22) && [self characterAtIndex:0] == 'S') { // mini private key format
         NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), self.length + 1));
         
         d.length = self.length;

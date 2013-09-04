@@ -125,17 +125,17 @@
 {
     NSData *d = [privateKey base58checkToData];
 
-    if (privateKey.length == 30 && [privateKey characterAtIndex:0] == 'S') { // mini private key format
+    if ((privateKey.length == 30 || privateKey.length == 22) && [privateKey characterAtIndex:0] == 'S') {
+        // mini private key format
         if (! [privateKey isValidBitcoinPrivateKey]) return;
         
-        d = [CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(), (__bridge CFStringRef)self,
-                                                                    kCFStringEncodingUTF8, 0)) SHA256];
+        [self setSecret:[CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(),
+                         (__bridge CFStringRef)privateKey, kCFStringEncodingUTF8, 0)) SHA256] compressed:NO];
+        return;
     }
     else if (! d || d.length == 28) d = [privateKey base58ToData];
     
-    if (d.length == 32) {
-        [self setSecret:d compressed:YES];
-    }
+    if (d.length == 32) [self setSecret:d compressed:YES];
     else if ((d.length == 33 || d.length == 34) && *(unsigned char *)d.bytes == 0x80) {
         [self setSecret:[NSData dataWithBytesNoCopy:(unsigned char *)d.bytes + 1 length:32 freeWhenDone:NO]
          compressed:d.length == 34 ? YES : NO];
@@ -147,9 +147,10 @@
     const BIGNUM *priv = EC_KEY_get0_private_key(_key);
     NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 34));
     
-    d.length = (EC_KEY_get_conv_form(_key) == POINT_CONVERSION_COMPRESSED ? 34 : 33);
-    *(unsigned char *)d.mutableBytes = 0x80;
-    BN_bn2bin(priv, (unsigned char *)d.mutableBytes + 33 - BN_num_bytes(priv));
+    [d appendBytes:"\x80" length:1];
+    d.length = 33;
+    BN_bn2bin(priv, (unsigned char *)d.mutableBytes + d.length - BN_num_bytes(priv));
+    if (EC_KEY_get_conv_form(_key) == POINT_CONVERSION_COMPRESSED) [d appendBytes:"\x01" length:1];
 
     return [NSString base58checkWithData:d];
 }

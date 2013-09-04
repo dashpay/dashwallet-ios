@@ -51,8 +51,6 @@
     [super tearDown];
 }
 
-//TODO: test mini private keys
-
 #pragma mark - testWallet
 
 //TODO: test standard free transaction no change
@@ -63,6 +61,54 @@
 //TODO: test free transaction who's inputs are too new to hit min free priority
 //TODO: test transaction with change below min allowable output
 //TODO: test gap limit with gaps in address chain less than the limit
+
+#pragma mark - testKey
+
+- (void)testKeyWithPrivateKey
+{
+    STAssertFalse([@"S6c56bnXQiBjk9mqSYE7ykVQ7NzrRz" isValidBitcoinPrivateKey],
+                  @"[NSString+Base58 isValidBitcoinPrivateKey]");
+
+    STAssertTrue([@"S6c56bnXQiBjk9mqSYE7ykVQ7NzrRy" isValidBitcoinPrivateKey],
+                 @"[NSString+Base58 isValidBitcoinPrivateKey]");
+
+    // mini private key format
+    ZNKey *key = [ZNKey keyWithPrivateKey:@"S6c56bnXQiBjk9mqSYE7ykVQ7NzrRy"];
+    
+    NSLog(@"privKey:S6c56bnXQiBjk9mqSYE7ykVQ7NzrRy = %@", key.address);
+    STAssertTrue([@"1CciesT23BNionJeXrbxmjc7ywfiyM4oLW" isEqual:key.address], @"[ZNKey keyWithPrivateKey:]");
+
+    STAssertTrue([@"SzavMBLoXU6kDrqtUVmffv" isValidBitcoinPrivateKey],
+                 @"[NSString+Base58 isValidBitcoinPrivateKey]");
+
+    // old mini private key format
+    key = [ZNKey keyWithPrivateKey:@"SzavMBLoXU6kDrqtUVmffv"];
+    
+    NSLog(@"privKey:SzavMBLoXU6kDrqtUVmffv = %@", key.address);
+    STAssertTrue([@"1CC3X2gu58d6wXUWMffpuzN9JAfTUWu4Kj" isEqual:key.address], @"[ZNKey keyWithPrivateKey:]");
+
+    // uncompressed private key
+    key = [ZNKey keyWithPrivateKey:@"5Kb8kLf9zgWQnogidDA76MzPL6TsZZY36hWXMssSzNydYXYB9KF"];
+    
+    NSLog(@"privKey:5Kb8kLf9zgWQnogidDA76MzPL6TsZZY36hWXMssSzNydYXYB9KF = %@", key.address);
+    STAssertTrue([@"1CC3X2gu58d6wXUWMffpuzN9JAfTUWu4Kj" isEqual:key.address], @"[ZNKey keyWithPrivateKey:]");
+    
+    // uncompressed private key export
+    NSLog(@"privKey = %@", key.privateKey);
+    STAssertTrue([@"5Kb8kLf9zgWQnogidDA76MzPL6TsZZY36hWXMssSzNydYXYB9KF" isEqual:key.privateKey],
+                 @"[ZNKey privateKey]");
+
+    // compressed private key
+    key = [ZNKey keyWithPrivateKey:@"KyvGbxRUoofdw3TNydWn2Z78dBHSy2odn1d3wXWN2o3SAtccFNJL"];
+    
+    NSLog(@"privKey:KyvGbxRUoofdw3TNydWn2Z78dBHSy2odn1d3wXWN2o3SAtccFNJL = %@", key.address);
+    STAssertTrue([@"1JMsC6fCtYWkTjPPdDrYX3we2aBrewuEM3" isEqual:key.address], @"[ZNKey keyWithPrivateKey:]");
+    
+    // compressed private key export
+    NSLog(@"privKey = %@", key.privateKey);
+    STAssertTrue([@"KyvGbxRUoofdw3TNydWn2Z78dBHSy2odn1d3wXWN2o3SAtccFNJL" isEqual:key.privateKey],
+                 @"[ZNKey privateKey]");
+}
 
 #pragma mark - testTransaction
 
