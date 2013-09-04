@@ -68,9 +68,10 @@
 
 - (ZNTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee;
 - (NSTimeInterval)timeUntilFree:(ZNTransaction *)transaction;
+- (uint64_t)transactionAmount:(ZNTransaction *)transaction;
 - (uint64_t)transactionFee:(ZNTransaction *)transaction;
 - (BOOL)signTransaction:(ZNTransaction *)transaction;
-- (void)sweepPrivateAddress:(NSString *)privKey withFee:(BOOL)fee
+- (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
 completion:(void (^)(ZNTransaction *tx, NSError *error))completion;
 - (void)publishTransaction:(ZNTransaction *)transaction completion:(void (^)(NSError *error))completion;
 

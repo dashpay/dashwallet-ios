@@ -327,4 +327,30 @@ breakout:
     return NO;
 }
 
+- (BOOL)isValidBitcoinPrivateKey
+{
+    NSData *d = [self base58checkToData];
+    
+    if (d.length == 33 || d.length == 34) {
+        switch (*(uint8_t *)d.bytes) {
+            case BITCOIN_PRIVKEY:
+                return ! BITCOIN_TESTNET;
+                
+            case BITCOIN_PRIVKEY_TEST:
+                return BITCOIN_TESTNET;
+        }
+    }
+    else if (self.length == 30 && [self characterAtIndex:0] == 'S') { // mini private key format
+        NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), self.length + 1));
+        
+        d.length = self.length;
+        [self getBytes:d.mutableBytes maxLength:d.length usedLength:NULL encoding:NSUTF8StringEncoding options:0
+         range:NSMakeRange(0, self.length) remainingRange:NULL];
+        [d appendBytes:"?" length:1];
+        if (*(unsigned char *)[d SHA256].bytes == 0x00) return YES;
+    }
+    
+    return NO;
+}
+
 @end

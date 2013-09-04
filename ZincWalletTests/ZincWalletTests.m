@@ -51,6 +51,8 @@
     [super tearDown];
 }
 
+//TODO: test mini private keys
+
 #pragma mark - testWallet
 
 //TODO: test standard free transaction no change

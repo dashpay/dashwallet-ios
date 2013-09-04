@@ -356,7 +356,7 @@
                 }
             }
 
-            return h > 55 ? h : 55;
+            return h > 22 ? h : 22;
         
         default:
             NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, section);

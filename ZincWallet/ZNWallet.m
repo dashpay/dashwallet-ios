@@ -772,29 +772,37 @@ static NSData *getKeychainData(NSString *key)
     return height > currentHeight + 1 ? (height - currentHeight)*600 : 0;
 }
 
-// returns the standard transaction fee for the given transaction
-- (uint64_t)transactionFee:(ZNTransaction *)transaction
+// retuns the total amount of the trasaction including any fees
+- (uint64_t)transactionAmount:(ZNTransaction *)transaction
 {
-    __block uint64_t balance = 0, amount = 0;
-
+    __block uint64_t amount = 0;
+    
     [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         ZNUnspentOutputEntity *o = [ZNUnspentOutputEntity objectsMatching:@"txHash == %@ && n == %d",
                                     transaction.inputHashes[idx], [transaction.inputIndexes[idx] intValue]].lastObject;
         
         if (! o) {
-            balance = UINT64_MAX;
+            amount = 0;
             *stop = YES;
         }
-        else balance += o.value;
+        else amount += o.value;
     }];
 
-    if (balance == UINT64_MAX) return UINT64_MAX;
+    return amount;
+}
+
+// returns the transaction fee for the given transaction
+- (uint64_t)transactionFee:(ZNTransaction *)transaction
+{
+    __block uint64_t amount = [self transactionAmount:transaction];
+
+    if (amount == 0) return UINT64_MAX;
     
     [transaction.outputAmounts enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        amount += [obj unsignedLongLongValue];
+        amount -= [obj unsignedLongLongValue];
     }];
     
-    return balance - amount;
+    return amount;
 }
 
 - (BOOL)signTransaction:(ZNTransaction *)transaction
@@ -819,7 +827,7 @@ static NSData *getKeychainData(NSString *key)
 
 // given a private key, queries blockchain for unspent outputs and calls the completion block with a signed transaction
 // that will sweep the balance into wallet (doesn't publish the tx)
-- (void)sweepPrivateAddress:(NSString *)privKey withFee:(BOOL)fee
+- (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
 completion:(void (^)(ZNTransaction *tx, NSError *error))completion
 {
     NSString *address = [[ZNKey keyWithPrivateKey:privKey] address];
@@ -832,8 +840,17 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
         return;
     }
     
+    if (_synchronizing) {
+        completion(nil, [NSError errorWithDomain:@"ZincWallet" code:1
+                         userInfo:@{NSLocalizedDescriptionKey:@"Wait for wallet sync to finish."}]);
+        return;
+    }
+    
+    _synchronizing = YES;
     // pass in a mutable dictionary in place of a ZNAddressEntity to avoid storing the address in core data
     [self queryUnspentOutputs:@[[@{@"address":address} mutableCopy]] completion:^(NSError *error) {
+        _synchronizing = NO;
+        
         if (error) {
             completion(nil, error);
             return;
@@ -869,6 +886,12 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
         }
         
         [tx addOutputAddress:[self changeAddress] amount:balance - standardFee];
+
+        if (! [tx signWithPrivateKeys:@[privKey]]) {
+            completion(nil, [NSError errorWithDomain:@"ZincWallet" code:401
+                       userInfo:@{NSLocalizedDescriptionKey:@"Error signing transaction."}]);
+            return;
+        }
         
         completion(tx, nil);
     }];

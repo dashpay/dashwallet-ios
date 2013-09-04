@@ -125,7 +125,13 @@
 {
     NSData *d = [privateKey base58checkToData];
 
-    if (! d || d.length == 28) d = [privateKey base58ToData];
+    if (privateKey.length == 30 && [privateKey characterAtIndex:0] == 'S') { // mini private key format
+        if (! [privateKey isValidBitcoinPrivateKey]) return;
+        
+        d = [CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(), (__bridge CFStringRef)self,
+                                                                    kCFStringEncodingUTF8, 0)) SHA256];
+    }
+    else if (! d || d.length == 28) d = [privateKey base58ToData];
     
     if (d.length == 32) {
         [self setSecret:d compressed:YES];

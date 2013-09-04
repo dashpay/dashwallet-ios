@@ -59,6 +59,7 @@
 @property (nonatomic, strong) id urlObserver, activeObserver, balanceObserver, reachabilityObserver;
 @property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 @property (nonatomic, assign) int syncErrorCount;
+@property (nonatomic, strong) ZNTransaction *sweepTx;
 
 @property (nonatomic, strong) IBOutlet UIScrollView *scrollView;
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
@@ -478,6 +479,42 @@
     }
 }
 
+- (void)confirmSweep:(NSString *)privKey
+{
+    if (! [privKey isValidBitcoinPrivateKey]) return;
+    
+    ZNWallet *w = [ZNWallet sharedInstance];
+    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    
+    hud.mode = MBProgressHUDModeIndeterminate;
+    hud.labelText = @"checking private key balance...";
+    hud.labelFont = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+
+    [w sweepPrivateKey:privKey withFee:YES completion:^(ZNTransaction *tx, NSError *error) {
+        [hud hide:YES];
+
+        if (error) {
+            [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription delegate:self
+              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+            return;
+        }
+        
+        __block uint64_t fee = tx.standardFee, amount = fee;
+        
+        [tx.outputAmounts enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            amount += [obj unsignedLongLongValue];
+        }];
+
+        self.sweepTx = tx;
+        [[[UIAlertView alloc] initWithTitle:nil
+         message:[NSString stringWithFormat:@"Sweep %@ (%@) from this private key into your wallet? "
+         "The bitcoin network will receive a fee of %@ (%@).", [w stringForAmount:amount],
+         [w localCurrencyStringForAmount:amount], [w stringForAmount:fee], [w localCurrencyStringForAmount:fee]]
+         delegate:self cancelButtonTitle:@"cancel" otherButtonTitles:[NSString stringWithFormat:@"%@ (%@)",
+         [w stringForAmount:amount], [w localCurrencyStringForAmount:amount]], nil] show];
+    }];
+}
+
 #pragma mark - IBAction
 
 - (IBAction)doIt:(id)sender
@@ -570,6 +607,7 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
     if (buttonIndex == alertView.cancelButtonIndex || self.selectedIndex == NSNotFound) {
+        self.sweepTx = nil;
         self.selectedIndex = NSNotFound;
         [self layoutButtonsAnimated:YES];
         return;
@@ -577,10 +615,13 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
     
     ZNWallet *w = [ZNWallet sharedInstance];
     ZNPaymentRequest *request = self.requests[self.selectedIndex];
-    ZNTransaction *tx = [w transactionFor:request.amount to:request.paymentAddress withFee:NO];
-    ZNTransaction *txWithFee = [w transactionFor:request.amount to:request.paymentAddress withFee:YES];
-    
+    ZNTransaction *tx = nil, *txWithFee = nil;
     NSString *title = [alertView buttonTitleAtIndex:buttonIndex];
+    
+    if (! self.sweepTx) {
+        tx = [w transactionFor:request.amount to:request.paymentAddress withFee:NO];
+        txWithFee = [w transactionFor:request.amount to:request.paymentAddress withFee:YES];
+    }
     
     if ([title hasPrefix:@"+ "] || [title isEqual:@"no fee"]) {
         if ([title hasPrefix:@"+ "]) tx = txWithFee;
@@ -600,70 +641,99 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
         [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
           message:request.message ? request.message : request.paymentAddress delegate:self
           cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
+        return;
     }
-    else {
-        if ([w amountForString:title] > request.amount) tx = txWithFee;
-    
-        NSLog(@"signing transaction");
-        [w signTransaction:tx];
+    else if (self.sweepTx) {
+        [self.spinner startAnimating];
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
         
-        if (! [tx isSigned]) {
-            [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:@"error signing bitcoin transaction"
-              delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        //BUG: after private key sweep, the additional balance was somehow doubled briefly until wallet sync
+        [w publishTransaction:self.sweepTx completion:^(NSError *error) {
+            [self.spinner stopAnimating];
+            self.navigationItem.rightBarButtonItem = self.refreshButton;
             self.selectedIndex = NSNotFound;
             [self layoutButtonsAnimated:YES];
-            return;
-        }
-
-        NSLog(@"signed transaction:\n%@", [tx toHex]);
+            
+            if (error) {
+                [[[UIAlertView alloc] initWithTitle:@"Couldn't sweep balance." message:error.localizedDescription
+                  delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+                return;
+            }
+            
+            MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+            
+            hud.mode = MBProgressHUDModeText;
+            hud.labelText = @"swept!";
+            hud.labelFont = [UIFont fontWithName:@"HelveticaNeue-Medium" size:17.0];
+            [hud hide:YES afterDelay:2.0];
+        }];
         
-        if (self.selectedIndex == NSNotFound || [self.requestIDs[self.selectedIndex] isEqual:QR_ID] ||
-            [self.requestIDs[self.selectedIndex] isEqual:CLIPBOARD_ID]) {
-            
-            [self.spinner startAnimating];
-            self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
-            
-            //TODO: check for duplicate transactions
-            [w publishTransaction:tx completion:^(NSError *error) {
-                [self.spinner stopAnimating];
-                self.navigationItem.rightBarButtonItem = self.refreshButton;
-            
-                if (error) {
-                    [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription
-                     delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-                    self.selectedIndex = NSNotFound;
-                    [self layoutButtonsAnimated:YES];
-                    return;
-                }
-            
-                MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+        self.sweepTx = nil;
+        return;
+    }
 
-                hud.mode = MBProgressHUDModeText;
-                hud.labelText = @"sent!";
-                hud.labelFont = [UIFont fontWithName:@"HelveticaNeue-Medium" size:17.0];
-                [hud hide:YES afterDelay:2.0];
-            }];
-        }
-        else { // this should be wrapped in #ifdef for bluetooth support
-            NSLog(@"sending signed request to %@", self.requestIDs[self.selectedIndex]);
-        
-            NSError *error = nil;
-            
-            [self.session sendData:[[tx toHex] dataUsingEncoding:NSUTF8StringEncoding]
-             toPeers:@[self.requestIDs[self.selectedIndex]] withDataMode:GKSendDataReliable error:&error];
+
+    if ([w amountForString:title] > request.amount) tx = txWithFee;
     
+    NSLog(@"signing transaction");
+    [w signTransaction:tx];
+    
+    if (! [tx isSigned]) {
+        [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:@"error signing bitcoin transaction"
+          delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        self.selectedIndex = NSNotFound;
+        [self layoutButtonsAnimated:YES];
+        return;
+    }
+
+    NSLog(@"signed transaction:\n%@", [tx toHex]);
+        
+    if (self.selectedIndex == NSNotFound || [self.requestIDs[self.selectedIndex] isEqual:QR_ID] ||
+        [self.requestIDs[self.selectedIndex] isEqual:CLIPBOARD_ID]) {
+        
+        [self.spinner startAnimating];
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
+            
+        //TODO: check for duplicate transactions
+        [w publishTransaction:tx completion:^(NSError *error) {
+            [self.spinner stopAnimating];
+            self.navigationItem.rightBarButtonItem = self.refreshButton;
+            
             if (error) {
                 [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription
                   delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+                self.selectedIndex = NSNotFound;
+                [self layoutButtonsAnimated:YES];
+                return;
             }
-    
-            [self.requestIDs removeObjectAtIndex:self.selectedIndex];
-            [self.requests removeObjectAtIndex:self.selectedIndex];
-        }
-        self.selectedIndex = NSNotFound;
-    
-        [self layoutButtonsAnimated:YES];
+            
+            MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+
+            hud.mode = MBProgressHUDModeText;
+            hud.labelText = @"sent!";
+            hud.labelFont = [UIFont fontWithName:@"HelveticaNeue-Medium" size:17.0];
+            [hud hide:YES afterDelay:2.0];
+        }];
     }
+    else { // this should be wrapped in #ifdef for bluetooth support
+        NSLog(@"sending signed request to %@", self.requestIDs[self.selectedIndex]);
+        
+        NSError *error = nil;
+        
+        [self.session sendData:[[tx toHex] dataUsingEncoding:NSUTF8StringEncoding]
+         toPeers:@[self.requestIDs[self.selectedIndex]] withDataMode:GKSendDataReliable error:&error];
+    
+        if (error) {
+            [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription delegate:nil
+             cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        }
+    
+        [self.requestIDs removeObjectAtIndex:self.selectedIndex];
+        [self.requests removeObjectAtIndex:self.selectedIndex];
+    }
+    self.selectedIndex = NSNotFound;
+    
+    [self layoutButtonsAnimated:YES];
 }
 
 #pragma mark - UIImagePickerControllerDelegate
@@ -678,7 +748,7 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
         req.data = [s dataUsingEncoding:NSUTF8StringEncoding];
         req.label = @"scan QR code";
         
-        if (! req.paymentAddress) {
+        if (! req.paymentAddress && ! [s isValidBitcoinPrivateKey]) {
             [[[UIAlertView alloc] initWithTitle:@"not a bitcoin QR code" message:nil delegate:nil
               cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
         }
@@ -687,7 +757,8 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
             
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_current_queue(), ^{
                 self.selectedIndex = [self.requestIDs indexOfObject:QR_ID];
-                [self confirmRequest:req];
+                if (req.paymentAddress) [self confirmRequest:req];
+                else [self confirmSweep:s];
                 [reader dismissViewControllerAnimated:YES completion:nil];
                 self.zbarController = nil;
             });

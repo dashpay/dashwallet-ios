@@ -236,6 +236,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 
 - (size_t)size
 {
+    //TODO: not all keys come from this wallet (private keys can be swept), might cause a lower than standard tx fee
 #if WALLET_BIP32
     size_t sigSize = 149; // electrum seeds generate uncompressed keys, bip32 uses compressed
 #else
@@ -281,7 +282,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     // this could possibly overflow a uint64 for very large input amounts and far in the future block heights,
     // however we should be okay up to the largest current bitcoin balance in existence for the next 40 years or so,
     // and the worst case is paying a transaction fee when it's not needed
-    return (TX_FREE_MIN_PRIORITY*self.size + amountsByHeights + amountTotal - 1)/amountTotal;
+    return (TX_FREE_MIN_PRIORITY*(uint64_t)self.size + amountsByHeights + amountTotal - 1llu)/amountTotal;
 }
 
 - (uint64_t)standardFee
