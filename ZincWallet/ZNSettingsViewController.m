@@ -29,6 +29,7 @@
 #import "ZNTransactionEntity.h"
 #import "ZNTxInputEntity.h"
 #import "ZNTxOutputEntity.h"
+#import "ZNStoryboardSegue.h"
 #import <QuartzCore/QuartzCore.h>
 
 #define TRANSACTION_CELL_HEIGHT 75
@@ -390,8 +391,8 @@
         case 1:
             switch (indexPath.row) {
                 case 0:                    
-                    [self.navigationController pushViewController:[self.storyboard
-                     instantiateViewControllerWithIdentifier:@"ZNAboutViewController"] animated:YES];
+                    [ZNStoryboardSegue segueFrom:self
+                     to:[self.storyboard instantiateViewControllerWithIdentifier:@"ZNAboutViewController"]];
                     break;
                     
                 case 1:
@@ -444,9 +445,8 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
         return;
     }
     
-    ZNSeedViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNSeedViewController"];
-
-    [self.navigationController pushViewController:c animated:YES];
+    [ZNStoryboardSegue segueFrom:self
+     to:[self.storyboard instantiateViewControllerWithIdentifier:@"ZNSeedViewController"]];
 }
 
 @end

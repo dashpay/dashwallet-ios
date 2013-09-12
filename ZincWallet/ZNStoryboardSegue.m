@@ -27,39 +27,39 @@
 
 @implementation ZNStoryboardSegue
 
-- (void)perform
++ (void)segueFrom:(UIViewController *)from to:(UIViewController *)to
 {
-    CGPoint p = [[self.destinationViewController view] center];
+    to.view.center = CGPointMake(to.view.center.x + to.view.frame.size.width, to.view.center.y);
+    [from.view.superview addSubview:to.view];
     
-    p.x += [[self.destinationViewController view] frame].size.width;
-    [[self.destinationViewController view] setCenter:p];
-    [[[self.sourceViewController view] superview] addSubview:[self.destinationViewController view]];
-
-    if ([[[self.sourceViewController navigationController] delegate]
+    if ([from.navigationController.delegate
          respondsToSelector:@selector(navigationController:willShowViewController:animated:)]) {
-        [[[self.sourceViewController navigationController] delegate]
-         navigationController:[self.sourceViewController navigationController]
-         willShowViewController:self.destinationViewController animated:YES];
+        [from.navigationController.delegate navigationController:from.navigationController willShowViewController:to
+         animated:YES];
     }
-
+    
     [UIView animateWithDuration:SEGUE_DURATION animations:^{
-        CGPoint p = [[self.sourceViewController view] center];
-        
-        p.x -= [[self.sourceViewController view] frame].size.width;
-        [[self.sourceViewController view] setCenter:p];
-        
-        p.x += [[self.sourceViewController view] frame].size.width;
-        [[self.destinationViewController view] setCenter:p];
+        from.navigationController.navigationBar.alpha = 0.5;
+        to.view.center = from.view.center;
+        from.view.center = CGPointMake(from.view.center.x - from.view.frame.size.width, from.view.center.y);
     } completion:^(BOOL finished) {
-        [[self.sourceViewController navigationController] pushViewController:self.destinationViewController animated:NO];
+        [from.navigationController pushViewController:to animated:NO];
         
-        if ([[[self.sourceViewController navigationController] delegate]
+        [UIView animateWithDuration:0.1 animations:^{
+            from.navigationController.navigationBar.alpha = 1.0;
+        }];
+
+        if ([from.navigationController.delegate
              respondsToSelector:@selector(navigationController:didShowViewController:animated:)]) {
-            [[[self.sourceViewController navigationController] delegate]
-             navigationController:[self.sourceViewController navigationController]
-             didShowViewController:self.destinationViewController animated:YES];
+            [from.navigationController.delegate navigationController:from.navigationController didShowViewController:to
+             animated:YES];
         }
     }];
+}
+
+- (void)perform
+{
+    [[self class] segueFrom:self.sourceViewController to:self.destinationViewController];
 }
 
 @end

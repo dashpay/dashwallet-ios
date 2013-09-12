@@ -27,4 +27,6 @@
 
 @interface ZNStoryboardSegue : UIStoryboardSegue
 
++ (void)segueFrom:(UIViewController *)from to:(UIViewController *)to;
+
 @end

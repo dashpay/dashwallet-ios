@@ -97,7 +97,9 @@
 {
     [super viewWillAppear:animated];
     
-    self.addressLabel.text = [@"to: " stringByAppendingString:self.request.paymentAddress];
+    NSString *addr = self.request.paymentAddress;
+    
+    if (addr) self.addressLabel.text = [@"to: " stringByAppendingString:addr];
     //self.payButton.enabled = self.amountField.text.length ? YES : NO;
 }
 
@@ -217,7 +219,7 @@ replacementString:(NSString *)string
     }
 
     // don't allow values below TX_MIN_OUTPUT_AMOUNT
-    if ([w amountForString:[t stringByAppendingString:@"9"]] < TX_MIN_OUTPUT_AMOUNT) return NO;
+    if (t.length > 0 && [w amountForString:[t stringByAppendingString:@"9"]] < TX_MIN_OUTPUT_AMOUNT) return NO;
 
     textField.text = t;
     //self.payButton.enabled = t.length ? YES : NO;

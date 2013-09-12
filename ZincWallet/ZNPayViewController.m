@@ -32,6 +32,7 @@
 #import "ZNKey.h"
 #import "ZNTransaction.h"
 #import "ZNButton.h"
+#import "ZNStoryboardSegue.h"
 #import <QuartzCore/QuartzCore.h>
 #import <netinet/in.h>
 #import "Reachability.h"
@@ -417,8 +418,8 @@
             
         c.request = request;
         c.navigationItem.title = self.navigationItem.title;
-        [self.navigationController pushViewController:c
-         animated:self.navigationController.visibleViewController == self ? YES : NO];
+        
+        [ZNStoryboardSegue segueFrom:self to:c];
             
         self.selectedIndex = NSNotFound;
     }
