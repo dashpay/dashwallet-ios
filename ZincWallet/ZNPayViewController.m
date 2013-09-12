@@ -524,9 +524,7 @@
     
     if ([self.requestIDs[self.selectedIndex] isEqual:QR_ID]) {
         self.selectedIndex = NSNotFound;
-        
-        //TODO: customize look of zbar controller
-        //TODO: remove zbar info button
+
         self.zbarController = [ZBarReaderViewController new];
         self.zbarController.readerDelegate = self;
         self.zbarController.cameraOverlayView =
@@ -534,10 +532,18 @@
         
         CGPoint c = self.zbarController.view.center;
         
-        self.zbarController.cameraOverlayView.center = CGPointMake(c.x, c.y - 22.0);
+        self.zbarController.cameraOverlayView.center = CGPointMake(c.x, c.y);
         [self.navigationController presentViewController:self.zbarController animated:YES completion:^{
             NSLog(@"present qr reader complete");
         }];
+        
+        for (UIView *v in self.zbarController.view.subviews) {
+            for (id t in v.subviews) {
+                if ([t isKindOfClass:[UIToolbar class]] && [[t items] count] > 0) {
+                    [t setItems:@[[t items][0]]];
+                }
+            }
+        }
     }
     else {
         [sender setEnabled:NO];
