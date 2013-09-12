@@ -44,9 +44,10 @@
 
 #define CONNECT_TIMEOUT 5.0
 
-#define CLIPBOARD_ID @"clipboard"
-#define QR_ID        @"qr"
-#define URL_ID       @"url"
+#define CLIPBOARD_ID    @"clipboard"
+#define QR_ID           @"qr"
+#define URL_ID          @"url"
+#define CLIPBOARD_LABEL @"pay address from clipboard"
 
 @interface ZNPayViewController ()
 
@@ -85,7 +86,6 @@
     
     //TODO: add a field for manually entering a payment address
     //TODO: make title use dynamic font size
-    //TODO: add a placeholder button for empty or non-bitcoin clipboard
     //BUG: clipboard button title is offcenter (ios7 specific font layout bug?)
     ZNPaymentRequest *req = [ZNPaymentRequest new];
     ZNWallet *w = [ZNWallet sharedInstance];
@@ -303,28 +303,23 @@
 
 - (void)layoutButtonsAnimated:(BOOL)animated
 {
-    if ([[[UIPasteboard generalPasteboard] string] length] &&
-        ! [[[UIPasteboard generalPasteboard] string] isEqual:self.receiveController.copiedAddress]) {
-        ZNPaymentRequest *req = [ZNPaymentRequest requestWithString:[[UIPasteboard generalPasteboard] string]];
-        
-        if (req.paymentAddress) {
-            if (! req.label.length) {
-                if (req.amount > 0) {
-                    req.label = [NSString stringWithFormat:@"%@ - %@", req.paymentAddress,
-                                 [[ZNWallet sharedInstance] stringForAmount:req.amount]];
-                }
-                else req.label = req.paymentAddress;
-            }
-            
-            NSUInteger i = [self.requestIDs indexOfObject:CLIPBOARD_ID];
-            
-            if (i == NSNotFound) {
-                [self.requests addObject:req];
-                [self.requestIDs addObject:CLIPBOARD_ID];
-            }
-            else [self.requests replaceObjectAtIndex:i withObject:req];
+    ZNPaymentRequest *req = [ZNPaymentRequest requestWithString:[[UIPasteboard generalPasteboard] string]];
+    
+    if (! req.paymentAddress) req.label = CLIPBOARD_LABEL;
+
+    if (! req.label.length) {
+        if (req.amount > 0) {
+            req.label = [NSString stringWithFormat:@"%@ - %@", req.paymentAddress,
+                         [[ZNWallet sharedInstance] stringForAmount:req.amount]];
         }
+        else req.label = req.paymentAddress;
     }
+            
+    if ([self.requestIDs indexOfObject:CLIPBOARD_ID] == NSNotFound) {
+        [self.requests addObject:req];
+        [self.requestIDs addObject:CLIPBOARD_ID];
+    }
+    else [self.requests replaceObjectAtIndex:[self.requestIDs indexOfObject:CLIPBOARD_ID] withObject:req];
 
     while (self.requests.count > self.requestButtons.count) {
         ZNButton *button = [ZNButton buttonWithType:UIButtonTypeCustom];
@@ -402,7 +397,14 @@
 
 - (void)confirmRequest:(ZNPaymentRequest *)request
 {
-    if (! request.isValid) return;
+    if (! request.isValid) {
+        if ([request.label isEqual:CLIPBOARD_LABEL]) {
+            [[[UIAlertView alloc] initWithTitle:nil message:@"The clipboard doesn't contain a valid bitcoin address."
+              delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+            self.selectedIndex = NSNotFound;
+        }
+        return;
+    }
     
     ZNWallet *w = [ZNWallet sharedInstance];
     
@@ -532,7 +534,7 @@
         
         CGPoint c = self.zbarController.view.center;
         
-        self.zbarController.cameraOverlayView.center = CGPointMake(c.x, c.y);
+        self.zbarController.cameraOverlayView.center = CGPointMake(c.x, c.y - 10.0);
         [self.navigationController presentViewController:self.zbarController animated:YES completion:^{
             NSLog(@"present qr reader complete");
         }];

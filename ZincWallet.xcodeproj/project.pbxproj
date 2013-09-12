@@ -737,8 +737,6 @@
 		75C2F3D4178D3061009F8CD3 /* cameraguide-green@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75C2F3D1178D3061009F8CD3 /* cameraguide-green@2x.png */; };
 		75C2F3D5178D3061009F8CD3 /* cameraguide-red@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75C2F3D2178D3061009F8CD3 /* cameraguide-red@2x.png */; };
 		75C2F3D6178D3061009F8CD3 /* cameraguide@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75C2F3D3178D3061009F8CD3 /* cameraguide@2x.png */; };
-		75CBEAD0173ABFA500978DBA /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75CBEACF173ABFA500978DBA /* GameKit.framework */; };
-		75CBEAD2173C3F2900978DBA /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75CBEAD1173C3F2900978DBA /* CoreBluetooth.framework */; };
 		75CBEADC173C5FB500978DBA /* icon72.png in Resources */ = {isa = PBXBuildFile; fileRef = 75CBEADB173C5FB500978DBA /* icon72.png */; };
 		75CBEADE173C5FEF00978DBA /* icon144.png in Resources */ = {isa = PBXBuildFile; fileRef = 75CBEADD173C5FEF00978DBA /* icon144.png */; };
 		75CBEAE0173C601D00978DBA /* icon57.png in Resources */ = {isa = PBXBuildFile; fileRef = 75CBEADF173C601D00978DBA /* icon57.png */; };
@@ -1819,8 +1817,6 @@
 		75C2F3D1178D3061009F8CD3 /* cameraguide-green@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide-green@2x.png"; sourceTree = "<group>"; };
 		75C2F3D2178D3061009F8CD3 /* cameraguide-red@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide-red@2x.png"; sourceTree = "<group>"; };
 		75C2F3D3178D3061009F8CD3 /* cameraguide@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide@2x.png"; sourceTree = "<group>"; };
-		75CBEACF173ABFA500978DBA /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
-		75CBEAD1173C3F2900978DBA /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
 		75CBEADB173C5FB500978DBA /* icon72.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon72.png; path = ../icon72.png; sourceTree = "<group>"; };
 		75CBEADD173C5FEF00978DBA /* icon144.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon144.png; path = ../icon144.png; sourceTree = "<group>"; };
 		75CBEADF173C601D00978DBA /* icon57.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon57.png; path = ../icon57.png; sourceTree = "<group>"; };
@@ -2006,8 +2002,6 @@
 				7559FBA9174E85B10000E809 /* Security.framework in Frameworks */,
 				752C2FAB174091DD0033F636 /* MobileCoreServices.framework in Frameworks */,
 				752C2F8917406FF70033F636 /* SystemConfiguration.framework in Frameworks */,
-				75CBEAD2173C3F2900978DBA /* CoreBluetooth.framework in Frameworks */,
-				75CBEAD0173ABFA500978DBA /* GameKit.framework in Frameworks */,
 				75D8F382173ABE3C0080D95E /* UIKit.framework in Frameworks */,
 				75D8F384173ABE3C0080D95E /* Foundation.framework in Frameworks */,
 				75D8F386173ABE3C0080D95E /* CoreGraphics.framework in Frameworks */,
@@ -3499,8 +3493,6 @@
 				7559FBA8174E85B10000E809 /* Security.framework */,
 				752C2FAA174091DD0033F636 /* MobileCoreServices.framework */,
 				752C2F8817406FF70033F636 /* SystemConfiguration.framework */,
-				75CBEAD1173C3F2900978DBA /* CoreBluetooth.framework */,
-				75CBEACF173ABFA500978DBA /* GameKit.framework */,
 				75D8F381173ABE3C0080D95E /* UIKit.framework */,
 				75D8F383173ABE3C0080D95E /* Foundation.framework */,
 				75D8F385173ABE3C0080D95E /* CoreGraphics.framework */,
