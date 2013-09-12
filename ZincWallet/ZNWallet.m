@@ -235,12 +235,12 @@ static NSData *getKeychainData(NSString *key)
     self.seed = seed;
 }
 
-- (NSData *)mpk
+- (NSData *)masterPublicKey
 {
-    if (_mpk) return _mpk;
+    if (self.mpk) return self.mpk;
     
     self.mpk = [self.sequence masterPublicKeyFromSeed:self.seed];
-    return _mpk;
+    return self.mpk;
 }
 
 // if any of an unconfimred transaction's inputs show up as unspent, or spent by a confirmed transaction,
@@ -395,7 +395,7 @@ static NSData *getKeychainData(NSString *key)
     
         while (a.count < gapLimit) { // generate new addresses up to gapLimit
             int32_t index = a.count ? [a.lastObject index] + 1 : count;
-            NSData *pubKey = [self.sequence publicKey:index internal:internal masterPublicKey:self.mpk];
+            NSData *pubKey = [self.sequence publicKey:index internal:internal masterPublicKey:self.masterPublicKey];
             NSString *addr = [[ZNKey keyWithPublicKey:pubKey] address];
 
             if (! addr) {

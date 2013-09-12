@@ -25,6 +25,7 @@
 
 #import "ZNRestoreViewController.h"
 #import "ZNWallet.h"
+#import "NSString+Base58.h"
 #if WALLET_BIP39
 #import "ZNBIP39Mnemonic.h"
 #else
@@ -32,10 +33,15 @@
 #endif
 #import <QuartzCore/QuartzCore.h>
 
+#define SHFT @"\xE2\x87\xA7" // upwards white arrow (utf-8)
+#define BKSP @"\xE2\x8C\xAB" // erase to the left (backspace) (utf-8)
+
 @interface ZNRestoreViewController ()
 
 @property (nonatomic, strong) IBOutlet UITextView *textView;
 @property (nonatomic, strong) IBOutlet UILabel *label;
+@property (nonatomic, strong) IBOutletCollection(UIButton) NSArray *keys;
+
 @property (nonatomic, strong) id<ZNMnemonic> mnemonic;
 #if WALLET_BIP39
 @property (nonatomic, strong) NSSet *adjs, *nouns, *advs, *verbs;
@@ -62,10 +68,6 @@
     self.textView.layer.borderColor = [[UIColor colorWithWhite:0.0 alpha:0.25] CGColor];
     self.textView.layer.borderWidth = 0.5;
     self.textView.textColor = [UIColor blackColor];
-
-    if ([self.navigationController.navigationBar respondsToSelector:@selector(shadowImage)]) {
-        [self.navigationController.navigationBar setShadowImage:[UIImage new]];
-    }
 
 #if WALLET_BIP39
     self.mnemonic = [ZNBIP39Mnemonic new];
@@ -118,6 +120,73 @@
 - (IBAction)cancel:(id)sender
 {
     [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (IBAction)hideKeyboard:(id)sender
+{
+    [self.textView resignFirstResponder];
+    [self.keys makeObjectsPerformSelector:@selector(setHidden:) withObject:nil];
+}
+
+- (IBAction)keyPress:(id)sender
+{
+    NSString *t = [sender titleForState:UIControlStateNormal];
+
+    if ([t isEqual:@"done"]) {
+        if ([[ZNWallet sharedInstance] masterPublicKey]) {
+            if (! [self.label.text isValidBitcoinPrivateKey]) {
+                [[[UIAlertView alloc] initWithTitle:nil message:@"not a valid private key" delegate:nil
+                  cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+            }
+            else {
+                UIViewController *p = self.navigationController.presentingViewController.presentingViewController;
+                NSString *s = self.label.text;
+                
+                self.label.text = nil;
+                
+                [p dismissViewControllerAnimated:NO completion:^{
+                    [[(UINavigationController *)p viewControllers][0] performSelector:@selector(confirmSweep:)
+                     withObject:s];
+                }];
+            }
+        }
+        else {
+            NSData *d = [self.label.text hexToData];
+        
+            if (! d) {
+                [[[UIAlertView alloc] initWithTitle:nil message:@"not a hex string" delegate:nil cancelButtonTitle:@"OK"
+                  otherButtonTitles:nil] show];
+            }
+            else if (d.length != 128/8) {
+                [[[UIAlertView alloc] initWithTitle:nil message:@"wallet seeds must be 128 bits" delegate:nil
+                  cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+            }
+            else {
+                self.label.text = nil;
+                
+                [[ZNWallet sharedInstance] setSeed:d];
+                
+                [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+            }
+        }
+    }
+    else if ([t isEqual:@"space"]) {
+        self.label.text = [self.label.text stringByAppendingString:@" "];
+    }
+    else if ([t isEqual:BKSP]) {
+        if (self.label.text.length > 0) self.label.text = [self.label.text substringToIndex:self.label.text.length - 1];
+    }
+    else if ([t isEqual:SHFT]) {
+        [self.keys enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            NSString *s = [obj titleForState:UIControlStateNormal];
+        
+            if (s.length > 1) return;
+            
+            [obj setTitle:[s isEqual:[s lowercaseString]] ? [s uppercaseString] : [s lowercaseString]
+             forState:UIControlStateNormal];
+        }];
+    }
+    else self.label.text = [self.label.text stringByAppendingString:t];
 }
 
 #pragma mark - UITextViewDelegate

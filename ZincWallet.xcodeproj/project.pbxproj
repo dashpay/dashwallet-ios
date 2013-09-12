@@ -713,6 +713,8 @@
 		7591EC0E1773DD3700B44340 /* redgradient@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7591EC0D1773DD3700B44340 /* redgradient@2x.png */; };
 		75920F86174AB82100C1C03D /* NSMutableData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 75920F85174AB82100C1C03D /* NSMutableData+Bitcoin.m */; };
 		7593BD0A17A24D1500F814F6 /* cameraguide-small@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7593BD0917A24D1500F814F6 /* cameraguide-small@2x.png */; };
+		7597028117E15B1E00CDC14A /* ZNNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7597028017E15B1E00CDC14A /* ZNNavigationBar.m */; };
+		7597028417E15B5600CDC14A /* ZNStoryboardSegue.m in Sources */ = {isa = PBXBuildFile; fileRef = 7597028317E15B5600CDC14A /* ZNStoryboardSegue.m */; };
 		759B779317BECFCF0000510F /* base64.c in Sources */ = {isa = PBXBuildFile; fileRef = 759B778C17BECFCF0000510F /* base64.c */; };
 		759B779417BECFCF0000510F /* NSData+SRB64Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = 759B778F17BECFCF0000510F /* NSData+SRB64Additions.m */; };
 		759B779517BECFCF0000510F /* SRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 759B779217BECFCF0000510F /* SRWebSocket.m */; };
@@ -1784,6 +1786,10 @@
 		75920F84174AB82100C1C03D /* NSMutableData+Bitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableData+Bitcoin.h"; sourceTree = "<group>"; };
 		75920F85174AB82100C1C03D /* NSMutableData+Bitcoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableData+Bitcoin.m"; sourceTree = "<group>"; };
 		7593BD0917A24D1500F814F6 /* cameraguide-small@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide-small@2x.png"; sourceTree = "<group>"; };
+		7597027F17E15B1E00CDC14A /* ZNNavigationBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNNavigationBar.h; sourceTree = "<group>"; };
+		7597028017E15B1E00CDC14A /* ZNNavigationBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNNavigationBar.m; sourceTree = "<group>"; };
+		7597028217E15B5600CDC14A /* ZNStoryboardSegue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNStoryboardSegue.h; sourceTree = "<group>"; };
+		7597028317E15B5600CDC14A /* ZNStoryboardSegue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNStoryboardSegue.m; sourceTree = "<group>"; };
 		759B778C17BECFCF0000510F /* base64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = base64.c; sourceTree = "<group>"; };
 		759B778D17BECFCF0000510F /* base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = base64.h; sourceTree = "<group>"; };
 		759B778E17BECFCF0000510F /* NSData+SRB64Additions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+SRB64Additions.h"; sourceTree = "<group>"; };
@@ -3312,6 +3318,10 @@
 			children = (
 				7535CCDD176BE3D2007E29C5 /* ZNButton.h */,
 				7535CCDE176BE3D2007E29C5 /* ZNButton.m */,
+				7597027F17E15B1E00CDC14A /* ZNNavigationBar.h */,
+				7597028017E15B1E00CDC14A /* ZNNavigationBar.m */,
+				7597028217E15B5600CDC14A /* ZNStoryboardSegue.h */,
+				7597028317E15B5600CDC14A /* ZNStoryboardSegue.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -4697,6 +4707,7 @@
 				75920F86174AB82100C1C03D /* NSMutableData+Bitcoin.m in Sources */,
 				7559FBA7174D8B1F0000E809 /* ZNKey.m in Sources */,
 				75EAE8471753E93A00FDB2D2 /* ZNElectrumSequence.m in Sources */,
+				7597028117E15B1E00CDC14A /* ZNNavigationBar.m in Sources */,
 				759CB240175F03BF00AFA559 /* ZNAmountViewController.m in Sources */,
 				753007EC17684A8C00C7BB60 /* ZNSettingsViewController.m in Sources */,
 				753007EF1769899B00C7BB60 /* ZNSeedViewController.m in Sources */,
@@ -4706,6 +4717,7 @@
 				75183B88178B4ABE0032F365 /* ZNWelcomeViewController.m in Sources */,
 				84DC139A1799E02800F6ED91 /* ZNBIP32Sequence.m in Sources */,
 				847C2302179A1FD600163CEF /* ZNElectrumMnemonic.m in Sources */,
+				7597028417E15B5600CDC14A /* ZNStoryboardSegue.m in Sources */,
 				756E9CD617ACC95D00D316A8 /* ZNSocketListener.m in Sources */,
 				75A6ECE317BD464A0043E52D /* ZNBIP39Mnemonic.m in Sources */,
 				759B779317BECFCF0000510F /* base64.c in Sources */,

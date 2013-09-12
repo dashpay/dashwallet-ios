@@ -41,7 +41,7 @@
 
 @property (nonatomic, strong) NSString *seedPhrase;
 @property (nonatomic, strong) NSData *seed;
-@property (nonatomic, readonly, getter = mpk) NSData *masterPublicKey;
+@property (nonatomic, readonly) NSData *masterPublicKey;
 @property (nonatomic, readonly) uint64_t balance;
 @property (nonatomic, readonly) NSString *receiveAddress;
 @property (nonatomic, readonly) NSString *changeAddress;

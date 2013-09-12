@@ -1082,13 +1082,7 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                     </view>
-                    <navigationItem key="navigationItem" title="backup phrase:" id="Rys-4R-JXw">
-                        <barButtonItem key="rightBarButtonItem" title="          " id="zap-AF-Uee">
-                            <connections>
-                                <action selector="hideKeyboard:" destination="V5i-az-h7s" id="umL-N7-fXi"/>
-                            </connections>
-                        </barButtonItem>
-                    </navigationItem>
+                    <navigationItem key="navigationItem" title="backup phrase:" id="Rys-4R-JXw"/>
                     <connections>
                         <outlet property="label" destination="dp7-RI-qf7" id="iKd-E5-gWy"/>
                         <outlet property="textView" destination="TTv-8y-tZs" id="2EC-mg-E3C"/>
@@ -2419,11 +2413,6 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
                         <barButtonItem key="leftBarButtonItem" title="cancel" id="fzo-HD-Vdr">
                             <connections>
                                 <action selector="cancel:" destination="yia-gn-YeR" id="ye5-ku-vS6"/>
-                            </connections>
-                        </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" title="            " id="JDM-hN-glc">
-                            <connections>
-                                <action selector="hideKeyboard:" destination="yia-gn-YeR" id="APG-xc-Btn"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>

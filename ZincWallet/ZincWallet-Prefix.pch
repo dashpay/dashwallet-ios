@@ -15,14 +15,13 @@
     #import <MobileCoreServices/MobileCoreServices.h>
 #endif
 
-#define APPSTORE_VERSION 0
-
-#define GK_SESSION_ID @"cc.zinc.ZincWallet"
-#define BTC @"\xC9\x83" // capital B with stroke
-#define SATOSHIS 100000000.0
-#define DEFAULT_SYNC_INTERVAL 300
-#define PARALAX_RATIO 0.25
-
+#define APPSTORE_VERSION       1
+#define GK_SESSION_ID          @"cc.zinc.ZincWallet"
+#define BTC                    @"\xC9\x83" // capital B with stroke
+#define SATOSHIS               100000000.0
+#define DEFAULT_SYNC_INTERVAL  300
+#define PARALAX_RATIO          0.25
+#define SEGUE_DURATION         0.3
 #define bitcoinURLNotification @"bitcoinURLNotification"
 
 // defines for building third party libs
