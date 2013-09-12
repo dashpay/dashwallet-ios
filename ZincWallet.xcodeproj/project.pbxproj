@@ -742,7 +742,7 @@
 		75CBEAE0173C601D00978DBA /* icon57.png in Resources */ = {isa = PBXBuildFile; fileRef = 75CBEADF173C601D00978DBA /* icon57.png */; };
 		75CBEAE2173C603800978DBA /* icon114.png in Resources */ = {isa = PBXBuildFile; fileRef = 75CBEAE1173C603800978DBA /* icon114.png */; };
 		75CBEAE9173C80AD00978DBA /* ZNPaymentRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 75CBEAE8173C80AD00978DBA /* ZNPaymentRequest.m */; };
-		75D423291783E0B100BDD771 /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D423121783E0B100BDD771 /* MBProgressHUD.m */; };
+		75D423291783E0B100BDD771 /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D423121783E0B100BDD771 /* MBProgressHUD.m */; settings = {COMPILER_FLAGS = "-w"; }; };
 		75D8F382173ABE3C0080D95E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F381173ABE3C0080D95E /* UIKit.framework */; };
 		75D8F384173ABE3C0080D95E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		75D8F386173ABE3C0080D95E /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F385173ABE3C0080D95E /* CoreGraphics.framework */; };

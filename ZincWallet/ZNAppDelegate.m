@@ -76,24 +76,24 @@ annotation:(id)annotation
 {
     [[UINavigationBar appearance]
      setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor grayColor],
-                              NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue" size:19.0]}];
+                              NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue" size:17.0]}];
 
     [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
      setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
      forState:UIControlStateNormal];
 }
 
-#pragma mark - CBCentralManagerDelegate
-
-- (void)centralManagerDidUpdateState:(CBCentralManager *)cbManager
-{
-    switch (cbManager.state) {
-        case CBCentralManagerStateResetting: NSLog(@"system BT connection momentarily lost."); break;
-        case CBCentralManagerStateUnsupported: NSLog(@"BT Low Energy not suppoerted."); break;
-        case CBCentralManagerStateUnauthorized: NSLog(@"BT Low Energy not authorized."); break;
-        case CBCentralManagerStatePoweredOff: NSLog(@"BT off."); break;
-        case CBCentralManagerStatePoweredOn: NSLog(@"BT on."); break;
-        default: NSLog(@"BT State unknown."); break;
-    }    
-}
+//#pragma mark - CBCentralManagerDelegate
+//
+//- (void)centralManagerDidUpdateState:(CBCentralManager *)cbManager
+//{
+//    switch (cbManager.state) {
+//        case CBCentralManagerStateResetting: NSLog(@"system BT connection momentarily lost."); break;
+//        case CBCentralManagerStateUnsupported: NSLog(@"BT Low Energy not suppoerted."); break;
+//        case CBCentralManagerStateUnauthorized: NSLog(@"BT Low Energy not authorized."); break;
+//        case CBCentralManagerStatePoweredOff: NSLog(@"BT off."); break;
+//        case CBCentralManagerStatePoweredOn: NSLog(@"BT on."); break;
+//        default: NSLog(@"BT State unknown."); break;
+//    }    
+//}
 @end

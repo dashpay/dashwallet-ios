@@ -229,9 +229,10 @@
 
                 CGRect f = unconfirmedLabel.frame;
                 
-                f.size.width = [unconfirmedLabel.text sizeWithFont:unconfirmedLabel.font].width + 10;
+                f.size.width = [unconfirmedLabel.text
+                                sizeWithAttributes:@{NSFontAttributeName:unconfirmedLabel.font}].width + 10;
                 unconfirmedLabel.frame = f;
-                f.size.width = [sentLabel.text sizeWithFont:sentLabel.font].width + 10;
+                f.size.width = [sentLabel.text sizeWithAttributes:@{NSFontAttributeName:sentLabel.font}].width + 10;
                 sentLabel.frame = f;
                 sentLabel.layer.borderColor = sentLabel.textColor.CGColor;
                 

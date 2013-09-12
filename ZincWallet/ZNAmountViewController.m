@@ -63,7 +63,7 @@
 
     self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     CGRect f = self.spinner.frame;
-    f.size.width = 33;
+    f.size.width = 20;
     self.spinner.frame = f;
 
     if ([[UIScreen mainScreen] bounds].size.height < 500) { // adjust number buttons for 3.5" screen

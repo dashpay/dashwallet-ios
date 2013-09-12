@@ -99,7 +99,7 @@
 
     self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     CGRect f = self.spinner.frame;
-    f.size.width = 33;
+    f.size.width = 20;
     self.spinner.frame = f;
 
     self.wallpaperStart = self.wallpaper.center;

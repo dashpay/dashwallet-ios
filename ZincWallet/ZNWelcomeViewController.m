@@ -50,7 +50,7 @@
     
     [self.navigationController.navigationBar
      setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor whiteColor],
-                              NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue" size:19.0]}];
+                              NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue" size:17.0]}];
     
     self.navigationController.delegate = self;
 
@@ -90,6 +90,8 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+    
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:YES];
     
     if (self.hasAppeared) return;
     
