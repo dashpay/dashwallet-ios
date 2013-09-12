@@ -26,8 +26,8 @@
 #import "ZNRestoreViewController.h"
 #import "ZNWallet.h"
 #import "NSString+Base58.h"
-#if WALLET_BIP39
-#import "ZNBIP39Mnemonic.h"
+#if WALLET_BIP32
+#import "ZNZincMnemonic.h"
 #else
 #import "ZNElectrumMnemonic.h"
 #endif
@@ -43,7 +43,7 @@
 @property (nonatomic, strong) IBOutletCollection(UIButton) NSArray *keys;
 
 @property (nonatomic, strong) id<ZNMnemonic> mnemonic;
-#if WALLET_BIP39
+#if WALLET_BIP32
 @property (nonatomic, strong) NSSet *adjs, *nouns, *advs, *verbs;
 #else
 @property (nonatomic, strong) NSSet *words;
@@ -59,7 +59,7 @@
     // Do any additional setup after loading the view.
  
     // TODO: create secure versions of keyboard and UILabel and use in place of UITextView
-    // TODO: autocomplete based on 4 letter prefixes of BIP39 words
+    // TODO: autocomplete based on 4 letter prefixes of mnemonic words
     
     self.textView.layer.cornerRadius = 5.0;
     
@@ -69,8 +69,8 @@
     self.textView.layer.borderWidth = 0.5;
     self.textView.textColor = [UIColor blackColor];
 
-#if WALLET_BIP39
-    self.mnemonic = [ZNBIP39Mnemonic new];
+#if WALLET_BIP32
+    self.mnemonic = [ZNZincMnemonic new];
 #else
     self.mnemonic = [ZNElectrumMnemonic new];
 #endif
@@ -89,15 +89,15 @@
 {
     [super viewDidAppear:animated];
     
-#if WALLET_BIP39
+#if WALLET_BIP32
     self.adjs = [NSSet setWithArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
-                 pathForResource:@"BIP39adjs" ofType:@"plist"]]];
+                 pathForResource:@"MnemonicAdjs" ofType:@"plist"]]];
     self.nouns = [NSSet setWithArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
-                  pathForResource:@"BIP39nouns" ofType:@"plist"]]];
+                  pathForResource:@"MnemonicNouns" ofType:@"plist"]]];
     self.advs = [NSSet setWithArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
-                 pathForResource:@"BIP39advs" ofType:@"plist"]]];
+                 pathForResource:@"MnemonicAdvs" ofType:@"plist"]]];
     self.verbs = [NSSet setWithArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
-                  pathForResource:@"BIP39verbs" ofType:@"plist"]]];
+                  pathForResource:@"MnemonicVerbs" ofType:@"plist"]]];
 #else
     self.words = [NSSet setWithArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
                   pathForResource:@"ElectrumSeedWords" ofType:@"plist"]]];
@@ -106,7 +106,7 @@
 
 - (void)viewWillDisappear:(BOOL)animated
 {
-#if WALLET_BIP39
+#if WALLET_BIP32
     self.adjs = self.nouns = self.advs = self.verbs = nil;
 #else
     self.words = nil;
@@ -240,7 +240,7 @@
     
     NSArray *a = [s componentsSeparatedByString:@" "];
         
-#if WALLET_BIP39
+#if WALLET_BIP32
     NSString *incorrect = nil;
         
     for (NSUInteger i = 0; i < 12; i += 6) {

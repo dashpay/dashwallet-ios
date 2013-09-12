@@ -29,7 +29,7 @@
 #import "ZNElectrumSequence.h"
 #import "ZNBIP32Sequence.h"
 #import "ZNElectrumMnemonic.h"
-#import "ZNBIP39Mnemonic.h"
+#import "ZNZincMnemonic.h"
 #import "ZNTransaction.h"
 #import "ZNKey.h"
 #import "NSData+Hash.h"
@@ -148,12 +148,12 @@
     STAssertTrue(priority >= TX_FREE_MIN_PRIORITY, @"[ZNTransaction heightUntilFreeFor:atHeights:]");
 }
 
-#pragma mark - testBIP39Mnemonic
+#pragma mark - testZincMnemonic
 
-//TODO: test bip39
-//- (void)testBIP39MnemonicDecodePhrase
+//TODO: test zinc mnemonic
+//- (void)testZincMnemonicDecodePhrase
 //{
-//    id<ZNMnemonic> mnemonic = [ZNBIP39Mnemonic sharedInstance];
+//    id<ZNMnemonic> mnemonic = [ZNZincMnemonic sharedInstance];
 //    
 //    NSData *d = [mnemonic decodePhrase:@"like just love know never want time out there make look eye"];
 //    
@@ -178,9 +178,9 @@
 //    //STAssertEqualObjects(d, @"8d02be487e1953ce2dd6c186fcc97e65".hexToData, @"[ZNWallet decodePhrase:]");
 //}
 
-- (void)testBIP39MnemonicEncodePhrase
+- (void)testZincMnemonicEncodePhrase
 {
-    id<ZNMnemonic> mnemonic = [ZNBIP39Mnemonic sharedInstance];
+    id<ZNMnemonic> mnemonic = [ZNZincMnemonic sharedInstance];
     
     NSString *s = [mnemonic encodePhrase:@"00285dfe00285e0100285e0400285e07".hexToData];
     

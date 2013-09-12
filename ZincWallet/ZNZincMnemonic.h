@@ -1,5 +1,5 @@
 //
-//  ZNBIP39Mnemonic.h
+//  ZNZincMnemonic.h
 //  ZincWallet
 //
 //  Created by Aaron Voisine on 8/15/13.
@@ -26,7 +26,7 @@
 #import <Foundation/Foundation.h>
 #import "ZNMnemonic.h"
 
-@interface ZNBIP39Mnemonic : NSObject<ZNMnemonic>
+@interface ZNZincMnemonic : NSObject<ZNMnemonic>
 
 + (instancetype)sharedInstance;
 

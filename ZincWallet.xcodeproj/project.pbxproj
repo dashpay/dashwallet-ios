@@ -724,16 +724,16 @@
 		759CB23B175E8D4900AFA559 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB23A175E8D4900AFA559 /* AVFoundation.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		759CB23D175E8D6300AFA559 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB23C175E8D6300AFA559 /* CoreMedia.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		759CB240175F03BF00AFA559 /* ZNAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759CB23F175F03BF00AFA559 /* ZNAmountViewController.m */; };
-		75A6ECE317BD464A0043E52D /* ZNBIP39Mnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = 75A6ECE217BD464A0043E52D /* ZNBIP39Mnemonic.m */; };
+		75A6ECE317BD464A0043E52D /* ZNZincMnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = 75A6ECE217BD464A0043E52D /* ZNZincMnemonic.m */; };
 		75ADF1FE17B0EC0D006B1336 /* deletetoleft-blue.png in Resources */ = {isa = PBXBuildFile; fileRef = 75ADF1FD17B0EC0C006B1336 /* deletetoleft-blue.png */; };
 		75AF36D8176675D3004AA912 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		75AF36EC17667E43004AA912 /* DataMatrix.mm in Sources */ = {isa = PBXBuildFile; fileRef = 75AF36E517667E43004AA912 /* DataMatrix.mm */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		75AF36ED17667E43004AA912 /* QR_Encode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75AF36E617667E43004AA912 /* QR_Encode.cpp */; };
 		75AF36EE17667E43004AA912 /* QREncoder.mm in Sources */ = {isa = PBXBuildFile; fileRef = 75AF36EB17667E43004AA912 /* QREncoder.mm */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		75B4941B17C43ACA003A3FCA /* BIP39adjs.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75B4941A17C43ACA003A3FCA /* BIP39adjs.plist */; };
-		75B4941D17C43BCE003A3FCA /* BIP39nouns.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75B4941C17C43BCE003A3FCA /* BIP39nouns.plist */; };
-		75B4941F17C43C58003A3FCA /* BIP39advs.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75B4941E17C43C58003A3FCA /* BIP39advs.plist */; };
-		75B4942117C43CAC003A3FCA /* BIP39verbs.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75B4942017C43CAC003A3FCA /* BIP39verbs.plist */; };
+		75B4941B17C43ACA003A3FCA /* MnemonicAdjs.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75B4941A17C43ACA003A3FCA /* MnemonicAdjs.plist */; };
+		75B4941D17C43BCE003A3FCA /* MnemonicNouns.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75B4941C17C43BCE003A3FCA /* MnemonicNouns.plist */; };
+		75B4941F17C43C58003A3FCA /* MnemonicAdvs.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75B4941E17C43C58003A3FCA /* MnemonicAdvs.plist */; };
+		75B4942117C43CAC003A3FCA /* MnemonicVerbs.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75B4942017C43CAC003A3FCA /* MnemonicVerbs.plist */; };
 		75C2F3D4178D3061009F8CD3 /* cameraguide-green@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75C2F3D1178D3061009F8CD3 /* cameraguide-green@2x.png */; };
 		75C2F3D5178D3061009F8CD3 /* cameraguide-red@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75C2F3D2178D3061009F8CD3 /* cameraguide-red@2x.png */; };
 		75C2F3D6178D3061009F8CD3 /* cameraguide@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75C2F3D3178D3061009F8CD3 /* cameraguide@2x.png */; };
@@ -1799,8 +1799,8 @@
 		759CB23C175E8D6300AFA559 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		759CB23E175F03BF00AFA559 /* ZNAmountViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNAmountViewController.h; sourceTree = "<group>"; };
 		759CB23F175F03BF00AFA559 /* ZNAmountViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNAmountViewController.m; sourceTree = "<group>"; };
-		75A6ECE117BD464A0043E52D /* ZNBIP39Mnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNBIP39Mnemonic.h; sourceTree = "<group>"; };
-		75A6ECE217BD464A0043E52D /* ZNBIP39Mnemonic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNBIP39Mnemonic.m; sourceTree = "<group>"; };
+		75A6ECE117BD464A0043E52D /* ZNZincMnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNZincMnemonic.h; sourceTree = "<group>"; };
+		75A6ECE217BD464A0043E52D /* ZNZincMnemonic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNZincMnemonic.m; sourceTree = "<group>"; };
 		75A6ECE517BD4CF60043E52D /* ZNMnemonic.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNMnemonic.h; sourceTree = "<group>"; };
 		75ADF1FD17B0EC0C006B1336 /* deletetoleft-blue.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "deletetoleft-blue.png"; sourceTree = "<group>"; };
 		75AF36D7176675D3004AA912 /* libqrencoder.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libqrencoder.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1812,10 +1812,10 @@
 		75AF36E917667E43004AA912 /* QREncoder-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "QREncoder-Prefix.pch"; sourceTree = "<group>"; };
 		75AF36EA17667E43004AA912 /* QREncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QREncoder.h; sourceTree = "<group>"; };
 		75AF36EB17667E43004AA912 /* QREncoder.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = QREncoder.mm; sourceTree = "<group>"; };
-		75B4941A17C43ACA003A3FCA /* BIP39adjs.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = BIP39adjs.plist; sourceTree = "<group>"; };
-		75B4941C17C43BCE003A3FCA /* BIP39nouns.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = BIP39nouns.plist; sourceTree = "<group>"; };
-		75B4941E17C43C58003A3FCA /* BIP39advs.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = BIP39advs.plist; sourceTree = "<group>"; };
-		75B4942017C43CAC003A3FCA /* BIP39verbs.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = BIP39verbs.plist; sourceTree = "<group>"; };
+		75B4941A17C43ACA003A3FCA /* MnemonicAdjs.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = MnemonicAdjs.plist; sourceTree = "<group>"; };
+		75B4941C17C43BCE003A3FCA /* MnemonicNouns.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = MnemonicNouns.plist; sourceTree = "<group>"; };
+		75B4941E17C43C58003A3FCA /* MnemonicAdvs.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = MnemonicAdvs.plist; sourceTree = "<group>"; };
+		75B4942017C43CAC003A3FCA /* MnemonicVerbs.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = MnemonicVerbs.plist; sourceTree = "<group>"; };
 		75C2F3D1178D3061009F8CD3 /* cameraguide-green@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide-green@2x.png"; sourceTree = "<group>"; };
 		75C2F3D2178D3061009F8CD3 /* cameraguide-red@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide-red@2x.png"; sourceTree = "<group>"; };
 		75C2F3D3178D3061009F8CD3 /* cameraguide@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide@2x.png"; sourceTree = "<group>"; };
@@ -3444,8 +3444,8 @@
 				75EAE8451753E93A00FDB2D2 /* ZNElectrumSequence.h */,
 				75EAE8461753E93A00FDB2D2 /* ZNElectrumSequence.m */,
 				75A6ECE517BD4CF60043E52D /* ZNMnemonic.h */,
-				75A6ECE117BD464A0043E52D /* ZNBIP39Mnemonic.h */,
-				75A6ECE217BD464A0043E52D /* ZNBIP39Mnemonic.m */,
+				75A6ECE117BD464A0043E52D /* ZNZincMnemonic.h */,
+				75A6ECE217BD464A0043E52D /* ZNZincMnemonic.m */,
 				847C2300179A1FD600163CEF /* ZNElectrumMnemonic.h */,
 				847C2301179A1FD600163CEF /* ZNElectrumMnemonic.m */,
 			);
@@ -3532,10 +3532,10 @@
 			isa = PBXGroup;
 			children = (
 				75D8F389173ABE3C0080D95E /* ZincWallet-Info.plist */,
-				75B4941A17C43ACA003A3FCA /* BIP39adjs.plist */,
-				75B4941C17C43BCE003A3FCA /* BIP39nouns.plist */,
-				75B4941E17C43C58003A3FCA /* BIP39advs.plist */,
-				75B4942017C43CAC003A3FCA /* BIP39verbs.plist */,
+				75B4941A17C43ACA003A3FCA /* MnemonicAdjs.plist */,
+				75B4941C17C43BCE003A3FCA /* MnemonicNouns.plist */,
+				75B4941E17C43C58003A3FCA /* MnemonicAdvs.plist */,
+				75B4942017C43CAC003A3FCA /* MnemonicVerbs.plist */,
 				75EAE8421752D20800FDB2D2 /* ElectrumSeedWords.plist */,
 				75D8F38A173ABE3C0080D95E /* InfoPlist.strings */,
 				75D8F38D173ABE3C0080D95E /* main.m */,
@@ -3907,10 +3907,10 @@
 				757B1DD517AEEB1600AA6CAB /* cameraguide-blue-small@2x.png in Resources */,
 				757B1DDA17AEFCAD00AA6CAB /* wallpaper-default@2x.png in Resources */,
 				75ADF1FE17B0EC0D006B1336 /* deletetoleft-blue.png in Resources */,
-				75B4941B17C43ACA003A3FCA /* BIP39adjs.plist in Resources */,
-				75B4941D17C43BCE003A3FCA /* BIP39nouns.plist in Resources */,
-				75B4941F17C43C58003A3FCA /* BIP39advs.plist in Resources */,
-				75B4942117C43CAC003A3FCA /* BIP39verbs.plist in Resources */,
+				75B4941B17C43ACA003A3FCA /* MnemonicAdjs.plist in Resources */,
+				75B4941D17C43BCE003A3FCA /* MnemonicNouns.plist in Resources */,
+				75B4941F17C43C58003A3FCA /* MnemonicAdvs.plist in Resources */,
+				75B4942117C43CAC003A3FCA /* MnemonicVerbs.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4699,7 +4699,7 @@
 				847C2302179A1FD600163CEF /* ZNElectrumMnemonic.m in Sources */,
 				7597028417E15B5600CDC14A /* ZNStoryboardSegue.m in Sources */,
 				756E9CD617ACC95D00D316A8 /* ZNSocketListener.m in Sources */,
-				75A6ECE317BD464A0043E52D /* ZNBIP39Mnemonic.m in Sources */,
+				75A6ECE317BD464A0043E52D /* ZNZincMnemonic.m in Sources */,
 				759B779317BECFCF0000510F /* base64.c in Sources */,
 				759B779417BECFCF0000510F /* NSData+SRB64Additions.m in Sources */,
 				759B779517BECFCF0000510F /* SRWebSocket.m in Sources */,

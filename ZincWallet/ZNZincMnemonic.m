@@ -1,5 +1,5 @@
 //
-//  ZNBIP39Mnemonic.m
+//  ZNZincMnemonic.m
 //  ZincWallet
 //
 //  Created by Aaron Voisine on 8/15/13.
@@ -23,15 +23,15 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "ZNBIP39Mnemonic.h"
+#import "ZNZincMnemonic.h"
 #import "NSString+Base58.h"
 
-#define ADJS  @"BIP39adjs"
-#define NOUNS @"BIP39nouns"
-#define ADVS  @"BIP39advs"
-#define VERBS @"BIP39verbs"
+#define ADJS  @"MnemonicAdjs"
+#define NOUNS @"MnemonicNouns"
+#define ADVS  @"MnemonicAdvs"
+#define VERBS @"MnemonicVerbs"
 
-@implementation ZNBIP39Mnemonic
+@implementation ZNZincMnemonic
 
 + (instancetype)sharedInstance
 {

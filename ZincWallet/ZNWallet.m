@@ -38,8 +38,8 @@
 #import "AFNetworking.h"
 
 #import "ZNMnemonic.h"
-#if WALLET_BIP39
-#import "ZNBIP39Mnemonic.h"
+#if WALLET_BIP32
+#import "ZNZincMnemonic.h"
 #else
 #import "ZNElectrumMnemonic.h"
 #endif
@@ -205,8 +205,8 @@ static NSData *getKeychainData(NSString *key)
 
 - (NSString *)seedPhrase
 {
-#if WALLET_BIP39
-    id<ZNMnemonic> mnemonic = [ZNBIP39Mnemonic sharedInstance];
+#if WALLET_BIP32
+    id<ZNMnemonic> mnemonic = [ZNZincMnemonic sharedInstance];
 #else
     id<ZNMnemonic> mnemonic = [ZNElectrumMnemonic sharedInstance];
 #endif
@@ -216,8 +216,8 @@ static NSData *getKeychainData(NSString *key)
 
 - (void)setSeedPhrase:(NSString *)seedPhrase
 {
-#if WALLET_BIP39
-    id<ZNMnemonic> mnemonic = [ZNBIP39Mnemonic sharedInstance];
+#if WALLET_BIP32
+    id<ZNMnemonic> mnemonic = [ZNZincMnemonic sharedInstance];
 #else
     id<ZNMnemonic> mnemonic = [ZNElectrumMnemonic sharedInstance];
 #endif
