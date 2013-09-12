@@ -77,14 +77,12 @@
         }];
 }
 
-- (void)viewDidUnload
+- (void)dealloc
 {
     self.navigationController.delegate = nil;
 
-    [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
-    [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
-
-    [super viewDidUnload];
+    if (self.activeObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
+    if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
 }
 
 - (void)viewWillAppear:(BOOL)animated
