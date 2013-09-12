@@ -69,15 +69,8 @@
     self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                  [w localCurrencyStringForAmount:w.balance]];
     
-    if ([self.navigationController.navigationBar respondsToSelector:@selector(shadowImage)]) {
-        [self.navigationController.navigationBar setShadowImage:[UIImage new]];
-    }
-    
-    self.navigationController.navigationBar.backgroundColor =
-        [UIColor colorWithPatternImage:[UIImage imageNamed:@"navbar-bg.png"]];
-    
     self.wallpaper = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"wallpaper-default.png"]];
-    self.wallpaperStart = self.wallpaper.center;// = CGPointMake(self.wallpaper.center.x, self.wallpaper.center.y + 20);
+    self.wallpaperStart = self.wallpaper.center;
     
     [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
     
@@ -94,6 +87,26 @@
     [super viewWillAppear:animated];
     
     self.transactions = [[ZNWallet sharedInstance] recentTransactions];
+}
+
+- (void)setBackgroundForCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)path
+{
+    if (! cell.backgroundView) {
+        UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0, 0, cell.frame.size.width, 0.5)];
+        
+        v.tag = 100;
+        cell.backgroundView = [[UIView alloc] initWithFrame:cell.frame];
+        cell.backgroundView.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.67];
+        v.backgroundColor = self.tableView.separatorColor;
+        [cell.backgroundView addSubview:v];
+        v = [[UIView alloc] initWithFrame:CGRectMake(0, cell.frame.size.height - 0.5, cell.frame.size.width, 0.5)];
+        v.tag = 101;
+        v.backgroundColor = self.tableView.separatorColor;
+        [cell.backgroundView addSubview:v];
+    }
+    
+    [cell viewWithTag:100].frame = CGRectMake(path.row == 0 ? 0 : 15, 0, cell.frame.size.width, 0.5);
+    [cell viewWithTag:101].hidden = (path.row + 1 < [self tableView:self.tableView numberOfRowsInSection:path.section]);
 }
 
 #pragma mark - IBAction
@@ -132,6 +145,7 @@
     switch (indexPath.section) {
         case 0:
             cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent];
+            [self setBackgroundForCell:cell atIndexPath:indexPath];
             
             textLabel = (id)[cell viewWithTag:1];
             detailTextLabel = (id)[cell viewWithTag:2];
@@ -227,17 +241,7 @@
             
         case 1:
             cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
-            if (! cell.backgroundView) {
-                //UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0, -1, cell.frame.size.width, 1)];
-                
-                cell.backgroundView = [[UIView alloc] initWithFrame:cell.frame];
-                cell.backgroundView.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.67];
-                //v.backgroundColor = tableView.separatorColor;
-                //[cell.backgroundView addSubview:v];
-                //v = [[UIView alloc] initWithFrame:CGRectMake(0, cell.frame.size.height - 1, cell.frame.size.width, 1)];
-                //v.backgroundColor = tableView.separatorColor;
-                //[cell.backgroundView addSubview:v];
-            }
+            [self setBackgroundForCell:cell atIndexPath:indexPath];
             
             switch (indexPath.row) {
                 case 0:
@@ -255,19 +259,7 @@
             
         case 2:
             cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
-            if (! cell.backgroundView) {
-                //UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0, -1.0, cell.frame.size.width, 1.0)];
-                
-                cell.backgroundView = [[UIView alloc] initWithFrame:cell.frame];
-                cell.selectedBackgroundView = [[UIView alloc] initWithFrame:cell.frame];
-                cell.backgroundView.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.67];
-                cell.selectedBackgroundView.backgroundColor =
-                    [UIColor colorWithPatternImage:[UIImage imageNamed:@"redgradient.png"]];
-                //v.backgroundColor = tableView.separatorColor;
-                //[cell.backgroundView addSubview:v];
-                cell.textLabel.textColor = [UIColor redColor];
-                cell.textLabel.shadowColor = [UIColor clearColor];
-            }
+            [self setBackgroundForCell:cell atIndexPath:indexPath];
 
             switch (indexPath.row) {
                 case 0:
