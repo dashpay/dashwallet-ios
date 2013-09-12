@@ -79,8 +79,6 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-    
-    //BUG: iOS 5 has a resizing bug, put in a fix here
 
     [self.textView becomeFirstResponder];
 }
