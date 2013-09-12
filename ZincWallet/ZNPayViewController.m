@@ -36,7 +36,6 @@
 #import <netinet/in.h>
 #import "Reachability.h"
 #import "NSString+Base58.h"
-#import "ZBarReaderViewController.h"
 #import "MBProgressHUD.h"
 
 #define BUTTON_HEIGHT 44.0
@@ -50,7 +49,7 @@
 
 @interface ZNPayViewController ()
 
-@property (nonatomic, strong) GKSession *session;
+//@property (nonatomic, strong) GKSession *session;
 @property (nonatomic, strong) NSMutableArray *requests;
 @property (nonatomic, strong) NSMutableArray *requestIDs;
 @property (nonatomic, strong) NSMutableArray *requestButtons;
@@ -83,6 +82,9 @@
     // Do any additional setup after loading the view, typically from a nib.
     
     //TODO: add a field for manually entering a payment address
+    //TODO: make title use dynamic font size
+    //TODO: add a placeholder button for empty or non-bitcoin clipboard
+    //BUG: clipboard button title is offcenter (ios7 specific font layout bug?)
     ZNPaymentRequest *req = [ZNPaymentRequest new];
     ZNWallet *w = [ZNWallet sharedInstance];
     
@@ -99,13 +101,6 @@
     self.spinner.frame = f;
 
     self.wallpaperStart = self.wallpaper.center;
-
-    // if > iOS 6, we can customize the appearance of the pageControl and don't need the black bar behind it.
-    if ([self.pageControl respondsToSelector:@selector(pageIndicatorTintColor)]) {
-        self.pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:0.85 alpha:1.0];
-        self.pageControl.currentPageIndicatorTintColor = [UIColor grayColor];
-        self.pageControl.superview.backgroundColor = [UIColor clearColor];
-    }
     
     self.urlObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:bitcoinURLNotification object:nil queue:nil
@@ -130,7 +125,7 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             if (w.timeSinceLastSync > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
-            else [[ZNSocketListener sharedInstance] openSocket];
+            else if (w.masterPublicKey) [[ZNSocketListener sharedInstance] openSocket];
 
             [self layoutButtonsAnimated:YES]; // check the clipboard for changes
         }];
@@ -140,7 +135,7 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             if (w.timeSinceLastSync > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
-            else [[ZNSocketListener sharedInstance] openSocket];
+            else if (w.masterPublicKey) [[ZNSocketListener sharedInstance] openSocket];
         }];
 
     self.balanceObserver =
@@ -172,7 +167,7 @@
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                          [w localCurrencyStringForAmount:w.balance]];
             
-            [[ZNSocketListener sharedInstance] openSocket];
+            if (w.masterPublicKey) [[ZNSocketListener sharedInstance] openSocket];
         }];
 
     //TODO: create an error banner instead of using an alert
@@ -252,12 +247,12 @@
         }];
     }
 
-    self.session = [[GKSession alloc] initWithSessionID:GK_SESSION_ID
-                    displayName:[UIDevice.currentDevice.name stringByAppendingString:@" Wallet"]
-                    sessionMode:GKSessionModeClient];
-    self.session.delegate = self;
-    [self.session setDataReceiveHandler:self withContext:nil];
-    self.session.available = YES;
+//    self.session = [[GKSession alloc] initWithSessionID:GK_SESSION_ID
+//                    displayName:[UIDevice.currentDevice.name stringByAppendingString:@" Wallet"]
+//                    sessionMode:GKSessionModeClient];
+//    self.session.delegate = self;
+//    [self.session setDataReceiveHandler:self withContext:nil];
+//    self.session.available = YES;
     
     self.scrollView.contentSize = CGSizeMake(self.scrollView.frame.size.width*2, self.scrollView.frame.size.height);
     
@@ -284,16 +279,16 @@
     [super viewDidAppear:animated];
 
     if ([[ZNWallet sharedInstance] timeSinceLastSync] > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
-    else [[ZNSocketListener sharedInstance] openSocket];
+    else if ([ZNWallet sharedInstance].masterPublicKey) [[ZNSocketListener sharedInstance] openSocket];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
     
-    self.session.available = NO;
-    [self.session disconnectFromAllPeers];
-    self.session = nil;
+//    self.session.available = NO;
+//    [self.session disconnectFromAllPeers];
+//    self.session = nil;
 }
 
 - (ZNReceiveViewController *)receiveController
@@ -387,7 +382,7 @@
     };
     
     if (animated) {
-        [UIView animateWithDuration:0.2 animations:block completion:^(BOOL finished) {
+        [UIView animateWithDuration:SEGUE_DURATION animations:block completion:^(BOOL finished) {
             while (self.requestButtons.count > self.requests.count) {
                 [self.requestButtons.lastObject removeFromSuperview];
                 [self.requestButtons removeLastObject];
@@ -593,7 +588,7 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
 {
     if (! animated) return;
     
-    [UIView animateWithDuration:UINavigationControllerHideShowBarDuration*2 animations:^{
+    [UIView animateWithDuration:SEGUE_DURATION animations:^{
         if (viewController != self) {
             self.wallpaper.center = CGPointMake(self.wallpaperStart.x - self.view.frame.size.width*PARALAX_RATIO,
                                                 self.wallpaperStart.y);
@@ -606,7 +601,7 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    if (buttonIndex == alertView.cancelButtonIndex || self.selectedIndex == NSNotFound) {
+    if (buttonIndex == alertView.cancelButtonIndex) {
         self.sweepTx = nil;
         self.selectedIndex = NSNotFound;
         [self layoutButtonsAnimated:YES];
@@ -614,14 +609,40 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
     }
     
     ZNWallet *w = [ZNWallet sharedInstance];
-    ZNPaymentRequest *request = self.requests[self.selectedIndex];
-    ZNTransaction *tx = nil, *txWithFee = nil;
-    NSString *title = [alertView buttonTitleAtIndex:buttonIndex];
     
-    if (! self.sweepTx) {
-        tx = [w transactionFor:request.amount to:request.paymentAddress withFee:NO];
-        txWithFee = [w transactionFor:request.amount to:request.paymentAddress withFee:YES];
+    if (self.sweepTx) {
+        [self.spinner startAnimating];
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
+        
+        [w publishTransaction:self.sweepTx completion:^(NSError *error) {
+            [self.spinner stopAnimating];
+            self.navigationItem.rightBarButtonItem = self.refreshButton;
+            self.selectedIndex = NSNotFound;
+            [self layoutButtonsAnimated:YES];
+            
+            if (error) {
+                [[[UIAlertView alloc] initWithTitle:@"Couldn't sweep balance." message:error.localizedDescription
+                                           delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+                return;
+            }
+            
+            MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+            
+            hud.mode = MBProgressHUDModeText;
+            hud.labelText = @"swept!";
+            hud.labelFont = [UIFont fontWithName:@"HelveticaNeue-Medium" size:17.0];
+            [hud hide:YES afterDelay:2.0];
+        }];
+        
+        self.sweepTx = nil;
+        return;
     }
+    else if (self.selectedIndex == NSNotFound) return;
+
+    ZNPaymentRequest *request = self.requests[self.selectedIndex];
+    ZNTransaction *tx = [w transactionFor:request.amount to:request.paymentAddress withFee:NO];
+    ZNTransaction *txWithFee = [w transactionFor:request.amount to:request.paymentAddress withFee:YES];
+    NSString *title = [alertView buttonTitleAtIndex:buttonIndex];
     
     if ([title hasPrefix:@"+ "] || [title isEqual:@"no fee"]) {
         if ([title hasPrefix:@"+ "]) tx = txWithFee;
@@ -641,33 +662,6 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
         [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
           message:request.message ? request.message : request.paymentAddress delegate:self
           cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
-        return;
-    }
-    else if (self.sweepTx) {
-        [self.spinner startAnimating];
-        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
-        
-        [w publishTransaction:self.sweepTx completion:^(NSError *error) {
-            [self.spinner stopAnimating];
-            self.navigationItem.rightBarButtonItem = self.refreshButton;
-            self.selectedIndex = NSNotFound;
-            [self layoutButtonsAnimated:YES];
-            
-            if (error) {
-                [[[UIAlertView alloc] initWithTitle:@"Couldn't sweep balance." message:error.localizedDescription
-                  delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-                return;
-            }
-            
-            MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
-            
-            hud.mode = MBProgressHUDModeText;
-            hud.labelText = @"swept!";
-            hud.labelFont = [UIFont fontWithName:@"HelveticaNeue-Medium" size:17.0];
-            [hud hide:YES afterDelay:2.0];
-        }];
-        
-        self.sweepTx = nil;
         return;
     }
 
@@ -713,22 +707,23 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
             [hud hide:YES afterDelay:2.0];
         }];
     }
-    else { // this should be wrapped in #ifdef for bluetooth support
-        NSLog(@"sending signed request to %@", self.requestIDs[self.selectedIndex]);
-        
-        NSError *error = nil;
-        
-        [self.session sendData:[[tx toHex] dataUsingEncoding:NSUTF8StringEncoding]
-         toPeers:@[self.requestIDs[self.selectedIndex]] withDataMode:GKSendDataReliable error:&error];
-    
-        if (error) {
-            [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription delegate:nil
-             cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-        }
-    
-        [self.requestIDs removeObjectAtIndex:self.selectedIndex];
-        [self.requests removeObjectAtIndex:self.selectedIndex];
-    }
+//    else { // this should be wrapped in #ifdef for bluetooth support
+//        NSLog(@"sending signed request to %@", self.requestIDs[self.selectedIndex]);
+//        
+//        NSError *error = nil;
+//        
+//        [self.session sendData:[[tx toHex] dataUsingEncoding:NSUTF8StringEncoding]
+//         toPeers:@[self.requestIDs[self.selectedIndex]] withDataMode:GKSendDataReliable error:&error];
+//    
+//        if (error) {
+//            [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription delegate:nil
+//             cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+//        }
+//    
+//        [self.requestIDs removeObjectAtIndex:self.selectedIndex];
+//        [self.requests removeObjectAtIndex:self.selectedIndex];
+//    }
+
     self.selectedIndex = NSNotFound;
     
     [self layoutButtonsAnimated:YES];
@@ -753,7 +748,7 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
         else {
             [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide-green.png"]];
             
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_current_queue(), ^{
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
                 self.selectedIndex = [self.requestIDs indexOfObject:QR_ID];
                 if (req.paymentAddress) [self confirmRequest:req];
                 else [self confirmSweep:s];
@@ -766,125 +761,125 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
     }
 }
 
-#pragma mark - GKSessionDelegate
-
-// Indicates a state change for the given peer.
-- (void)session:(GKSession *)session peer:(NSString *)peerID didChangeState:(GKPeerConnectionState)state
-{
-    NSLog(@"%@ didChangeState:%@", peerID, state == GKPeerStateAvailable ? @"available" :
-          state == GKPeerStateUnavailable ? @"unavailable" :
-          state == GKPeerStateConnecting ? @"connecting" :
-          state == GKPeerStateConnected ? @"connected" :
-          state == GKPeerStateDisconnected ? @"disconnected" : @"unkown");
-    
-    if (state == GKPeerStateAvailable) {
-        if (! [self.requestIDs containsObject:peerID]) {
-            [self.requestIDs addObject:peerID];
-            [self.requests addObject:[ZNPaymentRequest new]];
-            
-            [session connectToPeer:peerID withTimeout:CONNECT_TIMEOUT];
-            
-            [self layoutButtonsAnimated:YES];
-        }
-    }
-    else if (state == GKPeerStateUnavailable || state == GKPeerStateDisconnected) {
-        if ([self.requestIDs containsObject:peerID]) {
-            NSUInteger idx = [self.requestIDs indexOfObject:peerID];
-            
-            [self.requestIDs removeObjectAtIndex:idx];
-            [self.requests removeObjectAtIndex:idx];
-            [self layoutButtonsAnimated:YES];
-        }
-    }
-}
-
-// Indicates a connection request was received from another peer.
+//#pragma mark - GKSessionDelegate
 //
-// Accept by calling -acceptConnectionFromPeer:
-// Deny by calling -denyConnectionFromPeer:
-- (void)session:(GKSession *)session didReceiveConnectionRequestFromPeer:(NSString *)peerID
-{
-    NSAssert(FALSE, @"%s:%d %s: recieved connection request (not in client mode)", __FILE__, __LINE__,  __func__);
-    return;
-    
-    
-    [session denyConnectionFromPeer:peerID];
-}
-
-// Indicates a connection error occurred with a peer, including connection request failures or timeouts.
-- (void)session:(GKSession *)session connectionWithPeerFailed:(NSString *)peerID withError:(NSError *)error
-{
-    [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription delegate:nil
-                      cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-    
-    if (self.selectedIndex != NSNotFound && [self.requestIDs[self.selectedIndex] isEqual:peerID]) {
-        self.selectedIndex = NSNotFound;
-    }
-    
-    if ([self.requestIDs containsObject:peerID]) {
-        NSUInteger idx = [self.requestIDs indexOfObject:peerID];
-        
-        [self.requestIDs removeObjectAtIndex:idx];
-        [self.requests removeObjectAtIndex:idx];
-        [self layoutButtonsAnimated:YES];
-    }
-}
-
-// Indicates an error occurred with the session such as failing to make available.
-- (void)session:(GKSession *)session didFailWithError:(NSError *)error
-{
-    if (self.selectedIndex != NSNotFound && ! [self.requestIDs[self.selectedIndex] isEqual:CLIPBOARD_ID] &&
-        ! [self.requestIDs[self.selectedIndex] isEqual:QR_ID]) {
-        self.selectedIndex = NSNotFound;
-    }
-    
-    NSIndexSet *indexes =
-        [self.requestIDs indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-            return ! [obj isEqual:CLIPBOARD_ID] && ! [obj isEqual:QR_ID];
-        }];
-    
-    [self.requestIDs removeObjectsAtIndexes:indexes];
-    [self.requests removeObjectsAtIndexes:indexes];
-    
-    [self layoutButtonsAnimated:YES];
-    
-    //[[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription delegate:nil
-    //                  cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-}
-
-- (void)receiveData:(NSData *)data fromPeer:(NSString *)peer inSession:(GKSession *)session context:(void *)context
-{
-    NSUInteger idx = [self.requestIDs indexOfObject:peer];
-    
-    if (idx == NSNotFound) {
-        NSAssert(FALSE, @"%s:%d %s: idx = NSNotFound", __FILE__, __LINE__,  __func__);
-        return;
-    }
-    
-    ZNPaymentRequest *req = self.requests[idx];
-    
-    [req setData:data];
-    
-    if (! req.valid) {
-        [[[UIAlertView alloc] initWithTitle:@"Couldn't validate payment request"
-                                    message:@"The payment reqeust did not contain a valid merchant signature" delegate:self
-                          cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-        
-        if (self.selectedIndex == idx) {
-            self.selectedIndex = NSNotFound;
-        }
-        
-        [self.requestIDs removeObjectAtIndex:idx];
-        [self.requests removeObjectAtIndex:idx];
-        [self layoutButtonsAnimated:YES];
-        
-        return;
-    }
-    
-    NSLog(@"got payment reqeust for %@", peer);
-    NSLog(@"%@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-    
-    if (self.selectedIndex == idx) [self confirmRequest:req];
-}
+//// Indicates a state change for the given peer.
+//- (void)session:(GKSession *)session peer:(NSString *)peerID didChangeState:(GKPeerConnectionState)state
+//{
+//    NSLog(@"%@ didChangeState:%@", peerID, state == GKPeerStateAvailable ? @"available" :
+//          state == GKPeerStateUnavailable ? @"unavailable" :
+//          state == GKPeerStateConnecting ? @"connecting" :
+//          state == GKPeerStateConnected ? @"connected" :
+//          state == GKPeerStateDisconnected ? @"disconnected" : @"unkown");
+//    
+//    if (state == GKPeerStateAvailable) {
+//        if (! [self.requestIDs containsObject:peerID]) {
+//            [self.requestIDs addObject:peerID];
+//            [self.requests addObject:[ZNPaymentRequest new]];
+//            
+//            [session connectToPeer:peerID withTimeout:CONNECT_TIMEOUT];
+//            
+//            [self layoutButtonsAnimated:YES];
+//        }
+//    }
+//    else if (state == GKPeerStateUnavailable || state == GKPeerStateDisconnected) {
+//        if ([self.requestIDs containsObject:peerID]) {
+//            NSUInteger idx = [self.requestIDs indexOfObject:peerID];
+//            
+//            [self.requestIDs removeObjectAtIndex:idx];
+//            [self.requests removeObjectAtIndex:idx];
+//            [self layoutButtonsAnimated:YES];
+//        }
+//    }
+//}
+//
+//// Indicates a connection request was received from another peer.
+////
+//// Accept by calling -acceptConnectionFromPeer:
+//// Deny by calling -denyConnectionFromPeer:
+//- (void)session:(GKSession *)session didReceiveConnectionRequestFromPeer:(NSString *)peerID
+//{
+//    NSAssert(FALSE, @"%s:%d %s: recieved connection request (not in client mode)", __FILE__, __LINE__,  __func__);
+//    return;
+//    
+//    
+//    [session denyConnectionFromPeer:peerID];
+//}
+//
+//// Indicates a connection error occurred with a peer, including connection request failures or timeouts.
+//- (void)session:(GKSession *)session connectionWithPeerFailed:(NSString *)peerID withError:(NSError *)error
+//{
+//    [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription delegate:nil
+//                      cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+//    
+//    if (self.selectedIndex != NSNotFound && [self.requestIDs[self.selectedIndex] isEqual:peerID]) {
+//        self.selectedIndex = NSNotFound;
+//    }
+//    
+//    if ([self.requestIDs containsObject:peerID]) {
+//        NSUInteger idx = [self.requestIDs indexOfObject:peerID];
+//        
+//        [self.requestIDs removeObjectAtIndex:idx];
+//        [self.requests removeObjectAtIndex:idx];
+//        [self layoutButtonsAnimated:YES];
+//    }
+//}
+//
+//// Indicates an error occurred with the session such as failing to make available.
+//- (void)session:(GKSession *)session didFailWithError:(NSError *)error
+//{
+//    if (self.selectedIndex != NSNotFound && ! [self.requestIDs[self.selectedIndex] isEqual:CLIPBOARD_ID] &&
+//        ! [self.requestIDs[self.selectedIndex] isEqual:QR_ID]) {
+//        self.selectedIndex = NSNotFound;
+//    }
+//    
+//    NSIndexSet *indexes =
+//        [self.requestIDs indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+//            return ! [obj isEqual:CLIPBOARD_ID] && ! [obj isEqual:QR_ID];
+//        }];
+//    
+//    [self.requestIDs removeObjectsAtIndexes:indexes];
+//    [self.requests removeObjectsAtIndexes:indexes];
+//    
+//    [self layoutButtonsAnimated:YES];
+//    
+//    //[[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription delegate:nil
+//    //                  cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+//}
+//
+//- (void)receiveData:(NSData *)data fromPeer:(NSString *)peer inSession:(GKSession *)session context:(void *)context
+//{
+//    NSUInteger idx = [self.requestIDs indexOfObject:peer];
+//    
+//    if (idx == NSNotFound) {
+//        NSAssert(FALSE, @"%s:%d %s: idx = NSNotFound", __FILE__, __LINE__,  __func__);
+//        return;
+//    }
+//    
+//    ZNPaymentRequest *req = self.requests[idx];
+//    
+//    [req setData:data];
+//    
+//    if (! req.valid) {
+//        [[[UIAlertView alloc] initWithTitle:@"Couldn't validate payment request"
+//                                    message:@"The payment reqeust did not contain a valid merchant signature" delegate:self
+//                          cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+//        
+//        if (self.selectedIndex == idx) {
+//            self.selectedIndex = NSNotFound;
+//        }
+//        
+//        [self.requestIDs removeObjectAtIndex:idx];
+//        [self.requests removeObjectAtIndex:idx];
+//        [self layoutButtonsAnimated:YES];
+//        
+//        return;
+//    }
+//    
+//    NSLog(@"got payment reqeust for %@", peer);
+//    NSLog(@"%@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+//    
+//    if (self.selectedIndex == idx) [self confirmRequest:req];
+//}
 
 @end

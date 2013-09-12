@@ -24,10 +24,10 @@
 //  THE SOFTWARE.
 
 #import <UIKit/UIKit.h>
-#import <GameKit/GameKit.h>
-#import "ZBarReaderController.h"
+//#import <GameKit/GameKit.h>
+#import "ZBarSDK.h"
 
-@interface ZNPayViewController : UIViewController <GKSessionDelegate, UIAlertViewDelegate,
-UINavigationControllerDelegate, ZBarReaderDelegate>
+@interface ZNPayViewController : UIViewController <UIAlertViewDelegate,
+UINavigationControllerDelegate, ZBarReaderDelegate>//, GKSessionDelegate>
 
 @end
