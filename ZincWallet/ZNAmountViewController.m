@@ -202,23 +202,24 @@ replacementString:(NSString *)string
     }
     else if ((string.length && textField.text.length && t == nil) ||
              (point != NSNotFound && textField.text.length - point > w.format.maximumFractionDigits)) {
-        return NO;
+        return NO; // too many digits
     }
     else if ([string isEqual:@"."] && (! textField.text.length || point == NSNotFound)) {
-        if (! textField.text.length) {
-            t = [w.format stringFromNumber:@0];
-        }
+        if (! textField.text.length) t = [w.format stringFromNumber:@0]; // if first char is '.', prepend a zero
         
         t = [t stringByAppendingString:@"."];
     }
     else if ([string isEqual:@"0"]) {
-        if (! textField.text.length) {
+        if (! textField.text.length) { // if first digit is zero, append a '.'
             t = [[w.format stringFromNumber:@0] stringByAppendingString:@"."];
         }
         else if (point != NSNotFound) { // handle multiple zeros after period....
             t = [textField.text stringByAppendingString:@"0"];
         }
     }
+
+    // don't allow values below TX_MIN_OUTPUT_AMOUNT
+    if ([w amountForString:[t stringByAppendingString:@"9"]] < TX_MIN_OUTPUT_AMOUNT) return NO;
 
     textField.text = t;
     //self.payButton.enabled = t.length ? YES : NO;

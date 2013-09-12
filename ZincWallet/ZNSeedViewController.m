@@ -25,13 +25,14 @@
 
 #import "ZNSeedViewController.h"
 #import "ZNWallet.h"
+#import "ZNBIP32Sequence.h"
 
 #define LABEL_MARGIN 20
 
 @interface ZNSeedViewController ()
 
 //TODO: create a secure version of UILabel and use it for seedLabel
-@property (nonatomic, strong) IBOutlet UILabel *seedLabel, *compatiblityLabel;
+@property (nonatomic, strong) IBOutlet UILabel *seedLabel, *compatiblityLabel, *exportLabel;
 @property (nonatomic, strong) IBOutlet UIView *labelFrame;
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper, *logo;
 @property (nonatomic, strong) IBOutletCollection(UILabel) NSArray *otherLabels;
@@ -74,6 +75,8 @@
 
 - (void)viewWillAppear:(BOOL)animated
 {
+    ZNWallet *w = [ZNWallet sharedInstance];
+
     [super viewWillAppear:animated];
  
     // remove done button if we're not the root of the nav stack
@@ -81,20 +84,23 @@
         self.navigationItem.leftBarButtonItem = nil;
     }
 
-    if (! [[ZNWallet sharedInstance] seed]) {
-        [[ZNWallet sharedInstance] generateRandomSeed];
+    if (! w.masterPublicKey) {
+        [w generateRandomSeed];
         self.compatiblityLabel.hidden = YES;
     }
     else {
         self.navigationItem.rightBarButtonItem = nil;
 #if WALLET_BIP32
         self.compatiblityLabel.hidden = YES; // BIP32 isn't compatible with very much yet :(
+        self.exportLabel.text =
+            [@"BIP32 extended private key: "
+             stringByAppendingString:[[ZNBIP32Sequence new] serializedPrivateMasterFromSeed:w.seed]];
 #else
         self.compatiblityLabel.hidden = NO;
 #endif
     }
 
-    self.seedLabel.text = [[ZNWallet sharedInstance] seedPhrase];
+    self.seedLabel.text = w.seedPhrase;
     
     CGFloat m = self.labelFrame.frame.size.height - self.seedLabel.frame.size.height;
     CGSize s = [self.seedLabel.text sizeWithFont:self.seedLabel.font
@@ -124,7 +130,7 @@
 {
     [[ZNWallet sharedInstance] generateRandomSeed];
     
-    [UIView animateWithDuration:0.2 animations:^{ self.seedLabel.alpha = 0.0; }
+    [UIView animateWithDuration:SEGUE_DURATION animations:^{ self.seedLabel.alpha = 0.0; }
     completion:^(BOOL finished) {
         self.seedLabel.text = [[ZNWallet sharedInstance] seedPhrase];
         
@@ -136,7 +142,7 @@
                                            self.view.frame.size.height/2 - s.height/2 - m/2,
                                            self.labelFrame.frame.size.width, s.height + m);
 
-        [UIView animateWithDuration:0.2 animations:^{ self.seedLabel.alpha = 1.0; }];
+        [UIView animateWithDuration:SEGUE_DURATION animations:^{ self.seedLabel.alpha = 1.0; }];
     }];
 
 }
