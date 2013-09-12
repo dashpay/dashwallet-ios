@@ -710,7 +710,6 @@
 		757BFF3317CC1AA800D1C4AF /* ZNTxOutputEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BFF3217CC1AA800D1C4AF /* ZNTxOutputEntity.m */; };
 		758B585E176BB1DE0069968F /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 758B585D176BB1DE0069968F /* MessageUI.framework */; };
 		758F2D8217669D6800102AF1 /* libqrencoder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75AF36D7176675D3004AA912 /* libqrencoder.a */; };
-		7591EC0E1773DD3700B44340 /* redgradient@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7591EC0D1773DD3700B44340 /* redgradient@2x.png */; };
 		75920F86174AB82100C1C03D /* NSMutableData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 75920F85174AB82100C1C03D /* NSMutableData+Bitcoin.m */; };
 		7593BD0A17A24D1500F814F6 /* cameraguide-small@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7593BD0917A24D1500F814F6 /* cameraguide-small@2x.png */; };
 		7597028117E15B1E00CDC14A /* ZNNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7597028017E15B1E00CDC14A /* ZNNavigationBar.m */; };
@@ -725,9 +724,7 @@
 		759CB23B175E8D4900AFA559 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB23A175E8D4900AFA559 /* AVFoundation.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		759CB23D175E8D6300AFA559 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB23C175E8D6300AFA559 /* CoreMedia.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		759CB240175F03BF00AFA559 /* ZNAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759CB23F175F03BF00AFA559 /* ZNAmountViewController.m */; };
-		75A6ECDD17B88F370043E52D /* navbar-bg@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75A6ECDC17B88F360043E52D /* navbar-bg@2x.png */; };
 		75A6ECE317BD464A0043E52D /* ZNBIP39Mnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = 75A6ECE217BD464A0043E52D /* ZNBIP39Mnemonic.m */; };
-		75A857C417896584005F6642 /* button-bg-clear@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75A857C317896584005F6642 /* button-bg-clear@2x.png */; };
 		75ADF1FE17B0EC0D006B1336 /* deletetoleft-blue.png in Resources */ = {isa = PBXBuildFile; fileRef = 75ADF1FD17B0EC0C006B1336 /* deletetoleft-blue.png */; };
 		75AF36D8176675D3004AA912 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		75AF36EC17667E43004AA912 /* DataMatrix.mm in Sources */ = {isa = PBXBuildFile; fileRef = 75AF36E517667E43004AA912 /* DataMatrix.mm */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -766,8 +763,6 @@
 		75D8F3B6173ABE3D0080D95E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		75D8F3BE173ABE3D0080D95E /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F3BC173ABE3D0080D95E /* InfoPlist.strings */; };
 		75D8F3C1173ABE3D0080D95E /* ZincWalletTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3C0173ABE3D0080D95E /* ZincWalletTests.m */; };
-		75E111A0178AAA150038173E /* back-bg@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75E1119F178AAA150038173E /* back-bg@2x.png */; };
-		75E111A5178AB4AF0038173E /* back-bg-pressed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75E111A1178AB4AF0038173E /* back-bg-pressed@2x.png */; };
 		75E111A8178AB4AF0038173E /* button-bg-white@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75E111A4178AB4AF0038173E /* button-bg-white@2x.png */; };
 		75EAE8431752D20800FDB2D2 /* ElectrumSeedWords.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75EAE8421752D20800FDB2D2 /* ElectrumSeedWords.plist */; };
 		75EAE8471753E93A00FDB2D2 /* ZNElectrumSequence.m in Sources */ = {isa = PBXBuildFile; fileRef = 75EAE8461753E93A00FDB2D2 /* ZNElectrumSequence.m */; };
@@ -1782,7 +1777,6 @@
 		757BFF3117CC1AA800D1C4AF /* ZNTxOutputEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNTxOutputEntity.h; sourceTree = "<group>"; };
 		757BFF3217CC1AA800D1C4AF /* ZNTxOutputEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNTxOutputEntity.m; sourceTree = "<group>"; };
 		758B585D176BB1DE0069968F /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
-		7591EC0D1773DD3700B44340 /* redgradient@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "redgradient@2x.png"; sourceTree = "<group>"; };
 		75920F84174AB82100C1C03D /* NSMutableData+Bitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableData+Bitcoin.h"; sourceTree = "<group>"; };
 		75920F85174AB82100C1C03D /* NSMutableData+Bitcoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableData+Bitcoin.m"; sourceTree = "<group>"; };
 		7593BD0917A24D1500F814F6 /* cameraguide-small@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide-small@2x.png"; sourceTree = "<group>"; };
@@ -1805,11 +1799,9 @@
 		759CB23C175E8D6300AFA559 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		759CB23E175F03BF00AFA559 /* ZNAmountViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNAmountViewController.h; sourceTree = "<group>"; };
 		759CB23F175F03BF00AFA559 /* ZNAmountViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNAmountViewController.m; sourceTree = "<group>"; };
-		75A6ECDC17B88F360043E52D /* navbar-bg@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "navbar-bg@2x.png"; sourceTree = "<group>"; };
 		75A6ECE117BD464A0043E52D /* ZNBIP39Mnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNBIP39Mnemonic.h; sourceTree = "<group>"; };
 		75A6ECE217BD464A0043E52D /* ZNBIP39Mnemonic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNBIP39Mnemonic.m; sourceTree = "<group>"; };
 		75A6ECE517BD4CF60043E52D /* ZNMnemonic.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNMnemonic.h; sourceTree = "<group>"; };
-		75A857C317896584005F6642 /* button-bg-clear@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-clear@2x.png"; sourceTree = "<group>"; };
 		75ADF1FD17B0EC0C006B1336 /* deletetoleft-blue.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "deletetoleft-blue.png"; sourceTree = "<group>"; };
 		75AF36D7176675D3004AA912 /* libqrencoder.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libqrencoder.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		75AF36E417667E43004AA912 /* DataMatrix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataMatrix.h; sourceTree = "<group>"; };
@@ -1864,8 +1856,6 @@
 		75D8F3BD173ABE3D0080D95E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		75D8F3BF173ABE3D0080D95E /* ZincWalletTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZincWalletTests.h; sourceTree = "<group>"; };
 		75D8F3C0173ABE3D0080D95E /* ZincWalletTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZincWalletTests.m; sourceTree = "<group>"; };
-		75E1119F178AAA150038173E /* back-bg@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "back-bg@2x.png"; sourceTree = "<group>"; };
-		75E111A1178AB4AF0038173E /* back-bg-pressed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "back-bg-pressed@2x.png"; sourceTree = "<group>"; };
 		75E111A4178AB4AF0038173E /* button-bg-white@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-white@2x.png"; sourceTree = "<group>"; };
 		75EAE8421752D20800FDB2D2 /* ElectrumSeedWords.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = ElectrumSeedWords.plist; sourceTree = "<group>"; };
 		75EAE8441753E8E300FDB2D2 /* ZNKeySequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNKeySequence.h; sourceTree = "<group>"; };
@@ -3389,14 +3379,10 @@
 				756E9CD717AD802700D316A8 /* wallpaper-welcome@2x.png */,
 				757B1DD817AEFCAD00AA6CAB /* wallpaper-default@2x.png */,
 				7545424C17606C7500638B95 /* button-bg-disabled@2x.png */,
-				75A857C317896584005F6642 /* button-bg-clear@2x.png */,
 				75E111A4178AB4AF0038173E /* button-bg-white@2x.png */,
 				757B1DCF17ADD79D00AA6CAB /* button-bg-white-pressed@2x.png */,
 				757B1DCD17ADD53C00AA6CAB /* button-bg-blue@2x.png */,
 				75F9D3E5179F451E00C28B49 /* button-bg-blue-pressed@2x.png */,
-				75E1119F178AAA150038173E /* back-bg@2x.png */,
-				75E111A1178AB4AF0038173E /* back-bg-pressed@2x.png */,
-				75A6ECDC17B88F360043E52D /* navbar-bg@2x.png */,
 				751E809D1789797500E3CFB2 /* gear@2x.png */,
 				751E809E1789797500E3CFB2 /* refresh@2x.png */,
 				75C2F3D3178D3061009F8CD3 /* cameraguide@2x.png */,
@@ -3406,7 +3392,6 @@
 				757B1DD317AEEB1600AA6CAB /* cameraguide-blue-small@2x.png */,
 				75F17C4217455F2D00D9F228 /* deletetoleft-inv.png */,
 				75ADF1FD17B0EC0C006B1336 /* deletetoleft-blue.png */,
-				7591EC0D1773DD3700B44340 /* redgradient@2x.png */,
 				75D8F393173ABE3C0080D95E /* Default.png */,
 				75D8F395173ABE3C0080D95E /* Default@2x.png */,
 				75D8F397173ABE3C0080D95E /* Default-568h@2x.png */,
@@ -3902,15 +3887,11 @@
 				75F17C4417455F2D00D9F228 /* deletetoleft-inv.png in Resources */,
 				75EAE8431752D20800FDB2D2 /* ElectrumSeedWords.plist in Resources */,
 				7545424F17606C7500638B95 /* button-bg-disabled@2x.png in Resources */,
-				7591EC0E1773DD3700B44340 /* redgradient@2x.png in Resources */,
 				7536A2AF177D1A6C00BAC31E /* zbar-help.html in Resources */,
 				7536A2B0177D1A6C00BAC31E /* zbar-helpicons.png in Resources */,
 				7536A2B1177D1A6C00BAC31E /* zbar-samples.png in Resources */,
-				75A857C417896584005F6642 /* button-bg-clear@2x.png in Resources */,
 				751E809F1789797500E3CFB2 /* gear@2x.png in Resources */,
 				751E80A01789797500E3CFB2 /* refresh@2x.png in Resources */,
-				75E111A0178AAA150038173E /* back-bg@2x.png in Resources */,
-				75E111A5178AB4AF0038173E /* back-bg-pressed@2x.png in Resources */,
 				75E111A8178AB4AF0038173E /* button-bg-white@2x.png in Resources */,
 				75402998178CD08C00D4F3FD /* zincwallet@2x.png in Resources */,
 				75C2F3D4178D3061009F8CD3 /* cameraguide-green@2x.png in Resources */,
@@ -3926,7 +3907,6 @@
 				757B1DD517AEEB1600AA6CAB /* cameraguide-blue-small@2x.png in Resources */,
 				757B1DDA17AEFCAD00AA6CAB /* wallpaper-default@2x.png in Resources */,
 				75ADF1FE17B0EC0D006B1336 /* deletetoleft-blue.png in Resources */,
-				75A6ECDD17B88F370043E52D /* navbar-bg@2x.png in Resources */,
 				75B4941B17C43ACA003A3FCA /* BIP39adjs.plist in Resources */,
 				75B4941D17C43BCE003A3FCA /* BIP39nouns.plist in Resources */,
 				75B4941F17C43C58003A3FCA /* BIP39advs.plist in Resources */,

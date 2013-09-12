@@ -1202,7 +1202,7 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     </imageView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="jE8-Jd-YjS" customClass="ZNButton">
-                                        <rect key="frame" x="10" y="297" width="300" height="40"/>
+                                        <rect key="frame" x="15" y="297" width="290" height="40"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="15"/>
                                         <size key="titleShadowOffset" width="0.0" height="1"/>
@@ -2491,15 +2491,10 @@ v0.2 relies on blockchain.info for blockchain data. More data sources coming soo
         <image name="deletetoleft-inv.png" width="120" height="92"/>
         <image name="gear.png" width="19" height="21"/>
         <image name="refresh.png" width="14" height="16"/>
-        <image name="refresh.png" width="14" height="16"/>
-        <image name="wallpaper-default.png" width="480" height="568"/>
-        <image name="wallpaper-default.png" width="480" height="568"/>
         <image name="wallpaper-default.png" width="480" height="568"/>
         <image name="wallpaper-welcome.png" width="757" height="568"/>
         <image name="zincwallet-big.png" width="250" height="210"/>
         <image name="zincwallet-white.png" width="88" height="18"/>
-        <image name="zincwallet-white.png" width="88" height="18"/>
-        <image name="zincwallet.png" width="84" height="15"/>
         <image name="zincwallet.png" width="84" height="15"/>
     </resources>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">

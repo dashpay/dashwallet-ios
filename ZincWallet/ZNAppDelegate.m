@@ -79,43 +79,9 @@ annotation:(id)annotation
      setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor grayColor],
                               NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue" size:19.0]}];
 
-//    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque];
-
     [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
      setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
      forState:UIControlStateNormal];
-
-//    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
-//     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor colorWithRed:0.0 green:0.25 blue:0.5 alpha:1.0],
-//                              UITextAttributeTextShadowColor:[UIColor whiteColor],
-//                              UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 0.0)],
-//                              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
-//     forState:UIControlStateHighlighted];
-//
-//    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
-//     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor lightGrayColor],
-//                              UITextAttributeTextShadowColor:[UIColor whiteColor],
-//                              UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 0.0)],
-//                              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
-//     forState:UIControlStateDisabled];
-//
-//    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
-//     setBackgroundImage:[[UIImage imageNamed:@"button-bg-clear.png"]
-//                         resizableImageWithCapInsets:UIEdgeInsetsMake(14.0, 5.0, 16.0, 5.0)]
-//     forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
-//
-//    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
-//     setBackButtonBackgroundImage:[[UIImage imageNamed:@"back-bg.png"]
-//                                   resizableImageWithCapInsets:UIEdgeInsetsMake(14.0, 15.0, 16.0, 5.0)]
-//     forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
-//
-//    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
-//     setBackButtonBackgroundImage:[[UIImage imageNamed:@"back-bg-pressed.png"]
-//                                   resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 15.0, 15.0, 5.0)]
-//     forState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
-//
-//    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
-//     setBackButtonTitlePositionAdjustment:UIOffsetMake(1.0, -3.0) forBarMetrics:UIBarMetricsDefault];
 }
 
 #pragma mark - CBCentralManagerDelegate

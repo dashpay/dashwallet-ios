@@ -64,7 +64,6 @@
 }
 
 //TODO: handle bitcoin payment messages per: https://gist.github.com/gavinandresen/4120476
-//TODO: offer to sweep balance into wallet if it's a private key not already in wallet.
 - (void)setData:(NSData *)data
 {
     self.paymentAddress = nil;
