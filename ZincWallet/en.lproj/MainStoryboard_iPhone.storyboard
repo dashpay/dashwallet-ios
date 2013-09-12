@@ -27,6 +27,8 @@
                             </scrollView>
                             <pageControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" numberOfPages="2" id="kTQ-jN-pAH">
                                 <rect key="frame" x="141" y="537" width="38" height="36"/>
+                                <color key="pageIndicatorTintColor" white="0.84999999999999998" alpha="1" colorSpace="calibratedWhite"/>
+                                <color key="currentPageIndicatorTintColor" white="0.5" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                 <connections>
                                     <action selector="page:" destination="2" eventType="valueChanged" id="Ff8-Ps-a2A"/>
                                 </connections>

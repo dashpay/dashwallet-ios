@@ -25,7 +25,7 @@
 
 #import "ZNWelcomeViewController.h"
 
-#define WALLPAPER_ANIMATION_DURATION 60.0
+#define WALLPAPER_ANIMATION_DURATION 30.0
 #define WALLPAPER_ANIMATION_X 240.0
 #define WALLPAPER_ANIMATION_Y 0.0
 
@@ -49,14 +49,13 @@
     // Do any additional setup after loading the view.
     
     [self.navigationController.navigationBar
-     setTitleTextAttributes:@{UITextAttributeTextColor:[UIColor whiteColor],
-                              UITextAttributeTextShadowColor:[UIColor colorWithRed:0 green:0 blue:0 alpha:0.15],
-                              UITextAttributeTextShadowOffset:[NSValue valueWithUIOffset:UIOffsetMake(0.0, 1.0)],
-                              UITextAttributeFont:[UIFont fontWithName:@"HelveticaNeue" size:19.0]}];
-    
-    if ([self.navigationController.navigationBar respondsToSelector:@selector(shadowImage)]) {
-        [self.navigationController.navigationBar setShadowImage:[UIImage new]];
-    }
+     setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor whiteColor],
+                              //NSShadowAttributeName:[UIColor colorWithRed:0 green:0 blue:0 alpha:0.15],
+                              NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue" size:19.0]}];
+
+//    if ([self.navigationController.navigationBar respondsToSelector:@selector(shadowImage)]) {
+//        [self.navigationController.navigationBar setShadowImage:[UIImage new]];
+//    }
     
     self.navigationController.delegate = self;
 
@@ -130,7 +129,7 @@
                                                 self.wallpaperStart.y - WALLPAPER_ANIMATION_Y);
         } completion:^(BOOL finished) { self.animating = NO; }];
         
-        [UIView animateWithDuration:UINavigationControllerHideShowBarDuration*2 delay:1.0 options:0 animations:^{
+        [UIView animateWithDuration:SEGUE_DURATION delay:1.0 options:0 animations:^{
             self.walletButton.center = self.walletStart;
             self.restoreButton.center = self.restoreStart;
             self.logo.center = self.logoStart;
@@ -151,7 +150,7 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
 {
     if (! animated) return;
 
-    [UIView animateWithDuration:UINavigationControllerHideShowBarDuration*2 animations:^{
+    [UIView animateWithDuration:SEGUE_DURATION animations:^{
         if (viewController != self) {
             self.paralax.center = CGPointMake(self.paralaxStart.x - self.view.frame.size.width*PARALAX_RATIO,
                                               self.paralaxStart.y);
