@@ -66,11 +66,9 @@
         }];
 }
 
-- (void)viewWillUnload
+- (void)dealloc
 {
-    [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
-
-    [super viewWillUnload];
+    if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -78,6 +76,8 @@
     ZNWallet *w = [ZNWallet sharedInstance];
 
     [super viewWillAppear:animated];
+ 
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
  
     // remove done button if we're not the root of the nav stack
     if (self.navigationController.viewControllers[0] != self) {

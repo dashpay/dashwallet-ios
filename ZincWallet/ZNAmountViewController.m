@@ -88,11 +88,9 @@
         }];
 }
 
-- (void)viewWillUnload
+- (void)dealloc
 {
-    [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
-
-    [super viewWillUnload];
+    if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
 }
 
 - (void)viewWillAppear:(BOOL)animated

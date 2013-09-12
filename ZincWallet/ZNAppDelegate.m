@@ -77,15 +77,12 @@ annotation:(id)annotation
 {
     [[UINavigationBar appearance]
      setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor grayColor],
-                              //NSShadowAttributeName:[UIColor whiteColor],
                               NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue" size:19.0]}];
 
 //    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque];
 
     [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
-     setTitleTextAttributes:@{//NSForegroundColorAttributeName:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0],
-                              //NSShadowAttributeName:[UIColor whiteColor],
-                              NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
+     setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
      forState:UIControlStateNormal];
 
 //    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]

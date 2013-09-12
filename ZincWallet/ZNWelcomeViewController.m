@@ -50,12 +50,7 @@
     
     [self.navigationController.navigationBar
      setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor whiteColor],
-                              //NSShadowAttributeName:[UIColor colorWithRed:0 green:0 blue:0 alpha:0.15],
                               NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue" size:19.0]}];
-
-//    if ([self.navigationController.navigationBar respondsToSelector:@selector(shadowImage)]) {
-//        [self.navigationController.navigationBar setShadowImage:[UIImage new]];
-//    }
     
     self.navigationController.delegate = self;
 

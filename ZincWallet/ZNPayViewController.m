@@ -65,6 +65,7 @@
 @property (nonatomic, strong) IBOutlet UIPageControl *pageControl;
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *refreshButton;
 @property (nonatomic, strong) IBOutlet UIActivityIndicatorView *spinner;
+//@property (nonatomic, strong) IBOutlet UILabel *label;
 
 @property (nonatomic, strong) ZNReceiveViewController *receiveController;
 @property (nonatomic, strong) ZBarReaderViewController *zbarController;
@@ -207,19 +208,17 @@
     }
 }
 
-- (void)viewWillUnload
+- (void)dealloc
 {
     [self.reachability stopNotifier];
 
-    [[NSNotificationCenter defaultCenter] removeObserver:self.urlObserver];
-    [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
-    [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
-    [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
-    [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
-    [[NSNotificationCenter defaultCenter] removeObserver:self.syncFinishedObserver];
-    [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
-
-    [super viewWillUnload];
+    if (self.urlObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.urlObserver];
+    if (self.activeObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
+    if (self.reachabilityObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
+    if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
+    if (self.syncStartedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
+    if (self.syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFinishedObserver];
+    if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -246,6 +245,8 @@
             [self.navigationController dismissViewControllerAnimated:YES completion:nil];
         }];
     }
+    
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
 
 //    self.session = [[GKSession alloc] initWithSessionID:GK_SESSION_ID
 //                    displayName:[UIDevice.currentDevice.name stringByAppendingString:@" Wallet"]
@@ -254,13 +255,12 @@
 //    [self.session setDataReceiveHandler:self withContext:nil];
 //    self.session.available = YES;
     
-    self.scrollView.contentSize = CGSizeMake(self.scrollView.frame.size.width*2, self.scrollView.frame.size.height);
+    self.scrollView.contentSize = CGSizeMake(self.scrollView.bounds.size.width*2, self.scrollView.bounds.size.height);
     
-    //TODO: switch to a main viewcontroller that contains the scrollview, with both pay and receive as subviews.
-    // having payviewcontroller instantiate receiveviewcontroller like this is ugly
-    CGRect f = self.scrollView.frame;
+    //TODO: make both payview and receiveview into containers inside a main controller using addChildViewController:
+    CGRect f = self.scrollView.bounds;
   
-    self.receiveController.view.frame = CGRectMake(f.origin.x + f.size.width, f.origin.y, f.size.width, f.size.height);
+    self.receiveController.view.frame = CGRectMake(f.size.width, 0, f.size.width, f.size.height);
     [self.scrollView addSubview:self.receiveController.view];
     
     if (firstAppearance) {
@@ -277,7 +277,7 @@
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
-
+    
     if ([[ZNWallet sharedInstance] timeSinceLastSync] > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
     else if ([ZNWallet sharedInstance].masterPublicKey) [[ZNSocketListener sharedInstance] openSocket];
 }

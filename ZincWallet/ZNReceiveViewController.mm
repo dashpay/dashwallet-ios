@@ -87,7 +87,7 @@
         hud.mode = MBProgressHUDModeText;
         hud.labelText = @"coppied";
         hud.labelFont = [UIFont fontWithName:@"HelveticaNeue-Medium" size:17.0];
-        [hud hide:YES afterDelay:2.0];
+        [hud hide:YES afterDelay:1.0];
     }
     else if ([title isEqual:@"email"]) {
         if ([MFMailComposeViewController canSendMail]) {

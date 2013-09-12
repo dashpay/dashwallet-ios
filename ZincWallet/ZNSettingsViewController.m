@@ -76,16 +76,16 @@
         [UIColor colorWithPatternImage:[UIImage imageNamed:@"navbar-bg.png"]];
     
     self.wallpaper = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"wallpaper-default.png"]];
-    self.wallpaperStart = self.wallpaper.center = CGPointMake(self.wallpaper.center.x, self.wallpaper.center.y + 20);
+    self.wallpaperStart = self.wallpaper.center;// = CGPointMake(self.wallpaper.center.x, self.wallpaper.center.y + 20);
     
     [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
     
     self.navigationController.delegate = self;
 }
 
-- (void)viewWillUnload
+- (void)dealloc
 {
-    [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
+    if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -151,7 +151,7 @@
                 ZNWallet *w = [ZNWallet sharedInstance];
                 ZNTransactionEntity *tx = self.transactions[indexPath.row];
                 __block uint64_t received = 0, spent = 0;
-                int height = -1;
+                int height = tx.blockHeight ? w.lastBlockHeight - tx.blockHeight : 0;
                 
                 [tx.inputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                     ZNTxInputEntity *i = obj;
@@ -181,12 +181,9 @@
                 sentLabel.layer.cornerRadius = 3.0;
                 sentLabel.layer.borderWidth = 0.5;
                 
-                if (tx.blockHeight) height = w.lastBlockHeight - tx.blockHeight;
-                
-                if (height < 1) unconfirmedLabel.text = @"unconfirmed";
-                else if (height <= 6) {
+                if (height < 6) {
                     unconfirmedLabel.text =
-                        [NSString stringWithFormat:@"%d confirmation%@", height, height > 1 ? @"s" : @""];
+                        [NSString stringWithFormat:@"%d confirmation%@", height, height == 1 ? @"" : @"s"];
                 }
                 else {
                     unconfirmedLabel.hidden = YES;
@@ -230,15 +227,15 @@
         case 1:
             cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
             if (! cell.backgroundView) {
-                UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0, -1, cell.frame.size.width, 1)];
+                //UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0, -1, cell.frame.size.width, 1)];
                 
                 cell.backgroundView = [[UIView alloc] initWithFrame:cell.frame];
                 cell.backgroundView.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.67];
-                v.backgroundColor = tableView.separatorColor;
-                [cell.backgroundView addSubview:v];
-                v = [[UIView alloc] initWithFrame:CGRectMake(0, cell.frame.size.height - 1, cell.frame.size.width, 1)];
-                v.backgroundColor = tableView.separatorColor;
-                [cell.backgroundView addSubview:v];
+                //v.backgroundColor = tableView.separatorColor;
+                //[cell.backgroundView addSubview:v];
+                //v = [[UIView alloc] initWithFrame:CGRectMake(0, cell.frame.size.height - 1, cell.frame.size.width, 1)];
+                //v.backgroundColor = tableView.separatorColor;
+                //[cell.backgroundView addSubview:v];
             }
             
             switch (indexPath.row) {
@@ -258,15 +255,15 @@
         case 2:
             cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
             if (! cell.backgroundView) {
-                UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0, -1.0, cell.frame.size.width, 1.0)];
+                //UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0, -1.0, cell.frame.size.width, 1.0)];
                 
                 cell.backgroundView = [[UIView alloc] initWithFrame:cell.frame];
                 cell.selectedBackgroundView = [[UIView alloc] initWithFrame:cell.frame];
                 cell.backgroundView.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.67];
                 cell.selectedBackgroundView.backgroundColor =
                     [UIColor colorWithPatternImage:[UIImage imageNamed:@"redgradient.png"]];
-                v.backgroundColor = tableView.separatorColor;
-                [cell.backgroundView addSubview:v];
+                //v.backgroundColor = tableView.separatorColor;
+                //[cell.backgroundView addSubview:v];
                 cell.textLabel.textColor = [UIColor redColor];
                 cell.textLabel.shadowColor = [UIColor clearColor];
             }
@@ -429,7 +426,7 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
 {
     if (! animated) return;
     
-    [UIView animateWithDuration:UINavigationControllerHideShowBarDuration*2 animations:^{
+    [UIView animateWithDuration:SEGUE_DURATION animations:^{
         if (viewController != self) {
             self.wallpaper.center = CGPointMake(self.wallpaperStart.x - self.view.frame.size.width*PARALAX_RATIO,
                                                 self.wallpaperStart.y);
