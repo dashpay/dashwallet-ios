@@ -110,6 +110,14 @@
                  @"[ZNKey privateKey]");
 }
 
+#pragma mark - testPaymentRequest
+
+//TODO: test valid request with no arguments
+//TODO: test valid request with known arguments
+//TODO: test valid request with unkown arguments
+//TODO: test invalid bitcoin address
+//TODO: test invalid request with unkown required arguments
+
 #pragma mark - testTransaction
 
 - (void)testTransactionHeightUntilFree

@@ -85,6 +85,7 @@
     
     self.paymentAddress = url.host;
     
+    //TODO: correctly handle unkown but required url arguments (by reporting the request invalid)
     [[url.query componentsSeparatedByString:@"&"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         NSArray *pair = [obj componentsSeparatedByString:@"="];
         if (pair.count != 2) return;
@@ -97,11 +98,6 @@
             self.message = [[pair[1] stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
                             stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     }];
-}
-
-- (void)setPaymentAddress:(NSString *)paymentAddress
-{
-    _paymentAddress = [paymentAddress isValidBitcoinAddress] ? paymentAddress : nil;
 }
 
 - (NSData *)data
@@ -135,7 +131,7 @@
 
 - (BOOL)isValid
 {
-    if (! self.paymentAddress) return NO;
+    if (! [self.paymentAddress isValidBitcoinAddress]) return NO;
     
     // TODO: validate bitcoin payment request X.509 certificate, hopefully offline
 

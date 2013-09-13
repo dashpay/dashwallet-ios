@@ -56,14 +56,19 @@
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication
 annotation:(id)annotation
 {
-    if (! url.host && url.resourceSpecifier) {
-        url = [NSURL URLWithString:[NSString stringWithFormat:@"%@://%@", url.scheme, url.resourceSpecifier]];
+    NSURL *u = url;
+    
+    if (! u.host && u.resourceSpecifier) {
+        u = [NSURL URLWithString:[NSString stringWithFormat:@"%@://%@", u.scheme, u.resourceSpecifier]];
     }
 
-    if (! [url.scheme isEqual:@"bitcoin"] || ! [url.host isValidBitcoinAddress]) return NO;
-
-    [[NSNotificationCenter defaultCenter] postNotificationName:bitcoinURLNotification object:nil
-     userInfo:@{@"url":url}];
+    if (! [u.scheme isEqual:@"bitcoin"]) {
+        [[[UIAlertView alloc] initWithTitle:@"Not a bitcoin URL" message:url.absoluteString delegate:nil
+          cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        return NO;
+    }
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:bitcoinURLNotification object:nil userInfo:@{@"url":u}];
     
     return YES;
 }

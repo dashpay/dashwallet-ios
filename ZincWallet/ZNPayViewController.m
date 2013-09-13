@@ -108,18 +108,25 @@
         usingBlock:^(NSNotification *note) {
             ZNPaymentRequest *req = [ZNPaymentRequest requestWithURL:note.userInfo[@"url"]];
         
-            if (req.isValid &&
-                [self.requests indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-                    return [[req data] isEqualToData:[obj data]] ? (*stop = YES) : NO;
-                }] == NSNotFound) {
-                [self.requests insertObject:req atIndex:0];
-                [self.requestIDs insertObject:URL_ID atIndex:0];
-                [self layoutButtonsAnimated:YES];
-                [self.scrollView setContentOffset:CGPointZero animated:YES];
-                
-                [self.navigationController popToRootViewControllerAnimated:NO];
-                if (w.masterPublicKey) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
+            if (! req.label.length) req.label = req.paymentAddress;
+            
+            if (req.amount > 0 && [req.label rangeOfString:[w stringForAmount:req.amount]].location == NSNotFound) {
+                req.label = [NSString stringWithFormat:@"%@ - %@", req.label,
+                             [[ZNWallet sharedInstance] stringForAmount:req.amount]];
             }
+        
+            if ([self.requestIDs indexOfObject:URL_ID] != NSNotFound) {
+                [self.requests removeObjectAtIndex:[self.requestIDs indexOfObject:URL_ID]];
+                [self.requestIDs removeObjectAtIndex:[self.requestIDs indexOfObject:URL_ID]];
+            }
+        
+            [self.requests insertObject:req atIndex:0];
+            [self.requestIDs insertObject:URL_ID atIndex:0];
+            [self layoutButtonsAnimated:YES];
+            [self.scrollView setContentOffset:CGPointZero animated:YES];
+                
+            [self.navigationController popToRootViewControllerAnimated:NO];
+            if (w.masterPublicKey) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
         }];
     
     self.activeObserver =
@@ -300,18 +307,17 @@
 
 - (void)layoutButtonsAnimated:(BOOL)animated
 {
+    ZNWallet *w = [ZNWallet sharedInstance];
     ZNPaymentRequest *req = [ZNPaymentRequest requestWithString:[[UIPasteboard generalPasteboard] string]];
     
-    if (! req.paymentAddress) req.label = CLIPBOARD_LABEL;
-
-    if (! req.label.length) {
-        if (req.amount > 0) {
-            req.label = [NSString stringWithFormat:@"%@ - %@", req.paymentAddress,
-                         [[ZNWallet sharedInstance] stringForAmount:req.amount]];
-        }
-        else req.label = req.paymentAddress;
+    if (! req.isValid) {
+        req.paymentAddress = nil;
+        req.label = CLIPBOARD_LABEL;
     }
-            
+    else if (req.amount > 0 && [req.label rangeOfString:[w stringForAmount:req.amount]].location == NSNotFound) {
+        req.label = [NSString stringWithFormat:@"%@ - %@", req.label, [w stringForAmount:req.amount]];
+    }
+    
     if ([self.requestIDs indexOfObject:CLIPBOARD_ID] == NSNotFound) {
         [self.requests addObject:req];
         [self.requestIDs addObject:CLIPBOARD_ID];
@@ -398,8 +404,13 @@
         if ([request.label isEqual:CLIPBOARD_LABEL]) {
             [[[UIAlertView alloc] initWithTitle:nil message:@"The clipboard doesn't contain a valid bitcoin address."
               delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-            self.selectedIndex = NSNotFound;
         }
+        else {
+            [[[UIAlertView alloc] initWithTitle:@"Not a valid bitcoin address." message:request.paymentAddress
+              delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        }
+
+        self.selectedIndex = NSNotFound;
         return;
     }
     
