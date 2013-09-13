@@ -3913,11 +3913,6 @@
 			inputPaths = (
 			);
 			outputPaths = (
-				"$(SRCROOT)/AFNetworking/AFNetworking/AFNetworking.h",
-				"$(SRCROOT)/ZBar/iphone/include/ZBarSDK/ZBarSDK.h",
-				"$(SRCROOT)/QR-Code-Encoder-for-Objective-C/QRCodeEncoderObjectiveCAtGithub/QREncoder.h",
-				"$(SRCROOT)/MBProgressHUD/MBProgressHUD.h",
-				"$(SRCROOT)/SocketRocket/SocketRocket/SRWebSocket.h",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
