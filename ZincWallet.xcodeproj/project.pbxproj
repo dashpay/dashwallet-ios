@@ -3916,7 +3916,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd $SRCROOT\n\ngit submodule init\ngit submodule update";
+			shellScript = "ZBAR=ZBar/iphone/include/ZBarSDK/ZBarSDK.h\n\ncd $SRCROOT\n\n[ -f $SRCROOT/$ZBAR ] || git submodule init\n[ -f $SRCROOT/$ZBAR ] || git submodule update";
 		};
 		75D8F3B0173ABE3D0080D95E /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
