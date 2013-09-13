@@ -48,14 +48,7 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    if (self.navigationController.viewControllers[0] == self) {
-        self.wallpaper.hidden = NO;
-        
-        if ([self.navigationController.navigationBar respondsToSelector:@selector(shadowImage)]) {
-            [self.navigationController.navigationBar setShadowImage:[UIImage new]];
-        }
-    }
-    else self.wallpaper.hidden = YES;
+    self.wallpaper.hidden = (self.navigationController.viewControllers[0] != self) ? YES : NO;
     
     self.resignActiveObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil

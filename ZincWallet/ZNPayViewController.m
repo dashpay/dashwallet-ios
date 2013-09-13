@@ -98,9 +98,8 @@
     self.selectedIndex = NSNotFound;
 
     self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-    CGRect f = self.spinner.frame;
-    f.size.width = 20;
-    self.spinner.frame = f;
+    self.spinner.frame =
+        CGRectMake(self.spinner.frame.origin.x, self.spinner.frame.origin.y, 20.0, self.spinner.frame.size.height);
 
     self.wallpaperStart = self.wallpaper.center;
     
@@ -203,10 +202,6 @@
     
     self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                  [w localCurrencyStringForAmount:w.balance]];
-    
-    if ([self.navigationController.navigationBar respondsToSelector:@selector(shadowImage)]) {
-        [self.navigationController.navigationBar setShadowImage:[UIImage new]];
-    }
 }
 
 - (void)dealloc
@@ -242,12 +237,15 @@
             [(UIImageView *)c.view setImage:[UIImage imageNamed:@"Default.png"]];
         }
         
+        [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:NO];
+        
         [self.navigationController presentViewController:c animated:NO completion:^{
-            [self.navigationController dismissViewControllerAnimated:YES completion:nil];
+            [self.navigationController dismissViewControllerAnimated:YES completion:^{
+                [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
+            }];
         }];
     }
-    
-    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
+    else [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
 
 //    self.session = [[GKSession alloc] initWithSessionID:GK_SESSION_ID
 //                    displayName:[UIDevice.currentDevice.name stringByAppendingString:@" Wallet"]
@@ -259,9 +257,8 @@
     self.scrollView.contentSize = CGSizeMake(self.scrollView.bounds.size.width*2, self.scrollView.bounds.size.height);
     
     //TODO: make both payview and receiveview into containers inside a main controller using addChildViewController:
-    CGRect f = self.scrollView.bounds;
-  
-    self.receiveController.view.frame = CGRectMake(f.size.width, 0, f.size.width, f.size.height);
+    self.receiveController.view.frame = CGRectMake(self.scrollView.frame.size.width, 0,
+                                                   self.scrollView.frame.size.width, self.scrollView.frame.size.height);
     [self.scrollView addSubview:self.receiveController.view];
     
     if (firstAppearance) {
