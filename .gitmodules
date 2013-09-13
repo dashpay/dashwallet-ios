@@ -1,5 +1,5 @@
-[submodule "AFNetowrking"]
-	path = AFNetowrking
+[submodule "AFNetworking"]
+	path = AFNetworking
 	url = git://github.com/AFNetworking/AFNetworking.git
 [submodule "ZBar"]
 	path = ZBar

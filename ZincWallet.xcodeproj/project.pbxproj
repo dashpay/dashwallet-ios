@@ -3284,7 +3284,7 @@
 				752C38C21742BC4D0033F636 /* UIImageView+AFNetworking.m */,
 			);
 			name = AFNetworking;
-			path = AFNetowrking/AFNetworking;
+			path = AFNetworking/AFNetworking;
 			sourceTree = SOURCE_ROOT;
 		};
 		7535CCDC176BE376007E29C5 /* Views */ = {
@@ -3913,7 +3913,7 @@
 			inputPaths = (
 			);
 			outputPaths = (
-				"$(SRCROOT)/AFNetowrking/AFNetworking/AFNetworking.h",
+				"$(SRCROOT)/AFNetworking/AFNetworking/AFNetworking.h",
 				"$(SRCROOT)/ZBar/iphone/include/ZBarSDK/ZBarSDK.h",
 				"$(SRCROOT)/QR-Code-Encoder-for-Objective-C/QRCodeEncoderObjectiveCAtGithub/QREncoder.h",
 				"$(SRCROOT)/MBProgressHUD/MBProgressHUD.h",
@@ -5145,6 +5145,7 @@
 				7599CC1F17E2A4B200852F9B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		75AF36E2176675D3004AA912 /* Build configuration list for PBXNativeTarget "qrencoder" */ = {
 			isa = XCConfigurationList;
