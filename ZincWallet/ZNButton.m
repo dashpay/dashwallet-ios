@@ -114,7 +114,7 @@
             [self setBackgroundImage:nil forState:UIControlStateDisabled];
             
             [self setTitleColor:[UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0] forState:UIControlStateNormal];
-            [self setTitleColor:[UIColor colorWithRed:0.0 green:0.25 blue:0.5 alpha:1.0]
+            [self setTitleColor:[UIColor colorWithRed:0.78 green:0.86 blue:0.96 alpha:1.0]
              forState:UIControlStateHighlighted];
             [self setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
             

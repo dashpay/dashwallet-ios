@@ -6,6 +6,20 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		7599CC1C17E2A4B200852F9B /* submodules */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 7599CC1D17E2A4B200852F9B /* Build configuration list for PBXAggregateTarget "submodules" */;
+			buildPhases = (
+				7599CC2017E2A4C500852F9B /* ShellScript */,
+			);
+			dependencies = (
+			);
+			name = submodules;
+			productName = submodules;
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXBuildFile section */
 		75183B88178B4ABE0032F365 /* ZNWelcomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75183B87178B4ABE0032F365 /* ZNWelcomeViewController.m */; };
 		751E809F1789797500E3CFB2 /* gear@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 751E809D1789797500E3CFB2 /* gear@2x.png */; };
@@ -689,9 +703,6 @@
 		753007EF1769899B00C7BB60 /* ZNSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007EE1769899B00C7BB60 /* ZNSeedViewController.m */; };
 		753007F2176A48DA00C7BB60 /* ZNRestoreViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007F1176A48DA00C7BB60 /* ZNRestoreViewController.m */; };
 		7535CCDF176BE3D2007E29C5 /* ZNButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 7535CCDE176BE3D2007E29C5 /* ZNButton.m */; };
-		7536A2AF177D1A6C00BAC31E /* zbar-help.html in Resources */ = {isa = PBXBuildFile; fileRef = 7536A29E177D1A6C00BAC31E /* zbar-help.html */; };
-		7536A2B0177D1A6C00BAC31E /* zbar-helpicons.png in Resources */ = {isa = PBXBuildFile; fileRef = 7536A29F177D1A6C00BAC31E /* zbar-helpicons.png */; };
-		7536A2B1177D1A6C00BAC31E /* zbar-samples.png in Resources */ = {isa = PBXBuildFile; fileRef = 7536A2A0177D1A6C00BAC31E /* zbar-samples.png */; };
 		753A4149178E070C003B938D /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 753A4148178E070C003B938D /* AudioToolbox.framework */; };
 		75402998178CD08C00D4F3FD /* zincwallet@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75402997178CD08C00D4F3FD /* zincwallet@2x.png */; };
 		7545424F17606C7500638B95 /* button-bg-disabled@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7545424C17606C7500638B95 /* button-bg-disabled@2x.png */; };
@@ -739,6 +750,7 @@
 		75C2F3D4178D3061009F8CD3 /* cameraguide-green@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75C2F3D1178D3061009F8CD3 /* cameraguide-green@2x.png */; };
 		75C2F3D5178D3061009F8CD3 /* cameraguide-red@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75C2F3D2178D3061009F8CD3 /* cameraguide-red@2x.png */; };
 		75C2F3D6178D3061009F8CD3 /* cameraguide@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75C2F3D3178D3061009F8CD3 /* cameraguide@2x.png */; };
+		75C483DD17E27B1E00CAC0BC /* icon120.png in Resources */ = {isa = PBXBuildFile; fileRef = 758FBDC717E1D33100D341BF /* icon120.png */; };
 		75CBEAE9173C80AD00978DBA /* ZNPaymentRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 75CBEAE8173C80AD00978DBA /* ZNPaymentRequest.m */; };
 		75D423291783E0B100BDD771 /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D423121783E0B100BDD771 /* MBProgressHUD.m */; settings = {COMPILER_FLAGS = "-w"; }; };
 		75D8F382173ABE3C0080D95E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F381173ABE3C0080D95E /* UIKit.framework */; };
@@ -828,6 +840,27 @@
 			proxyType = 1;
 			remoteGlobalIDString = 752C300C1742AD060033F636;
 			remoteInfo = ssl;
+		};
+		7599CC2117E2A53E00852F9B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 75D8F376173ABE3C0080D95E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7599CC1C17E2A4B200852F9B;
+			remoteInfo = submodules;
+		};
+		7599CC2317E2A54600852F9B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 75D8F376173ABE3C0080D95E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7599CC1C17E2A4B200852F9B;
+			remoteInfo = submodules;
+		};
+		7599CC2517E2A54B00852F9B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 75D8F376173ABE3C0080D95E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7599CC1C17E2A4B200852F9B;
+			remoteInfo = submodules;
 		};
 		75AF36EF17667F0B004AA912 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1719,9 +1752,6 @@
 		753007F1176A48DA00C7BB60 /* ZNRestoreViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNRestoreViewController.m; sourceTree = "<group>"; };
 		7535CCDD176BE3D2007E29C5 /* ZNButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNButton.h; sourceTree = "<group>"; };
 		7535CCDE176BE3D2007E29C5 /* ZNButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNButton.m; sourceTree = "<group>"; };
-		7536A29E177D1A6C00BAC31E /* zbar-help.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "zbar-help.html"; sourceTree = "<group>"; };
-		7536A29F177D1A6C00BAC31E /* zbar-helpicons.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "zbar-helpicons.png"; sourceTree = "<group>"; };
-		7536A2A0177D1A6C00BAC31E /* zbar-samples.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "zbar-samples.png"; sourceTree = "<group>"; };
 		753A4148178E070C003B938D /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		75402997178CD08C00D4F3FD /* zincwallet@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "zincwallet@2x.png"; sourceTree = "<group>"; };
 		7545424C17606C7500638B95 /* button-bg-disabled@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-disabled@2x.png"; sourceTree = "<group>"; };
@@ -1823,6 +1853,7 @@
 		75EAE8441753E8E300FDB2D2 /* ZNKeySequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNKeySequence.h; sourceTree = "<group>"; };
 		75EAE8451753E93A00FDB2D2 /* ZNElectrumSequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNElectrumSequence.h; sourceTree = "<group>"; };
 		75EAE8461753E93A00FDB2D2 /* ZNElectrumSequence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNElectrumSequence.m; sourceTree = "<group>"; };
+		75F15A5017E290C400DCDD2B /* zinc.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = zinc.entitlements; path = ../zinc.entitlements; sourceTree = "<group>"; };
 		75F17C331744CC2100D9F228 /* ZNTransaction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNTransaction.h; sourceTree = "<group>"; };
 		75F17C341744CC2100D9F228 /* ZNTransaction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNTransaction.m; sourceTree = "<group>"; };
 		75F17C4217455F2D00D9F228 /* deletetoleft-inv.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "deletetoleft-inv.png"; sourceTree = "<group>"; };
@@ -3269,17 +3300,6 @@
 			name = Views;
 			sourceTree = "<group>";
 		};
-		7536A293177D1A6C00BAC31E /* res */ = {
-			isa = PBXGroup;
-			children = (
-				7536A29E177D1A6C00BAC31E /* zbar-help.html */,
-				7536A29F177D1A6C00BAC31E /* zbar-helpicons.png */,
-				7536A2A0177D1A6C00BAC31E /* zbar-samples.png */,
-			);
-			name = res;
-			path = ZBar/iphone/res;
-			sourceTree = SOURCE_ROOT;
-		};
 		759B778B17BECFCF0000510F /* SocketRocket */ = {
 			isa = PBXGroup;
 			children = (
@@ -3317,7 +3337,6 @@
 				75F1B87B17C7506100680E1B /* ZincWallet.xcdatamodeld */,
 				75D8F399173ABE3C0080D95E /* MainStoryboard_iPhone.storyboard */,
 				75D8F39C173ABE3C0080D95E /* MainStoryboard_iPad.storyboard */,
-				7536A293177D1A6C00BAC31E /* res */,
 				75CBEAE4173C801900978DBA /* Images */,
 			);
 			name = Resources;
@@ -3481,6 +3500,7 @@
 			isa = PBXGroup;
 			children = (
 				75D8F389173ABE3C0080D95E /* ZincWallet-Info.plist */,
+				75F15A5017E290C400DCDD2B /* zinc.entitlements */,
 				75B4941A17C43ACA003A3FCA /* MnemonicAdjs.plist */,
 				75B4941C17C43BCE003A3FCA /* MnemonicNouns.plist */,
 				75B4941E17C43C58003A3FCA /* MnemonicAdvs.plist */,
@@ -3702,6 +3722,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				7599CC2617E2A54B00852F9B /* PBXTargetDependency */,
 			);
 			name = qrencoder;
 			productName = qrencoder;
@@ -3719,6 +3740,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				7599CC2217E2A53E00852F9B /* PBXTargetDependency */,
 				753D4F4D17A44674009FFCAE /* PBXTargetDependency */,
 				75AF36F017667F0B004AA912 /* PBXTargetDependency */,
 				75FD9D69176658EB00307894 /* PBXTargetDependency */,
@@ -3758,6 +3780,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				7599CC2417E2A54600852F9B /* PBXTargetDependency */,
 			);
 			name = zbar;
 			productName = zbar;
@@ -3779,6 +3802,15 @@
 						SystemCapabilities = {
 							com.apple.DataProtection = {
 								enabled = 1;
+							};
+							com.apple.GameCenter = {
+								enabled = 0;
+							};
+							com.apple.Keychain = {
+								enabled = 0;
+							};
+							com.apple.iCloud = {
+								enabled = 0;
 							};
 						};
 					};
@@ -3802,6 +3834,7 @@
 				752C300C1742AD060033F636 /* ssl */,
 				75FD9C0117664F3000307894 /* zbar */,
 				75AF36D6176675D3004AA912 /* qrencoder */,
+				7599CC1C17E2A4B200852F9B /* submodules */,
 			);
 		};
 /* End PBXProject section */
@@ -3820,9 +3853,6 @@
 				75F17C4417455F2D00D9F228 /* deletetoleft-inv.png in Resources */,
 				75EAE8431752D20800FDB2D2 /* ElectrumSeedWords.plist in Resources */,
 				7545424F17606C7500638B95 /* button-bg-disabled@2x.png in Resources */,
-				7536A2AF177D1A6C00BAC31E /* zbar-help.html in Resources */,
-				7536A2B0177D1A6C00BAC31E /* zbar-helpicons.png in Resources */,
-				7536A2B1177D1A6C00BAC31E /* zbar-samples.png in Resources */,
 				751E809F1789797500E3CFB2 /* gear@2x.png in Resources */,
 				751E80A01789797500E3CFB2 /* refresh@2x.png in Resources */,
 				758FBDCB17E1D75F00D341BF /* icon58.png in Resources */,
@@ -3837,6 +3867,7 @@
 				7593BD0A17A24D1500F814F6 /* cameraguide-small@2x.png in Resources */,
 				756E9CD817AD802700D316A8 /* wallpaper-welcome@2x.png in Resources */,
 				757B1DCE17ADD53C00AA6CAB /* button-bg-blue@2x.png in Resources */,
+				75C483DD17E27B1E00CAC0BC /* icon120.png in Resources */,
 				757B1DD017ADD79D00AA6CAB /* button-bg-white-pressed@2x.png in Resources */,
 				757B1DD217AE191400AA6CAB /* zincwallet-white@2x.png in Resources */,
 				757B1DD517AEEB1600AA6CAB /* cameraguide-blue-small@2x.png in Resources */,
@@ -3873,6 +3904,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "VERSION=1.0.1c\nARCHIVE=openssl-$VERSION.tar.gz\nSHA1=91b684de947cb021ac61b8c51027cc4b63d894ce\n\ncd $SRCROOT\n[ -L $SRCROOT/openssl ] || ( rm -rf $SRCROOT/openssl && ln -s openssl-$VERSION openssl )\n\n([ -f $SRCROOT/$ARCHIVE ] && openssl sha1 $SRCROOT/$ARCHIVE | grep $SHA1) || \\\n(rm -f $SRCROOT/$ARCHIVE && curl -sSO http://www.openssl.org/source/$ARCHIVE && \\\nopenssl sha1 $SRCROOT/$ARCHIVE | grep $SHA1)\n\n[ -f $SRCROOT/openssl/ssl/tls_srp.c ] || tar -xvzf $ARCHIVE";
+		};
+		7599CC2017E2A4C500852F9B /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/AFNetowrking/AFNetworking/AFNetworking.h",
+				"$(SRCROOT)/ZBar/iphone/include/ZBarSDK/ZBarSDK.h",
+				"$(SRCROOT)/QR-Code-Encoder-for-Objective-C/QRCodeEncoderObjectiveCAtGithub/QREncoder.h",
+				"$(SRCROOT)/MBProgressHUD/MBProgressHUD.h",
+				"$(SRCROOT)/SocketRocket/SocketRocket/SRWebSocket.h",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd $SRCROOT\n\ngit submodule init\ngit submodule update";
 		};
 		75D8F3B0173ABE3D0080D95E /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4687,6 +4736,21 @@
 			target = 752C300C1742AD060033F636 /* ssl */;
 			targetProxy = 753D4F4C17A44674009FFCAE /* PBXContainerItemProxy */;
 		};
+		7599CC2217E2A53E00852F9B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7599CC1C17E2A4B200852F9B /* submodules */;
+			targetProxy = 7599CC2117E2A53E00852F9B /* PBXContainerItemProxy */;
+		};
+		7599CC2417E2A54600852F9B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7599CC1C17E2A4B200852F9B /* submodules */;
+			targetProxy = 7599CC2317E2A54600852F9B /* PBXContainerItemProxy */;
+		};
+		7599CC2617E2A54B00852F9B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7599CC1C17E2A4B200852F9B /* submodules */;
+			targetProxy = 7599CC2517E2A54B00852F9B /* PBXContainerItemProxy */;
+		};
 		75AF36F017667F0B004AA912 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 75AF36D6176675D3004AA912 /* qrencoder */;
@@ -4818,6 +4882,20 @@
 			};
 			name = Release;
 		};
+		7599CC1E17E2A4B200852F9B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		7599CC1F17E2A4B200852F9B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		75AF36E0176675D3004AA912 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -4851,8 +4929,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++98";
-				CLANG_CXX_LIBRARY = "libstdc++";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -4862,7 +4938,6 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -4883,8 +4958,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++98";
-				CLANG_CXX_LIBRARY = "libstdc++";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -4894,14 +4967,11 @@
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				COPY_PHASE_STRIP = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
-				PROVISIONING_PROFILE = "8CC37DF2-416C-4020-8545-8B1B942ACCD5";
-				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "8CC37DF2-416C-4020-8545-8B1B942ACCD5";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 1;
 				VALIDATE_PRODUCT = YES;
@@ -4913,6 +4983,8 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++98";
 				CLANG_CXX_LIBRARY = "libstdc++";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "ZincWallet/ZincWallet-Prefix.pch";
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
@@ -4923,9 +4995,11 @@
 					"$(SRCROOT)/iOS-WebSockets",
 				);
 				INFOPLIST_FILE = "ZincWallet/ZincWallet-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
+				TARGETED_DEVICE_FAMILY = 1;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -4935,6 +5009,8 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++98";
 				CLANG_CXX_LIBRARY = "libstdc++";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "ZincWallet/ZincWallet-Prefix.pch";
 				HEADER_SEARCH_PATHS = (
@@ -4944,9 +5020,11 @@
 					"$(SRCROOT)/iOS-WebSockets",
 				);
 				INFOPLIST_FILE = "ZincWallet/ZincWallet-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
+				TARGETED_DEVICE_FAMILY = 1;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -5059,6 +5137,14 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
+		};
+		7599CC1D17E2A4B200852F9B /* Build configuration list for PBXAggregateTarget "submodules" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7599CC1E17E2A4B200852F9B /* Debug */,
+				7599CC1F17E2A4B200852F9B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
 		};
 		75AF36E2176675D3004AA912 /* Build configuration list for PBXNativeTarget "qrencoder" */ = {
 			isa = XCConfigurationList;
