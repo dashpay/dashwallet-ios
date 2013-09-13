@@ -1724,7 +1724,7 @@
 		752C35301742AE1E0033F636 /* v3err.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = v3err.c; sourceTree = "<group>"; };
 		752C35311742AE1E0033F636 /* v3prin.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = v3prin.c; sourceTree = "<group>"; };
 		752C35321742AE1E0033F636 /* x509v3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x509v3.h; sourceTree = "<group>"; };
-		752C38411742BB270033F636 /* v3_conf.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = v3_conf.c; path = "openssl-1.0.1c/crypto/x509v3/v3_conf.c"; sourceTree = SOURCE_ROOT; };
+		752C38411742BB270033F636 /* v3_conf.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = v3_conf.c; sourceTree = "<group>"; };
 		752C38B01742BC4D0033F636 /* AFHTTPClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFHTTPClient.h; sourceTree = "<group>"; };
 		752C38B11742BC4D0033F636 /* AFHTTPClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFHTTPClient.m; sourceTree = "<group>"; };
 		752C38B21742BC4D0033F636 /* AFHTTPRequestOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFHTTPRequestOperation.h; sourceTree = "<group>"; };
@@ -3899,11 +3899,11 @@
 			inputPaths = (
 			);
 			outputPaths = (
-				"$(SRCROOT)/openssl/ssl/tls_srp.c",
+				"$(SRCROOT)/openssl-1.0.1e/ssl/tls_srp.c",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "VERSION=1.0.1c\nARCHIVE=openssl-$VERSION.tar.gz\nSHA1=91b684de947cb021ac61b8c51027cc4b63d894ce\n\ncd $SRCROOT\n[ -L $SRCROOT/openssl ] || ( rm -rf $SRCROOT/openssl && ln -s openssl-$VERSION openssl )\n\n([ -f $SRCROOT/$ARCHIVE ] && openssl sha1 $SRCROOT/$ARCHIVE | grep $SHA1) || \\\n(rm -f $SRCROOT/$ARCHIVE && curl -sSO http://www.openssl.org/source/$ARCHIVE && \\\nopenssl sha1 $SRCROOT/$ARCHIVE | grep $SHA1)\n\n[ -f $SRCROOT/openssl/ssl/tls_srp.c ] || tar -xvzf $ARCHIVE";
+			shellScript = "VERSION=1.0.1e\nARCHIVE=openssl-$VERSION.tar.gz\nSHA1=3f1b1223c9e8189bfe4e186d86449775bd903460\n\ncd $SRCROOT\nrm -rf $SRCROOT/openssl\nln -s openssl-$VERSION openssl\n\n([ -f $SRCROOT/$ARCHIVE ] && openssl sha1 $SRCROOT/$ARCHIVE | grep $SHA1) || \\\n(rm -rf $SRCROOT/openssl-* && curl -sSO http://www.openssl.org/source/$ARCHIVE && \\\nopenssl sha1 $SRCROOT/$ARCHIVE | grep $SHA1)\n\n[ -f $SRCROOT/openssl/ssl/tls_srp.c ] || tar -xvzf $ARCHIVE";
 		};
 		7599CC2017E2A4C500852F9B /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
