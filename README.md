@@ -1,4 +1,4 @@
 zincwallet
-==========
+----------
 
-zinc bitcoin wallet
+A BIP32 deterministic bitcoin wallet for iOS

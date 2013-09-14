@@ -1,0 +1,16 @@
+zincwallet change log
+---------------------
+
+v0.1:
+
+- initial private beta
+
+v0.2:
+
+- first public release
+- updated UI for iOS 7
+
+v0.2.1:
+
+- improved url handling
+- additional unit tests

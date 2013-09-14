@@ -1,0 +1,10 @@
+build and install zincwallet
+----------------------------
+
+1. clone the zincwallet git repository: 
+
+   `git clone https://github.com/voisine/zincwallet.git`
+
+2. open zincwallet/ZincWallet.xcodeproj in XCode 5.0 or later
+
+3. select Product->Run
