@@ -181,7 +181,7 @@
         [self.navigationController presentViewController:c animated:NO completion:nil];
         return;
     }
-    else if (firstAppearance) { // BUG: somehow the splash screen is showing up when handling url
+    else if (firstAppearance && ! animated) { // BUG: somehow the splash screen is showing up when handling url
         UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNSplashViewController"];
         
         if ([[UIScreen mainScreen] bounds].size.height < 500) { // use splash image for 3.5" screen

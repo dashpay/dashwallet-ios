@@ -409,7 +409,7 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                     <color key="titleShadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <connections>
-                                    <segue destination="jaw-AS-YG5" kind="modal" id="qjQ-48-FcI"/>
+                                    <segue destination="jaw-AS-YG5" kind="modal" modalTransitionStyle="flipHorizontal" id="qjQ-48-FcI"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -1139,7 +1139,7 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
         <!--Navigation Controller-->
         <scene sceneID="d5q-zo-uy4">
             <objects>
-                <navigationController definesPresentationContext="YES" modalTransitionStyle="flipHorizontal" id="jaw-AS-YG5" sceneMemberID="viewController">
+                <navigationController definesPresentationContext="YES" id="jaw-AS-YG5" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="QD8-9d-Z2F" customClass="ZNNavigationBar">
                         <rect key="frame" x="0.0" y="-44" width="0.0" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -2542,15 +2542,10 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
         <image name="deletetoleft-inv.png" width="120" height="92"/>
         <image name="gear.png" width="19" height="21"/>
         <image name="refresh.png" width="14" height="16"/>
-        <image name="refresh.png" width="14" height="16"/>
-        <image name="wallpaper-default.png" width="480" height="568"/>
-        <image name="wallpaper-default.png" width="480" height="568"/>
         <image name="wallpaper-default.png" width="480" height="568"/>
         <image name="wallpaper-welcome.png" width="757" height="568"/>
         <image name="zincwallet-big.png" width="250" height="210"/>
         <image name="zincwallet-white.png" width="88" height="18"/>
-        <image name="zincwallet-white.png" width="88" height="18"/>
-        <image name="zincwallet.png" width="84" height="15"/>
         <image name="zincwallet.png" width="84" height="15"/>
     </resources>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
