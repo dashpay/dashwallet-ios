@@ -157,6 +157,7 @@
     else if (req.amount > 0 && [req.label rangeOfString:[w stringForAmount:req.amount]].location == NSNotFound) {
         req.label = [NSString stringWithFormat:@"%@ - %@", req.label, [w stringForAmount:req.amount]];
     }
+    else if (! req.label.length) req.label = req.paymentAddress;
     
     if ([self.requestIDs indexOfObject:CLIPBOARD_ID] == NSNotFound) {
         [self.requests addObject:req];
