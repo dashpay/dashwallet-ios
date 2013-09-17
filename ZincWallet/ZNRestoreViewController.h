@@ -25,6 +25,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ZNRestoreViewController : UIViewController <UITextViewDelegate, UIActionSheetDelegate>
+@interface ZNRestoreViewController : UIViewController<UITextViewDelegate, UIActionSheetDelegate>
 
 @end

@@ -25,7 +25,7 @@
 
 #import <Foundation/Foundation.h>
 
-@protocol ZNMnemonic <NSObject>
+@protocol ZNMnemonic<NSObject>
 @required
 
 - (NSString *)encodePhrase:(NSData *)data;

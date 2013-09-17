@@ -79,8 +79,9 @@ static void *secureReallocate(void *ptr, CFIndex newsize, CFOptionFlags hint, vo
 CFAllocatorRef SecureAllocator()
 {
     static CFAllocatorRef alloc = NULL;
+    static dispatch_once_t onceToken = 0;
     
-    if (alloc == NULL) {
+    dispatch_once(&onceToken, ^{
         CFAllocatorContext context;
         
         context.version = 0;
@@ -91,7 +92,7 @@ CFAllocatorRef SecureAllocator()
         context.deallocate = secureDeallocate;
         
         alloc = CFAllocatorCreate(kCFAllocatorDefault, &context);
-    }
+    });
     
     return alloc;
 }
@@ -225,15 +226,19 @@ breakout:
 + (NSString *)addressWithScript:(NSData *)script
 {
     static NSData *suffix = nil;
+    static dispatch_once_t onceToken = 0;
     
-    if (! suffix) suffix = [NSData dataWithBytes:BITCOIN_SCRIPT_SUFFIX length:strlen(BITCOIN_SCRIPT_SUFFIX)];
+    dispatch_once(&onceToken, ^{
+        suffix = [NSData dataWithBytes:BITCOIN_SCRIPT_SUFFIX length:strlen(BITCOIN_SCRIPT_SUFFIX)];
+    });
 
     if (script.length < suffix.length + 20 ||
         ! [[script subdataWithRange:NSMakeRange(script.length - suffix.length, suffix.length)] isEqualToData:suffix]) {
         return nil;
     }
     
-    NSMutableData *d = [NSMutableData dataWithBytes:"\0" length:1];
+    unsigned char x = BITCOIN_TESTNET ? BITCOIN_PUBKEY_ADDRESS_TEST : BITCOIN_PUBKEY_ADDRESS;
+    NSMutableData *d = [NSMutableData dataWithBytes:&x length:1];
     
     [d appendBytes:(const unsigned char *)script.bytes + script.length - suffix.length - 20 length:20];
     

@@ -130,6 +130,7 @@ static NSData *getKeychainData(NSString *key)
     dispatch_once(&onceToken, ^{
         singleton = [self new];
     });
+    
     return singleton;
 }
 
@@ -907,6 +908,8 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
         return;
     }
     
+    [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncStartedNotification object:nil];
+    
     AFHTTPClient *client = [AFHTTPClient clientWithBaseURL:[NSURL URLWithString:BASE_URL]];
 
     [client postPath:PUSHTX_PATH parameters:@{@"tx":[transaction toHex]}
@@ -938,9 +941,13 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
         [NSManagedObject saveContext];
         [_defs synchronize];
         
+        [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
         [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:nil];
         if (completion) completion(nil);
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification object:nil
+         userInfo:@{@"error":error}];
+
         NSLog(@"%@", operation.responseString);
         if (completion) completion(error);
     }];

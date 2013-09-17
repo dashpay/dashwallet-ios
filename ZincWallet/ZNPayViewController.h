@@ -27,7 +27,6 @@
 //#import <GameKit/GameKit.h>
 #import "ZBarSDK.h"
 
-@interface ZNPayViewController : UIViewController <UIAlertViewDelegate,
-UINavigationControllerDelegate, ZBarReaderDelegate>//, GKSessionDelegate>
+@interface ZNPayViewController : UIViewController<UIAlertViewDelegate, ZBarReaderDelegate>//, GKSessionDelegate>
 
 @end

@@ -32,9 +32,10 @@
 
 @interface ZNReceiveViewController ()
 
+@property (nonatomic, strong) IBOutlet UILabel *label;
+@property (nonatomic, strong) IBOutlet UIButton *infoButton;
 @property (nonatomic, strong) IBOutlet UIImageView *qrView;
 @property (nonatomic, strong) IBOutlet ZNButton *addressButton;
-@property (nonatomic, strong) IBOutlet UILabel *label;
 
 @end
 
@@ -45,6 +46,7 @@
     [super viewDidLoad];
     
     self.addressButton.style = ZNButtonStyleNone;
+    self.infoButton.frame = CGRectMake(self.infoButton.frame.origin.x, self.infoButton.frame.origin.y, 16.0, 16.0);
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -69,6 +71,30 @@
 - (NSString *)paymentAddress
 {
     return [[ZNWallet sharedInstance] receiveAddress];
+}
+
+#pragma mark - IBAction
+
+- (IBAction)info:(id)sender
+{
+    
+}
+
+- (IBAction)address:(id)sender
+{
+    UIActionSheet *a = [UIActionSheet new];
+    
+    a.title = [@"Receive bitcoins at this address: " stringByAppendingString:self.paymentAddress];
+    a.delegate = self;
+    [a addButtonWithTitle:@"copy"];
+    if ([MFMailComposeViewController canSendMail]) [a addButtonWithTitle:@"email"];
+#if ! TARGET_IPHONE_SIMULATOR
+    if ([MFMessageComposeViewController canSendText]) [a addButtonWithTitle:@"sms"];
+#endif
+    [a addButtonWithTitle:@"cancel"];
+    a.cancelButtonIndex = a.numberOfButtons - 1;
+    
+    [a showInView:[[UIApplication sharedApplication] keyWindow]];
 }
 
 #pragma mark - UIActionSheetDelegate
@@ -96,7 +122,8 @@
             [c setSubject:@"Bitcoin address"];
             [c setMessageBody:[@"bitcoin:" stringByAppendingString:[self paymentAddress]] isHTML:NO];
             c.mailComposeDelegate = self;
-            [self.navController presentViewController:c animated:YES completion:nil];
+            //[self.navController presentViewController:c animated:YES completion:nil];
+            [self.navigationController presentViewController:c animated:YES completion:nil];
             c.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default.png"]];
         }
         else {
@@ -110,7 +137,8 @@
             
             c.body = [@"bitcoin:" stringByAppendingString:[self paymentAddress]];
             c.messageComposeDelegate = self;
-            [self.navController presentViewController:c animated:YES completion:nil];
+            //[self.navController presentViewController:c animated:YES completion:nil];
+            [self.navigationController presentViewController:c animated:YES completion:nil];
             c.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default.png"]];
         }
         else {
@@ -125,7 +153,8 @@
 - (void)messageComposeViewController:(MFMessageComposeViewController *)controller
 didFinishWithResult:(MessageComposeResult)result
 {
-    [self.navController dismissViewControllerAnimated:YES completion:nil];
+    //[self.navController dismissViewControllerAnimated:YES completion:nil];
+    [self.navigationController dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - MFMailComposeViewControllerDelegate
@@ -133,26 +162,8 @@ didFinishWithResult:(MessageComposeResult)result
 - (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result
 error:(NSError *)error
 {
-    [self.navController dismissViewControllerAnimated:YES completion:nil];
-}
-
-#pragma mark - IBAction
-
-- (IBAction)address:(id)sender
-{
-    UIActionSheet *a = [UIActionSheet new];
-    
-    a.title = [@"Receive bitcoins at this address: " stringByAppendingString:self.paymentAddress];
-    a.delegate = self;
-    [a addButtonWithTitle:@"copy"];
-    if ([MFMailComposeViewController canSendMail]) [a addButtonWithTitle:@"email"];
-#if ! TARGET_IPHONE_SIMULATOR
-    if ([MFMessageComposeViewController canSendText]) [a addButtonWithTitle:@"sms"];
-#endif
-    [a addButtonWithTitle:@"cancel"];
-    a.cancelButtonIndex = a.numberOfButtons - 1;
-    
-    [a showInView:[[UIApplication sharedApplication] keyWindow]];
+    //[self.navController dismissViewControllerAnimated:YES completion:nil];
+    [self.navigationController dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end

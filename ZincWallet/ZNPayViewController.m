@@ -25,24 +25,20 @@
 
 #import "ZNPayViewController.h"
 #import "ZNAmountViewController.h"
-#import "ZNReceiveViewController.h"
 #import "ZNWallet.h"
-#import "ZNSocketListener.h"
 #import "ZNPaymentRequest.h"
 #import "ZNKey.h"
 #import "ZNTransaction.h"
 #import "ZNButton.h"
 #import "ZNStoryboardSegue.h"
 #import <QuartzCore/QuartzCore.h>
-#import <netinet/in.h>
-#import "Reachability.h"
 #import "NSString+Base58.h"
 #import "MBProgressHUD.h"
 
 #define BUTTON_HEIGHT 44.0
 #define BUTTON_MARGIN 10.0
 
-#define CONNECT_TIMEOUT 5.0
+//#define CONNECT_TIMEOUT 5.0
 
 #define CLIPBOARD_ID    @"clipboard"
 #define QR_ID           @"qr"
@@ -57,23 +53,14 @@
 @property (nonatomic, strong) NSMutableArray *requestButtons;
 @property (nonatomic, assign) NSUInteger selectedIndex;
 @property (nonatomic, strong) NSString *addressInWallet;
-@property (nonatomic, strong) id urlObserver, activeObserver, balanceObserver, reachabilityObserver;
-@property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
-@property (nonatomic, assign) int syncErrorCount;
+@property (nonatomic, strong) id urlObserver, activeObserver;
 @property (nonatomic, strong) ZNTransaction *sweepTx;
 
-@property (nonatomic, strong) IBOutlet UIScrollView *scrollView;
-@property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
-@property (nonatomic, strong) IBOutlet UIPageControl *pageControl;
-@property (nonatomic, strong) IBOutlet UIBarButtonItem *refreshButton;
-@property (nonatomic, strong) IBOutlet UIActivityIndicatorView *spinner;
-//@property (nonatomic, strong) IBOutlet UILabel *label;
+@property (nonatomic, strong) IBOutlet UILabel *label;
+@property (nonatomic, strong) IBOutlet UIButton *infoButton;
 
-@property (nonatomic, strong) ZNReceiveViewController *receiveController;
 @property (nonatomic, strong) ZBarReaderViewController *zbarController;
-@property (nonatomic, strong) Reachability *reachability;
-
-@property (nonatomic, assign) CGPoint wallpaperStart;
+//@property (nonatomic, strong) Reachability *reachability;
 
 @end
 
@@ -96,12 +83,8 @@
     self.requestIDs = [NSMutableArray arrayWithObject:QR_ID];
     self.requestButtons = [NSMutableArray array];
     self.selectedIndex = NSNotFound;
-
-    self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-    self.spinner.frame =
-        CGRectMake(self.spinner.frame.origin.x, self.spinner.frame.origin.y, 20.0, self.spinner.frame.size.height);
-
-    self.wallpaperStart = self.wallpaper.center;
+    
+    self.infoButton.frame = CGRectMake(self.infoButton.frame.origin.x, self.infoButton.frame.origin.y, 16.0, 16.0);
     
     self.urlObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:bitcoinURLNotification object:nil queue:nil
@@ -123,187 +106,44 @@
             [self.requests insertObject:req atIndex:0];
             [self.requestIDs insertObject:URL_ID atIndex:0];
             [self layoutButtonsAnimated:YES];
-            [self.scrollView setContentOffset:CGPointZero animated:YES];
-                
-            [self.navigationController popToRootViewControllerAnimated:NO];
-            if (w.masterPublicKey) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
         }];
     
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (w.timeSinceLastSync > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
-            else if (w.masterPublicKey) [[ZNSocketListener sharedInstance] openSocket];
-
             [self layoutButtonsAnimated:YES]; // check the clipboard for changes
         }];
     
-    // TODO: switch to AFNetworkingReachability
-    self.reachabilityObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
-        usingBlock:^(NSNotification *note) {
-            if (w.timeSinceLastSync > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
-            else if (w.masterPublicKey) [[ZNSocketListener sharedInstance] openSocket];
-        }];
-
-    self.balanceObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:walletBalanceNotification object:nil queue:nil
-        usingBlock:^(NSNotification *note) {
-            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
-                                         [w localCurrencyStringForAmount:w.balance]];
-            
-            // update receive qr code if it's not on screen
-            if (self.pageControl.currentPage != 1) [[self receiveController] viewWillAppear:NO];
-        }];
-    
-    self.syncStartedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncStartedNotification object:nil queue:nil
-        usingBlock:^(NSNotification *note) {
-            self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
-            [self.spinner startAnimating];
-            
-            if (w.balance == 0) self.navigationItem.title = @"syncing...";
-        }];
-
-    self.syncFinishedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncFinishedNotification object:nil queue:nil
-        usingBlock:^(NSNotification *note) {
-            self.syncErrorCount = 0;
-            [self.spinner stopAnimating];
-            self.navigationItem.rightBarButtonItem = self.refreshButton;
-            
-            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
-                                         [w localCurrencyStringForAmount:w.balance]];
-            
-            if (w.masterPublicKey) [[ZNSocketListener sharedInstance] openSocket];
-        }];
-
-    //TODO: create an error banner instead of using an alert
-    self.syncFailedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncFailedNotification object:nil queue:nil
-        usingBlock:^(NSNotification *note) {
-            self.syncErrorCount++;
-//            if ([note.userInfo[@"error"] code] == 504 && self.syncErrorCount < 3) {
-//                [[[UIAlertView alloc] initWithTitle:@"Couldn't refresh wallet balance" message:@"retrying..."
-//                  delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-//                [w synchronize];
-//                return;
-//            }
-        
-            [self.spinner stopAnimating];
-            self.navigationItem.rightBarButtonItem = self.refreshButton;
-            
-            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
-                                         [w localCurrencyStringForAmount:w.balance]];
-            
-            [[[UIAlertView alloc] initWithTitle:@"Couldn't refresh wallet balance" message:[note.userInfo[@"error"]
-              localizedDescription] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-        }];    
-
-    self.reachability = [Reachability reachabilityWithHostName:@"blockchain.info"];
-    [self.reachability startNotifier];
-    
-    self.navigationController.delegate = self;
-
-    [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
-    
-    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
-                                 [w localCurrencyStringForAmount:w.balance]];
 }
 
 - (void)dealloc
 {
-    [self.reachability stopNotifier];
-
     if (self.urlObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.urlObserver];
     if (self.activeObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
-    if (self.reachabilityObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
-    if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
-    if (self.syncStartedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
-    if (self.syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFinishedObserver];
-    if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
 }
 
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
  
-    static BOOL firstAppearance = YES;
-    ZNWallet *w = [ZNWallet sharedInstance];
-
-    if (! w.masterPublicKey) {
-        UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNNewWalletNav"];
-        
-        [self.navigationController presentViewController:c animated:NO completion:nil];
-        return;
-    }
-    else if (firstAppearance) { // BUG: somehow the splash screen is showing up when handling url
-        UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNSplashViewController"];
-
-        if ([[UIScreen mainScreen] bounds].size.height < 500) { // use splash image for 3.5" screen
-            [(UIImageView *)c.view setImage:[UIImage imageNamed:@"Default.png"]];
-        }
-        
-        [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:NO];
-        
-        [self.navigationController presentViewController:c animated:NO completion:^{
-            [self.navigationController dismissViewControllerAnimated:YES completion:^{
-                [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
-            }];
-        }];
-    }
-    else [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
-
 //    self.session = [[GKSession alloc] initWithSessionID:GK_SESSION_ID
 //                    displayName:[UIDevice.currentDevice.name stringByAppendingString:@" Wallet"]
 //                    sessionMode:GKSessionModeClient];
 //    self.session.delegate = self;
 //    [self.session setDataReceiveHandler:self withContext:nil];
 //    self.session.available = YES;
-    
-    self.scrollView.contentSize = CGSizeMake(self.scrollView.bounds.size.width*2, self.scrollView.bounds.size.height);
-    
-    //TODO: make both payview and receiveview into containers inside a main controller using addChildViewController:
-    self.receiveController.view.frame = CGRectMake(self.scrollView.frame.size.width, 0,
-                                                   self.scrollView.frame.size.width, self.scrollView.frame.size.height);
-    [self.scrollView addSubview:self.receiveController.view];
-    
-    if (firstAppearance) {
-        firstAppearance = NO;
-    
-        if (w.balance == 0) {
-            [self.scrollView setContentOffset:CGPointMake(self.scrollView.frame.size.width, 0) animated:NO];
-        }
-    }
-    
+
     [self layoutButtonsAnimated:NO];
 }
 
-- (void)viewDidAppear:(BOOL)animated
-{
-    [super viewDidAppear:animated];
-    
-    if ([[ZNWallet sharedInstance] timeSinceLastSync] > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
-    else if ([ZNWallet sharedInstance].masterPublicKey) [[ZNSocketListener sharedInstance] openSocket];
-}
-
-- (void)viewWillDisappear:(BOOL)animated
-{
-    [super viewWillDisappear:animated];
-    
+//- (void)viewWillDisappear:(BOOL)animated
+//{
+//    [super viewWillDisappear:animated];
+//
 //    self.session.available = NO;
 //    [self.session disconnectFromAllPeers];
 //    self.session = nil;
-}
-
-- (ZNReceiveViewController *)receiveController
-{
-    if (_receiveController) return _receiveController;
-    
-    _receiveController = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNReceiveViewController"];
-    _receiveController.navController = self.navigationController;
-    return _receiveController;
-}
+//}
 
 - (void)layoutButtonsAnimated:(BOOL)animated
 {
@@ -330,20 +170,19 @@
         button.style = ZNButtonStyleBlue;
         button.imageEdgeInsets = UIEdgeInsetsMake(0, -10, 0, 10);
         button.alpha = animated ? 0 : 1;
-        button.frame = CGRectMake(BUTTON_MARGIN*2, self.scrollView.frame.size.height/2 +
-                                  self.navigationController.navigationBar.frame.size.height/2 +
-                                  (BUTTON_HEIGHT + BUTTON_MARGIN*2)*(self.requestButtons.count-self.requests.count/2.0),
-                                  self.scrollView.frame.size.width - BUTTON_MARGIN*4, BUTTON_HEIGHT);
+        button.frame =
+            CGRectMake(BUTTON_MARGIN*2, self.view.frame.size.height/2 +
+                       (BUTTON_HEIGHT + BUTTON_MARGIN*2)*(self.requestButtons.count - self.requests.count/2.0 - 0.5),
+                       self.view.frame.size.width - BUTTON_MARGIN*4, BUTTON_HEIGHT);
         [button addTarget:self action:@selector(doIt:) forControlEvents:UIControlEventTouchUpInside];
-        [self.scrollView addSubview:button];
+        [self.view addSubview:button];
         [self.requestButtons addObject:button];
     }
 
     void (^block)(void) = ^{
         [self.requestButtons enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            CGPoint c = CGPointMake([obj center].x, self.scrollView.frame.size.height/2 +
-                                    self.navigationController.navigationBar.frame.size.height/2 + BUTTON_HEIGHT/2 +
-                                    BUTTON_MARGIN + (BUTTON_HEIGHT + 2*BUTTON_MARGIN)*(idx - self.requests.count/2.0));
+            CGPoint c = CGPointMake([obj center].x, self.view.frame.size.height/2 +
+                                    (BUTTON_HEIGHT + BUTTON_MARGIN*2)*(idx - self.requests.count/2.0));
             
             [obj setCenter:c];
             
@@ -378,6 +217,10 @@
                 [obj setImage:nil forState:UIControlStateHighlighted];
             }
         }];
+        
+        self.label.center = CGPointMake(self.label.center.x,
+                                        [self.requestButtons[0] center].y - BUTTON_HEIGHT - BUTTON_MARGIN/2);
+        self.infoButton.center = CGPointMake(self.infoButton.center.x, self.label.center.y + 1.0);
     };
     
     if (animated) {
@@ -427,9 +270,10 @@
         ZNAmountViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNAmountViewController"];
             
         c.request = request;
-        c.navigationItem.title = self.navigationItem.title;
+        c.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
+                                  [w localCurrencyStringForAmount:w.balance]];
         
-        [ZNStoryboardSegue segueFrom:self to:c];
+        [ZNStoryboardSegue segueFrom:self.navigationController.topViewController to:c];
             
         self.selectedIndex = NSNotFound;
     }
@@ -523,6 +367,11 @@
 
 #pragma mark - IBAction
 
+- (IBAction)info:(id)sender
+{
+    
+}
+
 - (IBAction)doIt:(id)sender
 {
     self.selectedIndex = [self.requestButtons indexOfObject:sender];
@@ -561,59 +410,6 @@
     }
 }
 
-- (IBAction)refresh:(id)sender
-{
-    if (! sender && [self.reachability currentReachabilityStatus] == NotReachable) return;
-    
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
-    [self.spinner startAnimating];
-
-    if ([[ZNWallet sharedInstance] balance] == 0) self.navigationItem.title = @"syncing...";
-
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[ZNWallet sharedInstance] synchronize];
-    });
-}
-
-- (IBAction)page:(id)sender
-{
-    if ([self.scrollView isTracking] || [self.scrollView isDecelerating] ||
-        self.pageControl.currentPage == self.scrollView.contentOffset.x/self.scrollView.frame.size.width + 0.5) return;
-        
-    [self.scrollView setContentOffset:CGPointMake(self.pageControl.currentPage*self.scrollView.frame.size.width, 0)
-     animated:YES];
-}
-
-#pragma mark - UIScrollViewDelegate
-
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView
-{
-    self.pageControl.currentPage = scrollView.contentOffset.x/scrollView.frame.size.width + 0.5;
-    self.wallpaper.center = CGPointMake(self.wallpaperStart.x - scrollView.contentOffset.x*PARALAX_RATIO,
-                                        self.wallpaperStart.y);
-}
-
-#pragma mark - UINavigationControllerDelegate
-
-- (void)navigationController:(UINavigationController *)navigationController
-didShowViewController:(UIViewController *)viewController animated:(BOOL)animated
-{
-}
-
-- (void)navigationController:(UINavigationController *)navigationController
-willShowViewController:(UIViewController *)viewController animated:(BOOL)animated
-{
-    if (! animated) return;
-    
-    [UIView animateWithDuration:SEGUE_DURATION animations:^{
-        if (viewController != self) {
-            self.wallpaper.center = CGPointMake(self.wallpaperStart.x - self.view.frame.size.width*PARALAX_RATIO,
-                                                self.wallpaperStart.y);
-        }
-        else self.wallpaper.center = self.wallpaperStart;
-    }];
-}
-
 #pragma mark - UIAlertViewDelegate
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
@@ -628,18 +424,13 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
     ZNWallet *w = [ZNWallet sharedInstance];
     
     if (self.sweepTx) {
-        [self.spinner startAnimating];
-        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
-        
         [w publishTransaction:self.sweepTx completion:^(NSError *error) {
-            [self.spinner stopAnimating];
-            self.navigationItem.rightBarButtonItem = self.refreshButton;
             self.selectedIndex = NSNotFound;
             [self layoutButtonsAnimated:YES];
             
             if (error) {
                 [[[UIAlertView alloc] initWithTitle:@"Couldn't sweep balance." message:error.localizedDescription
-                                           delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+                  delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
                 return;
             }
             
@@ -700,14 +491,8 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
     if (self.selectedIndex == NSNotFound || [self.requestIDs[self.selectedIndex] isEqual:QR_ID] ||
         [self.requestIDs[self.selectedIndex] isEqual:CLIPBOARD_ID]) {
         
-        [self.spinner startAnimating];
-        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
-            
         //TODO: check for duplicate transactions
         [w publishTransaction:tx completion:^(NSError *error) {
-            [self.spinner stopAnimating];
-            self.navigationItem.rightBarButtonItem = self.refreshButton;
-            
             if (error) {
                 [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:error.localizedDescription
                   delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];

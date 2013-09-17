@@ -27,10 +27,10 @@
 //#import <GameKit/GameKit.h>
 #import <MessageUI/MessageUI.h>
 
-@interface ZNReceiveViewController : UIViewController <UIActionSheetDelegate, //UITextFieldDelegate, GKSessionDelegate,
+@interface ZNReceiveViewController : UIViewController<UIActionSheetDelegate, //UITextFieldDelegate, GKSessionDelegate,
 MFMessageComposeViewControllerDelegate, MFMailComposeViewControllerDelegate>
 
-@property (nonatomic, strong) UINavigationController *navController;
+//@property (nonatomic, strong) UINavigationController *navController;
 @property (nonatomic, readonly) NSString *copiedAddress; // exclude this address from pay to clipboard address
 
 @end

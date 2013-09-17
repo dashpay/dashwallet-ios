@@ -25,6 +25,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ZNWelcomeViewController : UIViewController <UINavigationControllerDelegate>
+@interface ZNWelcomeViewController : UIViewController<UINavigationControllerDelegate>
 
 @end

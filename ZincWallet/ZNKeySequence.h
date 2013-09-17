@@ -29,7 +29,7 @@
 #define GAP_LIMIT_EXTERNAL 10
 #define GAP_LIMIT_INTERNAL 3
 
-@protocol ZNKeySequence <NSObject>
+@protocol ZNKeySequence<NSObject>
 @required
 
 - (NSData *)masterPublicKeyFromSeed:(NSData *)seed;

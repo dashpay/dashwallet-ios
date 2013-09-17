@@ -58,8 +58,9 @@
 - (void)setStyle:(ZNButtonStyle)style
 {
     static UIImage *white = nil, *whitepressed = nil, *blue = nil, *bluepressed = nil, *disabled = nil;
+    static dispatch_once_t onceToken = 0;
     
-    if (! white) {
+    dispatch_once(&onceToken, ^{
         white = [[UIImage imageNamed:@"button-bg-white.png"]
                  resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 5.0, 15.0, 5.0)];
         whitepressed = [[UIImage imageNamed:@"button-bg-white-pressed.png"]
@@ -70,7 +71,7 @@
                        resizableImageWithCapInsets:UIEdgeInsetsMake(38.0, 5.0, 5.0, 5.0)];
         disabled = [[UIImage imageNamed:@"button-bg-disabled.png"]
                     resizableImageWithCapInsets:UIEdgeInsetsMake(15.0, 5.0, 15.0, 5.0)];
-    }
+    });
     
     switch (style) {
         case ZNButtonStyleWhite:

@@ -785,6 +785,7 @@
 		75F1B87217C7198B00680E1B /* ZNUnspentOutputEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F1B87117C7198B00680E1B /* ZNUnspentOutputEntity.m */; };
 		75F1B87917C7356B00680E1B /* NSManagedObject+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F1B87817C7356B00680E1B /* NSManagedObject+Utils.m */; };
 		75F1B87D17C7506200680E1B /* ZincWallet.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 75F1B87B17C7506100680E1B /* ZincWallet.xcdatamodeld */; };
+		75F4D4B417E636860007500D /* ZNMainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F4D4B317E636860007500D /* ZNMainViewController.m */; };
 		75F9D3E6179F451F00C28B49 /* button-bg-blue-pressed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75F9D3E5179F451E00C28B49 /* button-bg-blue-pressed@2x.png */; };
 		75FD9C0317664F3000307894 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		75FD9C6817664FE700307894 /* config.c in Sources */ = {isa = PBXBuildFile; fileRef = 75FD9C0F17664FE600307894 /* config.c */; };
@@ -861,6 +862,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 7599CC1C17E2A4B200852F9B;
 			remoteInfo = submodules;
+		};
+		75A9327917E44C8300FE34DA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 75D8F376173ABE3C0080D95E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 752C2FFC1742ACFB0033F636;
+			remoteInfo = crypto;
 		};
 		75AF36EF17667F0B004AA912 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1868,6 +1876,8 @@
 		75F1B87717C7356B00680E1B /* NSManagedObject+Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSManagedObject+Utils.h"; sourceTree = "<group>"; };
 		75F1B87817C7356B00680E1B /* NSManagedObject+Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSManagedObject+Utils.m"; sourceTree = "<group>"; };
 		75F1B87C17C7506200680E1B /* ZincWallet.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ZincWallet.xcdatamodel; sourceTree = "<group>"; };
+		75F4D4B217E636860007500D /* ZNMainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNMainViewController.h; sourceTree = "<group>"; };
+		75F4D4B317E636860007500D /* ZNMainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNMainViewController.m; sourceTree = "<group>"; };
 		75F9D3E5179F451E00C28B49 /* button-bg-blue-pressed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-blue-pressed@2x.png"; sourceTree = "<group>"; };
 		75FD9C0217664F3000307894 /* libzbar.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libzbar.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		75FD9C0F17664FE600307894 /* config.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = config.c; sourceTree = "<group>"; };
@@ -3377,12 +3387,14 @@
 		75CBEAE5173C806E00978DBA /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				75F4D4B217E636860007500D /* ZNMainViewController.h */,
+				75F4D4B317E636860007500D /* ZNMainViewController.m */,
 				75D8F39F173ABE3C0080D95E /* ZNPayViewController.h */,
 				75D8F3A0173ABE3C0080D95E /* ZNPayViewController.m */,
-				759CB23E175F03BF00AFA559 /* ZNAmountViewController.h */,
-				759CB23F175F03BF00AFA559 /* ZNAmountViewController.m */,
 				75D8F3A6173ABE3D0080D95E /* ZNReceiveViewController.h */,
 				75D8F3A7173ABE3D0080D95E /* ZNReceiveViewController.mm */,
+				759CB23E175F03BF00AFA559 /* ZNAmountViewController.h */,
+				759CB23F175F03BF00AFA559 /* ZNAmountViewController.m */,
 				753007EA17684A8C00C7BB60 /* ZNSettingsViewController.h */,
 				753007EB17684A8C00C7BB60 /* ZNSettingsViewController.m */,
 				753007ED1769899B00C7BB60 /* ZNSeedViewController.h */,
@@ -3741,9 +3753,10 @@
 			);
 			dependencies = (
 				7599CC2217E2A53E00852F9B /* PBXTargetDependency */,
+				75A9327A17E44C8300FE34DA /* PBXTargetDependency */,
 				753D4F4D17A44674009FFCAE /* PBXTargetDependency */,
-				75AF36F017667F0B004AA912 /* PBXTargetDependency */,
 				75FD9D69176658EB00307894 /* PBXTargetDependency */,
+				75AF36F017667F0B004AA912 /* PBXTargetDependency */,
 			);
 			name = zinc;
 			productName = ZincWallet;
@@ -3829,12 +3842,12 @@
 			projectRoot = "";
 			targets = (
 				75D8F37D173ABE3C0080D95E /* zinc */,
-				75D8F3B1173ABE3D0080D95E /* ZincWalletTests */,
 				752C2FFC1742ACFB0033F636 /* crypto */,
 				752C300C1742AD060033F636 /* ssl */,
 				75FD9C0117664F3000307894 /* zbar */,
 				75AF36D6176675D3004AA912 /* qrencoder */,
 				7599CC1C17E2A4B200852F9B /* submodules */,
+				75D8F3B1173ABE3D0080D95E /* ZincWalletTests */,
 			);
 		};
 /* End PBXProject section */
@@ -4635,6 +4648,7 @@
 				752C38C71742BC4D0033F636 /* AFNetworkActivityIndicatorManager.m in Sources */,
 				752C38C81742BC4D0033F636 /* AFPropertyListRequestOperation.m in Sources */,
 				752C38C91742BC4D0033F636 /* AFURLConnectionOperation.m in Sources */,
+				75F4D4B417E636860007500D /* ZNMainViewController.m in Sources */,
 				752C38CA1742BC4D0033F636 /* AFXMLRequestOperation.m in Sources */,
 				752C38CB1742BC4D0033F636 /* UIImageView+AFNetworking.m in Sources */,
 				75F17C351744CC2100D9F228 /* ZNTransaction.m in Sources */,
@@ -4745,6 +4759,11 @@
 			isa = PBXTargetDependency;
 			target = 7599CC1C17E2A4B200852F9B /* submodules */;
 			targetProxy = 7599CC2517E2A54B00852F9B /* PBXContainerItemProxy */;
+		};
+		75A9327A17E44C8300FE34DA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 752C2FFC1742ACFB0033F636 /* crypto */;
+			targetProxy = 75A9327917E44C8300FE34DA /* PBXContainerItemProxy */;
 		};
 		75AF36F017667F0B004AA912 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;

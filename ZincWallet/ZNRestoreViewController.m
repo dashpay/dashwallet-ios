@@ -192,16 +192,17 @@
 - (void)textViewDidChange:(UITextView *)textView
 {
     static NSCharacterSet *charset = nil;
-    NSRange selected = textView.selectedRange;
-    NSString *s = textView.text;
-    BOOL done = ([s rangeOfString:@"\n"].location != NSNotFound);
-
-
-    if (! charset) {
+    static dispatch_once_t onceToken = 0;
+    
+    dispatch_once(&onceToken, ^{
         charset = [[NSCharacterSet
                     characterSetWithCharactersInString:@"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz., "]
                    invertedSet];
-    }
+    });
+    
+    NSRange selected = textView.selectedRange;
+    NSString *s = textView.text;
+    BOOL done = ([s rangeOfString:@"\n"].location != NSNotFound);
     
     while ([s rangeOfCharacterFromSet:charset].location != NSNotFound) {
         NSRange r = [s rangeOfCharacterFromSet:charset];

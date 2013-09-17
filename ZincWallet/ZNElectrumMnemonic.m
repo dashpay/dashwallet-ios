@@ -38,6 +38,7 @@
     dispatch_once(&onceToken, ^{
         singleton = [self new];
     });
+    
     return singleton;
 }
 

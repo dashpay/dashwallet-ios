@@ -25,6 +25,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ZNSeedViewController : UIViewController <UIAlertViewDelegate>
+@interface ZNSeedViewController : UIViewController<UIAlertViewDelegate>
 
 @end
