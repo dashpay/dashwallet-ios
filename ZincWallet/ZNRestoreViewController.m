@@ -26,6 +26,7 @@
 #import "ZNRestoreViewController.h"
 #import "ZNWallet.h"
 #import "NSString+Base58.h"
+#import "ZNKeySequence.h"
 #if WALLET_BIP32
 #import "ZNZincMnemonic.h"
 #else
@@ -155,8 +156,9 @@
                 [[[UIAlertView alloc] initWithTitle:nil message:@"not a hex string" delegate:nil cancelButtonTitle:@"OK"
                   otherButtonTitles:nil] show];
             }
-            else if (d.length != 128/8) {
-                [[[UIAlertView alloc] initWithTitle:nil message:@"wallet seeds must be 128 bits" delegate:nil
+            else if (d.length != SEED_LENGTH) {
+                [[[UIAlertView alloc] initWithTitle:nil
+                  message:[NSString stringWithFormat:@"wallet seeds must be %d bits", SEED_LENGTH*8] delegate:nil
                   cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
             }
             else {
@@ -242,7 +244,7 @@
 #if WALLET_BIP32
     NSString *incorrect = nil;
         
-    for (NSUInteger i = 0; i < 12; i += 6) {
+    for (NSUInteger i = 0; i < SEED_LENGTH*3/4; i += 6) {
         if (i < a.count && ! [self.adjs containsObject:a[i]]) incorrect = a[i];
         else if (i + 1 < a.count && ! [self.nouns containsObject:a[i + 1]]) incorrect = a[i + 1];
         else if (i + 2 < a.count && ! [self.advs containsObject:a[i + 2]]) incorrect = a[i + 2];
@@ -273,8 +275,9 @@
           cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
     }
 #endif
-    else if (a.count != 12) {
-        [[[UIAlertView alloc] initWithTitle:nil message:@"backup phrase must be 12 words" delegate:nil
+    else if (a.count != SEED_LENGTH*3/4) {
+        [[[UIAlertView alloc] initWithTitle:nil
+          message:[NSString stringWithFormat:@"backup phrase must be %d words", SEED_LENGTH*3/4] delegate:nil
           cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
     }
     else if ([[ZNWallet sharedInstance] seed]) {

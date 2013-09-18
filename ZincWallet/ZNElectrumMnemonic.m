@@ -24,6 +24,7 @@
 //  THE SOFTWARE.
 
 #import "ZNElectrumMnemonic.h"
+#import "ZNKeySequence.h"
 #import "NSString+Base58.h"
 
 #define WORDS @"ElectrumSeedWords"
@@ -100,8 +101,8 @@
     NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), a.count*4/3));
     int32_t n = words.count, x, w1, w2, w3;
 
-    if (a.count != 12) {
-        NSLog(@"phrase should be 12 words, found %d instead", a.count);
+    if (a.count != SEED_LENGTH*3/4) {
+        NSLog(@"phrase should be %d words, found %d instead", SEED_LENGTH*3/4, a.count);
         return nil;
     }
 

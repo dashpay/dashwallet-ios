@@ -175,7 +175,7 @@ static NSData *getKeychainData(NSString *key)
 {
     NSData *seed = getKeychainData(SEED_KEY);
     
-    if (seed.length != 128/8) {
+    if (seed.length != SEED_LENGTH) {
         self.seed = nil;
         return nil;
     }
