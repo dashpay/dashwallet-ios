@@ -37,7 +37,7 @@
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                     </view>
                     <navigationItem key="navigationItem" title="mɃ 0.00000" id="TF6-YO-yee">
-                        <barButtonItem key="backBarButtonItem" title="back" id="sI0-fv-rOw"/>
+                        <barButtonItem key="backBarButtonItem" title=" " id="sI0-fv-rOw"/>
                         <barButtonItem key="leftBarButtonItem" image="gear.png" id="KKr-sB-LsJ">
                             <connections>
                                 <segue destination="wFs-aD-OST" kind="modal" id="TZb-LZ-jmy"/>
@@ -176,7 +176,7 @@
                         </prototypes>
                     </tableView>
                     <navigationItem key="navigationItem" title="mɃ 0.00000" id="7N8-Cz-vq3">
-                        <barButtonItem key="backBarButtonItem" title="back" id="RaK-k5-PIH"/>
+                        <barButtonItem key="backBarButtonItem" title=" " id="RaK-k5-PIH"/>
                         <barButtonItem key="leftBarButtonItem" title="done" id="szI-11-pCy">
                             <connections>
                                 <action selector="done:" destination="ONk-2h-AQR" id="9GK-lu-utT"/>
@@ -339,7 +339,7 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                     </view>
                     <navigationItem key="navigationItem" id="bAO-E4-qa5">
                         <nil key="title"/>
-                        <barButtonItem key="backBarButtonItem" title="back" id="JBm-c1-XP7"/>
+                        <barButtonItem key="backBarButtonItem" title=" " id="JBm-c1-XP7"/>
                         <view key="titleView" contentMode="scaleToFill" id="NH4-nM-d4p">
                             <rect key="frame" x="116" y="13" width="88" height="18"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
