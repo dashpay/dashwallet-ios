@@ -154,16 +154,24 @@
         req.paymentAddress = nil;
         req.label = CLIPBOARD_LABEL;
     }
-    else if (req.amount > 0 && [req.label rangeOfString:[w stringForAmount:req.amount]].location == NSNotFound) {
+    
+    if (! req.label.length) req.label = req.paymentAddress;
+    
+    if (req.amount > 0 && [req.label rangeOfString:[w stringForAmount:req.amount]].location == NSNotFound) {
         req.label = [NSString stringWithFormat:@"%@ - %@", req.label, [w stringForAmount:req.amount]];
     }
-    else if (! req.label.length) req.label = req.paymentAddress;
     
-    if ([self.requestIDs indexOfObject:CLIPBOARD_ID] == NSNotFound) {
+    if ([self.requestIDs indexOfObject:CLIPBOARD_ID] != NSNotFound) {
+        [self.requests removeObjectAtIndex:[self.requestIDs indexOfObject:CLIPBOARD_ID]];
+        [self.requestIDs removeObject:CLIPBOARD_ID];
+    }
+
+    if ([self.requests indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+            return [req.label isEqual:[obj label]] ? (*stop = YES) : NO;
+        }] == NSNotFound) {
         [self.requests addObject:req];
         [self.requestIDs addObject:CLIPBOARD_ID];
     }
-    else [self.requests replaceObjectAtIndex:[self.requestIDs indexOfObject:CLIPBOARD_ID] withObject:req];
 
     while (self.requests.count > self.requestButtons.count) {
         ZNButton *button = [ZNButton buttonWithType:UIButtonTypeCustom];
