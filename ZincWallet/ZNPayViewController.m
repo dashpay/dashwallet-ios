@@ -84,8 +84,6 @@
     self.requestButtons = [NSMutableArray array];
     self.selectedIndex = NSNotFound;
     
-    self.infoButton.frame = CGRectMake(self.infoButton.frame.origin.x, self.infoButton.frame.origin.y, 16.0, 16.0);
-    
     self.urlObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:bitcoinURLNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {

@@ -722,6 +722,8 @@
 		758F2D8217669D6800102AF1 /* libqrencoder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75AF36D7176675D3004AA912 /* libqrencoder.a */; };
 		758FBDC917E1D56C00D341BF /* icon80.png in Resources */ = {isa = PBXBuildFile; fileRef = 758FBDC817E1D56C00D341BF /* icon80.png */; };
 		758FBDCB17E1D75F00D341BF /* icon58.png in Resources */ = {isa = PBXBuildFile; fileRef = 758FBDCA17E1D75F00D341BF /* icon58.png */; };
+		759145B717EB7CE00040D496 /* info@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 759145B617EB7CE00040D496 /* info@2x.png */; };
+		759145B917EB87BF0040D496 /* info-pressed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 759145B817EB87BF0040D496 /* info-pressed@2x.png */; };
 		75920F86174AB82100C1C03D /* NSMutableData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 75920F85174AB82100C1C03D /* NSMutableData+Bitcoin.m */; };
 		7593BD0A17A24D1500F814F6 /* cameraguide-small@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7593BD0917A24D1500F814F6 /* cameraguide-small@2x.png */; };
 		7597028117E15B1E00CDC14A /* ZNNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7597028017E15B1E00CDC14A /* ZNNavigationBar.m */; };
@@ -1782,6 +1784,8 @@
 		758FBDC717E1D33100D341BF /* icon120.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon120.png; path = ../icon120.png; sourceTree = "<group>"; };
 		758FBDC817E1D56C00D341BF /* icon80.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon80.png; sourceTree = SOURCE_ROOT; };
 		758FBDCA17E1D75F00D341BF /* icon58.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon58.png; sourceTree = SOURCE_ROOT; };
+		759145B617EB7CE00040D496 /* info@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "info@2x.png"; sourceTree = "<group>"; };
+		759145B817EB87BF0040D496 /* info-pressed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "info-pressed@2x.png"; sourceTree = "<group>"; };
 		75920F84174AB82100C1C03D /* NSMutableData+Bitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableData+Bitcoin.h"; sourceTree = "<group>"; };
 		75920F85174AB82100C1C03D /* NSMutableData+Bitcoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableData+Bitcoin.m"; sourceTree = "<group>"; };
 		7593BD0917A24D1500F814F6 /* cameraguide-small@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide-small@2x.png"; sourceTree = "<group>"; };
@@ -3345,6 +3349,11 @@
 				75D8F399173ABE3C0080D95E /* MainStoryboard_iPhone.storyboard */,
 				75D8F39C173ABE3C0080D95E /* MainStoryboard_iPad.storyboard */,
 				75CBEAE4173C801900978DBA /* Images */,
+				75B4941A17C43ACA003A3FCA /* MnemonicAdjs.plist */,
+				75B4941C17C43BCE003A3FCA /* MnemonicNouns.plist */,
+				75B4941E17C43C58003A3FCA /* MnemonicAdvs.plist */,
+				75B4942017C43CAC003A3FCA /* MnemonicVerbs.plist */,
+				75EAE8421752D20800FDB2D2 /* ElectrumSeedWords.plist */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -3364,6 +3373,8 @@
 				75F9D3E5179F451E00C28B49 /* button-bg-blue-pressed@2x.png */,
 				751E809D1789797500E3CFB2 /* gear@2x.png */,
 				751E809E1789797500E3CFB2 /* refresh@2x.png */,
+				759145B617EB7CE00040D496 /* info@2x.png */,
+				759145B817EB87BF0040D496 /* info-pressed@2x.png */,
 				75C2F3D3178D3061009F8CD3 /* cameraguide@2x.png */,
 				75C2F3D1178D3061009F8CD3 /* cameraguide-green@2x.png */,
 				75C2F3D2178D3061009F8CD3 /* cameraguide-red@2x.png */,
@@ -3510,11 +3521,6 @@
 			children = (
 				75D8F389173ABE3C0080D95E /* ZincWallet-Info.plist */,
 				75F15A5017E290C400DCDD2B /* zinc.entitlements */,
-				75B4941A17C43ACA003A3FCA /* MnemonicAdjs.plist */,
-				75B4941C17C43BCE003A3FCA /* MnemonicNouns.plist */,
-				75B4941E17C43C58003A3FCA /* MnemonicAdvs.plist */,
-				75B4942017C43CAC003A3FCA /* MnemonicVerbs.plist */,
-				75EAE8421752D20800FDB2D2 /* ElectrumSeedWords.plist */,
 				75D8F38A173ABE3C0080D95E /* InfoPlist.strings */,
 				75D8F38D173ABE3C0080D95E /* main.m */,
 				75D8F38F173ABE3C0080D95E /* ZincWallet-Prefix.pch */,
@@ -3874,8 +3880,10 @@
 				75C2F3D6178D3061009F8CD3 /* cameraguide@2x.png in Resources */,
 				75F9D3E6179F451F00C28B49 /* button-bg-blue-pressed@2x.png in Resources */,
 				752327FE17A088DA00DDEFBB /* zincwallet-big@2x.png in Resources */,
+				759145B917EB87BF0040D496 /* info-pressed@2x.png in Resources */,
 				7593BD0A17A24D1500F814F6 /* cameraguide-small@2x.png in Resources */,
 				756E9CD817AD802700D316A8 /* wallpaper-welcome@2x.png in Resources */,
+				759145B717EB7CE00040D496 /* info@2x.png in Resources */,
 				757B1DCE17ADD53C00AA6CAB /* button-bg-blue@2x.png in Resources */,
 				75C483DD17E27B1E00CAC0BC /* icon120.png in Resources */,
 				757B1DD017ADD79D00AA6CAB /* button-bg-white-pressed@2x.png in Resources */,

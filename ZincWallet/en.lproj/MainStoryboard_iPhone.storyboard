@@ -208,7 +208,7 @@
                                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Cl2-sB-zuB">
                                         <rect key="frame" x="20" y="0.0" width="280" height="240"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                        <string key="text">zinc wallet v0.2.1
+                                        <string key="text">zincwallet v0.2.1
 Copyright © 2013 Aaron Voisine
 
 This app is open source:
@@ -1177,8 +1177,8 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                 <rect key="frame" x="0.0" y="111" width="320" height="347"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <subviews>
-                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="receive money:" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Lel-6K-GPE">
-                                        <rect key="frame" x="104" y="7" width="111" height="21"/>
+                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="receive money:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Lel-6K-GPE">
+                                        <rect key="frame" x="100" y="7" width="133" height="21"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
                                         <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
@@ -1186,6 +1186,18 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                         <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         <size key="shadowOffset" width="0.0" height="1"/>
                                     </label>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" reversesTitleShadowWhenHighlighted="YES" adjustsImageWhenHighlighted="NO" lineBreakMode="middleTruncation" id="q5B-K9-E8f">
+                                        <rect key="frame" x="209" y="1" width="35" height="35"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="13"/>
+                                        <state key="normal" image="info.png">
+                                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
+                                        <state key="highlighted" image="info-pressed.png"/>
+                                        <connections>
+                                            <action selector="info:" destination="toP-Vb-grN" eventType="touchUpInside" id="2Hr-UL-HNe"/>
+                                        </connections>
+                                    </button>
                                     <view contentMode="scaleToFill" id="PTx-pR-mJh">
                                         <rect key="frame" x="35" y="44" width="250" height="250"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -1223,17 +1235,6 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                             <action selector="address:" destination="toP-Vb-grN" eventType="touchUpInside" id="WiK-uh-2Lh"/>
                                         </connections>
                                     </button>
-                                    <button hidden="YES" opaque="NO" alpha="0.75" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="infoLight" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="5XE-RK-X18">
-                                        <rect key="frame" x="217" y="11" width="22" height="22"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                                        <state key="normal">
-                                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="info:" destination="toP-Vb-grN" eventType="touchUpInside" id="F7b-1R-1Lt"/>
-                                        </connections>
-                                    </button>
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </view>
@@ -1243,7 +1244,7 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
                     <connections>
                         <outlet property="addressButton" destination="jE8-Jd-YjS" id="1Sm-IF-r4B"/>
-                        <outlet property="infoButton" destination="5XE-RK-X18" id="IdS-wj-idY"/>
+                        <outlet property="infoButton" destination="q5B-K9-E8f" id="B0A-CA-n2r"/>
                         <outlet property="label" destination="Lel-6K-GPE" id="9Jk-td-n2G"/>
                         <outlet property="qrView" destination="ckp-Du-ZrM" id="ZZX-Ms-xWf"/>
                     </connections>
@@ -1758,22 +1759,23 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="send money:" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="2uc-By-E6L">
-                                <rect key="frame" x="112" y="274" width="95" height="21"/>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="send money:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="2uc-By-E6L">
+                                <rect key="frame" x="106" y="274" width="118" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
                                 <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button hidden="YES" opaque="NO" alpha="0.75" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="infoLight" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="LJo-p2-Dng">
-                                <rect key="frame" x="209" y="275" width="22" height="22"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" reversesTitleShadowWhenHighlighted="YES" adjustsImageWhenHighlighted="NO" lineBreakMode="middleTruncation" id="W1s-0j-rRa">
+                                <rect key="frame" x="200" y="268" width="35" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                                <state key="normal">
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="13"/>
+                                <state key="normal" image="info.png">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
+                                <state key="highlighted" image="info-pressed.png"/>
                                 <connections>
-                                    <action selector="info:" destination="Th9-g2-TJH" eventType="touchUpInside" id="7tb-eX-lsc"/>
+                                    <action selector="info:" destination="Th9-g2-TJH" eventType="touchUpInside" id="2dv-zf-cf2"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -1781,7 +1783,7 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                     </view>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
                     <connections>
-                        <outlet property="infoButton" destination="LJo-p2-Dng" id="3OT-On-Dct"/>
+                        <outlet property="infoButton" destination="W1s-0j-rRa" id="cBA-hZ-23a"/>
                         <outlet property="label" destination="2uc-By-E6L" id="X85-Zw-frc"/>
                     </connections>
                 </viewController>
@@ -2542,11 +2544,20 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
         <image name="deletetoleft-blue.png" width="120" height="92"/>
         <image name="deletetoleft-inv.png" width="120" height="92"/>
         <image name="gear.png" width="19" height="21"/>
+        <image name="info-pressed.png" width="15" height="15"/>
+        <image name="info-pressed.png" width="15" height="15"/>
+        <image name="info.png" width="15" height="15"/>
+        <image name="info.png" width="15" height="15"/>
         <image name="refresh.png" width="14" height="16"/>
+        <image name="refresh.png" width="14" height="16"/>
+        <image name="wallpaper-default.png" width="480" height="568"/>
+        <image name="wallpaper-default.png" width="480" height="568"/>
         <image name="wallpaper-default.png" width="480" height="568"/>
         <image name="wallpaper-welcome.png" width="757" height="568"/>
         <image name="zincwallet-big.png" width="250" height="210"/>
         <image name="zincwallet-white.png" width="88" height="18"/>
+        <image name="zincwallet-white.png" width="88" height="18"/>
+        <image name="zincwallet.png" width="84" height="15"/>
         <image name="zincwallet.png" width="84" height="15"/>
     </resources>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">

@@ -46,7 +46,6 @@
     [super viewDidLoad];
     
     self.addressButton.style = ZNButtonStyleNone;
-    self.infoButton.frame = CGRectMake(self.infoButton.frame.origin.x, self.infoButton.frame.origin.y, 16.0, 16.0);
 }
 
 - (void)viewWillAppear:(BOOL)animated
