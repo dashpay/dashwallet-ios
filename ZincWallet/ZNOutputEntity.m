@@ -59,7 +59,7 @@
     [[self managedObjectContext] performBlockAndWait:^{
         if (address.length) self.address = address;
         if (txIndex > 0) self.txIndex = txIndex;
-        if (n >= 0 && n != NSNotFound) self.n = n;
+        if (n >= 0 && n != (int32_t)NSNotFound) self.n = n;
         if (value > 0) self.value = value;
     }];
     

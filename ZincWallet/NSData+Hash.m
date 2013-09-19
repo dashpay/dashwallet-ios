@@ -35,7 +35,7 @@ extern CFAllocatorRef SecureAllocator();
 {
     NSMutableData *d = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH];
     
-    CC_SHA256(self.bytes, self.length, d.mutableBytes);
+    CC_SHA256(self.bytes, (CC_LONG)self.length, d.mutableBytes);
     
     return d;
 }
@@ -44,8 +44,8 @@ extern CFAllocatorRef SecureAllocator();
 {
     NSMutableData *d = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH];
     
-    CC_SHA256(self.bytes, self.length, d.mutableBytes);
-    CC_SHA256(d.bytes, d.length, d.mutableBytes);
+    CC_SHA256(self.bytes, (CC_LONG)self.length, d.mutableBytes);
+    CC_SHA256(d.bytes, (CC_LONG)d.length, d.mutableBytes);
     
     return d;
 }

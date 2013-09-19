@@ -60,7 +60,7 @@
 - (NSString *)encodePhrase:(NSData *)data
 {
     NSArray *words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:WORDS ofType:@"plist"]];
-    uint32_t n = words.count, x, w1, w2, w3;
+    uint32_t n = (uint32_t)words.count, x, w1, w2, w3;
     NSMutableArray *a =
         CFBridgingRelease(CFArrayCreateMutable(SecureAllocator(), data.length*3/4, &kCFTypeArrayCallBacks));
 
@@ -99,20 +99,21 @@
 
     NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), s, CFSTR(" ")));
     NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), a.count*4/3));
-    int32_t n = words.count, x, w1, w2, w3;
+    int32_t n = (int32_t)words.count, x, w1, w2, w3;
 
     if (a.count != SEED_LENGTH*3/4) {
-        NSLog(@"phrase should be %d words, found %d instead", SEED_LENGTH*3/4, a.count);
+        NSLog(@"phrase should be %d words, found %d instead", SEED_LENGTH*3/4, (int)a.count);
         return nil;
     }
 
     for (NSUInteger i = 0; i < a.count; i += 3) {
-        w1 = [words indexOfObject:a[i]];
-        w2 = [words indexOfObject:a[i + 1]];
-        w3 = [words indexOfObject:a[i + 2]];
+        w1 = (int32_t)[words indexOfObject:a[i]];
+        w2 = (int32_t)[words indexOfObject:a[i + 1]];
+        w3 = (int32_t)[words indexOfObject:a[i + 2]];
 
-        if (w1 == NSNotFound || w2 == NSNotFound || w3 == NSNotFound) {
-            NSLog(@"phrase contained unknown word: %@", a[i + (w1 == NSNotFound ? 0 : w2 == NSNotFound ? 1 : 2)]);
+        if (w1 == (int32_t)NSNotFound || w2 == (int32_t)NSNotFound || w3 == (int32_t)NSNotFound) {
+            NSLog(@"phrase contained unknown word: %@",
+                  a[i + (w1 == (int32_t)NSNotFound ? 0 : w2 == (int32_t)NSNotFound ? 1 : 2)]);
             return nil;
         }
 

@@ -688,7 +688,6 @@
 		752C38381742AE200033F636 /* v3_sxnet.c in Sources */ = {isa = PBXBuildFile; fileRef = 752C352D1742AE1E0033F636 /* v3_sxnet.c */; };
 		752C38391742AE200033F636 /* v3_utl.c in Sources */ = {isa = PBXBuildFile; fileRef = 752C352E1742AE1E0033F636 /* v3_utl.c */; };
 		752C383B1742AE200033F636 /* v3err.c in Sources */ = {isa = PBXBuildFile; fileRef = 752C35301742AE1E0033F636 /* v3err.c */; };
-		752C383C1742AE200033F636 /* v3prin.c in Sources */ = {isa = PBXBuildFile; fileRef = 752C35311742AE1E0033F636 /* v3prin.c */; };
 		752C38421742BB270033F636 /* v3_conf.c in Sources */ = {isa = PBXBuildFile; fileRef = 752C38411742BB270033F636 /* v3_conf.c */; };
 		752C38C31742BC4D0033F636 /* AFHTTPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 752C38B11742BC4D0033F636 /* AFHTTPClient.m */; };
 		752C38C41742BC4D0033F636 /* AFHTTPRequestOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 752C38B31742BC4D0033F636 /* AFHTTPRequestOperation.m */; };
@@ -727,9 +726,9 @@
 		7593BD0A17A24D1500F814F6 /* cameraguide-small@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7593BD0917A24D1500F814F6 /* cameraguide-small@2x.png */; };
 		7597028117E15B1E00CDC14A /* ZNNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7597028017E15B1E00CDC14A /* ZNNavigationBar.m */; };
 		7597028417E15B5600CDC14A /* ZNStoryboardSegue.m in Sources */ = {isa = PBXBuildFile; fileRef = 7597028317E15B5600CDC14A /* ZNStoryboardSegue.m */; };
-		759B779317BECFCF0000510F /* base64.c in Sources */ = {isa = PBXBuildFile; fileRef = 759B778C17BECFCF0000510F /* base64.c */; };
+		759B779317BECFCF0000510F /* base64.c in Sources */ = {isa = PBXBuildFile; fileRef = 759B778C17BECFCF0000510F /* base64.c */; settings = {COMPILER_FLAGS = "-w"; }; };
 		759B779417BECFCF0000510F /* NSData+SRB64Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = 759B778F17BECFCF0000510F /* NSData+SRB64Additions.m */; };
-		759B779517BECFCF0000510F /* SRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 759B779217BECFCF0000510F /* SRWebSocket.m */; };
+		759B779517BECFCF0000510F /* SRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 759B779217BECFCF0000510F /* SRWebSocket.m */; settings = {COMPILER_FLAGS = "-w"; }; };
 		759B779717BF46AD0000510F /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759B779617BF46AD0000510F /* CFNetwork.framework */; };
 		759B779917BF46FE0000510F /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 759B779817BF46FE0000510F /* libicucore.dylib */; };
 		759CB235175E8A1200AFA559 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB234175E8A1200AFA559 /* QuartzCore.framework */; };
@@ -1730,7 +1729,6 @@
 		752C352D1742AE1E0033F636 /* v3_sxnet.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = v3_sxnet.c; sourceTree = "<group>"; };
 		752C352E1742AE1E0033F636 /* v3_utl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = v3_utl.c; sourceTree = "<group>"; };
 		752C35301742AE1E0033F636 /* v3err.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = v3err.c; sourceTree = "<group>"; };
-		752C35311742AE1E0033F636 /* v3prin.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = v3prin.c; sourceTree = "<group>"; };
 		752C35321742AE1E0033F636 /* x509v3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x509v3.h; sourceTree = "<group>"; };
 		752C38411742BB270033F636 /* v3_conf.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = v3_conf.c; sourceTree = "<group>"; };
 		752C38B01742BC4D0033F636 /* AFHTTPClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFHTTPClient.h; sourceTree = "<group>"; };
@@ -3264,7 +3262,6 @@
 				752C352D1742AE1E0033F636 /* v3_sxnet.c */,
 				752C352E1742AE1E0033F636 /* v3_utl.c */,
 				752C35301742AE1E0033F636 /* v3err.c */,
-				752C35311742AE1E0033F636 /* v3prin.c */,
 				752C35321742AE1E0033F636 /* x509v3.h */,
 			);
 			path = x509v3;
@@ -4560,7 +4557,6 @@
 				752C38381742AE200033F636 /* v3_sxnet.c in Sources */,
 				752C38391742AE200033F636 /* v3_utl.c in Sources */,
 				752C383B1742AE200033F636 /* v3err.c in Sources */,
-				752C383C1742AE200033F636 /* v3prin.c in Sources */,
 				752C38421742BB270033F636 /* v3_conf.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4913,12 +4909,11 @@
 		75AF36E0176675D3004AA912 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
-				CLANG_CXX_LIBRARY = "libc++";
 				DSTROOT = /tmp/qrencoder.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "QR-Code-Encoder-for-Objective-C/QRCodeEncoderObjectiveCAtGithub/QRCodeEncoderObjectiveCAtGithub-Prefix.pch";
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_INHIBIT_ALL_WARNINGS = YES;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -4928,11 +4923,10 @@
 		75AF36E1176675D3004AA912 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
-				CLANG_CXX_LIBRARY = "libc++";
 				DSTROOT = /tmp/qrencoder.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "QR-Code-Encoder-for-Objective-C/QRCodeEncoderObjectiveCAtGithub/QRCodeEncoderObjectiveCAtGithub-Prefix.pch";
+				GCC_WARN_INHIBIT_ALL_WARNINGS = YES;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -5082,8 +5076,6 @@
 		75FD9C0C17664F3000307894 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
-				CLANG_CXX_LIBRARY = "libc++";
 				DSTROOT = /tmp/zbar.dst;
 				EXCLUDED_SOURCE_FILE_NAMES = "";
 				"EXCLUDED_SOURCE_FILE_NAMES[sdk=iphoneos*]" = ZBarReaderViewImpl_Simulator.m;
@@ -5110,8 +5102,6 @@
 		75FD9C0D17664F3000307894 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
-				CLANG_CXX_LIBRARY = "libc++";
 				DSTROOT = /tmp/zbar.dst;
 				EXCLUDED_SOURCE_FILE_NAMES = "";
 				"EXCLUDED_SOURCE_FILE_NAMES[sdk=iphoneos*]" = ZBarReaderViewImpl_Simulator.m;

@@ -46,8 +46,8 @@
 @property (nonatomic, readonly) NSString *receiveAddress;
 @property (nonatomic, readonly) NSString *changeAddress;
 @property (nonatomic, readonly) NSArray *recentTransactions; // ZNTransactionEntities sorted by date, most recent first
-@property (nonatomic, readonly) NSUInteger estimatedCurrentBlockHeight;
-@property (nonatomic, readonly) NSUInteger lastBlockHeight;
+@property (nonatomic, readonly) uint32_t estimatedCurrentBlockHeight;
+@property (nonatomic, readonly) uint32_t lastBlockHeight;
 @property (nonatomic, readonly, getter = isSynchronizing) BOOL synchronizing;
 @property (nonatomic, readonly) NSTimeInterval timeSinceLastSync;
 @property (nonatomic, strong) NSNumberFormatter *format;

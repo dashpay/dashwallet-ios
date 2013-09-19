@@ -112,7 +112,7 @@ const char base58chars[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrst
     BN_init(&x);
     BN_init(&r);
     BN_set_word(&base, 58);
-    BN_bin2bn(d.bytes, d.length, &x);
+    BN_bin2bn(d.bytes, (int)d.length, &x);
     s[--i] = '\0';
 
     while (! BN_is_zero(&x)) {

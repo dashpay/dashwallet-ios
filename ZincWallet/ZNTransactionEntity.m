@@ -138,7 +138,7 @@
         }
 
         [outputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            [(ZNTxOutputEntity *)obj setAddress:tx.outputAddresses[idx] txIndex:0 n:idx
+            [(ZNTxOutputEntity *)obj setAddress:tx.outputAddresses[idx] txIndex:0 n:(int32_t)idx
              value:[tx.outputAmounts[idx] longLongValue]];
         }];
     }];

@@ -28,4 +28,4 @@
 
 #define OPENSSL_NO_HW
 #define OPENSSL_NO_GOST
-
+#define OPENSSL_NO_INLINE_ASM

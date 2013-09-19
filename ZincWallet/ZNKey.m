@@ -208,7 +208,7 @@
     unsigned int l = ECDSA_size(_key);
     NSMutableData *sig = [NSMutableData dataWithLength:l];
 
-    ECDSA_sign(0, d.bytes, d.length, sig.mutableBytes, &l, _key);
+    ECDSA_sign(0, d.bytes, (int)d.length, sig.mutableBytes, &l, _key);
     sig.length = l;
 
     if (! [self verify:d signature:sig]) {
@@ -222,7 +222,7 @@
 - (BOOL)verify:(NSData *)d signature:(NSData *)sig
 {
     // -1 = error, 0 = bad sig, 1 = good
-    return ECDSA_verify(0, d.bytes, d.length, sig.bytes, sig.length, _key) == 1 ? YES : NO;
+    return ECDSA_verify(0, d.bytes, (int)d.length, sig.bytes, (int)sig.length, _key) == 1 ? YES : NO;
 }
 
 @end

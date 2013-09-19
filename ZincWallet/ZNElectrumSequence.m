@@ -49,14 +49,14 @@
     
     if (d.length < CC_SHA256_DIGEST_LENGTH) d.length = CC_SHA256_DIGEST_LENGTH;
     
-    CC_SHA256(d.bytes, d.length, d.mutableBytes);
+    CC_SHA256(d.bytes, (CC_LONG)d.length, d.mutableBytes);
     
     d.length = CC_SHA256_DIGEST_LENGTH + s.length;
     [s getBytes:(unsigned char *)d.mutableBytes + CC_SHA256_DIGEST_LENGTH maxLength:s.length usedLength:NULL
      encoding:NSUTF8StringEncoding options:0 range:NSMakeRange(0, s.length) remainingRange:NULL];
     
     unsigned char *md = d.mutableBytes;
-    CC_LONG l = d.length;
+    CC_LONG l = (CC_LONG)d.length;
     
     for (NSUInteger i = 1; i < 100000; i++) {
         CC_SHA256(md, l, md);
@@ -66,7 +66,7 @@
     return d;
 }
 
-- (NSData *)sequence:(NSUInteger)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
+- (NSData *)sequence:(unsigned int)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
 {
     if (! masterPublicKey) return nil;
     
@@ -93,7 +93,7 @@
     return CFBridgingRelease(CFDataCreate(SecureAllocator(), (const uint8_t *)pubKey.bytes + 1, pubKey.length - 1));
 }
 
-- (NSData *)publicKey:(NSUInteger)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
+- (NSData *)publicKey:(unsigned int)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
 {
     if (! masterPublicKey) return nil;
 
@@ -110,7 +110,7 @@
     [d appendData:masterPublicKey];
 
     BN_init(&zbn);
-    BN_bin2bn(z.bytes, z.length, &zbn);
+    BN_bin2bn(z.bytes, (int)z.length, &zbn);
     EC_POINT_oct2point(group, masterPubKeyPoint, d.bytes, d.length, ctx);
     EC_POINT_mul(group, zPoint, &zbn, NULL, NULL, ctx);
     EC_POINT_add(group, pubKeyPoint, masterPubKeyPoint, zPoint, ctx);
@@ -125,7 +125,7 @@
     return d;
 }
 
-- (NSString *)privateKey:(NSUInteger)n internal:(BOOL)internal fromSeed:(NSData *)seed
+- (NSString *)privateKey:(unsigned int)n internal:(BOOL)internal fromSeed:(NSData *)seed
 {
     return seed ? [[self privateKeys:@[@(n)] internal:internal fromSeed:seed] lastObject] : nil;
 }
@@ -149,11 +149,11 @@
     EC_GROUP_get_order(group, &order, ctx);
     
     [n enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        NSData *sequence = [self sequence:[obj unsignedIntegerValue] internal:internal masterPublicKey:mpk];
+        NSData *sequence = [self sequence:[obj unsignedIntValue] internal:internal masterPublicKey:mpk];
         NSMutableData *pk = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 33));
 
-        BN_bin2bn(sequence.bytes, sequence.length, &sequencebn);
-        BN_bin2bn(secexp.bytes, secexp.length, &secexpbn);
+        BN_bin2bn(sequence.bytes, (int)sequence.length, &sequencebn);
+        BN_bin2bn(secexp.bytes, (int)secexp.length, &secexpbn);
         
         BN_mod_add(&secexpbn, &secexpbn, &sequencebn, &order, ctx);
 

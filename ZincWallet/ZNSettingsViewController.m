@@ -129,7 +129,7 @@
         case 0: return self.transactions.count ? self.transactions.count : 1;
         case 1: return 2;
         case 2: return 1;
-        default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, section);
+        default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
     }
 
     return 0;
@@ -254,7 +254,8 @@
                     break;
                     
                 default:
-                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__, indexPath.row);
+                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
+                             (int)indexPath.row);
             }
             break;
             
@@ -268,12 +269,14 @@
                     break;
                                         
                 default:
-                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__, indexPath.row);
+                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
+                             (int)indexPath.row);
             }
             break;
             
         default:
-            NSAssert(FALSE, @"%s:%d %s: unkown indexPath.section %d", __FILE__, __LINE__,  __func__, indexPath.section);
+            NSAssert(FALSE, @"%s:%d %s: unkown indexPath.section %d", __FILE__, __LINE__,  __func__,
+                     (int)indexPath.section);
     }
     
     return cell;
@@ -308,7 +311,8 @@
                     return 44;
                     
                 default:
-                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__, indexPath.row);
+                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
+                             (int)indexPath.row);
             }
             return 44;
             
@@ -316,7 +320,8 @@
             return 44;
 
         default:
-            NSAssert(FALSE, @"%s:%d %s: unkown indexPath.section %d", __FILE__, __LINE__,  __func__, indexPath.section);
+            NSAssert(FALSE, @"%s:%d %s: unkown indexPath.section %d", __FILE__, __LINE__,  __func__,
+                     (int)indexPath.section);
     }
     
     return 44;
@@ -347,7 +352,7 @@
             return h > 22 ? h : 22;
         
         default:
-            NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, section);
+            NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
     }
 
     return 22;
@@ -395,7 +400,8 @@
                     break;
                     
                 default:
-                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__, indexPath.row);
+                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
+                             (int)indexPath.row);
             }
             break;
             
@@ -404,7 +410,8 @@
             break;
             
         default:
-            NSAssert(FALSE, @"%s:%d %s: unkown indexPath.section %d", __FILE__, __LINE__,  __func__, indexPath.section);
+            NSAssert(FALSE, @"%s:%d %s: unkown indexPath.section %d", __FILE__, __LINE__,  __func__,
+                     (int)indexPath.section);
     }
 }
 

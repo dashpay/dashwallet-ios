@@ -29,8 +29,8 @@
 @interface ZNElectrumSequence : NSObject<ZNKeySequence>
 
 - (NSData *)masterPublicKeyFromSeed:(NSData *)seed;
-- (NSData *)publicKey:(NSUInteger)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey;
-- (NSString *)privateKey:(NSUInteger)n internal:(BOOL)internal fromSeed:(NSData *)seed;
+- (NSData *)publicKey:(unsigned int)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey;
+- (NSString *)privateKey:(unsigned int)n internal:(BOOL)internal fromSeed:(NSData *)seed;
 - (NSArray *)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed;
 
 @end

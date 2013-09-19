@@ -130,7 +130,7 @@
     NSUInteger height = [tx blockHeightUntilFreeForAmounts:@[@5000000000] withBlockHeights:@[@1]];
     uint64_t priority = [tx priorityForAmounts:@[@5000000000] withAges:@[@(height - 1)]];
     
-    NSLog(@"height = %d", height);
+    NSLog(@"height = %lu", (unsigned long)height);
     NSLog(@"priority = %llu", priority);
     
     STAssertTrue(priority >= TX_FREE_MIN_PRIORITY, @"[ZNTransaction heightUntilFreeFor:atHeights:]");
@@ -150,7 +150,7 @@
                 withAges:@[@(height - 1), @(height - 2), @(height - 3), @(height - 4), @(height - 5), @(height - 6),
                            @(height - 7), @(height - 8), @(height - 9), @(height - 10)]];
     
-    NSLog(@"height = %d", height);
+    NSLog(@"height = %lu", (unsigned long)height);
     NSLog(@"priority = %llu", priority);
     
     STAssertTrue(priority >= TX_FREE_MIN_PRIORITY, @"[ZNTransaction heightUntilFreeFor:atHeights:]");

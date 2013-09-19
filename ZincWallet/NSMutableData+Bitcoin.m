@@ -130,7 +130,7 @@
     }
     else {
         [self appendUInt8:OP_PUSHDATA4];
-        [self appendUInt32:d.length];
+        [self appendUInt32:(uint32_t)d.length];
     }
 
     [self appendData:d];

@@ -70,7 +70,7 @@
     BN_init(&Ilbn);
     BN_init(&kbn);
     BN_bin2bn(I.bytes, 32, &Ilbn);
-    BN_bin2bn(k.bytes, k.length, &kbn);
+    BN_bin2bn(k.bytes, (int)k.length, &kbn);
     EC_GROUP_get_order(group, &order, ctx);
 
     BN_mod_add(&kbn, &Ilbn, &kbn, &order, ctx);
@@ -163,7 +163,7 @@
     return mpk;
 }
 
-- (NSData *)publicKey:(NSUInteger)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
+- (NSData *)publicKey:(unsigned int)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
 {
     if (masterPublicKey.length < 36) return nil;
 
@@ -179,7 +179,7 @@
     return pubKey;
 }
 
-- (NSString *)privateKey:(NSUInteger)n internal:(BOOL)internal fromSeed:(NSData *)seed
+- (NSString *)privateKey:(unsigned int)n internal:(BOOL)internal fromSeed:(NSData *)seed
 {
     return seed ? [[self privateKeys:@[@(n)] internal:internal fromSeed:seed] lastObject] : nil;
 }
@@ -208,7 +208,7 @@
         NSMutableData *s = CFBridgingRelease(CFDataCreateMutableCopy(SecureAllocator(), 32,(__bridge CFDataRef)secret));
         NSMutableData *c = CFBridgingRelease(CFDataCreateMutableCopy(SecureAllocator(), 32, (__bridge CFDataRef)chain));
         
-        [self CKDForKey:s chain:c i:i.unsignedIntegerValue]; // nth key in chain
+        [self CKDForKey:s chain:c i:i.unsignedIntValue]; // nth key in chain
 
         [prvKey appendBytes:"\x80" length:1];
         [prvKey appendData:s];

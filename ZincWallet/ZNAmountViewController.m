@@ -163,7 +163,7 @@
           otherButtonTitles:[NSString stringWithFormat:@"+ %@ (%@)", fee, localCurrencyFee], nil] show];
     }
     else if (t > DBL_EPSILON) {
-        NSUInteger minutes = t/60, hours = t/(60*60), days = t/(60*60*24);
+        int minutes = t/60, hours = t/(60*60), days = t/(60*60*24);
         NSString *time = [NSString stringWithFormat:@"%d %@%@", days ? days : (hours ? hours : minutes),
                           days ? @"day" : (hours ? @"hour" : @"minutes"),
                           days > 1 ? @"s" : (days == 0 && hours > 1 ? @"s" : @"")];
