@@ -1,5 +1,5 @@
 //
-//  ZNSecondViewController.m
+//  ZNReceiveViewController.m
 //  ZincWallet
 //
 //  Created by Aaron Voisine on 5/8/13.
@@ -163,7 +163,6 @@
     NSString *title = [actionSheet buttonTitleAtIndex:buttonIndex];
     
     if ([title isEqual:@"copy"]) {
-        _copiedAddress = [self paymentAddress];
         [[UIPasteboard generalPasteboard] setString:[self paymentAddress]];
         
         MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
@@ -181,7 +180,6 @@
             [c setSubject:@"Bitcoin address"];
             [c setMessageBody:[@"bitcoin:" stringByAppendingString:[self paymentAddress]] isHTML:NO];
             c.mailComposeDelegate = self;
-            //[self.navController presentViewController:c animated:YES completion:nil];
             [self.navigationController presentViewController:c animated:YES completion:nil];
             c.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default.png"]];
         }
@@ -196,7 +194,6 @@
             
             c.body = [@"bitcoin:" stringByAppendingString:[self paymentAddress]];
             c.messageComposeDelegate = self;
-            //[self.navController presentViewController:c animated:YES completion:nil];
             [self.navigationController presentViewController:c animated:YES completion:nil];
             c.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default.png"]];
         }
@@ -212,7 +209,6 @@
 - (void)messageComposeViewController:(MFMessageComposeViewController *)controller
 didFinishWithResult:(MessageComposeResult)result
 {
-    //[self.navController dismissViewControllerAnimated:YES completion:nil];
     [self.navigationController dismissViewControllerAnimated:YES completion:nil];
 }
 
@@ -221,7 +217,6 @@ didFinishWithResult:(MessageComposeResult)result
 - (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result
 error:(NSError *)error
 {
-    //[self.navController dismissViewControllerAnimated:YES completion:nil];
     [self.navigationController dismissViewControllerAnimated:YES completion:nil];
 }
 

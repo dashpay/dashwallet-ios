@@ -1,5 +1,5 @@
 //
-//  ZNSecondViewController.h
+//  ZNReceiveViewController.h
 //  ZincWallet
 //
 //  Created by Aaron Voisine on 5/8/13.
@@ -27,10 +27,9 @@
 //#import <GameKit/GameKit.h>
 #import <MessageUI/MessageUI.h>
 
-@interface ZNReceiveViewController : UIViewController<UIActionSheetDelegate, //UITextFieldDelegate, GKSessionDelegate,
+@interface ZNReceiveViewController : UIViewController<UIActionSheetDelegate, //GKSessionDelegate,
 MFMessageComposeViewControllerDelegate, MFMailComposeViewControllerDelegate>
 
-//@property (nonatomic, strong) UINavigationController *navController;
-@property (nonatomic, readonly) NSString *copiedAddress; // exclude this address from pay to clipboard address
+- (BOOL)hideTips;
 
 @end

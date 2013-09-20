@@ -2990,29 +2990,17 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
     <resources>
         <image name="Default-568h.png" width="16" height="16"/>
         <image name="bubble-down.png" width="300" height="45"/>
-        <image name="bubble-down.png" width="300" height="45"/>
-        <image name="bubble-down.png" width="300" height="45"/>
-        <image name="bubble-down.png" width="300" height="45"/>
-        <image name="bubble-up.png" width="300" height="45"/>
-        <image name="bubble-up.png" width="300" height="45"/>
         <image name="bubble-up.png" width="300" height="45"/>
         <image name="deletetoleft-blue.png" width="120" height="92"/>
         <image name="deletetoleft-inv.png" width="120" height="92"/>
         <image name="gear.png" width="19" height="21"/>
         <image name="info-pressed.png" width="15" height="15"/>
-        <image name="info-pressed.png" width="15" height="15"/>
-        <image name="info.png" width="15" height="15"/>
         <image name="info.png" width="15" height="15"/>
         <image name="refresh.png" width="14" height="16"/>
-        <image name="refresh.png" width="14" height="16"/>
-        <image name="wallpaper-default.png" width="480" height="568"/>
-        <image name="wallpaper-default.png" width="480" height="568"/>
         <image name="wallpaper-default.png" width="480" height="568"/>
         <image name="wallpaper-welcome.png" width="757" height="568"/>
         <image name="zincwallet-big.png" width="250" height="210"/>
         <image name="zincwallet-white.png" width="88" height="18"/>
-        <image name="zincwallet-white.png" width="88" height="18"/>
-        <image name="zincwallet.png" width="84" height="15"/>
         <image name="zincwallet.png" width="84" height="15"/>
     </resources>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
