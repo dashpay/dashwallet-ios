@@ -58,6 +58,7 @@
 
 @property (nonatomic, strong) IBOutlet UILabel *label;
 @property (nonatomic, strong) IBOutlet UIButton *infoButton;
+@property (nonatomic, strong) IBOutlet UIView *scanTipView, *clipboardTipView, *pageTipView;
 
 @property (nonatomic, strong) ZBarReaderViewController *zbarController;
 //@property (nonatomic, strong) Reachability *reachability;
@@ -134,14 +135,16 @@
     [self layoutButtonsAnimated:NO];
 }
 
-//- (void)viewWillDisappear:(BOOL)animated
-//{
-//    [super viewWillDisappear:animated];
-//
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [self hideTips];
+
 //    self.session.available = NO;
 //    [self.session disconnectFromAllPeers];
 //    self.session = nil;
-//}
+
+    [super viewWillDisappear:animated];
+}
 
 - (void)layoutButtonsAnimated:(BOOL)animated
 {
@@ -372,15 +375,70 @@
     }];
 }
 
+- (BOOL)hideTips
+{
+    if (self.scanTipView.alpha < 0.5 && self.clipboardTipView.alpha < 0.5 && self.pageTipView.alpha < 0.5) return NO;
+    
+    [UIView animateWithDuration:UINavigationControllerHideShowBarDuration animations:^{
+        self.scanTipView.alpha = self.clipboardTipView.alpha = self.pageTipView.alpha = 0.0;
+    }];
+    
+    return YES;
+}
+
+- (BOOL)nextTip
+{
+    if (self.scanTipView.alpha < 0.5 && self.clipboardTipView.alpha < 0.5 && self.pageTipView.alpha < 0.5) return NO;
+    
+    if (self.scanTipView.alpha > 0.5) {
+        UIButton *b = self.requestButtons[[self.requestIDs indexOfObject:CLIPBOARD_ID]];
+    
+        [self.view bringSubviewToFront:self.clipboardTipView];
+        self.clipboardTipView.center = CGPointMake(self.clipboardTipView.center.x, b.frame.origin.y +
+                                                   b.frame.size.height + self.scanTipView.frame.size.height/2 - 10);
+    }
+    
+    [UIView animateWithDuration:UINavigationControllerHideShowBarDuration animations:^{
+        if (self.scanTipView.alpha > 0.5) {
+            self.scanTipView.alpha = 0.0;
+            self.clipboardTipView.alpha = 1.0;
+        }
+        else if (self.clipboardTipView.alpha > 0.5) {
+            self.clipboardTipView.alpha = 0.0;
+            self.pageTipView.alpha = 1.0;
+        }
+        else if (self.pageTipView.alpha > 0.5) self.pageTipView.alpha = 0.0;
+    }];
+    
+    return YES;
+}
+
 #pragma mark - IBAction
 
 - (IBAction)info:(id)sender
 {
+    if ([self nextTip]) return;
     
+    UIButton *b = self.requestButtons[[self.requestIDs indexOfObject:QR_ID]];
+    
+    [self.view bringSubviewToFront:self.scanTipView];
+    self.scanTipView.center = CGPointMake(self.scanTipView.center.x,
+                                          b.frame.origin.y + 10 - self.scanTipView.frame.size.height/2);
+    
+    [UIView animateWithDuration:UINavigationControllerHideShowBarDuration animations:^{
+        self.scanTipView.alpha = 1.0;
+    }];
+}
+
+- (IBAction)next:(id)sender
+{
+    [self nextTip];
 }
 
 - (IBAction)doIt:(id)sender
 {
+    if ([self nextTip]) return;
+
     self.selectedIndex = [self.requestButtons indexOfObject:sender];
     
     if (self.selectedIndex == NSNotFound) {

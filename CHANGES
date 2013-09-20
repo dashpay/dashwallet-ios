@@ -12,5 +12,5 @@ v0.2:
 
 v0.2.1:
 
-- improved url handling
-- additional unit tests
+- improved bitcoin url handling
+- info buttons with usage tips

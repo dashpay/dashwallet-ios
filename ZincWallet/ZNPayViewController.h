@@ -29,4 +29,6 @@
 
 @interface ZNPayViewController : UIViewController<UIAlertViewDelegate, ZBarReaderDelegate>//, GKSessionDelegate>
 
+- (BOOL)hideTips;
+
 @end

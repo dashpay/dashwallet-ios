@@ -35,6 +35,7 @@
 @property (nonatomic, strong) IBOutlet UILabel *label;
 @property (nonatomic, strong) IBOutlet UIButton *infoButton;
 @property (nonatomic, strong) IBOutlet UIImageView *qrView;
+@property (nonatomic, strong) IBOutlet UIView *qrTipView, *addressTipView, *pageTipView, *balanceTipView;
 @property (nonatomic, strong) IBOutlet ZNButton *addressButton;
 
 @end
@@ -62,6 +63,13 @@
     [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
 }
 
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [self hideTips];
+    
+    [super viewWillDisappear:animated];
+}
+
 - (ZNPaymentRequest *)paymentRequest
 {
     return [ZNPaymentRequest requestWithString:self.paymentAddress];
@@ -72,15 +80,65 @@
     return [[ZNWallet sharedInstance] receiveAddress];
 }
 
+- (BOOL)nextTip
+{
+    if (self.qrTipView.alpha < 0.5 && self.addressTipView.alpha < 0.5 && self.balanceTipView.alpha < 0.5 &&
+        self.pageTipView.alpha < 0.5) return NO;
+
+    [UIView animateWithDuration:UINavigationControllerHideShowBarDuration animations:^{
+        if (self.qrTipView.alpha > 0.5) {
+            self.qrTipView.alpha = 0.0;
+            self.addressTipView.alpha = 1.0;
+        }
+        else if (self.addressTipView.alpha > 0.5) {
+            self.addressTipView.alpha = 0.0;
+            self.qrView.alpha = 1.0;
+            self.balanceTipView.alpha = 1.0;
+        }
+        else if (self.balanceTipView.alpha > 0.5) {
+            self.balanceTipView.alpha = 0.0;
+            self.pageTipView.alpha = 1.0;
+        }
+        else if (self.pageTipView.alpha > 0.5) self.pageTipView.alpha = 0.0;
+    }];
+    
+    return YES;
+}
+
+- (BOOL)hideTips
+{
+    if (self.qrTipView.alpha < 0.5 && self.addressTipView.alpha < 0.5 && self.balanceTipView.alpha < 0.5 &&
+        self.pageTipView.alpha < 0.5) return NO;
+    
+    [UIView animateWithDuration:UINavigationControllerHideShowBarDuration animations:^{
+        self.qrTipView.alpha = self.addressTipView.alpha = self.balanceTipView.alpha = self.pageTipView.alpha = 0.0;
+        self.qrView.alpha = 1.0;
+    }];
+    
+    return YES;
+}
+
 #pragma mark - IBAction
 
 - (IBAction)info:(id)sender
 {
-    
+    if ([self nextTip]) return;
+
+    [UIView animateWithDuration:UINavigationControllerHideShowBarDuration animations:^{
+        self.qrView.alpha = 0.5;
+        self.qrTipView.alpha = 1.0;
+    }];
+}
+
+- (IBAction)next:(id)sender
+{
+    [self nextTip];
 }
 
 - (IBAction)address:(id)sender
 {
+    if ([self nextTip]) return;
+
     UIActionSheet *a = [UIActionSheet new];
     
     a.title = [@"Receive bitcoins at this address: " stringByAppendingString:self.paymentAddress];
@@ -95,6 +153,8 @@
     
     [a showInView:[[UIApplication sharedApplication] keyWindow]];
 }
+
+#pragma mark - UIResponderStandardEditActions
 
 #pragma mark - UIActionSheetDelegate
 

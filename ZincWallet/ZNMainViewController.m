@@ -40,7 +40,7 @@
 @property (nonatomic, strong) IBOutlet UIScrollView *scrollView;
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
 @property (nonatomic, strong) IBOutlet UIPageControl *pageControl;
-@property (nonatomic, strong) IBOutlet UIBarButtonItem *refreshButton;
+@property (nonatomic, strong) IBOutlet UIBarButtonItem *settingsButton, *refreshButton;
 @property (nonatomic, strong) IBOutlet UIActivityIndicatorView *spinner;
 
 @property (nonatomic, strong) ZNPayViewController *payController;
@@ -64,6 +64,11 @@
     self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     self.spinner.frame =
         CGRectMake(self.spinner.frame.origin.x, self.spinner.frame.origin.y, 20.0, self.spinner.frame.size.height);
+    self.spinner.accessibilityLabel = @"synchornizing";
+    
+    self.settingsButton.accessibilityLabel = @"settings";
+    self.refreshButton.accessibilityLabel = @"synchronize";
+    self.pageControl.accessibilityLabel = @"receive money";
     
     self.wallpaperStart = self.wallpaper.center;
     
@@ -265,14 +270,22 @@
         self.pageControl.currentPage == self.scrollView.contentOffset.x/self.scrollView.frame.size.width + 0.5) return;
     
     [self.scrollView setContentOffset:CGPointMake(self.pageControl.currentPage*self.scrollView.frame.size.width, 0)
-                             animated:YES];
+     animated:YES];
 }
 
 #pragma mark - UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
-    self.pageControl.currentPage = scrollView.contentOffset.x/scrollView.frame.size.width + 0.5;
+    NSInteger page = scrollView.contentOffset.x/scrollView.frame.size.width + 0.5;
+    
+    if (self.pageControl.currentPage != page) {
+        self.pageControl.currentPage = scrollView.contentOffset.x/scrollView.frame.size.width + 0.5;
+        self.pageControl.accessibilityLabel = page ? @"send money" : @"receive money";
+        
+        [(id)(page ? self.payController : self.receiveController) hideTips];
+    }
+    
     self.wallpaper.center = CGPointMake(self.wallpaperStart.x - scrollView.contentOffset.x*PARALAX_RATIO,
                                         self.wallpaperStart.y);
 }

@@ -39,11 +39,15 @@
     
     //TODO: digitally sign every source release
     
-    //TODO: upgrade openssl (and other libs) to latest
-    
     //TODO: implement pin code
 
     //TODO: network status indicator perferrably tied to websocket status
+    
+    //TODO: SPV mode (with a build option limiting it to one or two trusted peers for app store compatibility)
+    
+    //TODO: accessibility for the visually impaired
+    
+    //TODO: internationalization
     
     // this will notify user if bluetooth is disabled (on 4S and newer devices that support BTLE)
     //CBCentralManager *cbManager = [[CBCentralManager alloc] initWithDelegate:self queue:dispatch_get_main_queue()];

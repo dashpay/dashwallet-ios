@@ -301,7 +301,7 @@ static NSData *getKeychainData(NSString *key)
     __block NSMutableArray *gap = [NSMutableArray array];
     
     // a recursive block ARC retain loop is avoided by passing the block as an argument to itself... just shoot me now
-    __block void (^completion)(NSError *, id) = ^(NSError *error, id completion) {
+    __block void (^completion)(NSError *, id) = ^(NSError *error, void (^completion)(NSError *, id)) {
         if (error) {
             _synchronizing = NO;
             [NSManagedObject saveContext];
@@ -323,7 +323,7 @@ static NSData *getKeychainData(NSString *key)
 
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [self queryAddresses:gap completion:^(NSError *error) {
-                        ((void (^)(NSError *, id))completion)(error, completion);
+                        completion(error, completion);
                     }];
                 });
             });
