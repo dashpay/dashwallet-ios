@@ -24,11 +24,10 @@
 //  THE SOFTWARE.
 
 #import "ZNTransaction.h"
-#import "ZNWallet.h"
+#import "ZNKey.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSData+Hash.h"
 #import "NSString+Base58.h"
-#import "ZNKey.h"
 
 #define TX_VERSION      0x00000001u
 #define TX_LOCKTIME     0x00000000u

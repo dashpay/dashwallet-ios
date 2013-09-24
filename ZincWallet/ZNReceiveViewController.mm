@@ -61,6 +61,11 @@
                          imageDimension:self.qrView.frame.size.width];
     
     [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
+    
+#if APPSTORE_VERSION
+    self.label.text =
+        [[NSUserDefaults standardUserDefaults] boolForKey:WEBAPP_ENABLED_KEY] ? @"receive money:" : @"bitcoin address:";
+#endif
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -120,6 +125,11 @@
 
 #pragma mark - IBAction
 
+- (IBAction)swipeRight:(id)sender
+{
+    [self.parentViewController performSelector:@selector(page:) withObject:nil];
+}
+
 - (IBAction)info:(id)sender
 {
     if ([self nextTip]) return;
@@ -153,8 +163,6 @@
     
     [a showInView:[[UIApplication sharedApplication] keyWindow]];
 }
-
-#pragma mark - UIResponderStandardEditActions
 
 #pragma mark - UIActionSheetDelegate
 

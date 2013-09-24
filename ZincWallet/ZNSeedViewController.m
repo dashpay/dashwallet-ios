@@ -32,10 +32,9 @@
 @interface ZNSeedViewController ()
 
 //TODO: create a secure version of UILabel and use it for seedLabel
-@property (nonatomic, strong) IBOutlet UILabel *seedLabel, *compatiblityLabel, *exportLabel;
+@property (nonatomic, strong) IBOutlet UILabel *seedLabel, *warningLabel, *compatiblityLabel, *exportLabel;
 @property (nonatomic, strong) IBOutlet UIView *labelFrame;
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper, *logo;
-@property (nonatomic, strong) IBOutletCollection(UILabel) NSArray *otherLabels;
 
 @property (nonatomic, strong) id resignActiveObserver;
 
@@ -49,6 +48,10 @@
     // Do any additional setup after loading the view.
     
     self.wallpaper.hidden = (self.navigationController.viewControllers[0] != self) ? YES : NO;
+    
+#if APPSTORE_VERSION
+    self.warningLabel.text = @"WRITE IT DOWN and keep it safe. Lose it and you may lose your wallet forever.";
+#endif
     
     self.resignActiveObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil

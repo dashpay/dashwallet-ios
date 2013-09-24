@@ -43,7 +43,7 @@
 
     //TODO: network status indicator perferrably tied to websocket status
     
-    //TODO: SPV mode (with a build option limiting it to one or two trusted peers for app store compatibility)
+    //TODO: SPV mode (note: SPV mode is not p2p since no traffic is relayed to other nodes)
     
     //TODO: accessibility for the visually impaired
     
@@ -66,7 +66,7 @@ annotation:(id)annotation
         u = [NSURL URLWithString:[NSString stringWithFormat:@"%@://%@", u.scheme, u.resourceSpecifier]];
     }
 
-    if (! [u.scheme isEqual:@"bitcoin"]) {
+    if (! [u.scheme isEqual:@"bitcoin"] && ! [u.scheme isEqual:@"zinc"]) {
         [[[UIAlertView alloc] initWithTitle:@"Not a bitcoin URL" message:url.absoluteString delegate:nil
           cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
         return NO;

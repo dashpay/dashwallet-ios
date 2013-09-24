@@ -27,7 +27,7 @@
 
 @implementation ZNStoryboardSegue
 
-+ (void)segueFrom:(UIViewController *)from to:(UIViewController *)to
++ (void)segueFrom:(UIViewController *)from to:(UIViewController *)to completion:(void (^)())completion
 {
     to.view.center = CGPointMake(to.view.center.x + to.view.frame.size.width, to.view.center.y);
     [from.view.superview addSubview:to.view];
@@ -54,12 +54,14 @@
             [from.navigationController.delegate navigationController:from.navigationController didShowViewController:to
              animated:YES];
         }
+        
+        if (completion) completion();
     }];
 }
 
 - (void)perform
 {
-    [[self class] segueFrom:self.sourceViewController to:self.destinationViewController];
+    [[self class] segueFrom:self.sourceViewController to:self.destinationViewController completion:nil];
 }
 
 @end

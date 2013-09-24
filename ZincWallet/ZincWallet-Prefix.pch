@@ -4,8 +4,8 @@
 
 #import <Availability.h>
 
-#ifndef __IPHONE_5_0
-#warning "This project uses features only available in iOS SDK 5.0 and later."
+#ifndef __IPHONE_7_0
+#warning "This project uses features only available in iOS SDK 7.0 and later."
 #endif
 
 #ifdef __OBJC__
@@ -16,13 +16,20 @@
 #endif
 
 #define APPSTORE_VERSION       1
-#define GK_SESSION_ID          @"cc.zinc.ZincWallet"
-#define BTC                    @"\xC9\x83" // capital B with stroke
+#define WEBAPP_ENABLED_KEY     @"WEBAPP_ENABLED"
+#define WEBAPP_BASEURL         @"https://zinc.herokuapp.com"
+#define WEBAPP_PATH            @"/tx"
+#define GK_SESSION_ID          @"cc.zinc.zinc"
+#define BTC                    @"\xC9\x83" // capital B with stroke (utf-8 encoded)
 #define SATOSHIS               100000000.0
 #define DEFAULT_SYNC_INTERVAL  300
 #define PARALAX_RATIO          0.25
 #define SEGUE_DURATION         0.3
 #define bitcoinURLNotification @"bitcoinURLNotification"
+
+#if ! DEBUG
+#define NSLog(...)
+#endif
 
 // defines for building third party libs
 

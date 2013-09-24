@@ -47,7 +47,7 @@
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    
+        
     [self.navigationController.navigationBar
      setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor whiteColor],
                               NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue" size:17.0]}];
@@ -143,6 +143,11 @@ didShowViewController:(UIViewController *)viewController animated:(BOOL)animated
 - (void)navigationController:(UINavigationController *)navigationController
 willShowViewController:(UIViewController *)viewController animated:(BOOL)animated
 {
+#if APPSTORE_VERSION
+    [(id)[viewController.view viewWithTag:911]
+     setText:@"KEEP IT SECRET. Anyone who sees your backup phrase can access your wallet."];
+#endif
+
     if (! animated) return;
 
     [UIView animateWithDuration:SEGUE_DURATION animations:^{

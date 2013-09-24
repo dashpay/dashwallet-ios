@@ -381,6 +381,12 @@
 {
     //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
 
+    static NSString *warning = @"DO NOT let anyone see your backup phrase or they can spend your bitcoins.";
+
+#if APPSTORE_VERSION
+    warning = @"DO NOT let anyone see your backup phrase or they can access your wallet.";
+#endif
+
     switch (indexPath.section) {
         case 0:
             //TODO: show transaction details
@@ -390,13 +396,14 @@
             switch (indexPath.row) {
                 case 0:                    
                     [ZNStoryboardSegue segueFrom:self
-                     to:[self.storyboard instantiateViewControllerWithIdentifier:@"ZNAboutViewController"]];
+                     to:[self.storyboard instantiateViewControllerWithIdentifier:@"ZNAboutViewController"]
+                     completion:nil];
                     break;
                     
                 case 1:
-                    [[[UIAlertView alloc] initWithTitle:@"WARNING" message:@"DO NOT let anyone see your backup phrase "
-                      "or they can spend your bitcoins." delegate:self cancelButtonTitle:@"cancel"
-                      otherButtonTitles:@"show", nil] show];
+                    [[[UIAlertView alloc] initWithTitle:@"WARNING" message:warning delegate:self
+                      cancelButtonTitle:@"cancel" otherButtonTitles:@"show", nil] show];
+
                     break;
                     
                 default:
@@ -446,7 +453,7 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
     }
     
     [ZNStoryboardSegue segueFrom:self
-     to:[self.storyboard instantiateViewControllerWithIdentifier:@"ZNSeedViewController"]];
+     to:[self.storyboard instantiateViewControllerWithIdentifier:@"ZNSeedViewController"] completion:nil];
 }
 
 @end

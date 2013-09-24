@@ -17,7 +17,7 @@
                                 <rect key="frame" x="-40" y="0.0" width="480" height="568"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                             </imageView>
-                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" directionalLockEnabled="YES" alwaysBounceHorizontal="YES" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" indicatorStyle="white" delaysContentTouches="NO" bouncesZoom="NO" id="FiH-S7-Ich">
+                            <scrollView multipleTouchEnabled="YES" contentMode="scaleToFill" directionalLockEnabled="YES" alwaysBounceHorizontal="YES" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" indicatorStyle="white" delaysContentTouches="NO" bouncesZoom="NO" id="FiH-S7-Ich">
                                 <rect key="frame" x="0.0" y="49" width="320" height="499"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
@@ -386,7 +386,7 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                         <color key="shadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                         <size key="shadowOffset" width="0.0" height="1"/>
                                     </label>
-                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="KEEP IT SECRET. Anyone who sees your backup phrase can spend your bitcoins." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="4zT-au-gLS">
+                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="911" contentMode="left" text="KEEP IT SECRET. Anyone who sees your backup phrase can spend your bitcoins." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="4zT-au-gLS">
                                         <rect key="frame" x="12" y="52" width="296" height="42"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="16"/>
@@ -1301,8 +1301,8 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                 <rect key="frame" x="0.0" y="111" width="320" height="347"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <subviews>
-                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="receive money:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Lel-6K-GPE">
-                                        <rect key="frame" x="100" y="7" width="133" height="21"/>
+                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="receive money:" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Lel-6K-GPE">
+                                        <rect key="frame" x="25" y="7" width="192" height="21"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
                                         <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
@@ -1310,7 +1310,7 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                         <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         <size key="shadowOffset" width="0.0" height="1"/>
                                     </label>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" reversesTitleShadowWhenHighlighted="YES" adjustsImageWhenHighlighted="NO" lineBreakMode="middleTruncation" id="q5B-K9-E8f">
+                                    <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" reversesTitleShadowWhenHighlighted="YES" adjustsImageWhenHighlighted="NO" lineBreakMode="middleTruncation" id="q5B-K9-E8f">
                                         <rect key="frame" x="209" y="1" width="35" height="35"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <accessibility key="accessibilityConfiguration" label="info"/>
@@ -1345,6 +1345,7 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="jE8-Jd-YjS" customClass="ZNButton">
                                         <rect key="frame" x="15" y="304" width="290" height="40"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                                        <gestureRecognizers/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="15"/>
                                         <size key="titleShadowOffset" width="0.0" height="1"/>
                                         <state key="normal" title="1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW">
@@ -1361,6 +1362,7 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                         </state>
                                         <connections>
                                             <action selector="address:" destination="toP-Vb-grN" eventType="touchUpInside" id="WiK-uh-2Lh"/>
+                                            <outletCollection property="gestureRecognizers" destination="e3X-u0-2D8" appends="YES" id="C0U-VH-TuB"/>
                                         </connections>
                                     </button>
                                     <view alpha="0.0" contentMode="scaleToFill" id="a2s-Ru-Qlx">
@@ -1375,7 +1377,7 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="ym7-Qy-8hs">
                                                 <rect key="frame" x="10" y="24" width="280" height="70"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                <string key="text">Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transfering them to this address. </string>
+                                                <string key="text">Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to this address. </string>
                                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
                                                 <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 <nil key="highlightedColor"/>
@@ -1426,16 +1428,16 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </view>
                             <view alpha="0.0" contentMode="scaleToFill" id="RFd-H1-tiW">
-                                <rect key="frame" x="10" y="503" width="300" height="57"/>
+                                <rect key="frame" x="36" y="503" width="247" height="57"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <subviews>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble-down.png" id="xLq-nh-L4O">
-                                        <rect key="frame" x="0.0" y="0.0" width="300" height="57"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="247" height="57"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <rect key="contentStretch" x="0.0" y="0.5" width="1" height="0.0"/>
                                     </imageView>
                                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tap or swipe right to send money." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="WiJ-q1-nJn">
-                                        <rect key="frame" x="10" y="15" width="280" height="18"/>
+                                        <rect key="frame" x="10" y="15" width="227" height="18"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -1469,6 +1471,11 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                         <action selector="next:" destination="toP-Vb-grN" id="nUf-R5-K81"/>
                     </connections>
                 </tapGestureRecognizer>
+                <swipeGestureRecognizer direction="right" id="e3X-u0-2D8">
+                    <connections>
+                        <action selector="swipeRight:" destination="toP-Vb-grN" id="oHW-UX-ODR"/>
+                    </connections>
+                </swipeGestureRecognizer>
             </objects>
             <point key="canvasLocation" x="1254" y="326"/>
         </scene>
@@ -1997,9 +2004,7 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                         <outlet property="logo" destination="gZK-WH-4nS" id="4Ki-Fi-VKg"/>
                         <outlet property="seedLabel" destination="G6I-gf-wQK" id="xZ9-MU-iLm"/>
                         <outlet property="wallpaper" destination="19u-ww-OAk" id="OCl-Ct-Aq2"/>
-                        <outletCollection property="otherLabels" destination="SHe-lM-jN1" id="9fO-1c-Bf8"/>
-                        <outletCollection property="otherLabels" destination="0Dr-uM-kcV" id="0n9-kY-7eN"/>
-                        <outletCollection property="otherLabels" destination="u8B-dk-OsH" id="QAU-Vd-lER"/>
+                        <outlet property="warningLabel" destination="u8B-dk-OsH" id="Kft-5L-QqL"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="FoE-LD-Loz" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -2014,15 +2019,15 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="send money:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="2uc-By-E6L">
-                                <rect key="frame" x="106" y="274" width="118" height="21"/>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="send money:" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="2uc-By-E6L">
+                                <rect key="frame" x="25" y="200" width="182" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
                                 <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" reversesTitleShadowWhenHighlighted="YES" adjustsImageWhenHighlighted="NO" lineBreakMode="middleTruncation" id="W1s-0j-rRa">
-                                <rect key="frame" x="200" y="268" width="35" height="35"/>
+                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" reversesTitleShadowWhenHighlighted="YES" adjustsImageWhenHighlighted="NO" lineBreakMode="middleTruncation" id="W1s-0j-rRa">
+                                <rect key="frame" x="200" y="194" width="35" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <accessibility key="accessibilityConfiguration" label="info"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="13"/>
@@ -2073,16 +2078,16 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </view>
                             <view alpha="0.0" contentMode="scaleToFill" id="4dO-wk-1CZ">
-                                <rect key="frame" x="10" y="433" width="300" height="57"/>
+                                <rect key="frame" x="34" y="433" width="252" height="57"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <subviews>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble-down.png" id="00b-EO-ZdR">
-                                        <rect key="frame" x="0.0" y="0.0" width="300" height="57"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="252" height="57"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <rect key="contentStretch" x="0.0" y="0.5" width="1" height="0.0"/>
                                     </imageView>
                                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tap or swipe left to receive money." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="sAS-rN-tSI">
-                                        <rect key="frame" x="10" y="15" width="280" height="18"/>
+                                        <rect key="frame" x="10" y="15" width="232" height="18"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -2091,6 +2096,21 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </view>
+                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="TK3-Fu-ugy" customClass="ZNButton">
+                                <rect key="frame" x="20" y="228" width="280" height="44"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                <gestureRecognizers/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
+                                <state key="normal" title="send transfers at zincwallet.com">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="page:" destination="Th9-g2-TJH" eventType="touchDragExit" id="7xU-FN-f6Z"/>
+                                    <action selector="page:" destination="Th9-g2-TJH" eventType="touchDragInside" id="9eh-TQ-fHY"/>
+                                    <action selector="webApp:" destination="Th9-g2-TJH" eventType="touchUpInside" id="xOS-rQ-YQw"/>
+                                    <outletCollection property="gestureRecognizers" destination="9Vl-hC-FNy" appends="YES" id="hHW-Vv-V6l"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <gestureRecognizers/>
@@ -2105,6 +2125,7 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                         <outlet property="label" destination="2uc-By-E6L" id="X85-Zw-frc"/>
                         <outlet property="pageTipView" destination="4dO-wk-1CZ" id="7en-IT-WSh"/>
                         <outlet property="scanTipView" destination="DsE-9b-9pv" id="EW2-7J-IdN"/>
+                        <outlet property="webAppButton" destination="TK3-Fu-ugy" id="6HY-Ae-WgI"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="t9V-Er-6VR" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -2113,6 +2134,11 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                         <action selector="next:" destination="Th9-g2-TJH" id="y6f-Ip-qGh"/>
                     </connections>
                 </tapGestureRecognizer>
+                <swipeGestureRecognizer direction="left" id="9Vl-hC-FNy">
+                    <connections>
+                        <action selector="swipeLeft:" destination="Th9-g2-TJH" id="jnU-Er-zYH"/>
+                    </connections>
+                </swipeGestureRecognizer>
             </objects>
             <point key="canvasLocation" x="832" y="326"/>
         </scene>

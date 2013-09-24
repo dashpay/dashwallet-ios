@@ -266,6 +266,14 @@
 
 - (IBAction)page:(id)sender
 {
+    if (! sender) {
+        [self.scrollView
+         setContentOffset:CGPointMake((1 - self.pageControl.currentPage)*self.scrollView.frame.size.width, 0)
+         animated:YES];
+
+        return;
+    }
+
     if ([self.scrollView isTracking] || [self.scrollView isDecelerating] ||
         self.pageControl.currentPage == self.scrollView.contentOffset.x/self.scrollView.frame.size.width + 0.5) return;
     

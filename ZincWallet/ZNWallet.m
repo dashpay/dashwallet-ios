@@ -51,10 +51,11 @@
 #import "ZNElectrumSequence.h"
 #endif
 
-#define BASE_URL       @"https://blockchain.info"
+#define BASE_URL      @"https://blockchain.info"
 #define UNSPENT_URL   BASE_URL "/unspent?active="
 #define ADDRESS_URL   BASE_URL "/multiaddr?active="
 #define PUSHTX_PATH   @"/pushtx"
+#define BTC           @"\xC9\x83"     // capital B with stroke (utf-8 encoded)
 #define CURRENCY_SIGN @"\xC2\xA4"     // generic currency sign (utf-8)
 #define NBSP          @"\xC2\xA0"     // no-break space (utf-8)
 #define NARROW_NBSP   @"\xE2\x80\xAF" // narrow no-break space (utf-8)
@@ -723,7 +724,7 @@ static NSData *getKeychainData(NSString *key)
     return ret;
 }
 
-#pragma mark - ZNTransaction helpers
+#pragma mark - transactions
 
 - (ZNTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee
 {
@@ -733,6 +734,7 @@ static NSData *getKeychainData(NSString *key)
 
     [tx addOutputAddress:address amount:amount];
 
+    //TODO: make sure transaction is less than TX_MAX_SIZE
     //TODO: optimize for free transactions (watch out for performance issues, nothing O(n^2) please)
     // this is a nieve implementation to just get it functional, sorts unspent outputs by oldest first
     [[ZNUnspentOutputEntity objectsSortedBy:@"txIndex" ascending:YES]
@@ -759,71 +761,6 @@ static NSData *getKeychainData(NSString *key)
     }
     
     return tx;
-}
-
-// returns the estimated time in seconds until the transaction will be processed without a fee.
-// this is based on the default satoshi client settings, but on the real network it's way off. in testing, a 0.01btc
-// transaction with a 90 day time until free was confirmed in under an hour by Eligius pool.
-- (NSTimeInterval)timeUntilFree:(ZNTransaction *)transaction
-{
-    // TODO: calculate estimated time based on the median priority of free transactions in last 144 blocks (24hrs)
-    NSMutableArray *amounts = [NSMutableArray array], *heights = [NSMutableArray array];
-    NSUInteger currentHeight = [_defs integerForKey:LATEST_BLOCK_HEIGHT_KEY];
-    
-    if (! currentHeight) return DBL_MAX;
-    
-    // get the heights (which block in the blockchain it's in) of all the transaction inputs
-    [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        ZNUnspentOutputEntity *o = [ZNUnspentOutputEntity objectsMatching:@"txHash == %@ && n == %d",
-                                    transaction.inputHashes[idx], [transaction.inputIndexes[idx] intValue]].lastObject;
-
-        if (o) {
-            [amounts addObject:@(o.value)];
-            [heights addObject:@(currentHeight - o.confirmations)];
-        }
-        else *stop = YES;
-    }];
-
-    NSUInteger height = [transaction blockHeightUntilFreeForAmounts:amounts withBlockHeights:heights];
-    
-    if (height == NSNotFound) return DBL_MAX;
-    
-    currentHeight = [self estimatedCurrentBlockHeight];
-    
-    return height > currentHeight + 1 ? (height - currentHeight)*600 : 0;
-}
-
-// retuns the total amount of the trasaction including any fees
-- (uint64_t)transactionAmount:(ZNTransaction *)transaction
-{
-    __block uint64_t amount = 0;
-    
-    [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        ZNUnspentOutputEntity *o = [ZNUnspentOutputEntity objectsMatching:@"txHash == %@ && n == %d",
-                                    transaction.inputHashes[idx], [transaction.inputIndexes[idx] intValue]].lastObject;
-        
-        if (! o) {
-            amount = 0;
-            *stop = YES;
-        }
-        else amount += o.value;
-    }];
-
-    return amount;
-}
-
-// returns the transaction fee for the given transaction
-- (uint64_t)transactionFee:(ZNTransaction *)transaction
-{
-    __block uint64_t amount = [self transactionAmount:transaction];
-
-    if (amount == 0) return UINT64_MAX;
-    
-    [transaction.outputAmounts enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        amount -= [obj unsignedLongLongValue];
-    }];
-    
-    return amount;
 }
 
 - (BOOL)signTransaction:(ZNTransaction *)transaction
@@ -877,6 +814,8 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
             return;
         }
         
+        //TODO: make sure not to create a transaction larger than TX_MAX_SIZE
+        
         __block uint64_t balance = 0, standardFee = 0;
         ZNTransaction *tx = [ZNTransaction new];
         
@@ -929,11 +868,9 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
     }
     
     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncStartedNotification object:nil];
-    
-    AFHTTPClient *client = [AFHTTPClient clientWithBaseURL:[NSURL URLWithString:BASE_URL]];
 
-    [client postPath:PUSHTX_PATH parameters:@{@"tx":[transaction toHex]}
-    success:^(AFHTTPRequestOperation *operation, id responseObject) {        
+    [[AFHTTPClient clientWithBaseURL:[NSURL URLWithString:BASE_URL]] postPath:PUSHTX_PATH
+    parameters:@{@"tx":[transaction toHex]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NOTE: successful response is "Transaction submitted", maybe we should check for that
         NSLog(@"responseObject: %@", responseObject);
         NSLog(@"response:\n%@", operation.responseString);

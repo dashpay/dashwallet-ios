@@ -26,20 +26,21 @@
 #import "ZNPayViewController.h"
 #import "ZNAmountViewController.h"
 #import "ZNWallet.h"
+#import "ZNWallet+Transaction.h"
 #import "ZNPaymentRequest.h"
 #import "ZNKey.h"
 #import "ZNTransaction.h"
 #import "ZNButton.h"
 #import "ZNStoryboardSegue.h"
-#import <QuartzCore/QuartzCore.h>
 #import "NSString+Base58.h"
 #import "MBProgressHUD.h"
-
-#define BUTTON_HEIGHT 44.0
-#define BUTTON_MARGIN 10.0
+#import "AFNetworking.h"
+#import "NSData+SRB64Additions.h"
+#import <QuartzCore/QuartzCore.h>
 
 //#define CONNECT_TIMEOUT 5.0
-
+#define BUTTON_HEIGHT   44.0
+#define BUTTON_MARGIN   10.0
 #define CLIPBOARD_ID    @"clipboard"
 #define QR_ID           @"qr"
 #define URL_ID          @"url"
@@ -55,13 +56,12 @@
 @property (nonatomic, strong) NSString *addressInWallet;
 @property (nonatomic, strong) id urlObserver, activeObserver;
 @property (nonatomic, strong) ZNTransaction *sweepTx;
+@property (nonatomic, strong) ZBarReaderViewController *zbarController;
 
 @property (nonatomic, strong) IBOutlet UILabel *label;
 @property (nonatomic, strong) IBOutlet UIButton *infoButton;
 @property (nonatomic, strong) IBOutlet UIView *scanTipView, *clipboardTipView, *pageTipView;
-
-@property (nonatomic, strong) ZBarReaderViewController *zbarController;
-//@property (nonatomic, strong) Reachability *reachability;
+@property (nonatomic, strong) IBOutlet ZNButton *webAppButton;
 
 @end
 
@@ -75,8 +75,8 @@
     //TODO: add a field for manually entering a payment address
     //TODO: make title use dynamic font size
     //BUG: clipboard button title is offcenter (ios7 specific font layout bug?)
-    ZNPaymentRequest *req = [ZNPaymentRequest new];
     ZNWallet *w = [ZNWallet sharedInstance];
+    ZNPaymentRequest *req = [ZNPaymentRequest new];
     
     req.label = @"scan QR code";
     
@@ -84,10 +84,13 @@
     self.requestIDs = [NSMutableArray arrayWithObject:QR_ID];
     self.requestButtons = [NSMutableArray array];
     self.selectedIndex = NSNotFound;
+    self.webAppButton.style = ZNButtonStyleBlue;
+    self.webAppButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:17];
     
     self.urlObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:bitcoinURLNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
+            //TODO: handle zinc: urls
             ZNPaymentRequest *req = [ZNPaymentRequest requestWithURL:note.userInfo[@"url"]];
         
             if (! req.label.length) req.label = req.paymentAddress;
@@ -110,6 +113,9 @@
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
+            //TODO: if a tx was sent to safari and we returned to the app not from a zinc: url, something went wrong,
+            // so fall back on sending from within the app
+        
             [self layoutButtonsAnimated:YES]; // check the clipboard for changes
         }];
     
@@ -146,7 +152,7 @@
     [super viewWillDisappear:animated];
 }
 
-- (void)layoutButtonsAnimated:(BOOL)animated
+- (void)checkClipboard
 {
     ZNWallet *w = [ZNWallet sharedInstance];
     ZNPaymentRequest *req = [ZNPaymentRequest requestWithString:[[UIPasteboard generalPasteboard] string]];
@@ -173,10 +179,17 @@
         [self.requests addObject:req];
         [self.requestIDs addObject:CLIPBOARD_ID];
     }
+}
+
+- (void)layoutButtonsAnimated:(BOOL)animated
+{
+    [self checkClipboard];
 
     while (self.requests.count > self.requestButtons.count) {
         ZNButton *button = [ZNButton buttonWithType:UIButtonTypeCustom];
-
+        UISwipeGestureRecognizer *g = [[UISwipeGestureRecognizer alloc] initWithTarget:self
+                                       action:@selector(swipeLeft:)];
+        
         button.style = ZNButtonStyleBlue;
         button.imageEdgeInsets = UIEdgeInsetsMake(0, -10, 0, 10);
         button.alpha = animated ? 0 : 1;
@@ -185,6 +198,10 @@
                        (BUTTON_HEIGHT + BUTTON_MARGIN*2)*(self.requestButtons.count - self.requests.count/2.0 - 0.5),
                        self.view.frame.size.width - BUTTON_MARGIN*4, BUTTON_HEIGHT);
         [button addTarget:self action:@selector(doIt:) forControlEvents:UIControlEventTouchUpInside];
+
+        g.cancelsTouchesInView = YES;
+        g.direction = UISwipeGestureRecognizerDirectionLeft;
+        [button addGestureRecognizer:g];
         [self.view addSubview:button];
         [self.requestButtons addObject:button];
     }
@@ -249,6 +266,85 @@
             [self.requestButtons removeLastObject];
         }
     }
+    
+#if APPSTORE_VERSION
+    if (! [[NSUserDefaults standardUserDefaults] boolForKey:WEBAPP_ENABLED_KEY]) {
+        [self.requestButtons enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            [obj setHidden:YES];
+        }];
+        
+        self.webAppButton.hidden = NO;
+        self.label.hidden = YES;
+        self.infoButton.hidden = YES;
+        
+        [[AFHTTPClient clientWithBaseURL:[NSURL URLWithString:WEBAPP_BASEURL]] getPath:WEBAPP_PATH parameters:nil
+        success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            [[NSUserDefaults standardUserDefaults] setBool:YES forKey:WEBAPP_ENABLED_KEY];
+            [self.requestButtons enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                [obj setHidden:NO];
+            }];
+            
+            self.webAppButton.hidden = YES;
+            self.label.hidden = NO;
+            self.infoButton.hidden = NO;
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {}];
+    }
+#endif
+}
+
+- (ZBarReaderViewController *)zbarController
+{
+    if (! _zbarController) {
+        _zbarController = [ZBarReaderViewController new];
+        _zbarController.readerDelegate = self;
+        _zbarController.cameraOverlayView =
+        [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"cameraguide.png"]];
+        
+        CGPoint c = _zbarController.view.center;
+        
+        _zbarController.cameraOverlayView.center = CGPointMake(c.x, c.y - 10.0);
+    }
+    
+    return _zbarController;
+}
+
+- (void)confirmTransaction:(ZNTransaction *)tx
+{
+    ZNWallet *w = [ZNWallet sharedInstance];
+    uint64_t txAmount = [w transactionAmount:tx] - [w transactionChange:tx];
+    NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:txAmount],
+                        [w localCurrencyStringForAmount:txAmount]];
+    
+#if APPSTORE_VERSION
+    [[AFHTTPClient clientWithBaseURL:[NSURL URLWithString:WEBAPP_BASEURL]] getPath:WEBAPP_PATH parameters:nil
+    success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        //TODO: verify webapp sha hash or signature
+        NSLog(@"signing transaction");
+        [w signTransaction:tx];
+        
+        if (! [tx isSigned]) {
+            [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:@"error signing bitcoin transaction"
+                                       delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+            self.selectedIndex = NSNotFound;
+            [self layoutButtonsAnimated:YES];
+            return;
+        }
+        
+        NSLog(@"signed transaction:\n%@", [tx toHex]);
+        
+        //TODO: check for duplicate transactions
+        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithFormat:WEBAPP_BASEURL
+         WEBAPP_PATH @"#%@|%@|%@", tx.toHex, [w transactionTo:tx], amount]]];
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        [[[UIAlertView alloc] initWithTitle:@"Confirm Payment" message:[w transactionTo:tx] delegate:self
+          cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
+    }];
+
+    return;
+#endif
+
+    [[[UIAlertView alloc] initWithTitle:@"Confirm Payment" message:[w transactionTo:tx] delegate:self
+      cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
 }
 
 - (void)confirmRequest:(ZNPaymentRequest *)request
@@ -283,7 +379,10 @@
         c.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                   [w localCurrencyStringForAmount:w.balance]];
         
-        [ZNStoryboardSegue segueFrom:self.navigationController.topViewController to:c];
+        self.view.superview.clipsToBounds = YES;
+        [ZNStoryboardSegue segueFrom:self.navigationController.topViewController to:c completion:^{
+            self.view.superview.clipsToBounds = NO;
+        }];
             
         self.selectedIndex = NSNotFound;
     }
@@ -306,36 +405,29 @@
         if (! txWithFee) fee = [w stringForAmount:tx.standardFee];
         
         if (! tx) {
-            [[[UIAlertView alloc] initWithTitle:@"Insuficient Funds" message:nil delegate:nil cancelButtonTitle:@"OK"
+            [[[UIAlertView alloc] initWithTitle:@"Insufficient Funds" message:nil delegate:nil cancelButtonTitle:@"OK"
               otherButtonTitles:nil] show];
             self.selectedIndex = NSNotFound;
         }
-        else if (t == DBL_MAX) {
-            [[[UIAlertView alloc] initWithTitle:@"transaction fee needed"
-              message:[NSString stringWithFormat:@"the bitcoin network needs a fee of %@ (%@) to send this payment",
+        else if (t > DBL_EPSILON) {//(t == DBL_MAX) {
+            [[[UIAlertView alloc] initWithTitle:nil//@"transaction fee"
+              message:[NSString stringWithFormat:@"the bitcoin network will receive a fee of %@ (%@)",
                        fee, localCurrencyFee] delegate:self cancelButtonTitle:@"cancel"
               otherButtonTitles:[NSString stringWithFormat:@"+ %@ (%@)", fee, localCurrencyFee], nil] show];
         }
-        else if (t > DBL_EPSILON) {
-            int minutes = t/60, hours = t/(60*60), days = t/(60*60*24);
-            NSString *time = [NSString stringWithFormat:@"%d %@%@", days ? days : (hours ? hours : minutes),
-                              days ? @"day" : (hours ? @"hour" : @"minutes"),
-                              days > 1 ? @"s" : (days == 0 && hours > 1 ? @"s" : @"")];
-            
-            [[[UIAlertView alloc]
-              initWithTitle:[NSString stringWithFormat:@"%@ (%@) transaction fee recommended", fee, localCurrencyFee]
-              message:[NSString stringWithFormat:@"estimated confirmation time with no fee: %@", time] delegate:self
-              cancelButtonTitle:nil otherButtonTitles:@"no fee",
-              [NSString stringWithFormat:@"+ %@ (%@)", fee, localCurrencyFee], nil] show];
-        }
-        else {            
-            NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:request.amount],
-                                [w localCurrencyStringForAmount:request.amount]];
-
-            [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
-              message:request.message ? request.message : request.paymentAddress delegate:self
-             cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
-        }
+//        else if (t > DBL_EPSILON) {
+//            int minutes = t/60, hours = t/(60*60), days = t/(60*60*24);
+//            NSString *time = [NSString stringWithFormat:@"%d %@%@", days ? days : (hours ? hours : minutes),
+//                              days ? @"day" : (hours ? @"hour" : @"minutes"),
+//                              days > 1 ? @"s" : (days == 0 && hours > 1 ? @"s" : @"")];
+//            
+//            [[[UIAlertView alloc]
+//              initWithTitle:[NSString stringWithFormat:@"%@ (%@) transaction fee recommended", fee, localCurrencyFee]
+//              message:[NSString stringWithFormat:@"estimated confirmation time with no fee: %@", time] delegate:self
+//              cancelButtonTitle:nil otherButtonTitles:@"no fee",
+//              [NSString stringWithFormat:@"+ %@ (%@)", fee, localCurrencyFee], nil] show];
+//        }
+        else [self confirmTransaction:tx];
     }
 }
 
@@ -415,6 +507,11 @@
 
 #pragma mark - IBAction
 
+- (IBAction)swipeLeft:(id)sender
+{
+    [self.parentViewController performSelector:@selector(page:) withObject:nil];
+}
+
 - (IBAction)info:(id)sender
 {
     if ([self nextTip]) return;
@@ -435,6 +532,11 @@
     [self nextTip];
 }
 
+- (IBAction)webApp:(id)sender
+{
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:WEBAPP_BASEURL]];
+}
+
 - (IBAction)doIt:(id)sender
 {
     if ([self nextTip]) return;
@@ -449,14 +551,6 @@
     if ([self.requestIDs[self.selectedIndex] isEqual:QR_ID]) {
         self.selectedIndex = NSNotFound;
 
-        self.zbarController = [ZBarReaderViewController new];
-        self.zbarController.readerDelegate = self;
-        self.zbarController.cameraOverlayView =
-            [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"cameraguide.png"]];
-        
-        CGPoint c = self.zbarController.view.center;
-        
-        self.zbarController.cameraOverlayView.center = CGPointMake(c.x, c.y - 10.0);
         [self.navigationController presentViewController:self.zbarController animated:YES completion:^{
             NSLog(@"present qr reader complete");
         }];
@@ -521,20 +615,14 @@
         if ([title hasPrefix:@"+ "]) tx = txWithFee;
         
         if (! tx) {
-            [[[UIAlertView alloc] initWithTitle:@"Insuficient Funds" message:nil delegate:nil cancelButtonTitle:@"OK"
+            [[[UIAlertView alloc] initWithTitle:@"Insufficient Funds" message:nil delegate:nil cancelButtonTitle:@"OK"
               otherButtonTitles:nil] show];
             self.selectedIndex = NSNotFound;
             [self layoutButtonsAnimated:YES];
             return;
         }
 
-        uint64_t total = request.amount + [w transactionFee:tx];
-        NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:total],
-                            [w localCurrencyStringForAmount:total]];
-
-        [[[UIAlertView alloc] initWithTitle:@"Confirm Payment"
-          message:request.message ? request.message : request.paymentAddress delegate:self
-          cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
+        [self confirmTransaction:tx];
         return;
     }
 
