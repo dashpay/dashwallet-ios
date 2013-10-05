@@ -238,11 +238,8 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 - (size_t)size
 {
     //TODO: not all keys come from this wallet (private keys can be swept), might cause a lower than standard tx fee
-#if WALLET_BIP32
     size_t sigSize = 149; // electrum seeds generate uncompressed keys, bip32 uses compressed
-#else
-    size_t sigSize = 181;
-#endif
+//    size_t sigSize = 181;
 
     return 8 + [NSMutableData sizeOfVarInt:self.hashes.count] + [NSMutableData sizeOfVarInt:self.addresses.count] +
            sigSize*self.hashes.count + 34*self.addresses.count;

@@ -26,6 +26,7 @@
 #import "ZNSettingsViewController.h"
 #import "ZNSeedViewController.h"
 #import "ZNWallet.h"
+#import "ZNWallet+Utils.h"
 #import "ZNTransactionEntity.h"
 #import "ZNTxInputEntity.h"
 #import "ZNTxOutputEntity.h"
@@ -223,7 +224,7 @@
                     textLabel.text = [w stringForAmount:received];
                     localCurrencyLabel.text =
                        [NSString stringWithFormat:@"(%@)", [w localCurrencyStringForAmount:received]];
-                    sentLabel.text = @"recieved";
+                    sentLabel.text = @"received";
                     sentLabel.textColor = [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
                 }
 
@@ -380,12 +381,7 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
-
     static NSString *warning = @"DO NOT let anyone see your backup phrase or they can spend your bitcoins.";
-
-#if APPSTORE_VERSION
-    warning = @"DO NOT let anyone see your backup phrase or they can access your wallet.";
-#endif
 
     switch (indexPath.section) {
         case 0:

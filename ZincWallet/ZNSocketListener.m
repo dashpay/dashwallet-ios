@@ -182,6 +182,42 @@ wasClean:(BOOL)wasClean
     }
 }
 
+// example utx JSON message
+//{
+//    op = utx;
+//    x = {
+//        hash = c11ab8aa71f558bd61266d72e270b30a6f687eadbbd3fdd3605657cfcd515fc7;
+//        inputs = (
+//            {
+//                "prev_out" = {
+//                    addr = 1NmG6o7MAbXhUWbtnKCF4dzh6k1erprkku;
+//                    type = 0;
+//                    value = 9974540;
+//                };
+//            }
+//        );
+//        "lock_time" = Unavailable;
+//        out = (
+//            {
+//                addr = 1EyuTKk7ayNdcepz7Es3T9fH8xYBuuq54g;
+//                type = 0;
+//                value = 1000000;
+//            },
+//            {
+//                addr = 17on1bqLCVWwd83kGkDBsyLRkJS8rK1Gjs;
+//                type = 0;
+//                value = 8974540;
+//            }
+//        );
+//        "relayed_by" = "127.0.0.1";
+//        size = 225;
+//        time = 1380848035;
+//        "tx_index" = 92141019;
+//        "vin_sz" = 1;
+//        "vout_sz" = 2;
+//    };
+//}
+
 // message will either be an NSString if the server is using text or NSData if the server is using binary.
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)msg;
 {
@@ -200,19 +236,63 @@ wasClean:(BOOL)wasClean
     NSString *op = JSON[@"op"];
     
     if ([op isEqual:@"utx"]) {
-        ZNTransactionEntity *tx = [ZNTransactionEntity updateOrCreateWithJSON:JSON[@"x"]];
+        __block ZNTransactionEntity *tx = [ZNTransactionEntity updateOrCreateWithJSON:JSON[@"x"]];
+        NSArray *inaddrs = [ZNAddressEntity objectsMatching:@"address IN %@", [tx.inputs valueForKey:@"address"]],
+                *outaddrs = [ZNAddressEntity objectsMatching:@"address IN %@", [tx.outputs valueForKey:@"address"]];
+        NSMutableArray *outputs = [[ZNUnspentOutputEntity objectsSortedBy:@"txIndex" ascending:YES] mutableCopy];
+        NSMutableArray *spent = [NSMutableArray array];
+
+        if (inaddrs.count == 0 && outaddrs.count == 0) { // transaction not in wallet
+            [tx deleteObject];
+            return;
+        }
+        
+        [inaddrs setValue:@(YES) forKey:@"newTx"]; // mark addresses to be updated on next wallet sync
+        [outaddrs setValue:@(YES) forKey:@"newTx"];
 
         // delete any unspent outputs that are now spent
         [tx.inputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            [[ZNUnspentOutputEntity objectsMatching:@"txIndex == %lld && n == %d", [obj txIndex], [obj n]].lastObject
-             deleteObject];
+            ZNTxInputEntity *e = obj;
+            
+            if (e.txIndex > 0) {
+                [spent addObjectsFromArray:[ZNUnspentOutputEntity objectsMatching:@"txIndex == %lld && n == %d",
+                                            e.txIndex, e.n]];
+            }
+            else if ([[inaddrs valueForKey:@"address"] containsObject:e.address]) {
+                // The utx JSON message doesn't contain either txHash or txIndex for inputs (and even combines multiple
+                // inputs for the same address, WTF?!?), so try to match inputs based on just the address and amount. If
+                // there is any ambiguity, ignore the whole tx. It will show up when the wallet is next synced.
+                __block int32_t balance = e.value;
+
+                [outputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                    ZNUnspentOutputEntity *o = obj;
+                     
+                    if (! [o.address isEqual:e.address]) return;
+                    
+                    balance -= o.value;
+                    [spent addObject:o];
+
+                    if (balance <= 0) *stop = YES;
+                }];
+
+                if (balance != 0) { // tx inputs didn't match up with unspent outputs, ignore the tx
+                    [tx deleteObject];
+                    tx = nil;
+                    *stop = YES;
+                }
+                else [outputs removeObjectsInArray:spent];
+            }
         }];
+        
+        if (! tx) return;
+        
+        [spent makeObjectsPerformSelector:@selector(deleteObject)]; // delete spent outputs
         
         // add outputs sent to wallet addresses to unspent outputs
         [tx.outputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             if ([[ZNWallet sharedInstance] containsAddress:(id)[obj address]] &&
                 [ZNUnspentOutputEntity countObjectsMatching:@"txHash == %@ && n == %d", tx.txHash, idx] == 0) {
-                [ZNUnspentOutputEntity entityWithTxOutput:obj];
+                [ZNUnspentOutputEntity entityWithTxOutput:obj]; // create new unspent output object in core data
             }
         }];
         

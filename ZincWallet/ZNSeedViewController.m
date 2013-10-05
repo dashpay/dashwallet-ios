@@ -49,10 +49,6 @@
     
     self.wallpaper.hidden = (self.navigationController.viewControllers[0] != self) ? YES : NO;
     
-#if APPSTORE_VERSION
-    self.warningLabel.text = @"WRITE IT DOWN and keep it safe. Lose it and you may lose your wallet forever.";
-#endif
-    
     self.resignActiveObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
@@ -86,14 +82,10 @@
     }
     else {
         self.navigationItem.rightBarButtonItem = nil;
-#if WALLET_BIP32
         self.compatiblityLabel.hidden = YES; // BIP32 isn't compatible with very much yet :(
         self.exportLabel.text =
             [@"BIP32 extended private key: "
              stringByAppendingString:[[ZNBIP32Sequence new] serializedPrivateMasterFromSeed:w.seed]];
-#else
-        self.compatiblityLabel.hidden = NO;
-#endif
     }
 
     [UIView animateWithDuration:SEGUE_DURATION/2 animations:^{
@@ -122,8 +114,8 @@
 
 - (IBAction)done:(id)sender
 {
-    [[[UIAlertView alloc] initWithTitle:nil message:@"You can see your backup phrase again under settings" delegate:self
-      cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+    [[[UIAlertView alloc] initWithTitle:nil message:@"you can see your backup phrase again under settings" delegate:self
+      cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
 }
 
 - (IBAction)refresh:(id)sender

@@ -1,12 +1,29 @@
 //
-//  ZNWallet+Transaction.m
+//  ZNWallet+Utils.m
 //  ZincWallet
 //
 //  Created by Aaron Voisine on 9/23/13.
-//  Copyright (c) 2013 Aaron Voisine. All rights reserved.
+//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+//
+//  The above copyright notice and this permission notice shall be included in
+//  all copies or substantial portions of the Software.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//  THE SOFTWARE.
 
-#import "ZNWallet+Transaction.h"
+#import "ZNWallet+Utils.h"
 #import "ZNTransaction.h"
 #import "ZNKey.h"
 #import "ZNUnspentOutputEntity.h"
@@ -14,7 +31,70 @@
 #import "NSManagedObject+Utils.h"
 #import "AFNetworking.h"
 
-@implementation ZNWallet (Transaction)
+#define LOCAL_CURRENCY_SYMBOL_KEY  @"LOCAL_CURRENCY_SYMBOL"
+#define LOCAL_CURRENCY_CODE_KEY    @"LOCAL_CURRENCY_CODE"
+#define LOCAL_CURRENCY_PRICE_KEY   @"LOCAL_CURRENCY_PRICE"
+
+#define CURRENCY_SIGN @"\xC2\xA4"     // generic currency sign (utf-8)
+
+@implementation ZNWallet (Utils)
+
+#pragma mark - string helpers
+
+- (int64_t)amountForString:(NSString *)string
+{
+    return ([[self.format numberFromString:string] doubleValue] + DBL_EPSILON)*
+    pow(10.0, self.format.maximumFractionDigits);
+}
+
+- (NSString *)stringForAmount:(int64_t)amount
+{
+    NSUInteger min = self.format.minimumFractionDigits;
+    
+    if (amount == 0) {
+        self.format.minimumFractionDigits =
+        self.format.maximumFractionDigits > 4 ? 4 : self.format.maximumFractionDigits;
+    }
+    
+    NSString *r = [self.format stringFromNumber:@(amount/pow(10.0, self.format.maximumFractionDigits))];
+    
+    self.format.minimumFractionDigits = min;
+    
+    return r;
+}
+
+- (NSString *)localCurrencyStringForAmount:(int64_t)amount
+{
+    static NSNumberFormatter *format = nil;
+    
+    if (! format) {
+        format = [NSNumberFormatter new];
+        format.lenient = YES;
+        format.numberStyle = NSNumberFormatterCurrencyStyle;
+        format.negativeFormat =
+            [format.positiveFormat stringByReplacingOccurrencesOfString:CURRENCY_SIGN withString:CURRENCY_SIGN @"-"];
+    }
+
+    if (! amount) return [format stringFromNumber:@(0)];
+    
+    NSString *symbol = [[NSUserDefaults standardUserDefaults] stringForKey:LOCAL_CURRENCY_SYMBOL_KEY];
+    NSString *code = [[NSUserDefaults standardUserDefaults] stringForKey:LOCAL_CURRENCY_CODE_KEY];
+    double price = [[NSUserDefaults standardUserDefaults] doubleForKey:LOCAL_CURRENCY_PRICE_KEY];
+    
+    if (! symbol.length || price <= DBL_EPSILON) return nil;
+    
+    format.currencySymbol = symbol;
+    format.currencyCode = code;
+    
+    NSString *ret = [format stringFromNumber:@(amount/price)];
+    
+    // if the amount is too small to be represented in local currency (but is != 0) then return a string like "<$0.01"
+    if (amount != 0 && [[format numberFromString:ret] isEqual:@(0.0)]) {
+        ret = [@"<" stringByAppendingString:[format stringFromNumber:@(1.0/pow(10.0, format.maximumFractionDigits))]];
+    }
+    
+    return ret;
+}
 
 #pragma mark - ZNTransaction helpers
 
@@ -50,7 +130,7 @@
     return height > currentHeight + 1 ? (height - currentHeight)*600 : 0;
 }
 
-// retuns the total amount tendered in the trasaction (total unspent outputs consumed)
+// retuns the total amount tendered in the trasaction (total unspent outputs consumed, change included)
 - (uint64_t)transactionAmount:(ZNTransaction *)transaction
 {
     __block uint64_t amount = 0;

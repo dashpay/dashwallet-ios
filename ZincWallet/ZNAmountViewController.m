@@ -26,12 +26,9 @@
 #import "ZNAmountViewController.h"
 #import "ZNPaymentRequest.h"
 #import "ZNWallet.h"
-#import "ZNWallet+Transaction.h"
+#import "ZNWallet+Utils.h"
 #import "ZNTransaction.h"
 #import "ZNButton.h"
-#import "NSData+Hash.h"
-#import "MBProgressHUD.h"
-#import "AFNetworking.h"
 
 @interface ZNAmountViewController ()
 
@@ -41,9 +38,7 @@
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *payButton;
 @property (nonatomic, strong) IBOutlet UIButton *delButton;
 @property (nonatomic, strong) IBOutletCollection(UIButton) NSArray *buttons, *buttonRow1, *buttonRow2, *buttonRow3;
-
-@property (nonatomic, strong) ZNTransaction *tx, *txWithFee;
-@property (nonatomic, strong) id balanceObserver, urlObserver, activeObserver;
+@property (nonatomic, strong) id balanceObserver, syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 
 @end
 
@@ -81,10 +76,6 @@
         }];
     }
     
-#if APPSTORE_VERSION
-    self.navigationItem.rightBarButtonItem.title = @"next";
-#endif
-
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:walletBalanceNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
@@ -92,25 +83,34 @@
                                          [w localCurrencyStringForAmount:w.balance]];
         }];
     
-    self.urlObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:bitcoinURLNotification object:nil queue:nil
+    self.syncStartedObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncStartedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            //TODO: handle zinc: urls
+            self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
+            [self.spinner startAnimating];
         }];
     
-    self.activeObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
-        queue:nil usingBlock:^(NSNotification *note) {
-            //TODO: if a tx was sent to safari and we returned to the app not from a zinc: url, something went wrong,
-            // so fall back on sending from within the app
+    self.syncFinishedObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncFinishedNotification object:nil queue:nil
+        usingBlock:^(NSNotification *note) {
+            self.navigationItem.rightBarButtonItem = self.payButton;
+            [self.spinner stopAnimating];
+        }];
+    
+    self.syncFailedObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncFailedNotification object:nil queue:nil
+        usingBlock:^(NSNotification *note) {
+            self.navigationItem.rightBarButtonItem = self.payButton;
+            [self.spinner stopAnimating];
         }];
 }
 
 - (void)dealloc
 {
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
-    if (self.urlObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.urlObserver];
-    if (self.activeObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
+    if (self.syncStartedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
+    if (self.syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFinishedObserver];
+    if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -128,43 +128,6 @@
     self.request.amount = 0;
     
     [super viewWillDisappear:animated];
-}
-
-- (void)confirmTransaction:(ZNTransaction *)tx
-{
-    ZNWallet *w = [ZNWallet sharedInstance];
-    uint64_t txAmount = [w transactionAmount:tx] - [w transactionChange:tx];
-    NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:txAmount],
-                        [w localCurrencyStringForAmount:txAmount]];
-    
-#if APPSTORE_VERSION
-    [[AFHTTPClient clientWithBaseURL:[NSURL URLWithString:WEBAPP_BASEURL]] getPath:WEBAPP_PATH parameters:nil
-    success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        //TODO: verify webapp sha hash or signature
-        NSLog(@"signing transaction");
-        [w signTransaction:tx];
-        
-        if (! [tx isSigned]) {
-            [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment" message:@"error signing bitcoin transaction"
-              delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-            return;
-        }
-        
-        NSLog(@"signed transaction:\n%@", [tx toHex]);
-        
-        //TODO: check for duplicate transactions
-        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithFormat:WEBAPP_BASEURL
-         WEBAPP_PATH @"#%@|%@|%@", tx.toHex, [w transactionTo:tx], amount]]];
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        [[[UIAlertView alloc] initWithTitle:@"Confirm Payment" message:[w transactionTo:tx] delegate:self
-          cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
-    }];
-    
-    return;
-#endif
-
-    [[[UIAlertView alloc] initWithTitle:@"Confirm Payment" message:[w transactionTo:tx] delegate:self
-      cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
 }
 
 #pragma mark - IBAction
@@ -189,50 +152,9 @@
 
     self.request.amount = [w amountForString:self.amountField.text];
 
-    if (self.request.amount == 0 || ! self.request.isValid) return;
+    if (self.request.amount == 0) return;
     
-    if (self.request.amount < TX_MIN_OUTPUT_AMOUNT) {
-        [[[UIAlertView alloc] initWithTitle:@"Couldn't make payment"
-          message:[@"Bitcoin payments can't be less than "
-                   stringByAppendingString:[w stringForAmount:TX_MIN_OUTPUT_AMOUNT]] delegate:nil
-                   cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-            
-        return;
-    }
-
-    self.tx = [w transactionFor:self.request.amount to:self.request.paymentAddress withFee:NO];
-    self.txWithFee = [w transactionFor:self.request.amount to:self.request.paymentAddress withFee:YES];
-    
-    uint64_t txFee = [w transactionFee:self.txWithFee];
-    NSString *fee = [w stringForAmount:txFee];
-    NSString *localCurrencyFee = [w localCurrencyStringForAmount:txFee];
-    NSTimeInterval t = [w timeUntilFree:self.tx];
-    
-    if (self.tx && ! self.txWithFee) fee = [w stringForAmount:[self.tx standardFee]];
-    
-    if (! self.tx) {
-        [[[UIAlertView alloc] initWithTitle:@"Insufficient Funds" message:nil delegate:nil cancelButtonTitle:@"OK"
-          otherButtonTitles:nil] show];
-    }
-    else if (t > DBL_EPSILON) {//(t == DBL_MAX) {
-        [[[UIAlertView alloc] initWithTitle:nil//@"transaction fee"
-          message:[NSString stringWithFormat:@"the bitcoin network will receive a fee of %@ (%@)", fee,
-                   localCurrencyFee] delegate:self cancelButtonTitle:@"cancel"
-          otherButtonTitles:[NSString stringWithFormat:@"+ %@ (%@)", fee, localCurrencyFee], nil] show];
-    }
-//    else if (t > DBL_EPSILON) {
-//        int minutes = t/60, hours = t/(60*60), days = t/(60*60*24);
-//        NSString *time = [NSString stringWithFormat:@"%d %@%@", days ? days : (hours ? hours : minutes),
-//                          days ? @"day" : (hours ? @"hour" : @"minutes"),
-//                          days > 1 ? @"s" : (days == 0 && hours > 1 ? @"s" : @"")];
-//        
-//        [[[UIAlertView alloc]
-//          initWithTitle:[NSString stringWithFormat:@"%@ (%@) transaction fee recommended", fee, localCurrencyFee]
-//          message:[NSString stringWithFormat:@"estimated confirmation time with no fee: %@", time] delegate:self
-//          cancelButtonTitle:nil otherButtonTitles:@"no fee",
-//          [NSString stringWithFormat:@"+ %@ (%@)", fee, localCurrencyFee], nil] show];
-//    }
-    else [self confirmTransaction:self.tx];
+    [self.delegate amountViewController:self selectedAmount:self.request.amount];
 }
 
 #pragma mark - UITextFieldDelegate
@@ -275,62 +197,6 @@ replacementString:(NSString *)string
     //self.payButton.enabled = t.length ? YES : NO;
 
     return NO;
-}
-
-#pragma mark - UIAlertViewDelegate
-
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-    if (buttonIndex == alertView.cancelButtonIndex) return;
-    
-    ZNWallet *w = [ZNWallet sharedInstance];
-    NSString *title = [alertView buttonTitleAtIndex:buttonIndex];
-    
-    if ([title hasPrefix:@"+ "]) self.tx = self.txWithFee;
-    
-    if (! self.tx) {
-        [[[UIAlertView alloc] initWithTitle:@"Insufficient Funds" message:nil delegate:nil cancelButtonTitle:@"OK"
-          otherButtonTitles:nil] show];
-    }
-    else if (! [title hasPrefix:@"+ "] && ! [title isEqual:@"no fee"]) {
-        NSLog(@"signing transaction");
-        [w signTransaction:self.tx];
-        
-        if (! [self.tx isSigned]) {
-            [[[UIAlertView alloc] initWithTitle:@"couldn't send payment" message:@"error signing bitcoin transaction"
-              delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-            return;
-        }
-
-        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
-        [self.spinner startAnimating];
-        
-        NSLog(@"signed transaction:\n%@", [self.tx toHex]);
-        
-        //TODO: check for duplicate transactions and warn user
-        [w publishTransaction:self.tx completion:^(NSError *error) {
-            [self.spinner stopAnimating];
-            self.navigationItem.rightBarButtonItem = self.payButton;
-            
-            if (error) {
-                [[[UIAlertView alloc] initWithTitle:@"couldn't send payment" message:error.localizedDescription
-                  delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-                return;
-            }
-            
-            MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
-            
-            hud.mode = MBProgressHUDModeText;
-            hud.labelText = @"sent!";
-            hud.labelFont = [UIFont fontWithName:@"HelveticaNeue-Medium" size:17.0];
-            [hud hide:YES afterDelay:2.0];
-            
-            if (self.navigationController.topViewController == self) {
-                [self.navigationController popViewControllerAnimated:YES];
-            }
-        }];
-    }
-    else [self confirmTransaction:self.tx];
 }
 
 @end

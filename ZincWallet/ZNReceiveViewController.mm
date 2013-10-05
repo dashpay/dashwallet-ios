@@ -55,17 +55,16 @@
     
     if (! [[self paymentRequest] isValid]) return;
     
+//#warning remove this
+//    ZNPaymentRequest *r = self.paymentRequest;
+//    r.amount = 1;
+//    NSString *s = [[NSString alloc] initWithData:r.data encoding:NSUTF8StringEncoding];
     NSString *s = [[NSString alloc] initWithData:self.paymentRequest.data encoding:NSUTF8StringEncoding];
     
     self.qrView.image = [QREncoder renderDataMatrix:[QREncoder encodeWithECLevel:1 version:1 string:s]
                          imageDimension:self.qrView.frame.size.width];
     
     [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
-    
-#if APPSTORE_VERSION
-    self.label.text =
-        [[NSUserDefaults standardUserDefaults] boolForKey:WEBAPP_ENABLED_KEY] ? @"receive money:" : @"bitcoin address:";
-#endif
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -91,17 +90,16 @@
         self.pageTipView.alpha < 0.5) return NO;
 
     [UIView animateWithDuration:UINavigationControllerHideShowBarDuration animations:^{
-        if (self.qrTipView.alpha > 0.5) {
+        if (self.balanceTipView.alpha > 0.5) {
+            self.balanceTipView.alpha = 0.0;
+            self.qrTipView.alpha = 1.0;
+        }
+        else if (self.qrTipView.alpha > 0.5) {
             self.qrTipView.alpha = 0.0;
             self.addressTipView.alpha = 1.0;
         }
         else if (self.addressTipView.alpha > 0.5) {
             self.addressTipView.alpha = 0.0;
-            self.qrView.alpha = 1.0;
-            self.balanceTipView.alpha = 1.0;
-        }
-        else if (self.balanceTipView.alpha > 0.5) {
-            self.balanceTipView.alpha = 0.0;
             self.pageTipView.alpha = 1.0;
         }
         else if (self.pageTipView.alpha > 0.5) self.pageTipView.alpha = 0.0;
@@ -117,7 +115,6 @@
     
     [UIView animateWithDuration:UINavigationControllerHideShowBarDuration animations:^{
         self.qrTipView.alpha = self.addressTipView.alpha = self.balanceTipView.alpha = self.pageTipView.alpha = 0.0;
-        self.qrView.alpha = 1.0;
     }];
     
     return YES;
@@ -135,8 +132,7 @@
     if ([self nextTip]) return;
 
     [UIView animateWithDuration:UINavigationControllerHideShowBarDuration animations:^{
-        self.qrView.alpha = 0.5;
-        self.qrTipView.alpha = 1.0;
+        self.balanceTipView.alpha = 1.0;
     }];
 }
 
@@ -193,7 +189,7 @@
         }
         else {
             [[[UIAlertView alloc] initWithTitle:nil message:@"email not configured on this device" delegate:nil
-              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+              cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
         }
     }
     else if ([title isEqual:@"sms"]) {
@@ -207,7 +203,7 @@
         }
         else {
             [[[UIAlertView alloc] initWithTitle:nil message:@"sms not currently available on this device" delegate:nil
-              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+              cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
         }
     }    
 }

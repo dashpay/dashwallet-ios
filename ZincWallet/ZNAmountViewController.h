@@ -25,10 +25,18 @@
 
 #import <UIKit/UIKit.h>
 
-@class ZNPaymentRequest;
+@class ZNAmountViewController, ZNPaymentRequest;
+
+@protocol ZNAmountViewControllerDelegate <NSObject>
+@required
+
+- (void)amountViewController:(ZNAmountViewController *)amountViewController selectedAmount:(uint64_t)amount;
+
+@end
 
 @interface ZNAmountViewController : UIViewController<UITextFieldDelegate, UIAlertViewDelegate>
 
+@property (nonatomic, assign) id<ZNAmountViewControllerDelegate> delegate;
 @property (nonatomic, strong) ZNPaymentRequest *request;
 
 @end

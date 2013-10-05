@@ -27,6 +27,7 @@
 #import "ZNPayViewController.h"
 #import "ZNReceiveViewController.h"
 #import "ZNWallet.h"
+#import "ZNWallet+Utils.h"
 #import "ZNSocketListener.h"
 #import <netinet/in.h>
 #import "Reachability.h"
@@ -73,10 +74,9 @@
     self.wallpaperStart = self.wallpaper.center;
     
     self.urlObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:bitcoinURLNotification object:nil queue:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:ZNURLNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             [self.scrollView setContentOffset:CGPointZero animated:YES];
-            [self.navigationController popToRootViewControllerAnimated:NO];
             
             if (w.masterPublicKey) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
         }];
@@ -134,9 +134,9 @@
         usingBlock:^(NSNotification *note) {
             self.syncErrorCount++;
 //            if ([note.userInfo[@"error"] code] == 504 && self.syncErrorCount < 3) {
-//                [[[UIAlertView alloc] initWithTitle:@"Couldn't refresh wallet balance" message:@"retrying..."
-//                  delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-//                [w synchronize];
+//                [[[UIAlertView alloc] initWithTitle:@"couldn't refresh wallet balance" message:@"retrying..."
+//                  delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+//                [w synchronize:YES];
 //                return;
 //            }
             
@@ -146,8 +146,8 @@
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                          [w localCurrencyStringForAmount:w.balance]];
                                                       
-            [[[UIAlertView alloc] initWithTitle:@"Couldn't refresh wallet balance"
-              message:[note.userInfo[@"error"] localizedDescription] delegate:nil cancelButtonTitle:@"OK"
+            [[[UIAlertView alloc] initWithTitle:@"couldn't refresh wallet balance"
+              message:[note.userInfo[@"error"] localizedDescription] delegate:nil cancelButtonTitle:@"ok"
               otherButtonTitles:nil] show];
         }];
     
@@ -260,7 +260,7 @@
     if ([[ZNWallet sharedInstance] balance] == 0) self.navigationItem.title = @"syncing...";
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[ZNWallet sharedInstance] synchronize];
+        [[ZNWallet sharedInstance] synchronize:sender == nil ? NO : YES];
     });
 }
 

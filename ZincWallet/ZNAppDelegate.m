@@ -25,6 +25,7 @@
 
 #import "ZNAppDelegate.h"
 #import "NSString+Base58.h"
+#import "AFNetworking.h"
 #import <MessageUI/MessageUI.h>
 
 @implementation ZNAppDelegate
@@ -33,17 +34,25 @@
 {
     // Override point for customization after application launch.
 
-    [self keepUpAppearances];
+    [[UINavigationBar appearance]
+     setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor grayColor],
+                              NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue" size:17.0]}];
+    
+    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
+     setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
+     forState:UIControlStateNormal];
 
-    //TODO: implement testnet build
+    //TODO: testnet build
     
     //TODO: digitally sign every source release
     
-    //TODO: implement pin code
+    //TODO: pin code
 
     //TODO: network status indicator perferrably tied to websocket status
     
-    //TODO: SPV mode (note: SPV mode is not p2p since no traffic is relayed to other nodes)
+    //TODO: SPV mode
+    //NOTE: app store guidelines prohibit p2p networking, however SPV mode is not p2p since it doesn't permit incoming
+    //      peer connections and no traffic is relayed to other nodes. SPV is strictly a client/server model.
     
     //TODO: accessibility for the visually impaired
     
@@ -53,41 +62,47 @@
     //CBCentralManager *cbManager = [[CBCentralManager alloc] initWithDelegate:self queue:dispatch_get_main_queue()];
     
     //[self centralManagerDidUpdateState:cbManager]; // Show initial state
+
+#if APPSTORE_HACK
+    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     
+    if ([[defs stringForKey:WEBAPP_VERSION_KEY] doubleValue] <= WEBAPP_VERSION) {
+        AFHTTPRequestOperation *op = [[AFHTTPRequestOperation alloc] initWithRequest:[NSURLRequest
+                                      requestWithURL:[NSURL URLWithString:WEBAPP_BASEURL WEBAPP_PATH]
+                                      cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:WEBAPP_TIMEOUT]];
+
+        [op setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+            NSRegularExpression *re = [NSRegularExpression regularExpressionWithPattern:
+                                       @"<meta\\s+name\\s*=\\s*[\"']version[\"']\\s+content\\s*=\\s*[\"']([^\"'>]*)"
+                                       options:NSRegularExpressionCaseInsensitive error:nil];
+            NSString *s = operation.responseString;
+            NSTextCheckingResult *match = [re firstMatchInString:s options:0 range:NSMakeRange(0, [s length])];
+            
+            if (match) {
+                [defs setObject:[s substringWithRange:[match rangeAtIndex:1]] forKey:WEBAPP_VERSION_KEY];
+                [defs synchronize];
+            }
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {}];
+        
+        [op start];
+    }
+#endif
+
     return YES;
 }
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication
 annotation:(id)annotation
 {
-    NSURL *u = url;
-    
-    if (! u.host && u.resourceSpecifier) {
-        u = [NSURL URLWithString:[NSString stringWithFormat:@"%@://%@", u.scheme, u.resourceSpecifier]];
-    }
-
-    if (! [u.scheme isEqual:@"bitcoin"] && ! [u.scheme isEqual:@"zinc"]) {
+    if (! [url.scheme isEqual:@"bitcoin"] && ! [url.scheme isEqual:@"zinc"]) {
         [[[UIAlertView alloc] initWithTitle:@"Not a bitcoin URL" message:url.absoluteString delegate:nil
           cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
         return NO;
     }
     
-    [[NSNotificationCenter defaultCenter] postNotificationName:bitcoinURLNotification object:nil userInfo:@{@"url":u}];
+    [[NSNotificationCenter defaultCenter] postNotificationName:ZNURLNotification object:nil userInfo:@{@"url":url}];
     
     return YES;
-}
-
-#pragma mark - appearance
-
-- (void)keepUpAppearances
-{
-    [[UINavigationBar appearance]
-     setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor grayColor],
-                              NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue" size:17.0]}];
-
-    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
-     setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
-     forState:UIControlStateNormal];
 }
 
 //#pragma mark - CBCentralManagerDelegate

@@ -27,11 +27,7 @@
 #import "ZNWallet.h"
 #import "NSString+Base58.h"
 #import "ZNKeySequence.h"
-#if WALLET_BIP32
 #import "ZNZincMnemonic.h"
-#else
-#import "ZNElectrumMnemonic.h"
-#endif
 #import <QuartzCore/QuartzCore.h>
 
 #define SHFT @"\xE2\x87\xA7" // upwards white arrow (utf-8)
@@ -44,11 +40,7 @@
 @property (nonatomic, strong) IBOutletCollection(UIButton) NSArray *keys;
 
 @property (nonatomic, strong) id<ZNMnemonic> mnemonic;
-#if WALLET_BIP32
 @property (nonatomic, strong) NSSet *adjs, *nouns, *advs, *verbs;
-#else
-@property (nonatomic, strong) NSSet *words;
-#endif
 
 @end
 
@@ -70,11 +62,7 @@
     self.textView.layer.borderWidth = 0.5;
     self.textView.textColor = [UIColor blackColor];
 
-#if WALLET_BIP32
     self.mnemonic = [ZNZincMnemonic new];
-#else
-    self.mnemonic = [ZNElectrumMnemonic new];
-#endif
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -88,7 +76,6 @@
 {
     [super viewDidAppear:animated];
     
-#if WALLET_BIP32
     self.adjs = [NSSet setWithArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
                  pathForResource:@"MnemonicAdjs" ofType:@"plist"]]];
     self.nouns = [NSSet setWithArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
@@ -97,19 +84,11 @@
                  pathForResource:@"MnemonicAdvs" ofType:@"plist"]]];
     self.verbs = [NSSet setWithArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
                   pathForResource:@"MnemonicVerbs" ofType:@"plist"]]];
-#else
-    self.words = [NSSet setWithArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
-                  pathForResource:@"ElectrumSeedWords" ofType:@"plist"]]];
-#endif
 }
 
 - (void)viewWillDisappear:(BOOL)animated
 {
-#if WALLET_BIP32
     self.adjs = self.nouns = self.advs = self.verbs = nil;
-#else
-    self.words = nil;
-#endif
     
     [super viewWillDisappear:animated];
 }
@@ -135,7 +114,7 @@
         if ([[ZNWallet sharedInstance] masterPublicKey]) {
             if (! [self.label.text isValidBitcoinPrivateKey]) {
                 [[[UIAlertView alloc] initWithTitle:nil message:@"not a valid private key" delegate:nil
-                  cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+                  cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
             }
             else {
                 UIViewController *p = self.navigationController.presentingViewController.presentingViewController;
@@ -153,13 +132,13 @@
             NSData *d = [self.label.text hexToData];
         
             if (! d) {
-                [[[UIAlertView alloc] initWithTitle:nil message:@"not a hex string" delegate:nil cancelButtonTitle:@"OK"
+                [[[UIAlertView alloc] initWithTitle:nil message:@"not a hex string" delegate:nil cancelButtonTitle:@"ok"
                   otherButtonTitles:nil] show];
             }
             else if (d.length != SEED_LENGTH) {
                 [[[UIAlertView alloc] initWithTitle:nil
                   message:[NSString stringWithFormat:@"wallet seeds must be %d bits", SEED_LENGTH*8] delegate:nil
-                  cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+                  cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
             }
             else {
                 self.label.text = nil;
@@ -241,7 +220,6 @@
     
     NSArray *a = [s componentsSeparatedByString:@" "];
         
-#if WALLET_BIP32
     NSString *incorrect = nil;
         
     for (NSUInteger i = 0; i < SEED_LENGTH*3/4; i += 6) {
@@ -259,26 +237,12 @@
         
         [[[UIAlertView alloc] initWithTitle:nil
           message:[incorrect stringByAppendingString:@" is not the correct backup phrase word"] delegate:nil
-          cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+          cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
     }
-#else
-    if (! [[NSSet setWithArray:a] isSubsetOfSet:self.words]) {
-        NSUInteger i =
-            [a indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-                return [self.words containsObject:obj] ? NO : (*stop = YES);
-            }];
-        
-        textView.selectedRange = [textView.text rangeOfString:a[i]];
-            
-        [[[UIAlertView alloc] initWithTitle:nil
-          message:[a[i] stringByAppendingString:@" is not a correct backup phrase word"] delegate:nil
-          cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-    }
-#endif
     else if (a.count != SEED_LENGTH*3/4) {
         [[[UIAlertView alloc] initWithTitle:nil
           message:[NSString stringWithFormat:@"backup phrase must be %d words", SEED_LENGTH*3/4] delegate:nil
-          cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+          cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
     }
     else if ([[ZNWallet sharedInstance] seed]) {
         if ([[[ZNWallet sharedInstance] seed] isEqual:[self.mnemonic decodePhrase:textView.text]]) {
@@ -288,7 +252,7 @@
         }
         else {
             [[[UIAlertView alloc] initWithTitle:nil message:@"backup phrase doesn't match" delegate:nil
-              cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+              cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
         }
     }
     else {

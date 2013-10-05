@@ -99,7 +99,7 @@
 {
     if (i & BIP32_PRIME) {
         @throw [NSException exceptionWithName:@"ZNPrivateCKDException"
-                reason:@"Can't derive private child key from public parent key." userInfo:nil];
+                reason:@"can't derive private child key from public parent key" userInfo:nil];
     }
     
     NSMutableData *I = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), CC_SHA512_DIGEST_LENGTH));

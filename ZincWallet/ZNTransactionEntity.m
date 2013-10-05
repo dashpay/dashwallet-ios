@@ -27,6 +27,7 @@
 #import "ZNTxInputEntity.h"
 #import "ZNTxOutputEntity.h"
 #import "ZNUnspentOutputEntity.h"
+#import "ZNAddressEntity.h"
 #import "ZNTransaction.h"
 #import "NSManagedObject+Utils.h"
 #import "NSString+Base58.h"
@@ -54,7 +55,6 @@
     if (! e) e = [self managedObject];
     
     return [e setAttributesFromJSON:JSON];
-    
 }
 
 - (instancetype)setAttributesFromJSON:(NSDictionary *)JSON
@@ -70,34 +70,34 @@
         if ([JSON[@"inputs"] isKindOfClass:[NSArray class]]) {
             NSMutableOrderedSet *inputs = [self mutableOrderedSetValueForKey:@"inputs"];
     
-            while ([JSON[@"inputs"] count] >= inputs.count) {
+            while (inputs.count < [JSON[@"inputs"] count]) {
                 [inputs addObject:[ZNTxInputEntity managedObject]];
+            }
+
+            while (inputs.count > [JSON[@"inputs"] count]) {
+                [inputs removeObjectAtIndex:inputs.count - 1];
             }
 
             [[JSON[@"inputs"] valueForKey:@"prev_out"]
             enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                 [inputs[idx] setAttributesFromJSON:obj];
             }];
-        
-            while (inputs.count > [JSON[@"inputs"] count]) {
-                [inputs removeObjectAtIndex:inputs.count - 1];
-            }
         }
     
         if ([JSON[@"out"] isKindOfClass:[NSArray class]]) {
             NSMutableOrderedSet *outputs = [self mutableOrderedSetValueForKey:@"outputs"];
             
-            while ([JSON[@"out"] count] >= outputs.count) {
+            while (outputs.count < [JSON[@"out"] count]) {
                 [outputs addObject:[ZNTxOutputEntity managedObject]];
+            }
+
+            while (outputs.count > [JSON[@"out"] count]) {
+                [outputs removeObjectAtIndex:outputs.count - 1];
             }
 
             [JSON[@"out"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                 [outputs[idx] setAttributesFromJSON:obj];
             }];
-        
-            while (outputs.count > [JSON[@"out"] count]) {
-                [outputs removeObjectAtIndex:outputs.count - 1];
-            }
         }
     }];
     
@@ -125,7 +125,9 @@
             ZNUnspentOutputEntity *o = [ZNUnspentOutputEntity objectsMatching:@"txHash == %@ && n == %d",
                                         tx.inputHashes[idx], [tx.inputIndexes[idx] intValue]].lastObject;
         
-            if (o) [obj setAddress:o.address txIndex:o.txIndex n:o.n value:o.value];
+            if (o) {
+                [obj setAddress:o.address txIndex:o.txIndex n:o.n value:o.value];
+            }
             else [obj setAddress:tx.inputAddresses[idx] txIndex:0 n:[tx.inputIndexes[idx] intValue] value:0];
         }];
 

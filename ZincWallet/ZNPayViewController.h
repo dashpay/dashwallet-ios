@@ -25,9 +25,11 @@
 
 #import <UIKit/UIKit.h>
 //#import <GameKit/GameKit.h>
+#import "ZNAmountViewController.h"
 #import "ZBarSDK.h"
 
-@interface ZNPayViewController : UIViewController<UIAlertViewDelegate, ZBarReaderDelegate>//, GKSessionDelegate>
+@interface ZNPayViewController : UIViewController<UIAlertViewDelegate, ZBarReaderDelegate,
+ZNAmountViewControllerDelegate>//, GKSessionDelegate>
 
 - (BOOL)hideTips;
 

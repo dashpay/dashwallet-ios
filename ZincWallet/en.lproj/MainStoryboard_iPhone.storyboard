@@ -386,7 +386,7 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                         <color key="shadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                         <size key="shadowOffset" width="0.0" height="1"/>
                                     </label>
-                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="911" contentMode="left" text="KEEP IT SECRET. Anyone who sees your backup phrase can spend your bitcoins." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="4zT-au-gLS">
+                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="1337" contentMode="left" text="KEEP IT SECRET. Anyone who sees your backup phrase can spend your bitcoins." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="4zT-au-gLS">
                                         <rect key="frame" x="12" y="52" width="296" height="42"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="16"/>
@@ -1310,8 +1310,8 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                         <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         <size key="shadowOffset" width="0.0" height="1"/>
                                     </label>
-                                    <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" reversesTitleShadowWhenHighlighted="YES" adjustsImageWhenHighlighted="NO" lineBreakMode="middleTruncation" id="q5B-K9-E8f">
-                                        <rect key="frame" x="209" y="1" width="35" height="35"/>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" reversesTitleShadowWhenHighlighted="YES" adjustsImageWhenHighlighted="NO" lineBreakMode="middleTruncation" id="q5B-K9-E8f">
+                                        <rect key="frame" x="212" y="1" width="35" height="35"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <accessibility key="accessibilityConfiguration" label="info"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="13"/>
@@ -1366,7 +1366,7 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                         </connections>
                                     </button>
                                     <view alpha="0.0" contentMode="scaleToFill" id="a2s-Ru-Qlx">
-                                        <rect key="frame" x="10" y="120" width="300" height="109"/>
+                                        <rect key="frame" x="10" y="160" width="300" height="109"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <subviews>
                                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble-up.png" id="T7M-XH-JW8">
@@ -1377,17 +1377,19 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="ym7-Qy-8hs">
                                                 <rect key="frame" x="10" y="24" width="280" height="70"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                <string key="text">Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to this address. </string>
+                                                <string key="text">Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address. </string>
                                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
                                                 <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 <nil key="highlightedColor"/>
+                                                <color key="shadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <size key="shadowOffset" width="0.0" height="1"/>
                                             </label>
                                         </subviews>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                     </view>
                                     <view alpha="0.0" contentMode="scaleToFill" id="kLP-hY-MPJ">
-                                        <rect key="frame" x="10" y="205" width="300" height="109"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <rect key="frame" x="10" y="202" width="300" height="109"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <subviews>
                                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble-down.png" id="z2t-sO-JKg">
                                                 <rect key="frame" x="0.0" y="0.0" width="300" height="109"/>
@@ -1401,6 +1403,8 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
                                                 <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 <nil key="highlightedColor"/>
+                                                <color key="shadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <size key="shadowOffset" width="0.0" height="1"/>
                                             </label>
                                         </subviews>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
@@ -1409,7 +1413,7 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </view>
                             <view alpha="0.0" contentMode="scaleToFill" id="Xl2-ks-JFe">
-                                <rect key="frame" x="10" y="5" width="300" height="92"/>
+                                <rect key="frame" x="10" y="8" width="300" height="92"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <subviews>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble-up.png" id="pb5-nl-GvO">
@@ -1423,25 +1427,29 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         <nil key="highlightedColor"/>
+                                        <color key="shadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                        <size key="shadowOffset" width="0.0" height="1"/>
                                     </label>
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </view>
                             <view alpha="0.0" contentMode="scaleToFill" id="RFd-H1-tiW">
-                                <rect key="frame" x="36" y="503" width="247" height="57"/>
+                                <rect key="frame" x="31" y="500" width="257" height="57"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <subviews>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble-down.png" id="xLq-nh-L4O">
-                                        <rect key="frame" x="0.0" y="0.0" width="247" height="57"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="257" height="57"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <rect key="contentStretch" x="0.0" y="0.5" width="1" height="0.0"/>
                                     </imageView>
                                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tap or swipe right to send money." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="WiJ-q1-nJn">
-                                        <rect key="frame" x="10" y="15" width="227" height="18"/>
+                                        <rect key="frame" x="15" y="15" width="227" height="18"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         <nil key="highlightedColor"/>
+                                        <color key="shadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                        <size key="shadowOffset" width="0.0" height="1"/>
                                     </label>
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
@@ -2026,8 +2034,8 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                 <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" reversesTitleShadowWhenHighlighted="YES" adjustsImageWhenHighlighted="NO" lineBreakMode="middleTruncation" id="W1s-0j-rRa">
-                                <rect key="frame" x="200" y="194" width="35" height="35"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" reversesTitleShadowWhenHighlighted="YES" adjustsImageWhenHighlighted="NO" lineBreakMode="middleTruncation" id="W1s-0j-rRa">
+                                <rect key="frame" x="203" y="194" width="35" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <accessibility key="accessibilityConfiguration" label="info"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="13"/>
@@ -2040,7 +2048,7 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                 </connections>
                             </button>
                             <view alpha="0.0" contentMode="scaleToFill" id="DsE-9b-9pv">
-                                <rect key="frame" x="10" y="207" width="300" height="91"/>
+                                <rect key="frame" x="10" y="204" width="300" height="91"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <subviews>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble-down.png" id="6E7-sA-cuZ">
@@ -2054,12 +2062,14 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         <nil key="highlightedColor"/>
+                                        <color key="shadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
+                                        <size key="shadowOffset" width="0.0" height="1"/>
                                     </label>
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </view>
                             <view alpha="0.0" contentMode="scaleToFill" id="OUn-s1-0xb">
-                                <rect key="frame" x="10" y="328" width="300" height="92"/>
+                                <rect key="frame" x="10" y="331" width="300" height="92"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <subviews>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble-up.png" id="jMY-Jc-r9Q">
@@ -2073,44 +2083,33 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         <nil key="highlightedColor"/>
+                                        <color key="shadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                        <size key="shadowOffset" width="0.0" height="1"/>
                                     </label>
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </view>
                             <view alpha="0.0" contentMode="scaleToFill" id="4dO-wk-1CZ">
-                                <rect key="frame" x="34" y="433" width="252" height="57"/>
+                                <rect key="frame" x="29" y="430" width="262" height="57"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <subviews>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble-down.png" id="00b-EO-ZdR">
-                                        <rect key="frame" x="0.0" y="0.0" width="252" height="57"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="262" height="57"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <rect key="contentStretch" x="0.0" y="0.5" width="1" height="0.0"/>
                                     </imageView>
                                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tap or swipe left to receive money." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="sAS-rN-tSI">
-                                        <rect key="frame" x="10" y="15" width="232" height="18"/>
+                                        <rect key="frame" x="15" y="15" width="232" height="18"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         <nil key="highlightedColor"/>
+                                        <color key="shadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                        <size key="shadowOffset" width="0.0" height="1"/>
                                     </label>
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </view>
-                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="TK3-Fu-ugy" customClass="ZNButton">
-                                <rect key="frame" x="20" y="228" width="280" height="44"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                <gestureRecognizers/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
-                                <state key="normal" title="send transfers at zincwallet.com">
-                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                                </state>
-                                <connections>
-                                    <action selector="page:" destination="Th9-g2-TJH" eventType="touchDragExit" id="7xU-FN-f6Z"/>
-                                    <action selector="page:" destination="Th9-g2-TJH" eventType="touchDragInside" id="9eh-TQ-fHY"/>
-                                    <action selector="webApp:" destination="Th9-g2-TJH" eventType="touchUpInside" id="xOS-rQ-YQw"/>
-                                    <outletCollection property="gestureRecognizers" destination="9Vl-hC-FNy" appends="YES" id="hHW-Vv-V6l"/>
-                                </connections>
-                            </button>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <gestureRecognizers/>
@@ -2125,7 +2124,6 @@ v0.2.1 relies on blockchain.info for blockchain data. More data sources coming s
                         <outlet property="label" destination="2uc-By-E6L" id="X85-Zw-frc"/>
                         <outlet property="pageTipView" destination="4dO-wk-1CZ" id="7en-IT-WSh"/>
                         <outlet property="scanTipView" destination="DsE-9b-9pv" id="EW2-7J-IdN"/>
-                        <outlet property="webAppButton" destination="TK3-Fu-ugy" id="6HY-Ae-WgI"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="t9V-Er-6VR" userLabel="First Responder" sceneMemberID="firstResponder"/>
