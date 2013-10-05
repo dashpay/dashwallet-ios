@@ -63,31 +63,6 @@
     
     //[self centralManagerDidUpdateState:cbManager]; // Show initial state
 
-#if APPSTORE_HACK
-    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-    
-    if ([[defs stringForKey:WEBAPP_VERSION_KEY] doubleValue] <= WEBAPP_VERSION) {
-        AFHTTPRequestOperation *op = [[AFHTTPRequestOperation alloc] initWithRequest:[NSURLRequest
-                                      requestWithURL:[NSURL URLWithString:WEBAPP_BASEURL WEBAPP_PATH]
-                                      cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:WEBAPP_TIMEOUT]];
-
-        [op setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
-            NSRegularExpression *re = [NSRegularExpression regularExpressionWithPattern:
-                                       @"<meta\\s+name\\s*=\\s*[\"']version[\"']\\s+content\\s*=\\s*[\"']([^\"'>]*)"
-                                       options:NSRegularExpressionCaseInsensitive error:nil];
-            NSString *s = operation.responseString;
-            NSTextCheckingResult *match = [re firstMatchInString:s options:0 range:NSMakeRange(0, [s length])];
-            
-            if (match) {
-                [defs setObject:[s substringWithRange:[match rangeAtIndex:1]] forKey:WEBAPP_VERSION_KEY];
-                [defs synchronize];
-            }
-        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {}];
-        
-        [op start];
-    }
-#endif
-
     return YES;
 }
 
