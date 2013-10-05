@@ -12,5 +12,4 @@ v0.2:
 
 v0.2.1:
 
-- improved bitcoin url handling
-- info buttons with usage tips
+- created appstore build that sends transactions using mobile safari
