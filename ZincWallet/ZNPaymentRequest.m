@@ -28,6 +28,7 @@
 
 @implementation ZNPaymentRequest
 
+//TODO: support for BIP70 payment protocol
 + (instancetype)requestWithString:(NSString *)string
 {
     return [[self alloc] initWithString:string];
@@ -63,7 +64,6 @@
     return self;
 }
 
-//TODO: handle bitcoin payment messages per: https://gist.github.com/gavinandresen/4120476
 - (void)setData:(NSData *)data
 {
     self.paymentAddress = nil;

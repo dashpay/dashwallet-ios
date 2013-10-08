@@ -1,8 +1,8 @@
 //
-//  NSString+Base58.h
+//  ZNPeerEntity.m
 //  ZincWallet
 //
-//  Created by Aaron Voisine on 5/13/13.
+//  Created by Aaron Voisine on 10/6/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,39 +23,29 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
+#import "ZNPeerEntity.h"
+#import "NSManagedObject+Utils.h"
 
-//TODO: get testnet build working
-#define BITCOIN_TESTNET 1
+@implementation ZNPeerEntity
 
-#define BITCOIN_PUBKEY_ADDRESS      0
-#define BITCOIN_SCRIPT_ADDRESS      5
-#define BITCOIN_PUBKEY_ADDRESS_TEST 111
-#define BITCOIN_SCRIPT_ADDRESS_TEST 196
-#define BITCOIN_PRIVKEY             128
-#define BITCOIN_PRIVKEY_TEST        239
-#define BITCOIN_SCRIPT_SUFFIX       "\x88\xAC" // OP_EQUALVERIFY OP_CHECKSIG
+@dynamic address;
+@dynamic timestamp;
+@dynamic port;
+@dynamic services;
 
-CFAllocatorRef SecureAllocator();
++ (instancetype)entityWithAddress:(int32_t)address port:(int16_t)port timestamp:(NSTimeInterval)timestamp
+services:(int64_t)services
+{
+    ZNPeerEntity *e = [self managedObject];
 
-@interface NSString (Base58)
+    [e.managedObjectContext performBlockAndWait:^{
+        e.address = address;
+        e.port = port;
+        e.timestamp = timestamp;
+        e.services = services;
+    }];
 
-+ (NSString *)base58WithData:(NSData *)d;
-+ (NSString *)base58checkWithData:(NSData *)d;
-+ (NSString *)hexWithData:(NSData *)d;
-+ (NSString *)addressWithScript:(NSData *)script;
-
-- (NSData *)base58ToData;
-- (NSString *)hexToBase58;
-- (NSString *)base58ToHex;
-
-- (NSData *)base58checkToData;
-- (NSString *)hexToBase58check;
-- (NSString *)base58checkToHex;
-
-- (NSData *)hexToData;
-
-- (BOOL)isValidBitcoinAddress;
-- (BOOL)isValidBitcoinPrivateKey;
+    return e;
+}
 
 @end

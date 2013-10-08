@@ -51,8 +51,10 @@
     //TODO: network status indicator perferrably tied to websocket status
     
     //TODO: SPV mode
-    //NOTE: app store guidelines prohibit p2p networking, however SPV mode is not p2p since it doesn't permit incoming
-    //      peer connections and no traffic is relayed to other nodes. SPV is strictly a client/server model.
+    //NOTE: app store guidelines prohibit p2p networking, however SPV mode is not p2p since neither incoming peer
+    //      connections are permitted nor is network traffic relayed. SPV is strictly a client/server model.
+    
+    //TODO: support for BIP70 payment protocol
     
     //TODO: accessibility for the visually impaired
     

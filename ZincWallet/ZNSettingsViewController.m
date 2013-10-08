@@ -382,6 +382,8 @@
 {
     //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
     static NSString *warning = @"DO NOT let anyone see your backup phrase or they can spend your bitcoins.";
+    UIViewController *c = nil;
+    UILabel *l = nil;
 
     switch (indexPath.section) {
         case 0:
@@ -390,10 +392,12 @@
             
         case 1:
             switch (indexPath.row) {
-                case 0:                    
-                    [ZNStoryboardSegue segueFrom:self
-                     to:[self.storyboard instantiateViewControllerWithIdentifier:@"ZNAboutViewController"]
-                     completion:nil];
+                case 0:
+                    c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNAboutViewController"];
+                    l = (id)[c.view viewWithTag:411];
+                    l.text = [l.text stringByReplacingOccurrencesOfString:@"%ver%"
+                              withString:NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"]];
+                    [ZNStoryboardSegue segueFrom:self to:c completion:nil];
                     break;
                     
                 case 1:

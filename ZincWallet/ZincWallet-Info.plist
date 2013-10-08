@@ -38,11 +38,18 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
+			<string>cc.zinc.zinc</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>zinc</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
 			<string>cc.zinc.bitcoin</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>bitcoin</string>
-				<string>zinc</string>
 			</array>
 		</dict>
 	</array>

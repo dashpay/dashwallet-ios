@@ -154,8 +154,9 @@
             [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:model];
         NSError *error = nil;
         
-        if (! [coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil
-               error:&error]) {
+        if ([coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL
+             options:@{NSMigratePersistentStoresAutomaticallyOption:@(YES),
+                       NSInferMappingModelAutomaticallyOption:@(YES)} error:&error] == nil) {
             NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
 #if DEBUG
             abort();
@@ -165,8 +166,9 @@
                 NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
             }
             
-            if (! [coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil
-                   error:&error]) {
+            if ([coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL
+                 options:@{NSMigratePersistentStoresAutomaticallyOption:@(YES),
+                           NSInferMappingModelAutomaticallyOption:@(YES)} error:&error] == nil) {
                 NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
                 abort(); // Forsooth, I am slain!
             }

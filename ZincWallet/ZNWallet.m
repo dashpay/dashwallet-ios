@@ -26,6 +26,7 @@
 #import "ZNWallet.h"
 #import "ZNTransaction.h"
 #import "ZNKey.h"
+#import "ZNBitcoin.h"
 #import "ZNSocketListener.h"
 #import "ZNAddressEntity.h"
 #import "ZNTransactionEntity.h"
@@ -139,10 +140,12 @@ static NSData *getKeychainData(NSString *key)
         [self.format.positiveFormat stringByReplacingOccurrencesOfString:CURRENCY_SIGN withString:CURRENCY_SIGN @"-"];
     //self.format.currencySymbol = @"m" BTC NARROW_NBSP;
     //self.format.maximumFractionDigits = 5;
-    //self.format.maximum = @21000000000.0;
+    //self.format.maximum = @210000000009.0;
     self.format.currencySymbol = BTC NARROW_NBSP;
     self.format.maximumFractionDigits = 8;
-    self.format.maximum = @21000000.0;
+    // for reasons both mysterious and inscrutable, 210,000,009 is the smallest value of format.maximum that will allow
+    // the user to input a value of 21,000,000
+    self.format.maximum = @210000009.0;
         
     return self;
 }
@@ -334,6 +337,11 @@ static NSData *getKeychainData(NSString *key)
             
             self.updatedTxHashes = [NSMutableSet set]; // reset the updated tx set
             
+#if SPV_MODE
+            _synchronizing = NO;
+            [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
+            return;
+#endif
             // query addresses for transactons, unused addresses first
             [self queryAddresses:[gap arrayByAddingObjectsFromArray:used] completion:^(NSError *error) {
                 completion(error, completion);

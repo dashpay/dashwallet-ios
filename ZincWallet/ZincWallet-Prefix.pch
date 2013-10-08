@@ -15,7 +15,8 @@
     #import <MobileCoreServices/MobileCoreServices.h>
 #endif
 
-#define APPSTORE              1
+//#define APPSTORE              1
+#define SPV_MODE              1
 #define WEBAPP_BASEURL        @"http://zincwallet.com"
 #define WEBAPP_PATH           @"/tx"
 #define WEBAPP_TIMEOUT        15

@@ -262,7 +262,7 @@ wasClean:(BOOL)wasClean
                 // The utx JSON message doesn't contain either txHash or txIndex for inputs (and even combines multiple
                 // inputs for the same address, WTF?!?), so try to match inputs based on just the address and amount. If
                 // there is any ambiguity, ignore the whole tx. It will show up when the wallet is next synced.
-                __block int32_t balance = e.value;
+                __block int64_t balance = e.value;
 
                 [outputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                     ZNUnspentOutputEntity *o = obj;
