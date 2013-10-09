@@ -156,4 +156,12 @@
     return YES;
 }
 
+- (void)appendNetAddress:(uint32_t)address port:(uint16_t)port services:(uint64_t)services
+{
+    [self appendUInt64:services];
+    [self appendBytes:"\0\0\0\0\0\0\0\0\0\0\xff\xff" length:12]; // IPv4 mapped IPv6 header
+    [self appendUInt32:address];
+    [self appendUInt16:port];
+}
+
 @end

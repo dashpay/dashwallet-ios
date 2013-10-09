@@ -31,11 +31,11 @@
 #import "NSManagedObject+Utils.h"
 #import "AFNetworking.h"
 
-#define LOCAL_CURRENCY_SYMBOL_KEY  @"LOCAL_CURRENCY_SYMBOL"
-#define LOCAL_CURRENCY_CODE_KEY    @"LOCAL_CURRENCY_CODE"
-#define LOCAL_CURRENCY_PRICE_KEY   @"LOCAL_CURRENCY_PRICE"
+#define LOCAL_CURRENCY_SYMBOL_KEY @"LOCAL_CURRENCY_SYMBOL"
+#define LOCAL_CURRENCY_CODE_KEY   @"LOCAL_CURRENCY_CODE"
+#define LOCAL_CURRENCY_PRICE_KEY  @"LOCAL_CURRENCY_PRICE"
 
-#define CURRENCY_SIGN @"\xC2\xA4"     // generic currency sign (utf-8)
+#define CURRENCY_SIGN @"\xC2\xA4" // generic currency sign (utf-8)
 
 @implementation ZNWallet (Utils)
 

@@ -1,8 +1,8 @@
 //
-//  ZNBitcoin.h
+//  ZNPeer.h
 //  ZincWallet
 //
-//  Created by Aaron Voisine on 10/6/13.
+//  Created by Aaron Voisine on 10/9/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,11 +24,25 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
+#import "NSString+Base58.h" //BITCOIN_TESTNET is defined here
 
-@interface ZNBitcoin : NSObject<NSStreamDelegate>
+#if BITCOIN_TESTNET
+#define STANDARD_PORT     18333
+#else // BITCOIN_TESTNET
+#define STANDARD_PORT     8333
+#endif // BITCOIN_TESTNET
 
-+ (instancetype)sharedInstance;
+#define NODE_NETWORK      1
 
+@interface ZNPeer : NSObject<NSStreamDelegate>
+
+@property (nonatomic, readonly) uint32_t address;
+@property (nonatomic, readonly) uint16_t port;
+@property (nonatomic, readonly) uint64_t services;
+
++ (instancetype)peerWithAddress:(uint32_t)address andPort:(uint16_t)port;
+
+- (instancetype)initWithAddress:(uint32_t)address andPort:(uint16_t)port;
 - (void)connect;
 
 @end

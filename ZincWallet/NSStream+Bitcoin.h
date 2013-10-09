@@ -1,8 +1,8 @@
 //
-//  NSMutableData+Bitcoin.h
+//  NSStream+Bitcoin.h
 //  ZincWallet
 //
-//  Created by Aaron Voisine on 5/20/13.
+//  Created by Aaron Voisine on 10/8/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,20 +25,17 @@
 
 #import <Foundation/Foundation.h>
 
-@interface NSMutableData (Bitcoin)
+#define BITCOIN_MSG_HEADER_LENGTH 24
 
-+ (size_t)sizeOfVarInt:(uint64_t)i;
+@interface NSStream (Bitcoin)
 
-- (void)appendUInt8:(uint8_t)i;
-- (void)appendUInt32:(uint32_t)i;
-- (void)appendUInt64:(uint64_t)i;
-- (void)appendVarInt:(uint64_t)i;
-- (void)appendString:(NSString *)s;
-//- (void)appendHash:(NSData *)hash;
-- (void)appendScriptPubKeyForHash:(NSData *)hash;
-- (BOOL)appendScriptPubKeyForAddress:(NSString *)address;
-- (void)appendScriptPushData:(NSData *)d;
-
-- (void)appendNetAddress:(uint32_t)address port:(uint16_t)port services:(uint64_t)services;
+- (NSInteger)writeUInt8:(uint8_t)i;
+- (NSInteger)writeUInt16:(uint16_t)i;
+- (NSInteger)writeUInt32:(uint32_t)i;
+- (NSInteger)writeUInt64:(uint64_t)i;
+- (NSInteger)writeVarInt:(uint64_t)i;
+- (NSInteger)writeString:(NSString *)s nullPaddedToLength:(NSUInteger)length;
+- (NSInteger)writeData:(NSData *)d;
+- (NSInteger)writeCommand:(NSString *)command payload:(NSData *)payload;
 
 @end

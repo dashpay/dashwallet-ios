@@ -14,10 +14,10 @@
         <attribute name="value" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
     </entity>
     <entity name="ZNPeerEntity" representedClassName="ZNPeerEntity" syncable="YES">
-        <attribute name="address" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
-        <attribute name="port" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
+        <attribute name="address" optional="YES" attributeType="Integer 32" defaultValueString="0" indexed="YES" syncable="YES"/>
+        <attribute name="port" optional="YES" attributeType="Integer 16" defaultValueString="0" indexed="YES" syncable="YES"/>
         <attribute name="services" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
-        <attribute name="timestamp" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="timestamp" optional="YES" attributeType="Date" indexed="YES" syncable="YES"/>
     </entity>
     <entity name="ZNTransactionEntity" representedClassName="ZNTransactionEntity" syncable="YES">
         <attribute name="blockHeight" optional="YES" attributeType="Integer 32" defaultValueString="0" indexed="YES" syncable="YES"/>

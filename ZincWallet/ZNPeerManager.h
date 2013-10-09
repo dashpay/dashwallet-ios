@@ -1,8 +1,8 @@
 //
-//  NSMutableData+Bitcoin.h
+//  ZNBitcoin.h
 //  ZincWallet
 //
-//  Created by Aaron Voisine on 5/20/13.
+//  Created by Aaron Voisine on 10/6/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,20 +25,10 @@
 
 #import <Foundation/Foundation.h>
 
-@interface NSMutableData (Bitcoin)
+@interface ZNPeerManager : NSObject<NSStreamDelegate>
 
-+ (size_t)sizeOfVarInt:(uint64_t)i;
++ (instancetype)sharedInstance;
 
-- (void)appendUInt8:(uint8_t)i;
-- (void)appendUInt32:(uint32_t)i;
-- (void)appendUInt64:(uint64_t)i;
-- (void)appendVarInt:(uint64_t)i;
-- (void)appendString:(NSString *)s;
-//- (void)appendHash:(NSData *)hash;
-- (void)appendScriptPubKeyForHash:(NSData *)hash;
-- (BOOL)appendScriptPubKeyForAddress:(NSString *)address;
-- (void)appendScriptPushData:(NSData *)d;
-
-- (void)appendNetAddress:(uint32_t)address port:(uint16_t)port services:(uint64_t)services;
+- (void)connect;
 
 @end

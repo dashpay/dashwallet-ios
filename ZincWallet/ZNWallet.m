@@ -26,7 +26,7 @@
 #import "ZNWallet.h"
 #import "ZNTransaction.h"
 #import "ZNKey.h"
-#import "ZNBitcoin.h"
+#import "ZNPeerManager.h"
 #import "ZNSocketListener.h"
 #import "ZNAddressEntity.h"
 #import "ZNTransactionEntity.h"
@@ -337,7 +337,7 @@ static NSData *getKeychainData(NSString *key)
             
             self.updatedTxHashes = [NSMutableSet set]; // reset the updated tx set
             
-#if SPV_MODE
+#if BITCOIN_TESTNET
             _synchronizing = NO;
             [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
             return;

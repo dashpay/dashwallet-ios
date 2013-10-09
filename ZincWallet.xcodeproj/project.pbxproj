@@ -703,9 +703,11 @@
 		753007F2176A48DA00C7BB60 /* ZNRestoreViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007F1176A48DA00C7BB60 /* ZNRestoreViewController.m */; };
 		7535CCDF176BE3D2007E29C5 /* ZNButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 7535CCDE176BE3D2007E29C5 /* ZNButton.m */; };
 		753A4149178E070C003B938D /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 753A4148178E070C003B938D /* AudioToolbox.framework */; };
-		753E7CD61801628C00FC6BA7 /* ZNBitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 753E7CD2180155B400FC6BA7 /* ZNBitcoin.m */; };
+		753E7CD61801628C00FC6BA7 /* ZNPeerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 753E7CD2180155B400FC6BA7 /* ZNPeerManager.m */; };
 		753E7CD91802648700FC6BA7 /* ZNPeerEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 753E7CD81802648700FC6BA7 /* ZNPeerEntity.m */; };
 		753E7CDB180387A600FC6BA7 /* FixedPeers.plist in Resources */ = {isa = PBXBuildFile; fileRef = 753E7CDA180387A600FC6BA7 /* FixedPeers.plist */; };
+		753E7CDE180478D400FC6BA7 /* NSStream+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 753E7CDD180478D400FC6BA7 /* NSStream+Bitcoin.m */; };
+		753E7CE118053B3F00FC6BA7 /* ZNPeer.m in Sources */ = {isa = PBXBuildFile; fileRef = 753E7CE018053B3F00FC6BA7 /* ZNPeer.m */; };
 		75402998178CD08C00D4F3FD /* zincwallet@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75402997178CD08C00D4F3FD /* zincwallet@2x.png */; };
 		7545424F17606C7500638B95 /* button-bg-disabled@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7545424C17606C7500638B95 /* button-bg-disabled@2x.png */; };
 		7559FBA7174D8B1F0000E809 /* ZNKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 7559FBA6174D8B1F0000E809 /* ZNKey.m */; };
@@ -1766,11 +1768,15 @@
 		7535CCDD176BE3D2007E29C5 /* ZNButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNButton.h; sourceTree = "<group>"; };
 		7535CCDE176BE3D2007E29C5 /* ZNButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNButton.m; sourceTree = "<group>"; };
 		753A4148178E070C003B938D /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
-		753E7CD1180155B400FC6BA7 /* ZNBitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNBitcoin.h; sourceTree = "<group>"; };
-		753E7CD2180155B400FC6BA7 /* ZNBitcoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNBitcoin.m; sourceTree = "<group>"; };
+		753E7CD1180155B400FC6BA7 /* ZNPeerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNPeerManager.h; sourceTree = "<group>"; };
+		753E7CD2180155B400FC6BA7 /* ZNPeerManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNPeerManager.m; sourceTree = "<group>"; };
 		753E7CD71802648700FC6BA7 /* ZNPeerEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNPeerEntity.h; sourceTree = "<group>"; };
 		753E7CD81802648700FC6BA7 /* ZNPeerEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNPeerEntity.m; sourceTree = "<group>"; };
 		753E7CDA180387A600FC6BA7 /* FixedPeers.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = FixedPeers.plist; sourceTree = "<group>"; };
+		753E7CDC180478D400FC6BA7 /* NSStream+Bitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSStream+Bitcoin.h"; sourceTree = "<group>"; };
+		753E7CDD180478D400FC6BA7 /* NSStream+Bitcoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSStream+Bitcoin.m"; sourceTree = "<group>"; };
+		753E7CDF18053B3F00FC6BA7 /* ZNPeer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNPeer.h; sourceTree = "<group>"; };
+		753E7CE018053B3F00FC6BA7 /* ZNPeer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNPeer.m; sourceTree = "<group>"; };
 		75402997178CD08C00D4F3FD /* zincwallet@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "zincwallet@2x.png"; sourceTree = "<group>"; };
 		7545424C17606C7500638B95 /* button-bg-disabled@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-disabled@2x.png"; sourceTree = "<group>"; };
 		7555F61217D2DAF4000415E3 /* ZNSocketListener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNSocketListener.h; sourceTree = "<group>"; };
@@ -2070,6 +2076,8 @@
 				752C2FB4174171760033F636 /* NSData+Hash.m */,
 				75920F84174AB82100C1C03D /* NSMutableData+Bitcoin.h */,
 				75920F85174AB82100C1C03D /* NSMutableData+Bitcoin.m */,
+				753E7CDC180478D400FC6BA7 /* NSStream+Bitcoin.h */,
+				753E7CDD180478D400FC6BA7 /* NSStream+Bitcoin.m */,
 				75F1B87717C7356B00680E1B /* NSManagedObject+Utils.h */,
 				75F1B87817C7356B00680E1B /* NSManagedObject+Utils.m */,
 			);
@@ -3456,8 +3464,10 @@
 				75A6ECE217BD464A0043E52D /* ZNZincMnemonic.m */,
 				847C2300179A1FD600163CEF /* ZNElectrumMnemonic.h */,
 				847C2301179A1FD600163CEF /* ZNElectrumMnemonic.m */,
-				753E7CD1180155B400FC6BA7 /* ZNBitcoin.h */,
-				753E7CD2180155B400FC6BA7 /* ZNBitcoin.m */,
+				753E7CDF18053B3F00FC6BA7 /* ZNPeer.h */,
+				753E7CE018053B3F00FC6BA7 /* ZNPeer.m */,
+				753E7CD1180155B400FC6BA7 /* ZNPeerManager.h */,
+				753E7CD2180155B400FC6BA7 /* ZNPeerManager.m */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -4678,6 +4688,7 @@
 				75F4D4B417E636860007500D /* ZNMainViewController.m in Sources */,
 				752C38CA1742BC4D0033F636 /* AFXMLRequestOperation.m in Sources */,
 				752C38CB1742BC4D0033F636 /* UIImageView+AFNetworking.m in Sources */,
+				753E7CE118053B3F00FC6BA7 /* ZNPeer.m in Sources */,
 				75C8C90D17F109E2004D5E1B /* ZNWallet+Utils.m in Sources */,
 				75F17C351744CC2100D9F228 /* ZNTransaction.m in Sources */,
 				75920F86174AB82100C1C03D /* NSMutableData+Bitcoin.m in Sources */,
@@ -4695,13 +4706,14 @@
 				847C2302179A1FD600163CEF /* ZNElectrumMnemonic.m in Sources */,
 				7597028417E15B5600CDC14A /* ZNStoryboardSegue.m in Sources */,
 				756E9CD617ACC95D00D316A8 /* ZNSocketListener.m in Sources */,
+				753E7CDE180478D400FC6BA7 /* NSStream+Bitcoin.m in Sources */,
 				753E7CD91802648700FC6BA7 /* ZNPeerEntity.m in Sources */,
 				75A6ECE317BD464A0043E52D /* ZNZincMnemonic.m in Sources */,
 				759B779317BECFCF0000510F /* base64.c in Sources */,
 				759B779417BECFCF0000510F /* NSData+SRB64Additions.m in Sources */,
 				759B779517BECFCF0000510F /* SRWebSocket.m in Sources */,
 				75F1B86917C7186E00680E1B /* ZNTransactionEntity.m in Sources */,
-				753E7CD61801628C00FC6BA7 /* ZNBitcoin.m in Sources */,
+				753E7CD61801628C00FC6BA7 /* ZNPeerManager.m in Sources */,
 				75F1B86F17C7193900680E1B /* ZNOutputEntity.m in Sources */,
 				75F1B87217C7198B00680E1B /* ZNUnspentOutputEntity.m in Sources */,
 				75F1B87917C7356B00680E1B /* NSManagedObject+Utils.m in Sources */,
