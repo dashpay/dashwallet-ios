@@ -706,7 +706,6 @@
 		753E7CD61801628C00FC6BA7 /* ZNPeerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 753E7CD2180155B400FC6BA7 /* ZNPeerManager.m */; };
 		753E7CD91802648700FC6BA7 /* ZNPeerEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 753E7CD81802648700FC6BA7 /* ZNPeerEntity.m */; };
 		753E7CDB180387A600FC6BA7 /* FixedPeers.plist in Resources */ = {isa = PBXBuildFile; fileRef = 753E7CDA180387A600FC6BA7 /* FixedPeers.plist */; };
-		753E7CDE180478D400FC6BA7 /* NSStream+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 753E7CDD180478D400FC6BA7 /* NSStream+Bitcoin.m */; };
 		753E7CE118053B3F00FC6BA7 /* ZNPeer.m in Sources */ = {isa = PBXBuildFile; fileRef = 753E7CE018053B3F00FC6BA7 /* ZNPeer.m */; };
 		75402998178CD08C00D4F3FD /* zincwallet@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75402997178CD08C00D4F3FD /* zincwallet@2x.png */; };
 		7545424F17606C7500638B95 /* button-bg-disabled@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7545424C17606C7500638B95 /* button-bg-disabled@2x.png */; };
@@ -1773,8 +1772,6 @@
 		753E7CD71802648700FC6BA7 /* ZNPeerEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNPeerEntity.h; sourceTree = "<group>"; };
 		753E7CD81802648700FC6BA7 /* ZNPeerEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNPeerEntity.m; sourceTree = "<group>"; };
 		753E7CDA180387A600FC6BA7 /* FixedPeers.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = FixedPeers.plist; sourceTree = "<group>"; };
-		753E7CDC180478D400FC6BA7 /* NSStream+Bitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSStream+Bitcoin.h"; sourceTree = "<group>"; };
-		753E7CDD180478D400FC6BA7 /* NSStream+Bitcoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSStream+Bitcoin.m"; sourceTree = "<group>"; };
 		753E7CDF18053B3F00FC6BA7 /* ZNPeer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNPeer.h; sourceTree = "<group>"; };
 		753E7CE018053B3F00FC6BA7 /* ZNPeer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNPeer.m; sourceTree = "<group>"; };
 		75402997178CD08C00D4F3FD /* zincwallet@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "zincwallet@2x.png"; sourceTree = "<group>"; };
@@ -2076,8 +2073,6 @@
 				752C2FB4174171760033F636 /* NSData+Hash.m */,
 				75920F84174AB82100C1C03D /* NSMutableData+Bitcoin.h */,
 				75920F85174AB82100C1C03D /* NSMutableData+Bitcoin.m */,
-				753E7CDC180478D400FC6BA7 /* NSStream+Bitcoin.h */,
-				753E7CDD180478D400FC6BA7 /* NSStream+Bitcoin.m */,
 				75F1B87717C7356B00680E1B /* NSManagedObject+Utils.h */,
 				75F1B87817C7356B00680E1B /* NSManagedObject+Utils.m */,
 			);
@@ -4706,7 +4701,6 @@
 				847C2302179A1FD600163CEF /* ZNElectrumMnemonic.m in Sources */,
 				7597028417E15B5600CDC14A /* ZNStoryboardSegue.m in Sources */,
 				756E9CD617ACC95D00D316A8 /* ZNSocketListener.m in Sources */,
-				753E7CDE180478D400FC6BA7 /* NSStream+Bitcoin.m in Sources */,
 				753E7CD91802648700FC6BA7 /* ZNPeerEntity.m in Sources */,
 				75A6ECE317BD464A0043E52D /* ZNZincMnemonic.m in Sources */,
 				759B779317BECFCF0000510F /* base64.c in Sources */,

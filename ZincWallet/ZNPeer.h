@@ -44,5 +44,7 @@
 
 - (instancetype)initWithAddress:(uint32_t)address andPort:(uint16_t)port;
 - (void)connect;
+- (void)sendCommand:(NSString *)command payload:(NSData *)payload;
+- (void)sendVersion;
 
 @end

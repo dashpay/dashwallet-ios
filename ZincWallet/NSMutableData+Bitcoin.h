@@ -24,6 +24,13 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
+#import "NSString+Base58.h"
+
+#if BITCOIN_TESTNET
+#define MAGIC_NUMBER 0x0709110B
+#else
+#define MAGIC_NUMBER 0xD9B4BEF9
+#endif
 
 @interface NSMutableData (Bitcoin)
 
@@ -34,11 +41,13 @@
 - (void)appendUInt64:(uint64_t)i;
 - (void)appendVarInt:(uint64_t)i;
 - (void)appendString:(NSString *)s;
-//- (void)appendHash:(NSData *)hash;
+
 - (void)appendScriptPubKeyForHash:(NSData *)hash;
 - (BOOL)appendScriptPubKeyForAddress:(NSString *)address;
 - (void)appendScriptPushData:(NSData *)d;
 
+- (void)appendCommand:(NSString *)command payload:(NSData *)payload;
+- (void)appendNullPaddedString:(NSString *)s length:(NSUInteger)length;
 - (void)appendNetAddress:(uint32_t)address port:(uint16_t)port services:(uint64_t)services;
 
 @end

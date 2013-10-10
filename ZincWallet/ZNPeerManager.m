@@ -29,7 +29,6 @@
 #import "NSString+Base58.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSData+Hash.h"
-#import "NSStream+Bitcoin.h"
 #import "NSManagedObject+Utils.h"
 #import <netdb.h>
 #import <arpa/inet.h>
@@ -73,6 +72,7 @@
     static dispatch_once_t onceToken = 0;
     
     dispatch_once(&onceToken, ^{
+        srand48(time(NULL)); // seed psudo random number generator (for non-cryptographic use only!)
         singleton = [self new];
     });
     
@@ -84,8 +84,6 @@
     if (! (self = [super init])) return nil;
 
     self.peers = [NSMutableArray array];
-
-    srand48(time(NULL)); // seed psudo random number generator (for non-cryptographic use only!)
     
     return self;
 }
@@ -137,7 +135,7 @@
     if (count == 0) count += [self discoverPeers];
     if (count == 0) return nil;
     
-    offset = pow(lrand48() % count, 2)/count; // pick a random peer biased toward peers with more recent timestamps
+    offset = pow(lrand48() % count, 2)/count; // pick a random peer biased for peers with more recent timestamps
     return [ZNPeerEntity objectsSortedBy:@"timestamp" ascending:NO offset:offset limit:1].lastObject;
 }
 

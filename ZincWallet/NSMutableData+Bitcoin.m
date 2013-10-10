@@ -25,6 +25,7 @@
 
 #import "NSMutableData+Bitcoin.h"
 #import "NSString+Base58.h"
+#import "NSData+Hash.h"
 
 #define VAR_INT16_HEADER 0xfd
 #define VAR_INT32_HEADER 0xfe
@@ -55,23 +56,20 @@
 
 - (void)appendUInt16:(uint16_t)i
 {
-    uint16_t le = CFSwapInt16HostToLittle(i);
-    
-    [self appendBytes:&le length:sizeof(le)];    
+    i = CFSwapInt16HostToLittle(i);
+    [self appendBytes:&i length:sizeof(i)];
 }
 
 - (void)appendUInt32:(uint32_t)i
 {
-    uint32_t le = CFSwapInt32HostToLittle(i);
-    
-    [self appendBytes:&le length:sizeof(le)];
+    i = CFSwapInt32HostToLittle(i);
+    [self appendBytes:&i length:sizeof(i)];
 }
 
 - (void)appendUInt64:(uint64_t)i
 {
-    uint64_t le = CFSwapInt64HostToLittle(i);
-    
-    [self appendBytes:&le length:sizeof(le)];
+    i = CFSwapInt64HostToLittle(i);
+    [self appendBytes:&i length:sizeof(i)];
 }
 
 - (void)appendVarInt:(uint64_t)i
@@ -112,9 +110,11 @@
     [self appendBytes:s.UTF8String length:l];
 }
 
+#pragma mark - bitcoin script
+
 - (void)appendScriptPushData:(NSData *)d
 {
-    if (! d.length) {
+    if (d.length == 0) {
         return;
     }
     else if (d.length < OP_PUSHDATA1) {
@@ -149,19 +149,43 @@
 {
     NSData *d = [address base58checkToData];
 
-    if (! d) return NO;
+    if (d.length < 1) return NO;
 
     [self appendScriptPubKeyForHash:[d subdataWithRange:NSMakeRange(1, d.length - 1)]];
     
     return YES;
 }
 
+#pragma mark - bitcoin protocol
+
+- (void)appendCommand:(NSString *)command payload:(NSData *)payload;
+{
+    [self appendUInt32:MAGIC_NUMBER];
+    [self appendNullPaddedString:command length:12];
+    [self appendUInt32:(uint32_t)payload.length];
+    [self appendBytes:[[payload SHA256_2] bytes] length:4];
+    [self appendBytes:payload.bytes length:payload.length];
+}
+
+- (void)appendNullPaddedString:(NSString *)s length:(NSUInteger)length
+{
+    NSUInteger l = [s lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+
+    [self appendBytes:s.UTF8String length:l];
+
+    while (l++ < length) {
+        [self appendBytes:"\0" length:1];
+    }
+}
+
 - (void)appendNetAddress:(uint32_t)address port:(uint16_t)port services:(uint64_t)services
 {
     [self appendUInt64:services];
     [self appendBytes:"\0\0\0\0\0\0\0\0\0\0\xff\xff" length:12]; // IPv4 mapped IPv6 header
-    [self appendUInt32:address];
-    [self appendUInt16:port];
+    address = CFSwapInt32HostToBig(address);
+    [self appendBytes:&address length:sizeof(address)];
+    port = CFSwapInt16HostToBig(port);
+    [self appendBytes:&port length:sizeof(port)];
 }
 
 @end
