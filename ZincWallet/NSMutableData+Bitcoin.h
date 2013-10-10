@@ -37,6 +37,7 @@
 + (size_t)sizeOfVarInt:(uint64_t)i;
 
 - (void)appendUInt8:(uint8_t)i;
+- (void)appendUInt16:(uint16_t)i;
 - (void)appendUInt32:(uint32_t)i;
 - (void)appendUInt64:(uint64_t)i;
 - (void)appendVarInt:(uint64_t)i;

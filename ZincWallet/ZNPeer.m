@@ -25,6 +25,7 @@
 
 #import "ZNPeer.h"
 #import "NSMutableData+Bitcoin.h"
+#import "NSData+Bitcoin.h"
 #import "NSData+Hash.h"
 #import <arpa/inet.h>
 
@@ -175,22 +176,19 @@
 
 - (void)acceptVersionMessage:(NSData *)message
 {
-    _version = CFSwapInt32LittleToHost(*(uint32_t *)message.bytes);
+    NSUInteger l = 0;
+    
+    _version = [message UInt32AtOffset:0];
     
     if (self.version < MIN_PROTO_VERSION) {
         [self disconnect];
         return;
     }
     
-    _services = CFSwapInt64LittleToHost(*(uint64_t *)((char *)message.bytes + 4));
-    _timestamp = CFSwapInt64LittleToHost(*(uint64_t *)((char *)message.bytes + 12));
-    
-    uint64_t len = 0; //XXXX read varint
-    size_t lenlen = [NSMutableData sizeOfVarInt:len];
-    
-    _useragent = [[NSString alloc] initWithBytes:(char *)message.bytes + 80 + lenlen length:len
-                  encoding:NSUTF8StringEncoding];
-    _lastblock = CFSwapInt32LittleToHost(*(uint32_t *)((char *)message.bytes + 80 + lenlen + len));
+    _services = [message UInt64AtOffset:4];
+    _timestamp = [message UInt64AtOffset:12];
+    _useragent = [message stringAtOffset:80 length:&l];
+    _lastblock = [message UInt32AtOffset:80 + l];
     
     [self sendVerackMessage];
 }
@@ -258,7 +256,7 @@
                     
                     // consume one byte at a time, until we find the magic number that starts a new message header
                     while (self.msgHeader.length >= sizeof(uint32_t) &&
-                           CFSwapInt32LittleToHost(*(uint32_t *)self.msgHeader.bytes) != MAGIC_NUMBER) {
+                           [self.msgHeader UInt32AtOffset:0] != MAGIC_NUMBER) {
                         NSLog(@"%c", *(char *)self.msgHeader.bytes);
                         [self.msgHeader replaceBytesInRange:NSMakeRange(0, 1) withBytes:NULL length:0];
                     }
@@ -266,14 +264,14 @@
                     if (self.msgHeader.length < HEADER_LENGTH) continue; // wait for more stream input
                 }
                 
-                if (*((char *)self.msgHeader.bytes + 15) != '\0') { // verify that the msg type field is null terminated
+                if ([self.msgHeader UInt8AtOffset:15] != 0) { // verify that the msg type field is null terminated
                     NSLog(@"error reading message from peer, malformed message header");
                     goto reset;
                 }
                 
                 type = [NSString stringWithUTF8String:(char *)self.msgHeader.bytes + 4];
-                length = CFSwapInt32LittleToHost(*(uint32_t *)((char *)self.msgHeader.bytes + 16));
-                checksum = *(uint32_t *)((char *)self.msgHeader.bytes + 20);
+                length = [self.msgHeader UInt32AtOffset:16];
+                checksum = [self.msgHeader UInt32AtOffset:20];
                 
                 if (length > MAX_MSG_LENGTH) {
                     NSLog(@"error reading message from peer, message too long");
