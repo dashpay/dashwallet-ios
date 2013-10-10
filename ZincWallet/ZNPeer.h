@@ -39,12 +39,16 @@
 @property (nonatomic, readonly) uint32_t address;
 @property (nonatomic, readonly) uint16_t port;
 @property (nonatomic, readonly) uint64_t services;
+@property (nonatomic, readonly) uint32_t version;
+@property (nonatomic, readonly) uint64_t timestamp;
+@property (nonatomic, readonly) NSString *useragent;
+@property (nonatomic, readonly) uint32_t lastblock;
 
 + (instancetype)peerWithAddress:(uint32_t)address andPort:(uint16_t)port;
 
 - (instancetype)initWithAddress:(uint32_t)address andPort:(uint16_t)port;
 - (void)connect;
-- (void)sendCommand:(NSString *)command payload:(NSData *)payload;
-- (void)sendVersion;
+- (void)sendMessage:(NSData *)message type:(NSString *)type;
+- (void)sendVersionMessage;
 
 @end

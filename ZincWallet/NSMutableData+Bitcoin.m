@@ -158,13 +158,13 @@
 
 #pragma mark - bitcoin protocol
 
-- (void)appendCommand:(NSString *)command payload:(NSData *)payload;
+- (void)appendMessage:(NSData *)message type:(NSString *)type;
 {
     [self appendUInt32:MAGIC_NUMBER];
-    [self appendNullPaddedString:command length:12];
-    [self appendUInt32:(uint32_t)payload.length];
-    [self appendBytes:[[payload SHA256_2] bytes] length:4];
-    [self appendBytes:payload.bytes length:payload.length];
+    [self appendNullPaddedString:type length:12];
+    [self appendUInt32:(uint32_t)message.length];
+    [self appendBytes:[[message SHA256_2] bytes] length:4];
+    [self appendBytes:message.bytes length:message.length];
 }
 
 - (void)appendNullPaddedString:(NSString *)s length:(NSUInteger)length

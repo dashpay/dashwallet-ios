@@ -29,37 +29,38 @@
 #import <arpa/inet.h>
 
 #define USERAGENT [NSString stringWithFormat:@"/zincwallet:%@/", NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"]]
-#define MSG_HEADER_LENGTH      24
-#define MAX_PAYLOAD_LENGTH     0x02000000
+
+#define HEADER_LENGTH          24
+#define MAX_MSG_LENGTH         0x02000000
 #define ENABLED_SERVICES       0 // we don't provide full blocks to remote nodes
 #define PROTOCOL_VERSION       70001
 #define MIN_PROTO_VERSION      209 // peers earlier than this protocol version not supported
 #define LOCAL_HOST             0x010000ff
 #define REFERENCE_BLOCK_HEIGHT 250000
 
-#define CMD_VERSION     @"version"
-#define CMD_VERACK      @"verack"
-#define CMD_ADDR        @"addr"
-#define CMD_INV         @"inv"
-#define CMD_GETDATA     @"getdata"
-#define CMD_NOTFOUND    @"notfound"
-#define CMD_GETBLOCKS   @"getblocks"
-#define CMD_GETHEADERS  @"getheaders"
-#define CMD_TX          @"tx"
-#define CMD_BLOCK       @"block"
-#define CMD_HEADERS     @"headers"
-#define CMD_GETADDR     @"getaddr"
-#define CMD_MEMPOOL     @"mempool"
-#define CMD_CHECKORDER  @"checkorder"
-#define CMD_SUBMITORDER @"submitorder"
-#define CMD_REPLY       @"reply"
-#define CMD_PING        @"ping"
-#define CMD_PONG        @"pong"
-#define CMD_FILTERLOAD  @"filterload"
-#define CMD_FILTERADD   @"filteradd"
-#define CMD_FILTERCLEAR @"filterclear"
-#define CMD_MERKLEBLOCK @"merkleblock"
-#define CMD_ALERT       @"alert"
+#define MSG_VERSION     @"version"
+#define MSG_VERACK      @"verack"
+#define MSG_ADDR        @"addr"
+#define MSG_INV         @"inv"
+#define MSG_GETDATA     @"getdata"
+#define MSG_NOTFOUND    @"notfound"
+#define MSG_GETBLOCKS   @"getblocks"
+#define MSG_GETHEADERS  @"getheaders"
+#define MSG_TX          @"tx"
+#define MSG_BLOCK       @"block"
+#define MSG_HEADERS     @"headers"
+#define MSG_GETADDR     @"getaddr"
+#define MSG_MEMPOOL     @"mempool"
+#define MSG_CHECKORDER  @"checkorder"
+#define MSG_SUBMITORDER @"submitorder"
+#define MSG_REPLY       @"reply"
+#define MSG_PING        @"ping"
+#define MSG_PONG        @"pong"
+#define MSG_FILTERLOAD  @"filterload"
+#define MSG_FILTERADD   @"filteradd"
+#define MSG_FILTERCLEAR @"filterclear"
+#define MSG_MERKLEBLOCK @"merkleblock"
+#define MSG_ALERT       @"alert"
 
 #define llurand() (((long long unsigned)mrand48() << (sizeof(unsigned)*8)) | (unsigned)mrand48())
 
@@ -87,6 +88,7 @@
     
     self.msgHeader = [NSMutableData data];
     self.msgPayload = [NSMutableData data];
+    self.outputBuffer = [NSMutableData data];
     
     return self;
 }
@@ -99,58 +101,103 @@
     CFWriteStreamRef writeStream = NULL;
     
     CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)host, self.port, &readStream, &writeStream);
-    
-    NSInputStream *inStream = CFBridgingRelease(readStream);
-    NSOutputStream *outStream = CFBridgingRelease(writeStream);
-    
-    inStream.delegate = outStream.delegate = self;
+    self.inputStream = CFBridgingRelease(readStream);
+    self.outputStream = CFBridgingRelease(writeStream);
+    self.inputStream.delegate = self.outputStream.delegate = self;
     
     // we may want to use a different thread for each peer
-    [inStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    [outStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+    [self.inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+    [self.outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     
-    [inStream open];
-    [outStream open];
+    [self.inputStream open];
+    [self.outputStream open];
     
-    [self sendVersion];
+    [self sendVersionMessage];
 }
 
-- (void)sendCommand:(NSString *)command payload:(NSData *)payload
+- (void)disconnect
 {
-    [self.outputBuffer appendCommand:command payload:payload];
+    [self.inputStream close];
+    [self.outputStream close];
+
+    [self.inputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+    [self.outputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+    
+    //XXXX remove from coredata?
+}
+
+#pragma mark - send
+
+- (void)sendMessage:(NSData *)message type:(NSString *)type
+{
+    [self.outputBuffer appendMessage:message type:type];
 
     NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
 
     if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
 }
 
-- (void)sendVersion
+- (void)sendVersionMessage
 {
-    NSMutableData *d = [NSMutableData data];
+    NSMutableData *msg = [NSMutableData data];
     
-    [d appendUInt32:PROTOCOL_VERSION]; // version
-    [d appendUInt64:ENABLED_SERVICES]; // services
-    [d appendUInt64:[NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970]; // timestamp
-    [d appendNetAddress:self.address port:self.port services:self.services]; // address of remote peer
+    [msg appendUInt32:PROTOCOL_VERSION]; // version
+    [msg appendUInt64:ENABLED_SERVICES]; // services
+    [msg appendUInt64:[NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970]; // timestamp
+    [msg appendNetAddress:self.address port:self.port services:self.services]; // address of remote peer
     //XXXX does using 127.0.0.1 work?
-    [d appendNetAddress:LOCAL_HOST port:STANDARD_PORT services:ENABLED_SERVICES]; // address of local peer
-    [d appendUInt64:llurand()]; // random nonce
-    [d appendString:USERAGENT]; // user agent
+    [msg appendNetAddress:LOCAL_HOST port:STANDARD_PORT services:ENABLED_SERVICES]; // address of local peer
+    [msg appendUInt64:llurand()]; // random nonce
+    [msg appendString:USERAGENT]; // user agent
     //TODO: XXXX get last block stored in core data
-    [d appendUInt32:REFERENCE_BLOCK_HEIGHT]; // last block received
-    [d appendUInt8:0]; // relay transactions (no for SPV bloom filter mode)
+    [msg appendUInt32:REFERENCE_BLOCK_HEIGHT]; // last block received
+    [msg appendUInt8:0]; // relay transactions (no for SPV bloom filter mode)
     
-    [self sendCommand:@"version" payload:d];
+    [self sendMessage:msg type:MSG_VERSION];
 }
 
-- (void)acceptCommand:(NSString *)command payload:(NSData *)payload
+- (void)sendVerackMessage
 {
-    if ([CMD_VERSION isEqual:command]) {
-        // send verack
+    
+}
+
+#pragma mark - accept
+
+- (void)acceptMessage:(NSData *)message type:(NSString *)type
+{
+    if ([MSG_VERSION isEqual:type]) {
+        [self acceptVersionMessage:message];
     }
-    else if ([CMD_VERACK isEqual:command]) {
-        // peer accepted out version message
+    else if ([MSG_VERACK isEqual:type]) {
+        [self acceptVerackMessage:message];
     }
+}
+
+- (void)acceptVersionMessage:(NSData *)message
+{
+    _version = CFSwapInt32LittleToHost(*(uint32_t *)message.bytes);
+    
+    if (self.version < MIN_PROTO_VERSION) {
+        [self disconnect];
+        return;
+    }
+    
+    _services = CFSwapInt64LittleToHost(*(uint64_t *)((char *)message.bytes + 4));
+    _timestamp = CFSwapInt64LittleToHost(*(uint64_t *)((char *)message.bytes + 12));
+    
+    uint64_t len = 0; //XXXX read varint
+    size_t lenlen = [NSMutableData sizeOfVarInt:len];
+    
+    _useragent = [[NSString alloc] initWithBytes:(char *)message.bytes + 80 + lenlen length:len
+                  encoding:NSUTF8StringEncoding];
+    _lastblock = CFSwapInt32LittleToHost(*(uint32_t *)((char *)message.bytes + 80 + lenlen + len));
+    
+    [self sendVerackMessage];
+}
+
+- (void)acceptVerackMessage:(NSData *)message
+{
+    
 }
 
 #pragma mark - hash
@@ -163,12 +210,12 @@
 {
     uint32_t hash = FNV32_OFFSET;
     
-    hash = (hash^((self.address >> 24) & 0xFF))*FNV32_PRIME;
-    hash = (hash^((self.address >> 16) & 0xFF))*FNV32_PRIME;
-    hash = (hash^((self.address >> 8) & 0xFF))*FNV32_PRIME;
-    hash = (hash^((self.address >> 0) & 0xFF))*FNV32_PRIME;
-    hash = (hash^((self.port >> 8) & 0xFF))*FNV32_PRIME;
-    hash = (hash^((self.port >> 0) & 0xFF))*FNV32_PRIME;
+    hash = (hash ^ ((self.address >> 24) & 0xFF))*FNV32_PRIME;
+    hash = (hash ^ ((self.address >> 16) & 0xFF))*FNV32_PRIME;
+    hash = (hash ^ ((self.address >> 8) & 0xFF))*FNV32_PRIME;
+    hash = (hash ^ ((self.address >> 0) & 0xFF))*FNV32_PRIME;
+    hash = (hash ^ ((self.port >> 8) & 0xFF))*FNV32_PRIME;
+    hash = (hash ^ ((self.port >> 0) & 0xFF))*FNV32_PRIME;
     
     return hash;
 }
@@ -184,93 +231,105 @@
 
 - (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode
 {
-    const uint8_t *b = NULL;
-    NSString *command = nil;
-    uint32_t length = 0, checksum = 0;
-    
     switch (eventCode) {
         case NSStreamEventOpenCompleted:
-            NSLog(@"Stream opened");
+            NSLog(@"peer connection opened");
             break;
             
         case NSStreamEventHasBytesAvailable:
             if (aStream != self.inputStream) break;
 
-            while ([(NSInputStream *)aStream hasBytesAvailable]) {
-                NSInteger hlen = self.msgHeader.length, plen = self.msgPayload.length, l = 0;
+            while ([self.inputStream hasBytesAvailable]) {
+                NSString *type = nil;
+                uint32_t length = 0, checksum = 0;
+                NSInteger headerLen = self.msgHeader.length, payloadLen = self.msgPayload.length, l = 0;
 
-                if (hlen < MSG_HEADER_LENGTH) {
-                    self.msgHeader.length = MSG_HEADER_LENGTH;
-                    l = [(NSInputStream *)aStream read:self.msgHeader.mutableBytes maxLength:self.msgHeader.length];
-                    self.msgHeader.length = l < 0 ? hlen : hlen + l;
+                if (headerLen < HEADER_LENGTH) { // read message header
+                    self.msgHeader.length = HEADER_LENGTH;
+                    l = [self.inputStream read:(uint8_t *)self.msgHeader.mutableBytes + headerLen
+                         maxLength:self.msgHeader.length];
                     
-                    if (l < 0 || (self.msgHeader.length > sizeof(uint32_t) &&
-                                  CFSwapInt32LittleToHost(*(uint32_t *)self.msgHeader.bytes) != MAGIC_NUMBER)) {
+                    if (l < 0) {
                         NSLog(@"error reading message from peer");
-                        goto breakout;
+                        goto reset;
                     }
-                    else if (self.msgHeader.length < MSG_HEADER_LENGTH) continue;
+                    
+                    self.msgHeader.length = headerLen + l;
+                    
+                    // consume one byte at a time, until we find the magic number that starts a new message header
+                    while (self.msgHeader.length >= sizeof(uint32_t) &&
+                           CFSwapInt32LittleToHost(*(uint32_t *)self.msgHeader.bytes) != MAGIC_NUMBER) {
+                        NSLog(@"%c", *(char *)self.msgHeader.bytes);
+                        [self.msgHeader replaceBytesInRange:NSMakeRange(0, 1) withBytes:NULL length:0];
+                    }
+                    
+                    if (self.msgHeader.length < HEADER_LENGTH) continue; // wait for more stream input
                 }
                 
-                b = self.msgHeader.bytes;
-                command = [[NSString alloc] initWithBytes:&b[4] length:12 encoding:NSUTF8StringEncoding];
-                length = CFSwapInt32LittleToHost(*(uint32_t *)&b[16]);
-                checksum = *(uint32_t *)&b[20];
+                if (*((char *)self.msgHeader.bytes + 15) != '\0') { // verify that the msg type field is null terminated
+                    NSLog(@"error reading message from peer, malformed message header");
+                    goto reset;
+                }
                 
-                if (length > MAX_PAYLOAD_LENGTH) {
+                type = [NSString stringWithUTF8String:(char *)self.msgHeader.bytes + 4];
+                length = CFSwapInt32LittleToHost(*(uint32_t *)((char *)self.msgHeader.bytes + 16));
+                checksum = *(uint32_t *)((char *)self.msgHeader.bytes + 20);
+                
+                if (length > MAX_MSG_LENGTH) {
                     NSLog(@"error reading message from peer, message too long");
-                    goto breakout;
+                    goto reset;
                 }
-                else if (plen < length) {
+                
+                if (payloadLen < length) { // read message payload
                     self.msgPayload.length = length;
-                    l = [(NSInputStream *)aStream read:self.msgPayload.mutableBytes maxLength:self.msgPayload.length];
-                    self.msgPayload.length = l < 0 ? plen : plen + l;
+                    l = [self.inputStream read:(uint8_t *)self.msgPayload.mutableBytes + payloadLen
+                         maxLength:self.msgPayload.length];
                 
                     if (l < 0) {
                         NSLog(@"error reading message from peer");
-                        goto breakout;
+                        goto reset;
                     }
-                    else if (self.msgPayload.length < length) continue;
+                    
+                    self.msgPayload.length = payloadLen + l;
+                    if (self.msgPayload.length < length) continue; // wait for more stream input
                 }
 
                 if (*(uint32_t *)[self.msgPayload SHA256_2].bytes != checksum) {
                     NSLog(@"error reading message from peer, invalid checksum");
-                    goto breakout;
+                    goto reset;
                 }
-                else [self acceptCommand:command payload:self.msgPayload];
                 
-breakout:
-                // reset and wait for next message
-                self.msgHeader.length = 0;
-                self.msgPayload.length = 0;
+                [self acceptMessage:self.msgPayload type:type];
+                
+reset:          // reset for next message
+                self.msgHeader.length = self.msgPayload.length = 0;
             }
+            
             break;
            
         case NSStreamEventHasSpaceAvailable:
             if (aStream != self.outputStream) break;
             
-            while (self.outputBuffer.length > 0 && [(NSOutputStream *)aStream hasSpaceAvailable]) {
+            while (self.outputBuffer.length > 0 && [self.outputStream hasSpaceAvailable]) {
                 NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
 
                 if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
             }
+            
             break;
         
         case NSStreamEventErrorOccurred:
-            NSLog(@"Can not connect to the host!");
-            [aStream close];
-            [aStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-            //XXX remove peer
+            NSLog(@"error connecting to peer");
+            [self disconnect];
             break;
             
         case NSStreamEventEndEncountered:
-            [aStream close];
-            [aStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-            //XXX remove peer or reconnect or something
+            NSLog(@"peer connection closed");
+            [self disconnect];
             break;
             
         default:
-            NSLog(@"Unknown event");
+            NSLog(@"unknown network stream event");
     }
 }
 
