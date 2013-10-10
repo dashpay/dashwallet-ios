@@ -49,6 +49,8 @@
 
 - (void)appendMessage:(NSData *)message type:(NSString *)type;
 - (void)appendNullPaddedString:(NSString *)s length:(NSUInteger)length;
+
+// address is an IPv4 address in network byte order
 - (void)appendNetAddress:(uint32_t)address port:(uint16_t)port services:(uint64_t)services;
 
 @end

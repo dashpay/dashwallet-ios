@@ -24,8 +24,9 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
+#import "ZNPeer.h"
 
-@interface ZNPeerManager : NSObject<NSStreamDelegate>
+@interface ZNPeerManager : NSObject<ZNPeerDelegate>
 
 + (instancetype)sharedInstance;
 

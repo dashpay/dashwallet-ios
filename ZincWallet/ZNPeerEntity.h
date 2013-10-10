@@ -28,7 +28,7 @@
 
 @interface ZNPeerEntity : NSManagedObject
 
-@property (nonatomic) int32_t address;
+@property (nonatomic) int32_t address; // IPv4 address in network byte order
 @property (nonatomic) NSTimeInterval timestamp;
 @property (nonatomic) int16_t port;
 @property (nonatomic) int64_t services;

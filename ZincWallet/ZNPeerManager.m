@@ -26,6 +26,7 @@
 #import "ZNPeerManager.h"
 #import "ZNPeer.h"
 #import "ZNPeerEntity.h"
+#import "ZNWallet.h"
 #import "NSString+Base58.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSData+Hash.h"
@@ -61,6 +62,7 @@
 @interface ZNPeerManager ()
 
 @property (nonatomic, strong) NSMutableArray *peers;
+@property (nonatomic, assign) BOOL connected;
 
 @end
 
@@ -85,6 +87,8 @@
 
     self.peers = [NSMutableArray array];
     
+    //TODO: monitor network reachability and reconnect whenever connection becomes available
+    
     return self;
 }
 
@@ -104,10 +108,10 @@
         struct hostent *h = gethostbyname([obj UTF8String]);
         
         for (int j = 0; h->h_addr_list[j] != NULL; j++) {
-            struct in_addr a = *(struct in_addr *)h->h_addr_list[j];
+            uint32_t addr = ((struct in_addr *)h->h_addr_list[j])->s_addr;
             NSTimeInterval t = now - 24*60*60*(3 + drand48()*4); // random timestamp between 3 and 7 days ago
             
-            [ZNPeerEntity entityWithAddress:a.s_addr port:STANDARD_PORT timestamp:t services:NODE_NETWORK];
+            [ZNPeerEntity entityWithAddress:addr port:STANDARD_PORT timestamp:t services:NODE_NETWORK];
             count++;
         }
     }];
@@ -116,11 +120,14 @@
     if (count > 0) return count;
      
     // if dns peer discovery fails, fall back on a hard coded list of peers
+    // hard coded list is taken from the satoshi client
+    // values need to be byte order swapped to be host native, and then possibly swapped again to network byte order
     [[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:FIXED_PEERS ofType:@"plist"]]
     enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        uint32_t addr = CFSwapInt32HostToBig(CFSwapInt32([obj intValue]));
         NSTimeInterval t = now - 24*60*60*(7 + drand48()*7); // random timestamp between 7 and 14 days ago
         
-        [ZNPeerEntity entityWithAddress:[obj intValue] port:STANDARD_PORT timestamp:t services:NODE_NETWORK];
+        [ZNPeerEntity entityWithAddress:addr port:STANDARD_PORT timestamp:t services:NODE_NETWORK];
         count++;
     }];
 #endif
@@ -141,14 +148,56 @@
 
 - (void)connect
 {
+    if (self.peers.count > 0 && [self.peers[0] status] != disconnected) {
+#warning remove this too
+        [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
+
+        self.connected = YES;
+        return;
+    }
+
     ZNPeerEntity *e = [self randomPeer];
     
     if (! e) return;
     
     ZNPeer *peer = [ZNPeer peerWithAddress:e.address andPort:e.port];
     
+    peer.delegate = self;
+    [self.peers removeAllObjects]; //XXX: obviously this will need to change
     [self.peers addObject:peer];
+
+    // tesnet node 144.76.46.66:18333 connected successfully on the first attempt!
     [peer connect];
+}
+
+#pragma mark - ZNPeerDelegate
+
+- (void)peerConnected:(ZNPeer *)peer
+{
+    self.connected = YES;
+    NSLog(@"peer connected");
+    
+#warning remove this too
+    [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
+}
+
+- (void)peerDisconnected:(ZNPeer *)peer
+{
+    //TODO: XXXX remove peer from core data?
+    [self.peers removeObject:peer];
+    NSLog(@"peer disconnected");
+
+    if (! self.connected) { //XXXX do we need this? maybe just try another node
+        NSError *error = [NSError errorWithDomain:@"ZincWallet" code:0
+                          userInfo:@{NSLocalizedDescriptionKey:@"couldn't connect to bitcoin network"}];
+    
+        [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification
+         object:@{@"error":error}];
+    }
+
+    if (! self.peers.count) {
+        self.connected = NO;
+    }
 }
 
 @end

@@ -36,7 +36,7 @@
 #define ENABLED_SERVICES       0 // we don't provide full blocks to remote nodes
 #define PROTOCOL_VERSION       70001
 #define MIN_PROTO_VERSION      209 // peers earlier than this protocol version not supported
-#define LOCAL_HOST             0x010000ff
+#define LOCAL_HOST             0x7f000001
 #define REFERENCE_BLOCK_HEIGHT 250000
 
 #define MSG_VERSION     @"version"
@@ -70,6 +70,7 @@
 @property (nonatomic, strong) NSInputStream *inputStream;
 @property (nonatomic, strong) NSOutputStream *outputStream;
 @property (nonatomic, strong) NSMutableData *msgHeader, *msgPayload, *outputBuffer;
+@property (nonatomic, assign) BOOL sentVerack, gotVerack;
 
 @end
 
@@ -97,10 +98,13 @@
 - (void)connect
 {
     struct in_addr addr = { self.address };
-    NSString *host = [NSString stringWithUTF8String:inet_ntoa(addr)];
+    char s[INET_ADDRSTRLEN];
+    NSString *host = [NSString stringWithUTF8String:inet_ntop(AF_INET, &addr, s, INET_ADDRSTRLEN)];
     CFReadStreamRef readStream = NULL;
     CFWriteStreamRef writeStream = NULL;
     
+    NSLog(@"connecting to %@:%u", host, self.port);
+    _status = connecting;
     CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)host, self.port, &readStream, &writeStream);
     self.inputStream = CFBridgingRelease(readStream);
     self.outputStream = CFBridgingRelease(writeStream);
@@ -124,7 +128,20 @@
     [self.inputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     [self.outputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     
-    //XXXX remove from coredata?
+    self.gotVerack = self.sentVerack = NO;
+    _status = disconnected;
+    [self.delegate peerDisconnected:self];
+}
+
+// change state to connected if appropriate
+- (void)setConnected
+{
+    if (self.status != connecting || ! self.sentVerack || ! self.gotVerack) return;
+
+    _status = connected;
+    [self.delegate peerConnected:self];
+    
+    //TODO: XXXX send bloom filters
 }
 
 #pragma mark - send
@@ -132,19 +149,24 @@
 - (void)sendMessage:(NSData *)message type:(NSString *)type
 {
     [self.outputBuffer appendMessage:message type:type];
+    
+    while (self.outputBuffer.length > 0 && [self.outputStream hasSpaceAvailable]) {
+        NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
 
-    NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
-
-    if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
+        if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
+    }
 }
 
 - (void)sendVersionMessage
 {
     NSMutableData *msg = [NSMutableData data];
     
+    NSLog(@"sending version");
+    
     [msg appendUInt32:PROTOCOL_VERSION]; // version
     [msg appendUInt64:ENABLED_SERVICES]; // services
     [msg appendUInt64:[NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970]; // timestamp
+    //XXXX we have endianess problems
     [msg appendNetAddress:self.address port:self.port services:self.services]; // address of remote peer
     //XXXX does using 127.0.0.1 work?
     [msg appendNetAddress:LOCAL_HOST port:STANDARD_PORT services:ENABLED_SERVICES]; // address of local peer
@@ -154,12 +176,17 @@
     [msg appendUInt32:REFERENCE_BLOCK_HEIGHT]; // last block received
     [msg appendUInt8:0]; // relay transactions (no for SPV bloom filter mode)
     
+    //TODO: need some sort of timeout for verack
     [self sendMessage:msg type:MSG_VERSION];
 }
 
 - (void)sendVerackMessage
 {
+    NSLog(@"sending verack");
     
+    [self sendMessage:[NSData data] type:MSG_VERACK];
+    self.sentVerack = YES;
+    [self setConnected];
 }
 
 #pragma mark - accept
@@ -172,6 +199,7 @@
     else if ([MSG_VERACK isEqual:type]) {
         [self acceptVerackMessage:message];
     }
+    else NSLog(@"dropping %@, handler not implemented", type);
 }
 
 - (void)acceptVersionMessage:(NSData *)message
@@ -190,12 +218,21 @@
     _useragent = [message stringAtOffset:80 length:&l];
     _lastblock = [message UInt32AtOffset:80 + l];
     
+    NSLog(@"got version");
+    
     [self sendVerackMessage];
 }
 
 - (void)acceptVerackMessage:(NSData *)message
 {
+    if (message.length != 0) {
+        NSLog(@"error reading message, malformed verack payload");
+        return;
+    }
     
+    NSLog(@"got verack");
+    self.gotVerack = YES;
+    [self setConnected];
 }
 
 #pragma mark - hash
@@ -229,9 +266,23 @@
 
 - (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode
 {
+    struct in_addr addr = { self.address };
+    char s[INET_ADDRSTRLEN];
+
     switch (eventCode) {
         case NSStreamEventOpenCompleted:
-            NSLog(@"peer connection opened");
+            NSLog(@"%s:%d %@ stream connected", inet_ntop(AF_INET, &addr, s, INET_ADDRSTRLEN), self.port,
+                  aStream == self.inputStream ? @"input" : aStream == self.outputStream ? @"output" : @"unkown");
+            // no break; continue to next case and send any queued output
+        case NSStreamEventHasSpaceAvailable:
+            if (aStream != self.outputStream) break;
+            
+            while (self.outputBuffer.length > 0 && [self.outputStream hasSpaceAvailable]) {
+                NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
+                
+                if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
+            }
+            
             break;
             
         case NSStreamEventHasBytesAvailable:
@@ -273,7 +324,7 @@
                 length = [self.msgHeader UInt32AtOffset:16];
                 checksum = [self.msgHeader UInt32AtOffset:20];
                 
-                if (length > MAX_MSG_LENGTH) {
+                if (length > MAX_MSG_LENGTH) { // check message length
                     NSLog(@"error reading message from peer, message too long");
                     goto reset;
                 }
@@ -292,30 +343,19 @@
                     if (self.msgPayload.length < length) continue; // wait for more stream input
                 }
 
-                if (*(uint32_t *)[self.msgPayload SHA256_2].bytes != checksum) {
+                if (*(uint32_t *)[self.msgPayload SHA256_2].bytes != checksum) { // verify checksum
                     NSLog(@"error reading message from peer, invalid checksum");
                     goto reset;
                 }
                 
-                [self acceptMessage:self.msgPayload type:type];
+                [self acceptMessage:self.msgPayload type:type]; // process message
                 
 reset:          // reset for next message
                 self.msgHeader.length = self.msgPayload.length = 0;
             }
             
             break;
-           
-        case NSStreamEventHasSpaceAvailable:
-            if (aStream != self.outputStream) break;
             
-            while (self.outputBuffer.length > 0 && [self.outputStream hasSpaceAvailable]) {
-                NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
-
-                if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
-            }
-            
-            break;
-        
         case NSStreamEventErrorOccurred:
             NSLog(@"error connecting to peer");
             [self disconnect];

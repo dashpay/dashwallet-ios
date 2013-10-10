@@ -34,9 +34,27 @@
 
 #define NODE_NETWORK      1
 
+@class ZNPeer;
+
+@protocol ZNPeerDelegate<NSObject>
+@optional
+
+- (void)peerConnected:(ZNPeer *)peer;
+- (void)peerDisconnected:(ZNPeer *)peer;
+
+@end
+
+typedef enum {
+    disconnected = 0,
+    connecting,
+    connected
+} peerStatus;
+
 @interface ZNPeer : NSObject<NSStreamDelegate>
 
-@property (nonatomic, readonly) uint32_t address;
+@property (nonatomic, assign) id<ZNPeerDelegate> delegate;
+@property (nonatomic, readonly) peerStatus status;
+@property (nonatomic, readonly) uint32_t address; // IPv4 address in network byte order
 @property (nonatomic, readonly) uint16_t port;
 @property (nonatomic, readonly) uint64_t services;
 @property (nonatomic, readonly) uint32_t version;

@@ -337,6 +337,13 @@ static NSData *getKeychainData(NSString *key)
             
             self.updatedTxHashes = [NSMutableSet set]; // reset the updated tx set
             
+
+#if SPV_MODE
+            _synchronizing = NO;
+            [[ZNPeerManager sharedInstance] connect];
+            return;
+#endif
+
 #if BITCOIN_TESTNET
             _synchronizing = NO;
             [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
