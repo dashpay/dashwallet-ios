@@ -181,10 +181,12 @@
 // address is an IPv4 address in network byte order
 - (void)appendNetAddress:(uint32_t)address port:(uint16_t)port services:(uint64_t)services
 {
+    address = CFSwapInt32HostToBig(address);
+    port = CFSwapInt16HostToBig(port);
+    
     [self appendUInt64:services];
     [self appendBytes:"\0\0\0\0\0\0\0\0\0\0\xff\xff" length:12]; // IPv4 mapped IPv6 header
     [self appendBytes:&address length:sizeof(address)];
-    port = CFSwapInt16HostToBig(port);
     [self appendBytes:&port length:sizeof(port)];
 }
 

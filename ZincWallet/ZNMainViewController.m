@@ -28,7 +28,11 @@
 #import "ZNReceiveViewController.h"
 #import "ZNWallet.h"
 #import "ZNWallet+Utils.h"
+#if SPV_MODE
+#import "ZNPeerManager.h"
+#else
 #import "ZNSocketListener.h"
+#endif
 #import <netinet/in.h>
 #import "Reachability.h"
 
@@ -84,16 +88,25 @@
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
+#if SPV_MODE
+            if (w.masterPublicKey) [[ZNPeerManager sharedInstance] connect];
+#else
             if (w.timeSinceLastSync > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
             else if (w.masterPublicKey) [[ZNSocketListener sharedInstance] openSocket];
+#endif
         }];
     
     // TODO: switch to AFNetworkingReachability
     self.reachabilityObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
+            //TODO: XXXX check reachability status? changed != reachable
+#if SPV_MODE
+            if (w.masterPublicKey) [[ZNPeerManager sharedInstance] connect];
+#else
             if (w.timeSinceLastSync > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
             else if (w.masterPublicKey) [[ZNSocketListener sharedInstance] openSocket];
+#endif
         }];
     
     self.balanceObserver =
@@ -124,8 +137,10 @@
             
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                          [w localCurrencyStringForAmount:w.balance]];
-            
+
+#if ! SPV_MODE
             if (w.masterPublicKey) [[ZNSocketListener sharedInstance] openSocket];
+#endif
         }];
     
     //TODO: create an error banner instead of using an alert
@@ -228,8 +243,12 @@
 {
     [super viewDidAppear:animated];
     
+#if SPV_MODE
+    if ([ZNWallet sharedInstance].masterPublicKey) [[ZNPeerManager sharedInstance] connect];
+#else
     if ([[ZNWallet sharedInstance] timeSinceLastSync] > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
     else if ([ZNWallet sharedInstance].masterPublicKey) [[ZNSocketListener sharedInstance] openSocket];
+#endif
 }
 
 - (ZNPayViewController *)payController

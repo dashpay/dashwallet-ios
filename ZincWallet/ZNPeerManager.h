@@ -31,5 +31,6 @@
 + (instancetype)sharedInstance;
 
 - (void)connect;
+- (void)subscribeToAddresses:newaddresses;
 
 @end

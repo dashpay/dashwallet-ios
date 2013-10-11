@@ -63,6 +63,7 @@
 
 @property (nonatomic, strong) NSMutableArray *peers;
 @property (nonatomic, assign) BOOL connected;
+@property (nonatomic, assign) int connectFailures;
 
 @end
 
@@ -88,6 +89,7 @@
     self.peers = [NSMutableArray array];
     
     //TODO: monitor network reachability and reconnect whenever connection becomes available
+    //[[ZNPeerEntity allObjects] makeObjectsPerformSelector:@selector(deleteObject)];
     
     return self;
 }
@@ -108,7 +110,7 @@
         struct hostent *h = gethostbyname([obj UTF8String]);
         
         for (int j = 0; h->h_addr_list[j] != NULL; j++) {
-            uint32_t addr = ((struct in_addr *)h->h_addr_list[j])->s_addr;
+            uint32_t addr = CFSwapInt32BigToHost(((struct in_addr *)h->h_addr_list[j])->s_addr);
             NSTimeInterval t = now - 24*60*60*(3 + drand48()*4); // random timestamp between 3 and 7 days ago
             
             [ZNPeerEntity entityWithAddress:addr port:STANDARD_PORT timestamp:t services:NODE_NETWORK];
@@ -120,11 +122,10 @@
     if (count > 0) return count;
      
     // if dns peer discovery fails, fall back on a hard coded list of peers
-    // hard coded list is taken from the satoshi client
-    // values need to be byte order swapped to be host native, and then possibly swapped again to network byte order
+    // hard coded list is taken from the satoshi client, values need to be byte order swapped to be host native
     [[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:FIXED_PEERS ofType:@"plist"]]
     enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        uint32_t addr = CFSwapInt32HostToBig(CFSwapInt32([obj intValue]));
+        uint32_t addr = CFSwapInt32([obj intValue]);
         NSTimeInterval t = now - 24*60*60*(7 + drand48()*7); // random timestamp between 7 and 14 days ago
         
         [ZNPeerEntity entityWithAddress:addr port:STANDARD_PORT timestamp:t services:NODE_NETWORK];
@@ -135,7 +136,7 @@
     return count;
 }
 
-- (ZNPeerEntity *)randomPeer
+- (ZNPeerEntity *)randomPeer //XXXX why does this always pick the smae one over and over?
 {
     NSUInteger count = [ZNPeerEntity countAllObjects], offset = 0;
     
@@ -143,6 +144,9 @@
     if (count == 0) return nil;
     
     offset = pow(lrand48() % count, 2)/count; // pick a random peer biased for peers with more recent timestamps
+    
+    NSLog(@"picking peer %lu out of %lu known", (unsigned long)offset, (unsigned long)count);
+    
     return [ZNPeerEntity objectsSortedBy:@"timestamp" ascending:NO offset:offset limit:1].lastObject;
 }
 
@@ -158,7 +162,10 @@
 
     ZNPeerEntity *e = [self randomPeer];
     
-    if (! e) return;
+    if (! e) {
+        
+        return;
+    }
     
     ZNPeer *peer = [ZNPeer peerWithAddress:e.address andPort:e.port];
     
@@ -170,34 +177,51 @@
     [peer connect];
 }
 
+- (void)subscribeToAddresses:(NSArray *)addresses
+{
+    //TODO: add addresses to bloom filters
+}
+
 #pragma mark - ZNPeerDelegate
 
 - (void)peerConnected:(ZNPeer *)peer
 {
     self.connected = YES;
-    NSLog(@"peer connected");
+    self.connectFailures = 0;
+    NSLog(@"%@:%d connected", peer.host, peer.port);
     
 #warning remove this too
     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
 }
 
-- (void)peerDisconnected:(ZNPeer *)peer
+- (void)peerDisconnected:(ZNPeer *)peer withError:(NSError *)error
 {
-    //TODO: XXXX remove peer from core data?
     [self.peers removeObject:peer];
-    NSLog(@"peer disconnected");
+    NSLog(@"%@:%d disconnected%@%@", peer.host, peer.port, error ? @", " : @"", error ? error : @"");
 
-    if (! self.connected) { //XXXX do we need this? maybe just try another node
-        NSError *error = [NSError errorWithDomain:@"ZincWallet" code:0
-                          userInfo:@{NSLocalizedDescriptionKey:@"couldn't connect to bitcoin network"}];
-    
-        [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification
-         object:@{@"error":error}];
+    //TODO: XXXX check for network reachability
+    if (error) {
+        [[ZNPeerEntity objectsMatching:@"address == %u && port == %u", peer.address, peer.port]
+         makeObjectsPerformSelector:@selector(deleteObject)];
     }
 
     if (! self.peers.count) {
         self.connected = NO;
+        self.connectFailures++;
+        
+        if (self.connectFailures > 5) {
+            if (! error) {
+                error = [NSError errorWithDomain:@"ZincWallet" code:0
+                         userInfo:@{NSLocalizedDescriptionKey:@"couldn't connect to bitcoin network"}];
+            }
+            
+            [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification
+             object:@{@"error":error}];
+            return;
+        }
     }
+    
+    if (! self.connected) [self connect];
 }
 
 @end

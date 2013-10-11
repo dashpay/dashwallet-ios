@@ -76,6 +76,8 @@
 
 @implementation ZNPeer
 
+@dynamic host;
+
 + (instancetype)peerWithAddress:(uint32_t)address andPort:(uint16_t)port
 {
     return [[self alloc] initWithAddress:address andPort:port];
@@ -97,15 +99,12 @@
 
 - (void)connect
 {
-    struct in_addr addr = { self.address };
-    char s[INET_ADDRSTRLEN];
-    NSString *host = [NSString stringWithUTF8String:inet_ntop(AF_INET, &addr, s, INET_ADDRSTRLEN)];
     CFReadStreamRef readStream = NULL;
     CFWriteStreamRef writeStream = NULL;
     
-    NSLog(@"connecting to %@:%u", host, self.port);
+    NSLog(@"connecting to %@:%u", self.host, self.port);
     _status = connecting;
-    CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)host, self.port, &readStream, &writeStream);
+    CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)self.host, self.port, &readStream, &writeStream);
     self.inputStream = CFBridgingRelease(readStream);
     self.outputStream = CFBridgingRelease(writeStream);
     self.inputStream.delegate = self.outputStream.delegate = self;
@@ -122,6 +121,11 @@
 
 - (void)disconnect
 {
+    NSError *error = nil;
+    
+    if (self.inputStream.streamStatus == NSStreamStatusError) error = self.inputStream.streamError;
+    if (self.outputStream.streamStatus == NSStreamStatusError) error = self.outputStream.streamError;
+
     [self.inputStream close];
     [self.outputStream close];
 
@@ -130,7 +134,15 @@
     
     self.gotVerack = self.sentVerack = NO;
     _status = disconnected;
-    [self.delegate peerDisconnected:self];
+    [self.delegate peerDisconnected:self withError:error];
+}
+
+- (NSString *)host
+{
+    struct in_addr addr = { CFSwapInt32HostToBig(self.address) };
+    char s[INET_ADDRSTRLEN];
+
+    return [NSString stringWithUTF8String:inet_ntop(AF_INET, &addr, s, INET_ADDRSTRLEN)];
 }
 
 // change state to connected if appropriate
@@ -138,6 +150,8 @@
 {
     if (self.status != connecting || ! self.sentVerack || ! self.gotVerack) return;
 
+    NSLog(@"handshake completed");
+    
     _status = connected;
     [self.delegate peerConnected:self];
     
@@ -154,6 +168,8 @@
         NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
 
         if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
+        
+        if (self.outputBuffer.length == 0) NSLog(@"output buffer cleared");
     }
 }
 
@@ -266,12 +282,9 @@
 
 - (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode
 {
-    struct in_addr addr = { self.address };
-    char s[INET_ADDRSTRLEN];
-
     switch (eventCode) {
         case NSStreamEventOpenCompleted:
-            NSLog(@"%s:%d %@ stream connected", inet_ntop(AF_INET, &addr, s, INET_ADDRSTRLEN), self.port,
+            NSLog(@"%@:%d %@ stream connected", self.host, self.port,
                   aStream == self.inputStream ? @"input" : aStream == self.outputStream ? @"output" : @"unkown");
             // no break; continue to next case and send any queued output
         case NSStreamEventHasSpaceAvailable:
@@ -281,6 +294,8 @@
                 NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
                 
                 if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
+
+                if (self.outputBuffer.length == 0) NSLog(@"output buffer cleared");
             }
             
             break;
@@ -357,7 +372,7 @@ reset:          // reset for next message
             break;
             
         case NSStreamEventErrorOccurred:
-            NSLog(@"error connecting to peer");
+            NSLog(@"error connecting to peer, %@", aStream.streamError);
             [self disconnect];
             break;
             

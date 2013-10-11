@@ -237,10 +237,14 @@ breakout:
         return nil;
     }
     
-    unsigned char x = BITCOIN_TESTNET ? BITCOIN_PUBKEY_ADDRESS_TEST : BITCOIN_PUBKEY_ADDRESS;
+#if BITCOIN_TESTNET
+    uint8_t x = BITCOIN_PUBKEY_ADDRESS_TEST;
+#else
+    uint8_t x = BITCOIN_PUBKEY_ADDRESS;
+#endif
     NSMutableData *d = [NSMutableData dataWithBytes:&x length:1];
     
-    [d appendBytes:(const unsigned char *)script.bytes + script.length - suffix.length - 20 length:20];
+    [d appendBytes:(const uint8_t *)script.bytes + script.length - suffix.length - 20 length:20];
     
     return [self base58checkWithData:d];
 }
@@ -317,19 +321,15 @@ breakout:
 {
     NSData *d = [self base58checkToData];
     
-    if (d.length == 21) {
-        switch (*(uint8_t *)d.bytes) {
-            case BITCOIN_PUBKEY_ADDRESS:
-            case BITCOIN_SCRIPT_ADDRESS:
-                return ! BITCOIN_TESTNET;
-                
-            case BITCOIN_PUBKEY_ADDRESS_TEST:
-            case BITCOIN_SCRIPT_ADDRESS_TEST:
-                return BITCOIN_TESTNET;
-        }
-    }
+    if (d.length != 21) return NO;
+    
+    uint8_t version = *(uint8_t *)d.bytes;
         
-    return NO;
+#if BITCOIN_TESTNET
+    return (version == BITCOIN_PUBKEY_ADDRESS_TEST || version == BITCOIN_SCRIPT_ADDRESS_TEST) ? YES : NO;
+#else
+    return (version == BITCOIN_PUBKEY_ADDRESS || version == BITCOIN_SCRIPT_ADDRESS) ? YES : NO;
+#endif
 }
 
 - (BOOL)isValidBitcoinPrivateKey
@@ -337,13 +337,11 @@ breakout:
     NSData *d = [self base58checkToData];
     
     if (d.length == 33 || d.length == 34) {
-        switch (*(uint8_t *)d.bytes) {
-            case BITCOIN_PRIVKEY:
-                return ! BITCOIN_TESTNET;
-                
-            case BITCOIN_PRIVKEY_TEST:
-                return BITCOIN_TESTNET;
-        }
+#if BITCOIN_TESNET
+        return *(uint8_t *)d.bytes == BITCOIN_PRIVKEY_TEST ? YES : NO;
+#else
+        return *(uint8_t *)d.bytes == BITCOIN_PRIVKEY ? YES : NO;
+#endif
     }
     else if ((self.length == 30 || self.length == 22) && [self characterAtIndex:0] == 'S') { // mini private key format
         NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), self.length + 1));
@@ -352,10 +350,9 @@ breakout:
         [self getBytes:d.mutableBytes maxLength:d.length usedLength:NULL encoding:NSUTF8StringEncoding options:0
          range:NSMakeRange(0, self.length) remainingRange:NULL];
         [d appendBytes:"?" length:1];
-        if (*(unsigned char *)[d SHA256].bytes == 0x00) return YES;
+        return *(uint8_t *)[d SHA256].bytes == 0 ? YES : NO;
     }
-    
-    return NO;
+    else return NO;
 }
 
 @end

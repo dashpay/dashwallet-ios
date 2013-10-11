@@ -336,7 +336,6 @@ static NSData *getKeychainData(NSString *key)
             NSArray *used = [ZNAddressEntity objectsMatching:@"! (address IN %@)", [gap valueForKey:@"address"]];
             
             self.updatedTxHashes = [NSMutableSet set]; // reset the updated tx set
-            
 
 #if SPV_MODE
             _synchronizing = NO;
@@ -407,7 +406,11 @@ static NSData *getKeychainData(NSString *key)
         }
     }
     
+#if SPV_MODE
+    if (newaddresses.count > 0) [[ZNPeerManager sharedInstance] subscribeToAddresses:newaddresses];
+#else
     if (newaddresses.count > 0) [[ZNSocketListener sharedInstance] subscribeToAddresses:newaddresses];
+#endif
     
     return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
 }

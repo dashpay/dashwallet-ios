@@ -40,7 +40,7 @@
 @optional
 
 - (void)peerConnected:(ZNPeer *)peer;
-- (void)peerDisconnected:(ZNPeer *)peer;
+- (void)peerDisconnected:(ZNPeer *)peer withError:(NSError *)error;
 
 @end
 
@@ -54,7 +54,8 @@ typedef enum {
 
 @property (nonatomic, assign) id<ZNPeerDelegate> delegate;
 @property (nonatomic, readonly) peerStatus status;
-@property (nonatomic, readonly) uint32_t address; // IPv4 address in network byte order
+@property (nonatomic, readonly) NSString *host;
+@property (nonatomic, readonly) uint32_t address;
 @property (nonatomic, readonly) uint16_t port;
 @property (nonatomic, readonly) uint64_t services;
 @property (nonatomic, readonly) uint32_t version;

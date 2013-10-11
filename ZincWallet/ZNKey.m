@@ -190,7 +190,11 @@
     if (! hash.length) return nil;
 
     NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), hash.length + 1));
-    uint8_t version = BITCOIN_TESTNET ? BITCOIN_PUBKEY_ADDRESS_TEST : BITCOIN_PUBKEY_ADDRESS;
+#if BITCOIN_TESTNET
+    uint8_t version = BITCOIN_PUBKEY_ADDRESS_TEST;
+#else
+    uint8_t version = BITCOIN_PUBKEY_ADDRESS;
+#endif
     
     [d appendBytes:&version length:1];
     [d appendData:hash];
