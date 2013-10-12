@@ -113,7 +113,7 @@
             uint32_t addr = CFSwapInt32BigToHost(((struct in_addr *)h->h_addr_list[j])->s_addr);
             NSTimeInterval t = now - 24*60*60*(3 + drand48()*4); // random timestamp between 3 and 7 days ago
             
-            [ZNPeerEntity entityWithAddress:addr port:STANDARD_PORT timestamp:t services:NODE_NETWORK];
+            [ZNPeerEntity createOrUpdateWithAddress:addr port:STANDARD_PORT timestamp:t services:NODE_NETWORK];
             count++;
         }
     }];
@@ -128,7 +128,7 @@
         uint32_t addr = CFSwapInt32([obj intValue]);
         NSTimeInterval t = now - 24*60*60*(7 + drand48()*7); // random timestamp between 7 and 14 days ago
         
-        [ZNPeerEntity entityWithAddress:addr port:STANDARD_PORT timestamp:t services:NODE_NETWORK];
+        [ZNPeerEntity createOrUpdateWithAddress:addr port:STANDARD_PORT timestamp:t services:NODE_NETWORK];
         count++;
     }];
 #endif
@@ -136,8 +136,9 @@
     return count;
 }
 
-- (ZNPeerEntity *)randomPeer //XXXX why does this always pick the smae one over and over?
+- (ZNPeerEntity *)randomPeer
 {
+    //TODO: prefer peers within 3 hours of most recent peer?
     NSUInteger count = [ZNPeerEntity countAllObjects], offset = 0;
     
     if (count == 0) count += [self discoverPeers];
@@ -209,16 +210,16 @@
         self.connected = NO;
         self.connectFailures++;
         
-        if (self.connectFailures > 5) {
-            if (! error) {
-                error = [NSError errorWithDomain:@"ZincWallet" code:0
-                         userInfo:@{NSLocalizedDescriptionKey:@"couldn't connect to bitcoin network"}];
-            }
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification
-             object:@{@"error":error}];
-            return;
-        }
+//        if (self.connectFailures > 5) {
+//            if (! error) {
+//                error = [NSError errorWithDomain:@"ZincWallet" code:0
+//                         userInfo:@{NSLocalizedDescriptionKey:@"couldn't connect to bitcoin network"}];
+//            }
+//            
+//            [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification
+//             object:@{@"error":error}];
+//            return;
+//        }
     }
     
     if (! self.connected) [self connect];

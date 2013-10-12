@@ -24,9 +24,11 @@
 //  THE SOFTWARE.
 
 #import "ZNPeer.h"
+#import "ZNPeerEntity.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSData+Bitcoin.h"
 #import "NSData+Hash.h"
+#import "NSManagedObject+Utils.h"
 #import <arpa/inet.h>
 
 #define USERAGENT [NSString stringWithFormat:@"/zincwallet:%@/", NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"]]
@@ -35,7 +37,7 @@
 #define MAX_MSG_LENGTH         0x02000000
 #define ENABLED_SERVICES       0 // we don't provide full blocks to remote nodes
 #define PROTOCOL_VERSION       70001
-#define MIN_PROTO_VERSION      209 // peers earlier than this protocol version not supported
+#define MIN_PROTO_VERSION      31402 // peers earlier than this protocol version not supported
 #define LOCAL_HOST             0x7f000001
 #define REFERENCE_BLOCK_HEIGHT 250000
 
@@ -102,7 +104,11 @@
     CFReadStreamRef readStream = NULL;
     CFWriteStreamRef writeStream = NULL;
     
-    NSLog(@"connecting to %@:%u", self.host, self.port);
+    [self performSelector:@selector(disconnectWithError:) withObject:[NSError errorWithDomain:@"ZincWallet" code:1001
+     userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"%@:%u connect timout", self.host, self.port]}]
+     afterDelay:15];
+    
+    NSLog(@"%@:%u connecting", self.host, self.port);
     _status = connecting;
     CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)self.host, self.port, &readStream, &writeStream);
     self.inputStream = CFBridgingRelease(readStream);
@@ -119,13 +125,10 @@
     [self sendVersionMessage];
 }
 
-- (void)disconnect
+- (void)disconnectWithError:(NSError *)error
 {
-    NSError *error = nil;
+    [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending timeouts
     
-    if (self.inputStream.streamStatus == NSStreamStatusError) error = self.inputStream.streamError;
-    if (self.outputStream.streamStatus == NSStreamStatusError) error = self.outputStream.streamError;
-
     [self.inputStream close];
     [self.outputStream close];
 
@@ -146,14 +149,19 @@
 }
 
 // change state to connected if appropriate
-- (void)setConnected
+- (void)didConnect
 {
     if (self.status != connecting || ! self.sentVerack || ! self.gotVerack) return;
 
-    NSLog(@"handshake completed");
+    [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending timeouts
+
+    NSLog(@"%@:%d handshake completed", self.host, self.port);
     
     _status = connected;
     [self.delegate peerConnected:self];
+    
+    NSLog(@"%@:%d sending getaddr", self.host, self.port);
+    [self sendMessage:[NSData data] type:MSG_GETADDR];
     
     //TODO: XXXX send bloom filters
 }
@@ -169,7 +177,7 @@
 
         if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
         
-        if (self.outputBuffer.length == 0) NSLog(@"output buffer cleared");
+        if (self.outputBuffer.length == 0) NSLog(@"%@:%d output buffer cleared", self.host, self.port);
     }
 }
 
@@ -177,14 +185,12 @@
 {
     NSMutableData *msg = [NSMutableData data];
     
-    NSLog(@"sending version");
+    NSLog(@"%@:%d sending version", self.host, self.port);
     
     [msg appendUInt32:PROTOCOL_VERSION]; // version
     [msg appendUInt64:ENABLED_SERVICES]; // services
     [msg appendUInt64:[NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970]; // timestamp
-    //XXXX we have endianess problems
     [msg appendNetAddress:self.address port:self.port services:self.services]; // address of remote peer
-    //XXXX does using 127.0.0.1 work?
     [msg appendNetAddress:LOCAL_HOST port:STANDARD_PORT services:ENABLED_SERVICES]; // address of local peer
     [msg appendUInt64:llurand()]; // random nonce
     [msg appendString:USERAGENT]; // user agent
@@ -198,43 +204,69 @@
 
 - (void)sendVerackMessage
 {
-    NSLog(@"sending verack");
+    NSLog(@"%@:%d sending verack", self.host, self.port);
     
     [self sendMessage:[NSData data] type:MSG_VERACK];
     self.sentVerack = YES;
-    [self setConnected];
+    [self didConnect];
+}
+
+- (void)sendAddrMessage
+{
+    NSMutableData *msg = [NSMutableData data];
+    
+    NSLog(@"%@:%d sending addr", self.host, self.port);
+    
+    [msg appendVarInt:0];
+    [self sendMessage:msg type:MSG_ADDR];
 }
 
 #pragma mark - accept
 
 - (void)acceptMessage:(NSData *)message type:(NSString *)type
 {
-    if ([MSG_VERSION isEqual:type]) {
-        [self acceptVersionMessage:message];
-    }
-    else if ([MSG_VERACK isEqual:type]) {
-        [self acceptVerackMessage:message];
-    }
-    else NSLog(@"dropping %@, handler not implemented", type);
+    // update timestamp for peer
+    [ZNPeerEntity createOrUpdateWithAddress:self.address port:self.port
+     timestamp:[NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 services:self.services];
+
+    if ([MSG_VERSION isEqual:type]) [self acceptVersionMessage:message];
+    else if ([MSG_VERACK isEqual:type]) [self acceptVerackMessage:message];
+    else if ([MSG_ADDR isEqual:type]) [self acceptAddrMessage:message];
+    else if ([MSG_PING isEqual:type]) [self acceptPing:message];
+    else NSLog(@"%@:%d dropping %@, handler not implemented", self.host, self.port, type);
 }
 
 - (void)acceptVersionMessage:(NSData *)message
 {
     NSUInteger l = 0;
     
+    if (message.length < 85) {
+        NSLog(@"%@:%d malformed version message, length is %lu, should be >84", self.host, self.port, message.length);
+        return;
+    }
+    
     _version = [message UInt32AtOffset:0];
     
     if (self.version < MIN_PROTO_VERSION) {
-        [self disconnect];
+        [self disconnectWithError:[NSError errorWithDomain:@"ZincWallet" code:500
+         userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"%@:%u protocol version %u not supported",
+                                               self.host, self.port, self.version]}]];
         return;
     }
     
     _services = [message UInt64AtOffset:4];
     _timestamp = [message UInt64AtOffset:12];
     _useragent = [message stringAtOffset:80 length:&l];
+
+    if (message.length < 80 + l + sizeof(uint32_t)) {
+        NSLog(@"%@:%d malformed version message, length is %lu, should be %lu", self.host, self.port,
+              message.length, 80 + l + sizeof(uint32_t));
+        return;
+    }
+    
     _lastblock = [message UInt32AtOffset:80 + l];
     
-    NSLog(@"got version");
+    NSLog(@"%@:%d got version, useragent:\"%@\"", self.host, self.port, self.useragent);
     
     [self sendVerackMessage];
 }
@@ -242,13 +274,71 @@
 - (void)acceptVerackMessage:(NSData *)message
 {
     if (message.length != 0) {
-        NSLog(@"error reading message, malformed verack payload");
+        NSLog(@"%@:%d malformed verack message %@", self.host, self.port, message);
         return;
     }
     
-    NSLog(@"got verack");
+    NSLog(@"%@:%u got verack", self.host, self.port);
     self.gotVerack = YES;
-    [self setConnected];
+    [self didConnect];
+}
+
+- (void)acceptAddrMessage:(NSData *)message
+{
+    if (message.length < 1) {
+        NSLog(@"%@:%d malformed addr message, message empty", self.host, self.port);
+        return;
+    }
+
+    NSUInteger l = [message UInt8AtOffset:0];
+
+    if (l > 0 && message.length < 31) {
+        NSLog(@"%@:%d malformed addr message, length %lu is too short", self.host, self.port, message.length);
+        return;
+    }
+
+    NSUInteger count = [message varIntAtOffset:0 length:&l];
+    
+    if (message.length < l + 30*count) {
+        NSLog(@"%@:%d malformed addr message, length is %lu, should be %lu for %lu peers", self.host, self.port,
+              message.length, l + 30*count, count);
+        return;
+    }
+    
+    for (uint64_t i = 0; i < count; i++) {
+        NSTimeInterval timestamp = [message UInt32AtOffset:l + 30*i];
+        uint64_t services = [message UInt64AtOffset:l + 30*i + 4];
+        uint32_t address = CFSwapInt32BigToHost(*(uint32_t *)((uint8_t *)message.bytes + l + 30*i + 24));
+        uint16_t port = CFSwapInt16BigToHost(*(uint16_t *)((uint8_t *)message.bytes + l + 30*i + 28));
+        
+        [ZNPeerEntity createOrUpdateWithAddress:address port:port timestamp:timestamp services:services];
+    }
+    
+    [NSManagedObject saveContext];
+    
+    NSLog(@"%@:%d got addr with %lu peers", self.host, self.port, (unsigned long)count);
+}
+
+- (void)acceptGetaddrMessage:(NSData *)message
+{
+    if (message.length != 0) {
+        NSLog(@"%@:%d malformed getaddr message %@", self.host, self.port, message);
+        return;
+    }
+
+    NSLog(@"%@:%u got getaddr", self.host, self.port);
+    
+    [self sendAddrMessage];
+}
+
+- (void)acceptPing:(NSData *)message
+{
+    if (message.length != sizeof(uint64_t)) {
+        NSLog(@"%@:%d malformed ping message, length is %lu, should be 4", self.host, self.port, message.length);
+        return;
+    }
+    
+    [self sendMessage:message type:MSG_PONG];
 }
 
 #pragma mark - hash
@@ -295,7 +385,7 @@
                 
                 if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
 
-                if (self.outputBuffer.length == 0) NSLog(@"output buffer cleared");
+                if (self.outputBuffer.length == 0) NSLog(@"%@:%d output buffer cleared", self.host, self.port);
             }
             
             break;
@@ -311,10 +401,10 @@
                 if (headerLen < HEADER_LENGTH) { // read message header
                     self.msgHeader.length = HEADER_LENGTH;
                     l = [self.inputStream read:(uint8_t *)self.msgHeader.mutableBytes + headerLen
-                         maxLength:self.msgHeader.length];
+                         maxLength:self.msgHeader.length - headerLen];
                     
                     if (l < 0) {
-                        NSLog(@"error reading message from peer");
+                        NSLog(@"%@:%u error reading message", self.host, self.port);
                         goto reset;
                     }
                     
@@ -323,7 +413,8 @@
                     // consume one byte at a time, until we find the magic number that starts a new message header
                     while (self.msgHeader.length >= sizeof(uint32_t) &&
                            [self.msgHeader UInt32AtOffset:0] != MAGIC_NUMBER) {
-                        NSLog(@"%c", *(char *)self.msgHeader.bytes);
+                        //NSLog(@"%c", *(char *)self.msgHeader.bytes);
+                        printf("%c", *(char *)self.msgHeader.bytes);
                         [self.msgHeader replaceBytesInRange:NSMakeRange(0, 1) withBytes:NULL length:0];
                     }
                     
@@ -331,7 +422,8 @@
                 }
                 
                 if ([self.msgHeader UInt8AtOffset:15] != 0) { // verify that the msg type field is null terminated
-                    NSLog(@"error reading message from peer, malformed message header");
+                    NSLog(@"%@:%u malformed message header %@", self.host, self.port,
+                          self.msgHeader);
                     goto reset;
                 }
                 
@@ -340,17 +432,17 @@
                 checksum = [self.msgHeader UInt32AtOffset:20];
                 
                 if (length > MAX_MSG_LENGTH) { // check message length
-                    NSLog(@"error reading message from peer, message too long");
+                    NSLog(@"%@:%u error reading %@, message length %u is too long", self.host, self.port, type, length);
                     goto reset;
                 }
                 
                 if (payloadLen < length) { // read message payload
                     self.msgPayload.length = length;
                     l = [self.inputStream read:(uint8_t *)self.msgPayload.mutableBytes + payloadLen
-                         maxLength:self.msgPayload.length];
+                        maxLength:self.msgPayload.length - payloadLen];
                 
                     if (l < 0) {
-                        NSLog(@"error reading message from peer");
+                        NSLog(@"%@:%u error reading %@", self.host, self.port, type);
                         goto reset;
                     }
                     
@@ -359,7 +451,10 @@
                 }
 
                 if (*(uint32_t *)[self.msgPayload SHA256_2].bytes != checksum) { // verify checksum
-                    NSLog(@"error reading message from peer, invalid checksum");
+                    NSLog(@"%@:%u error reading %@, invalid checksum %x, expected %x, payload length:%lu, "
+                          "expected length:%u, SHA256_2:%@", self.host, self.port, type,
+                          *(uint32_t *)[self.msgPayload SHA256_2].bytes, checksum, self.msgPayload.length, length,
+                          [self.msgPayload SHA256_2]);
                     goto reset;
                 }
                 
@@ -372,17 +467,17 @@ reset:          // reset for next message
             break;
             
         case NSStreamEventErrorOccurred:
-            NSLog(@"error connecting to peer, %@", aStream.streamError);
-            [self disconnect];
+            NSLog(@"%@:%u error connecting, %@", self.host, self.port, aStream.streamError);
+            [self disconnectWithError:aStream.streamError];
             break;
             
         case NSStreamEventEndEncountered:
-            NSLog(@"peer connection closed");
-            [self disconnect];
+            NSLog(@"%@:%u connection closed", self.host, self.port);
+            [self disconnectWithError:nil];
             break;
             
         default:
-            NSLog(@"unknown network stream event");
+            NSLog(@"%@:%u unknown network stream eventCode:%lu", self.host, self.port, eventCode);
     }
 }
 

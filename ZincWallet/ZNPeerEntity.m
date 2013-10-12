@@ -25,6 +25,7 @@
 
 #import "ZNPeerEntity.h"
 #import "NSManagedObject+Utils.h"
+#import <arpa/inet.h>
 
 @implementation ZNPeerEntity
 
@@ -33,15 +34,25 @@
 @dynamic port;
 @dynamic services;
 
-+ (instancetype)entityWithAddress:(int32_t)address port:(int16_t)port timestamp:(NSTimeInterval)timestamp
++ (instancetype)createOrUpdateWithAddress:(int32_t)address port:(int16_t)port timestamp:(NSTimeInterval)timestamp
 services:(int64_t)services
 {
-    ZNPeerEntity *e = [self managedObject];
+    if (timestamp > [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 + 60*60) {
+        struct in_addr addr = { CFSwapInt32HostToBig(address) };
+        char s[INET_ADDRSTRLEN];
+
+        NSLog(@"%s:%d timestamp too far in the future", inet_ntop(AF_INET, &addr, s, INET_ADDRSTRLEN), port);
+        return nil;
+    }
+
+    ZNPeerEntity *e = [self objectsMatching:@"address == %u && port == %u", address, port].lastObject;
+    
+    if (! e) e = [ZNPeerEntity managedObject];
 
     [e.managedObjectContext performBlockAndWait:^{
         e.address = address;
         e.port = port;
-        e.timestamp = timestamp;
+        if (timestamp > e.timestamp) e.timestamp = timestamp;
         e.services = services;
     }];
 

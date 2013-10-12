@@ -33,7 +33,7 @@
 @property (nonatomic) int16_t port;
 @property (nonatomic) int64_t services;
 
-+ (instancetype)entityWithAddress:(int32_t)address port:(int16_t)port timestamp:(NSTimeInterval)timestamp
++ (instancetype)createOrUpdateWithAddress:(int32_t)address port:(int16_t)port timestamp:(NSTimeInterval)timestamp
 services:(int64_t)services;
 
 @end

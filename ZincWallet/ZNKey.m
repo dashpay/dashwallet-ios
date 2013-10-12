@@ -211,7 +211,8 @@
 
     unsigned int l = ECDSA_size(_key);
     NSMutableData *sig = [NSMutableData dataWithLength:l];
-
+    
+    //TODO: implement RFC6979 deterministic signatures
     ECDSA_sign(0, d.bytes, (int)d.length, sig.mutableBytes, &l, _key);
     sig.length = l;
 
