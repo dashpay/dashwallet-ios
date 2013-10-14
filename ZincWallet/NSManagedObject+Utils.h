@@ -27,6 +27,7 @@
 @interface NSManagedObject (Utils)
 
 + (instancetype)managedObject;
++ (NSArray *)managedObjectArrayWithLength:(NSUInteger)length;
 
 + (NSArray *)allObjects;
 + (NSArray *)objectsMatching:(NSString *)predicateFormat, ...;
@@ -40,6 +41,8 @@
 + (NSUInteger)countObjectsMatching:(NSString *)predicateFormat arguments:(va_list)args;
 + (NSUInteger)countObjects:(NSFetchRequest *)request;
 
++ (NSUInteger)deleteObjects:(NSArray *)objects;
+
 + (NSManagedObjectContext *)context;
 + (void)saveContext;
 
@@ -48,5 +51,7 @@
 + (NSFetchedResultsController *)fetchedResultsController:(NSFetchRequest *)request;
 
 - (void)deleteObject;
+- (id)get:(NSString *)key; // thread safe valueForKey:
+- (void)set:(NSString *)key to:(id)value; // thread safe setValue:forKey:
 
 @end

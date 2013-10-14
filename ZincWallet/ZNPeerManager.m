@@ -62,7 +62,7 @@
 @interface ZNPeerManager ()
 
 @property (nonatomic, strong) NSMutableArray *peers;
-@property (nonatomic, assign) BOOL connected;
+//@property (nonatomic, assign) BOOL connected;
 @property (nonatomic, assign) int connectFailures;
 
 @end
@@ -73,6 +73,10 @@
 {
     static id singleton = nil;
     static dispatch_once_t onceToken = 0;
+    
+#if ! SPV_MODE
+    return nil;
+#endif
     
     dispatch_once(&onceToken, ^{
         srand48(time(NULL)); // seed psudo random number generator (for non-cryptographic use only!)
@@ -89,7 +93,7 @@
     self.peers = [NSMutableArray array];
     
     //TODO: monitor network reachability and reconnect whenever connection becomes available
-    //[[ZNPeerEntity allObjects] makeObjectsPerformSelector:@selector(deleteObject)];
+    //TODO: disconnect peers when app is backgrounded unless we're syncing or launching mobile web app tx handler
     
     return self;
 }
@@ -97,7 +101,7 @@
 - (NSUInteger)discoverPeers
 {
     __block NSUInteger count = 0;
-    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970;
+    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
 #if BITCOIN_TESTNET
     NSArray *a = @[@"testnet-seed.bitcoin.petertodd.org", @"testnet-seed.bluematt.me"];
 #else
@@ -142,29 +146,26 @@
     NSUInteger count = [ZNPeerEntity countAllObjects], offset = 0;
     
     if (count == 0) count += [self discoverPeers];
+    if (count > 100) count = 100;
     if (count == 0) return nil;
-    
+
     offset = pow(lrand48() % count, 2)/count; // pick a random peer biased for peers with more recent timestamps
     
-    NSLog(@"picking peer %lu out of %lu known", (unsigned long)offset, (unsigned long)count);
+    NSLog(@"picking peer %lu out of %lu most recent", (unsigned long)offset, (unsigned long)count);
     
     return [ZNPeerEntity objectsSortedBy:@"timestamp" ascending:NO offset:offset limit:1].lastObject;
 }
 
 - (void)connect
 {
-    if (self.peers.count > 0 && [self.peers[0] status] != disconnected) {
-#warning remove this too
-        [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
-
-        self.connected = YES;
-        return;
-    }
+    if (self.peers.count > 0 && [self.peers[0] status] != disconnected) return;
 
     ZNPeerEntity *e = [self randomPeer];
     
     if (! e) {
-        
+        [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification
+         object:@{@"error":[NSError errorWithDomain:@"ZincWallet" code:1
+                            userInfo:@{NSLocalizedDescriptionKey:@"no peers found"}]}];
         return;
     }
     
@@ -174,7 +175,6 @@
     [self.peers removeAllObjects]; //XXX: obviously this will need to change
     [self.peers addObject:peer];
 
-    // tesnet node 144.76.46.66:18333 connected successfully on the first attempt!
     [peer connect];
 }
 
@@ -187,11 +187,10 @@
 
 - (void)peerConnected:(ZNPeer *)peer
 {
-    self.connected = YES;
+    _connected = YES;
     self.connectFailures = 0;
     NSLog(@"%@:%d connected", peer.host, peer.port);
     
-#warning remove this too
     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
 }
 
@@ -207,7 +206,7 @@
     }
 
     if (! self.peers.count) {
-        self.connected = NO;
+        _connected = NO;
         self.connectFailures++;
         
 //        if (self.connectFailures > 5) {
@@ -220,9 +219,10 @@
 //             object:@{@"error":error}];
 //            return;
 //        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self connect];
+        });
     }
-    
-    if (! self.connected) [self connect];
 }
 
 @end

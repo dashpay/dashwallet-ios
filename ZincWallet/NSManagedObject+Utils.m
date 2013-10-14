@@ -26,7 +26,7 @@
 
 @implementation NSManagedObject (Utils)
 
-#pragma mark - create object
+#pragma mark - create objects
 
 + (instancetype)managedObject
 {
@@ -39,6 +39,22 @@
     }];
     
     return obj;
+}
+
++ (NSArray *)managedObjectArrayWithLength:(NSUInteger)length
+{
+    __block NSEntityDescription *entity = nil;
+    NSMutableArray *a = [NSMutableArray arrayWithCapacity:length];
+    
+    [[self context] performBlockAndWait:^{
+        entity = [NSEntityDescription entityForName:[self entityName] inManagedObjectContext:[self context]];
+        
+        for (NSUInteger i = 0; i < length; i++) {
+            [a addObject:[[self alloc] initWithEntity:entity insertIntoManagedObjectContext:[self context]]];
+        }
+    }];
+    
+    return a;
 }
 
 #pragma mark - fetch existing objects
@@ -93,6 +109,19 @@
     }];
      
     return a;
+}
+
+#pragma mark - delete objects
+
++ (NSUInteger)deleteObjects:(NSArray *)objects
+{
+    [[self context] performBlockAndWait:^{
+        [objects enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            [[self context] deleteObject:obj];
+        }];
+    }];
+    
+    return objects.count;
 }
 
 #pragma mark - count exising objects
@@ -232,6 +261,24 @@
 {
     [[self managedObjectContext] performBlockAndWait:^{
         [[self managedObjectContext] deleteObject:self];
+    }];
+}
+
+- (id)get:(NSString *)key
+{
+    __block id value = nil;
+    
+    [[self managedObjectContext] performBlockAndWait:^{
+        value = [self valueForKey:key];
+    }];
+
+    return value;
+}
+
+- (void)set:(NSString *)key to:(id)value
+{
+    [[self managedObjectContext] performBlockAndWait:^{
+        [self setValue:value forKey:key];
     }];
 }
 

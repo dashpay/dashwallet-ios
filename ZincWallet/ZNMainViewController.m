@@ -28,11 +28,8 @@
 #import "ZNReceiveViewController.h"
 #import "ZNWallet.h"
 #import "ZNWallet+Utils.h"
-#if SPV_MODE
-#import "ZNPeerManager.h"
-#else
 #import "ZNSocketListener.h"
-#endif
+#import "ZNPeerManager.h"
 #import <netinet/in.h>
 #import "Reachability.h"
 
@@ -88,12 +85,11 @@
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-#if SPV_MODE
-            if (w.masterPublicKey) [[ZNPeerManager sharedInstance] connect];
-#else
             if (w.timeSinceLastSync > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
-            else if (w.masterPublicKey) [[ZNSocketListener sharedInstance] openSocket];
-#endif
+            else if (w.masterPublicKey) {
+                [[ZNSocketListener sharedInstance] openSocket];
+                [[ZNPeerManager sharedInstance] connect];
+            }
         }];
     
     // TODO: switch to AFNetworkingReachability
@@ -101,12 +97,11 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             //TODO: XXXX check reachability status? changed != reachable
-#if SPV_MODE
-            if (w.masterPublicKey) [[ZNPeerManager sharedInstance] connect];
-#else
             if (w.timeSinceLastSync > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
-            else if (w.masterPublicKey) [[ZNSocketListener sharedInstance] openSocket];
-#endif
+            else if (w.masterPublicKey) {
+                [[ZNSocketListener sharedInstance] openSocket];
+                [[ZNPeerManager sharedInstance] connect];
+            }
         }];
     
     self.balanceObserver =
@@ -122,9 +117,11 @@
     self.syncStartedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncStartedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
-            [self.spinner startAnimating];
-                                                      
+            if (self.navigationItem.rightBarButtonItem == self.refreshButton) {
+                self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
+                [self.spinner startAnimating];
+            }
+            
             if (w.balance == 0) self.navigationItem.title = @"syncing...";
         }];
     
@@ -132,15 +129,14 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncFinishedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             self.syncErrorCount = 0;
-            [self.spinner stopAnimating];
+            [self.spinner stopAnimating]; //BUG: XXXX this sometimes takes several seconds to display... why?!?
             self.navigationItem.rightBarButtonItem = self.refreshButton;
-            
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                          [w localCurrencyStringForAmount:w.balance]];
-
-#if ! SPV_MODE
-            if (w.masterPublicKey) [[ZNSocketListener sharedInstance] openSocket];
-#endif
+            if (w.masterPublicKey) {
+                [[ZNSocketListener sharedInstance] openSocket];
+                [[ZNPeerManager sharedInstance] connect];
+            }
         }];
     
     //TODO: create an error banner instead of using an alert
@@ -157,10 +153,9 @@
             
             [self.spinner stopAnimating];
             self.navigationItem.rightBarButtonItem = self.refreshButton;
-            
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                          [w localCurrencyStringForAmount:w.balance]];
-                                                      
+            
             [[[UIAlertView alloc] initWithTitle:@"couldn't refresh wallet balance"
               message:[note.userInfo[@"error"] localizedDescription] delegate:nil cancelButtonTitle:@"ok"
               otherButtonTitles:nil] show];
@@ -243,12 +238,11 @@
 {
     [super viewDidAppear:animated];
     
-#if SPV_MODE
-    if ([ZNWallet sharedInstance].masterPublicKey) [[ZNPeerManager sharedInstance] connect];
-#else
     if ([[ZNWallet sharedInstance] timeSinceLastSync] > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
-    else if ([ZNWallet sharedInstance].masterPublicKey) [[ZNSocketListener sharedInstance] openSocket];
-#endif
+    else if ([ZNWallet sharedInstance].masterPublicKey) {
+        [[ZNSocketListener sharedInstance] openSocket];
+        [[ZNPeerManager sharedInstance] connect];
+    }
 }
 
 - (ZNPayViewController *)payController
@@ -273,8 +267,10 @@
 {
     if (! sender && [self.reachability currentReachabilityStatus] == NotReachable) return;
     
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
-    [self.spinner startAnimating];
+    if (self.navigationItem.rightBarButtonItem == self.refreshButton) {
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
+        [self.spinner startAnimating];
+    }
     
     if ([[ZNWallet sharedInstance] balance] == 0) self.navigationItem.title = @"syncing...";
     

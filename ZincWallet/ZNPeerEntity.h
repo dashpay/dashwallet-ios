@@ -36,4 +36,7 @@
 + (instancetype)createOrUpdateWithAddress:(int32_t)address port:(int16_t)port timestamp:(NSTimeInterval)timestamp
 services:(int64_t)services;
 
++ (NSArray *)createOrUpdateWithAddresses:(NSArray *)addresses ports:(NSArray *)ports timestamps:(NSArray *)timestamps
+services:(NSArray *)services;
+
 @end

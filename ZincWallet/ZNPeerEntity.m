@@ -37,14 +37,6 @@
 + (instancetype)createOrUpdateWithAddress:(int32_t)address port:(int16_t)port timestamp:(NSTimeInterval)timestamp
 services:(int64_t)services
 {
-    if (timestamp > [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 + 60*60) {
-        struct in_addr addr = { CFSwapInt32HostToBig(address) };
-        char s[INET_ADDRSTRLEN];
-
-        NSLog(@"%s:%d timestamp too far in the future", inet_ntop(AF_INET, &addr, s, INET_ADDRSTRLEN), port);
-        return nil;
-    }
-
     ZNPeerEntity *e = [self objectsMatching:@"address == %u && port == %u", address, port].lastObject;
     
     if (! e) e = [ZNPeerEntity managedObject];
@@ -57,6 +49,67 @@ services:(int64_t)services
     }];
 
     return e;
+}
+
++ (NSArray *)createOrUpdateWithAddresses:(NSArray *)addresses ports:(NSArray *)ports timestamps:(NSArray *)timestamps
+services:(NSArray *)services
+{
+    if (addresses.count > 100) { // break into chunks of 100 so we don't freeze the UI
+        return [[self createOrUpdateWithAddresses:[addresses subarrayWithRange:NSMakeRange(0, 100)]
+                 ports:[ports subarrayWithRange:NSMakeRange(0, 100)]
+                 timestamps:[timestamps subarrayWithRange:NSMakeRange(0, 100)]
+                 services:[services subarrayWithRange:NSMakeRange(0, 100)]] arrayByAddingObjectsFromArray:[self
+                createOrUpdateWithAddresses:[addresses subarrayWithRange:NSMakeRange(100, addresses.count - 100)]
+                ports:[ports subarrayWithRange:NSMakeRange(100, ports.count - 100)]
+                timestamps:[timestamps subarrayWithRange:NSMakeRange(100, timestamps.count - 100)]
+                services:[services subarrayWithRange:NSMakeRange(100, services.count - 100)]]];
+    }
+
+    NSMutableArray *a = [NSMutableArray arrayWithCapacity:addresses.count];
+    NSMutableIndexSet *set = [NSMutableIndexSet indexSet];
+    NSArray *peers = [self objectsMatching:@"address IN %@", addresses];
+    
+    [[NSManagedObject context] performBlockAndWait:^{
+        [peers enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            ZNPeerEntity *e = obj;
+            NSUInteger i = [addresses indexOfObject:@(e.address)];
+            
+            while (i < addresses.count - 1 && ! [ports[i] isEqual:@(e.port)]) {
+                i = [addresses indexOfObject:@(e.address) inRange:NSMakeRange(i + 1, addresses.count - (i + 1))];
+            }
+            
+            if (i < ports.count && [ports[i] isEqual:@(e.port)]) {
+                if ([timestamps[i] doubleValue] > e.timestamp) e.timestamp = [timestamps[i] doubleValue];
+                e.services = [services[i] longLongValue];
+                [a addObject:e];
+                [set addIndex:i];
+            }
+        }];
+    }];
+    
+    addresses = [NSMutableArray arrayWithArray:addresses];
+    [(id)addresses removeObjectsAtIndexes:set];
+    ports = [NSMutableArray arrayWithArray:ports];
+    [(id)ports removeObjectsAtIndexes:set];
+    timestamps = [NSMutableArray arrayWithArray:timestamps];
+    [(id)timestamps removeObjectsAtIndexes:set];
+    services = [NSMutableArray arrayWithArray:services];
+    [(id)services removeObjectsAtIndexes:set];
+    peers = [self managedObjectArrayWithLength:addresses.count];
+    
+    [[NSManagedObject context] performBlockAndWait:^{
+        [peers enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            ZNPeerEntity *e = obj;
+        
+            e.address = [addresses[idx] intValue];
+            e.port = [ports[idx] shortValue];
+            e.timestamp = [timestamps[idx] doubleValue];
+            e.services = [services[idx] longLongValue];
+            [a addObject:obj];
+        }];
+    }];
+    
+    return a;
 }
 
 @end

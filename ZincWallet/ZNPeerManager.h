@@ -28,6 +28,8 @@
 
 @interface ZNPeerManager : NSObject<ZNPeerDelegate>
 
+@property (nonatomic, readonly) BOOL connected;
+
 + (instancetype)sharedInstance;
 
 - (void)connect;

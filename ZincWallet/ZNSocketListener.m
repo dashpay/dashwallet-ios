@@ -58,6 +58,10 @@
     static id singleton = nil;
     static dispatch_once_t onceToken = 0;
     
+#if SPV_MODE
+    return nil;
+#endif
+    
     dispatch_once(&onceToken, ^{
         singleton = [self new];
     });

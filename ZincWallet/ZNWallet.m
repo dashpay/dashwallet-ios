@@ -146,7 +146,7 @@ static NSData *getKeychainData(NSString *key)
     // for reasons both mysterious and inscrutable, 210,000,009 is the smallest value of format.maximum that will allow
     // the user to input a value of 21,000,000
     self.format.maximum = @210000009.0;
-        
+    
     return self;
 }
 
@@ -247,11 +247,11 @@ static NSData *getKeychainData(NSString *key)
 
 - (void)synchronize:(BOOL)fullSync
 {
-    if (_synchronizing) return;
+    if (self.synchronizing) return;
     
     _synchronizing = YES;
     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncStartedNotification object:nil];
-        
+    
     __block NSMutableArray *gap = [NSMutableArray array];
     
     // a recursive block ARC retain loop is avoided by passing the block as an argument to itself... just shoot me now
@@ -338,12 +338,22 @@ static NSData *getKeychainData(NSString *key)
             self.updatedTxHashes = [NSMutableSet set]; // reset the updated tx set
 
 #if SPV_MODE
+            if ([[ZNPeerManager sharedInstance] connected]) {
+                [_defs setDouble:[NSDate timeIntervalSinceReferenceDate] forKey:LAST_SYNC_TIME_KEY];
+                [_defs synchronize];
+
+                [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
+            }
+            else [[ZNPeerManager sharedInstance] connect];
+            
             _synchronizing = NO;
-            [[ZNPeerManager sharedInstance] connect];
             return;
 #endif
 
 #if BITCOIN_TESTNET
+            [_defs setDouble:[NSDate timeIntervalSinceReferenceDate] forKey:LAST_SYNC_TIME_KEY];
+            [_defs synchronize];
+
             _synchronizing = NO;
             [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
             return;
@@ -443,7 +453,7 @@ static NSData *getKeychainData(NSString *key)
     __block AFJSONRequestOperation *requestOp =
         [AFJSONRequestOperation JSONRequestOperationWithRequest:[NSURLRequest requestWithURL:url]
         success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
-            if (! _synchronizing) return;
+            if (! self.synchronizing) return;
             
             if (! [JSON isKindOfClass:[NSDictionary class]] || ! [JSON[@"addresses"] isKindOfClass:[NSArray class]] ||
                 ! [JSON[@"txs"] isKindOfClass:[NSArray class]]) {
@@ -521,7 +531,7 @@ static NSData *getKeychainData(NSString *key)
     __block AFJSONRequestOperation *requestOp =
         [AFJSONRequestOperation JSONRequestOperationWithRequest:[NSURLRequest requestWithURL:url]
         success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
-            if (! _synchronizing) return;
+            if (! self.synchronizing) return;
             
             // if all outputs have been spent, blockchain.info returns the non-JSON string "no free outputs"
             if (! [requestOp.responseString.lowercaseString hasPrefix:@"no free outputs"] &&
@@ -727,7 +737,7 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
         return;
     }
     
-    if (_synchronizing) {
+    if (self.synchronizing) {
         completion(nil, [NSError errorWithDomain:@"ZincWallet" code:1
                          userInfo:@{NSLocalizedDescriptionKey:@"wait for wallet sync to finish"}]);
         return;

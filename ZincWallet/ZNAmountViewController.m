@@ -86,8 +86,10 @@
     self.syncStartedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncStartedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
-            [self.spinner startAnimating];
+            if (self.navigationItem.rightBarButtonItem == self.payButton) {
+                self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
+                [self.spinner startAnimating];
+            }
         }];
     
     self.syncFinishedObserver =

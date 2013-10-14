@@ -30,6 +30,8 @@
 #import "NSData+Hash.h"
 #import "NSManagedObject+Utils.h"
 #import <arpa/inet.h>
+#import <netinet/in.h>
+#import "Reachability.h"
 
 #define USERAGENT [NSString stringWithFormat:@"/zincwallet:%@/", NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"]]
 
@@ -73,6 +75,8 @@
 @property (nonatomic, strong) NSOutputStream *outputStream;
 @property (nonatomic, strong) NSMutableData *msgHeader, *msgPayload, *outputBuffer;
 @property (nonatomic, assign) BOOL sentVerack, gotVerack;
+@property (nonatomic, strong) Reachability *reachability;
+@property (nonatomic, strong) id reachabilityObserver;
 
 @end
 
@@ -95,21 +99,43 @@
     self.msgHeader = [NSMutableData data];
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
+    self.reachability = [Reachability reachabilityWithHostName:self.host];
     
     return self;
 }
 
+- (void)dealloc
+{
+    [self.reachability stopNotifier];
+    if (self.reachabilityObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
+}
+
 - (void)connect
 {
+    if (self.reachability.currentReachabilityStatus == NotReachable) {
+        if (self.reachabilityObserver) return;
+        
+        self.reachabilityObserver =
+            [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification
+            object:self.reachability queue:nil usingBlock:^(NSNotification *note) {
+                if (self.reachability.currentReachabilityStatus == NotReachable) return;
+
+                [self connect];
+            }];
+        [self.reachability startNotifier];
+    }
+    else if (self.reachabilityObserver) {
+        [self.reachability stopNotifier];
+        [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
+        self.reachabilityObserver = nil;
+    }
+
     CFReadStreamRef readStream = NULL;
     CFWriteStreamRef writeStream = NULL;
     
-    [self performSelector:@selector(disconnectWithError:) withObject:[NSError errorWithDomain:@"ZincWallet" code:1001
-     userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"%@:%u connect timout", self.host, self.port]}]
-     afterDelay:15];
-    
     NSLog(@"%@:%u connecting", self.host, self.port);
     _status = connecting;
+
     CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)self.host, self.port, &readStream, &writeStream);
     self.inputStream = CFBridgingRelease(readStream);
     self.outputStream = CFBridgingRelease(writeStream);
@@ -119,6 +145,11 @@
     [self.inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     [self.outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     
+    // after the reachablity check, the radios should be warmed up and we can set a short socket connect timeout
+    [self performSelector:@selector(disconnectWithError:) withObject:[NSError errorWithDomain:@"ZincWallet" code:1001
+     userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"%@:%u socket connect timeout", self.host,
+                                           self.port]}] afterDelay:2];
+    
     [self.inputStream open];
     [self.outputStream open];
     
@@ -127,7 +158,7 @@
 
 - (void)disconnectWithError:(NSError *)error
 {
-    [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending timeouts
+    [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel connect timeout
     
     [self.inputStream close];
     [self.outputStream close];
@@ -153,15 +184,12 @@
 {
     if (self.status != connecting || ! self.sentVerack || ! self.gotVerack) return;
 
-    [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending timeouts
-
     NSLog(@"%@:%d handshake completed", self.host, self.port);
     
     _status = connected;
     [self.delegate peerConnected:self];
     
-    NSLog(@"%@:%d sending getaddr", self.host, self.port);
-    [self sendMessage:[NSData data] type:MSG_GETADDR];
+    if ([ZNPeerEntity countAllObjects] <= 1000) [self sendMessage:[NSData data] type:MSG_GETADDR];
     
     //TODO: XXXX send bloom filters
 }
@@ -170,6 +198,8 @@
 
 - (void)sendMessage:(NSData *)message type:(NSString *)type
 {
+    NSLog(@"%@:%d sending %@", self.host, self.port, type);
+
     [self.outputBuffer appendMessage:message type:type];
     
     while (self.outputBuffer.length > 0 && [self.outputStream hasSpaceAvailable]) {
@@ -185,8 +215,6 @@
 {
     NSMutableData *msg = [NSMutableData data];
     
-    NSLog(@"%@:%d sending version", self.host, self.port);
-    
     [msg appendUInt32:PROTOCOL_VERSION]; // version
     [msg appendUInt64:ENABLED_SERVICES]; // services
     [msg appendUInt64:[NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970]; // timestamp
@@ -198,14 +226,15 @@
     [msg appendUInt32:REFERENCE_BLOCK_HEIGHT]; // last block received
     [msg appendUInt8:0]; // relay transactions (no for SPV bloom filter mode)
     
-    //TODO: need some sort of timeout for verack
+    [self performSelector:@selector(disconnectWithError:) withObject:[NSError errorWithDomain:@"ZincWallet" code:1001
+     userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"%@:%u verack timeout", self.host, self.port]}]
+     afterDelay:5];
+
     [self sendMessage:msg type:MSG_VERSION];
 }
 
 - (void)sendVerackMessage
 {
-    NSLog(@"%@:%d sending verack", self.host, self.port);
-    
     [self sendMessage:[NSData data] type:MSG_VERACK];
     self.sentVerack = YES;
     [self didConnect];
@@ -215,8 +244,7 @@
 {
     NSMutableData *msg = [NSMutableData data];
     
-    NSLog(@"%@:%d sending addr", self.host, self.port);
-    
+    //TODO: send addresses we know about
     [msg appendVarInt:0];
     [self sendMessage:msg type:MSG_ADDR];
 }
@@ -227,7 +255,7 @@
 {
     // update timestamp for peer
     [ZNPeerEntity createOrUpdateWithAddress:self.address port:self.port
-     timestamp:[NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 services:self.services];
+     timestamp:[NSDate timeIntervalSinceReferenceDate] services:self.services];
 
     if ([MSG_VERSION isEqual:type]) [self acceptVersionMessage:message];
     else if ([MSG_VERACK isEqual:type]) [self acceptVerackMessage:message];
@@ -241,7 +269,8 @@
     NSUInteger l = 0;
     
     if (message.length < 85) {
-        NSLog(@"%@:%d malformed version message, length is %lu, should be >84", self.host, self.port, message.length);
+        NSLog(@"%@:%d malformed version message, length is %u, should be > 84", self.host, self.port,
+              (int)message.length);
         return;
     }
     
@@ -259,8 +288,8 @@
     _useragent = [message stringAtOffset:80 length:&l];
 
     if (message.length < 80 + l + sizeof(uint32_t)) {
-        NSLog(@"%@:%d malformed version message, length is %lu, should be %lu", self.host, self.port,
-              message.length, 80 + l + sizeof(uint32_t));
+        NSLog(@"%@:%d malformed version message, length is %u, should be %lu", self.host, self.port,
+              (int)message.length, 80 + l + sizeof(uint32_t));
         return;
     }
     
@@ -279,44 +308,68 @@
     }
     
     NSLog(@"%@:%u got verack", self.host, self.port);
+    [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending verack timeout
     self.gotVerack = YES;
     [self didConnect];
 }
 
+//NOTE: since we connect only intermitently, a hostile node could flush the address list with bad values that would take
+// several minutes to clear, after which we would fall back on DNS seeding.
+// TODO: keep around at least 1000 nodes we've personally connected to.
+// TODO: relay addresses
 - (void)acceptAddrMessage:(NSData *)message
 {
-    if (message.length < 1) {
-        NSLog(@"%@:%d malformed addr message, message empty", self.host, self.port);
+    if (message.length > 0 && [message UInt8AtOffset:0] == 0) {
+        NSLog(@"%@:%d got addr with 0 addresses", self.host, self.port);
+        return;
+    }
+    else if (message.length < 5) {
+        NSLog(@"%@:%d malformed addr message, length %u is too short", self.host, self.port, (int)message.length);
         return;
     }
 
-    NSUInteger l = [message UInt8AtOffset:0];
-
-    if (l > 0 && message.length < 31) {
-        NSLog(@"%@:%d malformed addr message, length %lu is too short", self.host, self.port, message.length);
-        return;
-    }
-
-    NSUInteger count = [message varIntAtOffset:0 length:&l];
+    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+    NSFetchRequest *req = [ZNPeerEntity fetchRequest];
+    NSUInteger l, count = [message varIntAtOffset:0 length:&l];
+    NSMutableArray *addresses = [NSMutableArray array], *ports = [NSMutableArray array],
+                   *timestamps = [NSMutableArray array], *services = [NSMutableArray array];
     
-    if (message.length < l + 30*count) {
-        NSLog(@"%@:%d malformed addr message, length is %lu, should be %lu for %lu peers", self.host, self.port,
-              message.length, l + 30*count, count);
+    if (count > 1000) {
+        NSLog(@"%@:%d dropping addr message, %u is too many addresses (max 1000)", self.host, self.port, (int)count);
         return;
     }
+    else if (message.length < l + 30*count) {
+        NSLog(@"%@:%d malformed addr message, length is %u, should be %u for %u addresses", self.host, self.port,
+              (int)message.length, (int)(l + 30*count), (int)count);
+        return;
+    }
+    else NSLog(@"%@:%d got addr with %u addresses", self.host, self.port, (int)count);
     
     for (uint64_t i = 0; i < count; i++) {
-        NSTimeInterval timestamp = [message UInt32AtOffset:l + 30*i];
-        uint64_t services = [message UInt64AtOffset:l + 30*i + 4];
-        uint32_t address = CFSwapInt32BigToHost(*(uint32_t *)((uint8_t *)message.bytes + l + 30*i + 24));
-        uint16_t port = CFSwapInt16BigToHost(*(uint16_t *)((uint8_t *)message.bytes + l + 30*i + 28));
-        
-        [ZNPeerEntity createOrUpdateWithAddress:address port:port timestamp:timestamp services:services];
+        NSTimeInterval timestamp = [message UInt32AtOffset:l + 30*i] - NSTimeIntervalSince1970;
+
+        [services addObject:@([message UInt64AtOffset:l + 30*i + 4])];
+        [addresses addObject:@(CFSwapInt32BigToHost(*(uint32_t *)((uint8_t *)message.bytes + l + 30*i + 24)))];
+        [ports addObject:@(CFSwapInt16BigToHost(*(uint16_t *)((uint8_t *)message.bytes + l + 30*i + 28)))];
+            
+        // if address time is more than 10min in the future or before reference date, set to 5 days old
+        if (timestamp > now + 10*60 || timestamp < 0) timestamp = now - 5*24*60*60;
+        [timestamps addObject:@(timestamp - 2*60*60)]; // subtract two hours and add it to the list
     }
     
-    [NSManagedObject saveContext];
+    [ZNPeerEntity createOrUpdateWithAddresses:addresses ports:ports timestamps:timestamps services:services];
+    count = [ZNPeerEntity countAllObjects];
     
-    NSLog(@"%@:%d got addr with %lu peers", self.host, self.port, (unsigned long)count);
+    if (count > 1000) { // remove peers with a timestamp more than 3 hours old, or until there are only 1000 left
+        req.predicate = [NSPredicate predicateWithFormat:@"timestamp < %@",
+                         [NSDate dateWithTimeIntervalSinceReferenceDate:now - 3*60*60]];
+        req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"timestamp" ascending:YES]];
+        req.fetchLimit = count - 1000;
+        [ZNPeerEntity deleteObjects:[ZNPeerEntity fetchObjects:req]];
+        
+        // limit total to 2500 peers
+        [ZNPeerEntity deleteObjects:[ZNPeerEntity objectsSortedBy:@"timestamp" ascending:NO offset:2500 limit:0]];
+    }
 }
 
 - (void)acceptGetaddrMessage:(NSData *)message
@@ -334,9 +387,11 @@
 - (void)acceptPing:(NSData *)message
 {
     if (message.length != sizeof(uint64_t)) {
-        NSLog(@"%@:%d malformed ping message, length is %lu, should be 4", self.host, self.port, message.length);
+        NSLog(@"%@:%d malformed ping message, length is %u, should be 4", self.host, self.port, (int)message.length);
         return;
     }
+    
+    NSLog(@"%@:%u got ping", self.host, self.port);
     
     [self sendMessage:message type:MSG_PONG];
 }
@@ -376,6 +431,7 @@
         case NSStreamEventOpenCompleted:
             NSLog(@"%@:%d %@ stream connected", self.host, self.port,
                   aStream == self.inputStream ? @"input" : aStream == self.outputStream ? @"output" : @"unkown");
+            [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending connect timeout
             // no break; continue to next case and send any queued output
         case NSStreamEventHasSpaceAvailable:
             if (aStream != self.outputStream) break;
@@ -391,18 +447,18 @@
             break;
             
         case NSStreamEventHasBytesAvailable:
-            if (aStream != self.inputStream) break;
+            if (aStream != self.inputStream) return;
 
             while ([self.inputStream hasBytesAvailable]) {
                 NSString *type = nil;
                 uint32_t length = 0, checksum = 0;
                 NSInteger headerLen = self.msgHeader.length, payloadLen = self.msgPayload.length, l = 0;
-
+                        
                 if (headerLen < HEADER_LENGTH) { // read message header
                     self.msgHeader.length = HEADER_LENGTH;
                     l = [self.inputStream read:(uint8_t *)self.msgHeader.mutableBytes + headerLen
                          maxLength:self.msgHeader.length - headerLen];
-                    
+                            
                     if (l < 0) {
                         NSLog(@"%@:%u error reading message", self.host, self.port);
                         goto reset;
@@ -410,27 +466,27 @@
                     
                     self.msgHeader.length = headerLen + l;
                     
-                    // consume one byte at a time, until we find the magic number that starts a new message header
+                    // consume one byte at a time, up to the magic number that starts a new message header
                     while (self.msgHeader.length >= sizeof(uint32_t) &&
                            [self.msgHeader UInt32AtOffset:0] != MAGIC_NUMBER) {
-                        //NSLog(@"%c", *(char *)self.msgHeader.bytes);
+#if DEBUG
                         printf("%c", *(char *)self.msgHeader.bytes);
+#endif
                         [self.msgHeader replaceBytesInRange:NSMakeRange(0, 1) withBytes:NULL length:0];
                     }
                     
                     if (self.msgHeader.length < HEADER_LENGTH) continue; // wait for more stream input
                 }
                 
-                if ([self.msgHeader UInt8AtOffset:15] != 0) { // verify that the msg type field is null terminated
-                    NSLog(@"%@:%u malformed message header %@", self.host, self.port,
-                          self.msgHeader);
+                if ([self.msgHeader UInt8AtOffset:15] != 0) { // verify msg type field is null terminated
+                    NSLog(@"%@:%u malformed message header %@", self.host, self.port, self.msgHeader);
                     goto reset;
                 }
                 
                 type = [NSString stringWithUTF8String:(char *)self.msgHeader.bytes + 4];
                 length = [self.msgHeader UInt32AtOffset:16];
                 checksum = [self.msgHeader UInt32AtOffset:20];
-                
+                        
                 if (length > MAX_MSG_LENGTH) { // check message length
                     NSLog(@"%@:%u error reading %@, message length %u is too long", self.host, self.port, type, length);
                     goto reset;
@@ -439,8 +495,8 @@
                 if (payloadLen < length) { // read message payload
                     self.msgPayload.length = length;
                     l = [self.inputStream read:(uint8_t *)self.msgPayload.mutableBytes + payloadLen
-                        maxLength:self.msgPayload.length - payloadLen];
-                
+                         maxLength:self.msgPayload.length - payloadLen];
+                    
                     if (l < 0) {
                         NSLog(@"%@:%u error reading %@", self.host, self.port, type);
                         goto reset;
@@ -449,21 +505,27 @@
                     self.msgPayload.length = payloadLen + l;
                     if (self.msgPayload.length < length) continue; // wait for more stream input
                 }
-
-                if (*(uint32_t *)[self.msgPayload SHA256_2].bytes != checksum) { // verify checksum
-                    NSLog(@"%@:%u error reading %@, invalid checksum %x, expected %x, payload length:%lu, "
-                          "expected length:%u, SHA256_2:%@", self.host, self.port, type,
-                          *(uint32_t *)[self.msgPayload SHA256_2].bytes, checksum, self.msgPayload.length, length,
-                          [self.msgPayload SHA256_2]);
-                    goto reset;
-                }
                 
-                [self acceptMessage:self.msgPayload type:type]; // process message
+                if (*(uint32_t *)[self.msgPayload SHA256_2].bytes != checksum) { // verify checksum
+                    NSLog(@"%@:%u error reading %@, invalid checksum %x, expected %x, payload length:%u, expected "
+                          "length:%u, SHA256_2:%@", self.host, self.port, type,
+                          *(uint32_t *)[self.msgPayload SHA256_2].bytes, checksum, (int)self.msgPayload.length, length,
+                          [self.msgPayload SHA256_2]);
+                }
+                else {
+                    NSData *message = self.msgPayload;
+                    
+                    self.msgPayload = [NSMutableData data];
+                    
+                    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                        [self acceptMessage:message type:type]; // process message
+                    });
+                }
                 
 reset:          // reset for next message
                 self.msgHeader.length = self.msgPayload.length = 0;
             }
-            
+
             break;
             
         case NSStreamEventErrorOccurred:
@@ -477,7 +539,7 @@ reset:          // reset for next message
             break;
             
         default:
-            NSLog(@"%@:%u unknown network stream eventCode:%lu", self.host, self.port, eventCode);
+            NSLog(@"%@:%u unknown network stream eventCode:%u", self.host, self.port, (int)eventCode);
     }
 }
 
