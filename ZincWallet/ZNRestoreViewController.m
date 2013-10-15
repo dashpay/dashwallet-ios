@@ -156,14 +156,14 @@
         if (self.label.text.length > 0) self.label.text = [self.label.text substringToIndex:self.label.text.length - 1];
     }
     else if ([t isEqual:SHFT]) {
-        [self.keys enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            NSString *s = [obj titleForState:UIControlStateNormal];
+        for (UIButton *key in self.keys) {
+            NSString *s = [key titleForState:UIControlStateNormal];
         
-            if (s.length > 1) return;
+            if (s.length > 1) continue;
             
-            [obj setTitle:[s isEqual:[s lowercaseString]] ? [s uppercaseString] : [s lowercaseString]
+            [key setTitle:[s isEqual:[s lowercaseString]] ? [s uppercaseString] : [s lowercaseString]
              forState:UIControlStateNormal];
-        }];
+        }
     }
     else self.label.text = [self.label.text stringByAppendingString:t];
 }

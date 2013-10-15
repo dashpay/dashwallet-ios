@@ -255,9 +255,7 @@ wasClean:(BOOL)wasClean
         [outaddrs setValue:@(YES) forKey:@"newTx"];
 
         // delete any unspent outputs that are now spent
-        [tx.inputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            ZNTxInputEntity *e = obj;
-            
+        for (ZNTxInputEntity *e in tx.inputs) {
             if (e.txIndex > 0) {
                 [spent addObjectsFromArray:[ZNUnspentOutputEntity objectsMatching:@"txIndex == %lld && n == %d",
                                             e.txIndex, e.n]];
@@ -268,37 +266,39 @@ wasClean:(BOOL)wasClean
                 // there is any ambiguity, ignore the whole tx. It will show up when the wallet is next synced.
                 __block int64_t balance = e.value;
 
-                [outputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                    ZNUnspentOutputEntity *o = obj;
-                     
-                    if (! [o.address isEqual:e.address]) return;
+                for (ZNUnspentOutputEntity *o in outputs) {
+                    if (! [o.address isEqual:e.address]) continue;
                     
                     balance -= o.value;
                     [spent addObject:o];
 
-                    if (balance <= 0) *stop = YES;
-                }];
+                    if (balance <= 0) break;
+                }
 
                 if (balance != 0) { // tx inputs didn't match up with unspent outputs, ignore the tx
                     [tx deleteObject];
                     tx = nil;
-                    *stop = YES;
+                    break;
                 }
                 else [outputs removeObjectsInArray:spent];
             }
-        }];
+        }
         
         if (! tx) return;
         
         [spent makeObjectsPerformSelector:@selector(deleteObject)]; // delete spent outputs
         
         // add outputs sent to wallet addresses to unspent outputs
-        [tx.outputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            if ([[ZNWallet sharedInstance] containsAddress:(id)[obj address]] &&
+        NSUInteger idx = 0;
+        
+        for (ZNTxOutputEntity *o in tx.outputs) {
+            if ([[ZNWallet sharedInstance] containsAddress:o.address] &&
                 [ZNUnspentOutputEntity countObjectsMatching:@"txHash == %@ && n == %d", tx.txHash, idx] == 0) {
-                [ZNUnspentOutputEntity entityWithTxOutput:obj]; // create new unspent output object in core data
+                [ZNUnspentOutputEntity entityWithTxOutput:o]; // create new unspent output object in core data
             }
-        }];
+
+            idx++;
+        }
         
         AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
         //TODO: play a beep sound
@@ -327,10 +327,9 @@ wasClean:(BOOL)wasClean
         }
         
         // set the block height for transactions included in the new block
-        [[ZNTransactionEntity objectsMatching:@"txIndex IN %@", txIndexes]
-        enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            [obj setBlockHeight:height];
-        }];
+        for (ZNTransactionEntity *e in [ZNTransactionEntity objectsMatching:@"txIndex IN %@", txIndexes]) {
+            [e setBlockHeight:height];
+        }
         
         [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:nil];
         

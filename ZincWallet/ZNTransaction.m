@@ -25,21 +25,21 @@
 
 #import "ZNTransaction.h"
 #import "ZNKey.h"
-#import "NSMutableData+Bitcoin.h"
-#import "NSData+Hash.h"
 #import "NSString+Base58.h"
+#import "NSMutableData+Bitcoin.h"
+#import "NSData+Bitcoin.h"
+#import "NSData+Hash.h"
 
-#define TX_VERSION      0x00000001u
-#define TX_LOCKTIME     0x00000000u
-#define TXIN_SEQUENCE   UINT32_MAX
-#define TXOUT_PUBKEYLEN 25
-#define SIGHASH_ALL     0x00000001u
+#define TX_VERSION    0x00000001u
+#define TX_LOCKTIME   0x00000000u
+#define TXIN_SEQUENCE UINT32_MAX
+#define SIGHASH_ALL   0x00000001u
 
 @interface ZNTransaction ()
 
-@property (nonatomic, strong) NSMutableArray *hashes, *indexes, *scripts;
-@property (nonatomic, strong) NSMutableArray *addresses, *amounts;
-@property (nonatomic, strong) NSMutableArray *signatures;
+@property (nonatomic, strong) NSMutableArray *hashes, *indexes, *inScripts;
+@property (nonatomic, strong) NSMutableArray *amounts, *addresses, *outScripts;
+@property (nonatomic, strong) NSMutableArray *signatures, *sequences;
 
 @end
 
@@ -48,13 +48,17 @@
 - (instancetype)init
 {
     if (! (self = [super init])) return nil;
-        
+    
+    _version = TX_VERSION;
     self.hashes = [NSMutableArray array];
     self.indexes = [NSMutableArray array];
-    self.scripts = [NSMutableArray array];
-    self.addresses = [NSMutableArray array];
+    self.inScripts = [NSMutableArray array];
     self.amounts = [NSMutableArray array];
+    self.addresses = [NSMutableArray array];
+    self.outScripts = [NSMutableArray array];
     self.signatures = [NSMutableArray array];
+    self.sequences = [NSMutableArray array];
+    _lockTime = TX_LOCKTIME;
     
     return self;
 }
@@ -66,17 +70,78 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 
     if (! (self = [super init])) return nil;
     
+    _version = TX_VERSION;
     self.hashes = [NSMutableArray arrayWithArray:hashes];
     self.indexes = [NSMutableArray arrayWithArray:indexes];
-    self.scripts = [NSMutableArray arrayWithArray:scripts];
-    
-    self.addresses = [NSMutableArray arrayWithArray:addresses];
+    self.inScripts = [NSMutableArray arrayWithArray:scripts];
     self.amounts = [NSMutableArray arrayWithArray:amounts];
+    self.addresses = [NSMutableArray arrayWithArray:addresses];
+    self.outScripts = [NSMutableArray arrayWithCapacity:addresses.count];
+    for (int i = 0; i < addresses.count; i++) {
+        [self.outScripts addObject:[NSMutableData data]];
+        [self.outScripts.lastObject appendScriptPubKeyForAddress:self.addresses[i]];
+    }
     
     self.signatures = [NSMutableArray arrayWithCapacity:hashes.count];
+    self.sequences = [NSMutableArray arrayWithCapacity:hashes.count];
     for (int i = 0; i < hashes.count; i++) {
         [self.signatures addObject:[NSNull null]];
+        [self.sequences addObject:@(TXIN_SEQUENCE)];
     }
+    
+    _lockTime = TX_LOCKTIME;
+
+    return self;
+}
+
+- (instancetype)initWithData:(NSData *)data
+{
+    if (! (self = [super init])) return nil;
+ 
+    NSString *address = nil;
+    NSUInteger l = 0, len = 0, off = 0, count = 0;
+
+    if (data.length < off + sizeof(uint32_t) + VARINT_MAX_LEN) return nil;
+    _version = [data UInt32AtOffset:off]; // tx version
+    off += sizeof(uint32_t);
+    count = [data varIntAtOffset:off length:&l]; // input count
+    off += l;
+
+    for (NSUInteger i = 0; i < count; i++) { // inputs
+        if (data.length < off + CC_SHA256_DIGEST_LENGTH + sizeof(uint32_t) + VARINT_MAX_LEN) return nil;
+        [self.hashes addObject:[data subdataWithRange:NSMakeRange(off, CC_SHA256_DIGEST_LENGTH)]]; // input tx hash
+        off += CC_SHA256_DIGEST_LENGTH;
+        [self.indexes addObject:@([data UInt32AtOffset:off])]; // input index
+        off += sizeof(uint32_t);
+        [self.inScripts addObject:[NSNull null]]; // placeholder for input script (comes from previous transaction)
+        len = [data varIntAtOffset:off length:&l]; // input signature length
+        off += l;
+        if (data.length < off + len + sizeof(uint32_t)) return nil;
+        [self.signatures addObject:[data subdataWithRange:NSMakeRange(off, len)]]; // input signature
+        off += len;
+        [self.sequences addObject:@([data UInt32AtOffset:off])]; // input sequence number (for replacement transactons)
+        off += sizeof(uint32_t);
+    }
+
+    if (data.length < off + VARINT_MAX_LEN) return nil;
+    count = [data varIntAtOffset:off length:&l]; // output count
+    off += l;
+    
+    for (NSUInteger i = 0; i < count; i++) { // outputs
+        if (data.length < off + sizeof(uint64_t) + VARINT_MAX_LEN) return nil;
+        [self.amounts addObject:@([data UInt64AtOffset:off])]; // output amount
+        off += sizeof(uint64_t);
+        len = [data varIntAtOffset:off length:&l]; // output script length
+        off += l;
+        if (data.length < off + len) return nil;
+        [self.outScripts addObject:[data subdataWithRange:NSMakeRange(off, len)]]; // output script
+        off += len;
+        address = [NSString addressWithScript:self.outScripts.lastObject]; // address from output script if applicable
+        [self.addresses addObject:address ? address : [NSNull null]];
+    }
+    
+    if (data.length < off + sizeof(uint32_t)) return nil;
+    _lockTime = [data UInt32AtOffset:off]; // tx locktime
     
     return self;
 }
@@ -86,26 +151,40 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 {
     [self.hashes addObject:hash];
     [self.indexes addObject:@(index)];
-    [self.scripts addObject:script];
+    [self.inScripts addObject:script];
     [self.signatures addObject:[NSNull null]];
+    [self.sequences addObject:@(TXIN_SEQUENCE)];
 }
 
 - (void)addOutputAddress:(NSString *)address amount:(uint64_t)amount
 {
-    [self.addresses addObject:address];
     [self.amounts addObject:@(amount)];
+    [self.addresses addObject:address];
+    [self.outScripts addObject:[NSMutableData data]];
+    [self.outScripts.lastObject appendScriptPubKeyForAddress:address];
+}
+
+- (void)setInputAddress:(NSString *)address atIndex:(NSUInteger)index;
+{
+    NSMutableData *d = [NSMutableData data];
+
+    [d appendScriptPubKeyForAddress:address];
+    [self.inScripts replaceObjectAtIndex:index withObject:d];
 }
 
 - (NSArray *)inputAddresses
 {
-    NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:self.scripts.count];
+    NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:self.inScripts.count];
 
-    [self.scripts enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        NSMutableData *addr = [NSMutableData dataWithBytes:"\0" length:1];
+    for (NSData *d in self.inScripts) {
+        if (d != (id)[NSNull null] && d.length >= 22) {
+            NSMutableData *addr = [NSMutableData dataWithBytes:"\0" length:1];
 
-        [addr appendData:[obj subdataWithRange:NSMakeRange([obj length] - 22, 20)]];
-        [addresses addObject:[NSString base58checkWithData:addr]];
-    }];
+            [addr appendData:[d subdataWithRange:NSMakeRange(d.length - 22, 20)]];
+            [addresses addObject:[NSString base58checkWithData:addr]];
+        }
+        else [addresses addObject:[NSNull null]];
+    }
 
     return addresses;
 }
@@ -115,14 +194,19 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     return self.hashes;
 }
 
-- (NSArray *)inputScripts
-{
-    return self.scripts;
-}
-
 - (NSArray *)inputIndexes
 {
     return self.indexes;
+}
+
+- (NSArray *)inputScripts
+{
+    return self.inScripts;
+}
+
+- (NSArray *)inputSequences
+{
+    return self.sequences;
 }
 
 - (NSArray *)outputAddresses
@@ -140,18 +224,18 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:privateKeys.count],
                    *keys = [NSMutableArray arrayWithCapacity:privateKeys.count];
     
-    [privateKeys enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        ZNKey *key = [ZNKey keyWithPrivateKey:obj];
+    for (NSString *pk in privateKeys) {
+        ZNKey *key = [ZNKey keyWithPrivateKey:pk];
 
-        if (! key) return;
+        if (! key) continue;
  
         [keys addObject:key];
         [addresses addObject:key.hash160];
-    }];
+    }
 
     for (NSUInteger i = 0; i < self.hashes.count; i++) {
-        NSUInteger keyIdx = [addresses indexOfObject:[self.scripts[i]
-                             subdataWithRange:NSMakeRange([self.scripts[i] length] - 22, 20)]];
+        NSUInteger keyIdx = [addresses indexOfObject:[self.inScripts[i]
+                             subdataWithRange:NSMakeRange([self.inScripts[i] length] - 22, 20)]];
 
         if (keyIdx == NSNotFound) continue;
     
@@ -185,8 +269,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 {
     NSMutableData *d = [NSMutableData dataWithCapacity:self.size];
 
-    [d appendUInt32:TX_VERSION];
-
+    [d appendUInt32:self.version];
     [d appendVarInt:self.hashes.count];
 
     for (NSUInteger i = 0; i < self.hashes.count; i++) {
@@ -199,24 +282,23 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
         }
         else if (i == subscriptIndex) {
             //TODO: to fully match the reference implementation, OP_CODESEPARATOR related checksig logic should go here
-            [d appendVarInt:[self.scripts[i] length]];
-            [d appendData:self.scripts[i]];
+            [d appendVarInt:[self.inScripts[i] length]];
+            [d appendData:self.inScripts[i]];
         }
         else [d appendVarInt:0];
         
-        [d appendUInt32:TXIN_SEQUENCE];
+        [d appendUInt32:[self.sequences[i] unsignedIntValue]];
     }
     
     [d appendVarInt:self.addresses.count];
     
     for (NSUInteger i = 0; i < self.addresses.count; i++) {
         [d appendUInt64:[self.amounts[i] unsignedLongLongValue]];
-        
-        [d appendVarInt:TXOUT_PUBKEYLEN]; // this shouldn't be hard coded
-        [d appendScriptPubKeyForAddress:self.addresses[i]];
+        [d appendVarInt:[self.outScripts[i] length]];
+        [d appendData:self.outScripts[i]];
     }
     
-    [d appendUInt32:TX_LOCKTIME];
+    [d appendUInt32:self.lockTime];
     
     if (subscriptIndex != NSNotFound) {
         [d appendUInt32:SIGHASH_ALL];

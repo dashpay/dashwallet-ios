@@ -44,10 +44,14 @@
 @property (nonatomic, readonly) NSArray *inputHashes;
 @property (nonatomic, readonly) NSArray *inputIndexes;
 @property (nonatomic, readonly) NSArray *inputScripts;
-@property (nonatomic, readonly) NSArray *outputAddresses;
+@property (nonatomic, readonly) NSArray *inputSequences;
 @property (nonatomic, readonly) NSArray *outputAmounts;
+@property (nonatomic, readonly) NSArray *outputAddresses;
+@property (nonatomic, readonly) NSArray *outputScripts;
 
+@property (nonatomic, readonly) uint32_t version;
 @property (nonatomic, strong) NSData *txHash; // hash of the signed transaction, little endian
+@property (nonatomic, readonly) uint32_t lockTime;
 @property (nonatomic, readonly) size_t size;
 @property (nonatomic, readonly) uint64_t standardFee;
 @property (nonatomic, readonly) BOOL isSigned;
@@ -58,9 +62,13 @@
 - (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts
 outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts;
 
+- (instancetype)initWithData:(NSData *)data;
+
 - (void)addInputHash:(NSData *)hash index:(NSUInteger)index script:(NSData *)script;
 
 - (void)addOutputAddress:(NSString *)address amount:(uint64_t)amount;
+
+- (void)setInputAddress:(NSString *)address atIndex:(NSUInteger)index;
 
 - (BOOL)signWithPrivateKeys:(NSArray *)privateKeys;
 

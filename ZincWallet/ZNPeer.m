@@ -25,6 +25,7 @@
 
 #import "ZNPeer.h"
 #import "ZNPeerEntity.h"
+#import "ZNTransaction.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSData+Bitcoin.h"
 #import "NSData+Hash.h"
@@ -42,30 +43,6 @@
 #define MIN_PROTO_VERSION      31402 // peers earlier than this protocol version not supported
 #define LOCAL_HOST             0x7f000001
 #define REFERENCE_BLOCK_HEIGHT 250000
-
-#define MSG_VERSION     @"version"
-#define MSG_VERACK      @"verack"
-#define MSG_ADDR        @"addr"
-#define MSG_INV         @"inv"
-#define MSG_GETDATA     @"getdata"
-#define MSG_NOTFOUND    @"notfound"
-#define MSG_GETBLOCKS   @"getblocks"
-#define MSG_GETHEADERS  @"getheaders"
-#define MSG_TX          @"tx"
-#define MSG_BLOCK       @"block"
-#define MSG_HEADERS     @"headers"
-#define MSG_GETADDR     @"getaddr"
-#define MSG_MEMPOOL     @"mempool"
-#define MSG_CHECKORDER  @"checkorder"
-#define MSG_SUBMITORDER @"submitorder"
-#define MSG_REPLY       @"reply"
-#define MSG_PING        @"ping"
-#define MSG_PONG        @"pong"
-#define MSG_FILTERLOAD  @"filterload"
-#define MSG_FILTERADD   @"filteradd"
-#define MSG_FILTERCLEAR @"filterclear"
-#define MSG_MERKLEBLOCK @"merkleblock"
-#define MSG_ALERT       @"alert"
 
 #define llurand() (((long long unsigned)mrand48() << (sizeof(unsigned)*8)) | (unsigned)mrand48())
 
@@ -168,7 +145,7 @@
     
     self.gotVerack = self.sentVerack = NO;
     _status = disconnected;
-    [self.delegate peerDisconnected:self withError:error];
+    [self.delegate peer:self disconnectedWithError:error];
 }
 
 - (NSString *)host
@@ -188,10 +165,6 @@
     
     _status = connected;
     [self.delegate peerConnected:self];
-    
-    if ([ZNPeerEntity countAllObjects] <= 1000) [self sendMessage:[NSData data] type:MSG_GETADDR];
-    
-    //TODO: XXXX send bloom filters
 }
 
 #pragma mark - send
@@ -240,6 +213,11 @@
     [self didConnect];
 }
 
+- (void)sendGetaddrMessage
+{
+    [self sendMessage:[NSData data] type:MSG_GETADDR];
+}
+
 - (void)sendAddrMessage
 {
     NSMutableData *msg = [NSMutableData data];
@@ -260,7 +238,27 @@
     if ([MSG_VERSION isEqual:type]) [self acceptVersionMessage:message];
     else if ([MSG_VERACK isEqual:type]) [self acceptVerackMessage:message];
     else if ([MSG_ADDR isEqual:type]) [self acceptAddrMessage:message];
-    else if ([MSG_PING isEqual:type]) [self acceptPing:message];
+    //else if ([MSG_INV isEqual:type]) [self acceptInvMessage:message];
+    //else if ([MSG_GETDATA isEqual:type]) [self acceptGetdataMessage:message];
+    //else if ([MSG_NOTFOUND isEqual:type]) [self acceptNotfoundMessage:message];
+    //else if ([MSG_GETBLOCKS isEqual:type]) [self acceptGetblocksMessage:message];
+    //else if ([MSG_GETHEADERS isEqual:type]) [self acceptGetheadersMessage:message];
+    else if ([MSG_TX isEqual:type]) [self acceptTxMessage:message];
+    //else if ([MSG_BLOCK isEqual:type]) [self acceptBlockMessage:message];
+    //else if ([MSG_HEADERS isEqual:type]) [self acceptHeadersMessage:message];
+    else if ([MSG_GETADDR isEqual:type]) [self acceptGetaddrMessage:message];
+    //else if ([MSG_MEMPOOL isEqual:type]) [self acceptMempoolMessage:message];
+    //else if ([MSG_CHECKORDER isEqual:type]) [self acceptCheckorderMessage:message];
+    //else if ([MSG_SUBMITORDER isEqual:type]) [self acceptSubmitorderMessage:message];
+    //else if ([MSG_REPLY isEqual:type]) [self acceptReplyMessage:message];
+    else if ([MSG_PING isEqual:type]) [self acceptPingMessage:message];
+    //else if ([MSG_PONG isEqual:type]) [self acceptPongMessage:message];
+    //else if ([MSG_FILTERLOAD isEqual:type]) [self acceptFilterloadMessage:message];
+    //else if ([MSG_FILTERADD isEqual:type]) [self acceptFilteraddMessage:message];
+    //else if ([MSG_FILTERCLEAR isEqual:type]) [self acceptFilterclearMessage:message];
+    else if ([MSG_MERKLEBLOCK isEqual:type]) [self acceptMerkleblockMessage:message];
+    //else if ([MSG_ALERT isEqual:type]) [self acceptAlertMessage:message];
+
     else NSLog(@"%@:%d dropping %@, handler not implemented", self.host, self.port, type);
 }
 
@@ -358,6 +356,7 @@
     }
     
     [ZNPeerEntity createOrUpdateWithAddresses:addresses ports:ports timestamps:timestamps services:services];
+    
     count = [ZNPeerEntity countAllObjects];
     
     if (count > 1000) { // remove peers with a timestamp more than 3 hours old, or until there are only 1000 left
@@ -372,6 +371,18 @@
     }
 }
 
+- (void)acceptTxMessage:(NSData *)message
+{
+    ZNTransaction *tx = [[ZNTransaction alloc] initWithData:message];
+    
+    if (! tx) {
+        NSLog(@"%@:%d malformed tx message %@", self.host, self.port, message);
+        return;
+    }
+    
+    [self.delegate peer:self relayedTransaction:tx];
+}
+
 - (void)acceptGetaddrMessage:(NSData *)message
 {
     if (message.length != 0) {
@@ -384,7 +395,7 @@
     [self sendAddrMessage];
 }
 
-- (void)acceptPing:(NSData *)message
+- (void)acceptPingMessage:(NSData *)message
 {
     if (message.length != sizeof(uint64_t)) {
         NSLog(@"%@:%d malformed ping message, length is %u, should be 4", self.host, self.port, (int)message.length);
@@ -394,6 +405,11 @@
     NSLog(@"%@:%u got ping", self.host, self.port);
     
     [self sendMessage:message type:MSG_PONG];
+}
+
+- (void)acceptMerkleblockMessage:(NSData *)message
+{
+    
 }
 
 #pragma mark - hash
@@ -419,8 +435,8 @@
 // two peers are equal if they share an ip address and port number
 - (BOOL)isEqual:(id)object
 {
-    return [object isKindOfClass:[ZNPeer class]] &&
-           self.address == [(ZNPeer *)object address] && self.port == [(ZNPeer *)object port];
+    return ([object isKindOfClass:[ZNPeer class]] && self.address == ((ZNPeer *)object).address &&
+            self.port == ((ZNPeer *)object).port) ? YES : NO;
 }
 
 #pragma mark - NSStreamDelegate

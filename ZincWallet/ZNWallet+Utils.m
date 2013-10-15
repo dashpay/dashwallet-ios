@@ -105,21 +105,19 @@
 {
     // TODO: calculate estimated time based on the median priority of free transactions in last 144 blocks (24hrs)
     NSMutableArray *amounts = [NSMutableArray array], *heights = [NSMutableArray array];
-    NSUInteger currentHeight = self.lastBlockHeight;
+    NSUInteger currentHeight = self.lastBlockHeight, idx = 0;
     
     if (! currentHeight) return DBL_MAX;
     
     // get the heights (which block in the blockchain it's in) of all the transaction inputs
-    [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        ZNUnspentOutputEntity *o = [ZNUnspentOutputEntity objectsMatching:@"txHash == %@ && n == %d",
-                                    transaction.inputHashes[idx], [transaction.inputIndexes[idx] intValue]].lastObject;
+    for (NSData *hash in transaction.inputHashes) {
+        ZNUnspentOutputEntity *o = [ZNUnspentOutputEntity objectsMatching:@"txHash == %@ && n == %d", hash,
+                                    [transaction.inputIndexes[idx++] intValue]].lastObject;
         
-        if (o) {
-            [amounts addObject:@(o.value)];
-            [heights addObject:@(currentHeight - o.confirmations)];
-        }
-        else *stop = YES;
-    }];
+        if (! o) break;
+        [amounts addObject:@(o.value)];
+        [heights addObject:@(currentHeight - o.confirmations)];
+    }
     
     NSUInteger height = [transaction blockHeightUntilFreeForAmounts:amounts withBlockHeights:heights];
     
@@ -133,18 +131,19 @@
 // retuns the total amount tendered in the trasaction (total unspent outputs consumed, change included)
 - (uint64_t)transactionAmount:(ZNTransaction *)transaction
 {
-    __block uint64_t amount = 0;
+    uint64_t amount = 0;
+    NSUInteger idx = 0;
     
-    [transaction.inputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        ZNUnspentOutputEntity *o = [ZNUnspentOutputEntity objectsMatching:@"txHash == %@ && n == %d",
-                                    transaction.inputHashes[idx], [transaction.inputIndexes[idx] intValue]].lastObject;
+    for (NSData *hash in transaction.inputHashes) {
+        ZNUnspentOutputEntity *o = [ZNUnspentOutputEntity objectsMatching:@"txHash == %@ && n == %d", hash,
+                                    [transaction.inputIndexes[idx++] intValue]].lastObject;
         
         if (! o) {
             amount = 0;
-            *stop = YES;
+            break;
         }
         else amount += o.value;
-    }];
+    }
     
     return amount;
 }
@@ -152,13 +151,13 @@
 // returns the transaction fee for the given transaction
 - (uint64_t)transactionFee:(ZNTransaction *)transaction
 {
-    __block uint64_t amount = [self transactionAmount:transaction];
+    uint64_t amount = [self transactionAmount:transaction];
     
     if (amount == 0) return UINT64_MAX;
     
-    [transaction.outputAmounts enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        amount -= [obj unsignedLongLongValue];
-    }];
+    for (NSNumber *amt in transaction.outputAmounts) {
+        amount -= amt.unsignedLongLongValue;
+    }
     
     return amount;
 }
@@ -166,11 +165,13 @@
 // returns the amount that the given transaction returns to a change address
 - (uint64_t)transactionChange:(ZNTransaction *)transaction
 {
-    __block uint64_t amount = 0;
+    uint64_t amount = 0;
+    NSUInteger idx = 0;
     
-    [transaction.outputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        if ([self containsAddress:obj]) amount += [transaction.outputAmounts[idx] unsignedLongLongValue];
-    }];
+    for (NSString *address in transaction.outputAddresses) {
+        if ([self containsAddress:address]) amount += [transaction.outputAmounts[idx] unsignedLongLongValue];
+        idx++;
+    }
     
     return amount;
 }
@@ -178,13 +179,13 @@
 // returns the first trasnaction output address not contained in the wallet
 - (NSString *)transactionTo:(ZNTransaction *)transaction
 {
-    __block NSString *address = nil;
+    NSString *address = nil;
     
-    [transaction.outputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        if ([self containsAddress:obj]) return;
-        address = obj;
-        *stop = YES;
-    }];
+    for (NSString *addr in transaction.outputAddresses) {
+        if ([self containsAddress:addr]) continue;
+        address = addr;
+        break;
+    }
     
     return address;
 }

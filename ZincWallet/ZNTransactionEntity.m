@@ -69,7 +69,8 @@
         
         if ([JSON[@"inputs"] isKindOfClass:[NSArray class]]) {
             NSMutableOrderedSet *inputs = [self mutableOrderedSetValueForKey:@"inputs"];
-    
+            NSUInteger idx = 0;
+            
             while (inputs.count < [JSON[@"inputs"] count]) {
                 [inputs addObject:[ZNTxInputEntity managedObject]];
             }
@@ -78,14 +79,14 @@
                 [inputs removeObjectAtIndex:inputs.count - 1];
             }
 
-            [[JSON[@"inputs"] valueForKey:@"prev_out"]
-            enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                [inputs[idx] setAttributesFromJSON:obj];
-            }];
+            for (NSDictionary *input in [JSON[@"inputs"] valueForKey:@"prev_out"]) {
+                [inputs[idx++] setAttributesFromJSON:input];
+            };
         }
     
         if ([JSON[@"out"] isKindOfClass:[NSArray class]]) {
             NSMutableOrderedSet *outputs = [self mutableOrderedSetValueForKey:@"outputs"];
+            NSUInteger idx = 0;
             
             while (outputs.count < [JSON[@"out"] count]) {
                 [outputs addObject:[ZNTxOutputEntity managedObject]];
@@ -95,9 +96,9 @@
                 [outputs removeObjectAtIndex:outputs.count - 1];
             }
 
-            [JSON[@"out"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                [outputs[idx] setAttributesFromJSON:obj];
-            }];
+            for (NSDictionary *output in JSON[@"out"]) {
+                [outputs[idx++] setAttributesFromJSON:output];
+            }
         }
     }];
     
@@ -109,6 +110,7 @@
     [[self managedObjectContext] performBlockAndWait:^{
         NSMutableOrderedSet *inputs = [self mutableOrderedSetValueForKey:@"inputs"];
         NSMutableOrderedSet *outputs = [self mutableOrderedSetValueForKey:@"outputs"];
+        NSUInteger idx = 0;
         
         self.txHash = tx.txHash;
         if (self.timeStamp < 1.0) self.timeStamp = [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970;
@@ -121,15 +123,17 @@
             [inputs removeObjectAtIndex:inputs.count - 1];
         }
     
-        [inputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        for (ZNTxInputEntity *e in inputs) {
             ZNUnspentOutputEntity *o = [ZNUnspentOutputEntity objectsMatching:@"txHash == %@ && n == %d",
                                         tx.inputHashes[idx], [tx.inputIndexes[idx] intValue]].lastObject;
         
             if (o) {
-                [obj setAddress:o.address txIndex:o.txIndex n:o.n value:o.value];
+                [e setAddress:o.address txIndex:o.txIndex n:o.n value:o.value];
             }
-            else [obj setAddress:tx.inputAddresses[idx] txIndex:0 n:[tx.inputIndexes[idx] intValue] value:0];
-        }];
+            else [e setAddress:tx.inputAddresses[idx] txIndex:0 n:[tx.inputIndexes[idx] intValue] value:0];
+            
+            idx++;
+        }
 
         while (outputs.count < tx.outputAddresses.count) {
             [outputs addObject:[ZNTxOutputEntity managedObject]];
@@ -139,10 +143,13 @@
             [self removeObjectFromOutputsAtIndex:outputs.count - 1];
         }
 
-        [outputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            [(ZNTxOutputEntity *)obj setAddress:tx.outputAddresses[idx] txIndex:0 n:(int32_t)idx
+        idx = 0;
+        
+        for (ZNTxOutputEntity *o in outputs) {
+            [o setAddress:tx.outputAddresses[idx] txIndex:0 n:(int32_t)idx
              value:[tx.outputAmounts[idx] longLongValue]];
-        }];
+            idx++;
+        }
     }];
     
     return self;

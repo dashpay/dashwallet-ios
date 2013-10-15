@@ -220,27 +220,21 @@ static NSData *getKeychainData(NSString *key)
 {
     //TODO: remove unconfirmed transactions after 2 days?
     //TODO: keep a seprate list of failed transactions to display along with the successful ones
-    [[ZNTransactionEntity objectsMatching:@"blockHeight == 0"]
-    enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        ZNTransactionEntity *tx = obj;
-        
-        // check each tx input
-        [tx.inputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            ZNTxInputEntity *i = obj;
-            
+    for (ZNTransactionEntity *tx in [ZNTransactionEntity objectsMatching:@"blockHeight == 0"]) {
+        for (ZNTxInputEntity *i in tx.inputs) { // check each tx input
             // if the input is unspent, or spent by a confirmed transaction, delete the unconfirmed tx
             if ([ZNUnspentOutputEntity countObjectsMatching:@"txIndex == %lld && n == %d", i.txIndex, i.n] > 0 ||
                 [ZNTxInputEntity countObjectsMatching:@"txIndex == %lld && n == %d && transaction.blockHeight > 0",
-                i.txIndex, i.n] > 0) {
+                 i.txIndex, i.n] > 0) {
                 NSArray *addrs = [[[tx.inputs valueForKey:@"address"] array]
                                   arrayByAddingObjectsFromArray:[[tx.outputs valueForKey:@"address"] array]];
                 
                 [[ZNAddressEntity objectsMatching:@"address IN %@", addrs] setValue:@(YES) forKey:@"newTx"];
                 [tx deleteObject];
-                *stop = YES;
+                break;
             }
-        }];
-    }];
+        }
+    }
 }
 
 #pragma mark - synchronization
@@ -286,15 +280,14 @@ static NSData *getKeychainData(NSString *key)
         
         // remove unconfirmed transactions that no longer appear in query results
         //TODO: keep a seprate list of failed transactions to display along with the successful ones
-        [[ZNTransactionEntity objectsMatching:@"blockHeight == 0 && ! (txHash IN %@)", self.updatedTxHashes]
-        enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            ZNTransactionEntity *tx = obj;
+        for (ZNTransactionEntity *tx in
+             [ZNTransactionEntity objectsMatching:@"blockHeight == 0 && ! (txHash IN %@)", self.updatedTxHashes]) {
             NSArray *addrs = [[[tx.inputs valueForKey:@"address"] array]
                               arrayByAddingObjectsFromArray:[[tx.outputs valueForKey:@"address"] array]];
 
             [[ZNAddressEntity objectsMatching:@"address IN %@", addrs] setValue:@(YES) forKey:@"newTx"];
             [tx deleteObject];
-        }];
+        }
 
         // update the unspent outputs for addresses that have new transactions, or all addresses in case of fullSync
         NSArray *addrs = fullSync ? [ZNAddressEntity allObjects] : [ZNAddressEntity objectsMatching:@"newTx == YES"];
@@ -463,16 +456,16 @@ static NSData *getKeychainData(NSString *key)
                 if (completion) completion(error);
             }
         
-            [JSON[@"addresses"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                [ZNAddressEntity updateWithJSON:obj]; // update core data address objects
-            }];
+            for (NSDictionary *d in JSON[@"addresses"]) {
+                [ZNAddressEntity updateWithJSON:d]; // update core data address objects
+            }
             
-            [JSON[@"txs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                ZNTransactionEntity *tx = [ZNTransactionEntity updateOrCreateWithJSON:obj]; // update core data tx objs
+            for (NSDictionary *d in JSON[@"txs"]) {
+                ZNTransactionEntity *tx = [ZNTransactionEntity updateOrCreateWithJSON:d]; // update core data tx objs
                 
                 if (tx.txHash) [self.updatedTxHashes addObject:tx.txHash];
-            }];
-        
+            }
+            
             // store other useful information from the query result in user defaults
             if ([JSON[@"info"] isKindOfClass:[NSDictionary class]] &&
                 [JSON[@"info"][@"latest_block"] isKindOfClass:[NSDictionary class]] &&
@@ -550,11 +543,11 @@ static NSData *getKeychainData(NSString *key)
              makeObjectsPerformSelector:@selector(deleteObject)];
             
             // store any unspent outputs in core data
-            [JSON[@"unspent_outputs"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                ZNUnspentOutputEntity *o = [ZNUnspentOutputEntity entityWithJSON:obj];
+            for (NSDictionary *d in JSON[@"unspent_outputs"]) {
+                ZNUnspentOutputEntity *o = [ZNUnspentOutputEntity entityWithJSON:d];
                     
                 if (o.value == 0 || ! [addrs containsObject:o.address]) [o deleteObject];
-            }];
+            }
             
             [addresses setValue:@(NO) forKey:@"newTx"]; // tx successfully synced, reset new tx flag
 
@@ -592,9 +585,9 @@ static NSData *getKeychainData(NSString *key)
     // the outputs of unconfirmed transactions will show up in the unspent outputs list even with 0 confirmations
     __block uint64_t balance = 0;
     
-    [[ZNUnspentOutputEntity allObjects] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        balance += [(ZNUnspentOutputEntity *)obj value];
-    }];
+    for (ZNUnspentOutputEntity *o in [ZNUnspentOutputEntity allObjects]) {
+        balance += o.value;
+    }
     
     return balance;
 }
@@ -675,19 +668,18 @@ static NSData *getKeychainData(NSString *key)
     //TODO: make sure transaction is less than TX_MAX_SIZE
     //TODO: optimize for free transactions (watch out for performance issues, nothing O(n^2) please)
     // this is a nieve implementation to just get it functional, sorts unspent outputs by oldest first
-    [[ZNUnspentOutputEntity objectsSortedBy:@"txIndex" ascending:YES]
-    enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        [tx addInputHash:[obj txHash] index:[obj n] script:[obj script]]; // txHash is already in little endian
+    for (ZNUnspentOutputEntity *o in [ZNUnspentOutputEntity objectsSortedBy:@"txIndex" ascending:YES]) {
+        [tx addInputHash:o.txHash index:o.n script:o.script]; // txHash is already in little endian
             
-        balance += [(ZNUnspentOutputEntity *)obj value];
+        balance += o.value;
 
         // assume we will be adding a change output (additional 34 bytes)
         //TODO: calculate the median of the lowest fee-per-kb that made it into the previous 144 blocks (24hrs)
         //NOTE: consider feedback effects if everyone uses the same algorithm to calculate fees, maybe introduce noise
         if (fee) standardFee = ((tx.size + 34 + 999)/1000)*TX_FEE_PER_KB;
             
-        if (balance == amount + standardFee || balance >= amount + standardFee + minChange) *stop = YES;
-    }];
+        if (balance == amount + standardFee || balance >= amount + standardFee + minChange) break;
+    }
     
     if (balance < amount + standardFee) { // insufficent funds
         NSLog(@"Insufficient funds. %llu is less than transaction amount:%llu", balance, amount + standardFee);
@@ -757,14 +749,13 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
         __block uint64_t balance = 0, standardFee = 0;
         ZNTransaction *tx = [ZNTransaction new];
         
-        [[ZNUnspentOutputEntity objectsMatching:@"address == %@", address]
-        enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            [tx addInputHash:[obj txHash] index:[obj n] script:[obj script]]; // txHash is already in little endian
+        for (ZNUnspentOutputEntity *o in [ZNUnspentOutputEntity objectsMatching:@"address == %@", address]) {
+            [tx addInputHash:o.txHash index:o.n script:o.script]; // txHash is already in little endian
             
-            balance += [(ZNUnspentOutputEntity *)obj value];
+            balance += o.value;
 
-            [obj deleteObject]; // immediately remove unspent output from core data, they are not yet in the wallet
-        }];
+            [o deleteObject]; // immediately remove unspent output from core data, they are not yet in the wallet
+        }
         
         if (balance == 0) {
             completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
@@ -841,6 +832,7 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
 
 - (void)registerTransaction:(ZNTransaction *)transaction
 {
+    NSUInteger idx = 0;
     NSArray *addresses = [ZNAddressEntity objectsMatching:@"address IN %@",
                           [transaction.outputAddresses arrayByAddingObjectsFromArray:transaction.inputAddresses]];
     
@@ -854,19 +846,23 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
     [addresses setValue:@(YES) forKey:@"newTx"]; // mark addresses to be updated on next wallet sync
 
     // delete any unspent outputs that are now spent
-    [transaction.inputHashes enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        [[ZNUnspentOutputEntity objectsMatching:@"txHash == %@ && n == %d", obj,
-          [transaction.inputIndexes[idx] intValue]].lastObject deleteObject];
-    }];
+    for (NSData *hash in transaction.inputHashes) {
+        [[ZNUnspentOutputEntity objectsMatching:@"txHash == %@ && n == %d", hash,
+          [transaction.inputIndexes[idx++] intValue]].lastObject deleteObject];
+    }
     
     // add change to unspent outputs
-    [transaction.outputAddresses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        if ([self containsAddress:obj] &&
+    idx = 0;
+    
+    for (NSString *address in transaction.outputAddresses) {
+        if ([self containsAddress:address] &&
             [ZNUnspentOutputEntity countObjectsMatching:@"txHash == %@ && n == %d", transaction.txHash, idx] == 0) {
-            [ZNUnspentOutputEntity entityWithAddress:obj txHash:transaction.txHash n:(unsigned int)idx
+            [ZNUnspentOutputEntity entityWithAddress:address txHash:transaction.txHash n:(int)idx
              value:[transaction.outputAmounts[idx] longLongValue]];
         }
-    }];
+        
+        idx++;
+    }
     
     [NSManagedObject saveContext];
     [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:nil];

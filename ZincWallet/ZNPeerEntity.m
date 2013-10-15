@@ -64,14 +64,14 @@ services:(NSArray *)services
                 timestamps:[timestamps subarrayWithRange:NSMakeRange(100, timestamps.count - 100)]
                 services:[services subarrayWithRange:NSMakeRange(100, services.count - 100)]]];
     }
+    else if (addresses.count == 0) return @[];
 
     NSMutableArray *a = [NSMutableArray arrayWithCapacity:addresses.count];
     NSMutableIndexSet *set = [NSMutableIndexSet indexSet];
     NSArray *peers = [self objectsMatching:@"address IN %@", addresses];
     
     [[NSManagedObject context] performBlockAndWait:^{
-        [peers enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            ZNPeerEntity *e = obj;
+        for (ZNPeerEntity *e in peers) {
             NSUInteger i = [addresses indexOfObject:@(e.address)];
             
             while (i < addresses.count - 1 && ! [ports[i] isEqual:@(e.port)]) {
@@ -84,7 +84,7 @@ services:(NSArray *)services
                 [a addObject:e];
                 [set addIndex:i];
             }
-        }];
+        }
     }];
     
     addresses = [NSMutableArray arrayWithArray:addresses];
@@ -98,15 +98,16 @@ services:(NSArray *)services
     peers = [self managedObjectArrayWithLength:addresses.count];
     
     [[NSManagedObject context] performBlockAndWait:^{
-        [peers enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            ZNPeerEntity *e = obj;
+        NSUInteger idx = 0;
         
+        for (ZNPeerEntity *e in peers) {
             e.address = [addresses[idx] intValue];
             e.port = [ports[idx] shortValue];
             e.timestamp = [timestamps[idx] doubleValue];
             e.services = [services[idx] longLongValue];
-            [a addObject:obj];
-        }];
+            [a addObject:e];
+            idx++;
+        }
     }];
     
     return a;

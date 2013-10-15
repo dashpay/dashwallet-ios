@@ -53,27 +53,27 @@
     
     self.amountField.placeholder = [w stringForAmount:0];
     
-    [self.buttons enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        [(ZNButton *)obj setStyle:ZNButtonStyleBlue];
-        [[obj titleLabel] setFont:[UIFont fontWithName:@"HelveticaNeue-UltraLight" size:50]];
-    }];
+    for (ZNButton *button in self.buttons) {
+        [button setStyle:ZNButtonStyleBlue];
+        button.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-UltraLight" size:50];
+    }
 
     self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     self.spinner.frame =
         CGRectMake(self.spinner.frame.origin.x, self.spinner.frame.origin.y, 20.0, self.spinner.frame.size.height);
 
     if ([[UIScreen mainScreen] bounds].size.height < 500) { // adjust number buttons for 3.5" screen
-        [self.buttons enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        for (ZNButton *button in self.buttons) {
             CGFloat y = self.view.frame.size.height - 122;
 
-            if ([self.buttonRow1 containsObject:obj]) y = self.view.frame.size.height - 344.0;
-            else if ([self.buttonRow2 containsObject:obj]) y = self.view.frame.size.height - 270.0;
-            else if ([self.buttonRow3 containsObject:obj]) y = self.view.frame.size.height - 196.0;
+            if ([self.buttonRow1 containsObject:button]) y = self.view.frame.size.height - 344.0;
+            else if ([self.buttonRow2 containsObject:button]) y = self.view.frame.size.height - 270.0;
+            else if ([self.buttonRow3 containsObject:button]) y = self.view.frame.size.height - 196.0;
 
-            [obj setFrame:CGRectMake([obj frame].origin.x, y, [obj frame].size.width, 66.0)];
-            [obj setImageEdgeInsets:UIEdgeInsetsMake(20.0, [obj imageEdgeInsets].left,
-                                                     20.0, [obj imageEdgeInsets].right)];
-        }];
+            button.frame = CGRectMake(button.frame.origin.x, y, button.frame.size.width, 66.0);
+            button.imageEdgeInsets = UIEdgeInsetsMake(20.0, button.imageEdgeInsets.left,
+                                                      20.0, button.imageEdgeInsets.right);
+        }
     }
     
     self.balanceObserver =

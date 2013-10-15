@@ -86,9 +86,9 @@
     self.paymentAddress = url.host;
     
     //TODO: correctly handle unkown but required url arguments (by reporting the request invalid)
-    [[url.query componentsSeparatedByString:@"&"] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        NSArray *pair = [obj componentsSeparatedByString:@"="];
-        if (pair.count != 2) return;
+    for (NSString *arg in [url.query componentsSeparatedByString:@"&"]) {
+        NSArray *pair = [arg componentsSeparatedByString:@"="];
+        if (pair.count != 2) continue;
         
         if ([pair[0] isEqual:@"amount"]) self.amount = ([pair[1] doubleValue] + DBL_EPSILON)*SATOSHIS;
         else if ([pair[0] isEqual:@"label"])
@@ -97,7 +97,7 @@
         else if ([pair[0] isEqual:@"message"])
             self.message = [[pair[1] stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
                             stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-    }];
+    }
 }
 
 - (NSData *)data

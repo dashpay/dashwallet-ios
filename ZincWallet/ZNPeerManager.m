@@ -26,6 +26,10 @@
 #import "ZNPeerManager.h"
 #import "ZNPeer.h"
 #import "ZNPeerEntity.h"
+#import "ZNTransaction.h"
+#import "ZNTransactionEntity.h"
+#import "ZNTxOutputEntity.h"
+#import "ZNAddressEntity.h"
 #import "ZNWallet.h"
 #import "NSString+Base58.h"
 #import "NSMutableData+Bitcoin.h"
@@ -110,8 +114,8 @@
 
     // DNS peer discovery
     // TODO: provide seed.zincwallet.com DNS seed service
-    [a enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        struct hostent *h = gethostbyname([obj UTF8String]);
+    for (NSString *host in a) {
+        struct hostent *h = gethostbyname(host.UTF8String);
         
         for (int j = 0; h->h_addr_list[j] != NULL; j++) {
             uint32_t addr = CFSwapInt32BigToHost(((struct in_addr *)h->h_addr_list[j])->s_addr);
@@ -120,21 +124,21 @@
             [ZNPeerEntity createOrUpdateWithAddress:addr port:STANDARD_PORT timestamp:t services:NODE_NETWORK];
             count++;
         }
-    }];
+    }
     
 #if ! BITCOIN_TESTNET
     if (count > 0) return count;
      
     // if dns peer discovery fails, fall back on a hard coded list of peers
     // hard coded list is taken from the satoshi client, values need to be byte order swapped to be host native
-    [[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:FIXED_PEERS ofType:@"plist"]]
-    enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        uint32_t addr = CFSwapInt32([obj intValue]);
+    for (NSNumber *address in
+         [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:FIXED_PEERS ofType:@"plist"]]) {
+        uint32_t addr = CFSwapInt32(address.intValue);
         NSTimeInterval t = now - 24*60*60*(7 + drand48()*7); // random timestamp between 7 and 14 days ago
         
         [ZNPeerEntity createOrUpdateWithAddress:addr port:STANDARD_PORT timestamp:t services:NODE_NETWORK];
         count++;
-    }];
+    }
 #endif
     
     return count;
@@ -192,9 +196,13 @@
     NSLog(@"%@:%d connected", peer.host, peer.port);
     
     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
+    
+    if ([ZNPeerEntity countAllObjects] <= 1000) [peer sendGetaddrMessage];
+    
+    //TODO: XXXX send bloom filters
 }
 
-- (void)peerDisconnected:(ZNPeer *)peer withError:(NSError *)error
+- (void)peer:(ZNPeer *)peer disconnectedWithError:(NSError *)error
 {
     [self.peers removeObject:peer];
     NSLog(@"%@:%d disconnected%@%@", peer.host, peer.port, error ? @", " : @"", error ? error : @"");
@@ -223,6 +231,35 @@
             [self connect];
         });
     }
+}
+
+- (void)peer:(ZNPeer *)peer relayedTransaction:(ZNTransaction *)transaction
+{
+    ZNTransactionEntity *tx = [ZNTransactionEntity objectsMatching:@"txHash == %@", transaction.txHash].lastObject;
+    NSUInteger idx = 0;
+    
+    if (tx) {
+        // TODO: mark tx as having been relayed
+        return;
+    }
+
+    // relayed transactions don't contain input scripts, input scripts must be obtained from previous tx outputs
+    for (NSData *hash in transaction.inputHashes) { // lookup input addresses
+        uint32_t n = [transaction.inputIndexes[idx++] unsignedIntValue];
+        ZNTransactionEntity *e = [ZNTransactionEntity objectsMatching:@"txHash == %@", hash].lastObject;
+
+        if (! e) continue; // if the input tx is missing, then that input tx didn't involve wallet addresses
+        
+        if (n > e.outputs.count) {
+            NSLog(@"invalid transaction, input %u has non-existant previous output index", (int)idx - 1);
+            return;
+        }
+        
+        //TODO: refactor this to use the actual previous output script instead of generating a new one from the address
+        [transaction setInputAddress:[(ZNTxOutputEntity *)e.outputs[n] address] atIndex:idx - 1];
+    }
+    
+    [[ZNWallet sharedInstance] registerTransaction:transaction]; // registerTransaction will ignore any non-wallet tx
 }
 
 @end

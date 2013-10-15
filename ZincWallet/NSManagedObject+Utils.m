@@ -116,9 +116,9 @@
 + (NSUInteger)deleteObjects:(NSArray *)objects
 {
     [[self context] performBlockAndWait:^{
-        [objects enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        for (NSManagedObject *obj in objects) {
             [[self context] deleteObject:obj];
-        }];
+        }
     }];
     
     return objects.count;

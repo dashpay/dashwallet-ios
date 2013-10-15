@@ -169,17 +169,13 @@
                 __block uint64_t received = 0, spent = 0;
                 int height = tx.blockHeight ? w.lastBlockHeight - tx.blockHeight : 0;
                 
-                [tx.inputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                    ZNTxInputEntity *i = obj;
-
+                for (ZNTxInputEntity *i in tx.inputs) {
                     if (i.address && [w containsAddress:i.address]) spent += i.value;
-                }];
+                }
 
                 __block BOOL withinWallet = spent > 0 ? YES : NO;
                 
-                [tx.outputs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                    ZNTxOutputEntity *o = obj;
-                    
+                for (ZNTxOutputEntity *o in tx.outputs) {
                     if (o.address && [w containsAddress:o.address]) {
                         received += o.value;
                         if (spent == 0) detailTextLabel.text = [@"to: " stringByAppendingString:o.address];
@@ -188,7 +184,7 @@
                         if (o.address) detailTextLabel.text = [@"to: " stringByAppendingString:o.address];
                         withinWallet = NO;
                     }
-                }];
+                }
                 
                 noTxLabel.hidden = YES;
                 sentLabel.hidden = YES;

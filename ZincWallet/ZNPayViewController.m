@@ -92,12 +92,11 @@
             if ([url.scheme isEqual:@"zinc"] && [url.host isEqual:@"x-callback-url"] && [url.path isEqual:@"/tx"]) {
                 __block NSString *status = nil;
                 
-                [[url.query componentsSeparatedByString:@"&"]
-                enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                    NSArray *tuple = [obj componentsSeparatedByString:@"="];
+                for (NSString *arg in [url.query componentsSeparatedByString:@"&"]) {
+                    NSArray *pair = [arg componentsSeparatedByString:@"="];
                     
-                    if (tuple.count == 2 && [tuple[0] isEqual:@"status"]) status = tuple[1];
-                }];
+                    if (pair.count == 2 && [pair[0] isEqual:@"status"]) status = pair[1];
+                }
             
                 if ([status isEqual:@"sent"]) {
                     NSUInteger idx = [self.requests indexOfObject:self.request];
@@ -247,43 +246,47 @@
     }
 
     void (^block)(void) = ^{
-        [self.requestButtons enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            CGPoint c = CGPointMake([obj center].x, self.view.frame.size.height/2 +
+        NSUInteger idx = 0;
+    
+        for (UIButton *button in self.requestButtons) {
+            CGPoint c = CGPointMake(button.center.x, self.view.frame.size.height/2 +
                                     (BUTTON_HEIGHT + BUTTON_MARGIN*2)*(idx - self.requests.count/2.0));
             
-            [obj setCenter:c];
+            button.center = c;
             
             if (self.request) {
-                [obj setEnabled:NO];
-                [obj setAlpha:idx < self.requests.count ? 0.5 : 0];
+                button.enabled = NO;
+                button.alpha = idx < self.requests.count ? 0.5 : 0;
             }
             else {
-                [obj setEnabled:YES];
-                [obj setAlpha:idx < self.requests.count ? 1 : 0];
+                button.enabled = YES;
+                button.alpha = idx < self.requests.count ? 1 : 0;
             }
 
             if (idx < self.requestIDs.count && [self.requestIDs[idx] isEqual:QR_ID]) {
-                [obj setImage:[UIImage imageNamed:@"cameraguide-blue-small.png"] forState:UIControlStateNormal];
-                [obj setImage:[UIImage imageNamed:@"cameraguide-small.png"] forState:UIControlStateHighlighted];
+                [button setImage:[UIImage imageNamed:@"cameraguide-blue-small.png"] forState:UIControlStateNormal];
+                [button setImage:[UIImage imageNamed:@"cameraguide-small.png"] forState:UIControlStateHighlighted];
             }
             else {
-                [obj setImage:nil forState:UIControlStateNormal];
-                [obj setImage:nil forState:UIControlStateHighlighted];
+                [button setImage:nil forState:UIControlStateNormal];
+                [button setImage:nil forState:UIControlStateHighlighted];
             }
 
             if (idx < self.requests.count) {
                 ZNPaymentRequest *req = self.requests[idx];
                 
                 if ([req.label rangeOfString:BTC].location != NSNotFound) {
-                    [obj titleLabel].font = [UIFont fontWithName:@"HelveticaNeue" size:15];
+                    button.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15];
                 }
-                else [obj titleLabel].font = [UIFont fontWithName:@"HelveticaNeue-Light" size:17];
+                else button.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:17];
 
-                [obj setTitle:req.label forState:UIControlStateNormal];
+                [button setTitle:req.label forState:UIControlStateNormal];
 
-                if ([self.addressInWallet isEqual:req.paymentAddress]) [obj setEnabled:NO];
+                if ([self.addressInWallet isEqual:req.paymentAddress]) button.enabled = NO;
             }
-        }];
+            
+            idx++;
+        }
         
         self.label.center = CGPointMake(self.label.center.x,
                                         [self.requestButtons[0] center].y - BUTTON_HEIGHT - BUTTON_MARGIN/2);
@@ -511,9 +514,9 @@
         
         __block uint64_t fee = tx.standardFee, amount = fee;
         
-        [tx.outputAmounts enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            amount += [obj unsignedLongLongValue];
-        }];
+        for (NSNumber *amt in tx.outputAmounts) {
+            amount += amt.unsignedLongLongValue;
+        }
 
         self.sweepTx = tx;
         [[[UIAlertView alloc] initWithTitle:nil

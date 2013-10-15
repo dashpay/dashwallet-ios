@@ -34,13 +34,38 @@
 
 #define NODE_NETWORK      1
 
-@class ZNPeer;
+#define MSG_VERSION     @"version"
+#define MSG_VERACK      @"verack"
+#define MSG_ADDR        @"addr"
+#define MSG_INV         @"inv"
+#define MSG_GETDATA     @"getdata"
+#define MSG_NOTFOUND    @"notfound"
+#define MSG_GETBLOCKS   @"getblocks"
+#define MSG_GETHEADERS  @"getheaders"
+#define MSG_TX          @"tx"
+#define MSG_BLOCK       @"block"
+#define MSG_HEADERS     @"headers"
+#define MSG_GETADDR     @"getaddr"
+#define MSG_MEMPOOL     @"mempool"
+#define MSG_CHECKORDER  @"checkorder"
+#define MSG_SUBMITORDER @"submitorder"
+#define MSG_REPLY       @"reply"
+#define MSG_PING        @"ping"
+#define MSG_PONG        @"pong"
+#define MSG_FILTERLOAD  @"filterload"
+#define MSG_FILTERADD   @"filteradd"
+#define MSG_FILTERCLEAR @"filterclear"
+#define MSG_MERKLEBLOCK @"merkleblock"
+#define MSG_ALERT       @"alert"
+
+@class ZNPeer, ZNTransaction;
 
 @protocol ZNPeerDelegate<NSObject>
-@optional
+@required
 
 - (void)peerConnected:(ZNPeer *)peer;
-- (void)peerDisconnected:(ZNPeer *)peer withError:(NSError *)error;
+- (void)peer:(ZNPeer *)peer disconnectedWithError:(NSError *)error;
+- (void)peer:(ZNPeer *)peer relayedTransaction:(ZNTransaction *)transaction;
 
 @end
 
@@ -68,6 +93,6 @@ typedef enum {
 - (instancetype)initWithAddress:(uint32_t)address andPort:(uint16_t)port;
 - (void)connect;
 - (void)sendMessage:(NSData *)message type:(NSString *)type;
-- (void)sendVersionMessage;
+- (void)sendGetaddrMessage;
 
 @end

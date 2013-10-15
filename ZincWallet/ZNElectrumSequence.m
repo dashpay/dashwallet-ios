@@ -148,8 +148,8 @@
     BN_init(&order);
     EC_GROUP_get_order(group, &order, ctx);
     
-    [n enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        NSData *sequence = [self sequence:[obj unsignedIntValue] internal:internal masterPublicKey:mpk];
+    for (NSNumber *num in n) {
+        NSData *sequence = [self sequence:num.unsignedIntValue internal:internal masterPublicKey:mpk];
         NSMutableData *pk = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 33));
 
         BN_bin2bn(sequence.bytes, (int)sequence.length, &sequencebn);
@@ -162,7 +162,7 @@
         BN_bn2bin(&secexpbn, (unsigned char *)pk.mutableBytes + pk.length - BN_num_bytes(&secexpbn));
         
         [a addObject:[NSString base58checkWithData:pk]];
-    }];
+    }
     
     EC_GROUP_free(group);
     BN_free(&order);
