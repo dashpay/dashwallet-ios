@@ -448,7 +448,7 @@
             NSLog(@"%@:%d %@ stream connected", self.host, self.port,
                   aStream == self.inputStream ? @"input" : aStream == self.outputStream ? @"output" : @"unkown");
             [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending connect timeout
-            // no break; continue to next case and send any queued output
+            // fall through to send any queued output
         case NSStreamEventHasSpaceAvailable:
             if (aStream != self.outputStream) break;
             

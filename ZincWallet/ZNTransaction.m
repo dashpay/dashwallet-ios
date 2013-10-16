@@ -96,7 +96,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 
 - (instancetype)initWithData:(NSData *)data
 {
-    if (! (self = [super init])) return nil;
+    if (! (self = [self init])) return nil;
  
     NSString *address = nil;
     NSUInteger l = 0, len = 0, off = 0, count = 0;
@@ -219,6 +219,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     return self.amounts;
 }
 
+//TODO: support signing pay2pubkey outputs (typically used for coinbase outputs)
 - (BOOL)signWithPrivateKeys:(NSArray *)privateKeys
 {
     NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:privateKeys.count],

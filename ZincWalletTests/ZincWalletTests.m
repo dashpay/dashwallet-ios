@@ -32,6 +32,7 @@
 #import "ZNZincMnemonic.h"
 #import "ZNTransaction.h"
 #import "ZNKey.h"
+#import "ZNBloomFilter.h"
 #import "NSData+Hash.h"
 #import "NSString+Base58.h"
 
@@ -120,7 +121,7 @@
 
 #pragma mark - testTransaction
 
-- (void)testTransactionHeightUntilFree
+- (void)testTransaction
 {
     NSData *hash = [NSMutableData dataWithLength:32], *script = [NSMutableData dataWithLength:136];
     NSString *addr = @"1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa";
@@ -154,6 +155,13 @@
     NSLog(@"priority = %llu", priority);
     
     STAssertTrue(priority >= TX_FREE_MIN_PRIORITY, @"[ZNTransaction heightUntilFreeFor:atHeights:]");
+    
+    NSData *d = [tx toData], *d2 = nil;
+    
+    tx = [[ZNTransaction alloc] initWithData:d];
+    d2 = [tx toData];
+    
+    STAssertTrue([d isEqual:d2], @"[ZNTransaction initWithData:]");
 }
 
 #pragma mark - testZincMnemonic
@@ -414,6 +422,63 @@
 
     STAssertEqualObjects(pk.base58checkToHex, @"8000f7f216a82f6beb105728dbbc29e2c13446bfa1078b7bef6e0ceff2c8a1e774",
                          @"[ZNElectrumSequence privateKey:forChange:fromSeed:]");    
+}
+
+#pragma mark - testBloomFilter
+
+- (void)testBloomFilter
+{
+    ZNBloomFilter *f = [ZNBloomFilter filterWithFalsePositiveRate:.01 forElementCount:3 tweak:0 flags:BLOOM_UPDATE_ALL];
+
+    [f insertData:@"99108ad8ed9bb6274d3980bab5a85c048f0950c8".hexToData];
+
+    STAssertTrue([f containsData:@"99108ad8ed9bb6274d3980bab5a85c048f0950c8".hexToData],
+                 @"[ZNBloomFilter containsData:]");
+
+    // one bit difference
+    STAssertFalse([f containsData:@"19108ad8ed9bb6274d3980bab5a85c048f0950c8".hexToData],
+                  @"[ZNBloomFilter containsData:]");
+
+    [f insertData:@"b5a2c786d9ef4658287ced5914b37a1b4aa32eee".hexToData];
+
+    STAssertTrue([f containsData:@"b5a2c786d9ef4658287ced5914b37a1b4aa32eee".hexToData],
+                 @"[ZNBloomFilter containsData:]");
+
+    [f insertData:@"b9300670b4c5366e95b2699e8b18bc75e5f729c5".hexToData];
+
+    STAssertTrue([f containsData:@"b9300670b4c5366e95b2699e8b18bc75e5f729c5".hexToData],
+                 @"[ZNBloomFilter containsData:]");
+
+    // check against satoshi client output
+    STAssertEqualObjects(@"03614e9b050000000000000001".hexToData, f.data, @"[ZNBloomFilter data:]");
+}
+
+- (void)testBloomFilterWithTweak
+{
+    ZNBloomFilter *f = [ZNBloomFilter filterWithFalsePositiveRate:.01 forElementCount:3 tweak:2147483649
+                        flags:BLOOM_UPDATE_P2PUBKEY_ONLY];
+
+    [f insertData:@"99108ad8ed9bb6274d3980bab5a85c048f0950c8".hexToData];
+    
+    STAssertTrue([f containsData:@"99108ad8ed9bb6274d3980bab5a85c048f0950c8".hexToData],
+                 @"[ZNBloomFilter containsData:]");
+    
+    // one bit difference
+    STAssertFalse([f containsData:@"19108ad8ed9bb6274d3980bab5a85c048f0950c8".hexToData],
+                  @"[ZNBloomFilter containsData:]");
+    
+    [f insertData:@"b5a2c786d9ef4658287ced5914b37a1b4aa32eee".hexToData];
+    
+    STAssertTrue([f containsData:@"b5a2c786d9ef4658287ced5914b37a1b4aa32eee".hexToData],
+                 @"[ZNBloomFilter containsData:]");
+    
+    [f insertData:@"b9300670b4c5366e95b2699e8b18bc75e5f729c5".hexToData];
+    
+    STAssertTrue([f containsData:@"b9300670b4c5366e95b2699e8b18bc75e5f729c5".hexToData],
+                 @"[ZNBloomFilter containsData:]");
+
+    // check against satoshi client output
+    STAssertEqualObjects(@"03ce4299050000000100008002".hexToData, f.data, @"[ZNBloomFilter data:]");
 }
 
 @end

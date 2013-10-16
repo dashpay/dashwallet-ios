@@ -26,6 +26,7 @@
 #import "ZNPeerManager.h"
 #import "ZNPeer.h"
 #import "ZNPeerEntity.h"
+#import "ZNBloomFilter.h"
 #import "ZNTransaction.h"
 #import "ZNTransactionEntity.h"
 #import "ZNTxOutputEntity.h"
@@ -113,7 +114,6 @@
 #endif
 
     // DNS peer discovery
-    // TODO: provide seed.zincwallet.com DNS seed service
     for (NSString *host in a) {
         struct hostent *h = gethostbyname(host.UTF8String);
         
@@ -146,7 +146,6 @@
 
 - (ZNPeerEntity *)randomPeer
 {
-    //TODO: prefer peers within 3 hours of most recent peer?
     NSUInteger count = [ZNPeerEntity countAllObjects], offset = 0;
     
     if (count == 0) count += [self discoverPeers];
@@ -176,7 +175,7 @@
     ZNPeer *peer = [ZNPeer peerWithAddress:e.address andPort:e.port];
     
     peer.delegate = self;
-    [self.peers removeAllObjects]; //XXX: obviously this will need to change
+    [self.peers removeAllObjects]; //TODO: XXXX connect to multiple peers
     [self.peers addObject:peer];
 
     [peer connect];
@@ -199,7 +198,25 @@
     
     if ([ZNPeerEntity countAllObjects] <= 1000) [peer sendGetaddrMessage];
     
-    //TODO: XXXX send bloom filters
+    // send bloom filter
+    //TODO: if we have more than about 10,0000 addresses we'll bump up against max filter size and we'll need to divide
+    // up the addresses between multiple connected peers
+    NSArray *addresses = [ZNAddressEntity allObjects];
+    // we don't need auto updates, just manually update when new addresses are added to wallet
+    ZNBloomFilter *filter = [ZNBloomFilter filterWithFalsePositiveRate:0.000001 forElementCount:addresses.count
+                             tweak:(uint32_t)mrand48() flags:BLOOM_UPDATE_NONE];
+
+    for (ZNAddressEntity *e in addresses) {
+        // add the address hash160 to watch for any tx receiveing money to the wallet
+        NSData *d = [e.address base58checkToData];
+        
+        if (d.length > 0) [filter insertData:[d subdataWithRange:NSMakeRange(1, d.length - 1)]];
+        
+        //TODO: XXXX add the address pubkey to watch for any tx sending money out of the wallet
+        // this is going to be slow :( we'll have to cache pubkeys in ZNAdddressEntity or something
+    }
+    
+    [peer sendMessage:filter.data type:MSG_FILTERLOAD];
 }
 
 - (void)peer:(ZNPeer *)peer disconnectedWithError:(NSError *)error
@@ -238,7 +255,7 @@
     ZNTransactionEntity *tx = [ZNTransactionEntity objectsMatching:@"txHash == %@", transaction.txHash].lastObject;
     NSUInteger idx = 0;
     
-    if (tx) {
+    if (tx) { // we already have the transaction, and now we also know that a bitcoin is willing to relay it
         // TODO: mark tx as having been relayed
         return;
     }
@@ -255,7 +272,7 @@
             return;
         }
         
-        //TODO: refactor this to use the actual previous output script instead of generating a new one from the address
+        //TODO: refactor this to use actual previous output script instead of generating a standard one from the address
         [transaction setInputAddress:[(ZNTxOutputEntity *)e.outputs[n] address] atIndex:idx - 1];
     }
     

@@ -746,6 +746,7 @@
 		759CB23D175E8D6300AFA559 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB23C175E8D6300AFA559 /* CoreMedia.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		759CB240175F03BF00AFA559 /* ZNAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759CB23F175F03BF00AFA559 /* ZNAmountViewController.m */; };
 		75A6ECE317BD464A0043E52D /* ZNZincMnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = 75A6ECE217BD464A0043E52D /* ZNZincMnemonic.m */; };
+		75AC8160180DFBC700ACA0C9 /* ZNBloomFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 75AC815F180DFBC700ACA0C9 /* ZNBloomFilter.m */; };
 		75ADF1FE17B0EC0D006B1336 /* deletetoleft-blue.png in Resources */ = {isa = PBXBuildFile; fileRef = 75ADF1FD17B0EC0C006B1336 /* deletetoleft-blue.png */; };
 		75AF36D8176675D3004AA912 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		75AF36EC17667E43004AA912 /* DataMatrix.mm in Sources */ = {isa = PBXBuildFile; fileRef = 75AF36E517667E43004AA912 /* DataMatrix.mm */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -1829,6 +1830,8 @@
 		75A6ECE117BD464A0043E52D /* ZNZincMnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNZincMnemonic.h; sourceTree = "<group>"; };
 		75A6ECE217BD464A0043E52D /* ZNZincMnemonic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNZincMnemonic.m; sourceTree = "<group>"; };
 		75A6ECE517BD4CF60043E52D /* ZNMnemonic.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNMnemonic.h; sourceTree = "<group>"; };
+		75AC815E180DFBC700ACA0C9 /* ZNBloomFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNBloomFilter.h; sourceTree = "<group>"; };
+		75AC815F180DFBC700ACA0C9 /* ZNBloomFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNBloomFilter.m; sourceTree = "<group>"; };
 		75ADF1FD17B0EC0C006B1336 /* deletetoleft-blue.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "deletetoleft-blue.png"; sourceTree = "<group>"; };
 		75AF36D7176675D3004AA912 /* libqrencoder.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libqrencoder.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		75AF36E417667E43004AA912 /* DataMatrix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataMatrix.h; sourceTree = "<group>"; };
@@ -3454,6 +3457,8 @@
 				75CBEAE8173C80AD00978DBA /* ZNPaymentRequest.m */,
 				75F17C331744CC2100D9F228 /* ZNTransaction.h */,
 				75F17C341744CC2100D9F228 /* ZNTransaction.m */,
+				75AC815E180DFBC700ACA0C9 /* ZNBloomFilter.h */,
+				75AC815F180DFBC700ACA0C9 /* ZNBloomFilter.m */,
 				753E7CDF18053B3F00FC6BA7 /* ZNPeer.h */,
 				753E7CE018053B3F00FC6BA7 /* ZNPeer.m */,
 				753E7CD1180155B400FC6BA7 /* ZNPeerManager.h */,
@@ -4720,6 +4725,7 @@
 				75F1B87D17C7506200680E1B /* ZincWallet.xcdatamodeld in Sources */,
 				757BFF2D17CBD0D700D1C4AF /* ZNAddressEntity.m in Sources */,
 				757BFF3017CC1A9100D1C4AF /* ZNTxInputEntity.m in Sources */,
+				75AC8160180DFBC700ACA0C9 /* ZNBloomFilter.m in Sources */,
 				757BFF3317CC1AA800D1C4AF /* ZNTxOutputEntity.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
