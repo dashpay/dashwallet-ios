@@ -36,9 +36,10 @@
 
 + (instancetype)entityWithAddress:(NSString *)address index:(int32_t)index internal:(BOOL)internal
 {
-    ZNAddressEntity *e = [self managedObject];
+    __block ZNAddressEntity *e = nil;
 
-    [e.managedObjectContext performBlockAndWait:^{
+    [[self context] performBlockAndWait:^{
+        e = [self managedObject];
         e.address = address;
         e.index = index;
         e.internal = internal;
@@ -54,11 +55,13 @@
 {
     if (! [JSON isKindOfClass:[NSDictionary class]] || ! [JSON[@"address"] isKindOfClass:[NSString class]]) return nil;
     
-    __block ZNAddressEntity *address = [self objectsMatching:@"address == %@", JSON[@"address"]].lastObject;
+    __block ZNAddressEntity *address = nil;
     
-    if (! address) return nil;
+    [[self context] performBlockAndWait:^{
+        address = [self objectsMatching:@"address == %@", JSON[@"address"]].lastObject;
     
-    [[address managedObjectContext] performBlockAndWait:^{
+        if (! address) return;
+    
         if ([JSON[@"n_tx"] isKindOfClass:[NSNumber class]] && [JSON[@"n_tx"] intValue] != address.txCount) {
             address.txCount = [JSON[@"n_tx"] intValue];
             address.newTx = YES;

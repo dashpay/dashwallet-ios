@@ -67,7 +67,6 @@
 @interface ZNPeerManager ()
 
 @property (nonatomic, strong) NSMutableArray *peers;
-//@property (nonatomic, assign) BOOL connected;
 @property (nonatomic, assign) int connectFailures;
 
 @end
@@ -95,6 +94,7 @@
 {
     if (! (self = [super init])) return nil;
 
+    self.earliestBlockHeight = REFERENCE_BLOCK_HEIGHT;
     self.peers = [NSMutableArray array];
     
     //TODO: monitor network reachability and reconnect whenever connection becomes available
@@ -164,6 +164,7 @@
     if (self.peers.count > 0 && [self.peers[0] status] != disconnected) return;
 
     ZNPeerEntity *e = [self randomPeer];
+    __block ZNPeer *peer = nil;
     
     if (! e) {
         [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification
@@ -172,18 +173,60 @@
         return;
     }
     
-    ZNPeer *peer = [ZNPeer peerWithAddress:e.address andPort:e.port];
+    [e.managedObjectContext performBlockAndWait:^{
+        peer = [ZNPeer peerWithAddress:e.address andPort:e.port];
+    }];
     
     peer.delegate = self;
     [self.peers removeAllObjects]; //TODO: XXXX connect to multiple peers
-    [self.peers addObject:peer];
+    if (peer) [self.peers addObject:peer];
 
     [peer connect];
 }
 
+// WARNING: this exposes public keys that otherwise are only exposed with a spend
+//- (void)subscribeToPubKeys:(NSArray *)pubKeys
+//{
+//    for (NSData *pubKey in pubKeys) {
+//        NSMutableData *msg = [NSMutableData data];
+//        
+//        [msg appendVarInt:pubKey.length];
+//        [msg appendData:pubKey];
+//        
+//        for (ZNPeer *peer in self.peers) {
+//            [peer sendMessage:msg type:MSG_FILTERADD];
+//        }
+//
+//        msg.length = 0;
+//        [msg appendVarInt:160/8];
+//        [msg appendData:[pubKey hash160]];
+//        
+//        for (ZNPeer *peer in self.peers) {
+//            [peer sendMessage:msg type:MSG_FILTERADD];
+//        }
+//    }
+//}
+
+// this will extend the bloom filter to include transactions sent to the given addresses
+// to include spend transactions, the public key for the address must be added to the filter
 - (void)subscribeToAddresses:(NSArray *)addresses
 {
-    //TODO: add addresses to bloom filters
+    [[addresses.lastObject managedObjectContext] performBlockAndWait:^{
+        for (ZNAddressEntity *e in addresses) {
+            NSData *d = [e.address base58checkToData];
+            NSMutableData *msg = [NSMutableData data];
+        
+            if (d.length != 160/8 + 1) continue;
+            
+            [msg appendVarInt:d.length - 1];
+            [msg appendData:[d subdataWithRange:NSMakeRange(1, d.length - 1)]];
+            
+            //TODO: consider clearing an re-sending the entire filter to maintain address anonymity
+            for (ZNPeer *peer in self.peers) {
+                [peer sendMessage:msg type:MSG_FILTERADD];
+            }
+        }
+    }];
 }
 
 #pragma mark - ZNPeerDelegate
@@ -199,24 +242,29 @@
     if ([ZNPeerEntity countAllObjects] <= 1000) [peer sendGetaddrMessage];
     
     // send bloom filter
-    //TODO: if we have more than about 10,0000 addresses we'll bump up against max filter size and we'll need to divide
+    //TODO: if we have more than about 10,000 addresses we'll bump up against max filter size and we'll need to divide
     // up the addresses between multiple connected peers
     NSArray *addresses = [ZNAddressEntity allObjects];
-    // we don't need auto updates, just manually update when new addresses are added to wallet
-    ZNBloomFilter *filter = [ZNBloomFilter filterWithFalsePositiveRate:0.000001 forElementCount:addresses.count
-                             tweak:(uint32_t)mrand48() flags:BLOOM_UPDATE_NONE];
+    // we don't need auto updates, just manually update when new addresses are added to the wallet
+    ZNBloomFilter *filter = [ZNBloomFilter filterWithFalsePositiveRate:BLOOM_DEFAULT_FALSEPOSITIVE_RATE
+                             forElementCount:addresses.count tweak:(uint32_t)mrand48() flags:BLOOM_UPDATE_NONE];
 
-    for (ZNAddressEntity *e in addresses) {
-        // add the address hash160 to watch for any tx receiveing money to the wallet
-        NSData *d = [e.address base58checkToData];
-        
-        if (d.length > 0) [filter insertData:[d subdataWithRange:NSMakeRange(1, d.length - 1)]];
-        
-        //TODO: XXXX add the address pubkey to watch for any tx sending money out of the wallet
-        // this is going to be slow :( we'll have to cache pubkeys in ZNAdddressEntity or something
-    }
+    [[addresses.lastObject managedObjectContext] performBlockAndWait:^{
+        for (ZNAddressEntity *e in addresses) {
+            // add the address hash160 to watch for any tx receiveing money to the wallet
+            NSData *d = [e.address base58checkToData];
+            
+            if (d.length > 0) [filter insertData:[d subdataWithRange:NSMakeRange(1, d.length - 1)]];
+            
+            //TODO: XXXX add the address pubkey to the filter to watch for any tx sending money out of the wallet...
+            // since generating pubkeys is slow, add them to a filter at creation time and cache the filter. we'll need
+            // to support multiple filters in order to handle more than a few thousand addresses.
+        }
+    }];
     
     [peer sendMessage:filter.data type:MSG_FILTERLOAD];
+    
+    [peer sendGetblocksMessage];
 }
 
 - (void)peer:(ZNPeer *)peer disconnectedWithError:(NSError *)error
@@ -226,8 +274,8 @@
 
     //TODO: XXXX check for network reachability
     if (error) {
-        [[ZNPeerEntity objectsMatching:@"address == %u && port == %u", peer.address, peer.port]
-         makeObjectsPerformSelector:@selector(deleteObject)];
+        [ZNPeerEntity deleteObjects:[ZNPeerEntity objectsMatching:@"address == %u && port == %u", peer.address,
+                                     peer.port]];
     }
 
     if (! self.peers.count) {
@@ -253,7 +301,8 @@
 - (void)peer:(ZNPeer *)peer relayedTransaction:(ZNTransaction *)transaction
 {
     ZNTransactionEntity *tx = [ZNTransactionEntity objectsMatching:@"txHash == %@", transaction.txHash].lastObject;
-    NSUInteger idx = 0;
+    __block NSUInteger idx = 0;
+    __block BOOL valid = YES;
     
     if (tx) { // we already have the transaction, and now we also know that a bitcoin is willing to relay it
         // TODO: mark tx as having been relayed
@@ -261,22 +310,25 @@
     }
 
     // relayed transactions don't contain input scripts, input scripts must be obtained from previous tx outputs
-    for (NSData *hash in transaction.inputHashes) { // lookup input addresses
-        uint32_t n = [transaction.inputIndexes[idx++] unsignedIntValue];
-        ZNTransactionEntity *e = [ZNTransactionEntity objectsMatching:@"txHash == %@", hash].lastObject;
+    [[ZNTransactionEntity context] performBlockAndWait:^{
+        for (NSData *hash in transaction.inputHashes) { // lookup input addresses
+            uint32_t n = [transaction.inputIndexes[idx++] unsignedIntValue];
+            ZNTransactionEntity *e = [ZNTransactionEntity objectsMatching:@"txHash == %@", hash].lastObject;
 
-        if (! e) continue; // if the input tx is missing, then that input tx didn't involve wallet addresses
+            if (! e) continue; // if the input tx is missing, then that input tx didn't involve wallet addresses
         
-        if (n > e.outputs.count) {
-            NSLog(@"invalid transaction, input %u has non-existant previous output index", (int)idx - 1);
-            return;
+            if (n > e.outputs.count) {
+                NSLog(@"invalid transaction, input %u has non-existant previous output index", (int)idx - 1);
+                valid = NO;
+                return;
+            }
+        
+            //TODO: refactor this to use actual previous output script instead of generating a standard one from the address
+            [transaction setInputAddress:[(ZNTxOutputEntity *)e.outputs[n] address] atIndex:idx - 1];
         }
-        
-        //TODO: refactor this to use actual previous output script instead of generating a standard one from the address
-        [transaction setInputAddress:[(ZNTxOutputEntity *)e.outputs[n] address] atIndex:idx - 1];
-    }
+    }];
     
-    [[ZNWallet sharedInstance] registerTransaction:transaction]; // registerTransaction will ignore any non-wallet tx
+    if (valid) [[ZNWallet sharedInstance] registerTransaction:transaction]; // registerTransaction will ignore any non-wallet tx
 }
 
 @end

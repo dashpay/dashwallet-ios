@@ -60,9 +60,6 @@
 #define LAST_SYNC_TIME_KEY         @"LAST_SYNC_TIME"
 #define SEED_KEY                   @"seed"
 
-#define REFERENCE_BLOCK_HEIGHT 250000
-#define REFERENCE_BLOCK_TIME   1375533383.0
-
 #define SEC_ATTR_SERVICE @"cc.zinc.zincwallet"
 
 static BOOL setKeychainData(NSData *data, NSString *key)
@@ -172,9 +169,9 @@ static NSData *getKeychainData(NSString *key)
     self.mpk = nil; // reset master public key
 
     // remove all core data wallet data
-    [[ZNAddressEntity allObjects] makeObjectsPerformSelector:@selector(deleteObject)];
-    [[ZNTransactionEntity allObjects] makeObjectsPerformSelector:@selector(deleteObject)];
-    [[ZNUnspentOutputEntity allObjects] makeObjectsPerformSelector:@selector(deleteObject)];
+    [ZNAddressEntity deleteObjects:[ZNAddressEntity allObjects]];
+    [ZNTransactionEntity deleteObjects:[ZNTransactionEntity allObjects]];
+    [ZNUnspentOutputEntity deleteObjects:[ZNUnspentOutputEntity allObjects]];
     
     [_defs removeObjectForKey:LAST_SYNC_TIME_KEY]; // clean out wallet values in user defaults
 
@@ -539,8 +536,7 @@ static NSData *getKeychainData(NSString *key)
             NSArray *addrs = [addresses valueForKey:@"address"];
             
             // remove any previously stored unspent outputs for the queried addresses
-            [[ZNUnspentOutputEntity objectsMatching:@"address IN %@", addrs]
-             makeObjectsPerformSelector:@selector(deleteObject)];
+            [ZNUnspentOutputEntity deleteObjects:[ZNUnspentOutputEntity objectsMatching:@"address IN %@", addrs]];
             
             // store any unspent outputs in core data
             for (NSDictionary *d in JSON[@"unspent_outputs"]) {
@@ -561,8 +557,8 @@ static NSData *getKeychainData(NSString *key)
             }
             
             // all outputs have been spent for the requested addresses
-            [[ZNUnspentOutputEntity objectsMatching:@"address IN %@", [addresses valueForKey:@"address"]]
-             makeObjectsPerformSelector:@selector(deleteObject)];
+            [ZNUnspentOutputEntity deleteObjects:[ZNUnspentOutputEntity objectsMatching:@"address IN %@",
+                                                  [addresses valueForKey:@"address"]]];
 
             [addresses setValue:@(NO) forKey:@"newTx"]; // tx successfully synced, reset new tx flag
             

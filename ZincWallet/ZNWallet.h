@@ -27,6 +27,14 @@
 
 #define ADDRESSES_PER_QUERY 100 // maximum number of addresses to request in a single query
 
+#if BITCOIN_TESTNET
+#define REFERENCE_BLOCK_HEIGHT 0
+#define REFERENCE_BLOCK_TIME   1296688602.0
+#else
+#define REFERENCE_BLOCK_HEIGHT 250000
+#define REFERENCE_BLOCK_TIME   1375533383.0
+#endif
+
 #define walletSyncStartedNotification  @"walletSyncStartedNotification"
 #define walletSyncFinishedNotification @"walletSyncFinishedNotification"
 #define walletSyncFailedNotification   @"walletSyncFailedNotification"

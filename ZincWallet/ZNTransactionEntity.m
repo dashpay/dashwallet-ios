@@ -47,14 +47,19 @@
     if (! [JSON isKindOfClass:[NSDictionary class]] || ! [JSON[@"hash"] isKindOfClass:[NSString class]]) return nil;
 
     NSData *hash = [JSON[@"hash"] hexToData];
+    __block ZNTransactionEntity *e = nil;
 
     if (hash.length != CC_SHA256_DIGEST_LENGTH) return nil;
     
-    ZNTransactionEntity *e = [self objectsMatching:@"txHash == %@", hash].lastObject;
+    [[self context] performBlockAndWait:^{
+        e = [self objectsMatching:@"txHash == %@", hash].lastObject;
     
-    if (! e) e = [self managedObject];
+        if (! e) e = [self managedObject];
     
-    return [e setAttributesFromJSON:JSON];
+        [e setAttributesFromJSON:JSON];
+    }];
+    
+    return e;
 }
 
 - (instancetype)setAttributesFromJSON:(NSDictionary *)JSON

@@ -131,8 +131,8 @@
     __block NSMutableString *msg = [NSMutableString string];
     
     [[addresses.lastObject managedObjectContext] performBlockAndWait:^{
-        for (ZNAddressEntity *a in addresses) {
-            [msg appendFormat:@"{\"op\":\"addr_sub\", \"addr\":\"%@\"}", a.address];
+        for (ZNAddressEntity *e in addresses) {
+            [msg appendFormat:@"{\"op\":\"addr_sub\", \"addr\":\"%@\"}", e.address];
         }
     }];
     
@@ -286,7 +286,7 @@ wasClean:(BOOL)wasClean
         
         if (! tx) return;
         
-        [spent makeObjectsPerformSelector:@selector(deleteObject)]; // delete spent outputs
+        [ZNUnspentOutputEntity deleteObjects:spent]; // delete spent outputs
         
         // add outputs sent to wallet addresses to unspent outputs
         NSUInteger idx = 0;

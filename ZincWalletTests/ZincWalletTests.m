@@ -77,7 +77,9 @@
     ZNKey *key = [ZNKey keyWithPrivateKey:@"S6c56bnXQiBjk9mqSYE7ykVQ7NzrRy"];
     
     NSLog(@"privKey:S6c56bnXQiBjk9mqSYE7ykVQ7NzrRy = %@", key.address);
-    STAssertTrue([@"1CciesT23BNionJeXrbxmjc7ywfiyM4oLW" isEqual:key.address], @"[ZNKey keyWithPrivateKey:]");
+#if ! BITCOIN_TESTNET
+    STAssertEqualObjects(@"1CciesT23BNionJeXrbxmjc7ywfiyM4oLW", key.address, @"[ZNKey keyWithPrivateKey:]");
+#endif
 
     STAssertTrue([@"SzavMBLoXU6kDrqtUVmffv" isValidBitcoinPrivateKey],
                  @"[NSString+Base58 isValidBitcoinPrivateKey]");
@@ -86,29 +88,33 @@
     key = [ZNKey keyWithPrivateKey:@"SzavMBLoXU6kDrqtUVmffv"];
     
     NSLog(@"privKey:SzavMBLoXU6kDrqtUVmffv = %@", key.address);
-    STAssertTrue([@"1CC3X2gu58d6wXUWMffpuzN9JAfTUWu4Kj" isEqual:key.address], @"[ZNKey keyWithPrivateKey:]");
+#if ! BITCOIN_TESTNET
+    STAssertEqualObjects(@"1CC3X2gu58d6wXUWMffpuzN9JAfTUWu4Kj", key.address, @"[ZNKey keyWithPrivateKey:]");
+#endif
 
     // uncompressed private key
     key = [ZNKey keyWithPrivateKey:@"5Kb8kLf9zgWQnogidDA76MzPL6TsZZY36hWXMssSzNydYXYB9KF"];
     
     NSLog(@"privKey:5Kb8kLf9zgWQnogidDA76MzPL6TsZZY36hWXMssSzNydYXYB9KF = %@", key.address);
-    STAssertTrue([@"1CC3X2gu58d6wXUWMffpuzN9JAfTUWu4Kj" isEqual:key.address], @"[ZNKey keyWithPrivateKey:]");
+#if ! BITCOIN_TESTNET
+    STAssertEqualObjects(@"1CC3X2gu58d6wXUWMffpuzN9JAfTUWu4Kj", key.address, @"[ZNKey keyWithPrivateKey:]");
+#endif
     
     // uncompressed private key export
     NSLog(@"privKey = %@", key.privateKey);
-    STAssertTrue([@"5Kb8kLf9zgWQnogidDA76MzPL6TsZZY36hWXMssSzNydYXYB9KF" isEqual:key.privateKey],
-                 @"[ZNKey privateKey]");
+    STAssertEqualObjects(@"5Kb8kLf9zgWQnogidDA76MzPL6TsZZY36hWXMssSzNydYXYB9KF", key.privateKey, @"[ZNKey privateKey]");
 
     // compressed private key
     key = [ZNKey keyWithPrivateKey:@"KyvGbxRUoofdw3TNydWn2Z78dBHSy2odn1d3wXWN2o3SAtccFNJL"];
     
     NSLog(@"privKey:KyvGbxRUoofdw3TNydWn2Z78dBHSy2odn1d3wXWN2o3SAtccFNJL = %@", key.address);
-    STAssertTrue([@"1JMsC6fCtYWkTjPPdDrYX3we2aBrewuEM3" isEqual:key.address], @"[ZNKey keyWithPrivateKey:]");
+#if ! BITCOIN_TESTNET
+    STAssertEqualObjects(@"1JMsC6fCtYWkTjPPdDrYX3we2aBrewuEM3", key.address, @"[ZNKey keyWithPrivateKey:]");
+#endif
     
     // compressed private key export
     NSLog(@"privKey = %@", key.privateKey);
-    STAssertTrue([@"KyvGbxRUoofdw3TNydWn2Z78dBHSy2odn1d3wXWN2o3SAtccFNJL" isEqual:key.privateKey],
-                 @"[ZNKey privateKey]");
+    STAssertEqualObjects(@"KyvGbxRUoofdw3TNydWn2Z78dBHSy2odn1d3wXWN2o3SAtccFNJL", key.privateKey,@"[ZNKey privateKey]");
 }
 
 #pragma mark - testPaymentRequest
@@ -161,7 +167,7 @@
     tx = [[ZNTransaction alloc] initWithData:d];
     d2 = [tx toData];
     
-    STAssertTrue([d isEqual:d2], @"[ZNTransaction initWithData:]");
+    STAssertEqualObjects(d, d2, @"[ZNTransaction initWithData:]");
 }
 
 #pragma mark - testZincMnemonic
@@ -393,16 +399,18 @@
 {
     ZNElectrumSequence *seq = [ZNElectrumSequence new];
     NSData *mpk = [seq masterPublicKeyFromSeed:@"00000000000000000000000000000000".hexToData];
-    NSData *pk = [seq publicKey:0 internal:NO masterPublicKey:mpk];
-    NSString *addr = [(ZNKey *)[ZNKey keyWithPublicKey:pk] address];
+    NSData *pubkey = [seq publicKey:0 internal:NO masterPublicKey:mpk];
+    NSString *addr = [(ZNKey *)[ZNKey keyWithPublicKey:pubkey] address];
     
-    NSLog(@"publicKey:0 = %@", [NSString hexWithData:pk]);
+    NSLog(@"publicKey:0 = %@", [NSString hexWithData:pubkey]);
     NSLog(@"addr:0 = %@", addr);
     
-    STAssertEqualObjects(pk, @"040900f07c15d3fa441979e71d7ccdcca1afc30a28de07a0525a3d7655dc49cca"
-                              "0f844fb0903b3cccc4604107a9de6a0571c4a39996a9e4bd6ab596138ecae54f5".hexToData,
+    STAssertEqualObjects(pubkey, @"040900f07c15d3fa441979e71d7ccdcca1afc30a28de07a0525a3d7655dc49cca"
+                                  "0f844fb0903b3cccc4604107a9de6a0571c4a39996a9e4bd6ab596138ecae54f5".hexToData,
                          @"[ZNElectrumSequence publicKey:forChange:masterPublicKey:]");
+#if ! BITCOIN_TESTNET
     STAssertEqualObjects(addr, @"1FHsTashEBUNPQwC1CwVjnKUxzwgw73pU4", @"[[ZNKey keyWithPublicKey:] address]");
+#endif
 }
 
 - (void)testElectrumSequencePrivateKey

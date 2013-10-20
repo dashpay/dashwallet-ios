@@ -101,14 +101,13 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     NSString *address = nil;
     NSUInteger l = 0, len = 0, off = 0, count = 0;
 
-    if (data.length < off + sizeof(uint32_t) + VARINT_MAX_LEN) return nil;
     _version = [data UInt32AtOffset:off]; // tx version
     off += sizeof(uint32_t);
     count = [data varIntAtOffset:off length:&l]; // input count
     off += l;
 
     for (NSUInteger i = 0; i < count; i++) { // inputs
-        if (data.length < off + CC_SHA256_DIGEST_LENGTH + sizeof(uint32_t) + VARINT_MAX_LEN) return nil;
+        if (data.length < off + CC_SHA256_DIGEST_LENGTH) return nil;
         [self.hashes addObject:[data subdataWithRange:NSMakeRange(off, CC_SHA256_DIGEST_LENGTH)]]; // input tx hash
         off += CC_SHA256_DIGEST_LENGTH;
         [self.indexes addObject:@([data UInt32AtOffset:off])]; // input index
@@ -116,19 +115,17 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
         [self.inScripts addObject:[NSNull null]]; // placeholder for input script (comes from previous transaction)
         len = [data varIntAtOffset:off length:&l]; // input signature length
         off += l;
-        if (data.length < off + len + sizeof(uint32_t)) return nil;
+        if (data.length < off + len) return nil;
         [self.signatures addObject:[data subdataWithRange:NSMakeRange(off, len)]]; // input signature
         off += len;
         [self.sequences addObject:@([data UInt32AtOffset:off])]; // input sequence number (for replacement transactons)
         off += sizeof(uint32_t);
     }
 
-    if (data.length < off + VARINT_MAX_LEN) return nil;
     count = [data varIntAtOffset:off length:&l]; // output count
     off += l;
     
     for (NSUInteger i = 0; i < count; i++) { // outputs
-        if (data.length < off + sizeof(uint64_t) + VARINT_MAX_LEN) return nil;
         [self.amounts addObject:@([data UInt64AtOffset:off])]; // output amount
         off += sizeof(uint64_t);
         len = [data varIntAtOffset:off length:&l]; // output script length

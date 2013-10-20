@@ -37,11 +37,13 @@
 + (instancetype)createOrUpdateWithAddress:(int32_t)address port:(int16_t)port timestamp:(NSTimeInterval)timestamp
 services:(int64_t)services
 {
-    ZNPeerEntity *e = [self objectsMatching:@"address == %u && port == %u", address, port].lastObject;
-    
-    if (! e) e = [ZNPeerEntity managedObject];
+    __block ZNPeerEntity *e = nil;
 
-    [e.managedObjectContext performBlockAndWait:^{
+    [[self context] performBlockAndWait:^{
+        e = [self objectsMatching:@"address == %u && port == %u", address, port].lastObject;
+    
+        if (! e) e = [ZNPeerEntity managedObject];
+
         e.address = address;
         e.port = port;
         if (timestamp > e.timestamp) e.timestamp = timestamp;

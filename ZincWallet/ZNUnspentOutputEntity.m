@@ -38,10 +38,10 @@
 
 + (instancetype)entityWithTxOutput:(ZNTxOutputEntity *)output
 {
-    __block ZNUnspentOutputEntity *e =
-        [self entityWithAddress:output.address txHash:output.transaction.txHash n:output.n value:output.value];
+    __block ZNUnspentOutputEntity *e = nil;
     
-    [[e managedObjectContext] performBlockAndWait:^{
+    [[self context] performBlockAndWait:^{
+        e = [self entityWithAddress:output.address txHash:output.transaction.txHash n:output.n value:output.value];
         e.txIndex = output.txIndex;
     }];
 
@@ -50,26 +50,28 @@
 
 + (instancetype)entityWithAddress:(NSString *)address txHash:(NSData *)txHash n:(int32_t)n value:(int64_t)value
 {
-    __block ZNUnspentOutputEntity *e = [self managedObject];
-    __block NSMutableData *script = [NSMutableData data];
+    __block ZNUnspentOutputEntity *e = nil;
     
-    [[e managedObjectContext] performBlockAndWait:^{
-        [script appendScriptPubKeyForAddress:address];
+    [[self context] performBlockAndWait:^{
+        NSMutableData *script = [NSMutableData data];
+        
+        e = [self managedObject];
         [e setAddress:address txIndex:0 n:n value:value];
         e.txHash = txHash;
+        [script appendScriptPubKeyForAddress:address];
         e.script = script;
     }];
-    
+
     return e;
 }
 
 - (instancetype)setAttributesFromJSON:(NSDictionary *)JSON
 {
     if (! [JSON isKindOfClass:[NSDictionary class]]) return self;
-    
-    [super setAttributesFromJSON:JSON];
-    
+
     [[self managedObjectContext] performBlockAndWait:^{
+        [super setAttributesFromJSON:JSON];
+    
         if ([JSON[@"tx_hash"] isKindOfClass:[NSString class]]) self.txHash = [JSON[@"tx_hash"] hexToData];
         if ([JSON[@"tx_output_n"] isKindOfClass:[NSNumber class]]) self.n = [JSON[@"tx_output_n"] intValue];
         if ([JSON[@"script"] isKindOfClass:[NSString class]]) self.script = [JSON[@"script"] hexToData];

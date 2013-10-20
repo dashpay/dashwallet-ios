@@ -16,21 +16,25 @@
 
 - (uint8_t)UInt8AtOffset:(NSUInteger)offset
 {
+    if (self.length < offset + sizeof(uint8_t)) return 0;
     return *((uint8_t *)self.bytes + offset);
 }
 
 - (uint16_t)UInt16AtOffset:(NSUInteger)offset
 {
+    if (self.length < offset + sizeof(uint16_t)) return 0;
     return CFSwapInt16LittleToHost(*(uint16_t *)((uint8_t *)self.bytes + offset));
 }
 
 - (uint32_t)UInt32AtOffset:(NSUInteger)offset
 {
+    if (self.length < offset + sizeof(uint32_t)) return 0;
     return CFSwapInt32LittleToHost(*(uint32_t *)((uint8_t *)self.bytes + offset));
 }
 
 - (uint64_t)UInt64AtOffset:(NSUInteger)offset
 {
+    if (self.length < offset + sizeof(uint64_t)) return 0;
     return CFSwapInt64LittleToHost(*(uint64_t *)((uint8_t *)self.bytes + offset));
 }
 
@@ -62,6 +66,7 @@
     NSUInteger ll, l = [self varIntAtOffset:offset length:&ll];
     
     if (length) *length = ll + l;
+    if (self.length < offset + ll + l) return nil;
     return [[NSString alloc] initWithBytes:(char *)self.bytes + offset + ll length:l encoding:NSUTF8StringEncoding];
 }
 

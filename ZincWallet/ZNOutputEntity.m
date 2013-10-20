@@ -37,7 +37,13 @@
 {
     if (! [JSON isKindOfClass:[NSDictionary class]]) return nil;
 
-    return [[self managedObject] setAttributesFromJSON:JSON];
+    __block ZNOutputEntity *e = nil;
+
+    [[self context] performBlockAndWait:^{
+        e = [[self managedObject] setAttributesFromJSON:JSON];
+    }];
+
+    return e;
 }
 
 - (instancetype)setAttributesFromJSON:(NSDictionary *)JSON

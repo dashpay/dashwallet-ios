@@ -25,9 +25,10 @@
 
 #import <Foundation/Foundation.h>
 
-#define BLOOM_UPDATE_NONE          0
-#define BLOOM_UPDATE_ALL           1
-#define BLOOM_UPDATE_P2PUBKEY_ONLY 2
+#define BLOOM_DEFAULT_FALSEPOSITIVE_RATE 0.0005 // same as bitcoinj, use 0.0001 for less data, 0.001 for good anonymity
+#define BLOOM_UPDATE_NONE                0
+#define BLOOM_UPDATE_ALL                 1
+#define BLOOM_UPDATE_P2PUBKEY_ONLY       2
 
 @interface ZNBloomFilter : NSObject
 
@@ -37,10 +38,10 @@
 
 + (instancetype)filterWithFalsePositiveRate:(double)fpRate forElementCount:(NSUInteger)count tweak:(uint32_t)tweak
 flags:(uint8_t)flags;
++ (NSUInteger)maxElementCountWithFalsePostiveRate:(double)fpRate;
 
 - (instancetype)initWithFalsePositiveRate:(double)fpRate forElementCount:(NSUInteger)count tweak:(uint32_t)tweak
 flags:(uint8_t)flags;
-
 - (void)insertData:(NSData *)data;
 - (BOOL)containsData:(NSData *)data;
 

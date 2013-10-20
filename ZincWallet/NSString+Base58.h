@@ -25,8 +25,10 @@
 
 #import <Foundation/Foundation.h>
 
-//TODO: get testnet build working
 #define BITCOIN_TESTNET             1
+#if BITCOIN_TESTNET
+#warning testnet build
+#endif
 
 #define BITCOIN_PUBKEY_ADDRESS      0
 #define BITCOIN_SCRIPT_ADDRESS      5

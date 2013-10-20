@@ -27,13 +27,14 @@
 #import "NSString+Base58.h" //BITCOIN_TESTNET is defined here
 
 #if BITCOIN_TESTNET
-#define STANDARD_PORT     18333
-#else // BITCOIN_TESTNET
-#define STANDARD_PORT     8333
-#endif // BITCOIN_TESTNET
+#define STANDARD_PORT 18333
+#else
+#define STANDARD_PORT 8333
+#endif
 
-#define NODE_NETWORK      1
+#define NODE_NETWORK  1
 
+// explanation of message types at: https://en.bitcoin.it/wiki/Protocol_specification
 #define MSG_VERSION     @"version"
 #define MSG_VERACK      @"verack"
 #define MSG_ADDR        @"addr"
@@ -85,8 +86,10 @@ typedef enum {
 @property (nonatomic, readonly) uint64_t services;
 @property (nonatomic, readonly) uint32_t version;
 @property (nonatomic, readonly) uint64_t timestamp;
+@property (nonatomic, readonly) uint64_t nonce;
 @property (nonatomic, readonly) NSString *useragent;
 @property (nonatomic, readonly) uint32_t lastblock;
+@property (nonatomic, readonly) NSTimeInterval pingTime;
 
 + (instancetype)peerWithAddress:(uint32_t)address andPort:(uint16_t)port;
 
@@ -94,5 +97,6 @@ typedef enum {
 - (void)connect;
 - (void)sendMessage:(NSData *)message type:(NSString *)type;
 - (void)sendGetaddrMessage;
+- (void)sendGetblocksMessage;
 
 @end
