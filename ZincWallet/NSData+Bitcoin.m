@@ -7,6 +7,7 @@
 //
 
 #import "NSData+Bitcoin.h"
+#import <CommonCrypto/CommonCrypto.h>
 
 #define VAR_INT16_HEADER 0xfd
 #define VAR_INT32_HEADER 0xfe
@@ -61,13 +62,28 @@
     }
 }
 
+- (NSData *)hashAtOffset:(NSUInteger)offset
+{
+    if (self.length < offset + CC_SHA256_DIGEST_LENGTH) return nil;
+    return [self subdataWithRange:NSMakeRange(offset, CC_SHA256_DIGEST_LENGTH)];
+}
+
 - (NSString *)stringAtOffset:(NSUInteger)offset length:(NSUInteger *)length
 {
     NSUInteger ll, l = [self varIntAtOffset:offset length:&ll];
     
     if (length) *length = ll + l;
-    if (self.length < offset + ll + l) return nil;
+    if (ll == 0 || self.length < offset + ll + l) return nil;
     return [[NSString alloc] initWithBytes:(char *)self.bytes + offset + ll length:l encoding:NSUTF8StringEncoding];
+}
+
+- (NSData *)dataAtOffset:(NSUInteger)offset length:(NSUInteger *)length
+{
+    NSUInteger ll, l = [self varIntAtOffset:offset length:&ll];
+    
+    if (length) *length = ll + l;
+    if (ll == 0 || self.length < offset + ll + l) return nil;
+    return [self subdataWithRange:NSMakeRange(offset + ll, l)];
 }
 
 @end

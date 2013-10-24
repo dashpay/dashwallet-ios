@@ -59,6 +59,7 @@ static uint32_t murmurHash3(NSData *data, uint32_t seed)
     return h1;
 }
 
+//TODO: XXXX figure out what to do to prevent matching satoshidice in the false positives...
 
 @interface ZNBloomFilter ()
 
@@ -83,7 +84,7 @@ flags:(uint8_t)flags
 - (instancetype)initWithFalsePositiveRate:(double)fpRate forElementCount:(NSUInteger)count tweak:(uint32_t)tweak
 flags:(uint8_t)flags
 {
-    if (! (self = [super init])) return nil;
+    if (! (self = [self init])) return nil;
 
     NSUInteger size = MAX(1, (-1/pow(M_LN2, 2))*count*log(fpRate)/8);
 

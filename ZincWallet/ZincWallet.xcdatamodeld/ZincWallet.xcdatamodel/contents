@@ -7,6 +7,19 @@
         <attribute name="newTx" attributeType="Boolean" defaultValueString="NO" indexed="YES" syncable="YES"/>
         <attribute name="txCount" attributeType="Integer 32" defaultValueString="0" indexed="YES" syncable="YES"/>
     </entity>
+    <entity name="ZNMerkleBlockEntity" syncable="YES">
+        <attribute name="bits" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="blockHash" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="flags" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="hashes" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="height" optional="YES" attributeType="Integer 32" defaultValueString="-1" indexed="YES" syncable="YES"/>
+        <attribute name="merkleRoot" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="nonce" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="prevBlock" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="timestamp" optional="YES" attributeType="Date" indexed="YES" syncable="YES"/>
+        <attribute name="totalTransactions" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="version" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+    </entity>
     <entity name="ZNOutputEntity" representedClassName="ZNOutputEntity" isAbstract="YES" syncable="YES">
         <attribute name="address" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="n" attributeType="Integer 32" defaultValueString="0" indexed="YES" syncable="YES"/>
@@ -40,11 +53,12 @@
     </entity>
     <elements>
         <element name="ZNAddressEntity" positionX="0" positionY="0" width="0" height="0"/>
+        <element name="ZNMerkleBlockEntity" positionX="0" positionY="0" width="0" height="0"/>
         <element name="ZNOutputEntity" positionX="0" positionY="0" width="0" height="0"/>
+        <element name="ZNPeerEntity" positionX="0" positionY="0" width="0" height="0"/>
         <element name="ZNTransactionEntity" positionX="0" positionY="0" width="0" height="0"/>
         <element name="ZNTxInputEntity" positionX="0" positionY="0" width="0" height="0"/>
         <element name="ZNTxOutputEntity" positionX="0" positionY="0" width="0" height="0"/>
         <element name="ZNUnspentOutputEntity" positionX="0" positionY="0" width="0" height="0"/>
-        <element name="ZNPeerEntity" positionX="0" positionY="0" width="0" height="0"/>
     </elements>
 </model>

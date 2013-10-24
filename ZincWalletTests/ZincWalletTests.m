@@ -33,6 +33,7 @@
 #import "ZNTransaction.h"
 #import "ZNKey.h"
 #import "ZNBloomFilter.h"
+#import "ZNMerkleBlock.h"
 #import "NSData+Hash.h"
 #import "NSString+Base58.h"
 
@@ -487,6 +488,43 @@
 
     // check against satoshi client output
     STAssertEqualObjects(@"03ce4299050000000100008002".hexToData, f.data, @"[ZNBloomFilter data:]");
+}
+
+#pragma mark - testMerkleBlock
+
+- (void)testMerkleBlock
+{
+    // block 10001 filtered to include only transactions 0, 1, 2, and 6
+    NSData *block = @"0100000006e533fd1ada86391f3f6c343204b0d278d4aaec1c0b20aa27ba0300000000006abbb3eb3d733a9fe18967fd7"
+                     "d4c117e4ccbbac5bec4d910d900b3ae0793e77f54241b4d4c86041b4089cc9b0c000000084c30b63cfcdc2d35e3329421"
+                     "b9805ef0c6565d35381ca857762ea0b3a5a128bbca5065ff9617cbcba45eb23726df6498a9b9cafed4f54cbab9d227b00"
+                     "35ddefbbb15ac1d57d0182aaee61c74743a9c4f785895e563909bafec45c9a2b0ff3181d77706be8b1dcc91112eada86d"
+                     "424e2d0a8907c3488b6e44fda5a74a25cbc7d6bb4fa04245f4ac8a1a571d5537eac24adca1454d65eda446055479af6c6"
+                     "d4dd3c9ab658448c10b6921b7a4ce3021eb22ed6bb6a7fde1e5bcc4b1db6615c6abc5ca042127bfaf9f44ebce29cb29c6"
+                     "df9d05b47f35b2edff4f0064b578ab741fa78276222651209fe1a2c4c0fa1c58510aec8b090dd1eb1f82f9d261b8273b5"
+                     "25b02ff1a".hexToData;
+    
+    ZNMerkleBlock *mb = [ZNMerkleBlock blockWithMessage:block];
+    
+    STAssertEqualObjects(mb.blockHash, @"00000000000080b66c911bd5ba14a74260057311eaeb1982802f7010f1a9f090".hexToData,
+                         @"[ZNMerkleBlock blockHash]");
+
+    STAssertTrue(mb.valid, @"[ZNMerkleBlock isValid]");
+
+    STAssertTrue([mb containsTxHash:@"bb28a1a5b3a02e7657a81c38355d56c6f05e80b9219432e3352ddcfc3cb6304c".hexToData],
+                 @"[ZNMerkleBlock containsTxHash:]");
+
+    STAssertTrue(mb.txHashes.count == 4, @"[ZNMerkleBlock txHashes]");
+    STAssertEqualObjects(mb.txHashes[0], @"bb28a1a5b3a02e7657a81c38355d56c6f05e80b9219432e3352ddcfc3cb6304c".hexToData,
+                         @"[ZNMerkleBlock txHashes]");
+    STAssertEqualObjects(mb.txHashes[1], @"fbde5d03b027d2b9ba4cf5d4fecab9a99864df2637b25ea4cbcb1796ff6550ca".hexToData,
+                         @"[ZNMerkleBlock txHashes]");
+    STAssertEqualObjects(mb.txHashes[2], @"8131ffb0a2c945ecaf9b9063e59558784f9c3a74741ce6ae2a18d0571dac15bb".hexToData,
+                         @"[ZNMerkleBlock txHashes]");
+    STAssertEqualObjects(mb.txHashes[3], @"c5abc61566dbb1c4bce5e1fda7b66bed22eb2130cea4b721690bc1488465abc9".hexToData,
+                         @"[ZNMerkleBlock txHashes]");
+    
+    //TODO: test a block with an odd number of tree rows both at the tx level and merkle node level
 }
 
 @end

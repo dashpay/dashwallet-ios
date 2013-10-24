@@ -99,7 +99,8 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     if (! (self = [self init])) return nil;
  
     NSString *address = nil;
-    NSUInteger l = 0, len = 0, off = 0, count = 0;
+    NSUInteger l = 0, off = 0, count = 0;
+    NSData *d = nil;
 
     _version = [data UInt32AtOffset:off]; // tx version
     off += sizeof(uint32_t);
@@ -107,17 +108,15 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     off += l;
 
     for (NSUInteger i = 0; i < count; i++) { // inputs
-        if (data.length < off + CC_SHA256_DIGEST_LENGTH) return nil;
-        [self.hashes addObject:[data subdataWithRange:NSMakeRange(off, CC_SHA256_DIGEST_LENGTH)]]; // input tx hash
+        d = [data hashAtOffset:off];
+        [self.hashes addObject:d ? d : [NSNull null]]; // input tx hash
         off += CC_SHA256_DIGEST_LENGTH;
         [self.indexes addObject:@([data UInt32AtOffset:off])]; // input index
         off += sizeof(uint32_t);
         [self.inScripts addObject:[NSNull null]]; // placeholder for input script (comes from previous transaction)
-        len = [data varIntAtOffset:off length:&l]; // input signature length
+        d = [data dataAtOffset:off length:&l];
+        [self.signatures addObject:d ? d : [NSNull null]]; // input signature
         off += l;
-        if (data.length < off + len) return nil;
-        [self.signatures addObject:[data subdataWithRange:NSMakeRange(off, len)]]; // input signature
-        off += len;
         [self.sequences addObject:@([data UInt32AtOffset:off])]; // input sequence number (for replacement transactons)
         off += sizeof(uint32_t);
     }
@@ -128,16 +127,13 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     for (NSUInteger i = 0; i < count; i++) { // outputs
         [self.amounts addObject:@([data UInt64AtOffset:off])]; // output amount
         off += sizeof(uint64_t);
-        len = [data varIntAtOffset:off length:&l]; // output script length
+        d = [data dataAtOffset:off length:&l];
+        [self.outScripts addObject:d ? d : [NSNull null]]; // output script
         off += l;
-        if (data.length < off + len) return nil;
-        [self.outScripts addObject:[data subdataWithRange:NSMakeRange(off, len)]]; // output script
-        off += len;
         address = [NSString addressWithScript:self.outScripts.lastObject]; // address from output script if applicable
         [self.addresses addObject:address ? address : [NSNull null]];
     }
     
-    if (data.length < off + sizeof(uint32_t)) return nil;
     _lockTime = [data UInt32AtOffset:off]; // tx locktime
     
     return self;
@@ -346,9 +342,9 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 
     if (self.size > TX_FREE_MAX_SIZE) return NSNotFound;
     
-    if ([self.amounts indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-            return [obj unsignedLongLongValue] < TX_FREE_MIN_OUTPUT ? (*stop = YES) : NO;
-        }] != NSNotFound) return NSNotFound;
+    for (NSNumber *amount in self.amounts) {
+        if (amount.unsignedLongLongValue < TX_FREE_MIN_OUTPUT) return NSNotFound;
+    }
 
     uint64_t amountTotal = 0, amountsByHeights = 0;
     

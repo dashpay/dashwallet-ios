@@ -93,13 +93,6 @@
     }];
     
     self.seedLabel.text = w.seedPhrase;
-    
-    //CGFloat m = self.labelFrame.frame.size.height - self.seedLabel.frame.size.height;
-    //CGSize s = [self.seedLabel.text sizeWithFont:self.seedLabel.font
-    //            constrainedToSize:CGSizeMake(self.seedLabel.frame.size.width, CGFLOAT_MAX)];
-    //
-    //self.labelFrame.frame = CGRectMake(self.labelFrame.frame.origin.x, self.view.frame.size.height/2 - s.height/2 - m/2,
-    //                                   self.labelFrame.frame.size.width, s.height + m);
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -127,14 +120,6 @@
     } completion:^(BOOL finished) {
         self.seedLabel.text = [[ZNWallet sharedInstance] seedPhrase];
         
-//        CGFloat m = self.labelFrame.frame.size.height - self.seedLabel.frame.size.height;
-//        CGSize s = [self.seedLabel.text sizeWithFont:self.seedLabel.font
-//                    constrainedToSize:CGSizeMake(self.seedLabel.frame.size.width, CGFLOAT_MAX)];
-//        
-//        self.labelFrame.frame = CGRectMake(self.labelFrame.frame.origin.x,
-//                                           self.view.frame.size.height/2 - s.height/2 - m/2,
-//                                           self.labelFrame.frame.size.width, s.height + m);
-
         [UIView animateWithDuration:SEGUE_DURATION/2 animations:^{
             self.seedLabel.alpha = 1.0;
         }];

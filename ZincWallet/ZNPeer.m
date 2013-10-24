@@ -27,6 +27,8 @@
 #import "ZNPeerEntity.h"
 #import "ZNTransaction.h"
 #import "ZNTransactionEntity.h"
+#import "ZNMerkleBlock.h"
+#import "ZNMerkleBlockEntity.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSData+Bitcoin.h"
 #import "NSData+Hash.h"
@@ -78,7 +80,7 @@ typedef enum {
 
 - (instancetype)initWithAddress:(uint32_t)address andPort:(uint16_t)port
 {
-    if (! (self = [super init])) return nil;
+    if (! (self = [self init])) return nil;
     
     _address = address;
     _port = port;
@@ -257,33 +259,32 @@ typedef enum {
 - (void)sendGetblocksMessage
 {
     NSMutableData *msg = [NSMutableData data];
-//    NSFetchRequest *req = [ZNMerkleBlockEntity fetchRequest];
-//    uint32_t step = 1, start = 0;
-//    uint32_t top = [[ZNMerkleBlockEntity objectsSortedBy:@"height" ascending:NO offset:0 limit:1].lastObject height];
-//    NSMutableArray *heights = [NSMutableArray array];
+    NSFetchRequest *req = [ZNMerkleBlockEntity fetchRequest];
+    uint32_t step = 1, start = 0;
+    uint32_t top = [[ZNMerkleBlockEntity objectsSortedBy:@"height" ascending:NO offset:0 limit:1].lastObject height];
+    NSMutableArray *heights = [NSMutableArray array];
 
     [msg appendUInt32:PROTOCOL_VERSION];
     
-//    // append the 10 most recent block hashes decending, then continue appending while doubling the step back each time,
-//    // finishing with the genisis block (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -13, -17, -25, -41, -73, ..., 0)
-//    for (uint32_t i = top; i > 0; i -= step, ++start) {
-//        if (start >= 10) step *= 2;
-//
-//        [heights addObject:@(i)];
-//    }
-//    
-//    [heights addObject:@(0)];
-//    
-//    [msg appendVarInt:heights.count]; // number of block locator hashes
-//    
-//    req.predicate = [NSPredicate predicateWithFormat:@"height IN %@", heights];
-//    req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"height" ascending:NO]];
-//
-//    for (ZNMerkleBlockEntity *e in [ZNMerkleBlockEntity fetchObjects:req]) {
-//        [msg appendData:e.blockHash];
-//    }
-    [msg appendVarInt:1];
-    [msg appendData:@"000000000000003887df1f29024b06fc2200b55f8af8f35453d7be294df2d214".hexToData];
+    // append the 10 most recent block hashes decending, then continue appending while doubling the step back each time,
+    // finishing with the genisis block (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -13, -17, -25, -41, -73, ..., 0)
+    for (uint32_t i = top; i > 0; i -= step, ++start) {
+        if (start >= 10) step *= 2;
+
+        [heights addObject:@(i)];
+    }
+    
+    [heights addObject:@(0)];
+    
+    [msg appendVarInt:heights.count]; // number of block locator hashes
+    
+    req.predicate = [NSPredicate predicateWithFormat:@"height IN %@", heights];
+    req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"height" ascending:NO]];
+
+    //XXX handle no blocks case, and use performBlockAndWait
+    for (ZNMerkleBlockEntity *e in [ZNMerkleBlockEntity fetchObjects:req]) {
+        [msg appendData:e.blockHash];
+    }
 
     [msg appendBytes:"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" length:32]; // hash stop
     
@@ -472,7 +473,9 @@ typedef enum {
     
     for (NSUInteger i = 0; i < count; i++) {
         inv_t type = [message UInt32AtOffset:l + i*36];
-        NSData *hash = [message subdataWithRange:NSMakeRange(l + i*36 + sizeof(uint32_t), CC_SHA256_DIGEST_LENGTH)];
+        NSData *hash = [message hashAtOffset:l + i*36 + sizeof(uint32_t)];
+        
+        if (! hash) continue;
         
         switch (type) {
             case tx: [txHashes addObject:hash]; break;
@@ -487,8 +490,8 @@ typedef enum {
     // remove transactions we already know about
     [txHashes removeObjectsInArray:[[ZNTransactionEntity objectsMatching:@"txHash IN %@", txHashes]
                                     valueForKey:@"txHash"]];
-    //[blockHashes removeObjectsInArray:[[ZNMerkleBlockEntity objectsMatching@"blockHash IN %@", blockHashes]
-    //                                   valueForKeay:@"blockHash"]];
+    [blockHashes removeObjectsInArray:[[ZNMerkleBlockEntity objectsMatching:@"blockHash IN %@", blockHashes]
+                                       valueForKey:@"blockHash"]];
     
     if (txHashes.count + blockHashes.count > 0) {
         [self sendGetdataMessageWithTxHashes:txHashes andBlockHashes:blockHashes];
@@ -558,6 +561,14 @@ typedef enum {
 
 - (void)acceptMerkleblockMessage:(NSData *)message
 {
+    // Bitcoin nodes don't support querying arbitrary transactions, only transactions not yet accepted in a block. After
+    // a merkleblock message, the remote node is expected to send tx messages for the tx referenced in the block. When a
+    // non-tx message is received we should have all the tx in the merkleblock. If not, the only way to request them is
+    // re-request the merkleblock. The simplest way to do this is to delete the block and let the block organization
+    // algorithm figure it out what needs to be requested.
+    
+    [ZNMerkleBlockEntity createOrUpdateWithMerkleBlock:[ZNMerkleBlock blockWithMessage:message]];
+
     NSLog(@"%@:%u got merkleblock", self.host, self.port);
 }
 

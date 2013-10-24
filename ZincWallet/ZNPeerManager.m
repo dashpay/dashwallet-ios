@@ -184,29 +184,6 @@
     [peer connect];
 }
 
-// WARNING: this exposes public keys that otherwise are only exposed with a spend
-//- (void)subscribeToPubKeys:(NSArray *)pubKeys
-//{
-//    for (NSData *pubKey in pubKeys) {
-//        NSMutableData *msg = [NSMutableData data];
-//        
-//        [msg appendVarInt:pubKey.length];
-//        [msg appendData:pubKey];
-//        
-//        for (ZNPeer *peer in self.peers) {
-//            [peer sendMessage:msg type:MSG_FILTERADD];
-//        }
-//
-//        msg.length = 0;
-//        [msg appendVarInt:160/8];
-//        [msg appendData:[pubKey hash160]];
-//        
-//        for (ZNPeer *peer in self.peers) {
-//            [peer sendMessage:msg type:MSG_FILTERADD];
-//        }
-//    }
-//}
-
 // this will extend the bloom filter to include transactions sent to the given addresses
 // to include spend transactions, the public key for the address must be added to the filter
 - (void)subscribeToAddresses:(NSArray *)addresses
@@ -242,12 +219,11 @@
     if ([ZNPeerEntity countAllObjects] <= 1000) [peer sendGetaddrMessage];
     
     // send bloom filter
-    //TODO: if we have more than about 10,000 addresses we'll bump up against max filter size and we'll need to divide
+    //TODO: if we have more than about 7,000 addresses we'll bump up against max filter size and we'll want to divide
     // up the addresses between multiple connected peers
     NSArray *addresses = [ZNAddressEntity allObjects];
-    // we don't need auto updates, just manually update when new addresses are added to the wallet
     ZNBloomFilter *filter = [ZNBloomFilter filterWithFalsePositiveRate:BLOOM_DEFAULT_FALSEPOSITIVE_RATE
-                             forElementCount:addresses.count tweak:(uint32_t)mrand48() flags:BLOOM_UPDATE_NONE];
+                             forElementCount:addresses.count tweak:(int32_t)mrand48() flags:BLOOM_UPDATE_P2PUBKEY_ONLY];
 
     [[addresses.lastObject managedObjectContext] performBlockAndWait:^{
         for (ZNAddressEntity *e in addresses) {
@@ -256,11 +232,14 @@
             
             if (d.length > 0) [filter insertData:[d subdataWithRange:NSMakeRange(1, d.length - 1)]];
             
-            //TODO: XXXX add the address pubkey to the filter to watch for any tx sending money out of the wallet...
-            // since generating pubkeys is slow, add them to a filter at creation time and cache the filter. we'll need
-            // to support multiple filters in order to handle more than a few thousand addresses.
+            //TODO: add the serialized coutpoint for all unspent outputs to watch for any spend tx
+            
+            //TODO: after a wallet restore, reset all non-download peer filters with coutpoints of unspent outputs
         }
     }];
+    
+    //NOTE: since the app does not connect for long periods of time, bloom filter degredation from being auto updated
+    // with the coutpoints of false positives isn't much of a concern.
     
     [peer sendMessage:filter.data type:MSG_FILTERLOAD];
     

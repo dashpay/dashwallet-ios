@@ -89,34 +89,42 @@
         usingBlock:^(NSNotification *note) {
             NSURL *url = note.userInfo[@"url"];
             
-            if ([url.scheme isEqual:@"zinc"] && [url.host isEqual:@"x-callback-url"] && [url.path isEqual:@"/tx"]) {
-                __block NSString *status = nil;
+            if ([url.scheme isEqual:@"zinc"] && [url.host isEqual:@"x-callback-url"]) {
                 
-                for (NSString *arg in [url.query componentsSeparatedByString:@"&"]) {
-                    NSArray *pair = [arg componentsSeparatedByString:@"="];
-                    
-                    if (pair.count == 2 && [pair[0] isEqual:@"status"]) status = pair[1];
-                }
-            
-                if ([status isEqual:@"sent"]) {
-                    NSUInteger idx = [self.requests indexOfObject:self.request];
-                    
-                    if (self.tx) [w registerTransaction:self.tx];
-                    
-                    if ([self.requestIDs indexOfObject:QR_ID] != idx) {
-                        if ([self.requestIDs indexOfObject:CLIPBOARD_ID] == idx) {
-                            [[UIPasteboard generalPasteboard] setString:@""];
-                        }
+                if ([url.path isEqual:@"/tx"]) {
+                    __block NSString *status = nil;
+                
+                    for (NSString *arg in [url.query componentsSeparatedByString:@"&"]) {
+                        NSArray *pair = [arg componentsSeparatedByString:@"="];
                         
-                        [self.requestIDs removeObjectAtIndex:idx];
-                        [self.requests removeObjectAtIndex:idx];
+                        if (pair.count == 2 && [pair[0] isEqual:@"status"]) status = pair[1];
                     }
                     
-                    [self reset:nil];
+                    if ([status isEqual:@"sent"]) {
+                        NSUInteger idx = [self.requests indexOfObject:self.request];
+                        
+                        if (self.tx) [w registerTransaction:self.tx];
+                        
+                        if ([self.requestIDs indexOfObject:QR_ID] != idx) {
+                            if ([self.requestIDs indexOfObject:CLIPBOARD_ID] == idx) {
+                                [[UIPasteboard generalPasteboard] setString:@""];
+                            }
+                            
+                            [self.requestIDs removeObjectAtIndex:idx];
+                            [self.requests removeObjectAtIndex:idx];
+                        }
+                    
+                        [self reset:nil];
+                    }
+                    else if ([status isEqual:@"canceled"]) [self cancel:nil];
                 }
-                else if ([status isEqual:@"canceled"]) [self cancel:nil];
+                else if ([url.path isEqual:@"/qr"]) {
+                    //TODO: XXXX scan qr and launch webapp
+                }
             }
             else if ([url.scheme isEqual:@"bitcoin"]) {
+#if APPSTORE
+#endif
                 ZNPaymentRequest *req = [ZNPaymentRequest requestWithURL:url];
         
                 if (! req.label.length) req.label = req.paymentAddress;
@@ -213,12 +221,12 @@
         [self.requestIDs removeObject:CLIPBOARD_ID];
     }
 
-    if ([self.requests indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-            return [req.label isEqual:[obj label]] ? (*stop = YES) : NO;
-        }] == NSNotFound) {
-        [self.requests addObject:req];
-        [self.requestIDs addObject:CLIPBOARD_ID];
+    for (ZNPaymentRequest *r in self.requests) {
+        if ([req.label isEqual:r.label]) return;
     }
+
+    [self.requests addObject:req];
+    [self.requestIDs addObject:CLIPBOARD_ID];
 }
 
 - (void)layoutButtonsAnimated:(BOOL)animated

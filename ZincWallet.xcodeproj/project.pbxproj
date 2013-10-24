@@ -21,6 +21,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		7505A9FA18177DC400419043 /* ZNMerkleBlock.m in Sources */ = {isa = PBXBuildFile; fileRef = 7505A9F918177DC400419043 /* ZNMerkleBlock.m */; };
 		75183B88178B4ABE0032F365 /* ZNWelcomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75183B87178B4ABE0032F365 /* ZNWelcomeViewController.m */; };
 		751E809F1789797500E3CFB2 /* gear@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 751E809D1789797500E3CFB2 /* gear@2x.png */; };
 		751E80A01789797500E3CFB2 /* refresh@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 751E809E1789797500E3CFB2 /* refresh@2x.png */; };
@@ -747,6 +748,7 @@
 		759CB240175F03BF00AFA559 /* ZNAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759CB23F175F03BF00AFA559 /* ZNAmountViewController.m */; };
 		75A6ECE317BD464A0043E52D /* ZNZincMnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = 75A6ECE217BD464A0043E52D /* ZNZincMnemonic.m */; };
 		75AC8160180DFBC700ACA0C9 /* ZNBloomFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 75AC815F180DFBC700ACA0C9 /* ZNBloomFilter.m */; };
+		75AC8163181385D100ACA0C9 /* ZNMerkleBlockEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 75AC8162181385D100ACA0C9 /* ZNMerkleBlockEntity.m */; };
 		75ADF1FE17B0EC0D006B1336 /* deletetoleft-blue.png in Resources */ = {isa = PBXBuildFile; fileRef = 75ADF1FD17B0EC0C006B1336 /* deletetoleft-blue.png */; };
 		75AF36D8176675D3004AA912 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		75AF36EC17667E43004AA912 /* DataMatrix.mm in Sources */ = {isa = PBXBuildFile; fileRef = 75AF36E517667E43004AA912 /* DataMatrix.mm */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -942,6 +944,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		7505A9F818177DC400419043 /* ZNMerkleBlock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNMerkleBlock.h; sourceTree = "<group>"; };
+		7505A9F918177DC400419043 /* ZNMerkleBlock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNMerkleBlock.m; sourceTree = "<group>"; };
 		75183B86178B4ABE0032F365 /* ZNWelcomeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNWelcomeViewController.h; sourceTree = "<group>"; };
 		75183B87178B4ABE0032F365 /* ZNWelcomeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNWelcomeViewController.m; sourceTree = "<group>"; };
 		751E809D1789797500E3CFB2 /* gear@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "gear@2x.png"; sourceTree = "<group>"; };
@@ -1832,6 +1836,8 @@
 		75A6ECE517BD4CF60043E52D /* ZNMnemonic.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNMnemonic.h; sourceTree = "<group>"; };
 		75AC815E180DFBC700ACA0C9 /* ZNBloomFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNBloomFilter.h; sourceTree = "<group>"; };
 		75AC815F180DFBC700ACA0C9 /* ZNBloomFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNBloomFilter.m; sourceTree = "<group>"; };
+		75AC8161181385D100ACA0C9 /* ZNMerkleBlockEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNMerkleBlockEntity.h; sourceTree = "<group>"; };
+		75AC8162181385D100ACA0C9 /* ZNMerkleBlockEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNMerkleBlockEntity.m; sourceTree = "<group>"; };
 		75ADF1FD17B0EC0C006B1336 /* deletetoleft-blue.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "deletetoleft-blue.png"; sourceTree = "<group>"; };
 		75AF36D7176675D3004AA912 /* libqrencoder.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libqrencoder.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		75AF36E417667E43004AA912 /* DataMatrix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataMatrix.h; sourceTree = "<group>"; };
@@ -3459,6 +3465,8 @@
 				75F17C341744CC2100D9F228 /* ZNTransaction.m */,
 				75AC815E180DFBC700ACA0C9 /* ZNBloomFilter.h */,
 				75AC815F180DFBC700ACA0C9 /* ZNBloomFilter.m */,
+				7505A9F818177DC400419043 /* ZNMerkleBlock.h */,
+				7505A9F918177DC400419043 /* ZNMerkleBlock.m */,
 				753E7CDF18053B3F00FC6BA7 /* ZNPeer.h */,
 				753E7CE018053B3F00FC6BA7 /* ZNPeer.m */,
 				753E7CD1180155B400FC6BA7 /* ZNPeerManager.h */,
@@ -3584,8 +3592,6 @@
 		75F1B86017C7164300680E1B /* Entities */ = {
 			isa = PBXGroup;
 			children = (
-				753E7CD71802648700FC6BA7 /* ZNPeerEntity.h */,
-				753E7CD81802648700FC6BA7 /* ZNPeerEntity.m */,
 				757BFF2B17CBD0D700D1C4AF /* ZNAddressEntity.h */,
 				757BFF2C17CBD0D700D1C4AF /* ZNAddressEntity.m */,
 				75F1B86D17C7193800680E1B /* ZNOutputEntity.h */,
@@ -3598,6 +3604,10 @@
 				757BFF3217CC1AA800D1C4AF /* ZNTxOutputEntity.m */,
 				75F1B87017C7198B00680E1B /* ZNUnspentOutputEntity.h */,
 				75F1B87117C7198B00680E1B /* ZNUnspentOutputEntity.m */,
+				753E7CD71802648700FC6BA7 /* ZNPeerEntity.h */,
+				753E7CD81802648700FC6BA7 /* ZNPeerEntity.m */,
+				75AC8161181385D100ACA0C9 /* ZNMerkleBlockEntity.h */,
+				75AC8162181385D100ACA0C9 /* ZNMerkleBlockEntity.m */,
 			);
 			name = Entities;
 			sourceTree = "<group>";
@@ -4679,6 +4689,7 @@
 				75D8F3A1173ABE3C0080D95E /* ZNPayViewController.m in Sources */,
 				75D8F3A8173ABE3D0080D95E /* ZNReceiveViewController.mm in Sources */,
 				75CBEAE9173C80AD00978DBA /* ZNPaymentRequest.m in Sources */,
+				7505A9FA18177DC400419043 /* ZNMerkleBlock.m in Sources */,
 				752C2F8717406EEA0033F636 /* Reachability.m in Sources */,
 				752C2F8C174071520033F636 /* ZNWallet.m in Sources */,
 				752C2FAF17416C620033F636 /* NSString+Base58.m in Sources */,
@@ -4724,6 +4735,7 @@
 				75F1B87917C7356B00680E1B /* NSManagedObject+Utils.m in Sources */,
 				75F1B87D17C7506200680E1B /* ZincWallet.xcdatamodeld in Sources */,
 				757BFF2D17CBD0D700D1C4AF /* ZNAddressEntity.m in Sources */,
+				75AC8163181385D100ACA0C9 /* ZNMerkleBlockEntity.m in Sources */,
 				757BFF3017CC1A9100D1C4AF /* ZNTxInputEntity.m in Sources */,
 				75AC8160180DFBC700ACA0C9 /* ZNBloomFilter.m in Sources */,
 				757BFF3317CC1AA800D1C4AF /* ZNTxOutputEntity.m in Sources */,

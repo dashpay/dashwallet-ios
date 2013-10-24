@@ -55,10 +55,6 @@
     
     if (! [[self paymentRequest] isValid]) return;
     
-//#warning remove this
-//    ZNPaymentRequest *r = self.paymentRequest;
-//    r.amount = 1;
-//    NSString *s = [[NSString alloc] initWithData:r.data encoding:NSUTF8StringEncoding];
     NSString *s = [[NSString alloc] initWithData:self.paymentRequest.data encoding:NSUTF8StringEncoding];
     
     self.qrView.image = [QREncoder renderDataMatrix:[QREncoder encodeWithECLevel:1 version:1 string:s]
