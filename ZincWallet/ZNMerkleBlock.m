@@ -111,25 +111,6 @@ static void setCompact(BIGNUM *bn, uint32_t compact)
     return self;
 }
 
-// convert difficulty target bits to bignum, as per: https://github.com/bitcoin/bitcoin/blob/master/src/bignum.h#L289
-- (BIGNUM)difficultyTarget
-{
-    uint32_t size = _bits >> 24, word = _bits & 0x007fffff;
-    BIGNUM target;
-    
-    BN_init(&target);
-
-    if (size > 3) {
-        BN_set_word(&target, word);
-        BN_lshift(&target, &target, 8*(size - 3));
-    }
-    else BN_set_word(&target, word >> 8*(3 - size));
-    
-    BN_set_negative(&target, (_bits & 0x00800000) != 0);
-    
-    return target;
-}
-
 - (BOOL)isValid
 {
     __block NSMutableData *d = [NSMutableData data];
@@ -148,8 +129,8 @@ static void setCompact(BIGNUM *bn, uint32_t compact)
     
     if (_timestamp > [NSDate timeIntervalSinceReferenceDate] + MAX_TIME_DRIFT) return NO; // timestamp too far in future
     
-    // Check proof-of-work. This only checks if the block difficulty matches what is claimed in the header. It does not
-    // check if the difficulty is correct for the block's height in the chain.
+    // Check proof-of-work. This only checks if the block difficulty matches the target claimed in the header. It does
+    // not check if the difficulty is correct for the block's height in the chain.
     BN_init(&target);
     BN_init(&maxTarget);
     BN_init(&hash);
