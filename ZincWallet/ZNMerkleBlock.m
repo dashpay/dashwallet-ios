@@ -26,6 +26,24 @@
 #import "ZNMerkleBlock.h"
 #import "NSData+Bitcoin.h"
 #import "NSData+Hash.h"
+#import <openssl/bn.h>
+
+#define MAX_TIME_DRIFT    (2*60*60)
+#define MAX_PROOF_OF_WORK 0x1d00ffffu // highest value for difficulty target (higher values are less difficult)
+
+// convert difficulty target format to bignum, as per: https://github.com/bitcoin/bitcoin/blob/master/src/bignum.h#L289
+static void setCompact(BIGNUM *bn, uint32_t compact)
+{
+    uint32_t size = compact >> 24, word = compact & 0x007fffff;
+    
+    if (size > 3) {
+        BN_set_word(bn, word);
+        BN_lshift(bn, bn, 8*(size - 3));
+    }
+    else BN_set_word(bn, word >> 8*(3 - size));
+    
+    BN_set_negative(bn, (compact & 0x00800000) != 0);
+}
 
 // from https://en.bitcoin.it/wiki/Protocol_specification#Merkle_Trees
 // Merkle trees are binary trees of hashes. Merkle trees in bitcoin use a double SHA-256, the SHA-256 hash of the
@@ -93,9 +111,29 @@
     return self;
 }
 
+// convert difficulty target bits to bignum, as per: https://github.com/bitcoin/bitcoin/blob/master/src/bignum.h#L289
+- (BIGNUM)difficultyTarget
+{
+    uint32_t size = _bits >> 24, word = _bits & 0x007fffff;
+    BIGNUM target;
+    
+    BN_init(&target);
+
+    if (size > 3) {
+        BN_set_word(&target, word);
+        BN_lshift(&target, &target, 8*(size - 3));
+    }
+    else BN_set_word(&target, word >> 8*(3 - size));
+    
+    BN_set_negative(&target, (_bits & 0x00800000) != 0);
+    
+    return target;
+}
+
 - (BOOL)isValid
 {
     __block NSMutableData *d = [NSMutableData data];
+    BIGNUM target, maxTarget, hash;
     int hashIdx = 0, flagIdx = 0;
     NSData *merkleRoot =
         [self _walk:&hashIdx :&flagIdx :0 :^id (NSData *hash, BOOL flag) {
@@ -106,9 +144,23 @@
             return [d SHA256_2];
         }];
     
-    if (! [merkleRoot isEqual:_merkleRoot]) return NO;
+    if (! [merkleRoot isEqual:_merkleRoot]) return NO; // merkle root check failed
+    
+    if (_timestamp > [NSDate timeIntervalSinceReferenceDate] + MAX_TIME_DRIFT) return NO; // timestamp too far in future
+    
+    // Check proof-of-work. This only checks if the block difficulty matches what is claimed in the header. It does not
+    // check if the difficulty is correct for the block's height in the chain.
+    BN_init(&target);
+    BN_init(&maxTarget);
+    BN_init(&hash);
+    setCompact(&target, _bits);
+    setCompact(&maxTarget, MAX_PROOF_OF_WORK);
+    BN_bin2bn(_blockHash.bytes, CC_SHA256_DIGEST_LENGTH, &hash);
+    
+    if (BN_cmp(&target, BN_value_one()) < 0 || BN_cmp(&target, &maxTarget) > 0) return NO; // target out of range
 
-    //TODO: XXXX validate difficulty
+    if (BN_cmp(&hash, &target) > 0) return NO; // block not as difficult as target (smaller values are more difficult)
+
     return YES;
 }
 
@@ -138,7 +190,7 @@
     return txHashes;
 }
 
-// recursively walks the merkle tree in depth first order, calling leaf(hash, flag) for each hash encountered, and
+// recursively walks the merkle tree in depth first order, calling leaf(hash, flag) for each stored hash, and
 // branch(left, right) with the result from each branch
 - (id)_walk:(int *)hashIdx :(int *)flagIdx :(int)depth :(id (^)(NSData *, BOOL))leaf :(id (^)(id, id))branch
 {

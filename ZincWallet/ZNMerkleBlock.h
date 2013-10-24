@@ -28,14 +28,14 @@
 @interface ZNMerkleBlock : NSObject
 
 @property (nonatomic, readonly) NSData *blockHash;
-@property (nonatomic, readonly) int32_t height;
-@property (nonatomic, readonly) int32_t version;
+@property (nonatomic, readonly) uint32_t height;
+@property (nonatomic, readonly) uint32_t version;
 @property (nonatomic, readonly) NSData *prevBlock;
 @property (nonatomic, readonly) NSData *merkleRoot;
 @property (nonatomic, readonly) NSTimeInterval timestamp;
-@property (nonatomic, readonly) int32_t bits;
-@property (nonatomic, readonly) int32_t nonce;
-@property (nonatomic, readonly) int32_t totalTransactions;
+@property (nonatomic, readonly) uint32_t bits;
+@property (nonatomic, readonly) uint32_t nonce;
+@property (nonatomic, readonly) uint32_t totalTransactions;
 @property (nonatomic, readonly) NSData *hashes;
 @property (nonatomic, readonly) NSData *flags;
 

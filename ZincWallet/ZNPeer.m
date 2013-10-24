@@ -435,7 +435,7 @@ typedef enum {
         [addresses addObject:@(CFSwapInt32BigToHost(*(uint32_t *)((uint8_t *)message.bytes + l + 30*i + 24)))];
         [ports addObject:@(CFSwapInt16BigToHost(*(uint16_t *)((uint8_t *)message.bytes + l + 30*i + 28)))];
             
-        // if address time is more than 10min in the future or before reference date, set to 5 days old
+        // if address time is more than 10min in the future or older than reference date, set to 5 days old
         if (timestamp > now + 10*60 || timestamp < 0) timestamp = now - 5*24*60*60;
         [timestamps addObject:@(timestamp - 2*60*60)]; // subtract two hours and add it to the list
     }
