@@ -38,10 +38,12 @@
 
 + (instancetype)filterWithFalsePositiveRate:(double)fpRate forElementCount:(NSUInteger)count tweak:(uint32_t)tweak
 flags:(uint8_t)flags;
++ (instancetype)filterWithFullMatch;
 + (NSUInteger)maxElementCountWithFalsePostiveRate:(double)fpRate;
 
 - (instancetype)initWithFalsePositiveRate:(double)fpRate forElementCount:(NSUInteger)count tweak:(uint32_t)tweak
 flags:(uint8_t)flags;
+- (instancetype)initWithFullMatch;
 - (void)insertData:(NSData *)data;
 - (BOOL)containsData:(NSData *)data;
 

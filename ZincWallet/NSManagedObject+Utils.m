@@ -189,7 +189,7 @@
             NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
 #if DEBUG
             abort();
-#else
+#endif
             // if this is a not a debug build, attempt to delete and create a new persisent data store before crashing
             if (! [[NSFileManager defaultManager] removeItemAtURL:storeURL error:&error]) {
                 NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
@@ -201,7 +201,6 @@
                 NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
                 abort(); // Forsooth, I am slain!
             }
-#endif
         }
 
         if (coordinator) {

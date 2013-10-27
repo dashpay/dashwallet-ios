@@ -24,12 +24,15 @@
 //  THE SOFTWARE.
 
 #import "ZNMerkleBlock.h"
+#import "NSMutableData+Bitcoin.h"
 #import "NSData+Bitcoin.h"
 #import "NSData+Hash.h"
 #import <openssl/bn.h>
 
-#define MAX_TIME_DRIFT    (2*60*60)
-#define MAX_PROOF_OF_WORK 0x1d00ffffu // highest value for difficulty target (higher values are less difficult)
+#define MAX_TIME_DRIFT      (2*60*60)     // the furthest in the future a block is allowed to be timestamped
+#define MAX_PROOF_OF_WORK   0x1d00ffffu   // highest value for difficulty target (higher values are less difficult)
+#define DIFFICULTY_INTERVAL 2016          // number of blocks between difficulty target adjustments
+#define TARGET_TIMESPAN     (14*24*60*60) // the targeted timespan between difficulty target adjustments
 
 // convert difficulty target format to bignum, as per: https://github.com/bitcoin/bitcoin/blob/master/src/bignum.h#L289
 static void setCompact(BIGNUM *bn, uint32_t compact)
@@ -38,11 +41,31 @@ static void setCompact(BIGNUM *bn, uint32_t compact)
     
     if (size > 3) {
         BN_set_word(bn, word);
-        BN_lshift(bn, bn, 8*(size - 3));
+        BN_lshift(bn, bn, (size - 3)*8);
     }
-    else BN_set_word(bn, word >> 8*(3 - size));
+    else BN_set_word(bn, word >> (3 - size)*8);
     
     BN_set_negative(bn, (compact & 0x00800000) != 0);
+}
+
+static uint32_t getCompact(const BIGNUM *bn)
+{
+    uint32_t size = BN_num_bytes(bn), compact = 0;
+    BIGNUM n;
+
+    if (size > 3) {
+        BN_init(&n);
+        BN_rshift(&n, bn, (size - 3)*8);
+        compact = BN_get_word(&n);
+    }
+    else compact = BN_get_word(bn) << (3 - size)*8;
+
+    if (compact & 0x00800000) { // if sign is already set, divide the mantissa by 256 and increment the exponent
+        compact >>= 8;
+        size++;
+    }
+
+    return (compact | size << 24) | (BN_is_negative(bn) ? 0x00800000 : 0);
 }
 
 // from https://en.bitcoin.it/wiki/Protocol_specification#Merkle_Trees
@@ -85,7 +108,7 @@ static void setCompact(BIGNUM *bn, uint32_t compact)
     
     if (! (self = [self init])) return nil;
     
-    if (message.length < 80) return self;
+    if (message.length < 80) return nil;
     
     _blockHash = [[[message subdataWithRange:NSMakeRange(0, 80)] SHA256_2] reverse];
     _version = [message UInt32AtOffset:off];
@@ -107,10 +130,33 @@ static void setCompact(BIGNUM *bn, uint32_t compact)
     _hashes = off + len > message.length ? nil : [message subdataWithRange:NSMakeRange(off, len)];
     off += len;
     _flags = [message dataAtOffset:off length:&l];
+
+    return self;
+}
+
+- (instancetype)initWithBlockHash:(NSData *)blockHash version:(uint32_t)version prevBlock:(NSData *)prevBlock
+merkleRoot:(NSData *)merkleRoot timestamp:(NSTimeInterval)timestamp bits:(uint32_t)bits nonce:(uint32_t)nonce
+totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags
+{
+    if (! (self = [self init])) return nil;
+    
+    _blockHash = blockHash;
+    _version = version;
+    _prevBlock = prevBlock;
+    _merkleRoot = merkleRoot;
+    _timestamp = timestamp;
+    _bits = bits;
+    _nonce = nonce;
+    _totalTransactions = totalTransactions;
+    _hashes = hashes;
+    _flags = flags;
     
     return self;
 }
 
+// verfies merkle tree, timestamp, and that proof-of-work matches the stated difficulty target
+// NOTE: this only checks if the block difficulty matches the difficulty target in the header, it does not check if the
+// target is correct for the block's height in the chain, for that, use verifyDifficultyAtHeight:
 - (BOOL)isValid
 {
     __block NSMutableData *d = [NSMutableData data];
@@ -129,22 +175,21 @@ static void setCompact(BIGNUM *bn, uint32_t compact)
     
     if (_timestamp > [NSDate timeIntervalSinceReferenceDate] + MAX_TIME_DRIFT) return NO; // timestamp too far in future
     
-    // Check proof-of-work. This only checks if the block difficulty matches the target claimed in the header. It does
-    // not check if the difficulty is correct for the block's height in the chain.
+    // check proof-of-work
     BN_init(&target);
     BN_init(&maxTarget);
-    BN_init(&hash);
     setCompact(&target, _bits);
     setCompact(&maxTarget, MAX_PROOF_OF_WORK);
-    BN_bin2bn(_blockHash.bytes, CC_SHA256_DIGEST_LENGTH, &hash);
-    
     if (BN_cmp(&target, BN_value_one()) < 0 || BN_cmp(&target, &maxTarget) > 0) return NO; // target out of range
 
+    BN_init(&hash);
+    BN_bin2bn(_blockHash.bytes, (int)_blockHash.length, &hash);
     if (BN_cmp(&hash, &target) > 0) return NO; // block not as difficult as target (smaller values are more difficult)
 
     return YES;
 }
 
+// true if the given tx hash is included in the block
 - (BOOL)containsTxHash:(NSData *)txHash
 {
     txHash = [txHash reverse];
@@ -169,6 +214,39 @@ static void setCompact(BIGNUM *bn, uint32_t compact)
         }];
     
     return txHashes;
+}
+
+- (BOOL)verifyDifficultyAtHeight:(uint32_t)height previous:(ZNMerkleBlock *)previous transitionTime:(NSTimeInterval)time
+{
+#if BITCOIN_TESTNET
+    //TODO: implement testnet difficulty rule check
+    return YES; // don't worry about difficulty on testnet for now
+#endif
+
+    if ((height % DIFFICULTY_INTERVAL) != 0) return _bits == previous.bits ? YES : NO;
+
+    int32_t timespan = (int32_t)((int64_t)previous.timestamp - (int64_t)time);
+    BIGNUM target, maxTarget, span, targetSpan;
+    BN_CTX *ctx = BN_CTX_new();
+    
+    // limit difficulty transition to 400%
+    if (timespan < TARGET_TIMESPAN/4) timespan = TARGET_TIMESPAN/4;
+    if (timespan > TARGET_TIMESPAN*4) timespan = TARGET_TIMESPAN*4;
+
+    BN_init(&target);
+    BN_init(&maxTarget);
+    BN_init(&span);
+    BN_init(&targetSpan);
+    setCompact(&target, previous.bits);
+    setCompact(&maxTarget, MAX_PROOF_OF_WORK);
+    BN_set_word(&span, timespan);
+    BN_set_word(&targetSpan, TARGET_TIMESPAN);
+    BN_mul(&target, &target, &span, ctx);
+    BN_div(&target, NULL, &target, &targetSpan, ctx);
+    if (BN_cmp(&target, &maxTarget) > 0) BN_copy(&target, &maxTarget); // limit to MAX_PROOF_OF_WORK
+    BN_CTX_free(ctx);
+    
+    return _bits == getCompact(&target) ? YES : NO;
 }
 
 // recursively walks the merkle tree in depth first order, calling leaf(hash, flag) for each stored hash, and

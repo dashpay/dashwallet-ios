@@ -59,6 +59,7 @@ static uint32_t murmurHash3(NSData *data, uint32_t seed)
     return h1;
 }
 
+// bloom filters are explained in BIP 37: https://en.bitcoin.it/wiki/BIP_0037
 //TODO: XXXX figure out what to do to prevent matching satoshidice in the false positives...
 
 @interface ZNBloomFilter ()
@@ -74,6 +75,14 @@ static uint32_t murmurHash3(NSData *data, uint32_t seed)
 flags:(uint8_t)flags
 {
     return [[self alloc] initWithFalsePositiveRate:fpRate forElementCount:count tweak:tweak flags:flags];
+}
+
+// a bloom filter that matches everything is useful if a full node wants to use the filtered block protocol, which
+// doesn't send transactions with blocks if the receiving node already received the tx prior to its inclusion in the
+// block, allowing a full node to operate while using about half the network traffic.
++ (instancetype)filterWithFullMatch
+{
+    return [[self alloc] initWithFullMatch];
 }
 
 + (NSUInteger)maxElementCountWithFalsePostiveRate:(double)fpRate
@@ -93,6 +102,18 @@ flags:(uint8_t)flags
     if (self.hashFuncs > MAX_HASH_FUNCS) self.hashFuncs = MAX_HASH_FUNCS;
     _tweak = tweak;
     _flags = flags;
+    
+    return self;
+}
+
+- (instancetype)initWithFullMatch
+{
+    if (! (self = [self init])) return nil;
+    
+    self.filter = [NSMutableData dataWithBytes:"\xFF" length:1];
+    self.hashFuncs = 0;
+    _tweak = 0;
+    _flags = BLOOM_UPDATE_NONE;
     
     return self;
 }

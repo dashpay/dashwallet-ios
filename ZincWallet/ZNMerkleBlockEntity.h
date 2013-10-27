@@ -44,4 +44,6 @@
 
 + (instancetype)createOrUpdateWithMerkleBlock:(ZNMerkleBlock *)block;
 
+- (ZNMerkleBlock *)merkleBlock;
+
 @end

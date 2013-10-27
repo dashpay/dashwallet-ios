@@ -30,6 +30,8 @@
 #import "ZNTransaction.h"
 #import "ZNTransactionEntity.h"
 #import "ZNTxOutputEntity.h"
+#import "ZNMerkleBlock.h"
+#import "ZNMerkleBlockEntity.h"
 #import "ZNAddressEntity.h"
 #import "ZNWallet.h"
 #import "NSString+Base58.h"
@@ -61,13 +63,16 @@
 //    60000.0     // * estimated number of transactions per day after checkpoint
 //};
 
-#define FIXED_PEERS     @"FixedPeers"
-#define MAX_CONNECTIONS 3
+#define FIXED_PEERS         @"FixedPeers"
+#define MAX_CONNECTIONS     3
 
 @interface ZNPeerManager ()
 
 @property (nonatomic, strong) NSMutableArray *peers;
 @property (nonatomic, assign) int connectFailures;
+@property (nonatomic, strong) ZNMerkleBlock *topBlock;
+@property (nonatomic, assign) int32_t topBlockHeight;
+@property (nonatomic, assign) NSTimeInterval transitionTime; // timestamp of last difficulty transition
 
 @end
 
@@ -96,6 +101,18 @@
 
     self.earliestBlockHeight = REFERENCE_BLOCK_HEIGHT;
     self.peers = [NSMutableArray array];
+    
+    ZNMerkleBlockEntity *e = [ZNMerkleBlockEntity objectsSortedBy:@"height" ascending:NO offset:0 limit:1].lastObject;
+    
+    if (! e || [[e get:@"height"] intValue] < 0) {
+        //TODO: XXXX seed the block chain with the genesis block
+    
+        e = nil;
+    }
+
+    self.topBlockHeight = [[e get:@"height"] intValue];
+    self.topBlock = [e merkleBlock];
+    //TODO: XXXX set self.transitionTime
     
     //TODO: monitor network reachability and reconnect whenever connection becomes available
     //TODO: disconnect peers when app is backgrounded unless we're syncing or launching mobile web app tx handler
@@ -185,7 +202,6 @@
 }
 
 // this will extend the bloom filter to include transactions sent to the given addresses
-// to include spend transactions, the public key for the address must be added to the filter
 - (void)subscribeToAddresses:(NSArray *)addresses
 {
     [[addresses.lastObject managedObjectContext] performBlockAndWait:^{
@@ -216,8 +232,6 @@
     
     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
     
-    if ([ZNPeerEntity countAllObjects] <= 1000) [peer sendGetaddrMessage];
-    
     // send bloom filter
     //TODO: if we have more than about 7,000 addresses we'll bump up against max filter size and we'll want to divide
     // up the addresses between multiple connected peers
@@ -243,7 +257,9 @@
     
     [peer sendMessage:filter.data type:MSG_FILTERLOAD];
     
-    [peer sendGetblocksMessage];
+    if ([ZNPeerEntity countAllObjects] <= 1000) [peer sendGetaddrMessage];
+    
+    if (self.topBlockHeight < peer.lastblock) [peer sendGetblocksMessage];
 }
 
 - (void)peer:(ZNPeer *)peer disconnectedWithError:(NSError *)error
@@ -283,7 +299,7 @@
     __block NSUInteger idx = 0;
     __block BOOL valid = YES;
     
-    if (tx) { // we already have the transaction, and now we also know that a bitcoin is willing to relay it
+    if (tx) { // we already have the transaction, and now we also know that a bitcoin node is willing to relay it
         // TODO: mark tx as having been relayed
         return;
     }
@@ -302,12 +318,62 @@
                 return;
             }
         
-            //TODO: refactor this to use actual previous output script instead of generating a standard one from the address
+            //TODO: refactor to use actual previous output script instead of generating a standard one from the address
             [transaction setInputAddress:[(ZNTxOutputEntity *)e.outputs[n] address] atIndex:idx - 1];
         }
     }];
     
-    if (valid) [[ZNWallet sharedInstance] registerTransaction:transaction]; // registerTransaction will ignore any non-wallet tx
+    if (valid) [[ZNWallet sharedInstance] registerTransaction:transaction]; // this will ignore any non-wallet tx
+}
+
+- (void)peer:(ZNPeer *)peer relayedBlock:(ZNMerkleBlock *)block
+{
+    if ([block.prevBlock isEqual:self.topBlock.blockHash]) { // new block extends the existing chain
+        if (! [block verifyDifficultyAtHeight:self.topBlockHeight + 1 previous:self.topBlock
+               transitionTime:self.transitionTime]) {
+            NSLog(@"%@:%d relayed block with invalid difficulty target %x, expected %x, blockHash: %@", peer.host,
+                  peer.port, block.bits, self.topBlock.bits, block.blockHash);
+            //TODO: XXXX mark peer as misbehaving and disconnect
+            return;
+        }
+    
+        ZNMerkleBlockEntity *e = [ZNMerkleBlockEntity createOrUpdateWithMerkleBlock:block];
+        
+        [e set:@"height" to:@(++self.topBlockHeight)];
+        self.topBlock = block;
+        
+        //TODO: XXXX set the height for any tx in the new block
+        //TODO: XXXX set self.transitionTime if needed
+        return;
+    }
+
+    [[ZNMerkleBlockEntity context] performBlockAndWait:^{
+        ZNMerkleBlockEntity *e = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", block.prevBlock].lastObject;
+
+//        if (e && e.height >= 0)
+//
+//
+//        if (prev && prev.height >= 0) {
+//            // Since we're an SPV client, we can get away with relying on the network to resovle forks for us. All
+//            // we need to do is delete everything after the fork and grab the longest chain advertised by a peer.
+//            // As long as we verify the chain of difficulty and ignore forks before the most recent checkpoint, an
+//            // attacker would have to expend too much effort to create a fake fork longer than the legitimate chain.
+//            // (even without relying on checkpoints, a chain with a low difficulty couldn't be made longer than the
+//            // legitimate chain without using invalid timestamps from the future)
+//            // NOTE: How secure is the system timestamp on systems that auto-update using NNTP?
+//
+//            //TODO: XXXX does this really work?
+//            // what about the case where we're already caught up and we get two near simultanious fresh blocks? it
+//            // will accept the second one and delete the first one... if the next block is built on the deleted one
+//            // then we'll do getblocks to link up the chain, but would it be better not to have deleted it?
+//            [ZNMerkleBlockEntity deleteObjects:[ZNMerkleBlockEntity objectsMatching:@"height > %d", prev.height]];
+//            e.height = prev.height + 1;
+//        }
+//            else { // can't connect block to the chain, we need to run getblocks
+//                
+//            }
+//        }
+    }];
 }
 
 @end

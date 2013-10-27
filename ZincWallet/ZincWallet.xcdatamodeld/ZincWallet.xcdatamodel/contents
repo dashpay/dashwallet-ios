@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="3396" systemVersion="12F45" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="3400" systemVersion="13A603" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
     <entity name="ZNAddressEntity" representedClassName="ZNAddressEntity" syncable="YES">
         <attribute name="address" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="index" attributeType="Integer 32" defaultValueString="0" indexed="YES" syncable="YES"/>
@@ -7,7 +7,7 @@
         <attribute name="newTx" attributeType="Boolean" defaultValueString="NO" indexed="YES" syncable="YES"/>
         <attribute name="txCount" attributeType="Integer 32" defaultValueString="0" indexed="YES" syncable="YES"/>
     </entity>
-    <entity name="ZNMerkleBlockEntity" syncable="YES">
+    <entity name="ZNMerkleBlockEntity" representedClassName="ZNMerkleBlockEntity" syncable="YES">
         <attribute name="bits" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <attribute name="blockHash" attributeType="Binary" indexed="YES" syncable="YES"/>
         <attribute name="flags" optional="YES" attributeType="Binary" syncable="YES"/>

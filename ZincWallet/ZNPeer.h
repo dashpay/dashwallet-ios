@@ -24,12 +24,13 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
-#import "NSString+Base58.h" //BITCOIN_TESTNET is defined here
 
 #if BITCOIN_TESTNET
-#define STANDARD_PORT 18333
+#define STANDARD_PORT          18333
+#define REFERENCE_BLOCK_HEIGHT 0
 #else
-#define STANDARD_PORT 8333
+#define STANDARD_PORT          8333
+#define REFERENCE_BLOCK_HEIGHT 250000
 #endif
 
 #define NODE_NETWORK  1
@@ -59,7 +60,7 @@
 #define MSG_MERKLEBLOCK @"merkleblock"
 #define MSG_ALERT       @"alert"
 
-@class ZNPeer, ZNTransaction;
+@class ZNPeer, ZNTransaction, ZNMerkleBlock;
 
 @protocol ZNPeerDelegate<NSObject>
 @required
@@ -67,6 +68,7 @@
 - (void)peerConnected:(ZNPeer *)peer;
 - (void)peer:(ZNPeer *)peer disconnectedWithError:(NSError *)error;
 - (void)peer:(ZNPeer *)peer relayedTransaction:(ZNTransaction *)transaction;
+- (void)peer:(ZNPeer *)peer relayedBlock:(ZNMerkleBlock *)block;
 
 @end
 
@@ -98,5 +100,7 @@ typedef enum {
 - (void)sendMessage:(NSData *)message type:(NSString *)type;
 - (void)sendGetaddrMessage;
 - (void)sendGetblocksMessage;
+
+- (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes;
 
 @end

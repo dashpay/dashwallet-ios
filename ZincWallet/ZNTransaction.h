@@ -50,7 +50,7 @@
 @property (nonatomic, readonly) NSArray *outputScripts;
 
 @property (nonatomic, readonly) uint32_t version;
-@property (nonatomic, strong) NSData *txHash; // hash of the signed transaction, little endian
+@property (nonatomic, readonly) NSData *txHash; // hash of the signed transaction, little endian
 @property (nonatomic, readonly) uint32_t lockTime;
 @property (nonatomic, readonly) size_t size;
 @property (nonatomic, readonly) uint64_t standardFee;

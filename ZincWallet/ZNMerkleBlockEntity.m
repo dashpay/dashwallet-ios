@@ -67,4 +67,17 @@
     return e;
 }
 
+- (ZNMerkleBlock *)merkleBlock
+{
+    __block ZNMerkleBlock *block = nil;
+    
+    [[self managedObjectContext] performBlockAndWait:^{
+        block = [[ZNMerkleBlock alloc] initWithBlockHash:self.blockHash version:self.version prevBlock:self.prevBlock
+                 merkleRoot:self.merkleRoot timestamp:self.timestamp bits:self.bits nonce:self.nonce
+                 totalTransactions:self.totalTransactions hashes:self.hashes flags:self.flags];
+    }];
+    
+    return block;
+}
+
 @end

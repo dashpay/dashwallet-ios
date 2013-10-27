@@ -30,6 +30,7 @@
 #import "ZNMerkleBlock.h"
 #import "ZNMerkleBlockEntity.h"
 #import "NSMutableData+Bitcoin.h"
+#import "NSString+Base58.h"
 #import "NSData+Bitcoin.h"
 #import "NSData+Hash.h"
 #import "NSManagedObject+Utils.h"
@@ -39,13 +40,19 @@
 
 #define USERAGENT [NSString stringWithFormat:@"/zincwallet:%@/", NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"]]
 
-#define HEADER_LENGTH          24
-#define MAX_MSG_LENGTH         0x02000000
-#define ENABLED_SERVICES       0 // we don't provide full blocks to remote nodes
-#define PROTOCOL_VERSION       70001
-#define MIN_PROTO_VERSION      31402 // peers earlier than this protocol version not supported
-#define LOCAL_HOST             0x7f000001
-#define REFERENCE_BLOCK_HEIGHT 250000
+#define HEADER_LENGTH      24
+#define MAX_MSG_LENGTH     0x02000000
+#define ENABLED_SERVICES   0 // we don't provide full blocks to remote nodes
+#define PROTOCOL_VERSION   70001
+#define MIN_PROTO_VERSION  31402 // peers earlier than this protocol version not supported
+#define LOCAL_HOST         0x7f000001
+#define ZERO_HASH          @"0000000000000000000000000000000000000000000000000000000000000000".hexToData
+
+#if BITCOIN_TESTNET
+#define GENESIS_BLOCK_HASH @"000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943".hexToData
+#else
+#define GENESIS_BLOCK_HASH @"000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f".hexToData
+#endif
 
 #define llurand() (((long long unsigned)mrand48() << (sizeof(unsigned)*8)) | (unsigned)mrand48())
 
@@ -66,6 +73,9 @@ typedef enum {
 @property (nonatomic, strong) id reachabilityObserver;
 @property (nonatomic, assign) uint64_t localNonce;
 @property (nonatomic, assign) NSTimeInterval startTime;
+@property (nonatomic, strong) ZNMerkleBlock *currentBlock;
+@property (nonatomic, strong) NSMutableArray *currentTxHashes;
+@property (nonatomic, strong) dispatch_queue_t q;
 
 @end
 
@@ -90,6 +100,7 @@ typedef enum {
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
     self.reachability = [Reachability reachabilityWithHostName:self.host];
+    self.q = dispatch_queue_create([NSString stringWithFormat:@"cc.zinc.%@:%d", self.host, self.port].UTF8String, NULL);
 
     return self;
 }
@@ -253,6 +264,8 @@ typedef enum {
     }
 
     [self sendMessage:msg type:MSG_GETDATA];
+    
+    if (blockHashes.count > 0) [self sendPingMessage];
 }
 
 // peer will send an inv message in response to getblocks
@@ -260,15 +273,15 @@ typedef enum {
 {
     NSMutableData *msg = [NSMutableData data];
     NSFetchRequest *req = [ZNMerkleBlockEntity fetchRequest];
-    uint32_t step = 1, start = 0;
-    uint32_t top = [[ZNMerkleBlockEntity objectsSortedBy:@"height" ascending:NO offset:0 limit:1].lastObject height];
+    int32_t step = 1, start = 0;
+    int32_t top = [[ZNMerkleBlockEntity objectsSortedBy:@"height" ascending:NO offset:0 limit:1].lastObject height];
     NSMutableArray *heights = [NSMutableArray array];
 
     [msg appendUInt32:PROTOCOL_VERSION];
     
     // append the 10 most recent block hashes decending, then continue appending while doubling the step back each time,
-    // finishing with the genisis block (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -13, -17, -25, -41, -73, ..., 0)
-    for (uint32_t i = top; i > 0; i -= step, ++start) {
+    // finishing with the genisis block (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0)
+    for (int32_t i = top; i > 0; i -= step, ++start) {
         if (start >= 10) step *= 2;
 
         [heights addObject:@(i)];
@@ -281,12 +294,18 @@ typedef enum {
     req.predicate = [NSPredicate predicateWithFormat:@"height IN %@", heights];
     req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"height" ascending:NO]];
 
-    //XXX handle no blocks case, and use performBlockAndWait
-    for (ZNMerkleBlockEntity *e in [ZNMerkleBlockEntity fetchObjects:req]) {
-        [msg appendData:e.blockHash];
+    NSArray *blocks = [ZNMerkleBlockEntity fetchObjects:req];
+    
+    if (blocks.count > 0) {
+        [[ZNMerkleBlockEntity context] performBlockAndWait:^{
+            for (ZNMerkleBlockEntity *e in blocks) {
+                [msg appendData:e.blockHash];
+            }
+        }];
     }
+    else [msg appendData:GENESIS_BLOCK_HASH];
 
-    [msg appendBytes:"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" length:32]; // hash stop
+    [msg appendData:ZERO_HASH]; // hash stop
     
     [self sendMessage:msg type:MSG_GETBLOCKS];
 }
@@ -309,9 +328,15 @@ typedef enum {
 
 - (void)acceptMessage:(NSData *)message type:(NSString *)type
 {
-    // update timestamp for peer
     [ZNPeerEntity createOrUpdateWithAddress:self.address port:self.port
-     timestamp:[NSDate timeIntervalSinceReferenceDate] services:self.services];
+     timestamp:[NSDate timeIntervalSinceReferenceDate] services:self.services]; // update timestamp for peer
+    
+    if (self.currentBlock && ! [MSG_TX isEqual:type]) { // if we receive a non-tx message, then the merkleblock is done
+        NSLog(@"%@:%d received non-tx message, expected %u more tx, dropping merkleblock %@", self.host,
+              self.port, (int)self.currentTxHashes.count, self.currentBlock.blockHash);
+        self.currentBlock = nil;
+        self.currentTxHashes = nil;
+    }
 
     if ([MSG_VERSION isEqual:type]) [self acceptVersionMessage:message];
     else if ([MSG_VERACK isEqual:type]) [self acceptVerackMessage:message];
@@ -487,11 +512,13 @@ typedef enum {
 
     NSLog(@"%@:%u got inv with %u items", self.host, self.port, (int)count);
     
-    // remove transactions we already know about
-    [txHashes removeObjectsInArray:[[ZNTransactionEntity objectsMatching:@"txHash IN %@", txHashes]
-                                    valueForKey:@"txHash"]];
-    [blockHashes removeObjectsInArray:[[ZNMerkleBlockEntity objectsMatching:@"blockHash IN %@", blockHashes]
-                                       valueForKey:@"blockHash"]];
+    // remove blocks and transactions we already know about
+    [[NSManagedObject context] performBlockAndWait:^{
+        [txHashes removeObjectsInArray:[[ZNTransactionEntity objectsMatching:@"txHash IN %@", txHashes]
+                                        valueForKey:@"txHash"]];
+        [blockHashes removeObjectsInArray:[[ZNMerkleBlockEntity objectsMatching:@"blockHash IN %@", blockHashes]
+                                           valueForKey:@"blockHash"]];
+    }];
     
     if (txHashes.count + blockHashes.count > 0) {
         [self sendGetdataMessageWithTxHashes:txHashes andBlockHashes:blockHashes];
@@ -505,6 +532,17 @@ typedef enum {
     if (! tx) {
         NSLog(@"%@:%d malformed tx message %@", self.host, self.port, message);
         return;
+    }
+    
+    NSLog(@"%@:%u got tx %@", self.host, self.port, tx.txHash);
+    
+    if (self.currentBlock) { // we're collecting tx message for a merkleblock
+        [self.currentTxHashes removeObject:tx.txHash];
+        if (self.currentTxHashes.count == 0) { // we received the entire block including all matched tx
+            [self.delegate peer:self relayedBlock:self.currentBlock];
+            self.currentBlock = nil;
+            self.currentTxHashes = nil;
+        }
     }
     
     [self.delegate peer:self relayedTransaction:tx];
@@ -564,12 +602,24 @@ typedef enum {
     // Bitcoin nodes don't support querying arbitrary transactions, only transactions not yet accepted in a block. After
     // a merkleblock message, the remote node is expected to send tx messages for the tx referenced in the block. When a
     // non-tx message is received we should have all the tx in the merkleblock. If not, the only way to request them is
-    // re-request the merkleblock. The simplest way to do this is to delete the block and let the block organization
-    // algorithm figure it out what needs to be requested.
+    // re-requesting the merkleblock. The simplest way to do that is to drop the block and let the block organization
+    // algorithm figure out what needs to be requested.
     
-    [ZNMerkleBlockEntity createOrUpdateWithMerkleBlock:[ZNMerkleBlock blockWithMessage:message]];
-
-    NSLog(@"%@:%u got merkleblock", self.host, self.port);
+    ZNMerkleBlock *block = [ZNMerkleBlock blockWithMessage:message];
+    
+    if (! block.valid) {
+        NSLog(@"%@:%u droping invalid merkleblock %@", self.host, self.port, block.blockHash);
+        return;
+    }
+    else NSLog(@"%@:%u got merkleblock %@", self.host, self.port, block.blockHash);
+    
+    NSMutableArray *txHashes = [NSMutableArray arrayWithArray:block.txHashes];
+    
+    if (txHashes.count > 0) { // we need to wait til we get all the tx messages before saving the block
+        self.currentBlock = block;
+        self.currentTxHashes = txHashes;
+    }
+    else [self.delegate peer:self relayedBlock:block];
 }
 
 #pragma mark - hash
@@ -698,7 +748,7 @@ typedef enum {
                     
                     self.msgPayload = [NSMutableData data];
                     
-                    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                    dispatch_async(self.q, ^{
                         [self acceptMessage:message type:type]; // process message
                     });
                 }

@@ -185,7 +185,7 @@
     port = CFSwapInt16HostToBig(port);
     
     [self appendUInt64:services];
-    [self appendBytes:"\0\0\0\0\0\0\0\0\0\0\xff\xff" length:12]; // IPv4 mapped IPv6 header
+    [self appendBytes:"\0\0\0\0\0\0\0\0\0\0\xFF\xFF" length:12]; // IPv4 mapped IPv6 header
     [self appendBytes:&address length:sizeof(address)];
     [self appendBytes:&port length:sizeof(port)];
 }

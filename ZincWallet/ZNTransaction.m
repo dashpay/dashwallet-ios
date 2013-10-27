@@ -102,6 +102,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     NSUInteger l = 0, off = 0, count = 0;
     NSData *d = nil;
 
+    _txHash = [[data SHA256_2] reverse];
     _version = [data UInt32AtOffset:off]; // tx version
     off += sizeof(uint32_t);
     count = [data varIntAtOffset:off length:&l]; // input count
@@ -135,7 +136,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     }
     
     _lockTime = [data UInt32AtOffset:off]; // tx locktime
-    
+
     return self;
 }
 
@@ -246,7 +247,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     
     if (! [self isSigned]) return NO;
     
-    self.txHash = [[[self toData] SHA256_2] reverse];
+    _txHash = [[[self toData] SHA256_2] reverse];
         
     return YES;
 }

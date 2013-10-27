@@ -53,6 +53,7 @@ services:(int64_t)services
     return e;
 }
 
+// more efficient method for creating or updating a lot of peers at once
 + (NSArray *)createOrUpdateWithAddresses:(NSArray *)addresses ports:(NSArray *)ports timestamps:(NSArray *)timestamps
 services:(NSArray *)services
 {
@@ -72,7 +73,7 @@ services:(NSArray *)services
     NSMutableIndexSet *set = [NSMutableIndexSet indexSet];
     NSArray *peers = [self objectsMatching:@"address IN %@", addresses];
     
-    [[NSManagedObject context] performBlockAndWait:^{
+    [[self context] performBlockAndWait:^{
         for (ZNPeerEntity *e in peers) {
             NSUInteger i = [addresses indexOfObject:@(e.address)];
             
@@ -99,7 +100,7 @@ services:(NSArray *)services
     [(id)services removeObjectsAtIndexes:set];
     peers = [self managedObjectArrayWithLength:addresses.count];
     
-    [[NSManagedObject context] performBlockAndWait:^{
+    [[self context] performBlockAndWait:^{
         NSUInteger idx = 0;
         
         for (ZNPeerEntity *e in peers) {
@@ -111,7 +112,7 @@ services:(NSArray *)services
             idx++;
         }
     }];
-    
+
     return a;
 }
 

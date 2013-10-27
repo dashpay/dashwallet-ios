@@ -24,7 +24,6 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
-#import "NSString+Base58.h"
 
 #if BITCOIN_TESTNET
 #define MAGIC_NUMBER 0x0709110B

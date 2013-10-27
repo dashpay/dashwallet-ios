@@ -16,6 +16,7 @@
 #endif
 
 //#define APPSTORE              1
+#define BITCOIN_TESTNET       1
 #define SPV_MODE              1
 #define WEBAPP_BASEURL        @"http://zincwallet.com"
 #define WEBAPP_PATH           @"/tx"
@@ -28,6 +29,10 @@
 #define PARALAX_RATIO         0.25
 #define SEGUE_DURATION        0.3
 #define ZNURLNotification     @"ZNURLNotification"
+
+#if BITCOIN_TESTNET
+#warning testnet build
+#endif
 
 #if ! DEBUG
 #define NSLog(...)

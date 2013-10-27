@@ -28,7 +28,6 @@
 @interface ZNMerkleBlock : NSObject
 
 @property (nonatomic, readonly) NSData *blockHash;
-@property (nonatomic, readonly) uint32_t height;
 @property (nonatomic, readonly) uint32_t version;
 @property (nonatomic, readonly) NSData *prevBlock;
 @property (nonatomic, readonly) NSData *merkleRoot;
@@ -45,8 +44,13 @@
 + (instancetype)blockWithMessage:(NSData *)message;
 
 - (instancetype)initWithMessage:(NSData *)message;
+- (instancetype)initWithBlockHash:(NSData *)blockHash version:(uint32_t)version prevBlock:(NSData *)prevBlock
+merkleRoot:(NSData *)merkleRoot timestamp:(NSTimeInterval)timestamp bits:(uint32_t)bits nonce:(uint32_t)nonce
+totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags;
 
-// true if the given tx hash is included in the block
+// true if the given tx hash is known to be included in the block
 - (BOOL)containsTxHash:(NSData *)txHash;
+
+- (BOOL)verifyDifficultyAtHeight:(uint32_t)height previous:(ZNMerkleBlock*)previous transitionTime:(NSTimeInterval)time;
 
 @end
