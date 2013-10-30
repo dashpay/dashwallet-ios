@@ -31,7 +31,6 @@
 #define BITCOIN_SCRIPT_ADDRESS_TEST 196
 #define BITCOIN_PRIVKEY             128
 #define BITCOIN_PRIVKEY_TEST        239
-#define BITCOIN_SCRIPT_SUFFIX       "\x88\xAC" // OP_EQUALVERIFY OP_CHECKSIG
 
 CFAllocatorRef SecureAllocator();
 

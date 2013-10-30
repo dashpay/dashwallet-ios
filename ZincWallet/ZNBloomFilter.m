@@ -95,9 +95,10 @@ flags:(uint8_t)flags
 {
     if (! (self = [self init])) return nil;
 
-    NSUInteger size = MAX(1, (-1/pow(M_LN2, 2))*count*log(fpRate)/8);
+    NSUInteger size = (-1/pow(M_LN2, 2))*count*log(fpRate)/8;
 
-    self.filter = [NSMutableData dataWithLength:size > MAX_BLOOM_FILTER_SIZE ? MAX_BLOOM_FILTER_SIZE : size];
+    if (size > MAX_BLOOM_FILTER_SIZE) size = MAX_BLOOM_FILTER_SIZE;
+    self.filter = [NSMutableData dataWithLength:size < 1 ? 1 : size];
     self.hashFuncs = ((self.filter.length*8)/(double)count)*M_LN2;
     if (self.hashFuncs > MAX_HASH_FUNCS) self.hashFuncs = MAX_HASH_FUNCS;
     _tweak = tweak;

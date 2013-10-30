@@ -25,6 +25,8 @@
 
 #import <Foundation/Foundation.h>
 
+#define BITCOIN_DIFFICULTY_INTERVAL 2016 // number of blocks between difficulty target adjustments
+
 @interface ZNMerkleBlock : NSObject
 
 @property (nonatomic, readonly) NSData *blockHash;
@@ -40,6 +42,7 @@
 
 @property (nonatomic, readonly) NSArray *txHashes; // the matched tx hashes in the block
 @property (nonatomic, readonly, getter = isValid) BOOL valid; // true if difficulty and merkle tree hashes are correct
+@property (nonatomic, readonly, getter = toData) NSData *data;
 
 + (instancetype)blockWithMessage:(NSData *)message;
 

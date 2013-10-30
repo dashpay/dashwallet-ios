@@ -173,7 +173,7 @@
                     if (i.address && [w containsAddress:i.address]) spent += i.value;
                 }
 
-                __block BOOL withinWallet = spent > 0 ? YES : NO;
+                __block BOOL withinWallet = (spent > 0) ? YES : NO;
                 
                 for (ZNTxOutputEntity *o in tx.outputs) {
                     if (o.address && [w containsAddress:o.address]) {

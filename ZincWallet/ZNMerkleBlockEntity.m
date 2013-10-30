@@ -41,7 +41,7 @@
 @dynamic hashes;
 @dynamic flags;
 
-+ (instancetype)createOrUpdateWithMerkleBlock:(ZNMerkleBlock *)block
++ (instancetype)createOrUpdateWithMerkleBlock:(ZNMerkleBlock *)block atHeight:(int32_t)height
 {
     __block ZNMerkleBlockEntity *e = nil;
 
@@ -62,9 +62,23 @@
         e.totalTransactions = block.totalTransactions;
         e.hashes = [NSData dataWithData:block.hashes];
         e.flags = [NSData dataWithData:block.flags];
+        e.height = height;
     }];
     
     return e;
+}
+
++ (BOOL)updateTreeFromMerkleBlock:(ZNMerkleBlock *)block
+{
+    __block ZNMerkleBlockEntity *e = nil;
+    
+    [[self context] performBlockAndWait:^{
+        e = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", block.blockHash].lastObject;
+        e.hashes = [NSData dataWithData:block.hashes];
+        e.flags = [NSData dataWithData:block.flags];
+    }];
+    
+    return (e != nil) ? YES : NO;
 }
 
 - (ZNMerkleBlock *)merkleBlock

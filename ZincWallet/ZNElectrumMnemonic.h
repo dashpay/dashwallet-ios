@@ -26,8 +26,6 @@
 #import <Foundation/Foundation.h>
 #import "ZNMnemonic.h"
 
-#define ELECTRUM_WORD_LIST_RESOURCE @"ElectrumSeedWords"
-
 @interface ZNElectrumMnemonic : NSObject<ZNMnemonic>
 
 + (instancetype)sharedInstance;

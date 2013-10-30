@@ -39,7 +39,7 @@
 @property (nonatomic, retain) NSOrderedSet *inputs;
 @property (nonatomic, retain) NSOrderedSet *outputs;
 
-+ (instancetype)updateOrCreateWithJSON:(NSDictionary *)JSON;
++ (instancetype)createOrUpdateWithJSON:(NSDictionary *)JSON;
 
 - (instancetype)setAttributesFromJSON:(NSDictionary *)JSON;
 - (instancetype)setAttributesFromTx:(ZNTransaction *)tx;

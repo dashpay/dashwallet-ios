@@ -138,7 +138,7 @@
     if (d.length == 32) [self setSecret:d compressed:YES];
     else if ((d.length == 33 || d.length == 34) && *(unsigned char *)d.bytes == 0x80) {
         [self setSecret:[NSData dataWithBytesNoCopy:(unsigned char *)d.bytes + 1 length:32 freeWhenDone:NO]
-         compressed:d.length == 34 ? YES : NO];
+         compressed:(d.length == 34) ? YES : NO];
     }
 }
 
@@ -227,7 +227,7 @@
 - (BOOL)verify:(NSData *)d signature:(NSData *)sig
 {
     // -1 = error, 0 = bad sig, 1 = good
-    return ECDSA_verify(0, d.bytes, (int)d.length, sig.bytes, (int)sig.length, _key) == 1 ? YES : NO;
+    return (ECDSA_verify(0, d.bytes, (int)d.length, sig.bytes, (int)sig.length, _key) == 1) ? YES : NO;
 }
 
 @end

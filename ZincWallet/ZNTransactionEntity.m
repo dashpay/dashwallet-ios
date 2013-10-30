@@ -42,7 +42,7 @@
 @dynamic inputs;
 @dynamic outputs;
 
-+ (instancetype)updateOrCreateWithJSON:(NSDictionary *)JSON
++ (instancetype)createOrUpdateWithJSON:(NSDictionary *)JSON
 {
     if (! [JSON isKindOfClass:[NSDictionary class]] || ! [JSON[@"hash"] isKindOfClass:[NSString class]]) return nil;
 
@@ -69,7 +69,7 @@
     [[self managedObjectContext] performBlockAndWait:^{
         if ([JSON[@"hash"] isKindOfClass:[NSString class]]) self.txHash = [JSON[@"hash"] hexToData];
         if ([JSON[@"block_height"] isKindOfClass:[NSNumber class]]) self.blockHeight = [JSON[@"block_height"] intValue];
-        if ([JSON[@"time"] isKindOfClass:[NSNumber class]]) self.timeStamp = [JSON[@"time"] doubleValue];
+        if ([JSON[@"time"] isKindOfClass:[NSNumber class]]) self.timeStamp = [JSON[@"time"] doubleValue] - NSTimeIntervalSince1970;
         if ([JSON[@"tx_index"] isKindOfClass:[NSNumber class]]) self.txIndex = [JSON[@"tx_index"] longLongValue];
         
         if ([JSON[@"inputs"] isKindOfClass:[NSArray class]]) {
@@ -118,7 +118,7 @@
         NSUInteger idx = 0;
         
         self.txHash = tx.txHash;
-        if (self.timeStamp < 1.0) self.timeStamp = [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970;
+        if (self.timeStamp < 1.0) self.timeStamp = [NSDate timeIntervalSinceReferenceDate];
     
         while (inputs.count < tx.inputHashes.count) {
             [inputs addObject:[ZNTxInputEntity managedObject]];

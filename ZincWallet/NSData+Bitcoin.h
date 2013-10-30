@@ -8,8 +8,6 @@
 
 #import <Foundation/Foundation.h>
 
-#define VARINT_MAX_LEN (sizeof(uint8_t) + sizeof(uint64_t))
-
 @interface NSData (Bitcoin)
 
 - (uint8_t)UInt8AtOffset:(NSUInteger)offset;

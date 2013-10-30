@@ -275,7 +275,7 @@
     if ([[ZNWallet sharedInstance] balance] == 0) self.navigationItem.title = @"syncing...";
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[ZNWallet sharedInstance] synchronize:sender == nil ? NO : YES];
+        [[ZNWallet sharedInstance] synchronize:(sender == nil) ? NO : YES];
     });
 }
 

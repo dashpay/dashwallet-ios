@@ -121,10 +121,10 @@
 {
     if (! addresses.count || self.webSocket.readyState != SR_OPEN) return;
     
-    if (addresses.count > ADDRESSES_PER_QUERY) {
-        [self subscribeToAddresses:[addresses subarrayWithRange:NSMakeRange(0, ADDRESSES_PER_QUERY)]];
-        [self subscribeToAddresses:[addresses subarrayWithRange:NSMakeRange(ADDRESSES_PER_QUERY,
-                                                                            addresses.count - ADDRESSES_PER_QUERY)]];
+    if (addresses.count > WALLET_ADDRESSES_PER_QUERY) {
+        [self subscribeToAddresses:[addresses subarrayWithRange:NSMakeRange(0, WALLET_ADDRESSES_PER_QUERY)]];
+        [self subscribeToAddresses:[addresses subarrayWithRange:NSMakeRange(WALLET_ADDRESSES_PER_QUERY, addresses.count-
+                                                                            WALLET_ADDRESSES_PER_QUERY)]];
         return;
     }
     
@@ -154,8 +154,8 @@
     
     NSMutableArray *a = [NSMutableArray array];
     
-    [a addObjectsFromArray:[[ZNWallet sharedInstance] addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
-    [a addObjectsFromArray:[[ZNWallet sharedInstance] addressesWithGapLimit:GAP_LIMIT_INTERNAL internal:YES]];
+    [a addObjectsFromArray:[[ZNWallet sharedInstance] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO]];
+    [a addObjectsFromArray:[[ZNWallet sharedInstance] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES]];
     [a addObjectsFromArray:[ZNAddressEntity objectsMatching:@"! (address IN %@)", [a valueForKey:@"address"]]];
     
     [self subscribeToAddresses:a];
@@ -240,7 +240,7 @@ wasClean:(BOOL)wasClean
     NSString *op = JSON[@"op"];
     
     if ([op isEqual:@"utx"]) {
-        __block ZNTransactionEntity *tx = [ZNTransactionEntity updateOrCreateWithJSON:JSON[@"x"]];
+        __block ZNTransactionEntity *tx = [ZNTransactionEntity createOrUpdateWithJSON:JSON[@"x"]];
         NSArray *inaddrs = [ZNAddressEntity objectsMatching:@"address IN %@", [tx.inputs valueForKey:@"address"]],
                 *outaddrs = [ZNAddressEntity objectsMatching:@"address IN %@", [tx.outputs valueForKey:@"address"]];
         NSMutableArray *outputs = [[ZNUnspentOutputEntity objectsSortedBy:@"txIndex" ascending:YES] mutableCopy];

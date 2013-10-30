@@ -48,7 +48,7 @@
 
 - (NSString *)encodePhrase:(NSData *)data
 {
-    if (data.length != SEED_LENGTH) return nil;
+    if (data.length != SEQUENCE_SEED_LENGTH) return nil;
     
     NSArray *adjs = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:ADJS ofType:@"plist"]];
     NSArray *nouns = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:NOUNS ofType:@"plist"]];
@@ -60,7 +60,7 @@
     NSUInteger x;
     const uint8_t *b = data.bytes;
     
-    for (int i = 0; i < SEED_LENGTH; i += 64/8) {
+    for (int i = 0; i < SEQUENCE_SEED_LENGTH; i += 64/8) {
         x = (((uint16_t)b[i] << 3) | ((uint16_t)b[i + 1] >> 5)) & ((1 << 11) - 1);
         [s setString:adjs[x]];
         CFStringCapitalize((__bridge CFMutableStringRef)s, CFLocaleGetSystem());
@@ -103,13 +103,13 @@
     NSArray *advs = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:ADVS ofType:@"plist"]];
     NSArray *verbs = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:VERBS ofType:@"plist"]];
     NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), s, CFSTR(" ")));
-    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), SEED_LENGTH));
+    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), SEQUENCE_SEED_LENGTH));
     NSUInteger x, y;
     uint8_t b;
     
-    if (a.count != SEED_LENGTH*3/4) return nil;
+    if (a.count != SEQUENCE_SEED_LENGTH*3/4) return nil;
 
-    for (int i = 0; i < SEED_LENGTH*3/4; i += 6) {
+    for (int i = 0; i < SEQUENCE_SEED_LENGTH*3/4; i += 6) {
         if ((x = [adjs indexOfObject:a[i]]) == NSNotFound) return nil;
         b = (x >> 3) & 0xff;
         [d appendBytes:&b length:1];

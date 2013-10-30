@@ -27,6 +27,10 @@
 #import "NSData+Hash.h"
 #import <openssl/bn.h>
 
+#define SCRIPT_SUFFIX "\x88\xAC" // OP_EQUALVERIFY OP_CHECKSIG
+
+const char base58chars[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+
 static void *secureAllocate(CFIndex allocSize, CFOptionFlags hint, void *info)
 {
     NSMutableDictionary *d = (__bridge NSMutableDictionary *)info;
@@ -96,8 +100,6 @@ CFAllocatorRef SecureAllocator()
     
     return alloc;
 }
-
-const char base58chars[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
 @implementation NSString (Base58)
 
@@ -229,7 +231,7 @@ breakout:
     static dispatch_once_t onceToken = 0;
     
     dispatch_once(&onceToken, ^{
-        suffix = [NSData dataWithBytes:BITCOIN_SCRIPT_SUFFIX length:strlen(BITCOIN_SCRIPT_SUFFIX)];
+        suffix = [NSData dataWithBytes:SCRIPT_SUFFIX length:strlen(SCRIPT_SUFFIX)];
     });
 
     if (script.length < suffix.length + 20 ||
@@ -338,9 +340,9 @@ breakout:
     
     if (d.length == 33 || d.length == 34) {
 #if BITCOIN_TESNET
-        return *(uint8_t *)d.bytes == BITCOIN_PRIVKEY_TEST ? YES : NO;
+        return (*(uint8_t *)d.bytes == BITCOIN_PRIVKEY_TEST) ? YES : NO;
 #else
-        return *(uint8_t *)d.bytes == BITCOIN_PRIVKEY ? YES : NO;
+        return (*(uint8_t *)d.bytes == BITCOIN_PRIVKEY) ? YES : NO;
 #endif
     }
     else if ((self.length == 30 || self.length == 22) && [self characterAtIndex:0] == 'S') { // mini private key format
@@ -350,7 +352,7 @@ breakout:
         [self getBytes:d.mutableBytes maxLength:d.length usedLength:NULL encoding:NSUTF8StringEncoding options:0
          range:NSMakeRange(0, self.length) remainingRange:NULL];
         [d appendBytes:"?" length:1];
-        return *(uint8_t *)[d SHA256].bytes == 0 ? YES : NO;
+        return (*(uint8_t *)[d SHA256].bytes == 0) ? YES : NO;
     }
     else return NO;
 }

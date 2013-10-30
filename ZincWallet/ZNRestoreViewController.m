@@ -135,10 +135,10 @@
                 [[[UIAlertView alloc] initWithTitle:nil message:@"not a hex string" delegate:nil cancelButtonTitle:@"ok"
                   otherButtonTitles:nil] show];
             }
-            else if (d.length != SEED_LENGTH) {
+            else if (d.length != SEQUENCE_SEED_LENGTH) {
                 [[[UIAlertView alloc] initWithTitle:nil
-                  message:[NSString stringWithFormat:@"wallet seeds must be %d bits", SEED_LENGTH*8] delegate:nil
-                  cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+                  message:[NSString stringWithFormat:@"wallet seeds must be %d bits", SEQUENCE_SEED_LENGTH*8]
+                  delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
             }
             else {
                 self.label.text = nil;
@@ -222,7 +222,7 @@
         
     NSString *incorrect = nil;
         
-    for (NSUInteger i = 0; i < SEED_LENGTH*3/4; i += 6) {
+    for (NSUInteger i = 0; i < SEQUENCE_SEED_LENGTH*3/4; i += 6) {
         if (i < a.count && ! [self.adjs containsObject:a[i]]) incorrect = a[i];
         else if (i + 1 < a.count && ! [self.nouns containsObject:a[i + 1]]) incorrect = a[i + 1];
         else if (i + 2 < a.count && ! [self.advs containsObject:a[i + 2]]) incorrect = a[i + 2];
@@ -239,9 +239,9 @@
           message:[incorrect stringByAppendingString:@" is not the correct backup phrase word"] delegate:nil
           cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
     }
-    else if (a.count != SEED_LENGTH*3/4) {
+    else if (a.count != SEQUENCE_SEED_LENGTH*3/4) {
         [[[UIAlertView alloc] initWithTitle:nil
-          message:[NSString stringWithFormat:@"backup phrase must be %d words", SEED_LENGTH*3/4] delegate:nil
+          message:[NSString stringWithFormat:@"backup phrase must be %d words", SEQUENCE_SEED_LENGTH*3/4] delegate:nil
           cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
     }
     else if ([[ZNWallet sharedInstance] seed]) {

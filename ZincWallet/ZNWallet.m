@@ -26,6 +26,7 @@
 #import "ZNWallet.h"
 #import "ZNTransaction.h"
 #import "ZNKey.h"
+#import "ZNPeer.h"
 #import "ZNPeerManager.h"
 #import "ZNSocketListener.h"
 #import "ZNAddressEntity.h"
@@ -81,7 +82,7 @@ static BOOL setKeychainData(NSData *data, NSString *key)
                            (__bridge id)kSecAttrAccessible:(__bridge id)kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
                            (__bridge id)kSecValueData:data};
     
-    return SecItemAdd((__bridge CFDictionaryRef)item, NULL) == noErr ? YES : NO;
+    return (SecItemAdd((__bridge CFDictionaryRef)item, NULL) == noErr) ? YES : NO;
 }
 
 static NSData *getKeychainData(NSString *key)
@@ -151,7 +152,7 @@ static NSData *getKeychainData(NSString *key)
 {
     NSData *seed = getKeychainData(SEED_KEY);
     
-    if (seed.length != SEED_LENGTH) {
+    if (seed.length != SEQUENCE_SEED_LENGTH) {
         self.seed = nil;
         return nil;
     }
@@ -195,9 +196,9 @@ static NSData *getKeychainData(NSString *key)
 
 - (void)generateRandomSeed
 {
-    NSMutableData *seed = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), SEED_LENGTH));
+    NSMutableData *seed = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), SEQUENCE_SEED_LENGTH));
         
-    seed.length = SEED_LENGTH;
+    seed.length = SEQUENCE_SEED_LENGTH;
     SecRandomCopyBytes(kSecRandomDefault, seed.length, seed.mutableBytes);
 
     self.seed = seed;
@@ -215,7 +216,8 @@ static NSData *getKeychainData(NSString *key)
 // that means the tx failed to confirm and needs to be removed from the tx list
 - (void)cleanUnconfirmed
 {
-    //TODO: remove unconfirmed transactions after 2 days?
+    //TODO: XXXX we can query all connected peers for unconfirmed tx, if they relay them they're still valid
+    // we can also use a 2 of 3 peers voting system to try to detect potential malicious nodes
     //TODO: keep a seprate list of failed transactions to display along with the successful ones
     for (ZNTransactionEntity *tx in [ZNTransactionEntity objectsMatching:@"blockHeight == 0"]) {
         for (ZNTxInputEntity *i in tx.inputs) { // check each tx input
@@ -262,8 +264,8 @@ static NSData *getKeychainData(NSString *key)
         
         if (gap.count > 0) { // take the next set of empty addresses and check them for transactions
             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                [gap setArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
-                [gap addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:YES]];
+                [gap setArray:[self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO]];
+                [gap addObjectsFromArray:[self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:YES]];
                 if (gap.count == 0) return;
 
                 dispatch_async(dispatch_get_main_queue(), ^{
@@ -319,8 +321,8 @@ static NSData *getKeychainData(NSString *key)
     // generating addresses is slow, but addressesWithGapLimit is thread safe, so we can do that in a separate thread
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         // use external gap limit for the inernal chain to produce fewer network requests
-        [gap addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:NO]];
-        [gap addObjectsFromArray:[self addressesWithGapLimit:GAP_LIMIT_EXTERNAL internal:YES]];
+        [gap addObjectsFromArray:[self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO]];
+        [gap addObjectsFromArray:[self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:YES]];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             NSArray *used = [ZNAddressEntity objectsMatching:@"! (address IN %@)", [gap valueForKey:@"address"]];
@@ -423,8 +425,8 @@ static NSData *getKeychainData(NSString *key)
         return;
     }
     
-    if (addresses.count > ADDRESSES_PER_QUERY) { // break up into multiple network queries if needed
-        [self queryAddresses:[addresses subarrayWithRange:NSMakeRange(0, ADDRESSES_PER_QUERY)]
+    if (addresses.count > WALLET_ADDRESSES_PER_QUERY) { // break up into multiple network queries if needed
+        [self queryAddresses:[addresses subarrayWithRange:NSMakeRange(0, WALLET_ADDRESSES_PER_QUERY)]
         completion:^(NSError *error) {
             if (error) {
                 if (completion) completion(error);
@@ -432,7 +434,7 @@ static NSData *getKeychainData(NSString *key)
             }
             
             [self queryAddresses:[addresses
-             subarrayWithRange:NSMakeRange(ADDRESSES_PER_QUERY, addresses.count - ADDRESSES_PER_QUERY)]
+             subarrayWithRange:NSMakeRange(WALLET_ADDRESSES_PER_QUERY, addresses.count - WALLET_ADDRESSES_PER_QUERY)]
              completion:completion];
         }];
         return;
@@ -458,7 +460,7 @@ static NSData *getKeychainData(NSString *key)
             }
             
             for (NSDictionary *d in JSON[@"txs"]) {
-                ZNTransactionEntity *tx = [ZNTransactionEntity updateOrCreateWithJSON:d]; // update core data tx objs
+                ZNTransactionEntity *tx = [ZNTransactionEntity createOrUpdateWithJSON:d]; // update core data tx objs
                 
                 if (tx.txHash) [self.updatedTxHashes addObject:tx.txHash];
             }
@@ -501,8 +503,8 @@ static NSData *getKeychainData(NSString *key)
         return;
     }
     
-    if (addresses.count > ADDRESSES_PER_QUERY) { // break up into multiple network queries if needed
-        [self queryUnspentOutputs:[addresses subarrayWithRange:NSMakeRange(0, ADDRESSES_PER_QUERY)]
+    if (addresses.count > WALLET_ADDRESSES_PER_QUERY) { // break up into multiple network queries if needed
+        [self queryUnspentOutputs:[addresses subarrayWithRange:NSMakeRange(0, WALLET_ADDRESSES_PER_QUERY)]
         completion:^(NSError *error) {
             if (error) {
                 if (completion) completion(error);
@@ -510,7 +512,7 @@ static NSData *getKeychainData(NSString *key)
             }
             
             [self queryUnspentOutputs:[addresses
-             subarrayWithRange:NSMakeRange(ADDRESSES_PER_QUERY, addresses.count - ADDRESSES_PER_QUERY)]
+             subarrayWithRange:NSMakeRange(WALLET_ADDRESSES_PER_QUERY, addresses.count - WALLET_ADDRESSES_PER_QUERY)]
              completion:completion];
         }];
         return;
@@ -631,7 +633,7 @@ static NSData *getKeychainData(NSString *key)
 {
     uint32_t height = (uint32_t)[_defs integerForKey:LATEST_BLOCK_HEIGHT_KEY];
     
-    if (! height) height = REFERENCE_BLOCK_HEIGHT;
+    if (! height) height = BITCOIN_REFERENCE_BLOCK_HEIGHT;
     
     return height;
 }
@@ -640,7 +642,7 @@ static NSData *getKeychainData(NSString *key)
 {
     NSTimeInterval time = [_defs doubleForKey:LATEST_BLOCK_TIMESTAMP_KEY];
     
-    if (time < 1.0) time = REFERENCE_BLOCK_TIME;
+    if (time < 1.0) time = BITCOIN_REFERENCE_BLOCK_TIME;
     
     // average one block every 600 seconds
     return self.lastBlockHeight + ([NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 - time)/600;

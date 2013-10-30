@@ -41,30 +41,51 @@
 #import <netdb.h>
 #import <arpa/inet.h>
 
-// blockchain checkpoints
-//
-//( 11111, uint256("0x0000000069e244f73d78e8fd29ba2fd2ed618bd6fa2ee92559f542fdb26e7c1d"))
-//( 33333, uint256("0x000000002dd5588a74784eaa7ab0507a18ad16a236e7b1ce69f00d7ddfb5d0a6"))
-//( 74000, uint256("0x0000000000573993a3c9e41ce34471c079dcf5f52a0e824a81e7f953b8661a20"))
-//(105000, uint256("0x00000000000291ce28027faea320c8d2b054b2e0fe44a773f3eefb151d6bdc97"))
-//(134444, uint256("0x00000000000005b12ffd4cd315cd34ffd4a594f430ac814c91184a0d42d2b0fe"))
-//(168000, uint256("0x000000000000099e61ea72015e79632f216fe6cb33d7899acb35b75c8303b763"))
-//(193000, uint256("0x000000000000059f452a5f7340de6682a977387c17010ff6e6c3bd83ca8b1317"))
-//(210000, uint256("0x000000000000048b95347e83192f69cf0366076336c639f9b7228e9ba171342e"))
-//(216116, uint256("0x00000000000001b4f4b433e81ee46494af945cf96014816a4e2370f11b23df4e"))
-//(225430, uint256("0x00000000000001c108384350f74090433e7fcf79a606b8e797f065b130575932"))
-//(250000, uint256("0x000000000000003887df1f29024b06fc2200b55f8af8f35453d7be294df2d214"))
-//
-//static const CCheckpointData data = {
-//    &mapCheckpoints,
-//    1375533383, // * UNIX timestamp of last checkpoint block
-//    21491097,   // * total number of transactions between genesis and last checkpoint
-//                //   (the tx=... number in the SetBestChain debug.log lines)
-//    60000.0     // * estimated number of transactions per day after checkpoint
-//};
+#define FIXED_PEERS     @"FixedPeers"
+#define MAX_CONNECTIONS 3
 
-#define FIXED_PEERS         @"FixedPeers"
-#define MAX_CONNECTIONS     3
+#if BITCOIN_TESTNET
+// The testnet genesis block uses the mainnet genesis block's merkle root. The hash is wrong using it's own root.
+#define GENESIS_BLOCK [[ZNMerkleBlock alloc] \
+    initWithBlockHash:[@"000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943".hexToData reverse] version:1\
+    prevBlock:@"0000000000000000000000000000000000000000000000000000000000000000".hexToData \
+    merkleRoot:@"3ba3edfd7a7b12b27ac72c3e67768f617fC81bc3888a51323a9fb8aa4b1e5e4a".hexToData \
+    timestamp:1296688602.0 - NSTimeIntervalSince1970 bits:0x1d00ffffu nonce:414098458u totalTransactions:1\
+    hashes:@"3ba3edfd7a7b12b27ac72c3e67768f617fC81bc3888a51323a9fb8aa4b1e5e4a".hexToData flags:@"00".hexToData]
+
+static const struct { uint32_t height; char *hash; } checkpoint_array[] = {};
+
+static const char *dnsSeeds[] = { "testnet-seed.bitcoin.petertodd.org", "testnet-seed.bluematt.me" };
+
+#else
+#define GENESIS_BLOCK [[ZNMerkleBlock alloc] \
+    initWithBlockHash:[@"000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f".hexToData reverse] version:1\
+    prevBlock:@"0000000000000000000000000000000000000000000000000000000000000000".hexToData\
+    merkleRoot:@"3ba3edfd7a7b12b27ac72c3e67768f617fC81bc3888a51323a9fb8aa4b1e5e4a".hexToData\
+    timestamp:1231006505.0 - NSTimeIntervalSince1970 bits:0x1d00ffffu nonce:2083236893u totalTransactions:1\
+    hashes:@"3ba3edfd7a7b12b27ac72c3e67768f617fC81bc3888a51323a9fb8aa4b1e5e4a".hexToData flags:@"00".hexToData]
+
+static const struct { uint32_t height; char *hash; } checkpoint_array[] = {
+    { 11111, "0000000069e244f73d78e8fd29ba2fd2ed618bd6fa2ee92559f542fdb26e7c1d" },
+    { 33333, "000000002dd5588a74784eaa7ab0507a18ad16a236e7b1ce69f00d7ddfb5d0a6" },
+    { 74000, "0000000000573993a3c9e41ce34471c079dcf5f52a0e824a81e7f953b8661a20" },
+    { 105000, "00000000000291ce28027faea320c8d2b054b2e0fe44a773f3eefb151d6bdc97" },
+    { 134444, "00000000000005b12ffd4cd315cd34ffd4a594f430ac814c91184a0d42d2b0fe" },
+    { 168000, "000000000000099e61ea72015e79632f216fe6cb33d7899acb35b75c8303b763" },
+    { 193000, "000000000000059f452a5f7340de6682a977387c17010ff6e6c3bd83ca8b1317" },
+    { 210000, "000000000000048b95347e83192f69cf0366076336c639f9b7228e9ba171342e" },
+    { 216116, "00000000000001b4f4b433e81ee46494af945cf96014816a4e2370f11b23df4e" },
+    { 225430, "00000000000001c108384350f74090433e7fcf79a606b8e797f065b130575932" },
+    { 250000, "000000000000003887df1f29024b06fc2200b55f8af8f35453d7be294df2d214" },
+};
+
+static const char *dnsSeeds[] = {
+    "seed.bitcoin.sipa.be", "dnsseed.bluematt.me", "dnsseed.bitcoin.dashjr.org", "bitseed.xf2.org"
+};
+
+#endif
+
+static NSMutableDictionary *checkpoints;
 
 @interface ZNPeerManager ()
 
@@ -89,6 +110,14 @@
     
     dispatch_once(&onceToken, ^{
         srand48(time(NULL)); // seed psudo random number generator (for non-cryptographic use only!)
+        
+        checkpoints = [NSMutableDictionary dictionary]; // blockchain checkpoints
+
+        for (int i = 0; i < sizeof(checkpoint_array)/sizeof(*checkpoint_array); i++) {
+            checkpoints[@(checkpoint_array[i].height)] =
+                [[NSString stringWithUTF8String:checkpoint_array[i].hash].hexToData reverse];
+        }
+
         singleton = [self new];
     });
     
@@ -99,20 +128,23 @@
 {
     if (! (self = [super init])) return nil;
 
-    self.earliestBlockHeight = REFERENCE_BLOCK_HEIGHT;
+    self.earliestBlockHeight = BITCOIN_REFERENCE_BLOCK_HEIGHT;
     self.peers = [NSMutableArray array];
     
+//#warning remove this!
+//    [ZNMerkleBlockEntity deleteObjects:[ZNMerkleBlockEntity allObjects]]; //XXXX <--- this right here, YES THIS!
+    
     ZNMerkleBlockEntity *e = [ZNMerkleBlockEntity objectsSortedBy:@"height" ascending:NO offset:0 limit:1].lastObject;
-    
+
     if (! e || [[e get:@"height"] intValue] < 0) {
-        //TODO: XXXX seed the block chain with the genesis block
-    
-        e = nil;
+        e = [ZNMerkleBlockEntity createOrUpdateWithMerkleBlock:GENESIS_BLOCK atHeight:0];
     }
 
     self.topBlockHeight = [[e get:@"height"] intValue];
     self.topBlock = [e merkleBlock];
-    //TODO: XXXX set self.transitionTime
+    e = [ZNMerkleBlockEntity objectsMatching:@"height == %d",
+         self.topBlockHeight - (self.topBlockHeight % BITCOIN_DIFFICULTY_INTERVAL)].lastObject;
+    if (e) self.transitionTime = [[e get:@"timestamp"] timeIntervalSinceReferenceDate];
     
     //TODO: monitor network reachability and reconnect whenever connection becomes available
     //TODO: disconnect peers when app is backgrounded unless we're syncing or launching mobile web app tx handler
@@ -124,21 +156,15 @@
 {
     __block NSUInteger count = 0;
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
-#if BITCOIN_TESTNET
-    NSArray *a = @[@"testnet-seed.bitcoin.petertodd.org", @"testnet-seed.bluematt.me"];
-#else
-    NSArray *a = @[@"seed.bitcoin.sipa.be", @"dnsseed.bluematt.me", @"dnsseed.bitcoin.dashjr.org", @"bitseed.xf2.org"];
-#endif
 
-    // DNS peer discovery
-    for (NSString *host in a) {
-        struct hostent *h = gethostbyname(host.UTF8String);
+    for (int i = 0; i < sizeof(dnsSeeds)/sizeof(*dnsSeeds); i++) { // DNS peer discovery
+        struct hostent *h = gethostbyname(dnsSeeds[i]);
         
         for (int j = 0; h->h_addr_list[j] != NULL; j++) {
             uint32_t addr = CFSwapInt32BigToHost(((struct in_addr *)h->h_addr_list[j])->s_addr);
             NSTimeInterval t = now - 24*60*60*(3 + drand48()*4); // random timestamp between 3 and 7 days ago
             
-            [ZNPeerEntity createOrUpdateWithAddress:addr port:STANDARD_PORT timestamp:t services:NODE_NETWORK];
+            [ZNPeerEntity createOrUpdateWithAddress:addr port:BITCOIN_STANDARD_PORT timestamp:t services:NODE_NETWORK];
             count++;
         }
     }
@@ -153,7 +179,7 @@
         uint32_t addr = CFSwapInt32(address.intValue);
         NSTimeInterval t = now - 24*60*60*(7 + drand48()*7); // random timestamp between 7 and 14 days ago
         
-        [ZNPeerEntity createOrUpdateWithAddress:addr port:STANDARD_PORT timestamp:t services:NODE_NETWORK];
+        [ZNPeerEntity createOrUpdateWithAddress:addr port:BITCOIN_STANDARD_PORT timestamp:t services:NODE_NETWORK];
         count++;
     }
 #endif
@@ -222,6 +248,11 @@
     }];
 }
 
+- (void)peerMisbehavin:(ZNPeer *)peer
+{
+    //TODO: XXXX mark peer as misbehaving and disconnect
+}
+
 #pragma mark - ZNPeerDelegate
 
 - (void)peerConnected:(ZNPeer *)peer
@@ -234,7 +265,7 @@
     
     // send bloom filter
     //TODO: if we have more than about 7,000 addresses we'll bump up against max filter size and we'll want to divide
-    // up the addresses between multiple connected peers
+    // up the addresses between multiple connected peers (does that mean we also have to merge merkle blocks?)
     NSArray *addresses = [ZNAddressEntity allObjects];
     ZNBloomFilter *filter = [ZNBloomFilter filterWithFalsePositiveRate:BLOOM_DEFAULT_FALSEPOSITIVE_RATE
                              forElementCount:addresses.count tweak:(int32_t)mrand48() flags:BLOOM_UPDATE_P2PUBKEY_ONLY];
@@ -252,8 +283,8 @@
         }
     }];
     
-    //NOTE: since the app does not connect for long periods of time, bloom filter degredation from being auto updated
-    // with the coutpoints of false positives isn't much of a concern.
+    //NOTE: since the app does not stay connected for long periods of time, bloom filter degredation from being auto
+    // updated with the coutpoints of false positives isn't much of a concern, except during initial block download
     
     [peer sendMessage:filter.data type:MSG_FILTERLOAD];
     
@@ -300,7 +331,7 @@
     __block BOOL valid = YES;
     
     if (tx) { // we already have the transaction, and now we also know that a bitcoin node is willing to relay it
-        // TODO: mark tx as having been relayed
+        [self peerMisbehavin:peer];
         return;
     }
 
@@ -328,51 +359,118 @@
 
 - (void)peer:(ZNPeer *)peer relayedBlock:(ZNMerkleBlock *)block
 {
-    if ([block.prevBlock isEqual:self.topBlock.blockHash]) { // new block extends the existing chain
-        if (! [block verifyDifficultyAtHeight:self.topBlockHeight + 1 previous:self.topBlock
-               transitionTime:self.transitionTime]) {
-            NSLog(@"%@:%d relayed block with invalid difficulty target %x, expected %x, blockHash: %@", peer.host,
-                  peer.port, block.bits, self.topBlock.bits, block.blockHash);
-            //TODO: XXXX mark peer as misbehaving and disconnect
+    int32_t height = self.topBlockHeight + 1;
+    ZNMerkleBlock *prev = self.topBlock;
+    NSTimeInterval transitionTime = self.transitionTime;
+    
+    if (! [block.prevBlock isEqual:prev.blockHash]) { // find previous block for difficulty verification
+        ZNMerkleBlockEntity *e = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", block.prevBlock].lastObject;
+        
+        if (! e) { // block is either an orphan, or we haven't downloaded the whole chain yet
+            [peer sendGetblocksMessage]; // continue chain download
             return;
         }
+        
+        height = abs([[e get:@"height"] intValue]) + 1;
+        prev = [e merkleBlock];
+        
+        if ((height % BITCOIN_DIFFICULTY_INTERVAL) == 0) { // hit a difficulty transition, find the last transition time
+            int32_t h = [[e get:@"height"] intValue];
+
+            // if we're on a fork, walk back to main chain or previous transition on this fork
+            while (h < 0 && abs(h) > height - BITCOIN_DIFFICULTY_INTERVAL) { // we use negative height to denote forks
+                e = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", e.prevBlock].lastObject;
+                h = [[e get:@"height"] intValue];
+            }
+        
+            if (h >= 0) { // once we're back on the main chain, we can jump straight to the previous transition
+                transitionTime = [[[ZNMerkleBlockEntity objectsMatching:@"height == %d",
+                                    height - BITCOIN_DIFFICULTY_INTERVAL].lastObject get:@"timestamp"] doubleValue];
+            }
+            else transitionTime = [[e get:@"timestamp"] doubleValue]; // previous transition was on the fork as well
+            //NOTE: a fork longer than 2016 blocks probably means an attempted 51% attack
+        }
+    }
+
+    if (! [block verifyDifficultyAtHeight:height previous:prev transitionTime:transitionTime]) { // verify difficulty
+        NSLog(@"%@:%d relayed block with invalid difficulty target %x, blockHash: %@", peer.host, peer.port,
+              block.bits, block.blockHash);
+        [self peerMisbehavin:peer];
+        return;
+    }
     
-        ZNMerkleBlockEntity *e = [ZNMerkleBlockEntity createOrUpdateWithMerkleBlock:block];
-        
-        [e set:@"height" to:@(++self.topBlockHeight)];
-        self.topBlock = block;
-        
-        //TODO: XXXX set the height for any tx in the new block
-        //TODO: XXXX set self.transitionTime if needed
+    if (checkpoints[@(height)] && ! [block.blockHash isEqual:checkpoints[@(height)]]) { // verify checkpoints
+        NSLog(@"%@:%d relayed a block that differs from the checkpoint at height %d, blockHash: %@, expected: %@",
+              peer.host, peer.port, height, block.blockHash, checkpoints[@(height)]);
+        [self peerMisbehavin:peer];
         return;
     }
 
-    [[ZNMerkleBlockEntity context] performBlockAndWait:^{
-        ZNMerkleBlockEntity *e = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", block.prevBlock].lastObject;
+    if (prev == self.topBlock) { // block extends main chain
+        [ZNMerkleBlockEntity createOrUpdateWithMerkleBlock:block atHeight:height];
+        
+        self.topBlock = block;
+        self.topBlockHeight = height;
+        if ((height % BITCOIN_DIFFICULTY_INTERVAL) == 0) self.transitionTime = block.timestamp;
+        
+        for (ZNTransactionEntity *tx in [ZNTransactionEntity objectsMatching:@"txHash IN %@", block.txHashes]) {
+            [tx set:@"blockHeight" to:@(height)]; // mark transactions in the new block as having a confirmation
+        }
+        return;
+    }
+    
+    if ([ZNMerkleBlockEntity countObjectsMatching:@"blockHash == %@", block.blockHash] > 0) { // already have the block
+        [ZNMerkleBlockEntity updateTreeFromMerkleBlock:block]; // update merkle tree with any new matched transactions
 
-//        if (e && e.height >= 0)
-//
-//
-//        if (prev && prev.height >= 0) {
-//            // Since we're an SPV client, we can get away with relying on the network to resovle forks for us. All
-//            // we need to do is delete everything after the fork and grab the longest chain advertised by a peer.
-//            // As long as we verify the chain of difficulty and ignore forks before the most recent checkpoint, an
-//            // attacker would have to expend too much effort to create a fake fork longer than the legitimate chain.
-//            // (even without relying on checkpoints, a chain with a low difficulty couldn't be made longer than the
-//            // legitimate chain without using invalid timestamps from the future)
-//            // NOTE: How secure is the system timestamp on systems that auto-update using NNTP?
-//
-//            //TODO: XXXX does this really work?
-//            // what about the case where we're already caught up and we get two near simultanious fresh blocks? it
-//            // will accept the second one and delete the first one... if the next block is built on the deleted one
-//            // then we'll do getblocks to link up the chain, but would it be better not to have deleted it?
-//            [ZNMerkleBlockEntity deleteObjects:[ZNMerkleBlockEntity objectsMatching:@"height > %d", prev.height]];
-//            e.height = prev.height + 1;
-//        }
-//            else { // can't connect block to the chain, we need to run getblocks
-//                
-//            }
-//        }
+        for (ZNTransactionEntity *tx in [ZNTransactionEntity objectsMatching:@"txHash IN %@", block.txHashes]) {
+            [tx set:@"blockHeight" to:@(height)]; // mark transactions in the new block as having a confirmation
+        }
+        return;
+    }
+
+    if (height <= BITCOIN_REFERENCE_BLOCK_HEIGHT) { // fork is older than the most recent checkpoint
+        NSLog(@"%@:%d relayed a block that forks prior to the last checkpoint, fork height: %d, blockHash: %@",
+              peer.host, peer.port, height, block.blockHash);
+        [self peerMisbehavin:peer];
+        return;
+    }
+
+    // use negative height to denote we're on a fork
+    __block ZNMerkleBlockEntity *b = [ZNMerkleBlockEntity createOrUpdateWithMerkleBlock:block atHeight:-height], *e;
+
+    if (height <= self.topBlockHeight) return; // fork is shorter than main chain, so ingore it for now
+
+    // the fork is longer than the main chain, so make it the new main chain
+    [[ZNMerkleBlockEntity context] performBlockAndWait:^{
+        int32_t h = -height;
+    
+        while (h < 0) { // walk back to where the fork joins the old main chain
+            e = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", e.prevBlock].lastObject;
+            h = e.height;
+        }
+        
+        for (ZNTransactionEntity *tx in [ZNTransactionEntity objectsMatching:@"blockHeight > %d", h]) {
+            tx.blockHeight = 0; // mark transactions after the join point as unconfirmed
+        }
+        
+        for (e in [ZNMerkleBlockEntity objectsMatching:@"height > %d", h]) {
+            e.height = -e.height; // set old main chain heights to negative to denote a fork
+        }
+        
+        while (b.height < 0) {
+            b.height = -b.height;
+
+            for (ZNTransactionEntity *tx in
+                 [ZNTransactionEntity objectsMatching:@"txHash IN %@", b.merkleBlock.txHashes]) {
+                tx.blockHeight = b.height; // mark transactions in new main chain as confirmed
+            }
+            
+            b = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", b.prevBlock].lastObject;
+        }
+        
+        self.topBlock = block;
+        self.topBlockHeight = height;
+        if ((height % BITCOIN_DIFFICULTY_INTERVAL) == 0) self.transitionTime = block.timestamp;
     }];
 }
 

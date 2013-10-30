@@ -42,7 +42,8 @@
 @property (nonatomic, retain) NSData *hashes;
 @property (nonatomic, retain) NSData *flags;
 
-+ (instancetype)createOrUpdateWithMerkleBlock:(ZNMerkleBlock *)block;
++ (instancetype)createOrUpdateWithMerkleBlock:(ZNMerkleBlock *)block atHeight:(int32_t)height;
++ (BOOL)updateTreeFromMerkleBlock:(ZNMerkleBlock *)block;
 
 - (ZNMerkleBlock *)merkleBlock;
 

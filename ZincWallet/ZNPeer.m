@@ -216,11 +216,11 @@ typedef enum {
     [msg appendUInt64:ENABLED_SERVICES]; // services
     [msg appendUInt64:[NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970]; // timestamp
     [msg appendNetAddress:self.address port:self.port services:self.services]; // address of remote peer
-    [msg appendNetAddress:LOCAL_HOST port:STANDARD_PORT services:ENABLED_SERVICES]; // address of local peer
+    [msg appendNetAddress:LOCAL_HOST port:BITCOIN_STANDARD_PORT services:ENABLED_SERVICES]; // address of local peer
     [msg appendUInt64:(self.localNonce = llurand())]; // random nonce
     [msg appendString:USERAGENT]; // user agent
     //TODO: XXXX get last block stored in core data
-    [msg appendUInt32:REFERENCE_BLOCK_HEIGHT]; // last block received
+    [msg appendUInt32:BITCOIN_REFERENCE_BLOCK_HEIGHT]; // last block received
     [msg appendUInt8:0]; // relay transactions (no for SPV bloom filter mode)
     
     [self performSelector:@selector(disconnectWithError:) withObject:[NSError errorWithDomain:@"ZincWallet" code:1001
@@ -303,7 +303,7 @@ typedef enum {
             }
         }];
     }
-    else [msg appendData:GENESIS_BLOCK_HASH];
+    else [msg appendData:[GENESIS_BLOCK_HASH reverse]];
 
     [msg appendData:ZERO_HASH]; // hash stop
     
@@ -672,7 +672,7 @@ typedef enum {
                 
                 if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
 
-                if (self.outputBuffer.length == 0) NSLog(@"%@:%d output buffer cleared", self.host, self.port);
+                //if (self.outputBuffer.length == 0) NSLog(@"%@:%d output buffer cleared", self.host, self.port);
             }
             
             break;
@@ -699,7 +699,7 @@ typedef enum {
                     
                     // consume one byte at a time, up to the magic number that starts a new message header
                     while (self.msgHeader.length >= sizeof(uint32_t) &&
-                           [self.msgHeader UInt32AtOffset:0] != MAGIC_NUMBER) {
+                           [self.msgHeader UInt32AtOffset:0] != BITCOIN_MAGIC_NUMBER) {
 #if DEBUG
                         printf("%c", *(char *)self.msgHeader.bytes);
 #endif
