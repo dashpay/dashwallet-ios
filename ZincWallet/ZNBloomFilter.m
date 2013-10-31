@@ -85,11 +85,6 @@ flags:(uint8_t)flags
     return [[self alloc] initWithFullMatch];
 }
 
-+ (NSUInteger)maxElementCountWithFalsePostiveRate:(double)fpRate
-{
-    return MAX_BLOOM_FILTER_SIZE*8/((-1/pow(M_LN2, 2))*log(fpRate));
-}
-
 - (instancetype)initWithFalsePositiveRate:(double)fpRate forElementCount:(NSUInteger)count tweak:(uint32_t)tweak
 flags:(uint8_t)flags
 {
@@ -133,6 +128,8 @@ flags:(uint8_t)flags
 
         b[idx >> 3] |= (1 << (7 & idx));
     }
+    
+    _elementCount++;
 }
 
 - (BOOL)containsData:(NSData *)data
@@ -146,6 +143,11 @@ flags:(uint8_t)flags
     }
 
     return YES;
+}
+
+- (double)falsePostiveRate
+{
+    return pow(M_E, -8*self.filter.length*pow(M_LN2, 2)/self.elementCount);
 }
 
 - (NSData *)toData

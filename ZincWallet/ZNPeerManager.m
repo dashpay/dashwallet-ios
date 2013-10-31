@@ -30,6 +30,7 @@
 #import "ZNTransaction.h"
 #import "ZNTransactionEntity.h"
 #import "ZNTxOutputEntity.h"
+#import "ZNUnspentOutputEntity.h"
 #import "ZNMerkleBlock.h"
 #import "ZNMerkleBlockEntity.h"
 #import "ZNAddressEntity.h"
@@ -94,6 +95,10 @@ static NSMutableDictionary *checkpoints;
 @property (nonatomic, strong) ZNMerkleBlock *topBlock;
 @property (nonatomic, assign) int32_t topBlockHeight;
 @property (nonatomic, assign) NSTimeInterval transitionTime; // timestamp of last difficulty transition
+@property (nonatomic, assign) uint32_t tweak;
+@property (nonatomic, strong) ZNBloomFilter *bloomFilter;
+@property (nonatomic, assign) NSUInteger filterElemCount;
+@property (nonatomic, assign) BOOL filterWasReset;
 
 @end
 
@@ -131,8 +136,8 @@ static NSMutableDictionary *checkpoints;
     self.earliestBlockHeight = BITCOIN_REFERENCE_BLOCK_HEIGHT;
     self.peers = [NSMutableArray array];
     
-//#warning remove this!
-//    [ZNMerkleBlockEntity deleteObjects:[ZNMerkleBlockEntity allObjects]]; //XXXX <--- this right here, YES THIS!
+#warning remove this!
+    [ZNMerkleBlockEntity deleteObjects:[ZNMerkleBlockEntity allObjects]]; //XXXX <--- this right here, YES THIS!
     
     ZNMerkleBlockEntity *e = [ZNMerkleBlockEntity objectsSortedBy:@"height" ascending:NO offset:0 limit:1].lastObject;
 
@@ -145,6 +150,8 @@ static NSMutableDictionary *checkpoints;
     e = [ZNMerkleBlockEntity objectsMatching:@"height == %d",
          self.topBlockHeight - (self.topBlockHeight % BITCOIN_DIFFICULTY_INTERVAL)].lastObject;
     if (e) self.transitionTime = [[e get:@"timestamp"] timeIntervalSinceReferenceDate];
+    
+    self.tweak = mrand48();
     
     //TODO: monitor network reachability and reconnect whenever connection becomes available
     //TODO: disconnect peers when app is backgrounded unless we're syncing or launching mobile web app tx handler
@@ -227,25 +234,64 @@ static NSMutableDictionary *checkpoints;
     [peer connect];
 }
 
+- (ZNBloomFilter *)bloomFilter
+{
+    // A bloom filter's falsepositive rate will increase with each item added to the filter. If the filter has degraded
+    // by half and we've added at least 100 items to it, clear it and build a new one
+    if (_bloomFilter && _bloomFilter.falsePositiveRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*2 &&
+        _bloomFilter.elementCount > self.filterElemCount + 100) {
+        _bloomFilter = nil;
+        self.filterWasReset = YES;
+    }
+
+    if (_bloomFilter) return _bloomFilter;
+
+    NSArray *addresses = [ZNAddressEntity allObjects];
+    NSArray *utxos = [ZNUnspentOutputEntity allObjects];
+
+    // set the filter element count to the next largest multiple of 100, and use a fixed tweak to reduce the information
+    // leaked to the remote peer when the filter is reset
+    self.filterElemCount = (addresses.count + utxos.count + 100) - ((addresses.count + utxos.count) % 100);
+    _bloomFilter = [ZNBloomFilter filterWithFalsePositiveRate:BLOOM_DEFAULT_FALSEPOSITIVE_RATE
+                    forElementCount:self.filterElemCount tweak:self.tweak flags:BLOOM_UPDATE_P2PUBKEY_ONLY];
+    
+    [[addresses.lastObject managedObjectContext] performBlockAndWait:^{
+        for (ZNAddressEntity *e in addresses) {
+            NSData *d = [e.address base58checkToData];
+            
+            // add the address hash160 to watch for any tx receiveing money to the wallet
+            if (d.length == 160/8 + 1) [_bloomFilter insertData:[d subdataWithRange:NSMakeRange(1, d.length - 1)]];
+        }
+        
+        for (ZNUnspentOutputEntity *e in utxos) {
+            NSMutableData *d = [NSMutableData data];
+            
+            [d appendData:e.txHash];
+            [d appendUInt32:e.n];
+            [_bloomFilter insertData:d]; // add the unspent output to watch for any tx sending money from the wallet
+        }
+        
+        //TODO: after a wallet restore and chain download, reset all non-download peer's filters with new utxo's
+    }];
+    
+    return _bloomFilter;
+}
+
 // this will extend the bloom filter to include transactions sent to the given addresses
 - (void)subscribeToAddresses:(NSArray *)addresses
 {
     [[addresses.lastObject managedObjectContext] performBlockAndWait:^{
         for (ZNAddressEntity *e in addresses) {
             NSData *d = [e.address base58checkToData];
-            NSMutableData *msg = [NSMutableData data];
         
-            if (d.length != 160/8 + 1) continue;
-            
-            [msg appendVarInt:d.length - 1];
-            [msg appendData:[d subdataWithRange:NSMakeRange(1, d.length - 1)]];
-            
-            //TODO: consider clearing an re-sending the entire filter to maintain address anonymity
-            for (ZNPeer *peer in self.peers) {
-                [peer sendMessage:msg type:MSG_FILTERADD];
-            }
+            // add the address hash160 to watch for any tx receiveing money to the wallet
+            if (d.length == 160/8 + 1) [self.bloomFilter insertData:[d subdataWithRange:NSMakeRange(1, d.length - 1)]];
         }
     }];
+
+    for (ZNPeer *peer in self.peers) {
+        [peer sendMessage:self.bloomFilter.data type:MSG_FILTERLOAD];
+    }
 }
 
 - (void)peerMisbehavin:(ZNPeer *)peer
@@ -263,33 +309,8 @@ static NSMutableDictionary *checkpoints;
     
     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
     
-    // send bloom filter
-    //TODO: if we have more than about 7,000 addresses we'll bump up against max filter size and we'll want to divide
-    // up the addresses between multiple connected peers (does that mean we also have to merge merkle blocks?)
-    NSArray *addresses = [ZNAddressEntity allObjects];
-    ZNBloomFilter *filter = [ZNBloomFilter filterWithFalsePositiveRate:BLOOM_DEFAULT_FALSEPOSITIVE_RATE
-                             forElementCount:addresses.count tweak:(int32_t)mrand48() flags:BLOOM_UPDATE_P2PUBKEY_ONLY];
-
-    [[addresses.lastObject managedObjectContext] performBlockAndWait:^{
-        for (ZNAddressEntity *e in addresses) {
-            // add the address hash160 to watch for any tx receiveing money to the wallet
-            NSData *d = [e.address base58checkToData];
-            
-            if (d.length > 0) [filter insertData:[d subdataWithRange:NSMakeRange(1, d.length - 1)]];
-            
-            //TODO: add the serialized coutpoint for all unspent outputs to watch for any spend tx
-            
-            //TODO: after a wallet restore, reset all non-download peer filters with coutpoints of unspent outputs
-        }
-    }];
-    
-    //NOTE: since the app does not stay connected for long periods of time, bloom filter degredation from being auto
-    // updated with the coutpoints of false positives isn't much of a concern, except during initial block download
-    
-    [peer sendMessage:filter.data type:MSG_FILTERLOAD];
-    
+    [peer sendMessage:self.bloomFilter.data type:MSG_FILTERLOAD];
     if ([ZNPeerEntity countAllObjects] <= 1000) [peer sendGetaddrMessage];
-    
     if (self.topBlockHeight < peer.lastblock) [peer sendGetblocksMessage];
 }
 
@@ -329,6 +350,7 @@ static NSMutableDictionary *checkpoints;
     ZNTransactionEntity *tx = [ZNTransactionEntity objectsMatching:@"txHash == %@", transaction.txHash].lastObject;
     __block NSUInteger idx = 0;
     __block BOOL valid = YES;
+    NSMutableData *d = [NSMutableData data];
     
     if (tx) { // we already have the transaction, and now we also know that a bitcoin node is willing to relay it
         [self peerMisbehavin:peer];
@@ -340,7 +362,7 @@ static NSMutableDictionary *checkpoints;
         for (NSData *hash in transaction.inputHashes) { // lookup input addresses
             uint32_t n = [transaction.inputIndexes[idx++] unsignedIntValue];
             ZNTransactionEntity *e = [ZNTransactionEntity objectsMatching:@"txHash == %@", hash].lastObject;
-
+        
             if (! e) continue; // if the input tx is missing, then that input tx didn't involve wallet addresses
         
             if (n > e.outputs.count) {
@@ -353,6 +375,20 @@ static NSMutableDictionary *checkpoints;
             [transaction setInputAddress:[(ZNTxOutputEntity *)e.outputs[n] address] atIndex:idx - 1];
         }
     }];
+    
+    for (uint32_t n = 0; n < transaction.outputAddresses.count; n++) {
+        [d setData:transaction.txHash];
+        [d appendUInt32:n];
+        [self.bloomFilter insertData:d]; // update bloomFilter with each txout
+    }
+    
+    if (self.filterWasReset) { // filter got reset, send the new one to all the peers
+        self.filterWasReset = NO;
+        
+        for (ZNPeer *peer in self.peers) {
+            [peer sendMessage:self.bloomFilter.data type:MSG_FILTERLOAD];
+        }
+    }
     
     if (valid) [[ZNWallet sharedInstance] registerTransaction:transaction]; // this will ignore any non-wallet tx
 }
@@ -367,7 +403,7 @@ static NSMutableDictionary *checkpoints;
         ZNMerkleBlockEntity *e = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", block.prevBlock].lastObject;
         
         if (! e) { // block is either an orphan, or we haven't downloaded the whole chain yet
-            [peer sendGetblocksMessage]; // continue chain download
+            //[peer sendGetblocksMessage]; // continue chain download
             return;
         }
         
@@ -407,14 +443,19 @@ static NSMutableDictionary *checkpoints;
     }
 
     if (prev == self.topBlock) { // block extends main chain
+        NSLog(@"adding block at height: %d", height);
         [ZNMerkleBlockEntity createOrUpdateWithMerkleBlock:block atHeight:height];
         
         self.topBlock = block;
         self.topBlockHeight = height;
         if ((height % BITCOIN_DIFFICULTY_INTERVAL) == 0) self.transitionTime = block.timestamp;
         
-        for (ZNTransactionEntity *tx in [ZNTransactionEntity objectsMatching:@"txHash IN %@", block.txHashes]) {
-            [tx set:@"blockHeight" to:@(height)]; // mark transactions in the new block as having a confirmation
+        NSArray *txHashes = block.txHashes;
+        
+        if (txHashes.count > 0) {
+            for (ZNTransactionEntity *tx in [ZNTransactionEntity objectsMatching:@"txHash IN %@", txHashes]) {
+                [tx set:@"blockHeight" to:@(height)]; // mark transactions in the new block as having a confirmation
+            }
         }
         return;
     }

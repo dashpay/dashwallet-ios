@@ -31,6 +31,7 @@
 #import "ZNTxInputEntity.h"
 #import "ZNTxOutputEntity.h"
 #import "ZNStoryboardSegue.h"
+#import "NSManagedObject+Utils.h"
 #import <QuartzCore/QuartzCore.h>
 
 #define TRANSACTION_CELL_HEIGHT 75
@@ -167,24 +168,29 @@
                 ZNWallet *w = [ZNWallet sharedInstance];
                 ZNTransactionEntity *tx = self.transactions[indexPath.row];
                 __block uint64_t received = 0, spent = 0;
-                int height = tx.blockHeight ? w.lastBlockHeight - tx.blockHeight : 0;
+                __block int height = 0;
+                __block BOOL withinWallet = NO;
                 
-                for (ZNTxInputEntity *i in tx.inputs) {
-                    if (i.address && [w containsAddress:i.address]) spent += i.value;
-                }
+                [[NSManagedObject context] performBlockAndWait:^{
+                    height = tx.blockHeight ? w.lastBlockHeight - tx.blockHeight : 0;
+                
+                    for (ZNTxInputEntity *i in tx.inputs) {
+                        if (i.address && [w containsAddress:i.address]) spent += i.value;
+                    }
 
-                __block BOOL withinWallet = (spent > 0) ? YES : NO;
-                
-                for (ZNTxOutputEntity *o in tx.outputs) {
-                    if (o.address && [w containsAddress:o.address]) {
-                        received += o.value;
-                        if (spent == 0) detailTextLabel.text = [@"to: " stringByAppendingString:o.address];
+                    withinWallet = (spent > 0) ? YES : NO;
+                    
+                    for (ZNTxOutputEntity *o in tx.outputs) {
+                        if (o.address && [w containsAddress:o.address]) {
+                            received += o.value;
+                            if (spent == 0) detailTextLabel.text = [@"to: " stringByAppendingString:o.address];
+                        }
+                        else if (spent > 0) {
+                            if (o.address) detailTextLabel.text = [@"to: " stringByAppendingString:o.address];
+                            withinWallet = NO;
+                        }
                     }
-                    else if (spent > 0) {
-                        if (o.address) detailTextLabel.text = [@"to: " stringByAppendingString:o.address];
-                        withinWallet = NO;
-                    }
-                }
+                }];
                 
                 noTxLabel.hidden = YES;
                 sentLabel.hidden = YES;

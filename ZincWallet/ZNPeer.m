@@ -47,6 +47,7 @@
 #define MIN_PROTO_VERSION  31402 // peers earlier than this protocol version not supported
 #define LOCAL_HOST         0x7f000001
 #define ZERO_HASH          @"0000000000000000000000000000000000000000000000000000000000000000".hexToData
+#define BLOOM_RESEND_COUNT 25000 // bloom filter degrades with each match, reset it after this many blocks
 
 #if BITCOIN_TESTNET
 #define GENESIS_BLOCK_HASH @"000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943".hexToData
@@ -75,7 +76,7 @@ typedef enum {
 @property (nonatomic, assign) NSTimeInterval startTime;
 @property (nonatomic, strong) ZNMerkleBlock *currentBlock;
 @property (nonatomic, strong) NSMutableArray *currentTxHashes;
-@property (nonatomic, strong) dispatch_queue_t q;
+@property (nonatomic, strong) dispatch_queue_t sendq, receiveq;
 
 @end
 
@@ -100,8 +101,10 @@ typedef enum {
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
     self.reachability = [Reachability reachabilityWithHostName:self.host];
-    self.q = dispatch_queue_create([NSString stringWithFormat:@"cc.zinc.%@:%d", self.host, self.port].UTF8String, NULL);
-
+    self.sendq = dispatch_queue_create([NSString stringWithFormat:@"cc.zinc.zinc.send.%@:%d", self.host,
+                                        self.port].UTF8String, NULL);
+    self.receiveq = dispatch_queue_create([NSString stringWithFormat:@"cc.zinc.zinc.receive.%@:%d", self.host,
+                                           self.port].UTF8String, NULL);
     return self;
 }
 
@@ -195,17 +198,19 @@ typedef enum {
 
 - (void)sendMessage:(NSData *)message type:(NSString *)type
 {
-    NSLog(@"%@:%d sending %@", self.host, self.port, type);
+    dispatch_async(self.sendq, ^{
+        NSLog(@"%@:%d sending %@", self.host, self.port, type);
 
-    [self.outputBuffer appendMessage:message type:type];
-    
-    while (self.outputBuffer.length > 0 && [self.outputStream hasSpaceAvailable]) {
-        NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
-
-        if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
+        [self.outputBuffer appendMessage:message type:type];
         
-        if (self.outputBuffer.length == 0) NSLog(@"%@:%d output buffer cleared", self.host, self.port);
-    }
+        while (self.outputBuffer.length > 0 && [self.outputStream hasSpaceAvailable]) {
+            NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
+
+            if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
+            
+            //if (self.outputBuffer.length == 0) NSLog(@"%@:%d output buffer cleared", self.host, self.port);
+        }
+    });
 }
 
 - (void)sendVersionMessage
@@ -265,6 +270,8 @@ typedef enum {
 
     [self sendMessage:msg type:MSG_GETDATA];
     
+    // Each merkleblock the remote peer sends us is followed by a set of tx messages for that block. We send a ping to
+    // get a pong reply after the last block and all it's tx are sent, inicating no more tx messages for the last block.
     if (blockHashes.count > 0) [self sendPingMessage];
 }
 
@@ -289,21 +296,24 @@ typedef enum {
     
     [heights addObject:@(0)];
     
-    [msg appendVarInt:heights.count]; // number of block locator hashes
-    
     req.predicate = [NSPredicate predicateWithFormat:@"height IN %@", heights];
     req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"height" ascending:NO]];
 
     NSArray *blocks = [ZNMerkleBlockEntity fetchObjects:req];
     
     if (blocks.count > 0) {
+        [msg appendVarInt:blocks.count]; // number of block locator hashes
+        
         [[ZNMerkleBlockEntity context] performBlockAndWait:^{
             for (ZNMerkleBlockEntity *e in blocks) {
                 [msg appendData:e.blockHash];
             }
         }];
     }
-    else [msg appendData:[GENESIS_BLOCK_HASH reverse]];
+    else {
+        [msg appendVarInt:1];
+        [msg appendData:[GENESIS_BLOCK_HASH reverse]];
+    }
 
     [msg appendData:ZERO_HASH]; // hash stop
     
@@ -328,41 +338,45 @@ typedef enum {
 
 - (void)acceptMessage:(NSData *)message type:(NSString *)type
 {
-    [ZNPeerEntity createOrUpdateWithAddress:self.address port:self.port
-     timestamp:[NSDate timeIntervalSinceReferenceDate] services:self.services]; // update timestamp for peer
+    if ([MSG_INV isEqual:type]) [self fastAcceptInv:message]; // special case to improve chain download performance
+
+    dispatch_async(self.receiveq, ^{
+        [ZNPeerEntity createOrUpdateWithAddress:self.address port:self.port
+         timestamp:[NSDate timeIntervalSinceReferenceDate] services:self.services]; // update timestamp for peer
     
-    if (self.currentBlock && ! [MSG_TX isEqual:type]) { // if we receive a non-tx message, then the merkleblock is done
-        NSLog(@"%@:%d received non-tx message, expected %u more tx, dropping merkleblock %@", self.host,
-              self.port, (int)self.currentTxHashes.count, self.currentBlock.blockHash);
-        self.currentBlock = nil;
-        self.currentTxHashes = nil;
-    }
+        if (self.currentBlock && ! [MSG_TX isEqual:type]) { // if we receive a non-tx message, the merkleblock is done
+            NSLog(@"%@:%d received non-tx message, expected %u more tx, dropping merkleblock %@", self.host,
+                  self.port, (int)self.currentTxHashes.count, self.currentBlock.blockHash);
+            self.currentBlock = nil;
+            self.currentTxHashes = nil;
+        }
 
-    if ([MSG_VERSION isEqual:type]) [self acceptVersionMessage:message];
-    else if ([MSG_VERACK isEqual:type]) [self acceptVerackMessage:message];
-    else if ([MSG_ADDR isEqual:type]) [self acceptAddrMessage:message];
-    else if ([MSG_INV isEqual:type]) [self acceptInvMessage:message];
-    //else if ([MSG_GETDATA isEqual:type]) [self acceptGetdataMessage:message];
-    //else if ([MSG_NOTFOUND isEqual:type]) [self acceptNotfoundMessage:message];
-    //else if ([MSG_GETBLOCKS isEqual:type]) [self acceptGetblocksMessage:message];
-    //else if ([MSG_GETHEADERS isEqual:type]) [self acceptGetheadersMessage:message];
-    else if ([MSG_TX isEqual:type]) [self acceptTxMessage:message];
-    //else if ([MSG_BLOCK isEqual:type]) [self acceptBlockMessage:message];
-    //else if ([MSG_HEADERS isEqual:type]) [self acceptHeadersMessage:message];
-    else if ([MSG_GETADDR isEqual:type]) [self acceptGetaddrMessage:message];
-    //else if ([MSG_MEMPOOL isEqual:type]) [self acceptMempoolMessage:message];
-    //else if ([MSG_CHECKORDER isEqual:type]) [self acceptCheckorderMessage:message];
-    //else if ([MSG_SUBMITORDER isEqual:type]) [self acceptSubmitorderMessage:message];
-    //else if ([MSG_REPLY isEqual:type]) [self acceptReplyMessage:message];
-    else if ([MSG_PING isEqual:type]) [self acceptPingMessage:message];
-    else if ([MSG_PONG isEqual:type]) [self acceptPongMessage:message];
-    //else if ([MSG_FILTERLOAD isEqual:type]) [self acceptFilterloadMessage:message];
-    //else if ([MSG_FILTERADD isEqual:type]) [self acceptFilteraddMessage:message];
-    //else if ([MSG_FILTERCLEAR isEqual:type]) [self acceptFilterclearMessage:message];
-    else if ([MSG_MERKLEBLOCK isEqual:type]) [self acceptMerkleblockMessage:message];
-    //else if ([MSG_ALERT isEqual:type]) [self acceptAlertMessage:message];
+        if ([MSG_VERSION isEqual:type]) [self acceptVersionMessage:message];
+        else if ([MSG_VERACK isEqual:type]) [self acceptVerackMessage:message];
+        else if ([MSG_ADDR isEqual:type]) [self acceptAddrMessage:message];
+        else if ([MSG_INV isEqual:type]) [self acceptInvMessage:message];
+        //else if ([MSG_GETDATA isEqual:type]) [self acceptGetdataMessage:message];
+        //else if ([MSG_NOTFOUND isEqual:type]) [self acceptNotfoundMessage:message];
+        //else if ([MSG_GETBLOCKS isEqual:type]) [self acceptGetblocksMessage:message];
+        //else if ([MSG_GETHEADERS isEqual:type]) [self acceptGetheadersMessage:message];
+        else if ([MSG_TX isEqual:type]) [self acceptTxMessage:message];
+        //else if ([MSG_BLOCK isEqual:type]) [self acceptBlockMessage:message];
+        //else if ([MSG_HEADERS isEqual:type]) [self acceptHeadersMessage:message];
+        else if ([MSG_GETADDR isEqual:type]) [self acceptGetaddrMessage:message];
+        //else if ([MSG_MEMPOOL isEqual:type]) [self acceptMempoolMessage:message];
+        //else if ([MSG_CHECKORDER isEqual:type]) [self acceptCheckorderMessage:message];
+        //else if ([MSG_SUBMITORDER isEqual:type]) [self acceptSubmitorderMessage:message];
+        //else if ([MSG_REPLY isEqual:type]) [self acceptReplyMessage:message];
+        else if ([MSG_PING isEqual:type]) [self acceptPingMessage:message];
+        else if ([MSG_PONG isEqual:type]) [self acceptPongMessage:message];
+        //else if ([MSG_FILTERLOAD isEqual:type]) [self acceptFilterloadMessage:message];
+        //else if ([MSG_FILTERADD isEqual:type]) [self acceptFilteraddMessage:message];
+        //else if ([MSG_FILTERCLEAR isEqual:type]) [self acceptFilterclearMessage:message];
+        else if ([MSG_MERKLEBLOCK isEqual:type]) [self acceptMerkleblockMessage:message];
+        //else if ([MSG_ALERT isEqual:type]) [self acceptAlertMessage:message];
 
-    else NSLog(@"%@:%d dropping %@ length %u, not implemented", self.host, self.port, type, (int)message.length);
+        else NSLog(@"%@:%d dropping %@ length %u, not implemented", self.host, self.port, type, (int)message.length);
+    });
 }
 
 - (void)acceptVersionMessage:(NSData *)message
@@ -388,7 +402,7 @@ typedef enum {
     _timestamp = [message UInt64AtOffset:12];
     _useragent = [message stringAtOffset:80 length:&l];
 
-    if (message.length != 80 + l + sizeof(uint32_t)) {
+    if (message.length < 80 + l + sizeof(uint32_t)) {
         NSLog(@"%@:%d malformed version message, length is %u, should be %lu", self.host, self.port,
               (int)message.length, 80 + l + sizeof(uint32_t));
         return;
@@ -525,6 +539,43 @@ typedef enum {
     }
 }
 
+// this is called outside the normal message processing queue and allows the blockchain download to continue
+// concurrently while the getdata replys are still being processed.
+- (void)fastAcceptInv:(NSData *)message
+{
+    NSUInteger l, count = [message varIntAtOffset:0 length:&l];
+    NSMutableData *msg = nil;
+    
+    if (l == 0 || message.length < l + count*36) {
+        NSLog(@"%@:%u malformed inv message, length is %u, should be %u for %u items", self.host, self.port,
+              (int)message.length, (int)(l == 0 ? 1 : l) + (int)count*36, (int)count);
+        return;
+    }
+    else if (count > 50000) {
+        NSLog(@"%@:%u dropping inv message, %u is too many items (max 50000)", self.host, self.port, (int)count);
+        return;
+    }
+    else if (count < 500) return; // if there's less than 500 items, either we're done or it's not a chain download inv
+
+    for (int i = (int)count - 1; i >= 0; i--) {
+        inv_t type = [message UInt32AtOffset:l + i*36];
+        
+        switch (type) {
+            case merkleblock: // drop through
+            case block:
+                msg = [NSMutableData data];
+                [msg appendUInt32:PROTOCOL_VERSION];
+                [msg appendVarInt:2]; // number of block locator hashes
+                [msg appendData:[message hashAtOffset:l + i*36 + sizeof(uint32_t)]];
+                [msg appendData:[GENESIS_BLOCK_HASH reverse]];
+                [msg appendData:ZERO_HASH]; // hash stop
+                [self sendMessage:msg type:MSG_GETBLOCKS];
+                return;
+            default: break;
+        }
+    }
+}
+
 - (void)acceptTxMessage:(NSData *)message
 {
     ZNTransaction *tx = [[ZNTransaction alloc] initWithData:message];
@@ -611,7 +662,7 @@ typedef enum {
         NSLog(@"%@:%u droping invalid merkleblock %@", self.host, self.port, block.blockHash);
         return;
     }
-    else NSLog(@"%@:%u got merkleblock %@", self.host, self.port, block.blockHash);
+    //else NSLog(@"%@:%u got merkleblock %@", self.host, self.port, block.blockHash);
     
     NSMutableArray *txHashes = [NSMutableArray arrayWithArray:block.txHashes];
     
@@ -665,16 +716,18 @@ typedef enum {
 
             // fall through to send any queued output
         case NSStreamEventHasSpaceAvailable:
-            if (aStream != self.outputStream) break;
-            
-            while (self.outputBuffer.length > 0 && [self.outputStream hasSpaceAvailable]) {
-                NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
+            if (aStream == self.outputStream) {
+                dispatch_async(self.sendq, ^{
+                    while (self.outputBuffer.length > 0 && [self.outputStream hasSpaceAvailable]) {
+                        NSInteger l =
+                            [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
                 
-                if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
+                        if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
 
-                //if (self.outputBuffer.length == 0) NSLog(@"%@:%d output buffer cleared", self.host, self.port);
+                        //if (self.outputBuffer.length == 0) NSLog(@"%@:%d output buffer cleared", self.host, self.port);
+                    }
+                });
             }
-            
             break;
             
         case NSStreamEventHasBytesAvailable:
@@ -747,10 +800,7 @@ typedef enum {
                     NSData *message = self.msgPayload;
                     
                     self.msgPayload = [NSMutableData data];
-                    
-                    dispatch_async(self.q, ^{
-                        [self acceptMessage:message type:type]; // process message
-                    });
+                    [self acceptMessage:message type:type]; // process message
                 }
                 
 reset:          // reset for next message

@@ -204,7 +204,7 @@
         }
 
         if (coordinator) {
-            moc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
+            moc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
             [moc setPersistentStoreCoordinator:coordinator];
             
             // Saves changes in the application's managed object context before the application terminates.
