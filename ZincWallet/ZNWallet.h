@@ -64,6 +64,8 @@
 - (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
 completion:(void (^)(ZNTransaction *tx, NSError *error))completion;
 - (void)publishTransaction:(ZNTransaction *)transaction completion:(void (^)(NSError *error))completion;
-- (void)registerTransaction:(ZNTransaction *)transaction;
+
+// returns false if the given transaction is not related to this wallet
+- (BOOL)registerTransaction:(ZNTransaction *)transaction;
 
 @end

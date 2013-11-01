@@ -128,6 +128,8 @@ static NSData *getKeychainData(NSString *key)
 {
     if (! (self = [super init])) return nil;
     
+    [NSManagedObject setConcurrencyType:NSPrivateQueueConcurrencyType];
+    
     self.defs = [NSUserDefaults standardUserDefaults];
     self.sequence = [ZNBIP32Sequence new];
     self.format = [NSNumberFormatter new];
@@ -229,7 +231,7 @@ static NSData *getKeychainData(NSString *key)
                         NSArray *addrs = [[[tx.inputs valueForKey:@"address"] array]
                                           arrayByAddingObjectsFromArray:[[tx.outputs valueForKey:@"address"] array]];
                 
-                        [[ZNAddressEntity objectsMatching:@"address IN %@", addrs] setValue:@(YES) forKey:@"newTx"];
+                        [[ZNAddressEntity objectsMatching:@"address in %@", addrs] setValue:@(YES) forKey:@"newTx"];
                         [tx deleteObject];
                         break;
                 }
@@ -283,11 +285,11 @@ static NSData *getKeychainData(NSString *key)
         //TODO: keep a seprate list of failed transactions to display along with the successful ones
         [[NSManagedObject context] performBlockAndWait:^{
             for (ZNTransactionEntity *tx in
-                 [ZNTransactionEntity objectsMatching:@"blockHeight == 0 && ! (txHash IN %@)", self.updatedTxHashes]) {
+                 [ZNTransactionEntity objectsMatching:@"blockHeight == 0 && ! (txHash in %@)", self.updatedTxHashes]) {
                 NSArray *addrs = [[[tx.inputs valueForKey:@"address"] array]
                                   arrayByAddingObjectsFromArray:[[tx.outputs valueForKey:@"address"] array]];
 
-                [[ZNAddressEntity objectsMatching:@"address IN %@", addrs] setValue:@(YES) forKey:@"newTx"];
+                [[ZNAddressEntity objectsMatching:@"address in %@", addrs] setValue:@(YES) forKey:@"newTx"];
                 [tx deleteObject];
             }
         }];
@@ -329,7 +331,7 @@ static NSData *getKeychainData(NSString *key)
         [gap addObjectsFromArray:[self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:YES]];
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            NSArray *used = [ZNAddressEntity objectsMatching:@"! (address IN %@)", [gap valueForKey:@"address"]];
+            NSArray *used = [ZNAddressEntity objectsMatching:@"! (address in %@)", [gap valueForKey:@"address"]];
             
             self.updatedTxHashes = [NSMutableSet set]; // reset the updated tx set
 
@@ -544,7 +546,7 @@ static NSData *getKeychainData(NSString *key)
                 NSArray *addrs = [addresses valueForKey:@"address"];
                 
                 // remove any previously stored unspent outputs for the queried addresses
-                [ZNUnspentOutputEntity deleteObjects:[ZNUnspentOutputEntity objectsMatching:@"address IN %@", addrs]];
+                [ZNUnspentOutputEntity deleteObjects:[ZNUnspentOutputEntity objectsMatching:@"address in %@", addrs]];
             
                 // store any unspent outputs in core data
                 for (NSDictionary *d in JSON[@"unspent_outputs"]) {
@@ -567,7 +569,7 @@ static NSData *getKeychainData(NSString *key)
             
             [[NSManagedObject context] performBlockAndWait:^{
                 // all outputs have been spent for the requested addresses
-                [ZNUnspentOutputEntity deleteObjects:[ZNUnspentOutputEntity objectsMatching:@"address IN %@",
+                [ZNUnspentOutputEntity deleteObjects:[ZNUnspentOutputEntity objectsMatching:@"address in %@",
                                                       [addresses valueForKey:@"address"]]];
 
                 [addresses setValue:@(NO) forKey:@"newTx"]; // tx successfully synced, reset new tx flag
@@ -718,9 +720,9 @@ static NSData *getKeychainData(NSString *key)
     NSData *seed = self.seed;
     
     [[NSManagedObject context] performBlockAndWait:^{
-        NSArray *externalIndexes = [[ZNAddressEntity objectsMatching:@"internal == NO && address IN %@",
+        NSArray *externalIndexes = [[ZNAddressEntity objectsMatching:@"internal == NO && address in %@",
                                      transaction.inputAddresses] valueForKey:@"index"];
-        NSArray *internalIndexes = [[ZNAddressEntity objectsMatching:@"internal == YES && address IN %@",
+        NSArray *internalIndexes = [[ZNAddressEntity objectsMatching:@"internal == YES && address in %@",
                                      transaction.inputAddresses] valueForKey:@"index"];
     
         [pkeys addObjectsFromArray:[self.sequence privateKeys:externalIndexes internal:NO fromSeed:seed]];
@@ -853,13 +855,13 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
     //TODO: also publish transactions directly to coinbase and bitpay servers for faster POS experience
 }
 
-- (void)registerTransaction:(ZNTransaction *)transaction
+- (BOOL)registerTransaction:(ZNTransaction *)transaction
 {
     NSUInteger idx = 0;
-    NSArray *addresses = [ZNAddressEntity objectsMatching:@"address IN %@",
+    NSArray *addresses = [ZNAddressEntity objectsMatching:@"address in %@",
                           [transaction.outputAddresses arrayByAddingObjectsFromArray:transaction.inputAddresses]];
     
-    if (addresses.count == 0) return; // at least one address in the tx must be contained in the wallet
+    if (addresses.count == 0) return NO; // at least one address in the tx must be contained in the wallet
 
     // add the transaction to the tx list
     if ([ZNTransactionEntity countObjectsMatching:@"txHash == %@", transaction.txHash] == 0) {
@@ -889,8 +891,8 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
         idx++;
     }
     
-    [NSManagedObject saveContext];
     [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:nil];
+    return YES;
 }
 
 @end

@@ -24,6 +24,9 @@
 
 #import "NSManagedObject+Utils.h"
 
+// default concurrency type is NSMainQueueConcurrencyType
+static NSManagedObjectContextConcurrencyType _concurrencyType = NSMainQueueConcurrencyType;
+
 @implementation NSManagedObject (Utils)
 
 #pragma mark - create objects
@@ -111,19 +114,6 @@
     return a;
 }
 
-#pragma mark - delete objects
-
-+ (NSUInteger)deleteObjects:(NSArray *)objects
-{
-    [[self context] performBlockAndWait:^{
-        for (NSManagedObject *obj in objects) {
-            [[self context] deleteObject:obj];
-        }
-    }];
-    
-    return objects.count;
-}
-
 #pragma mark - count exising objects
 
 + (NSUInteger)countAllObjects
@@ -163,7 +153,26 @@
     return count;
 }
 
+#pragma mark - delete objects
+
++ (NSUInteger)deleteObjects:(NSArray *)objects
+{
+    [[self context] performBlockAndWait:^{
+        for (NSManagedObject *obj in objects) {
+            [[self context] deleteObject:obj];
+        }
+    }];
+    
+    return objects.count;
+}
+
 #pragma mark - core data stack
+
+// call this before any NSManagedObject+Utils methods to use a concurrency type other than NSMainQueueConcurrencyType
++ (void)setConcurrencyType:(NSManagedObjectContextConcurrencyType)type
+{
+    _concurrencyType = type;
+}
 
 // Returns the managed object context for the application. If the context doesn't already exist,
 // it is created and bound to the persistent store coordinator for the application.
@@ -204,7 +213,7 @@
         }
 
         if (coordinator) {
-            moc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+            moc = [[NSManagedObjectContext alloc] initWithConcurrencyType:_concurrencyType];
             [moc setPersistentStoreCoordinator:coordinator];
             
             // Saves changes in the application's managed object context before the application terminates.

@@ -29,6 +29,7 @@
 #import "ZNUnspentOutputEntity.h"
 #import "ZNAddressEntity.h"
 #import "ZNTransaction.h"
+#import "ZNMerkleBlock.h"
 #import "NSManagedObject+Utils.h"
 #import "NSString+Base58.h"
 #import <CommonCrypto/CommonDigest.h>
@@ -60,6 +61,28 @@
     }];
     
     return e;
+}
+
+// more efficient method for updating the heights of all the transactions in a long chain of blocks
++ (NSArray *)updateHeightsWithChain:(NSArray *)chain startHeight:(int32_t)height
+{
+    NSMutableDictionary *txHeights = [NSMutableDictionary dictionary];
+    
+    for (ZNMerkleBlock *b in chain) {
+        for (NSData *txHash in b.txHashes) {
+            txHeights[txHash] = @(height);
+        }
+
+        height++;
+    }
+
+    [[self context] performBlockAndWait:^{
+        for (ZNTransactionEntity *e in [ZNTransactionEntity objectsMatching:@"txHash in %@", txHeights.allKeys]) {
+            e.blockHeight = [txHeights[e.txHash] intValue];
+        }
+    }];
+
+    return nil;
 }
 
 - (instancetype)setAttributesFromJSON:(NSDictionary *)JSON

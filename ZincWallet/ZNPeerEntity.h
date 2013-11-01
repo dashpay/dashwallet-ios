@@ -26,6 +26,8 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
+@class ZNPeer;
+
 @interface ZNPeerEntity : NSManagedObject
 
 @property (nonatomic) int32_t address;
@@ -33,11 +35,9 @@
 @property (nonatomic) int16_t port;
 @property (nonatomic) int64_t services;
 
-+ (instancetype)createOrUpdateWithAddress:(int32_t)address port:(int16_t)port timestamp:(NSTimeInterval)timestamp
-services:(int64_t)services;
++ (instancetype)createOrUpdateWithPeer:(ZNPeer *)peer;
 
-// more efficient method for creating or updating a lot of peers at once
-+ (NSArray *)createOrUpdateWithAddresses:(NSArray *)addresses ports:(NSArray *)ports timestamps:(NSArray *)timestamps
-services:(NSArray *)services;
+// more efficient method for creating or updating a lot of peer entities at once
++ (NSArray *)createOrUpdateWithPeers:(NSArray *)peers;
 
 @end

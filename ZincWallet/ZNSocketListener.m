@@ -157,7 +157,7 @@
     [a addObjectsFromArray:[[ZNWallet sharedInstance] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO]];
     [a addObjectsFromArray:[[ZNWallet sharedInstance] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES]];
     [[NSManagedObject context] performBlockAndWait:^{
-        [a addObjectsFromArray:[ZNAddressEntity objectsMatching:@"! (address IN %@)", [a valueForKey:@"address"]]];
+        [a addObjectsFromArray:[ZNAddressEntity objectsMatching:@"! (address in %@)", [a valueForKey:@"address"]]];
     }];
     
     [self subscribeToAddresses:a];
@@ -244,8 +244,8 @@ wasClean:(BOOL)wasClean
     if ([op isEqual:@"utx"]) {
         [[NSManagedObject context] performBlockAndWait:^{
             __block ZNTransactionEntity *tx = [ZNTransactionEntity createOrUpdateWithJSON:JSON[@"x"]];
-            NSArray *inaddrs = [ZNAddressEntity objectsMatching:@"address IN %@", [tx.inputs valueForKey:@"address"]],
-                    *outaddrs = [ZNAddressEntity objectsMatching:@"address IN %@", [tx.outputs valueForKey:@"address"]];
+            NSArray *inaddrs = [ZNAddressEntity objectsMatching:@"address in %@", [tx.inputs valueForKey:@"address"]],
+                    *outaddrs = [ZNAddressEntity objectsMatching:@"address in %@", [tx.outputs valueForKey:@"address"]];
             NSMutableArray *outputs = [[ZNUnspentOutputEntity objectsSortedBy:@"txIndex" ascending:YES] mutableCopy];
             NSMutableArray *spent = [NSMutableArray array];
 
@@ -332,7 +332,7 @@ wasClean:(BOOL)wasClean
         
         // set the block height for transactions included in the new block
         [[NSManagedObject context] performBlockAndWait:^{
-            for (ZNTransactionEntity *e in [ZNTransactionEntity objectsMatching:@"txIndex IN %@", txIndexes]) {
+            for (ZNTransactionEntity *e in [ZNTransactionEntity objectsMatching:@"txIndex in %@", txIndexes]) {
                 e.blockHeight = height;
             }
         }];

@@ -41,6 +41,9 @@
 
 + (instancetype)createOrUpdateWithJSON:(NSDictionary *)JSON;
 
+// more efficient method for updating the heights of all the transactions in a long chain of blocks
++ (NSArray *)updateHeightsWithChain:(NSArray *)chain startHeight:(int32_t)height;
+
 - (instancetype)setAttributesFromJSON:(NSDictionary *)JSON;
 - (instancetype)setAttributesFromTx:(ZNTransaction *)tx;
 

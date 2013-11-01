@@ -26,9 +26,11 @@
 
 @interface NSManagedObject (Utils)
 
+// create objects
 + (instancetype)managedObject;
 + (NSArray *)managedObjectArrayWithLength:(NSUInteger)length;
 
+// fetch existing objects
 + (NSArray *)allObjects;
 + (NSArray *)objectsMatching:(NSString *)predicateFormat, ...;
 + (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args;
@@ -36,12 +38,17 @@
 + (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending offset:(NSUInteger)offset limit:(NSUInteger)lim;
 + (NSArray *)fetchObjects:(NSFetchRequest *)request;
 
+// count existing objects
 + (NSUInteger)countAllObjects;
 + (NSUInteger)countObjectsMatching:(NSString *)predicateFormat, ...;
 + (NSUInteger)countObjectsMatching:(NSString *)predicateFormat arguments:(va_list)args;
 + (NSUInteger)countObjects:(NSFetchRequest *)request;
 
+// delete objects
 + (NSUInteger)deleteObjects:(NSArray *)objects;
+
+// call this before any NSManagedObject+Utils methods to use a concurrency type other than NSMainQueueConcurrencyType
++ (void)setConcurrencyType:(NSManagedObjectContextConcurrencyType)type;
 
 + (NSManagedObjectContext *)context;
 + (void)saveContext;

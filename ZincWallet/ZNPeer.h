@@ -35,8 +35,6 @@
 #define BITCOIN_REFERENCE_BLOCK_TIME   1375533383.0
 #endif
 
-#define NODE_NETWORK  1
-
 // explanation of message types at: https://en.bitcoin.it/wiki/Protocol_specification
 #define MSG_VERSION     @"version"
 #define MSG_VERACK      @"verack"
@@ -69,6 +67,7 @@
 
 - (void)peerConnected:(ZNPeer *)peer;
 - (void)peer:(ZNPeer *)peer disconnectedWithError:(NSError *)error;
+- (void)peer:(ZNPeer *)peer relayedPeers:(NSArray *)peers;
 - (void)peer:(ZNPeer *)peer relayedTransaction:(ZNTransaction *)transaction;
 - (void)peer:(ZNPeer *)peer relayedBlock:(ZNMerkleBlock *)block;
 
@@ -89,7 +88,7 @@ typedef enum {
 @property (nonatomic, readonly) uint16_t port;
 @property (nonatomic, readonly) uint64_t services;
 @property (nonatomic, readonly) uint32_t version;
-@property (nonatomic, readonly) uint64_t timestamp;
+@property (nonatomic, readonly) NSTimeInterval timestamp;
 @property (nonatomic, readonly) uint64_t nonce;
 @property (nonatomic, readonly) NSString *useragent;
 @property (nonatomic, readonly) uint32_t lastblock;
@@ -101,8 +100,7 @@ typedef enum {
 - (void)connect;
 - (void)sendMessage:(NSData *)message type:(NSString *)type;
 - (void)sendGetaddrMessage;
-- (void)sendGetblocksMessage;
-
+- (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop;
 - (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes;
 
 @end

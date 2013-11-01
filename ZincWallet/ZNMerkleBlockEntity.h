@@ -43,6 +43,9 @@
 @property (nonatomic, retain) NSData *flags;
 
 + (instancetype)createOrUpdateWithMerkleBlock:(ZNMerkleBlock *)block atHeight:(int32_t)height;
+
+// more efficient method for creating or updating a long chain of blocks all at once
++ (NSArray *)createOrUpdateWithChain:(NSArray *)chain startHeight:(int32_t)height;
 + (BOOL)updateTreeFromMerkleBlock:(ZNMerkleBlock *)block;
 
 - (ZNMerkleBlock *)merkleBlock;
