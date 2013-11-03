@@ -44,6 +44,7 @@
 #define MIN_PROTO_VERSION  31402 // peers earlier than this protocol version not supported
 #define LOCAL_HOST         0x7f000001
 #define ZERO_HASH          @"0000000000000000000000000000000000000000000000000000000000000000".hexToData
+#define SOCKET_TIMEOUT     2.0
 
 #define llurand() (((long long unsigned)mrand48() << (sizeof(unsigned)*8)) | (unsigned)mrand48())
 
@@ -66,7 +67,7 @@ typedef enum {
 @property (nonatomic, assign) NSTimeInterval startTime;
 @property (nonatomic, strong) ZNMerkleBlock *currentBlock;
 @property (nonatomic, strong) NSMutableArray *currentTxHashes;
-@property (nonatomic, strong) dispatch_queue_t sendq, receiveq;
+@property (nonatomic, strong) dispatch_queue_t sendq, receiveq;//, streamq;
 
 @end
 
@@ -126,9 +127,6 @@ services:(uint64_t)services
         [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
         self.reachabilityObserver = nil;
     }
-
-    CFReadStreamRef readStream = NULL;
-    CFWriteStreamRef writeStream = NULL;
     
     NSLog(@"%@:%u connecting", self.host, self.port);
     _status = connecting;
@@ -139,30 +137,37 @@ services:(uint64_t)services
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
     self.reachability = [Reachability reachabilityWithHostName:self.host];
-    
+
+    //self.streamq = dispatch_queue_create([NSString stringWithFormat:@"cc.zinc.zinc.stream.%@:%d", self.host,
+    //                                      self.port].UTF8String, NULL);
     self.sendq = dispatch_queue_create([NSString stringWithFormat:@"cc.zinc.zinc.send.%@:%d", self.host,
                                         self.port].UTF8String, NULL);
     self.receiveq = dispatch_queue_create([NSString stringWithFormat:@"cc.zinc.zinc.receive.%@:%d", self.host,
                                            self.port].UTF8String, NULL);
     
-    CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)self.host, self.port, &readStream, &writeStream);
-    self.inputStream = CFBridgingRelease(readStream);
-    self.outputStream = CFBridgingRelease(writeStream);
-    self.inputStream.delegate = self.outputStream.delegate = self;
+    //dispatch_async(self.streamq, ^{
+        CFReadStreamRef readStream = NULL;
+        CFWriteStreamRef writeStream = NULL;
+
+        CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)self.host, self.port, &readStream, &writeStream);
+        self.inputStream = CFBridgingRelease(readStream);
+        self.outputStream = CFBridgingRelease(writeStream);
+        self.inputStream.delegate = self.outputStream.delegate = self;
+        
+        //TODO: XXXX schedule streams on a separate network thread
+        [self.inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+        [self.outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+        
+        // after the reachablity check, the radios should be warmed up and we can set a short socket connect timeout
+        [self performSelector:@selector(disconnectWithError:) withObject:[NSError errorWithDomain:@"ZincWallet" code:1001
+         userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"%@:%u socket connect timeout", self.host,
+                                               self.port]}] afterDelay:SOCKET_TIMEOUT];
+        
+        [self.inputStream open];
+        [self.outputStream open];
     
-    // we may want to use a different thread for each peer
-    [self.inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    [self.outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    
-    // after the reachablity check, the radios should be warmed up and we can set a short socket connect timeout
-    [self performSelector:@selector(disconnectWithError:) withObject:[NSError errorWithDomain:@"ZincWallet" code:1001
-     userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"%@:%u socket connect timeout", self.host,
-                                           self.port]}] afterDelay:2];
-    
-    [self.inputStream open];
-    [self.outputStream open];
-    
-    [self sendVersionMessage];
+        [self sendVersionMessage];
+    //});
 }
 
 - (void)disconnectWithError:(NSError *)error
@@ -268,15 +273,8 @@ services:(uint64_t)services
 - (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes
 {
     if (txHashes.count + blockHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
-         [self sendGetdataMessageWithTxHashes:(txHashes.count > MAX_GETDATA_HASHES) ?
-         [txHashes subarrayWithRange:NSMakeRange(0, MAX_GETDATA_HASHES)] : txHashes
-         andBlockHashes:(txHashes.count > MAX_GETDATA_HASHES) ? @[] :
-         [blockHashes subarrayWithRange:NSMakeRange(0, MAX_GETDATA_HASHES - txHashes.count)]];
-        [self sendGetdataMessageWithTxHashes:(txHashes.count > MAX_GETDATA_HASHES) ?
-         [txHashes subarrayWithRange:NSMakeRange(MAX_GETDATA_HASHES, txHashes.count - MAX_GETDATA_HASHES)] : @[]
-         andBlockHashes:(txHashes.count > MAX_GETDATA_HASHES) ? blockHashes :
-         [blockHashes subarrayWithRange:NSMakeRange(MAX_GETDATA_HASHES - txHashes.count,
-                                                    blockHashes.count - (MAX_GETDATA_HASHES - txHashes.count))]];
+        NSLog(@"%@:%d couldn't send getdata, %u is too many items, max is %u", self.host,
+              self.port, (int)txHashes.count + (int)blockHashes.count, MAX_GETDATA_HASHES);
         return;
     }
 
@@ -295,13 +293,14 @@ services:(uint64_t)services
     }
 
     [self sendMessage:msg type:MSG_GETDATA];
-    
-    // Each merkleblock the remote peer sends us is followed by a set of tx messages for that block. We send a ping to
-    // get a pong reply after the last block and all it's tx are sent, inicating no more tx messages for the last block.
-    if (blockHashes.count > 0) [self sendPingMessage];
 }
 
-// peer will send an inv message in response to getblocks
+// the blockchain download protocol works like so:
+// local peer sends getblocks, remote peer reponds with inv containing up to 500 block hashes
+// local peer sends getdata containing the block hashes, remote peer responds with multiple merkleblock and tx
+// remote peer sends inv containg 1 hash, the most recent block
+// local peer sends getdata with the hash, remote peer responds with merkleblock
+// if local peer can't connect the block to the chain, it sends a new getblocks message, rinse, repeat
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop
 {
     NSMutableData *msg = [NSMutableData data];
@@ -492,8 +491,16 @@ services:(uint64_t)services
 
     NSLog(@"%@:%u got inv with %u items", self.host, self.port, (int)count);
 
+    if (blockHashes.count >= 500) { // this is probably a chain download inv, request next chunk
+        [self sendGetblocksMessageWithLocators:@[blockHashes.lastObject, blockHashes[0]] andHashStop:nil];
+    }
+
     if (txHashes.count + blockHashes.count > 0) {
         [self sendGetdataMessageWithTxHashes:txHashes andBlockHashes:blockHashes];
+        
+        // Each merkleblock the remote peer sends us is followed by a set of tx messages for that block. We send a ping
+        // to get a pong reply after the block and all it's tx are sent, inicating that there are no more tx messages
+        if (blockHashes.count == 1) [self sendPingMessage];
     }
 }
 
@@ -574,7 +581,7 @@ services:(uint64_t)services
     // Bitcoin nodes don't support querying arbitrary transactions, only transactions not yet accepted in a block. After
     // a merkleblock message, the remote node is expected to send tx messages for the tx referenced in the block. When a
     // non-tx message is received we should have all the tx in the merkleblock. If not, the only way to request them is
-    // re-requesting the merkleblock. The simplest way to do that is to drop the block and let the block organization
+    // re-requesting the merkleblock. The simplest way to do that is to drop the block and let the chain organization
     // algorithm figure out what needs to be requested.
     
     ZNMerkleBlock *block = [ZNMerkleBlock blockWithMessage:message];

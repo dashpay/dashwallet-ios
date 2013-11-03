@@ -40,7 +40,7 @@
     __block ZNPeerEntity *e = nil;
 
     [[self context] performBlockAndWait:^{
-        e = [self objectsMatching:@"address == %u && port == %u", peer.address, peer.port].lastObject;
+        e = [self objectsMatching:@"address == %d && port == %d", (int32_t)peer.address, (int16_t)peer.port].lastObject;
     
         if (! e) e = [ZNPeerEntity managedObject];
 
@@ -61,7 +61,6 @@
     [[self context] performBlockAndWait:^{
         NSMutableIndexSet *set = [NSMutableIndexSet indexSet];
         NSMutableArray *addresses = [NSMutableArray array];
-        NSUInteger idx = 0;
         
         for (ZNPeer *p in peers) {
             [addresses addObject:@(p.address)];
@@ -87,6 +86,7 @@
         }
     
         NSMutableArray *prs = [NSMutableArray arrayWithArray:peers];
+        NSUInteger idx = 0;
 
         [prs removeObjectsAtIndexes:set];
         entities = [self managedObjectArrayWithLength:prs.count];

@@ -294,4 +294,15 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     return branch(left, right);
 }
 
+- (NSUInteger)hash
+{
+    if (_blockHash.length < sizeof(NSUInteger)) return [super hash];
+    return *(NSUInteger *)_blockHash.bytes;
+}
+
+- (BOOL)isEqual:(id)object
+{
+    return ([object isKindOfClass:[ZNMerkleBlock class]] && [[object blockHash] isEqual:_blockHash]) ? YES : NO;
+}
+
 @end

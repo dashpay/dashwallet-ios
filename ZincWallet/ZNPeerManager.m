@@ -252,6 +252,7 @@ static NSMutableDictionary *checkpoints;
 {
     // A bloom filter's falsepositive rate will increase with each item added to the filter. If the filter has degraded
     // by half and we've added at least 100 items to it, clear it and build a new one
+    //TODO: XXXX for a wallet with fewer than 100 addresses, this creates a really low false positive rate... fix it
     if (_bloomFilter && _bloomFilter.falsePositiveRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*2 &&
         _bloomFilter.elementCount > self.filterElemCount + 100) {
         _bloomFilter = nil;
@@ -372,8 +373,8 @@ static NSMutableDictionary *checkpoints;
 
     //TODO: XXXX check for network reachability
     if (error) {
-        [ZNPeerEntity deleteObjects:[ZNPeerEntity objectsMatching:@"address == %u && port == %u", peer.address,
-                                     peer.port]];
+        [ZNPeerEntity deleteObjects:[ZNPeerEntity objectsMatching:@"address == %d && port == %d", (int32_t)peer.address,
+                                     (int16_t)peer.port]];
     }
 
     if (! self.peers.count) {
@@ -470,11 +471,22 @@ static NSMutableDictionary *checkpoints;
     int32_t height = self.topBlockHeight + 1;
     ZNMerkleBlock *prev = self.topBlock;
     NSTimeInterval transitionTime = self.transitionTime;
+    NSArray *chain = nil;
     
     if (! [block.prevBlock isEqual:prev.blockHash]) { // find previous block for difficulty verification
         ZNMerkleBlockEntity *e = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", block.prevBlock].lastObject;
         
         if (! e) { // block is either an orphan, or we haven't downloaded the whole chain yet
+            if (self.blockChain.count > 0) {
+                chain = [NSArray arrayWithArray:self.blockChain];
+                [self.blockChain removeAllObjects];
+
+                [[ZNMerkleBlockEntity context] performBlockAndWait:^{
+                    [ZNMerkleBlockEntity createOrUpdateWithChain:chain startHeight:height - (int)chain.count];
+                    [ZNTransactionEntity updateHeightsWithChain:chain startHeight:height - (int)chain.count];
+                }];
+            }
+
             [peer sendGetblocksMessageWithLocators:@[self.topBlock.blockHash] andHashStop:nil]; // continue download
             return;
         }
@@ -515,32 +527,33 @@ static NSMutableDictionary *checkpoints;
     }
 
     if (prev == self.topBlock) { // block extends main chain
-        if ((height % 100) == 0) NSLog(@"adding block at height: %d", height);
-        //[ZNMerkleBlockEntity createOrUpdateWithMerkleBlock:block atHeight:height];
+        if ((height % 500) == 0) NSLog(@"adding block at height: %d", height);
         [self.blockChain addObject:block];
         
         self.topBlock = block;
         self.topBlockHeight = height;
         if ((height % BITCOIN_DIFFICULTY_INTERVAL) == 0) self.transitionTime = block.timestamp;
         
-        if (self.blockChain.count < 500) return;
+        if (self.blockChain.count >= 500) {
+            chain = [NSArray arrayWithArray:self.blockChain];
+            [self.blockChain removeAllObjects];
         
-        NSArray *chain = [NSArray arrayWithArray:self.blockChain];
-        
-        [self.blockChain removeAllObjects];
-        
-        [[ZNMerkleBlockEntity context] performBlock:^{
-            [ZNMerkleBlockEntity createOrUpdateWithChain:chain startHeight:height + 1 - (int)chain.count];
-            [ZNTransactionEntity updateHeightsWithChain:chain startHeight:height + 1 - (int)chain.count];
-        }];
+            [[ZNMerkleBlockEntity context] performBlock:^{
+                [ZNMerkleBlockEntity createOrUpdateWithChain:chain startHeight:height + 1 - (int)chain.count];
+                [ZNTransactionEntity updateHeightsWithChain:chain startHeight:height + 1 - (int)chain.count];
+            }];
+        }
 
         return;
     }
 
     if (self.blockChain.count > 0) {
+        chain = [NSArray arrayWithArray:self.blockChain];
+        [self.blockChain removeAllObjects];
+
         [[ZNMerkleBlockEntity context] performBlockAndWait:^{
-            [ZNMerkleBlockEntity createOrUpdateWithChain:_blockChain startHeight:height - (int)_blockChain.count];
-            [ZNTransactionEntity updateHeightsWithChain:_blockChain startHeight:height - (int)_blockChain.count];
+            [ZNMerkleBlockEntity createOrUpdateWithChain:chain startHeight:height - (int)chain.count];
+            [ZNTransactionEntity updateHeightsWithChain:chain startHeight:height - (int)chain.count];
         }];
     }
 
@@ -593,7 +606,6 @@ static NSMutableDictionary *checkpoints;
             b = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", b.prevBlock].lastObject;
         }
         
-        //TODO: XXXX need to flush _blockChain whenever topBlockHeight changes without appending to _blockChain
         self.topBlock = block;
         self.topBlockHeight = height;
         if ((height % BITCOIN_DIFFICULTY_INTERVAL) == 0) self.transitionTime = block.timestamp;

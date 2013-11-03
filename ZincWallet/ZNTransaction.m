@@ -365,4 +365,15 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     return ((self.size + 999)/1000)*TX_FEE_PER_KB;
 }
 
+- (NSUInteger)hash
+{
+    if (self.txHash.length < sizeof(NSUInteger)) return [super hash];
+    return *(NSUInteger *)self.txHash.bytes;
+}
+
+- (BOOL)isEqual:(id)object
+{
+    return ([object isKindOfClass:[ZNTransaction class]] && [[object txHash] isEqual:self.txHash]) ? YES : NO;
+}
+
 @end

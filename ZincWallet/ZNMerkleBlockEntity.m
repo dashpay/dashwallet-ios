@@ -51,6 +51,7 @@
         if (! e) {
             e = [ZNMerkleBlockEntity managedObject];
             e.blockHash = block.blockHash;
+            [self _allBlocks][e.blockHash] = e;
         }
        
         e.version = block.version;
@@ -74,50 +75,31 @@
     NSMutableArray *a = [NSMutableArray arrayWithCapacity:chain.count];
     
     [[self context] performBlockAndWait:^{
-        NSMutableArray *hashes = [NSMutableArray arrayWithCapacity:chain.count];
-    
-        for (ZNMerkleBlock *b in chain) {
-            [hashes addObject:b.blockHash];
-        }
-
-        NSArray *blocks = [ZNMerkleBlockEntity objectsMatching:@"blockHash in %@", hashes];
-        NSMutableIndexSet *set = [NSMutableIndexSet indexSet];
+        NSMutableDictionary *allBlocks = [self _allBlocks];
         NSUInteger idx = 0;
-    
-        for (ZNMerkleBlockEntity *e in blocks) {
-            NSUInteger i = [hashes indexOfObject:e.blockHash];
-            ZNMerkleBlock *b = chain[i];
-            
-            e.totalTransactions = b.totalTransactions;
-            e.hashes = b.hashes;
-            e.flags = b.flags;
-            e.height = height + i;
-            [a addObject:e];
-            [set addIndex:i];
-        }
         
-        NSMutableArray *chn = [NSMutableArray arrayWithArray:chain];
+        for (ZNMerkleBlock *block in chain) {
+            ZNMerkleBlockEntity *e = allBlocks[block.blockHash];
 
-        [chn removeObjectsAtIndexes:set];
-        blocks = [ZNMerkleBlockEntity managedObjectArrayWithLength:chn.count];
-    
-        for (ZNMerkleBlockEntity *e in blocks) {
-            ZNMerkleBlock *b = chn[idx++];
-            NSUInteger i = [hashes indexOfObject:b.blockHash];
+            if (! e) {
+                e = [ZNMerkleBlockEntity managedObject];
+                e.blockHash = block.blockHash;
+                allBlocks[e.blockHash] = e;
+                e.version = block.version;
+                e.prevBlock = block.prevBlock;
+                e.merkleRoot = block.merkleRoot;
+                e.timestamp = block.timestamp;
+                e.bits = block.bits;
+                e.nonce = block.nonce;
+            }
             
-            e.blockHash = b.blockHash;
-            e.version = b.version;
-            e.prevBlock = b.prevBlock;
-            e.merkleRoot = b.merkleRoot;
-            e.timestamp = b.timestamp;
-            e.bits = b.bits;
-            e.nonce = b.nonce;
-            e.totalTransactions = b.totalTransactions;
-            e.hashes = b.hashes;
-            e.flags = b.flags;
-            e.height = height + i;
+            e.totalTransactions = block.totalTransactions;
+            e.hashes = block.hashes;
+            e.flags = block.flags;
+            e.height = height + idx;
             [a addObject:e];
-        }
+            idx++;
+        }        
     }];
     
 #if DEBUG
@@ -141,6 +123,24 @@
     }];
     
     return (e != nil) ? YES : NO;
+}
+
++ (NSMutableDictionary *)_allBlocks
+{
+    static NSMutableDictionary *allBlocks = nil;
+    static dispatch_once_t onceToken = 0;
+    
+    dispatch_once(&onceToken, ^{
+        allBlocks = [NSMutableDictionary dictionary];
+
+        [[self context] performBlockAndWait:^{
+            for (ZNMerkleBlockEntity *e in [ZNMerkleBlockEntity allObjects]) {
+                allBlocks[e.blockHash] = e;
+            }
+        }];
+    });
+    
+    return allBlocks;
 }
 
 - (ZNMerkleBlock *)merkleBlock
