@@ -121,7 +121,7 @@
     
     NSUInteger height = [transaction blockHeightUntilFreeForAmounts:amounts withBlockHeights:heights];
     
-    if (height == NSNotFound) return DBL_MAX;
+    if (height == TX_UNCONFIRMED) return DBL_MAX;
     
     currentHeight = [self estimatedCurrentBlockHeight];
     

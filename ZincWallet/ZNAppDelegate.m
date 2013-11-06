@@ -25,7 +25,6 @@
 
 #import "ZNAppDelegate.h"
 #import "NSString+Base58.h"
-#import "AFNetworking.h"
 #import <MessageUI/MessageUI.h>
 
 @implementation ZNAppDelegate
@@ -42,17 +41,17 @@
      setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
      forState:UIControlStateNormal];
 
-    //TODO: testnet build
-    
     //TODO: digitally sign every source release
     
     //TODO: pin code
 
-    //TODO: network status indicator perferrably tied to websocket status
+    //TODO: network status indicator tied to peer connection status
     
     //TODO: SPV mode
     //NOTE: app store guidelines prohibit p2p networking, however SPV mode is not p2p since neither incoming peer
     //      connections are permitted nor is network traffic relayed. SPV is strictly a client/server model.
+    
+    //TODO: remove MBProgressHUD dependency
     
     //TODO: support for BIP70 payment protocol
     

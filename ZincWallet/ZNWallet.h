@@ -52,7 +52,7 @@
 + (instancetype)sharedInstance;
 
 - (void)generateRandomSeed;
-- (void)synchronize:(BOOL)fullSync;
+- (void)synchronize;
 
 - (BOOL)containsAddress:(NSString *)address;
 
@@ -64,8 +64,7 @@
 - (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
 completion:(void (^)(ZNTransaction *tx, NSError *error))completion;
 - (void)publishTransaction:(ZNTransaction *)transaction completion:(void (^)(NSError *error))completion;
-
-// returns false if the given transaction is not related to this wallet
+- (BOOL)containsTransaction:(ZNTransaction *)transaction;
 - (BOOL)registerTransaction:(ZNTransaction *)transaction;
 
 @end

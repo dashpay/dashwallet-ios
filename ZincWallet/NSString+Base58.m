@@ -234,7 +234,7 @@ breakout:
         suffix = [NSData dataWithBytes:SCRIPT_SUFFIX length:strlen(SCRIPT_SUFFIX)];
     });
 
-    if (script.length < suffix.length + 20 ||
+    if (script == (id)[NSNull null] || script.length < suffix.length + 20 ||
         ! [[script subdataWithRange:NSMakeRange(script.length - suffix.length, suffix.length)] isEqualToData:suffix]) {
         return nil;
     }

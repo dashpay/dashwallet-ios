@@ -70,6 +70,7 @@
 - (void)peer:(ZNPeer *)peer relayedPeers:(NSArray *)peers;
 - (void)peer:(ZNPeer *)peer relayedTransaction:(ZNTransaction *)transaction;
 - (void)peer:(ZNPeer *)peer relayedBlock:(ZNMerkleBlock *)block;
+- (ZNTransaction *)peer:(ZNPeer *)peer requestedTransaction:(NSData *)txHash;
 
 @end
 
@@ -101,6 +102,7 @@ typedef enum {
 - (void)sendMessage:(NSData *)message type:(NSString *)type;
 - (void)sendGetaddrMessage;
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop;
+- (void)sendInvMessageWithTxHash:(NSData *)txHash;
 - (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes;
 
 @end

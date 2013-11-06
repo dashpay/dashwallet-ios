@@ -209,7 +209,7 @@ services:(uint64_t)services
 - (void)sendMessage:(NSData *)message type:(NSString *)type
 {
     if (message.length > MAX_MSG_LENGTH) {
-        NSLog(@"%@:%d failed to send %@, message length %d is too long", self.host, self.port, type, message.length);
+        NSLog(@"%@:%d failed to send %@, length %d is too long", self.host, self.port, type, (int)message.length);
 #if DEBUG
         abort();
 #endif
@@ -242,7 +242,6 @@ services:(uint64_t)services
     [msg appendNetAddress:LOCAL_HOST port:BITCOIN_STANDARD_PORT services:ENABLED_SERVICES]; // address of local peer
     [msg appendUInt64:(self.localNonce = llurand())]; // random nonce
     [msg appendString:USERAGENT]; // user agent
-    //TODO: XXXX get last block stored in core data
     [msg appendUInt32:BITCOIN_REFERENCE_BLOCK_HEIGHT]; // last block received
     [msg appendUInt8:0]; // relay transactions (no for SPV bloom filter mode)
     
@@ -270,31 +269,6 @@ services:(uint64_t)services
     [self sendMessage:msg type:MSG_ADDR];
 }
 
-- (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes
-{
-    if (txHashes.count + blockHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
-        NSLog(@"%@:%d couldn't send getdata, %u is too many items, max is %u", self.host,
-              self.port, (int)txHashes.count + (int)blockHashes.count, MAX_GETDATA_HASHES);
-        return;
-    }
-
-    NSMutableData *msg = [NSMutableData data];
-    
-    [msg appendVarInt:txHashes.count + blockHashes.count];
-    
-    for (NSData *hash in txHashes) {
-        [msg appendUInt32:tx];
-        [msg appendData:hash];
-    }
-    
-    for (NSData *hash in blockHashes) {
-        [msg appendUInt32:merkleblock];
-        [msg appendData:hash];
-    }
-
-    [self sendMessage:msg type:MSG_GETDATA];
-}
-
 // the blockchain download protocol works like so:
 // local peer sends getblocks, remote peer reponds with inv containing up to 500 block hashes
 // local peer sends getdata containing the block hashes, remote peer responds with multiple merkleblock and tx
@@ -315,6 +289,41 @@ services:(uint64_t)services
     [msg appendData:hashStop ? hashStop : ZERO_HASH];
 
     [self sendMessage:msg type:MSG_GETBLOCKS];
+}
+
+- (void)sendInvMessageWithTxHash:(NSData *)txHash
+{
+    NSMutableData *msg = [NSMutableData data];
+    
+    [msg appendVarInt:1];
+    [msg appendUInt32:tx];
+    [msg appendData:txHash];
+    [self sendMessage:msg type:MSG_INV];
+}
+
+- (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes
+{
+    if (txHashes.count + blockHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
+        NSLog(@"%@:%d couldn't send getdata, %u is too many items, max is %u", self.host,
+              self.port, (int)txHashes.count + (int)blockHashes.count, MAX_GETDATA_HASHES);
+        return;
+    }
+    
+    NSMutableData *msg = [NSMutableData data];
+    
+    [msg appendVarInt:txHashes.count + blockHashes.count];
+    
+    for (NSData *hash in txHashes) {
+        [msg appendUInt32:tx];
+        [msg appendData:hash];
+    }
+    
+    for (NSData *hash in blockHashes) {
+        [msg appendUInt32:merkleblock];
+        [msg appendData:hash];
+    }
+    
+    [self sendMessage:msg type:MSG_GETDATA];
 }
 
 - (void)sendGetaddrMessage
@@ -349,6 +358,7 @@ services:(uint64_t)services
         else if ([MSG_INV isEqual:type]) [self acceptInvMessage:message];
         else if ([MSG_TX isEqual:type]) [self acceptTxMessage:message];
         else if ([MSG_GETADDR isEqual:type]) [self acceptGetaddrMessage:message];
+        else if ([MSG_GETDATA isEqual:type]) [self acceptGetdataMessage:message];
         else if ([MSG_PING isEqual:type]) [self acceptPingMessage:message];
         else if ([MSG_PONG isEqual:type]) [self acceptPongMessage:message];
         else if ([MSG_MERKLEBLOCK isEqual:type]) [self acceptMerkleblockMessage:message];
@@ -436,18 +446,18 @@ services:(uint64_t)services
         NSLog(@"%@:%d dropping addr message, %u is too many addresses (max 1000)", self.host, self.port, (int)count);
         return;
     }
-    else if (message.length != l + 30*count) {
+    else if (message.length != l + count*30) {
         NSLog(@"%@:%d malformed addr message, length is %u, should be %u for %u addresses", self.host, self.port,
-              (int)message.length, (int)(l + 30*count), (int)count);
+              (int)message.length, (int)(l + count*30), (int)count);
         return;
     }
     else NSLog(@"%@:%d got addr with %u addresses", self.host, self.port, (int)count);
     
-    for (uint64_t i = 0; i < count; i++) {
-        NSTimeInterval timestamp = [message UInt32AtOffset:l + 30*i] - NSTimeIntervalSince1970;
-        uint64_t services = [message UInt64AtOffset:l + 30*i + 4];
-        uint32_t address = CFSwapInt32BigToHost(*(uint32_t *)((uint8_t *)message.bytes + l + 30*i + 24));
-        uint16_t port = CFSwapInt16BigToHost(*(uint16_t *)((uint8_t *)message.bytes + l + 30*i + 28));
+    for (NSUInteger off = l; off < l + 30*count; off += 30) {
+        NSTimeInterval timestamp = [message UInt32AtOffset:off] - NSTimeIntervalSince1970;
+        uint64_t services = [message UInt64AtOffset:off + sizeof(uint32_t)];
+        uint32_t address = CFSwapInt32BigToHost(*(uint32_t *)((uint8_t *)message.bytes + off + sizeof(uint32_t) + 20));
+        uint16_t port = CFSwapInt16BigToHost(*(uint16_t *)((uint8_t *)message.bytes + off + sizeof(uint32_t)*2 + 20));
         
         // if address time is more than 10min in the future or older than reference date, set to 5 days old
         if (timestamp > now + 10*60 || timestamp < 0) timestamp = now - 5*24*60*60;
@@ -467,17 +477,18 @@ services:(uint64_t)services
     
     if (l == 0 || message.length < l + count*36) {
         NSLog(@"%@:%u malformed inv message, length is %u, should be %u for %u items", self.host, self.port,
-              (int)message.length, (int)(l == 0 ? 1 : l) + (int)count*36, (int)count);
+              (int)message.length, (int)((l == 0) ? 1 : l) + (int)count*36, (int)count);
         return;
     }
-    else if (count > 50000) {
-        NSLog(@"%@:%u dropping inv message, %u is too many items (max 50000)", self.host, self.port, (int)count);
+    else if (count > MAX_GETDATA_HASHES) {
+        NSLog(@"%@:%u dropping inv message, %u is too many items, max is %d", self.host, self.port, (int)count,
+              MAX_GETDATA_HASHES);
         return;
     }
     
-    for (NSUInteger i = 0; i < count; i++) {
-        inv_t type = [message UInt32AtOffset:l + i*36];
-        NSData *hash = [message hashAtOffset:l + i*36 + sizeof(uint32_t)];
+    for (NSUInteger off = l; off < l + 36*count; off += 36) {
+        inv_t type = [message UInt32AtOffset:off];
+        NSData *hash = [message hashAtOffset:off + sizeof(uint32_t)];
         
         if (! hash) continue;
         
@@ -491,7 +502,7 @@ services:(uint64_t)services
 
     NSLog(@"%@:%u got inv with %u items", self.host, self.port, (int)count);
 
-    if (blockHashes.count >= 500) { // this is probably a chain download inv, request next chunk
+    if (blockHashes.count >= 500) { // this is probably a chain download inv, so request the next chunk
         [self sendGetblocksMessageWithLocators:@[blockHashes.lastObject, blockHashes[0]] andHashStop:nil];
     }
 
@@ -515,6 +526,8 @@ services:(uint64_t)services
     
     NSLog(@"%@:%u got tx %@", self.host, self.port, tx.txHash);
     
+    [self.delegate peer:self relayedTransaction:tx];
+    
     if (self.currentBlock) { // we're collecting tx message for a merkleblock
         [self.currentTxHashes removeObject:tx.txHash];
         if (self.currentTxHashes.count == 0) { // we received the entire block including all matched tx
@@ -523,8 +536,6 @@ services:(uint64_t)services
             self.currentTxHashes = nil;
         }
     }
-    
-    [self.delegate peer:self relayedTransaction:tx];
 }
 
 - (void)acceptGetaddrMessage:(NSData *)message
@@ -537,6 +548,58 @@ services:(uint64_t)services
     NSLog(@"%@:%u got getaddr", self.host, self.port);
     
     [self sendAddrMessage];
+}
+
+- (void)acceptGetdataMessage:(NSData *)message
+{
+    NSUInteger l, count = [message varIntAtOffset:0 length:&l];
+    
+    if (l == 0 || message.length < l + count*36) {
+        NSLog(@"%@:%u malformed getdata message, length is %u, should be %u for %u items", self.host, self.port,
+              (int)message.length, (int)((l == 0) ? 1 : l) + (int)count*36, (int)count);
+        return;
+    }
+    else if (count > 50000) {
+        NSLog(@"%@:%u dropping getdata message, %u is too many items, max is %d", self.host, self.port, (int)count,
+              MAX_GETDATA_HASHES);
+        return;
+    }
+    
+    NSLog(@"%@:%u got getdata", self.host, self.port);
+    
+    NSMutableData *notfound = [NSMutableData data];
+    
+    for (NSUInteger off = l; off < l + count*36; off += 36) {
+        inv_t type = [message UInt32AtOffset:off];
+        NSData *hash = [message hashAtOffset:off + sizeof(uint32_t)];
+        ZNTransaction *transaction = nil;
+        
+        if (! hash) continue;
+        
+        switch (type) {
+            case tx:
+                transaction = [self.delegate peer:self requestedTransaction:hash];
+                
+                if (transaction) {
+                    [self sendMessage:transaction.data type:MSG_TX];
+                    break;
+                }
+                
+                // fall through
+            default:
+                [notfound appendUInt32:type];
+                [notfound appendData:hash];
+                break;
+        }
+    }
+
+    if (notfound.length > 0) {
+        NSMutableData *msg = [NSMutableData data];
+        
+        [msg appendVarInt:notfound.length/36];
+        [msg appendData:notfound];
+        [self sendMessage:msg type:MSG_NOTFOUND];
+    }
 }
 
 - (void)acceptPingMessage:(NSData *)message

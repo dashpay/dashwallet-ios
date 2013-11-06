@@ -25,12 +25,19 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
-#import "ZNOutputEntity.h"
 
-@class ZNTransactionEntity;
+@class ZNTransactionEntity, ZNTransaction;
 
-@interface ZNTxOutputEntity : ZNOutputEntity
+@interface ZNTxOutputEntity : NSManagedObject
 
+@property (nonatomic, retain) NSData *txHash; // little endian
+@property (nonatomic) int32_t n;
+@property (nonatomic, retain) NSString *address;
+@property (nonatomic, retain) NSData *script;
+@property (nonatomic) int64_t value;
+@property (nonatomic) BOOL spent;
 @property (nonatomic, retain) ZNTransactionEntity *transaction;
+
+- (instancetype)setAttributesFromTx:(ZNTransaction *)tx outputIndex:(NSUInteger)index;
 
 @end

@@ -30,7 +30,6 @@
 #import "ZNTransaction.h"
 #import "ZNTransactionEntity.h"
 #import "ZNTxOutputEntity.h"
-#import "ZNUnspentOutputEntity.h"
 #import "ZNMerkleBlock.h"
 #import "ZNMerkleBlockEntity.h"
 #import "ZNAddressEntity.h"
@@ -103,6 +102,7 @@ static NSMutableDictionary *checkpoints;
 @property (nonatomic, assign) NSUInteger filterElemCount;
 @property (nonatomic, assign) BOOL filterWasReset;
 @property (nonatomic, strong) NSMutableArray *blockChain;
+@property (nonatomic, strong) NSMutableDictionary *publishedTx;
 
 @end
 
@@ -313,6 +313,20 @@ static NSMutableDictionary *checkpoints;
     }
 }
 
+- (void)publishTransaction:(ZNTransaction *)transaction
+{
+    self.publishedTx[transaction.txHash] = transaction;
+
+    for (ZNPeer *peer in self.peers) {
+        [peer sendInvMessageWithTxHash:transaction.txHash];
+    }
+}
+
+- (BOOL)verifyTransaction:(ZNTransaction *)transaction
+{
+    //TODO: XXXX send getdata and wait for a tx response
+}
+
 - (void)peerMisbehavin:(ZNPeer *)peer
 {
     //TODO: XXXX mark peer as misbehaving and disconnect
@@ -419,36 +433,8 @@ static NSMutableDictionary *checkpoints;
 
 - (void)peer:(ZNPeer *)peer relayedTransaction:(ZNTransaction *)transaction
 {
-    ZNTransactionEntity *tx = [ZNTransactionEntity objectsMatching:@"txHash == %@", transaction.txHash].lastObject;
-    __block NSUInteger idx = 0;
-    __block BOOL valid = YES;
     NSMutableData *d = [NSMutableData data];
-    
-    if (tx) { // we already have the transaction, and now we also know that a bitcoin node is willing to relay it
-        //TODO: XXXX mark transaction as having been relayed
-        return;
-    }
 
-    // relayed transactions don't contain input scripts, input scripts must be obtained from previous tx outputs
-    [[ZNTransactionEntity context] performBlockAndWait:^{
-        //TODO: XXXX performance issues here
-        for (NSData *hash in transaction.inputHashes) { // lookup input addresses
-            uint32_t n = [transaction.inputIndexes[idx++] unsignedIntValue];
-            ZNTransactionEntity *e = [ZNTransactionEntity objectsMatching:@"txHash == %@", hash].lastObject;
-        
-            if (! e) continue; // if the input tx is missing, then that input tx didn't involve wallet addresses
-        
-            if (n > e.outputs.count) {
-                NSLog(@"invalid transaction, input %u has non-existant previous output index", (int)idx - 1);
-                valid = NO;
-                return;
-            }
-        
-            //TODO: refactor to use actual previous output script instead of generating a standard one from the address
-            [transaction setInputAddress:[(ZNTxOutputEntity *)e.outputs[n] address] atIndex:idx - 1];
-        }
-    }];
-    
     for (uint32_t n = 0; n < transaction.outputAddresses.count; n++) {
         [d setData:transaction.txHash];
         [d appendUInt32:n];
@@ -462,8 +448,18 @@ static NSMutableDictionary *checkpoints;
             [peer sendMessage:self.bloomFilter.data type:MSG_FILTERLOAD];
         }
     }
+
+    if (! [[ZNWallet sharedInstance] registerTransaction:transaction]) return;
     
-    if (valid) [[ZNWallet sharedInstance] registerTransaction:transaction];
+    ZNTransactionEntity *tx = [ZNTransactionEntity objectsMatching:@"txHash == %@", transaction.txHash].lastObject;
+    
+    if (tx) { // we already have the transaction, and now we also know that a bitcoin node is willing to relay it
+        //TODO: XXXX mark transaction as having been relayed
+        return;
+    }
+    
+    // if we're not downloading the chain, relay the tx to other peers so we have plausible deniability for our own
+    //TODO: XXXX relay tx to other peers
 }
 
 - (void)peer:(ZNPeer *)peer relayedBlock:(ZNMerkleBlock *)block
@@ -588,7 +584,7 @@ static NSMutableDictionary *checkpoints;
         }
         
         for (ZNTransactionEntity *tx in [ZNTransactionEntity objectsMatching:@"blockHeight > %d", h]) {
-            tx.blockHeight = 0; // mark transactions after the join point as unconfirmed
+            tx.blockHeight = TX_UNCONFIRMED; // mark transactions after the join point as unconfirmed
         }
         
         for (e in [ZNMerkleBlockEntity objectsMatching:@"height > %d", h]) {
@@ -610,6 +606,14 @@ static NSMutableDictionary *checkpoints;
         self.topBlockHeight = height;
         if ((height % BITCOIN_DIFFICULTY_INTERVAL) == 0) self.transitionTime = block.timestamp;
     }];
+}
+
+- (ZNTransaction *)peer:(ZNPeer *)peer requestedTransaction:(NSData *)txHash
+{
+    ZNTransaction *tx = self.publishedTx[txHash];
+    
+    return tx ? tx : [[ZNTransactionEntity objectsMatching:@"txHash == %@ && blockHeight == %d", txHash,
+                       TX_UNCONFIRMED].lastObject transaction];
 }
 
 @end

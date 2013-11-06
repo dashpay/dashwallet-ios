@@ -45,7 +45,7 @@
 // returns the amount that the given transaction returns to a change address
 - (uint64_t)transactionChange:(ZNTransaction *)transaction;
 
-// returns the first trasnaction output address not contained in the wallet
+// returns the first transaction output address not contained in the wallet
 - (NSString *)transactionTo:(ZNTransaction *)transaction;
 
 @end

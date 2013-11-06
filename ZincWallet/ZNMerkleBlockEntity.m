@@ -81,7 +81,7 @@
         for (ZNMerkleBlock *block in chain) {
             ZNMerkleBlockEntity *e = allBlocks[block.blockHash];
 
-            if (! e) {
+            if (! e || e.isDeleted) {
                 e = [ZNMerkleBlockEntity managedObject];
                 e.blockHash = block.blockHash;
                 allBlocks[e.blockHash] = e;
@@ -125,6 +125,7 @@
     return (e != nil) ? YES : NO;
 }
 
+//TODO: XXXX change this to be just a set of all the block hashes
 + (NSMutableDictionary *)_allBlocks
 {
     static NSMutableDictionary *allBlocks = nil;

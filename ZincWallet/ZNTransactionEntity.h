@@ -35,17 +35,15 @@
 @property (nonatomic, retain) NSData *txHash; // little endian
 @property (nonatomic) int32_t blockHeight;
 @property (nonatomic) NSTimeInterval timeStamp;
-@property (nonatomic) int64_t txIndex;
 @property (nonatomic, retain) NSOrderedSet *inputs;
 @property (nonatomic, retain) NSOrderedSet *outputs;
-
-+ (instancetype)createOrUpdateWithJSON:(NSDictionary *)JSON;
+@property (nonatomic) int32_t lockTime;
 
 // more efficient method for updating the heights of all the transactions in a long chain of blocks
 + (NSArray *)updateHeightsWithChain:(NSArray *)chain startHeight:(int32_t)height;
 
-- (instancetype)setAttributesFromJSON:(NSDictionary *)JSON;
 - (instancetype)setAttributesFromTx:(ZNTransaction *)tx;
+- (ZNTransaction *)transaction;
 
 @end
 

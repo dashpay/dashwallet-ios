@@ -25,9 +25,30 @@
 
 #import "ZNTxInputEntity.h"
 #import "ZNTransactionEntity.h"
+#import "ZNTransaction.h"
+#import "ZNTxOutputEntity.h"
+#import "NSManagedObject+Utils.h"
 
 @implementation ZNTxInputEntity
 
+@dynamic txHash;
+@dynamic n;
+@dynamic signature;
+@dynamic sequence;
 @dynamic transaction;
+
+- (instancetype)setAttributesFromTx:(ZNTransaction *)tx inputIndex:(NSUInteger)index
+{
+    [[self managedObjectContext] performBlockAndWait:^{
+        self.txHash = tx.inputHashes[index];
+        self.n = [tx.inputIndexes[index] intValue];
+        self.signature = (tx.inputSignatures[index] != [NSNull null]) ? tx.inputSignatures[index] : nil;
+        self.sequence = [tx.inputSequences[index] intValue];
+    
+        [[ZNTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", self.txHash, self.n].lastObject setSpent:YES];
+    }];
+    
+    return self;
+}
 
 @end

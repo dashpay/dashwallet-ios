@@ -172,7 +172,7 @@
                 __block BOOL withinWallet = NO;
                 
                 [[NSManagedObject context] performBlockAndWait:^{
-                    height = tx.blockHeight ? w.lastBlockHeight - tx.blockHeight : 0;
+                    height = (tx.blockHeight != TX_UNCONFIRMED) ? w.lastBlockHeight - tx.blockHeight : 0;
                 
                     for (ZNTxInputEntity *i in tx.inputs) {
                         if (i.address && [w containsAddress:i.address]) spent += i.value;

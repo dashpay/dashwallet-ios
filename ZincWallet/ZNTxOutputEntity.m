@@ -25,9 +25,30 @@
 
 #import "ZNTxOutputEntity.h"
 #import "ZNTransactionEntity.h"
+#import "ZNTransaction.h"
+#import "NSManagedObject+Utils.h"
 
 @implementation ZNTxOutputEntity
 
+@dynamic txHash;
+@dynamic n;
+@dynamic address;
+@dynamic script;
+@dynamic value;
+@dynamic spent;
 @dynamic transaction;
+
+- (instancetype)setAttributesFromTx:(ZNTransaction *)tx outputIndex:(NSUInteger)index
+{
+    [[self managedObjectContext] performBlockAndWait:^{
+        self.txHash = tx.txHash;
+        self.n = index;
+        self.address = tx.outputAddresses[index];
+        self.script = tx.outputScripts[index];
+        self.value = [tx.outputAmounts[index] longLongValue];
+    }];
+    
+    return self;
+}
 
 @end

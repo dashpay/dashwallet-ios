@@ -31,8 +31,6 @@
 @dynamic address;
 @dynamic index;
 @dynamic internal;
-@dynamic newTx;
-@dynamic txCount;
 
 + (instancetype)entityWithAddress:(NSString *)address index:(int32_t)index internal:(BOOL)internal
 {
@@ -43,33 +41,9 @@
         e.address = address;
         e.index = index;
         e.internal = internal;
-        e.newTx = NO;
-        e.txCount = 0;
     }];
     
     return e;
-}
-
-// updates the appropriate entity from JSON, returns the updated entity or nil if no updates were made or on error
-+ (instancetype)updateWithJSON:(NSDictionary *)JSON
-{
-    if (! [JSON isKindOfClass:[NSDictionary class]] || ! [JSON[@"address"] isKindOfClass:[NSString class]]) return nil;
-    
-    __block ZNAddressEntity *address = nil;
-    
-    [[self context] performBlockAndWait:^{
-        address = [self objectsMatching:@"address == %@", JSON[@"address"]].lastObject;
-    
-        if (! address) return;
-    
-        if ([JSON[@"n_tx"] isKindOfClass:[NSNumber class]] && [JSON[@"n_tx"] intValue] != address.txCount) {
-            address.txCount = [JSON[@"n_tx"] intValue];
-            address.newTx = YES;
-        }
-        else address = nil;
-    }];
-    
-    return address;
 }
 
 @end

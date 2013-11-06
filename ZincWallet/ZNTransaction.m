@@ -37,9 +37,8 @@
 
 @interface ZNTransaction ()
 
-@property (nonatomic, strong) NSMutableArray *hashes, *indexes, *inScripts;
+@property (nonatomic, strong) NSMutableArray *hashes, *indexes, *inScripts, *signatures, *sequences;
 @property (nonatomic, strong) NSMutableArray *amounts, *addresses, *outScripts;
-@property (nonatomic, strong) NSMutableArray *signatures, *sequences;
 
 @end
 
@@ -59,6 +58,7 @@
     self.signatures = [NSMutableArray array];
     self.sequences = [NSMutableArray array];
     _lockTime = TX_LOCKTIME;
+    _blockHeight = TX_UNCONFIRMED;
     
     return self;
 }
@@ -90,6 +90,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     }
     
     _lockTime = TX_LOCKTIME;
+    _blockHeight = TX_UNCONFIRMED;
 
     return self;
 }
@@ -131,23 +132,29 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
         d = [data dataAtOffset:off length:&l];
         [self.outScripts addObject:d ? d : [NSNull null]]; // output script
         off += l;
-        address = [NSString addressWithScript:self.outScripts.lastObject]; // address from output script if applicable
+        address = [NSString addressWithScript:d]; // address from output script if applicable
         [self.addresses addObject:address ? address : [NSNull null]];
     }
     
     _lockTime = [data UInt32AtOffset:off]; // tx locktime
-
+    
     return self;
 }
 
 // hashes are expected to already be little endian
 - (void)addInputHash:(NSData *)hash index:(NSUInteger)index script:(NSData *)script
 {
+    [self addInputHash:hash index:index script:script signature:nil sequence:TXIN_SEQUENCE];
+}
+
+- (void)addInputHash:(NSData *)hash index:(NSUInteger)index script:(NSData *)script signature:(NSData *)signature
+sequence:(uint32_t)sequence
+{
     [self.hashes addObject:hash];
     [self.indexes addObject:@(index)];
-    [self.inScripts addObject:script];
-    [self.signatures addObject:[NSNull null]];
-    [self.sequences addObject:@(TXIN_SEQUENCE)];
+    [self.inScripts addObject:script ? script : [NSNull null]];
+    [self.signatures addObject:signature ? signature : [NSNull null]];
+    [self.sequences addObject:@(sequence)];
 }
 
 - (void)addOutputAddress:(NSString *)address amount:(uint64_t)amount
@@ -156,6 +163,15 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     [self.addresses addObject:address];
     [self.outScripts addObject:[NSMutableData data]];
     [self.outScripts.lastObject appendScriptPubKeyForAddress:address];
+}
+
+- (void)addOutputScript:(NSData *)script amount:(uint64_t)amount;
+{
+    NSString *address = [NSString addressWithScript:script];
+
+    [self.amounts addObject:@(amount)];
+    [self.outScripts addObject:script];
+    [self.addresses addObject:address ? address : [NSNull null]];
 }
 
 - (void)setInputAddress:(NSString *)address atIndex:(NSUInteger)index;
@@ -196,6 +212,11 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 - (NSArray *)inputScripts
 {
     return self.inScripts;
+}
+
+- (NSArray *)inputSignatures
+{
+    return self.signatures;
 }
 
 - (NSArray *)inputSequences
@@ -336,7 +357,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     return p/self.size;
 }
 
-// the block height after which the transaction can be confirmed without a fee, or NSNotFound for never
+// the block height after which the transaction can be confirmed without a fee, or TX_UNCONFIRMRED for never
 - (NSUInteger)blockHeightUntilFreeForAmounts:(NSArray *)amounts withBlockHeights:(NSArray *)heights
 {
     if (amounts.count != self.hashes.count || heights.count != self.hashes.count) return NSNotFound;
