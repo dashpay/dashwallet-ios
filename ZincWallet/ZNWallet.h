@@ -46,7 +46,6 @@
 @property (nonatomic, readonly) uint32_t estimatedCurrentBlockHeight;
 @property (nonatomic, readonly) uint32_t lastBlockHeight;
 @property (nonatomic, readonly, getter = isSynchronizing) BOOL synchronizing;
-@property (nonatomic, readonly) NSTimeInterval timeSinceLastSync;
 @property (nonatomic, strong) NSNumberFormatter *format;
 
 + (instancetype)sharedInstance;
@@ -64,7 +63,11 @@
 - (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
 completion:(void (^)(ZNTransaction *tx, NSError *error))completion;
 - (void)publishTransaction:(ZNTransaction *)transaction completion:(void (^)(NSError *error))completion;
+
+// true if the given transaction is associated with the wallet, false otherwise
 - (BOOL)containsTransaction:(ZNTransaction *)transaction;
+
+// returns false if the transaction wasn't associated with the wallet
 - (BOOL)registerTransaction:(ZNTransaction *)transaction;
 
 @end

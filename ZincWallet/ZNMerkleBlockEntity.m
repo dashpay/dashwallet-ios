@@ -51,7 +51,7 @@
         if (! e) {
             e = [ZNMerkleBlockEntity managedObject];
             e.blockHash = block.blockHash;
-            [self _allBlocks][e.blockHash] = e;
+            [[self _allBlockHashes] addObject:e.blockHash];
         }
        
         e.version = block.version;
@@ -75,16 +75,20 @@
     NSMutableArray *a = [NSMutableArray arrayWithCapacity:chain.count];
     
     [[self context] performBlockAndWait:^{
-        NSMutableDictionary *allBlocks = [self _allBlocks];
+        NSMutableSet *blockHashes = [self _allBlockHashes];
         NSUInteger idx = 0;
         
         for (ZNMerkleBlock *block in chain) {
-            ZNMerkleBlockEntity *e = allBlocks[block.blockHash];
+            ZNMerkleBlockEntity *e = nil;
+            
+            if ([blockHashes containsObject:block.blockHash]) {
+                e = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", block.blockHash].lastObject;
+            }
 
-            if (! e || e.isDeleted) {
+            if (! e) {
                 e = [ZNMerkleBlockEntity managedObject];
                 e.blockHash = block.blockHash;
-                allBlocks[e.blockHash] = e;
+                [blockHashes addObject:block.blockHash];
                 e.version = block.version;
                 e.prevBlock = block.prevBlock;
                 e.merkleRoot = block.merkleRoot;
@@ -125,23 +129,18 @@
     return (e != nil) ? YES : NO;
 }
 
-//TODO: XXXX change this to be just a set of all the block hashes
-+ (NSMutableDictionary *)_allBlocks
++ (NSMutableSet *)_allBlockHashes
 {
-    static NSMutableDictionary *allBlocks = nil;
+    static NSMutableSet *blockHashes = nil;
     static dispatch_once_t onceToken = 0;
     
     dispatch_once(&onceToken, ^{
-        allBlocks = [NSMutableDictionary dictionary];
-
         [[self context] performBlockAndWait:^{
-            for (ZNMerkleBlockEntity *e in [ZNMerkleBlockEntity allObjects]) {
-                allBlocks[e.blockHash] = e;
-            }
+            blockHashes = [NSMutableSet setWithArray:[[ZNMerkleBlockEntity allObjects] valueForKey:@"blockHash"]];
         }];
     });
     
-    return allBlocks;
+    return blockHashes;
 }
 
 - (ZNMerkleBlock *)merkleBlock

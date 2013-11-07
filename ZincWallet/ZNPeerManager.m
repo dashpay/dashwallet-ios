@@ -102,7 +102,7 @@ static NSMutableDictionary *checkpoints;
 @property (nonatomic, assign) NSUInteger filterElemCount;
 @property (nonatomic, assign) BOOL filterWasReset;
 @property (nonatomic, strong) NSMutableArray *blockChain;
-@property (nonatomic, strong) NSMutableDictionary *publishedTx;
+@property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
 
 @end
 
@@ -143,19 +143,25 @@ static NSMutableDictionary *checkpoints;
 #warning remove this!
     [ZNMerkleBlockEntity deleteObjects:[ZNMerkleBlockEntity allObjects]]; //XXXX <--- this right here, YES THIS!
     
-    ZNMerkleBlockEntity *e = [ZNMerkleBlockEntity objectsSortedBy:@"height" ascending:NO offset:0 limit:1].lastObject;
+    ZNMerkleBlockEntity *b = [ZNMerkleBlockEntity objectsSortedBy:@"height" ascending:NO offset:0 limit:1].lastObject;
 
-    if (! e || [[e get:@"height"] intValue] < 0) {
-        e = [ZNMerkleBlockEntity createOrUpdateWithMerkleBlock:GENESIS_BLOCK atHeight:0];
+    if (! b || [[b get:@"height"] intValue] < 0) {
+        b = [ZNMerkleBlockEntity createOrUpdateWithMerkleBlock:GENESIS_BLOCK atHeight:0];
     }
 
     self.tweak = mrand48();
     self.blockChain = [NSMutableArray array];
-    self.topBlockHeight = [[e get:@"height"] intValue];
-    self.topBlock = [e merkleBlock];
-    e = [ZNMerkleBlockEntity objectsMatching:@"height == %d",
+    self.topBlockHeight = [[b get:@"height"] intValue];
+    self.topBlock = [b merkleBlock];
+    b = [ZNMerkleBlockEntity objectsMatching:@"height == %d",
          self.topBlockHeight - (self.topBlockHeight % BITCOIN_DIFFICULTY_INTERVAL)].lastObject;
-    if (e) self.transitionTime = [[e get:@"timestamp"] timeIntervalSinceReferenceDate];
+    if (b) self.transitionTime = [[b get:@"timestamp"] timeIntervalSinceReferenceDate];
+    self.publishedTx = [NSMutableDictionary dictionary];
+    self.publishedCallback = [NSMutableDictionary dictionary];
+    
+    for (ZNTransactionEntity *e in [ZNTransactionEntity objectsMatching:@"blockHeight == %d", TX_UNCONFIRMED]) {
+        self.publishedTx[[e get:@"txHash"]] = [e transaction];
+    }
     
     //TODO: monitor network reachability and reconnect whenever connection becomes available
     //TODO: disconnect peers when app is backgrounded unless we're syncing or launching mobile web app tx handler
@@ -262,7 +268,7 @@ static NSMutableDictionary *checkpoints;
     if (_bloomFilter) return _bloomFilter;
 
     NSArray *addresses = [ZNAddressEntity allObjects];
-    NSArray *utxos = [ZNUnspentOutputEntity allObjects];
+    NSArray *utxos = [ZNTxOutputEntity objectsMatching:@"spent == NO"];
 
     // set the filter element count to the next largest multiple of 100, and use a fixed tweak to reduce the information
     // leaked to the remote peer when the filter is reset
@@ -278,7 +284,7 @@ static NSMutableDictionary *checkpoints;
             if (d.length == 160/8 + 1) [_bloomFilter insertData:[d subdataWithRange:NSMakeRange(1, d.length - 1)]];
         }
         
-        for (ZNUnspentOutputEntity *e in utxos) {
+        for (ZNTxOutputEntity *e in utxos) {
             NSMutableData *d = [NSMutableData data];
             
             [d appendData:e.txHash];
@@ -313,18 +319,22 @@ static NSMutableDictionary *checkpoints;
     }
 }
 
-- (void)publishTransaction:(ZNTransaction *)transaction
+- (void)publishTransaction:(ZNTransaction *)transaction completion:(void (^)(NSError *error))completion
 {
     self.publishedTx[transaction.txHash] = transaction;
+    self.publishedCallback[transaction.txHash] = completion;
+
+    //TODO: XXXX setup a publish timeout
 
     for (ZNPeer *peer in self.peers) {
         [peer sendInvMessageWithTxHash:transaction.txHash];
     }
 }
 
-- (BOOL)verifyTransaction:(ZNTransaction *)transaction
+- (void)verifyTransaction:(ZNTransaction *)transaction completion:(void (^)(BOOL verified))completion;
 {
     //TODO: XXXX send getdata and wait for a tx response
+    if (completion) completion(YES);
 }
 
 - (void)peerMisbehavin:(ZNPeer *)peer
@@ -529,7 +539,8 @@ static NSMutableDictionary *checkpoints;
         self.topBlock = block;
         self.topBlockHeight = height;
         if ((height % BITCOIN_DIFFICULTY_INTERVAL) == 0) self.transitionTime = block.timestamp;
-        
+        [self.publishedTx removeObjectsForKeys:block.txHashes]; // remove confirmed transactions from publish list
+
         if (self.blockChain.count >= 500) {
             chain = [NSArray arrayWithArray:self.blockChain];
             [self.blockChain removeAllObjects];
@@ -555,6 +566,7 @@ static NSMutableDictionary *checkpoints;
 
     if ([ZNMerkleBlockEntity countObjectsMatching:@"blockHash == %@", block.blockHash] > 0) { // already have the block
         [ZNMerkleBlockEntity updateTreeFromMerkleBlock:block]; // update merkle tree with any new matched transactions
+        [self.publishedTx removeObjectsForKeys:block.txHashes]; // remove confirmed transactions from publish list
 
         for (ZNTransactionEntity *tx in [ZNTransactionEntity objectsMatching:@"txHash in %@", block.txHashes]) {
             [tx set:@"blockHeight" to:@(height)]; // mark transactions in the new block as having a confirmation
@@ -602,6 +614,17 @@ static NSMutableDictionary *checkpoints;
             b = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", b.prevBlock].lastObject;
         }
         
+        // remove any confirmed tx from the publish list
+        for (ZNTransactionEntity *e in [ZNTransactionEntity objectsMatching:@"blockHeight != %d && txHash in %@",
+                                        TX_UNCONFIRMED, self.publishedTx.allKeys]) {
+            [self.publishedTx removeObjectForKey:[e get:@"txHash"]];
+        }
+
+        // re-publish any transactions that may have become unconfirmed
+        for (ZNTransactionEntity *e in [ZNTransactionEntity objectsMatching:@"blockHeight == %d", TX_UNCONFIRMED]) {
+            [self publishTransaction:e.transaction completion:nil];
+        }
+        
         self.topBlock = block;
         self.topBlockHeight = height;
         if ((height % BITCOIN_DIFFICULTY_INTERVAL) == 0) self.transitionTime = block.timestamp;
@@ -611,9 +634,17 @@ static NSMutableDictionary *checkpoints;
 - (ZNTransaction *)peer:(ZNPeer *)peer requestedTransaction:(NSData *)txHash
 {
     ZNTransaction *tx = self.publishedTx[txHash];
+    void (^callback)(NSError *error) = self.publishedCallback[txHash];
     
-    return tx ? tx : [[ZNTransactionEntity objectsMatching:@"txHash == %@ && blockHeight == %d", txHash,
-                       TX_UNCONFIRMED].lastObject transaction];
+    if (tx) {
+        [self.publishedCallback removeObjectForKey:txHash];
+        //TODO: XXXX cancel callback timeout
+        if (callback) callback(nil);
+        return tx;
+    }
+    
+    return [[ZNTransactionEntity objectsMatching:@"txHash == %@ && blockHeight == %d", txHash,
+             TX_UNCONFIRMED].lastObject transaction];
 }
 
 @end

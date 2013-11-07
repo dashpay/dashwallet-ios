@@ -28,7 +28,6 @@
 #import "ZNReceiveViewController.h"
 #import "ZNWallet.h"
 #import "ZNWallet+Utils.h"
-#import "ZNSocketListener.h"
 #import "ZNPeerManager.h"
 #import <netinet/in.h>
 #import "Reachability.h"
@@ -85,11 +84,7 @@
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (w.timeSinceLastSync > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
-            else if (w.masterPublicKey) {
-                [[ZNSocketListener sharedInstance] openSocket];
-                [[ZNPeerManager sharedInstance] connect];
-            }
+            if (w.masterPublicKey) [[ZNPeerManager sharedInstance] connect];
         }];
     
     // TODO: switch to AFNetworkingReachability
@@ -97,11 +92,7 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             //TODO: XXXX check reachability status? changed != reachable
-            if (w.timeSinceLastSync > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
-            else if (w.masterPublicKey) {
-                [[ZNSocketListener sharedInstance] openSocket];
-                [[ZNPeerManager sharedInstance] connect];
-            }
+            if (w.masterPublicKey) [[ZNPeerManager sharedInstance] connect];
         }];
     
     self.balanceObserver =
@@ -133,10 +124,7 @@
             self.navigationItem.rightBarButtonItem = self.refreshButton;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                          [w localCurrencyStringForAmount:w.balance]];
-            if (w.masterPublicKey) {
-                [[ZNSocketListener sharedInstance] openSocket];
-                [[ZNPeerManager sharedInstance] connect];
-            }
+            if (w.masterPublicKey) [[ZNPeerManager sharedInstance] connect];
         }];
     
     //TODO: create an error banner instead of using an alert
@@ -238,11 +226,7 @@
 {
     [super viewDidAppear:animated];
     
-    if ([[ZNWallet sharedInstance] timeSinceLastSync] > DEFAULT_SYNC_INTERVAL) [self refresh:nil];
-    else if ([ZNWallet sharedInstance].masterPublicKey) {
-        [[ZNSocketListener sharedInstance] openSocket];
-        [[ZNPeerManager sharedInstance] connect];
-    }
+    if ([ZNWallet sharedInstance].masterPublicKey) [[ZNPeerManager sharedInstance] connect];
 }
 
 - (ZNPayViewController *)payController
@@ -275,7 +259,7 @@
     if ([[ZNWallet sharedInstance] balance] == 0) self.navigationItem.title = @"syncing...";
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[ZNWallet sharedInstance] synchronize:(sender == nil) ? NO : YES];
+        [[ZNWallet sharedInstance] synchronize];
     });
 }
 

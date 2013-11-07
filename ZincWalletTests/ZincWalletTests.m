@@ -506,7 +506,8 @@
     
     ZNMerkleBlock *mb = [ZNMerkleBlock blockWithMessage:block];
     
-    STAssertEqualObjects(mb.blockHash, @"00000000000080b66c911bd5ba14a74260057311eaeb1982802f7010f1a9f090".hexToData,
+    STAssertEqualObjects(mb.blockHash,
+                         [@"00000000000080b66c911bd5ba14a74260057311eaeb1982802f7010f1a9f090".hexToData reverse],
                          @"[ZNMerkleBlock blockHash]");
 
     STAssertTrue(mb.valid, @"[ZNMerkleBlock isValid]");

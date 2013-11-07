@@ -28,11 +28,11 @@
 #if BITCOIN_TESTNET
 #define BITCOIN_STANDARD_PORT          18333
 #define BITCOIN_REFERENCE_BLOCK_HEIGHT 0
-#define BITCOIN_REFERENCE_BLOCK_TIME   1296688602.0
+#define BITCOIN_REFERENCE_BLOCK_TIME   (1296688602.0 - NSTimeIntervalSince1970)
 #else
 #define BITCOIN_STANDARD_PORT          8333
 #define BITCOIN_REFERENCE_BLOCK_HEIGHT 250000
-#define BITCOIN_REFERENCE_BLOCK_TIME   1375533383.0
+#define BITCOIN_REFERENCE_BLOCK_TIME   (1375533383.0 - NSTimeIntervalSince1970)
 #endif
 
 // explanation of message types at: https://en.bitcoin.it/wiki/Protocol_specification

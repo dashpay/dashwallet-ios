@@ -27,6 +27,7 @@
 #import "ZNSeedViewController.h"
 #import "ZNWallet.h"
 #import "ZNWallet+Utils.h"
+#import "ZNTransaction.h"
 #import "ZNTransactionEntity.h"
 #import "ZNTxInputEntity.h"
 #import "ZNTxOutputEntity.h"
@@ -175,7 +176,10 @@
                     height = (tx.blockHeight != TX_UNCONFIRMED) ? w.lastBlockHeight - tx.blockHeight : 0;
                 
                     for (ZNTxInputEntity *i in tx.inputs) {
-                        if (i.address && [w containsAddress:i.address]) spent += i.value;
+                        ZNTxOutputEntity *o = [ZNTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", i.txHash,
+                                               i.n].lastObject;
+
+                        if (o.address && [w containsAddress:o.address]) spent += o.value;
                     }
 
                     withinWallet = (spent > 0) ? YES : NO;

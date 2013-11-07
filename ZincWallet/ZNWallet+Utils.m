@@ -24,12 +24,12 @@
 //  THE SOFTWARE.
 
 #import "ZNWallet+Utils.h"
-#import "ZNTransaction.h"
 #import "ZNKey.h"
-#import "ZNUnspentOutputEntity.h"
+#import "ZNTransaction.h"
+#import "ZNTransactionEntity.h"
+#import "ZNTxOutputEntity.h"
 #import "ZNAddressEntity.h"
 #import "NSManagedObject+Utils.h"
-#import "AFNetworking.h"
 
 #define LOCAL_CURRENCY_SYMBOL_KEY @"LOCAL_CURRENCY_SYMBOL"
 #define LOCAL_CURRENCY_CODE_KEY   @"LOCAL_CURRENCY_CODE"
@@ -111,12 +111,15 @@
     
     // get the heights (which block in the blockchain it's in) of all the transaction inputs
     for (NSData *hash in transaction.inputHashes) {
-        ZNUnspentOutputEntity *o = [ZNUnspentOutputEntity objectsMatching:@"txHash == %@ && n == %d", hash,
-                                    [transaction.inputIndexes[idx++] intValue]].lastObject;
+        ZNTxOutputEntity *o = [ZNTxOutputEntity objectsMatching:@"spent == NO && txHash == %@ && n == %d", hash,
+                               [transaction.inputIndexes[idx++] intValue]].lastObject;
         
         if (! o) break;
-        [amounts addObject:@(o.value)];
-        [heights addObject:@(currentHeight - o.confirmations)];
+        
+        [[o managedObjectContext] performBlockAndWait:^{
+            [amounts addObject:@(o.value)];
+            [heights addObject:@(o.transaction.blockHeight)];
+        }];
     }
     
     NSUInteger height = [transaction blockHeightUntilFreeForAmounts:amounts withBlockHeights:heights];
@@ -135,14 +138,14 @@
     NSUInteger idx = 0;
     
     for (NSData *hash in transaction.inputHashes) {
-        ZNUnspentOutputEntity *o = [ZNUnspentOutputEntity objectsMatching:@"txHash == %@ && n == %d", hash,
-                                    [transaction.inputIndexes[idx++] intValue]].lastObject;
+        ZNTxOutputEntity *o = [ZNTxOutputEntity objectsMatching:@"spent == NO && txHash == %@ && n == %d", hash,
+                               [transaction.inputIndexes[idx++] intValue]].lastObject;
         
         if (! o) {
             amount = 0;
             break;
         }
-        else amount += o.value;
+        else amount += [[o get:@"value"] longLongValue];
     }
     
     return amount;

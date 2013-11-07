@@ -27,7 +27,6 @@
 #import "ZNKey.h"
 #import "ZNPeer.h"
 #import "ZNPeerManager.h"
-#import "ZNSocketListener.h"
 #import "ZNAddressEntity.h"
 #import "ZNTransaction.h"
 #import "ZNTransactionEntity.h"
@@ -42,12 +41,11 @@
 #import "NSMutableData+Bitcoin.h"
 #import "NSString+Base58.h"
 #import "NSManagedObject+Utils.h"
-#import "AFNetworking.h"
 
-#define BASE_URL      @"https://blockchain.info"
-#define UNSPENT_URL   BASE_URL "/unspent?active="
-#define ADDRESS_URL   BASE_URL "/multiaddr?active="
-#define PUSHTX_PATH   @"/pushtx"
+//#define BASE_URL      @"https://blockchain.info"
+//#define UNSPENT_URL   BASE_URL "/unspent?active="
+//#define ADDRESS_URL   BASE_URL "/multiaddr?active="
+//#define PUSHTX_PATH   @"/pushtx"
 #define BTC           @"\xC9\x83"     // capital B with stroke (utf-8)
 #define CURRENCY_SIGN @"\xC2\xA4"     // generic currency sign (utf-8)
 #define NBSP          @"\xC2\xA0"     // no-break space (utf-8)
@@ -56,9 +54,6 @@
 #define LOCAL_CURRENCY_SYMBOL_KEY  @"LOCAL_CURRENCY_SYMBOL"
 #define LOCAL_CURRENCY_CODE_KEY    @"LOCAL_CURRENCY_CODE"
 #define LOCAL_CURRENCY_PRICE_KEY   @"LOCAL_CURRENCY_PRICE"
-#define LATEST_BLOCK_HEIGHT_KEY    @"LATEST_BLOCK_HEIGHT"
-#define LATEST_BLOCK_TIMESTAMP_KEY @"LATEST_BLOCK_TIMESTAMP"
-#define LAST_SYNC_TIME_KEY         @"LAST_SYNC_TIME"
 #define SEED_KEY                   @"seed"
 #define CREATION_TIME_KEY          @"creationtime"
 
@@ -182,8 +177,6 @@ static NSData *getKeychainData(NSString *key)
     [ZNTransactionEntity deleteObjects:[ZNTransactionEntity allObjects]];
     [self.allTxHashes removeAllObjects];
     [ZNMerkleBlockEntity deleteObjects:[ZNMerkleBlockEntity allObjects]];
-    
-    [_defs removeObjectForKey:LAST_SYNC_TIME_KEY]; // clean out wallet values in user defaults
 
     [NSManagedObject saveContext];
     [_defs synchronize];
@@ -230,7 +223,7 @@ static NSData *getKeychainData(NSString *key)
 
 #pragma mark - synchronization
 
-- (void)synchronize:(BOOL)fullSync
+- (void)synchronize
 {
     if (self.synchronizing) return;
     
@@ -248,9 +241,6 @@ static NSData *getKeychainData(NSString *key)
         
         dispatch_async(dispatch_get_main_queue(), ^{
             if ([[ZNPeerManager sharedInstance] connected]) {
-                [_defs setDouble:[NSDate timeIntervalSinceReferenceDate] forKey:LAST_SYNC_TIME_KEY];
-                [_defs synchronize];
-
                 [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
             }
             else [[ZNPeerManager sharedInstance] connect];
@@ -380,7 +370,8 @@ static NSData *getKeychainData(NSString *key)
 
 - (uint32_t)lastBlockHeight
 {
-    uint32_t height = (uint32_t)[_defs integerForKey:LATEST_BLOCK_HEIGHT_KEY];
+    uint32_t height = [[[ZNMerkleBlockEntity objectsSortedBy:@"height" ascending:NO offset:0 limit:1].lastObject
+                        get:@"height"] intValue];
     
     if (! height) height = BITCOIN_REFERENCE_BLOCK_HEIGHT;
     
@@ -389,12 +380,13 @@ static NSData *getKeychainData(NSString *key)
 
 - (uint32_t)estimatedCurrentBlockHeight
 {
-    NSTimeInterval time = [_defs doubleForKey:LATEST_BLOCK_TIMESTAMP_KEY];
+    NSTimeInterval time = [[[ZNMerkleBlockEntity objectsSortedBy:@"height" ascending:NO offset:0 limit:1].lastObject
+                            get:@"timestamp"] intValue];
     
     if (time < 1.0) time = BITCOIN_REFERENCE_BLOCK_TIME;
     
     // average one block every 600 seconds
-    return self.lastBlockHeight + ([NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 - time)/600;
+    return self.lastBlockHeight + ([NSDate timeIntervalSinceReferenceDate] - time)/600;
 }
 
 - (BOOL)containsAddress:(NSString *)address
@@ -554,39 +546,22 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
     
     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncStartedNotification object:nil];
 
-    [[AFHTTPClient clientWithBaseURL:[NSURL URLWithString:BASE_URL]] postPath:PUSHTX_PATH
-    parameters:@{@"tx":[transaction toHex]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"responseObject: %@", responseObject);
-        NSLog(@"response:\n%@", operation.responseString);
-        
-        if ([operation.responseString.lowercaseString rangeOfString:@"error"].location != NSNotFound) {
-            NSError *error = [NSError errorWithDomain:@"ZincWallet" code:500
-                              userInfo:@{NSLocalizedDescriptionKey:operation.responseString}];
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification object:nil
-             userInfo:@{@"error":error}];
-            
-            if (completion) completion(error);
-            return;
-        }
-        
-        [self registerTransaction:transaction];
-        [_defs synchronize];
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
-        if (completion) completion(nil);
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification object:nil
-         userInfo:@{@"error":error}];
+    [self registerTransaction:transaction];
 
-        NSLog(@"%@", operation.responseString);
+    [[ZNPeerManager sharedInstance] publishTransaction:transaction completion:^(NSError *error) {
+        if (error) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification
+             object:@{@"error":error}];
+        }
+        else [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
+        
         if (completion) completion(error);
     }];
 
     //TODO: also publish transactions directly to coinbase and bitpay servers for faster POS experience
 }
 
-// true if the given transaction is associated with the wallet
+// true if the given transaction is associated with the wallet, false otherwise
 - (BOOL)containsTransaction:(ZNTransaction *)transaction
 {
     if ([[NSSet setWithArray:transaction.outputAddresses] intersectsSet:self.allAddresses]) return YES;
@@ -607,7 +582,7 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
     return NO;
 }
 
-// returns a ZNTransactionEntity or nil if the transaction wasn't associated with the wallet
+// returns false if the transaction wasn't associated with the wallet
 - (BOOL)registerTransaction:(ZNTransaction *)transaction
 {
     if (! [self containsTransaction:transaction]) return NO;
@@ -616,32 +591,6 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
     if ([ZNTransactionEntity countObjectsMatching:@"txHash == %@", transaction.txHash] == 0) {
         [[ZNTransactionEntity managedObject] setAttributesFromTx:transaction];
         [self.allTxHashes addObject:transaction.txHash];
-    }
-    
-    [[NSManagedObject context] performBlockAndWait:^{ // WTF? this doesn't work... addresses are just strings
-        [transaction.outputAddresses setValue:@(YES) forKey:@"newTx"]; // mark addresses for update on next wallet sync
-    }];
-    
-    NSUInteger idx = 0;
-
-    // delete any unspent outputs that are now spent
-    for (NSData *hash in transaction.inputHashes) {
-        [[ZNUnspentOutputEntity objectsMatching:@"txHash == %@ && n == %d", hash,
-          [transaction.inputIndexes[idx] intValue]].lastObject deleteObject];
-        idx++;
-    }
-    
-    idx = 0;
-    
-    // add new outputs to unspent outputs
-    for (NSString *address in transaction.outputAddresses) {
-        if ([self containsAddress:address] &&
-            [ZNUnspentOutputEntity countObjectsMatching:@"txHash == %@ && n == %d", transaction.txHash, idx] == 0) {
-            [ZNUnspentOutputEntity entityWithAddress:address txHash:transaction.txHash n:(int)idx
-             value:[transaction.outputAmounts[idx] longLongValue]];
-        }
-        
-        idx++;
     }
     
     [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:nil];

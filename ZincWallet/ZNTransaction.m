@@ -273,9 +273,10 @@ sequence:(uint32_t)sequence
     return YES;
 }
 
+// checks if all signatures exist, but does not verify them
 - (BOOL)isSigned
 {
-    return (self.signatures.count && self.signatures.count == self.hashes.count &&
+    return (self.signatures.count > 0 && self.signatures.count == self.hashes.count &&
             ! [self.signatures containsObject:[NSNull null]]);
 }
 

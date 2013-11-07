@@ -45,6 +45,7 @@
         self.signature = (tx.inputSignatures[index] != [NSNull null]) ? tx.inputSignatures[index] : nil;
         self.sequence = [tx.inputSequences[index] intValue];
     
+        // mark previously unspent outputs as spent
         [[ZNTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", self.txHash, self.n].lastObject setSpent:YES];
     }];
     

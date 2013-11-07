@@ -34,8 +34,6 @@
 #import "ZNStoryboardSegue.h"
 #import "NSString+Base58.h"
 #import "MBProgressHUD.h"
-#import "AFNetworking.h"
-#import "NSData+SRB64Additions.h"
 #import <QuartzCore/QuartzCore.h>
 
 //#define CONNECT_TIMEOUT 5.0
@@ -123,8 +121,6 @@
                 }
             }
             else if ([url.scheme isEqual:@"bitcoin"]) {
-#if APPSTORE
-#endif
                 ZNPaymentRequest *req = [ZNPaymentRequest requestWithURL:url];
         
                 if (! req.label.length) req.label = req.paymentAddress;
@@ -335,46 +331,6 @@
     return _zbarController;
 }
 
-- (void)verifyWebApp:(void (^)(BOOL verified))completion;
-{
-    if ([[_defs stringForKey:WEBAPP_VERSION_KEY] doubleValue] > DBL_EPSILON) {
-        if (completion) completion(YES);
-        return;
-    }
-
-    AFHTTPRequestOperation *op = [[AFHTTPRequestOperation alloc] initWithRequest:[NSURLRequest
-                                  requestWithURL:[NSURL URLWithString:WEBAPP_BASEURL WEBAPP_PATH]
-                                  cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:WEBAPP_TIMEOUT]];
-    
-    [op setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSRegularExpression *re = [NSRegularExpression regularExpressionWithPattern:
-                                   @"<meta\\s+name\\s*=\\s*[\"']version[\"']\\s+content\\s*=\\s*[\"']([^\"'>]*)"
-                                   options:NSRegularExpressionCaseInsensitive error:nil];
-        NSString *s = operation.responseString;
-        NSTextCheckingResult *match = [re firstMatchInString:s options:0 range:NSMakeRange(0, [s length])];
-
-        [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
-
-        //TODO: verify webapp sha hash or signature
-        if (match) {
-            [_defs setObject:[s substringWithRange:[match rangeAtIndex:1]] forKey:WEBAPP_VERSION_KEY];
-            [_defs synchronize];
-            
-            if (completion) completion(YES);
-            return;
-        }
-
-        if (completion) completion(NO);
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
-        
-        if (completion) completion(NO);
-    }];
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncStartedNotification object:nil];
-    [op start];
-}
-
 - (void)confirmTransaction
 {
     if (! self.tx) return;
@@ -384,37 +340,6 @@
     NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:txAmount],
                         [w localCurrencyStringForAmount:txAmount]];
     
-#if APPSTORE
-    [self verifyWebApp:^(BOOL verified) {
-        if (! verified) {
-            // something went wrong so fall back on sending tx from app
-            [[[UIAlertView alloc] initWithTitle:@"confirm payment" message:[w transactionTo:self.tx] delegate:self
-              cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
-            return;
-        }
-
-        NSLog(@"signing transaction");
-        [w signTransaction:self.tx];
-    
-        if (! [self.tx isSigned]) {
-            [[[UIAlertView alloc] initWithTitle:@"couldn't make payment" message:@"error signing bitcoin transaction"
-              delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
-            [self reset:nil];
-            return;
-        }
-    
-        NSLog(@"signed transaction:\n%@", [self.tx toHex]);
-    
-        NSString *url = [NSString stringWithFormat:WEBAPP_BASEURL WEBAPP_PATH @"#%@:%@:%@", self.tx.toHex,
-                         [w transactionTo:self.tx],
-                         [amount stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
-
-        //TODO: check for duplicate transactions
-        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:url]];
-    }];
-    return;
-#endif
-
     [[[UIAlertView alloc] initWithTitle:@"confirm payment" message:[w transactionTo:self.tx] delegate:self
       cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
 }
