@@ -60,14 +60,14 @@ typedef enum {
 @property (nonatomic, strong) NSInputStream *inputStream;
 @property (nonatomic, strong) NSOutputStream *outputStream;
 @property (nonatomic, strong) NSMutableData *msgHeader, *msgPayload, *outputBuffer;
-@property (nonatomic, assign) BOOL sentVerack, gotVerack, chainDownload;
+@property (nonatomic, assign) BOOL sentVerack, gotVerack;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) id reachabilityObserver;
 @property (nonatomic, assign) uint64_t localNonce;
 @property (nonatomic, assign) NSTimeInterval startTime;
 @property (nonatomic, strong) ZNMerkleBlock *currentBlock;
 @property (nonatomic, strong) NSMutableArray *currentTxHashes;
-@property (nonatomic, strong) dispatch_queue_t sendq, receiveq;//, streamq;
+@property (nonatomic, strong) dispatch_queue_t sendq, receiveq, streamq;
 
 @end
 
@@ -139,14 +139,14 @@ services:(uint64_t)services
     self.outputBuffer = [NSMutableData data];
     self.reachability = [Reachability reachabilityWithHostName:self.host];
 
-    //self.streamq = dispatch_queue_create([NSString stringWithFormat:@"cc.zinc.zinc.stream.%@:%d", self.host,
-    //                                      self.port].UTF8String, NULL);
+    self.streamq = dispatch_queue_create([NSString stringWithFormat:@"cc.zinc.zinc.stream.%@:%d", self.host,
+                                          self.port].UTF8String, NULL);
     self.sendq = dispatch_queue_create([NSString stringWithFormat:@"cc.zinc.zinc.send.%@:%d", self.host,
                                         self.port].UTF8String, NULL);
     self.receiveq = dispatch_queue_create([NSString stringWithFormat:@"cc.zinc.zinc.receive.%@:%d", self.host,
                                            self.port].UTF8String, NULL);
     
-    //dispatch_async(self.streamq, ^{
+    dispatch_async(self.streamq, ^{
         CFReadStreamRef readStream = NULL;
         CFWriteStreamRef writeStream = NULL;
 
@@ -160,26 +160,37 @@ services:(uint64_t)services
         [self.outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
         
         // after the reachablity check, the radios should be warmed up and we can set a short socket connect timeout
-        [self performSelector:@selector(disconnectWithError:) withObject:[NSError errorWithDomain:@"ZincWallet" code:1001
-         userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"%@:%u socket connect timeout", self.host,
-                                               self.port]}] afterDelay:SOCKET_TIMEOUT];
+        [self performSelector:@selector(disconnectWithError:) withObject:[NSError errorWithDomain:@"ZincWallet"
+         code:1001 userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"%@:%u socket connect timeout",
+                                                         self.host, self.port]}] afterDelay:SOCKET_TIMEOUT];
         
         [self.inputStream open];
         [self.outputStream open];
     
         [self sendVersionMessage];
-    //});
+        [[NSRunLoop currentRunLoop] run];
+    });
+}
+
+- (void)disconnect
+{
+    [self disconnectWithError:nil];
 }
 
 - (void)disconnectWithError:(NSError *)error
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel connect timeout
     
-    [self.inputStream close];
-    [self.outputStream close];
+    //TODO: XXXX BUG: somehow this doesn't close the connection??? test it.
+    dispatch_async(self.streamq, ^{
+        [self.inputStream close];
+        [self.outputStream close];
 
-    [self.inputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    [self.outputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+        [self.inputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+        [self.outputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+        
+        CFRunLoopStop([[NSRunLoop currentRunLoop] getCFRunLoop]);
+    });
     
     self.gotVerack = self.sentVerack = NO;
     _status = disconnected;
@@ -282,8 +293,6 @@ services:(uint64_t)services
     }
     
     [msg appendData:hashStop ? hashStop : ZERO_HASH];
-    
-    if (! hashStop) self.chainDownload = YES;
     [self sendMessage:msg type:MSG_GETHEADERS];
 }
 
@@ -295,9 +304,6 @@ services:(uint64_t)services
 // if local peer can't connect the block to the chain, it sends a new getblocks message, rinse, repeat
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop
 {
-    // ignore getblocks requests for orphan blocks while the chain is being downloaded
-    if (self.chainDownload && hashStop) return;
-
     NSMutableData *msg = [NSMutableData data];
     
     [msg appendUInt32:PROTOCOL_VERSION];
@@ -308,8 +314,6 @@ services:(uint64_t)services
     }
     
     [msg appendData:hashStop ? hashStop : ZERO_HASH];
-
-    if (! hashStop) self.chainDownload = YES;
     [self sendMessage:msg type:MSG_GETBLOCKS];
 }
 
@@ -528,7 +532,6 @@ services:(uint64_t)services
     if (blockHashes.count >= 500) { // this is probably a chain download inv, so request the next chunk
         [self sendGetblocksMessageWithLocators:@[blockHashes.lastObject, blockHashes[0]] andHashStop:nil];
     }
-    else self.chainDownload = NO;
 
     if (txHashes.count + blockHashes.count > 0) {
         [self sendGetdataMessageWithTxHashes:txHashes andBlockHashes:blockHashes];

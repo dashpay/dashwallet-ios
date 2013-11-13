@@ -136,8 +136,8 @@ static NSMutableDictionary *checkpoints;
     self.earliestBlockHeight = BITCOIN_REFERENCE_BLOCK_HEIGHT;
     self.peers = [NSMutableArray array];
     
-#warning remove this!
-    [ZNMerkleBlockEntity deleteObjects:[ZNMerkleBlockEntity allObjects]]; //XXXX <--- this right here, YES THIS!
+//#warning remove this!
+//    [ZNMerkleBlockEntity deleteObjects:[ZNMerkleBlockEntity allObjects]]; //for testing chain download
     
     if (! [ZNMerkleBlockEntity topBlock]) [ZNMerkleBlockEntity createOrUpdateWithBlock:GENESIS_BLOCK atHeight:0];
 
@@ -469,11 +469,16 @@ static NSMutableDictionary *checkpoints;
     //TODO: XXX need to have some kind of timeout/retry if chain download stalls
     
     if (! e) { // block is either an orphan, or we haven't downloaded the whole chain yet
-        NSData *hash = [[ZNMerkleBlockEntity topBlock] get:@"blockHash"];
+        e = [ZNMerkleBlockEntity topBlock];
+        
+        // if the top block is just a header (totalTransactions == 0) that means we're still downloading the chain, in
+        // which case we ignore the orphan block for now as it's probably in the chain we're already downloading
+        if ([[e get:@"totalTransactions"] intValue] == 0) return;
 
         NSLog(@"%@:%d relayed orphan block, calling getblocks with last block", peer.host, peer.port);
-        //TODO: XXX this should use a full locator array
-        [peer sendGetblocksMessageWithLocators:hash ? @[hash] : @[] andHashStop:block.blockHash];
+
+        //TODO: this should use a full locator array so we don't dowload the entire chain if the top block is on a fork
+        [peer sendGetblocksMessageWithLocators:@[[e get:@"blockHash"]] andHashStop:block.blockHash];
         return;
     }
 
@@ -505,14 +510,15 @@ static NSMutableDictionary *checkpoints;
     e = [ZNMerkleBlockEntity blockForHash:block.blockHash];
     
     if (e) { // already have the block
-        [e setTreeFromBlock:block];
-        
         if ((height % 500) == 0) NSLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, height);
+        
+        [e setTreeFromBlock:block];
         
         if ([[e get:@"height"] intValue] >= 0) { // and it's not on a fork
             [ZNTransactionEntity setBlockHeight:height forTxHashes:block.txHashes];
             [self.publishedTx removeObjectsForKeys:block.txHashes]; // remove confirmed transactions from publish list
         }
+        
         return;
     }
     else if ([ZNMerkleBlockEntity blockAtHeight:height] == nil) { // new block extends main chain
@@ -552,8 +558,9 @@ static NSMutableDictionary *checkpoints;
             [ZNTransactionEntity setBlockHeight:TX_UNCONFIRMED
              forTxHashes:[[ZNTransactionEntity objectsMatching:@"blockHeight > %d", h] valueForKey:@"txHash"]];
         
+            // set old main chain heights to negative to denote they are now a fork
             for (e in [ZNMerkleBlockEntity objectsMatching:@"height > %d", h]) {
-                e.height *= -1; // set old main chain heights to negative to denote they are now a fork
+                e.height *= -1;
             }
             
             e = [ZNMerkleBlockEntity blockForHash:block.blockHash];
@@ -566,7 +573,7 @@ static NSMutableDictionary *checkpoints;
             }
 
             // re-publish any transactions that may have become unconfirmed
-            for (ZNTransactionEntity *tx in [ZNTransactionEntity objectsMatching:@"blockHeight == %d", TX_UNCONFIRMED]) {
+            for (ZNTransactionEntity *tx in [ZNTransactionEntity objectsMatching:@"blockHeight == %d", TX_UNCONFIRMED]){
                 [self publishTransaction:tx.transaction completion:nil];
             }
                 
@@ -574,8 +581,7 @@ static NSMutableDictionary *checkpoints;
         }];
     }
     
-    // after downloading the block headers is complete, get the block and transactions for each header that has a height
-    // greater than earliestBlockHeight
+    // after downloading the block headers, get the transactions for the blocks newer than earliestBlockHeight
     if (block.totalTransactions == 0 && height == peer.lastblock) { // totalTransactions is 0 if it's a block header
         NSMutableArray *locators = [NSMutableArray array];
     

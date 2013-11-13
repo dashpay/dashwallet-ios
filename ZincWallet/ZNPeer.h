@@ -99,6 +99,7 @@ typedef enum {
 
 - (instancetype)initWithAddress:(uint32_t)address andPort:(uint16_t)port;
 - (void)connect;
+- (void)disconnect;
 - (void)sendMessage:(NSData *)message type:(NSString *)type;
 - (void)sendGetaddrMessage;
 - (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop;

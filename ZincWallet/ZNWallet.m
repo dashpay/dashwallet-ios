@@ -371,8 +371,7 @@ static NSData *getKeychainData(NSString *key)
 
 - (NSArray *)recentTransactions
 {
-    // sort in descending order by timestamp (using block_height doesn't work for unconfirmed, or multiple tx per block)
-    return [ZNTransactionEntity objectsSortedBy:@"timeStamp" ascending:NO];
+    return [ZNTransactionEntity objectsSortedBy:@"blockHeight" ascending:NO];
 }
 
 - (uint32_t)lastBlockHeight
