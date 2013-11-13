@@ -30,7 +30,7 @@
 
 @property (nonatomic, readonly) BOOL connected;
 
-// set this to the oldest block that might contain a wallet address to improve initial sync time
+// set this to the oldest block that might contain a wallet transaction to improve initial sync time
 @property (nonatomic, assign) uint32_t earliestBlockHeight;
 
 + (instancetype)sharedInstance;

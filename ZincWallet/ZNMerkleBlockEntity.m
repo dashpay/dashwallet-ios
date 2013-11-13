@@ -41,25 +41,35 @@
 @dynamic hashes;
 @dynamic flags;
 
-+ (instancetype)createOrUpdateWithMerkleBlock:(ZNMerkleBlock *)block atHeight:(int32_t)height
++ (instancetype)createOrUpdateWithBlock:(ZNMerkleBlock *)block atHeight:(int32_t)height
 {
     __block ZNMerkleBlockEntity *e = nil;
 
     [[self context] performBlockAndWait:^{
-        e = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", block.blockHash].lastObject;
+        NSMutableDictionary *allBlocks = [self _allBlocks];
+        NSMutableArray *orderedBlocks = [self _orderedBlocks];
+        
+        e = allBlocks[block.blockHash];
        
-        if (! e) {
+        if (! e || e.isDeleted) {
             e = [ZNMerkleBlockEntity managedObject];
             e.blockHash = block.blockHash;
-            [[self _allBlockHashes] addObject:e.blockHash];
+            e.version = block.version;
+            e.prevBlock = block.prevBlock;
+            e.merkleRoot = block.merkleRoot;
+            e.timestamp = block.timestamp;
+            e.bits = block.bits;
+            e.nonce = block.nonce;
+            allBlocks[block.blockHash] = e;
+            if (height >= 0) {
+                if (orderedBlocks.count != height) {
+                    while (orderedBlocks.count <= height) [orderedBlocks addObject:[NSNull null]];
+                    orderedBlocks[height] = e;
+                }
+                else [orderedBlocks addObject:e];
+            }
         }
        
-        e.version = block.version;
-        e.prevBlock = block.prevBlock;
-        e.merkleRoot = block.merkleRoot;
-        e.timestamp = block.timestamp;
-        e.bits = block.bits;
-        e.nonce = block.nonce;
         e.totalTransactions = block.totalTransactions;
         e.hashes = block.hashes;
         e.flags = block.flags;
@@ -69,78 +79,77 @@
     return e;
 }
 
-// more efficient method for creating or updating a chain of blocks all at once
-+ (NSArray *)createOrUpdateWithChain:(NSArray *)chain startHeight:(int32_t)height
++ (instancetype)blockForHash:(NSData *)blockHash
 {
-    NSMutableArray *a = [NSMutableArray arrayWithCapacity:chain.count];
-    
-    [[self context] performBlockAndWait:^{
-        NSMutableSet *blockHashes = [self _allBlockHashes];
-        NSUInteger idx = 0;
-        
-        for (ZNMerkleBlock *block in chain) {
-            ZNMerkleBlockEntity *e = nil;
-            
-            if ([blockHashes containsObject:block.blockHash]) {
-                e = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", block.blockHash].lastObject;
-            }
+    ZNMerkleBlockEntity *e = [self _allBlocks][blockHash];
 
-            if (! e) {
-                e = [ZNMerkleBlockEntity managedObject];
-                e.blockHash = block.blockHash;
-                [blockHashes addObject:block.blockHash];
-                e.version = block.version;
-                e.prevBlock = block.prevBlock;
-                e.merkleRoot = block.merkleRoot;
-                e.timestamp = block.timestamp;
-                e.bits = block.bits;
-                e.nonce = block.nonce;
-            }
-            
-            e.totalTransactions = block.totalTransactions;
-            e.hashes = block.hashes;
-            e.flags = block.flags;
-            e.height = height + idx;
-            [a addObject:e];
-            idx++;
-        }        
-    }];
-    
-#if DEBUG
-    static int count = 0;
-
-    count += a.count;
-    NSLog(@"created or updated %d blocks", count);
-#endif
-
-    return a;
+    return e.isDeleted ? nil : e;
 }
 
-+ (BOOL)updateTreeFromMerkleBlock:(ZNMerkleBlock *)block
++ (instancetype)blockAtHeight:(int32_t)height
 {
-    __block ZNMerkleBlockEntity *e = nil;
+    NSArray *orderedBlocks = [self _orderedBlocks];
+    ZNMerkleBlockEntity *e = (height < orderedBlocks.count) ? orderedBlocks[height] : nil;
     
-    [[self context] performBlockAndWait:^{
-        e = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", block.blockHash].lastObject;
-        e.hashes = [NSData dataWithData:block.hashes];
-        e.flags = [NSData dataWithData:block.flags];
-    }];
-    
-    return (e != nil) ? YES : NO;
+    return (e.isDeleted || e == (id)[NSNull null]) ? nil : e;
 }
 
-+ (NSMutableSet *)_allBlockHashes
++ (instancetype)topBlock
 {
-    static NSMutableSet *blockHashes = nil;
+    return [self _orderedBlocks].lastObject;
+}
+
++ (NSMutableDictionary *)_allBlocks
+{
+    static NSMutableDictionary *blocks = nil;
     static dispatch_once_t onceToken = 0;
     
     dispatch_once(&onceToken, ^{
+        blocks = [NSMutableDictionary dictionary];
+        
         [[self context] performBlockAndWait:^{
-            blockHashes = [NSMutableSet setWithArray:[[ZNMerkleBlockEntity allObjects] valueForKey:@"blockHash"]];
+            for (ZNMerkleBlockEntity *e in [ZNMerkleBlockEntity allObjects]) {
+                blocks[e.blockHash] = e;
+            }
         }];
     });
     
-    return blockHashes;
+    return blocks;
+}
+
++ (NSMutableArray *)_orderedBlocks
+{
+    static NSMutableArray *blocks = nil;
+    static dispatch_once_t onceToken = 0;
+    
+    dispatch_once(&onceToken, ^{
+        blocks = [NSMutableArray array];
+        
+        [[self context] performBlockAndWait:^{
+            for (ZNMerkleBlockEntity *e in [ZNMerkleBlockEntity objectsSortedBy:@"height" ascending:YES]) {
+                int32_t height = e.height;
+                
+                if (height >= 0) {
+                    if (blocks.count != height) {
+                        while (blocks.count <= height) [blocks addObject:[NSNull null]];
+                        blocks[height] = e;
+                    }
+                    else [blocks addObject:e];
+                }
+            }
+        }];
+    });
+    
+    return blocks;
+}
+
+- (void)setTreeFromBlock:(ZNMerkleBlock *)block
+{
+    [[self managedObjectContext] performBlockAndWait:^{
+        self.totalTransactions = block.totalTransactions;
+        self.hashes = [NSData dataWithData:block.hashes];
+        self.flags = [NSData dataWithData:block.flags];
+    }];
 }
 
 - (ZNMerkleBlock *)merkleBlock

@@ -39,8 +39,7 @@
 @property (nonatomic, retain) NSOrderedSet *outputs;
 @property (nonatomic) int32_t lockTime;
 
-// more efficient method for updating the heights of all the transactions in a long chain of blocks
-+ (NSArray *)updateHeightsWithChain:(NSArray *)chain startHeight:(int32_t)height;
++ (void)setBlockHeight:(int32_t)blockHeight forTxHashes:(NSArray *)txHashes;
 
 - (instancetype)setAttributesFromTx:(ZNTransaction *)tx;
 - (ZNTransaction *)transaction;

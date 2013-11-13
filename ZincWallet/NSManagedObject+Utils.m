@@ -197,7 +197,7 @@ static NSManagedObjectContextConcurrencyType _concurrencyType = NSMainQueueConcu
                        NSInferMappingModelAutomaticallyOption:@(YES)} error:&error] == nil) {
             NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
 #if DEBUG
-            abort();
+            //abort();
 #endif
             // if this is a not a debug build, attempt to delete and create a new persisent data store before crashing
             if (! [[NSFileManager defaultManager] removeItemAtURL:storeURL error:&error]) {

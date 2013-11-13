@@ -39,6 +39,7 @@
 @property (nonatomic, strong) NSString *seedPhrase;
 @property (nonatomic, strong) NSData *seed;
 @property (nonatomic, readonly) NSData *masterPublicKey;
+@property (nonatomic, readonly) NSTimeInterval seedCreationTime;
 @property (nonatomic, readonly) uint64_t balance;
 @property (nonatomic, readonly) NSString *receiveAddress;
 @property (nonatomic, readonly) NSString *changeAddress;

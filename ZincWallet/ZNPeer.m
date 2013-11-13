@@ -60,7 +60,7 @@ typedef enum {
 @property (nonatomic, strong) NSInputStream *inputStream;
 @property (nonatomic, strong) NSOutputStream *outputStream;
 @property (nonatomic, strong) NSMutableData *msgHeader, *msgPayload, *outputBuffer;
-@property (nonatomic, assign) BOOL sentVerack, gotVerack;
+@property (nonatomic, assign) BOOL sentVerack, gotVerack, chainDownload;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) id reachabilityObserver;
 @property (nonatomic, assign) uint64_t localNonce;
@@ -120,6 +120,7 @@ services:(uint64_t)services
 
                 [self connect];
             }];
+        
         [self.reachability startNotifier];
     }
     else if (self.reachabilityObserver) {
@@ -269,6 +270,23 @@ services:(uint64_t)services
     [self sendMessage:msg type:MSG_ADDR];
 }
 
+- (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop
+{
+    NSMutableData *msg = [NSMutableData data];
+    
+    [msg appendUInt32:PROTOCOL_VERSION];
+    [msg appendVarInt:locators.count]; // number of block locator hashes
+    
+    for (NSData *hash in locators) {
+        [msg appendData:hash];
+    }
+    
+    [msg appendData:hashStop ? hashStop : ZERO_HASH];
+    
+    if (! hashStop) self.chainDownload = YES;
+    [self sendMessage:msg type:MSG_GETHEADERS];
+}
+
 // the blockchain download protocol works like so:
 // local peer sends getblocks, remote peer reponds with inv containing up to 500 block hashes
 // local peer sends getdata containing the block hashes, remote peer responds with multiple merkleblock and tx
@@ -277,6 +295,9 @@ services:(uint64_t)services
 // if local peer can't connect the block to the chain, it sends a new getblocks message, rinse, repeat
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop
 {
+    // ignore getblocks requests for orphan blocks while the chain is being downloaded
+    if (self.chainDownload && hashStop) return;
+
     NSMutableData *msg = [NSMutableData data];
     
     [msg appendUInt32:PROTOCOL_VERSION];
@@ -288,6 +309,7 @@ services:(uint64_t)services
     
     [msg appendData:hashStop ? hashStop : ZERO_HASH];
 
+    if (! hashStop) self.chainDownload = YES;
     [self sendMessage:msg type:MSG_GETBLOCKS];
 }
 
@@ -304,8 +326,8 @@ services:(uint64_t)services
 - (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes
 {
     if (txHashes.count + blockHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
-        NSLog(@"%@:%d couldn't send getdata, %u is too many items, max is %u", self.host,
-              self.port, (int)txHashes.count + (int)blockHashes.count, MAX_GETDATA_HASHES);
+        NSLog(@"%@:%d couldn't send getdata, %u is too many items, max is %u", self.host, self.port,
+              (int)txHashes.count + (int)blockHashes.count, MAX_GETDATA_HASHES);
         return;
     }
     
@@ -357,6 +379,7 @@ services:(uint64_t)services
         else if ([MSG_ADDR isEqual:type]) [self acceptAddrMessage:message];
         else if ([MSG_INV isEqual:type]) [self acceptInvMessage:message];
         else if ([MSG_TX isEqual:type]) [self acceptTxMessage:message];
+        else if ([MSG_HEADERS isEqual:type]) [self acceptHeadersMessage:message];
         else if ([MSG_GETADDR isEqual:type]) [self acceptGetaddrMessage:message];
         else if ([MSG_GETDATA isEqual:type]) [self acceptGetdataMessage:message];
         else if ([MSG_PING isEqual:type]) [self acceptPingMessage:message];
@@ -505,6 +528,7 @@ services:(uint64_t)services
     if (blockHashes.count >= 500) { // this is probably a chain download inv, so request the next chunk
         [self sendGetblocksMessageWithLocators:@[blockHashes.lastObject, blockHashes[0]] andHashStop:nil];
     }
+    else self.chainDownload = NO;
 
     if (txHashes.count + blockHashes.count > 0) {
         [self sendGetdataMessageWithTxHashes:txHashes andBlockHashes:blockHashes];
@@ -535,6 +559,38 @@ services:(uint64_t)services
             self.currentBlock = nil;
             self.currentTxHashes = nil;
         }
+    }
+}
+
+//TODO: XXXX this seems to stop in the middle if an inv is received for a new block
+- (void)acceptHeadersMessage:(NSData *)message
+{
+    NSUInteger l, count = [message varIntAtOffset:0 length:&l];
+    
+    if (message.length != l + 81*count) {
+        NSLog(@"%@:%u malformed headers message, length is %u, should be %u for %u items", self.host, self.port,
+              (int)message.length, (int)((l == 0) ? 1 : l) + (int)count*81, (int)count);
+        return;
+    }
+
+    if (count >= 2000) { // this is a chunk of a larger chain of headers, so request the next chunk
+        NSData *firstHash = [[message subdataWithRange:NSMakeRange(l, 80)] SHA256_2],
+               *lastHash = [[message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)] SHA256_2];
+    
+        [self sendGetheadersMessageWithLocators:@[lastHash, firstHash] andHashStop:nil];
+    }
+
+    NSLog(@"%@:%u got %u headers", self.host, self.port, (int)count);
+
+    for (NSUInteger off = l; off < l + 81*count; off += 81) {
+        ZNMerkleBlock *block = [ZNMerkleBlock blockWithMessage:[message subdataWithRange:NSMakeRange(off, 81)]];
+    
+        if (! block.valid) {
+            NSLog(@"%@:%u droping invalid block header %@", self.host, self.port, block.blockHash);
+            continue;
+        }
+    
+        [self.delegate peer:self relayedBlock:block];
     }
 }
 
@@ -677,9 +733,9 @@ services:(uint64_t)services
     hash = (hash ^ ((self.address >> 24) & 0xff))*FNV32_PRIME;
     hash = (hash ^ ((self.address >> 16) & 0xff))*FNV32_PRIME;
     hash = (hash ^ ((self.address >> 8) & 0xff))*FNV32_PRIME;
-    hash = (hash ^ ((self.address >> 0) & 0xff))*FNV32_PRIME;
+    hash = (hash ^ (self.address & 0xff))*FNV32_PRIME;
     hash = (hash ^ ((self.port >> 8) & 0xff))*FNV32_PRIME;
-    hash = (hash ^ ((self.port >> 0) & 0xff))*FNV32_PRIME;
+    hash = (hash ^ (self.port & 0xff))*FNV32_PRIME;
     
     return hash;
 }

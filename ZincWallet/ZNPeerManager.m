@@ -94,14 +94,10 @@ static NSMutableDictionary *checkpoints;
 
 @property (nonatomic, strong) NSMutableArray *peers;
 @property (nonatomic, assign) int connectFailures;
-@property (nonatomic, strong) ZNMerkleBlock *topBlock;
-@property (nonatomic, assign) int32_t topBlockHeight;
-@property (nonatomic, assign) NSTimeInterval transitionTime; // timestamp of last difficulty transition
 @property (nonatomic, assign) uint32_t tweak;
 @property (nonatomic, strong) ZNBloomFilter *bloomFilter;
 @property (nonatomic, assign) NSUInteger filterElemCount;
 @property (nonatomic, assign) BOOL filterWasReset;
-@property (nonatomic, strong) NSMutableArray *blockChain;
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
 
 @end
@@ -143,19 +139,9 @@ static NSMutableDictionary *checkpoints;
 #warning remove this!
     [ZNMerkleBlockEntity deleteObjects:[ZNMerkleBlockEntity allObjects]]; //XXXX <--- this right here, YES THIS!
     
-    ZNMerkleBlockEntity *b = [ZNMerkleBlockEntity objectsSortedBy:@"height" ascending:NO offset:0 limit:1].lastObject;
-
-    if (! b || [[b get:@"height"] intValue] < 0) {
-        b = [ZNMerkleBlockEntity createOrUpdateWithMerkleBlock:GENESIS_BLOCK atHeight:0];
-    }
+    if (! [ZNMerkleBlockEntity topBlock]) [ZNMerkleBlockEntity createOrUpdateWithBlock:GENESIS_BLOCK atHeight:0];
 
     self.tweak = mrand48();
-    self.blockChain = [NSMutableArray array];
-    self.topBlockHeight = [[b get:@"height"] intValue];
-    self.topBlock = [b merkleBlock];
-    b = [ZNMerkleBlockEntity objectsMatching:@"height == %d",
-         self.topBlockHeight - (self.topBlockHeight % BITCOIN_DIFFICULTY_INTERVAL)].lastObject;
-    if (b) self.transitionTime = [[b get:@"timestamp"] timeIntervalSinceReferenceDate];
     self.publishedTx = [NSMutableDictionary dictionary];
     self.publishedCallback = [NSMutableDictionary dictionary];
     
@@ -353,17 +339,16 @@ static NSMutableDictionary *checkpoints;
     
     ZNPeerEntity *e = [ZNPeerEntity createOrUpdateWithPeer:peer];
 
-    [e set:@"timestamp" to:[NSDate date]]; // update timestamp for peer
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
+    [e set:@"timestamp" to:[NSDate date]]; // set last seen timestamp for peer
     
     [peer sendMessage:self.bloomFilter.data type:MSG_FILTERLOAD];
     if ([ZNPeerEntity countAllObjects] <= 1000) [peer sendGetaddrMessage];
 
-    if (self.topBlockHeight < peer.lastblock) {
+    uint32_t top = [[[ZNMerkleBlockEntity topBlock] get:@"height"] intValue];
+
+    if (top < peer.lastblock) {
         NSFetchRequest *req = [ZNMerkleBlockEntity fetchRequest];
         int32_t step = 1, start = 0;
-        int32_t top = [[ZNMerkleBlockEntity objectsSortedBy:@"height" ascending:NO offset:0 limit:1].lastObject height];
         NSMutableArray *heights = [NSMutableArray array];
         
         // append 10 most recent block hashes decending, then continue appending while doubling the step back each time,
@@ -383,11 +368,12 @@ static NSMutableDictionary *checkpoints;
         
         if (blocks.count > 0) {
             [[ZNMerkleBlockEntity context] performBlockAndWait:^{
-                [peer sendGetblocksMessageWithLocators:[blocks valueForKey:@"blockHash"] andHashStop:nil];
+                [peer sendGetheadersMessageWithLocators:[blocks valueForKey:@"blockHash"] andHashStop:nil];
             }];
         }
-        else [peer sendGetblocksMessageWithLocators:@[[GENESIS_BLOCK_HASH reverse]] andHashStop:nil];
+        else [peer sendGetheadersMessageWithLocators:@[[GENESIS_BLOCK_HASH reverse]] andHashStop:nil];
     }
+    else [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
 }
 
 - (void)peer:(ZNPeer *)peer disconnectedWithError:(NSError *)error
@@ -443,6 +429,8 @@ static NSMutableDictionary *checkpoints;
 
 - (void)peer:(ZNPeer *)peer relayedTransaction:(ZNTransaction *)transaction
 {
+    NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, transaction);
+
     NSMutableData *d = [NSMutableData data];
 
     for (uint32_t n = 0; n < transaction.outputAddresses.count; n++) {
@@ -474,53 +462,35 @@ static NSMutableDictionary *checkpoints;
 
 - (void)peer:(ZNPeer *)peer relayedBlock:(ZNMerkleBlock *)block
 {
-    int32_t height = self.topBlockHeight + 1;
-    ZNMerkleBlock *prev = self.topBlock;
-    NSTimeInterval transitionTime = self.transitionTime;
-    NSArray *chain = nil;
+    __block ZNMerkleBlockEntity *e = [ZNMerkleBlockEntity blockForHash:block.prevBlock];
+    __block int32_t height = abs([[e get:@"height"] intValue]) + 1;
+    __block NSTimeInterval transitionTime = 0;
+
+    //TODO: XXX need to have some kind of timeout/retry if chain download stalls
     
-    if (! [block.prevBlock isEqual:prev.blockHash]) { // find previous block for difficulty verification
-        ZNMerkleBlockEntity *e = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", block.prevBlock].lastObject;
-        
-        if (! e) { // block is either an orphan, or we haven't downloaded the whole chain yet
-            if (self.blockChain.count > 0) {
-                chain = [NSArray arrayWithArray:self.blockChain];
-                [self.blockChain removeAllObjects];
+    if (! e) { // block is either an orphan, or we haven't downloaded the whole chain yet
+        NSData *hash = [[ZNMerkleBlockEntity topBlock] get:@"blockHash"];
 
-                [[ZNMerkleBlockEntity context] performBlockAndWait:^{
-                    [ZNMerkleBlockEntity createOrUpdateWithChain:chain startHeight:height - (int)chain.count];
-                    [ZNTransactionEntity updateHeightsWithChain:chain startHeight:height - (int)chain.count];
-                }];
-            }
-
-            [peer sendGetblocksMessageWithLocators:@[self.topBlock.blockHash] andHashStop:nil]; // continue download
-            return;
-        }
-        
-        height = abs([[e get:@"height"] intValue]) + 1;
-        prev = [e merkleBlock];
-        
-        if ((height % BITCOIN_DIFFICULTY_INTERVAL) == 0) { // hit a difficulty transition, find the last transition time
-            int32_t h = [[e get:@"height"] intValue];
-
-            // if we're on a fork, walk back to main chain or previous transition on this fork
-            while (h < 0 && abs(h) > height - BITCOIN_DIFFICULTY_INTERVAL) { // we use negative height to denote forks
-                e = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", e.prevBlock].lastObject;
-                h = [[e get:@"height"] intValue];
-            }
-        
-            if (h >= 0) { // once we're back on the main chain, we can jump straight to the previous transition
-                transitionTime = [[[ZNMerkleBlockEntity objectsMatching:@"height == %d",
-                                    height - BITCOIN_DIFFICULTY_INTERVAL].lastObject get:@"timestamp"] doubleValue];
-            }
-            else transitionTime = [[e get:@"timestamp"] doubleValue]; // previous transition was on the fork as well
-            //NOTE: a fork longer than 2016 blocks probably means an attempted 51% attack
-        }
+        NSLog(@"%@:%d relayed orphan block, calling getblocks with last block", peer.host, peer.port);
+        //TODO: XXX this should use a full locator array
+        [peer sendGetblocksMessageWithLocators:hash ? @[hash] : @[] andHashStop:block.blockHash];
+        return;
     }
 
-    if (! [block verifyDifficultyAtHeight:height previous:prev transitionTime:transitionTime]) { // verify difficulty
-        NSLog(@"%@:%d relayed block with invalid difficulty target %x, blockHash: %@", peer.host, peer.port,
-              block.bits, block.blockHash);
+    if ((height % BITCOIN_DIFFICULTY_INTERVAL) == 0) { // hit a difficulty transition, find last transition time
+        [[ZNMerkleBlockEntity context] performBlockAndWait:^{
+            while (abs(e.height) > height - BITCOIN_DIFFICULTY_INTERVAL) {
+                e = [ZNMerkleBlockEntity blockForHash:e.prevBlock];
+            }
+        
+            transitionTime = e.timestamp;
+            e = [ZNMerkleBlockEntity blockForHash:block.prevBlock];
+        }];
+    }
+
+    if (! [block verifyDifficultyAtHeight:height previous:e.merkleBlock transitionTime:transitionTime]) {
+        NSLog(@"%@:%d relayed block with invalid difficulty target %x, blockHash: %@", peer.host, peer.port, block.bits,
+              block.blockHash);
         [self peerMisbehavin:peer];
         return;
     }
@@ -531,104 +501,98 @@ static NSMutableDictionary *checkpoints;
         [self peerMisbehavin:peer];
         return;
     }
-
-    if (prev == self.topBlock) { // block extends main chain
-        if ((height % 500) == 0) NSLog(@"adding block at height: %d", height);
-        [self.blockChain addObject:block];
-        
-        self.topBlock = block;
-        self.topBlockHeight = height;
-        if ((height % BITCOIN_DIFFICULTY_INTERVAL) == 0) self.transitionTime = block.timestamp;
-        [self.publishedTx removeObjectsForKeys:block.txHashes]; // remove confirmed transactions from publish list
-
-        if (self.blockChain.count >= 500) {
-            chain = [NSArray arrayWithArray:self.blockChain];
-            [self.blockChain removeAllObjects];
-        
-            [[ZNMerkleBlockEntity context] performBlock:^{
-                [ZNMerkleBlockEntity createOrUpdateWithChain:chain startHeight:height + 1 - (int)chain.count];
-                [ZNTransactionEntity updateHeightsWithChain:chain startHeight:height + 1 - (int)chain.count];
-            }];
-        }
-
-        return;
-    }
-
-    if (self.blockChain.count > 0) {
-        chain = [NSArray arrayWithArray:self.blockChain];
-        [self.blockChain removeAllObjects];
-
-        [[ZNMerkleBlockEntity context] performBlockAndWait:^{
-            [ZNMerkleBlockEntity createOrUpdateWithChain:chain startHeight:height - (int)chain.count];
-            [ZNTransactionEntity updateHeightsWithChain:chain startHeight:height - (int)chain.count];
-        }];
-    }
-
-    if ([ZNMerkleBlockEntity countObjectsMatching:@"blockHash == %@", block.blockHash] > 0) { // already have the block
-        [ZNMerkleBlockEntity updateTreeFromMerkleBlock:block]; // update merkle tree with any new matched transactions
-        [self.publishedTx removeObjectsForKeys:block.txHashes]; // remove confirmed transactions from publish list
-
-        for (ZNTransactionEntity *tx in [ZNTransactionEntity objectsMatching:@"txHash in %@", block.txHashes]) {
-            [tx set:@"blockHeight" to:@(height)]; // mark transactions in the new block as having a confirmation
-        }
-        return;
-    }
-
-    if (height <= BITCOIN_REFERENCE_BLOCK_HEIGHT) { // fork is older than the most recent checkpoint
-        NSLog(@"%@:%d relayed a block that forks prior to the last checkpoint, fork height: %d, blockHash: %@",
-              peer.host, peer.port, height, block.blockHash);
-        [self peerMisbehavin:peer];
-        return;
-    }
-
-    // use negative height to denote we're on a fork
-    __block ZNMerkleBlockEntity *b = [ZNMerkleBlockEntity createOrUpdateWithMerkleBlock:block atHeight:-height], *e;
-
-    if (height <= self.topBlockHeight) return; // fork is shorter than main chain, so ingore it for now
-
-    // the fork is longer than the main chain, so make it the new main chain
-    [[ZNMerkleBlockEntity context] performBlockAndWait:^{
-        int32_t h = -height;
     
-        while (h < 0) { // walk back to where the fork joins the old main chain
-            e = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", e.prevBlock].lastObject;
-            h = e.height;
+    e = [ZNMerkleBlockEntity blockForHash:block.blockHash];
+    
+    if (e) { // already have the block
+        [e setTreeFromBlock:block];
+        
+        if ((height % 500) == 0) NSLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, height);
+        
+        if ([[e get:@"height"] intValue] >= 0) { // and it's not on a fork
+            [ZNTransactionEntity setBlockHeight:height forTxHashes:block.txHashes];
+            [self.publishedTx removeObjectsForKeys:block.txHashes]; // remove confirmed transactions from publish list
+        }
+        return;
+    }
+    else if ([ZNMerkleBlockEntity blockAtHeight:height] == nil) { // new block extends main chain
+        if ((height % 500) == 0) NSLog(@"adding block at height: %d", height);
+        
+        [ZNMerkleBlockEntity createOrUpdateWithBlock:block atHeight:height];
+        [ZNTransactionEntity setBlockHeight:height forTxHashes:block.txHashes];
+        [self.publishedTx removeObjectsForKeys:block.txHashes]; // remove confirmed transactions from publish list
+    }
+    else { // new block is on a fork
+        if (height <= BITCOIN_REFERENCE_BLOCK_HEIGHT) { // fork is older than the most recent checkpoint
+            NSLog(@"%@:%d relayed a block that forks prior to the last checkpoint, fork height: %d, blockHash: %@",
+                  peer.host, peer.port, height, block.blockHash);
+            [self peerMisbehavin:peer];
+            return;
         }
         
-        for (ZNTransactionEntity *tx in [ZNTransactionEntity objectsMatching:@"blockHeight > %d", h]) {
-            tx.blockHeight = TX_UNCONFIRMED; // mark transactions after the join point as unconfirmed
-        }
-        
-        for (e in [ZNMerkleBlockEntity objectsMatching:@"height > %d", h]) {
-            e.height = -e.height; // set old main chain heights to negative to denote a fork
-        }
-        
-        while (b.height < 0) {
-            b.height = -b.height;
+        NSLog(@"chain fork at height %d", height);
 
-            for (ZNTransactionEntity *tx in
-                 [ZNTransactionEntity objectsMatching:@"txHash in %@", b.merkleBlock.txHashes]) {
-                tx.blockHeight = b.height; // mark transactions in new main chain as confirmed
+        e = [ZNMerkleBlockEntity createOrUpdateWithBlock:block atHeight:-height]; // negative height denotes a fork
+        
+        // if fork is shorter than main chain, ingore it for now
+        if (height <= [[[ZNMerkleBlockEntity topBlock] get:@"height"] intValue]) return;
+
+        // the fork is longer than the main chain, so make it the new main chain
+        [[ZNMerkleBlockEntity context] performBlockAndWait:^{
+            int32_t h = -height;
+            
+            while (h < 0) { // walk back to where the fork joins the old main chain
+                e = [ZNMerkleBlockEntity blockForHash:e.prevBlock];
+                h = e.height;
+            }
+    
+            NSLog(@"reorganizing chain from height %d", h);
+        
+            // mark transactions after the join point as unconfirmed
+            [ZNTransactionEntity setBlockHeight:TX_UNCONFIRMED
+             forTxHashes:[[ZNTransactionEntity objectsMatching:@"blockHeight > %d", h] valueForKey:@"txHash"]];
+        
+            for (e in [ZNMerkleBlockEntity objectsMatching:@"height > %d", h]) {
+                e.height *= -1; // set old main chain heights to negative to denote they are now a fork
             }
             
-            b = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", b.prevBlock].lastObject;
-        }
-        
-        // remove any confirmed tx from the publish list
-        for (ZNTransactionEntity *e in [ZNTransactionEntity objectsMatching:@"blockHeight != %d && txHash in %@",
-                                        TX_UNCONFIRMED, self.publishedTx.allKeys]) {
-            [self.publishedTx removeObjectForKey:[e get:@"txHash"]];
-        }
+            e = [ZNMerkleBlockEntity blockForHash:block.blockHash];
+            
+            while (e.height < 0) { // set block heights for new main chain and mark its transactions as confirmed
+                e.height *= -1;
+                [ZNTransactionEntity setBlockHeight:e.height forTxHashes:e.merkleBlock.txHashes];
+                [self.publishedTx removeObjectsForKeys:e.merkleBlock.txHashes]; // remove confirmed tx from publish list
+                e = [ZNMerkleBlockEntity blockForHash:e.prevBlock];
+            }
 
-        // re-publish any transactions that may have become unconfirmed
-        for (ZNTransactionEntity *e in [ZNTransactionEntity objectsMatching:@"blockHeight == %d", TX_UNCONFIRMED]) {
-            [self publishTransaction:e.transaction completion:nil];
-        }
-        
-        self.topBlock = block;
-        self.topBlockHeight = height;
-        if ((height % BITCOIN_DIFFICULTY_INTERVAL) == 0) self.transitionTime = block.timestamp;
-    }];
+            // re-publish any transactions that may have become unconfirmed
+            for (ZNTransactionEntity *tx in [ZNTransactionEntity objectsMatching:@"blockHeight == %d", TX_UNCONFIRMED]) {
+                [self publishTransaction:tx.transaction completion:nil];
+            }
+                
+            NSLog(@"new chain height %d", height);
+        }];
+    }
+    
+    // after downloading the block headers is complete, get the block and transactions for each header that has a height
+    // greater than earliestBlockHeight
+    if (block.totalTransactions == 0 && height == peer.lastblock) { // totalTransactions is 0 if it's a block header
+        NSMutableArray *locators = [NSMutableArray array];
+    
+        [[ZNMerkleBlockEntity context] performBlockAndWait:^{
+            e = [ZNMerkleBlockEntity blockForHash:block.blockHash];
+
+            // find the previous non-header, or earliestBlockHeight
+            while (e.totalTransactions == 0 && e.height > self.earliestBlockHeight) {
+                e = [ZNMerkleBlockEntity blockForHash:e.prevBlock];
+            }
+    
+            if (e) [locators addObject:e.blockHash];
+            if (e.height > 0) [locators addObject:[GENESIS_BLOCK_HASH reverse]];
+        }];
+    
+        [peer sendGetblocksMessageWithLocators:locators andHashStop:nil];
+    }
 }
 
 - (ZNTransaction *)peer:(ZNPeer *)peer requestedTransaction:(NSData *)txHash

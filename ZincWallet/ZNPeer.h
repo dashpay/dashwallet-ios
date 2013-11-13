@@ -101,6 +101,7 @@ typedef enum {
 - (void)connect;
 - (void)sendMessage:(NSData *)message type:(NSString *)type;
 - (void)sendGetaddrMessage;
+- (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop;
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop;
 - (void)sendInvMessageWithTxHash:(NSData *)txHash;
 - (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes;

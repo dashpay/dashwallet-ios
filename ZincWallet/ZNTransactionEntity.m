@@ -43,26 +43,13 @@
 @dynamic outputs;
 @dynamic lockTime;
 
-// more efficient method for updating the heights of all the transactions in a long chain of blocks
-+ (NSArray *)updateHeightsWithChain:(NSArray *)chain startHeight:(int32_t)height
++ (void)setBlockHeight:(int32_t)blockHeight forTxHashes:(NSArray *)txHashes
 {
-    NSMutableDictionary *txHeights = [NSMutableDictionary dictionary];
+    if (txHashes.count == 0) return;
     
-    for (ZNMerkleBlock *b in chain) {
-        for (NSData *txHash in b.txHashes) {
-            txHeights[txHash] = @(height);
-        }
-
-        height++;
-    }
-
     [[self context] performBlockAndWait:^{
-        for (ZNTransactionEntity *e in [ZNTransactionEntity objectsMatching:@"txHash in %@", txHeights.allKeys]) {
-            e.blockHeight = [txHeights[e.txHash] intValue];
-        }
+        [[self objectsMatching:@"txHash in %@", txHashes] setValue:@(blockHeight) forKey:@"blockHeight"];
     }];
-
-    return nil;
 }
 
 - (instancetype)setAttributesFromTx:(ZNTransaction *)tx

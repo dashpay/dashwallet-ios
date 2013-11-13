@@ -221,6 +221,13 @@ static NSData *getKeychainData(NSString *key)
     return self.mpk;
 }
 
+- (NSTimeInterval)seedCreationTime
+{
+    NSData *d = getKeychainData(CREATION_TIME_KEY);
+    
+    return (d.length < sizeof(NSTimeInterval)) ? BITCOIN_REFERENCE_BLOCK_TIME : *(NSTimeInterval *)d.bytes;
+}
+
 #pragma mark - synchronization
 
 - (void)synchronize
