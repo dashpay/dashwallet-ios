@@ -67,7 +67,7 @@ typedef enum {
 @property (nonatomic, assign) NSTimeInterval startTime;
 @property (nonatomic, strong) ZNMerkleBlock *currentBlock;
 @property (nonatomic, strong) NSMutableArray *currentTxHashes;
-@property (nonatomic, strong) dispatch_queue_t sendq, receiveq, streamq;
+@property (nonatomic, strong) NSRunLoop *runLoop;
 
 @end
 
@@ -131,33 +131,28 @@ services:(uint64_t)services
     
     NSLog(@"%@:%u connecting", self.host, self.port);
     _status = connecting;
-
     _pingTime = DBL_MAX;
     
     self.msgHeader = [NSMutableData data];
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
-    self.reachability = [Reachability reachabilityWithHostName:self.host];
-
-    self.streamq = dispatch_queue_create([NSString stringWithFormat:@"cc.zinc.zinc.stream.%@:%d", self.host,
-                                          self.port].UTF8String, NULL);
-    self.sendq = dispatch_queue_create([NSString stringWithFormat:@"cc.zinc.zinc.send.%@:%d", self.host,
-                                        self.port].UTF8String, NULL);
-    self.receiveq = dispatch_queue_create([NSString stringWithFormat:@"cc.zinc.zinc.receive.%@:%d", self.host,
-                                           self.port].UTF8String, NULL);
     
-    dispatch_async(self.streamq, ^{
+    // create a private serial queue with it's own thread for processing socket io
+    dispatch_async(dispatch_queue_create([[NSString stringWithFormat:@"cc.zinc.peer.%@:%d", self.host, self.port]
+                                          UTF8String], NULL), ^{
         CFReadStreamRef readStream = NULL;
         CFWriteStreamRef writeStream = NULL;
+
+        self.reachability = [Reachability reachabilityWithHostName:self.host];
 
         CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)self.host, self.port, &readStream, &writeStream);
         self.inputStream = CFBridgingRelease(readStream);
         self.outputStream = CFBridgingRelease(writeStream);
         self.inputStream.delegate = self.outputStream.delegate = self;
-        
-        //TODO: XXXX schedule streams on a separate network thread
-        [self.inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-        [self.outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+
+        self.runLoop = [NSRunLoop currentRunLoop];
+        [self.inputStream scheduleInRunLoop:self.runLoop forMode:NSDefaultRunLoopMode];
+        [self.outputStream scheduleInRunLoop:self.runLoop forMode:NSDefaultRunLoopMode];
         
         // after the reachablity check, the radios should be warmed up and we can set a short socket connect timeout
         [self performSelector:@selector(disconnectWithError:) withObject:[NSError errorWithDomain:@"ZincWallet"
@@ -168,7 +163,7 @@ services:(uint64_t)services
         [self.outputStream open];
     
         [self sendVersionMessage];
-        [[NSRunLoop currentRunLoop] run];
+        [self.runLoop run]; // this doesn't return until the runloop is stopped
     });
 }
 
@@ -181,20 +176,22 @@ services:(uint64_t)services
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel connect timeout
     
-    //TODO: XXXX BUG: somehow this doesn't close the connection??? test it.
-    dispatch_async(self.streamq, ^{
+    if (! self.runLoop) return;
+    
+    // can't use dispatch_async here because the runloop blocks the queue, so schedule a block on the runloop instead
+    CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopDefaultMode, ^{
         [self.inputStream close];
         [self.outputStream close];
 
-        [self.inputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-        [self.outputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+        [self.inputStream removeFromRunLoop:self.runLoop forMode:NSDefaultRunLoopMode];
+        [self.outputStream removeFromRunLoop:self.runLoop forMode:NSDefaultRunLoopMode];
         
-        CFRunLoopStop([[NSRunLoop currentRunLoop] getCFRunLoop]);
+        CFRunLoopStop([self.runLoop getCFRunLoop]);
+        
+        self.gotVerack = self.sentVerack = NO;
+        _status = disconnected;
+        [self.delegate peer:self disconnectedWithError:error];
     });
-    
-    self.gotVerack = self.sentVerack = NO;
-    _status = disconnected;
-    [self.delegate peer:self disconnectedWithError:error];
 }
 
 - (NSString *)host
@@ -228,7 +225,9 @@ services:(uint64_t)services
         return;
     }
 
-    dispatch_async(self.sendq, ^{
+    if (! self.runLoop) return;
+
+    CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopDefaultMode, ^{
         NSLog(@"%@:%d sending %@", self.host, self.port, type);
 
         [self.outputBuffer appendMessage:message type:type];
@@ -370,7 +369,7 @@ services:(uint64_t)services
 
 - (void)acceptMessage:(NSData *)message type:(NSString *)type
 {
-    dispatch_async(self.receiveq, ^{
+    CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopDefaultMode, ^{
         if (self.currentBlock && ! [MSG_TX isEqual:type]) { // if we receive a non-tx message, the merkleblock is done
             NSLog(@"%@:%d received non-tx message, expected %u more tx, dropping merkleblock %@", self.host,
                   self.port, (int)self.currentTxHashes.count, self.currentBlock.blockHash);
@@ -565,7 +564,6 @@ services:(uint64_t)services
     }
 }
 
-//TODO: XXXX this seems to stop in the middle if an inv is received for a new block
 - (void)acceptHeadersMessage:(NSData *)message
 {
     NSUInteger l, count = [message varIntAtOffset:0 length:&l];
@@ -584,17 +582,20 @@ services:(uint64_t)services
     }
 
     NSLog(@"%@:%u got %u headers", self.host, self.port, (int)count);
-
-    for (NSUInteger off = l; off < l + 81*count; off += 81) {
-        ZNMerkleBlock *block = [ZNMerkleBlock blockWithMessage:[message subdataWithRange:NSMakeRange(off, 81)]];
     
-        if (! block.valid) {
-            NSLog(@"%@:%u droping invalid block header %@", self.host, self.port, block.blockHash);
-            continue;
+    // schedule this on the runloop to ensure the above getheaders message is sent first for faster chain download
+    CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopDefaultMode, ^{
+        for (NSUInteger off = l; off < l + 81*count; off += 81) {
+            ZNMerkleBlock *block = [ZNMerkleBlock blockWithMessage:[message subdataWithRange:NSMakeRange(off, 81)]];
+    
+            if (! block.valid) {
+                NSLog(@"%@:%u droping invalid block header %@", self.host, self.port, block.blockHash);
+                continue;
+            }
+    
+            [self.delegate peer:self relayedBlock:block];
         }
-    
-        [self.delegate peer:self relayedBlock:block];
-    }
+    });
 }
 
 - (void)acceptGetaddrMessage:(NSData *)message
@@ -767,15 +768,12 @@ services:(uint64_t)services
             // fall through to send any queued output
         case NSStreamEventHasSpaceAvailable:
             if (aStream == self.outputStream) {
-                dispatch_async(self.sendq, ^{
-                    while (self.outputBuffer.length > 0 && [self.outputStream hasSpaceAvailable]) {
-                        NSInteger l =
-                            [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
+                while (self.outputBuffer.length > 0 && [self.outputStream hasSpaceAvailable]) {
+                    NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
                 
-                        if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
-                        //if(self.outputBuffer.length == 0) NSLog(@"%@:%d output buffer cleared", self.host, self.port);
-                    }
-                });
+                    if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
+                    //if(self.outputBuffer.length == 0) NSLog(@"%@:%d output buffer cleared", self.host, self.port);
+                }
             }
             break;
             
