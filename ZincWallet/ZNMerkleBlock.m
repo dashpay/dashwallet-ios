@@ -118,7 +118,7 @@ static uint32_t getCompact(const BIGNUM *bn)
     off += CC_SHA256_DIGEST_LENGTH;
     _timestamp = [message UInt32AtOffset:off] - NSTimeIntervalSince1970;
     off += sizeof(uint32_t);
-    _bits = [message UInt32AtOffset:off];
+    _target = [message UInt32AtOffset:off];
     off += sizeof(uint32_t);
     _nonce = [message UInt32AtOffset:off];
     off += sizeof(uint32_t);
@@ -134,7 +134,7 @@ static uint32_t getCompact(const BIGNUM *bn)
 }
 
 - (instancetype)initWithBlockHash:(NSData *)blockHash version:(uint32_t)version prevBlock:(NSData *)prevBlock
-merkleRoot:(NSData *)merkleRoot timestamp:(NSTimeInterval)timestamp bits:(uint32_t)bits nonce:(uint32_t)nonce
+merkleRoot:(NSData *)merkleRoot timestamp:(NSTimeInterval)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
 totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags
 {
     if (! (self = [self init])) return nil;
@@ -144,7 +144,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     _prevBlock = prevBlock;
     _merkleRoot = merkleRoot;
     _timestamp = timestamp;
-    _bits = bits;
+    _target = target;
     _nonce = nonce;
     _totalTransactions = totalTransactions;
     _hashes = hashes;
@@ -178,7 +178,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     // check proof-of-work
     BN_init(&target);
     BN_init(&maxTarget);
-    setCompact(&target, _bits);
+    setCompact(&target, _target);
     setCompact(&maxTarget, MAX_PROOF_OF_WORK);
     if (BN_cmp(&target, BN_value_one()) < 0 || BN_cmp(&target, &maxTarget) > 0) return NO; // target out of range
 
@@ -197,7 +197,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     [d appendData:_prevBlock];
     [d appendData:_merkleRoot];
     [d appendUInt32:_timestamp + NSTimeIntervalSince1970];
-    [d appendUInt32:_bits];
+    [d appendUInt32:_target];
     [d appendUInt32:_nonce];
     [d appendUInt32:_totalTransactions];
     [d appendVarInt:_hashes.length/CC_SHA256_DIGEST_LENGTH];
@@ -235,10 +235,13 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     return txHashes;
 }
 
-// Verifies the block difficulty target is correct for the block's position in the chain. The difficulty algorithm works
-// as follows: The target must be the same as the previous block unless the block's height is a multiple of 2016. Every
-// 2016 blocks there is a difficulty transition where a new difficulty is calculated. The new target is the previous
-// target multiplied by the time between the last transition block's timestamp and this one (in seconds), divided by the
+// Verifies the block difficulty target is correct for the block's position in the chain. transitionTime may be 0 if
+// height is not a multiple of BITCOIN_DIFFICULTY_INTERVAL.
+//
+// The difficulty algorithm works as follows:
+// The target must be the same as the previous block unless the block's height is a multiple of 2016. Every 2016 blocks
+// there is a difficulty transition where a new difficulty is calculated. The new target is the previous target
+// multiplied by the time between the last transition block's timestamp and this one (in seconds), divided by the
 // targeted time between transitions (14*24*60*60 seconds). If the new difficulty is more than 4x or less than 1/4 of
 // the previous difficulty, the change is limited to either 4x or 1/4. There is also a minimum difficulty value
 // intuitively named MAX_PROOF_OF_WORK... since larger values are less difficult.
@@ -251,13 +254,13 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     return YES; // don't worry about difficulty on testnet for now
 #endif
 
-    if ((height % BITCOIN_DIFFICULTY_INTERVAL) != 0) return (_bits == previous.bits) ? YES : NO;
+    if ((height % BITCOIN_DIFFICULTY_INTERVAL) != 0) return (_target == previous.target) ? YES : NO;
 
     int32_t timespan = (int32_t)((int64_t)previous.timestamp - (int64_t)time);
     BIGNUM target, maxTarget, span, targetSpan, bn;
     BN_CTX *ctx = BN_CTX_new();
     
-    // limit difficulty transition to 400%
+    // limit difficulty transition to -75% or +400%
     if (timespan < TARGET_TIMESPAN/4) timespan = TARGET_TIMESPAN/4;
     if (timespan > TARGET_TIMESPAN*4) timespan = TARGET_TIMESPAN*4;
 
@@ -266,7 +269,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     BN_init(&span);
     BN_init(&targetSpan);
     BN_init(&bn);
-    setCompact(&target, previous.bits);
+    setCompact(&target, previous.target);
     setCompact(&maxTarget, MAX_PROOF_OF_WORK);
     BN_set_word(&span, timespan);
     BN_set_word(&targetSpan, TARGET_TIMESPAN);
@@ -275,7 +278,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     if (BN_cmp(&target, &maxTarget) > 0) BN_copy(&target, &maxTarget); // limit to MAX_PROOF_OF_WORK
     BN_CTX_free(ctx);
     
-    return (_bits == getCompact(&target)) ? YES : NO;
+    return (_target == getCompact(&target)) ? YES : NO;
 }
 
 // recursively walks the merkle tree in depth first order, calling leaf(hash, flag) for each stored hash, and

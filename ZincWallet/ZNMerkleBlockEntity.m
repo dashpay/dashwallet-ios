@@ -35,7 +35,7 @@
 @dynamic prevBlock;
 @dynamic merkleRoot;
 @dynamic timestamp;
-@dynamic bits;
+@dynamic target;
 @dynamic nonce;
 @dynamic totalTransactions;
 @dynamic hashes;
@@ -58,7 +58,7 @@
             e.prevBlock = block.prevBlock;
             e.merkleRoot = block.merkleRoot;
             e.timestamp = block.timestamp;
-            e.bits = block.bits;
+            e.target = block.target;
             e.nonce = block.nonce;
             allBlocks[block.blockHash] = e;
             if (height >= 0) {
@@ -158,7 +158,7 @@
     
     [[self managedObjectContext] performBlockAndWait:^{
         block = [[ZNMerkleBlock alloc] initWithBlockHash:self.blockHash version:self.version prevBlock:self.prevBlock
-                 merkleRoot:self.merkleRoot timestamp:self.timestamp bits:self.bits nonce:self.nonce
+                 merkleRoot:self.merkleRoot timestamp:self.timestamp target:self.target nonce:self.nonce
                  totalTransactions:self.totalTransactions hashes:self.hashes flags:self.flags];
     }];
     

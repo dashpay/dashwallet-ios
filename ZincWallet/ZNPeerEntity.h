@@ -34,6 +34,7 @@
 @property (nonatomic) NSTimeInterval timestamp;
 @property (nonatomic) int16_t port;
 @property (nonatomic) int64_t services;
+@property (nonatomic) int16_t misbehavin;
 
 + (instancetype)createOrUpdateWithPeer:(ZNPeer *)peer;
 

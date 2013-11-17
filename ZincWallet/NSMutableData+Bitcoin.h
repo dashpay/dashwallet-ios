@@ -26,9 +26,9 @@
 #import <Foundation/Foundation.h>
 
 #if BITCOIN_TESTNET
-#define BITCOIN_MAGIC_NUMBER 0x0709110B
+#define BITCOIN_MAGIC_NUMBER 0x0709110b
 #else
-#define BITCOIN_MAGIC_NUMBER 0xD9B4BEF9
+#define BITCOIN_MAGIC_NUMBER 0xd9b4bef9
 #endif
 
 @interface NSMutableData (Bitcoin)
@@ -48,8 +48,6 @@
 
 - (void)appendMessage:(NSData *)message type:(NSString *)type;
 - (void)appendNullPaddedString:(NSString *)s length:(NSUInteger)length;
-
-// address is an IPv4 address in network byte order
 - (void)appendNetAddress:(uint32_t)address port:(uint16_t)port services:(uint64_t)services;
 
 @end

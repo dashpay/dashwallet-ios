@@ -34,7 +34,7 @@
 @property (nonatomic, readonly) NSData *prevBlock;
 @property (nonatomic, readonly) NSData *merkleRoot;
 @property (nonatomic, readonly) NSTimeInterval timestamp;
-@property (nonatomic, readonly) uint32_t bits;
+@property (nonatomic, readonly) uint32_t target;
 @property (nonatomic, readonly) uint32_t nonce;
 @property (nonatomic, readonly) uint32_t totalTransactions;
 @property (nonatomic, readonly) NSData *hashes;
@@ -48,7 +48,7 @@
 
 - (instancetype)initWithMessage:(NSData *)message;
 - (instancetype)initWithBlockHash:(NSData *)blockHash version:(uint32_t)version prevBlock:(NSData *)prevBlock
-merkleRoot:(NSData *)merkleRoot timestamp:(NSTimeInterval)timestamp bits:(uint32_t)bits nonce:(uint32_t)nonce
+merkleRoot:(NSData *)merkleRoot timestamp:(NSTimeInterval)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
 totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags;
 
 // true if the given tx hash is known to be included in the block

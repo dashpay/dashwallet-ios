@@ -60,7 +60,7 @@ typedef enum {
 @property (nonatomic, strong) NSInputStream *inputStream;
 @property (nonatomic, strong) NSOutputStream *outputStream;
 @property (nonatomic, strong) NSMutableData *msgHeader, *msgPayload, *outputBuffer;
-@property (nonatomic, assign) BOOL sentVerack, gotVerack;
+@property (nonatomic, assign) BOOL sentVerack, gotVerack, sentGetblocks;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) id reachabilityObserver;
 @property (nonatomic, assign) uint64_t localNonce;
@@ -137,7 +137,7 @@ services:(uint64_t)services
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
     
-    // create a private serial queue with it's own thread for processing socket io
+    // create a private serial queue for processing socket io
     dispatch_async(dispatch_queue_create([[NSString stringWithFormat:@"cc.zinc.peer.%@:%d", self.host, self.port]
                                           UTF8String], NULL), ^{
         CFReadStreamRef readStream = NULL;
@@ -227,6 +227,8 @@ services:(uint64_t)services
 
     if (! self.runLoop) return;
 
+    //TODO: XXXX in the sim at least, sometimes this block isn't called for 20-30 seconds after it's scheduled on the
+    // runloop... figure out why.
     CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopDefaultMode, ^{
         NSLog(@"%@:%d sending %@", self.host, self.port, type);
 
@@ -313,6 +315,8 @@ services:(uint64_t)services
     }
     
     [msg appendData:hashStop ? hashStop : ZERO_HASH];
+
+    self.sentGetblocks = YES;
     [self sendMessage:msg type:MSG_GETBLOCKS];
 }
 
@@ -574,7 +578,7 @@ services:(uint64_t)services
         return;
     }
 
-    if (count >= 2000) { // this is a chunk of a larger chain of headers, so request the next chunk
+    if (count >= 2000 && ! self.sentGetblocks) { // this is a chunk of a larger chain of headers, so request next chunk
         NSData *firstHash = [[message subdataWithRange:NSMakeRange(l, 80)] SHA256_2],
                *lastHash = [[message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)] SHA256_2];
     

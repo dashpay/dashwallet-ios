@@ -167,34 +167,35 @@
             }
             else {
                 ZNWallet *w = [ZNWallet sharedInstance];
-                ZNTransactionEntity *tx = self.transactions[indexPath.row];
-                __block uint64_t received = 0, spent = 0;
-                __block int height = 0;
-                __block BOOL withinWallet = NO;
+                ZNTransaction *tx = self.transactions[indexPath.row];
+                uint64_t received = 0, spent = 0, amount = 0;
+                NSUInteger height = 0, idx = 0;
+                BOOL withinWallet = NO;
                 
-                [[NSManagedObject context] performBlockAndWait:^{
-                    height = (tx.blockHeight != TX_UNCONFIRMED) ? w.lastBlockHeight - tx.blockHeight : 0;
+                height = (tx.blockHeight != TX_UNCONFIRMED) ? w.lastBlockHeight - tx.blockHeight : 0;
                 
-                    for (ZNTxInputEntity *i in tx.inputs) {
-                        ZNTxOutputEntity *o = [ZNTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", i.txHash,
-                                               i.n].lastObject;
-
-                        if (o.address && [w containsAddress:o.address]) spent += o.value;
-                    }
-
-                    withinWallet = (spent > 0) ? YES : NO;
+                for (NSData *hash in tx.inputHashes) {
+                    ZNTxOutputEntity *o = [ZNTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", hash,
+                                           tx.inputIndexes[idx++]].lastObject;
                     
-                    for (ZNTxOutputEntity *o in tx.outputs) {
-                        if (o.address && [w containsAddress:o.address]) {
-                            received += o.value;
-                            if (spent == 0) detailTextLabel.text = [@"to: " stringByAppendingString:o.address];
-                        }
-                        else if (spent > 0) {
-                            if (o.address) detailTextLabel.text = [@"to: " stringByAppendingString:o.address];
-                            withinWallet = NO;
-                        }
+                    if (o.address && [w containsAddress:o.address]) spent += o.value;
+                }
+                
+                withinWallet = (spent > 0) ? YES : NO;
+                idx = 0;
+                
+                for (NSString *address in tx.outputAddresses) {
+                    amount = [tx.outputAmounts[idx++] unsignedLongLongValue];
+                    
+                    if ([w containsAddress:address]) {
+                        received += amount;
+                        if (spent == 0) detailTextLabel.text = [@"to: " stringByAppendingString:address];
                     }
-                }];
+                    else if (spent > 0) {
+                        if (address) detailTextLabel.text = [@"to: " stringByAppendingString:address];
+                        withinWallet = NO;
+                    }
+                }
                 
                 noTxLabel.hidden = YES;
                 sentLabel.hidden = YES;
@@ -205,7 +206,7 @@
                 
                 if (height < 6) {
                     unconfirmedLabel.text =
-                        [NSString stringWithFormat:@"%d confirmation%@", height, height == 1 ? @"" : @"s"];
+                        [NSString stringWithFormat:@"%d confirmation%@", (int)height, (height == 1) ? @"" : @"s"];
                 }
                 else {
                     unconfirmedLabel.hidden = YES;

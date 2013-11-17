@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="3400" systemVersion="13A603" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="3401" systemVersion="13A603" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
     <entity name="ZNAddressEntity" representedClassName="ZNAddressEntity" syncable="YES">
         <attribute name="address" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="index" attributeType="Integer 32" defaultValueString="0" indexed="YES" syncable="YES"/>
         <attribute name="internal" attributeType="Boolean" defaultValueString="0" indexed="YES" syncable="YES"/>
     </entity>
     <entity name="ZNMerkleBlockEntity" representedClassName="ZNMerkleBlockEntity" syncable="YES">
-        <attribute name="bits" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <attribute name="blockHash" attributeType="Binary" indexed="YES" syncable="YES"/>
         <attribute name="flags" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="hashes" optional="YES" attributeType="Binary" syncable="YES"/>
@@ -14,12 +13,14 @@
         <attribute name="merkleRoot" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="nonce" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <attribute name="prevBlock" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="target" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <attribute name="timestamp" optional="YES" attributeType="Date" indexed="YES" syncable="YES"/>
         <attribute name="totalTransactions" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <attribute name="version" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
     </entity>
     <entity name="ZNPeerEntity" representedClassName="ZNPeerEntity" syncable="YES">
         <attribute name="address" optional="YES" attributeType="Integer 32" defaultValueString="0" indexed="YES" syncable="YES"/>
+        <attribute name="misbehavin" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="port" optional="YES" attributeType="Integer 16" defaultValueString="0" indexed="YES" syncable="YES"/>
         <attribute name="services" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
         <attribute name="timestamp" optional="YES" attributeType="Date" indexed="YES" syncable="YES"/>

@@ -259,22 +259,26 @@ static NSData *getKeychainData(NSString *key)
 }
 
 // Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
-// found that haven't been used in any transactions. This method returns an array of <gapLimit> unused ZNAddressEntity
-// objects following the last used address in the chain. The internal chain is used for change address and the external
-// chain for receive addresses.
+// found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
+// following the last used address in the chain. The internal chain is used for change address and the external chain
+// for receive addresses.
 - (NSArray *)addressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal
 {
+    NSMutableArray *a = [NSMutableArray array];
     NSMutableArray *newaddresses = [NSMutableArray array];
     NSFetchRequest *req = [ZNAddressEntity fetchRequest];
     
     req.predicate = [NSPredicate predicateWithFormat:@"internal == %@", @(internal)];
     req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"index" ascending:YES]];
     
-    __block NSMutableArray *a = [NSMutableArray arrayWithArray:[ZNAddressEntity fetchObjects:req]];
+    [[ZNAddressEntity context] performBlockAndWait:^{
+        [a addObjectsFromArray:[[ZNAddressEntity fetchObjects:req] valueForKey:@"address"]];
+    }];
+    
     __block NSUInteger count = a.count, i = a.count;
 
     // keep only the trailing contiguous block of addresses with no transactions
-    while (i > 0 && [ZNTxOutputEntity countObjectsMatching:@"address == %@", [a[i - 1] get:@"address"]] == 0) i--;
+    while (i > 0 && [ZNTxOutputEntity countObjectsMatching:@"address == %@", a[i - 1]] == 0) i--;
     
     if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
     
@@ -286,8 +290,11 @@ static NSData *getKeychainData(NSString *key)
     @synchronized(self) {
         // add any new addresses that were generated while waiting for mutex lock
         req.predicate = [NSPredicate predicateWithFormat:@"internal == %@ && index >= %d", @(internal), count];
-        [a addObjectsFromArray:[ZNAddressEntity fetchObjects:req]];
-    
+        
+        [[ZNAddressEntity context] performBlockAndWait:^{
+            [a addObjectsFromArray:[[ZNAddressEntity fetchObjects:req] valueForKey:@"address"]];
+        }];
+
         while (a.count < gapLimit) { // generate new addresses up to gapLimit
             unsigned int index = a.count ? [a.lastObject index] + 1 : (unsigned int)count;
             NSData *pubKey = [self.sequence publicKey:index internal:internal masterPublicKey:self.masterPublicKey];
@@ -298,20 +305,15 @@ static NSData *getKeychainData(NSString *key)
                 return nil;
             }
 
-            // store new address in core data
-            ZNAddressEntity *address = [ZNAddressEntity entityWithAddress:addr index:index internal:internal];
+            [ZNAddressEntity entityWithAddress:addr index:index internal:internal]; // store new address in core data
             
             [self.allAddresses addObject:addr];
-            [a addObject:address];
-            [newaddresses addObject:address];
+            [a addObject:addr];
+            [newaddresses addObject:addr];
         }
     }
     
-#if SPV_MODE
     if (newaddresses.count > 0) [[ZNPeerManager sharedInstance] subscribeToAddresses:newaddresses];
-#else
-    if (newaddresses.count > 0) [[ZNSocketListener sharedInstance] subscribeToAddresses:newaddresses];
-#endif
     
     return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
 }
@@ -332,46 +334,26 @@ static NSData *getKeychainData(NSString *key)
     return balance;
 }
 
-// returns the next unused address on the requested chain
-- (NSString *)addressFromInternal:(BOOL)internal
-{
-    __block NSString *address = nil;
-
-    [[NSManagedObject context] performBlockAndWait:^{
-        ZNAddressEntity *addr = [self addressesWithGapLimit:1 internal:internal].lastObject;
-        int32_t i = addr.index, height = 0;
-    
-        while (i > 0) { // consider an address still unused if none of its transactions have more than 6 confimations
-            ZNAddressEntity *a =
-                [ZNAddressEntity objectsMatching:@"internal == %@ && index == %d", @(internal), --i].lastObject;
-        
-            for (ZNTxOutputEntity *o in [ZNTxOutputEntity objectsMatching:@"address == %@", a.address]) {
-                height = o.transaction.blockHeight;
-                if (height == TX_UNCONFIRMED || self.lastBlockHeight - height < 6) continue;
-                addr = a;
-                break;
-            }
-        }
-        
-        address = addr.address;
-    }];
-    
-    return address;
-}
-
 - (NSString *)receiveAddress
 {
-    return [self addressFromInternal:NO];
+    return [self addressesWithGapLimit:1 internal:NO].lastObject;
 }
 
 - (NSString *)changeAddress
 {
-    return [self addressFromInternal:YES];
+    return [self addressesWithGapLimit:1 internal:YES].lastObject;
 }
 
 - (NSArray *)recentTransactions
 {
-    return [ZNTransactionEntity objectsSortedBy:@"blockHeight" ascending:NO];
+    NSMutableArray *a = [NSMutableArray array];
+
+    //TODO: XXXX need a secondary sort based on (reverse) db insert order
+    for (ZNTransactionEntity *e in [ZNTransactionEntity objectsSortedBy:@"blockHeight" ascending:NO]) {
+        [a addObject:e.transaction];
+    }
+
+    return a;
 }
 
 - (uint32_t)lastBlockHeight

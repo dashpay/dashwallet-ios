@@ -25,8 +25,6 @@
 
 #import <Foundation/Foundation.h>
 
-#define WALLET_ADDRESSES_PER_QUERY 100 // maximum number of addresses to request in a single query
-
 #define walletSyncStartedNotification  @"walletSyncStartedNotification"
 #define walletSyncFinishedNotification @"walletSyncFinishedNotification"
 #define walletSyncFailedNotification   @"walletSyncFailedNotification"
@@ -43,7 +41,7 @@
 @property (nonatomic, readonly) uint64_t balance;
 @property (nonatomic, readonly) NSString *receiveAddress;
 @property (nonatomic, readonly) NSString *changeAddress;
-@property (nonatomic, readonly) NSArray *recentTransactions; // ZNTransactionEntities sorted by date, most recent first
+@property (nonatomic, readonly) NSArray *recentTransactions; // ZNTransaction objects sorted by date, most recent first
 @property (nonatomic, readonly) uint32_t estimatedCurrentBlockHeight;
 @property (nonatomic, readonly) uint32_t lastBlockHeight;
 @property (nonatomic, readonly, getter = isSynchronizing) BOOL synchronizing;

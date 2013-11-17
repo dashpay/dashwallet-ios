@@ -36,7 +36,7 @@
 @property (nonatomic, retain) NSData *prevBlock;
 @property (nonatomic, retain) NSData *merkleRoot;
 @property (nonatomic) NSTimeInterval timestamp;
-@property (nonatomic) int32_t bits;
+@property (nonatomic) int32_t target;
 @property (nonatomic) int32_t nonce;
 @property (nonatomic) int32_t totalTransactions;
 @property (nonatomic, retain) NSData *hashes;

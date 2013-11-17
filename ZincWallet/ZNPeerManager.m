@@ -46,25 +46,28 @@
 #define NODE_NETWORK    1 // services value indicating a node offers full blocks, not just headers
 
 #if BITCOIN_TESTNET
+
 #define GENESIS_BLOCK_HASH @"000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943".hexToData
 
 // The testnet genesis block uses the mainnet genesis block's merkle root. The hash is wrong using it's own root.
 #define GENESIS_BLOCK [[ZNMerkleBlock alloc] initWithBlockHash:[GENESIS_BLOCK_HASH reverse] version:1\
-    prevBlock:@"0000000000000000000000000000000000000000000000000000000000000000".hexToData \
-    merkleRoot:@"3ba3edfd7a7b12b27ac72c3e67768f617fC81bc3888a51323a9fb8aa4b1e5e4a".hexToData \
-    timestamp:1296688602.0 - NSTimeIntervalSince1970 bits:0x1d00ffffu nonce:414098458u totalTransactions:1\
+    prevBlock:@"0000000000000000000000000000000000000000000000000000000000000000".hexToData\
+    merkleRoot:@"3ba3edfd7a7b12b27ac72c3e67768f617fC81bc3888a51323a9fb8aa4b1e5e4a".hexToData\
+    timestamp:1296688602.0 - NSTimeIntervalSince1970 target:0x1d00ffffu nonce:414098458u totalTransactions:1\
     hashes:@"3ba3edfd7a7b12b27ac72c3e67768f617fC81bc3888a51323a9fb8aa4b1e5e4a".hexToData flags:@"00".hexToData]
 
 static const struct { uint32_t height; char *hash; } checkpoint_array[] = {};
 
-static const char *dnsSeeds[] = { "testnet-seed.bitcoin.petertodd.org", "testnet-seed.bluematt.me" };
+static const char *dns_seeds[] = { "testnet-seed.bitcoin.petertodd.org", "testnet-seed.bluematt.me" };
 
 #else
+
 #define GENESIS_BLOCK_HASH @"000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f".hexToData
+
 #define GENESIS_BLOCK [[ZNMerkleBlock alloc] initWithBlockHash:[GENESIS_BLOCK_HASH reverse] version:1\
     prevBlock:@"0000000000000000000000000000000000000000000000000000000000000000".hexToData\
     merkleRoot:@"3ba3edfd7a7b12b27ac72c3e67768f617fC81bc3888a51323a9fb8aa4b1e5e4a".hexToData\
-    timestamp:1231006505.0 - NSTimeIntervalSince1970 bits:0x1d00ffffu nonce:2083236893u totalTransactions:1\
+    timestamp:1231006505.0 - NSTimeIntervalSince1970 target:0x1d00ffffu nonce:2083236893u totalTransactions:1\
     hashes:@"3ba3edfd7a7b12b27ac72c3e67768f617fC81bc3888a51323a9fb8aa4b1e5e4a".hexToData flags:@"00".hexToData]
 
 // blockchain checkpoints
@@ -82,13 +85,11 @@ static const struct { uint32_t height; char *hash; } checkpoint_array[] = {
     { 250000, "000000000000003887df1f29024b06fc2200b55f8af8f35453d7be294df2d214" },
 };
 
-static const char *dnsSeeds[] = {
+static const char *dns_seeds[] = {
     "seed.bitcoin.sipa.be", "dnsseed.bluematt.me", "dnsseed.bitcoin.dashjr.org", "bitseed.xf2.org"
 };
 
 #endif
-
-static NSMutableDictionary *checkpoints;
 
 @interface ZNPeerManager ()
 
@@ -98,7 +99,7 @@ static NSMutableDictionary *checkpoints;
 @property (nonatomic, strong) ZNBloomFilter *bloomFilter;
 @property (nonatomic, assign) NSUInteger filterElemCount;
 @property (nonatomic, assign) BOOL filterWasReset;
-@property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
+@property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback, *checkpoints;
 
 @end
 
@@ -109,20 +110,8 @@ static NSMutableDictionary *checkpoints;
     static id singleton = nil;
     static dispatch_once_t onceToken = 0;
     
-#if ! SPV_MODE
-    return nil;
-#endif
-    
     dispatch_once(&onceToken, ^{
         srand48(time(NULL)); // seed psudo random number generator (for non-cryptographic use only!)
-        
-        checkpoints = [NSMutableDictionary dictionary]; // blockchain checkpoints
-
-        for (int i = 0; i < sizeof(checkpoint_array)/sizeof(*checkpoint_array); i++) {
-            checkpoints[@(checkpoint_array[i].height)] =
-                [[NSString stringWithUTF8String:checkpoint_array[i].hash].hexToData reverse];
-        }
-
         singleton = [self new];
     });
     
@@ -138,6 +127,7 @@ static NSMutableDictionary *checkpoints;
     
 #warning remove this!
     [ZNMerkleBlockEntity deleteObjects:[ZNMerkleBlockEntity allObjects]]; //for testing chain download
+    self.earliestBlockHeight = 100000; // remove this too
     
     if (! [ZNMerkleBlockEntity topBlock]) [ZNMerkleBlockEntity createOrUpdateWithBlock:GENESIS_BLOCK atHeight:0];
 
@@ -149,6 +139,13 @@ static NSMutableDictionary *checkpoints;
         self.publishedTx[[e get:@"txHash"]] = [e transaction];
     }
     
+    self.checkpoints = [NSMutableDictionary dictionary]; // blockchain checkpoints
+    
+    for (int i = 0; i < sizeof(checkpoint_array)/sizeof(*checkpoint_array); i++) {
+        self.checkpoints[@(checkpoint_array[i].height)] =
+        [[NSString stringWithUTF8String:checkpoint_array[i].hash].hexToData reverse];
+    }
+
     //TODO: monitor network reachability and reconnect whenever connection becomes available
     //TODO: disconnect peers when app is backgrounded unless we're syncing or launching mobile web app tx handler
     
@@ -160,8 +157,8 @@ static NSMutableDictionary *checkpoints;
     __block NSUInteger count = 0;
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
 
-    for (int i = 0; i < sizeof(dnsSeeds)/sizeof(*dnsSeeds); i++) { // DNS peer discovery
-        struct hostent *h = gethostbyname(dnsSeeds[i]);
+    for (int i = 0; i < sizeof(dns_seeds)/sizeof(*dns_seeds); i++) { // DNS peer discovery
+        struct hostent *h = gethostbyname(dns_seeds[i]);
         
         [[ZNPeerEntity context] performBlockAndWait:^{
             for (int j = 0; h->h_addr_list[j] != NULL; j++) {
@@ -202,17 +199,23 @@ static NSMutableDictionary *checkpoints;
 
 - (ZNPeerEntity *)randomPeer
 {
-    NSUInteger count = [ZNPeerEntity countAllObjects], offset = 0;
+    NSFetchRequest *req = [ZNPeerEntity fetchRequest];
+    
+    req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"timestamp" ascending:NO]];
+    req.predicate = [NSPredicate predicateWithFormat:@"misbehavin == 0"];
+    
+    NSUInteger count = [ZNPeerEntity countObjects:req];
     
     if (count == 0) count += [self discoverPeers];
     if (count > 100) count = 100;
     if (count == 0) return nil;
 
-    offset = pow(lrand48() % count, 2)/count; // pick a random peer biased for peers with more recent timestamps
+    req.fetchOffset = pow(lrand48() % count, 2)/count; // pick a random peer biased for peers with recent timestamps
+    req.fetchLimit = 1;
     
-    NSLog(@"picking peer %lu out of %lu most recent", (unsigned long)offset, (unsigned long)count);
+    NSLog(@"picking peer %d out of %d most recent", (int)req.fetchOffset, (int)count);
     
-    return [ZNPeerEntity objectsSortedBy:@"timestamp" ascending:NO offset:offset limit:1].lastObject;
+    return [ZNPeerEntity fetchObjects:req].lastObject;
 }
 
 - (void)connect
@@ -240,6 +243,7 @@ static NSMutableDictionary *checkpoints;
     [peer connect];
 }
 
+//TODO: XXXX check if this is slow... seems to take a while sometimes to load the filter
 - (ZNBloomFilter *)bloomFilter
 {
     // A bloom filter's falsepositive rate will increase with each item added to the filter. If the filter has degraded
@@ -287,13 +291,7 @@ static NSMutableDictionary *checkpoints;
 // this will extend the bloom filter to include transactions sent to the given addresses
 - (void)subscribeToAddresses:(NSArray *)addresses
 {
-    __block NSArray *a;
-
-    [[ZNAddressEntity context] performBlockAndWait:^{
-        a = [addresses valueForKey:@"address"];
-    }];
-
-    for (NSString *addr in a) {
+    for (NSString *addr in addresses) {
         NSData *d = [addr base58checkToData];
         
         // add the address hash160 to watch for any tx receiveing money to the wallet
@@ -325,8 +323,11 @@ static NSMutableDictionary *checkpoints;
 
 - (void)peerMisbehavin:(ZNPeer *)peer
 {
-    //TODO: XXXX mark peer as misbehaving and disconnect
-    //TODO: XXXX if for any reason you don't disconnect, reset _blockChain, _topBlock, _topBlockHeight
+    [[ZNPeerEntity context] performBlockAndWait:^{
+        [ZNPeerEntity createOrUpdateWithPeer:peer].misbehavin++;
+    }];
+    
+    [peer disconnect];
 }
 
 #pragma mark - ZNPeerDelegate
@@ -334,45 +335,40 @@ static NSMutableDictionary *checkpoints;
 - (void)peerConnected:(ZNPeer *)peer
 {
     [[ZNPeerEntity context] performBlock:^{
+        ZNPeerEntity *e = [ZNPeerEntity createOrUpdateWithPeer:peer];
+        uint32_t top = [ZNMerkleBlockEntity topBlock].height;
+        
         _connected = YES;
         self.connectFailures = 0;
         NSLog(@"%@:%d connected", peer.host, peer.port);
-    
-        ZNPeerEntity *e = [ZNPeerEntity createOrUpdateWithPeer:peer];
         
-        [e set:@"timestamp" to:[NSDate date]]; // set last seen timestamp for peer
+        e.timestamp = [NSDate timeIntervalSinceReferenceDate]; // set last seen timestamp for peer
         
         [peer sendMessage:self.bloomFilter.data type:MSG_FILTERLOAD];
         if ([ZNPeerEntity countAllObjects] <= 1000) [peer sendGetaddrMessage];
 
-        uint32_t top = [ZNMerkleBlockEntity topBlock].height;
-
         //TODO: XXXX how does chain download work with relation to new wallet addresses being added? when a tx is found,
         // that address gets "used up" and we need to request the next address gap from the wallet somehow
         if (top < peer.lastblock) {
-            NSFetchRequest *req = [ZNMerkleBlockEntity fetchRequest];
             int32_t step = 1, start = 0;
-            NSMutableArray *heights = [NSMutableArray array];
+            NSMutableArray *locators = [NSMutableArray array];
+            NSData *hash = nil;
         
             // append 10 most recent block hashes, decending, then continue appending, doubling the step back each time,
             // finishing with the genisis block (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, ...0)
             for (int32_t i = top; i > 0; i -= step, ++start) {
                 if (start >= 10) step *= 2;
-                
-                [heights addObject:@(i)];
+                hash = [ZNMerkleBlockEntity blockAtHeight:i].blockHash;
+                if (hash) [locators addObject:hash];
             }
             
-            [heights addObject:@(0)];
+            [locators addObject:[GENESIS_BLOCK_HASH reverse]];
             
-            req.predicate = [NSPredicate predicateWithFormat:@"height in %@", heights];
-            req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"height" ascending:NO]];
-            
-            NSArray *blocks = [ZNMerkleBlockEntity fetchObjects:req];
-            
-            if (blocks.count > 0) {
-                [peer sendGetheadersMessageWithLocators:[blocks valueForKey:@"blockHash"] andHashStop:nil];
+            // request just block headers up to self.earliestBlockHeight, and then merkleblocks after that
+            if (top >= self.earliestBlockHeight) {
+                [peer sendGetblocksMessageWithLocators:locators andHashStop:nil];
             }
-            else [peer sendGetheadersMessageWithLocators:@[[GENESIS_BLOCK_HASH reverse]] andHashStop:nil];
+            else [peer sendGetheadersMessageWithLocators:locators andHashStop:nil];
         }
         else {
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -389,10 +385,6 @@ static NSMutableDictionary *checkpoints;
         NSLog(@"%@:%d disconnected%@%@", peer.host, peer.port, error ? @", " : @"", error ? error : @"");
 
         //TODO: XXXX check for network reachability
-        if (error) {
-            [ZNPeerEntity deleteObjects:[ZNPeerEntity objectsMatching:@"address == %d && port == %d",
-                                         (int32_t)peer.address, (int16_t)peer.port]];
-        }
 
         if (! self.peers.count) {
             _connected = NO;
@@ -483,10 +475,9 @@ static NSMutableDictionary *checkpoints;
 
         //TODO: XXX need to have some kind of timeout/retry if chain download stalls
         
-        if (! e) { // block is either an orphan, or we haven't downloaded the whole chain yet
-            // if the top block is just a header (totalTransactions == 0) that means we're still downloading the chain,
-            // in which case we ignore the orphan block for now as it's probably in the chain we're already downloading
-            if ([ZNMerkleBlockEntity topBlock].totalTransactions == 0) return;
+        if (! e) { // block is an orphan
+            // if we're still downloading the chain, ignore orphan block for now since it's probably in the chain
+            if ([ZNMerkleBlockEntity topBlock].height < peer.lastblock) return;
 
             NSLog(@"%@:%d relayed orphan block, calling getblocks with last block", peer.host, peer.port);
 
@@ -495,6 +486,9 @@ static NSMutableDictionary *checkpoints;
              andHashStop:block.blockHash];
             return;
         }
+
+        // if it's just a block header (totalTransactions == 0), ingore it for heights above earliestBlockHeight
+        if (block.totalTransactions == 0 && height >= self.earliestBlockHeight) return;
 
         if ((height % BITCOIN_DIFFICULTY_INTERVAL) == 0) { // hit a difficulty transition, find last transition time
             while (abs(e.height) > height - BITCOIN_DIFFICULTY_INTERVAL) {
@@ -505,40 +499,36 @@ static NSMutableDictionary *checkpoints;
             e = [ZNMerkleBlockEntity blockForHash:block.prevBlock];
         }
 
+        // verify block difficulty
         if (! [block verifyDifficultyAtHeight:height previous:e.merkleBlock transitionTime:transitionTime]) {
             NSLog(@"%@:%d relayed block with invalid difficulty target %x, blockHash: %@", peer.host, peer.port,
-                  block.bits, block.blockHash);
+                  block.target, block.blockHash);
             [self peerMisbehavin:peer];
             return;
         }
         
-        if (checkpoints[@(height)] && ! [block.blockHash isEqual:checkpoints[@(height)]]) { // verify checkpoints
+        // verify block chain checkpoints
+        if (self.checkpoints[@(height)] && ! [block.blockHash isEqual:self.checkpoints[@(height)]]) {
             NSLog(@"%@:%d relayed a block that differs from the checkpoint at height %d, blockHash: %@, expected: %@",
-                  peer.host, peer.port, height, block.blockHash, checkpoints[@(height)]);
+                  peer.host, peer.port, height, block.blockHash, self.checkpoints[@(height)]);
             [self peerMisbehavin:peer];
             return;
         }
     
         e = [ZNMerkleBlockEntity blockForHash:block.blockHash];
     
-        if (e) { // already have the block
+        if (e) { // we already have the block (or at least the header)
             if ((height % 500) == 0) NSLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, height);
             
-            [e setTreeFromBlock:block];
+            [e setTreeFromBlock:block]; // set the merkle tree and transaction count
             
-            if (e.height >= 0) { // and it's not on a fork
+            if (e.height >= 0) { // if it's not on a fork, set block heights for the block's transactions
                 [ZNTransactionEntity setBlockHeight:height forTxHashes:block.txHashes];
                 [self.publishedTx removeObjectsForKeys:block.txHashes]; // remove confirmed tx from publish list
             }
             return;
         }
-        else if ([ZNMerkleBlockEntity blockAtHeight:height] == nil) { // new block extends main chain
-            // if the current top block is a header (totalTransactions == 0) that means we're still downloading the
-            // chain, in which case we ignore new blocks we don't already have headers for so we don't get confused
-            //TODO: BUG: XXXX the real problem is that checking if the top block is a header is just a bad way of
-            // determining if we're downloading the chain
-            if (block.totalTransactions > 0 && [ZNMerkleBlockEntity topBlock].totalTransactions == 0) return;
-            
+        else if ([ZNMerkleBlockEntity blockAtHeight:height] == nil) { // new block extends the main chain
             if ((height % 500) == 0) NSLog(@"adding block at height: %d", height);
         
             [ZNMerkleBlockEntity createOrUpdateWithBlock:block atHeight:height];
@@ -568,7 +558,7 @@ static NSMutableDictionary *checkpoints;
                 h = e.height;
             }
     
-            NSLog(@"reorganizing chain from height %d", h);
+            NSLog(@"reorganizing chain from height %d, new height is %d", h, height);
         
             // mark transactions after the join point as unconfirmed
             [ZNTransactionEntity setBlockHeight:TX_UNCONFIRMED
@@ -592,25 +582,11 @@ static NSMutableDictionary *checkpoints;
             for (ZNTransactionEntity *tx in [ZNTransactionEntity objectsMatching:@"blockHeight == %d", TX_UNCONFIRMED]){
                 [self publishTransaction:tx.transaction completion:nil];
             }
-                
-            NSLog(@"new chain height %d", height);
         }
-    
-        // after downloading the block headers, get the transactions for the blocks newer than earliestBlockHeight
-        if (block.totalTransactions == 0 && height == peer.lastblock) { // totalTransactions is 0 if it's a block header
-            NSMutableArray *locators = [NSMutableArray array];
-    
-            e = [ZNMerkleBlockEntity blockForHash:block.blockHash];
-
-            // find the previous non-header, or earliestBlockHeight
-            while (e.totalTransactions == 0 && e.height > self.earliestBlockHeight) {
-                e = [ZNMerkleBlockEntity blockForHash:e.prevBlock];
-            }
-    
-            if (e) [locators addObject:e.blockHash];
-            if (e.height > 0) [locators addObject:[GENESIS_BLOCK_HASH reverse]];
-    
-            [peer sendGetblocksMessageWithLocators:locators andHashStop:nil];
+        
+        if (block.totalTransactions == 0 && height + 1 == self.earliestBlockHeight) {
+            //TODO: this should use a full locator array so we don't dowload the entire chain if top block is on a fork
+            [peer sendGetblocksMessageWithLocators:@[[ZNMerkleBlockEntity topBlock].blockHash] andHashStop:nil];
         }
     }];
 }

@@ -34,6 +34,7 @@
 @dynamic timestamp;
 @dynamic port;
 @dynamic services;
+@dynamic misbehavin;
 
 + (instancetype)createOrUpdateWithPeer:(ZNPeer *)peer
 {
