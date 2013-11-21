@@ -18,5 +18,5 @@
 - (NSData *)hashAtOffset:(NSUInteger)offset;
 - (NSString *)stringAtOffset:(NSUInteger)offset length:(NSUInteger *)length;
 - (NSData *)dataAtOffset:(NSUInteger)offset length:(NSUInteger *)length;
-
+- (NSArray *)scriptDataElements;
 @end

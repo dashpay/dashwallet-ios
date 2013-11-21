@@ -151,8 +151,8 @@ services:(uint64_t)services
         self.inputStream.delegate = self.outputStream.delegate = self;
 
         self.runLoop = [NSRunLoop currentRunLoop];
-        [self.inputStream scheduleInRunLoop:self.runLoop forMode:NSDefaultRunLoopMode];
-        [self.outputStream scheduleInRunLoop:self.runLoop forMode:NSDefaultRunLoopMode];
+        [self.inputStream scheduleInRunLoop:self.runLoop forMode:NSRunLoopCommonModes];
+        [self.outputStream scheduleInRunLoop:self.runLoop forMode:NSRunLoopCommonModes];
         
         // after the reachablity check, the radios should be warmed up and we can set a short socket connect timeout
         [self performSelector:@selector(disconnectWithError:) withObject:[NSError errorWithDomain:@"ZincWallet"
@@ -179,12 +179,12 @@ services:(uint64_t)services
     if (! self.runLoop) return;
     
     // can't use dispatch_async here because the runloop blocks the queue, so schedule a block on the runloop instead
-    CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopDefaultMode, ^{
+    CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
         [self.inputStream close];
         [self.outputStream close];
 
-        [self.inputStream removeFromRunLoop:self.runLoop forMode:NSDefaultRunLoopMode];
-        [self.outputStream removeFromRunLoop:self.runLoop forMode:NSDefaultRunLoopMode];
+        [self.inputStream removeFromRunLoop:self.runLoop forMode:NSRunLoopCommonModes];
+        [self.outputStream removeFromRunLoop:self.runLoop forMode:NSRunLoopCommonModes];
         
         CFRunLoopStop([self.runLoop getCFRunLoop]);
         
@@ -192,6 +192,7 @@ services:(uint64_t)services
         _status = disconnected;
         [self.delegate peer:self disconnectedWithError:error];
     });
+    CFRunLoopWakeUp([self.runLoop getCFRunLoop]);
 }
 
 - (NSString *)host
@@ -227,9 +228,7 @@ services:(uint64_t)services
 
     if (! self.runLoop) return;
 
-    //TODO: XXXX in the sim at least, sometimes this block isn't called for 20-30 seconds after it's scheduled on the
-    // runloop... figure out why.
-    CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopDefaultMode, ^{
+    CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
         NSLog(@"%@:%d sending %@", self.host, self.port, type);
 
         [self.outputBuffer appendMessage:message type:type];
@@ -242,6 +241,7 @@ services:(uint64_t)services
             //if (self.outputBuffer.length == 0) NSLog(@"%@:%d output buffer cleared", self.host, self.port);
         }
     });
+    CFRunLoopWakeUp([self.runLoop getCFRunLoop]);
 }
 
 - (void)sendVersionMessage
@@ -373,7 +373,7 @@ services:(uint64_t)services
 
 - (void)acceptMessage:(NSData *)message type:(NSString *)type
 {
-    CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopDefaultMode, ^{
+    CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
         if (self.currentBlock && ! [MSG_TX isEqual:type]) { // if we receive a non-tx message, the merkleblock is done
             NSLog(@"%@:%d received non-tx message, expected %u more tx, dropping merkleblock %@", self.host,
                   self.port, (int)self.currentTxHashes.count, self.currentBlock.blockHash);
@@ -395,6 +395,7 @@ services:(uint64_t)services
 
         else NSLog(@"%@:%d dropping %@ length %u, not implemented", self.host, self.port, type, (int)message.length);
     });
+    CFRunLoopWakeUp([self.runLoop getCFRunLoop]);
 }
 
 - (void)acceptVersionMessage:(NSData *)message
@@ -588,7 +589,7 @@ services:(uint64_t)services
     NSLog(@"%@:%u got %u headers", self.host, self.port, (int)count);
     
     // schedule this on the runloop to ensure the above getheaders message is sent first for faster chain download
-    CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopDefaultMode, ^{
+    CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
         for (NSUInteger off = l; off < l + 81*count; off += 81) {
             ZNMerkleBlock *block = [ZNMerkleBlock blockWithMessage:[message subdataWithRange:NSMakeRange(off, 81)]];
     
@@ -600,6 +601,7 @@ services:(uint64_t)services
             [self.delegate peer:self relayedBlock:block];
         }
     });
+    CFRunLoopWakeUp([self.runLoop getCFRunLoop]);
 }
 
 - (void)acceptGetaddrMessage:(NSData *)message

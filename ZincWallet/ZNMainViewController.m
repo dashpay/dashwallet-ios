@@ -28,7 +28,6 @@
 #import "ZNReceiveViewController.h"
 #import "ZNWallet.h"
 #import "ZNWallet+Utils.h"
-#import "ZNPeerManager.h"
 #import <netinet/in.h>
 #import "Reachability.h"
 
@@ -84,7 +83,7 @@
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (w.masterPublicKey) [[ZNPeerManager sharedInstance] connect];
+            [w synchronize];
         }];
     
     // TODO: switch to AFNetworkingReachability
@@ -92,7 +91,7 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             //TODO: XXXX check reachability status? changed != reachable
-            if (w.masterPublicKey) [[ZNPeerManager sharedInstance] connect];
+            [w synchronize];
         }];
     
     self.balanceObserver =
@@ -124,7 +123,7 @@
             self.navigationItem.rightBarButtonItem = self.refreshButton;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                          [w localCurrencyStringForAmount:w.balance]];
-            if (w.masterPublicKey) [[ZNPeerManager sharedInstance] connect];
+            [w synchronize];
         }];
     
     //TODO: create an error banner instead of using an alert
@@ -226,7 +225,7 @@
 {
     [super viewDidAppear:animated];
     
-    if ([ZNWallet sharedInstance].masterPublicKey) [[ZNPeerManager sharedInstance] connect];
+    [[ZNWallet sharedInstance] synchronize];
 }
 
 - (ZNPayViewController *)payController

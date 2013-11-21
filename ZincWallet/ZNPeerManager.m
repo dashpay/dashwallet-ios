@@ -36,6 +36,7 @@
 #import "ZNWallet.h"
 #import "NSString+Base58.h"
 #import "NSMutableData+Bitcoin.h"
+#import "NSData+Bitcoin.h"
 #import "NSData+Hash.h"
 #import "NSManagedObject+Utils.h"
 #import <netdb.h>
@@ -250,9 +251,14 @@ static const char *dns_seeds[] = {
     // by half and we've added at least 100 items to it, clear it and build a new one
     //TODO: XXXX for a wallet with fewer than 100 addresses, this creates a really low false positive rate... fix it
     if (_bloomFilter && _bloomFilter.falsePositiveRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*2 &&
-        _bloomFilter.elementCount > self.filterElemCount + 100) {
+        (_bloomFilter.elementCount > self.filterElemCount + 100 || _bloomFilter.elementCount > self.filterElemCount*1.5)) {
+        NSLog(@"elemCount = %d, fpfrate = %f > default*2 = %f", (int)_bloomFilter.elementCount,
+              _bloomFilter.falsePositiveRate, BLOOM_DEFAULT_FALSEPOSITIVE_RATE*2);
         _bloomFilter = nil;
         self.filterWasReset = YES;
+        
+        //TODO: XXXX the problem here is that the filter degrades with only two tx, but when we reset the filter we
+        // don't include tx that aren't in the wallet, so it degrades again after only two false postives
     }
 
     if (_bloomFilter) return _bloomFilter;
@@ -263,6 +269,8 @@ static const char *dns_seeds[] = {
     // set the filter element count to the next largest multiple of 100, and use a fixed tweak to reduce the information
     // leaked to the remote peer when the filter is reset
     self.filterElemCount = (addresses.count + utxos.count + 100) - ((addresses.count + utxos.count) % 100);
+    if (self.filterElemCount > (addresses.count + utxos.count)*1.5) self.filterElemCount = (addresses.count + utxos.count)*1.5;
+    //self.filterElemCount = (addresses.count + utxos.count)*2;
     _bloomFilter = [ZNBloomFilter filterWithFalsePositiveRate:BLOOM_DEFAULT_FALSEPOSITIVE_RATE
                     forElementCount:self.filterElemCount tweak:self.tweak flags:BLOOM_UPDATE_P2PUBKEY_ONLY];
     
@@ -306,7 +314,7 @@ static const char *dns_seeds[] = {
 - (void)publishTransaction:(ZNTransaction *)transaction completion:(void (^)(NSError *error))completion
 {
     self.publishedTx[transaction.txHash] = transaction;
-    self.publishedCallback[transaction.txHash] = completion;
+    if (completion) self.publishedCallback[transaction.txHash] = completion;
 
     //TODO: XXXX setup a publish timeout
 
@@ -334,7 +342,7 @@ static const char *dns_seeds[] = {
 
 - (void)peerConnected:(ZNPeer *)peer
 {
-    [[ZNPeerEntity context] performBlock:^{
+    [[ZNPeerEntity context] performBlockAndWait:^{
         ZNPeerEntity *e = [ZNPeerEntity createOrUpdateWithPeer:peer];
         uint32_t top = [ZNMerkleBlockEntity topBlock].height;
         
@@ -364,8 +372,8 @@ static const char *dns_seeds[] = {
             
             [locators addObject:[GENESIS_BLOCK_HASH reverse]];
             
-            // request just block headers up to self.earliestBlockHeight, and then merkleblocks after that
-            if (top >= self.earliestBlockHeight) {
+            // request just block headers up to earliestBlockHeight, and then merkleblocks after that
+            if (top + 1 >= self.earliestBlockHeight) {
                 [peer sendGetblocksMessageWithLocators:locators andHashStop:nil];
             }
             else [peer sendGetheadersMessageWithLocators:locators andHashStop:nil];
@@ -380,9 +388,11 @@ static const char *dns_seeds[] = {
 
 - (void)peer:(ZNPeer *)peer disconnectedWithError:(NSError *)error
 {
-    [[ZNPeerEntity context] performBlock:^{
+    [[ZNPeerEntity context] performBlockAndWait:^{
         [self.peers removeObject:peer];
         NSLog(@"%@:%d disconnected%@%@", peer.host, peer.port, error ? @", " : @"", error ? error : @"");
+
+        if (error) [[ZNPeerEntity createOrUpdateWithPeer:peer] deleteObject];
 
         //TODO: XXXX check for network reachability
 
@@ -411,7 +421,7 @@ static const char *dns_seeds[] = {
 
 - (void)peer:(ZNPeer *)peer relayedPeers:(NSArray *)peers
 {
-    [[ZNPeerEntity context] performBlock:^{
+    [[ZNPeerEntity context] performBlockAndWait:^{
         [ZNPeerEntity createOrUpdateWithPeers:peers];
     
         NSUInteger count = [ZNPeerEntity countAllObjects];
@@ -433,15 +443,25 @@ static const char *dns_seeds[] = {
 
 - (void)peer:(ZNPeer *)peer relayedTransaction:(ZNTransaction *)transaction
 {
-    [[ZNTransactionEntity context] performBlock:^{
+    [[ZNTransactionEntity context] performBlockAndWait:^{
         NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, transaction);
 
         NSMutableData *d = [NSMutableData data];
+        uint32_t n = 0;
         
-        for (uint32_t n = 0; n < transaction.outputAddresses.count; n++) {
-            [d setData:transaction.txHash];
-            [d appendUInt32:n];
-            [self.bloomFilter insertData:d]; // update bloomFilter with each txout
+        for (NSData *script in transaction.outputScripts) {
+            n++;
+
+            if (script == (id)[NSNull null]) continue;
+        
+            for (NSData *elem in [script scriptDataElements]) {
+                if (! [self.bloomFilter containsData:elem]) continue;
+        
+                [d setData:transaction.txHash];
+                [d appendUInt32:n - 1];
+                [self.bloomFilter insertData:d]; // update bloomFilter with matched txout
+                break;
+            }
         }
     
         if (self.filterWasReset) { // filter got reset, send the new one to all the peers
@@ -468,7 +488,7 @@ static const char *dns_seeds[] = {
 
 - (void)peer:(ZNPeer *)peer relayedBlock:(ZNMerkleBlock *)block
 {
-    [[ZNMerkleBlockEntity context] performBlock:^{
+    [[ZNMerkleBlockEntity context] performBlockAndWait:^{
         ZNMerkleBlockEntity *e = [ZNMerkleBlockEntity blockForHash:block.prevBlock];
         int32_t height = abs(e.height) + 1;
         NSTimeInterval transitionTime = 0;
@@ -481,7 +501,7 @@ static const char *dns_seeds[] = {
 
             NSLog(@"%@:%d relayed orphan block, calling getblocks with last block", peer.host, peer.port);
 
-            //TODO: this should use a full locator array so we don't dowload the entire chain if top block is on a fork
+            //TODO: this should use a full locator array so we don't download the entire chain if top block is on a fork
             [peer sendGetblocksMessageWithLocators:@[[ZNMerkleBlockEntity topBlock].blockHash]
              andHashStop:block.blockHash];
             return;
@@ -516,7 +536,7 @@ static const char *dns_seeds[] = {
         }
     
         e = [ZNMerkleBlockEntity blockForHash:block.blockHash];
-    
+        
         if (e) { // we already have the block (or at least the header)
             if ((height % 500) == 0) NSLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, height);
             
@@ -530,7 +550,7 @@ static const char *dns_seeds[] = {
         }
         else if ([ZNMerkleBlockEntity blockAtHeight:height] == nil) { // new block extends the main chain
             if ((height % 500) == 0) NSLog(@"adding block at height: %d", height);
-        
+
             [ZNMerkleBlockEntity createOrUpdateWithBlock:block atHeight:height];
             [ZNTransactionEntity setBlockHeight:height forTxHashes:block.txHashes];
             [self.publishedTx removeObjectsForKeys:block.txHashes]; // remove confirmed transactions from publish list
@@ -584,6 +604,7 @@ static const char *dns_seeds[] = {
             }
         }
         
+        // if we're done grabbing headers up to earliestBlockHeight, request merkle blocks for the rest of the chain
         if (block.totalTransactions == 0 && height + 1 == self.earliestBlockHeight) {
             //TODO: this should use a full locator array so we don't dowload the entire chain if top block is on a fork
             [peer sendGetblocksMessageWithLocators:@[[ZNMerkleBlockEntity topBlock].blockHash] andHashStop:nil];

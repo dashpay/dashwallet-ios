@@ -232,7 +232,7 @@ static NSData *getKeychainData(NSString *key)
 
 - (void)synchronize
 {
-    if (self.synchronizing) return;
+    if (self.synchronizing || ! self.masterPublicKey) return;
     
     _synchronizing = YES;
     [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncStartedNotification object:nil];
@@ -291,12 +291,15 @@ static NSData *getKeychainData(NSString *key)
         // add any new addresses that were generated while waiting for mutex lock
         req.predicate = [NSPredicate predicateWithFormat:@"internal == %@ && index >= %d", @(internal), count];
         
+        NSArray *addrs = [ZNAddressEntity fetchObjects:req];
+        __block int32_t index = (int)count;
+        
         [[ZNAddressEntity context] performBlockAndWait:^{
-            [a addObjectsFromArray:[[ZNAddressEntity fetchObjects:req] valueForKey:@"address"]];
+            [a addObjectsFromArray:[addrs valueForKey:@"address"]];
+            if (addrs.count > 0) index = [addrs.lastObject index] + 1;
         }];
 
         while (a.count < gapLimit) { // generate new addresses up to gapLimit
-            unsigned int index = a.count ? [a.lastObject index] + 1 : (unsigned int)count;
             NSData *pubKey = [self.sequence publicKey:index internal:internal masterPublicKey:self.masterPublicKey];
             NSString *addr = [[ZNKey keyWithPublicKey:pubKey] address];
 
@@ -310,10 +313,13 @@ static NSData *getKeychainData(NSString *key)
             [self.allAddresses addObject:addr];
             [a addObject:addr];
             [newaddresses addObject:addr];
+            index++;
         }
     }
     
-    if (newaddresses.count > 0) [[ZNPeerManager sharedInstance] subscribeToAddresses:newaddresses];
+    if (newaddresses.count > 0 && [[ZNPeerManager sharedInstance] connected]) {
+        [[ZNPeerManager sharedInstance] subscribeToAddresses:newaddresses];
+    }
     
     return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
 }

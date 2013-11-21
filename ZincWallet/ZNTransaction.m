@@ -224,14 +224,19 @@ sequence:(uint32_t)sequence
     return self.sequences;
 }
 
+- (NSArray *)outputAmounts
+{
+    return self.amounts;
+}
+
 - (NSArray *)outputAddresses
 {
     return self.addresses;
 }
 
-- (NSArray *)outputAmounts
+- (NSArray *)outputScripts
 {
-    return self.amounts;
+    return self.outScripts;
 }
 
 //TODO: support signing pay2pubkey outputs (typically used for coinbase outputs)
@@ -375,6 +380,8 @@ sequence:(uint32_t)sequence
         amountTotal += [amounts[i] unsignedLongLongValue];
         amountsByHeights += [amounts[i] unsignedLongLongValue]*[heights[i] unsignedLongLongValue];
     }
+    
+    if (amountTotal == 0) return TX_UNCONFIRMED;
     
     // this could possibly overflow a uint64 for very large input amounts and far in the future block heights,
     // however we should be okay up to the largest current bitcoin balance in existence for the next 40 years or so,

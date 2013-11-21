@@ -13,6 +13,10 @@
 #define VAR_INT32_HEADER 0xfe
 #define VAR_INT64_HEADER 0xff
 
+#define OP_PUSHDATA1     0x4c
+#define OP_PUSHDATA2     0x4d
+#define OP_PUSHDATA4     0x4e
+
 @implementation NSData (Bitcoin)
 
 - (uint8_t)UInt8AtOffset:(NSUInteger)offset
@@ -84,6 +88,56 @@
     if (length) *length = ll + l;
     if (ll == 0 || self.length < offset + ll + l) return nil;
     return [self subdataWithRange:NSMakeRange(offset + ll, l)];
+}
+
+- (NSArray *)scriptDataElements
+{
+    NSMutableArray *a = [NSMutableArray array];
+    const uint8_t *b = (uint8_t *)self.bytes;
+    NSUInteger length = self.length;
+    
+    for (NSUInteger i = 0; i < length; i++) {
+        if (b[i] > OP_PUSHDATA4) continue;
+
+        NSUInteger l = 0;
+        
+        switch (b[i]) {
+            case 0:
+                continue;
+
+            case OP_PUSHDATA1:
+                i++;
+                if (i + sizeof(uint8_t) > length) return a;
+                l = b[i];
+                i += sizeof(uint8_t);
+                break;
+
+            case OP_PUSHDATA2:
+                i++;
+                if (i + sizeof(uint16_t) > length) return a;
+                l = CFSwapInt16LittleToHost(*(uint16_t *)&b[i]);
+                i += sizeof(uint16_t);
+                break;
+
+            case OP_PUSHDATA4:
+                i++;
+                if (i + sizeof(uint32_t) > length) return a;
+                l = CFSwapInt32LittleToHost(*(uint32_t *)&b[i]);
+                i += sizeof(uint32_t);
+                break;
+
+            default:
+                l = b[i];
+                i++;
+                break;
+        }
+        
+        if (i + l > length) return a;
+        [a addObject:[NSData dataWithBytes:&b[i] length:l]];
+        i += l - 1;
+    }
+    
+    return a;
 }
 
 @end
