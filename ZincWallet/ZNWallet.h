@@ -25,10 +25,7 @@
 
 #import <Foundation/Foundation.h>
 
-#define walletSyncStartedNotification  @"walletSyncStartedNotification"
-#define walletSyncFinishedNotification @"walletSyncFinishedNotification"
-#define walletSyncFailedNotification   @"walletSyncFailedNotification"
-#define walletBalanceNotification      @"walletBalanceNotification"
+#define balanceChangedNotification @"balanceChangedNotification"
 
 @class ZNTransaction;
 
@@ -50,7 +47,6 @@
 + (instancetype)sharedInstance;
 
 - (void)generateRandomSeed;
-- (void)synchronize;
 
 - (BOOL)containsAddress:(NSString *)address;
 
@@ -61,12 +57,32 @@
 - (BOOL)signTransaction:(ZNTransaction *)transaction;
 - (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
 completion:(void (^)(ZNTransaction *tx, NSError *error))completion;
-- (void)publishTransaction:(ZNTransaction *)transaction completion:(void (^)(NSError *error))completion;
 
 // true if the given transaction is associated with the wallet, false otherwise
 - (BOOL)containsTransaction:(ZNTransaction *)transaction;
 
 // returns false if the transaction wasn't associated with the wallet
 - (BOOL)registerTransaction:(ZNTransaction *)transaction;
+
+// returns the estimated time in seconds until the transaction will be processed without a fee.
+// this is based on the default satoshi client settings, but on the real network it's way off. in testing, a 0.01btc
+// transaction with a 90 day time until free was confirmed in under an hour by Eligius pool.
+- (NSTimeInterval)timeUntilFree:(ZNTransaction *)transaction;
+
+// retuns the total amount tendered in the trasaction (total unspent outputs consumed, change included)
+- (uint64_t)transactionAmount:(ZNTransaction *)transaction;
+
+// returns the transaction fee for the given transaction
+- (uint64_t)transactionFee:(ZNTransaction *)transaction;
+
+// returns the amount that the given transaction returns to a change address
+- (uint64_t)transactionChange:(ZNTransaction *)transaction;
+
+// returns the first transaction output address not contained in the wallet
+- (NSString *)transactionTo:(ZNTransaction *)transaction;
+
+- (int64_t)amountForString:(NSString *)string;
+- (NSString *)stringForAmount:(int64_t)amount;
+- (NSString *)localCurrencyStringForAmount:(int64_t)amount;
 
 @end

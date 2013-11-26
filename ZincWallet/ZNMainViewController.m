@@ -27,7 +27,7 @@
 #import "ZNPayViewController.h"
 #import "ZNReceiveViewController.h"
 #import "ZNWallet.h"
-#import "ZNWallet+Utils.h"
+#import "ZNPeerManager.h"
 #import <netinet/in.h>
 #import "Reachability.h"
 
@@ -83,7 +83,7 @@
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            [w synchronize];
+            [[ZNPeerManager sharedInstance] connect];
         }];
     
     // TODO: switch to AFNetworkingReachability
@@ -91,11 +91,11 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             //TODO: XXXX check reachability status? changed != reachable
-            [w synchronize];
+            [[ZNPeerManager sharedInstance] connect];
         }];
     
     self.balanceObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:walletBalanceNotification object:nil queue:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:balanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                          [w localCurrencyStringForAmount:w.balance]];
@@ -105,7 +105,7 @@
         }];
     
     self.syncStartedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncStartedNotification object:nil queue:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:syncStartedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             if (self.navigationItem.rightBarButtonItem == self.refreshButton) {
                 self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
@@ -116,19 +116,18 @@
         }];
     
     self.syncFinishedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncFinishedNotification object:nil queue:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:syncFinishedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             self.syncErrorCount = 0;
             [self.spinner stopAnimating]; //BUG: XXXX this sometimes takes several seconds to display... why?!?
             self.navigationItem.rightBarButtonItem = self.refreshButton;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                          [w localCurrencyStringForAmount:w.balance]];
-            [w synchronize];
         }];
     
     //TODO: create an error banner instead of using an alert
     self.syncFailedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncFailedNotification object:nil queue:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:syncFailedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             self.syncErrorCount++;
 //            if ([note.userInfo[@"error"] code] == 504 && self.syncErrorCount < 3) {
@@ -225,7 +224,7 @@
 {
     [super viewDidAppear:animated];
     
-    [[ZNWallet sharedInstance] synchronize];
+    [[ZNPeerManager sharedInstance] connect];
 }
 
 - (ZNPayViewController *)payController
@@ -257,9 +256,7 @@
     
     if ([[ZNWallet sharedInstance] balance] == 0) self.navigationItem.title = @"syncing...";
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[ZNWallet sharedInstance] synchronize];
-    });
+    [[ZNPeerManager sharedInstance] connect];
 }
 
 - (IBAction)page:(id)sender

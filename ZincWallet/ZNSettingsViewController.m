@@ -26,7 +26,6 @@
 #import "ZNSettingsViewController.h"
 #import "ZNSeedViewController.h"
 #import "ZNWallet.h"
-#import "ZNWallet+Utils.h"
 #import "ZNTransaction.h"
 #import "ZNTransactionEntity.h"
 #import "ZNTxInputEntity.h"
@@ -58,7 +57,7 @@
     ZNWallet *w = [ZNWallet sharedInstance];
     
     self.balanceObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:walletBalanceNotification object:nil queue:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:balanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                          [w localCurrencyStringForAmount:w.balance]];

@@ -93,13 +93,11 @@
 - (NSArray *)scriptDataElements
 {
     NSMutableArray *a = [NSMutableArray array];
-    const uint8_t *b = (uint8_t *)self.bytes;
-    NSUInteger length = self.length;
+    const uint8_t *b = (const uint8_t *)self.bytes;
+    NSUInteger length = self.length, l;
     
     for (NSUInteger i = 0; i < length; i++) {
         if (b[i] > OP_PUSHDATA4) continue;
-
-        NSUInteger l = 0;
         
         switch (b[i]) {
             case 0:

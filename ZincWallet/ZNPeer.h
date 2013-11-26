@@ -69,7 +69,10 @@
 - (void)peer:(ZNPeer *)peer disconnectedWithError:(NSError *)error;
 - (void)peer:(ZNPeer *)peer relayedPeers:(NSArray *)peers;
 - (void)peer:(ZNPeer *)peer relayedTransaction:(ZNTransaction *)transaction;
+
+// called when the peer relays either a merkleblock or a block header, headers will have 0 totalTransactions
 - (void)peer:(ZNPeer *)peer relayedBlock:(ZNMerkleBlock *)block;
+
 - (ZNTransaction *)peer:(ZNPeer *)peer requestedTransaction:(NSData *)txHash;
 
 @end
@@ -101,6 +104,7 @@ typedef enum {
 - (void)connect;
 - (void)disconnect;
 - (void)sendMessage:(NSData *)message type:(NSString *)type;
+- (void)sendFilterloadMessage:(NSData *)filter;
 - (void)sendGetaddrMessage;
 - (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop;
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop;

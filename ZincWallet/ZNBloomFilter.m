@@ -26,8 +26,7 @@
 #import "ZNBloomFilter.h"
 #import "NSMutableData+Bitcoin.h"
 
-#define MAX_BLOOM_FILTER_SIZE 36000
-#define MAX_HASH_FUNCS        50
+#define BLOOM_MAX_HASH_FUNCS 50
 
 // murmurHash3 (x86_32): http://code.google.com/p/smhasher/source/browse/trunk/MurmurHash3.cpp
 static uint32_t murmurHash3(NSData *data, uint32_t seed)
@@ -90,12 +89,12 @@ flags:(uint8_t)flags
 {
     if (! (self = [self init])) return nil;
 
-    NSUInteger size = (-1.0/pow(M_LN2, 2))*count*log(fpRate)/8.0;
+    NSUInteger length = (-1.0/pow(M_LN2, 2))*count*log(fpRate)/8.0;
 
-    if (size > MAX_BLOOM_FILTER_SIZE) size = MAX_BLOOM_FILTER_SIZE;
-    self.filter = [NSMutableData dataWithLength:size < 1 ? 1 : size];
+    if (length > BLOOM_MAX_FILTER_LENGTH) length = BLOOM_MAX_FILTER_LENGTH;
+    self.filter = [NSMutableData dataWithLength:length < 1 ? 1 : length];
     self.hashFuncs = ((self.filter.length*8.0)/count)*M_LN2;
-    if (self.hashFuncs > MAX_HASH_FUNCS) self.hashFuncs = MAX_HASH_FUNCS;
+    if (self.hashFuncs > BLOOM_MAX_HASH_FUNCS) self.hashFuncs = BLOOM_MAX_HASH_FUNCS;
     _tweak = tweak;
     _flags = flags;
     
@@ -154,13 +153,18 @@ flags:(uint8_t)flags
 {
     NSMutableData *d = [NSMutableData data];
     
-    [d appendVarInt:self.filter.length];
+    [d appendVarInt:self.length];
     [d appendData:self.filter];
     [d appendUInt32:self.hashFuncs];
     [d appendUInt32:self.tweak];
     [d appendUInt8:self.flags];
 
     return d;
+}
+
+- (NSUInteger)length
+{
+    return self.filter.length;
 }
 
 @end

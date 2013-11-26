@@ -65,6 +65,7 @@ typedef enum {
 @property (nonatomic, strong) id reachabilityObserver;
 @property (nonatomic, assign) uint64_t localNonce;
 @property (nonatomic, assign) NSTimeInterval startTime;
+@property (nonatomic, strong) NSArray *currentBlockHashes;
 @property (nonatomic, strong) ZNMerkleBlock *currentBlock;
 @property (nonatomic, strong) NSMutableArray *currentTxHashes;
 @property (nonatomic, strong) NSRunLoop *runLoop;
@@ -253,7 +254,8 @@ services:(uint64_t)services
     [msg appendUInt64:[NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970]; // timestamp
     [msg appendNetAddress:self.address port:self.port services:self.services]; // address of remote peer
     [msg appendNetAddress:LOCAL_HOST port:BITCOIN_STANDARD_PORT services:ENABLED_SERVICES]; // address of local peer
-    [msg appendUInt64:(self.localNonce = llurand())]; // random nonce
+    self.localNonce = llurand(); // random nonce
+    [msg appendUInt64:self.localNonce];
     [msg appendString:USERAGENT]; // user agent
     [msg appendUInt32:BITCOIN_REFERENCE_BLOCK_HEIGHT]; // last block received
     [msg appendUInt8:0]; // relay transactions (no for SPV bloom filter mode)
@@ -273,14 +275,58 @@ services:(uint64_t)services
     [self didConnect];
 }
 
+- (void)sendFilterloadMessage:(NSData *)filter
+{
+    [self sendMessage:filter type:MSG_FILTERLOAD];
+
+    // the new bloom filter may contain additional wallet addresses, so re-send the most recent getdata message to get
+    // any additional transactions matching the new filter
+    // TODO: BUG XXXX does this cause two separate simultaneous chain download loops?
+    if (self.currentBlockHashes.count > 0) {
+        NSMutableArray *locators = [NSMutableArray arrayWithObject:self.currentBlockHashes.lastObject];
+        
+        if (self.currentBlockHashes.count > 1) [locators addObject:self.currentBlockHashes[0]];
+        [self sendGetblocksMessageWithLocators:locators andHashStop:nil];
+    }
+    
+    // TODO: XXXX should we also send mempool message?
+}
+
 - (void)sendAddrMessage
 {
     NSMutableData *msg = [NSMutableData data];
     
-    //TODO: send addresses we know about
+    //TODO: send peer addresses we know about
     [msg appendVarInt:0];
     [self sendMessage:msg type:MSG_ADDR];
 }
+
+// the standard blockchain download protocol works as follows (for merkleblocks):
+// - local peer sends getblocks
+// - remote peer reponds with inv containing up to 500 block hashes
+// - local peer sends getdata with the block hashes
+// - remote peer responds with multiple merkleblock and tx messages
+// - remote peer sends inv containg 1 hash, of the most recent block
+// - local peer sends getdata with the most recent block hash
+// - remote peer responds with merkleblock
+// - if local peer can't connect the most recent block to the chain (because it was more than 500 blocks behind), go
+//   back to first step and repeat until entire chain is downloaded
+//
+// we modify this sequence to improve sync performance and handle adding new bip32 addresses as the download progresses:
+// - local peer sends getheaders
+// - remote peer responds with up to 2000 headers
+// - local peer immediately sends getheaders again and then processes the headers
+// - previous two steps repeat until a header within a week of earliestKeyTime is reached (further headers are ignored)
+// - local peer sends getblocks
+// - remote peer responds with inv containing up to 500 block hashes
+// - if there are 500, local peer immediately sends getblocks again, followed by getdata with the block hashes
+// - remote peer responds with inv containing up to 500 block hashes, followed by multiple merkleblock and tx messages
+// - previous two steps repeat until an inv with fewer than 500 block hashes is received
+// - local peer sends just getdata for the final set of fewer than 500 block hashes
+// - remote peer responds with multiple merkleblock and tx messages
+// - if at any point tx messages consume enough wallet addresses to drop below the bip32 chain gap limit, more addresses
+//   are generated and local peer sends filterload with an updated bloom filter
+// - when filterload is sent, the most recent getdata message is also repeated to get any new tx matching the new filter
 
 - (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop
 {
@@ -297,18 +343,12 @@ services:(uint64_t)services
     [self sendMessage:msg type:MSG_GETHEADERS];
 }
 
-// the blockchain download protocol works like so:
-// local peer sends getblocks, remote peer reponds with inv containing up to 500 block hashes
-// local peer sends getdata containing the block hashes, remote peer responds with multiple merkleblock and tx
-// remote peer sends inv containg 1 hash, the most recent block
-// local peer sends getdata with the hash, remote peer responds with merkleblock
-// if local peer can't connect the block to the chain, it sends a new getblocks message, rinse, repeat
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop
 {
     NSMutableData *msg = [NSMutableData data];
     
     [msg appendUInt32:PROTOCOL_VERSION];
-    [msg appendVarInt:locators.count]; // number of block locator hashes
+    [msg appendVarInt:locators.count];
 
     for (NSData *hash in locators) {
         [msg appendData:hash];
@@ -405,6 +445,8 @@ services:(uint64_t)services
     if (message.length < 85) {
         NSLog(@"%@:%d malformed version message, length is %u, should be > 84", self.host, self.port,
               (int)message.length);
+        //TODO: XXX need to notify delegate that the peer is misbehaving, also consider what could happen if a network
+        // connection produced a lot of errors, might all the peers be marked as misbehaving forever?
         return;
     }
     
@@ -533,7 +575,9 @@ services:(uint64_t)services
 
     NSLog(@"%@:%u got inv with %u items", self.host, self.port, (int)count);
 
-    if (blockHashes.count >= 500) { // this is probably a chain download inv, so request the next chunk
+    // to improve chain download performance, if we received 500 block hashes, we request the next 500 block hashes
+    // immediately before sending the getdata request
+    if (blockHashes.count >= 500) {
         [self sendGetblocksMessageWithLocators:@[blockHashes.lastObject, blockHashes[0]] andHashStop:nil];
     }
 
@@ -544,6 +588,9 @@ services:(uint64_t)services
         // to get a pong reply after the block and all it's tx are sent, inicating that there are no more tx messages
         if (blockHashes.count == 1) [self sendPingMessage];
     }
+    
+    // keep track of the blockHashes requested in case we need to re-request them with an updated bloom filter
+    if (self.currentBlockHashes.count == 0 || blockHashes.count > 1 ) self.currentBlockHashes = blockHashes;
 }
 
 - (void)acceptTxMessage:(NSData *)message
@@ -579,7 +626,10 @@ services:(uint64_t)services
         return;
     }
 
-    if (count >= 2000 && ! self.sentGetblocks) { // this is a chunk of a larger chain of headers, so request next chunk
+    // To improve chain download performance, if this message contains 2000 headers then request the next 2000 headers
+    // immediately, stopping as soon as the delegate makes the first getblocks request (we are optimizing for the case
+    // where the delegate requests headers up to a certain chain height, and then switches to requesting blocks)
+    if (count >= 2000 && ! self.sentGetblocks) {
         NSData *firstHash = [[message subdataWithRange:NSMakeRange(l, 80)] SHA256_2],
                *lastHash = [[message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)] SHA256_2];
     
@@ -723,7 +773,7 @@ services:(uint64_t)services
     
     NSMutableArray *txHashes = [NSMutableArray arrayWithArray:block.txHashes];
     
-    if (txHashes.count > 0) { // we need to wait til we get all the tx messages before saving the block
+    if (txHashes.count > 0) { // wait til we get all the tx messages before processing the block
         self.currentBlock = block;
         self.currentTxHashes = txHashes;
     }

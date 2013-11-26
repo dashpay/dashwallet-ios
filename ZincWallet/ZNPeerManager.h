@@ -26,17 +26,20 @@
 #import <Foundation/Foundation.h>
 #import "ZNPeer.h"
 
+#define syncStartedNotification  @"syncStartedNotification"
+#define syncFinishedNotification @"syncFinishedNotification"
+#define syncFailedNotification   @"syncFailedNotification"
+
 @interface ZNPeerManager : NSObject<ZNPeerDelegate>
 
 @property (nonatomic, readonly) BOOL connected;
 
-// set this to the oldest block that might contain a wallet transaction to improve initial sync time
-@property (nonatomic, assign) uint32_t earliestBlockHeight;
+// set this to the timestamp when the wallet was created to improve initial sync time
+@property (nonatomic, assign) NSTimeInterval earliestKeyTime;
 
 + (instancetype)sharedInstance;
 
 - (void)connect;
-- (void)subscribeToAddresses:newaddresses;
 - (void)publishTransaction:(ZNTransaction *)transaction completion:(void (^)(NSError *error))completion;
 
 // Bitcoin nodes will only respond with a tx message in repsonse to a getdata if the tx exists, is valid, and is not yet

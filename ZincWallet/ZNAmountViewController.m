@@ -26,7 +26,7 @@
 #import "ZNAmountViewController.h"
 #import "ZNPaymentRequest.h"
 #import "ZNWallet.h"
-#import "ZNWallet+Utils.h"
+#import "ZNPeerManager.h"
 #import "ZNTransaction.h"
 #import "ZNButton.h"
 
@@ -77,14 +77,14 @@
     }
     
     self.balanceObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:walletBalanceNotification object:nil queue:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:balanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                          [w localCurrencyStringForAmount:w.balance]];
         }];
     
     self.syncStartedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncStartedNotification object:nil queue:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:syncStartedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             if (self.navigationItem.rightBarButtonItem == self.payButton) {
                 self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
@@ -93,14 +93,14 @@
         }];
     
     self.syncFinishedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncFinishedNotification object:nil queue:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:syncFinishedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             self.navigationItem.rightBarButtonItem = self.payButton;
             [self.spinner stopAnimating];
         }];
     
     self.syncFailedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:walletSyncFailedNotification object:nil queue:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:syncFailedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             self.navigationItem.rightBarButtonItem = self.payButton;
             [self.spinner stopAnimating];

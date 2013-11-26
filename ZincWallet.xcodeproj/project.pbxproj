@@ -749,7 +749,6 @@
 		75C2F3D5178D3061009F8CD3 /* cameraguide-red@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75C2F3D2178D3061009F8CD3 /* cameraguide-red@2x.png */; };
 		75C2F3D6178D3061009F8CD3 /* cameraguide@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75C2F3D3178D3061009F8CD3 /* cameraguide@2x.png */; };
 		75C483DD17E27B1E00CAC0BC /* icon120.png in Resources */ = {isa = PBXBuildFile; fileRef = 758FBDC717E1D33100D341BF /* icon120.png */; };
-		75C8C90D17F109E2004D5E1B /* ZNWallet+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 75C8C90C17F109E2004D5E1B /* ZNWallet+Utils.m */; };
 		75CBEAE9173C80AD00978DBA /* ZNPaymentRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 75CBEAE8173C80AD00978DBA /* ZNPaymentRequest.m */; };
 		75D423291783E0B100BDD771 /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D423121783E0B100BDD771 /* MBProgressHUD.m */; settings = {COMPILER_FLAGS = "-w"; }; };
 		75D8F382173ABE3C0080D95E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F381173ABE3C0080D95E /* UIKit.framework */; };
@@ -1812,8 +1811,6 @@
 		75C2F3D1178D3061009F8CD3 /* cameraguide-green@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide-green@2x.png"; sourceTree = "<group>"; };
 		75C2F3D2178D3061009F8CD3 /* cameraguide-red@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide-red@2x.png"; sourceTree = "<group>"; };
 		75C2F3D3178D3061009F8CD3 /* cameraguide@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide@2x.png"; sourceTree = "<group>"; };
-		75C8C90B17F109E2004D5E1B /* ZNWallet+Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ZNWallet+Utils.h"; sourceTree = "<group>"; };
-		75C8C90C17F109E2004D5E1B /* ZNWallet+Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ZNWallet+Utils.m"; sourceTree = "<group>"; };
 		75CBEAE7173C80AD00978DBA /* ZNPaymentRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNPaymentRequest.h; sourceTree = "<group>"; };
 		75CBEAE8173C80AD00978DBA /* ZNPaymentRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNPaymentRequest.m; sourceTree = "<group>"; };
 		75D423111783E0B100BDD771 /* MBProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBProgressHUD.h; sourceTree = "<group>"; };
@@ -3364,8 +3361,6 @@
 				7559FBA6174D8B1F0000E809 /* ZNKey.m */,
 				752C2F8A174071520033F636 /* ZNWallet.h */,
 				752C2F8B174071520033F636 /* ZNWallet.m */,
-				75C8C90B17F109E2004D5E1B /* ZNWallet+Utils.h */,
-				75C8C90C17F109E2004D5E1B /* ZNWallet+Utils.m */,
 				75CBEAE7173C80AD00978DBA /* ZNPaymentRequest.h */,
 				75CBEAE8173C80AD00978DBA /* ZNPaymentRequest.m */,
 				75F17C331744CC2100D9F228 /* ZNTransaction.h */,
@@ -4600,7 +4595,6 @@
 				753E7CE41806853400FC6BA7 /* NSData+Bitcoin.m in Sources */,
 				75F4D4B417E636860007500D /* ZNMainViewController.m in Sources */,
 				753E7CE118053B3F00FC6BA7 /* ZNPeer.m in Sources */,
-				75C8C90D17F109E2004D5E1B /* ZNWallet+Utils.m in Sources */,
 				75F17C351744CC2100D9F228 /* ZNTransaction.m in Sources */,
 				75920F86174AB82100C1C03D /* NSMutableData+Bitcoin.m in Sources */,
 				7559FBA7174D8B1F0000E809 /* ZNKey.m in Sources */,

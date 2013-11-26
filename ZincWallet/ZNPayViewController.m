@@ -26,7 +26,7 @@
 #import "ZNPayViewController.h"
 #import "ZNAmountViewController.h"
 #import "ZNWallet.h"
-#import "ZNWallet+Utils.h"
+#import "ZNPeerManager.h"
 #import "ZNPaymentRequest.h"
 #import "ZNKey.h"
 #import "ZNTransaction.h"
@@ -643,10 +643,8 @@
         return;
     }
     
-    ZNWallet *w = [ZNWallet sharedInstance];
-    
     if (self.sweepTx) {
-        [w publishTransaction:self.sweepTx completion:^(NSError *error) {
+        [[ZNPeerManager sharedInstance] publishTransaction:self.sweepTx completion:^(NSError *error) {
             [self reset:nil];
             
             if (error) {
@@ -684,7 +682,7 @@
     }
     
     NSLog(@"signing transaction");
-    [w signTransaction:self.tx];
+    [[ZNWallet sharedInstance] signTransaction:self.tx];
     
     if (! [self.tx isSigned]) {
         [[[UIAlertView alloc] initWithTitle:@"couldn't make payment" message:@"error signing bitcoin transaction"
@@ -706,7 +704,7 @@
 
     if ([reqID isEqual:QR_ID] || [reqID isEqual:CLIPBOARD_ID] || [reqID isEqual:URL_ID]) {
         //TODO: check for duplicate transactions
-        [w publishTransaction:self.tx completion:^(NSError *error) {
+        [[ZNPeerManager sharedInstance] publishTransaction:self.tx completion:^(NSError *error) {
             if (error) {
                 [[[UIAlertView alloc] initWithTitle:@"couldn't make payment" message:error.localizedDescription
                   delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];

@@ -26,7 +26,6 @@
 #import "ZNWallet.h"
 #import "ZNKey.h"
 #import "ZNPeer.h"
-#import "ZNPeerManager.h"
 #import "ZNAddressEntity.h"
 #import "ZNTransaction.h"
 #import "ZNTransactionEntity.h"
@@ -103,7 +102,6 @@ static NSData *getKeychainData(NSString *key)
 @property (nonatomic, strong) id<ZNKeySequence> sequence;
 @property (nonatomic, strong) NSData *mpk;
 @property (nonatomic, strong) NSMutableSet *allTxHashes, *allAddresses;
-@property (nonatomic, strong) NSUserDefaults *defs;
 
 @end
 
@@ -127,7 +125,6 @@ static NSData *getKeychainData(NSString *key)
     
     [NSManagedObject setConcurrencyType:NSPrivateQueueConcurrencyType];
     
-    self.defs = [NSUserDefaults standardUserDefaults];
     self.sequence = [ZNBIP32Sequence new];
     self.format = [NSNumberFormatter new];
     self.format.lenient = YES;
@@ -179,7 +176,6 @@ static NSData *getKeychainData(NSString *key)
     [ZNMerkleBlockEntity deleteObjects:[ZNMerkleBlockEntity allObjects]];
 
     [NSManagedObject saveContext];
-    [_defs synchronize];
     
     setKeychainData(nil, CREATION_TIME_KEY);
     setKeychainData(seed, SEED_KEY);
@@ -228,44 +224,13 @@ static NSData *getKeychainData(NSString *key)
     return (d.length < sizeof(NSTimeInterval)) ? BITCOIN_REFERENCE_BLOCK_TIME : *(NSTimeInterval *)d.bytes;
 }
 
-#pragma mark - synchronization
-
-- (void)synchronize
-{
-    if (self.synchronizing || ! self.masterPublicKey) return;
-    
-    _synchronizing = YES;
-    [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncStartedNotification object:nil];
-    
-    __block NSMutableArray *gap = [NSMutableArray array];
-    
-    // check all the addresses in the wallet for transactions (generating new addresses as needed)
-    // generating addresses is slow, but addressesWithGapLimit is thread safe, so we can do that in a separate thread
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        // use external gap limit for the inernal chain to produce fewer network requests
-        [gap addObjectsFromArray:[self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO]];
-        [gap addObjectsFromArray:[self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:YES]];
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if ([[ZNPeerManager sharedInstance] connected]) {
-                [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
-            }
-            else [[ZNPeerManager sharedInstance] connect];
-            
-            _synchronizing = NO;
-            return;
-        });
-    });
-}
-
 // Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
 // found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
-// following the last used address in the chain. The internal chain is used for change address and the external chain
+// following the last used address in the chain. The internal chain is used for change addresses and the external chain
 // for receive addresses.
 - (NSArray *)addressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal
 {
     NSMutableArray *a = [NSMutableArray array];
-    NSMutableArray *newaddresses = [NSMutableArray array];
     NSFetchRequest *req = [ZNAddressEntity fetchRequest];
     
     req.predicate = [NSPredicate predicateWithFormat:@"internal == %@", @(internal)];
@@ -312,13 +277,8 @@ static NSData *getKeychainData(NSString *key)
             
             [self.allAddresses addObject:addr];
             [a addObject:addr];
-            [newaddresses addObject:addr];
             index++;
         }
-    }
-    
-    if (newaddresses.count > 0 && [[ZNPeerManager sharedInstance] connected]) {
-        [[ZNPeerManager sharedInstance] subscribeToAddresses:newaddresses];
     }
     
     return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
@@ -528,33 +488,6 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
 //    }];
 }
 
-- (void)publishTransaction:(ZNTransaction *)transaction completion:(void (^)(NSError *error))completion
-{
-    if (! [transaction isSigned]) {
-        if (completion) {
-            completion([NSError errorWithDomain:@"ZincWallet" code:401
-                        userInfo:@{NSLocalizedDescriptionKey:@"bitcoin transaction not signed"}]);
-        }
-        return;
-    }
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncStartedNotification object:nil];
-
-    [self registerTransaction:transaction];
-
-    [[ZNPeerManager sharedInstance] publishTransaction:transaction completion:^(NSError *error) {
-        if (error) {
-            [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification
-             object:@{@"error":error}];
-        }
-        else [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
-        
-        if (completion) completion(error);
-    }];
-
-    //TODO: also publish transactions directly to coinbase and bitpay servers for faster POS experience
-}
-
 // true if the given transaction is associated with the wallet, false otherwise
 - (BOOL)containsTransaction:(ZNTransaction *)transaction
 {
@@ -587,8 +520,168 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
         [self.allTxHashes addObject:transaction.txHash];
     }
     
-    [[NSNotificationCenter defaultCenter] postNotificationName:walletBalanceNotification object:nil];
+    //TODO: XXXX We leak too much information about wallet addresses by subscribing to new address (which resets the
+    // bloom filter) after each transaction that consumes one. We should generate and subscribe to a bunch of addresses
+    // at once and only generate more when the number of spare addresses drops below the gap limit
+    
+    // when a wallet address is used in a transaction, we need to generate a new address to replace it
+    [self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
+    [self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:balanceChangedNotification object:nil];
     return YES;
+}
+
+// returns the estimated time in seconds until the transaction will be processed without a fee.
+// this is based on the default satoshi client settings, but on the real network it's way off. in testing, a 0.01btc
+// transaction with a 90 day time until free was confirmed in under an hour by Eligius pool.
+- (NSTimeInterval)timeUntilFree:(ZNTransaction *)transaction
+{
+    // TODO: calculate estimated time based on the median priority of free transactions in last 144 blocks (24hrs)
+    NSMutableArray *amounts = [NSMutableArray array], *heights = [NSMutableArray array];
+    NSUInteger currentHeight = self.lastBlockHeight, idx = 0;
+    
+    if (! currentHeight) return DBL_MAX;
+    
+    // get the heights (which block in the blockchain it's in) of all the transaction inputs
+    for (NSData *hash in transaction.inputHashes) {
+        ZNTxOutputEntity *o = [ZNTxOutputEntity objectsMatching:@"spent == NO && txHash == %@ && n == %d", hash,
+                               [transaction.inputIndexes[idx++] intValue]].lastObject;
+        
+        if (! o) break;
+        
+        [[o managedObjectContext] performBlockAndWait:^{
+            [amounts addObject:@(o.value)];
+            [heights addObject:@(o.transaction.blockHeight)];
+        }];
+    }
+    
+    NSUInteger height = [transaction blockHeightUntilFreeForAmounts:amounts withBlockHeights:heights];
+    
+    if (height == TX_UNCONFIRMED) return DBL_MAX;
+    
+    currentHeight = [self estimatedCurrentBlockHeight];
+    
+    return height > currentHeight + 1 ? (height - currentHeight)*600 : 0;
+}
+
+// retuns the total amount tendered in the trasaction (total unspent outputs consumed, change included)
+- (uint64_t)transactionAmount:(ZNTransaction *)transaction
+{
+    uint64_t amount = 0;
+    NSUInteger idx = 0;
+    
+    for (NSData *hash in transaction.inputHashes) {
+        ZNTxOutputEntity *o = [ZNTxOutputEntity objectsMatching:@"spent == NO && txHash == %@ && n == %d", hash,
+                               [transaction.inputIndexes[idx++] intValue]].lastObject;
+        
+        if (! o) {
+            amount = 0;
+            break;
+        }
+        else amount += [[o get:@"value"] longLongValue];
+    }
+    
+    return amount;
+}
+
+// returns the transaction fee for the given transaction
+- (uint64_t)transactionFee:(ZNTransaction *)transaction
+{
+    uint64_t amount = [self transactionAmount:transaction];
+    
+    if (amount == 0) return UINT64_MAX;
+    
+    for (NSNumber *amt in transaction.outputAmounts) {
+        amount -= amt.unsignedLongLongValue;
+    }
+    
+    return amount;
+}
+
+// returns the amount that the given transaction returns to a change address
+- (uint64_t)transactionChange:(ZNTransaction *)transaction
+{
+    uint64_t amount = 0;
+    NSUInteger idx = 0;
+    
+    for (NSString *address in transaction.outputAddresses) {
+        if ([self containsAddress:address]) amount += [transaction.outputAmounts[idx] unsignedLongLongValue];
+        idx++;
+    }
+    
+    return amount;
+}
+
+// returns the first trasnaction output address not contained in the wallet
+- (NSString *)transactionTo:(ZNTransaction *)transaction
+{
+    NSString *address = nil;
+    
+    for (NSString *addr in transaction.outputAddresses) {
+        if ([self containsAddress:addr]) continue;
+        address = addr;
+        break;
+    }
+    
+    return address;
+}
+
+#pragma mark - string helpers
+
+- (int64_t)amountForString:(NSString *)string
+{
+    return ([[self.format numberFromString:string] doubleValue] + DBL_EPSILON)*
+    pow(10.0, self.format.maximumFractionDigits);
+}
+
+- (NSString *)stringForAmount:(int64_t)amount
+{
+    NSUInteger min = self.format.minimumFractionDigits;
+    
+    if (amount == 0) {
+        self.format.minimumFractionDigits =
+        self.format.maximumFractionDigits > 4 ? 4 : self.format.maximumFractionDigits;
+    }
+    
+    NSString *r = [self.format stringFromNumber:@(amount/pow(10.0, self.format.maximumFractionDigits))];
+    
+    self.format.minimumFractionDigits = min;
+    
+    return r;
+}
+
+- (NSString *)localCurrencyStringForAmount:(int64_t)amount
+{
+    static NSNumberFormatter *format = nil;
+    
+    if (! format) {
+        format = [NSNumberFormatter new];
+        format.lenient = YES;
+        format.numberStyle = NSNumberFormatterCurrencyStyle;
+        format.negativeFormat =
+        [format.positiveFormat stringByReplacingOccurrencesOfString:CURRENCY_SIGN withString:CURRENCY_SIGN @"-"];
+    }
+    
+    if (! amount) return [format stringFromNumber:@(0)];
+    
+    NSString *symbol = [[NSUserDefaults standardUserDefaults] stringForKey:LOCAL_CURRENCY_SYMBOL_KEY];
+    NSString *code = [[NSUserDefaults standardUserDefaults] stringForKey:LOCAL_CURRENCY_CODE_KEY];
+    double price = [[NSUserDefaults standardUserDefaults] doubleForKey:LOCAL_CURRENCY_PRICE_KEY];
+    
+    if (! symbol.length || price <= DBL_EPSILON) return nil;
+    
+    format.currencySymbol = symbol;
+    format.currencyCode = code;
+    
+    NSString *ret = [format stringFromNumber:@(amount/price)];
+    
+    // if the amount is too small to be represented in local currency (but is != 0) then return a string like "<$0.01"
+    if (amount != 0 && [[format numberFromString:ret] isEqual:@(0.0)]) {
+        ret = [@"<" stringByAppendingString:[format stringFromNumber:@(1.0/pow(10.0, format.maximumFractionDigits))]];
+    }
+    
+    return ret;
 }
 
 @end

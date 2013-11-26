@@ -29,6 +29,7 @@
 #define BLOOM_UPDATE_NONE                0
 #define BLOOM_UPDATE_ALL                 1
 #define BLOOM_UPDATE_P2PUBKEY_ONLY       2
+#define BLOOM_MAX_FILTER_LENGTH          36000
 
 @interface ZNBloomFilter : NSObject
 
@@ -37,6 +38,7 @@
 @property (nonatomic, readonly, getter = toData) NSData *data;
 @property (nonatomic, readonly) NSUInteger elementCount;
 @property (nonatomic, readonly) double falsePositiveRate;
+@property (nonatomic, readonly) NSUInteger length;
 
 + (instancetype)filterWithFalsePositiveRate:(double)fpRate forElementCount:(NSUInteger)count tweak:(uint32_t)tweak
 flags:(uint8_t)flags;

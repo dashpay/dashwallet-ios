@@ -27,6 +27,7 @@
 #import "ZNPeer.h"
 #import "ZNPeerEntity.h"
 #import "ZNBloomFilter.h"
+#import "ZNKeySequence.h"
 #import "ZNTransaction.h"
 #import "ZNTransactionEntity.h"
 #import "ZNTxOutputEntity.h"
@@ -101,6 +102,7 @@ static const char *dns_seeds[] = {
 @property (nonatomic, assign) NSUInteger filterElemCount;
 @property (nonatomic, assign) BOOL filterWasReset;
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback, *checkpoints;
+@property (nonatomic, strong) NSSet *internalAddrs, *externalAddrs;
 
 @end
 
@@ -123,12 +125,12 @@ static const char *dns_seeds[] = {
 {
     if (! (self = [super init])) return nil;
 
-    self.earliestBlockHeight = BITCOIN_REFERENCE_BLOCK_HEIGHT;
+    self.earliestKeyTime = BITCOIN_REFERENCE_BLOCK_TIME;
     self.peers = [NSMutableArray array];
     
 #warning remove this!
     [ZNMerkleBlockEntity deleteObjects:[ZNMerkleBlockEntity allObjects]]; //for testing chain download
-    self.earliestBlockHeight = 100000; // remove this too
+    self.earliestKeyTime = [NSDate timeIntervalSinceReferenceDate] - 365*24*60*60; // remove this too
     
     if (! [ZNMerkleBlockEntity topBlock]) [ZNMerkleBlockEntity createOrUpdateWithBlock:GENESIS_BLOCK atHeight:0];
 
@@ -227,7 +229,7 @@ static const char *dns_seeds[] = {
     __block ZNPeer *peer = nil;
     
     if (! e) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification
+        [[NSNotificationCenter defaultCenter] postNotificationName:syncFailedNotification
          object:@{@"error":[NSError errorWithDomain:@"ZincWallet" code:1
                             userInfo:@{NSLocalizedDescriptionKey:@"no peers found"}]}];
         return;
@@ -244,33 +246,30 @@ static const char *dns_seeds[] = {
     [peer connect];
 }
 
-//TODO: XXXX check if this is slow... seems to take a while sometimes to load the filter
 - (ZNBloomFilter *)bloomFilter
 {
-    // A bloom filter's falsepositive rate will increase with each item added to the filter. If the filter has degraded
-    // by half and we've added at least 100 items to it, clear it and build a new one
-    //TODO: XXXX for a wallet with fewer than 100 addresses, this creates a really low false positive rate... fix it
-    if (_bloomFilter && _bloomFilter.falsePositiveRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*2 &&
-        (_bloomFilter.elementCount > self.filterElemCount + 100 || _bloomFilter.elementCount > self.filterElemCount*1.5)) {
+    // a bloom filter's falsepositive rate will increase with each item added to the filter, so if it has degraded by
+    // half, clear it and build a new one
+    if (_bloomFilter && _bloomFilter.length < BLOOM_MAX_FILTER_LENGTH &&
+        _bloomFilter.falsePositiveRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*2) {
         NSLog(@"elemCount = %d, fpfrate = %f > default*2 = %f", (int)_bloomFilter.elementCount,
               _bloomFilter.falsePositiveRate, BLOOM_DEFAULT_FALSEPOSITIVE_RATE*2);
         _bloomFilter = nil;
         self.filterWasReset = YES;
-        
-        //TODO: XXXX the problem here is that the filter degrades with only two tx, but when we reset the filter we
-        // don't include tx that aren't in the wallet, so it degrades again after only two false postives
     }
 
     if (_bloomFilter) return _bloomFilter;
 
+    // generate spare addresses, with some extra headroom so we don't need to regenerate the filter each time a
+    // transaction consumes a wallet receive or change address (generate twice external gap limit for both)
+    [[ZNWallet sharedInstance] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:NO];
+    [[ZNWallet sharedInstance] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:YES];
+
     NSArray *addresses = [ZNAddressEntity allObjects];
     NSArray *utxos = [ZNTxOutputEntity objectsMatching:@"spent == NO"];
 
-    // set the filter element count to the next largest multiple of 100, and use a fixed tweak to reduce the information
-    // leaked to the remote peer when the filter is reset
-    self.filterElemCount = (addresses.count + utxos.count + 100) - ((addresses.count + utxos.count) % 100);
-    if (self.filterElemCount > (addresses.count + utxos.count)*1.5) self.filterElemCount = (addresses.count + utxos.count)*1.5;
-    //self.filterElemCount = (addresses.count + utxos.count)*2;
+    self.filterElemCount = addresses.count + utxos.count;
+    self.filterElemCount = (self.filterElemCount < 200) ? self.filterElemCount*1.5 : self.filterElemCount + 100;
     _bloomFilter = [ZNBloomFilter filterWithFalsePositiveRate:BLOOM_DEFAULT_FALSEPOSITIVE_RATE
                     forElementCount:self.filterElemCount tweak:self.tweak flags:BLOOM_UPDATE_P2PUBKEY_ONLY];
     
@@ -296,27 +295,23 @@ static const char *dns_seeds[] = {
     return _bloomFilter;
 }
 
-// this will extend the bloom filter to include transactions sent to the given addresses
-- (void)subscribeToAddresses:(NSArray *)addresses
-{
-    for (NSString *addr in addresses) {
-        NSData *d = [addr base58checkToData];
-        
-        // add the address hash160 to watch for any tx receiveing money to the wallet
-        if (d.length == 160/8 + 1) [self.bloomFilter insertData:[d subdataWithRange:NSMakeRange(1, d.length - 1)]];
-    }
-
-    for (ZNPeer *peer in self.peers) {
-        [peer sendMessage:self.bloomFilter.data type:MSG_FILTERLOAD];
-    }
-}
-
 - (void)publishTransaction:(ZNTransaction *)transaction completion:(void (^)(NSError *error))completion
 {
+    if (! [transaction isSigned]) {
+        if (completion) {
+            completion([NSError errorWithDomain:@"ZincWallet" code:401
+                        userInfo:@{NSLocalizedDescriptionKey:@"bitcoin transaction not signed"}]);
+        }
+        return;
+    }
+
+    [[ZNWallet sharedInstance] registerTransaction:transaction];
+
     self.publishedTx[transaction.txHash] = transaction;
     if (completion) self.publishedCallback[transaction.txHash] = completion;
 
     //TODO: XXXX setup a publish timeout
+    //TODO: also publish transactions directly to coinbase and bitpay servers for faster POS experience
 
     for (ZNPeer *peer in self.peers) {
         [peer sendInvMessageWithTxHash:transaction.txHash];
@@ -345,6 +340,7 @@ static const char *dns_seeds[] = {
     [[ZNPeerEntity context] performBlockAndWait:^{
         ZNPeerEntity *e = [ZNPeerEntity createOrUpdateWithPeer:peer];
         uint32_t top = [ZNMerkleBlockEntity topBlock].height;
+        NSTimeInterval t = [ZNMerkleBlockEntity topBlock].timestamp;
         
         _connected = YES;
         self.connectFailures = 0;
@@ -352,11 +348,9 @@ static const char *dns_seeds[] = {
         
         e.timestamp = [NSDate timeIntervalSinceReferenceDate]; // set last seen timestamp for peer
         
-        [peer sendMessage:self.bloomFilter.data type:MSG_FILTERLOAD];
+        [peer sendFilterloadMessage:self.bloomFilter.data];
         if ([ZNPeerEntity countAllObjects] <= 1000) [peer sendGetaddrMessage];
 
-        //TODO: XXXX how does chain download work with relation to new wallet addresses being added? when a tx is found,
-        // that address gets "used up" and we need to request the next address gap from the wallet somehow
         if (top < peer.lastblock) {
             int32_t step = 1, start = 0;
             NSMutableArray *locators = [NSMutableArray array];
@@ -372,15 +366,15 @@ static const char *dns_seeds[] = {
             
             [locators addObject:[GENESIS_BLOCK_HASH reverse]];
             
-            // request just block headers up to earliestBlockHeight, and then merkleblocks after that
-            if (top + 1 >= self.earliestBlockHeight) {
+            // request just block headers up to earliestKeyTime, and then merkleblocks after that
+            if (t + 7*24*60*60 > self.earliestKeyTime) {
                 [peer sendGetblocksMessageWithLocators:locators andHashStop:nil];
             }
             else [peer sendGetheadersMessageWithLocators:locators andHashStop:nil];
         }
         else {
             dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFinishedNotification object:nil];
+                [[NSNotificationCenter defaultCenter] postNotificationName:syncFinishedNotification object:nil];
             });
         }
     }];
@@ -441,6 +435,7 @@ static const char *dns_seeds[] = {
     }];
 }
 
+//TODO: XXXX measure performance, this will be called thousands of times durring a wallet restore
 - (void)peer:(ZNPeer *)peer relayedTransaction:(ZNTransaction *)transaction
 {
     [[ZNTransactionEntity context] performBlockAndWait:^{
@@ -449,30 +444,52 @@ static const char *dns_seeds[] = {
         NSMutableData *d = [NSMutableData data];
         uint32_t n = 0;
         
+        // When a transaction is matched by the bloom filter, if any of it's output scripts have a hash or key that also
+        // matches the filter, that output is automatically added to the filter. That way if a transaction spends the
+        // output later, it will also be matched without having to manually update the filter.
         for (NSData *script in transaction.outputScripts) {
-            n++;
-
-            if (script == (id)[NSNull null]) continue;
-        
             for (NSData *elem in [script scriptDataElements]) {
                 if (! [self.bloomFilter containsData:elem]) continue;
-        
                 [d setData:transaction.txHash];
-                [d appendUInt32:n - 1];
+                [d appendUInt32:n];
                 [self.bloomFilter insertData:d]; // update bloomFilter with matched txout
+                break;
+            }
+            
+            n++;
+        }
+    
+        ZNWallet *w = [ZNWallet sharedInstance];
+        BOOL registered = [w registerTransaction:transaction];
+    
+        // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
+        // unused addresses are still matched by the bloom filter
+        if (registered && ! self.filterWasReset) {
+            NSArray *addrs =
+                [[w addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO]
+                 arrayByAddingObjectsFromArray:[w addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES]];
+        
+            for (NSString *a in addrs) {
+                NSData *d = [a base58checkToData];
+                
+                if (d.length != 160/8 + 1) continue;
+                if ([self.bloomFilter containsData:[d subdataWithRange:NSMakeRange(1, 160/8)]]) continue;
+
+                _bloomFilter = nil;
+                self.filterWasReset = YES;
                 break;
             }
         }
     
         if (self.filterWasReset) { // filter got reset, send the new one to all the peers
-            self.filterWasReset = NO;
-        
             for (ZNPeer *peer in self.peers) {
-                [peer sendMessage:self.bloomFilter.data type:MSG_FILTERLOAD];
+                [peer sendFilterloadMessage:self.bloomFilter.data];
             }
+            
+            self.filterWasReset = NO;
         }
         
-        if (! [[ZNWallet sharedInstance] registerTransaction:transaction]) return;
+        if (! registered) return;
         
         ZNTransactionEntity *tx = [ZNTransactionEntity objectsMatching:@"txHash == %@", transaction.txHash].lastObject;
     
@@ -507,8 +524,8 @@ static const char *dns_seeds[] = {
             return;
         }
 
-        // if it's just a block header (totalTransactions == 0), ingore it for heights above earliestBlockHeight
-        if (block.totalTransactions == 0 && height >= self.earliestBlockHeight) return;
+        // if it's just a block header (totalTransactions == 0), ingore it after one week before earliestKeyTime
+        if (block.totalTransactions == 0 && e.timestamp + 7*24*60*60 > self.earliestKeyTime) return;
 
         if ((height % BITCOIN_DIFFICULTY_INTERVAL) == 0) { // hit a difficulty transition, find last transition time
             while (abs(e.height) > height - BITCOIN_DIFFICULTY_INTERVAL) {
@@ -604,8 +621,8 @@ static const char *dns_seeds[] = {
             }
         }
         
-        // if we're done grabbing headers up to earliestBlockHeight, request merkle blocks for the rest of the chain
-        if (block.totalTransactions == 0 && height + 1 == self.earliestBlockHeight) {
+        // if we're done getting headers up to one week before earliestKeyTime, get merkle blocks for remaining chain
+        if (block.totalTransactions == 0 && block.timestamp + 7*24*60*60 > self.earliestKeyTime) {
             //TODO: this should use a full locator array so we don't dowload the entire chain if top block is on a fork
             [peer sendGetblocksMessageWithLocators:@[[ZNMerkleBlockEntity topBlock].blockHash] andHashStop:nil];
         }
