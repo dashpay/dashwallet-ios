@@ -46,8 +46,6 @@
 #define ZERO_HASH          @"0000000000000000000000000000000000000000000000000000000000000000".hexToData
 #define SOCKET_TIMEOUT     2.0
 
-#define llurand() (((long long unsigned)mrand48() << (sizeof(unsigned)*8)) | (unsigned)mrand48())
-
 typedef enum {
     error = 0,
     tx,
@@ -93,10 +91,10 @@ typedef enum {
 - (instancetype)initWithAddress:(uint32_t)address port:(uint16_t)port timestamp:(NSTimeInterval)timestamp
 services:(uint64_t)services
 {
-    if (! (self = [self init])) return nil;
+    if (! (self = [self initWithAddress:address andPort:port])) return nil;
     
-    _address = address;
-    _port = port;
+    _timestamp = timestamp;
+    _services = services;
     return self;
 }
 
@@ -111,6 +109,8 @@ services:(uint64_t)services
 {
     if (self.status != disconnected) return;
 
+    if (! self.reachability) self.reachability = [Reachability reachabilityWithHostName:self.host];
+    
     if (self.reachability.currentReachabilityStatus == NotReachable) {
         if (self.reachabilityObserver) return;
         
@@ -130,22 +130,21 @@ services:(uint64_t)services
         self.reachabilityObserver = nil;
     }
     
-    NSLog(@"%@:%u connecting", self.host, self.port);
     _status = connecting;
     _pingTime = DBL_MAX;
-    
     self.msgHeader = [NSMutableData data];
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
     
+    NSString *label = [NSString stringWithFormat:@"cc.zinc.peer.%@:%d", self.host, self.port];
+    
     // create a private serial queue for processing socket io
-    dispatch_async(dispatch_queue_create([[NSString stringWithFormat:@"cc.zinc.peer.%@:%d", self.host, self.port]
-                                          UTF8String], NULL), ^{
+    dispatch_async(dispatch_queue_create(label.UTF8String, NULL), ^{
         CFReadStreamRef readStream = NULL;
         CFWriteStreamRef writeStream = NULL;
 
-        self.reachability = [Reachability reachabilityWithHostName:self.host];
-
+        NSLog(@"%@:%u connecting", self.host, self.port);
+    
         CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)self.host, self.port, &readStream, &writeStream);
         self.inputStream = CFBridgingRelease(readStream);
         self.outputStream = CFBridgingRelease(writeStream);
@@ -177,9 +176,11 @@ services:(uint64_t)services
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel connect timeout
     
+    _status = disconnected;
+    
     if (! self.runLoop) return;
     
-    // can't use dispatch_async here because the runloop blocks the queue, so schedule a block on the runloop instead
+    // can't use dispatch_async here because the runloop blocks the queue, so schedule on the runloop instead
     CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
         [self.inputStream close];
         [self.outputStream close];
@@ -204,7 +205,6 @@ services:(uint64_t)services
     return [NSString stringWithUTF8String:inet_ntop(AF_INET, &addr, s, INET_ADDRSTRLEN)];
 }
 
-// change state to connected if appropriate
 - (void)didConnect
 {
     if (self.status != connecting || ! self.sentVerack || ! self.gotVerack) return;
@@ -238,7 +238,6 @@ services:(uint64_t)services
             NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
 
             if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
-            
             //if (self.outputBuffer.length == 0) NSLog(@"%@:%d output buffer cleared", self.host, self.port);
         }
     });
@@ -254,7 +253,7 @@ services:(uint64_t)services
     [msg appendUInt64:[NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970]; // timestamp
     [msg appendNetAddress:self.address port:self.port services:self.services]; // address of remote peer
     [msg appendNetAddress:LOCAL_HOST port:BITCOIN_STANDARD_PORT services:ENABLED_SERVICES]; // address of local peer
-    self.localNonce = llurand(); // random nonce
+    self.localNonce = (((uint64_t)mrand48() << 32) | (uint32_t)mrand48()); // random nonce
     [msg appendUInt64:self.localNonce];
     [msg appendString:USERAGENT]; // user agent
     [msg appendUInt32:BITCOIN_REFERENCE_BLOCK_HEIGHT]; // last block received
@@ -281,15 +280,15 @@ services:(uint64_t)services
 
     // the new bloom filter may contain additional wallet addresses, so re-send the most recent getdata message to get
     // any additional transactions matching the new filter
-    // TODO: BUG XXXX does this cause two separate simultaneous chain download loops?
+    // BUG: XXXX does this cause two separate simultaneous chain download loops?
     if (self.currentBlockHashes.count > 0) {
         NSMutableArray *locators = [NSMutableArray arrayWithObject:self.currentBlockHashes.lastObject];
         
         if (self.currentBlockHashes.count > 1) [locators addObject:self.currentBlockHashes[0]];
         [self sendGetblocksMessageWithLocators:locators andHashStop:nil];
     }
-    
-    // TODO: XXXX should we also send mempool message?
+
+    [self sendMessage:[NSData data] type:MSG_MEMPOOL]; // reqeust any mempool transactions that match the filter
 }
 
 - (void)sendAddrMessage
@@ -333,7 +332,7 @@ services:(uint64_t)services
     NSMutableData *msg = [NSMutableData data];
     
     [msg appendUInt32:PROTOCOL_VERSION];
-    [msg appendVarInt:locators.count]; // number of block locator hashes
+    [msg appendVarInt:locators.count];
     
     for (NSData *hash in locators) {
         [msg appendData:hash];
@@ -606,7 +605,7 @@ services:(uint64_t)services
     
     [self.delegate peer:self relayedTransaction:tx];
     
-    if (self.currentBlock) { // we're collecting tx message for a merkleblock
+    if (self.currentBlock) { // we're collecting tx messages for a merkleblock
         [self.currentTxHashes removeObject:tx.txHash];
         if (self.currentTxHashes.count == 0) { // we received the entire block including all matched tx
             [self.delegate peer:self relayedBlock:self.currentBlock];
@@ -823,13 +822,13 @@ services:(uint64_t)services
 
             // fall through to send any queued output
         case NSStreamEventHasSpaceAvailable:
-            if (aStream == self.outputStream) {
-                while (self.outputBuffer.length > 0 && [self.outputStream hasSpaceAvailable]) {
-                    NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
+            if (aStream != self.outputStream) return;
+        
+            while (self.outputBuffer.length > 0 && [self.outputStream hasSpaceAvailable]) {
+                NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
                 
-                    if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
-                    //if(self.outputBuffer.length == 0) NSLog(@"%@:%d output buffer cleared", self.host, self.port);
-                }
+                if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
+                //if(self.outputBuffer.length == 0) NSLog(@"%@:%d output buffer cleared", self.host, self.port);
             }
             break;
             

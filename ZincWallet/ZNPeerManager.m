@@ -102,9 +102,11 @@ static const char *dns_seeds[] = {
 @property (nonatomic, assign) NSUInteger filterElemCount;
 @property (nonatomic, assign) BOOL filterWasReset;
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback, *checkpoints;
-@property (nonatomic, strong) NSSet *internalAddrs, *externalAddrs;
+@property (nonatomic, strong) ZNPeer *downloadPeer;
 
 @end
+
+//TODO: unconfirmed transaction confidence number based on other nodes relaying it
 
 @implementation ZNPeerManager
 
@@ -171,11 +173,22 @@ static const char *dns_seeds[] = {
             
                 e.timestamp = now - 24*60*60*(3 + drand48()*4); // random timestamp between 3 and 7 days ago;
                 e.services = NODE_NETWORK;
+                e.misbehavin = 0;
                 count++;
             }
         }];
     }
     
+    // if we've resorted to DNS peer discovery, we will also reset the misbahavin' count on any peers we already had
+    // just in case something went horribly wrong and every peer was marked as bad, but give all previously misbehavin'
+    // peers a timestamp older than two weeks
+    [[ZNPeerEntity context] performBlockAndWait:^{
+        for (ZNPeerEntity *e in [ZNPeerEntity objectsMatching:@"misbehavin > 0"]) {
+            e.misbehavin = 0;
+            e.timestamp += 14*24*60*60;
+        }
+    }];
+
 #if BITCOIN_TESTNET
     return count;
 #endif
@@ -200,50 +213,43 @@ static const char *dns_seeds[] = {
     return count;
 }
 
-- (ZNPeerEntity *)randomPeer
+- (void)connect
 {
+    [self.peers
+     removeObjectsAtIndexes:[self.peers indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+        return ([obj status] == disconnected) ? YES : NO;
+    }]];
+
+    if (self.peers.count >= MAX_CONNECTIONS) return; // we're already connected to MAX_CONNECTIONS peers
+
     NSFetchRequest *req = [ZNPeerEntity fetchRequest];
     
     req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"timestamp" ascending:NO]];
     req.predicate = [NSPredicate predicateWithFormat:@"misbehavin == 0"];
-    
-    NSUInteger count = [ZNPeerEntity countObjects:req];
-    
-    if (count == 0) count += [self discoverPeers];
-    if (count > 100) count = 100;
-    if (count == 0) return nil;
+    req.fetchLimit = MAX_CONNECTIONS + 100;
+    if ([ZNPeerEntity countObjects:req] < MAX_CONNECTIONS) [self discoverPeers];
 
-    req.fetchOffset = pow(lrand48() % count, 2)/count; // pick a random peer biased for peers with recent timestamps
-    req.fetchLimit = 1;
+    NSMutableArray *peers = [NSMutableArray arrayWithArray:[ZNPeerEntity fetchObjects:req]];
     
-    NSLog(@"picking peer %d out of %d most recent", (int)req.fetchOffset, (int)count);
+    [[ZNPeerEntity context] performBlockAndWait:^{
+        while (peers.count > 0 && self.peers.count < MAX_CONNECTIONS) {
+            // pick a random peer biased towards peers with more recent timestamps
+            ZNPeerEntity *e = peers[(NSUInteger)(pow(lrand48() % peers.count, 2)/peers.count)];
+            ZNPeer *p = [ZNPeer peerWithAddress:e.address andPort:e.port];
+            
+            p.delegate = self;
+            if (p) [self.peers addObject:p];
+            [p connect];
+            [peers removeObject:e];
+        }
+    }];
     
-    return [ZNPeerEntity fetchObjects:req].lastObject;
-}
-
-- (void)connect
-{
-    if (self.peers.count > 0 && [self.peers[0] status] != disconnected) return;
-
-    ZNPeerEntity *e = [self randomPeer];
-    __block ZNPeer *peer = nil;
-    
-    if (! e) {
+    if (self.peers.count == 0) {
         [[NSNotificationCenter defaultCenter] postNotificationName:syncFailedNotification
          object:@{@"error":[NSError errorWithDomain:@"ZincWallet" code:1
                             userInfo:@{NSLocalizedDescriptionKey:@"no peers found"}]}];
         return;
     }
-    
-    [e.managedObjectContext performBlockAndWait:^{
-        peer = [ZNPeer peerWithAddress:e.address andPort:e.port];
-    }];
-    
-    peer.delegate = self;
-    [self.peers removeAllObjects]; //TODO: XXXX connect to multiple peers
-    if (peer) [self.peers addObject:peer];
-
-    [peer connect];
 }
 
 - (ZNBloomFilter *)bloomFilter
@@ -331,26 +337,36 @@ static const char *dns_seeds[] = {
     }];
     
     [peer disconnect];
+    [self connect];
 }
 
 #pragma mark - ZNPeerDelegate
 
 - (void)peerConnected:(ZNPeer *)peer
 {
-    [[ZNPeerEntity context] performBlockAndWait:^{
-        ZNPeerEntity *e = [ZNPeerEntity createOrUpdateWithPeer:peer];
+    NSLog(@"%@:%d connected", peer.host, peer.port);
+
+    [[ZNPeerEntity createOrUpdateWithPeer:peer] set:@"timestamp" to:[NSDate date]]; // set last seen timestamp for peer
+    [peer sendFilterloadMessage:self.bloomFilter.data];
+
+    if ([ZNPeerEntity countAllObjects] <= 1000) [peer sendGetaddrMessage]; // request list of other bitcoin peers
+    
+    if (self.connected) return;
+    
+    // if all peers have connected, select the peer with the lowest ping time to download the chain from if we're behind
+    for (ZNPeer *p in self.peers) {
+        if (p.status != connected) return; // wait for all peers to finish connecting
+        if (p.pingTime < peer.pingTime) peer = p; // find the peer with the lowest ping time
+    }
+
+    _connected = YES;
+    self.connectFailures = 0;
+    self.downloadPeer = peer;
+
+    [[ZNMerkleBlockEntity context] performBlockAndWait:^{
         uint32_t top = [ZNMerkleBlockEntity topBlock].height;
         NSTimeInterval t = [ZNMerkleBlockEntity topBlock].timestamp;
         
-        _connected = YES;
-        self.connectFailures = 0;
-        NSLog(@"%@:%d connected", peer.host, peer.port);
-        
-        e.timestamp = [NSDate timeIntervalSinceReferenceDate]; // set last seen timestamp for peer
-        
-        [peer sendFilterloadMessage:self.bloomFilter.data];
-        if ([ZNPeerEntity countAllObjects] <= 1000) [peer sendGetaddrMessage];
-
         if (top < peer.lastblock) {
             int32_t step = 1, start = 0;
             NSMutableArray *locators = [NSMutableArray array];
@@ -382,35 +398,35 @@ static const char *dns_seeds[] = {
 
 - (void)peer:(ZNPeer *)peer disconnectedWithError:(NSError *)error
 {
-    [[ZNPeerEntity context] performBlockAndWait:^{
-        [self.peers removeObject:peer];
-        NSLog(@"%@:%d disconnected%@%@", peer.host, peer.port, error ? @", " : @"", error ? error : @"");
+    [self.peers removeObject:peer];
+    NSLog(@"%@:%d disconnected%@%@", peer.host, peer.port, error ? @", " : @"", error ? error : @"");
+    
+    if (error) [[ZNPeerEntity createOrUpdateWithPeer:peer] deleteObject];
 
-        if (error) [[ZNPeerEntity createOrUpdateWithPeer:peer] deleteObject];
+    //TODO: XXXX check for network reachability
 
-        //TODO: XXXX check for network reachability
+    if (! self.downloadPeer || [self.downloadPeer isEqual:peer]) {
+        _connected = NO;
+        self.connectFailures++;
+        self.downloadPeer = nil;
 
-        if (! self.peers.count) {
-            _connected = NO;
-            self.connectFailures++;
-        
-//            if (self.connectFailures > 5) {
-//                if (! error) {
-//                    error = [NSError errorWithDomain:@"ZincWallet" code:0
-//                             userInfo:@{NSLocalizedDescriptionKey:@"couldn't connect to bitcoin network"}];
-//                }
-//
-//                dispatch_async(dispatch_get_main_queue(), ^{
-//                    [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification
-//                     object:@{@"error":error}];
-//                });
-//                return;
+//        if (self.connectFailures > 5) {
+//            if (! error) {
+//                error = [NSError errorWithDomain:@"ZincWallet" code:0
+//                         userInfo:@{NSLocalizedDescriptionKey:@"couldn't connect to bitcoin network"}];
 //            }
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self connect];
-            });
-        }
-    }];
+//
+//            dispatch_async(dispatch_get_main_queue(), ^{
+//                [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification
+//                 object:@{@"error":error}];
+//            });
+//            return;
+//        }
+    }
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self connect];
+    });
 }
 
 - (void)peer:(ZNPeer *)peer relayedPeers:(NSArray *)peers
