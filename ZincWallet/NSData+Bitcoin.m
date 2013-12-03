@@ -94,7 +94,7 @@
 {
     NSMutableArray *a = [NSMutableArray array];
     const uint8_t *b = (const uint8_t *)self.bytes;
-    NSUInteger length = self.length, l;
+    NSUInteger l, length = self.length;
     
     for (NSUInteger i = 0; i < length; i++) {
         if (b[i] > OP_PUSHDATA4) continue;

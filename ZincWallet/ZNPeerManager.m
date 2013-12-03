@@ -96,13 +96,14 @@ static const char *dns_seeds[] = {
 @interface ZNPeerManager ()
 
 @property (nonatomic, strong) NSMutableArray *peers;
+@property (nonatomic, strong) ZNPeer *downloadPeer;
 @property (nonatomic, assign) int connectFailures;
 @property (nonatomic, assign) uint32_t tweak;
 @property (nonatomic, strong) ZNBloomFilter *bloomFilter;
 @property (nonatomic, assign) NSUInteger filterElemCount;
 @property (nonatomic, assign) BOOL filterWasReset;
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback, *checkpoints;
-@property (nonatomic, strong) ZNPeer *downloadPeer;
+@property (nonatomic, strong) NSCountedSet *txRelayCounts;
 
 @end
 
@@ -130,8 +131,9 @@ static const char *dns_seeds[] = {
     self.earliestKeyTime = BITCOIN_REFERENCE_BLOCK_TIME;
     self.peers = [NSMutableArray array];
     
-#warning remove this!
-    [ZNMerkleBlockEntity deleteObjects:[ZNMerkleBlockEntity allObjects]]; //for testing chain download
+//#warning remove this!
+//    [ZNMerkleBlockEntity deleteObjects:[ZNMerkleBlockEntity allObjects]]; //for testing chain download
+//    [ZNTransactionEntity deleteObjects:[ZNTransactionEntity allObjects]]; // and remove this
     self.earliestKeyTime = [NSDate timeIntervalSinceReferenceDate] - 365*24*60*60; // remove this too
     
     if (! [ZNMerkleBlockEntity topBlock]) [ZNMerkleBlockEntity createOrUpdateWithBlock:GENESIS_BLOCK atHeight:0];
@@ -139,9 +141,12 @@ static const char *dns_seeds[] = {
     self.tweak = mrand48();
     self.publishedTx = [NSMutableDictionary dictionary];
     self.publishedCallback = [NSMutableDictionary dictionary];
+    self.txRelayCounts = [NSCountedSet set];
     
     for (ZNTransactionEntity *e in [ZNTransactionEntity objectsMatching:@"blockHeight == %d", TX_UNCONFIRMED]) {
-        self.publishedTx[[e get:@"txHash"]] = [e transaction];
+        ZNTransaction *tx = [e transaction];
+        
+        self.publishedTx[tx.txHash] = tx;
     }
     
     self.checkpoints = [NSMutableDictionary dictionary]; // blockchain checkpoints
@@ -179,15 +184,16 @@ static const char *dns_seeds[] = {
         }];
     }
     
-    // if we've resorted to DNS peer discovery, we will also reset the misbahavin' count on any peers we already had
-    // just in case something went horribly wrong and every peer was marked as bad, but give all previously misbehavin'
-    // peers a timestamp older than two weeks
+    // if we've resorted to DNS peer discovery, reset the misbahavin' count on any peers we already had in case
+    // something went horribly wrong and every peer was marked as bad, but give them a timestamp older than two weeks
     [[ZNPeerEntity context] performBlockAndWait:^{
         for (ZNPeerEntity *e in [ZNPeerEntity objectsMatching:@"misbehavin > 0"]) {
             e.misbehavin = 0;
             e.timestamp += 14*24*60*60;
         }
     }];
+
+    //TODO: connect to a few random DNS peers and just to grab a list of peers and disconnect so as to not overload them
 
 #if BITCOIN_TESTNET
     return count;
@@ -252,22 +258,27 @@ static const char *dns_seeds[] = {
     }
 }
 
+//TODO: XXXX add refresh method that refreshes blocks/tx from earliestKeyTime
+// a malicious node might lie by omitting transactions, so it's a good idea to be able to refresh from a random node
+
 - (ZNBloomFilter *)bloomFilter
 {
     // a bloom filter's falsepositive rate will increase with each item added to the filter, so if it has degraded by
     // half, clear it and build a new one
     if (_bloomFilter && _bloomFilter.length < BLOOM_MAX_FILTER_LENGTH &&
         _bloomFilter.falsePositiveRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*2) {
-        NSLog(@"elemCount = %d, fpfrate = %f > default*2 = %f", (int)_bloomFilter.elementCount,
-              _bloomFilter.falsePositiveRate, BLOOM_DEFAULT_FALSEPOSITIVE_RATE*2);
+        NSLog(@"bloom filter false positive rate has degraded by half after adding %d items... rebuilding",
+              (int)_bloomFilter.elementCount);
         _bloomFilter = nil;
         self.filterWasReset = YES;
     }
 
     if (_bloomFilter) return _bloomFilter;
 
-    // generate spare addresses, with some extra headroom so we don't need to regenerate the filter each time a
-    // transaction consumes a wallet receive or change address (generate twice external gap limit for both)
+    // every time a new wallet address is added to the filter, the filter has to be rebuilt and sent to each peer, and
+    // each address is only used for one transaction, so here we generate some spare addresses to avoid rebuilding the
+    // filter each time a wallet transaction is encountered during the blockchain download
+    // (generates twice the external gap limit for both address chains)
     [[ZNWallet sharedInstance] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:NO];
     [[ZNWallet sharedInstance] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:YES];
 
@@ -288,6 +299,7 @@ static const char *dns_seeds[] = {
         }
         
         for (ZNTxOutputEntity *e in utxos) {
+            if (! [[ZNWallet sharedInstance] containsAddress:e.address]) continue;
             NSMutableData *d = [NSMutableData data];
             
             [d appendData:e.txHash];
@@ -324,10 +336,13 @@ static const char *dns_seeds[] = {
     }
 }
 
-- (void)verifyTransaction:(ZNTransaction *)transaction completion:(void (^)(BOOL verified))completion;
+// transaction is considered verified when all peers have relayed it
+- (BOOL)transactionIsVerified:(NSData *)txHash
 {
-    //TODO: XXXX send getdata and wait for a tx response
-    if (completion) completion(YES);
+    //TODO: we also need to know if a transaction is bad (double spend, not propagated after a certain time, etc...)
+    // and also consider estimated confirmation time based on fee per kb and priority
+
+    return ([self.txRelayCounts countForObject:txHash] >= MAX_CONNECTIONS) ? YES : NO;
 }
 
 - (void)peerMisbehavin:(ZNPeer *)peer
@@ -347,11 +362,11 @@ static const char *dns_seeds[] = {
     NSLog(@"%@:%d connected", peer.host, peer.port);
 
     [[ZNPeerEntity createOrUpdateWithPeer:peer] set:@"timestamp" to:[NSDate date]]; // set last seen timestamp for peer
-    [peer sendFilterloadMessage:self.bloomFilter.data];
+    [peer sendFilterloadMessage:self.bloomFilter.data]; // load the bloom filter
 
-    if ([ZNPeerEntity countAllObjects] <= 1000) [peer sendGetaddrMessage]; // request list of other bitcoin peers
+    if ([ZNPeerEntity countAllObjects] <= 1000) [peer sendGetaddrMessage]; // request a list of other bitcoin peers
     
-    if (self.connected) return;
+    if (self.connected) return; // we're already connected
     
     // if all peers have connected, select the peer with the lowest ping time to download the chain from if we're behind
     for (ZNPeer *p in self.peers) {
@@ -401,7 +416,10 @@ static const char *dns_seeds[] = {
     [self.peers removeObject:peer];
     NSLog(@"%@:%d disconnected%@%@", peer.host, peer.port, error ? @", " : @"", error ? error : @"");
     
-    if (error) [[ZNPeerEntity createOrUpdateWithPeer:peer] deleteObject];
+    if ([error.domain isEqual:@"ZincWallet"]) {
+        [self peerMisbehavin:peer];
+    }
+    else if (error) [[ZNPeerEntity createOrUpdateWithPeer:peer] deleteObject];
 
     //TODO: XXXX check for network reachability
 
@@ -455,29 +473,34 @@ static const char *dns_seeds[] = {
 - (void)peer:(ZNPeer *)peer relayedTransaction:(ZNTransaction *)transaction
 {
     [[ZNTransactionEntity context] performBlockAndWait:^{
-        NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, transaction);
-
         NSMutableData *d = [NSMutableData data];
         uint32_t n = 0;
+
+        NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, transaction);
         
         // When a transaction is matched by the bloom filter, if any of it's output scripts have a hash or key that also
-        // matches the filter, that output is automatically added to the filter. That way if a transaction spends the
-        // output later, it will also be matched without having to manually update the filter.
+        // matches the filter, the remote peer will automatically add that output to the filter. That way if another
+        // transaction spends the output later, it will also be matched without having to manually update the filter.
+        // We do the same here with the local copy to keep the filters in sync.
         for (NSData *script in transaction.outputScripts) {
             for (NSData *elem in [script scriptDataElements]) {
                 if (! [self.bloomFilter containsData:elem]) continue;
                 [d setData:transaction.txHash];
                 [d appendUInt32:n];
-                [self.bloomFilter insertData:d]; // update bloomFilter with matched txout
+                [self.bloomFilter insertData:d]; // update bloom filter with matched txout
                 break;
             }
             
             n++;
         }
     
+        [self.txRelayCounts addObject:transaction.txHash]; // increment relay count before registering tx with wallet
+    
         ZNWallet *w = [ZNWallet sharedInstance];
         BOOL registered = [w registerTransaction:transaction];
     
+        if (! registered) [self.txRelayCounts removeObject:transaction.txHash];
+        
         // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
         // unused addresses are still matched by the bloom filter
         if (registered && ! self.filterWasReset) {
@@ -505,16 +528,9 @@ static const char *dns_seeds[] = {
             self.filterWasReset = NO;
         }
         
-        if (! registered) return;
+        if (registered) self.publishedTx[transaction.txHash] = transaction;
         
-        ZNTransactionEntity *tx = [ZNTransactionEntity objectsMatching:@"txHash == %@", transaction.txHash].lastObject;
-    
-        if (tx) { // we already have the transaction, and now we also know that a bitcoin node is willing to relay it
-                  //TODO: XXXX mark transaction as having been relayed
-            return;
-        }
-    
-        // if we're not downloading the chain, relay the tx to other peers so we have plausible deniability for our own
+        // if we're not downloading the chain, relay tx to other peers so we have plausible deniability for our own tx
         //TODO: XXXX relay tx to other peers
     }];
 }
@@ -578,15 +594,17 @@ static const char *dns_seeds[] = {
             if (e.height >= 0) { // if it's not on a fork, set block heights for the block's transactions
                 [ZNTransactionEntity setBlockHeight:height forTxHashes:block.txHashes];
                 [self.publishedTx removeObjectsForKeys:block.txHashes]; // remove confirmed tx from publish list
+                [self.txRelayCounts minusSet:[NSSet setWithArray:block.txHashes]];
             }
             return;
         }
-        else if ([ZNMerkleBlockEntity blockAtHeight:height] == nil) { // new block extends the main chain
+        else if ([block.prevBlock isEqual:[ZNMerkleBlockEntity topBlock].blockHash]) { // new block extends main chain
             if ((height % 500) == 0) NSLog(@"adding block at height: %d", height);
 
             [ZNMerkleBlockEntity createOrUpdateWithBlock:block atHeight:height];
             [ZNTransactionEntity setBlockHeight:height forTxHashes:block.txHashes];
             [self.publishedTx removeObjectsForKeys:block.txHashes]; // remove confirmed transactions from publish list
+            [self.txRelayCounts minusSet:[NSSet setWithArray:block.txHashes]];
         }
         else { // new block is on a fork
             if (height <= BITCOIN_REFERENCE_BLOCK_HEIGHT) { // fork is older than the most recent checkpoint
@@ -628,6 +646,7 @@ static const char *dns_seeds[] = {
                 e.height *= -1;
                 [ZNTransactionEntity setBlockHeight:e.height forTxHashes:e.merkleBlock.txHashes];
                 [self.publishedTx removeObjectsForKeys:e.merkleBlock.txHashes]; // remove confirmed tx from publish list
+                [self.txRelayCounts minusSet:[NSSet setWithArray:block.txHashes]];
                 e = [ZNMerkleBlockEntity blockForHash:e.prevBlock];
             }
 

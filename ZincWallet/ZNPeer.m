@@ -117,9 +117,7 @@ services:(uint64_t)services
         self.reachabilityObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification
             object:self.reachability queue:nil usingBlock:^(NSNotification *note) {
-                if (self.reachability.currentReachabilityStatus == NotReachable) return;
-
-                [self connect];
+                if (self.reachability.currentReachabilityStatus != NotReachable) [self connect];
             }];
         
         [self.reachability startNotifier];
@@ -195,6 +193,16 @@ services:(uint64_t)services
         [self.delegate peer:self disconnectedWithError:error];
     });
     CFRunLoopWakeUp([self.runLoop getCFRunLoop]);
+}
+
+- (void)error:(NSString *)message, ...
+{
+    va_list args;
+
+    va_start(args, message);
+    [self disconnectWithError:[NSError errorWithDomain:@"ZincWallet" code:500
+     userInfo:@{NSLocalizedDescriptionKey:[[NSString alloc] initWithFormat:message arguments:args]}]];
+    va_end(args);
 }
 
 - (NSString *)host
@@ -281,6 +289,7 @@ services:(uint64_t)services
     // the new bloom filter may contain additional wallet addresses, so re-send the most recent getdata message to get
     // any additional transactions matching the new filter
     // BUG: XXXX does this cause two separate simultaneous chain download loops?
+    // TODO: XXXX verify this actually works and doesn't miss any transactions
     if (self.currentBlockHashes.count > 0) {
         NSMutableArray *locators = [NSMutableArray arrayWithObject:self.currentBlockHashes.lastObject];
         
@@ -442,19 +451,14 @@ services:(uint64_t)services
     NSUInteger l = 0;
     
     if (message.length < 85) {
-        NSLog(@"%@:%d malformed version message, length is %u, should be > 84", self.host, self.port,
-              (int)message.length);
-        //TODO: XXX need to notify delegate that the peer is misbehaving, also consider what could happen if a network
-        // connection produced a lot of errors, might all the peers be marked as misbehaving forever?
+        [self error:@"malformed version message, length is %u, should be > 84", (int)message.length];
         return;
     }
     
     _version = [message UInt32AtOffset:0];
     
     if (self.version < MIN_PROTO_VERSION) {
-        [self disconnectWithError:[NSError errorWithDomain:@"ZincWallet" code:500
-         userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"%@:%u protocol version %u not supported",
-                                               self.host, self.port, self.version]}]];
+        [self error:@"protocol version %u not supported", self.version];
         return;
     }
     
@@ -463,8 +467,7 @@ services:(uint64_t)services
     _useragent = [message stringAtOffset:80 length:&l];
 
     if (message.length < 80 + l + sizeof(uint32_t)) {
-        NSLog(@"%@:%d malformed version message, length is %u, should be %lu", self.host, self.port,
-              (int)message.length, 80 + l + sizeof(uint32_t));
+        [self error:@"malformed version message, length is %u, should be %lu", (int)message.length, 80 + l + 4];
         return;
     }
     
@@ -478,7 +481,7 @@ services:(uint64_t)services
 - (void)acceptVerackMessage:(NSData *)message
 {
     if (message.length != 0) {
-        NSLog(@"%@:%d malformed verack message %@", self.host, self.port, message);
+        [self error:@"malformed verack message: %@", message];
         return;
     }
     else if (self.gotVerack) {
@@ -506,7 +509,7 @@ services:(uint64_t)services
         return;
     }
     else if (message.length < 5) {
-        NSLog(@"%@:%d malformed addr message, length %u is too short", self.host, self.port, (int)message.length);
+        [self error:@"malformed addr message, length %u is too short", (int)message.length];
         return;
     }
 
@@ -519,8 +522,8 @@ services:(uint64_t)services
         return;
     }
     else if (message.length != l + count*30) {
-        NSLog(@"%@:%d malformed addr message, length is %u, should be %u for %u addresses", self.host, self.port,
-              (int)message.length, (int)(l + count*30), (int)count);
+        [self error:@"malformed addr message, length is %u, should be %u for %u addresses", (int)message.length,
+         (int)(l + count*30), (int)count];
         return;
     }
     else NSLog(@"%@:%d got addr with %u addresses", self.host, self.port, (int)count);
@@ -548,8 +551,8 @@ services:(uint64_t)services
     NSMutableArray *txHashes = [NSMutableArray array], *blockHashes = [NSMutableArray array];
     
     if (l == 0 || message.length < l + count*36) {
-        NSLog(@"%@:%u malformed inv message, length is %u, should be %u for %u items", self.host, self.port,
-              (int)message.length, (int)((l == 0) ? 1 : l) + (int)count*36, (int)count);
+        [self error:@"malformed inv message, length is %u, should be %u for %u items", (int)message.length,
+         (int)((l == 0) ? 1 : l) + (int)count*36, (int)count];
         return;
     }
     else if (count > MAX_GETDATA_HASHES) {
@@ -597,7 +600,7 @@ services:(uint64_t)services
     ZNTransaction *tx = [[ZNTransaction alloc] initWithData:message];
     
     if (! tx) {
-        NSLog(@"%@:%d malformed tx message %@", self.host, self.port, message);
+        [self error:@"malformed tx message: %@", message];
         return;
     }
     
@@ -620,8 +623,8 @@ services:(uint64_t)services
     NSUInteger l, count = [message varIntAtOffset:0 length:&l];
     
     if (message.length != l + 81*count) {
-        NSLog(@"%@:%u malformed headers message, length is %u, should be %u for %u items", self.host, self.port,
-              (int)message.length, (int)((l == 0) ? 1 : l) + (int)count*81, (int)count);
+        [self error:@"malformed headers message, length is %u, should be %u for %u items", (int)message.length,
+         (int)((l == 0) ? 1 : l) + (int)count*81, (int)count];
         return;
     }
 
@@ -643,8 +646,8 @@ services:(uint64_t)services
             ZNMerkleBlock *block = [ZNMerkleBlock blockWithMessage:[message subdataWithRange:NSMakeRange(off, 81)]];
     
             if (! block.valid) {
-                NSLog(@"%@:%u droping invalid block header %@", self.host, self.port, block.blockHash);
-                continue;
+                [self error:@"invalid block header %@", block.blockHash];
+                return;
             }
     
             [self.delegate peer:self relayedBlock:block];
@@ -656,7 +659,7 @@ services:(uint64_t)services
 - (void)acceptGetaddrMessage:(NSData *)message
 {
     if (message.length != 0) {
-        NSLog(@"%@:%d malformed getaddr message %@", self.host, self.port, message);
+        [self error:@"malformed getaddr message %@", message];
         return;
     }
 
@@ -670,8 +673,8 @@ services:(uint64_t)services
     NSUInteger l, count = [message varIntAtOffset:0 length:&l];
     
     if (l == 0 || message.length < l + count*36) {
-        NSLog(@"%@:%u malformed getdata message, length is %u, should be %u for %u items", self.host, self.port,
-              (int)message.length, (int)((l == 0) ? 1 : l) + (int)count*36, (int)count);
+        [self error:@"malformed getdata message, length is %u, should be %u for %u items", (int)message.length,
+         (int)((l == 0) ? 1 : l) + (int)count*36, (int)count];
         return;
     }
     else if (count > 50000) {
@@ -720,7 +723,7 @@ services:(uint64_t)services
 - (void)acceptPingMessage:(NSData *)message
 {
     if (message.length != sizeof(uint64_t)) {
-        NSLog(@"%@:%d malformed ping message, length is %u, should be 4", self.host, self.port, (int)message.length);
+        [self error:@"malformed ping message, length is %u, should be 4", (int)message.length];
         return;
     }
     
@@ -732,12 +735,12 @@ services:(uint64_t)services
 - (void)acceptPongMessage:(NSData *)message
 {
     if (message.length != sizeof(uint64_t)) {
-        NSLog(@"%@:%d malformed pong message, length is %u, should be 4", self.host, self.port, (int)message.length);
+        [self error:@"malformed pong message, length is %u, should be 4", (int)message.length];
         return;
     }
     else if ([message UInt64AtOffset:0] != self.localNonce) {
-        NSLog(@"%@:%d pong message contained wrong nonce: %llu, expected: %llu", self.host, self.port,
-              [message UInt64AtOffset:0], self.localNonce);
+        [self error:@"pong message contained wrong nonce: %llu, expected: %llu", [message UInt64AtOffset:0],
+         self.localNonce];
         return;
     }
     else if (self.startTime < 1) {
@@ -765,7 +768,7 @@ services:(uint64_t)services
     ZNMerkleBlock *block = [ZNMerkleBlock blockWithMessage:message];
     
     if (! block.valid) {
-        NSLog(@"%@:%u droping invalid merkleblock %@", self.host, self.port, block.blockHash);
+        [self error:@"invalid merkleblock: %@", block.blockHash];
         return;
     }
     //else NSLog(@"%@:%u got merkleblock %@", self.host, self.port, block.blockHash);
@@ -865,7 +868,7 @@ services:(uint64_t)services
                 }
                 
                 if ([self.msgHeader UInt8AtOffset:15] != 0) { // verify msg type field is null terminated
-                    NSLog(@"%@:%u malformed message header %@", self.host, self.port, self.msgHeader);
+                    [self error:@"malformed message header: %@", self.msgHeader];
                     goto reset;
                 }
                 
@@ -874,7 +877,7 @@ services:(uint64_t)services
                 checksum = [self.msgHeader UInt32AtOffset:20];
                         
                 if (length > MAX_MSG_LENGTH) { // check message length
-                    NSLog(@"%@:%u error reading %@, message length %u is too long", self.host, self.port, type, length);
+                    [self error:@"error reading %@, message length %u is too long", type, length];
                     goto reset;
                 }
                 
@@ -893,10 +896,9 @@ services:(uint64_t)services
                 }
                 
                 if (*(uint32_t *)[self.msgPayload SHA256_2].bytes != checksum) { // verify checksum
-                    NSLog(@"%@:%u error reading %@, invalid checksum %x, expected %x, payload length:%u, expected "
-                          "length:%u, SHA256_2:%@", self.host, self.port, type,
-                          *(uint32_t *)[self.msgPayload SHA256_2].bytes, checksum, (int)self.msgPayload.length, length,
-                          [self.msgPayload SHA256_2]);
+                    [self error:@"error reading %@, invalid checksum %x, expected %x, payload length:%u, expected "
+                     "length:%u, SHA256_2:%@", type, *(uint32_t *)[self.msgPayload SHA256_2].bytes, checksum,
+                     (int)self.msgPayload.length, length, [self.msgPayload SHA256_2]];
                 }
                 else {
                     NSData *message = self.msgPayload;

@@ -26,6 +26,7 @@
 #import "ZNSettingsViewController.h"
 #import "ZNSeedViewController.h"
 #import "ZNWallet.h"
+#import "ZNPeerManager.h"
 #import "ZNTransaction.h"
 #import "ZNTransactionEntity.h"
 #import "ZNTxInputEntity.h"
@@ -49,6 +50,7 @@
 
 //TODO: need settings for denomination (BTC, mBTC or uBTC), local currency, and exchange rate source
 //TODO: only show most recent 10-20 transactions and have a separate page for the rest with section headers for each day
+//TODO: opening/closing settings still takes a second or two on a iphone4 (probably from core data for receive address)
 
 - (void)viewDidLoad
 {
@@ -166,6 +168,7 @@
             }
             else {
                 ZNWallet *w = [ZNWallet sharedInstance];
+                ZNPeerManager *m = [ZNPeerManager sharedInstance];
                 ZNTransaction *tx = self.transactions[indexPath.row];
                 uint64_t received = 0, spent = 0, amount = 0;
                 NSUInteger height = 0, idx = 0;
@@ -177,7 +180,7 @@
                     ZNTxOutputEntity *o = [ZNTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", hash,
                                            tx.inputIndexes[idx++]].lastObject;
                     
-                    if (o.address && [w containsAddress:o.address]) spent += o.value;
+                    if ([w containsAddress:o.address]) spent += o.value;
                 }
                 
                 withinWallet = (spent > 0) ? YES : NO;
@@ -203,7 +206,10 @@
                 sentLabel.layer.cornerRadius = 3.0;
                 sentLabel.layer.borderWidth = 0.5;
                 
-                if (height < 6) {
+                if (height == 0 && ! [m transactionIsVerified:tx.txHash]) {
+                    unconfirmedLabel.text = @"unverified";
+                }
+                else if (height < 6) {
                     unconfirmedLabel.text =
                         [NSString stringWithFormat:@"%d confirmation%@", (int)height, (height == 1) ? @"" : @"s"];
                 }

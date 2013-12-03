@@ -231,6 +231,7 @@ static NSData *getKeychainData(NSString *key)
 - (NSArray *)addressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal
 {
     NSMutableArray *a = [NSMutableArray array];
+    NSMutableSet *used = [NSMutableSet set];
     NSFetchRequest *req = [ZNAddressEntity fetchRequest];
     
     req.predicate = [NSPredicate predicateWithFormat:@"internal == %@", @(internal)];
@@ -238,12 +239,13 @@ static NSData *getKeychainData(NSString *key)
     
     [[ZNAddressEntity context] performBlockAndWait:^{
         [a addObjectsFromArray:[[ZNAddressEntity fetchObjects:req] valueForKey:@"address"]];
+        [used addObjectsFromArray:[[ZNTxOutputEntity objectsMatching:@"address in %@", a] valueForKey:@"address"]];
     }];
     
-    __block NSUInteger count = a.count, i = a.count;
+    NSUInteger count = a.count, i = a.count;
 
     // keep only the trailing contiguous block of addresses with no transactions
-    while (i > 0 && [ZNTxOutputEntity countObjectsMatching:@"address == %@", a[i - 1]] == 0) i--;
+    while (i > 0 && ! [used containsObject:a[i - 1]]) i--;
     
     if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
     
@@ -293,7 +295,7 @@ static NSData *getKeychainData(NSString *key)
     
     [[NSManagedObject context] performBlockAndWait:^{
         for (ZNTxOutputEntity *o in [ZNTxOutputEntity objectsMatching:@"spent == NO"]) {
-            balance += o.value;
+            if ([self containsAddress:o.address]) balance += o.value;
         }
     }];
     
@@ -345,13 +347,15 @@ static NSData *getKeychainData(NSString *key)
 
 - (BOOL)containsAddress:(NSString *)address
 {
-    return [ZNAddressEntity countObjectsMatching:@"address == %@", address] > 0;
+    return (address && [ZNAddressEntity countObjectsMatching:@"address == %@", address] > 0) ? YES : NO;
 }
 
 #pragma mark - transactions
 
 - (ZNTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee
 {
+    //TODO: implement P2SH transactions
+
     __block uint64_t balance = 0, standardFee = 0;
     uint64_t minChange = fee ? TX_MIN_OUTPUT_AMOUNT : TX_FREE_MIN_OUTPUT;
     ZNTransaction *tx = [ZNTransaction new];
@@ -363,6 +367,7 @@ static NSData *getKeychainData(NSString *key)
     // this is a nieve implementation to just get it functional, sorts unspent outputs by oldest first
     [[NSManagedObject context] performBlockAndWait:^{
         for (ZNTxOutputEntity *o in [ZNTxOutputEntity objectsSortedBy:@"transaction.blockHeight" ascending:YES]) {
+            if (! [self containsAddress:o.address]) continue;
             [tx addInputHash:o.txHash index:o.n script:o.script]; // txHash is already in little endian
             
             balance += o.value;
@@ -519,12 +524,8 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
         [[ZNTransactionEntity managedObject] setAttributesFromTx:transaction];
         [self.allTxHashes addObject:transaction.txHash];
     }
-    
-    //TODO: XXXX We leak too much information about wallet addresses by subscribing to new address (which resets the
-    // bloom filter) after each transaction that consumes one. We should generate and subscribe to a bunch of addresses
-    // at once and only generate more when the number of spare addresses drops below the gap limit
-    
-    // when a wallet address is used in a transaction, we need to generate a new address to replace it
+
+    // when a wallet address is used in a transaction, generate a new address to replace it
     [self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
     [self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
     

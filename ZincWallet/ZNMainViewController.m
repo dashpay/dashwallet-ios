@@ -90,8 +90,7 @@
     self.reachabilityObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            //TODO: XXXX check reachability status? changed != reachable
-            [[ZNPeerManager sharedInstance] connect];
+            if (self.reachability.currentReachabilityStatus != NotReachable) [[ZNPeerManager sharedInstance] connect];
         }];
     
     self.balanceObserver =

@@ -238,7 +238,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 // Verifies the block difficulty target is correct for the block's position in the chain. transitionTime may be 0 if
 // height is not a multiple of BITCOIN_DIFFICULTY_INTERVAL.
 //
-// The difficulty algorithm works as follows:
+// The difficulty target algorithm works as follows:
 // The target must be the same as the previous block unless the block's height is a multiple of 2016. Every 2016 blocks
 // there is a difficulty transition where a new difficulty is calculated. The new target is the previous target
 // multiplied by the time between the last transition block's timestamp and this one (in seconds), divided by the

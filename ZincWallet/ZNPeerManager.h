@@ -42,8 +42,7 @@
 - (void)connect;
 - (void)publishTransaction:(ZNTransaction *)transaction completion:(void (^)(NSError *error))completion;
 
-// Bitcoin nodes will only respond with a tx message in repsonse to a getdata if the tx exists, is valid, and is not yet
-// included in a block. This method attempts a getdata to see if the given transaction meets these conditions.
-- (void)verifyTransaction:(ZNTransaction *)transaction completion:(void (^)(BOOL verified))completion;
+// transaction is considered verified when all peers have relayed it
+- (BOOL)transactionIsVerified:(NSData *)txHash;
 
 @end

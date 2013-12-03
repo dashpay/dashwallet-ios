@@ -33,11 +33,11 @@ const char base58chars[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrst
 
 static void *secureAllocate(CFIndex allocSize, CFOptionFlags hint, void *info)
 {
-    NSMutableDictionary *d = (__bridge NSMutableDictionary *)info;
     void *ptr = CFAllocatorAllocate(kCFAllocatorDefault, allocSize, hint);
     
     if (ptr) {
-        [d setObject:[NSNumber numberWithUnsignedLong:allocSize] forKey:[NSValue valueWithPointer:ptr]];
+        [(__bridge NSMutableDictionary *)info setObject:[NSNumber numberWithUnsignedLong:allocSize]
+         forKey:[NSValue valueWithPointer:ptr]];
         return ptr;
     }
     else return NULL;
@@ -45,12 +45,11 @@ static void *secureAllocate(CFIndex allocSize, CFOptionFlags hint, void *info)
 
 static void secureDeallocate(void *ptr, void *info)
 {
-    NSMutableDictionary *d = (__bridge NSMutableDictionary *)info;
     NSValue *key = [NSValue valueWithPointer:ptr];
-    size_t size = [[d objectForKey:key] unsignedLongValue];
+    size_t size = [[(__bridge NSMutableDictionary *)info objectForKey:key] unsignedLongValue];
     
     if (size) {
-        [d removeObjectForKey:key];
+        [(__bridge NSMutableDictionary *)info removeObjectForKey:key];
         OPENSSL_cleanse(ptr, size);
         CFAllocatorDeallocate(kCFAllocatorDefault, ptr);
     }
@@ -60,23 +59,21 @@ static void *secureReallocate(void *ptr, CFIndex newsize, CFOptionFlags hint, vo
 {
     // There's no way to tell ahead of time if there's enough space for the reallocation, or if the original memory
     // will be deallocted, so just cleanse and deallocate every time.
-    NSMutableDictionary *d = (__bridge NSMutableDictionary *)info;
     void *newptr = secureAllocate(newsize, hint, info);
     
     if (newptr) {
-        size_t size = [[d objectForKey:[NSValue valueWithPointer:ptr]] unsignedLongValue];
+        size_t size = [[(__bridge NSMutableDictionary *)info objectForKey:[NSValue valueWithPointer:ptr]]
+                       unsignedLongValue];
         
         if (size) {
             memcpy(newptr, ptr, size < newsize ? size : newsize);
             secureDeallocate(ptr, info);
             return newptr;
         }
-        else {
-            secureDeallocate(newptr, info);
-            return NULL;
-        }
+        else secureDeallocate(newptr, info);
     }
-    else return NULL;
+
+    return NULL;
 }
 
 // Since iOS does not page memory to storage, all we need to do is cleanse allocated memory prior to deallocation.
