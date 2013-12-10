@@ -38,7 +38,6 @@
 
 @dynamic txHash;
 @dynamic blockHeight;
-//@dynamic timeStamp;
 @dynamic inputs;
 @dynamic outputs;
 @dynamic lockTime;
@@ -61,7 +60,6 @@
         
         self.txHash = tx.txHash;
         self.blockHeight = tx.blockHeight;
-        //if (self.timeStamp < 1.0) self.timeStamp = [NSDate timeIntervalSinceReferenceDate];
     
         while (inputs.count < tx.inputHashes.count) {
             [inputs addObject:[ZNTxInputEntity managedObject]];

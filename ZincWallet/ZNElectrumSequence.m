@@ -66,7 +66,7 @@
     return d;
 }
 
-- (NSData *)sequence:(unsigned int)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
+- (NSData *)sequence:(unsigned)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
 {
     if (! masterPublicKey) return nil;
     
@@ -93,7 +93,7 @@
     return CFBridgingRelease(CFDataCreate(SecureAllocator(), (const uint8_t *)pubKey.bytes + 1, pubKey.length - 1));
 }
 
-- (NSData *)publicKey:(unsigned int)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
+- (NSData *)publicKey:(unsigned)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
 {
     if (! masterPublicKey) return nil;
 
@@ -125,7 +125,7 @@
     return d;
 }
 
-- (NSString *)privateKey:(unsigned int)n internal:(BOOL)internal fromSeed:(NSData *)seed
+- (NSString *)privateKey:(unsigned)n internal:(BOOL)internal fromSeed:(NSData *)seed
 {
     return seed ? [[self privateKeys:@[@(n)] internal:internal fromSeed:seed] lastObject] : nil;
 }

@@ -42,14 +42,7 @@
 @property (nonatomic, retain) NSData *hashes;
 @property (nonatomic, retain) NSData *flags;
 
-+ (instancetype)createOrUpdateWithBlock:(ZNMerkleBlock *)block atHeight:(int32_t)height;
-
-// fast block lookup
-+ (instancetype)blockForHash:(NSData *)blockHash;
-+ (instancetype)blockAtHeight:(int32_t)height;
-+ (instancetype)topBlock;
-
-- (void)setTreeFromBlock:(ZNMerkleBlock *)block;
+- (instancetype)setAttributesFromBlock:(ZNMerkleBlock *)block;
 - (ZNMerkleBlock *)merkleBlock;
 
 @end

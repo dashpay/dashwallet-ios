@@ -36,12 +36,14 @@
 @property (nonatomic, strong) id urlObserver, activeObserver, balanceObserver, reachabilityObserver;
 @property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 @property (nonatomic, assign) int syncErrorCount;
+@property (nonatomic, assign) BOOL didAppear;
 
 @property (nonatomic, strong) IBOutlet UIScrollView *scrollView;
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
 @property (nonatomic, strong) IBOutlet UIPageControl *pageControl;
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *settingsButton, *refreshButton;
 @property (nonatomic, strong) IBOutlet UIActivityIndicatorView *spinner;
+@property (nonatomic, strong) IBOutlet UIProgressView *progress;
 
 @property (nonatomic, strong) ZNPayViewController *payController;
 @property (nonatomic, strong) ZNReceiveViewController *receiveController;
@@ -83,14 +85,16 @@
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            [[ZNPeerManager sharedInstance] connect];
+            if (self.didAppear) [[ZNPeerManager sharedInstance] connect];
         }];
     
     // TODO: switch to AFNetworkingReachability
     self.reachabilityObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if (self.reachability.currentReachabilityStatus != NotReachable) [[ZNPeerManager sharedInstance] connect];
+            if (self.didAppear && self.reachability.currentReachabilityStatus != NotReachable) {
+                [[ZNPeerManager sharedInstance] connect];
+            }
         }];
     
     self.balanceObserver =
@@ -111,17 +115,22 @@
                 [self.spinner startAnimating];
             }
             
-            if (w.balance == 0) self.navigationItem.title = @"syncing...";
+            //if (w.balance == 0) self.navigationItem.title = @"syncing...";
+            [UIApplication sharedApplication].idleTimerDisabled = YES;
+            self.progress.hidden = NO;
+            [self updateProgress];
         }];
     
     self.syncFinishedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:syncFinishedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             self.syncErrorCount = 0;
-            [self.spinner stopAnimating]; //BUG: XXXX this sometimes takes several seconds to display... why?!?
+            [self.spinner stopAnimating];
             self.navigationItem.rightBarButtonItem = self.refreshButton;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                          [w localCurrencyStringForAmount:w.balance]];
+            [UIApplication sharedApplication].idleTimerDisabled = NO;
+            self.progress.hidden = YES;
         }];
     
     //TODO: create an error banner instead of using an alert
@@ -140,6 +149,8 @@
             self.navigationItem.rightBarButtonItem = self.refreshButton;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                          [w localCurrencyStringForAmount:w.balance]];
+            [UIApplication sharedApplication].idleTimerDisabled = NO;
+            self.progress.hidden = YES;
             
             [[[UIAlertView alloc] initWithTitle:@"couldn't refresh wallet balance"
               message:[note.userInfo[@"error"] localizedDescription] delegate:nil cancelButtonTitle:@"ok"
@@ -224,6 +235,28 @@
     [super viewDidAppear:animated];
     
     [[ZNPeerManager sharedInstance] connect];
+
+    self.didAppear = YES;
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    ZNWallet *w = [ZNWallet sharedInstance];
+
+    [self.spinner stopAnimating];
+    self.navigationItem.rightBarButtonItem = self.refreshButton;
+    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
+                                 [w localCurrencyStringForAmount:w.balance]];
+    [UIApplication sharedApplication].idleTimerDisabled = NO;
+    self.progress.hidden = YES;
+
+    [super viewWillDisappear:animated];
+}
+
+- (void)updateProgress
+{
+    [self.progress setProgress:[[ZNPeerManager sharedInstance] syncProgress] animated:YES];
+    if (self.progress.progress < 1.0) [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
 }
 
 - (ZNPayViewController *)payController

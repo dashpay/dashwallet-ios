@@ -32,7 +32,7 @@
 #endif
 
 #define TX_FREE_MIN_OUTPUT   1000000llu  // no tx output can be below this amount without a fee
-#define TX_FREE_MAX_SIZE     10000llu    // tx must not be larger than this size in bytes without a fee
+#define TX_FREE_MAX_SIZE     1000llu     // tx must not be larger than this size in bytes without a fee
 #define TX_FREE_MIN_PRIORITY 57600000llu // tx must not have a priority below this value without a fee
 #define TX_MAX_SIZE          100000llu   // no tx can be larger than this size in bytes
 #define TX_MIN_OUTPUT_AMOUNT 5460llu     // no tx output can be below this amount (or it won't be relayed)

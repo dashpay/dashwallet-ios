@@ -24,15 +24,17 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
+#import <CoreData/CoreData.h>
 #import "ZNPeer.h"
 
 #define syncStartedNotification  @"syncStartedNotification"
 #define syncFinishedNotification @"syncFinishedNotification"
 #define syncFailedNotification   @"syncFailedNotification"
 
-@interface ZNPeerManager : NSObject<ZNPeerDelegate>
+@interface ZNPeerManager : NSObject<ZNPeerDelegate, NSFetchedResultsControllerDelegate>
 
 @property (nonatomic, readonly) BOOL connected;
+@property (nonatomic, readonly) double syncProgress;
 
 // set this to the timestamp when the wallet was created to improve initial sync time
 @property (nonatomic, assign) NSTimeInterval earliestKeyTime;

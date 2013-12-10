@@ -34,7 +34,6 @@
 
 @property (nonatomic, retain) NSData *txHash; // little endian
 @property (nonatomic) int32_t blockHeight;
-//@property (nonatomic) NSTimeInterval timeStamp;
 @property (nonatomic, retain) NSOrderedSet *inputs;
 @property (nonatomic, retain) NSOrderedSet *outputs;
 @property (nonatomic) int32_t lockTime;

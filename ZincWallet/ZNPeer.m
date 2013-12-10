@@ -41,7 +41,7 @@
 #define MAX_GETDATA_HASHES 50000
 #define ENABLED_SERVICES   0 // we don't provide full blocks to remote nodes
 #define PROTOCOL_VERSION   70001
-#define MIN_PROTO_VERSION  31402 // peers earlier than this protocol version not supported
+#define MIN_PROTO_VERSION  70001 // peers earlier than this protocol version not supported
 #define LOCAL_HOST         0x7f000001
 #define ZERO_HASH          @"0000000000000000000000000000000000000000000000000000000000000000".hexToData
 #define SOCKET_TIMEOUT     2.0
@@ -473,7 +473,7 @@ services:(uint64_t)services
     
     _lastblock = [message UInt32AtOffset:80 + l];
     
-    NSLog(@"%@:%d got version, useragent:\"%@\"", self.host, self.port, self.useragent);
+    NSLog(@"%@:%d got version %d, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
     
     [self sendVerackMessage];
 }

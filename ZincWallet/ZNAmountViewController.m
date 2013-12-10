@@ -86,6 +86,8 @@
     self.syncStartedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:syncStartedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
+            [UIApplication sharedApplication].idleTimerDisabled = YES;
+            
             if (self.navigationItem.rightBarButtonItem == self.payButton) {
                 self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
                 [self.spinner startAnimating];
@@ -97,6 +99,7 @@
         usingBlock:^(NSNotification *note) {
             self.navigationItem.rightBarButtonItem = self.payButton;
             [self.spinner stopAnimating];
+            [UIApplication sharedApplication].idleTimerDisabled = NO;
         }];
     
     self.syncFailedObserver =
@@ -104,6 +107,7 @@
         usingBlock:^(NSNotification *note) {
             self.navigationItem.rightBarButtonItem = self.payButton;
             [self.spinner stopAnimating];
+            [UIApplication sharedApplication].idleTimerDisabled = NO;
         }];
 }
 

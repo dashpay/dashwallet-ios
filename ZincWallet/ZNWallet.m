@@ -101,7 +101,8 @@ static NSData *getKeychainData(NSString *key)
 @property (nonatomic, strong) NSMutableSet *updatedTxHashes;
 @property (nonatomic, strong) id<ZNKeySequence> sequence;
 @property (nonatomic, strong) NSData *mpk;
-@property (nonatomic, strong) NSMutableSet *allTxHashes, *allAddresses;
+@property (nonatomic, strong) NSMutableArray *internalAddresses, *externalAddresses;
+@property (nonatomic, strong) NSMutableSet *allTxHashes, *allAddresses, *usedAddresses;
 
 @end
 
@@ -142,8 +143,17 @@ static NSData *getKeychainData(NSString *key)
     self.format.maximum = @210000009.0;
 
     [[NSManagedObject context] performBlockAndWait:^{
+        NSFetchRequest *req = [ZNAddressEntity fetchRequest];
+
+        req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"index" ascending:YES]];
+        req.predicate = [NSPredicate predicateWithFormat:@"internal == YES"];
+        self.internalAddresses = [[[ZNAddressEntity fetchObjects:req] valueForKey:@"address"] mutableCopy];
+        req.predicate = [NSPredicate predicateWithFormat:@"internal == NO"];
+        self.externalAddresses = [[[ZNAddressEntity fetchObjects:req] valueForKey:@"address"] mutableCopy];
+
         self.allTxHashes = [NSMutableSet setWithArray:[[ZNTransactionEntity allObjects] valueForKey:@"txHash"]];
         self.allAddresses = [NSMutableSet setWithArray:[[ZNAddressEntity allObjects] valueForKey:@"address"]];
+        self.usedAddresses = [NSMutableSet setWithArray:[[ZNTxOutputEntity allObjects] valueForKey:@"address"]];
     }];
     
     return self;
@@ -171,6 +181,7 @@ static NSData *getKeychainData(NSString *key)
     // remove all core data wallet data
     [ZNAddressEntity deleteObjects:[ZNAddressEntity allObjects]];
     [self.allAddresses removeAllObjects];
+    [self.usedAddresses removeAllObjects];
     [ZNTransactionEntity deleteObjects:[ZNTransactionEntity allObjects]];
     [self.allTxHashes removeAllObjects];
     [ZNMerkleBlockEntity deleteObjects:[ZNMerkleBlockEntity allObjects]];
@@ -230,22 +241,11 @@ static NSData *getKeychainData(NSString *key)
 // for receive addresses.
 - (NSArray *)addressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal
 {
-    NSMutableArray *a = [NSMutableArray array];
-    NSMutableSet *used = [NSMutableSet set];
-    NSFetchRequest *req = [ZNAddressEntity fetchRequest];
-    
-    req.predicate = [NSPredicate predicateWithFormat:@"internal == %@", @(internal)];
-    req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"index" ascending:YES]];
-    
-    [[ZNAddressEntity context] performBlockAndWait:^{
-        [a addObjectsFromArray:[[ZNAddressEntity fetchObjects:req] valueForKey:@"address"]];
-        [used addObjectsFromArray:[[ZNTxOutputEntity objectsMatching:@"address in %@", a] valueForKey:@"address"]];
-    }];
-    
-    NSUInteger count = a.count, i = a.count;
+    NSMutableArray *a = [NSMutableArray arrayWithArray:internal ? self.internalAddresses : self.externalAddresses];
+    NSUInteger i = a.count;
 
     // keep only the trailing contiguous block of addresses with no transactions
-    while (i > 0 && ! [used containsObject:a[i - 1]]) i--;
+    while (i > 0 && ! [self.usedAddresses containsObject:a[i - 1]]) i--;
     
     if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
     
@@ -255,16 +255,14 @@ static NSData *getKeychainData(NSString *key)
     }
     
     @synchronized(self) {
-        // add any new addresses that were generated while waiting for mutex lock
-        req.predicate = [NSPredicate predicateWithFormat:@"internal == %@ && index >= %d", @(internal), count];
+        [a setArray:internal ? self.internalAddresses : self.externalAddresses];
+        i = a.count;
         
-        NSArray *addrs = [ZNAddressEntity fetchObjects:req];
-        __block int32_t index = (int)count;
+        unsigned index = (unsigned)i;
         
-        [[ZNAddressEntity context] performBlockAndWait:^{
-            [a addObjectsFromArray:[addrs valueForKey:@"address"]];
-            if (addrs.count > 0) index = [addrs.lastObject index] + 1;
-        }];
+        while (i > 0 && ! [self.usedAddresses containsObject:a[i - 1]]) i--;
+        
+        if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
 
         while (a.count < gapLimit) { // generate new addresses up to gapLimit
             NSData *pubKey = [self.sequence publicKey:index internal:internal masterPublicKey:self.masterPublicKey];
@@ -276,7 +274,8 @@ static NSData *getKeychainData(NSString *key)
             }
 
             [ZNAddressEntity entityWithAddress:addr index:index internal:internal]; // store new address in core data
-            
+
+            [(internal ? self.internalAddresses : self.externalAddresses) addObject:addr];
             [self.allAddresses addObject:addr];
             [a addObject:addr];
             index++;
@@ -337,7 +336,7 @@ static NSData *getKeychainData(NSString *key)
 - (uint32_t)estimatedCurrentBlockHeight
 {
     NSTimeInterval time = [[[ZNMerkleBlockEntity objectsSortedBy:@"height" ascending:NO offset:0 limit:1].lastObject
-                            get:@"timestamp"] intValue];
+                            get:@"timestamp"] timeIntervalSinceReferenceDate];
     
     if (time < 1.0) time = BITCOIN_REFERENCE_BLOCK_TIME;
     
@@ -347,7 +346,7 @@ static NSData *getKeychainData(NSString *key)
 
 - (BOOL)containsAddress:(NSString *)address
 {
-    return (address && [ZNAddressEntity countObjectsMatching:@"address == %@", address] > 0) ? YES : NO;
+    return (address && [self.allAddresses containsObject:address]) ? YES : NO;
 }
 
 #pragma mark - transactions
@@ -355,6 +354,7 @@ static NSData *getKeychainData(NSString *key)
 - (ZNTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee
 {
     //TODO: implement P2SH transactions
+    //TODO: remove TX_FREE_MIN_OUTPUT per 0.8.6 changes: https://gist.github.com/gavinandresen/7670433#086-relaying
 
     __block uint64_t balance = 0, standardFee = 0;
     uint64_t minChange = fee ? TX_MIN_OUTPUT_AMOUNT : TX_FREE_MIN_OUTPUT;
@@ -363,6 +363,8 @@ static NSData *getKeychainData(NSString *key)
     [tx addOutputAddress:address amount:amount];
 
     //TODO: make sure transaction is less than TX_MAX_SIZE
+    //TODO: we should use up all inputs tied to any particular address
+    //      otherwise we reveal the public key for an address that still has remaining funds
     //TODO: optimize for free transactions (watch out for performance issues, nothing O(n^2) please)
     // this is a nieve implementation to just get it functional, sorts unspent outputs by oldest first
     [[NSManagedObject context] performBlockAndWait:^{
@@ -523,13 +525,17 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
     if ([ZNTransactionEntity countObjectsMatching:@"txHash == %@", transaction.txHash] == 0) {
         [[ZNTransactionEntity managedObject] setAttributesFromTx:transaction];
         [self.allTxHashes addObject:transaction.txHash];
+        [self.usedAddresses addObjectsFromArray:transaction.outputAddresses];
     }
 
     // when a wallet address is used in a transaction, generate a new address to replace it
     [self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
     [self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
     
-    [[NSNotificationCenter defaultCenter] postNotificationName:balanceChangedNotification object:nil];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:balanceChangedNotification object:nil];
+    });
+
     return YES;
 }
 
