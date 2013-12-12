@@ -57,9 +57,7 @@
 
 //TODO: test standard free transaction no change
 //TODO: test standard free transaction with change
-//TODO: test transaction with an output below 0.01
-//TODO: test transaction with change below 0.01
-//TODO: test transaction over 10k bytes
+//TODO: test transaction over 1k bytes
 //TODO: test free transaction who's inputs are too new to hit min free priority
 //TODO: test transaction with change below min allowable output
 //TODO: test gap limit with gaps in address chain less than the limit
@@ -163,10 +161,10 @@
     
     STAssertTrue(priority >= TX_FREE_MIN_PRIORITY, @"[ZNTransaction heightUntilFreeFor:atHeights:]");
     
-    NSData *d = [tx toData], *d2 = nil;
+    NSData *d = tx.data, *d2 = nil;
     
     tx = [[ZNTransaction alloc] initWithData:d];
-    d2 = [tx toData];
+    d2 = tx.data;
     
     STAssertEqualObjects(d, d2, @"[ZNTransaction initWithData:]");
 }
@@ -300,7 +298,7 @@
     ZNBIP32Sequence *seq = [ZNBIP32Sequence new];
     NSData *seed = @"000102030405060708090a0b0c0d0e0f".hexToData;
     NSString *pk = [seq privateKey:2 | 0x80000000 internal:YES fromSeed:seed];
-    NSData *d = [pk base58checkToData];
+    NSData *d = pk.base58checkToData;
 
     NSLog(@"000102030405060708090a0b0c0d0e0f/0'/1/2' prv = %@", [NSString hexWithData:d]);
 
@@ -309,7 +307,7 @@
 
     // Test for correct zero padding of private keys, a nasty potential bug
     pk = [seq privateKey:97 internal:NO fromSeed:seed];
-    d = [pk base58checkToData];
+    d = pk.base58checkToData;
 
     NSLog(@"000102030405060708090a0b0c0d0e0f/0'/0/97 prv = %@", [NSString hexWithData:d]);
 
@@ -507,7 +505,7 @@
     ZNMerkleBlock *mb = [ZNMerkleBlock blockWithMessage:block];
     
     STAssertEqualObjects(mb.blockHash,
-                         [@"00000000000080b66c911bd5ba14a74260057311eaeb1982802f7010f1a9f090".hexToData reverse],
+                         @"00000000000080b66c911bd5ba14a74260057311eaeb1982802f7010f1a9f090".hexToData.reverse,
                          @"[ZNMerkleBlock blockHash]");
 
     STAssertTrue(mb.valid, @"[ZNMerkleBlock isValid]");

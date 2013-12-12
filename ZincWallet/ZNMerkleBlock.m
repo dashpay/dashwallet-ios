@@ -91,11 +91,12 @@ static uint32_t getCompact(const BIGNUM *bn)
 //   /  \     /  \
 // tx1  tx2 tx3  tx3
 //
-// flag bits: 00001011 [merkleRoot = 1, m1 = 1, tx1 = 0, tx2 = 1, m2 = 0, byte padding = 000]
+// flag bits (little endian): 00001011 [merkleRoot = 1, m1 = 1, tx1 = 0, tx2 = 1, m2 = 0, byte padding = 000]
 // hashes: [tx1, tx2, m2]
 
 @implementation ZNMerkleBlock
 
+// message can be either a merkleblock or header message
 + (instancetype)blockWithMessage:(NSData *)message
 {
     return [[self alloc] initWithMessage:message];
@@ -103,13 +104,13 @@ static uint32_t getCompact(const BIGNUM *bn)
 
 - (instancetype)initWithMessage:(NSData *)message
 {
-    NSUInteger off = 0, l = 0, len = 0;
-    
     if (! (self = [self init])) return nil;
     
     if (message.length < 80) return nil;
-    
-    _blockHash = [[message subdataWithRange:NSMakeRange(0, 80)] SHA256_2];
+
+    NSUInteger off = 0, l = 0, len = 0;
+
+    _blockHash = [message subdataWithRange:NSMakeRange(0, 80)].SHA256_2;
     _version = [message UInt32AtOffset:off];
     off += sizeof(uint32_t);
     _prevBlock = [message hashAtOffset:off];
@@ -153,7 +154,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     return self;
 }
 
-// verfies merkle tree, timestamp, and that proof-of-work matches the stated difficulty target
+// true if merkle tree and timestamp are valid, and proof-of-work matches the stated difficulty target
 // NOTE: this only checks if the block difficulty matches the difficulty target in the header, it does not check if the
 // target is correct for the block's height in the chain, use verifyDifficultyAtHeight: for that
 - (BOOL)isValid
@@ -167,7 +168,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
         } :^id (id left, id right) {
             [d setData:left];
             [d appendData:right ? right : left]; // if right branch is missing, duplicate left branch
-            return [d SHA256_2];
+            return d.SHA256_2;
         }];
     
     if (_totalTransactions > 0 && ! [merkleRoot isEqual:_merkleRoot]) return NO; // merkle root check failed
@@ -183,7 +184,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     if (BN_cmp(&target, BN_value_one()) < 0 || BN_cmp(&target, &maxTarget) > 0) return NO; // target out of range
 
     BN_init(&hash);
-    BN_bin2bn([_blockHash reverse].bytes, (int)_blockHash.length, &hash);
+    BN_bin2bn(_blockHash.reverse.bytes, (int)_blockHash.length, &hash);
     if (BN_cmp(&hash, &target) > 0) return NO; // block not as difficult as target (smaller values are more difficult)
 
     return YES;
@@ -211,7 +212,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 // true if the given tx hash is included in the block
 - (BOOL)containsTxHash:(NSData *)txHash
 {
-    txHash = [txHash reverse];
+    txHash = txHash.reverse;
 
     for (NSUInteger i = 0; i < _hashes.length/CC_SHA256_DIGEST_LENGTH; i += CC_SHA256_DIGEST_LENGTH) {
         if (! [txHash isEqual:[_hashes hashAtOffset:i]]) continue;
@@ -227,7 +228,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     int hashIdx = 0, flagIdx = 0;
     NSArray *txHashes =
         [self _walk:&hashIdx :&flagIdx :0 :^id (NSData *hash, BOOL flag) {
-            return (flag && hash) ? @[[hash reverse]] : @[];
+            return (flag && hash) ? @[hash.reverse] : @[];
         } :^id (id left, id right) {
             return [left arrayByAddingObjectsFromArray:right];
         }];
@@ -239,8 +240,8 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 // height is not a multiple of BITCOIN_DIFFICULTY_INTERVAL.
 //
 // The difficulty target algorithm works as follows:
-// The target must be the same as the previous block unless the block's height is a multiple of 2016. Every 2016 blocks
-// there is a difficulty transition where a new difficulty is calculated. The new target is the previous target
+// The target must be the same as in the previous block unless the block's height is a multiple of 2016. Every 2016
+// blocks there is a difficulty transition where a new difficulty is calculated. The new target is the previous target
 // multiplied by the time between the last transition block's timestamp and this one (in seconds), divided by the
 // targeted time between transitions (14*24*60*60 seconds). If the new difficulty is more than 4x or less than 1/4 of
 // the previous difficulty, the change is limited to either 4x or 1/4. There is also a minimum difficulty value

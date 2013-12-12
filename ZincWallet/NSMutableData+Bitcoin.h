@@ -43,7 +43,7 @@
 - (void)appendString:(NSString *)s;
 
 - (void)appendScriptPubKeyForHash:(NSData *)hash;
-- (BOOL)appendScriptPubKeyForAddress:(NSString *)address;
+- (void)appendScriptPubKeyForAddress:(NSString *)address;
 - (void)appendScriptPushData:(NSData *)d;
 
 - (void)appendMessage:(NSData *)message type:(NSString *)type;

@@ -76,7 +76,7 @@
     [d appendBytes:s.UTF8String length:[s lengthOfBytesUsingEncoding:NSUTF8StringEncoding]];
     [d appendData:masterPublicKey];
     
-    return [d SHA256_2];
+    return d.SHA256_2;
 }
 
 #pragma mark - ZNKeySequence

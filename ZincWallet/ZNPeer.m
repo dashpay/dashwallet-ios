@@ -480,11 +480,7 @@ services:(uint64_t)services
 
 - (void)acceptVerackMessage:(NSData *)message
 {
-    if (message.length != 0) {
-        [self error:@"malformed verack message: %@", message];
-        return;
-    }
-    else if (self.gotVerack) {
+    if (self.gotVerack) {
         NSLog(@"%@:%d got unexpected verack", self.host, self.port);
         return;
     }
@@ -521,7 +517,7 @@ services:(uint64_t)services
         NSLog(@"%@:%d dropping addr message, %u is too many addresses (max 1000)", self.host, self.port, (int)count);
         return;
     }
-    else if (message.length != l + count*30) {
+    else if (message.length < l + count*30) {
         [self error:@"malformed addr message, length is %u, should be %u for %u addresses", (int)message.length,
          (int)(l + count*30), (int)count];
         return;
@@ -622,7 +618,7 @@ services:(uint64_t)services
 {
     NSUInteger l, count = [message varIntAtOffset:0 length:&l];
     
-    if (message.length != l + 81*count) {
+    if (message.length < l + 81*count) {
         [self error:@"malformed headers message, length is %u, should be %u for %u items", (int)message.length,
          (int)((l == 0) ? 1 : l) + (int)count*81, (int)count];
         return;
@@ -632,8 +628,8 @@ services:(uint64_t)services
     // immediately, stopping as soon as the delegate makes the first getblocks request (we are optimizing for the case
     // where the delegate requests headers up to a certain chain height, and then switches to requesting blocks)
     if (count >= 2000 && ! self.sentGetblocks) {
-        NSData *firstHash = [[message subdataWithRange:NSMakeRange(l, 80)] SHA256_2],
-               *lastHash = [[message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)] SHA256_2];
+        NSData *firstHash = [message subdataWithRange:NSMakeRange(l, 80)].SHA256_2,
+               *lastHash = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].SHA256_2;
     
         [self sendGetheadersMessageWithLocators:@[lastHash, firstHash] andHashStop:nil];
     }
@@ -658,11 +654,6 @@ services:(uint64_t)services
 
 - (void)acceptGetaddrMessage:(NSData *)message
 {
-    if (message.length != 0) {
-        [self error:@"malformed getaddr message %@", message];
-        return;
-    }
-
     NSLog(@"%@:%u got getaddr", self.host, self.port);
     
     [self sendAddrMessage];
@@ -722,7 +713,7 @@ services:(uint64_t)services
 
 - (void)acceptPingMessage:(NSData *)message
 {
-    if (message.length != sizeof(uint64_t)) {
+    if (message.length < sizeof(uint64_t)) {
         [self error:@"malformed ping message, length is %u, should be 4", (int)message.length];
         return;
     }
@@ -734,7 +725,7 @@ services:(uint64_t)services
 
 - (void)acceptPongMessage:(NSData *)message
 {
-    if (message.length != sizeof(uint64_t)) {
+    if (message.length < sizeof(uint64_t)) {
         [self error:@"malformed pong message, length is %u, should be 4", (int)message.length];
         return;
     }
@@ -895,10 +886,10 @@ services:(uint64_t)services
                     if (self.msgPayload.length < length) continue; // wait for more stream input
                 }
                 
-                if (*(uint32_t *)[self.msgPayload SHA256_2].bytes != checksum) { // verify checksum
+                if (*(uint32_t *)self.msgPayload.SHA256_2.bytes != checksum) { // verify checksum
                     [self error:@"error reading %@, invalid checksum %x, expected %x, payload length:%u, expected "
-                     "length:%u, SHA256_2:%@", type, *(uint32_t *)[self.msgPayload SHA256_2].bytes, checksum,
-                     (int)self.msgPayload.length, length, [self.msgPayload SHA256_2]];
+                     "length:%u, SHA256_2:%@", type, *(uint32_t *)self.msgPayload.SHA256_2.bytes, checksum,
+                     (int)self.msgPayload.length, length, self.msgPayload.SHA256_2];
                 }
                 else {
                     NSData *message = self.msgPayload;

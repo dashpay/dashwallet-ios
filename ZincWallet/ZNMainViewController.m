@@ -115,7 +115,7 @@
                 [self.spinner startAnimating];
             }
             
-            //if (w.balance == 0) self.navigationItem.title = @"syncing...";
+            if (w.balance == 0) self.navigationItem.title = @"syncing...";
             [UIApplication sharedApplication].idleTimerDisabled = YES;
             self.progress.hidden = NO;
             [self updateProgress];

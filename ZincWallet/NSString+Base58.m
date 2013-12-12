@@ -139,7 +139,7 @@ CFAllocatorRef SecureAllocator()
     NSMutableData *data =
         CFBridgingRelease(CFDataCreateMutableCopy(SecureAllocator(), d.length + 4, (__bridge CFDataRef)d));
 
-    [data appendBytes:[[d SHA256_2] bytes] length:4];
+    [data appendBytes:d.SHA256_2.bytes length:4];
     
     return [self base58WithData:data];
 }
@@ -251,35 +251,35 @@ breakout:
 
 - (NSString *)hexToBase58
 {
-    return [[self class] base58WithData:[self hexToData]];
+    return [[self class] base58WithData:self.hexToData];
 }
 
 - (NSString *)base58ToHex
 {
-    return [NSString hexWithData:[self base58ToData]];
+    return [NSString hexWithData:self.base58ToData];
 }
 
 - (NSData *)base58checkToData
 {
-    NSData *d = [self base58ToData];
+    NSData *d = self.base58ToData;
     
     if (d.length < 4) return nil;
 
     NSData *data = CFBridgingRelease(CFDataCreate(SecureAllocator(), d.bytes, d.length - 4));
     
-    if (memcmp((const unsigned char *)d.bytes + d.length - 4, [[data SHA256_2] bytes], 4) != 0) return nil;
+    if (memcmp((const unsigned char *)d.bytes + d.length - 4, data.SHA256_2.bytes, 4) != 0) return nil;
     
     return data;
 }
 
 - (NSString *)hexToBase58check
 {
-    return [NSString base58checkWithData:[self hexToData]];
+    return [NSString base58checkWithData:self.hexToData];
 }
 
 - (NSString *)base58checkToHex
 {
-    return [NSString hexWithData:[self base58checkToData]];
+    return [NSString hexWithData:self.base58checkToData];
 }
 
 - (NSData *)hexToData
@@ -318,7 +318,7 @@ breakout:
 
 - (BOOL)isValidBitcoinAddress
 {
-    NSData *d = [self base58checkToData];
+    NSData *d = self.base58checkToData;
     
     if (d.length != 21) return NO;
     
@@ -333,7 +333,7 @@ breakout:
 
 - (BOOL)isValidBitcoinPrivateKey
 {
-    NSData *d = [self base58checkToData];
+    NSData *d = self.base58checkToData;
     
     if (d.length == 33 || d.length == 34) {
 #if BITCOIN_TESNET
@@ -349,7 +349,7 @@ breakout:
         [self getBytes:d.mutableBytes maxLength:d.length usedLength:NULL encoding:NSUTF8StringEncoding options:0
          range:NSMakeRange(0, self.length) remainingRange:NULL];
         [d appendBytes:"?" length:1];
-        return (*(uint8_t *)[d SHA256].bytes == 0) ? YES : NO;
+        return (*(uint8_t *)d.SHA256.bytes == 0) ? YES : NO;
     }
     else return NO;
 }

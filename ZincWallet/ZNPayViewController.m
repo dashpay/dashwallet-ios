@@ -201,7 +201,7 @@
     ZNPaymentRequest *req = [ZNPaymentRequest requestWithString:[[[UIPasteboard generalPasteboard] string]
                              stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
     
-    if (! req.isValid) {
+    if (! req.valid) {
         req.data = nil;
         req.label = @"pay address from clipboard";
     }
@@ -346,7 +346,7 @@
 
 - (void)confirmRequest
 {
-    if (! self.request.isValid) {
+    if (! self.request.valid) {
         if ([self.requests indexOfObject:self.request] == [self.requestIDs indexOfObject:CLIPBOARD_ID]) {
             [[[UIAlertView alloc] initWithTitle:nil message:@"the clipboard doesn't contain a valid bitcoin address"
               delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
@@ -597,7 +597,7 @@
         req.data = [s dataUsingEncoding:NSUTF8StringEncoding];
         req.label = @"scan QR code";
         
-        if (! req.isValid && ! [s isValidBitcoinPrivateKey]) {
+        if (! req.valid && ! [s isValidBitcoinPrivateKey]) {
             [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide-red.png"]];
 
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{

@@ -145,15 +145,11 @@
     [self appendUInt8:OP_CHECKSIG];
 }
 
-- (BOOL)appendScriptPubKeyForAddress:(NSString *)address
+- (void)appendScriptPubKeyForAddress:(NSString *)address
 {
-    NSData *d = [address base58checkToData];
+    NSData *d = address.base58checkToData;
 
-    if (d.length < 1) return NO;
-
-    [self appendScriptPubKeyForHash:[d subdataWithRange:NSMakeRange(1, d.length - 1)]];
-    
-    return YES;
+    if (d.length > 0) [self appendScriptPubKeyForHash:[d subdataWithRange:NSMakeRange(1, d.length - 1)]];
 }
 
 #pragma mark - bitcoin protocol
@@ -163,7 +159,7 @@
     [self appendUInt32:BITCOIN_MAGIC_NUMBER];
     [self appendNullPaddedString:type length:12];
     [self appendUInt32:(uint32_t)message.length];
-    [self appendBytes:[[message SHA256_2] bytes] length:4];
+    [self appendBytes:message.SHA256_2.bytes length:4];
     [self appendBytes:message.bytes length:message.length];
 }
 

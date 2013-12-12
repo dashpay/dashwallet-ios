@@ -27,8 +27,6 @@
 #import <CommonCrypto/CommonDigest.h>
 #import <openssl/ripemd.h>
 
-extern CFAllocatorRef SecureAllocator();
-
 @implementation NSData (Hash)
 
 - (NSData *)SHA256
@@ -61,7 +59,7 @@ extern CFAllocatorRef SecureAllocator();
 
 - (NSData *)hash160
 {
-    return [[self SHA256] RMD160];
+    return self.SHA256.RMD160;
 }
 
 - (NSData *)reverse

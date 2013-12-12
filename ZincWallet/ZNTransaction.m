@@ -103,7 +103,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     NSUInteger l = 0, off = 0, count = 0;
     NSData *d = nil;
 
-    _txHash = [[data SHA256_2] reverse];
+    _txHash = data.SHA256_2.reverse;
     _version = [data UInt32AtOffset:off]; // tx version
     off += sizeof(uint32_t);
     count = [data varIntAtOffset:off length:&l]; // input count
@@ -260,7 +260,7 @@ sequence:(uint32_t)sequence
 
         if (keyIdx == NSNotFound) continue;
     
-        NSData *txHash = [[self toDataWithSubscriptIndex:i] SHA256_2];
+        NSData *txHash = [self toDataWithSubscriptIndex:i].SHA256_2;
         NSMutableData *sig = [NSMutableData data];
         NSMutableData *s = [NSMutableData dataWithData:[keys[keyIdx] sign:txHash]];
 
@@ -273,7 +273,7 @@ sequence:(uint32_t)sequence
     
     if (! [self isSigned]) return NO;
     
-    _txHash = [[[self toData] SHA256_2] reverse];
+    _txHash = self.data.SHA256_2.reverse;
         
     return YES;
 }
@@ -336,7 +336,7 @@ sequence:(uint32_t)sequence
 
 - (NSString *)toHex
 {
-    return [NSString hexWithData:[self toData]];
+    return [NSString hexWithData:self.data];
 }
 
 - (size_t)size
@@ -371,7 +371,7 @@ sequence:(uint32_t)sequence
     if (self.size > TX_FREE_MAX_SIZE) return NSNotFound;
     
     for (NSNumber *amount in self.amounts) {
-        if (amount.unsignedLongLongValue < TX_FREE_MIN_OUTPUT) return NSNotFound;
+        if (amount.unsignedLongLongValue < TX_MIN_OUTPUT_AMOUNT) return NSNotFound;
     }
 
     uint64_t amountTotal = 0, amountsByHeights = 0;

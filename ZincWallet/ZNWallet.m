@@ -357,7 +357,6 @@ static NSData *getKeychainData(NSString *key)
     //TODO: remove TX_FREE_MIN_OUTPUT per 0.8.6 changes: https://gist.github.com/gavinandresen/7670433#086-relaying
 
     __block uint64_t balance = 0, standardFee = 0;
-    uint64_t minChange = fee ? TX_MIN_OUTPUT_AMOUNT : TX_FREE_MIN_OUTPUT;
     ZNTransaction *tx = [ZNTransaction new];
 
     [tx addOutputAddress:address amount:amount];
@@ -379,7 +378,7 @@ static NSData *getKeychainData(NSString *key)
             //NOTE: consider feedback effects if everyone uses the same algorithm to calculate fees, maybe add noise
             if (fee) standardFee = ((tx.size + 34 + 999)/1000)*TX_FEE_PER_KB;
             
-            if (balance == amount + standardFee || balance >= amount + standardFee + minChange) break;
+            if (balance == amount + standardFee || balance >= amount + standardFee + TX_MIN_OUTPUT_AMOUNT) break;
         }
     }];
     

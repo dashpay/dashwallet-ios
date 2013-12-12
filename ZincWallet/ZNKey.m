@@ -123,7 +123,7 @@
 
 - (void)setPrivateKey:(NSString *)privateKey
 {
-    NSData *d = [privateKey base58checkToData];
+    NSData *d = privateKey.base58checkToData;
 
     if ((privateKey.length == 30 || privateKey.length == 22) && [privateKey characterAtIndex:0] == 'S') {
         // mini private key format
@@ -133,7 +133,7 @@
                          (__bridge CFStringRef)privateKey, kCFStringEncodingUTF8, 0)) SHA256] compressed:NO];
         return;
     }
-    else if (! d || d.length == 28) d = [privateKey base58ToData];
+    else if (! d || d.length == 28) d = privateKey.base58ToData;
     
     if (d.length == 32) [self setSecret:d compressed:YES];
     else if ((d.length == 33 || d.length == 34) && *(unsigned char *)d.bytes == 0x80) {

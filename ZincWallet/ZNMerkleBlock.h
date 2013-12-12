@@ -41,9 +41,15 @@
 @property (nonatomic, readonly) NSData *flags;
 
 @property (nonatomic, readonly) NSArray *txHashes; // the matched tx hashes in the block
-@property (nonatomic, readonly, getter = isValid) BOOL valid; // true if difficulty and merkle tree hashes are correct
+
+// true if merkle tree and timestamp are valid, and proof-of-work matches the stated difficulty target
+// NOTE: this only checks if the block difficulty matches the difficulty target in the header, it does not check if the
+// target is correct for the block's height in the chain, use verifyDifficultyAtHeight: for that
+@property (nonatomic, readonly, getter = isValid) BOOL valid;
+
 @property (nonatomic, readonly, getter = toData) NSData *data;
 
+// message can be either a merkleblock or header message
 + (instancetype)blockWithMessage:(NSData *)message;
 
 - (instancetype)initWithMessage:(NSData *)message;

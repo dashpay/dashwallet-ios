@@ -53,7 +53,7 @@
 {
     [super viewWillAppear:animated];
     
-    if (! [[self paymentRequest] isValid]) return;
+    if (! self.paymentRequest.valid) return;
     
     NSString *s = [[NSString alloc] initWithData:self.paymentRequest.data encoding:NSUTF8StringEncoding];
     
@@ -163,7 +163,7 @@
     NSString *title = [actionSheet buttonTitleAtIndex:buttonIndex];
     
     if ([title isEqual:@"copy"]) {
-        [[UIPasteboard generalPasteboard] setString:[self paymentAddress]];
+        [[UIPasteboard generalPasteboard] setString:self.paymentAddress];
         
         MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
         
@@ -178,7 +178,7 @@
             MFMailComposeViewController *c = [MFMailComposeViewController new];
             
             [c setSubject:@"Bitcoin address"];
-            [c setMessageBody:[@"bitcoin:" stringByAppendingString:[self paymentAddress]] isHTML:NO];
+            [c setMessageBody:[@"bitcoin:" stringByAppendingString:self.paymentAddress] isHTML:NO];
             c.mailComposeDelegate = self;
             [self.navigationController presentViewController:c animated:YES completion:nil];
             c.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default.png"]];
@@ -192,7 +192,7 @@
         if ([MFMessageComposeViewController canSendText]) {
             MFMessageComposeViewController *c = [MFMessageComposeViewController new];
             
-            c.body = [@"bitcoin:" stringByAppendingString:[self paymentAddress]];
+            c.body = [@"bitcoin:" stringByAppendingString:self.paymentAddress];
             c.messageComposeDelegate = self;
             [self.navigationController presentViewController:c animated:YES completion:nil];
             c.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default.png"]];

@@ -129,7 +129,7 @@
             }
         }
         else {
-            NSData *d = [self.label.text hexToData];
+            NSData *d = self.label.text.hexToData;
         
             if (! d) {
                 [[[UIAlertView alloc] initWithTitle:nil message:@"not a hex string" delegate:nil cancelButtonTitle:@"ok"

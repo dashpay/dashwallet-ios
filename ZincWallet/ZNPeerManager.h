@@ -24,14 +24,13 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
 #import "ZNPeer.h"
 
 #define syncStartedNotification  @"syncStartedNotification"
 #define syncFinishedNotification @"syncFinishedNotification"
 #define syncFailedNotification   @"syncFailedNotification"
 
-@interface ZNPeerManager : NSObject<ZNPeerDelegate, NSFetchedResultsControllerDelegate>
+@interface ZNPeerManager : NSObject<ZNPeerDelegate>
 
 @property (nonatomic, readonly) BOOL connected;
 @property (nonatomic, readonly) double syncProgress;
