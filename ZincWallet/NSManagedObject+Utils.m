@@ -231,6 +231,7 @@ static NSManagedObjectContextConcurrencyType _concurrencyType = NSMainQueueConcu
 {
     [[self context] performBlock:^{
         NSError *error = nil;
+        NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
 
         if ([[self context] hasChanges] && ! [[self context] save:&error]) {
             NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
@@ -238,6 +239,8 @@ static NSManagedObjectContextConcurrencyType _concurrencyType = NSMainQueueConcu
             abort();
 #endif
         }
+
+        [[UIApplication sharedApplication] endBackgroundTask:taskId];
     }];
 }
 

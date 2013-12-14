@@ -101,6 +101,8 @@
     NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), a.count*4/3));
     int32_t n = (int32_t)words.count, x, w1, w2, w3;
 
+    CFRelease(s);
+
     if (a.count != SEQUENCE_SEED_LENGTH*3/4) {
         NSLog(@"phrase should be %d words, found %d instead", SEQUENCE_SEED_LENGTH*3/4, (int)a.count);
         return nil;

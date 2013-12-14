@@ -45,6 +45,7 @@
 //#define UNSPENT_URL   BASE_URL "/unspent?active="
 //#define ADDRESS_URL   BASE_URL "/multiaddr?active="
 //#define PUSHTX_PATH   @"/pushtx"
+
 #define BTC           @"\xC9\x83"     // capital B with stroke (utf-8)
 #define CURRENCY_SIGN @"\xC2\xA4"     // generic currency sign (utf-8)
 #define NBSP          @"\xC2\xA0"     // no-break space (utf-8)
@@ -56,6 +57,7 @@
 #define SEED_KEY                   @"seed"
 #define CREATION_TIME_KEY          @"creationtime"
 
+#define UNKOWN_BALANCE   UINT64_MAX
 #define SEC_ATTR_SERVICE @"cc.zinc.zincwallet"
 
 static BOOL setKeychainData(NSData *data, NSString *key)
@@ -98,11 +100,11 @@ static NSData *getKeychainData(NSString *key)
 
 @interface ZNWallet ()
 
-@property (nonatomic, strong) NSMutableSet *updatedTxHashes;
 @property (nonatomic, strong) id<ZNKeySequence> sequence;
 @property (nonatomic, strong) NSData *mpk;
 @property (nonatomic, strong) NSMutableArray *internalAddresses, *externalAddresses;
 @property (nonatomic, strong) NSMutableSet *allTxHashes, *allAddresses, *usedAddresses;
+@property (nonatomic, assign) uint64_t balance;
 
 @end
 
@@ -141,6 +143,8 @@ static NSData *getKeychainData(NSString *key)
     // for reasons both mysterious and inscrutable, 210,000,009 is the smallest value of format.maximum that will allow
     // the user to input a value of 21,000,000
     self.format.maximum = @210000009.0;
+
+    _balance = UNKOWN_BALANCE;
 
     [[NSManagedObject context] performBlockAndWait:^{
         NSFetchRequest *req = [ZNAddressEntity fetchRequest];
@@ -289,16 +293,17 @@ static NSData *getKeychainData(NSString *key)
 
 - (uint64_t)balance
 {
-    // the outputs of unconfirmed transactions will show up in the unspent outputs list even with 0 confirmations
-    __block uint64_t balance = 0;
+    if (_balance != UNKOWN_BALANCE) return _balance;
+
+    _balance = 0;
     
     [[NSManagedObject context] performBlockAndWait:^{
         for (ZNTxOutputEntity *o in [ZNTxOutputEntity objectsMatching:@"spent == NO"]) {
-            if ([self containsAddress:o.address]) balance += o.value;
+            if ([self containsAddress:o.address]) _balance += o.value;
         }
     }];
     
-    return balance;
+    return _balance;
 }
 
 - (NSString *)receiveAddress
@@ -532,6 +537,7 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
     [self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
     
     dispatch_async(dispatch_get_main_queue(), ^{
+        _balance = UNKOWN_BALANCE;
         [[NSNotificationCenter defaultCenter] postNotificationName:balanceChangedNotification object:nil];
     });
 

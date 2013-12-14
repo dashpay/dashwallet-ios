@@ -106,7 +106,9 @@
     NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), SEQUENCE_SEED_LENGTH));
     NSUInteger x, y;
     uint8_t b;
-    
+
+    CFRelease(s);
+
     if (a.count != SEQUENCE_SEED_LENGTH*3/4) return nil;
 
     for (int i = 0; i < SEQUENCE_SEED_LENGTH*3/4; i += 6) {

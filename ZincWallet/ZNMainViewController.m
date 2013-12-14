@@ -36,7 +36,7 @@
 @property (nonatomic, strong) id urlObserver, activeObserver, balanceObserver, reachabilityObserver;
 @property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 @property (nonatomic, assign) int syncErrorCount;
-@property (nonatomic, assign) BOOL didAppear;
+@property (nonatomic, assign) BOOL didAppear, alertVisible;
 
 @property (nonatomic, strong) IBOutlet UIScrollView *scrollView;
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
@@ -62,7 +62,7 @@
     
     //TODO: make title use dynamic font size
     ZNWallet *w = [ZNWallet sharedInstance];
-    
+
     self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     self.spinner.frame =
         CGRectMake(self.spinner.frame.origin.x, self.spinner.frame.origin.y, 20.0, self.spinner.frame.size.height);
@@ -73,7 +73,7 @@
     self.pageControl.accessibilityLabel = @"receive money";
     
     self.wallpaperStart = self.wallpaper.center;
-    
+
     self.urlObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNURLNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
@@ -151,15 +151,17 @@
                                          [w localCurrencyStringForAmount:w.balance]];
             [UIApplication sharedApplication].idleTimerDisabled = NO;
             self.progress.hidden = YES;
-            
-            [[[UIAlertView alloc] initWithTitle:@"couldn't refresh wallet balance"
-              message:[note.userInfo[@"error"] localizedDescription] delegate:nil cancelButtonTitle:@"ok"
-              otherButtonTitles:nil] show];
+
+            if (! self.alertVisible) {
+                self.alertVisible = YES;
+                [[[UIAlertView alloc] initWithTitle:@"couldn't refresh wallet balance" message:note.userInfo[@"error"]
+                  delegate:self cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+            }
         }];
     
-    self.reachability = [Reachability reachabilityWithHostName:@"blockchain.info"];
+    self.reachability = [Reachability reachabilityForInternetConnection];
     [self.reachability startNotifier];
-    
+
     self.navigationController.delegate = self;
     [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
     self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
@@ -286,7 +288,7 @@
         [self.spinner startAnimating];
     }
     
-    if ([[ZNWallet sharedInstance] balance] == 0) self.navigationItem.title = @"syncing...";
+    if ([ZNWallet sharedInstance].balance == 0) self.navigationItem.title = @"syncing...";
     
     [[ZNPeerManager sharedInstance] connect];
 }
@@ -344,6 +346,13 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
         }
         else self.wallpaper.center = self.wallpaperStart;
     }];
+}
+
+#pragma mark - UIAlertViewDelegate
+
+- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
+{
+    self.alertVisible = NO;
 }
 
 @end

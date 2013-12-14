@@ -28,8 +28,6 @@
 #import "ZNWallet.h"
 #import "ZNPeerManager.h"
 #import "ZNTransaction.h"
-#import "ZNTransactionEntity.h"
-#import "ZNTxInputEntity.h"
 #import "ZNTxOutputEntity.h"
 #import "ZNStoryboardSegue.h"
 #import "NSManagedObject+Utils.h"
@@ -174,8 +172,9 @@
                 NSUInteger height = 0, idx = 0;
                 BOOL withinWallet = NO;
                 
-                height = (tx.blockHeight != TX_UNCONFIRMED) ? w.lastBlockHeight - tx.blockHeight : 0;
-                
+                height = (tx.blockHeight != TX_UNCONFIRMED) ? m.lastBlockHeight - tx.blockHeight : 0;
+
+                //TODO: XXXX move direct core data refrences from view controllers into wallet or peer manager
                 for (NSData *hash in tx.inputHashes) {
                     ZNTxOutputEntity *o = [ZNTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", hash,
                                            tx.inputIndexes[idx++]].lastObject;
