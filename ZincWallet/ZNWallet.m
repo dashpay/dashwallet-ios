@@ -57,7 +57,6 @@
 #define SEED_KEY                   @"seed"
 #define CREATION_TIME_KEY          @"creationtime"
 
-#define UNKOWN_BALANCE   UINT64_MAX
 #define SEC_ATTR_SERVICE @"cc.zinc.zincwallet"
 
 static BOOL setKeychainData(NSData *data, NSString *key)
@@ -125,9 +124,9 @@ static NSData *getKeychainData(NSString *key)
 - (instancetype)init
 {
     if (! (self = [super init])) return nil;
-    
+
     [NSManagedObject setConcurrencyType:NSPrivateQueueConcurrencyType];
-    
+
     self.sequence = [ZNBIP32Sequence new];
     self.format = [NSNumberFormatter new];
     self.format.lenient = YES;
@@ -144,8 +143,6 @@ static NSData *getKeychainData(NSString *key)
     // the user to input a value of 21,000,000
     self.format.maximum = @210000009.0;
 
-    _balance = UNKOWN_BALANCE;
-
     [[NSManagedObject context] performBlockAndWait:^{
         NSFetchRequest *req = [ZNAddressEntity fetchRequest];
 
@@ -158,6 +155,9 @@ static NSData *getKeychainData(NSString *key)
         self.allTxHashes = [NSMutableSet setWithArray:[[ZNTransactionEntity allObjects] valueForKey:@"txHash"]];
         self.allAddresses = [NSMutableSet setWithArray:[[ZNAddressEntity allObjects] valueForKey:@"address"]];
         self.usedAddresses = [NSMutableSet setWithArray:[[ZNTxOutputEntity allObjects] valueForKey:@"address"]];
+
+        [self updateBalance];
+        [self updateRecentTransactions];
     }];
     
     return self;
@@ -291,19 +291,17 @@ static NSData *getKeychainData(NSString *key)
 
 #pragma mark - wallet info
 
-- (uint64_t)balance
+- (void)updateBalance
 {
-    if (_balance != UNKOWN_BALANCE) return _balance;
-
-    _balance = 0;
-    
     [[NSManagedObject context] performBlockAndWait:^{
+        uint64_t balance = 0;
+
         for (ZNTxOutputEntity *o in [ZNTxOutputEntity objectsMatching:@"spent == NO"]) {
-            if ([self containsAddress:o.address]) _balance += o.value;
+            if ([self containsAddress:o.address]) balance += o.value;
         }
+
+        _balance = balance;
     }];
-    
-    return _balance;
 }
 
 - (NSString *)receiveAddress
@@ -316,7 +314,8 @@ static NSData *getKeychainData(NSString *key)
     return [self addressesWithGapLimit:1 internal:YES].lastObject;
 }
 
-- (NSArray *)recentTransactions
+//BUG: XXXX this also hangs when chain is being downloaded
+- (void)updateRecentTransactions
 {
     NSMutableArray *a = [NSMutableArray array];
 
@@ -325,7 +324,7 @@ static NSData *getKeychainData(NSString *key)
         [a addObject:e.transaction];
     }
 
-    return a;
+    _recentTransactions = a;
 }
 
 - (uint32_t)lastBlockHeight
@@ -521,23 +520,27 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
 }
 
 // returns false if the transaction wasn't associated with the wallet
+// BUG: XXXX get this to return immediately even if core data blocks
 - (BOOL)registerTransaction:(ZNTransaction *)transaction
 {
     if (! [self containsTransaction:transaction]) return NO;
 
+    [self.allTxHashes addObject:transaction.txHash];
+    [self.usedAddresses addObjectsFromArray:transaction.outputAddresses];
+
     // add the transaction to the tx list
     if ([ZNTransactionEntity countObjectsMatching:@"txHash == %@", transaction.txHash] == 0) {
         [[ZNTransactionEntity managedObject] setAttributesFromTx:transaction];
-        [self.allTxHashes addObject:transaction.txHash];
-        [self.usedAddresses addObjectsFromArray:transaction.outputAddresses];
     }
 
     // when a wallet address is used in a transaction, generate a new address to replace it
     [self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
     [self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
-    
+
+    [self updateBalance];
+    [self updateRecentTransactions];
+
     dispatch_async(dispatch_get_main_queue(), ^{
-        _balance = UNKOWN_BALANCE;
         [[NSNotificationCenter defaultCenter] postNotificationName:balanceChangedNotification object:nil];
     });
 
@@ -577,49 +580,49 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
     return height > currentHeight + 1 ? (height - currentHeight)*600 : 0;
 }
 
-// retuns the total amount tendered in the trasaction (total unspent outputs consumed, change included)
-- (uint64_t)transactionAmount:(ZNTransaction *)transaction
+// returns the amount received to the wallet by the transaction (total outputs to change and/or recieve addresses)
+- (uint64_t)transactionReceived:(ZNTransaction *)transaction
 {
     uint64_t amount = 0;
     NSUInteger idx = 0;
-    
-    for (NSData *hash in transaction.inputHashes) {
-        ZNTxOutputEntity *o = [ZNTxOutputEntity objectsMatching:@"spent == NO && txHash == %@ && n == %d", hash,
-                               [transaction.inputIndexes[idx++] intValue]].lastObject;
-        
-        if (! o) {
-            amount = 0;
-            break;
-        }
-        else amount += [[o get:@"value"] longLongValue];
+
+    for (NSString *address in transaction.outputAddresses) {
+        if ([self containsAddress:address]) amount += [transaction.outputAmounts[idx] unsignedLongLongValue];
+        idx++;
     }
-    
+
+    return amount;
+}
+
+// retuns the amount sent from the wallet by the trasaction (total outputs consumed, change and fee included)
+- (uint64_t)transactionSent:(ZNTransaction *)transaction
+{
+    __block uint64_t amount = 0;
+
+    //TODO: XXX perfomrance issue here... cache txo in memory and update on each new tx like balance
+    [[ZNTxOutputEntity context] performBlockAndWait:^{
+        NSUInteger idx = 0;
+
+        for (NSData *hash in transaction.inputHashes) {
+            ZNTxOutputEntity *o = [ZNTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", hash,
+                                   [transaction.inputIndexes[idx++] intValue]].lastObject;
+        
+            if ([self containsAddress:o.address]) amount += o.value;
+        }
+    }];
+
     return amount;
 }
 
 // returns the transaction fee for the given transaction
 - (uint64_t)transactionFee:(ZNTransaction *)transaction
 {
-    uint64_t amount = [self transactionAmount:transaction];
+    uint64_t amount = [self transactionSent:transaction];
     
     if (amount == 0) return UINT64_MAX;
     
     for (NSNumber *amt in transaction.outputAmounts) {
         amount -= amt.unsignedLongLongValue;
-    }
-    
-    return amount;
-}
-
-// returns the amount that the given transaction returns to a change address
-- (uint64_t)transactionChange:(ZNTransaction *)transaction
-{
-    uint64_t amount = 0;
-    NSUInteger idx = 0;
-    
-    for (NSString *address in transaction.outputAddresses) {
-        if ([self containsAddress:address]) amount += [transaction.outputAmounts[idx] unsignedLongLongValue];
-        idx++;
     }
     
     return amount;

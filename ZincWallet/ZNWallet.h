@@ -69,14 +69,14 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion;
 // transaction with a 90 day time until free was confirmed in under an hour by Eligius pool.
 - (NSTimeInterval)timeUntilFree:(ZNTransaction *)transaction;
 
-// retuns the total amount tendered in the trasaction (total unspent outputs consumed, change included)
-- (uint64_t)transactionAmount:(ZNTransaction *)transaction;
+// returns the amount received to the wallet by the transaction (total outputs to change and/or recieve addresses)
+- (uint64_t)transactionReceived:(ZNTransaction *)transaction;
+
+// retuns the amount sent from the wallet by the trasaction (total outputs consumed, change and fee included)
+- (uint64_t)transactionSent:(ZNTransaction *)transaction;
 
 // returns the transaction fee for the given transaction
 - (uint64_t)transactionFee:(ZNTransaction *)transaction;
-
-// returns the amount that the given transaction returns to a change address
-- (uint64_t)transactionChange:(ZNTransaction *)transaction;
 
 // returns the first transaction output address not contained in the wallet
 - (NSString *)transactionTo:(ZNTransaction *)transaction;

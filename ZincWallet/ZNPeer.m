@@ -58,7 +58,7 @@ typedef enum {
 @property (nonatomic, strong) NSInputStream *inputStream;
 @property (nonatomic, strong) NSOutputStream *outputStream;
 @property (nonatomic, strong) NSMutableData *msgHeader, *msgPayload, *outputBuffer;
-@property (nonatomic, assign) BOOL sentVerack, gotVerack, sentGetblocks;
+@property (nonatomic, assign) BOOL sentVerack, gotVerack;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) id reachabilityObserver;
 @property (nonatomic, assign) uint64_t localNonce;
@@ -363,8 +363,6 @@ services:(uint64_t)services
     }
     
     [msg appendData:hashStop ? hashStop : ZERO_HASH];
-
-    self.sentGetblocks = YES;
     [self sendMessage:msg type:MSG_GETBLOCKS];
 }
 
@@ -627,11 +625,14 @@ services:(uint64_t)services
     // To improve chain download performance, if this message contains 2000 headers then request the next 2000 headers
     // immediately, stopping as soon as the delegate makes the first getblocks request (we are optimizing for the case
     // where the delegate requests headers up to a certain chain height, and then switches to requesting blocks)
-    if (count >= 2000 && ! self.sentGetblocks) {
+    if (count >= 2000) {
+        NSTimeInterval lastTimestamp = [message UInt32AtOffset:l + 81*(count - 1) + 68] - NSTimeIntervalSince1970;
         NSData *firstHash = [message subdataWithRange:NSMakeRange(l, 80)].SHA256_2,
                *lastHash = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].SHA256_2;
-    
-        [self sendGetheadersMessageWithLocators:@[lastHash, firstHash] andHashStop:nil];
+
+        if (lastTimestamp < self.earliestKeyTime - (7*24*60*60)) {
+            [self sendGetheadersMessageWithLocators:@[lastHash, firstHash] andHashStop:nil];
+        }
     }
 
     NSLog(@"%@:%u got %u headers", self.host, self.port, (int)count);

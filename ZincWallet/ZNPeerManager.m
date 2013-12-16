@@ -103,11 +103,10 @@ static const char *dns_seeds[] = {
 @property (nonatomic, strong) ZNBloomFilter *bloomFilter;
 @property (nonatomic, assign) NSUInteger filterElemCount, taskId;
 @property (nonatomic, assign) BOOL filterWasReset;
-@property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback, *checkpoints;
+@property (nonatomic, strong) NSMutableDictionary *transactions, *checkpoints, *publishedTx, *publishedCallback;
 @property (nonatomic, strong) NSCountedSet *txRelayCounts;
-@property (nonatomic, strong) NSTimer *timer;
+@property (nonatomic, strong) ZNWallet *wallet;
 @property (nonatomic, strong) Reachability *reachability;
-//@property (nonatomic, strong) id lowMemoryObserver;
 
 @end
 
@@ -130,17 +129,16 @@ static const char *dns_seeds[] = {
 {
     if (! (self = [super init])) return nil;
 
-    [[ZNPeerEntity context] setUndoManager:nil];
-
+    self.wallet = [ZNWallet sharedInstance];
     self.earliestKeyTime = BITCOIN_REFERENCE_BLOCK_TIME;
     self.peers = [NSMutableArray array];
     self.tweak = mrand48();
-    self.blockChain = [NSMutableArray array];
     self.publishedTx = [NSMutableDictionary dictionary];
     self.publishedCallback = [NSMutableDictionary dictionary];
     self.txRelayCounts = [NSCountedSet set];
     self.taskId = UIBackgroundTaskInvalid;
     self.reachability = [Reachability reachabilityForInternetConnection];
+    self.transactions = [NSMutableDictionary dictionary];
     self.checkpoints = [NSMutableDictionary dictionary];
 
     for (int i = 0; i < sizeof(checkpoint_array)/sizeof(*checkpoint_array); i++) {
@@ -148,32 +146,24 @@ static const char *dns_seeds[] = {
             [NSString stringWithUTF8String:checkpoint_array[i].hash].hexToData.reverse;
     }
 
-//#warning remove this!
-//    self.earliestKeyTime = [NSDate timeIntervalSinceReferenceDate] - 365*24*60*60; // remove this too
-//    [ZNMerkleBlockEntity deleteObjects:[ZNMerkleBlockEntity allObjects]]; //for testing chain download
-//    [ZNTransactionEntity deleteObjects:[ZNTransactionEntity allObjects]]; // and remove this
+    [[ZNPeerEntity context] performBlockAndWait:^{
+        for (ZNTransactionEntity *e in [ZNTransactionEntity allObjects]) {
+            self.transactions[e.txHash] = e;
+            if (e.blockHeight == TX_UNCONFIRMED) self.publishedTx[e.txHash] = e.transaction;
+        }
 
-    for (ZNTransactionEntity *e in [ZNTransactionEntity objectsMatching:@"blockHeight == %d", TX_UNCONFIRMED]) {
-        ZNTransaction *tx = [e transaction];
-
-        self.publishedTx[tx.txHash] = tx;
-    }
-
-//    self.lowMemoryObserver =
-//        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidReceiveMemoryWarningNotification
-//         object:nil queue:nil usingBlock:^(NSNotification *note) {
-//            [_blockChain removeAllObjects];
-//        }];
+        NSFetchRequest *req = [ZNMerkleBlockEntity fetchRequest];
+        
+        req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"height" ascending:NO]];
+        req.predicate = [NSPredicate predicateWithFormat:@"height >= 0 && height != %d", TX_UNCONFIRMED];
+        req.fetchLimit = 1;
+        _lastBlockHeight = [[ZNMerkleBlockEntity fetchObjects:req].lastObject height];
+    }];
 
     //TODO: disconnect peers when app is backgrounded unless we're syncing or launching mobile web app tx handler
     
     return self;
 }
-
-//- (void)dealloc
-//{
-//    if (self.lowMemoryObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.lowMemoryObserver];
-//}
 
 - (NSUInteger)discoverPeers
 {
@@ -242,7 +232,7 @@ static const char *dns_seeds[] = {
             return ([obj status] == disconnected) ? YES : NO;
         }]];
 
-        if (! self.downloadPeer || [self.blockChain.lastObject height] < self.downloadPeer.lastblock) {
+        if (! self.downloadPeer || self.lastBlockHeight < self.downloadPeer.lastblock) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:syncStartedNotification object:nil];
             });
@@ -259,7 +249,7 @@ static const char *dns_seeds[] = {
 
         NSMutableArray *peers = [NSMutableArray arrayWithArray:[ZNPeerEntity fetchObjects:req]];
 
-        if (self.peers.count < MAX_CONNECTIONS) self.syncStartHeight = [self.blockChain.lastObject height];
+        if (self.peers.count < MAX_CONNECTIONS) self.syncStartHeight = self.lastBlockHeight;
     
         while (peers.count > 0 && self.peers.count < MAX_CONNECTIONS) {
             // pick a random peer biased towards peers with more recent timestamps
@@ -268,6 +258,7 @@ static const char *dns_seeds[] = {
             
             if (p && ! [self.peers containsObject:p]) {
                 p.delegate = self;
+                p.earliestKeyTime = self.earliestKeyTime;
                 [self.peers addObject:p];
                 [p connect];
             }
@@ -294,12 +285,14 @@ static const char *dns_seeds[] = {
 {
     if (_blockChain.count > 0) return _blockChain;
 
-    [[ZNMerkleBlockEntity context] performBlock:^{
+    [[ZNMerkleBlockEntity context] performBlockAndWait:^{
+        if (_blockChain.count > 0) return;
+
         NSFetchRequest *req = [ZNMerkleBlockEntity fetchRequest];
 
         req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"height" ascending:YES]];
         req.predicate = [NSPredicate predicateWithFormat:@"height >= 0 && height != %d", TX_UNCONFIRMED];
-        req.fetchBatchSize = 100;
+
         _blockChain = [[ZNMerkleBlockEntity fetchObjects:req] mutableCopy];
 
         if (_blockChain.lastObject == nil) {
@@ -307,16 +300,39 @@ static const char *dns_seeds[] = {
             [_blockChain.lastObject setHeight:0];
         }
 
-        NSAssert([_blockChain.lastObject height] + 1 == _blockChain.count, @"wrong block height %d at index %d",
-                 [_blockChain.lastObject height], (int)_blockChain.count - 1);
+        for (int32_t i = [_blockChain[0] height]; i > 0; i--) {
+            [_blockChain insertObject:[NSNull null] atIndex:0];
+        }
+
+        _lastBlockHeight = [_blockChain.lastObject height];
+
+        NSAssert(self.lastBlockHeight + 1 == _blockChain.count, @"wrong block height %d at index %d",
+                 (int)self.lastBlockHeight, (int)_blockChain.count - 1);
     }];
 
     return _blockChain;
 }
 
-- (NSUInteger)lastBlockHeight
+//- (NSUInteger)lastBlockHeight
+//{
+//    return [[_blockChain.lastObject get:@"height"] unsignedIntegerValue];
+//}
+
+- (NSArray *)blockLocatorArray
 {
-    return [[_blockChain.lastObject get:@"height"] unsignedIntegerValue];
+    int32_t step = 1, start = 0;
+    NSMutableArray *locators = [NSMutableArray array];
+
+    // append 10 most recent block hashes, decending, then continue appending, doubling the step back each time,
+    // finishing with the genisis block (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0)
+    for (int i = (int)self.lastBlockHeight; i > 0 && self.blockChain[i] != [NSNull null]; i -= step, ++start) {
+        if (start >= 10) step *= 2;
+        [locators addObject:[self.blockChain[i] blockHash]];
+    }
+
+    [locators addObject:GENESIS_BLOCK_HASH.reverse];
+
+    return locators;
 }
 
 //TODO: XXXX add refresh method that refreshes blocks/tx from earliestKeyTime
@@ -340,8 +356,8 @@ static const char *dns_seeds[] = {
     // each address is only used for one transaction, so here we generate some spare addresses to avoid rebuilding the
     // filter each time a wallet transaction is encountered during the blockchain download
     // (generates twice the external gap limit for both address chains)
-    [[ZNWallet sharedInstance] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:NO];
-    [[ZNWallet sharedInstance] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:YES];
+    [self.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:NO];
+    [self.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:YES];
 
     NSArray *addresses = [ZNAddressEntity allObjects];
     NSArray *utxos = [ZNTxOutputEntity objectsMatching:@"spent == NO"];
@@ -360,7 +376,7 @@ static const char *dns_seeds[] = {
         }
         
         for (ZNTxOutputEntity *e in utxos) {
-            if (! [[ZNWallet sharedInstance] containsAddress:e.address]) continue;
+            if (! [self.wallet containsAddress:e.address]) continue;
             NSMutableData *d = [NSMutableData data];
             
             [d appendData:e.txHash];
@@ -384,8 +400,10 @@ static const char *dns_seeds[] = {
         return;
     }
 
-    [[ZNWallet sharedInstance] registerTransaction:transaction];
+    [self.wallet registerTransaction:transaction];
 
+    self.transactions[transaction.txHash] =
+        [ZNTransactionEntity objectsMatching:@"txHash == %@", transaction.txHash].lastObject;
     self.publishedTx[transaction.txHash] = transaction;
     if (completion) self.publishedCallback[transaction.txHash] = completion;
 
@@ -408,18 +426,18 @@ static const char *dns_seeds[] = {
 
 - (double)syncProgress
 {
-    int32_t height = [[self.blockChain.lastObject get:@"height"] intValue];
-    int32_t connections =
+    // TODO: account for both download and processing progress indivdually so progress doesn't appear stalled
+    NSUInteger connections =
         [[NSArray arrayWithArray:self.peers] indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
             return ([obj status] == connected) ? YES : NO;
         }].count;
 
     if (! self.downloadPeer) return 0.05 + (connections/(double)MAX_CONNECTIONS)*0.1;
 
-    if (height >= self.downloadPeer.lastblock) return 1;
+    if (self.lastBlockHeight >= self.downloadPeer.lastblock) return 1;
 
     return 0.05 + (connections/(double)MAX_CONNECTIONS)*0.1 +
-    (height - self.syncStartHeight)/(double)(self.downloadPeer.lastblock - self.syncStartHeight)*0.85;
+    (self.lastBlockHeight - self.syncStartHeight)/(double)(self.downloadPeer.lastblock - self.syncStartHeight)*0.85;
 }
 
 - (void)peerMisbehavin:(ZNPeer *)peer
@@ -428,16 +446,6 @@ static const char *dns_seeds[] = {
         [ZNPeerEntity createOrUpdateWithPeer:peer].misbehavin++;
     }];
     
-    [peer disconnect];
-    [self connect];
-}
-
-- (void)timedOut:(NSTimer *)timer
-{
-    ZNPeer *peer = timer.userInfo;
-
-    NSLog(@"%@:%d timed out", peer.host, peer.port);
-
     [peer disconnect];
     [self connect];
 }
@@ -451,55 +459,39 @@ static const char *dns_seeds[] = {
     [[ZNPeerEntity createOrUpdateWithPeer:peer] set:@"timestamp" to:[NSDate date]]; // set last seen timestamp for peer
     [peer sendFilterloadMessage:self.bloomFilter.data]; // load the bloom filter
 
-    if ([ZNPeerEntity countAllObjects] <= 1000) [peer sendGetaddrMessage]; // request a list of other bitcoin peers
+    if ([ZNPeerEntity countAllObjects] < 500) [peer sendGetaddrMessage]; // request a list of other bitcoin peers
     
     if (self.connected) return; // we're already connected
     
-    // if all peers have connected, select the peer with the lowest ping time to download the chain from if we're behind
+    // select the peer with the lowest ping time to download the chain from if we're behind
     for (ZNPeer *p in self.peers) {
-        if (p.status != connected) return; // wait for all peers to finish connecting
+        //if (p.status != connected) return; // wait for all peers to finish connecting
         if (p.pingTime < peer.pingTime) peer = p; // find the peer with the lowest ping time
     }
 
     _connected = YES;
     self.downloadPeer = peer;
 
-    [[ZNMerkleBlockEntity context] performBlockAndWait:^{
-        uint32_t top = [self.blockChain.lastObject height];
-        NSTimeInterval t = [self.blockChain.lastObject timestamp];
-        
-        if (top < peer.lastblock) {
-            int32_t step = 1, start = 0;
-            NSMutableArray *locators = [NSMutableArray array];
-
-            // append 10 most recent block hashes, decending, then continue appending, doubling the step back each time,
-            // finishing with the genisis block (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, ...0)
-            for (int32_t i = top; i > 0; i -= step, ++start) {
-                if (start >= 10) step *= 2;
-                [locators addObject:[self.blockChain[i] blockHash]];
-            }
-            
-            [locators addObject:GENESIS_BLOCK_HASH.reverse];
-
+    if (self.lastBlockHeight < peer.lastblock) {
+        [[ZNPeerEntity context] performBlockAndWait:^{
             if (self.taskId == UIBackgroundTaskInvalid) {
                 self.taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
             }
 
-            self.timer = [NSTimer timerWithTimeInterval:PROTOCOL_TIMEOUT*2 target:self selector:@selector(timedOut:)
-                          userInfo:peer repeats:NO];
+            //TODO: XXXX need a timeout for stalled chain downloads
 
             // request just block headers up to earliestKeyTime, and then merkleblocks after that
-            if (t + 7*24*60*60 > self.earliestKeyTime) {
-                [peer sendGetblocksMessageWithLocators:locators andHashStop:nil];
+            if ([self.blockChain.lastObject timestamp] + 7*24*60*60 >= self.earliestKeyTime) {
+                [peer sendGetblocksMessageWithLocators:[self blockLocatorArray] andHashStop:nil];
             }
-            else [peer sendGetheadersMessageWithLocators:locators andHashStop:nil];
-        }
-        else {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:syncFinishedNotification object:nil];
-            });
-        }
-    }];
+            else [peer sendGetheadersMessageWithLocators:[self blockLocatorArray] andHashStop:nil];
+        }];
+    }
+    else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:syncFinishedNotification object:nil];
+        });
+    }
 }
 
 - (void)peer:(ZNPeer *)peer disconnectedWithError:(NSError *)error
@@ -512,33 +504,9 @@ static const char *dns_seeds[] = {
     }
     else if (error) [[ZNPeerEntity createOrUpdateWithPeer:peer] deleteObject];
 
-    //TODO: XXXX check for network reachability
-
     if (! self.downloadPeer || [self.downloadPeer isEqual:peer]) {
         _connected = NO;
         self.downloadPeer = nil;
-        [self.timer invalidate];
-        self.timer = nil;
-
-//        self.connectFailures++;
-//
-//        if (self.connectFailures > 5) {
-//            if (! error) {
-//                error = [NSError errorWithDomain:@"ZincWallet" code:0
-//                         userInfo:@{NSLocalizedDescriptionKey:@"couldn't connect to bitcoin network"}];
-//            }
-//
-//            dispatch_async(dispatch_get_main_queue(), ^{
-//                if (self.taskId != UIBackgroundTaskInvalid) {
-//                    [[UIApplication sharedApplication] endBackgroundTask:self.taskId];
-//                    self.taskId = UIBackgroundTaskInvalid;
-//                }
-//
-//                [[NSNotificationCenter defaultCenter] postNotificationName:walletSyncFailedNotification
-//                 object:@{@"error":error}];
-//            });
-//            return;
-//        }
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -548,17 +516,10 @@ static const char *dns_seeds[] = {
 
 - (void)peer:(ZNPeer *)peer relayedPeers:(NSArray *)peers
 {
-    [[ZNPeerEntity context] performBlockAndWait:^{
-        if (peer == self.downloadPeer) {
-            [self.timer invalidate];
-            self.timer = ([self.blockChain.lastObject height] >= peer.lastblock) ? nil :
-                         [NSTimer timerWithTimeInterval:PROTOCOL_TIMEOUT target:self selector:@selector(timedOut:)
-                          userInfo:peer repeats:NO];
-        }
-
+    [[ZNPeerEntity context] performBlock:^{
         [ZNPeerEntity createOrUpdateWithPeers:peers];
     
-        NSUInteger count = [ZNPeerEntity countAllObjects];
+        NSUInteger count = [ZNPeerEntity countAllObjects], deleted = 0;
         NSFetchRequest *req = [ZNPeerEntity fetchRequest];
         
         if (count > 1000) { // remove peers with a timestamp more than 3 hours old, or until there are only 1000 left
@@ -567,60 +528,57 @@ static const char *dns_seeds[] = {
                               3*60*60]];
             req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"timestamp" ascending:YES]];
             req.fetchLimit = count - 1000;
-            [ZNPeerEntity deleteObjects:[ZNPeerEntity fetchObjects:req]];
-            
-            // limit total to 2500 peers
-            [ZNPeerEntity deleteObjects:[ZNPeerEntity objectsSortedBy:@"timestamp" ascending:NO offset:2500 limit:0]];
+            deleted = [ZNPeerEntity deleteObjects:[ZNPeerEntity fetchObjects:req]];
+
+            if (count - deleted > 2500) { // limit total to 2500 peers
+                [ZNPeerEntity deleteObjects:[ZNPeerEntity objectsSortedBy:@"timestamp" ascending:YES offset:0
+                 limit:count - deleted - 2500]];
+            }
         }
     }];
 }
 
-//TODO: XXXX measure performance, this will be called thousands of times durring a wallet restore
 - (void)peer:(ZNPeer *)peer relayedTransaction:(ZNTransaction *)transaction
 {
-    [[ZNTransactionEntity context] performBlockAndWait:^{
-        NSMutableData *d = [NSMutableData data];
-        uint32_t n = 0;
+    NSMutableData *d = [NSMutableData data];
+    uint32_t n = 0;
 
-        if (peer == self.downloadPeer) {
-            [self.timer invalidate];
-            self.timer = ([self.blockChain.lastObject height] >= peer.lastblock) ? nil :
-                         [NSTimer timerWithTimeInterval:PROTOCOL_TIMEOUT target:self selector:@selector(timedOut:)
-                          userInfo:peer repeats:NO];
+    // When a transaction is matched by the bloom filter, if any of it's output scripts have a hash or key that also
+    // matches the filter, the remote peer will automatically add that output to the filter. That way if another
+    // transaction spends the output later, it will also be matched without having to manually update the filter.
+    // We do the same here with the local copy to keep the filters in sync.
+    for (NSData *script in transaction.outputScripts) {
+        for (NSData *elem in [script scriptDataElements]) {
+            if (! [self.bloomFilter containsData:elem]) continue;
+            [d setData:transaction.txHash];
+            [d appendUInt32:n];
+            [self.bloomFilter insertData:d]; // update bloom filter with matched txout
+            break;
         }
 
-        NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, transaction);
+        n++;
+    }
 
-        // When a transaction is matched by the bloom filter, if any of it's output scripts have a hash or key that also
-        // matches the filter, the remote peer will automatically add that output to the filter. That way if another
-        // transaction spends the output later, it will also be matched without having to manually update the filter.
-        // We do the same here with the local copy to keep the filters in sync.
-        for (NSData *script in transaction.outputScripts) {
-            for (NSData *elem in [script scriptDataElements]) {
-                if (! [self.bloomFilter containsData:elem]) continue;
-                [d setData:transaction.txHash];
-                [d appendUInt32:n];
-                [self.bloomFilter insertData:d]; // update bloom filter with matched txout
-                break;
-            }
-            
-            n++;
+    if (self.filterWasReset) { // filter got reset, send the new one to all the peers
+        for (ZNPeer *peer in self.peers) {
+            [peer sendFilterloadMessage:self.bloomFilter.data];
         }
+
+        self.filterWasReset = NO;
+    }
+
+    [[ZNTransactionEntity context] performBlock:^{
+        NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, transaction.txHash);
 
         // keep track of how many peers relay a tx, this indicates how likely it is to be confirmed in future blocks
         [self.txRelayCounts addObject:transaction.txHash];
-    
-        ZNWallet *w = [ZNWallet sharedInstance];
-        BOOL registered = [w registerTransaction:transaction];
-    
-        if (! registered) [self.txRelayCounts removeObject:transaction.txHash];
-        
-        // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
-        // unused addresses are still matched by the bloom filter
-        if (registered && ! self.filterWasReset) {
-            NSArray *addrs =
-                [[w addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO]
-                 arrayByAddingObjectsFromArray:[w addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES]];
+
+        if ([self.wallet registerTransaction:transaction]) {
+            // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
+            // unused addresses are still matched by the bloom filter
+            NSArray *external = [self.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO],
+                    *internal = [self.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES],
+                    *addrs = [external arrayByAddingObjectsFromArray:internal];
         
             for (NSString *a in addrs) {
                 NSData *d = a.base58checkToData;
@@ -629,21 +587,18 @@ static const char *dns_seeds[] = {
                 if ([self.bloomFilter containsData:[d subdataWithRange:NSMakeRange(1, 160/8)]]) continue;
 
                 _bloomFilter = nil;
-                self.filterWasReset = YES;
+                for (ZNPeer *peer in self.peers) {
+                    [peer sendFilterloadMessage:self.bloomFilter.data];
+                }
                 break;
             }
+
+            self.transactions[transaction.txHash] =
+                [ZNTransactionEntity objectsMatching:@"txHash == %@", transaction.txHash].lastObject;
+            self.publishedTx[transaction.txHash] = transaction;
         }
-    
-        if (self.filterWasReset) { // filter got reset, send the new one to all the peers
-            for (ZNPeer *peer in self.peers) {
-                [peer sendFilterloadMessage:self.bloomFilter.data];
-            }
-            
-            self.filterWasReset = NO;
-        }
-        
-        if (registered) self.publishedTx[transaction.txHash] = transaction;
-        
+        else [self.txRelayCounts removeObject:transaction.txHash];
+
         // if we're not downloading the chain, relay tx to other peers so we have plausible deniability for our own tx
         //TODO: XXXX relay tx to other peers
     }];
@@ -651,20 +606,12 @@ static const char *dns_seeds[] = {
 
 - (void)peer:(ZNPeer *)peer relayedBlock:(ZNMerkleBlock *)block
 {
-    [[ZNMerkleBlockEntity context] performBlockAndWait:^{
-        if (peer == self.downloadPeer) {
-            [self.timer invalidate];
-            self.timer = ([self.blockChain.lastObject height] >= peer.lastblock) ? nil :
-                         [NSTimer timerWithTimeInterval:PROTOCOL_TIMEOUT target:self selector:@selector(timedOut:)
-                          userInfo:peer repeats:NO];
-        }
-
+    [[ZNMerkleBlockEntity context] performBlock:^{
         // ignore block headers that are newer than one week before earliestKeyTime (headers have 0 totalTransactions)
-        if (block.totalTransactions == 0 && block.timestamp + 7*24*60*60 > self.earliestKeyTime) {
+        if (block.totalTransactions == 0 && block.timestamp + 7*24*60*60 >= self.earliestKeyTime) {
             // if this is the first header being ignored, request merkle blocks for the remainder of the chain
             if ([block.prevBlock isEqual:[self.blockChain.lastObject blockHash]]) {
-                //TODO: use a full locator array so we don't dowload the entire chain if the top block is on a fork
-                [peer sendGetblocksMessageWithLocators:@[[self.blockChain.lastObject blockHash]] andHashStop:nil];
+                [peer sendGetblocksMessageWithLocators:[self blockLocatorArray] andHashStop:nil];
             }
 
             return;
@@ -683,15 +630,13 @@ static const char *dns_seeds[] = {
 
         if (! e) { // block is an orphan
             // if we're still downloading the chain, ignore orphan block for now since it's probably in the chain
-            if ([self.blockChain.lastObject height] < peer.lastblock) return;
+            if (self.lastBlockHeight < peer.lastblock) return;
 
             NSLog(@"%@:%d relayed orphan block, calling getblocks with last block", peer.host, peer.port);
 
-            //TODO: this should use a full locator array so we don't download the entire chain if top block is on a fork
             //TODO: set a limit on how many times we call getblocks, if we get 500 blocks and the first one is an
             //      orphan, we don't want to make 500 getblocks requests
-            [peer sendGetblocksMessageWithLocators:@[[self.blockChain.lastObject blockHash]]
-             andHashStop:block.blockHash];
+            [peer sendGetblocksMessageWithLocators:[self blockLocatorArray] andHashStop:block.blockHash];
             return;
         }
 
@@ -699,6 +644,7 @@ static const char *dns_seeds[] = {
 
         if ((height % BITCOIN_DIFFICULTY_INTERVAL) == 0) { // hit a difficulty transition, find last transition time
             transitionTime = [self.blockChain[height - BITCOIN_DIFFICULTY_INTERVAL] timestamp];
+            [ZNMerkleBlockEntity saveContext]; // this is a good opportunity to persist the blockchain up to this point
         }
 
         // verify block difficulty
@@ -732,7 +678,10 @@ static const char *dns_seeds[] = {
             [e setAttributesFromBlock:block]; // the bloom filter may have matched additional transactions, so update it
 
             if (e.height >= 0) { // if it's not on a fork, set block heights for the block's transactions
-                [ZNTransactionEntity setBlockHeight:height forTxHashes:block.txHashes];
+                for (NSData *hash in block.txHashes) {
+                    [self.transactions[hash] setBlockHeight:height];
+                }
+
                 [self.publishedTx removeObjectsForKeys:block.txHashes]; // remove confirmed tx from publish list
                 [self.txRelayCounts minusSet:[NSSet setWithArray:block.txHashes]];
             }
@@ -744,12 +693,16 @@ static const char *dns_seeds[] = {
             e = [[ZNMerkleBlockEntity managedObject] setAttributesFromBlock:block];
             e.height = height;
 
-            if (e.height < self.blockChain.count) {
-                [self.blockChain insertObject:e atIndex:height];
+            if (e.height >= self.blockChain.count) {
+                [self.blockChain addObject:e];
+                _lastBlockHeight = e.height;
             }
-            else [self.blockChain addObject:e];
+            else [self.blockChain insertObject:e atIndex:height];
 
-            [ZNTransactionEntity setBlockHeight:height forTxHashes:block.txHashes];
+            for (NSData *hash in block.txHashes) {
+                [self.transactions[hash] setBlockHeight:height];
+            }
+
             [self.publishedTx removeObjectsForKeys:block.txHashes]; // remove confirmed tx from publish list
             [self.txRelayCounts minusSet:[NSSet setWithArray:block.txHashes]];
         }
@@ -767,7 +720,7 @@ static const char *dns_seeds[] = {
             e.height = -height; // negative height denotes a fork
 
             // if fork is shorter than main chain, ingore it for now
-            if (height <= [self.blockChain.lastObject height]) return;
+            if (height <= self.lastBlockHeight) return;
 
             // the fork is longer than the main chain, so make it the new main chain
             int32_t h = -height;
@@ -780,8 +733,9 @@ static const char *dns_seeds[] = {
             NSLog(@"reorganizing chain from height %d, new height is %d", h, height);
 
             // mark transactions after the join point as unconfirmed
-            [ZNTransactionEntity setBlockHeight:TX_UNCONFIRMED
-             forTxHashes:[[ZNTransactionEntity objectsMatching:@"blockHeight > %d", h] valueForKey:@"txHash"]];
+            for (ZNTransactionEntity *e in self.transactions.allValues) {
+                if (e.blockHeight > h) e.blockHeight = TX_UNCONFIRMED;
+            }
 
             // set old main chain heights to negative to denote they are now a fork
             for (e in [ZNMerkleBlockEntity objectsMatching:@"height > %d", h]) {
@@ -794,12 +748,16 @@ static const char *dns_seeds[] = {
             while (e.height < 0) { // set block heights for new main chain and mark its transactions as confirmed
                 e.height *= -1;
 
-                if (e.height < self.blockChain.count) {
-                    [self.blockChain insertObject:e atIndex:height];
+                if (e.height >= self.blockChain.count) {
+                    [self.blockChain addObject:e];
+                    _lastBlockHeight = e.height;
                 }
-                else [self.blockChain addObject:e];
+                else [self.blockChain insertObject:e atIndex:height];
 
-                [ZNTransactionEntity setBlockHeight:e.height forTxHashes:e.merkleBlock.txHashes];
+                for (NSData *hash in e.merkleBlock.txHashes) {
+                    [self.transactions[hash] setBlockHeight:e.height];
+                }
+
                 [self.publishedTx removeObjectsForKeys:e.merkleBlock.txHashes]; // remove confirmed tx from publish list
                 [self.txRelayCounts minusSet:[NSSet setWithArray:block.txHashes]];
                 e = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", e.prevBlock].lastObject;;
@@ -812,17 +770,16 @@ static const char *dns_seeds[] = {
         }
 
         if (height == peer.lastblock) { // chain download is complete
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:syncFinishedNotification object:nil];
+            });
+
+            [ZNMerkleBlockEntity saveContext];
+            
             if (self.taskId != UIBackgroundTaskInvalid) {
                 [[UIApplication sharedApplication] endBackgroundTask:self.taskId];
                 self.taskId = UIBackgroundTaskInvalid;
             }
-
-            //TODO: XXXX investigate core data batch saving so it doesn't take so long to save on exit
-            // https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/CoreData/Articles/cdImporting.html
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:syncFinishedNotification object:nil];
-            });
         }
     }];
 }

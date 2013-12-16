@@ -86,6 +86,10 @@ typedef enum {
 @interface ZNPeer : NSObject<NSStreamDelegate>
 
 @property (nonatomic, assign) id<ZNPeerDelegate> delegate;
+
+// set this to the timestamp when the wallet was created to improve initial sync time
+@property (nonatomic, assign) NSTimeInterval earliestKeyTime;
+
 @property (nonatomic, readonly) peerStatus status;
 @property (nonatomic, readonly) NSString *host;
 @property (nonatomic, readonly) uint32_t address;

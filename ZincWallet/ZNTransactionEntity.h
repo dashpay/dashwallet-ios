@@ -38,8 +38,6 @@
 @property (nonatomic, retain) NSOrderedSet *outputs;
 @property (nonatomic) int32_t lockTime;
 
-+ (void)setBlockHeight:(int32_t)blockHeight forTxHashes:(NSArray *)txHashes;
-
 - (instancetype)setAttributesFromTx:(ZNTransaction *)tx;
 - (ZNTransaction *)transaction;
 

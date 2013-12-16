@@ -42,15 +42,6 @@
 @dynamic outputs;
 @dynamic lockTime;
 
-+ (void)setBlockHeight:(int32_t)blockHeight forTxHashes:(NSArray *)txHashes
-{
-    if (txHashes.count == 0) return;
-    
-    [[self context] performBlockAndWait:^{
-        [[self objectsMatching:@"txHash in %@", txHashes] setValue:@(blockHeight) forKey:@"blockHeight"];
-    }];
-}
-
 - (instancetype)setAttributesFromTx:(ZNTransaction *)tx
 {
     [[self managedObjectContext] performBlockAndWait:^{

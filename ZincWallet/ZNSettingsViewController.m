@@ -28,9 +28,7 @@
 #import "ZNWallet.h"
 #import "ZNPeerManager.h"
 #import "ZNTransaction.h"
-#import "ZNTxOutputEntity.h"
 #import "ZNStoryboardSegue.h"
-#import "NSManagedObject+Utils.h"
 #import <QuartzCore/QuartzCore.h>
 
 #define TRANSACTION_CELL_HEIGHT 75
@@ -168,31 +166,22 @@
                 ZNWallet *w = [ZNWallet sharedInstance];
                 ZNPeerManager *m = [ZNPeerManager sharedInstance];
                 ZNTransaction *tx = self.transactions[indexPath.row];
-                uint64_t received = 0, spent = 0, amount = 0;
+                uint64_t received = 0, sent = 0;
                 NSUInteger height = 0, idx = 0;
                 BOOL withinWallet = NO;
                 
                 height = (tx.blockHeight != TX_UNCONFIRMED) ? m.lastBlockHeight - tx.blockHeight : 0;
+                sent = [w transactionSent:tx];
+                withinWallet = (sent > 0) ? YES : NO;
 
-                //TODO: XXXX move direct core data refrences from view controllers into wallet or peer manager
-                for (NSData *hash in tx.inputHashes) {
-                    ZNTxOutputEntity *o = [ZNTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", hash,
-                                           tx.inputIndexes[idx++]].lastObject;
-                    
-                    if ([w containsAddress:o.address]) spent += o.value;
-                }
-                
-                withinWallet = (spent > 0) ? YES : NO;
-                idx = 0;
-                
                 for (NSString *address in tx.outputAddresses) {
-                    amount = [tx.outputAmounts[idx++] unsignedLongLongValue];
+                    uint64_t amt = [tx.outputAmounts[idx++] unsignedLongLongValue];
                     
                     if ([w containsAddress:address]) {
-                        received += amount;
-                        if (spent == 0) detailTextLabel.text = [@"to: " stringByAppendingString:address];
+                        received += amt;
+                        if (sent == 0) detailTextLabel.text = [@"to: " stringByAppendingString:address];
                     }
-                    else if (spent > 0) {
+                    else if (sent > 0) {
                         if (address) detailTextLabel.text = [@"to: " stringByAppendingString:address];
                         withinWallet = NO;
                     }
@@ -218,16 +207,16 @@
                 }
 
                 if (withinWallet) {
-                    textLabel.text = [w stringForAmount:spent];
+                    textLabel.text = [w stringForAmount:sent];
                     localCurrencyLabel.text =
-                        [NSString stringWithFormat:@"(%@)", [w localCurrencyStringForAmount:spent]];
+                        [NSString stringWithFormat:@"(%@)", [w localCurrencyStringForAmount:sent]];
                     detailTextLabel.text = @"within wallet";
                     sentLabel.text = @"moved";
                 }
-                else if (spent > 0) {
-                    textLabel.text = [w stringForAmount:received - spent];
+                else if (sent > 0) {
+                    textLabel.text = [w stringForAmount:received - sent];
                     localCurrencyLabel.text =
-                        [NSString stringWithFormat:@"(%@)", [w localCurrencyStringForAmount:received - spent]];
+                        [NSString stringWithFormat:@"(%@)", [w localCurrencyStringForAmount:received - sent]];
                     sentLabel.text = @"sent";
                     sentLabel.textColor = [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.67];
                 }

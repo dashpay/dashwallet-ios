@@ -260,9 +260,9 @@ sequence:(uint32_t)sequence
 
         if (keyIdx == NSNotFound) continue;
     
-        NSData *txHash = [self toDataWithSubscriptIndex:i].SHA256_2;
         NSMutableData *sig = [NSMutableData data];
-        NSMutableData *s = [NSMutableData dataWithData:[keys[keyIdx] sign:txHash]];
+        NSData *hash = [self toDataWithSubscriptIndex:i].SHA256_2;
+        NSMutableData *s = [NSMutableData dataWithData:[keys[keyIdx] sign:hash]];
 
         [s appendUInt8:SIGHASH_ALL];
         [sig appendScriptPushData:s];

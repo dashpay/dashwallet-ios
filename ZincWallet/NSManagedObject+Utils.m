@@ -24,8 +24,8 @@
 
 #import "NSManagedObject+Utils.h"
 
-// default concurrency type is NSMainQueueConcurrencyType
 static NSManagedObjectContextConcurrencyType _concurrencyType = NSMainQueueConcurrencyType;
+static NSUInteger _fetchBatchSize = 100;
 
 @implementation NSManagedObject (Utils)
 
@@ -174,11 +174,17 @@ static NSManagedObjectContextConcurrencyType _concurrencyType = NSMainQueueConcu
     _concurrencyType = type;
 }
 
+// set the fetchBatchSize to use when fetching objects, default is 100
++ (void)setFetchBatchSize:(NSUInteger)fetchBatchSize
+{
+    _fetchBatchSize = fetchBatchSize;
+}
+
 // Returns the managed object context for the application. If the context doesn't already exist,
 // it is created and bound to the persistent store coordinator for the application.
 + (NSManagedObjectContext *)context
 {
-    static NSManagedObjectContext *moc = nil;
+    static NSManagedObjectContext *writermoc = nil, *mainmoc = nil;
     static dispatch_once_t onceToken = 0;
     
     dispatch_once(&onceToken, ^{
@@ -197,7 +203,7 @@ static NSManagedObjectContextConcurrencyType _concurrencyType = NSMainQueueConcu
                        NSInferMappingModelAutomaticallyOption:@(YES)} error:&error] == nil) {
             NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
 #if DEBUG
-            //abort();
+            abort();
 #endif
             // if this is a not a debug build, attempt to delete and create a new persisent data store before crashing
             if (! [[NSFileManager defaultManager] removeItemAtURL:storeURL error:&error]) {
@@ -213,8 +219,12 @@ static NSManagedObjectContextConcurrencyType _concurrencyType = NSMainQueueConcu
         }
 
         if (coordinator) {
-            moc = [[NSManagedObjectContext alloc] initWithConcurrencyType:_concurrencyType];
-            [moc setPersistentStoreCoordinator:coordinator];
+            // create a separate context for writing to the persistent store asynchronously
+            writermoc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+            writermoc.persistentStoreCoordinator = coordinator;
+
+            mainmoc = [[NSManagedObjectContext alloc] initWithConcurrencyType:_concurrencyType];
+            mainmoc.parentContext = writermoc;
             
             // Saves changes in the application's managed object context before the application terminates.
             [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillTerminateNotification object:nil
@@ -224,23 +234,43 @@ static NSManagedObjectContextConcurrencyType _concurrencyType = NSMainQueueConcu
         }
     });
     
-    return moc;
+    return mainmoc;
 }
 
 + (void)saveContext
 {
+    if (! [[self context] hasChanges]) return;
+
     [[self context] performBlock:^{
         NSError *error = nil;
-        NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
 
-        if ([[self context] hasChanges] && ! [[self context] save:&error]) {
+        if ([[self context] hasChanges] && ! [[self context] save:&error]) { // save changes to writer context
             NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
 #if DEBUG
             abort();
 #endif
         }
 
-        [[UIApplication sharedApplication] endBackgroundTask:taskId];
+        [[self context].parentContext performBlock:^{
+            NSError *error = nil;
+            NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
+            NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate];
+
+            // write changes to persistent store
+            if ([[self context].parentContext hasChanges] && ! [[self context].parentContext save:&error]) {
+                NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
+#if DEBUG
+                abort();
+#endif
+            }
+
+            // BUG: XXXX core data memory bug
+            // obtain permanent ids and recreate persistent store as suggested here:
+            // http://finalize.com/2013/01/04/core-data-issues-with-memory-allocation/
+
+            NSLog(@"context save completed in %f seconds", [NSDate timeIntervalSinceReferenceDate] - t);
+            [[UIApplication sharedApplication] endBackgroundTask:taskId];
+        }];
     }];
 }
 
@@ -253,7 +283,10 @@ static NSManagedObjectContextConcurrencyType _concurrencyType = NSMainQueueConcu
 
 + (NSFetchRequest *)fetchRequest
 {
-    return [NSFetchRequest fetchRequestWithEntityName:[self entityName]];
+    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:[self entityName]];
+
+    request.fetchBatchSize = _fetchBatchSize;
+    return request;
 }
 
 + (NSFetchedResultsController *)fetchedResultsController:(NSFetchRequest *)request
@@ -275,6 +308,7 @@ static NSManagedObjectContextConcurrencyType _concurrencyType = NSMainQueueConcu
     }];
 }
 
+// thread safe valueForKey:
 - (id)get:(NSString *)key
 {
     __block id value = nil;
@@ -286,6 +320,7 @@ static NSManagedObjectContextConcurrencyType _concurrencyType = NSMainQueueConcu
     return value;
 }
 
+// thread safe setValue:forKey:
 - (void)set:(NSString *)key to:(id)value
 {
     [[self managedObjectContext] performBlockAndWait:^{

@@ -146,7 +146,7 @@
             // if a tx was sent to safari and we returned to the app not from a zinc: url, something went wrong, so
             // fall back on sending from within the app
             if (self.tx) {
-                uint64_t txAmount = [w transactionAmount:self.tx] - [w transactionChange:self.tx];
+                uint64_t txAmount = [w transactionSent:self.tx] - [w transactionReceived:self.tx];
                 NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:txAmount],
                                     [w localCurrencyStringForAmount:txAmount]];
 
@@ -336,7 +336,7 @@
     if (! self.tx) return;
 
     ZNWallet *w = [ZNWallet sharedInstance];
-    uint64_t txAmount = [w transactionAmount:self.tx] - [w transactionChange:self.tx];
+    uint64_t txAmount = [w transactionSent:self.tx] - [w transactionReceived:self.tx];
     NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:txAmount],
                         [w localCurrencyStringForAmount:txAmount]];
     

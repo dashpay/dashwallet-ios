@@ -50,7 +50,13 @@
 // call this before any NSManagedObject+Utils methods to use a concurrency type other than NSMainQueueConcurrencyType
 + (void)setConcurrencyType:(NSManagedObjectContextConcurrencyType)type;
 
+// set the fetchBatchSize to use when fetching objects, default is 100
++ (void)setFetchBatchSize:(NSUInteger)fetchBatchSize;
+
+// Returns the managed object context for the application. If the context doesn't already exist,
+// it is created and bound to the persistent store coordinator for the application.
 + (NSManagedObjectContext *)context;
+
 + (void)saveContext;
 
 + (NSString *)entityName;
