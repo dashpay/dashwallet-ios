@@ -313,7 +313,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 
 - (BOOL)isEqual:(id)object
 {
-    return ([object isKindOfClass:[ZNMerkleBlock class]] && [[object blockHash] isEqual:_blockHash]) ? YES : NO;
+    return self == object || ([object isKindOfClass:[ZNMerkleBlock class]] && [[object blockHash] isEqual:_blockHash]);
 }
 
 @end

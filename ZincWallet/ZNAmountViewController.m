@@ -77,15 +77,15 @@
     }
     
     self.balanceObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:balanceChangedNotification object:nil queue:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:ZNWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                          [w localCurrencyStringForAmount:w.balance]];
         }];
     
     self.syncStartedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:syncStartedNotification object:nil queue:nil
-        usingBlock:^(NSNotification *note) {
+        [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncStartedNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
             [UIApplication sharedApplication].idleTimerDisabled = YES;
             
             if (self.navigationItem.rightBarButtonItem == self.payButton) {
@@ -95,16 +95,16 @@
         }];
     
     self.syncFinishedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:syncFinishedNotification object:nil queue:nil
-        usingBlock:^(NSNotification *note) {
+        [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncFinishedNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
             self.navigationItem.rightBarButtonItem = self.payButton;
             [self.spinner stopAnimating];
             [UIApplication sharedApplication].idleTimerDisabled = NO;
         }];
     
     self.syncFailedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:syncFailedNotification object:nil queue:nil
-        usingBlock:^(NSNotification *note) {
+        [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncFailedNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
             self.navigationItem.rightBarButtonItem = self.payButton;
             [self.spinner stopAnimating];
             [UIApplication sharedApplication].idleTimerDisabled = NO;

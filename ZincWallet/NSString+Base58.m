@@ -33,38 +33,34 @@ const char base58chars[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrst
 
 static void *secureAllocate(CFIndex allocSize, CFOptionFlags hint, void *info)
 {
-    void *ptr = CFAllocatorAllocate(kCFAllocatorDefault, allocSize, hint);
+    void *ptr = CFAllocatorAllocate(kCFAllocatorDefault, sizeof(CFIndex) + allocSize, hint);
     
-    if (ptr) {
-        [(__bridge NSMutableDictionary *)info setObject:[NSNumber numberWithUnsignedLong:allocSize]
-         forKey:[NSValue valueWithPointer:ptr]];
-        return ptr;
+    if (ptr) { // we need to keep track of the size of the allocation so it can be cleansed before deallocation
+        *(CFIndex *)ptr = allocSize;
+        return (CFIndex *)ptr + 1;
     }
     else return NULL;
 }
 
 static void secureDeallocate(void *ptr, void *info)
 {
-    NSValue *key = [NSValue valueWithPointer:ptr];
-    size_t size = [[(__bridge NSMutableDictionary *)info objectForKey:key] unsignedLongValue];
-    
+    CFIndex size = *((CFIndex *)ptr - 1);
+
     if (size) {
-        [(__bridge NSMutableDictionary *)info removeObjectForKey:key];
-        OPENSSL_cleanse(ptr, size);
-        CFAllocatorDeallocate(kCFAllocatorDefault, ptr);
+        OPENSSL_cleanse(ptr, (size_t)size);
+        CFAllocatorDeallocate(kCFAllocatorDefault, (CFIndex *)ptr - 1);
     }
 }
 
 static void *secureReallocate(void *ptr, CFIndex newsize, CFOptionFlags hint, void *info)
 {
-    // There's no way to tell ahead of time if there's enough space for the reallocation, or if the original memory
-    // will be deallocted, so just cleanse and deallocate every time.
+    // There's no way to tell ahead of time if the original memory will be deallocted even if the new size is smaller
+    // than the old size, so just cleanse and deallocate every time.
     void *newptr = secureAllocate(newsize, hint, info);
     
     if (newptr) {
-        size_t size = [[(__bridge NSMutableDictionary *)info objectForKey:[NSValue valueWithPointer:ptr]]
-                       unsignedLongValue];
-        
+        CFIndex size = *((CFIndex *)ptr - 1);
+
         if (size) {
             memcpy(newptr, ptr, size < newsize ? size : newsize);
             secureDeallocate(ptr, info);
@@ -87,7 +83,6 @@ CFAllocatorRef SecureAllocator()
         
         context.version = 0;
         CFAllocatorGetContext(kCFAllocatorDefault, &context);
-        context.info = (void *)CFBridgingRetain([NSMutableDictionary dictionary]);
         context.allocate = secureAllocate;
         context.reallocate = secureReallocate;
         context.deallocate = secureDeallocate;

@@ -26,9 +26,9 @@
 #import <Foundation/Foundation.h>
 #import "ZNPeer.h"
 
-#define syncStartedNotification  @"syncStartedNotification"
-#define syncFinishedNotification @"syncFinishedNotification"
-#define syncFailedNotification   @"syncFailedNotification"
+#define ZNPeerManagerSyncStartedNotification  @"ZNPeerManagerSyncStartedNotification"
+#define ZNPeerManagerSyncFinishedNotification @"ZNPeerManagerSyncFinishedNotification"
+#define ZNPeerManagerSyncFailedNotification   @"ZNPeerManagerSyncFailedNotification"
 
 @interface ZNPeerManager : NSObject<ZNPeerDelegate>
 

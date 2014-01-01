@@ -146,12 +146,12 @@
             // if a tx was sent to safari and we returned to the app not from a zinc: url, something went wrong, so
             // fall back on sending from within the app
             if (self.tx) {
-                uint64_t txAmount = [w transactionSent:self.tx] - [w transactionReceived:self.tx];
+                uint64_t txAmount = [w amountSentByTransaction:self.tx] - [w amountReceivedFromTransaction:self.tx];
                 NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:txAmount],
                                     [w localCurrencyStringForAmount:txAmount]];
 
-                [[[UIAlertView alloc] initWithTitle:@"confirm payment" message:[w transactionTo:self.tx] delegate:self
-                  cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
+                [[[UIAlertView alloc] initWithTitle:@"confirm payment" message:[w addressForTransaction:self.tx]
+                  delegate:self cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
             }
         
             [self layoutButtonsAnimated:YES]; // check the clipboard for changes
@@ -336,11 +336,11 @@
     if (! self.tx) return;
 
     ZNWallet *w = [ZNWallet sharedInstance];
-    uint64_t txAmount = [w transactionSent:self.tx] - [w transactionReceived:self.tx];
+    uint64_t txAmount = [w amountSentByTransaction:self.tx] - [w amountReceivedFromTransaction:self.tx];
     NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:txAmount],
                         [w localCurrencyStringForAmount:txAmount]];
     
-    [[[UIAlertView alloc] initWithTitle:@"confirm payment" message:[w transactionTo:self.tx] delegate:self
+    [[[UIAlertView alloc] initWithTitle:@"confirm payment" message:[w addressForTransaction:self.tx] delegate:self
       cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
 }
 
@@ -392,23 +392,24 @@
         self.tx = [w transactionFor:self.request.amount to:self.request.paymentAddress withFee:NO];
         self.txWithFee = [w transactionFor:self.request.amount to:self.request.paymentAddress withFee:YES];
         
-        uint64_t txFee = self.txWithFee ? [w transactionFee:self.txWithFee] : self.tx.standardFee;
+        uint64_t txFee = self.txWithFee ? [w feeForTransaction:self.txWithFee] : self.tx.standardFee;
         NSString *fee = [w stringForAmount:txFee];
         NSString *localCurrencyFee = [w localCurrencyStringForAmount:txFee];
-        NSTimeInterval t = [w timeUntilFree:self.tx];
+        uint32_t freeHeight = [w blockHeightUntilFree:self.tx];
         
         if (! self.tx) {
             [[[UIAlertView alloc] initWithTitle:@"insufficient funds" message:nil delegate:nil cancelButtonTitle:@"ok"
               otherButtonTitles:nil] show];
             [self cancel:nil];
         }
-        else if (t > DBL_EPSILON) {//(t == DBL_MAX) {
+        else if (freeHeight == TX_UNCONFIRMED) {//(t == DBL_MAX) {
             [[[UIAlertView alloc] initWithTitle:nil//@"transaction fee"
               message:[NSString stringWithFormat:@"the bitcoin network will receive a fee of %@ (%@)", fee,
               localCurrencyFee] delegate:self cancelButtonTitle:@"cancel"
               otherButtonTitles:[NSString stringWithFormat:@"+ %@ (%@)", fee, localCurrencyFee], nil] show];
         }
-//        else if (t > DBL_EPSILON) {
+//        else if (freeHeight > [[ZNPeerManager sharedInstance] lastBlockHeight] + 1) {
+//            NSTimeInterval t = (freeHeight - [[ZNPeerManager sharedInstance] lastBlockHeight])*600;
 //            int minutes = t/60, hours = t/(60*60), days = t/(60*60*24);
 //            NSString *time = [NSString stringWithFormat:@"%d %@%@", days ? days : (hours ? hours : minutes),
 //                              days ? @"day" : (hours ? @"hour" : @"minutes"),

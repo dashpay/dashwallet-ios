@@ -98,7 +98,7 @@
         }];
     
     self.balanceObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:balanceChangedNotification object:nil queue:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:ZNWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                          [w localCurrencyStringForAmount:w.balance]];
@@ -108,8 +108,8 @@
         }];
     
     self.syncStartedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:syncStartedNotification object:nil queue:nil
-        usingBlock:^(NSNotification *note) {
+        [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncStartedNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
             if (self.navigationItem.rightBarButtonItem == self.refreshButton) {
                 self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
                 [self.spinner startAnimating];
@@ -122,8 +122,8 @@
         }];
     
     self.syncFinishedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:syncFinishedNotification object:nil queue:nil
-        usingBlock:^(NSNotification *note) {
+        [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncFinishedNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
             self.syncErrorCount = 0;
             [self.spinner stopAnimating];
             self.navigationItem.rightBarButtonItem = self.refreshButton;
@@ -135,8 +135,8 @@
     
     //TODO: create an error banner instead of using an alert
     self.syncFailedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:syncFailedNotification object:nil queue:nil
-        usingBlock:^(NSNotification *note) {
+        [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncFailedNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
             self.syncErrorCount++;
 //            if ([note.userInfo[@"error"] code] == 504 && self.syncErrorCount < 3) {
 //                [[[UIAlertView alloc] initWithTitle:@"couldn't refresh wallet balance" message:@"retrying..."
@@ -230,18 +230,18 @@
             [self.scrollView setContentOffset:CGPointMake(self.scrollView.frame.size.width, 0) animated:NO];
         }
     }
+
+    [[ZNPeerManager sharedInstance] connect];
 }
 
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
-    
-    [[ZNPeerManager sharedInstance] connect];
 
     self.didAppear = YES;
 }
 
-- (void)viewWillDisappear:(BOOL)animated
+- (void)viewDidDisappear:(BOOL)animated
 {
     ZNWallet *w = [ZNWallet sharedInstance];
 
@@ -252,7 +252,7 @@
     [UIApplication sharedApplication].idleTimerDisabled = NO;
     self.progress.hidden = YES;
 
-    [super viewWillDisappear:animated];
+    [super viewDidDisappear:animated];
 }
 
 - (void)updateProgress

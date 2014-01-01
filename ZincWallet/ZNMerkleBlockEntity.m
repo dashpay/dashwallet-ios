@@ -1,4 +1,4 @@
-//
+
 //  ZNMerkleBlockEntity.m
 //  ZincWallet
 //
@@ -40,6 +40,20 @@
 @dynamic totalTransactions;
 @dynamic hashes;
 @dynamic flags;
+
+// the block store has it's own context for performance reasons
++ (NSManagedObjectContext *)context
+{
+    static NSManagedObjectContext *moc = nil;
+    static dispatch_once_t onceToken = 0;
+
+    dispatch_once(&onceToken, ^{
+        moc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+        moc.parentContext = [super context].parentContext;
+    });
+
+    return moc;
+}
 
 - (instancetype)setAttributesFromBlock:(ZNMerkleBlock *)block;
 {

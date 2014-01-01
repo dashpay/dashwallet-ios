@@ -80,6 +80,6 @@ sequence:(uint32_t)sequence;
 - (uint64_t)priorityForAmounts:(NSArray *)amounts withAges:(NSArray *)ages;
 
 // the block height after which the transaction can be confirmed without a fee, or TX_UNCONFIRMED for never
-- (NSUInteger)blockHeightUntilFreeForAmounts:(NSArray *)amounts withBlockHeights:(NSArray *)heights;
+- (uint32_t)blockHeightUntilFreeForAmounts:(NSArray *)amounts withBlockHeights:(NSArray *)heights;
 
 @end

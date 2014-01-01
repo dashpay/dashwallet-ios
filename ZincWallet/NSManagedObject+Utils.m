@@ -226,7 +226,7 @@ static NSUInteger _fetchBatchSize = 100;
             mainmoc = [[NSManagedObjectContext alloc] initWithConcurrencyType:_concurrencyType];
             mainmoc.parentContext = writermoc;
             
-            // Saves changes in the application's managed object context before the application terminates.
+            // this will save changes to the persistent store before the application terminates.
             [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillTerminateNotification object:nil
              queue:nil usingBlock:^(NSNotification *note) {
                 [self saveContext];
@@ -242,8 +242,16 @@ static NSUInteger _fetchBatchSize = 100;
     if (! [[self context] hasChanges]) return;
 
     [[self context] performBlock:^{
+        static BOOL saving = NO, needsSave = NO;
         NSError *error = nil;
 
+        if (saving) {
+            needsSave = YES;
+            return;
+        }
+
+        saving = YES;
+        
         if ([[self context] hasChanges] && ! [[self context] save:&error]) { // save changes to writer context
             NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
 #if DEBUG
@@ -269,6 +277,13 @@ static NSUInteger _fetchBatchSize = 100;
             // http://finalize.com/2013/01/04/core-data-issues-with-memory-allocation/
 
             NSLog(@"context save completed in %f seconds", [NSDate timeIntervalSinceReferenceDate] - t);
+            saving = NO;
+
+            if (needsSave) {
+                needsSave = NO;
+                [self saveContext];
+            }
+            
             [[UIApplication sharedApplication] endBackgroundTask:taskId];
         }];
     }];
@@ -291,14 +306,8 @@ static NSUInteger _fetchBatchSize = 100;
 
 + (NSFetchedResultsController *)fetchedResultsController:(NSFetchRequest *)request
 {
-    __block NSFetchedResultsController *c = nil;
-
-    [[self context] performBlockAndWait:^{
-        c = [[NSFetchedResultsController alloc] initWithFetchRequest:request managedObjectContext:[self context]
-             sectionNameKeyPath:nil cacheName:nil];
-    }];
-    
-    return c;
+    return [[NSFetchedResultsController alloc] initWithFetchRequest:request managedObjectContext:[self context]
+            sectionNameKeyPath:nil cacheName:nil];
 }
 
 - (void)deleteObject

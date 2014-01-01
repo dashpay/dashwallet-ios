@@ -55,7 +55,7 @@
     ZNWallet *w = [ZNWallet sharedInstance];
     
     self.balanceObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:balanceChangedNotification object:nil queue:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:ZNWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                          [w localCurrencyStringForAmount:w.balance]];
@@ -166,27 +166,10 @@
                 ZNWallet *w = [ZNWallet sharedInstance];
                 ZNPeerManager *m = [ZNPeerManager sharedInstance];
                 ZNTransaction *tx = self.transactions[indexPath.row];
-                uint64_t received = 0, sent = 0;
-                NSUInteger height = 0, idx = 0;
-                BOOL withinWallet = NO;
-                
-                height = (tx.blockHeight != TX_UNCONFIRMED) ? m.lastBlockHeight - tx.blockHeight : 0;
-                sent = [w transactionSent:tx];
-                withinWallet = (sent > 0) ? YES : NO;
+                uint64_t received = [w amountReceivedFromTransaction:tx], sent = [w amountSentByTransaction:tx];
+                NSUInteger height = (tx.blockHeight != TX_UNCONFIRMED) ? m.lastBlockHeight - tx.blockHeight : 0;
+                NSString *address = [w addressForTransaction:tx];
 
-                for (NSString *address in tx.outputAddresses) {
-                    uint64_t amt = [tx.outputAmounts[idx++] unsignedLongLongValue];
-                    
-                    if ([w containsAddress:address]) {
-                        received += amt;
-                        if (sent == 0) detailTextLabel.text = [@"to: " stringByAppendingString:address];
-                    }
-                    else if (sent > 0) {
-                        if (address) detailTextLabel.text = [@"to: " stringByAppendingString:address];
-                        withinWallet = NO;
-                    }
-                }
-                
                 noTxLabel.hidden = YES;
                 sentLabel.hidden = YES;
                 unconfirmedLabel.hidden = NO;
@@ -206,7 +189,7 @@
                     sentLabel.hidden = NO;
                 }
 
-                if (withinWallet) {
+                if (sent > 0 && (! address || [w containsAddress:address])) {
                     textLabel.text = [w stringForAmount:sent];
                     localCurrencyLabel.text =
                         [NSString stringWithFormat:@"(%@)", [w localCurrencyStringForAmount:sent]];
@@ -215,6 +198,7 @@
                 }
                 else if (sent > 0) {
                     textLabel.text = [w stringForAmount:received - sent];
+                    detailTextLabel.text = [@"to: " stringByAppendingString:address];
                     localCurrencyLabel.text =
                         [NSString stringWithFormat:@"(%@)", [w localCurrencyStringForAmount:received - sent]];
                     sentLabel.text = @"sent";
@@ -222,6 +206,7 @@
                 }
                 else {
                     textLabel.text = [w stringForAmount:received];
+                    detailTextLabel.text = [@"to: " stringByAppendingString:address];
                     localCurrencyLabel.text =
                        [NSString stringWithFormat:@"(%@)", [w localCurrencyStringForAmount:received]];
                     sentLabel.text = @"received";

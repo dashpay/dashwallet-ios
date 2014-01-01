@@ -98,7 +98,6 @@ services:(uint64_t)services
     return self;
 }
 
-
 - (void)dealloc
 {
     [self.reachability stopNotifier];
@@ -266,7 +265,8 @@ services:(uint64_t)services
     [msg appendString:USERAGENT]; // user agent
     [msg appendUInt32:BITCOIN_REFERENCE_BLOCK_HEIGHT]; // last block received
     [msg appendUInt8:0]; // relay transactions (no for SPV bloom filter mode)
-    
+
+    // setup a 5 second timeout to receive a verack message back
     [self performSelector:@selector(disconnectWithError:) withObject:[NSError errorWithDomain:@"ZincWallet" code:1001
      userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"%@:%u verack timeout", self.host, self.port]}]
      afterDelay:5];
@@ -309,7 +309,7 @@ services:(uint64_t)services
     [self sendMessage:msg type:MSG_ADDR];
 }
 
-// the standard blockchain download protocol works as follows (for merkleblocks):
+// the standard blockchain download protocol works as follows (for SPV mode):
 // - local peer sends getblocks
 // - remote peer reponds with inv containing up to 500 block hashes
 // - local peer sends getdata with the block hashes
@@ -317,10 +317,10 @@ services:(uint64_t)services
 // - remote peer sends inv containg 1 hash, of the most recent block
 // - local peer sends getdata with the most recent block hash
 // - remote peer responds with merkleblock
-// - if local peer can't connect the most recent block to the chain (because it was more than 500 blocks behind), go
+// - if local peer can't connect the most recent block to the chain (because it started more than 500 blocks behind), go
 //   back to first step and repeat until entire chain is downloaded
 //
-// we modify this sequence to improve sync performance and handle adding new bip32 addresses as the download progresses:
+// we modify this sequence to improve sync performance and handle adding bip32 addresses to the bloom filter as needed:
 // - local peer sends getheaders
 // - remote peer responds with up to 2000 headers
 // - local peer immediately sends getheaders again and then processes the headers
@@ -335,6 +335,9 @@ services:(uint64_t)services
 // - if at any point tx messages consume enough wallet addresses to drop below the bip32 chain gap limit, more addresses
 //   are generated and local peer sends filterload with an updated bloom filter
 // - when filterload is sent, the most recent getdata message is also repeated to get any new tx matching the new filter
+
+// BUG: XXXX verify that after a bloom filter update, the satoshi client will resend blocks that have already been sent,
+// if it doesn't then we'll need to disconnect and reconnect instead of just sending a new filterload message
 
 - (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop
 {
@@ -438,8 +441,7 @@ services:(uint64_t)services
         else if ([MSG_PING isEqual:type]) [self acceptPingMessage:message];
         else if ([MSG_PONG isEqual:type]) [self acceptPongMessage:message];
         else if ([MSG_MERKLEBLOCK isEqual:type]) [self acceptMerkleblockMessage:message];
-
-        else NSLog(@"%@:%d dropping %@ length %u, not implemented", self.host, self.port, type, (int)message.length);
+        else NSLog(@"%@:%d dropping %@, length %u, not implemented", self.host, self.port, type, (int)message.length);
     });
     CFRunLoopWakeUp([self.runLoop getCFRunLoop]);
 }
@@ -623,21 +625,22 @@ services:(uint64_t)services
     }
 
     // To improve chain download performance, if this message contains 2000 headers then request the next 2000 headers
-    // immediately, stopping as soon as the delegate makes the first getblocks request (we are optimizing for the case
-    // where the delegate requests headers up to a certain chain height, and then switches to requesting blocks)
-    if (count >= 2000) {
-        NSTimeInterval lastTimestamp = [message UInt32AtOffset:l + 81*(count - 1) + 68] - NSTimeIntervalSince1970;
+    // immediately, and switching to requesting blocks when we receive a header newer than earliestKeyTime
+    NSTimeInterval lastTimestamp = [message UInt32AtOffset:l + 81*(count - 1) + 68] - NSTimeIntervalSince1970;
+
+    if (count >= 2000 || lastTimestamp + 7*24*60*60 >= self.earliestKeyTime) {
         NSData *firstHash = [message subdataWithRange:NSMakeRange(l, 80)].SHA256_2,
                *lastHash = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].SHA256_2;
 
-        if (lastTimestamp < self.earliestKeyTime - (7*24*60*60)) {
+        if (lastTimestamp + 7*24*60*60 < self.earliestKeyTime) {
             [self sendGetheadersMessageWithLocators:@[lastHash, firstHash] andHashStop:nil];
         }
+        else [self sendGetblocksMessageWithLocators:@[firstHash] andHashStop:nil];
     }
 
     NSLog(@"%@:%u got %u headers", self.host, self.port, (int)count);
     
-    // schedule this on the runloop to ensure the above getheaders message is sent first for faster chain download
+    // schedule this on the runloop to ensure the above get message is sent first for faster chain download
     CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
         for (NSUInteger off = l; off < l + 81*count; off += 81) {
             ZNMerkleBlock *block = [ZNMerkleBlock blockWithMessage:[message subdataWithRange:NSMakeRange(off, 81)]];
@@ -797,8 +800,8 @@ services:(uint64_t)services
 // two peer objects are equal if they share an ip address and port number
 - (BOOL)isEqual:(id)object
 {
-    return ([object isKindOfClass:[ZNPeer class]] && self.address == ((ZNPeer *)object).address &&
-            self.port == ((ZNPeer *)object).port) ? YES : NO;
+    return self == object || ([object isKindOfClass:[ZNPeer class]] && self.address == [(ZNPeer *)object address] &&
+                              self.port == [(ZNPeer *)object port]);
 }
 
 #pragma mark - NSStreamDelegate
@@ -831,6 +834,7 @@ services:(uint64_t)services
             if (aStream != self.inputStream) return;
 
             while ([self.inputStream hasBytesAvailable]) {
+                NSData *message = nil;
                 NSString *type = nil;
                 uint32_t length = 0, checksum = 0;
                 NSInteger headerLen = self.msgHeader.length, payloadLen = self.msgPayload.length, l = 0;
@@ -891,13 +895,12 @@ services:(uint64_t)services
                     [self error:@"error reading %@, invalid checksum %x, expected %x, payload length:%u, expected "
                      "length:%u, SHA256_2:%@", type, *(uint32_t *)self.msgPayload.SHA256_2.bytes, checksum,
                      (int)self.msgPayload.length, length, self.msgPayload.SHA256_2];
+                     goto reset;
                 }
-                else {
-                    NSData *message = self.msgPayload;
-                    
-                    self.msgPayload = [NSMutableData data];
-                    [self acceptMessage:message type:type]; // process message
-                }
+
+                message = self.msgPayload;
+                self.msgPayload = [NSMutableData data];
+                [self acceptMessage:message type:type]; // process message
                 
 reset:          // reset for next message
                 self.msgHeader.length = self.msgPayload.length = 0;

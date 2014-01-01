@@ -25,7 +25,7 @@
 
 #import <Foundation/Foundation.h>
 
-#define balanceChangedNotification @"balanceChangedNotification"
+#define ZNWalletBalanceChangedNotification @"ZNWalletBalanceChangedNotification"
 
 @class ZNTransaction;
 
@@ -38,10 +38,9 @@
 @property (nonatomic, readonly) uint64_t balance;
 @property (nonatomic, readonly) NSString *receiveAddress;
 @property (nonatomic, readonly) NSString *changeAddress;
+@property (nonatomic, readonly) NSSet *addresses;
+@property (nonatomic, readonly) NSArray *unspentOutputs;
 @property (nonatomic, readonly) NSArray *recentTransactions; // ZNTransaction objects sorted by date, most recent first
-@property (nonatomic, readonly) uint32_t estimatedCurrentBlockHeight;
-@property (nonatomic, readonly) uint32_t lastBlockHeight;
-@property (nonatomic, readonly, getter = isSynchronizing) BOOL synchronizing;
 @property (nonatomic, strong) NSNumberFormatter *format;
 
 + (instancetype)sharedInstance;
@@ -64,22 +63,22 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion;
 // returns false if the transaction wasn't associated with the wallet
 - (BOOL)registerTransaction:(ZNTransaction *)transaction;
 
-// returns the estimated time in seconds until the transaction will be processed without a fee.
-// this is based on the default satoshi client settings, but on the real network it's way off. in testing, a 0.01btc
-// transaction with a 90 day time until free was confirmed in under an hour by Eligius pool.
-- (NSTimeInterval)timeUntilFree:(ZNTransaction *)transaction;
+- (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes;
 
 // returns the amount received to the wallet by the transaction (total outputs to change and/or recieve addresses)
-- (uint64_t)transactionReceived:(ZNTransaction *)transaction;
+- (uint64_t)amountReceivedFromTransaction:(ZNTransaction *)transaction;
 
-// retuns the amount sent from the wallet by the trasaction (total outputs consumed, change and fee included)
-- (uint64_t)transactionSent:(ZNTransaction *)transaction;
+// retuns the amount sent from the wallet by the trasaction (total wallet outputs consumed, change and fee included)
+- (uint64_t)amountSentByTransaction:(ZNTransaction *)transaction;
 
-// returns the transaction fee for the given transaction
-- (uint64_t)transactionFee:(ZNTransaction *)transaction;
+// returns the fee for the given transaction if all its inputs are from wallet transactions, UINT64_MAX otherwise
+- (uint64_t)feeForTransaction:(ZNTransaction *)transaction;
 
-// returns the first transaction output address not contained in the wallet
-- (NSString *)transactionTo:(ZNTransaction *)transaction;
+// returns the first non-change transaction output address, or nil if there aren't any
+- (NSString *)addressForTransaction:(ZNTransaction *)transaction;
+
+// returns the block height after which the transaction is likely be processed without including a fee
+- (uint32_t)blockHeightUntilFree:(ZNTransaction *)transaction;
 
 - (int64_t)amountForString:(NSString *)string;
 - (NSString *)stringForAmount:(int64_t)amount;

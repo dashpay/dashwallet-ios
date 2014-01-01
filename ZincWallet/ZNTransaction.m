@@ -186,14 +186,10 @@ sequence:(uint32_t)sequence
 {
     NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:self.inScripts.count];
 
-    for (NSData *d in self.inScripts) {
-        if (d != (id)[NSNull null] && d.length >= 22) {
-            NSMutableData *addr = [NSMutableData dataWithBytes:"\0" length:1];
+    for (NSData *script in self.inScripts) {
+        NSString *addr = [NSString addressWithScript:script];
 
-            [addr appendData:[d subdataWithRange:NSMakeRange(d.length - 22, 20)]];
-            [addresses addObject:[NSString base58checkWithData:addr]];
-        }
-        else [addresses addObject:[NSNull null]];
+        [addresses addObject:addr ? addr : [NSNull null]];
     }
 
     return addresses;
@@ -364,14 +360,14 @@ sequence:(uint32_t)sequence
 }
 
 // the block height after which the transaction can be confirmed without a fee, or TX_UNCONFIRMRED for never
-- (NSUInteger)blockHeightUntilFreeForAmounts:(NSArray *)amounts withBlockHeights:(NSArray *)heights
+- (uint32_t)blockHeightUntilFreeForAmounts:(NSArray *)amounts withBlockHeights:(NSArray *)heights
 {
-    if (amounts.count != self.hashes.count || heights.count != self.hashes.count) return NSNotFound;
+    if (amounts.count != self.hashes.count || heights.count != self.hashes.count) return TX_UNCONFIRMED;
 
-    if (self.size > TX_FREE_MAX_SIZE) return NSNotFound;
+    if (self.size > TX_FREE_MAX_SIZE) return TX_UNCONFIRMED;
     
     for (NSNumber *amount in self.amounts) {
-        if (amount.unsignedLongLongValue < TX_MIN_OUTPUT_AMOUNT) return NSNotFound;
+        if (amount.unsignedLongLongValue < TX_MIN_OUTPUT_AMOUNT) return TX_UNCONFIRMED;
     }
 
     uint64_t amountTotal = 0, amountsByHeights = 0;
@@ -386,7 +382,7 @@ sequence:(uint32_t)sequence
     // this could possibly overflow a uint64 for very large input amounts and far in the future block heights,
     // however we should be okay up to the largest current bitcoin balance in existence for the next 40 years or so,
     // and the worst case is paying a transaction fee when it's not needed
-    return (TX_FREE_MIN_PRIORITY*(uint64_t)self.size + amountsByHeights + amountTotal - 1llu)/amountTotal;
+    return (uint32_t)((TX_FREE_MIN_PRIORITY*(uint64_t)self.size + amountsByHeights + amountTotal - 1llu)/amountTotal);
 }
 
 - (uint64_t)standardFee
@@ -396,8 +392,7 @@ sequence:(uint32_t)sequence
 
 - (NSUInteger)hash
 {
-    if (self.txHash.length < sizeof(NSUInteger)) return [super hash];
-    return *(NSUInteger *)self.txHash.bytes;
+    return (self.txHash.length < sizeof(NSUInteger)) ? [super hash] : *(NSUInteger *)self.txHash.bytes;
 }
 
 - (BOOL)isEqual:(id)object
