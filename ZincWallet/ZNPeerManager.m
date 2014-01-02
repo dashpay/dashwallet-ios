@@ -686,7 +686,7 @@ static const char *dns_seeds[] = {
                 return;
             }
 
-            NSLog(@"chain fork at height %d", height);
+            NSLog(@"chain fork to height %d", height);
 
             e = [[ZNMerkleBlockEntity managedObject] setAttributesFromBlock:block];
             e.height = -height; // set negative height to denote a fork
@@ -719,19 +719,19 @@ static const char *dns_seeds[] = {
                 e.height *= -1;
             }
 
-            e = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", block.blockHash].lastObject;;
+            e = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", block.blockHash].lastObject;
 
             while (e.height < 0) { // set block heights for new main chain and mark its transactions as confirmed
                 e.height *= -1;
 
-                if (e.height >= self.blockChain.count) {
-                    [self.blockChain addObject:e];
+                while (self.blockChain.count <= e.height) {
+                    [self.blockChain addObject:[NSNull null]];
                     _lastBlockHeight = e.height;
                 }
-                else [self.blockChain insertObject:e atIndex:e.height];
 
+                [self.blockChain replaceObjectAtIndex:e.height withObject:e];
                 [self setBlockHeight:e.height forTxHashes:e.merkleBlock.txHashes];
-                e = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", e.prevBlock].lastObject;;
+                e = [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", e.prevBlock].lastObject;
             }
 
             NSAssert(self.lastBlockHeight + 1 == self.blockChain.count, @"wrong block height %d at index %d",

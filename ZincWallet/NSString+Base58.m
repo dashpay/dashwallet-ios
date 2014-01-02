@@ -47,7 +47,7 @@ static void secureDeallocate(void *ptr, void *info)
     CFIndex size = *((CFIndex *)ptr - 1);
 
     if (size) {
-        OPENSSL_cleanse(ptr, (size_t)size);
+        OPENSSL_cleanse(ptr, size);
         CFAllocatorDeallocate(kCFAllocatorDefault, (CFIndex *)ptr - 1);
     }
 }

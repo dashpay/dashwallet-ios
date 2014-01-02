@@ -349,7 +349,7 @@
     UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width,
                                                          [self tableView:tableView heightForHeaderInSection:section])];
     UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(10, v.frame.size.height - 22.0,
-                                                           self.view.frame.size.width - 20, 22.0)];;
+                                                           self.view.frame.size.width - 20, 22.0)];
     
     l.text = [self tableView:tableView titleForHeaderInSection:section];
     l.backgroundColor = [UIColor clearColor];
