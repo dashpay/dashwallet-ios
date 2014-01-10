@@ -134,6 +134,7 @@ static const char *dns_seeds[] = {
     self.publishedCallback = [NSMutableDictionary dictionary];
     self.txRelayCounts = [NSCountedSet set];
     self.taskId = UIBackgroundTaskInvalid;
+    self.prevHeight = NSNotFound;
     self.reachability = [Reachability reachabilityForInternetConnection];
     self.checkpoints = [NSMutableDictionary dictionary];
 
@@ -230,6 +231,8 @@ static const char *dns_seeds[] = {
          removeObjectsAtIndexes:[self.peers indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
             return ([obj status] == disconnected) ? YES : NO;
         }]];
+
+        //BUG: if we're behind and haven't received a block in 10-20 seconds, we might need a tickle
 
         if (self.peers.count >= MAX_CONNECTIONS) return; // we're already connected to MAX_CONNECTIONS peers
 
@@ -492,7 +495,8 @@ static const char *dns_seeds[] = {
 - (void)peer:(ZNPeer *)peer disconnectedWithError:(NSError *)error
 {
     //TODO: XXXX detect 10-20 connection refused (NSPOSIXErrorDomain Code=61) in a row and notify about network problem
-
+    // Error Domain=NSPOSIXErrorDomain Code=65 "The operation couldn’t be completed. No route to host"
+    // Error Domain=NSPOSIXErrorDomain Code=49 "The operation couldn’t be completed. Can't assign requested address"
     NSLog(@"%@:%d disconnected%@%@", peer.host, peer.port, error ? @", " : @"", error ? error : @"");
     
     if ([error.domain isEqual:@"ZincWallet"] && error.code != 1001) {
@@ -591,7 +595,6 @@ static const char *dns_seeds[] = {
     //TODO: XXXX relay tx to other peers
 }
 
-//TODO: modify this to only keep around the most recent 4032 blocks, we don't need the whole chain
 - (void)peer:(ZNPeer *)peer relayedBlock:(ZNMerkleBlock *)block
 {
     // ignore block headers that are newer than one week before earliestKeyTime (headers have 0 totalTransactions)
@@ -611,7 +614,8 @@ static const char *dns_seeds[] = {
             // if we're still downloading the chain, ignore orphan block for now since it's probably in the chain
             if (self.lastBlockHeight < peer.lastblock) return;
 
-            NSLog(@"%@:%d relayed orphan block, calling getblocks with last block", peer.host, peer.port);
+            NSLog(@"%@:%d relayed orphan block %@, previous %@, calling getblocks with last block %@", peer.host,
+                  peer.port, block.blockHash, block.prevBlock, [self.blockChain[self.lastBlockHeight] blockHash]);
 
             //TODO: set a limit on how many times we call getblocks, if we get 500 blocks and the first one is an
             //      orphan, we don't want to make 500 getblocks requests
@@ -624,9 +628,22 @@ static const char *dns_seeds[] = {
 
         self.prevHeight = height;
 
-        if ((height % BITCOIN_DIFFICULTY_INTERVAL) == 0) { // hit a difficulty transition, find last transition time
+        if ((height % BITCOIN_DIFFICULTY_INTERVAL) == 0) { // hit a difficulty transition, find previous transition time
             transitionTime = [self.blockChain[height - BITCOIN_DIFFICULTY_INTERVAL] timestamp];
-            [ZNMerkleBlockEntity saveContext]; // this is a good opportunity to persist the blockchain up to this point
+
+            if (height > BITCOIN_DIFFICULTY_INTERVAL*2) { // discard blocks prior to the previous two transitions
+                int32_t h = height - BITCOIN_DIFFICULTY_INTERVAL*2;
+
+                [ZNMerkleBlockEntity
+                 deleteObjects:[ZNMerkleBlockEntity objectsMatching:@"height < 0 && height > %d", -h]];
+                [ZNMerkleBlockEntity
+                 deleteObjects:[ZNMerkleBlockEntity objectsMatching:@"height >= 0 && height < %d", h]];
+                [self.blockChain removeObjectsInRange:NSMakeRange(0, h)];
+
+                while (self.blockChain.count <= self.lastBlockHeight) {
+                    [self.blockChain insertObject:[NSNull null] atIndex:0];
+                }
+            }
         }
 
         // verify block difficulty
@@ -743,14 +760,13 @@ static const char *dns_seeds[] = {
             }
         }
 
+        if (height >= peer.lastblock) [ZNMerkleBlockEntity saveContext];
+
         if (height == peer.lastblock) { // chain download is complete
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:ZNPeerManagerSyncFinishedNotification
                  object:nil];
             });
-
-            [ZNMerkleBlockEntity saveContext];
-            [NSManagedObject saveContext];
             
             if (self.taskId != UIBackgroundTaskInvalid) {
                 [[UIApplication sharedApplication] endBackgroundTask:self.taskId];

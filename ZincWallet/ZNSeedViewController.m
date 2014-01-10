@@ -107,6 +107,8 @@
 
 - (IBAction)done:(id)sender
 {
+    if (self.navigationController.viewControllers[0] != self) return;
+
     [[[UIAlertView alloc] initWithTitle:nil message:@"you can see your backup phrase again under settings" delegate:self
       cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
 }

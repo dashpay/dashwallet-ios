@@ -249,9 +249,8 @@ static NSUInteger _fetchBatchSize = 100;
             needsSave = YES;
             return;
         }
+        else saving = YES;
 
-        saving = YES;
-        
         if ([[self context] hasChanges] && ! [[self context] save:&error]) { // save changes to writer context
             NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
 #if DEBUG
@@ -260,9 +259,9 @@ static NSUInteger _fetchBatchSize = 100;
         }
 
         [[self context].parentContext performBlock:^{
-            NSError *error = nil;
             NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
             NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate];
+            NSError *error = nil;
 
             // write changes to persistent store
             if ([[self context].parentContext hasChanges] && ! [[self context].parentContext save:&error]) {
@@ -271,10 +270,6 @@ static NSUInteger _fetchBatchSize = 100;
                 abort();
 #endif
             }
-
-            // BUG: XXXX core data memory bug
-            // obtain permanent ids and recreate persistent store as suggested here:
-            // http://finalize.com/2013/01/04/core-data-issues-with-memory-allocation/
 
             NSLog(@"context save completed in %f seconds", [NSDate timeIntervalSinceReferenceDate] - t);
             saving = NO;

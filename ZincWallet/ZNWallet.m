@@ -101,7 +101,8 @@ static NSData *getKeychainData(NSString *key)
 @property (nonatomic, strong) id<ZNKeySequence> sequence;
 @property (nonatomic, strong) NSData *mpk;
 @property (nonatomic, strong) NSMutableSet *allAddresses;
-@property (nonatomic, strong) NSMutableArray *internalAddresses, *externalAddresses, *transactions, *utxos;
+@property (nonatomic, strong) NSMutableArray *internalAddresses, *externalAddresses;
+@property (nonatomic, strong) NSMutableOrderedSet *transactions;
 @property (nonatomic, strong) NSMutableDictionary *allTxOutAddresses, *allTxOutValues;
 @property (nonatomic, assign) uint64_t balance;
 
@@ -154,7 +155,7 @@ static NSData *getKeychainData(NSString *key)
         self.allAddresses = [NSMutableSet setWithArray:[[ZNAddressEntity allObjects] valueForKey:@"address"]];
         self.allTxOutAddresses = [NSMutableDictionary dictionary];
         self.allTxOutValues = [NSMutableDictionary dictionary];
-        self.transactions = [NSMutableArray array];
+        self.transactions = [NSMutableOrderedSet orderedSet];
 
         for (ZNTransactionEntity *e in [ZNTransactionEntity objectsSortedBy:@"blockHeight" ascending:NO]) {
             [self.transactions addObject:e.transaction];
@@ -349,7 +350,7 @@ static NSData *getKeychainData(NSString *key)
 
 - (NSArray *)recentTransactions
 {
-    return self.transactions;
+    return [self.transactions array];
 }
 
 - (BOOL)containsAddress:(NSString *)address
@@ -514,7 +515,6 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
 }
 
 // returns false if the transaction wasn't associated with the wallet
-// BUG: XXXX get this to return immediately even if core data blocks
 - (BOOL)registerTransaction:(ZNTransaction *)transaction
 {
     if (! [self containsTransaction:transaction]) return NO;
@@ -542,16 +542,15 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
     _unspentOutputs = utxos;
     self.allTxOutAddresses[transaction.txHash] = transaction.outputAddresses;
     self.allTxOutValues[transaction.txHash] = transaction.outputAmounts;
+    [self.transactions insertObject:transaction atIndex:0];
 
     // when a wallet address is used in a transaction, generate a new address to replace it
     [self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
     [self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
 
-    // add the transaction to core data
-    [[ZNTransactionEntity context] performBlock:^{
+    [[ZNTransactionEntity context] performBlock:^{ // add the transaction to core data
         if ([ZNTransactionEntity countObjectsMatching:@"txHash == %@", transaction.txHash] == 0) {
             [[ZNTransactionEntity managedObject] setAttributesFromTx:transaction];
-            [self.transactions addObject:transaction];
         };
 
         [self updateBalance];

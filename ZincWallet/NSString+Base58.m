@@ -57,19 +57,17 @@ static void *secureReallocate(void *ptr, CFIndex newsize, CFOptionFlags hint, vo
     // There's no way to tell ahead of time if the original memory will be deallocted even if the new size is smaller
     // than the old size, so just cleanse and deallocate every time.
     void *newptr = secureAllocate(newsize, hint, info);
-    
-    if (newptr) {
-        CFIndex size = *((CFIndex *)ptr - 1);
+    CFIndex size = *((CFIndex *)ptr - 1);
 
+    if (newptr) {
         if (size) {
             memcpy(newptr, ptr, size < newsize ? size : newsize);
             secureDeallocate(ptr, info);
-            return newptr;
         }
-        else secureDeallocate(newptr, info);
-    }
 
-    return NULL;
+        return newptr;
+    }
+    else return NULL;
 }
 
 // Since iOS does not page memory to storage, all we need to do is cleanse allocated memory prior to deallocation.

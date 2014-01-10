@@ -392,12 +392,13 @@ sequence:(uint32_t)sequence
 
 - (NSUInteger)hash
 {
-    return (self.txHash.length < sizeof(NSUInteger)) ? [super hash] : *(NSUInteger *)self.txHash.bytes;
+    if (self.txHash.length < sizeof(NSUInteger)) return [super hash];
+    return *(NSUInteger *)self.txHash.bytes;
 }
 
 - (BOOL)isEqual:(id)object
 {
-    return ([object isKindOfClass:[ZNTransaction class]] && [[object txHash] isEqual:self.txHash]) ? YES : NO;
+    return self == object || ([object isKindOfClass:[ZNTransaction class]] && [[object txHash] isEqual:self.txHash]);
 }
 
 @end

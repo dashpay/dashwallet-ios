@@ -402,10 +402,10 @@
               otherButtonTitles:nil] show];
             [self cancel:nil];
         }
-        else if (freeHeight == TX_UNCONFIRMED) {//(t == DBL_MAX) {
-            [[[UIAlertView alloc] initWithTitle:nil//@"transaction fee"
+        else if (freeHeight == TX_UNCONFIRMED) {
+            [[[UIAlertView alloc] initWithTitle:nil
               message:[NSString stringWithFormat:@"the bitcoin network will receive a fee of %@ (%@)", fee,
-              localCurrencyFee] delegate:self cancelButtonTitle:@"cancel"
+                       localCurrencyFee] delegate:self cancelButtonTitle:@"cancel"
               otherButtonTitles:[NSString stringWithFormat:@"+ %@ (%@)", fee, localCurrencyFee], nil] show];
         }
 //        else if (freeHeight > [[ZNPeerManager sharedInstance] lastBlockHeight] + 1) {
