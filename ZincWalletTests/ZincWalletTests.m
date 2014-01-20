@@ -502,25 +502,25 @@
                      "df9d05b47f35b2edff4f0064b578ab741fa78276222651209fe1a2c4c0fa1c58510aec8b090dd1eb1f82f9d261b8273b5"
                      "25b02ff1a".hexToData;
     
-    ZNMerkleBlock *mb = [ZNMerkleBlock blockWithMessage:block];
+    ZNMerkleBlock *b = [ZNMerkleBlock blockWithMessage:block];
     
-    STAssertEqualObjects(mb.blockHash,
+    STAssertEqualObjects(b.blockHash,
                          @"00000000000080b66c911bd5ba14a74260057311eaeb1982802f7010f1a9f090".hexToData.reverse,
                          @"[ZNMerkleBlock blockHash]");
 
-    STAssertTrue(mb.valid, @"[ZNMerkleBlock isValid]");
+    STAssertTrue(b.valid, @"[ZNMerkleBlock isValid]");
 
-    STAssertTrue([mb containsTxHash:@"bb28a1a5b3a02e7657a81c38355d56c6f05e80b9219432e3352ddcfc3cb6304c".hexToData],
+    STAssertTrue([b containsTxHash:@"4c30b63cfcdc2d35e3329421b9805ef0c6565d35381ca857762ea0b3a5a128bb".hexToData],
                  @"[ZNMerkleBlock containsTxHash:]");
 
-    STAssertTrue(mb.txHashes.count == 4, @"[ZNMerkleBlock txHashes]");
-    STAssertEqualObjects(mb.txHashes[0], @"bb28a1a5b3a02e7657a81c38355d56c6f05e80b9219432e3352ddcfc3cb6304c".hexToData,
+    STAssertTrue(b.txHashes.count == 4, @"[ZNMerkleBlock txHashes]");
+    STAssertEqualObjects(b.txHashes[0], @"4c30b63cfcdc2d35e3329421b9805ef0c6565d35381ca857762ea0b3a5a128bb".hexToData,
                          @"[ZNMerkleBlock txHashes]");
-    STAssertEqualObjects(mb.txHashes[1], @"fbde5d03b027d2b9ba4cf5d4fecab9a99864df2637b25ea4cbcb1796ff6550ca".hexToData,
+    STAssertEqualObjects(b.txHashes[1], @"ca5065ff9617cbcba45eb23726df6498a9b9cafed4f54cbab9d227b0035ddefb".hexToData,
                          @"[ZNMerkleBlock txHashes]");
-    STAssertEqualObjects(mb.txHashes[2], @"8131ffb0a2c945ecaf9b9063e59558784f9c3a74741ce6ae2a18d0571dac15bb".hexToData,
+    STAssertEqualObjects(b.txHashes[2], @"bb15ac1d57d0182aaee61c74743a9c4f785895e563909bafec45c9a2b0ff3181".hexToData,
                          @"[ZNMerkleBlock txHashes]");
-    STAssertEqualObjects(mb.txHashes[3], @"c5abc61566dbb1c4bce5e1fda7b66bed22eb2130cea4b721690bc1488465abc9".hexToData,
+    STAssertEqualObjects(b.txHashes[3], @"c9ab658448c10b6921b7a4ce3021eb22ed6bb6a7fde1e5bcc4b1db6615c6abc5".hexToData,
                          @"[ZNMerkleBlock txHashes]");
     
     //TODO: test a block with an odd number of tree rows both at the tx level and merkle node level
