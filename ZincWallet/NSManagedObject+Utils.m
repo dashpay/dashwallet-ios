@@ -242,14 +242,7 @@ static NSUInteger _fetchBatchSize = 100;
     if (! [[self context] hasChanges]) return;
 
     [[self context] performBlock:^{
-        static BOOL saving = NO, needsSave = NO;
         NSError *error = nil;
-
-        if (saving) {
-            needsSave = YES;
-            return;
-        }
-        else saving = YES;
 
         if ([[self context] hasChanges] && ! [[self context] save:&error]) { // save changes to writer context
             NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
@@ -272,13 +265,6 @@ static NSUInteger _fetchBatchSize = 100;
             }
 
             NSLog(@"context save completed in %f seconds", [NSDate timeIntervalSinceReferenceDate] - t);
-            saving = NO;
-
-            if (needsSave) {
-                needsSave = NO;
-                [self saveContext];
-            }
-            
             [[UIApplication sharedApplication] endBackgroundTask:taskId];
         }];
     }];

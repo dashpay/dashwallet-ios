@@ -54,6 +54,7 @@
         self.totalTransactions = block.totalTransactions;
         self.hashes = [NSData dataWithData:block.hashes];
         self.flags = [NSData dataWithData:block.flags];
+        self.height = block.height;
     }];
 
     return self;
@@ -66,7 +67,7 @@
     [[self managedObjectContext] performBlockAndWait:^{
         block = [[ZNMerkleBlock alloc] initWithBlockHash:self.blockHash version:self.version prevBlock:self.prevBlock
                  merkleRoot:self.merkleRoot timestamp:self.timestamp target:self.target nonce:self.nonce
-                 totalTransactions:self.totalTransactions hashes:self.hashes flags:self.flags];
+                 totalTransactions:self.totalTransactions hashes:self.hashes flags:self.flags height:self.height];
     }];
     
     return block;

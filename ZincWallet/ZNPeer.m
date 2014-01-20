@@ -67,6 +67,7 @@ typedef enum {
 @property (nonatomic, strong) ZNMerkleBlock *currentBlock;
 @property (nonatomic, strong) NSMutableArray *currentTxHashes;
 @property (nonatomic, strong) NSRunLoop *runLoop;
+@property (nonatomic, strong) dispatch_queue_t q;
 
 @end
 
@@ -104,6 +105,19 @@ services:(uint64_t)services
     if (self.reachabilityObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
 }
 
+- (dispatch_queue_t)delegateQueue
+{
+    return _delegateQueue ? _delegateQueue : dispatch_get_main_queue();
+}
+
+- (NSString *)host
+{
+    struct in_addr addr = { CFSwapInt32HostToBig(self.address) };
+    char s[INET_ADDRSTRLEN];
+
+    return [NSString stringWithUTF8String:inet_ntop(AF_INET, &addr, s, INET_ADDRSTRLEN)];
+}
+
 - (void)connect
 {
     if (self.status != disconnected) return;
@@ -126,16 +140,16 @@ services:(uint64_t)services
         [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
         self.reachabilityObserver = nil;
     }
-    
+
     _status = connecting;
     _pingTime = DBL_MAX;
     self.msgHeader = [NSMutableData data];
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
-    
+
     NSString *label = [NSString stringWithFormat:@"cc.zinc.peer.%@:%d", self.host, self.port];
-    
-    // create a private serial queue for processing socket io
+
+    // use a private serial queue for processing socket io
     dispatch_async(dispatch_queue_create(label.UTF8String, NULL), ^{
         CFReadStreamRef readStream = NULL;
         CFWriteStreamRef writeStream = NULL;
@@ -189,7 +203,9 @@ services:(uint64_t)services
         
         self.gotVerack = self.sentVerack = NO;
         _status = disconnected;
-        [self.delegate peer:self disconnectedWithError:error];
+        dispatch_async(self.delegateQueue, ^{
+            [self.delegate peer:self disconnectedWithError:error];
+        });
     });
     CFRunLoopWakeUp([self.runLoop getCFRunLoop]);
 }
@@ -204,14 +220,6 @@ services:(uint64_t)services
     va_end(args);
 }
 
-- (NSString *)host
-{
-    struct in_addr addr = { CFSwapInt32HostToBig(self.address) };
-    char s[INET_ADDRSTRLEN];
-
-    return [NSString stringWithUTF8String:inet_ntop(AF_INET, &addr, s, INET_ADDRSTRLEN)];
-}
-
 - (void)didConnect
 {
     if (self.status != connecting || ! self.sentVerack || ! self.gotVerack) return;
@@ -219,7 +227,9 @@ services:(uint64_t)services
     NSLog(@"%@:%d handshake completed", self.host, self.port);
 
     _status = connected;
-    [self.delegate peerConnected:self];
+    dispatch_async(self.delegateQueue, ^{
+        [self.delegate peerConnected:self];
+    });
 }
 
 #pragma mark - send
@@ -537,8 +547,10 @@ services:(uint64_t)services
         [peers addObject:[[ZNPeer alloc] initWithAddress:address port:port timestamp:timestamp - 2*60*60
          services:services]];
     }
-    
-    [self.delegate peer:self relayedPeers:peers];
+
+    dispatch_async(self.delegateQueue, ^{
+        [self.delegate peer:self relayedPeers:peers];
+    });
 }
 
 - (void)acceptInvMessage:(NSData *)message
@@ -601,13 +613,20 @@ services:(uint64_t)services
     }
     
     NSLog(@"%@:%u got tx %@", self.host, self.port, tx.txHash);
-    
-    [self.delegate peer:self relayedTransaction:tx];
+
+    dispatch_async(self.delegateQueue, ^{
+        [self.delegate peer:self relayedTransaction:tx];
+    });
     
     if (self.currentBlock) { // we're collecting tx messages for a merkleblock
         [self.currentTxHashes removeObject:tx.txHash];
+
         if (self.currentTxHashes.count == 0) { // we received the entire block including all matched tx
-            [self.delegate peer:self relayedBlock:self.currentBlock];
+            ZNMerkleBlock *block = self.currentBlock;
+
+            dispatch_async(self.delegateQueue, ^{
+                [self.delegate peer:self relayedBlock:block];
+            });
             self.currentBlock = nil;
             self.currentTxHashes = nil;
         }
@@ -649,8 +668,10 @@ services:(uint64_t)services
                 [self error:@"invalid block header %@", block.blockHash];
                 return;
             }
-    
-            [self.delegate peer:self relayedBlock:block];
+
+            dispatch_async(self.delegateQueue, ^{
+                [self.delegate peer:self relayedBlock:block];
+            });
         }
     });
     CFRunLoopWakeUp([self.runLoop getCFRunLoop]);
@@ -679,40 +700,42 @@ services:(uint64_t)services
     }
     
     NSLog(@"%@:%u got getdata", self.host, self.port);
-    
-    NSMutableData *notfound = [NSMutableData data];
-    
-    for (NSUInteger off = l; off < l + count*36; off += 36) {
-        inv_t type = [message UInt32AtOffset:off];
-        NSData *hash = [message hashAtOffset:off + sizeof(uint32_t)];
-        ZNTransaction *transaction = nil;
-        
-        if (! hash) continue;
-        
-        switch (type) {
-            case tx:
-                transaction = [self.delegate peer:self requestedTransaction:hash];
-                
-                if (transaction) {
-                    [self sendMessage:transaction.data type:MSG_TX];
-                    break;
-                }
-                
-                // fall through
-            default:
-                [notfound appendUInt32:type];
-                [notfound appendData:hash];
-                break;
-        }
-    }
 
-    if (notfound.length > 0) {
-        NSMutableData *msg = [NSMutableData data];
+    dispatch_async(self.delegateQueue, ^{
+        NSMutableData *notfound = [NSMutableData data];
+    
+        for (NSUInteger off = l; off < l + count*36; off += 36) {
+            inv_t type = [message UInt32AtOffset:off];
+            NSData *hash = [message hashAtOffset:off + sizeof(uint32_t)];
+            ZNTransaction *transaction = nil;
         
-        [msg appendVarInt:notfound.length/36];
-        [msg appendData:notfound];
-        [self sendMessage:msg type:MSG_NOTFOUND];
-    }
+            if (! hash) continue;
+        
+            switch (type) {
+                case tx:
+                    transaction = [self.delegate peer:self requestedTransaction:hash];
+                
+                    if (transaction) {
+                        [self sendMessage:transaction.data type:MSG_TX];
+                        break;
+                    }
+                
+                    // fall through
+                default:
+                    [notfound appendUInt32:type];
+                    [notfound appendData:hash];
+                    break;
+            }
+        }
+
+        if (notfound.length > 0) {
+            NSMutableData *msg = [NSMutableData data];
+        
+            [msg appendVarInt:notfound.length/36];
+            [msg appendData:notfound];
+            [self sendMessage:msg type:MSG_NOTFOUND];
+        }
+    });
 }
 
 - (void)acceptPingMessage:(NSData *)message
@@ -774,7 +797,11 @@ services:(uint64_t)services
         self.currentBlock = block;
         self.currentTxHashes = txHashes;
     }
-    else [self.delegate peer:self relayedBlock:block];
+    else {
+        dispatch_async(self.delegateQueue, ^{
+            [self.delegate peer:self relayedBlock:block];
+        });
+    }
 }
 
 #pragma mark - hash

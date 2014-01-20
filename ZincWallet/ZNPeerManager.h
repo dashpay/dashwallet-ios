@@ -34,7 +34,7 @@
 
 @property (nonatomic, readonly) BOOL connected;
 @property (nonatomic, readonly) double syncProgress;
-@property (nonatomic, readonly) NSUInteger lastBlockHeight;
+@property (nonatomic, readonly) uint32_t lastBlockHeight;
 
 // set this to the timestamp when the wallet was created to improve initial sync time
 @property (nonatomic, assign) NSTimeInterval earliestKeyTime;

@@ -25,7 +25,8 @@
 
 #import <Foundation/Foundation.h>
 
-#define BITCOIN_DIFFICULTY_INTERVAL 2016 // number of blocks between difficulty target adjustments
+#define BLOCK_DIFFICULTY_INTERVAL 2016      // number of blocks between difficulty target adjustments
+#define BLOCK_UNKOWN_HEIGHT       INT32_MAX
 
 @interface ZNMerkleBlock : NSObject
 
@@ -39,6 +40,7 @@
 @property (nonatomic, readonly) uint32_t totalTransactions;
 @property (nonatomic, readonly) NSData *hashes;
 @property (nonatomic, readonly) NSData *flags;
+@property (nonatomic, assign) uint32_t height;
 
 @property (nonatomic, readonly) NSArray *txHashes; // the matched tx hashes in the block
 
@@ -55,11 +57,11 @@
 - (instancetype)initWithMessage:(NSData *)message;
 - (instancetype)initWithBlockHash:(NSData *)blockHash version:(uint32_t)version prevBlock:(NSData *)prevBlock
 merkleRoot:(NSData *)merkleRoot timestamp:(NSTimeInterval)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
-totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags;
+totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags height:(uint32_t)height;
 
 // true if the given tx hash is known to be included in the block
 - (BOOL)containsTxHash:(NSData *)txHash;
 
-- (BOOL)verifyDifficultyAtHeight:(uint32_t)height previous:(ZNMerkleBlock*)previous transitionTime:(NSTimeInterval)time;
+- (BOOL)verifyDifficultyFromPreviousBlock:(ZNMerkleBlock*)previous andTransitionTime:(NSTimeInterval)time;
 
 @end

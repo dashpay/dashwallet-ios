@@ -376,7 +376,12 @@ static NSData *getKeychainData(NSString *key)
     //TODO: optimize for free transactions (watch out for performance issues, nothing O(n^2) please)
     // this is a nieve implementation to just get it functional, sorts unspent outputs by oldest first
     [[NSManagedObject context] performBlockAndWait:^{
-        for (ZNTxOutputEntity *o in [ZNTxOutputEntity objectsSortedBy:@"transaction.blockHeight" ascending:YES]) {
+        NSFetchRequest *req = [ZNTxOutputEntity fetchRequest];
+
+        req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"transaction.blockHeight" ascending:YES]];
+        req.predicate = [NSPredicate predicateWithFormat:@"spent == NO"];
+
+        for (ZNTxOutputEntity *o in [ZNTxOutputEntity fetchObjects:req]) {
             if (! [self containsAddress:o.address]) continue;
             [tx addInputHash:o.txHash index:o.n script:o.script]; // txHash is already in little endian
             

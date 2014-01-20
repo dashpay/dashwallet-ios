@@ -130,13 +130,14 @@ static uint32_t getCompact(const BIGNUM *bn)
     _hashes = off + len > message.length ? nil : [message subdataWithRange:NSMakeRange(off, len)];
     off += len;
     _flags = [message dataAtOffset:off length:&l];
+    _height = BLOCK_UNKOWN_HEIGHT;
 
     return self;
 }
 
 - (instancetype)initWithBlockHash:(NSData *)blockHash version:(uint32_t)version prevBlock:(NSData *)prevBlock
 merkleRoot:(NSData *)merkleRoot timestamp:(NSTimeInterval)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
-totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags
+totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags height:(uint32_t)height
 {
     if (! (self = [self init])) return nil;
     
@@ -150,6 +151,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     _totalTransactions = totalTransactions;
     _hashes = hashes;
     _flags = flags;
+    _height = height;
     
     return self;
 }
@@ -246,16 +248,16 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 // targeted time between transitions (14*24*60*60 seconds). If the new difficulty is more than 4x or less than 1/4 of
 // the previous difficulty, the change is limited to either 4x or 1/4. There is also a minimum difficulty value
 // intuitively named MAX_PROOF_OF_WORK... since larger values are less difficult.
-- (BOOL)verifyDifficultyAtHeight:(uint32_t)height previous:(ZNMerkleBlock *)previous transitionTime:(NSTimeInterval)time
+- (BOOL)verifyDifficultyFromPreviousBlock:(ZNMerkleBlock *)previous andTransitionTime:(NSTimeInterval)time
 {
-    if (! [_prevBlock isEqual:previous.blockHash]) return NO;
+    if (! [_prevBlock isEqual:previous.blockHash] || _height != previous.height + 1) return NO;
     
 #if BITCOIN_TESTNET
     //TODO: implement testnet difficulty rule check
     return YES; // don't worry about difficulty on testnet for now
 #endif
 
-    if ((height % BITCOIN_DIFFICULTY_INTERVAL) != 0) return (_target == previous.target) ? YES : NO;
+    if ((_height % BLOCK_DIFFICULTY_INTERVAL) != 0) return (_target == previous.target) ? YES : NO;
 
     int32_t timespan = (int32_t)((int64_t)previous.timestamp - (int64_t)time);
     BIGNUM target, maxTarget, span, targetSpan, bn;
