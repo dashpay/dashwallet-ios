@@ -32,7 +32,7 @@
 
 @interface ZNTransactionEntity : NSManagedObject
 
-@property (nonatomic, retain) NSData *txHash; // little endian
+@property (nonatomic, retain) NSData *txHash;
 @property (nonatomic) int32_t blockHeight;
 @property (nonatomic, retain) NSOrderedSet *inputs;
 @property (nonatomic, retain) NSOrderedSet *outputs;

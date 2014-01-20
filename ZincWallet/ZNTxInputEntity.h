@@ -30,7 +30,7 @@
 
 @interface ZNTxInputEntity : NSManagedObject
 
-@property (nonatomic, retain) NSData *txHash; // little endian
+@property (nonatomic, retain) NSData *txHash;
 @property (nonatomic) int32_t n;
 @property (nonatomic, retain) NSData *signature;
 @property (nonatomic) int32_t sequence;

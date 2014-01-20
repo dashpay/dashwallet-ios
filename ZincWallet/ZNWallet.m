@@ -363,7 +363,6 @@ static NSData *getKeychainData(NSString *key)
 - (ZNTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee
 {
     //TODO: implement P2SH transactions
-    //TODO: remove TX_FREE_MIN_OUTPUT per 0.8.6 changes: https://gist.github.com/gavinandresen/7670433#086-relaying
 
     __block uint64_t balance = 0, standardFee = 0;
     ZNTransaction *tx = [ZNTransaction new];
@@ -383,7 +382,7 @@ static NSData *getKeychainData(NSString *key)
 
         for (ZNTxOutputEntity *o in [ZNTxOutputEntity fetchObjects:req]) {
             if (! [self containsAddress:o.address]) continue;
-            [tx addInputHash:o.txHash index:o.n script:o.script]; // txHash is already in little endian
+            [tx addInputHash:o.txHash index:o.n script:o.script];
             
             balance += o.value;
             
@@ -465,7 +464,7 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
 //        
 //        [[NSManagedObject context] performBlockAndWait:^{
 //            for (ZNUnspentOutputEntity *o in [ZNUnspentOutputEntity objectsMatching:@"address == %@", address]) {
-//                [tx addInputHash:o.txHash index:o.n script:o.script]; // txHash is already in little endian
+//                [tx addInputHash:o.txHash index:o.n script:o.script];
 //            
 //                balance += o.value;
 //                
@@ -534,7 +533,7 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
         [utxos removeObject:d];
     }
 
-    for (NSString *address in  transaction.outputAddresses) { // add outputs to unspentOutputs
+    for (NSString *address in transaction.outputAddresses) { // add outputs to unspentOutputs
         n++;
         if (! [self containsAddress:address]) continue;
 

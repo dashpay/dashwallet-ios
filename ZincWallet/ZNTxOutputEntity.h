@@ -30,7 +30,7 @@
 
 @interface ZNTxOutputEntity : NSManagedObject
 
-@property (nonatomic, retain) NSData *txHash; // little endian
+@property (nonatomic, retain) NSData *txHash;
 @property (nonatomic) int32_t n;
 @property (nonatomic, retain) NSString *address;
 @property (nonatomic, retain) NSData *script;

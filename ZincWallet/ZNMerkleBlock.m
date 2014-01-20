@@ -214,8 +214,6 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 // true if the given tx hash is included in the block
 - (BOOL)containsTxHash:(NSData *)txHash
 {
-    txHash = txHash.reverse;
-
     for (NSUInteger i = 0; i < _hashes.length/CC_SHA256_DIGEST_LENGTH; i += CC_SHA256_DIGEST_LENGTH) {
         if (! [txHash isEqual:[_hashes hashAtOffset:i]]) continue;
         return YES;
@@ -230,7 +228,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     int hashIdx = 0, flagIdx = 0;
     NSArray *txHashes =
         [self _walk:&hashIdx :&flagIdx :0 :^id (NSData *hash, BOOL flag) {
-            return (flag && hash) ? @[hash.reverse] : @[];
+            return (flag && hash) ? @[hash] : @[];
         } :^id (id left, id right) {
             return [left arrayByAddingObjectsFromArray:right];
         }];

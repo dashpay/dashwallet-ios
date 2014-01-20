@@ -320,6 +320,7 @@ static const char *dns_seeds[] = {
     while (b && b.height > 0) {
         [locators addObject:b.blockHash];
         if (++start >= 10) step *= 2;
+
         for (int32_t i = 0; b && i < step; i++) {
             b = self.blocks[b.prevBlock];
         }

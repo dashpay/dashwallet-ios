@@ -103,7 +103,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     NSUInteger l = 0, off = 0, count = 0;
     NSData *d = nil;
 
-    _txHash = data.SHA256_2.reverse;
+    _txHash = data.SHA256_2;
     _version = [data UInt32AtOffset:off]; // tx version
     off += sizeof(uint32_t);
     count = [data varIntAtOffset:off length:&l]; // input count
@@ -141,7 +141,6 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     return self;
 }
 
-// hashes are expected to already be little endian
 - (void)addInputHash:(NSData *)hash index:(NSUInteger)index script:(NSData *)script
 {
     [self addInputHash:hash index:index script:script signature:nil sequence:TXIN_SEQUENCE];
@@ -269,7 +268,7 @@ sequence:(uint32_t)sequence
     
     if (! [self isSigned]) return NO;
     
-    _txHash = self.data.SHA256_2.reverse;
+    _txHash = self.data.SHA256_2;
         
     return YES;
 }

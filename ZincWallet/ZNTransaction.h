@@ -50,7 +50,7 @@
 @property (nonatomic, readonly) NSArray *outputScripts;
 
 @property (nonatomic, assign) uint32_t version;
-@property (nonatomic, strong) NSData *txHash; // hash of the signed transaction, little endian
+@property (nonatomic, strong) NSData *txHash;
 @property (nonatomic, assign) uint32_t lockTime;
 @property (nonatomic, assign) uint32_t blockHeight;
 @property (nonatomic, readonly) size_t size;
@@ -59,7 +59,6 @@
 @property (nonatomic, readonly, getter = toData) NSData *data;
 @property (nonatomic, readonly, getter = toHex) NSString *hex;
 
-// hashes are expected to already be little endian
 - (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts
 outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts;
 
