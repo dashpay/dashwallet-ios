@@ -131,7 +131,7 @@
                                          [w localCurrencyStringForAmount:w.balance]];
             [UIApplication sharedApplication].idleTimerDisabled = NO;
             [self.progress setProgress:1.0 animated:YES];
-            [self.progress performSelector:@selector(setHidden:) withObject:self afterDelay:1.0];
+            [self.progress performSelector:@selector(setHidden:) withObject:self afterDelay:0.2];
         }];
     
     //TODO: create an error banner instead of using an alert

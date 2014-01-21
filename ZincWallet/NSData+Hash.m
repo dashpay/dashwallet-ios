@@ -64,12 +64,12 @@
 
 - (NSData *)reverse
 {
-    size_t l = self.length;
+    NSUInteger l = self.length;
     NSMutableData *d = [NSMutableData dataWithLength:l];
     uint8_t *b1 = d.mutableBytes;
     const uint8_t *b2 = self.bytes;
     
-    for (size_t i = 0; i < l; i++) {
+    for (NSUInteger i = 0; i < l; i++) {
         b1[i] = b2[l - i - 1];
     }
     

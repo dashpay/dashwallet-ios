@@ -273,7 +273,7 @@ services:(uint64_t)services
     self.localNonce = (((uint64_t)mrand48() << 32) | (uint32_t)mrand48()); // random nonce
     [msg appendUInt64:self.localNonce];
     [msg appendString:USERAGENT]; // user agent
-    [msg appendUInt32:BITCOIN_REFERENCE_BLOCK_HEIGHT]; // last block received
+    [msg appendUInt32:0]; // last block received
     [msg appendUInt8:0]; // relay transactions (no for SPV bloom filter mode)
 
     // setup a 5 second timeout to receive a verack message back
@@ -635,7 +635,7 @@ services:(uint64_t)services
 
 - (void)acceptHeadersMessage:(NSData *)message
 {
-    NSUInteger l, count = [message varIntAtOffset:0 length:&l];
+    NSUInteger l, count = [message varIntAtOffset:0 length:&l], off;
     
     if (message.length < l + 81*count) {
         [self error:@"malformed headers message, length is %u, should be %u for %u items", (int)message.length,
@@ -645,16 +645,21 @@ services:(uint64_t)services
 
     // To improve chain download performance, if this message contains 2000 headers then request the next 2000 headers
     // immediately, and switching to requesting blocks when we receive a header newer than earliestKeyTime
-    NSTimeInterval lastTimestamp = [message UInt32AtOffset:l + 81*(count - 1) + 68] - NSTimeIntervalSince1970;
+    NSTimeInterval t = [message UInt32AtOffset:l + 81*(count - 1) + 68] - NSTimeIntervalSince1970;
 
-    if (count >= 2000 || lastTimestamp + 7*24*60*60 >= self.earliestKeyTime) {
+    if (count >= 2000 || t + 7*24*60*60 >= self.earliestKeyTime) {
         NSData *firstHash = [message subdataWithRange:NSMakeRange(l, 80)].SHA256_2,
                *lastHash = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].SHA256_2;
 
-        if (lastTimestamp + 7*24*60*60 < self.earliestKeyTime) {
-            [self sendGetheadersMessageWithLocators:@[lastHash, firstHash] andHashStop:nil];
+        if (t + 7*24*60*60 >= self.earliestKeyTime) {
+            for (off = l + 81*(count - 1); off > l + 81 && t + 7*24*60*60 >= self.earliestKeyTime; off -= 81) {
+                t = [message UInt32AtOffset:off + 68] - NSTimeIntervalSince1970;
+            }
+
+            lastHash = [message subdataWithRange:NSMakeRange(off, 80)].SHA256_2;
+            [self sendGetblocksMessageWithLocators:@[lastHash, firstHash] andHashStop:nil];
         }
-        else [self sendGetblocksMessageWithLocators:@[firstHash] andHashStop:nil];
+        else [self sendGetheadersMessageWithLocators:@[lastHash, firstHash] andHashStop:nil];
     }
 
     NSLog(@"%@:%u got %u headers", self.host, self.port, (int)count);

@@ -57,7 +57,16 @@
     timestamp:1296688602.0 - NSTimeIntervalSince1970 target:0x1d00ffffu nonce:414098458u totalTransactions:1\
     hashes:@"3ba3edfd7a7b12b27ac72c3e67768f617fC81bc3888a51323a9fb8aa4b1e5e4a".hexToData flags:@"00".hexToData height:0]
 
-static const struct { uint32_t height; char *hash; time_t timestamp; } checkpoint_array[] = {};
+static const struct { uint32_t height; char *hash; time_t timestamp; } checkpoint_array[] = {
+    {  20160, "000000001cf5440e7c9ae69f655759b17a32aad141896defd55bb895b7cfc44e", 1345001466 },
+    {  40320, "000000008011f56b8c92ff27fb502df5723171c5374673670ef0eee3696aee6d", 1355980158 },
+    {  60480, "00000000130f90cda6a43048a58788c0a5c75fa3c32d38f788458eb8f6952cee", 1363746033 },
+    {  80640, "00000000002d0a8b51a9c028918db3068f976e3373d586f08201a4449619731c", 1369042673 },
+    { 100800, "0000000000a33112f86f3f7b0aa590cb4949b84c2d9c673e9e303257b3be9000", 1376543922 },
+    { 120960, "00000000003367e56e7f08fdd13b85bbb31c5bace2f8ca2b0000904d84960d0c", 1382025703 },
+    { 141120, "0000000007da2f551c3acd00e34cc389a4c6b6b3fad0e4e67907ad4c7ed6ab9f", 1384495076 },
+    { 161280, "0000000001d1b79a1aec5702aaa39bad593980dfe26799697085206ef9513486", 1388980370 }
+};
 
 static const char *dns_seeds[] = { "testnet-seed.bitcoin.petertodd.org", "testnet-seed.bluematt.me" };
 
@@ -71,19 +80,22 @@ static const char *dns_seeds[] = { "testnet-seed.bitcoin.petertodd.org", "testne
     timestamp:1231006505.0 - NSTimeIntervalSince1970 target:0x1d00ffffu nonce:2083236893u totalTransactions:1\
     hashes:@"3ba3edfd7a7b12b27ac72c3e67768f617fC81bc3888a51323a9fb8aa4b1e5e4a".hexToData flags:@"00".hexToData height:0]
 
-// blockchain checkpoints
+// blockchain checkpoints, these are used as starting points for partial chain downloads, so they need to be at
+// difficulty transition boundaries in order to verify block difficulty at the immediately following transition
 static const struct { uint32_t height; char *hash; time_t timestamp; } checkpoint_array[] = {
-    {  11111, "0000000069e244f73d78e8fd29ba2fd2ed618bd6fa2ee92559f542fdb26e7c1d", 1239852051 },
-    {  33333, "000000002dd5588a74784eaa7ab0507a18ad16a236e7b1ce69f00d7ddfb5d0a6", 1262749024 },
-    {  74000, "0000000000573993a3c9e41ce34471c079dcf5f52a0e824a81e7f953b8661a20", 1281678674 },
-    { 105000, "00000000000291ce28027faea320c8d2b054b2e0fe44a773f3eefb151d6bdc97", 1296207707 },
-    { 134444, "00000000000005b12ffd4cd315cd34ffd4a594f430ac814c91184a0d42d2b0fe", 1309640330 },
-    { 168000, "000000000000099e61ea72015e79632f216fe6cb33d7899acb35b75c8303b763", 1329946277 },
-    { 193000, "000000000000059f452a5f7340de6682a977387c17010ff6e6c3bd83ca8b1317", 1344491921 },
-    { 210000, "000000000000048b95347e83192f69cf0366076336c639f9b7228e9ba171342e", 1354116278 },
-    { 216116, "00000000000001b4f4b433e81ee46494af945cf96014816a4e2370f11b23df4e", 1357902690 },
-    { 225430, "00000000000001c108384350f74090433e7fcf79a606b8e797f065b130575932", 1363044279 },
-    { 250000, "000000000000003887df1f29024b06fc2200b55f8af8f35453d7be294df2d214", 1375533383 },
+    {  20160, "000000000f1aef56190aee63d33a373e6487132d522ff4cd98ccfc96566d461e", 1248481816 },
+    {  40320, "0000000045861e169b5a961b7034f8de9e98022e7a39100dde3ae3ea240d7245", 1266191579 },
+    {  60480, "000000000632e22ce73ed38f46d5b408ff1cff2cc9e10daaf437dfd655153837", 1276298786 },
+    {  80640, "0000000000307c80b87edf9f6a0697e2f01db67e518c8a4d6065d1d859a3a659", 1284861847 },
+    { 100800, "000000000000e383d43cc471c64a9a4a46794026989ef4ff9611d5acb704e47a", 1294031411 },
+    { 120960, "0000000000002c920cf7e4406b969ae9c807b5c4f271f490ca3de1b0770836fc", 1304131980 },
+    { 141120, "00000000000002d214e1af085eda0a780a8446698ab5c0128b6392e189886114", 1313451894 },
+    { 161280, "00000000000005911fe26209de7ff510a8306475b75ceffd434b68dc31943b99", 1326047176 },
+    { 181440, "00000000000000e527fc19df0992d58c12b98ef5a17544696bbba67812ef0e64", 1337883029 },
+    { 201600, "00000000000003a5e28bef30ad31f1f9be706e91ae9dda54179a95c9f9cd9ad0", 1349226660 },
+    { 221760, "00000000000000fc85dd77ea5ed6020f9e333589392560b40908d3264bd1f401", 1361148470 },
+    { 241920, "00000000000000b79f259ad14635739aaf0cc48875874b6aeecc7308267b50fa", 1371418654 },
+    { 262080, "000000000000000aa77be1c33deac6b8d3b7b0757d02ce72fffddc768235d0e2", 1381070552 }
 };
 
 static const char *dns_seeds[] = {
@@ -96,7 +108,7 @@ static const char *dns_seeds[] = {
 
 @property (nonatomic, strong) NSMutableArray *peers;
 @property (nonatomic, strong) ZNPeer *downloadPeer;
-@property (nonatomic, assign) uint32_t tweak, syncStartHeight, prevHeight;
+@property (nonatomic, assign) uint32_t tweak, syncStartHeight;
 @property (nonatomic, strong) ZNBloomFilter *bloomFilter;
 @property (nonatomic, assign) NSUInteger filterElemCount, taskId;
 @property (nonatomic, assign) BOOL filterWasReset;
@@ -132,31 +144,16 @@ static const char *dns_seeds[] = {
     self.earliestKeyTime = BITCOIN_REFERENCE_BLOCK_TIME;
     self.peers = [NSMutableArray array];
     self.tweak = mrand48();
-    self.publishedTx = [NSMutableDictionary dictionary];
-    self.publishedCallback = [NSMutableDictionary dictionary];
-    self.txRelayCounts = [NSCountedSet set];
     self.taskId = UIBackgroundTaskInvalid;
-    self.prevHeight = BLOCK_UNKOWN_HEIGHT;
-    self.reachability = [Reachability reachabilityForInternetConnection];
     self.q = dispatch_queue_create("cc.zinc.peermanager", NULL);
-    self.checkpoints = [NSMutableDictionary dictionary];
-
-    for (int i = 0; i < sizeof(checkpoint_array)/sizeof(*checkpoint_array); i++) {
-        self.checkpoints[@(checkpoint_array[i].height)] =
-            [NSString stringWithUTF8String:checkpoint_array[i].hash].hexToData.reverse;
-    }
+    self.reachability = [Reachability reachabilityForInternetConnection];
+    self.txRelayCounts = [NSCountedSet set];
+    self.publishedCallback = [NSMutableDictionary dictionary];
+    self.publishedTx = [NSMutableDictionary dictionary];
 
     for (ZNTransaction *tx in self.wallet.recentTransactions) {
         if (tx.blockHeight == TX_UNCONFIRMED) self.publishedTx[tx.txHash] = tx;
     }
-
-    NSFetchRequest *req = [ZNMerkleBlockEntity fetchRequest];
-    
-    req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"height" ascending:NO]];
-    req.predicate = [NSPredicate predicateWithFormat:@"height >= 0 && height != %d", BLOCK_UNKOWN_HEIGHT];
-    req.fetchLimit = 1;
-    self.lastBlock = [[ZNMerkleBlockEntity fetchObjects:req].lastObject merkleBlock];
-    if (! self.lastBlock) self.lastBlock = GENESIS_BLOCK;
 
     //TODO: disconnect peers when app is backgrounded unless we're syncing
     //TODO: XXX watch for app shutdown and persist blocks
@@ -290,6 +287,7 @@ static const char *dns_seeds[] = {
     [[ZNMerkleBlockEntity context] performBlockAndWait:^{
         if (_blocks.count > 0) return;
         _blocks = [NSMutableDictionary dictionary];
+        self.checkpoints = [NSMutableDictionary dictionary];
 
         _blocks[GENESIS_BLOCK_HASH] = GENESIS_BLOCK;
 
@@ -299,6 +297,7 @@ static const char *dns_seeds[] = {
             _blocks[hash] = [[ZNMerkleBlock alloc] initWithBlockHash:hash version:1 prevBlock:nil merkleRoot:nil
                              timestamp:checkpoint_array[i].timestamp - NSTimeIntervalSince1970 target:0 nonce:0
                              totalTransactions:0 hashes:nil flags:nil height:checkpoint_array[i].height];
+            self.checkpoints[@(checkpoint_array[i].height)] = hash;
         }
 
         for (ZNMerkleBlockEntity *e in [ZNMerkleBlockEntity allObjects]) {
@@ -323,13 +322,6 @@ static const char *dns_seeds[] = {
 
         for (int32_t i = 0; b && i < step; i++) {
             b = self.blocks[b.prevBlock];
-        }
-    }
-
-    if (locators.count == 0) {
-        for (int i = sizeof(checkpoint_array)/sizeof(*checkpoint_array) - 1; i >= 0; i--) {
-            if (checkpoint_array[i].timestamp + 7*24*60*60 - NSTimeIntervalSince1970 < self.earliestKeyTime) continue;
-            [locators addObject:[NSString stringWithUTF8String:checkpoint_array[i].hash].hexToData.reverse];
         }
     }
 
@@ -412,7 +404,6 @@ static const char *dns_seeds[] = {
 - (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes
 {
     if (txHashes.count == 0) return;
-
     [self.wallet setBlockHeight:height forTxHashes:txHashes];
     
     if (height != TX_UNCONFIRMED) { // remove confirmed tx from publish list and relay counts
@@ -433,14 +424,35 @@ static const char *dns_seeds[] = {
 
 - (double)syncProgress
 {
-    // TODO: account for both download and processing progress indivdually so progress doesn't appear stalled
-
     if (! self.downloadPeer) return 0.0;
-
-    if (self.lastBlockHeight >= self.downloadPeer.lastblock) return 1;
-
+    if (self.lastBlockHeight >= self.downloadPeer.lastblock) return 1.0;
     return (self.connected ? 0.05 : 0.0) +
         (self.lastBlockHeight - self.syncStartHeight)/(double)(self.downloadPeer.lastblock - self.syncStartHeight)*0.95;
+}
+
+- (ZNMerkleBlock *)lastBlock
+{
+    if (_lastBlock) return _lastBlock;
+
+    NSFetchRequest *req = [ZNMerkleBlockEntity fetchRequest];
+
+    req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"height" ascending:NO]];
+    req.predicate = [NSPredicate predicateWithFormat:@"height >= 0 && height != %d", BLOCK_UNKOWN_HEIGHT];
+    req.fetchLimit = 1;
+    _lastBlock = [[ZNMerkleBlockEntity fetchObjects:req].lastObject merkleBlock];
+
+    for (int i = sizeof(checkpoint_array)/sizeof(*checkpoint_array) - 1; ! _lastBlock && i >= 0; i--) {
+        if (checkpoint_array[i].timestamp + 7*24*60*60 - NSTimeIntervalSince1970 >= self.earliestKeyTime) continue;
+        _lastBlock = [[ZNMerkleBlock alloc]
+                      initWithBlockHash:[NSString stringWithUTF8String:checkpoint_array[i].hash].hexToData.reverse
+                      version:1 prevBlock:nil merkleRoot:nil
+                      timestamp:checkpoint_array[i].timestamp - NSTimeIntervalSince1970 target:0 nonce:0
+                      totalTransactions:0 hashes:nil flags:nil height:checkpoint_array[i].height];
+    }
+
+    if (! _lastBlock) _lastBlock = GENESIS_BLOCK;
+
+    return _lastBlock;
 }
 
 - (uint32_t)lastBlockHeight

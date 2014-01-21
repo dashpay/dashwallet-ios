@@ -236,8 +236,8 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     return txHashes;
 }
 
-// Verifies the block difficulty target is correct for the block's position in the chain. transitionTime may be 0 if
-// height is not a multiple of BITCOIN_DIFFICULTY_INTERVAL.
+// Verifies the block difficulty target is correct for the block's position in the chain. Transition time may be 0 if
+// height is not a multiple of BLOCK_DIFFICULTY_INTERVAL.
 //
 // The difficulty target algorithm works as follows:
 // The target must be the same as in the previous block unless the block's height is a multiple of 2016. Every 2016
@@ -249,7 +249,8 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 - (BOOL)verifyDifficultyFromPreviousBlock:(ZNMerkleBlock *)previous andTransitionTime:(NSTimeInterval)time
 {
     if (! [_prevBlock isEqual:previous.blockHash] || _height != previous.height + 1) return NO;
-    
+    if ((_height % BLOCK_DIFFICULTY_INTERVAL) == 0 && time == 0) return NO;
+
 #if BITCOIN_TESTNET
     //TODO: implement testnet difficulty rule check
     return YES; // don't worry about difficulty on testnet for now
