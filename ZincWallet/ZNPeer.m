@@ -80,12 +80,18 @@ typedef enum {
     return [[self alloc] initWithAddress:address andPort:port];
 }
 
++ (instancetype)peerWithAddress:(uint32_t)address port:(uint16_t)port timestamp:(NSTimeInterval)timestamp
+services:(uint64_t)services
+{
+    return [[self alloc] initWithAddress:address port:port timestamp:timestamp services:services];
+}
+
 - (instancetype)initWithAddress:(uint32_t)address andPort:(uint16_t)port
 {
     if (! (self = [self init])) return nil;
     
     _address = address;
-    _port = port;
+    _port = (port == 0) ? BITCOIN_STANDARD_PORT : port;
     return self;
 }
 
@@ -651,7 +657,7 @@ services:(uint64_t)services
         NSData *firstHash = [message subdataWithRange:NSMakeRange(l, 80)].SHA256_2,
                *lastHash = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].SHA256_2;
 
-        if (t + 7*24*60*60 >= self.earliestKeyTime) {
+        if (t + 7*24*60*60 >= self.earliestKeyTime) { // switch to requesting blocks for the remainder of the chain
             for (off = l + 81*(count - 1); off > l + 81 && t + 7*24*60*60 >= self.earliestKeyTime; off -= 81) {
                 t = [message UInt32AtOffset:off + 68] - NSTimeIntervalSince1970;
             }

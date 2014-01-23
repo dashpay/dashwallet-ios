@@ -32,18 +32,4 @@
 @dynamic index;
 @dynamic internal;
 
-+ (instancetype)entityWithAddress:(NSString *)address index:(int32_t)index internal:(BOOL)internal
-{
-    __block ZNAddressEntity *e = nil;
-
-    [[self context] performBlockAndWait:^{
-        e = [self managedObject];
-        e.address = address;
-        e.index = index;
-        e.internal = internal;
-    }];
-    
-    return e;
-}
-
 @end

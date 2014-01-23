@@ -43,7 +43,7 @@
 
 - (instancetype)setAttributesFromBlock:(ZNMerkleBlock *)block;
 {
-    [[self managedObjectContext] performBlockAndWait:^{
+    [self.managedObjectContext performBlockAndWait:^{
         self.blockHash = block.blockHash;
         self.version = block.version;
         self.prevBlock = block.prevBlock;
@@ -64,7 +64,7 @@
 {
     __block ZNMerkleBlock *block = nil;
     
-    [[self managedObjectContext] performBlockAndWait:^{
+    [self.managedObjectContext performBlockAndWait:^{
         block = [[ZNMerkleBlock alloc] initWithBlockHash:self.blockHash version:self.version prevBlock:self.prevBlock
                  merkleRoot:self.merkleRoot timestamp:self.timestamp target:self.target nonce:self.nonce
                  totalTransactions:self.totalTransactions hashes:self.hashes flags:self.flags height:self.height];

@@ -97,15 +97,20 @@ typedef enum {
 @property (nonatomic, readonly) uint16_t port;
 @property (nonatomic, readonly) uint64_t services;
 @property (nonatomic, readonly) uint32_t version;
-@property (nonatomic, readonly) NSTimeInterval timestamp;
 @property (nonatomic, readonly) uint64_t nonce;
 @property (nonatomic, readonly) NSString *useragent;
 @property (nonatomic, readonly) uint32_t lastblock;
 @property (nonatomic, readonly) NSTimeInterval pingTime;
+@property (nonatomic, assign) NSTimeInterval timestamp;
+@property (nonatomic, assign) int16_t misbehavin;
 
 + (instancetype)peerWithAddress:(uint32_t)address andPort:(uint16_t)port;
++ (instancetype)peerWithAddress:(uint32_t)address port:(uint16_t)port timestamp:(NSTimeInterval)timestamp
+services:(uint64_t)services;
 
 - (instancetype)initWithAddress:(uint32_t)address andPort:(uint16_t)port;
+- (instancetype)initWithAddress:(uint32_t)address port:(uint16_t)port timestamp:(NSTimeInterval)timestamp
+services:(uint64_t)services;
 - (void)connect;
 - (void)disconnect;
 - (void)sendMessage:(NSData *)message type:(NSString *)type;

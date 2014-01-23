@@ -80,8 +80,8 @@ static const char *dns_seeds[] = { "testnet-seed.bitcoin.petertodd.org", "testne
     timestamp:1231006505.0 - NSTimeIntervalSince1970 target:0x1d00ffffu nonce:2083236893u totalTransactions:1\
     hashes:@"3ba3edfd7a7b12b27ac72c3e67768f617fC81bc3888a51323a9fb8aa4b1e5e4a".hexToData flags:@"00".hexToData height:0]
 
-// blockchain checkpoints, these are used as starting points for partial chain downloads, so they need to be at
-// difficulty transition boundaries in order to verify block difficulty at the immediately following transition
+// blockchain checkpoints, these are also used as starting points for partial chain downloads, so they need to be at
+// difficulty transition boundaries in order to verify the block difficulty at the immediately following transition
 static const struct { uint32_t height; char *hash; time_t timestamp; } checkpoint_array[] = {
     {  20160, "000000000f1aef56190aee63d33a373e6487132d522ff4cd98ccfc96566d461e", 1248481816 },
     {  40320, "0000000045861e169b5a961b7034f8de9e98022e7a39100dde3ae3ea240d7245", 1266191579 },
@@ -106,7 +106,8 @@ static const char *dns_seeds[] = {
 
 @interface ZNPeerManager ()
 
-@property (nonatomic, strong) NSMutableArray *peers;
+@property (nonatomic, strong) NSMutableOrderedSet *peers;
+@property (nonatomic, strong) NSMutableSet *connectedPeers, *misbehavinPeers;
 @property (nonatomic, strong) ZNPeer *downloadPeer;
 @property (nonatomic, assign) uint32_t tweak, syncStartHeight;
 @property (nonatomic, strong) ZNBloomFilter *bloomFilter;
@@ -142,7 +143,8 @@ static const char *dns_seeds[] = {
 
     self.wallet = [ZNWallet sharedInstance];
     self.earliestKeyTime = BITCOIN_REFERENCE_BLOCK_TIME;
-    self.peers = [NSMutableArray array];
+    self.connectedPeers = [NSMutableSet set];
+    self.misbehavinPeers = [NSMutableSet set];
     self.tweak = mrand48();
     self.taskId = UIBackgroundTaskInvalid;
     self.q = dispatch_queue_create("cc.zinc.peermanager", NULL);
@@ -161,63 +163,6 @@ static const char *dns_seeds[] = {
     return self;
 }
 
-- (NSUInteger)discoverPeers
-{
-    __block NSUInteger count = 0;
-    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
-
-    for (int i = 0; i < sizeof(dns_seeds)/sizeof(*dns_seeds); i++) { // DNS peer discovery
-        struct hostent *h = gethostbyname(dns_seeds[i]);
-        
-        [[ZNPeerEntity context] performBlockAndWait:^{
-            for (int j = 0; h != NULL && h->h_addr_list[j] != NULL; j++) {
-                uint32_t addr = CFSwapInt32BigToHost(((struct in_addr *)h->h_addr_list[j])->s_addr);
-                ZNPeerEntity *e =
-                    [ZNPeerEntity createOrUpdateWithPeer:[ZNPeer peerWithAddress:addr andPort:BITCOIN_STANDARD_PORT]];
-                
-                e.timestamp = now - 24*60*60*(3 + drand48()*4); // random timestamp between 3 and 7 days ago;
-                e.services = NODE_NETWORK;
-                e.misbehavin = 0;
-                count++;
-            }
-        }];
-    }
-    
-    // if we've resorted to DNS peer discovery, reset the misbahavin' count on any peers we already had in case
-    // something went horribly wrong and every peer was marked as bad, but give them a timestamp older than two weeks
-    [[ZNPeerEntity context] performBlockAndWait:^{
-        for (ZNPeerEntity *e in [ZNPeerEntity objectsMatching:@"misbehavin > 0"]) {
-            e.misbehavin = 0;
-            e.timestamp += 14*24*60*60;
-        }
-    }];
-
-    //TODO: connect to a few random DNS peers and just to grab a list of peers and disconnect so as to not overload them
-
-#if BITCOIN_TESTNET
-    return count;
-#endif
-
-    if (count > 0) return count;
-    
-    [[ZNPeerEntity context] performBlockAndWait:^{
-        // if dns peer discovery fails, fall back on a hard coded list of peers
-        // hard coded list is taken from the satoshi client, values need to be byte order swapped to be host native
-        for (NSNumber *address in
-             [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:FIXED_PEERS ofType:@"plist"]]) {
-            uint32_t addr = CFSwapInt32(address.intValue);
-            ZNPeerEntity *e = [ZNPeerEntity createOrUpdateWithPeer:[ZNPeer peerWithAddress:addr
-                                                                    andPort:BITCOIN_STANDARD_PORT]];
-
-            e.timestamp = now - 24*60*60*(7 + drand48()*7); // random timestamp between 7 and 14 days ago
-            e.services = NODE_NETWORK;
-            count++;
-        }
-    }];
-    
-    return count;
-}
-
 - (void)connect
 {
     if (self.reachability.currentReachabilityStatus == NotReachable) return;
@@ -228,44 +173,36 @@ static const char *dns_seeds[] = {
         });
     }
 
-    [[ZNPeerEntity context] performBlock:^{
-        [self.peers
-         removeObjectsAtIndexes:[self.peers indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+    dispatch_async(self.q, ^{
+        [self.connectedPeers minusSet:[self.connectedPeers objectsPassingTest:^BOOL(id obj, BOOL *stop) {
             return ([obj status] == disconnected) ? YES : NO;
         }]];
 
         //BUG: if we're behind and haven't received a block in 10-20 seconds, we might need a tickle
 
-        if (self.peers.count >= MAX_CONNECTIONS) return; // we're already connected to MAX_CONNECTIONS peers
+        if (self.connectedPeers.count >= MAX_CONNECTIONS) return; // we're already connected to MAX_CONNECTIONS peers
 
-        NSFetchRequest *req = [ZNPeerEntity fetchRequest];
-    
-        req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"timestamp" ascending:NO]];
-        req.predicate = [NSPredicate predicateWithFormat:@"misbehavin == 0"];
-        req.fetchLimit = MAX_CONNECTIONS + 100;
-        if ([ZNPeerEntity countObjects:req] < MAX_CONNECTIONS) [self discoverPeers];
+        NSMutableOrderedSet *peers = [NSMutableOrderedSet orderedSetWithOrderedSet:self.peers];
 
-        NSMutableArray *peers = [NSMutableArray arrayWithArray:[ZNPeerEntity fetchObjects:req]];
+        if (peers.count > 100) [peers removeObjectsInRange:NSMakeRange(100, peers.count - 100)];
+        self.syncStartHeight = self.lastBlockHeight;
 
-        if (self.peers.count < MAX_CONNECTIONS) self.syncStartHeight = self.lastBlockHeight;
-    
-        while (peers.count > 0 && self.peers.count < MAX_CONNECTIONS) {
+        while (peers.count > 0 && self.connectedPeers.count < MAX_CONNECTIONS) {
             // pick a random peer biased towards peers with more recent timestamps
-            ZNPeerEntity *e = peers[(NSUInteger)(pow(lrand48() % peers.count, 2)/peers.count)];
-            ZNPeer *p = [ZNPeer peerWithAddress:e.address andPort:e.port];
-            
-            if (p && ! [self.peers containsObject:p]) {
+            ZNPeer *p = peers[(NSUInteger)(pow(lrand48() % peers.count, 2)/peers.count)];
+
+            if (p && ! [self.connectedPeers containsObject:p]) {
                 p.delegate = self;
                 p.delegateQueue = self.q;
                 p.earliestKeyTime = self.earliestKeyTime;
-                [self.peers addObject:p];
+                [self.connectedPeers addObject:p];
                 [p connect];
             }
-            
-            [peers removeObject:e];
+        
+            [peers removeObject:p];
         }
     
-        if (self.peers.count == 0) {
+        if (self.connectedPeers.count == 0) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 if (self.taskId != UIBackgroundTaskInvalid) {
                     [[UIApplication sharedApplication] endBackgroundTask:self.taskId];
@@ -277,7 +214,71 @@ static const char *dns_seeds[] = {
                  userInfo:@{NSLocalizedDescriptionKey:@"no peers found"}]}];
             });
         }
+    });
+}
+
+- (NSMutableOrderedSet *)peers
+{
+    if (_peers.count >= MAX_CONNECTIONS) return _peers;
+
+    [[ZNPeerEntity context] performBlockAndWait:^{
+        if (_peers.count >= MAX_CONNECTIONS) return;
+        _peers = [NSMutableOrderedSet orderedSet];
+
+        NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+
+        for (ZNPeerEntity *e in [ZNPeerEntity allObjects]) {
+            if ([_peers.lastObject misbehavin] == 0) [_peers addObject:[e peer]];
+            else [self.misbehavinPeers addObject:[e peer]];
+        }
+
+        if (_peers.count < MAX_CONNECTIONS) {
+            // we're resorting to DNS peer discovery, so reset the misbahavin' count on any peers we already had in case
+            // something went horribly wrong and every peer was marked as bad, but set timestamp older than two weeks
+            for (ZNPeer *p in self.misbehavinPeers) {
+                p.misbehavin = 0;
+                p.timestamp += 14*24*60*60;
+                [_peers addObject:p];
+            }
+
+            [self.misbehavinPeers removeAllObjects];
+
+            //TODO: connect to a few random DNS peers just to grab a list of peers and disconnect to not overload them
+
+            for (int i = 0; i < sizeof(dns_seeds)/sizeof(*dns_seeds); i++) { // DNS peer discovery
+                struct hostent *h = gethostbyname(dns_seeds[i]);
+
+                for (int j = 0; h != NULL && h->h_addr_list[j] != NULL; j++) {
+                    uint32_t addr = CFSwapInt32BigToHost(((struct in_addr *)h->h_addr_list[j])->s_addr);
+
+                    [_peers addObject:[ZNPeer peerWithAddress:addr port:BITCOIN_STANDARD_PORT
+                                       timestamp:now - 24*60*60*(3 + drand48()*4) services:NODE_NETWORK]];
+                }
+            }
+
+#if BITCOIN_TESTNET
+            goto sort;
+#endif
+            if (_peers.count < MAX_CONNECTIONS) {
+                // if dns peer discovery fails, fall back on a hard coded list of peers
+                // hard coded list is taken from the satoshi client, values need to be byte swapped to be host native
+                for (NSNumber *address in [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
+                                           pathForResource:FIXED_PEERS ofType:@"plist"]]) {
+                    [_peers addObject:[ZNPeer peerWithAddress:CFSwapInt32(address.intValue) port:BITCOIN_STANDARD_PORT
+                                       timestamp:now - 24*60*60*(7 + drand48()*7) services:NODE_NETWORK]];
+                }
+            }
+        }
+
+sort:
+        [_peers sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+            if ([obj1 timestamp] > [obj2 timestamp]) return NSOrderedAscending;
+            if ([obj1 timestamp] < [obj2 timestamp]) return NSOrderedDescending;
+            return NSOrderedSame;
+        }];
     }];
+
+    return _peers;
 }
 
 - (NSMutableDictionary *)blocks
@@ -396,7 +397,7 @@ static const char *dns_seeds[] = {
     //TODO: XXXX setup a publish timeout
     //TODO: also publish transactions directly to coinbase and bitpay servers for faster POS experience
 
-    for (ZNPeer *peer in self.peers) {
+    for (ZNPeer *peer in self.connectedPeers) {
         [peer sendInvMessageWithTxHash:transaction.txHash];
     }
 }
@@ -462,10 +463,9 @@ static const char *dns_seeds[] = {
 
 - (void)peerMisbehavin:(ZNPeer *)peer
 {
-    [[ZNPeerEntity context] performBlockAndWait:^{
-        [ZNPeerEntity createOrUpdateWithPeer:peer].misbehavin++;
-    }];
-    
+    peer.misbehavin++;
+    [self.peers removeObject:peer];
+    [self.misbehavinPeers addObject:peer];
     [peer disconnect];
     [self connect];
 }
@@ -476,18 +476,19 @@ static const char *dns_seeds[] = {
 {
     NSLog(@"%@:%d connected", peer.host, peer.port);
 
-    [[ZNPeerEntity createOrUpdateWithPeer:peer] set:@"timestamp" to:[NSDate date]]; // set last seen timestamp for peer
+    peer.timestamp = [NSDate timeIntervalSinceReferenceDate]; // set last seen timestamp for peer
 
     //TODO: adjust the false positive rate depending on how far behind we are, to target, say, 100 transactions that
     // aren't in the wallet for plausible deniability
     [peer sendFilterloadMessage:self.bloomFilter.data]; // load the bloom filter
 
-    if ([ZNPeerEntity countAllObjects] < 500) [peer sendGetaddrMessage]; // request a list of other bitcoin peers
+    //BUG: XXX does this get called after dns or hard coded peer discovery?
+    if (self.peers.count < 1000) [peer sendGetaddrMessage]; // request a list of other bitcoin peers
     
     if (self.connected) return; // we're already connected
     
     // select the peer with the lowest ping time to download the chain from if we're behind
-    for (ZNPeer *p in self.peers) {
+    for (ZNPeer *p in self.connectedPeers) {
         if (p.pingTime < peer.pingTime) peer = p; // find the peer with the lowest ping time
     }
 
@@ -525,7 +526,7 @@ static const char *dns_seeds[] = {
     if ([error.domain isEqual:@"ZincWallet"] && error.code != 1001) {
         [self peerMisbehavin:peer];
     }
-    else if (error) [[ZNPeerEntity createOrUpdateWithPeer:peer] deleteObject]; // sloooow...
+    else if (error) [self.peers removeObject:peer];
 
     if (! self.downloadPeer || [self.downloadPeer isEqual:peer]) {
         _connected = NO;
@@ -539,24 +540,49 @@ static const char *dns_seeds[] = {
 
 - (void)peer:(ZNPeer *)peer relayedPeers:(NSArray *)peers
 {
-    [[ZNPeerEntity context] performBlock:^{
-        [ZNPeerEntity createOrUpdateWithPeers:peers];
-    
-        NSUInteger count = [ZNPeerEntity countAllObjects], deleted = 0;
-        NSFetchRequest *req = [ZNPeerEntity fetchRequest];
-        
-        if (count > 1000) { // remove peers with a timestamp more than 3 hours old, or until there are only 1000 left
-            req.predicate = [NSPredicate predicateWithFormat:@"timestamp < %@",
-                             [NSDate dateWithTimeIntervalSinceReferenceDate:[NSDate timeIntervalSinceReferenceDate] -
-                              3*60*60]];
-            req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"timestamp" ascending:YES]];
-            req.fetchLimit = count - 1000;
-            deleted = [ZNPeerEntity deleteObjects:[ZNPeerEntity fetchObjects:req]];
+    [self.peers addObjectsFromArray:peers];
+    [self.peers minusSet:self.misbehavinPeers];
 
-            if (count - deleted > 2500) { // limit total to 2500 peers
-                [ZNPeerEntity deleteObjects:[ZNPeerEntity objectsSortedBy:@"timestamp" ascending:YES offset:0
-                 limit:count - deleted - 2500]];
-            }
+    [self.peers sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+        if ([obj1 timestamp] > [obj2 timestamp]) return NSOrderedAscending;
+        if ([obj1 timestamp] < [obj2 timestamp]) return NSOrderedDescending;
+        return NSOrderedSame;
+    }];
+
+    // limit total to 2500 peers
+    if (self.peers.count > 2500) [self.peers removeObjectsInRange:NSMakeRange(2500, self.peers.count - 2500)];
+
+    NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate] - 3*60*60;
+
+    // remove peers more than 3 hours old, or until there are only 1000 left
+    while (self.peers.count > 1000 && [self.peers.lastObject timestamp] < t) {
+        [self.peers removeObject:self.peers.lastObject];
+    }
+
+    if (peers.count >= 1000) return; // peer relay messages are complete when we recieve fewer than 1000
+
+    [[ZNPeerEntity context] performBlock:^{
+        NSMutableSet *allPeers = [[self.peers.set setByAddingObjectsFromSet:self.misbehavinPeers] mutableCopy];
+        NSMutableSet *addrs = [NSMutableSet set];
+        
+        for (ZNPeer *p in allPeers) {
+            [addrs addObject:@((int32_t)p.address)];
+        }
+        
+        [ZNPeerEntity deleteObjects:[ZNPeerEntity objectsMatching:@"! (address in %@)", addrs]];
+        
+        for (ZNPeerEntity *e in [ZNPeerEntity objectsMatching:@"address in %@", addrs]) {
+            ZNPeer *p = [allPeers member:[e peer]];
+            
+            if (! p) continue;
+            e.timestamp = p.timestamp;
+            e.services = p.services;
+            e.misbehavin = p.misbehavin;
+            [allPeers removeObject:p];
+        }
+        
+        for (ZNPeer *p in allPeers) {
+            [[ZNPeerEntity managedObject] setAttributesFromPeer:p];
         }
     }];
 }
@@ -609,7 +635,7 @@ static const char *dns_seeds[] = {
     if (self.filterWasReset) { // filter got reset, send the new one to all the peers
         self.filterWasReset = NO;
 
-        for (ZNPeer *peer in self.peers) {
+        for (ZNPeer *peer in self.connectedPeers) {
             [peer sendFilterloadMessage:self.bloomFilter.data];
         }
     }

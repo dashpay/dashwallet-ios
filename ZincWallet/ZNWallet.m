@@ -297,7 +297,11 @@ static NSData *getKeychainData(NSString *key)
             }
 
             [[ZNAddressEntity context] performBlock:^{ // store new address in core data
-                [ZNAddressEntity entityWithAddress:addr index:index internal:internal];
+                ZNAddressEntity *e = [ZNAddressEntity managedObject];
+
+                e.address = addr;
+                e.index = index;
+                e.internal = internal;
             }];
 
             [self.allAddresses addObject:addr];

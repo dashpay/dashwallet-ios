@@ -32,6 +32,4 @@
 @property (nonatomic) int32_t index;
 @property (nonatomic) BOOL internal;
 
-+ (instancetype)entityWithAddress:(NSString *)address index:(int32_t)index internal:(BOOL)internal;
-
 @end

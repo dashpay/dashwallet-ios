@@ -36,9 +36,7 @@
 @property (nonatomic) int64_t services;
 @property (nonatomic) int16_t misbehavin;
 
-+ (instancetype)createOrUpdateWithPeer:(ZNPeer *)peer;
-
-// more efficient method for creating or updating a lot of peer entities at once
-+ (NSArray *)createOrUpdateWithPeers:(NSArray *)peers;
+- (instancetype)setAttributesFromPeer:(ZNPeer *)peer;
+- (ZNPeer *)peer;
 
 @end

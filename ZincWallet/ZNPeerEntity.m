@@ -36,82 +36,29 @@
 @dynamic services;
 @dynamic misbehavin;
 
-+ (instancetype)createOrUpdateWithPeer:(ZNPeer *)peer
+- (instancetype)setAttributesFromPeer:(ZNPeer *)peer
 {
-    __block ZNPeerEntity *e = nil;
-
-    [[self context] performBlockAndWait:^{
-        e = [self objectsMatching:@"address == %d && port == %d", (int32_t)peer.address, (int16_t)peer.port].lastObject;
-    
-        if (! e) e = [ZNPeerEntity managedObject];
-
-        e.address = peer.address;
-        e.port = peer.port;
-        if (peer.timestamp > e.timestamp) e.timestamp = peer.timestamp;
-        e.services = peer.services;
+    [[self managedObjectContext] performBlockAndWait:^{
+        self.address = peer.address;
+        self.port = peer.port;
+        self.timestamp = peer.timestamp;
+        self.services = peer.services;
+        self.misbehavin = peer.misbehavin;
     }];
 
-    return e;
+    return self;
 }
 
-// more efficient method for creating or updating a lot of peer entities at once
-+ (NSArray *)createOrUpdateWithPeers:(NSArray *)peers
+- (ZNPeer *)peer
 {
-    NSMutableArray *a = [NSMutableArray arrayWithCapacity:peers.count];
-    
-    [[self context] performBlockAndWait:^{
-        NSMutableIndexSet *set = [NSMutableIndexSet indexSet];
-        NSMutableArray *addresses = [NSMutableArray array];
-        
-        for (ZNPeer *p in peers) {
-            [addresses addObject:@(p.address)];
-        }
-        
-        NSArray *entities = [self objectsMatching:@"address in %@", addresses];
-        
-        for (ZNPeerEntity *e in entities) {
-            NSUInteger i = [addresses indexOfObject:@(e.address)];
-            
-            while (i < addresses.count - 1 && [(ZNPeer *)peers[i] port] != e.port) {
-                i = [addresses indexOfObject:@(e.address) inRange:NSMakeRange(i + 1, addresses.count - (i + 1))];
-            }
-            
-            if (i < peers.count && [(ZNPeer *)peers[i] port] == e.port) {
-                ZNPeer *p = peers[i];
+    __block ZNPeer *peer = nil;
 
-                if (p.timestamp > e.timestamp) e.timestamp = p.timestamp;
-                e.services = p.services;
-                [a addObject:e];
-                [set addIndex:i];
-            }
-        }
-    
-        NSMutableArray *prs = [NSMutableArray arrayWithArray:peers];
-        NSUInteger idx = 0;
-
-        [prs removeObjectsAtIndexes:set];
-        entities = [self managedObjectArrayWithLength:prs.count];
-        
-        for (ZNPeerEntity *e in entities) {
-            ZNPeer *p = prs[idx];
-            
-            e.address = p.address;
-            e.port = p.port;
-            e.timestamp = p.timestamp;
-            e.services = p.services;
-            [a addObject:e];
-            idx++;
-        }
+    [[self managedObjectContext] performBlockAndWait:^{
+        peer = [ZNPeer peerWithAddress:self.address port:self.port timestamp:self.timestamp services:self.services];
+        peer.misbehavin = self.misbehavin;
     }];
 
-#if DEBUG
-    static int count = 0;
-    
-    count += a.count;
-    NSLog(@"created or updated %d peers", count);
-#endif
-
-    return a;
+    return peer;
 }
 
 @end
