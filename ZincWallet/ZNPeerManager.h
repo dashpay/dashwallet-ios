@@ -33,8 +33,8 @@
 @interface ZNPeerManager : NSObject<ZNPeerDelegate>
 
 @property (nonatomic, readonly) BOOL connected;
-@property (nonatomic, readonly) double syncProgress;
 @property (nonatomic, readonly) uint32_t lastBlockHeight;
+@property (nonatomic, readonly) double syncProgress;
 
 // set this to the timestamp when the wallet was created to improve initial sync time
 @property (nonatomic, assign) NSTimeInterval earliestKeyTime;

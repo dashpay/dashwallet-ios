@@ -119,6 +119,7 @@ static const char *dns_seeds[] = {
 @property (nonatomic, strong) ZNWallet *wallet;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) dispatch_queue_t q;
+@property (nonatomic, strong) id terminateObserver;
 
 @end
 
@@ -158,63 +159,21 @@ static const char *dns_seeds[] = {
     }
 
     //TODO: disconnect peers when app is backgrounded unless we're syncing
-    //TODO: XXX watch for app shutdown and persist blocks
-    
+
+    self.terminateObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillTerminateNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
+            [self savePeers];
+            [self saveBlocks];
+            [ZNMerkleBlockEntity saveContext];
+        }];
+
     return self;
 }
 
-- (void)connect
+- (void)dealloc
 {
-    if (self.reachability.currentReachabilityStatus == NotReachable) return;
-
-    if (! self.downloadPeer || self.lastBlockHeight < self.downloadPeer.lastblock) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:ZNPeerManagerSyncStartedNotification object:nil];
-        });
-    }
-
-    dispatch_async(self.q, ^{
-        [self.connectedPeers minusSet:[self.connectedPeers objectsPassingTest:^BOOL(id obj, BOOL *stop) {
-            return ([obj status] == disconnected) ? YES : NO;
-        }]];
-
-        //BUG: if we're behind and haven't received a block in 10-20 seconds, we might need a tickle
-
-        if (self.connectedPeers.count >= MAX_CONNECTIONS) return; // we're already connected to MAX_CONNECTIONS peers
-
-        NSMutableOrderedSet *peers = [NSMutableOrderedSet orderedSetWithOrderedSet:self.peers];
-
-        if (peers.count > 100) [peers removeObjectsInRange:NSMakeRange(100, peers.count - 100)];
-        self.syncStartHeight = self.lastBlockHeight;
-
-        while (peers.count > 0 && self.connectedPeers.count < MAX_CONNECTIONS) {
-            // pick a random peer biased towards peers with more recent timestamps
-            ZNPeer *p = peers[(NSUInteger)(pow(lrand48() % peers.count, 2)/peers.count)];
-
-            if (p && ! [self.connectedPeers containsObject:p]) {
-                p.delegate = self;
-                p.delegateQueue = self.q;
-                p.earliestKeyTime = self.earliestKeyTime;
-                [self.connectedPeers addObject:p];
-                [p connect];
-            }
-        
-            [peers removeObject:p];
-        }
-    
-        if (self.connectedPeers.count == 0) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (self.taskId != UIBackgroundTaskInvalid) {
-                    [[UIApplication sharedApplication] endBackgroundTask:self.taskId];
-                    self.taskId = UIBackgroundTaskInvalid;
-                }
-
-                [[NSNotificationCenter defaultCenter] postNotificationName:ZNPeerManagerSyncFailedNotification
-                 object:@{@"error":[NSError errorWithDomain:@"ZincWallet" code:1
-                 userInfo:@{NSLocalizedDescriptionKey:@"no peers found"}]}];
-            });
-        }
-    });
+    if (self.terminateObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.terminateObserver];
 }
 
 - (NSMutableOrderedSet *)peers
@@ -379,58 +338,6 @@ sort:
     return _bloomFilter;
 }
 
-- (void)publishTransaction:(ZNTransaction *)transaction completion:(void (^)(NSError *error))completion
-{
-    if (! [transaction isSigned]) {
-        if (completion) {
-            completion([NSError errorWithDomain:@"ZincWallet" code:401
-                        userInfo:@{NSLocalizedDescriptionKey:@"bitcoin transaction not signed"}]);
-        }
-        return;
-    }
-
-    [self.wallet registerTransaction:transaction];
-
-    self.publishedTx[transaction.txHash] = transaction;
-    if (completion) self.publishedCallback[transaction.txHash] = completion;
-
-    //TODO: XXXX setup a publish timeout
-    //TODO: also publish transactions directly to coinbase and bitpay servers for faster POS experience
-
-    for (ZNPeer *peer in self.connectedPeers) {
-        [peer sendInvMessageWithTxHash:transaction.txHash];
-    }
-}
-
-- (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes
-{
-    if (txHashes.count == 0) return;
-    [self.wallet setBlockHeight:height forTxHashes:txHashes];
-    
-    if (height != TX_UNCONFIRMED) { // remove confirmed tx from publish list and relay counts
-        [self.publishedTx removeObjectsForKeys:txHashes];
-        [self.publishedCallback removeObjectsForKeys:txHashes];
-        [self.txRelayCounts minusSet:[NSSet setWithArray:txHashes]];
-    }
-}
-
-// transaction is considered verified when all peers have relayed it
-- (BOOL)transactionIsVerified:(NSData *)txHash
-{
-    //TODO: we also need to know if a transaction is bad (double spend, not propagated after a certain time, etc...)
-    // and also consider estimated confirmation time based on fee per kb and priority
-
-    return ([self.txRelayCounts countForObject:txHash] >= MAX_CONNECTIONS) ? YES : NO;
-}
-
-- (double)syncProgress
-{
-    if (! self.downloadPeer) return 0.0;
-    if (self.lastBlockHeight >= self.downloadPeer.lastblock) return 1.0;
-    return (self.connected ? 0.05 : 0.0) +
-        (self.lastBlockHeight - self.syncStartHeight)/(double)(self.downloadPeer.lastblock - self.syncStartHeight)*0.95;
-}
-
 - (ZNMerkleBlock *)lastBlock
 {
     if (_lastBlock) return _lastBlock;
@@ -461,6 +368,112 @@ sort:
     return self.lastBlock.height;
 }
 
+- (double)syncProgress
+{
+    if (! self.downloadPeer) return 0.0;
+    if (self.lastBlockHeight >= self.downloadPeer.lastblock) return 1.0;
+    return (self.connected ? 0.05 : 0.0) +
+    (self.lastBlockHeight - self.syncStartHeight)/(double)(self.downloadPeer.lastblock - self.syncStartHeight)*0.95;
+}
+
+- (void)connect
+{
+    if (self.reachability.currentReachabilityStatus == NotReachable) return;
+
+    if (! self.downloadPeer || self.lastBlockHeight < self.downloadPeer.lastblock) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:ZNPeerManagerSyncStartedNotification object:nil];
+        });
+    }
+
+    dispatch_async(self.q, ^{
+        [self.connectedPeers minusSet:[self.connectedPeers objectsPassingTest:^BOOL(id obj, BOOL *stop) {
+            return ([obj status] == disconnected) ? YES : NO;
+        }]];
+
+        //BUG: if we're behind and haven't received a block in 10-20 seconds, we might need a tickle
+
+        if (self.connectedPeers.count >= MAX_CONNECTIONS) return; // we're already connected to MAX_CONNECTIONS peers
+
+        NSMutableOrderedSet *peers = [NSMutableOrderedSet orderedSetWithOrderedSet:self.peers];
+
+        if (peers.count > 100) [peers removeObjectsInRange:NSMakeRange(100, peers.count - 100)];
+        self.syncStartHeight = self.lastBlockHeight;
+
+        while (peers.count > 0 && self.connectedPeers.count < MAX_CONNECTIONS) {
+            // pick a random peer biased towards peers with more recent timestamps
+            ZNPeer *p = peers[(NSUInteger)(pow(lrand48() % peers.count, 2)/peers.count)];
+
+            if (p && ! [self.connectedPeers containsObject:p]) {
+                p.delegate = self;
+                p.delegateQueue = self.q;
+                p.earliestKeyTime = self.earliestKeyTime;
+                [self.connectedPeers addObject:p];
+                [p connect];
+            }
+
+            [peers removeObject:p];
+        }
+
+        if (self.connectedPeers.count == 0) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (self.taskId != UIBackgroundTaskInvalid) {
+                    [[UIApplication sharedApplication] endBackgroundTask:self.taskId];
+                    self.taskId = UIBackgroundTaskInvalid;
+                }
+
+                [[NSNotificationCenter defaultCenter] postNotificationName:ZNPeerManagerSyncFailedNotification
+                 object:@{@"error":[NSError errorWithDomain:@"ZincWallet" code:1
+                 userInfo:@{NSLocalizedDescriptionKey:@"no peers found"}]}];
+            });
+        }
+    });
+}
+
+- (void)publishTransaction:(ZNTransaction *)transaction completion:(void (^)(NSError *error))completion
+{
+    if (! [transaction isSigned]) {
+        if (completion) {
+            completion([NSError errorWithDomain:@"ZincWallet" code:401
+                        userInfo:@{NSLocalizedDescriptionKey:@"bitcoin transaction not signed"}]);
+        }
+        return;
+    }
+
+    [self.wallet registerTransaction:transaction];
+
+    self.publishedTx[transaction.txHash] = transaction;
+    if (completion) self.publishedCallback[transaction.txHash] = completion;
+
+    //TODO: XXXX setup a publish timeout
+    //TODO: also publish transactions directly to coinbase and bitpay servers for faster POS experience
+
+    for (ZNPeer *peer in self.connectedPeers) {
+        [peer sendInvMessageWithTxHash:transaction.txHash];
+    }
+}
+
+// transaction is considered verified when all peers have relayed it
+- (BOOL)transactionIsVerified:(NSData *)txHash
+{
+    //TODO: we also need to know if a transaction is bad (double spend, not propagated after a certain time, etc...)
+    // and also consider estimated confirmation time based on fee per kb and priority
+
+    return ([self.txRelayCounts countForObject:txHash] >= MAX_CONNECTIONS) ? YES : NO;
+}
+
+- (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes
+{
+    if (txHashes.count == 0) return;
+    [self.wallet setBlockHeight:height forTxHashes:txHashes];
+    
+    if (height != TX_UNCONFIRMED) { // remove confirmed tx from publish list and relay counts
+        [self.publishedTx removeObjectsForKeys:txHashes];
+        [self.publishedCallback removeObjectsForKeys:txHashes];
+        [self.txRelayCounts minusSet:[NSSet setWithArray:txHashes]];
+    }
+}
+
 - (void)peerMisbehavin:(ZNPeer *)peer
 {
     peer.misbehavin++;
@@ -468,6 +481,58 @@ sort:
     [self.misbehavinPeers addObject:peer];
     [peer disconnect];
     [self connect];
+}
+
+- (void)savePeers
+{
+    NSMutableSet *peers = [[self.peers.set setByAddingObjectsFromSet:self.misbehavinPeers] mutableCopy];
+    NSMutableSet *addrs = [NSMutableSet set];
+
+    for (ZNPeer *p in peers) {
+        [addrs addObject:@((int32_t)p.address)];
+    }
+
+    [[ZNPeerEntity context] performBlock:^{
+        [ZNPeerEntity deleteObjects:[ZNPeerEntity objectsMatching:@"! (address in %@)", addrs]];
+
+        for (ZNPeerEntity *e in [ZNPeerEntity objectsMatching:@"address in %@", addrs]) {
+            ZNPeer *p = [peers member:[e peer]];
+
+            if (! p) continue;
+            e.timestamp = p.timestamp;
+            e.services = p.services;
+            e.misbehavin = p.misbehavin;
+            [peers removeObject:p];
+        }
+
+        for (ZNPeer *p in peers) {
+            [[ZNPeerEntity managedObject] setAttributesFromPeer:p];
+        }
+    }];
+}
+
+- (void)saveBlocks
+{
+    NSMutableSet *blockHashes = [NSMutableSet set];
+    ZNMerkleBlock *b = self.lastBlock;
+
+    while (b) {
+        [blockHashes addObject:b.blockHash];
+        b = self.blocks[b.prevBlock];
+    }
+
+    [[ZNMerkleBlockEntity context] performBlock:^{
+        [ZNMerkleBlockEntity deleteObjects:[ZNMerkleBlockEntity objectsMatching:@"! (blockHash in %@)", blockHashes]];
+
+        for (ZNMerkleBlockEntity *e in [ZNMerkleBlockEntity objectsMatching:@"blockHash in %@", blockHashes]) {
+            [e setAttributesFromBlock:self.blocks[e.blockHash]];
+            [blockHashes removeObject:e.blockHash];
+        }
+
+        for (NSData *hash in blockHashes) {
+            [[ZNMerkleBlockEntity managedObject] setAttributesFromBlock:self.blocks[hash]];
+        }
+    }];
 }
 
 #pragma mark - ZNPeerDelegate
@@ -482,9 +547,8 @@ sort:
     // aren't in the wallet for plausible deniability
     [peer sendFilterloadMessage:self.bloomFilter.data]; // load the bloom filter
 
-    //BUG: XXX does this get called after dns or hard coded peer discovery?
-    if (self.peers.count < 1000) [peer sendGetaddrMessage]; // request a list of other bitcoin peers
-    
+    if (self.peers.count < 900) [peer sendGetaddrMessage]; // request a list of other bitcoin peers
+
     if (self.connected) return; // we're already connected
     
     // select the peer with the lowest ping time to download the chain from if we're behind
@@ -559,32 +623,7 @@ sort:
         [self.peers removeObject:self.peers.lastObject];
     }
 
-    if (peers.count >= 1000) return; // peer relay messages are complete when we recieve fewer than 1000
-
-    [[ZNPeerEntity context] performBlock:^{
-        NSMutableSet *allPeers = [[self.peers.set setByAddingObjectsFromSet:self.misbehavinPeers] mutableCopy];
-        NSMutableSet *addrs = [NSMutableSet set];
-        
-        for (ZNPeer *p in allPeers) {
-            [addrs addObject:@((int32_t)p.address)];
-        }
-        
-        [ZNPeerEntity deleteObjects:[ZNPeerEntity objectsMatching:@"! (address in %@)", addrs]];
-        
-        for (ZNPeerEntity *e in [ZNPeerEntity objectsMatching:@"address in %@", addrs]) {
-            ZNPeer *p = [allPeers member:[e peer]];
-            
-            if (! p) continue;
-            e.timestamp = p.timestamp;
-            e.services = p.services;
-            e.misbehavin = p.misbehavin;
-            [allPeers removeObject:p];
-        }
-        
-        for (ZNPeer *p in allPeers) {
-            [[ZNPeerEntity managedObject] setAttributesFromPeer:p];
-        }
-    }];
+    if (peers.count < 1000) [self savePeers]; // peer relaying is complete when we receive fewer than 1000
 }
 
 - (void)peer:(ZNPeer *)peer relayedTransaction:(ZNTransaction *)transaction
@@ -767,28 +806,8 @@ sort:
     }
 
     if (block.height == peer.lastblock && block == self.lastBlock) { // chain download is complete
-        NSMutableSet *set = [NSMutableSet set];
-        ZNMerkleBlock *b = self.lastBlock;
-
-        while (b) {
-            [set addObject:b.blockHash];
-            b = self.blocks[b.prevBlock];
-        }
-
-        [[ZNMerkleBlockEntity context] performBlock:^{
-            [ZNMerkleBlockEntity deleteObjects:[ZNMerkleBlockEntity objectsMatching:@"! (blockHash in %@)", set]];
-
-            for (ZNMerkleBlockEntity *e in [ZNMerkleBlockEntity objectsMatching:@"blockHash in %@", set]) {
-                [e setAttributesFromBlock:self.blocks[e.blockHash]];
-                [set removeObject:e.blockHash];
-            }
-
-            for (NSData *hash in set) {
-                [[ZNMerkleBlockEntity managedObject] setAttributesFromBlock:self.blocks[hash]];
-            }
-
-            [ZNMerkleBlockEntity saveContext];
-        }];
+        [self saveBlocks];
+        [ZNMerkleBlockEntity saveContext];
 
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:ZNPeerManagerSyncFinishedNotification
@@ -799,15 +818,6 @@ sort:
             [[UIApplication sharedApplication] endBackgroundTask:self.taskId];
             self.taskId = UIBackgroundTaskInvalid;
         }
-    }
-    else if (block.height > peer.lastblock) { // main chain download is already complete, so save the block
-        [[ZNMerkleBlockEntity context] performBlock:^{
-            ZNMerkleBlockEntity *e =
-                [ZNMerkleBlockEntity objectsMatching:@"blockHash == %@", block.blockHash].lastObject;
-
-            if (! e) e = [ZNMerkleBlockEntity managedObject];
-            [e setAttributesFromBlock:block];
-        }];
     }
 }
 
