@@ -35,6 +35,8 @@
 #define BITCOIN_REFERENCE_BLOCK_TIME   (1375533383.0 - NSTimeIntervalSince1970)
 #endif
 
+#define BITCOIN_TIMEOUT_CODE           1001
+
 // explanation of message types at: https://en.bitcoin.it/wiki/Protocol_specification
 #define MSG_VERSION     @"version"
 #define MSG_VERACK      @"verack"

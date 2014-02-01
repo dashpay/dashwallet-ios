@@ -201,7 +201,7 @@ static NSData *getKeychainData(NSString *key)
     setKeychainData(nil, CREATION_TIME_KEY);
     setKeychainData(seed, SEED_KEY);
 
-    //BUG: notify that bloom filters need to be rebuilt, earliestKeyTime updated
+    //BUG: XXXX notify that bloom filters need to be rebuilt, earliestKeyTime updated
 }
 
 - (NSString *)seedPhrase

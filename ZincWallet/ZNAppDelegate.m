@@ -46,14 +46,10 @@
     //TODO: pin code
 
     //TODO: network status indicator tied to peer connection status
-    
-    //TODO: SPV mode
-    //NOTE: app store guidelines prohibit p2p networking, however SPV mode is not p2p since neither incoming peer
-    //      connections are permitted nor is network traffic relayed. SPV is strictly a client/server model.
-    
+
     //TODO: remove MBProgressHUD dependency
     
-    //TODO: support for BIP70 payment protocol
+    //TODO: support for BIP70 payment protocol, BIP38 pasword encrypted private keys
     
     //TODO: accessibility for the visually impaired
     

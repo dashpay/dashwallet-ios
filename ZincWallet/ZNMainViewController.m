@@ -87,8 +87,7 @@
         queue:nil usingBlock:^(NSNotification *note) {
             if (self.didAppear) [[ZNPeerManager sharedInstance] connect];
         }];
-    
-    // TODO: switch to AFNetworkingReachability
+
     self.reachabilityObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
@@ -155,8 +154,11 @@
 
             if (! self.alertVisible) {
                 self.alertVisible = YES;
-                [[[UIAlertView alloc] initWithTitle:@"couldn't refresh wallet balance" message:note.userInfo[@"error"]
-                  delegate:self cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+                [[[UIAlertView alloc] initWithTitle:@"couldn't refresh wallet balance"
+                  message:[note.userInfo[@"error"] localizedDescription] delegate:self cancelButtonTitle:@"ok"
+                  otherButtonTitles:nil] show];
+
+                //TODO: XXXX add a retry/cancel button
             }
         }];
     
@@ -291,7 +293,7 @@
     
     if ([ZNWallet sharedInstance].balance == 0) self.navigationItem.title = @"syncing...";
     
-    [[ZNPeerManager sharedInstance] connect];
+    [[ZNPeerManager sharedInstance] refresh];
 }
 
 - (IBAction)page:(id)sender

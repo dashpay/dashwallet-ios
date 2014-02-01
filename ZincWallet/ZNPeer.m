@@ -40,11 +40,11 @@
 #define MAX_MSG_LENGTH     0x02000000
 #define MAX_GETDATA_HASHES 50000
 #define ENABLED_SERVICES   0     // we don't provide full blocks to remote nodes
-#define PROTOCOL_VERSION   70001
+#define PROTOCOL_VERSION   70002
 #define MIN_PROTO_VERSION  70001 // peers earlier than this protocol version not supported (SPV mode required)
 #define LOCAL_HOST         0x7f000001
 #define ZERO_HASH          @"0000000000000000000000000000000000000000000000000000000000000000".hexToData
-#define SOCKET_TIMEOUT     2.0
+#define SOCKET_TIMEOUT     5.0
 
 typedef enum {
     error = 0,
@@ -173,8 +173,9 @@ services:(uint64_t)services
         
         // after the reachablity check, the radios should be warmed up and we can set a short socket connect timeout
         [self performSelector:@selector(disconnectWithError:) withObject:[NSError errorWithDomain:@"ZincWallet"
-         code:1001 userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"%@:%u socket connect timeout",
-                                                         self.host, self.port]}] afterDelay:SOCKET_TIMEOUT];
+         code:BITCOIN_TIMEOUT_CODE
+         userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"%@:%u socket connect timeout", self.host,
+                                               self.port]}] afterDelay:SOCKET_TIMEOUT];
         
         [self.inputStream open];
         [self.outputStream open];
@@ -283,9 +284,10 @@ services:(uint64_t)services
     [msg appendUInt8:0]; // relay transactions (no for SPV bloom filter mode)
 
     // setup a 5 second timeout to receive a verack message back
-    [self performSelector:@selector(disconnectWithError:) withObject:[NSError errorWithDomain:@"ZincWallet" code:1001
-     userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"%@:%u verack timeout", self.host, self.port]}]
-     afterDelay:5];
+    [self performSelector:@selector(disconnectWithError:)
+     withObject:[NSError errorWithDomain:@"ZincWallet" code:BITCOIN_TIMEOUT_CODE
+                 userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"%@:%u verack timeout", self.host,
+                                                       self.port]}] afterDelay:5];
 
     self.startTime = [NSDate timeIntervalSinceReferenceDate];
     [self sendMessage:msg type:MSG_VERSION];

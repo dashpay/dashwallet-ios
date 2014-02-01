@@ -41,10 +41,11 @@
 #import <arpa/inet.h>
 #import "Reachability.h"
 
-#define FIXED_PEERS      @"FixedPeers"
-#define MAX_CONNECTIONS  3
-#define NODE_NETWORK     1 // services value indicating a node offers full blocks, not just headers
-#define PROTOCOL_TIMEOUT 10.0
+#define FIXED_PEERS           @"FixedPeers"
+#define MAX_CONNECTIONS       3
+#define NODE_NETWORK          1 // services value indicating a node offers full blocks, not just headers
+#define PROTOCOL_TIMEOUT      10.0
+#define MAX_CONNENCT_FAILURES 30 // notify user of network problems after this many connect failures in a row
 
 #if BITCOIN_TESTNET
 
@@ -70,7 +71,7 @@ static const struct { uint32_t height; char *hash; time_t timestamp; } checkpoin
 
 static const char *dns_seeds[] = { "testnet-seed.bitcoin.petertodd.org", "testnet-seed.bluematt.me" };
 
-#else
+#else // main net
 
 #define GENESIS_BLOCK_HASH @"000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f".hexToData.reverse
 
@@ -111,7 +112,7 @@ static const char *dns_seeds[] = {
 @property (nonatomic, strong) ZNPeer *downloadPeer;
 @property (nonatomic, assign) uint32_t tweak, syncStartHeight;
 @property (nonatomic, strong) ZNBloomFilter *bloomFilter;
-@property (nonatomic, assign) NSUInteger filterElemCount, taskId;
+@property (nonatomic, assign) NSUInteger filterElemCount, taskId, connectFailures;
 @property (nonatomic, assign) BOOL filterWasReset;
 @property (nonatomic, strong) NSMutableDictionary *blocks, *checkpoints, *publishedTx, *publishedCallback;
 @property (nonatomic, strong) ZNMerkleBlock *lastBlock;
@@ -119,7 +120,7 @@ static const char *dns_seeds[] = {
 @property (nonatomic, strong) ZNWallet *wallet;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) dispatch_queue_t q;
-@property (nonatomic, strong) id terminateObserver;
+@property (nonatomic, strong) id activeObserver;
 
 @end
 
@@ -158,14 +159,13 @@ static const char *dns_seeds[] = {
         if (tx.blockHeight == TX_UNCONFIRMED) self.publishedTx[tx.txHash] = tx;
     }
 
-    //TODO: disconnect peers when app is backgrounded unless we're syncing
-
-    self.terminateObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillTerminateNotification object:nil
+    self.activeObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             [self savePeers];
             [self saveBlocks];
             [ZNMerkleBlockEntity saveContext];
+            if (self.syncProgress >= 1.0) [self.peers.array makeObjectsPerformSelector:@selector(disconnect)];
         }];
 
     return self;
@@ -173,7 +173,7 @@ static const char *dns_seeds[] = {
 
 - (void)dealloc
 {
-    if (self.terminateObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.terminateObserver];
+    if (self.activeObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
 }
 
 - (NSMutableOrderedSet *)peers
@@ -201,8 +201,6 @@ static const char *dns_seeds[] = {
             }
 
             [self.misbehavinPeers removeAllObjects];
-
-            //TODO: connect to a few random DNS peers just to grab a list of peers and disconnect to not overload them
 
             for (int i = 0; i < sizeof(dns_seeds)/sizeof(*dns_seeds); i++) { // DNS peer discovery
                 struct hostent *h = gethostbyname(dns_seeds[i]);
@@ -290,9 +288,6 @@ sort:
     return locators;
 }
 
-//TODO: XXXX add refresh method that refreshes blocks/tx from earliestKeyTime
-// a malicious node might lie by omitting transactions, so it's a good idea to be able to refresh from a random node
-
 - (ZNBloomFilter *)bloomFilter
 {
     // a bloom filter's falsepositive rate will increase with each item added to the filter, so if it has degraded by
@@ -307,16 +302,15 @@ sort:
 
     if (_bloomFilter) return _bloomFilter;
 
-    // every time a new wallet address is added to the filter, the filter has to be rebuilt and sent to each peer,
-    // and each address is only used for one transaction, so here we generate some spare addresses to avoid
-    // rebuilding the filter each time a wallet transaction is encountered during the blockchain download (generates
-    // twice the external gap limit for both address chains)
+    // every time a new wallet address is added, the filter has to be rebuilt, and each address is only used for one
+    // transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
+    // transaction is encountered during the blockchain download (generates twice the external gap limit for both
+    // address chains)
     [self.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:NO];
     [self.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:YES];
 
     self.filterElemCount = self.wallet.addresses.count + self.wallet.unspentOutputs.count;
     self.filterElemCount = (self.filterElemCount < 200) ? self.filterElemCount*1.5 : self.filterElemCount + 100;
-
 
     ZNBloomFilter *filter = [ZNBloomFilter filterWithFalsePositiveRate:BLOOM_DEFAULT_FALSEPOSITIVE_RATE
                              forElementCount:self.filterElemCount tweak:self.tweak flags:BLOOM_UPDATE_P2PUBKEY_ONLY];
@@ -331,8 +325,6 @@ sort:
     for (NSData *utxo in self.wallet.unspentOutputs) {
         [filter insertData:utxo]; // add the unspent output to watch for any tx sending money from the wallet
     }
-    
-    //TODO: after a wallet restore and chain download, reset all non-download peer's filters with new utxo's
 
     _bloomFilter = filter;
     return _bloomFilter;
@@ -373,14 +365,14 @@ sort:
     if (! self.downloadPeer) return 0.0;
     if (self.lastBlockHeight >= self.downloadPeer.lastblock) return 1.0;
     return (self.connected ? 0.05 : 0.0) +
-    (self.lastBlockHeight - self.syncStartHeight)/(double)(self.downloadPeer.lastblock - self.syncStartHeight)*0.95;
+        (self.lastBlockHeight - self.syncStartHeight)/(double)(self.downloadPeer.lastblock - self.syncStartHeight)*0.95;
 }
 
 - (void)connect
 {
     if (self.reachability.currentReachabilityStatus == NotReachable) return;
 
-    if (! self.downloadPeer || self.lastBlockHeight < self.downloadPeer.lastblock) {
+    if (self.syncProgress < 1.0) {
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:ZNPeerManagerSyncStartedNotification object:nil];
         });
@@ -391,14 +383,15 @@ sort:
             return ([obj status] == disconnected) ? YES : NO;
         }]];
 
-        //BUG: if we're behind and haven't received a block in 10-20 seconds, we might need a tickle
+        //BUG: XXXX if we're behind and haven't received a block in 10-20 seconds, we might need a tickle
 
         if (self.connectedPeers.count >= MAX_CONNECTIONS) return; // we're already connected to MAX_CONNECTIONS peers
+        if (self.connectFailures >= MAX_CONNENCT_FAILURES) self.connectFailures = 0;
 
         NSMutableOrderedSet *peers = [NSMutableOrderedSet orderedSetWithOrderedSet:self.peers];
 
         if (peers.count > 100) [peers removeObjectsInRange:NSMakeRange(100, peers.count - 100)];
-        self.syncStartHeight = self.lastBlockHeight;
+        if (! self.connected) self.syncStartHeight = self.lastBlockHeight;
 
         while (peers.count > 0 && self.connectedPeers.count < MAX_CONNECTIONS) {
             // pick a random peer biased towards peers with more recent timestamps
@@ -423,11 +416,35 @@ sort:
                 }
 
                 [[NSNotificationCenter defaultCenter] postNotificationName:ZNPeerManagerSyncFailedNotification
-                 object:@{@"error":[NSError errorWithDomain:@"ZincWallet" code:1
-                 userInfo:@{NSLocalizedDescriptionKey:@"no peers found"}]}];
+                 object:self userInfo:@{@"error":[NSError errorWithDomain:@"ZincWallet" code:1
+                                                  userInfo:@{NSLocalizedDescriptionKey:@"no peers found"}]}];
             });
         }
     });
+}
+
+// refreshes blocks and transactions after earliestKeyTime, a new random download peer is also selected due to the
+// possibility that a malicious node might lie by omitting transactions that match the bloom filter
+- (void)refresh
+{
+    //BUG: XXX make sure refreshing works while chain is downloading, while not all peers are connected, etc...
+    // after refresh, progress bar stays forever at something like 60%
+    _lastBlock = nil;
+
+    for (int i = sizeof(checkpoint_array)/sizeof(*checkpoint_array) - 1; ! _lastBlock && i >= 0; i--) {
+        if (checkpoint_array[i].timestamp + 7*24*60*60 - NSTimeIntervalSince1970 >= self.earliestKeyTime) continue;
+        _lastBlock = self.blocks[[NSString stringWithUTF8String:checkpoint_array[i].hash].hexToData.reverse];
+    }
+
+    if (! _lastBlock) _lastBlock = self.blocks[GENESIS_BLOCK_HASH];
+
+    if (self.downloadPeer) {
+        [self.peers removeObject:self.downloadPeer];
+        [self.downloadPeer disconnect];
+    }
+
+    self.syncStartHeight = self.lastBlockHeight;
+    [self connect];
 }
 
 - (void)publishTransaction:(ZNTransaction *)transaction completion:(void (^)(NSError *error))completion
@@ -541,6 +558,7 @@ sort:
 {
     NSLog(@"%@:%d connected", peer.host, peer.port);
 
+    self.connectFailures = 0;
     peer.timestamp = [NSDate timeIntervalSinceReferenceDate]; // set last seen timestamp for peer
 
     //TODO: adjust the false positive rate depending on how far behind we are, to target, say, 100 transactions that
@@ -559,7 +577,7 @@ sort:
     _connected = YES;
     self.downloadPeer = peer;
 
-    if (self.lastBlockHeight < peer.lastblock) {
+    if (self.lastBlock.height < peer.lastblock) {
         if (self.taskId == UIBackgroundTaskInvalid) {
             self.taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
         }
@@ -582,23 +600,27 @@ sort:
 
 - (void)peer:(ZNPeer *)peer disconnectedWithError:(NSError *)error
 {
-    //TODO: XXXX detect 10-20 connection refused (NSPOSIXErrorDomain Code=61) in a row and notify about network problem
-    // Error Domain=NSPOSIXErrorDomain Code=65 "The operation couldn’t be completed. No route to host"
-    // Error Domain=NSPOSIXErrorDomain Code=49 "The operation couldn’t be completed. Can't assign requested address"
     NSLog(@"%@:%d disconnected%@%@", peer.host, peer.port, error ? @", " : @"", error ? error : @"");
     
-    if ([error.domain isEqual:@"ZincWallet"] && error.code != 1001) {
+    if ([error.domain isEqual:@"ZincWallet"] && error.code != BITCOIN_TIMEOUT_CODE) {
         [self peerMisbehavin:peer];
     }
-    else if (error) [self.peers removeObject:peer];
+    else if (error) {
+        [self.peers removeObject:peer];
+        if (! self.connected) self.connectFailures++;
+    }
 
     if (! self.downloadPeer || [self.downloadPeer isEqual:peer]) {
         _connected = NO;
         self.downloadPeer = nil;
     }
-    
+
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self connect];
+        if (! self.connected && self.connectFailures == MAX_CONNENCT_FAILURES) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:ZNPeerManagerSyncFailedNotification
+             object:self userInfo:@{@"error":error}];
+        }
+        else if (self.connectFailures < MAX_CONNENCT_FAILURES) [self connect];
     });
 }
 
@@ -696,7 +718,7 @@ sort:
               block.blockHash, block.prevBlock, self.lastBlock.blockHash, self.lastBlock.height);
 
         // if we're still downloading the chain, ignore orphan block for now since it's probably in the chain
-        if (self.lastBlockHeight < peer.lastblock) return;
+        if (self.lastBlock.height < peer.lastblock) return;
 
         NSLog(@"%@:%d relayed orphan block %@, previous %@, calling getblocks with last block %@", peer.host, peer.port,
               block.blockHash, block.prevBlock, self.lastBlock.blockHash);
@@ -740,7 +762,14 @@ sort:
         return;
     }
 
-    if (self.blocks[block.blockHash] != nil) { // we already have the block (or at least the header)
+    if ([block.prevBlock isEqual:self.lastBlock.blockHash]) { // new block extends main chain
+        if ((block.height % 500) == 0) NSLog(@"adding block at height: %d", block.height);
+
+        self.blocks[block.blockHash] = block;
+        self.lastBlock = block;
+        [self setBlockHeight:block.height forTxHashes:block.txHashes];
+    }
+    else if (self.blocks[block.blockHash] != nil) { // we already have the block (or at least the header)
         NSLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, block.height);
         self.blocks[block.blockHash] = block;
 
@@ -756,13 +785,6 @@ sort:
         // if the block isn't on a fork, set block heights for its transactions
         [self setBlockHeight:block.height forTxHashes:block.txHashes];
     }
-    else if ([block.prevBlock isEqual:self.lastBlock.blockHash]) { // new block extends main chain
-        if ((block.height % 500) == 0) NSLog(@"adding block at height: %d", block.height);
-
-        self.blocks[block.blockHash] = block;
-        self.lastBlock = block;
-        [self setBlockHeight:block.height forTxHashes:block.txHashes];
-    }
     else { // new block is on a fork
         if (block.height <= BITCOIN_REFERENCE_BLOCK_HEIGHT) { // fork is older than the most recent checkpoint
             NSLog(@"ignoring block on fork older than most recent checkpoint, fork height: %d, blockHash: %@",
@@ -770,8 +792,10 @@ sort:
             return;
         }
 
-        NSLog(@"chain fork to height %d", block.height);
         self.blocks[block.blockHash] = block;
+        if (prev.height > self.lastBlock.height) return; // special case, received a new block while refreshing chain
+
+        NSLog(@"chain fork to height %d", block.height);
         if (block.height <= self.lastBlock.height) return; // if fork is shorter than main chain, ingore it for now
 
         NSMutableArray *txHashes = [NSMutableArray array];
