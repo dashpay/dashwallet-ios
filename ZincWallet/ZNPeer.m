@@ -868,6 +868,7 @@ services:(uint64_t)services
                 if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
                 //if(self.outputBuffer.length == 0) NSLog(@"%@:%d output buffer cleared", self.host, self.port);
             }
+
             break;
             
         case NSStreamEventHasBytesAvailable:
@@ -876,9 +877,9 @@ services:(uint64_t)services
             while ([self.inputStream hasBytesAvailable]) {
                 NSData *message = nil;
                 NSString *type = nil;
-                uint32_t length = 0, checksum = 0;
                 NSInteger headerLen = self.msgHeader.length, payloadLen = self.msgPayload.length, l = 0;
-                        
+                uint32_t length = 0, checksum = 0;
+
                 if (headerLen < HEADER_LENGTH) { // read message header
                     self.msgHeader.length = HEADER_LENGTH;
                     l = [self.inputStream read:(uint8_t *)self.msgHeader.mutableBytes + headerLen

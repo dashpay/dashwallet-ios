@@ -40,23 +40,22 @@
 #import "NSString+Base58.h"
 #import "NSManagedObject+Utils.h"
 
-//#define BASE_URL      @"https://blockchain.info"
-//#define UNSPENT_URL   BASE_URL "/unspent?active="
-//#define ADDRESS_URL   BASE_URL "/multiaddr?active="
-//#define PUSHTX_PATH   @"/pushtx"
-
 #define BTC           @"\xC9\x83"     // capital B with stroke (utf-8)
 #define CURRENCY_SIGN @"\xC2\xA4"     // generic currency sign (utf-8)
 #define NBSP          @"\xC2\xA0"     // no-break space (utf-8)
 #define NARROW_NBSP   @"\xE2\x80\xAF" // narrow no-break space (utf-8)
 
-#define LOCAL_CURRENCY_SYMBOL_KEY  @"LOCAL_CURRENCY_SYMBOL"
-#define LOCAL_CURRENCY_CODE_KEY    @"LOCAL_CURRENCY_CODE"
-#define LOCAL_CURRENCY_PRICE_KEY   @"LOCAL_CURRENCY_PRICE"
-#define SEED_KEY                   @"seed"
-#define CREATION_TIME_KEY          @"creationtime"
+#define LOCAL_CURRENCY_SYMBOL_KEY @"LOCAL_CURRENCY_SYMBOL"
+#define LOCAL_CURRENCY_CODE_KEY   @"LOCAL_CURRENCY_CODE"
+#define LOCAL_CURRENCY_PRICE_KEY  @"LOCAL_CURRENCY_PRICE"
+#define SEED_KEY                  @"seed"
+#define CREATION_TIME_KEY         @"creationtime"
 
 #define SEC_ATTR_SERVICE @"cc.zinc.zincwallet"
+
+#define BASE_URL    @"https://blockchain.info"
+#define UNSPENT_URL BASE_URL "/unspent?active="
+#define ADDRESS_URL BASE_URL "/multiaddr?active="
 
 static BOOL setKeychainData(NSData *data, NSString *key)
 {
@@ -450,59 +449,83 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
                          userInfo:@{NSLocalizedDescriptionKey:@"this private key is already in your wallet"}]);
         return;
     }
+
+    NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:[UNSPENT_URL stringByAppendingString:address]]
+                         cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:10.0];
+
+    [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue currentQueue]
+    completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+        if (connectionError) {
+            completion(nil, connectionError);
+            return;
+        }
+
+        NSError *error = nil;
+        NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        uint64_t balance = 0, standardFee = 0;
+        ZNTransaction *tx = [ZNTransaction new];
+
+        if (error) {
+            if ([[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] hasPrefix:@"No free outputs"]) {
+                error = [NSError errorWithDomain:@"ZincWallet" code:417
+                         userInfo:@{NSLocalizedDescriptionKey:@"this private key is empty"}];
+            }
+
+            completion(nil, error);
+            return;
+        }
+
+        if (! [json isKindOfClass:[NSDictionary class]] ||
+            ! [json[@"unspent_outputs"] isKindOfClass:[NSArray class]]) {
+            completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
+                             userInfo:@{NSLocalizedDescriptionKey:@"unexpected response from blockchain.info"}]);
+            return;
+        }
+
+        //TODO: make sure not to create a transaction larger than TX_MAX_SIZE
+        for (NSDictionary *utxo in json[@"unspent_outputs"]) {
+            if (! [utxo isKindOfClass:[NSDictionary class]] ||
+                ! [utxo[@"tx_hash"] isKindOfClass:[NSString class]] ||
+                ! [utxo[@"tx_output_n"] isKindOfClass:[NSNumber class]] ||
+                ! [utxo[@"script"] isKindOfClass:[NSString class]] ||
+                ! [utxo[@"value"] isKindOfClass:[NSNumber class]]) {
+                completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
+                                 userInfo:@{NSLocalizedDescriptionKey:@"unexpected response from blockchain.info"}]);
+                return;
+            }
+
+            [tx addInputHash:[utxo[@"tx_hash"] hexToData] index:[utxo[@"tx_output_n"] unsignedIntegerValue]
+             script:[utxo[@"script"] hexToData]];
+            balance += [utxo[@"value"] unsignedLongLongValue];
+        }
+
+        if (balance == 0) {
+            completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
+                             userInfo:@{NSLocalizedDescriptionKey:@"this private key is empty"}]);
+            return;
+        }
+
+        // we will be adding a wallet output (additional 34 bytes)
+        //TODO: calculate the median of the lowest fee-per-kb that made it into the previous 144 blocks (24hrs)
+        if (fee) standardFee = ((tx.size + 34 + 999)/1000)*TX_FEE_PER_KB;
+
+        if (standardFee + TX_MIN_OUTPUT_AMOUNT > balance) {
+            completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
+                             userInfo:@{NSLocalizedDescriptionKey:@"transaction fees would cost more than the funds "
+                             "available on this private key to transfer (due to tiny \"dust\" deposits)"}]);
+            return;
+        }
         
-    //TODO: XXX implement sweep key... probably use blockchain.info in first version, then do a real blockchain scan
-//    _synchronizing = YES;
-//    // pass in a mutable dictionary in place of a ZNAddressEntity to avoid storing the address in core data
-//    [self queryUnspentOutputs:@[[@{@"address":address} mutableCopy]] completion:^(NSError *error) {
-//        _synchronizing = NO;
-//        
-//        if (error) {
-//            completion(nil, error);
-//            return;
-//        }
-//        
-//        //TODO: make sure not to create a transaction larger than TX_MAX_SIZE
-//        __block uint64_t balance = 0, standardFee = 0;
-//        ZNTransaction *tx = [ZNTransaction new];
-//        
-//        [[NSManagedObject context] performBlockAndWait:^{
-//            for (ZNUnspentOutputEntity *o in [ZNUnspentOutputEntity objectsMatching:@"address == %@", address]) {
-//                [tx addInputHash:o.txHash index:o.n script:o.script];
-//            
-//                balance += o.value;
-//                
-//                [o deleteObject]; // immediately remove unspent output from core data, they are not yet in the wallet
-//            }
-//        }];
-//        
-//        if (balance == 0) {
-//            completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
-//                             userInfo:@{NSLocalizedDescriptionKey:@"this private key is empty"}]);
-//            return;
-//        }
-//
-//        // we will be adding a wallet output (additional 34 bytes)
-//        //TODO: calculate the median of the lowest fee-per-kb that made it into the previous 144 blocks (24hrs)
-//        if (fee) standardFee = ((tx.size + 34 + 999)/1000)*TX_FEE_PER_KB;
-//
-//        if (standardFee + TX_MIN_OUTPUT_AMOUNT > balance) {
-//            completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
-//                             userInfo:@{NSLocalizedDescriptionKey:@"transaction fees would cost more than the funds "
-//                             "available on this private key to transfer (due to tiny \"dust\" deposits)"}]);
-//            return;
-//        }
-//        
-//        [tx addOutputAddress:[self changeAddress] amount:balance - standardFee];
-//
-//        if (! [tx signWithPrivateKeys:@[privKey]]) {
-//            completion(nil, [NSError errorWithDomain:@"ZincWallet" code:401
-//                       userInfo:@{NSLocalizedDescriptionKey:@"error signing transaction"}]);
-//            return;
-//        }
-//        
-//        completion(tx, nil);
-//    }];
+        [tx addOutputAddress:[self changeAddress] amount:balance - standardFee];
+
+        if (! [tx signWithPrivateKeys:@[privKey]]) {
+            completion(nil, [NSError errorWithDomain:@"ZincWallet" code:401
+                       userInfo:@{NSLocalizedDescriptionKey:@"error signing transaction"}]);
+            return;
+        }
+        
+        completion(tx, nil);
+    }];
 }
 
 // true if the given transaction is associated with the wallet, false otherwise

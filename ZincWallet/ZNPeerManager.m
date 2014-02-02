@@ -427,8 +427,6 @@ sort:
 // possibility that a malicious node might lie by omitting transactions that match the bloom filter
 - (void)refresh
 {
-    //BUG: XXX make sure refreshing works while chain is downloading, while not all peers are connected, etc...
-    // after refresh, progress bar stays forever at something like 60%
     _lastBlock = nil;
 
     for (int i = sizeof(checkpoint_array)/sizeof(*checkpoint_array) - 1; ! _lastBlock && i >= 0; i--) {
@@ -515,10 +513,13 @@ sort:
         for (ZNPeerEntity *e in [ZNPeerEntity objectsMatching:@"address in %@", addrs]) {
             ZNPeer *p = [peers member:[e peer]];
 
-            if (! p) continue;
-            e.timestamp = p.timestamp;
-            e.services = p.services;
-            e.misbehavin = p.misbehavin;
+            if (p) {
+                e.timestamp = p.timestamp;
+                e.services = p.services;
+                e.misbehavin = p.misbehavin;
+            }
+            else [e deleteObject];
+
             [peers removeObject:p];
         }
 
