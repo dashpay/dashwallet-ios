@@ -54,7 +54,6 @@
 @property (nonatomic, strong) ZNPaymentRequest *request;
 @property (nonatomic, strong) ZNTransaction *sweepTx, *tx, *txWithFee;
 @property (nonatomic, strong) ZBarReaderViewController *zbarController;
-@property (nonatomic, strong) NSUserDefaults *defs;
 
 @property (nonatomic, strong) IBOutlet UILabel *label;
 @property (nonatomic, strong) IBOutlet UIButton *infoButton;
@@ -77,7 +76,6 @@
     
     req.label = @"scan QR code";
     
-    self.defs = [NSUserDefaults standardUserDefaults];
     self.requests = [NSMutableArray arrayWithObject:req];
     self.requestIDs = [NSMutableArray arrayWithObject:QR_ID];
     self.requestButtons = [NSMutableArray array];

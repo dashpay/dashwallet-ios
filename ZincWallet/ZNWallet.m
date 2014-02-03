@@ -52,6 +52,7 @@
 #define CREATION_TIME_KEY         @"creationtime"
 
 #define SEC_ATTR_SERVICE @"cc.zinc.zincwallet"
+#define DEFAULT_CURRENCY_PRICE 100000.0
 
 #define BASE_URL    @"https://blockchain.info"
 #define UNSPENT_URL BASE_URL "/unspent?active="
@@ -142,6 +143,10 @@ static NSData *getKeychainData(NSString *key)
     // for reasons both mysterious and inscrutable, 210,000,009 is the smallest value of format.maximum that will allow
     // the user to input a value of 21,000,000
     self.format.maximum = @210000009.0;
+
+    [self updateExchangeRate];
+    [NSTimer scheduledTimerWithTimeInterval:60 target:self selector:@selector(updateExchangeRate) userInfo:nil
+     repeats:YES];
 
     [[NSManagedObject context] performBlockAndWait:^{
         NSFetchRequest *req = [ZNAddressEntity fetchRequest];
@@ -334,6 +339,46 @@ static NSData *getKeychainData(NSString *key)
     }];
 }
 
+- (void)updateExchangeRate
+{
+    NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:ADDRESS_URL]
+                         cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:10.0];
+
+    [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue currentQueue]
+    completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+        if (connectionError) {
+            NSLog(@"%@", connectionError);
+            return;
+        }
+
+        NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+        NSError *error = nil;
+        NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+
+        if (error || ! [json isKindOfClass:[NSDictionary class]] ||
+            ! [json[@"info"] isKindOfClass:[NSDictionary class]] ||
+            ! [json[@"info"][@"symbol_local"] isKindOfClass:[NSDictionary class]] ||
+            ! [json[@"info"][@"symbol_local"][@"symbol"] isKindOfClass:[NSString class]] ||
+            ! [json[@"info"][@"symbol_local"][@"code"] isKindOfClass:[NSString class]] ||
+            ! [json[@"info"][@"symbol_local"][@"conversion"] isKindOfClass:[NSNumber class]]) {
+            NSLog(@"unexpected response from blockchain.info:\n%@",
+                  [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            return;
+        }
+
+        [defs setObject:json[@"info"][@"symbol_local"][@"symbol"] forKey:LOCAL_CURRENCY_SYMBOL_KEY];
+        [defs setObject:json[@"info"][@"symbol_local"][@"code"] forKey:LOCAL_CURRENCY_CODE_KEY];
+        [defs setObject:json[@"info"][@"symbol_local"][@"conversion"] forKey:LOCAL_CURRENCY_PRICE_KEY];
+        [defs synchronize];
+        NSLog(@"exchange rate updated to %@/%@", [self localCurrencyStringForAmount:SATOSHIS],
+              [self stringForAmount:SATOSHIS]);
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:ZNWalletBalanceChangedNotification object:nil];
+        });
+    }];
+}
+
 #pragma mark - wallet info
 
 - (NSString *)receiveAddress
@@ -436,13 +481,20 @@ static NSData *getKeychainData(NSString *key)
 
 // given a private key, queries blockchain for unspent outputs and calls the completion block with a signed transaction
 // that will sweep the balance into wallet (doesn't publish the tx)
+//TODO: XXXX test this
 - (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
 completion:(void (^)(ZNTransaction *tx, NSError *error))completion
 {
     //TODO: add support for BIP38 password encrypted private keys
     NSString *address = [[ZNKey keyWithPrivateKey:privKey] address];
 
-    if (! address || ! completion) return;
+    if (! completion) return;
+
+    if (! address) {
+        completion(nil, [NSError errorWithDomain:@"ZincWallet" code:187
+                         userInfo:@{NSLocalizedDescriptionKey:@"not a valid private key"}]);
+        return;
+    }
     
     if ([self containsAddress:address]) {
         completion(nil, [NSError errorWithDomain:@"ZincWallet" code:187
@@ -485,16 +537,16 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
         //TODO: make sure not to create a transaction larger than TX_MAX_SIZE
         for (NSDictionary *utxo in json[@"unspent_outputs"]) {
             if (! [utxo isKindOfClass:[NSDictionary class]] ||
-                ! [utxo[@"tx_hash"] isKindOfClass:[NSString class]] ||
+                ! [utxo[@"tx_hash"] isKindOfClass:[NSString class]] || ! [utxo[@"tx_hash"] hexToData] ||
                 ! [utxo[@"tx_output_n"] isKindOfClass:[NSNumber class]] ||
-                ! [utxo[@"script"] isKindOfClass:[NSString class]] ||
+                ! [utxo[@"script"] isKindOfClass:[NSString class]] || ! [utxo[@"script"] hexToData] ||
                 ! [utxo[@"value"] isKindOfClass:[NSNumber class]]) {
                 completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
                                  userInfo:@{NSLocalizedDescriptionKey:@"unexpected response from blockchain.info"}]);
                 return;
             }
 
-            [tx addInputHash:[utxo[@"tx_hash"] hexToData] index:[utxo[@"tx_output_n"] unsignedIntegerValue]
+            [tx addInputHash:[utxo[@"tx_hash"] hexToData] index:[utxo[@"tx_output_n"] intValue]
              script:[utxo[@"script"] hexToData]];
             balance += [utxo[@"value"] unsignedLongLongValue];
         }
@@ -512,7 +564,7 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
         if (standardFee + TX_MIN_OUTPUT_AMOUNT > balance) {
             completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
                              userInfo:@{NSLocalizedDescriptionKey:@"transaction fees would cost more than the funds "
-                             "available on this private key to transfer (due to tiny \"dust\" deposits)"}]);
+                                        "available on this private key to transfer (due to tiny \"dust\" deposits)"}]);
             return;
         }
         
@@ -520,7 +572,7 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
 
         if (! [tx signWithPrivateKeys:@[privKey]]) {
             completion(nil, [NSError errorWithDomain:@"ZincWallet" code:401
-                       userInfo:@{NSLocalizedDescriptionKey:@"error signing transaction"}]);
+                             userInfo:@{NSLocalizedDescriptionKey:@"error signing transaction"}]);
             return;
         }
         
@@ -740,7 +792,7 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
     NSString *code = [[NSUserDefaults standardUserDefaults] stringForKey:LOCAL_CURRENCY_CODE_KEY];
     double price = [[NSUserDefaults standardUserDefaults] doubleForKey:LOCAL_CURRENCY_PRICE_KEY];
     
-    if (! symbol.length || price <= DBL_EPSILON) return nil;
+    if (! symbol.length || price <= DBL_EPSILON) return [format stringFromNumber:@(amount/DEFAULT_CURRENCY_PRICE)];
     
     format.currencySymbol = symbol;
     format.currencyCode = code;

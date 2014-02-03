@@ -306,7 +306,6 @@ services:(uint64_t)services
 
     // the new bloom filter may contain additional wallet addresses, so re-send the most recent getdata message to get
     // any additional transactions matching the new filter
-    // BUG: XXXX does this cause two separate simultaneous chain download loops?
     // TODO: XXXX verify this actually works and doesn't miss any transactions
     if (self.currentBlockHashes.count > 0) {
         NSMutableArray *locators = [NSMutableArray arrayWithObject:self.currentBlockHashes.lastObject];
