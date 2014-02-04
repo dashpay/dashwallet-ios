@@ -145,7 +145,7 @@ static NSData *getKeychainData(NSString *key)
     self.format.maximum = @210000009.0;
 
     [self updateExchangeRate];
-    [NSTimer scheduledTimerWithTimeInterval:60 target:self selector:@selector(updateExchangeRate) userInfo:nil
+    [NSTimer scheduledTimerWithTimeInterval:60.0 target:self selector:@selector(updateExchangeRate) userInfo:nil
      repeats:YES];
 
     [[NSManagedObject context] performBlockAndWait:^{
@@ -161,12 +161,13 @@ static NSData *getKeychainData(NSString *key)
         self.allTxOutValues = [NSMutableDictionary dictionary];
         self.transactions = [NSMutableOrderedSet orderedSet];
 
-        for (ZNTransactionEntity *e in [ZNTransactionEntity objectsSortedBy:@"blockHeight" ascending:NO]) {
+        for (ZNTransactionEntity *e in [ZNTransactionEntity allObjects]) {
             [self.transactions addObject:e.transaction];
             self.allTxOutAddresses[e.txHash] = [[e.outputs array] valueForKey:@"address"];
             self.allTxOutValues[e.txHash] = [[e.outputs array] valueForKey:@"value"];
         }
 
+        [self sortTransactions];
         [self updateBalance];
     }];
     
@@ -205,7 +206,9 @@ static NSData *getKeychainData(NSString *key)
     setKeychainData(nil, CREATION_TIME_KEY);
     setKeychainData(seed, SEED_KEY);
 
-    //BUG: XXXX notify that bloom filters need to be rebuilt, earliestKeyTime updated
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:ZNWalletSeedChangedNotification object:nil];
+    });
 }
 
 - (NSString *)seedPhrase
@@ -316,6 +319,15 @@ static NSData *getKeychainData(NSString *key)
     
         return a;
     }
+}
+
+- (void)sortTransactions
+{
+    [self.transactions sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+        if ([obj1 blockHeight] > [obj2 blockHeight]) return NSOrderedAscending;
+        if ([obj1 blockHeight] < [obj2 blockHeight]) return NSOrderedDescending;
+        return NSOrderedSame;
+    }];
 }
 
 - (void)updateBalance
@@ -546,7 +558,7 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
                 return;
             }
 
-            [tx addInputHash:[utxo[@"tx_hash"] hexToData] index:[utxo[@"tx_output_n"] intValue]
+            [tx addInputHash:[utxo[@"tx_hash"] hexToData] index:[utxo[@"tx_output_n"] unsignedIntegerValue]
              script:[utxo[@"script"] hexToData]];
             balance += [utxo[@"value"] unsignedLongLongValue];
         }
@@ -653,6 +665,8 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
     for (ZNTransaction *tx in self.transactions) {
         if ([txHashes containsObject:tx.txHash]) tx.blockHeight = height;
     }
+
+    [self sortTransactions];
 
     [[ZNTransactionEntity context] performBlock:^{
         for (ZNTransactionEntity *e in [ZNTransactionEntity objectsMatching:@"txHash in %@", txHashes]) {

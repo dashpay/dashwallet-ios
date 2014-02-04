@@ -44,7 +44,7 @@
 #define MIN_PROTO_VERSION  70001 // peers earlier than this protocol version not supported (SPV mode required)
 #define LOCAL_HOST         0x7f000001
 #define ZERO_HASH          @"0000000000000000000000000000000000000000000000000000000000000000".hexToData
-#define SOCKET_TIMEOUT     5.0
+#define SOCKET_TIMEOUT     3.0
 
 typedef enum {
     error = 0,

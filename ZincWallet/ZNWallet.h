@@ -26,6 +26,7 @@
 #import <Foundation/Foundation.h>
 
 #define ZNWalletBalanceChangedNotification @"ZNWalletBalanceChangedNotification"
+#define ZNWalletSeedChangedNotification @"ZNWalletSeedChangedNotification"
 
 @class ZNTransaction;
 
