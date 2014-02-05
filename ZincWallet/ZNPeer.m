@@ -44,7 +44,7 @@
 #define MIN_PROTO_VERSION  70001 // peers earlier than this protocol version not supported (SPV mode required)
 #define LOCAL_HOST         0x7f000001
 #define ZERO_HASH          @"0000000000000000000000000000000000000000000000000000000000000000".hexToData
-#define SOCKET_TIMEOUT     3.0
+#define CONNECT_TIMEOUT    3.0
 
 typedef enum {
     error = 0,
@@ -175,7 +175,7 @@ services:(uint64_t)services
         [self performSelector:@selector(disconnectWithError:) withObject:[NSError errorWithDomain:@"ZincWallet"
          code:BITCOIN_TIMEOUT_CODE
          userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"%@:%u socket connect timeout", self.host,
-                                               self.port]}] afterDelay:SOCKET_TIMEOUT];
+                                               self.port]}] afterDelay:CONNECT_TIMEOUT];
         
         [self.inputStream open];
         [self.outputStream open];
@@ -232,7 +232,7 @@ services:(uint64_t)services
     if (self.status != connecting || ! self.sentVerack || ! self.gotVerack) return;
 
     NSLog(@"%@:%d handshake completed", self.host, self.port);
-
+    [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending handshake timeout
     _status = connected;
     dispatch_async(self.delegateQueue, ^{
         [self.delegate peerConnected:self];
@@ -441,6 +441,7 @@ services:(uint64_t)services
 {
     CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
         if (self.currentBlock && ! [MSG_TX isEqual:type]) { // if we receive a non-tx message, the merkleblock is done
+            //BUG: XXXX all subsequent blocks are orphans because the peer won't resend a block it already sent
             NSLog(@"%@:%d received non-tx message, expected %u more tx, dropping merkleblock %@", self.host,
                   self.port, (int)self.currentTxHashes.count, self.currentBlock.blockHash);
             self.currentBlock = nil;
@@ -852,10 +853,16 @@ services:(uint64_t)services
             NSLog(@"%@:%d %@ stream connected in %fs", self.host, self.port,
                   aStream == self.inputStream ? @"input" : aStream == self.outputStream ? @"output" : @"unkown",
                   [NSDate timeIntervalSinceReferenceDate] - self.startTime);
-            [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending connect timeout
 
             // don't count socket connect time in ping time
-            if (aStream == self.outputStream) self.startTime = [NSDate timeIntervalSinceReferenceDate];
+            if (aStream == self.outputStream) {
+                self.startTime = [NSDate timeIntervalSinceReferenceDate];
+                [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending socket connect timeout
+                [self performSelector:@selector(disconnectWithError:)
+                 withObject:[NSError errorWithDomain:@"ZincWallet" code:BITCOIN_TIMEOUT_CODE
+                             userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"%@:%u handshake timeout",
+                                                                   self.host, self.port]}] afterDelay:CONNECT_TIMEOUT];
+            }
 
             // fall through to send any queued output
         case NSStreamEventHasSpaceAvailable:

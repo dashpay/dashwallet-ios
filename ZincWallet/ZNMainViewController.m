@@ -35,7 +35,6 @@
 
 @property (nonatomic, strong) id urlObserver, activeObserver, balanceObserver, reachabilityObserver;
 @property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
-@property (nonatomic, assign) int syncErrorCount;
 @property (nonatomic, assign) BOOL didAppear, alertVisible;
 
 @property (nonatomic, strong) IBOutlet UIScrollView *scrollView;
@@ -117,34 +116,33 @@
             if (w.balance == 0) self.navigationItem.title = @"syncing...";
             [UIApplication sharedApplication].idleTimerDisabled = YES;
             self.progress.hidden = NO;
+            self.progress.progress = 0.0;
+            [UIView animateWithDuration:0.2 animations:^{
+                self.progress.alpha = 1.0;
+            }];
             [self updateProgress];
         }];
     
     self.syncFinishedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncFinishedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            self.syncErrorCount = 0;
             [self.spinner stopAnimating];
             self.navigationItem.rightBarButtonItem = self.refreshButton;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                          [w localCurrencyStringForAmount:w.balance]];
             [UIApplication sharedApplication].idleTimerDisabled = NO;
             [self.progress setProgress:1.0 animated:YES];
-            [self.progress performSelector:@selector(setHidden:) withObject:self afterDelay:0.2];
+            [UIView animateWithDuration:0.2 animations:^{
+                self.progress.alpha = 0.0;
+            } completion:^(BOOL finished) {
+                self.progress.hidden = YES;
+            }];
         }];
     
     //TODO: create an error banner instead of using an alert
     self.syncFailedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncFailedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            self.syncErrorCount++;
-//            if ([note.userInfo[@"error"] code] == 504 && self.syncErrorCount < 3) {
-//                [[[UIAlertView alloc] initWithTitle:@"couldn't refresh wallet balance" message:@"retrying..."
-//                  delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
-//                [w synchronize:YES];
-//                return;
-//            }
-            
             [self.spinner stopAnimating];
             self.navigationItem.rightBarButtonItem = self.refreshButton;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],

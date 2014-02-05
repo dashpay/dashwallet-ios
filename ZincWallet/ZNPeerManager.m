@@ -45,7 +45,7 @@
 #define MAX_CONNECTIONS       3
 #define NODE_NETWORK          1 // services value indicating a node offers full blocks, not just headers
 #define PROTOCOL_TIMEOUT      15.0
-#define MAX_CONNENCT_FAILURES 10 // notify user of network problems after this many connect failures in a row
+#define MAX_CONNENCT_FAILURES 20 // notify user of network problems after this many connect failures in a row
 
 #if BITCOIN_TESTNET
 
@@ -96,7 +96,8 @@ static const struct { uint32_t height; char *hash; time_t timestamp; } checkpoin
     { 201600, "00000000000003a5e28bef30ad31f1f9be706e91ae9dda54179a95c9f9cd9ad0", 1349226660 },
     { 221760, "00000000000000fc85dd77ea5ed6020f9e333589392560b40908d3264bd1f401", 1361148470 },
     { 241920, "00000000000000b79f259ad14635739aaf0cc48875874b6aeecc7308267b50fa", 1371418654 },
-    { 262080, "000000000000000aa77be1c33deac6b8d3b7b0757d02ce72fffddc768235d0e2", 1381070552 }
+    { 262080, "000000000000000aa77be1c33deac6b8d3b7b0757d02ce72fffddc768235d0e2", 1381070552 },
+    { 282240, "0000000000000000ef9ee7529607286669763763e0c46acfdefd8a2306de5ca8", 1390570126 }
 };
 
 static const char *dns_seeds[] = {
@@ -117,6 +118,7 @@ static const char *dns_seeds[] = {
 @property (nonatomic, assign) NSTimeInterval earliestKeyTime, lastRelayTime;
 @property (nonatomic, strong) NSMutableDictionary *blocks, *checkpoints, *publishedTx, *publishedCallback;
 @property (nonatomic, strong) ZNMerkleBlock *lastBlock;
+@property (nonatomic, strong) NSData *lastGetblocksHash;
 @property (nonatomic, strong) NSCountedSet *txRelayCounts;
 @property (nonatomic, strong) ZNWallet *wallet;
 @property (nonatomic, strong) NSTimer *timer;
@@ -438,6 +440,11 @@ static const char *dns_seeds[] = {
 // possibility that a malicious node might lie by omitting transactions that match the bloom filter
 - (void)refresh
 {
+    if (! self.connected) {
+        [self connect];
+        return;
+    }
+
     _lastBlock = nil;
 
     for (int i = sizeof(checkpoint_array)/sizeof(*checkpoint_array) - 1; ! _lastBlock && i >= 0; i--) {
@@ -510,7 +517,7 @@ static const char *dns_seeds[] = {
         return;
     }
 
-    NSLog(@"%@:%d timed out", self.downloadPeer.host, self.downloadPeer.port);
+    NSLog(@"%@:%d chain sync timed out", self.downloadPeer.host, self.downloadPeer.port);
 
     [self.peers removeObject:self.downloadPeer];
     [self.downloadPeer disconnect];
@@ -523,7 +530,7 @@ static const char *dns_seeds[] = {
         self.taskId = UIBackgroundTaskInvalid;
     }
 
-    [self.timer invalidate];
+    [self.timer invalidate]; // cancel pending chain sync timeout
     self.timer = nil;
 }
 
@@ -564,10 +571,9 @@ static const char *dns_seeds[] = {
                 e.timestamp = p.timestamp;
                 e.services = p.services;
                 e.misbehavin = p.misbehavin;
+                [peers removeObject:p];
             }
             else [e deleteObject];
-
-            [peers removeObject:p];
         }
 
         for (ZNPeer *p in peers) {
@@ -610,8 +616,6 @@ static const char *dns_seeds[] = {
     peer.timestamp = [NSDate timeIntervalSinceReferenceDate]; // set last seen timestamp for peer
     [peer sendFilterloadMessage:self.bloomFilter.data]; // load the bloom filter
 
-    if (self.peers.count < 900) [peer sendGetaddrMessage]; // request a list of other bitcoin peers
-
     if (self.connected) return; // we're already connected
     
     // select the peer with the lowest ping time to download the chain from if we're behind
@@ -622,14 +626,15 @@ static const char *dns_seeds[] = {
     _connected = YES;
     self.downloadPeer = peer;
 
-    if (self.lastBlock.height < peer.lastblock) {
-        if (self.taskId == UIBackgroundTaskInvalid) {
+    if (self.lastBlock.height < peer.lastblock) { // start blockchain sync
+        if (self.taskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
             self.taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
         }
-        
-        self.lastRelayTime = 0;
+
+        // setup a timer to detect if the sync stalls
         self.timer = [NSTimer scheduledTimerWithTimeInterval:PROTOCOL_TIMEOUT target:self selector:@selector(timeout)
                       userInfo:nil repeats:NO];
+        self.lastRelayTime = 0;
 
         // request just block headers up to earliestKeyTime, and then merkleblocks after that
         if (self.lastBlock.timestamp + 7*24*60*60 >= self.earliestKeyTime) {
@@ -639,10 +644,11 @@ static const char *dns_seeds[] = {
     }
     else {
         [self syncStopped];
+        [peer sendGetaddrMessage]; // request a list of other bitcoin peers
 
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:ZNPeerManagerSyncFinishedNotification
-            object:nil];
+             object:nil];
         });
     }
 }
@@ -676,7 +682,7 @@ static const char *dns_seeds[] = {
 
 - (void)peer:(ZNPeer *)peer relayedPeers:(NSArray *)peers
 {
-    NSLog(@"%@:%d relayed %d peers", peer.host, peer.port, peers.count);
+    NSLog(@"%@:%d relayed %d peer(s)", peer.host, peer.port, (int)peers.count);
     self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
     [self.peers addObjectsFromArray:peers];
     [self.peers minusSet:self.misbehavinPeers];
@@ -692,7 +698,10 @@ static const char *dns_seeds[] = {
         [self.peers removeObject:self.peers.lastObject];
     }
 
-    if (peers.count < 1000) [self savePeers]; // peer relaying is complete when we receive fewer than 1000
+    if (peers.count < 1000) { // peer relaying is complete when we receive fewer than 1000
+        [self savePeers];
+        [ZNPeerEntity saveContext];
+    }
 }
 
 - (void)peer:(ZNPeer *)peer relayedTransaction:(ZNTransaction *)transaction
@@ -770,12 +779,13 @@ static const char *dns_seeds[] = {
         // if we're still downloading the chain, ignore orphan block for now since it's probably in the chain
         if (self.lastBlock.height < peer.lastblock) return;
 
-        NSLog(@"%@:%d relayed orphan block %@, previous %@, calling getblocks with last block %@", peer.host, peer.port,
-              block.blockHash, block.prevBlock, self.lastBlock.blockHash);
+        // call getblocks, unless we already did with the previous block or this one
+        if (! [self.lastGetblocksHash isEqual:block.prevBlock] && ! [self.lastGetblocksHash isEqual:block.blockHash]) {
+            NSLog(@"%@:%d calling getblocks with last block %@", peer.host, peer.port, self.lastBlock.blockHash);
+            [peer sendGetblocksMessageWithLocators:[self blockLocatorArray] andHashStop:nil];
+        }
 
-        //TODO: set a limit on how many times we call getblocks, if we get 500 blocks and the first one is an
-        //      orphan, we don't want to make 500 getblocks requests
-        [peer sendGetblocksMessageWithLocators:[self blockLocatorArray] andHashStop:block.blockHash];
+        self.lastGetblocksHash = block.blockHash;
         return;
     }
 
@@ -845,7 +855,7 @@ static const char *dns_seeds[] = {
         self.blocks[block.blockHash] = block;
 
         // special case, if a new block is mined while we're refreshing the chain and haven't caught up yet, ignore it
-        if (block.height > self.lastBlock.height + 1) return;
+        if (block.height > self.lastBlock.height + 1 && self.lastBlock.height < peer.lastblock) return;
 
         NSLog(@"chain fork to height %d", block.height);
         if (block.height <= self.lastBlock.height) return; // if fork is shorter than main chain, ingore it for now
@@ -885,6 +895,7 @@ static const char *dns_seeds[] = {
         [self saveBlocks];
         [ZNMerkleBlockEntity saveContext];
         [self syncStopped];
+        [peer sendGetaddrMessage]; // request a list of other bitcoin peers
 
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:ZNPeerManagerSyncFinishedNotification
