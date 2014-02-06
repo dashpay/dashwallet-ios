@@ -441,7 +441,6 @@ services:(uint64_t)services
 {
     CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
         if (self.currentBlock && ! [MSG_TX isEqual:type]) { // if we receive a non-tx message, the merkleblock is done
-            //BUG: XXXX all subsequent blocks are orphans because the peer won't resend a block it already sent
             NSLog(@"%@:%d received non-tx message, expected %u more tx, dropping merkleblock %@", self.host,
                   self.port, (int)self.currentTxHashes.count, self.currentBlock.blockHash);
             self.currentBlock = nil;
@@ -854,9 +853,8 @@ services:(uint64_t)services
                   aStream == self.inputStream ? @"input" : aStream == self.outputStream ? @"output" : @"unkown",
                   [NSDate timeIntervalSinceReferenceDate] - self.startTime);
 
-            // don't count socket connect time in ping time
             if (aStream == self.outputStream) {
-                self.startTime = [NSDate timeIntervalSinceReferenceDate];
+                self.startTime = [NSDate timeIntervalSinceReferenceDate]; // don't count connect time in ping time
                 [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending socket connect timeout
                 [self performSelector:@selector(disconnectWithError:)
                  withObject:[NSError errorWithDomain:@"ZincWallet" code:BITCOIN_TIMEOUT_CODE

@@ -145,8 +145,6 @@ static NSData *getKeychainData(NSString *key)
     self.format.maximum = @210000009.0;
 
     [self updateExchangeRate];
-    [NSTimer scheduledTimerWithTimeInterval:60.0 target:self selector:@selector(updateExchangeRate) userInfo:nil
-     repeats:YES];
 
     [[NSManagedObject context] performBlockAndWait:^{
         NSFetchRequest *req = [ZNAddressEntity fetchRequest];
@@ -172,6 +170,11 @@ static NSData *getKeychainData(NSString *key)
     }];
     
     return self;
+}
+
+- (void)dealloc
+{
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
 
 - (NSData *)seed
@@ -389,6 +392,9 @@ static NSData *getKeychainData(NSString *key)
             [[NSNotificationCenter defaultCenter] postNotificationName:ZNWalletBalanceChangedNotification object:nil];
         });
     }];
+
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateExchangeRate) object:nil];
+    [self performSelector:@selector(updateExchangeRate) withObject:nil afterDelay:60.0];
 }
 
 #pragma mark - wallet info

@@ -121,7 +121,6 @@ static const char *dns_seeds[] = {
 @property (nonatomic, strong) NSData *lastGetblocksHash;
 @property (nonatomic, strong) NSCountedSet *txRelayCounts;
 @property (nonatomic, strong) ZNWallet *wallet;
-@property (nonatomic, strong) NSTimer *timer;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) dispatch_queue_t q;
 @property (nonatomic, strong) id activeObserver, seedObserver;
@@ -159,6 +158,7 @@ static const char *dns_seeds[] = {
     self.publishedTx = [NSMutableDictionary dictionary];
     self.publishedCallback = [NSMutableDictionary dictionary];
 
+    //BUG: XXXX this will keep republishing potentially bad tx forever... we need a time limit
     for (ZNTransaction *tx in self.wallet.recentTransactions) {
         if (tx.blockHeight == TX_UNCONFIRMED) self.publishedTx[tx.txHash] = tx;
     }
@@ -194,6 +194,7 @@ static const char *dns_seeds[] = {
 
 - (void)dealloc
 {
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
     if (self.activeObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
     if (self.seedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.seedObserver];
 }
@@ -473,14 +474,21 @@ static const char *dns_seeds[] = {
         return;
     }
 
-    [self.wallet registerTransaction:transaction];
+    if (! self.connected) {
+        if (completion) {
+            completion([NSError errorWithDomain:@"ZincWallet" code:-1009
+                        userInfo:@{NSLocalizedDescriptionKey:@"transaction canceled, not connected to network"}]);
+        }
+        return;
+    }
+
+    //[self.wallet registerTransaction:transaction];
 
     self.publishedTx[transaction.txHash] = transaction;
     if (completion) self.publishedCallback[transaction.txHash] = completion;
+    [self performSelector:@selector(txTimeout:) withObject:transaction.txHash afterDelay:PROTOCOL_TIMEOUT];
 
-    //TODO: XXXX setup a publish timeout
     //TODO: also publish transactions directly to coinbase and bitpay servers for faster POS experience
-
     for (ZNPeer *peer in self.connectedPeers) {
         [peer sendInvMessageWithTxHash:transaction.txHash];
     }
@@ -507,13 +515,28 @@ static const char *dns_seeds[] = {
     }
 }
 
-- (void)timeout
+- (void)txTimeout:(NSData *)txHash
+{
+    void (^callback)(NSError *error) = self.publishedCallback[txHash];
+
+    [self.publishedTx removeObjectForKey:txHash];
+    [self.publishedCallback removeObjectForKey:txHash];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:txHash];
+
+    if (callback) {
+        callback([NSError errorWithDomain:@"ZincWallet" code:BITCOIN_TIMEOUT_CODE
+                  userInfo:@{NSLocalizedDescriptionKey:@"transaction canceled, network timeout"}]);
+    }
+}
+
+- (void)syncTimeout
 {
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
 
     if (now - self.lastRelayTime < PROTOCOL_TIMEOUT) {
-        self.timer = [NSTimer scheduledTimerWithTimeInterval:PROTOCOL_TIMEOUT - (now - self.lastRelayTime) target:self
-                      selector:@selector(timeout) userInfo:nil repeats:NO];
+        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
+        [self performSelector:@selector(syncTimeout) withObject:nil
+         afterDelay:PROTOCOL_TIMEOUT - (now - self.lastRelayTime)];
         return;
     }
 
@@ -530,8 +553,7 @@ static const char *dns_seeds[] = {
         self.taskId = UIBackgroundTaskInvalid;
     }
 
-    [self.timer invalidate]; // cancel pending chain sync timeout
-    self.timer = nil;
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
 }
 
 - (void)peerMisbehavin:(ZNPeer *)peer
@@ -616,6 +638,8 @@ static const char *dns_seeds[] = {
     peer.timestamp = [NSDate timeIntervalSinceReferenceDate]; // set last seen timestamp for peer
     [peer sendFilterloadMessage:self.bloomFilter.data]; // load the bloom filter
 
+    // TODO: XXXX publish recent unconfirmed tx, remove old unconfirmed tx not in the peer's mempool
+
     if (self.connected) return; // we're already connected
     
     // select the peer with the lowest ping time to download the chain from if we're behind
@@ -632,8 +656,8 @@ static const char *dns_seeds[] = {
         }
 
         // setup a timer to detect if the sync stalls
-        self.timer = [NSTimer scheduledTimerWithTimeInterval:PROTOCOL_TIMEOUT target:self selector:@selector(timeout)
-                      userInfo:nil repeats:NO];
+        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
+        [self performSelector:@selector(syncTimeout) withObject:nil afterDelay:PROTOCOL_TIMEOUT];
         self.lastRelayTime = 0;
 
         // request just block headers up to earliestKeyTime, and then merkleblocks after that
@@ -911,7 +935,8 @@ static const char *dns_seeds[] = {
     
     if (tx) {
         [self.publishedCallback removeObjectForKey:txHash];
-        //TODO: XXXX cancel callback timeout
+        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:txHash];
+        [self.wallet registerTransaction:tx];
         if (callback) callback(nil);
     }
 
