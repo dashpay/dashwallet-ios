@@ -65,7 +65,7 @@ typedef enum {
 @property (nonatomic, assign) NSTimeInterval startTime;
 @property (nonatomic, strong) NSArray *currentBlockHashes;
 @property (nonatomic, strong) ZNMerkleBlock *currentBlock;
-@property (nonatomic, strong) NSMutableArray *currentTxHashes;
+@property (nonatomic, strong) NSMutableSet *currentTxHashes, *knownTxHashes;
 @property (nonatomic, strong) NSRunLoop *runLoop;
 @property (nonatomic, strong) dispatch_queue_t q;
 
@@ -109,6 +109,7 @@ services:(uint64_t)services
 {
     [self.reachability stopNotifier];
     if (self.reachabilityObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
 
 - (dispatch_queue_t)delegateQueue
@@ -152,6 +153,7 @@ services:(uint64_t)services
     self.msgHeader = [NSMutableData data];
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
+    self.knownTxHashes = [NSMutableSet set];
 
     NSString *label = [NSString stringWithFormat:@"cc.zinc.peer.%@:%d", self.host, self.port];
 
@@ -173,9 +175,8 @@ services:(uint64_t)services
         
         // after the reachablity check, the radios should be warmed up and we can set a short socket connect timeout
         [self performSelector:@selector(disconnectWithError:) withObject:[NSError errorWithDomain:@"ZincWallet"
-         code:BITCOIN_TIMEOUT_CODE
-         userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"%@:%u socket connect timeout", self.host,
-                                               self.port]}] afterDelay:CONNECT_TIMEOUT];
+         code:BITCOIN_TIMEOUT_CODE userInfo:@{NSLocalizedDescriptionKey:@"connect timeout"}]
+         afterDelay:CONNECT_TIMEOUT];
         
         [self.inputStream open];
         [self.outputStream open];
@@ -283,12 +284,6 @@ services:(uint64_t)services
     [msg appendUInt32:0]; // last block received
     [msg appendUInt8:0]; // relay transactions (no for SPV bloom filter mode)
 
-    // setup a 5 second timeout to receive a verack message back
-    [self performSelector:@selector(disconnectWithError:)
-     withObject:[NSError errorWithDomain:@"ZincWallet" code:BITCOIN_TIMEOUT_CODE
-                 userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"%@:%u verack timeout", self.host,
-                                                       self.port]}] afterDelay:5];
-
     self.startTime = [NSDate timeIntervalSinceReferenceDate];
     [self sendMessage:msg type:MSG_VERSION];
 }
@@ -394,6 +389,7 @@ services:(uint64_t)services
     [msg appendUInt32:tx];
     [msg appendData:txHash];
     [self sendMessage:msg type:MSG_INV];
+    [self.knownTxHashes addObject:txHash];
 }
 
 - (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes
@@ -441,10 +437,11 @@ services:(uint64_t)services
 {
     CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
         if (self.currentBlock && ! [MSG_TX isEqual:type]) { // if we receive a non-tx message, the merkleblock is done
-            NSLog(@"%@:%d received non-tx message, expected %u more tx, dropping merkleblock %@", self.host,
-                  self.port, (int)self.currentTxHashes.count, self.currentBlock.blockHash);
             self.currentBlock = nil;
             self.currentTxHashes = nil;
+            [self error:@"incomplete merkleblock %@, expected %u more tx", self.currentBlock.blockHash,
+             (int)self.currentTxHashes.count];
+            return;
         }
 
         if ([MSG_VERSION isEqual:type]) [self acceptVersionMessage:message];
@@ -599,6 +596,7 @@ services:(uint64_t)services
     }
 
     if (txHashes.count + blockHashes.count > 0) {
+        [self.knownTxHashes addObjectsFromArray:txHashes];
         [self sendGetdataMessageWithTxHashes:txHashes andBlockHashes:blockHashes];
         
         // Each merkleblock the remote peer sends us is followed by a set of tx messages for that block. We send a ping
@@ -607,7 +605,7 @@ services:(uint64_t)services
     }
     
     // keep track of the blockHashes requested in case we need to re-request them with an updated bloom filter
-    if (self.currentBlockHashes.count == 0 || blockHashes.count > 1 ) self.currentBlockHashes = blockHashes;
+    if (self.currentBlockHashes.count == 0 || blockHashes.count > 1) self.currentBlockHashes = blockHashes;
 }
 
 - (void)acceptTxMessage:(NSData *)message
@@ -624,7 +622,7 @@ services:(uint64_t)services
     dispatch_async(self.delegateQueue, ^{
         [self.delegate peer:self relayedTransaction:tx];
     });
-    
+
     if (self.currentBlock) { // we're collecting tx messages for a merkleblock
         [self.currentTxHashes removeObject:tx.txHash];
 
@@ -791,10 +789,8 @@ services:(uint64_t)services
 {
     // Bitcoin nodes don't support querying arbitrary transactions, only transactions not yet accepted in a block. After
     // a merkleblock message, the remote node is expected to send tx messages for the tx referenced in the block. When a
-    // non-tx message is received we should have all the tx in the merkleblock. If not, the only way to request them is
-    // re-requesting the merkleblock. The simplest way to do that is to drop the block and let the chain organization
-    // algorithm figure out what needs to be requested.
-    
+    // non-tx message is received we should have all the tx in the merkleblock.
+
     ZNMerkleBlock *block = [ZNMerkleBlock blockWithMessage:message];
     
     if (! block.valid) {
@@ -803,8 +799,10 @@ services:(uint64_t)services
     }
     //else NSLog(@"%@:%u got merkleblock %@", self.host, self.port, block.blockHash);
     
-    NSMutableArray *txHashes = [NSMutableArray arrayWithArray:block.txHashes];
-    
+    NSMutableSet *txHashes = [NSMutableSet setWithArray:block.txHashes];
+
+    [txHashes minusSet:self.knownTxHashes];
+
     if (txHashes.count > 0) { // wait til we get all the tx messages before processing the block
         self.currentBlock = block;
         self.currentTxHashes = txHashes;
@@ -858,8 +856,7 @@ services:(uint64_t)services
                 [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending socket connect timeout
                 [self performSelector:@selector(disconnectWithError:)
                  withObject:[NSError errorWithDomain:@"ZincWallet" code:BITCOIN_TIMEOUT_CODE
-                             userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"%@:%u handshake timeout",
-                                                                   self.host, self.port]}] afterDelay:CONNECT_TIMEOUT];
+                             userInfo:@{NSLocalizedDescriptionKey:@"connect timeout"}] afterDelay:CONNECT_TIMEOUT];
             }
 
             // fall through to send any queued output

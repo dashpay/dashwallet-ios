@@ -24,7 +24,9 @@
 //  THE SOFTWARE.
 
 #import "ZNBloomFilter.h"
+#import "ZNTransaction.h"
 #import "NSMutableData+Bitcoin.h"
+#import "NSData+Bitcoin.h"
 
 #define BLOOM_MAX_HASH_FUNCS 50
 
@@ -118,19 +120,6 @@ flags:(uint8_t)flags
     return murmurHash3(data, hashNum*0xfba4c795 + self.tweak) % (self.filter.length*8);
 }
 
-- (void)insertData:(NSData *)data
-{
-    uint8_t *b = self.filter.mutableBytes;
-
-    for (uint32_t i = 0; i < self.hashFuncs; i++) {
-        uint32_t idx = [self hash:data hashNum:i];
-
-        b[idx >> 3] |= (1 << (7 & idx));
-    }
-    
-    _elementCount++;
-}
-
 - (BOOL)containsData:(NSData *)data
 {
     const uint8_t *b = self.filter.bytes;
@@ -142,6 +131,37 @@ flags:(uint8_t)flags
     }
 
     return YES;
+}
+
+- (void)insertData:(NSData *)data
+{
+    uint8_t *b = self.filter.mutableBytes;
+
+    for (uint32_t i = 0; i < self.hashFuncs; i++) {
+        uint32_t idx = [self hash:data hashNum:i];
+
+        b[idx >> 3] |= (1 << (7 & idx));
+    }
+
+    _elementCount++;
+}
+
+- (void)insertTransaction:(ZNTransaction *)tx
+{
+    int n = 0;
+    NSMutableData *d = [NSMutableData data];
+
+    for (NSData *script in tx.outputScripts) {
+        for (NSData *elem in [script scriptDataElements]) {
+            if (! [self containsData:elem]) continue;
+            [d setData:tx.txHash];
+            [d appendUInt32:n];
+            if (! [self containsData:d]) [self insertData:d]; // update bloom filter with matched txout
+            break;
+        }
+
+        n++;
+    }
 }
 
 - (double)falsePositiveRate

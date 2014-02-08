@@ -116,9 +116,8 @@ static const char *dns_seeds[] = {
 @property (nonatomic, assign) NSUInteger taskId, connectFailures;
 @property (nonatomic, assign) BOOL filterWasReset;
 @property (nonatomic, assign) NSTimeInterval earliestKeyTime, lastRelayTime;
-@property (nonatomic, strong) NSMutableDictionary *blocks, *checkpoints, *publishedTx, *publishedCallback;
-@property (nonatomic, strong) ZNMerkleBlock *lastBlock;
-@property (nonatomic, strong) NSData *lastGetblocksHash;
+@property (nonatomic, strong) NSMutableDictionary *blocks, *orphans, *checkpoints, *publishedTx, *publishedCallback;
+@property (nonatomic, strong) ZNMerkleBlock *lastBlock, *lastOrphan;
 @property (nonatomic, strong) NSCountedSet *txRelayCounts;
 @property (nonatomic, strong) ZNWallet *wallet;
 @property (nonatomic, strong) Reachability *reachability;
@@ -155,6 +154,7 @@ static const char *dns_seeds[] = {
     self.q = dispatch_queue_create("cc.zinc.peermanager", NULL);
     self.reachability = [Reachability reachabilityForInternetConnection];
     self.txRelayCounts = [NSCountedSet set];
+    self.orphans = [NSMutableDictionary dictionary];
     self.publishedTx = [NSMutableDictionary dictionary];
     self.publishedCallback = [NSMutableDictionary dictionary];
 
@@ -307,47 +307,6 @@ static const char *dns_seeds[] = {
     return locators;
 }
 
-- (ZNBloomFilter *)bloomFilter
-{
-    // a bloom filter's falsepositive rate will increase with each item added to the filter, so if it has degraded by
-    // half, clear it and build a new one
-    if (_bloomFilter && _bloomFilter.length < BLOOM_MAX_FILTER_LENGTH &&
-        _bloomFilter.falsePositiveRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*2) {
-        NSLog(@"bloom filter false positive rate has degraded by half after adding %d items... rebuilding",
-              (int)_bloomFilter.elementCount);
-        _bloomFilter = nil;
-        self.filterWasReset = YES;
-    }
-
-    if (_bloomFilter) return _bloomFilter;
-
-    // every time a new wallet address is added, the filter has to be rebuilt, and each address is only used for one
-    // transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
-    // transaction is encountered during the blockchain download (generates twice the external gap limit for both
-    // address chains)
-    [self.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:NO];
-    [self.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:YES];
-
-    NSUInteger elemCount = self.wallet.addresses.count + self.wallet.unspentOutputs.count;
-    ZNBloomFilter *filter = [ZNBloomFilter filterWithFalsePositiveRate:BLOOM_DEFAULT_FALSEPOSITIVE_RATE
-                             forElementCount:(elemCount < 200) ? elemCount*1.5 : elemCount + 100
-                             tweak:self.tweak flags:BLOOM_UPDATE_P2PUBKEY_ONLY];
-
-    for (NSString *address in self.wallet.addresses) {
-        NSData *d = address.base58checkToData;
-            
-        // add the address hash160 to watch for any tx receiveing money to the wallet
-        if (d.length == 160/8 + 1) [filter insertData:[d subdataWithRange:NSMakeRange(1, d.length - 1)]];
-    }
-    
-    for (NSData *utxo in self.wallet.unspentOutputs) {
-        [filter insertData:utxo]; // add the unspent output to watch for any tx sending money from the wallet
-    }
-
-    _bloomFilter = filter;
-    return _bloomFilter;
-}
-
 - (ZNMerkleBlock *)lastBlock
 {
     if (_lastBlock) return _lastBlock;
@@ -384,6 +343,47 @@ static const char *dns_seeds[] = {
     if (self.lastBlockHeight >= self.downloadPeer.lastblock) return 1.0;
     return (self.connected ? 0.1 : 0.05) +
         (self.lastBlockHeight - self.syncStartHeight)/(double)(self.downloadPeer.lastblock - self.syncStartHeight)*0.9;
+}
+
+- (ZNBloomFilter *)bloomFilter
+{
+    // a bloom filter's falsepositive rate will increase with each item added to the filter, so if it has degraded by
+    // half, clear it and build a new one
+    if (_bloomFilter && _bloomFilter.length < BLOOM_MAX_FILTER_LENGTH &&
+        _bloomFilter.falsePositiveRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*2) {
+        NSLog(@"bloom filter false positive rate has degraded by half after adding %d items... rebuilding",
+              (int)_bloomFilter.elementCount);
+        _bloomFilter = nil;
+        self.filterWasReset = YES;
+    }
+
+    if (_bloomFilter) return _bloomFilter;
+
+    // every time a new wallet address is added, the filter has to be rebuilt, and each address is only used for one
+    // transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
+    // transaction is encountered during the blockchain download (generates twice the external gap limit for both
+    // address chains)
+    [self.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:NO];
+    [self.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:YES];
+
+    NSUInteger elemCount = self.wallet.addresses.count + self.wallet.unspentOutputs.count;
+    ZNBloomFilter *filter = [ZNBloomFilter filterWithFalsePositiveRate:BLOOM_DEFAULT_FALSEPOSITIVE_RATE
+                             forElementCount:(elemCount < 200) ? elemCount*1.5 : elemCount + 100
+                             tweak:self.tweak flags:BLOOM_UPDATE_P2PUBKEY_ONLY];
+
+    for (NSString *address in self.wallet.addresses) {
+        NSData *d = address.base58checkToData;
+
+        // add the address hash160 to watch for any tx receiveing money to the wallet
+        if (d.length == 160/8 + 1) [filter insertData:[d subdataWithRange:NSMakeRange(1, d.length - 1)]];
+    }
+
+    for (NSData *utxo in self.wallet.unspentOutputs) {
+        [filter insertData:utxo]; // add the unspent output to watch for any tx sending money from the wallet
+    }
+    
+    _bloomFilter = filter;
+    return _bloomFilter;
 }
 
 - (void)connect
@@ -482,25 +482,30 @@ static const char *dns_seeds[] = {
         return;
     }
 
-    //[self.wallet registerTransaction:transaction];
-
     self.publishedTx[transaction.txHash] = transaction;
     if (completion) self.publishedCallback[transaction.txHash] = completion;
     [self performSelector:@selector(txTimeout:) withObject:transaction.txHash afterDelay:PROTOCOL_TIMEOUT];
 
-    //TODO: also publish transactions directly to coinbase and bitpay servers for faster POS experience
-    for (ZNPeer *peer in self.connectedPeers) {
-        [peer sendInvMessageWithTxHash:transaction.txHash];
+    NSMutableSet *peers = [NSMutableSet setWithSet:self.connectedPeers];
+
+    // instead of publishing to all peers, leave one out to see if the tx propogates and is relayed back to us
+    //TODO: also publish transactions directly to coinbase/bitpay/blockchain.info servers for faster POS experience
+    if (peers.count > 1) [peers removeObject:[peers anyObject]];
+
+    for (ZNPeer *p in peers) {
+        [p sendInvMessageWithTxHash:transaction.txHash];
     }
 }
 
-// transaction is considered verified when all peers have relayed it
+// transaction is considered verified when all peers have relayed it for a receive, or just one peer for a send
 - (BOOL)transactionIsVerified:(NSData *)txHash
 {
+    ZNTransaction *tx = self.publishedTx[txHash];
+    NSUInteger count = (tx && [self.wallet amountSentByTransaction:tx] > 0) ? 1 : self.connectedPeers.count;
+
     //TODO: we also need to know if a transaction is bad (double spend, not propagated after a certain time, etc...)
     // and also consider estimated confirmation time based on fee per kb and priority
-
-    return ([self.txRelayCounts countForObject:txHash] >= MAX_CONNECTIONS) ? YES : NO;
+    return ([self.txRelayCounts countForObject:txHash] >= count) ? YES : NO;
 }
 
 - (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes
@@ -730,9 +735,6 @@ static const char *dns_seeds[] = {
 
 - (void)peer:(ZNPeer *)peer relayedTransaction:(ZNTransaction *)transaction
 {
-    NSMutableData *d = [NSMutableData data];
-    uint32_t n = 0;
-
     NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, transaction.txHash);
     self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
 
@@ -740,17 +742,7 @@ static const char *dns_seeds[] = {
     // matches the filter, the remote peer will automatically add that output to the filter. That way if another
     // transaction spends the output later, it will also be matched without having to manually update the filter.
     // We do the same here with the local copy to keep the filters in sync.
-    for (NSData *script in transaction.outputScripts) {
-        for (NSData *elem in [script scriptDataElements]) {
-            if (! [self.bloomFilter containsData:elem]) continue;
-            [d setData:transaction.txHash];
-            [d appendUInt32:n];
-            [self.bloomFilter insertData:d]; // update bloom filter with matched txout
-            break;
-        }
-
-        n++;
-    }
+    [self.bloomFilter insertTransaction:transaction];
 
     if ([self.wallet registerTransaction:transaction]) {
         // keep track of how many peers relay a tx, this indicates how likely it is to be confirmed in future blocks
@@ -800,16 +792,14 @@ static const char *dns_seeds[] = {
         NSLog(@"%@:%d relayed orphan block %@, previous %@, last block is %@, height %d", peer.host, peer.port,
               block.blockHash, block.prevBlock, self.lastBlock.blockHash, self.lastBlock.height);
 
-        // if we're still downloading the chain, ignore orphan block for now since it's probably in the chain
-        if (self.lastBlock.height < peer.lastblock) return;
-
-        // call getblocks, unless we already did with the previous block or this one
-        if (! [self.lastGetblocksHash isEqual:block.prevBlock] && ! [self.lastGetblocksHash isEqual:block.blockHash]) {
+        // call getblocks, unless we already did with the previous block, or we're still downloading the chain
+        if (self.lastBlock.height >= peer.lastblock && ! [self.lastOrphan.blockHash isEqual:block.prevBlock]) {
             NSLog(@"%@:%d calling getblocks with last block %@", peer.host, peer.port, self.lastBlock.blockHash);
             [peer sendGetblocksMessageWithLocators:[self blockLocatorArray] andHashStop:nil];
         }
 
-        self.lastGetblocksHash = block.blockHash;
+        self.orphans[block.prevBlock] = block; // orphans are indexed by previous block rather than their own hash
+        self.lastOrphan = block;
         return;
     }
 
@@ -863,11 +853,10 @@ static const char *dns_seeds[] = {
             b = self.blocks[b.prevBlock];
         }
 
-        if (! [b.blockHash isEqual:block.blockHash]) return;
-        if (block.height == self.lastBlock.height) self.lastBlock = block;
-
-        // if the block isn't on a fork, set block heights for its transactions
-        [self setBlockHeight:block.height forTxHashes:block.txHashes];
+        if ([b.blockHash isEqual:block.blockHash]) { // if it's not on a fork, set block heights for its transactions
+            [self setBlockHeight:block.height forTxHashes:block.txHashes];
+            if (block.height == self.lastBlock.height) self.lastBlock = block;
+        }
     }
     else { // new block is on a fork
         if (block.height <= BITCOIN_REFERENCE_BLOCK_HEIGHT) { // fork is older than the most recent checkpoint
@@ -926,6 +915,13 @@ static const char *dns_seeds[] = {
              object:nil];
         });
     }
+
+    if (block == self.lastBlock && self.orphans[block.blockHash]) { // check if the next block was received as an orphan
+        ZNMerkleBlock *b = self.orphans[block.blockHash];
+
+        [self.orphans removeObjectForKey:block.blockHash];
+        [self peer:peer relayedBlock:b];
+    }
 }
 
 - (ZNTransaction *)peer:(ZNPeer *)peer requestedTransaction:(NSData *)txHash
@@ -936,8 +932,14 @@ static const char *dns_seeds[] = {
     if (tx) {
         [self.publishedCallback removeObjectForKey:txHash];
         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:txHash];
+        [self.bloomFilter insertTransaction:tx];
         [self.wallet registerTransaction:tx];
-        if (callback) callback(nil);
+
+        if (callback) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                callback(nil);
+            });
+        }
     }
 
     return tx;

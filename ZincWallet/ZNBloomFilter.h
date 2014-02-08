@@ -31,6 +31,8 @@
 #define BLOOM_UPDATE_P2PUBKEY_ONLY       2
 #define BLOOM_MAX_FILTER_LENGTH          36000
 
+@class ZNTransaction;
+
 @interface ZNBloomFilter : NSObject
 
 @property (nonatomic, readonly) uint32_t tweak;
@@ -47,7 +49,8 @@ flags:(uint8_t)flags;
 - (instancetype)initWithFalsePositiveRate:(double)fpRate forElementCount:(NSUInteger)count tweak:(uint32_t)tweak
 flags:(uint8_t)flags;
 - (instancetype)initWithFullMatch;
-- (void)insertData:(NSData *)data;
 - (BOOL)containsData:(NSData *)data;
+- (void)insertData:(NSData *)data;
+- (void)insertTransaction:(ZNTransaction *)tx;
 
 @end
