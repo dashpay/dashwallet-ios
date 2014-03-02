@@ -79,6 +79,8 @@
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
+            if ([[ZNPeerManager sharedInstance] syncProgress] < 1.0) return;
+
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                          [w localCurrencyStringForAmount:w.balance]];
         }];

@@ -107,8 +107,7 @@
 
 - (void)deleteObject
 {
-    for (ZNTxInputEntity *e in self.inputs) {
-        if ([ZNTxInputEntity countObjectsMatching:@"txHash == %@ && n == %d", e.txHash, e.n] > 1) continue;
+    for (ZNTxInputEntity *e in self.inputs) { // mark inputs as unspent
         [[ZNTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", e.txHash, e.n].lastObject setSpent:NO];
     }
 

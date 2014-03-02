@@ -36,6 +36,7 @@
 #import "ZNKeySequence.h"
 #import "ZNBIP32Sequence.h"
 #import "NSData+Hash.h"
+#import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSString+Base58.h"
 #import "NSManagedObject+Utils.h"
@@ -96,14 +97,25 @@ static NSData *getKeychainData(NSString *key)
     return CFBridgingRelease(result);
 }
 
+static NSData *txOutput(NSData *txHash, uint32_t n)
+{
+    NSMutableData *d = [NSMutableData dataWithCapacity:CC_SHA256_DIGEST_LENGTH + sizeof(uint32_t)];
+
+    [d appendData:txHash];
+    [d appendUInt32:n];
+    return d;
+}
+
+//TODO: separate out keychain for easier testing
+
 @interface ZNWallet ()
 
 @property (nonatomic, strong) id<ZNKeySequence> sequence;
 @property (nonatomic, strong) NSData *mpk;
-@property (nonatomic, strong) NSMutableSet *allAddresses;
 @property (nonatomic, strong) NSMutableArray *internalAddresses, *externalAddresses;
-@property (nonatomic, strong) NSMutableOrderedSet *transactions;
-@property (nonatomic, strong) NSMutableDictionary *allTxOutAddresses, *allTxOutValues;
+@property (nonatomic, strong) NSMutableSet *allAddresses, *usedAddresses, *spentOutputs, *invalidTx;
+@property (nonatomic, strong) NSMutableOrderedSet *transactions, *utxos;
+@property (nonatomic, strong) NSMutableDictionary *allTx;
 @property (nonatomic, assign) uint64_t balance;
 
 @end
@@ -118,7 +130,7 @@ static NSData *getKeychainData(NSString *key)
     dispatch_once(&onceToken, ^{
         singleton = [self new];
     });
-    
+
     return singleton;
 }
 
@@ -144,31 +156,41 @@ static NSData *getKeychainData(NSString *key)
     // the user to input a value of 21,000,000
     self.format.maximum = @210000009.0;
 
-    [self updateExchangeRate];
+    self.allTx = [NSMutableDictionary dictionary];
+    self.transactions = [NSMutableOrderedSet orderedSet];
+    self.internalAddresses = [NSMutableArray array];
+    self.externalAddresses = [NSMutableArray array];
+    self.allAddresses = [NSMutableSet set];
+    self.usedAddresses = [NSMutableSet set];
+    self.invalidTx = [NSMutableSet set];
+    self.spentOutputs = [NSMutableSet set];
+    self.utxos = [NSMutableOrderedSet orderedSet];
 
     [[NSManagedObject context] performBlockAndWait:^{
         NSFetchRequest *req = [ZNAddressEntity fetchRequest];
 
         req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"index" ascending:YES]];
         req.predicate = [NSPredicate predicateWithFormat:@"internal == YES"];
-        self.internalAddresses = [[[ZNAddressEntity fetchObjects:req] valueForKey:@"address"] mutableCopy];
+        [self.internalAddresses setArray:[[ZNAddressEntity fetchObjects:req] valueForKey:@"address"]];
         req.predicate = [NSPredicate predicateWithFormat:@"internal == NO"];
-        self.externalAddresses = [[[ZNAddressEntity fetchObjects:req] valueForKey:@"address"] mutableCopy];
-        self.allAddresses = [NSMutableSet setWithArray:[[ZNAddressEntity allObjects] valueForKey:@"address"]];
-        self.allTxOutAddresses = [NSMutableDictionary dictionary];
-        self.allTxOutValues = [NSMutableDictionary dictionary];
-        self.transactions = [NSMutableOrderedSet orderedSet];
+        [self.externalAddresses setArray:[[ZNAddressEntity fetchObjects:req] valueForKey:@"address"]];
+
+        [self.allAddresses addObjectsFromArray:self.internalAddresses];
+        [self.allAddresses addObjectsFromArray:self.externalAddresses];
 
         for (ZNTransactionEntity *e in [ZNTransactionEntity allObjects]) {
-            [self.transactions addObject:e.transaction];
-            self.allTxOutAddresses[e.txHash] = [[e.outputs array] valueForKey:@"address"];
-            self.allTxOutValues[e.txHash] = [[e.outputs array] valueForKey:@"value"];
-        }
+            ZNTransaction *tx = e.transaction;
 
-        [self sortTransactions];
-        [self updateBalance];
+            self.allTx[tx.txHash] = tx;
+            [self.transactions addObject:tx];
+            [self.usedAddresses addObjectsFromArray:tx.outputAddresses];
+        }
     }];
-    
+
+    [self sortTransactions];
+    [self updateBalance];
+    [self updateExchangeRate];
+
     return self;
 }
 
@@ -194,18 +216,23 @@ static NSData *getKeychainData(NSString *key)
     if (seed && [self.seed isEqual:seed]) return;
     
     self.mpk = nil; // reset master public key
-
-    // remove all core data wallet data
-    [ZNAddressEntity deleteObjects:[ZNAddressEntity allObjects]];
-    [self.allAddresses removeAllObjects];
-    [ZNTransactionEntity deleteObjects:[ZNTransactionEntity allObjects]];
+    [self.allTx removeAllObjects];
     [self.transactions removeAllObjects];
-    [self.allTxOutAddresses removeAllObjects];
-    [self.allTxOutValues removeAllObjects];
-    [self updateBalance];
+    [self.internalAddresses removeAllObjects];
+    [self.externalAddresses removeAllObjects];
+    [self.allAddresses removeAllObjects];
+    [self.usedAddresses removeAllObjects];
+    [self.invalidTx removeAllObjects];
+    [self.spentOutputs removeAllObjects];
+    [self.utxos removeAllObjects];
+    self.balance = 0;
 
-    [NSManagedObject saveContext];
-    
+    [[NSManagedObject context] performBlockAndWait:^{
+        [ZNAddressEntity deleteObjects:[ZNAddressEntity allObjects]];
+        [ZNTransactionEntity deleteObjects:[ZNTransactionEntity allObjects]];
+        [NSManagedObject saveContext];
+    }];
+
     setKeychainData(nil, CREATION_TIME_KEY);
     setKeychainData(seed, SEED_KEY);
 
@@ -265,40 +292,31 @@ static NSData *getKeychainData(NSString *key)
 {
     NSMutableArray *a = [NSMutableArray arrayWithArray:internal ? self.internalAddresses : self.externalAddresses];
     NSUInteger i = a.count;
-    NSMutableSet *used = [NSMutableSet set];
-
-    for (NSArray *addresses in self.allTxOutAddresses.allValues) {
-        [used addObjectsFromArray:addresses];
-    }
 
     // keep only the trailing contiguous block of addresses with no transactions
-    while (i > 0 && ! [used containsObject:a[i - 1]]) {
+    while (i > 0 && ! [self.usedAddresses containsObject:a[i - 1]]) {
         i--;
     }
 
     if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
-
-    if (a.count >= gapLimit) {
-        [a removeObjectsInRange:NSMakeRange(gapLimit, a.count - gapLimit)];
-        return a;
-    }
+    if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
 
     @synchronized(self) {
         [a setArray:internal ? self.internalAddresses : self.externalAddresses];
         i = a.count;
 
-        unsigned index = (unsigned)i;
-    
+        unsigned n = i;
+
         // keep only the trailing contiguous block of addresses with no transactions
-        while (i > 0 && ! [used containsObject:a[i - 1]]) {
+        while (i > 0 && ! [self.usedAddresses containsObject:a[i - 1]]) {
             i--;
         }
-    
+
         if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
-        if (a.count >= gapLimit) [a removeObjectsInRange:NSMakeRange(gapLimit, a.count - gapLimit)];
-    
+        if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
+
         while (a.count < gapLimit) { // generate new addresses up to gapLimit
-            NSData *pubKey = [self.sequence publicKey:index internal:internal masterPublicKey:self.masterPublicKey];
+            NSData *pubKey = [self.sequence publicKey:n internal:internal masterPublicKey:self.masterPublicKey];
             NSString *addr = [[ZNKey keyWithPublicKey:pubKey] address];
         
             if (! addr) {
@@ -310,48 +328,89 @@ static NSData *getKeychainData(NSString *key)
                 ZNAddressEntity *e = [ZNAddressEntity managedObject];
 
                 e.address = addr;
-                e.index = index;
+                e.index = n;
                 e.internal = internal;
             }];
 
             [self.allAddresses addObject:addr];
             [internal ? self.internalAddresses : self.externalAddresses addObject:addr];
             [a addObject:addr];
-            index++;
+            n++;
         }
     
         return a;
     }
 }
 
+// this sorts transactions by block height in descending order, and makes a best attempt at ordering transactions within
+// each block, however correct transaction ordering cannot be relied upon for determining wallet balance or UTXO set
 - (void)sortTransactions
 {
     [self.transactions sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
         if ([obj1 blockHeight] > [obj2 blockHeight]) return NSOrderedAscending;
         if ([obj1 blockHeight] < [obj2 blockHeight]) return NSOrderedDescending;
+        if ([[obj1 inputHashes] containsObject:[obj2 txHash]]) return NSOrderedDescending;
+        if ([[obj2 inputHashes] containsObject:[obj1 txHash]]) return NSOrderedAscending;
         return NSOrderedSame;
     }];
 }
 
 - (void)updateBalance
 {
-    [[ZNTxOutputEntity context] performBlockAndWait:^{
-        NSMutableArray *utxos = [NSMutableArray array];
-        uint64_t balance = 0;
+    uint64_t balance = 0;
+    NSMutableOrderedSet *utxos = [NSMutableOrderedSet orderedSet];
+    NSMutableSet *spentOutputs = [NSMutableSet set], *invalidTx = [NSMutableSet set];
 
-        for (ZNTxOutputEntity *e in [ZNTxOutputEntity objectsMatching:@"spent == NO"]) {
-            if (! [self containsAddress:e.address]) continue;
+    for (ZNTransaction *tx in [self.transactions reverseObjectEnumerator]) {
+        NSMutableSet *spent = [NSMutableSet set];
+        uint32_t i = 0, n = 0;
 
-            NSMutableData *d = [NSMutableData dataWithData:e.txHash];
-
-            [d appendUInt32:e.n];
-            [utxos addObject:d];
-            balance += e.value;
+        for (NSData *hash in tx.inputHashes) {
+            n = [tx.inputIndexes[i++] unsignedIntValue];
+            [spent addObject:txOutput(hash, n)];
         }
 
-        _unspentOutputs = utxos;
-        _balance = balance;
-    }];
+        // check if any inputs are invalid or already spent
+        if (tx.blockHeight == TX_UNCONFIRMED &&
+            ([spent intersectsSet:spentOutputs] || [[NSSet setWithArray:tx.inputHashes] intersectsSet:invalidTx])) {
+            [invalidTx addObject:tx.txHash];
+            continue;
+        }
+
+        [spentOutputs unionSet:spent]; // add inputs to spent output set
+        n = 0;
+
+        for (NSString *address in tx.outputAddresses) { // add outputs to UTXO set
+            if ([self containsAddress:address]) {
+                [utxos addObject:txOutput(tx.txHash, n)];
+                balance += [tx.outputAmounts[n] unsignedLongLongValue];
+            }
+            n++;
+        }
+
+        // transaction ordering is not guaranteed, so check the entire UTXO set against the entire spent output set
+        [spent setSet:[utxos set]];
+        [spent intersectSet:spentOutputs];
+        
+        for (NSData *o in spent) { // remove any spent outputs from UTXO set
+            ZNTransaction *transaction = self.allTx[[o hashAtOffset:0]];
+            uint32_t n = [o UInt32AtOffset:CC_SHA256_DIGEST_LENGTH];
+            
+            [utxos removeObject:o];
+            balance -= [transaction.outputAmounts[n] unsignedLongLongValue];
+        }
+    }
+
+    if (balance != self.balance) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:ZNWalletBalanceChangedNotification object:nil];
+        });
+    }
+
+    self.invalidTx = invalidTx;
+    self.spentOutputs = spentOutputs;
+    self.utxos = utxos;
+    self.balance = balance;
 }
 
 - (void)updateExchangeRate
@@ -414,6 +473,11 @@ static NSData *getKeychainData(NSString *key)
     return self.allAddresses;
 }
 
+- (NSArray *)unspentOutputs
+{
+    return [self.utxos array];
+}
+
 - (NSArray *)recentTransactions
 {
     return [self.transactions array];
@@ -426,40 +490,35 @@ static NSData *getKeychainData(NSString *key)
 
 #pragma mark - transactions
 
+// returns an unsigned transaction that sends the specified amount from the wallet to the given address
 - (ZNTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee
 {
-    //TODO: implement P2SH transactions
-
     __block uint64_t balance = 0, standardFee = 0;
-    ZNTransaction *tx = [ZNTransaction new];
+    ZNTransaction *transaction = [ZNTransaction new];
 
-    [tx addOutputAddress:address amount:amount];
+    [transaction addOutputAddress:address amount:amount];
 
+    //TODO: implement P2SH transactions
     //TODO: make sure transaction is less than TX_MAX_SIZE
-    //TODO: we should use up all inputs tied to any particular address
-    //      otherwise we reveal the public key for an address that still has remaining funds
-    //TODO: optimize for free transactions (watch out for performance issues, nothing O(n^2) please)
-    // this is a nieve implementation to just get it functional, sorts unspent outputs by oldest first
-    [[NSManagedObject context] performBlockAndWait:^{
-        NSFetchRequest *req = [ZNTxOutputEntity fetchRequest];
+    //TODO: don't use coin generation inputs less than 100 blocks deep
+    //TODO: we should use up all inputs tied to any particular address, otherwise we reveal the public key for an
+    //      address that still has remaining funds
+    for (NSData *o in self.utxos) {
+        ZNTransaction *tx = self.allTx[[o hashAtOffset:0]];
+        uint32_t n = [o UInt32AtOffset:CC_SHA256_DIGEST_LENGTH];
 
-        req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"transaction.blockHeight" ascending:YES]];
-        req.predicate = [NSPredicate predicateWithFormat:@"spent == NO"];
+        if (! tx) continue;
 
-        for (ZNTxOutputEntity *o in [ZNTxOutputEntity fetchObjects:req]) {
-            if (! [self containsAddress:o.address]) continue;
-            [tx addInputHash:o.txHash index:o.n script:o.script];
+        [transaction addInputHash:tx.txHash index:n script:tx.outputScripts[n]];
+        balance += [tx.outputAmounts[n] unsignedLongLongValue];
             
-            balance += o.value;
+        // assume we will be adding a change output (additional 34 bytes)
+        //TODO: calculate the median of the lowest fee-per-kb that made it into the previous 144 blocks (24hrs)
+        //NOTE: consider feedback effects if everyone uses the same algorithm to calculate fees, maybe add noise
+        if (fee) standardFee = ((tx.size + 34 + 999)/1000)*TX_FEE_PER_KB;
             
-            // assume we will be adding a change output (additional 34 bytes)
-            //TODO: calculate the median of the lowest fee-per-kb that made it into the previous 144 blocks (24hrs)
-            //NOTE: consider feedback effects if everyone uses the same algorithm to calculate fees, maybe add noise
-            if (fee) standardFee = ((tx.size + 34 + 999)/1000)*TX_FEE_PER_KB;
-            
-            if (balance == amount + standardFee || balance >= amount + standardFee + TX_MIN_OUTPUT_AMOUNT) break;
-        }
-    }];
+        if (balance == amount + standardFee || balance >= amount + standardFee + TX_MIN_OUTPUT_AMOUNT) break;
+    }
     
     if (balance < amount + standardFee) { // insufficent funds
         NSLog(@"Insufficient funds. %llu is less than transaction amount:%llu", balance, amount + standardFee);
@@ -468,27 +527,30 @@ static NSData *getKeychainData(NSString *key)
     
     //TODO: randomly swap order of outputs so the change address isn't publicy known
     if (balance - (amount + standardFee) >= TX_MIN_OUTPUT_AMOUNT) {
-        [tx addOutputAddress:self.changeAddress amount:balance - (amount + standardFee)];
+        [transaction addOutputAddress:self.changeAddress amount:balance - (amount + standardFee)];
     }
     
-    return tx;
+    return transaction;
 }
 
+// sign any inputs in given transaction that can be signed using private keys from the wallet
 - (BOOL)signTransaction:(ZNTransaction *)transaction
 {
-    NSMutableArray *pkeys = [NSMutableArray array];
     NSData *seed = self.seed;
-    
-    [[NSManagedObject context] performBlockAndWait:^{
-        NSArray *externalIndexes = [[ZNAddressEntity objectsMatching:@"internal == NO && address in %@",
-                                     transaction.inputAddresses] valueForKey:@"index"];
-        NSArray *internalIndexes = [[ZNAddressEntity objectsMatching:@"internal == YES && address in %@",
-                                     transaction.inputAddresses] valueForKey:@"index"];
-    
-        [pkeys addObjectsFromArray:[self.sequence privateKeys:externalIndexes internal:NO fromSeed:seed]];
-        [pkeys addObjectsFromArray:[self.sequence privateKeys:internalIndexes internal:YES fromSeed:seed]];
-    }];
-    
+    NSMutableArray *pkeys = [NSMutableArray array];
+    NSMutableOrderedSet *externalIndexes = [NSMutableOrderedSet orderedSet],
+                        *internalIndexes = [NSMutableOrderedSet orderedSet];
+
+    for (NSString *addr in transaction.inputAddresses) {
+        [internalIndexes addObject:@([self.internalAddresses indexOfObject:addr])];
+        [externalIndexes addObject:@([self.externalAddresses indexOfObject:addr])];
+    }
+
+    [internalIndexes removeObject:@(NSNotFound)];
+    [externalIndexes removeObject:@(NSNotFound)];
+    [pkeys addObjectsFromArray:[self.sequence privateKeys:[externalIndexes array] internal:NO fromSeed:seed]];
+    [pkeys addObjectsFromArray:[self.sequence privateKeys:[internalIndexes array] internal:YES fromSeed:seed]];
+
     [transaction signWithPrivateKeys:pkeys];
     
     seed = nil;
@@ -498,7 +560,7 @@ static NSData *getKeychainData(NSString *key)
 }
 
 // given a private key, queries blockchain for unspent outputs and calls the completion block with a signed transaction
-// that will sweep the balance into wallet (doesn't publish the tx)
+// that will sweep the balance into the wallet (doesn't publish the tx)
 //TODO: XXXX test this
 - (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
 completion:(void (^)(ZNTransaction *tx, NSError *error))completion
@@ -582,7 +644,7 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
         if (standardFee + TX_MIN_OUTPUT_AMOUNT > balance) {
             completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
                              userInfo:@{NSLocalizedDescriptionKey:@"transaction fees would cost more than the funds "
-                                        "available on this private key to transfer (due to tiny \"dust\" deposits)"}]);
+                                        "available on this private key (due to tiny \"dust\" deposits)"}]);
             return;
         }
         
@@ -606,44 +668,25 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
     NSInteger i = 0;
     
     for (NSData *txHash in transaction.inputHashes) {
-        NSUInteger n = [transaction.inputIndexes[i++] unsignedIntegerValue];
-        NSArray *addresses = self.allTxOutAddresses[txHash];
+        ZNTransaction *tx = self.allTx[txHash];
+        uint32_t n = [transaction.inputIndexes[i++] unsignedIntValue];
 
-        if (n < addresses.count && [self containsAddress:addresses[n]]) return YES;
+        if (n < tx.outputAddresses.count && [self containsAddress:tx.outputAddresses[n]]) return YES;
     }
         
     return NO;
 }
 
-// returns false if the transaction wasn't associated with the wallet
+// records the transaction in the wallet, or returns false if it isn't associated with the wallet
 - (BOOL)registerTransaction:(ZNTransaction *)transaction
 {
+    if (self.allTx[transaction.txHash] != nil) return YES;
     if (! [self containsTransaction:transaction]) return NO;
 
-    NSMutableArray *utxos = [NSMutableArray arrayWithArray:self.unspentOutputs];
-    uint32_t i = 0, n = 0;
-
-    for (NSData *txHash in transaction.inputHashes) { // remove inputs from unspentOutputs
-        NSMutableData *d = [NSMutableData dataWithData:txHash];
-
-        [d appendUInt32:[transaction.inputIndexes[i++] unsignedIntValue]];
-        [utxos removeObject:d];
-    }
-
-    for (NSString *address in transaction.outputAddresses) { // add outputs to unspentOutputs
-        n++;
-        if (! [self containsAddress:address]) continue;
-
-        NSMutableData *d = [NSMutableData dataWithData:transaction.txHash];
-
-        [d appendUInt32:n - 1];
-        [utxos addObject:d];
-    }
-
-    _unspentOutputs = utxos;
-    self.allTxOutAddresses[transaction.txHash] = transaction.outputAddresses;
-    self.allTxOutValues[transaction.txHash] = transaction.outputAmounts;
+    [self.usedAddresses addObjectsFromArray:transaction.outputAddresses];
+    self.allTx[transaction.txHash] = transaction;
     [self.transactions insertObject:transaction atIndex:0];
+    [self updateBalance];
 
     // when a wallet address is used in a transaction, generate a new address to replace it
     [self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
@@ -653,32 +696,70 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
         if ([ZNTransactionEntity countObjectsMatching:@"txHash == %@", transaction.txHash] == 0) {
             [[ZNTransactionEntity managedObject] setAttributesFromTx:transaction];
         };
-
-        [self updateBalance];
-
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:ZNWalletBalanceChangedNotification object:nil];
-        });
     }];
 
     return YES;
 }
 
-- (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes
+// removes a transaction from the wallet along with any transactions that depend on its outputs
+- (void)removeTransaction:(NSData *)txHash
 {
-    if (txHashes.count == 0) return;
+    ZNTransaction *transaction = self.allTx[txHash];
 
-    for (ZNTransaction *tx in self.transactions) {
-        if ([txHashes containsObject:tx.txHash]) tx.blockHeight = height;
+    for (ZNTransaction *tx in self.transactions) { // remove dependent transactions
+        if (tx.blockHeight < transaction.blockHeight) break;
+        if (! [txHash isEqual:tx.txHash] && [tx.inputHashes containsObject:txHash]) [self removeTransaction:tx.txHash];
     }
 
-    [self sortTransactions];
+    [self.allTx removeObjectForKey:txHash];
+    if (transaction) [self.transactions removeObject:transaction];
+    [self updateBalance];
 
-    [[ZNTransactionEntity context] performBlock:^{
-        for (ZNTransactionEntity *e in [ZNTransactionEntity objectsMatching:@"txHash in %@", txHashes]) {
-            e.blockHeight = height;
-        }
+    [[ZNTransactionEntity context] performBlock:^{ // remove transaction from core data
+        [ZNTransactionEntity deleteObjects:[ZNTransactionEntity objectsMatching:@"txHash == %@", txHash]];
     }];
+}
+
+- (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes
+{
+    BOOL set = NO;
+
+    for (NSData *hash in txHashes) {
+        ZNTransaction *tx = self.allTx[hash];
+
+        if (! tx || tx.blockHeight == height) continue;
+        tx.blockHeight = height;
+        set = YES;
+    }
+
+    if (set) {
+        [self sortTransactions];
+        [self updateBalance];
+
+        [[ZNTransactionEntity context] performBlock:^{
+            for (ZNTransactionEntity *e in [ZNTransactionEntity objectsMatching:@"txHash in %@", txHashes]) {
+                e.blockHeight = height;
+            }
+        }];
+    }
+}
+
+// true if no previous wallet transactions spend any of the given transaction's inputs, and no input tx are invalid
+- (BOOL)transactionIsValid:(ZNTransaction *)transaction
+{
+    if (transaction.blockHeight != TX_UNCONFIRMED) return YES;
+    if (self.allTx[transaction.txHash] != nil) return [self.invalidTx containsObject:transaction.txHash] ? NO : YES;
+
+    uint32_t i = 0;
+
+    for (NSData *hash in transaction.inputHashes) {
+        ZNTransaction *tx = self.allTx[hash];
+        uint32_t n = [transaction.inputIndexes[i++] unsignedIntValue];
+
+        if ((tx && ! [self transactionIsValid:tx]) || [self.spentOutputs containsObject:txOutput(hash, n)]) return NO;
+    }
+
+    return YES;
 }
 
 // returns the amount received to the wallet by the transaction (total outputs to change and/or recieve addresses)
@@ -702,10 +783,12 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
     NSUInteger i = 0;
 
     for (NSData *hash in transaction.inputHashes) {
+        ZNTransaction *tx = self.allTx[hash];
         uint32_t n = [transaction.inputIndexes[i++] intValue];
-        NSArray *addresses = self.allTxOutAddresses[hash], *values = self.allTxOutValues[hash];
 
-        if (n < addresses.count && [self containsAddress:addresses[n]]) amount += [values[n] unsignedLongLongValue];
+        if (n < tx.outputAddresses.count && [self containsAddress:tx.outputAddresses[n]]) {
+            amount += [tx.outputAmounts[n] unsignedLongLongValue];
+        }
     }
 
     return amount;
@@ -718,11 +801,11 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
     NSUInteger i = 0;
 
     for (NSData *hash in transaction.inputHashes) {
+        ZNTransaction *tx = self.allTx[hash];
         uint32_t n = [transaction.inputIndexes[i++] intValue];
-        NSArray *values = self.allTxOutValues[hash];
 
-        if (n >= values.count) return UINT64_MAX;
-        amount += [values[n] unsignedLongLongValue];
+        if (n >= tx.outputAmounts.count) return UINT64_MAX;
+        amount += [tx.outputAmounts[n] unsignedLongLongValue];
     }
 
     for (NSNumber *amt in transaction.outputAmounts) {
@@ -752,30 +835,27 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
 {
     // TODO: calculate estimated time based on the median priority of free transactions in last 144 blocks (24hrs)
     NSMutableArray *amounts = [NSMutableArray array], *heights = [NSMutableArray array];
+    NSUInteger i = 0;
 
-    // get the block heights of all the transaction inputs
-    [[ZNTransactionEntity context] performBlockAndWait:^{
-        NSUInteger i = 0;
+    for (NSData *hash in transaction.inputHashes) { // get the amounts and block heights of all the transaction inputs
+        ZNTransaction *tx = self.allTx[hash];
+        uint32_t n = [transaction.inputIndexes[i++] unsignedIntValue];
 
-        for (NSData *hash in transaction.inputHashes) {
-            ZNTxOutputEntity *o = [ZNTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", hash,
-                                   [transaction.inputIndexes[i++] intValue]].lastObject;
-            
-            if (! o) break;
-            [amounts addObject:@(o.value)];
-            [heights addObject:@(o.transaction.blockHeight)];
-        }
-    }];
+        if (n >= tx.outputAmounts.count) break;
+        [amounts addObject:tx.outputAmounts[n]];
+        [heights addObject:@(tx.blockHeight)];
+    };
 
     return [transaction blockHeightUntilFreeForAmounts:amounts withBlockHeights:heights];
 }
 
 #pragma mark - string helpers
 
+// TODO: make this work with local currency amounts
 - (int64_t)amountForString:(NSString *)string
 {
     return ([[self.format numberFromString:string] doubleValue] + DBL_EPSILON)*
-    pow(10.0, self.format.maximumFractionDigits);
+           pow(10.0, self.format.maximumFractionDigits);
 }
 
 - (NSString *)stringForAmount:(int64_t)amount
@@ -784,7 +864,7 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
     
     if (amount == 0) {
         self.format.minimumFractionDigits =
-        self.format.maximumFractionDigits > 4 ? 4 : self.format.maximumFractionDigits;
+            self.format.maximumFractionDigits > 4 ? 4 : self.format.maximumFractionDigits;
     }
     
     NSString *r = [self.format stringFromNumber:@(amount/pow(10.0, self.format.maximumFractionDigits))];
@@ -803,7 +883,7 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
         format.lenient = YES;
         format.numberStyle = NSNumberFormatterCurrencyStyle;
         format.negativeFormat =
-        [format.positiveFormat stringByReplacingOccurrencesOfString:CURRENCY_SIGN withString:CURRENCY_SIGN @"-"];
+            [format.positiveFormat stringByReplacingOccurrencesOfString:CURRENCY_SIGN withString:CURRENCY_SIGN @"-"];
     }
     
     if (! amount) return [format stringFromNumber:@(0)];

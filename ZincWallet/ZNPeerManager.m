@@ -51,7 +51,7 @@
 
 #define GENESIS_BLOCK_HASH @"000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943".hexToData.reverse
 
-// The testnet genesis block uses the mainnet genesis block's merkle root. The hash is wrong using it's own root.
+// The testnet genesis block uses the mainnet genesis block's merkle root. The hash is wrong using its own root.
 #define GENESIS_BLOCK [[ZNMerkleBlock alloc] initWithBlockHash:GENESIS_BLOCK_HASH version:1\
     prevBlock:@"0000000000000000000000000000000000000000000000000000000000000000".hexToData\
     merkleRoot:@"3ba3edfd7a7b12b27ac72c3e67768f617fC81bc3888a51323a9fb8aa4b1e5e4a".hexToData\
@@ -158,9 +158,9 @@ static const char *dns_seeds[] = {
     self.publishedTx = [NSMutableDictionary dictionary];
     self.publishedCallback = [NSMutableDictionary dictionary];
 
-    //BUG: XXXX this will keep republishing potentially bad tx forever... we need a time limit
-    for (ZNTransaction *tx in self.wallet.recentTransactions) {
-        if (tx.blockHeight == TX_UNCONFIRMED) self.publishedTx[tx.txHash] = tx;
+    for (ZNTransaction *tx in self.wallet.recentTransactions) { // add unconfirmed tx to mempool
+        if (tx.blockHeight != TX_UNCONFIRMED) break;
+        self.publishedTx[tx.txHash] = tx;
     }
 
     self.activeObserver =
@@ -390,7 +390,8 @@ static const char *dns_seeds[] = {
 {
     if (! self.wallet.masterPublicKey) return;
     if (self.reachability.currentReachabilityStatus == NotReachable) return;
-
+    if (self.connectFailures >= MAX_CONNENCT_FAILURES) self.connectFailures = 0; // this attempt is a manual retry
+    
     if (self.syncProgress < 1.0) {
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:ZNPeerManagerSyncStartedNotification object:nil];
@@ -403,7 +404,6 @@ static const char *dns_seeds[] = {
         }]];
 
         if (self.connectedPeers.count >= MAX_CONNECTIONS) return; // we're already connected to MAX_CONNECTIONS peers
-        if (self.connectFailures >= MAX_CONNENCT_FAILURES) self.connectFailures = 0;
 
         NSMutableOrderedSet *peers = [NSMutableOrderedSet orderedSetWithOrderedSet:self.peers];
 
@@ -448,6 +448,7 @@ static const char *dns_seeds[] = {
 
     _lastBlock = nil;
 
+    // start the chain download from the most recent checkpoint that's at least a week older than earliestKeyTime
     for (int i = sizeof(checkpoint_array)/sizeof(*checkpoint_array) - 1; ! _lastBlock && i >= 0; i--) {
         if (checkpoint_array[i].timestamp + 7*24*60*60 - NSTimeIntervalSince1970 >= self.earliestKeyTime) continue;
         _lastBlock = self.blocks[[NSString stringWithUTF8String:checkpoint_array[i].hash].hexToData.reverse];
@@ -455,7 +456,7 @@ static const char *dns_seeds[] = {
 
     if (! _lastBlock) _lastBlock = self.blocks[GENESIS_BLOCK_HASH];
 
-    if (self.downloadPeer) {
+    if (self.downloadPeer) { // disconnect the current download peer so a new random one will be selected
         [self.peers removeObject:self.downloadPeer];
         [self.downloadPeer disconnect];
     }
@@ -484,7 +485,10 @@ static const char *dns_seeds[] = {
 
     self.publishedTx[transaction.txHash] = transaction;
     if (completion) self.publishedCallback[transaction.txHash] = completion;
-    [self performSelector:@selector(txTimeout:) withObject:transaction.txHash afterDelay:PROTOCOL_TIMEOUT];
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self performSelector:@selector(txTimeout:) withObject:transaction.txHash afterDelay:PROTOCOL_TIMEOUT];
+    });
 
     NSMutableSet *peers = [NSMutableSet setWithSet:self.connectedPeers];
 
@@ -497,20 +501,14 @@ static const char *dns_seeds[] = {
     }
 }
 
-// transaction is considered verified when all peers have relayed it for a receive, or just one peer for a send
+// transaction is considered verified when all peers have relayed it
 - (BOOL)transactionIsVerified:(NSData *)txHash
 {
-    ZNTransaction *tx = self.publishedTx[txHash];
-    NSUInteger count = (tx && [self.wallet amountSentByTransaction:tx] > 0) ? 1 : self.connectedPeers.count;
-
-    //TODO: we also need to know if a transaction is bad (double spend, not propagated after a certain time, etc...)
-    // and also consider estimated confirmation time based on fee per kb and priority
-    return ([self.txRelayCounts countForObject:txHash] >= count) ? YES : NO;
+    return ([self.txRelayCounts countForObject:txHash] >= self.connectedPeers.count) ? YES : NO;
 }
 
 - (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes
 {
-    if (txHashes.count == 0) return;
     [self.wallet setBlockHeight:height forTxHashes:txHashes];
     
     if (height != TX_UNCONFIRMED) { // remove confirmed tx from publish list and relay counts
@@ -553,12 +551,26 @@ static const char *dns_seeds[] = {
 
 - (void)syncStopped
 {
+    if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateBackground) {
+        [self.peers.array makeObjectsPerformSelector:@selector(disconnect)];
+    }
+
     if (self.taskId != UIBackgroundTaskInvalid) {
         [[UIApplication sharedApplication] endBackgroundTask:self.taskId];
         self.taskId = UIBackgroundTaskInvalid;
     }
 
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
+    });
+}
+
+- (void)removeUnrelayedTransactions
+{
+    for (ZNTransaction *tx in self.wallet.recentTransactions) {
+        if (tx.blockHeight != TX_UNCONFIRMED) break;
+        if ([self.txRelayCounts countForObject:tx.txHash] == 0) [self.wallet removeTransaction:tx.txHash];
+    }
 }
 
 - (void)peerMisbehavin:(ZNPeer *)peer
@@ -637,13 +649,17 @@ static const char *dns_seeds[] = {
 
 - (void)peerConnected:(ZNPeer *)peer
 {
-    NSLog(@"%@:%d connected", peer.host, peer.port);
+    NSLog(@"%@:%d connected with lastblock %d", peer.host, peer.port, peer.lastblock);
 
     self.connectFailures = 0;
     peer.timestamp = [NSDate timeIntervalSinceReferenceDate]; // set last seen timestamp for peer
-    [peer sendFilterloadMessage:self.bloomFilter.data]; // load the bloom filter
 
-    // TODO: XXXX publish recent unconfirmed tx, remove old unconfirmed tx not in the peer's mempool
+    if (peer.lastblock + 10 < self.lastBlock.height) { // drop peers that aren't synced yet
+        [peer disconnect];
+        return;
+    }
+
+    [peer sendFilterloadMessage:self.bloomFilter.data]; // load the bloom filter
 
     if (self.connected) return; // we're already connected
     
@@ -660,9 +676,12 @@ static const char *dns_seeds[] = {
             self.taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
         }
 
+        //BUG: XXXX the sync progress bar resets (when connection times out and auto-retries?)
         // setup a timer to detect if the sync stalls
-        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
-        [self performSelector:@selector(syncTimeout) withObject:nil afterDelay:PROTOCOL_TIMEOUT];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
+            [self performSelector:@selector(syncTimeout) withObject:nil afterDelay:PROTOCOL_TIMEOUT];
+        });
         self.lastRelayTime = 0;
 
         // request just block headers up to earliestKeyTime, and then merkleblocks after that
@@ -728,6 +747,7 @@ static const char *dns_seeds[] = {
     }
 
     if (peers.count < 1000) { // peer relaying is complete when we receive fewer than 1000
+        [self removeUnrelayedTransactions]; // this is a good time to remove unconfirmed tx that dropped off the network
         [self savePeers];
         [ZNPeerEntity saveContext];
     }
@@ -738,7 +758,7 @@ static const char *dns_seeds[] = {
     NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, transaction.txHash);
     self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
 
-    // When a transaction is matched by the bloom filter, if any of it's output scripts have a hash or key that also
+    // When a transaction is matched by the bloom filter, if any of its output scripts have a hash or key that also
     // matches the filter, the remote peer will automatically add that output to the filter. That way if another
     // transaction spends the output later, it will also be matched without having to manually update the filter.
     // We do the same here with the local copy to keep the filters in sync.
@@ -746,8 +766,15 @@ static const char *dns_seeds[] = {
 
     if ([self.wallet registerTransaction:transaction]) {
         // keep track of how many peers relay a tx, this indicates how likely it is to be confirmed in future blocks
-        [self.txRelayCounts addObject:transaction.txHash];
         self.publishedTx[transaction.txHash] = transaction;
+        [self.txRelayCounts addObject:transaction.txHash];
+
+        if ([self.txRelayCounts countForObject:transaction.txHash] == self.connectedPeers.count) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:ZNPeerManagerTxStatusNotification
+                 object:nil];
+            });
+        }
 
         // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
         // unused addresses are still matched by the bloom filter
@@ -773,9 +800,6 @@ static const char *dns_seeds[] = {
             [peer sendFilterloadMessage:self.bloomFilter.data];
         }
     }
-
-    // if we're not downloading the chain, relay tx to other peers for plausible deniability for our own tx
-    //TODO: XXXX relay tx to other peers
 }
 
 - (void)peer:(ZNPeer *)peer relayedBlock:(ZNMerkleBlock *)block
@@ -792,9 +816,12 @@ static const char *dns_seeds[] = {
         NSLog(@"%@:%d relayed orphan block %@, previous %@, last block is %@, height %d", peer.host, peer.port,
               block.blockHash, block.prevBlock, self.lastBlock.blockHash, self.lastBlock.height);
 
+        // ignore orphans older than one week ago
+        if (block.timestamp < [NSDate timeIntervalSinceReferenceDate] - 7*24*60*60) return;
+
         // call getblocks, unless we already did with the previous block, or we're still downloading the chain
         if (self.lastBlock.height >= peer.lastblock && ! [self.lastOrphan.blockHash isEqual:block.prevBlock]) {
-            NSLog(@"%@:%d calling getblocks with last block %@", peer.host, peer.port, self.lastBlock.blockHash);
+            NSLog(@"%@:%d calling getblocks with locators %@", peer.host, peer.port, [self blockLocatorArray]);
             [peer sendGetblocksMessageWithLocators:[self blockLocatorArray] andHashStop:nil];
         }
 
@@ -837,7 +864,7 @@ static const char *dns_seeds[] = {
     }
 
     if ([block.prevBlock isEqual:self.lastBlock.blockHash]) { // new block extends main chain
-        if ((block.height % 500) == 0) NSLog(@"adding block at height: %d", block.height);
+        if (! (block.height % 500) || block.height > peer.lastblock) NSLog(@"adding block at height: %d", block.height);
 
         self.blocks[block.blockHash] = block;
         self.lastBlock = block;
@@ -865,12 +892,16 @@ static const char *dns_seeds[] = {
             return;
         }
 
-        self.blocks[block.blockHash] = block;
-
-        // special case, if a new block is mined while we're refreshing the chain and haven't caught up yet, ignore it
-        if (block.height > self.lastBlock.height + 1 && self.lastBlock.height < peer.lastblock) return;
+        // special case, if a new block is mined while we're refreshing the chain, mark as orphan til we're caught up
+        if (self.lastBlock.height < peer.lastblock && block.height > self.lastBlock.height + 1) {
+            NSLog(@"ignoring new block at height %d durring refresh", block.height);
+            self.orphans[block.prevBlock] = block;
+            self.lastOrphan = block;
+            return;
+        }
 
         NSLog(@"chain fork to height %d", block.height);
+        self.blocks[block.blockHash] = block;
         if (block.height <= self.lastBlock.height) return; // if fork is shorter than main chain, ingore it for now
 
         NSMutableArray *txHashes = [NSMutableArray array];
@@ -885,7 +916,8 @@ static const char *dns_seeds[] = {
 
         // mark transactions after the join point as unconfirmed
         for (ZNTransaction *tx in self.wallet.recentTransactions) {
-            if (tx.blockHeight > b.height) [txHashes addObject:tx.txHash];
+            if (tx.blockHeight <= b.height) break;
+            [txHashes addObject:tx.txHash];
         }
 
         [self setBlockHeight:TX_UNCONFIRMED forTxHashes:txHashes];
@@ -897,11 +929,6 @@ static const char *dns_seeds[] = {
         }
 
         self.lastBlock = block;
-
-        // re-publish any transactions that may have become unconfirmed
-        for (ZNTransaction *tx in self.wallet.recentTransactions) {
-            if (tx.blockHeight == TX_UNCONFIRMED) [self publishTransaction:tx completion:nil];
-        }
     }
 
     if (block.height == peer.lastblock && block == self.lastBlock) { // chain download is complete
@@ -922,6 +949,12 @@ static const char *dns_seeds[] = {
         [self.orphans removeObjectForKey:block.blockHash];
         [self peer:peer relayedBlock:b];
     }
+
+    if (block.height > peer.lastblock) { // notify that transaction confirmations may have changed
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:ZNPeerManagerTxStatusNotification object:nil];
+        });
+    }
 }
 
 - (ZNTransaction *)peer:(ZNPeer *)peer requestedTransaction:(NSData *)txHash
@@ -931,15 +964,22 @@ static const char *dns_seeds[] = {
     
     if (tx) {
         [self.publishedCallback removeObjectForKey:txHash];
-        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:txHash];
         [self.bloomFilter insertTransaction:tx];
+        [self.txRelayCounts addObject:txHash];
         [self.wallet registerTransaction:tx];
 
-        if (callback) {
+        if ([self.txRelayCounts countForObject:txHash] == self.connectedPeers.count) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                callback(nil);
+                [[NSNotificationCenter defaultCenter] postNotificationName:ZNPeerManagerTxStatusNotification
+                 object:nil];
             });
         }
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:txHash];
+            if (callback) callback(nil);
+        });
+
     }
 
     return tx;

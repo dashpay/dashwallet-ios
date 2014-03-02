@@ -26,7 +26,7 @@
 #import <Foundation/Foundation.h>
 
 #define ZNWalletBalanceChangedNotification @"ZNWalletBalanceChangedNotification"
-#define ZNWalletSeedChangedNotification @"ZNWalletSeedChangedNotification"
+#define ZNWalletSeedChangedNotification    @"ZNWalletSeedChangedNotification"
 
 @class ZNTransaction;
 
@@ -37,10 +37,10 @@
 @property (nonatomic, readonly) NSData *masterPublicKey;
 @property (nonatomic, readonly) NSTimeInterval seedCreationTime;
 @property (nonatomic, readonly) uint64_t balance;
-@property (nonatomic, readonly) NSString *receiveAddress;
-@property (nonatomic, readonly) NSString *changeAddress;
-@property (nonatomic, readonly) NSSet *addresses;
-@property (nonatomic, readonly) NSArray *unspentOutputs;
+@property (nonatomic, readonly) NSString *receiveAddress; // returns the first unused external address
+@property (nonatomic, readonly) NSString *changeAddress; // returns the first unused internal address
+@property (nonatomic, readonly) NSSet *addresses; // all previously generated internal and external addresses
+@property (nonatomic, readonly) NSArray *unspentOutputs; // NSData objects containing serialized UTXOs
 @property (nonatomic, readonly) NSArray *recentTransactions; // ZNTransaction objects sorted by date, most recent first
 @property (nonatomic, strong) NSNumberFormatter *format;
 
@@ -50,21 +50,37 @@
 
 - (BOOL)containsAddress:(NSString *)address;
 
-// returns array of gapLimit unused ZNAddressEntity objects following the last used address
+// Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
+// found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
+// following the last used address in the chain. The internal chain is used for change addresses and the external chain
+// for receive addresses.
 - (NSArray *)addressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
 
+// returns an unsigned transaction that sends the specified amount from the wallet to the given address
 - (ZNTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee;
+
+// sign any inputs in given transaction that can be signed using private keys from the wallet
 - (BOOL)signTransaction:(ZNTransaction *)transaction;
+
+// given a private key, queries blockchain for unspent outputs and calls the completion block with a signed transaction
+// that will sweep the balance into wallet (doesn't publish the tx)
 - (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
 completion:(void (^)(ZNTransaction *tx, NSError *error))completion;
 
 // true if the given transaction is associated with the wallet, false otherwise
 - (BOOL)containsTransaction:(ZNTransaction *)transaction;
 
-// returns false if the transaction wasn't associated with the wallet
+// adds a transaction to the wallet, or returns false if it isn't associated with the wallet
 - (BOOL)registerTransaction:(ZNTransaction *)transaction;
 
+// removes a transaction from the wallet along with any transactions that depend on its outputs
+- (void)removeTransaction:(NSData *)txHash;
+
+// set the block heights for the given transactions
 - (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes;
+
+// true if no previous wallet transaction spends any of the given transaction's inputs, and no input tx are invalid
+- (BOOL)transactionIsValid:(ZNTransaction *)transaction;
 
 // returns the amount received to the wallet by the transaction (total outputs to change and/or recieve addresses)
 - (uint64_t)amountReceivedFromTransaction:(ZNTransaction *)transaction;

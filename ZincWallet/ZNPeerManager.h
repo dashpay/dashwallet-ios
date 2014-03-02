@@ -29,6 +29,7 @@
 #define ZNPeerManagerSyncStartedNotification  @"ZNPeerManagerSyncStartedNotification"
 #define ZNPeerManagerSyncFinishedNotification @"ZNPeerManagerSyncFinishedNotification"
 #define ZNPeerManagerSyncFailedNotification   @"ZNPeerManagerSyncFailedNotification"
+#define ZNPeerManagerTxStatusNotification     @"ZNPeerManagerTxStatusNotification"
 
 @interface ZNPeerManager : NSObject<ZNPeerDelegate>
 
@@ -42,7 +43,7 @@
 - (void)refresh;
 - (void)publishTransaction:(ZNTransaction *)transaction completion:(void (^)(NSError *error))completion;
 
-// transaction is considered verified when all peers have relayed it
+// transaction is considered verified when all peers have relayed it for a receive, or just one peer for a send
 - (BOOL)transactionIsVerified:(NSData *)txHash;
 
 @end

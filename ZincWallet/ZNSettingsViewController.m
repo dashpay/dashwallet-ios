@@ -36,7 +36,7 @@
 @interface ZNSettingsViewController ()
 
 @property (nonatomic, strong) NSArray *transactions;
-@property (nonatomic, strong) id balanceObserver;
+@property (nonatomic, strong) id balanceObserver, txStatusObserver;
 @property (nonatomic, strong) UIImageView *wallpaper;
 @property (nonatomic, assign) CGPoint wallpaperStart;
 
@@ -65,7 +65,14 @@
             [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
              withRowAnimation:UITableViewRowAnimationAutomatic];
         }];
-    
+
+    self.txStatusObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerTxStatusNotification object:nil queue:nil
+        usingBlock:^(NSNotification *note) {
+            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
+             withRowAnimation:UITableViewRowAnimationAutomatic];
+        }];
+
     self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
                                  [w localCurrencyStringForAmount:w.balance]];
     
@@ -80,6 +87,7 @@
 - (void)dealloc
 {
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
+    if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -167,22 +175,27 @@
                 ZNPeerManager *m = [ZNPeerManager sharedInstance];
                 ZNTransaction *tx = self.transactions[indexPath.row];
                 uint64_t received = [w amountReceivedFromTransaction:tx], sent = [w amountSentByTransaction:tx];
-                NSUInteger height = (tx.blockHeight != TX_UNCONFIRMED) ? m.lastBlockHeight - tx.blockHeight : 0;
+                NSUInteger confirms = (tx.blockHeight != TX_UNCONFIRMED) ? m.lastBlockHeight - tx.blockHeight - 1 : 0;
                 NSString *address = [w addressForTransaction:tx];
 
                 noTxLabel.hidden = YES;
                 sentLabel.hidden = YES;
                 unconfirmedLabel.hidden = NO;
                 unconfirmedLabel.layer.cornerRadius = 3.0;
+                unconfirmedLabel.backgroundColor = [UIColor lightGrayColor];
                 sentLabel.layer.cornerRadius = 3.0;
                 sentLabel.layer.borderWidth = 0.5;
-                
-                if (height == 0 && ! [m transactionIsVerified:tx.txHash]) {
+
+                if (confirms == 0 && ! [w transactionIsValid:tx]) {
+                    unconfirmedLabel.text = @"INVALID";
+                    unconfirmedLabel.backgroundColor = [UIColor redColor];
+                }
+                else if (confirms == 0 && ! [m transactionIsVerified:tx.txHash]) {
                     unconfirmedLabel.text = @"unverified";
                 }
-                else if (height < 6) {
+                else if (confirms < 6) {
                     unconfirmedLabel.text =
-                        [NSString stringWithFormat:@"%d confirmation%@", (int)height, (height == 1) ? @"" : @"s"];
+                        [NSString stringWithFormat:@"%d confirmation%@", (int)confirms, (confirms == 1) ? @"" : @"s"];
                 }
                 else {
                     unconfirmedLabel.hidden = YES;

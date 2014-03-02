@@ -600,7 +600,7 @@ services:(uint64_t)services
         [self sendGetdataMessageWithTxHashes:txHashes andBlockHashes:blockHashes];
         
         // Each merkleblock the remote peer sends us is followed by a set of tx messages for that block. We send a ping
-        // to get a pong reply after the block and all it's tx are sent, inicating that there are no more tx messages
+        // to get a pong reply after the block and all its tx are sent, inicating that there are no more tx messages
         if (blockHashes.count == 1) [self sendPingMessage];
     }
     
