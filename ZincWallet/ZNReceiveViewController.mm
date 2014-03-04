@@ -25,6 +25,7 @@
 
 #import "ZNReceiveViewController.h"
 #import "ZNPaymentRequest.h"
+#import "ZNWalletManager.h"
 #import "ZNWallet.h"
 #import "ZNButton.h"
 #import "QREncoder.h"
@@ -77,7 +78,7 @@
 
 - (NSString *)paymentAddress
 {
-    return [[ZNWallet sharedInstance] receiveAddress];
+    return [[[ZNWalletManager sharedInstance] wallet] receiveAddress];
 }
 
 - (BOOL)nextTip

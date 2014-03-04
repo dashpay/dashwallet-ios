@@ -25,6 +25,7 @@
 
 #import "ZNSettingsViewController.h"
 #import "ZNSeedViewController.h"
+#import "ZNWalletManager.h"
 #import "ZNWallet.h"
 #import "ZNPeerManager.h"
 #import "ZNTransaction.h"
@@ -52,13 +53,14 @@
 {
     [super viewDidLoad];
 
-    ZNWallet *w = [ZNWallet sharedInstance];
+    ZNWallet *w = [[ZNWalletManager sharedInstance] wallet];
     
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
-                                         [w localCurrencyStringForAmount:w.balance]];
+            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
+                                         [[ZNWalletManager sharedInstance] stringForAmount:w.balance],
+                                         [[ZNWalletManager sharedInstance] localCurrencyStringForAmount:w.balance]];
             
             self.transactions = w.recentTransactions;
             
@@ -73,8 +75,9 @@
              withRowAnimation:UITableViewRowAnimationAutomatic];
         }];
 
-    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
-                                 [w localCurrencyStringForAmount:w.balance]];
+    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
+                                 [[ZNWalletManager sharedInstance] stringForAmount:w.balance],
+                                 [[ZNWalletManager sharedInstance] localCurrencyStringForAmount:w.balance]];
     
     self.wallpaper = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"wallpaper-default.png"]];
     self.wallpaperStart = self.wallpaper.center;
@@ -94,7 +97,7 @@
 {
     [super viewWillAppear:animated];
     
-    self.transactions = [[ZNWallet sharedInstance] recentTransactions];
+    self.transactions = [[[ZNWalletManager sharedInstance] wallet] recentTransactions];
 }
 
 - (void)setBackgroundForCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)path
@@ -171,12 +174,13 @@
                 sentLabel.hidden = YES;
             }
             else {
-                ZNWallet *w = [ZNWallet sharedInstance];
-                ZNPeerManager *m = [ZNPeerManager sharedInstance];
+                ZNWalletManager *m = [ZNWalletManager sharedInstance];
                 ZNTransaction *tx = self.transactions[indexPath.row];
-                uint64_t received = [w amountReceivedFromTransaction:tx], sent = [w amountSentByTransaction:tx];
-                NSUInteger confirms = (tx.blockHeight != TX_UNCONFIRMED) ? m.lastBlockHeight - tx.blockHeight - 1 : 0;
-                NSString *address = [w addressForTransaction:tx];
+                uint64_t received = [m.wallet amountReceivedFromTransaction:tx],
+                         sent = [m.wallet amountSentByTransaction:tx];
+                NSUInteger confirms = (tx.blockHeight != TX_UNCONFIRMED) ?
+                                      ([[ZNPeerManager sharedInstance] lastBlockHeight] - tx.blockHeight) + 1 : 0;
+                NSString *address = [m.wallet addressForTransaction:tx];
 
                 noTxLabel.hidden = YES;
                 sentLabel.hidden = YES;
@@ -186,11 +190,11 @@
                 sentLabel.layer.cornerRadius = 3.0;
                 sentLabel.layer.borderWidth = 0.5;
 
-                if (confirms == 0 && ! [w transactionIsValid:tx]) {
+                if (confirms == 0 && ! [m.wallet transactionIsValid:tx]) {
                     unconfirmedLabel.text = @"INVALID";
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                 }
-                else if (confirms == 0 && ! [m transactionIsVerified:tx.txHash]) {
+                else if (confirms == 0 && ! [[ZNPeerManager sharedInstance] transactionIsVerified:tx.txHash]) {
                     unconfirmedLabel.text = @"unverified";
                 }
                 else if (confirms < 6) {
@@ -202,26 +206,26 @@
                     sentLabel.hidden = NO;
                 }
 
-                if (sent > 0 && (! address || [w containsAddress:address])) {
-                    textLabel.text = [w stringForAmount:sent];
+                if (sent > 0 && (! address || [m.wallet containsAddress:address])) {
+                    textLabel.text = [m stringForAmount:sent];
                     localCurrencyLabel.text =
-                        [NSString stringWithFormat:@"(%@)", [w localCurrencyStringForAmount:sent]];
+                        [NSString stringWithFormat:@"(%@)", [m localCurrencyStringForAmount:sent]];
                     detailTextLabel.text = @"within wallet";
                     sentLabel.text = @"moved";
                 }
                 else if (sent > 0) {
-                    textLabel.text = [w stringForAmount:received - sent];
+                    textLabel.text = [m stringForAmount:received - sent];
                     detailTextLabel.text = [@"to: " stringByAppendingString:address];
                     localCurrencyLabel.text =
-                        [NSString stringWithFormat:@"(%@)", [w localCurrencyStringForAmount:received - sent]];
+                        [NSString stringWithFormat:@"(%@)", [m localCurrencyStringForAmount:received - sent]];
                     sentLabel.text = @"sent";
                     sentLabel.textColor = [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.67];
                 }
                 else {
-                    textLabel.text = [w stringForAmount:received];
+                    textLabel.text = [m stringForAmount:received];
                     detailTextLabel.text = [@"to: " stringByAppendingString:address];
                     localCurrencyLabel.text =
-                       [NSString stringWithFormat:@"(%@)", [w localCurrencyStringForAmount:received]];
+                        [NSString stringWithFormat:@"(%@)", [m localCurrencyStringForAmount:received]];
                     sentLabel.text = @"received";
                     sentLabel.textColor = [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
                 }

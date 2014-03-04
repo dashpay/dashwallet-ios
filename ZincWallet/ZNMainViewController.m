@@ -26,6 +26,7 @@
 #import "ZNMainViewController.h"
 #import "ZNPayViewController.h"
 #import "ZNReceiveViewController.h"
+#import "ZNWalletManager.h"
 #import "ZNWallet.h"
 #import "ZNPeerManager.h"
 #import <netinet/in.h>
@@ -60,7 +61,7 @@
     // Do any additional setup after loading the view, typically from a nib.
     
     //TODO: make title use dynamic font size
-    ZNWallet *w = [ZNWallet sharedInstance];
+    ZNWalletManager *m = [ZNWalletManager sharedInstance];
 
     self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     self.spinner.frame =
@@ -78,7 +79,7 @@
         usingBlock:^(NSNotification *note) {
             [self.scrollView setContentOffset:CGPointZero animated:YES];
             
-            if (w.masterPublicKey) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
+            if (m.wallet) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
         }];
     
     self.activeObserver =
@@ -98,10 +99,10 @@
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if ([[ZNPeerManager sharedInstance] syncProgress] < 1.0) return;
+            if ([[ZNPeerManager sharedInstance] syncProgress] < 1.0) return; // wait for sync before updating balance
 
-            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
-                                         [w localCurrencyStringForAmount:w.balance]];
+            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
+                                         [m localCurrencyStringForAmount:m.wallet.balance]];
             
             // update receive qr code if it's not on screen
             if (self.pageControl.currentPage != 1) [[self receiveController] viewWillAppear:NO];
@@ -115,7 +116,7 @@
                 [self.spinner startAnimating];
             }
             
-            if (w.balance == 0) self.navigationItem.title = @"syncing...";
+            if (m.wallet.balance == 0) self.navigationItem.title = @"syncing...";
             [UIApplication sharedApplication].idleTimerDisabled = YES;
             self.progress.hidden = NO;
             self.progress.progress = 0.0;
@@ -130,8 +131,8 @@
         queue:nil usingBlock:^(NSNotification *note) {
             [self.spinner stopAnimating];
             self.navigationItem.rightBarButtonItem = self.refreshButton;
-            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
-                                         [w localCurrencyStringForAmount:w.balance]];
+            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
+                                         [m localCurrencyStringForAmount:m.wallet.balance]];
             [UIApplication sharedApplication].idleTimerDisabled = NO;
             [self.progress setProgress:1.0 animated:YES];
             [UIView animateWithDuration:0.2 animations:^{
@@ -147,8 +148,8 @@
         queue:nil usingBlock:^(NSNotification *note) {
             [self.spinner stopAnimating];
             self.navigationItem.rightBarButtonItem = self.refreshButton;
-            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
-                                         [w localCurrencyStringForAmount:w.balance]];
+            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
+                                         [m localCurrencyStringForAmount:m.wallet.balance]];
             [UIApplication sharedApplication].idleTimerDisabled = NO;
             self.progress.hidden = YES;
 
@@ -167,8 +168,8 @@
 
     self.navigationController.delegate = self;
     [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
-    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
-                                 [w localCurrencyStringForAmount:w.balance]];
+    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
+                                 [m localCurrencyStringForAmount:m.wallet.balance]];
 }
 
 - (void)dealloc
@@ -189,9 +190,9 @@
     [super viewWillAppear:animated];
     
     static BOOL firstAppearance = YES;
-    ZNWallet *w = [ZNWallet sharedInstance];
+    ZNWalletManager *m = [ZNWalletManager sharedInstance];
     
-    if (! w.masterPublicKey) {
+    if (! m.wallet) {
         UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNNewWalletNav"];
         
         [self.navigationController presentViewController:c animated:NO completion:nil];
@@ -229,7 +230,7 @@
         [self.scrollView addSubview:self.receiveController.view];
         [self addChildViewController:self.receiveController];
         
-        if (w.balance == 0) {
+        if (m.wallet.balance == 0) {
             [self.scrollView setContentOffset:CGPointMake(self.scrollView.frame.size.width, 0) animated:NO];
         }
     }
@@ -246,12 +247,12 @@
 
 - (void)viewDidDisappear:(BOOL)animated
 {
-    ZNWallet *w = [ZNWallet sharedInstance];
+    ZNWalletManager *m = [ZNWalletManager sharedInstance];
 
     [self.spinner stopAnimating];
     self.navigationItem.rightBarButtonItem = self.refreshButton;
-    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
-                                 [w localCurrencyStringForAmount:w.balance]];
+    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
+                                 [m localCurrencyStringForAmount:m.wallet.balance]];
     [UIApplication sharedApplication].idleTimerDisabled = NO;
     self.progress.hidden = YES;
 
@@ -291,7 +292,7 @@
         [self.spinner startAnimating];
     }
     
-    if ([ZNWallet sharedInstance].balance == 0) self.navigationItem.title = @"syncing...";
+    if ([[[ZNWalletManager sharedInstance] wallet] balance] == 0) self.navigationItem.title = @"syncing...";
     
     [[ZNPeerManager sharedInstance] refresh];
 }

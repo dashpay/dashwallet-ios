@@ -25,6 +25,7 @@
 
 #import "ZNAmountViewController.h"
 #import "ZNPaymentRequest.h"
+#import "ZNWalletManager.h"
 #import "ZNWallet.h"
 #import "ZNPeerManager.h"
 #import "ZNTransaction.h"
@@ -49,9 +50,9 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    ZNWallet *w = [ZNWallet sharedInstance];
+    ZNWalletManager *m = [ZNWalletManager sharedInstance];
     
-    self.amountField.placeholder = [w stringForAmount:0];
+    self.amountField.placeholder = [m stringForAmount:0];
     
     for (ZNButton *button in self.buttons) {
         [button setStyle:ZNButtonStyleBlue];
@@ -79,10 +80,10 @@
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if ([[ZNPeerManager sharedInstance] syncProgress] < 1.0) return;
+            if ([[ZNPeerManager sharedInstance] syncProgress] < 1.0) return; // wait for sync before updating balance
 
-            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
-                                         [w localCurrencyStringForAmount:w.balance]];
+            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
+                                         [m localCurrencyStringForAmount:m.wallet.balance]];
         }];
     
     self.syncStartedObserver =
@@ -156,9 +157,7 @@
 
 - (IBAction)pay:(id)sender
 {
-    ZNWallet *w = [ZNWallet sharedInstance];
-
-    self.request.amount = [w amountForString:self.amountField.text];
+    self.request.amount = [[ZNWalletManager sharedInstance] amountForString:self.amountField.text];
 
     if (self.request.amount == 0) return;
     
@@ -170,28 +169,28 @@
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range
 replacementString:(NSString *)string
 {
-    ZNWallet *w = [ZNWallet sharedInstance];
+    ZNWalletManager *m = [ZNWalletManager sharedInstance];
     NSUInteger point = [textField.text rangeOfString:@"."].location;
     NSString *t = textField.text ? [textField.text stringByReplacingCharactersInRange:range withString:string] : string;
 
-    t = [w.format stringFromNumber:[w.format numberFromString:t]];
+    t = [m.format stringFromNumber:[m.format numberFromString:t]];
 
     if (! string.length && point != NSNotFound) { // delete trailing char
         t = [textField.text stringByReplacingCharactersInRange:range withString:string];
-        if ([t isEqual:[w.format stringFromNumber:@0]]) t = @"";
+        if ([t isEqual:[m.format stringFromNumber:@0]]) t = @"";
     }
     else if ((string.length && textField.text.length && t == nil) ||
-             (point != NSNotFound && textField.text.length - point > w.format.maximumFractionDigits)) {
+             (point != NSNotFound && textField.text.length - point > m.format.maximumFractionDigits)) {
         return NO; // too many digits
     }
     else if ([string isEqual:@"."] && (! textField.text.length || point == NSNotFound)) {
-        if (! textField.text.length) t = [w.format stringFromNumber:@0]; // if first char is '.', prepend a zero
+        if (! textField.text.length) t = [m.format stringFromNumber:@0]; // if first char is '.', prepend a zero
         
         t = [t stringByAppendingString:@"."];
     }
     else if ([string isEqual:@"0"]) {
         if (! textField.text.length) { // if first digit is zero, append a '.'
-            t = [[w.format stringFromNumber:@0] stringByAppendingString:@"."];
+            t = [[m.format stringFromNumber:@0] stringByAppendingString:@"."];
         }
         else if (point != NSNotFound) { // handle multiple zeros after period....
             t = [textField.text stringByAppendingString:@"0"];
@@ -199,7 +198,7 @@ replacementString:(NSString *)string
     }
 
     // don't allow values below TX_MIN_OUTPUT_AMOUNT
-    if (t.length > 0 && [w amountForString:[t stringByAppendingString:@"9"]] < TX_MIN_OUTPUT_AMOUNT) return NO;
+    if (t.length > 0 && [m amountForString:[t stringByAppendingString:@"9"]] < TX_MIN_OUTPUT_AMOUNT) return NO;
 
     textField.text = t;
     //self.payButton.enabled = t.length ? YES : NO;

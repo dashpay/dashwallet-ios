@@ -25,6 +25,7 @@
 
 #import "ZNPayViewController.h"
 #import "ZNAmountViewController.h"
+#import "ZNWalletManager.h"
 #import "ZNWallet.h"
 #import "ZNPeerManager.h"
 #import "ZNPaymentRequest.h"
@@ -71,7 +72,7 @@
     //TODO: add a field for manually entering a payment address
     //TODO: make title use dynamic font size
     //BUG: clipboard button title is offcenter (ios7 specific font layout bug?)
-    ZNWallet *w = [ZNWallet sharedInstance];
+    ZNWalletManager *m = [ZNWalletManager sharedInstance];
     ZNPaymentRequest *req = [ZNPaymentRequest new];
     
     req.label = @"scan QR code";
@@ -99,7 +100,7 @@
                     if ([status isEqual:@"sent"]) {
                         NSUInteger idx = [self.requests indexOfObject:self.request];
                         
-                        if (self.tx) [w registerTransaction:self.tx];
+                        if (self.tx) [m.wallet registerTransaction:self.tx];
                         
                         if ([self.requestIDs indexOfObject:QR_ID] != idx) {
                             if ([self.requestIDs indexOfObject:CLIPBOARD_ID] == idx) {
@@ -123,9 +124,10 @@
         
                 if (! req.label.length) req.label = req.paymentAddress;
                 
-                if (req.amount > 0 && [req.label rangeOfString:[w stringForAmount:req.amount]].location == NSNotFound) {
+                if (req.amount > 0 &&
+                    [req.label rangeOfString:[[ZNWalletManager sharedInstance] stringForAmount:req.amount]].location == NSNotFound) {
                     req.label = [NSString stringWithFormat:@"%@ - %@", req.label,
-                                 [[ZNWallet sharedInstance] stringForAmount:req.amount]];
+                                 [[ZNWalletManager sharedInstance] stringForAmount:req.amount]];
                 }
         
                 if ([self.requestIDs indexOfObject:URL_ID] != NSNotFound) {
@@ -144,11 +146,12 @@
             // if a tx was sent to safari and we returned to the app not from a zinc: url, something went wrong, so
             // fall back on sending from within the app
             if (self.tx) {
-                uint64_t txAmount = [w amountSentByTransaction:self.tx] - [w amountReceivedFromTransaction:self.tx];
-                NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:txAmount],
-                                    [w localCurrencyStringForAmount:txAmount]];
+                uint64_t txAmount = [m.wallet amountSentByTransaction:self.tx] -
+                                    [m.wallet amountReceivedFromTransaction:self.tx];
+                NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:txAmount],
+                                    [m localCurrencyStringForAmount:txAmount]];
 
-                [[[UIAlertView alloc] initWithTitle:@"confirm payment" message:[w addressForTransaction:self.tx]
+                [[[UIAlertView alloc] initWithTitle:@"confirm payment" message:[m.wallet addressForTransaction:self.tx]
                   delegate:self cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
             }
         
@@ -195,7 +198,7 @@
 
 - (void)checkClipboard
 {
-    ZNWallet *w = [ZNWallet sharedInstance];
+    ZNWalletManager *m = [ZNWalletManager sharedInstance];
     ZNPaymentRequest *req = [ZNPaymentRequest requestWithString:[[[UIPasteboard generalPasteboard] string]
                              stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
     
@@ -206,8 +209,8 @@
     
     if (! req.label.length) req.label = req.paymentAddress;
     
-    if (req.amount > 0 && [req.label rangeOfString:[w stringForAmount:req.amount]].location == NSNotFound) {
-        req.label = [NSString stringWithFormat:@"%@ - %@", req.label, [w stringForAmount:req.amount]];
+    if (req.amount > 0 && [req.label rangeOfString:[m stringForAmount:req.amount]].location == NSNotFound) {
+        req.label = [NSString stringWithFormat:@"%@ - %@", req.label, [m stringForAmount:req.amount]];
     }
     
     if ([self.requestIDs indexOfObject:CLIPBOARD_ID] < self.requests.count) {
@@ -333,13 +336,13 @@
 {
     if (! self.tx) return;
 
-    ZNWallet *w = [ZNWallet sharedInstance];
-    uint64_t txAmount = [w amountSentByTransaction:self.tx] - [w amountReceivedFromTransaction:self.tx];
-    NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:txAmount],
-                        [w localCurrencyStringForAmount:txAmount]];
+    ZNWalletManager *m = [ZNWalletManager sharedInstance];
+    uint64_t txAmount = [m.wallet amountSentByTransaction:self.tx] - [m.wallet amountReceivedFromTransaction:self.tx];
+    NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:txAmount],
+                        [m localCurrencyStringForAmount:txAmount]];
     
-    [[[UIAlertView alloc] initWithTitle:@"confirm payment" message:[w addressForTransaction:self.tx] delegate:self
-      cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
+    [[[UIAlertView alloc] initWithTitle:@"confirm payment" message:[m.wallet addressForTransaction:self.tx]
+     delegate:self cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
 }
 
 - (void)confirmRequest
@@ -358,9 +361,9 @@
         return;
     }
     
-    ZNWallet *w = [ZNWallet sharedInstance];
+    ZNWalletManager *m = [ZNWalletManager sharedInstance];
     
-    if ([w containsAddress:self.request.paymentAddress]) {
+    if ([m.wallet containsAddress:self.request.paymentAddress]) {
         [[[UIAlertView alloc] initWithTitle:nil message:@"this payment address is already in your wallet" delegate:nil
           cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
         
@@ -372,8 +375,8 @@
         
         c.delegate = self;
         c.request = self.request;
-        c.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [w stringForAmount:w.balance],
-                                  [w localCurrencyStringForAmount:w.balance]];
+        c.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
+                                  [m localCurrencyStringForAmount:m.wallet.balance]];
         
         self.view.superview.clipsToBounds = YES;
         [ZNStoryboardSegue segueFrom:self.navigationController.topViewController to:c completion:^{
@@ -382,18 +385,18 @@
     }
     else if (self.request.amount < TX_MIN_OUTPUT_AMOUNT) {
         [[[UIAlertView alloc] initWithTitle:@"couldn't make payment" message:[@"bitcoin payments can't be less than "
-          stringByAppendingString:[w stringForAmount:TX_MIN_OUTPUT_AMOUNT]] delegate:nil cancelButtonTitle:@"ok"
+          stringByAppendingString:[m stringForAmount:TX_MIN_OUTPUT_AMOUNT]] delegate:nil cancelButtonTitle:@"ok"
           otherButtonTitles:nil] show];
         [self cancel:nil];
     }
     else {
-        self.tx = [w transactionFor:self.request.amount to:self.request.paymentAddress withFee:NO];
-        self.txWithFee = [w transactionFor:self.request.amount to:self.request.paymentAddress withFee:YES];
+        self.tx = [m.wallet transactionFor:self.request.amount to:self.request.paymentAddress withFee:NO];
+        self.txWithFee = [m.wallet transactionFor:self.request.amount to:self.request.paymentAddress withFee:YES];
         
-        uint64_t txFee = self.txWithFee ? [w feeForTransaction:self.txWithFee] : self.tx.standardFee;
-        NSString *fee = [w stringForAmount:txFee];
-        NSString *localCurrencyFee = [w localCurrencyStringForAmount:txFee];
-        uint32_t freeHeight = [w blockHeightUntilFree:self.tx];
+        uint64_t txFee = self.txWithFee ? [m.wallet feeForTransaction:self.txWithFee] : self.tx.standardFee;
+        NSString *fee = [m stringForAmount:txFee];
+        NSString *localCurrencyFee = [m localCurrencyStringForAmount:txFee];
+        uint32_t freeHeight = [m.wallet blockHeightUntilFree:self.tx];
         
         if (! self.tx) {
             [[[UIAlertView alloc] initWithTitle:@"insufficient funds" message:nil delegate:nil cancelButtonTitle:@"ok"
@@ -427,14 +430,14 @@
 {
     if (! [privKey isValidBitcoinPrivateKey]) return;
     
-    ZNWallet *w = [ZNWallet sharedInstance];
+    ZNWalletManager *m = [ZNWalletManager sharedInstance];
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
     
     hud.mode = MBProgressHUDModeIndeterminate;
     hud.labelText = @"checking private key balance...";
     hud.labelFont = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
 
-    [w sweepPrivateKey:privKey withFee:YES completion:^(ZNTransaction *tx, NSError *error) {
+    [m sweepPrivateKey:privKey withFee:YES completion:^(ZNTransaction *tx, NSError *error) {
         [hud hide:YES];
 
         if (error) {
@@ -453,10 +456,10 @@
         self.sweepTx = tx;
         [[[UIAlertView alloc] initWithTitle:nil
           message:[NSString stringWithFormat:@"Sweep %@ (%@) from this private key into your wallet? "
-          "The bitcoin network will receive a fee of %@ (%@).", [w stringForAmount:amount],
-          [w localCurrencyStringForAmount:amount], [w stringForAmount:fee], [w localCurrencyStringForAmount:fee]]
+          "The bitcoin network will receive a fee of %@ (%@).", [m stringForAmount:amount],
+          [m localCurrencyStringForAmount:amount], [m stringForAmount:fee], [m localCurrencyStringForAmount:fee]]
           delegate:self cancelButtonTitle:@"cancel" otherButtonTitles:[NSString stringWithFormat:@"%@ (%@)",
-          [w stringForAmount:amount], [w localCurrencyStringForAmount:amount]], nil] show];
+          [m stringForAmount:amount], [m localCurrencyStringForAmount:amount]], nil] show];
     }];
 }
 
@@ -681,7 +684,7 @@
     }
     
     NSLog(@"signing transaction");
-    [[ZNWallet sharedInstance] signTransaction:self.tx];
+    [[[ZNWalletManager sharedInstance] wallet] signTransaction:self.tx];
     
     if (! [self.tx isSigned]) {
         [[[UIAlertView alloc] initWithTitle:@"couldn't make payment" message:@"error signing bitcoin transaction"

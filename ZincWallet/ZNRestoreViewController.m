@@ -24,7 +24,7 @@
 //  THE SOFTWARE.
 
 #import "ZNRestoreViewController.h"
-#import "ZNWallet.h"
+#import "ZNWalletManager.h"
 #import "NSString+Base58.h"
 #import "ZNKeySequence.h"
 #import "ZNZincMnemonic.h"
@@ -111,7 +111,7 @@
     NSString *t = [sender titleForState:UIControlStateNormal];
 
     if ([t isEqual:@"done"]) {
-        if ([[ZNWallet sharedInstance] masterPublicKey]) {
+        if ([[ZNWalletManager sharedInstance] wallet]) {
             if (! [self.label.text isValidBitcoinPrivateKey]) {
                 [[[UIAlertView alloc] initWithTitle:nil message:@"not a valid private key" delegate:nil
                   cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
@@ -143,7 +143,7 @@
             else {
                 self.label.text = nil;
                 
-                [[ZNWallet sharedInstance] setSeed:d];
+                [[ZNWalletManager sharedInstance] setSeed:d];
                 
                 [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
             }
@@ -244,8 +244,8 @@
           message:[NSString stringWithFormat:@"backup phrase must be %d words", SEQUENCE_SEED_LENGTH*3/4] delegate:nil
           cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
     }
-    else if ([[ZNWallet sharedInstance] seed]) {
-        if ([[[ZNWallet sharedInstance] seed] isEqual:[self.mnemonic decodePhrase:textView.text]]) {
+    else if ([[ZNWalletManager sharedInstance] seed]) {
+        if ([[[ZNWalletManager sharedInstance] seed] isEqual:[self.mnemonic decodePhrase:textView.text]]) {
             [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"cancel"
               destructiveButtonTitle:@"wipe" otherButtonTitles:nil]
              showInView:[[UIApplication sharedApplication] keyWindow]];
@@ -256,7 +256,7 @@
         }
     }
     else {
-        [[ZNWallet sharedInstance] setSeedPhrase:textView.text];
+        [[ZNWalletManager sharedInstance] setSeedPhrase:textView.text];
         
         textView.text = nil;
         
@@ -270,7 +270,7 @@
 {
     if (buttonIndex != actionSheet.destructiveButtonIndex) return;
     
-    [[ZNWallet sharedInstance] setSeed:nil];
+    [[ZNWalletManager sharedInstance] setSeed:nil];
 
     self.textView.text = nil;
     

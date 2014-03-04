@@ -31,6 +31,7 @@
 #import "ZNTransaction.h"
 #import "ZNMerkleBlock.h"
 #import "ZNMerkleBlockEntity.h"
+#import "ZNWalletManager.h"
 #import "ZNWallet.h"
 #import "NSString+Base58.h"
 #import "NSMutableData+Bitcoin.h"
@@ -119,10 +120,10 @@ static const char *dns_seeds[] = {
 @property (nonatomic, strong) NSMutableDictionary *blocks, *orphans, *checkpoints, *publishedTx, *publishedCallback;
 @property (nonatomic, strong) ZNMerkleBlock *lastBlock, *lastOrphan;
 @property (nonatomic, strong) NSCountedSet *txRelayCounts;
-@property (nonatomic, strong) ZNWallet *wallet;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) dispatch_queue_t q;
 @property (nonatomic, strong) id activeObserver, seedObserver;
+@property (nonatomic, readonly) ZNWallet *wallet;
 
 @end
 
@@ -145,8 +146,7 @@ static const char *dns_seeds[] = {
 {
     if (! (self = [super init])) return nil;
 
-    self.wallet = [ZNWallet sharedInstance];
-    self.earliestKeyTime = self.wallet.seedCreationTime;
+    self.earliestKeyTime = [[ZNWalletManager sharedInstance] seedCreationTime];
     self.connectedPeers = [NSMutableSet set];
     self.misbehavinPeers = [NSMutableSet set];
     self.tweak = mrand48();
@@ -173,9 +173,9 @@ static const char *dns_seeds[] = {
         }];
 
     self.seedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:ZNWalletSeedChangedNotification object:nil queue:nil
-        usingBlock:^(NSNotification *note) {
-            self.earliestKeyTime = self.wallet.seedCreationTime;
+        [[NSNotificationCenter defaultCenter] addObserverForName:ZNWalletManagerSeedChangedNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
+            self.earliestKeyTime = [[ZNWalletManager sharedInstance] seedCreationTime];
             [self.txRelayCounts removeAllObjects];
             [self.publishedTx removeAllObjects];
             [self.publishedCallback removeAllObjects];
@@ -197,6 +197,11 @@ static const char *dns_seeds[] = {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
     if (self.activeObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
     if (self.seedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.seedObserver];
+}
+
+- (ZNWallet *)wallet
+{
+    return [[ZNWalletManager sharedInstance] wallet];
 }
 
 - (NSMutableOrderedSet *)peers
@@ -388,7 +393,7 @@ static const char *dns_seeds[] = {
 
 - (void)connect
 {
-    if (! self.wallet.masterPublicKey) return;
+    if (! self.wallet) return;
     if (self.reachability.currentReachabilityStatus == NotReachable) return;
     if (self.connectFailures >= MAX_CONNENCT_FAILURES) self.connectFailures = 0; // this attempt is a manual retry
     

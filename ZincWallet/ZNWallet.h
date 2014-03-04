@@ -26,27 +26,19 @@
 #import <Foundation/Foundation.h>
 
 #define ZNWalletBalanceChangedNotification @"ZNWalletBalanceChangedNotification"
-#define ZNWalletSeedChangedNotification    @"ZNWalletSeedChangedNotification"
 
 @class ZNTransaction;
 
 @interface ZNWallet : NSObject
 
-@property (nonatomic, strong) NSString *seedPhrase;
-@property (nonatomic, strong) NSData *seed;
-@property (nonatomic, readonly) NSData *masterPublicKey;
-@property (nonatomic, readonly) NSTimeInterval seedCreationTime;
 @property (nonatomic, readonly) uint64_t balance;
 @property (nonatomic, readonly) NSString *receiveAddress; // returns the first unused external address
 @property (nonatomic, readonly) NSString *changeAddress; // returns the first unused internal address
 @property (nonatomic, readonly) NSSet *addresses; // all previously generated internal and external addresses
 @property (nonatomic, readonly) NSArray *unspentOutputs; // NSData objects containing serialized UTXOs
 @property (nonatomic, readonly) NSArray *recentTransactions; // ZNTransaction objects sorted by date, most recent first
-@property (nonatomic, strong) NSNumberFormatter *format;
 
-+ (instancetype)sharedInstance;
-
-- (void)generateRandomSeed;
+- (instancetype)initWithContext:(NSManagedObjectContext *)context andSeed:(NSData *(^)())seed;
 
 - (BOOL)containsAddress:(NSString *)address;
 
@@ -61,11 +53,6 @@
 
 // sign any inputs in given transaction that can be signed using private keys from the wallet
 - (BOOL)signTransaction:(ZNTransaction *)transaction;
-
-// given a private key, queries blockchain for unspent outputs and calls the completion block with a signed transaction
-// that will sweep the balance into wallet (doesn't publish the tx)
-- (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
-completion:(void (^)(ZNTransaction *tx, NSError *error))completion;
 
 // true if the given transaction is associated with the wallet, false otherwise
 - (BOOL)containsTransaction:(ZNTransaction *)transaction;
@@ -96,9 +83,5 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion;
 
 // returns the block height after which the transaction is likely be processed without including a fee
 - (uint32_t)blockHeightUntilFree:(ZNTransaction *)transaction;
-
-- (int64_t)amountForString:(NSString *)string;
-- (NSString *)stringForAmount:(int64_t)amount;
-- (NSString *)localCurrencyStringForAmount:(int64_t)amount;
 
 @end

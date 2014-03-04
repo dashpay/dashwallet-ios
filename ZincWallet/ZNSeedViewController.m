@@ -24,7 +24,7 @@
 //  THE SOFTWARE.
 
 #import "ZNSeedViewController.h"
-#import "ZNWallet.h"
+#import "ZNWalletManager.h"
 #import "ZNBIP32Sequence.h"
 
 #define LABEL_MARGIN 20
@@ -65,7 +65,7 @@
 
 - (void)viewWillAppear:(BOOL)animated
 {
-    ZNWallet *w = [ZNWallet sharedInstance];
+    ZNWalletManager *m = [ZNWalletManager sharedInstance];
 
     [super viewWillAppear:animated];
  
@@ -76,8 +76,8 @@
         self.navigationItem.leftBarButtonItem = nil;
     }
 
-    if (! w.masterPublicKey) {
-        [w generateRandomSeed];
+    if (! m.wallet) {
+        [m generateRandomSeed];
         self.compatiblityLabel.hidden = YES;
     }
     else {
@@ -85,14 +85,14 @@
         self.compatiblityLabel.hidden = YES; // BIP32 isn't compatible with very much yet :(
         self.exportLabel.text =
             [@"BIP32 extended private key: "
-             stringByAppendingString:[[ZNBIP32Sequence new] serializedPrivateMasterFromSeed:w.seed]];
+             stringByAppendingString:[[ZNBIP32Sequence new] serializedPrivateMasterFromSeed:m.seed]];
     }
 
     [UIView animateWithDuration:SEGUE_DURATION/2 animations:^{
         self.seedLabel.alpha = 1.0;
     }];
     
-    self.seedLabel.text = w.seedPhrase;
+    self.seedLabel.text = m.seedPhrase;
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -115,12 +115,12 @@
 
 - (IBAction)refresh:(id)sender
 {
-    [[ZNWallet sharedInstance] generateRandomSeed];
+    [[ZNWalletManager sharedInstance] generateRandomSeed];
     
     [UIView animateWithDuration:SEGUE_DURATION/2 animations:^{
         self.seedLabel.alpha = 0.0;
     } completion:^(BOOL finished) {
-        self.seedLabel.text = [[ZNWallet sharedInstance] seedPhrase];
+        self.seedLabel.text = [[ZNWalletManager sharedInstance] seedPhrase];
         
         [UIView animateWithDuration:SEGUE_DURATION/2 animations:^{
             self.seedLabel.alpha = 1.0;
