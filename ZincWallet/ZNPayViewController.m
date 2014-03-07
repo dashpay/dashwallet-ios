@@ -125,9 +125,8 @@
                 if (! req.label.length) req.label = req.paymentAddress;
                 
                 if (req.amount > 0 &&
-                    [req.label rangeOfString:[[ZNWalletManager sharedInstance] stringForAmount:req.amount]].location == NSNotFound) {
-                    req.label = [NSString stringWithFormat:@"%@ - %@", req.label,
-                                 [[ZNWalletManager sharedInstance] stringForAmount:req.amount]];
+                    [req.label rangeOfString:[m stringForAmount:req.amount]].location == NSNotFound) {
+                    req.label = [NSString stringWithFormat:@"%@ - %@", req.label, [m stringForAmount:req.amount]];
                 }
         
                 if ([self.requestIDs indexOfObject:URL_ID] != NSNotFound) {

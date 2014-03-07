@@ -104,11 +104,6 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     return self;
 }
 
-- (void)dealloc
-{
-    [NSObject cancelPreviousPerformRequestsWithTarget:self];
-}
-
 - (NSData *)masterPublicKey
 {
     if (! _masterPublicKey) _masterPublicKey = [self.sequence masterPublicKeyFromSeed:self.seed()];
@@ -271,6 +266,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     return [self.transactions array];
 }
 
+// true if the address is known to belong to the wallet
 - (BOOL)containsAddress:(NSString *)address
 {
     return (address && [self.allAddresses containsObject:address]) ? YES : NO;

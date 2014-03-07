@@ -175,7 +175,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     
     if (_totalTransactions > 0 && ! [merkleRoot isEqual:_merkleRoot]) return NO; // merkle root check failed
     
-    //TODO: XXXX use estimated network time instead of system time (avoids timejacking attacks and misconfigured time)
+    //TODO: use estimated network time instead of system time (avoids timejacking attacks and misconfigured time)
     if (_timestamp > [NSDate timeIntervalSinceReferenceDate] + MAX_TIME_DRIFT) return NO; // timestamp too far in future
     
     // check proof-of-work
@@ -266,6 +266,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     if (timespan < TARGET_TIMESPAN/4) timespan = TARGET_TIMESPAN/4;
     if (timespan > TARGET_TIMESPAN*4) timespan = TARGET_TIMESPAN*4;
 
+    BN_CTX_start(ctx);
     BN_init(&target);
     BN_init(&maxTarget);
     BN_init(&span);
@@ -278,6 +279,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     BN_mul(&bn, &target, &span, ctx);
     BN_div(&target, NULL, &bn, &targetSpan, ctx);
     if (BN_cmp(&target, &maxTarget) > 0) BN_copy(&target, &maxTarget); // limit to MAX_PROOF_OF_WORK
+    BN_CTX_end(ctx);
     BN_CTX_free(ctx);
     
     return (_target == getCompact(&target)) ? YES : NO;

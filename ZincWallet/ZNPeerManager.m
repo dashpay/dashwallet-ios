@@ -123,7 +123,6 @@ static const char *dns_seeds[] = {
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) dispatch_queue_t q;
 @property (nonatomic, strong) id activeObserver, seedObserver;
-@property (nonatomic, readonly) ZNWallet *wallet;
 
 @end
 
@@ -158,9 +157,9 @@ static const char *dns_seeds[] = {
     self.publishedTx = [NSMutableDictionary dictionary];
     self.publishedCallback = [NSMutableDictionary dictionary];
 
-    for (ZNTransaction *tx in self.wallet.recentTransactions) { // add unconfirmed tx to mempool
+    for (ZNTransaction *tx in [[[ZNWalletManager sharedInstance] wallet] recentTransactions]) {
         if (tx.blockHeight != TX_UNCONFIRMED) break;
-        self.publishedTx[tx.txHash] = tx;
+        self.publishedTx[tx.txHash] = tx; // add unconfirmed tx to mempool
     }
 
     self.activeObserver =
@@ -197,11 +196,6 @@ static const char *dns_seeds[] = {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
     if (self.activeObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
     if (self.seedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.seedObserver];
-}
-
-- (ZNWallet *)wallet
-{
-    return [[ZNWalletManager sharedInstance] wallet];
 }
 
 - (NSMutableOrderedSet *)peers
@@ -364,26 +358,28 @@ static const char *dns_seeds[] = {
 
     if (_bloomFilter) return _bloomFilter;
 
+    ZNWallet *w = [[ZNWalletManager sharedInstance] wallet];
+
     // every time a new wallet address is added, the filter has to be rebuilt, and each address is only used for one
     // transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
     // transaction is encountered during the blockchain download (generates twice the external gap limit for both
     // address chains)
-    [self.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:NO];
-    [self.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:YES];
+    [w addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:NO];
+    [w addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:YES];
 
-    NSUInteger elemCount = self.wallet.addresses.count + self.wallet.unspentOutputs.count;
+    NSUInteger elemCount = w.addresses.count + w.unspentOutputs.count;
     ZNBloomFilter *filter = [ZNBloomFilter filterWithFalsePositiveRate:BLOOM_DEFAULT_FALSEPOSITIVE_RATE
                              forElementCount:(elemCount < 200) ? elemCount*1.5 : elemCount + 100
                              tweak:self.tweak flags:BLOOM_UPDATE_P2PUBKEY_ONLY];
 
-    for (NSString *address in self.wallet.addresses) {
+    for (NSString *address in w.addresses) {
         NSData *d = address.base58checkToData;
 
         // add the address hash160 to watch for any tx receiveing money to the wallet
         if (d.length == 160/8 + 1) [filter insertData:[d subdataWithRange:NSMakeRange(1, d.length - 1)]];
     }
 
-    for (NSData *utxo in self.wallet.unspentOutputs) {
+    for (NSData *utxo in w.unspentOutputs) {
         [filter insertData:utxo]; // add the unspent output to watch for any tx sending money from the wallet
     }
     
@@ -393,7 +389,7 @@ static const char *dns_seeds[] = {
 
 - (void)connect
 {
-    if (! self.wallet) return;
+    if (! [[ZNWalletManager sharedInstance] wallet]) return;
     if (self.reachability.currentReachabilityStatus == NotReachable) return;
     if (self.connectFailures >= MAX_CONNENCT_FAILURES) self.connectFailures = 0; // this attempt is a manual retry
     
@@ -514,7 +510,7 @@ static const char *dns_seeds[] = {
 
 - (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes
 {
-    [self.wallet setBlockHeight:height forTxHashes:txHashes];
+    [[[ZNWalletManager sharedInstance] wallet] setBlockHeight:height forTxHashes:txHashes];
     
     if (height != TX_UNCONFIRMED) { // remove confirmed tx from publish list and relay counts
         [self.publishedTx removeObjectsForKeys:txHashes];
@@ -572,9 +568,11 @@ static const char *dns_seeds[] = {
 
 - (void)removeUnrelayedTransactions
 {
-    for (ZNTransaction *tx in self.wallet.recentTransactions) {
+    ZNWallet *w = [[ZNWalletManager sharedInstance] wallet];
+
+    for (ZNTransaction *tx in w.recentTransactions) {
         if (tx.blockHeight != TX_UNCONFIRMED) break;
-        if ([self.txRelayCounts countForObject:tx.txHash] == 0) [self.wallet removeTransaction:tx.txHash];
+        if ([self.txRelayCounts countForObject:tx.txHash] == 0) [w removeTransaction:tx.txHash];
     }
 }
 
@@ -681,7 +679,6 @@ static const char *dns_seeds[] = {
             self.taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
         }
 
-        //BUG: XXXX the sync progress bar resets (when connection times out and auto-retries?)
         // setup a timer to detect if the sync stalls
         dispatch_async(dispatch_get_main_queue(), ^{
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
@@ -760,6 +757,8 @@ static const char *dns_seeds[] = {
 
 - (void)peer:(ZNPeer *)peer relayedTransaction:(ZNTransaction *)transaction
 {
+    ZNWallet *w = [[ZNWalletManager sharedInstance] wallet];
+
     NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, transaction.txHash);
     self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
 
@@ -769,7 +768,7 @@ static const char *dns_seeds[] = {
     // We do the same here with the local copy to keep the filters in sync.
     [self.bloomFilter insertTransaction:transaction];
 
-    if ([self.wallet registerTransaction:transaction]) {
+    if ([w registerTransaction:transaction]) {
         // keep track of how many peers relay a tx, this indicates how likely it is to be confirmed in future blocks
         self.publishedTx[transaction.txHash] = transaction;
         [self.txRelayCounts addObject:transaction.txHash];
@@ -783,8 +782,8 @@ static const char *dns_seeds[] = {
 
         // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
         // unused addresses are still matched by the bloom filter
-        NSArray *external = [self.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO],
-                *internal = [self.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
+        NSArray *external = [w addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO],
+                *internal = [w addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
 
         for (NSString *a in [external arrayByAddingObjectsFromArray:internal]) {
             NSData *d = a.base58checkToData;
@@ -920,7 +919,7 @@ static const char *dns_seeds[] = {
         NSLog(@"reorganizing chain from height %d, new height is %d", b.height, block.height);
 
         // mark transactions after the join point as unconfirmed
-        for (ZNTransaction *tx in self.wallet.recentTransactions) {
+        for (ZNTransaction *tx in [[[ZNWalletManager sharedInstance] wallet] recentTransactions]) {
             if (tx.blockHeight <= b.height) break;
             [txHashes addObject:tx.txHash];
         }
@@ -971,7 +970,7 @@ static const char *dns_seeds[] = {
         [self.publishedCallback removeObjectForKey:txHash];
         [self.bloomFilter insertTransaction:tx];
         [self.txRelayCounts addObject:txHash];
-        [self.wallet registerTransaction:tx];
+        [[[ZNWalletManager sharedInstance] wallet] registerTransaction:tx];
 
         if ([self.txRelayCounts countForObject:txHash] == self.connectedPeers.count) {
             dispatch_async(dispatch_get_main_queue(), ^{

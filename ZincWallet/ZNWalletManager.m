@@ -34,6 +34,8 @@
 #import "ZNAddressEntity.h"
 #import "NSString+Base58.h"
 #import "NSManagedObject+Utils.h"
+#import <netdb.h>
+#import "Reachability.h"
 
 #define BTC           @"\xC9\x83"     // capital B with stroke (utf-8)
 #define CURRENCY_SIGN @"\xC2\xA4"     // generic currency sign (utf-8)
@@ -94,6 +96,7 @@ static NSData *getKeychainData(NSString *key)
 @interface ZNWalletManager()
 
 @property (nonatomic, strong) ZNWallet *wallet;
+@property (nonatomic, strong) Reachability *reachability;
 
 @end
 
@@ -116,7 +119,9 @@ static NSData *getKeychainData(NSString *key)
     if (! (self = [super init])) return nil;
 
     [NSManagedObject setConcurrencyType:NSPrivateQueueConcurrencyType];
-    
+
+    self.reachability = [Reachability reachabilityForInternetConnection];
+
     self.format = [NSNumberFormatter new];
     self.format.lenient = YES;
     self.format.numberStyle = NSNumberFormatterCurrencyStyle;
@@ -135,6 +140,11 @@ static NSData *getKeychainData(NSString *key)
     [self updateExchangeRate];
 
     return self;
+}
+
+- (void)dealloc
+{
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
 
 - (ZNWallet *)wallet
@@ -163,7 +173,6 @@ static NSData *getKeychainData(NSString *key)
 
 - (void)setSeed:(NSData *)seed
 {
-    //BUG: XXXX seed = nil ?
     if (seed && [self.seed isEqual:seed]) return;
 
     [[NSManagedObject context] performBlockAndWait:^{
@@ -219,6 +228,11 @@ static NSData *getKeychainData(NSString *key)
 
 - (void)updateExchangeRate
 {
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateExchangeRate) object:nil];
+    [self performSelector:@selector(updateExchangeRate) withObject:nil afterDelay:60.0];
+
+    if (self.reachability.currentReachabilityStatus == NotReachable) return;
+
     NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:ADDRESS_URL]
                          cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:10.0];
 
@@ -255,9 +269,6 @@ static NSData *getKeychainData(NSString *key)
             [[NSNotificationCenter defaultCenter] postNotificationName:ZNWalletBalanceChangedNotification object:nil];
         });
     }];
-
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateExchangeRate) object:nil];
-    [self performSelector:@selector(updateExchangeRate) withObject:nil afterDelay:60.0];
 }
 
 // given a private key, queries blockchain for unspent outputs and calls the completion block with a signed transaction

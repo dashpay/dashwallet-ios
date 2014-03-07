@@ -66,6 +66,7 @@
     I.length = CC_SHA512_DIGEST_LENGTH;
     CCHmac(kCCHmacAlgSHA512, c.bytes, c.length, data.bytes, data.length, I.mutableBytes);
 
+    BN_CTX_start(ctx);
     BN_init(&order);
     BN_init(&Ilbn);
     BN_init(&kbn);
@@ -84,6 +85,7 @@
     BN_clear_free(&kbn);
     BN_clear_free(&Ilbn);
     BN_free(&order);
+    BN_CTX_end(ctx);
     BN_CTX_free(ctx);
 }
 
@@ -116,6 +118,7 @@
     I.length = CC_SHA512_DIGEST_LENGTH;
     CCHmac(kCCHmacAlgSHA512, c.bytes, c.length, data.bytes, data.length, I.mutableBytes);
 
+    BN_CTX_start(ctx);
     BN_init(&Ilbn);
     BN_bin2bn(I.bytes, 32, &Ilbn);
     EC_GROUP_set_point_conversion_form(group, form);
@@ -132,6 +135,7 @@
     EC_POINT_clear_free(pubKeyPoint);
     EC_GROUP_free(group);
     BN_clear_free(&Ilbn);
+    BN_CTX_end(ctx);
     BN_CTX_free(ctx);
 }
 

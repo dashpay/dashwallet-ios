@@ -26,8 +26,37 @@
 #import "ZNKey.h"
 #import "NSString+Base58.h"
 #import "NSData+Hash.h"
+#import <CommonCrypto/CommonHMAC.h>
 #import <openssl/ecdsa.h>
 #import <openssl/obj_mac.h>
+
+// HMAC-SHA256 DRBG, using no prediction resistance or personalization string and outputing 256bits
+static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
+{
+    NSMutableData *V = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), CC_SHA256_DIGEST_LENGTH + 1 +
+                                                             entropy.length + nonce.length)),
+                  *K = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), CC_SHA256_DIGEST_LENGTH)),
+                  *T = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), CC_SHA256_DIGEST_LENGTH));
+
+    V.length = CC_SHA256_DIGEST_LENGTH;
+    memset(V.mutableBytes, 0x01, V.length); // V = 0x01 0x01 0x01 ... 0x01
+    K.length = CC_SHA256_DIGEST_LENGTH;     // K = 0x00 0x00 0x00 ... 0x00
+    [V appendBytes:"\0" length:1];
+    [V appendBytes:entropy.bytes length:entropy.length];
+    [V appendBytes:nonce.bytes length:nonce.length];
+    CCHmac(kCCHmacAlgSHA256, K.bytes, K.length, V.bytes, V.length, K.mutableBytes); // K = HMAC_K(V || 0x00 || seed)
+    V.length = CC_SHA256_DIGEST_LENGTH;
+    CCHmac(kCCHmacAlgSHA256, K.bytes, K.length, V.bytes, V.length, V.mutableBytes); // V = HMAC_K(V)
+    [V appendBytes:"\x01" length:1];
+    [V appendBytes:entropy.bytes length:entropy.length];
+    [V appendBytes:nonce.bytes length:nonce.length];
+    CCHmac(kCCHmacAlgSHA256, K.bytes, K.length, V.bytes, V.length, K.mutableBytes); // K = HMAC_K(V || 0x01 || seed)
+    V.length = CC_SHA256_DIGEST_LENGTH;
+    CCHmac(kCCHmacAlgSHA256, K.bytes, K.length, V.bytes, V.length, V.mutableBytes); // V = HMAC_K(V)
+    T.length = CC_SHA256_DIGEST_LENGTH;
+    CCHmac(kCCHmacAlgSHA256, K.bytes, K.length, V.bytes, V.length, T.mutableBytes); // T = HMAC_K(V)
+    return T;
+}
 
 @interface ZNKey ()
 
@@ -103,7 +132,8 @@
     BIGNUM priv;
     const EC_GROUP *group = EC_KEY_get0_group(_key);
     EC_POINT *pub = EC_POINT_new(group);
-    
+
+    if (ctx) BN_CTX_start(ctx);
     BN_init(&priv);
     
     if (pub && ctx) {
@@ -118,6 +148,7 @@
     
     if (pub) EC_POINT_free(pub);
     BN_clear_free(&priv);
+    if (ctx) BN_CTX_end(ctx);
     if (ctx) BN_CTX_free(ctx);
 }
 
@@ -204,48 +235,52 @@
 
 - (NSData *)sign:(NSData *)d
 {
-    if (d.length != 256/8) {
+    if (d.length != CC_SHA256_DIGEST_LENGTH) {
         NSLog(@"%s:%d: %s: Only 256 bit hashes can be signed", __FILE__, __LINE__,  __func__);
         return nil;
     }
 
-    unsigned l = ECDSA_size(_key);
-    NSMutableData *sig = [NSMutableData dataWithLength:l];
-    
-    //TODO: XXXX implement RFC6979 deterministic signatures
-    //# Test Vectors for RFC 6979 ECDSA, secp256k1, SHA-256
-    //# (private key, message, expected k, expected signature)
-    //test_vectors = [
-    //(0x1, "Satoshi Nakamoto",
-    //0x8F8A276C19F4149656B280621E358CCE24F5F52542772691EE69063B74F15D15,
-    //"934b1ea10a4b3c1757e2b0c017d0b6143ce3c9a7e6a4a49860d7a6ab210ee3d82442ce9d2b916064108014783e923ec36b49743e2ffa1c44"
-    //"96f01a512aafd9e5"),
-    //(0x1, "All those moments will be lost in time, like tears in rain. Time to die...",
-    //0x38AA22D72376B4DBC472E06C3BA403EE0A394DA63FC58D88686C611ABA98D6B3,
-    //"8600dbd41e348fe5c9465ab92d23e3db8b98b873beecd930736488696438cb6b547fe64427496db33bf66019dacbf0039c04199abb012291"
-    //"8601db38a72cfc21"),
-    //(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364140, "Satoshi Nakamoto",
-    //0x33A19B60E25FB6F4435AF53A3D42D493644827367E6453928554F43E49AA6F90,
-    //"fd567d121db66e382991534ada77a6bd3106f0a1098c231e47993447cd6af2d06b39cd0eb1bc8603e159ef5c20a5c8ad685a45b06ce9bebe"
-    //"d3f153d10d93bed5"),
-    //(0xf8b8af8ce3c7cca5e300d33939540c10d45ce001b8f252bfbc57ba0342904181, "Alan Turing",
-    //0x525A82B70E67874398067543FD84C83D30C175FDC45FDEEE082FE13B1D7CFDF1,
-    //"7063ae83e7f62bbb171798131b4a0564b956930092b33b07b395615d9ec7e15c58dfcc1e00a35e1572f366ffe34ba0fc47db1e7189759b9f"
-    //"b233c5b05ab388ea"),
-    //(0xe91671c46231f833a6406ccbea0e3e392c76c167bac1cb013f6f1013980455c2, "There is a computer disease that anybody "
-    //"who works with computers knows about. It's a very serious disease and it interferes completely with the work. "
-    //"The trouble with computers is that you 'play' with them!",
-    //0x1F4B84C23A86A221D233F2521BE018D9318639D5B8BBD6374A8A59232D16AD3D,
-    //"b552edd27580141f3b2a5463048cb7cd3e047b97c9f98076c32dbdf85a68718b279fa72dd19bfae05577e06c7c0c1900c371fcd5893f7e1d"
-    //"56a37d30174671f6")
-    //]
-    ECDSA_sign(0, d.bytes, (int)d.length, sig.mutableBytes, &l, _key);
-    sig.length = l;
+    BN_CTX *ctx = BN_CTX_new();
+    BIGNUM order, halforder, k, r;
+    const BIGNUM *priv = EC_KEY_get0_private_key(_key);
+    const EC_GROUP *group = EC_KEY_get0_group(_key);
+    EC_POINT *p = EC_POINT_new(group);
+    ECDSA_SIG *s;
+    NSMutableData *sig = [NSMutableData dataWithLength:ECDSA_size(_key)],
+                  *entropy = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 32));
+    unsigned char *b = sig.mutableBytes;
 
-    if (! [self verify:d signature:sig]) {
-        NSLog(@"%s:%d: %s: Verify failed", __FILE__, __LINE__,  __func__);
-        return nil;
+    BN_CTX_start(ctx);
+    BN_init(&order);
+    BN_init(&halforder);
+    BN_init(&k);
+    BN_init(&r);
+    EC_GROUP_get_order(group, &order, ctx);
+    BN_rshift1(&halforder, &order);
+
+    // generate k deterministicly per RFC6979: https://tools.ietf.org/html/rfc6979
+    entropy.length = 32;
+    BN_bn2bin(priv, (unsigned char *)entropy.mutableBytes + entropy.length - BN_num_bytes(priv));
+    BN_bin2bn(hmac_drbg(entropy, d).bytes, CC_SHA256_DIGEST_LENGTH, &k);
+    EC_POINT_mul(group, p, &k, NULL, NULL, ctx); // compute r, the x-coordinate of generator*k
+    EC_POINT_get_affine_coordinates_GFp(group, p, &r, NULL, ctx);
+    BN_mod_inverse(&k, &k, &order, ctx); // compute the inverse of k
+    s = ECDSA_do_sign_ex(d.bytes, (int)d.length, &k, &r, _key);
+
+    if (s != NULL) {
+        // enforce low s values, by negating the value (modulo the order) if above order/2.
+        if (BN_cmp(s->s, &halforder) > 0) BN_sub(s->s, &order, s->s);
+
+        sig.length = i2d_ECDSA_SIG(s, &b);
+        ECDSA_SIG_free(s);
     }
+    else sig = nil;
+
+    EC_POINT_clear_free(p);
+    BN_clear_free(&k);
+    BN_clear_free(&r);
+    BN_CTX_end(ctx);
+    BN_CTX_free(ctx);
 
     return sig;
 }

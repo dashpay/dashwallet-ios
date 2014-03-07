@@ -109,6 +109,7 @@
     [d appendBytes:&form length:1];
     [d appendData:masterPublicKey];
 
+    BN_CTX_start(ctx);
     BN_init(&zbn);
     BN_bin2bn(z.bytes, (int)z.length, &zbn);
     EC_POINT_oct2point(group, masterPubKeyPoint, d.bytes, d.length, ctx);
@@ -121,6 +122,7 @@
     EC_POINT_clear_free(masterPubKeyPoint);
     EC_GROUP_free(group);
     BN_clear_free(&zbn);
+    BN_CTX_end(ctx);
     BN_CTX_free(ctx);
     return d;
 }
@@ -143,6 +145,7 @@
     __block BIGNUM sequencebn, secexpbn, order;
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
 
+    BN_CTX_start(ctx);
     BN_init(&sequencebn);
     BN_init(&secexpbn);
     BN_init(&order);
@@ -168,6 +171,7 @@
     BN_free(&order);
     BN_clear_free(&secexpbn);
     BN_clear_free(&sequencebn);
+    BN_CTX_end(ctx);
     BN_CTX_free(ctx);
     return a;
 }

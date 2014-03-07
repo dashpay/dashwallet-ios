@@ -40,6 +40,7 @@
 
 - (instancetype)initWithContext:(NSManagedObjectContext *)context andSeed:(NSData *(^)())seed;
 
+// true if the address is known to belong to the wallet
 - (BOOL)containsAddress:(NSString *)address;
 
 // Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is

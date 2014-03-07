@@ -43,7 +43,7 @@
 - (void)refresh;
 - (void)publishTransaction:(ZNTransaction *)transaction completion:(void (^)(NSError *error))completion;
 
-// transaction is considered verified when all peers have relayed it for a receive, or just one peer for a send
+// transaction is considered verified when all peers have relayed it
 - (BOOL)transactionIsVerified:(NSData *)txHash;
 
 @end
