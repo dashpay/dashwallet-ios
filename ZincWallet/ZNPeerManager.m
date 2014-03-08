@@ -438,14 +438,11 @@ static const char *dns_seeds[] = {
     });
 }
 
-// refreshes blocks and transactions after earliestKeyTime, a new random download peer is also selected due to the
+// rescans blocks and transactions after earliestKeyTime, a new random download peer is also selected due to the
 // possibility that a malicious node might lie by omitting transactions that match the bloom filter
-- (void)refresh
+- (void)rescan
 {
-    if (! self.connected) {
-        [self connect];
-        return;
-    }
+    if (! self.connected) return;
 
     _lastBlock = nil;
 
@@ -664,11 +661,13 @@ static const char *dns_seeds[] = {
 
     [peer sendFilterloadMessage:self.bloomFilter.data]; // load the bloom filter
 
-    if (self.connected) return; // we're already connected
+    if (self.connected && (self.downloadPeer.lastblock >= peer.lastblock || self.lastBlock.height >= peer.lastblock)) {
+        return; // we're already connected
+    }
     
     // select the peer with the lowest ping time to download the chain from if we're behind
     for (ZNPeer *p in self.connectedPeers) {
-        if (p.pingTime < peer.pingTime) peer = p; // find the peer with the lowest ping time
+        if ((p.pingTime < peer.pingTime && p.lastblock >= peer.lastblock) || p.lastblock > peer.lastblock) peer = p;
     }
 
     _connected = YES;
@@ -712,12 +711,13 @@ static const char *dns_seeds[] = {
     }
     else if (error) {
         [self.peers removeObject:peer];
-        if (! self.connected) self.connectFailures++;
+        self.connectFailures++;
     }
 
-    if (! self.downloadPeer || [self.downloadPeer isEqual:peer]) {
+    if ([self.downloadPeer isEqual:peer]) {
         _connected = NO;
         self.downloadPeer = nil;
+        if (self.connectFailures > MAX_CONNENCT_FAILURES) self.connectFailures = MAX_CONNENCT_FAILURES;
         [self syncStopped];
     }
 

@@ -245,10 +245,8 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
     const BIGNUM *priv = EC_KEY_get0_private_key(_key);
     const EC_GROUP *group = EC_KEY_get0_group(_key);
     EC_POINT *p = EC_POINT_new(group);
-    ECDSA_SIG *s;
-    NSMutableData *sig = [NSMutableData dataWithLength:ECDSA_size(_key)],
-                  *entropy = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 32));
-    unsigned char *b = sig.mutableBytes;
+    NSMutableData *sig = nil, *entropy = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 32));
+    unsigned char *b;
 
     BN_CTX_start(ctx);
     BN_init(&order);
@@ -262,19 +260,23 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
     entropy.length = 32;
     BN_bn2bin(priv, (unsigned char *)entropy.mutableBytes + entropy.length - BN_num_bytes(priv));
     BN_bin2bn(hmac_drbg(entropy, d).bytes, CC_SHA256_DIGEST_LENGTH, &k);
+
     EC_POINT_mul(group, p, &k, NULL, NULL, ctx); // compute r, the x-coordinate of generator*k
     EC_POINT_get_affine_coordinates_GFp(group, p, &r, NULL, ctx);
-    BN_mod_inverse(&k, &k, &order, ctx); // compute the inverse of k
-    s = ECDSA_do_sign_ex(d.bytes, (int)d.length, &k, &r, _key);
 
-    if (s != NULL) {
-        // enforce low s values, by negating the value (modulo the order) if above order/2.
+    BN_mod_inverse(&k, &k, &order, ctx); // compute the inverse of k
+
+    ECDSA_SIG *s = ECDSA_do_sign_ex(d.bytes, (int)d.length, &k, &r, _key);
+
+    if (s) {
+        // enforce low s values, negate the value (modulo the order) if above order/2.
         if (BN_cmp(s->s, &halforder) > 0) BN_sub(s->s, &order, s->s);
 
+        sig = [NSMutableData dataWithLength:ECDSA_size(_key)];
+        b = sig.mutableBytes;
         sig.length = i2d_ECDSA_SIG(s, &b);
         ECDSA_SIG_free(s);
     }
-    else sig = nil;
 
     EC_POINT_clear_free(p);
     BN_clear_free(&k);

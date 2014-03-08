@@ -285,8 +285,8 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     //TODO: implement P2SH transactions
     //TODO: make sure transaction is less than TX_MAX_SIZE
     //TODO: don't use coin generation inputs less than 100 blocks deep
-    //TODO: we should use up all inputs tied to any particular address, otherwise we reveal the public key for an
-    //      address that still has remaining funds
+    //TODO: use up all inputs for all used addresses to avoid leaving funds in addresses whose public key is revealed
+    //TODO: avoid combining addresses in a single transaction when possible to reduce information leakage
     for (NSData *o in self.utxos) {
         ZNTransaction *tx = self.allTx[[o hashAtOffset:0]];
         uint32_t n = [o UInt32AtOffset:CC_SHA256_DIGEST_LENGTH];

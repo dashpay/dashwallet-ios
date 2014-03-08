@@ -62,7 +62,7 @@
                                          [[ZNWalletManager sharedInstance] stringForAmount:w.balance],
                                          [[ZNWalletManager sharedInstance] localCurrencyStringForAmount:w.balance]];
             
-            self.transactions = w.recentTransactions;
+            self.transactions = [NSArray arrayWithArray:w.recentTransactions];
             
             [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
              withRowAnimation:UITableViewRowAnimationAutomatic];
@@ -97,7 +97,7 @@
 {
     [super viewWillAppear:animated];
     
-    self.transactions = [[[ZNWalletManager sharedInstance] wallet] recentTransactions];
+    self.transactions = [NSArray arrayWithArray:[[[ZNWalletManager sharedInstance] wallet] recentTransactions]];
 }
 
 - (void)setBackgroundForCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)path
@@ -131,7 +131,7 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    return 3;
+    return 4;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -140,6 +140,7 @@
         case 0: return self.transactions.count ? self.transactions.count : 1;
         case 1: return 2;
         case 2: return 1;
+        case 3: return 1;
         default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
     }
 
@@ -149,7 +150,7 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     static NSString *disclosureIdent = @"ZNDisclosureCell", *transactionIdent = @"ZNTransactionCell",
-                    *actionIdent = @"ZNActionCell";
+                    *actionIdent = @"ZNActionCell", *restoreIdent = @"ZNRestoreCell";
     UITableViewCell *cell = nil;
     __block UILabel *textLabel, *detailTextLabel, *unconfirmedLabel, *sentLabel, *noTxLabel, *localCurrencyLabel;
     
@@ -246,7 +247,7 @@
         case 1:
             cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
             [self setBackgroundForCell:cell atIndexPath:indexPath];
-            
+
             switch (indexPath.row) {
                 case 0:
                     cell.textLabel.text = @"about";
@@ -265,18 +266,14 @@
         case 2:
             cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
             [self setBackgroundForCell:cell atIndexPath:indexPath];
-
-            switch (indexPath.row) {
-                case 0:
-                    cell.textLabel.text = @"start/restore another wallet";
-                    break;
-                                        
-                default:
-                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
-                             (int)indexPath.row);
-            }
+            cell.textLabel.text = @"rescan blockchain";
             break;
-            
+
+        case 3:
+            cell = [tableView dequeueReusableCellWithIdentifier:restoreIdent];
+            [self setBackgroundForCell:cell atIndexPath:indexPath];
+            break;
+
         default:
             NSAssert(FALSE, @"%s:%d %s: unkown indexPath.section %d", __FILE__, __LINE__,  __func__,
                      (int)indexPath.section);
@@ -306,20 +303,12 @@
             return TRANSACTION_CELL_HEIGHT;
 
         case 1:
-            switch (indexPath.row) {
-                case 0:
-                    return 44;
-
-                case 1:
-                    return 44;
-                    
-                default:
-                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
-                             (int)indexPath.row);
-            }
             return 44;
             
         case 2:
+            return 44;
+
+        case 3:
             return 44;
 
         default:
@@ -340,8 +329,11 @@
             
         case 1:
             return 22;
-            
+
         case 2:
+            return 22;
+
+        case 3:
             h = tableView.frame.size.height - self.navigationController.navigationBar.frame.size.height - 20.0 - 44.0;
 
             for (int s = 0; s < section; s++) {
@@ -405,7 +397,6 @@
                 case 1:
                     [[[UIAlertView alloc] initWithTitle:@"WARNING" message:warning delegate:self
                       cancelButtonTitle:@"cancel" otherButtonTitles:@"show", nil] show];
-
                     break;
                     
                 default:
@@ -413,11 +404,15 @@
                              (int)indexPath.row);
             }
             break;
-            
-        // section 2 is handled in storyboard
+
         case 2:
+            [[ZNPeerManager sharedInstance] rescan];
+            [self done:nil];
             break;
-            
+
+        case 3: // start/restore is handled in storyboard
+            break;
+
         default:
             NSAssert(FALSE, @"%s:%d %s: unkown indexPath.section %d", __FILE__, __LINE__,  __func__,
                      (int)indexPath.section);

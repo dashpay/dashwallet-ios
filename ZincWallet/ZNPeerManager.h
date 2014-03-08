@@ -40,7 +40,7 @@
 + (instancetype)sharedInstance;
 
 - (void)connect;
-- (void)refresh;
+- (void)rescan;
 - (void)publishTransaction:(ZNTransaction *)transaction completion:(void (^)(NSError *error))completion;
 
 // transaction is considered verified when all peers have relayed it

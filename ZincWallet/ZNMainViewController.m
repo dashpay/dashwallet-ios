@@ -41,9 +41,10 @@
 @property (nonatomic, strong) IBOutlet UIScrollView *scrollView;
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
 @property (nonatomic, strong) IBOutlet UIPageControl *pageControl;
-@property (nonatomic, strong) IBOutlet UIBarButtonItem *settingsButton, *refreshButton;
+@property (nonatomic, strong) IBOutlet UIBarButtonItem *settingsButton;//, *refreshButton;
 @property (nonatomic, strong) IBOutlet UIActivityIndicatorView *spinner;
 @property (nonatomic, strong) IBOutlet UIProgressView *progress;
+@property (nonatomic, strong) IBOutlet UIButton *connectButton;
 
 @property (nonatomic, strong) ZNPayViewController *payController;
 @property (nonatomic, strong) ZNReceiveViewController *receiveController;
@@ -69,7 +70,7 @@
     self.spinner.accessibilityLabel = @"synchornizing";
     
     self.settingsButton.accessibilityLabel = @"settings";
-    self.refreshButton.accessibilityLabel = @"synchronize";
+    //self.refreshButton.accessibilityLabel = @"synchronize";
     self.pageControl.accessibilityLabel = @"receive money";
     
     self.wallpaperStart = self.wallpaper.center;
@@ -94,6 +95,13 @@
             if (self.didAppear && self.reachability.currentReachabilityStatus != NotReachable) {
                 [[ZNPeerManager sharedInstance] connect];
             }
+            else if (self.didAppear && self.reachability.currentReachabilityStatus == NotReachable) {
+                self.connectButton.hidden = NO;
+                self.connectButton.alpha = 0.0;
+                [UIView animateWithDuration:0.2 animations:^{
+                    self.connectButton.alpha = 1.0;
+                }];
+            }
         }];
     
     self.balanceObserver =
@@ -111,7 +119,7 @@
     self.syncStartedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncStartedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.navigationItem.rightBarButtonItem == self.refreshButton) {
+            if (self.navigationItem.rightBarButtonItem == nil) {//self.refreshButton) {
                 self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
                 [self.spinner startAnimating];
             }
@@ -122,6 +130,7 @@
             self.progress.progress = 0.0;
             [UIView animateWithDuration:0.2 animations:^{
                 self.progress.alpha = 1.0;
+                self.connectButton.alpha = 0.0;
             }];
             [self updateProgress];
         }];
@@ -130,15 +139,13 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncFinishedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             [self.spinner stopAnimating];
-            self.navigationItem.rightBarButtonItem = self.refreshButton;
+            self.navigationItem.rightBarButtonItem = nil;//self.refreshButton;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
             [UIApplication sharedApplication].idleTimerDisabled = NO;
             [self.progress setProgress:1.0 animated:YES];
             [UIView animateWithDuration:0.2 animations:^{
                 self.progress.alpha = 0.0;
-            } completion:^(BOOL finished) {
-                self.progress.hidden = YES;
             }];
         }];
     
@@ -147,20 +154,26 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncFailedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             [self.spinner stopAnimating];
-            self.navigationItem.rightBarButtonItem = self.refreshButton;
+            self.navigationItem.rightBarButtonItem = nil;//self.refreshButton;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
             [UIApplication sharedApplication].idleTimerDisabled = NO;
             self.progress.hidden = YES;
 
-            if (! self.alertVisible) {
-                self.alertVisible = YES;
-                [[[UIAlertView alloc] initWithTitle:@"couldn't refresh wallet balance"
-                  message:[note.userInfo[@"error"] localizedDescription] delegate:self cancelButtonTitle:@"ok"
-                  otherButtonTitles:nil] show];
+//            if (! self.alertVisible) {
+//                self.alertVisible = YES;
+//                [[[UIAlertView alloc] initWithTitle:@"couldn't refresh wallet balance"
+//                  message:[note.userInfo[@"error"] localizedDescription] delegate:self cancelButtonTitle:@"ok"
+//                  otherButtonTitles:nil] show];
+//
+//                //TODO: XXXX add a retry/cancel button
+//            }
 
-                //TODO: XXXX add a retry/cancel button
-            }
+            self.connectButton.hidden = NO;
+            self.connectButton.alpha = 0.0;
+            [UIView animateWithDuration:0.2 animations:^{
+                self.connectButton.alpha = 1.0;
+            }];
         }];
     
     self.reachability = [Reachability reachabilityForInternetConnection];
@@ -243,6 +256,14 @@
     [super viewDidAppear:animated];
 
     self.didAppear = YES;
+
+    if (self.reachability.currentReachabilityStatus == NotReachable) {
+        self.connectButton.hidden = NO;
+        self.connectButton.alpha = 0.0;
+        [UIView animateWithDuration:0.2 animations:^{
+            self.connectButton.alpha = 1.0;
+        }];
+    }
 }
 
 - (void)viewDidDisappear:(BOOL)animated
@@ -250,7 +271,7 @@
     ZNWalletManager *m = [ZNWalletManager sharedInstance];
 
     [self.spinner stopAnimating];
-    self.navigationItem.rightBarButtonItem = self.refreshButton;
+    self.navigationItem.rightBarButtonItem = nil;//self.refreshButton;
     self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                  [m localCurrencyStringForAmount:m.wallet.balance]];
     [UIApplication sharedApplication].idleTimerDisabled = NO;
@@ -283,18 +304,18 @@
 
 #pragma mark - IBAction
 
-- (IBAction)refresh:(id)sender
+- (IBAction)connect:(id)sender
 {
     if (! sender && [self.reachability currentReachabilityStatus] == NotReachable) return;
     
-    if (self.navigationItem.rightBarButtonItem == self.refreshButton) {
-        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
-        [self.spinner startAnimating];
-    }
-    
-    if ([[[ZNWalletManager sharedInstance] wallet] balance] == 0) self.navigationItem.title = @"syncing...";
-    
-    [[ZNPeerManager sharedInstance] refresh];
+//    if (self.navigationItem.rightBarButtonItem == self.refreshButton) {
+//        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
+//        [self.spinner startAnimating];
+//    }
+//    
+//    if ([[[ZNWalletManager sharedInstance] wallet] balance] == 0) self.navigationItem.title = @"syncing...";
+
+    [[ZNPeerManager sharedInstance] connect];
 }
 
 - (IBAction)page:(id)sender
