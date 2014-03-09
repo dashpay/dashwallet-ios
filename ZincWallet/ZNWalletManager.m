@@ -163,7 +163,7 @@ static NSData *getKeychainData(NSString *key)
 {
     NSData *seed = getKeychainData(SEED_KEY);
 
-    if (seed.length != SEQUENCE_SEED_LENGTH) {
+    if (seed != nil && seed.length != SEQUENCE_SEED_LENGTH) {
         self.seed = nil;
         return nil;
     }
@@ -265,6 +265,8 @@ static NSData *getKeychainData(NSString *key)
         NSLog(@"exchange rate updated to %@/%@", [self localCurrencyStringForAmount:SATOSHIS],
               [self stringForAmount:SATOSHIS]);
 
+        if (! self.wallet) return;
+        
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:ZNWalletBalanceChangedNotification object:nil];
         });

@@ -52,16 +52,17 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-
-    ZNWallet *w = [[ZNWalletManager sharedInstance] wallet];
     
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
+            ZNWallet *w = [[ZNWalletManager sharedInstance] wallet];
+
+            if (! w) return;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
                                          [[ZNWalletManager sharedInstance] stringForAmount:w.balance],
                                          [[ZNWalletManager sharedInstance] localCurrencyStringForAmount:w.balance]];
-            
+
             self.transactions = [NSArray arrayWithArray:w.recentTransactions];
             
             [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
@@ -71,9 +72,14 @@
     self.txStatusObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerTxStatusNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
+            ZNWallet *w = [[ZNWalletManager sharedInstance] wallet];
+
+            if (! w) return;
             [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
              withRowAnimation:UITableViewRowAnimationAutomatic];
         }];
+
+    ZNWallet *w = [[ZNWalletManager sharedInstance] wallet];
 
     self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
                                  [[ZNWalletManager sharedInstance] stringForAmount:w.balance],
@@ -207,7 +213,7 @@
                     sentLabel.hidden = NO;
                 }
 
-                if (sent > 0 && (! address || [m.wallet containsAddress:address])) {
+                if (! address || (sent > 0 && [m.wallet containsAddress:address])) {
                     textLabel.text = [m stringForAmount:sent];
                     localCurrencyLabel.text =
                         [NSString stringWithFormat:@"(%@)", [m localCurrencyStringForAmount:sent]];

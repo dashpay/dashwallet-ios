@@ -662,6 +662,8 @@ services:(uint64_t)services
             }
 
             lastHash = [message subdataWithRange:NSMakeRange(off, 80)].SHA256_2;
+
+            NSLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, @[lastHash, firstHash]);
             [self sendGetblocksMessageWithLocators:@[lastHash, firstHash] andHashStop:nil];
         }
         else [self sendGetheadersMessageWithLocators:@[lastHash, firstHash] andHashStop:nil];

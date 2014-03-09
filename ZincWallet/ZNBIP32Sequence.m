@@ -35,8 +35,11 @@
 #define BIP32_XPRV     "\x04\x88\xAD\xE4"
 #define BIP32_XPUB     "\x04\x88\xB2\x1E"
 
-@implementation ZNBIP32Sequence
+// BIP32 is a scheme for deriving chains of addresses from a seed value
+// https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 
+// Private child key derivation:
+//
 // To define CKD((kpar, cpar), i) -> (ki, ci):
 //
 // - Check whether the highest bit (0x80000000) of i is set:
@@ -46,7 +49,8 @@
 // - Split I = Il || Ir into two 32-byte sequences, Il and Ir.
 // - ki = Il + kpar (mod n).
 // - ci = Ir.
-- (void)CKDForKey:(NSMutableData *)k chain:(NSMutableData *)c i:(uint32_t)i
+//
+static void CKD(NSMutableData *k, NSMutableData *c, uint32_t i)
 {
     NSMutableData *I = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), CC_SHA512_DIGEST_LENGTH));
     NSMutableData *data = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 33 + sizeof(i)));
@@ -89,6 +93,8 @@
     BN_CTX_free(ctx);
 }
 
+// Public child key derivation:
+//
 // To define CKD'((Kpar, cpar), i) -> (Ki, ci):
 //
 // - Check whether the highest bit (0x80000000) of i is set:
@@ -97,7 +103,8 @@
 // - Split I = Il || Ir into two 32-byte sequences, Il and Ir.
 // - Ki = (Il + kpar)*G = Il*G + Kpar
 // - ci = Ir.
-- (void)CKDPrimeForKey:(NSMutableData *)K chain:(NSMutableData *)c i:(uint32_t)i
+//
+static void CKDPrime(NSMutableData *K, NSMutableData *c, uint32_t i)
 {
     if (i & BIP32_PRIME) {
         @throw [NSException exceptionWithName:@"ZNPrivateCKDException"
@@ -139,6 +146,8 @@
     BN_CTX_free(ctx);
 }
 
+@implementation ZNBIP32Sequence
+
 #pragma mark - ZNKeySequence
 
 // master public key format is: 4 byte parent fingerprint || 32 byte chain code || 33 byte compressed public key
@@ -159,7 +168,7 @@
     [chain appendBytes:(const unsigned char *)I.bytes + 32 length:32];
     [mpk appendBytes:[[[ZNKey keyWithSecret:secret compressed:YES] hash160] bytes] length:4];
     
-    [self CKDForKey:secret chain:chain i:0 | BIP32_PRIME]; // account 0'
+    CKD(secret, chain, 0 | BIP32_PRIME); // account 0'
 
     [mpk appendData:chain];
     [mpk appendData:[[ZNKey keyWithSecret:secret compressed:YES] publicKey]];
@@ -177,8 +186,8 @@
     [chain appendBytes:(const unsigned char *)masterPublicKey.bytes + 4 length:32];
     [pubKey appendBytes:(const unsigned char *)masterPublicKey.bytes + 36 length:masterPublicKey.length - 36];
 
-    [self CKDPrimeForKey:pubKey chain:chain i:internal ? 1 : 0]; // internal or external chain
-    [self CKDPrimeForKey:pubKey chain:chain i:n]; // nth key in chain
+    CKDPrime(pubKey, chain, internal ? 1 : 0); // internal or external chain
+    CKDPrime(pubKey, chain, n); // nth key in chain
 
     return pubKey;
 }
@@ -204,15 +213,15 @@
     [secret appendBytes:I.bytes length:32];
     [chain appendBytes:(const unsigned char *)I.bytes + 32 length:32];
 
-    [self CKDForKey:secret chain:chain i:0 | BIP32_PRIME]; // account 0'
-    [self CKDForKey:secret chain:chain i:(internal ? 1 : 0)]; // internal or external chain
+    CKD(secret, chain, 0 | BIP32_PRIME); // account 0'
+    CKD(secret, chain, internal ? 1 : 0); // internal or external chain
 
     for (NSNumber *i in n) {
         NSMutableData *prvKey = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 34));
         NSMutableData *s = CFBridgingRelease(CFDataCreateMutableCopy(SecureAllocator(), 32,(__bridge CFDataRef)secret));
         NSMutableData *c = CFBridgingRelease(CFDataCreateMutableCopy(SecureAllocator(), 32, (__bridge CFDataRef)chain));
         
-        [self CKDForKey:s chain:c i:i.unsignedIntValue]; // nth key in chain
+        CKD(s, c, i.unsignedIntValue); // nth key in chain
 
         [prvKey appendBytes:"\x80" length:1];
         [prvKey appendData:s];

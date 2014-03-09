@@ -126,7 +126,11 @@
             self.seedLabel.alpha = 1.0;
         }];
     }];
+}
 
+- (IBAction)copy:(id)sender
+{
+    [[UIPasteboard generalPasteboard] setString:[[ZNWalletManager sharedInstance] seedPhrase]];
 }
 
 #pragma mark - UIAlertViewDelegate

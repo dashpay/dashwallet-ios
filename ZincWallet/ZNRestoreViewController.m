@@ -100,74 +100,6 @@
     [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
-- (IBAction)hideKeyboard:(id)sender
-{
-    [self.textView resignFirstResponder];
-    [self.keys makeObjectsPerformSelector:@selector(setHidden:) withObject:nil];
-}
-
-- (IBAction)keyPress:(id)sender
-{
-    NSString *t = [sender titleForState:UIControlStateNormal];
-
-    if ([t isEqual:@"done"]) {
-        if ([[ZNWalletManager sharedInstance] wallet]) {
-            if (! [self.label.text isValidBitcoinPrivateKey]) {
-                [[[UIAlertView alloc] initWithTitle:nil message:@"not a valid private key" delegate:nil
-                  cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
-            }
-            else {
-                UIViewController *p = self.navigationController.presentingViewController.presentingViewController;
-                NSString *s = self.label.text;
-                
-                self.label.text = nil;
-                
-                [p dismissViewControllerAnimated:NO completion:^{
-                    [[(UINavigationController *)p viewControllers][0] performSelector:@selector(confirmSweep:)
-                     withObject:s];
-                }];
-            }
-        }
-        else {
-            NSData *d = self.label.text.hexToData;
-        
-            if (! d) {
-                [[[UIAlertView alloc] initWithTitle:nil message:@"not a hex string" delegate:nil cancelButtonTitle:@"ok"
-                  otherButtonTitles:nil] show];
-            }
-            else if (d.length != SEQUENCE_SEED_LENGTH) {
-                [[[UIAlertView alloc] initWithTitle:nil
-                  message:[NSString stringWithFormat:@"wallet seeds must be %d bits", SEQUENCE_SEED_LENGTH*8]
-                  delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
-            }
-            else {
-                self.label.text = nil;
-                
-                [[ZNWalletManager sharedInstance] setSeed:d];
-                
-                [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
-            }
-        }
-    }
-    else if ([t isEqual:@"space"]) {
-        self.label.text = [self.label.text stringByAppendingString:@" "];
-    }
-    else if ([t isEqual:BKSP]) {
-        if (self.label.text.length > 0) self.label.text = [self.label.text substringToIndex:self.label.text.length - 1];
-    }
-    else if ([t isEqual:SHFT]) {
-        for (UIButton *key in self.keys) {
-            NSString *s = [key titleForState:UIControlStateNormal];
-        
-            if (s.length > 1) continue;
-            
-            [key setTitle:[s isEqual:[s lowercaseString]] ? [s uppercaseString] : [s lowercaseString]
-             forState:UIControlStateNormal];
-        }
-    }
-    else self.label.text = [self.label.text stringByAppendingString:t];
-}
-
 #pragma mark - UITextViewDelegate
 
 - (void)textViewDidChange:(UITextView *)textView
@@ -219,7 +151,6 @@
     }
     
     NSArray *a = [s componentsSeparatedByString:@" "];
-        
     NSString *incorrect = nil;
         
     for (NSUInteger i = 0; i < SEQUENCE_SEED_LENGTH*3/4; i += 6) {
@@ -231,7 +162,12 @@
         else if (i + 5 < a.count && ! [self.nouns containsObject:a[i + 5]]) incorrect = a[i + 5];
     }
 
-    if (incorrect) {
+    if ([s isEqual:@"wipe"]) { // shortcut word to force the wipe option to appear
+        [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"cancel"
+          destructiveButtonTitle:@"wipe" otherButtonTitles:nil]
+         showInView:[[UIApplication sharedApplication] keyWindow]];
+    }
+    else if (incorrect) {
         //BUG: the range should be set by word count, not string match
         textView.selectedRange = [[textView.text lowercaseString] rangeOfString:incorrect];
         
