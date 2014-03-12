@@ -1,8 +1,8 @@
 //
-//  ZNWalletManager.h
+//  ZNBubbleView.h
 //  ZincWallet
 //
-//  Created by Aaron Voisine on 3/2/14.
+//  Created by Aaron Voisine on 3/10/14.
 //  Copyright (c) 2014 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,31 +23,26 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
-#define ZNWalletManagerSeedChangedNotification @"ZNWalletManagerSeedChangedNotification"
+typedef enum {
+    ZNBubbleTipDirectionDown = 0,
+    ZNBubbleTipDirectionUp
+} ZNBubbleTipDirection;
 
-@class ZNWallet, ZNTransaction;
+@interface ZNBubbleView : UIView
 
-@interface ZNWalletManager : NSObject
+@property (nonatomic, strong) NSString *text;
+@property (nonatomic, strong) UIFont *font;
+@property (nonatomic, assign) CGPoint tipPoint;
+@property (nonatomic, assign) ZNBubbleTipDirection tipDirection;
+@property (nonatomic, strong) UIView *customView;
 
-@property (nonatomic, readonly) ZNWallet *wallet;
-@property (nonatomic, strong) NSData *seed;
-@property (nonatomic, strong) NSString *seedPhrase;
-@property (nonatomic, readonly) NSTimeInterval seedCreationTime; // interval since refrence date, 00:00:00 01/01/01 GMT
-@property (nonatomic, strong) NSNumberFormatter *format;
++ (instancetype)viewWithText:(NSString *)text center:(CGPoint)center;
++ (instancetype)viewWithText:(NSString *)text tipPoint:(CGPoint)point tipDirection:(ZNBubbleTipDirection)direction;
 
-+ (instancetype)sharedInstance;
-
-- (void)generateRandomSeed;
-
-// given a private key, queries blockchain for unspent outputs and calls the completion block with a signed transaction
-// that will sweep the balance into wallet (doesn't publish the tx)
-- (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
-completion:(void (^)(ZNTransaction *tx, NSError *error))completion;
-
-- (int64_t)amountForString:(NSString *)string;
-- (NSString *)stringForAmount:(int64_t)amount;
-- (NSString *)localCurrencyStringForAmount:(int64_t)amount;
+- (instancetype)fadeIn;
+- (instancetype)fadeOut;
+- (instancetype)fadeOutAfterDelay:(NSTimeInterval)delay;
 
 @end

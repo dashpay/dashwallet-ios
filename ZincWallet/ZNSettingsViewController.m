@@ -237,13 +237,15 @@
                     sentLabel.textColor = [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
                 }
 
-                CGRect f = unconfirmedLabel.frame;
-                
-                f.size.width = [unconfirmedLabel.text
-                                sizeWithAttributes:@{NSFontAttributeName:unconfirmedLabel.font}].width + 10;
-                unconfirmedLabel.frame = f;
-                f.size.width = [sentLabel.text sizeWithAttributes:@{NSFontAttributeName:sentLabel.font}].width + 10;
-                sentLabel.frame = f;
+                if (NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_6_1) {
+                    CGRect f = unconfirmedLabel.frame;
+
+                    f.size.width = [unconfirmedLabel.text
+                                    sizeWithAttributes:@{NSFontAttributeName:unconfirmedLabel.font}].width + 10;
+                    unconfirmedLabel.frame = f;
+                    f.size.width = [sentLabel.text sizeWithAttributes:@{NSFontAttributeName:sentLabel.font}].width + 10;
+                    sentLabel.frame = f;
+                }
                 sentLabel.layer.borderColor = sentLabel.textColor.CGColor;
                 
                 if (! detailTextLabel.text) detailTextLabel.text = @"can't decode payment address";

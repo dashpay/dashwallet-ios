@@ -127,7 +127,7 @@ services:(uint64_t)services
 
 - (void)connect
 {
-    if (self.status != disconnected) return;
+    if (self.status != ZNPeerStatusDisconnected) return;
 
     if (! self.reachability) self.reachability = [Reachability reachabilityWithHostName:self.host];
     
@@ -148,7 +148,7 @@ services:(uint64_t)services
         self.reachabilityObserver = nil;
     }
 
-    _status = connecting;
+    _status = ZNPeerStatusConnecting;
     _pingTime = DBL_MAX;
     self.msgHeader = [NSMutableData data];
     self.msgPayload = [NSMutableData data];
@@ -195,7 +195,7 @@ services:(uint64_t)services
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel connect timeout
     
-    _status = disconnected;
+    _status = ZNPeerStatusDisconnected;
     
     if (! self.runLoop) return;
     
@@ -210,7 +210,7 @@ services:(uint64_t)services
         CFRunLoopStop([self.runLoop getCFRunLoop]);
         
         self.gotVerack = self.sentVerack = NO;
-        _status = disconnected;
+        _status = ZNPeerStatusDisconnected;
         dispatch_async(self.delegateQueue, ^{
             [self.delegate peer:self disconnectedWithError:error];
         });
@@ -230,11 +230,11 @@ services:(uint64_t)services
 
 - (void)didConnect
 {
-    if (self.status != connecting || ! self.sentVerack || ! self.gotVerack) return;
+    if (self.status != ZNPeerStatusConnecting || ! self.sentVerack || ! self.gotVerack) return;
 
     NSLog(@"%@:%d handshake completed", self.host, self.port);
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending handshake timeout
-    _status = connected;
+    _status = ZNPeerStatusConnected;
     dispatch_async(self.delegateQueue, ^{
         [self.delegate peerConnected:self];
     });

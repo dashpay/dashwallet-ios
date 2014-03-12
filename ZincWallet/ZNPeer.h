@@ -80,20 +80,20 @@
 @end
 
 typedef enum {
-    disconnected = 0,
-    connecting,
-    connected
-} peerStatus;
+    ZNPeerStatusDisconnected = 0,
+    ZNPeerStatusConnecting,
+    ZNPeerStatusConnected
+} ZNPeerStatus;
 
 @interface ZNPeer : NSObject<NSStreamDelegate>
 
 @property (nonatomic, assign) id<ZNPeerDelegate> delegate;
 @property (nonatomic, strong) dispatch_queue_t delegateQueue;
 
-// set this to the timestamp when the wallet was created to improve initial sync time
+// set this to the timestamp when the wallet was created to improve initial sync time (interval since refrence date)
 @property (nonatomic, assign) NSTimeInterval earliestKeyTime;
 
-@property (nonatomic, readonly) peerStatus status;
+@property (nonatomic, readonly) ZNPeerStatus status;
 @property (nonatomic, readonly) NSString *host;
 @property (nonatomic, readonly) uint32_t address;
 @property (nonatomic, readonly) uint16_t port;
@@ -103,7 +103,7 @@ typedef enum {
 @property (nonatomic, readonly) NSString *useragent;
 @property (nonatomic, readonly) uint32_t lastblock;
 @property (nonatomic, readonly) NSTimeInterval pingTime;
-@property (nonatomic, assign) NSTimeInterval timestamp;
+@property (nonatomic, assign) NSTimeInterval timestamp; // last seen time (interval since refrence date)
 @property (nonatomic, assign) int16_t misbehavin;
 
 + (instancetype)peerWithAddress:(uint32_t)address andPort:(uint16_t)port;

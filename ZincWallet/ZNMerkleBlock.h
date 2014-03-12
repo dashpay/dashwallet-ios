@@ -34,7 +34,7 @@
 @property (nonatomic, readonly) uint32_t version;
 @property (nonatomic, readonly) NSData *prevBlock;
 @property (nonatomic, readonly) NSData *merkleRoot;
-@property (nonatomic, readonly) NSTimeInterval timestamp;
+@property (nonatomic, readonly) NSTimeInterval timestamp; // time interval since refrence date, 00:00:00 01/01/01 GMT
 @property (nonatomic, readonly) uint32_t target;
 @property (nonatomic, readonly) uint32_t nonce;
 @property (nonatomic, readonly) uint32_t totalTransactions;

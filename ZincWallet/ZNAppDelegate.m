@@ -46,8 +46,6 @@
     //TODO: pin code
 
     //TODO: network status indicator tied to peer connection status
-
-    //TODO: remove MBProgressHUD dependency
     
     //TODO: support for BIP70 payment protocol, BIP38 pasword encrypted private keys
     

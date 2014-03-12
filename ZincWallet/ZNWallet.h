@@ -52,7 +52,7 @@
 // returns an unsigned transaction that sends the specified amount from the wallet to the given address
 - (ZNTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee;
 
-// sign any inputs in given transaction that can be signed using private keys from the wallet
+// sign any inputs in the given transaction that can be signed using private keys from the wallet
 - (BOOL)signTransaction:(ZNTransaction *)transaction;
 
 // true if the given transaction is associated with the wallet, false otherwise

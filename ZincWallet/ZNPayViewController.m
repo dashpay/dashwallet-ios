@@ -34,8 +34,8 @@
 #import "ZNButton.h"
 #import "ZNStoryboardSegue.h"
 #import "NSString+Base58.h"
-#import "MBProgressHUD.h"
 #import <QuartzCore/QuartzCore.h>
+#import "ZNBubbleView.h"
 
 //#define CONNECT_TIMEOUT 5.0
 #define BUTTON_HEIGHT   44.0
@@ -43,6 +43,12 @@
 #define CLIPBOARD_ID    @"clipboard"
 #define QR_ID           @"qr"
 #define URL_ID          @"url"
+
+#define SCAN_TIP      @"Scan someone else's QR code to get their bitcoin address. "\
+                       "You can send a payment to anyone with an address."
+#define CLIPBOARD_TIP @"Bitcoin addresses can also be copied to the clipboard. "\
+                       "A bitcoin address always starts with '1'."
+#define PAGE_TIP      @"Tap or swipe right to receive money."
 
 @interface ZNPayViewController ()
 
@@ -55,10 +61,10 @@
 @property (nonatomic, strong) ZNPaymentRequest *request;
 @property (nonatomic, strong) ZNTransaction *sweepTx, *tx, *txWithFee;
 @property (nonatomic, strong) ZBarReaderViewController *zbarController;
+@property (nonatomic, strong) ZNBubbleView *tipView;
 
 @property (nonatomic, strong) IBOutlet UILabel *label;
 @property (nonatomic, strong) IBOutlet UIButton *infoButton;
-@property (nonatomic, strong) IBOutlet UIView *scanTipView, *clipboardTipView, *pageTipView;
 
 @end
 
@@ -156,7 +162,6 @@
         
             [self layoutButtonsAnimated:YES]; // check the clipboard for changes
         }];
-    
 }
 
 - (void)dealloc
@@ -430,14 +435,16 @@
     if (! [privKey isValidBitcoinPrivateKey]) return;
     
     ZNWalletManager *m = [ZNWalletManager sharedInstance];
-    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
-    
-    hud.mode = MBProgressHUDModeIndeterminate;
-    hud.labelText = @"checking private key balance...";
-    hud.labelFont = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+    ZNBubbleView *v = [ZNBubbleView viewWithText:@"checking private key balance..."
+                       center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
+
+    v.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+    v.customView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+    [(id)v.customView startAnimating];
+    [self.view addSubview:[v fadeIn]];
 
     [m sweepPrivateKey:privKey withFee:YES completion:^(ZNTransaction *tx, NSError *error) {
-        [hud hide:YES];
+        [v fadeOut];
 
         if (error) {
             [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription delegate:self
@@ -464,39 +471,35 @@
 
 - (BOOL)hideTips
 {
-    if (self.scanTipView.alpha < 0.5 && self.clipboardTipView.alpha < 0.5 && self.pageTipView.alpha < 0.5) return NO;
-    
-    [UIView animateWithDuration:UINavigationControllerHideShowBarDuration animations:^{
-        self.scanTipView.alpha = self.clipboardTipView.alpha = self.pageTipView.alpha = 0.0;
-    }];
-    
+    if (self.tipView.alpha < 0.5) return NO;
+    [self.tipView fadeOut];
     return YES;
 }
 
 - (BOOL)nextTip
 {
-    if (self.scanTipView.alpha < 0.5 && self.clipboardTipView.alpha < 0.5 && self.pageTipView.alpha < 0.5) return NO;
-    
-    if (self.scanTipView.alpha > 0.5) {
+    ZNBubbleView *v = self.tipView;
+
+    if (v.alpha < 0.5) return NO;
+
+    if ([v.text isEqual:SCAN_TIP]) {
         UIButton *b = self.requestButtons[[self.requestIDs indexOfObject:CLIPBOARD_ID]];
-    
-        [self.view bringSubviewToFront:self.clipboardTipView];
-        self.clipboardTipView.center = CGPointMake(self.clipboardTipView.center.x, b.frame.origin.y +
-                                                   b.frame.size.height + self.scanTipView.frame.size.height/2 - 10);
+
+        self.tipView = [ZNBubbleView viewWithText:CLIPBOARD_TIP tipPoint:CGPointMake(b.center.x, b.center.y + 5.0)
+                        tipDirection:ZNBubbleTipDirectionUp];
     }
-    
-    [UIView animateWithDuration:UINavigationControllerHideShowBarDuration animations:^{
-        if (self.scanTipView.alpha > 0.5) {
-            self.scanTipView.alpha = 0.0;
-            self.clipboardTipView.alpha = 1.0;
-        }
-        else if (self.clipboardTipView.alpha > 0.5) {
-            self.clipboardTipView.alpha = 0.0;
-            self.pageTipView.alpha = 1.0;
-        }
-        else if (self.pageTipView.alpha > 0.5) self.pageTipView.alpha = 0.0;
-    }];
-    
+    else if ([v.text isEqual:CLIPBOARD_TIP]) {
+        self.tipView = [ZNBubbleView viewWithText:PAGE_TIP
+                        tipPoint:CGPointMake(self.view.bounds.size.width/2.0, self.view.superview.bounds.size.height)
+                        tipDirection:ZNBubbleTipDirectionDown];
+    }
+    else self.tipView = nil;
+
+    self.tipView.backgroundColor = v.backgroundColor;
+    self.tipView.font = v.font;
+    if (self.tipView) [self.view addSubview:[self.tipView fadeIn]];
+    [v fadeOut];
+
     return YES;
 }
 
@@ -512,14 +515,12 @@
     if ([self nextTip]) return;
     
     UIButton *b = self.requestButtons[[self.requestIDs indexOfObject:QR_ID]];
-    
-    [self.view bringSubviewToFront:self.scanTipView];
-    self.scanTipView.center = CGPointMake(self.scanTipView.center.x,
-                                          b.frame.origin.y + 10 - self.scanTipView.frame.size.height/2);
-    
-    [UIView animateWithDuration:UINavigationControllerHideShowBarDuration animations:^{
-        self.scanTipView.alpha = 1.0;
-    }];
+
+    self.tipView = [ZNBubbleView viewWithText:SCAN_TIP tipPoint:CGPointMake(b.center.x, b.center.y - 5.0)
+                    tipDirection:ZNBubbleTipDirectionDown];
+    self.tipView.backgroundColor = [UIColor orangeColor];
+    self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+    [self.view addSubview:[self.tipView fadeIn]];
 }
 
 - (IBAction)next:(id)sender
@@ -653,13 +654,10 @@
                   delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
                 return;
             }
-            
-            MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
-            
-            hud.mode = MBProgressHUDModeText;
-            hud.labelText = @"swept!";
-            hud.labelFont = [UIFont fontWithName:@"HelveticaNeue-Medium" size:17.0];
-            [hud hide:YES afterDelay:2.0];
+
+            [self.view addSubview:[[[ZNBubbleView viewWithText:@"swept!"
+                                     center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
+                                    fadeIn] fadeOutAfterDelay:2.0]];
         }];
         
         return;
@@ -720,13 +718,9 @@
                 if ([reqID isEqual:CLIPBOARD_ID]) [[UIPasteboard generalPasteboard] setString:@""];
             }
             
-            MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
-
-            hud.mode = MBProgressHUDModeText;
-            hud.labelText = @"sent!";
-            hud.labelFont = [UIFont fontWithName:@"HelveticaNeue-Medium" size:17.0];
-            [hud hide:YES afterDelay:2.0];
-            
+            [self.view addSubview:[[[ZNBubbleView viewWithText:@"sent!"
+                                     center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
+                                    fadeIn] fadeOutAfterDelay:2.0]];
             [self reset:nil];
         }];
     }

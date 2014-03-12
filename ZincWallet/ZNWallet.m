@@ -317,7 +317,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     return transaction;
 }
 
-// sign any inputs in given transaction that can be signed using private keys from the wallet
+// sign any inputs in the given transaction that can be signed using private keys from the wallet
 - (BOOL)signTransaction:(ZNTransaction *)transaction
 {
     NSData *seed = self.seed();

@@ -619,92 +619,6 @@ https://github.com/voisine/zincwallet</string>
                                             <outletCollection property="gestureRecognizers" destination="e3X-u0-2D8" appends="YES" id="C0U-VH-TuB"/>
                                         </connections>
                                     </button>
-                                    <view alpha="0.0" contentMode="scaleToFill" id="a2s-Ru-Qlx">
-                                        <rect key="frame" x="10" y="160" width="300" height="109"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <subviews>
-                                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble-up.png" id="T7M-XH-JW8">
-                                                <rect key="frame" x="0.0" y="0.0" width="300" height="109"/>
-                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                <rect key="contentStretch" x="0.0" y="0.5" width="1" height="0.0"/>
-                                            </imageView>
-                                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="ym7-Qy-8hs">
-                                                <rect key="frame" x="10" y="24" width="280" height="70"/>
-                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                <string key="text">Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address. </string>
-                                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
-                                                <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                                <nil key="highlightedColor"/>
-                                                <color key="shadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
-                                                <size key="shadowOffset" width="0.0" height="1"/>
-                                            </label>
-                                        </subviews>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                    </view>
-                                    <view alpha="0.0" contentMode="scaleToFill" id="kLP-hY-MPJ">
-                                        <rect key="frame" x="10" y="202" width="300" height="109"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <subviews>
-                                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble-down.png" id="z2t-sO-JKg">
-                                                <rect key="frame" x="0.0" y="0.0" width="300" height="109"/>
-                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                <rect key="contentStretch" x="0.0" y="0.5" width="1" height="0.0"/>
-                                            </imageView>
-                                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="aNF-e9-AsF">
-                                                <rect key="frame" x="10" y="13" width="280" height="70"/>
-                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                <string key="text">This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work.</string>
-                                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
-                                                <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                                <nil key="highlightedColor"/>
-                                                <color key="shadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
-                                                <size key="shadowOffset" width="0.0" height="1"/>
-                                            </label>
-                                        </subviews>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                    </view>
-                                </subviews>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                            </view>
-                            <view alpha="0.0" contentMode="scaleToFill" id="Xl2-ks-JFe">
-                                <rect key="frame" x="10" y="8" width="300" height="92"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <subviews>
-                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble-up.png" id="pb5-nl-GvO">
-                                        <rect key="frame" x="0.0" y="0.0" width="300" height="92"/>
-                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                        <rect key="contentStretch" x="0.0" y="0.5" width="1" height="0.0"/>
-                                    </imageView>
-                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="DfU-GO-gWr">
-                                        <rect key="frame" x="10" y="24" width="280" height="53"/>
-                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                        <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
-                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                        <nil key="highlightedColor"/>
-                                        <color key="shadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
-                                        <size key="shadowOffset" width="0.0" height="1"/>
-                                    </label>
-                                </subviews>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                            </view>
-                            <view alpha="0.0" contentMode="scaleToFill" id="RFd-H1-tiW">
-                                <rect key="frame" x="31" y="500" width="257" height="57"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <subviews>
-                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble-down.png" id="xLq-nh-L4O">
-                                        <rect key="frame" x="0.0" y="0.0" width="257" height="57"/>
-                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                        <rect key="contentStretch" x="0.0" y="0.5" width="1" height="0.0"/>
-                                    </imageView>
-                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tap or swipe left to send money." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="WiJ-q1-nJn">
-                                        <rect key="frame" x="15" y="15" width="227" height="19"/>
-                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                        <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
-                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                        <nil key="highlightedColor"/>
-                                        <color key="shadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
-                                        <size key="shadowOffset" width="0.0" height="1"/>
-                                    </label>
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </view>
@@ -718,12 +632,8 @@ https://github.com/voisine/zincwallet</string>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
                     <connections>
                         <outlet property="addressButton" destination="jE8-Jd-YjS" id="1Sm-IF-r4B"/>
-                        <outlet property="addressTipView" destination="kLP-hY-MPJ" id="Rkc-rY-oHk"/>
-                        <outlet property="balanceTipView" destination="Xl2-ks-JFe" id="0Sj-dA-T5o"/>
                         <outlet property="infoButton" destination="q5B-K9-E8f" id="B0A-CA-n2r"/>
                         <outlet property="label" destination="Lel-6K-GPE" id="9Jk-td-n2G"/>
-                        <outlet property="pageTipView" destination="RFd-H1-tiW" id="Zrw-Ll-7W7"/>
-                        <outlet property="qrTipView" destination="a2s-Ru-Qlx" id="9ND-iG-78A"/>
                         <outlet property="qrView" destination="ckp-Du-ZrM" id="ZZX-Ms-xWf"/>
                     </connections>
                 </viewController>
@@ -1321,69 +1231,6 @@ https://github.com/voisine/zincwallet</string>
                                     <action selector="info:" destination="Th9-g2-TJH" eventType="touchUpInside" id="2dv-zf-cf2"/>
                                 </connections>
                             </button>
-                            <view alpha="0.0" contentMode="scaleToFill" id="DsE-9b-9pv">
-                                <rect key="frame" x="10" y="204" width="300" height="91"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                <subviews>
-                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble-down.png" id="6E7-sA-cuZ">
-                                        <rect key="frame" x="0.0" y="0.0" width="300" height="91"/>
-                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                        <rect key="contentStretch" x="0.0" y="0.5" width="1" height="0.0"/>
-                                    </imageView>
-                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="UXH-aU-OEf">
-                                        <rect key="frame" x="23" y="13" width="254" height="53"/>
-                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                        <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
-                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                        <nil key="highlightedColor"/>
-                                        <color key="shadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
-                                        <size key="shadowOffset" width="0.0" height="1"/>
-                                    </label>
-                                </subviews>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                            </view>
-                            <view alpha="0.0" contentMode="scaleToFill" id="OUn-s1-0xb">
-                                <rect key="frame" x="10" y="331" width="300" height="92"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                <subviews>
-                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble-up.png" id="jMY-Jc-r9Q">
-                                        <rect key="frame" x="0.0" y="0.0" width="300" height="92"/>
-                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                        <rect key="contentStretch" x="0.0" y="0.5" width="1" height="0.0"/>
-                                    </imageView>
-                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1'." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="kd3-K9-5CA">
-                                        <rect key="frame" x="10" y="24" width="280" height="53"/>
-                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                        <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
-                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                        <nil key="highlightedColor"/>
-                                        <color key="shadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
-                                        <size key="shadowOffset" width="0.0" height="1"/>
-                                    </label>
-                                </subviews>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                            </view>
-                            <view alpha="0.0" contentMode="scaleToFill" id="4dO-wk-1CZ">
-                                <rect key="frame" x="29" y="430" width="262" height="57"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <subviews>
-                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bubble-down.png" id="00b-EO-ZdR">
-                                        <rect key="frame" x="0.0" y="0.0" width="262" height="57"/>
-                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                        <rect key="contentStretch" x="0.0" y="0.5" width="1" height="0.0"/>
-                                    </imageView>
-                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tap or swipe right to receive money." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="sAS-rN-tSI">
-                                        <rect key="frame" x="10" y="15" width="242" height="18"/>
-                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                        <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
-                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                        <nil key="highlightedColor"/>
-                                        <color key="shadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
-                                        <size key="shadowOffset" width="0.0" height="1"/>
-                                    </label>
-                                </subviews>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                            </view>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <gestureRecognizers/>
@@ -1393,11 +1240,8 @@ https://github.com/voisine/zincwallet</string>
                     </view>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
                     <connections>
-                        <outlet property="clipboardTipView" destination="OUn-s1-0xb" id="os1-Cf-2QD"/>
                         <outlet property="infoButton" destination="W1s-0j-rRa" id="cBA-hZ-23a"/>
                         <outlet property="label" destination="2uc-By-E6L" id="X85-Zw-frc"/>
-                        <outlet property="pageTipView" destination="4dO-wk-1CZ" id="7en-IT-WSh"/>
-                        <outlet property="scanTipView" destination="DsE-9b-9pv" id="EW2-7J-IdN"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="t9V-Er-6VR" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1505,8 +1349,6 @@ https://github.com/voisine/zincwallet</string>
     </scenes>
     <resources>
         <image name="Default-568h.png" width="16" height="16"/>
-        <image name="bubble-down.png" width="300" height="45"/>
-        <image name="bubble-up.png" width="300" height="45"/>
         <image name="deletetoleft-blue.png" width="120" height="92"/>
         <image name="deletetoleft-inv.png" width="120" height="92"/>
         <image name="gear.png" width="19" height="21"/>

@@ -28,15 +28,23 @@
 #import "ZNWalletManager.h"
 #import "ZNWallet.h"
 #import "ZNButton.h"
+#import "ZNBubbleView.h"
 #import "QREncoder.h"
-#import "MBProgressHUD.h"
+
+#define BALANCE_TIP @"This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market."
+#define QR_TIP      @"Let others scan this QR code to get your bitcoin address. "\
+                     "Anyone can send bitcoins to your wallet by transferring them to your address."
+#define ADDRESS_TIP @"This is your bitcoin address. Tap to copy it or send it by email or sms. "\
+                     "The address will change each time you receive funds, but old addresses always work."
+#define PAGE_TIP    @"Tap or swipe left to send money."
 
 @interface ZNReceiveViewController ()
+
+@property (nonatomic, strong) ZNBubbleView *tipView;
 
 @property (nonatomic, strong) IBOutlet UILabel *label;
 @property (nonatomic, strong) IBOutlet UIButton *infoButton;
 @property (nonatomic, strong) IBOutlet UIImageView *qrView;
-@property (nonatomic, strong) IBOutlet UIView *qrTipView, *addressTipView, *pageTipView, *balanceTipView;
 @property (nonatomic, strong) IBOutlet ZNButton *addressButton;
 
 @end
@@ -83,37 +91,39 @@
 
 - (BOOL)nextTip
 {
-    if (self.qrTipView.alpha < 0.5 && self.addressTipView.alpha < 0.5 && self.balanceTipView.alpha < 0.5 &&
-        self.pageTipView.alpha < 0.5) return NO;
+    ZNBubbleView *v = self.tipView;
 
-    [UIView animateWithDuration:UINavigationControllerHideShowBarDuration animations:^{
-        if (self.balanceTipView.alpha > 0.5) {
-            self.balanceTipView.alpha = 0.0;
-            self.qrTipView.alpha = 1.0;
-        }
-        else if (self.qrTipView.alpha > 0.5) {
-            self.qrTipView.alpha = 0.0;
-            self.addressTipView.alpha = 1.0;
-        }
-        else if (self.addressTipView.alpha > 0.5) {
-            self.addressTipView.alpha = 0.0;
-            self.pageTipView.alpha = 1.0;
-        }
-        else if (self.pageTipView.alpha > 0.5) self.pageTipView.alpha = 0.0;
-    }];
+    if (v.alpha < 0.5) return NO;
+
+    if ([v.text isEqual:BALANCE_TIP]) {
+        self.tipView = [ZNBubbleView viewWithText:QR_TIP
+                        tipPoint:[self.qrView.superview convertPoint:self.qrView.center toView:self.view]
+                        tipDirection:ZNBubbleTipDirectionUp];
+    }
+    else if ([v.text isEqual:QR_TIP]) {
+        self.tipView = [ZNBubbleView viewWithText:ADDRESS_TIP
+                        tipPoint:[self.addressButton.superview convertPoint:self.addressButton.center toView:self.view]
+                        tipDirection:ZNBubbleTipDirectionDown];
+    }
+    else if ([v.text isEqual:ADDRESS_TIP]) {
+        self.tipView = [ZNBubbleView viewWithText:PAGE_TIP
+                        tipPoint:CGPointMake(self.view.bounds.size.width/2.0, self.view.superview.bounds.size.height)
+                        tipDirection:ZNBubbleTipDirectionDown];
+    }
+    else self.tipView = nil;
+
+    self.tipView.backgroundColor = v.backgroundColor;
+    self.tipView.font = v.font;
+    if (self.tipView) [self.view addSubview:[self.tipView fadeIn]];
+    [v fadeOut];
     
     return YES;
 }
 
 - (BOOL)hideTips
 {
-    if (self.qrTipView.alpha < 0.5 && self.addressTipView.alpha < 0.5 && self.balanceTipView.alpha < 0.5 &&
-        self.pageTipView.alpha < 0.5) return NO;
-    
-    [UIView animateWithDuration:UINavigationControllerHideShowBarDuration animations:^{
-        self.qrTipView.alpha = self.addressTipView.alpha = self.balanceTipView.alpha = self.pageTipView.alpha = 0.0;
-    }];
-    
+    if (self.tipView.alpha < 0.5) return NO;
+    [self.tipView fadeOut];
     return YES;
 }
 
@@ -128,9 +138,11 @@
 {
     if ([self nextTip]) return;
 
-    [UIView animateWithDuration:UINavigationControllerHideShowBarDuration animations:^{
-        self.balanceTipView.alpha = 1.0;
-    }];
+    self.tipView = [ZNBubbleView viewWithText:BALANCE_TIP tipPoint:CGPointMake(self.view.bounds.size.width/2.0, 0.0)
+                    tipDirection:ZNBubbleTipDirectionUp];
+    self.tipView.backgroundColor = [UIColor orangeColor];
+    self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+    [self.view addSubview:[self.tipView fadeIn]];
 }
 
 - (IBAction)next:(id)sender
@@ -164,15 +176,10 @@
     NSString *title = [actionSheet buttonTitleAtIndex:buttonIndex];
     
     if ([title isEqual:@"copy"]) {
-        [[UIPasteboard generalPasteboard] setString:self.paymentAddress];
-        
-        MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
-        
-        hud.yOffset = -130;
-        hud.mode = MBProgressHUDModeText;
-        hud.labelText = @"coppied";
-        hud.labelFont = [UIFont fontWithName:@"HelveticaNeue-Medium" size:17.0];
-        [hud hide:YES afterDelay:1.0];
+        [[UIPasteboard generalPasteboard] setString:self.paymentAddress];        
+        [self.view addSubview:[[[ZNBubbleView viewWithText:@"coppied"
+                                center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
+                                fadeIn] fadeOutAfterDelay:2.0]];
     }
     else if ([title isEqual:@"email"]) {
         if ([MFMailComposeViewController canSendMail]) {
