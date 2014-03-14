@@ -666,7 +666,10 @@ services:(uint64_t)services
             NSLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, @[lastHash, firstHash]);
             [self sendGetblocksMessageWithLocators:@[lastHash, firstHash] andHashStop:nil];
         }
-        else [self sendGetheadersMessageWithLocators:@[lastHash, firstHash] andHashStop:nil];
+        else {
+            NSLog(@"%@:%u calling getheaders with locators: %@", self.host, self.port, @[lastHash, firstHash]);
+            [self sendGetheadersMessageWithLocators:@[lastHash, firstHash] andHashStop:nil];
+        }
     }
 
     NSLog(@"%@:%u got %u headers", self.host, self.port, (int)count);

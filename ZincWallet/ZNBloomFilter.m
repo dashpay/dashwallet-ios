@@ -60,7 +60,7 @@ static uint32_t murmurHash3(NSData *data, uint32_t seed)
     return h1;
 }
 
-// bloom filters are explained in BIP 37: https://en.bitcoin.it/wiki/BIP_0037
+// bloom filters are explained in BIP 37: https://github.com/bitcoin/bips/blob/master/bip-0037.mediawiki
 //TODO: XXXX figure out what to do to prevent matching satoshidice in the false positives...
 
 @interface ZNBloomFilter ()

@@ -44,8 +44,6 @@
     //TODO: digitally sign every source release
     
     //TODO: pin code
-
-    //TODO: network status indicator tied to peer connection status
     
     //TODO: support for BIP70 payment protocol, BIP38 pasword encrypted private keys
     

@@ -41,7 +41,7 @@
 @property (nonatomic, strong) IBOutlet UIScrollView *scrollView;
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
 @property (nonatomic, strong) IBOutlet UIPageControl *pageControl;
-@property (nonatomic, strong) IBOutlet UIBarButtonItem *settingsButton;//, *refreshButton;
+@property (nonatomic, strong) IBOutlet UIBarButtonItem *settingsButton;
 @property (nonatomic, strong) IBOutlet UIActivityIndicatorView *spinner;
 @property (nonatomic, strong) IBOutlet UIProgressView *progress;
 @property (nonatomic, strong) IBOutlet UIButton *connectButton;
@@ -65,12 +65,11 @@
     ZNWalletManager *m = [ZNWalletManager sharedInstance];
 
     self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-    self.spinner.frame =
-        CGRectMake(self.spinner.frame.origin.x, self.spinner.frame.origin.y, 20.0, self.spinner.frame.size.height);
+//    self.spinner.frame =
+//        CGRectMake(self.spinner.frame.origin.x, self.spinner.frame.origin.y, 20.0, self.spinner.frame.size.height);
     self.spinner.accessibilityLabel = @"synchornizing";
     
     self.settingsButton.accessibilityLabel = @"settings";
-    //self.refreshButton.accessibilityLabel = @"synchronize";
     self.pageControl.accessibilityLabel = @"receive money";
     
     self.wallpaperStart = self.wallpaper.center;
@@ -119,7 +118,7 @@
     self.syncStartedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncStartedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.navigationItem.rightBarButtonItem == nil) {//self.refreshButton) {
+            if (self.navigationItem.rightBarButtonItem == nil) {
                 self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
                 [self.spinner startAnimating];
             }
@@ -139,7 +138,7 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncFinishedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             [self.spinner stopAnimating];
-            self.navigationItem.rightBarButtonItem = nil;//self.refreshButton;
+            self.navigationItem.rightBarButtonItem = nil;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
             [UIApplication sharedApplication].idleTimerDisabled = NO;
@@ -159,16 +158,6 @@
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
             [UIApplication sharedApplication].idleTimerDisabled = NO;
             self.progress.hidden = YES;
-
-//            if (! self.alertVisible) {
-//                self.alertVisible = YES;
-//                [[[UIAlertView alloc] initWithTitle:@"couldn't refresh wallet balance"
-//                  message:[note.userInfo[@"error"] localizedDescription] delegate:self cancelButtonTitle:@"ok"
-//                  otherButtonTitles:nil] show];
-//
-//                //TODO: XXXX add a retry/cancel button
-//            }
-
             self.connectButton.hidden = NO;
             self.connectButton.alpha = 0.0;
             [UIView animateWithDuration:0.2 animations:^{

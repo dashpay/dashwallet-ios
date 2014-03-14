@@ -568,6 +568,7 @@ static const char *dns_seeds[] = {
 
 - (void)removeUnrelayedTransactions
 {
+    //BUG: XXXX this won't work if tx relays are still counted after the peer that relayed them is disconnected
     ZNWallet *w = [[ZNWalletManager sharedInstance] wallet];
 
     for (ZNTransaction *tx in w.recentTransactions) {
@@ -800,6 +801,7 @@ static const char *dns_seeds[] = {
         }
     }
 
+    //BUG: XXXX durring a wallet restore with 40+ transactions, some tx are missed that don't show up until a rescan
     if (self.filterWasReset) { // filter got reset, send the new one to all the peers
         self.filterWasReset = NO;
 
@@ -814,7 +816,7 @@ static const char *dns_seeds[] = {
     self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
 
     // ignore block headers that are newer than one week before earliestKeyTime (headers have 0 totalTransactions)
-    if (block.totalTransactions == 0 && block.timestamp + 7*24*60*60 >= self.earliestKeyTime) return;
+    if (block.totalTransactions == 0 && block.timestamp + 7*24*60*60 > self.earliestKeyTime) return;
 
     ZNMerkleBlock *prev = self.blocks[block.prevBlock];
     NSTimeInterval transitionTime = 0;

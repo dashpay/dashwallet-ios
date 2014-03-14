@@ -33,11 +33,11 @@
 #import "ZNTransaction.h"
 #import "ZNButton.h"
 #import "ZNStoryboardSegue.h"
+#import "ZNBubbleView.h"
 #import "NSString+Base58.h"
 #import <QuartzCore/QuartzCore.h>
-#import "ZNBubbleView.h"
 
-//#define CONNECT_TIMEOUT 5.0
+//#define BT_CONNECT_TIMEOUT 5.0
 #define BUTTON_HEIGHT   44.0
 #define BUTTON_MARGIN   10.0
 #define CLIPBOARD_ID    @"clipboard"
@@ -407,7 +407,8 @@
               otherButtonTitles:nil] show];
             [self cancel:nil];
         }
-        else if (freeHeight == TX_UNCONFIRMED) {
+        //else if (freeHeight == TX_UNCONFIRMED) {
+        else if (freeHeight > [[ZNPeerManager sharedInstance] lastBlockHeight] + 1) {
             [[[UIAlertView alloc] initWithTitle:nil
               message:[NSString stringWithFormat:@"the bitcoin network will receive a fee of %@ (%@)", fee,
                        localCurrencyFee] delegate:self cancelButtonTitle:@"cancel"
@@ -758,7 +759,7 @@
 //            [self.requestIDs addObject:peerID];
 //            [self.requests addObject:[ZNPaymentRequest new]];
 //            
-//            [session connectToPeer:peerID withTimeout:CONNECT_TIMEOUT];
+//            [session connectToPeer:peerID withTimeout:BT_CONNECT_TIMEOUT];
 //            
 //            [self layoutButtonsAnimated:YES];
 //        }

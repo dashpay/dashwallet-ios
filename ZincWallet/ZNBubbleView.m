@@ -25,11 +25,14 @@
 
 #import "ZNBubbleView.h"
 
+#define RADIUS    15.0
+#define MARGIN    10.0
+#define MAX_WIDTH 300.0
+
 @interface ZNBubbleView ()
 
 @property (nonatomic, strong) UILabel *label;
 @property (nonatomic, strong) CAShapeLayer *arrow;
-@property (nonatomic, strong) NSStringDrawingContext *context;
 
 @end
 
@@ -37,7 +40,7 @@
 
 + (instancetype)viewWithText:(NSString *)text center:(CGPoint)center
 {
-    ZNBubbleView *v = [[self alloc] initWithFrame:CGRectMake(center.x - 10, center.y - 10, 20, 20)];
+    ZNBubbleView *v = [[self alloc] initWithFrame:CGRectMake(center.x - MARGIN, center.y - MARGIN, MARGIN*2, MARGIN*2)];
 
     v.text = text;
     return v;
@@ -45,7 +48,7 @@
 
 + (instancetype)viewWithText:(NSString *)text tipPoint:(CGPoint)point tipDirection:(ZNBubbleTipDirection)direction
 {
-    ZNBubbleView *v = [[self alloc] initWithFrame:CGRectMake(0, 0, 20, 20)];
+    ZNBubbleView *v = [[self alloc] initWithFrame:CGRectMake(0, 0, MARGIN*2, MARGIN*2)];
 
     v.text = text;
     v.tipDirection = direction;
@@ -58,10 +61,11 @@
     self = [super initWithFrame:frame];
     if (self) {
         // Initialization code
-        self.layer.cornerRadius = 15.0;
+        self.layer.cornerRadius = RADIUS;
         self.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.8];
 
-        self.label = [[UILabel alloc] initWithFrame:CGRectMake(10, 10, frame.size.width - 20, frame.size.height - 20)];
+        self.label = [[UILabel alloc] initWithFrame:CGRectMake(MARGIN, MARGIN, frame.size.width - MARGIN*2,
+                                                               frame.size.height - MARGIN*2)];
         self.label.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
         self.label.textAlignment = NSTextAlignmentCenter;
         self.label.textColor = [UIColor whiteColor];
@@ -70,8 +74,6 @@
         self.label.shadowOffset = CGSizeMake(0.0, 1.0);
         self.label.numberOfLines = 0;
         [self addSubview:self.label];
-
-        self.context = [NSStringDrawingContext new];
     }
     return self;
 }
@@ -156,46 +158,47 @@
 - (void)layoutSubviews
 {
     CGPoint center = self.center;
-    CGRect rect = [self.label textRectForBounds:CGRectMake(0.0, 0.0, 280.0, 1000.0) limitedToNumberOfLines:0];
+    CGRect rect = [self.label textRectForBounds:CGRectMake(0.0, 0.0, MAX_WIDTH - MARGIN*2, CGFLOAT_MAX)
+                   limitedToNumberOfLines:0];
 
     if (self.customView) {
         if (rect.size.width < self.customView.frame.size.width) rect.size.width = self.customView.frame.size.width;
-        rect.size.height += self.customView.frame.size.height;
-        if (self.text.length > 0) rect.size.height += 10.0;
+        rect.size.height += self.customView.frame.size.height + (self.text.length > 0 ? MARGIN : 0);
     }
 
     if (self.tipPoint.x > 1) {
         center.x = self.tipPoint.x;
-        if (center.x + (rect.size.width + 20.0)/2.0 > 310.0) center.x = 310.0 - (rect.size.width + 20.0)/2.0;
-        else if (center.x - (rect.size.width + 20.0)/2.0 < 10.0) center.x = 10.0 + (rect.size.width + 20.0)/2.0;
+        if (center.x + rect.size.width/2 > MAX_WIDTH) center.x = MAX_WIDTH - rect.size.width/2;
+        else if (center.x - rect.size.width/2 < MARGIN*2) center.x = MARGIN*2 + rect.size.width/2;
 
         center.y = self.tipPoint.y;
-        center.y += (self.tipDirection == ZNBubbleTipDirectionUp ? 1 : -1)*((rect.size.height + 20.0)/2.0 + 15.0);
+        center.y += (self.tipDirection == ZNBubbleTipDirectionUp ? 1 : -1)*((rect.size.height + MARGIN*2)/2 + RADIUS);
     }
 
-    self.frame = CGRectMake(center.x - (rect.size.width + 20.0)/2.0, center.y - (rect.size.height + 20.0)/2.0,
-                            rect.size.width + 20.0, rect.size.height + 20.0);
+    self.frame = CGRectMake(center.x - (rect.size.width + MARGIN*2)/2, center.y - (rect.size.height + MARGIN*2)/2,
+                            rect.size.width + MARGIN*2, rect.size.height + MARGIN*2);
 
     if (self.customView) {
-        self.customView.center = CGPointMake((rect.size.width + 20.0)/2, self.customView.frame.size.height/2 + 10.0);
-        self.label.frame = CGRectMake(10.0, self.customView.frame.size.height + 20.0, self.label.frame.size.width,
-                                      self.frame.size.height - (self.customView.frame.size.height + 30.0));
+        self.customView.center = CGPointMake((rect.size.width + MARGIN*2)/2,
+                                             self.customView.frame.size.height/2 + MARGIN);
+        self.label.frame = CGRectMake(MARGIN, self.customView.frame.size.height + MARGIN*2, self.label.frame.size.width,
+                                      self.frame.size.height - (self.customView.frame.size.height + MARGIN*3));
     }
-    else self.label.frame = CGRectMake(10.0, 10.0, self.label.frame.size.width, self.frame.size.height - 20.0);
+    else self.label.frame = CGRectMake(MARGIN, MARGIN, self.label.frame.size.width, self.frame.size.height - MARGIN*2);
 
     if (self.tipPoint.x > 1) {
         CGMutablePathRef path = CGPathCreateMutable();
-        CGFloat x = self.tipPoint.x - (center.x - (rect.size.width + 20.0)/2.0);
+        CGFloat x = self.tipPoint.x - (center.x - (rect.size.width + MARGIN*2)/2);
 
         if (! self.arrow) self.arrow = [[CAShapeLayer alloc] init];
-        x = MIN(x, rect.size.width + 20.0 - (self.layer.cornerRadius + 7.5));
+        x = MIN(x, rect.size.width + MARGIN*2 - (RADIUS + 7.5));
         x = MAX(x, self.layer.cornerRadius + 7.5);
         if (self.tipDirection == ZNBubbleTipDirectionUp) {
             CGPathMoveToPoint(path, NULL, 0.0, 7.5);
             CGPathAddLineToPoint(path, NULL, 7.5, 0.0);
             CGPathAddLineToPoint(path, NULL, 15.0, 7.5);
             CGPathAddLineToPoint(path, NULL, 0.0, 7.5);
-            self.arrow.position = CGPointMake(x, 0);
+            self.arrow.position = CGPointMake(x, 0.0);
             self.arrow.anchorPoint = CGPointMake(0.5, 1.0);
         }
         else {
@@ -203,7 +206,7 @@
             CGPathAddLineToPoint(path, NULL, 7.5, 7.5);
             CGPathAddLineToPoint(path, NULL, 15.0, 0.0);
             CGPathAddLineToPoint(path, NULL, 0.0, 0.0);
-            self.arrow.position = CGPointMake(x, rect.size.height + 20.0);
+            self.arrow.position = CGPointMake(x, rect.size.height + MARGIN*2);
             self.arrow.anchorPoint = CGPointMake(0.5, 0.0);
         }
         self.arrow.path = path;
