@@ -349,7 +349,7 @@ sequence:(uint32_t)sequence
 {
     uint64_t p = 0;
     
-    if (amounts.count != self.hashes.count || ages.count != self.hashes.count) return 0;
+    if (amounts.count != self.hashes.count || ages.count != self.hashes.count || [ages containsObject:@(0)]) return 0;
     
     for (NSUInteger i = 0; i < amounts.count; i++) {    
         p += [amounts[i] unsignedLongLongValue]*[ages[i] unsignedLongLongValue];
@@ -361,10 +361,11 @@ sequence:(uint32_t)sequence
 // the block height after which the transaction can be confirmed without a fee, or TX_UNCONFIRMRED for never
 - (uint32_t)blockHeightUntilFreeForAmounts:(NSArray *)amounts withBlockHeights:(NSArray *)heights
 {
-    if (amounts.count != self.hashes.count || heights.count != self.hashes.count) return TX_UNCONFIRMED;
+    if (amounts.count != self.hashes.count || heights.count != self.hashes.count ||
+        self.size > TX_FREE_MAX_SIZE || [heights containsObject:@(TX_UNCONFIRMED)]) {
+        return TX_UNCONFIRMED;
+    }
 
-    if (self.size > TX_FREE_MAX_SIZE) return TX_UNCONFIRMED;
-    
     for (NSNumber *amount in self.amounts) {
         if (amount.unsignedLongLongValue < TX_MIN_OUTPUT_AMOUNT) return TX_UNCONFIRMED;
     }

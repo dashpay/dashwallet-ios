@@ -65,8 +65,6 @@
     ZNWalletManager *m = [ZNWalletManager sharedInstance];
 
     self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-//    self.spinner.frame =
-//        CGRectMake(self.spinner.frame.origin.x, self.spinner.frame.origin.y, 20.0, self.spinner.frame.size.height);
     self.spinner.accessibilityLabel = @"synchornizing";
     
     self.settingsButton.accessibilityLabel = @"settings";

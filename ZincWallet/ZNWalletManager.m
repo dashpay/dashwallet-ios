@@ -135,7 +135,8 @@ static NSData *getKeychainData(NSString *key)
     self.format.maximumFractionDigits = 8;
     // for reasons both mysterious and inscrutable, 210,000,009 is the smallest value of format.maximum that will allow
     // the user to input a value of 21,000,000
-    self.format.maximum = @210000009.0;
+    //self.format.maximum = @210000009.0;
+    self.format.maximum = @21000000.0;
 
     [self updateExchangeRate];
 

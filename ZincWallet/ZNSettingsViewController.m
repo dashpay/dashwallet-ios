@@ -47,8 +47,6 @@
 
 //TODO: need settings for denomination (BTC, mBTC or uBTC), local currency, and exchange rate source
 //TODO: only show most recent 10-20 transactions and have a separate page for the rest with section headers for each day
-//TODO: opening/closing settings still takes a second or two on a iphone4 (probably from core data for receive address)
-
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -249,7 +247,7 @@
                 sentLabel.layer.borderColor = sentLabel.textColor.CGColor;
                 
                 if (! detailTextLabel.text) detailTextLabel.text = @"can't decode payment address";
-#warning test test test
+//#warning test test test
 //                int64_t balance = 0;
 //                for (ZNTransaction *t in [self.transactions reverseObjectEnumerator]) {
 //                    balance += [m.wallet amountReceivedFromTransaction:t];

@@ -762,7 +762,6 @@
 		75D8F39B173ABE3C0080D95E /* MainStoryboard_iPhone.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F399173ABE3C0080D95E /* MainStoryboard_iPhone.storyboard */; };
 		75D8F3A1173ABE3C0080D95E /* ZNPayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3A0173ABE3C0080D95E /* ZNPayViewController.m */; };
 		75D8F3A8173ABE3D0080D95E /* ZNReceiveViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3A7173ABE3D0080D95E /* ZNReceiveViewController.mm */; };
-		75D8F3B4173ABE3D0080D95E /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F3B3173ABE3D0080D95E /* SenTestingKit.framework */; };
 		75D8F3B5173ABE3D0080D95E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F381173ABE3C0080D95E /* UIKit.framework */; };
 		75D8F3B6173ABE3D0080D95E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		75D8F3BE173ABE3D0080D95E /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F3BC173ABE3D0080D95E /* InfoPlist.strings */; };
@@ -1833,8 +1832,7 @@
 		75D8F3A0173ABE3C0080D95E /* ZNPayViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZNPayViewController.m; sourceTree = "<group>"; };
 		75D8F3A6173ABE3D0080D95E /* ZNReceiveViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNReceiveViewController.h; sourceTree = "<group>"; };
 		75D8F3A7173ABE3D0080D95E /* ZNReceiveViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ZNReceiveViewController.mm; sourceTree = "<group>"; };
-		75D8F3B2173ABE3D0080D95E /* ZincWalletTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZincWalletTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
-		75D8F3B3173ABE3D0080D95E /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
+		75D8F3B2173ABE3D0080D95E /* ZincWalletTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZincWalletTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		75D8F3BB173ABE3D0080D95E /* ZincWalletTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ZincWalletTests-Info.plist"; sourceTree = "<group>"; };
 		75D8F3BD173ABE3D0080D95E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		75D8F3BF173ABE3D0080D95E /* ZincWalletTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZincWalletTests.h; sourceTree = "<group>"; };
@@ -1995,7 +1993,6 @@
 			files = (
 				75D8F3B5173ABE3D0080D95E /* UIKit.framework in Frameworks */,
 				75D8F3B6173ABE3D0080D95E /* Foundation.framework in Frameworks */,
-				75D8F3B4173ABE3D0080D95E /* SenTestingKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3401,7 +3398,7 @@
 			isa = PBXGroup;
 			children = (
 				75D8F37E173ABE3C0080D95E /* zinc.app */,
-				75D8F3B2173ABE3D0080D95E /* ZincWalletTests.octest */,
+				75D8F3B2173ABE3D0080D95E /* ZincWalletTests.xctest */,
 				752C2FFD1742ACFB0033F636 /* libcrypto.a */,
 				752C300D1742AD060033F636 /* libssl.a */,
 				75FD9C0217664F3000307894 /* libzbar.a */,
@@ -3427,7 +3424,6 @@
 				75D8F381173ABE3C0080D95E /* UIKit.framework */,
 				75D8F383173ABE3C0080D95E /* Foundation.framework */,
 				75D8F385173ABE3C0080D95E /* CoreGraphics.framework */,
-				75D8F3B3173ABE3D0080D95E /* SenTestingKit.framework */,
 				759B779817BF46FE0000510F /* libicucore.dylib */,
 				759CB238175E8AFE00AFA559 /* libiconv.dylib */,
 				75D7F23117E1540B006E9FC1 /* XCTest.framework */,
@@ -3717,8 +3713,8 @@
 			);
 			name = ZincWalletTests;
 			productName = ZincWalletTests;
-			productReference = 75D8F3B2173ABE3D0080D95E /* ZincWalletTests.octest */;
-			productType = "com.apple.product-type.bundle";
+			productReference = 75D8F3B2173ABE3D0080D95E /* ZincWalletTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		75FD9C0117664F3000307894 /* zbar */ = {
 			isa = PBXNativeTarget;
@@ -3745,7 +3741,8 @@
 			isa = PBXProject;
 			attributes = {
 				CLASSPREFIX = ZN;
-				LastUpgradeCheck = 0460;
+				LastTestingUpgradeCheck = 0510;
+				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "Aaron Voisine";
 				TargetAttributes = {
 					75D8F37D173ABE3C0080D95E = {
@@ -4865,7 +4862,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -4895,7 +4891,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -4970,15 +4965,15 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/zinc.app/zinc";
 				FRAMEWORK_SEARCH_PATHS = (
-					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
-					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
+					"\\\"$(SDKROOT)/Developer/Library/Frameworks\\\"",
+					"\\\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\\\"",
+					"$(inherited)",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "ZincWallet/ZincWallet-Prefix.pch";
 				INFOPLIST_FILE = "ZincWalletTests/ZincWalletTests-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUNDLE_LOADER)";
-				WRAPPER_EXTENSION = octest;
 			};
 			name = Debug;
 		};
@@ -4987,15 +4982,15 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/zinc.app/zinc";
 				FRAMEWORK_SEARCH_PATHS = (
-					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
-					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
+					"\\\"$(SDKROOT)/Developer/Library/Frameworks\\\"",
+					"\\\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\\\"",
+					"$(inherited)",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "ZincWallet/ZincWallet-Prefix.pch";
 				INFOPLIST_FILE = "ZincWalletTests/ZincWalletTests-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUNDLE_LOADER)";
-				WRAPPER_EXTENSION = octest;
 			};
 			name = Release;
 		};
