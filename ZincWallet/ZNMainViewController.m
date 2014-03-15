@@ -68,9 +68,13 @@
     self.spinner.accessibilityLabel = @"synchornizing";
     
     self.settingsButton.accessibilityLabel = @"settings";
+    self.settingsButton.accessibilityHint = @"show settings";
     self.pageControl.accessibilityLabel = @"receive money";
+    self.pageControl.accessibilityHint = @"send money";
     
     self.wallpaperStart = self.wallpaper.center;
+
+    //[self.navigationController.view addSubview:self.connectButton];
 
     self.urlObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNURLNotification object:nil queue:nil
@@ -151,7 +155,7 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncFailedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             [self.spinner stopAnimating];
-            self.navigationItem.rightBarButtonItem = nil;//self.refreshButton;
+            self.navigationItem.rightBarButtonItem = nil;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
             [UIApplication sharedApplication].idleTimerDisabled = NO;
@@ -162,7 +166,7 @@
                 self.connectButton.alpha = 1.0;
             }];
         }];
-    
+
     self.reachability = [Reachability reachabilityForInternetConnection];
     [self.reachability startNotifier];
 
@@ -331,6 +335,7 @@
     if (self.pageControl.currentPage != page) {
         self.pageControl.currentPage = scrollView.contentOffset.x/scrollView.frame.size.width + 0.5;
         self.pageControl.accessibilityLabel = page ? @"send money" : @"receive money";
+        self.pageControl.accessibilityHint = page ? @"receive money" : @"send money";
         
         [(id)(page ? self.payController : self.receiveController) hideTips];
     }

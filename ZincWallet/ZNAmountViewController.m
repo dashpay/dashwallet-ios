@@ -177,7 +177,7 @@ replacementString:(NSString *)string
         t = [textField.text stringByReplacingCharactersInRange:range withString:string];
         if ([t isEqual:[m.format stringFromNumber:@0]]) t = @"";
     }
-    else if ((string.length && textField.text.length && t == nil) ||
+    else if ((string.length > 0 && textField.text.length > 0 && t == nil) ||
              (point != NSNotFound && textField.text.length - point > m.format.maximumFractionDigits)) {
         return NO; // too many digits
     }
@@ -196,7 +196,10 @@ replacementString:(NSString *)string
     }
 
     // don't allow values below TX_MIN_OUTPUT_AMOUNT
-    if (t.length > 0 && [m amountForString:[t stringByAppendingString:@"9"]] < TX_MIN_OUTPUT_AMOUNT) return NO;
+    if (t.length > 0 && [t rangeOfString:@"."].location != NSNotFound &&
+        [m amountForString:[t stringByAppendingString:@"9"]] < TX_MIN_OUTPUT_AMOUNT) {
+        return NO;
+    }
 
     textField.text = t;
     //self.payButton.enabled = t.length ? YES : NO;

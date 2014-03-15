@@ -130,12 +130,9 @@ static NSData *getKeychainData(NSString *key)
         [self.format.positiveFormat stringByReplacingOccurrencesOfString:CURRENCY_SIGN withString:CURRENCY_SIGN @"-"];
     //self.format.currencySymbol = @"m" BTC NARROW_NBSP;
     //self.format.maximumFractionDigits = 5;
-    //self.format.maximum = @210000000009.0;
+    //self.format.maximum = @21000000000.0;
     self.format.currencySymbol = BTC NARROW_NBSP;
     self.format.maximumFractionDigits = 8;
-    // for reasons both mysterious and inscrutable, 210,000,009 is the smallest value of format.maximum that will allow
-    // the user to input a value of 21,000,000
-    //self.format.maximum = @210000009.0;
     self.format.maximum = @21000000.0;
 
     [self updateExchangeRate];

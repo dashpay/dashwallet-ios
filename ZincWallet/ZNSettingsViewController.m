@@ -247,16 +247,6 @@
                 sentLabel.layer.borderColor = sentLabel.textColor.CGColor;
                 
                 if (! detailTextLabel.text) detailTextLabel.text = @"can't decode payment address";
-//#warning test test test
-//                int64_t balance = 0;
-//                for (ZNTransaction *t in [self.transactions reverseObjectEnumerator]) {
-//                    balance += [m.wallet amountReceivedFromTransaction:t];
-//                    balance -= [m.wallet amountSentByTransaction:t];
-//                    if (t == tx) break;
-//                }
-//                detailTextLabel.text = [NSString stringWithFormat:@"h:%d r:%f s:-%f balance:%f", tx.blockHeight,
-//                                        [m.wallet amountReceivedFromTransaction:tx]/SATOSHIS,
-//                                        [m.wallet amountSentByTransaction:tx]/SATOSHIS, balance/SATOSHIS];
             }
             break;
             
