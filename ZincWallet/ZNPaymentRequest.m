@@ -73,7 +73,7 @@
 
     if (! data) return;
 
-    NSString *s = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    NSString *s = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     NSURL *url = [NSURL URLWithString:s];
     
     if (! url || ! url.scheme) {
