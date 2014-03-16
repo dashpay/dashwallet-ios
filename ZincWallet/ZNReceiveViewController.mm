@@ -177,7 +177,7 @@
     
     if ([title isEqual:@"copy"]) {
         [[UIPasteboard generalPasteboard] setString:self.paymentAddress];        
-        [self.view addSubview:[[[ZNBubbleView viewWithText:@"coppied"
+        [self.view addSubview:[[[ZNBubbleView viewWithText:@"copied"
                                 center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
                                 fadeIn] fadeOutAfterDelay:2.0]];
     }
