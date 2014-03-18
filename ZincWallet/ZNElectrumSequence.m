@@ -27,6 +27,7 @@
 #import "ZNKey.h"
 #import "NSData+Hash.h"
 #import "NSString+Base58.h"
+#import "NSMutableData+Bitcoin.h"
 #import <CommonCrypto/CommonDigest.h>
 #import <openssl/ecdsa.h>
 #import <openssl/obj_mac.h>
@@ -39,7 +40,7 @@
     
     // Electrum uses a hex representation of the seed instead of the seed itself
     NSString *s = [NSString hexWithData:seed];
-    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 0));
+    NSMutableData *d = [NSMutableData secureData];
     
     d.length = s.length*2;
     [s getBytes:d.mutableBytes maxLength:s.length usedLength:NULL encoding:NSUTF8StringEncoding options:0
@@ -71,7 +72,7 @@
     if (! masterPublicKey) return nil;
     
     NSString *s = [NSString stringWithFormat:@"%u:%d:", n, internal ? 1 : 0];
-    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), s.length + masterPublicKey.length));
+    NSMutableData *d = [NSMutableData secureDataWithCapacity:s.length + masterPublicKey.length];
     
     [d appendBytes:s.UTF8String length:[s lengthOfBytesUsingEncoding:NSUTF8StringEncoding]];
     [d appendData:masterPublicKey];
@@ -97,7 +98,7 @@
 {
     if (! masterPublicKey) return nil;
 
-    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 0));
+    NSMutableData *d = [NSMutableData secureData];
     NSData *z = [self sequence:n internal:internal masterPublicKey:masterPublicKey];
     BN_CTX *ctx = BN_CTX_new();
     BIGNUM zbn;
@@ -153,14 +154,13 @@
     
     for (NSNumber *num in n) {
         NSData *sequence = [self sequence:num.unsignedIntValue internal:internal masterPublicKey:mpk];
-        NSMutableData *pk = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 33));
+        NSMutableData *pk = [NSMutableData secureDataWithLength:33];
 
         BN_bin2bn(sequence.bytes, (int)sequence.length, &sequencebn);
         BN_bin2bn(secexp.bytes, (int)secexp.length, &secexpbn);
         
         BN_mod_add(&secexpbn, &secexpbn, &sequencebn, &order, ctx);
 
-        pk.length = 33;
         *(unsigned char *)pk.mutableBytes = 0x80;
         BN_bn2bin(&secexpbn, (unsigned char *)pk.mutableBytes + pk.length - BN_num_bytes(&secexpbn));
         

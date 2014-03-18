@@ -26,6 +26,7 @@
 #import "ZNBIP32Sequence.h"
 #import "ZNKey.h"
 #import "NSString+Base58.h"
+#import "NSMutableData+Bitcoin.h"
 #import <CommonCrypto/CommonHMAC.h>
 #import <openssl/ecdsa.h>
 #import <openssl/obj_mac.h>
@@ -52,8 +53,8 @@
 //
 static void CKD(NSMutableData *k, NSMutableData *c, uint32_t i)
 {
-    NSMutableData *I = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), CC_SHA512_DIGEST_LENGTH));
-    NSMutableData *data = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 33 + sizeof(i)));
+    NSMutableData *I = [NSMutableData secureDataWithLength:CC_SHA512_DIGEST_LENGTH];
+    NSMutableData *data = [NSMutableData secureDataWithCapacity:33 + sizeof(i)];
     BN_CTX *ctx = BN_CTX_new();
     BIGNUM order, Ilbn, kbn;
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
@@ -67,7 +68,6 @@ static void CKD(NSMutableData *k, NSMutableData *c, uint32_t i)
     i = CFSwapInt32HostToBig(i);
     [data appendBytes:&i length:sizeof(i)];
 
-    I.length = CC_SHA512_DIGEST_LENGTH;
     CCHmac(kCCHmacAlgSHA512, c.bytes, c.length, data.bytes, data.length, I.mutableBytes);
 
     BN_CTX_start(ctx);
@@ -111,8 +111,8 @@ static void CKDPrime(NSMutableData *K, NSMutableData *c, uint32_t i)
                 reason:@"can't derive private child key from public parent key" userInfo:nil];
     }
     
-    NSMutableData *I = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), CC_SHA512_DIGEST_LENGTH));
-    NSMutableData *data = CFBridgingRelease(CFDataCreateMutableCopy(SecureAllocator(), 0, (__bridge CFDataRef)K));
+    NSMutableData *I = [NSMutableData secureDataWithLength:CC_SHA512_DIGEST_LENGTH];
+    NSMutableData *data = [NSMutableData secureDataWithData:K];
     uint8_t form = POINT_CONVERSION_COMPRESSED;
     BN_CTX *ctx = BN_CTX_new();
     BIGNUM Ilbn;
@@ -122,7 +122,6 @@ static void CKDPrime(NSMutableData *K, NSMutableData *c, uint32_t i)
     i = CFSwapInt32HostToBig(i);
     [data appendBytes:&i length:sizeof(i)];
 
-    I.length = CC_SHA512_DIGEST_LENGTH;
     CCHmac(kCCHmacAlgSHA512, c.bytes, c.length, data.bytes, data.length, I.mutableBytes);
 
     BN_CTX_start(ctx);
@@ -156,12 +155,11 @@ static void CKDPrime(NSMutableData *K, NSMutableData *c, uint32_t i)
 {
     if (! seed) return nil;
 
-    NSMutableData *mpk = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 0));
-    NSMutableData *I = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), CC_SHA512_DIGEST_LENGTH));
-    NSMutableData *secret = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 32));
-    NSMutableData *chain = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 32));
+    NSMutableData *mpk = [NSMutableData secureData];
+    NSMutableData *I = [NSMutableData secureDataWithLength:CC_SHA512_DIGEST_LENGTH];
+    NSMutableData *secret = [NSMutableData secureDataWithCapacity:32];
+    NSMutableData *chain = [NSMutableData secureDataWithCapacity:32];
 
-    I.length = CC_SHA512_DIGEST_LENGTH;
     CCHmac(kCCHmacAlgSHA512, BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length, I.mutableBytes);
 
     [secret appendBytes:I.bytes length:32];
@@ -180,8 +178,8 @@ static void CKDPrime(NSMutableData *K, NSMutableData *c, uint32_t i)
 {
     if (masterPublicKey.length < 36) return nil;
 
-    NSMutableData *chain = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 32));
-    NSMutableData *pubKey = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 65));
+    NSMutableData *chain = [NSMutableData secureDataWithCapacity:32];
+    NSMutableData *pubKey = [NSMutableData secureDataWithCapacity:65];
 
     [chain appendBytes:(const unsigned char *)masterPublicKey.bytes + 4 length:32];
     [pubKey appendBytes:(const unsigned char *)masterPublicKey.bytes + 36 length:masterPublicKey.length - 36];
@@ -203,11 +201,10 @@ static void CKDPrime(NSMutableData *K, NSMutableData *c, uint32_t i)
     if (n.count == 0) return @[];
 
     NSMutableArray *a = [NSMutableArray arrayWithCapacity:n.count];
-    NSMutableData *I = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), CC_SHA512_DIGEST_LENGTH));
-    NSMutableData *secret = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 32));
-    NSMutableData *chain = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 32));
+    NSMutableData *I = [NSMutableData secureDataWithLength:CC_SHA512_DIGEST_LENGTH];
+    NSMutableData *secret = [NSMutableData secureDataWithCapacity:32];
+    NSMutableData *chain = [NSMutableData secureDataWithCapacity:32];
 
-    I.length = CC_SHA512_DIGEST_LENGTH;
     CCHmac(kCCHmacAlgSHA512, BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length, I.mutableBytes);
     
     [secret appendBytes:I.bytes length:32];
@@ -217,9 +214,9 @@ static void CKDPrime(NSMutableData *K, NSMutableData *c, uint32_t i)
     CKD(secret, chain, internal ? 1 : 0); // internal or external chain
 
     for (NSNumber *i in n) {
-        NSMutableData *prvKey = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 34));
-        NSMutableData *s = CFBridgingRelease(CFDataCreateMutableCopy(SecureAllocator(), 32,(__bridge CFDataRef)secret));
-        NSMutableData *c = CFBridgingRelease(CFDataCreateMutableCopy(SecureAllocator(), 32, (__bridge CFDataRef)chain));
+        NSMutableData *prvKey = [NSMutableData secureDataWithCapacity:34];
+        NSMutableData *s = [NSMutableData secureDataWithData:secret];
+        NSMutableData *c = [NSMutableData secureDataWithData:chain];
         
         CKD(s, c, i.unsignedIntValue); // nth key in chain
 
@@ -237,7 +234,7 @@ static void CKDPrime(NSMutableData *K, NSMutableData *c, uint32_t i)
 - (NSString *)serializeDepth:(uint8_t)depth fingerprint:(uint32_t)fingerprint child:(uint32_t)child
 chain:(NSData *)chain key:(NSData *)key
 {
-    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 14 + key.length + chain.length));
+    NSMutableData *d = [NSMutableData secureDataWithCapacity:14 + key.length + chain.length];
     
     fingerprint = CFSwapInt32HostToBig(fingerprint);
     child = CFSwapInt32HostToBig(child);
@@ -257,9 +254,8 @@ chain:(NSData *)chain key:(NSData *)key
 {
     if (! seed) return nil;
 
-    NSMutableData *I = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), CC_SHA512_DIGEST_LENGTH));
-    
-    I.length = CC_SHA512_DIGEST_LENGTH;
+    NSMutableData *I = [NSMutableData secureDataWithLength:CC_SHA512_DIGEST_LENGTH];
+
     CCHmac(kCCHmacAlgSHA512, BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length, I.mutableBytes);
     
     NSData *secret = [NSData dataWithBytesNoCopy:I.mutableBytes length:32 freeWhenDone:NO];

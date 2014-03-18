@@ -26,6 +26,7 @@
 #import "ZNZincMnemonic.h"
 #import "ZNKeySequence.h"
 #import "NSString+Base58.h"
+#import "NSMutableData+Bitcoin.h"
 
 #define ADJS  @"MnemonicAdjs"
 #define NOUNS @"MnemonicNouns"
@@ -103,7 +104,7 @@
     NSArray *advs = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:ADVS ofType:@"plist"]];
     NSArray *verbs = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:VERBS ofType:@"plist"]];
     NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), s, CFSTR(" ")));
-    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), SEQUENCE_SEED_LENGTH));
+    NSMutableData *d = [NSMutableData secureDataWithCapacity:SEQUENCE_SEED_LENGTH];
     NSUInteger x, y;
     uint8_t b;
 

@@ -73,7 +73,10 @@
 
     if (! data) return;
 
-    NSString *s = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    // stringByAddingPercentEscapesUsingEncoding: only encodes characters that would otherwise make the URL illegal so
+    // it doesn't result in double encoding
+    NSString *s = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]
+                   stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     NSURL *url = [NSURL URLWithString:s];
     
     if (! url || ! url.scheme) {
@@ -88,15 +91,20 @@
     //TODO: correctly handle unkown but required url arguments (by reporting the request invalid)
     for (NSString *arg in [url.query componentsSeparatedByString:@"&"]) {
         NSArray *pair = [arg componentsSeparatedByString:@"="];
+
         if (pair.count != 2) continue;
         
-        if ([pair[0] isEqual:@"amount"]) self.amount = ([pair[1] doubleValue] + DBL_EPSILON)*SATOSHIS;
-        else if ([pair[0] isEqual:@"label"])
+        if ([pair[0] isEqual:@"amount"]) {
+            self.amount = ([pair[1] doubleValue] + DBL_EPSILON)*SATOSHIS;
+        }
+        else if ([pair[0] isEqual:@"label"]) {
             self.label = [[pair[1] stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
                           stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-        else if ([pair[0] isEqual:@"message"])
+        }
+        else if ([pair[0] isEqual:@"message"]) {
             self.message = [[pair[1] stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
                             stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        }
     }
 }
 

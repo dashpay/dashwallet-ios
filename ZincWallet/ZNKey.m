@@ -26,6 +26,7 @@
 #import "ZNKey.h"
 #import "NSString+Base58.h"
 #import "NSData+Hash.h"
+#import "NSMutableData+Bitcoin.h"
 #import <CommonCrypto/CommonHMAC.h>
 #import <openssl/ecdsa.h>
 #import <openssl/obj_mac.h>
@@ -33,10 +34,10 @@
 // HMAC-SHA256 DRBG, using no prediction resistance or personalization string and outputing 256bits
 static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
 {
-    NSMutableData *V = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), CC_SHA256_DIGEST_LENGTH + 1 +
-                                                             entropy.length + nonce.length)),
-                  *K = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), CC_SHA256_DIGEST_LENGTH)),
-                  *T = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), CC_SHA256_DIGEST_LENGTH));
+    NSMutableData *V = [NSMutableData
+                        secureDataWithCapacity:CC_SHA256_DIGEST_LENGTH + 1 + entropy.length + nonce.length],
+                  *K = [NSMutableData secureDataWithCapacity:CC_SHA256_DIGEST_LENGTH],
+                  *T = [NSMutableData secureDataWithCapacity:CC_SHA256_DIGEST_LENGTH];
 
     V.length = CC_SHA256_DIGEST_LENGTH;
     memset(V.mutableBytes, 0x01, V.length); // V = 0x01 0x01 0x01 ... 0x01
@@ -176,7 +177,7 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
 - (NSString *)privateKey
 {
     const BIGNUM *priv = EC_KEY_get0_private_key(_key);
-    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 34));
+    NSMutableData *d = [NSMutableData secureDataWithCapacity:34];
     
     [d appendBytes:"\x80" length:1];
     d.length = 33;
@@ -198,10 +199,7 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
     if (! EC_KEY_check_key(_key)) return nil;
 
     size_t l = i2o_ECPublicKey(_key, NULL);
-    NSMutableData *pubKey = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), l));
-    
-    pubKey.length = l;
-    
+    NSMutableData *pubKey = [NSMutableData secureDataWithLength:l];
     unsigned char *bytes = pubKey.mutableBytes;
     
     if (i2o_ECPublicKey(_key, &bytes) != l) return nil;
@@ -220,7 +218,7 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
     
     if (! hash.length) return nil;
 
-    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), hash.length + 1));
+    NSMutableData *d = [NSMutableData secureDataWithCapacity:hash.length + 1];
 #if BITCOIN_TESTNET
     uint8_t version = BITCOIN_PUBKEY_ADDRESS_TEST;
 #else
@@ -245,7 +243,7 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
     const BIGNUM *priv = EC_KEY_get0_private_key(_key);
     const EC_GROUP *group = EC_KEY_get0_group(_key);
     EC_POINT *p = EC_POINT_new(group);
-    NSMutableData *sig = nil, *entropy = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), 32));
+    NSMutableData *sig = nil, *entropy = [NSMutableData secureDataWithLength:32];
     unsigned char *b;
 
     BN_CTX_start(ctx);
@@ -257,7 +255,6 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
     BN_rshift1(&halforder, &order);
 
     // generate k deterministicly per RFC6979: https://tools.ietf.org/html/rfc6979
-    entropy.length = 32;
     BN_bn2bin(priv, (unsigned char *)entropy.mutableBytes + entropy.length - BN_num_bytes(priv));
     BN_bin2bn(hmac_drbg(entropy, d).bytes, CC_SHA256_DIGEST_LENGTH, &k);
 

@@ -26,6 +26,7 @@
 #import "ZNElectrumMnemonic.h"
 #import "ZNKeySequence.h"
 #import "NSString+Base58.h"
+#import "NSMutableData+Bitcoin.h"
 
 #define WORDS @"ElectrumSeedWords"
 
@@ -98,7 +99,7 @@
     CFStringTrimWhitespace(s);
 
     NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), s, CFSTR(" ")));
-    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), a.count*4/3));
+    NSMutableData *d = [NSMutableData secureDataWithCapacity:a.count*4/3];
     int32_t n = (int32_t)words.count, x, w1, w2, w3;
 
     CFRelease(s);

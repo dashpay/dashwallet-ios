@@ -50,6 +50,7 @@ CFAllocatorRef SecureAllocator();
 - (NSString *)base58checkToHex;
 
 - (NSData *)hexToData;
+- (NSData *)addressToHash160;
 
 - (BOOL)isValidBitcoinAddress;
 - (BOOL)isValidBitcoinPrivateKey;

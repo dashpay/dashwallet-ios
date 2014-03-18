@@ -33,6 +33,7 @@
 #import "ZNTransactionEntity.h"
 #import "ZNAddressEntity.h"
 #import "NSString+Base58.h"
+#import "NSMutableData+Bitcoin.h"
 #import "NSManagedObject+Utils.h"
 #import <netdb.h>
 #import "Reachability.h"
@@ -205,10 +206,9 @@ static NSData *getKeychainData(NSString *key)
 
 - (void)generateRandomSeed
 {
-    NSMutableData *seed = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), SEQUENCE_SEED_LENGTH));
+    NSMutableData *seed = [NSMutableData secureDataWithLength:SEQUENCE_SEED_LENGTH];
     NSTimeInterval time = [NSDate timeIntervalSinceReferenceDate];
 
-    seed.length = SEQUENCE_SEED_LENGTH;
     SecRandomCopyBytes(kSecRandomDefault, seed.length, seed.mutableBytes);
 
     self.seed = seed;

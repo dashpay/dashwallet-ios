@@ -27,6 +27,7 @@
 #import "ZNTransaction.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSData+Bitcoin.h"
+#import "NSString+Base58.h"
 
 #define BLOOM_MAX_HASH_FUNCS 50
 
@@ -148,10 +149,15 @@ flags:(uint8_t)flags
 
 - (void)insertTransaction:(ZNTransaction *)tx
 {
-    int n = 0;
+    if ((self.flags & BLOOM_UPDATE_NONE) != 0) return;
+
+    int n = -1;
     NSMutableData *d = [NSMutableData data];
 
     for (NSData *script in tx.outputScripts) {
+        n++;
+        if ((self.flags & BLOOM_UPDATE_P2PUBKEY_ONLY) != 0 && [NSString addressWithScript:script] == nil) continue;
+
         for (NSData *elem in [script scriptDataElements]) {
             if (! [self containsData:elem]) continue;
             [d setData:tx.txHash];
@@ -159,8 +165,6 @@ flags:(uint8_t)flags
             if (! [self containsData:d]) [self insertData:d]; // update bloom filter with matched txout
             break;
         }
-
-        n++;
     }
 }
 

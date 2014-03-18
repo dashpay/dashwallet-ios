@@ -25,6 +25,7 @@
 
 #import "NSString+Base58.h"
 #import "NSData+Hash.h"
+#import "NSMutableData+Bitcoin.h"
 #import <openssl/bn.h>
 
 #define SCRIPT_SUFFIX "\x88\xAC" // OP_EQUALVERIFY OP_CHECKSIG
@@ -129,8 +130,7 @@ CFAllocatorRef SecureAllocator()
 
 + (NSString *)base58checkWithData:(NSData *)d
 {
-    NSMutableData *data =
-        CFBridgingRelease(CFDataCreateMutableCopy(SecureAllocator(), d.length + 4, (__bridge CFDataRef)d));
+    NSMutableData *data = [NSMutableData secureDataWithData:d];
 
     [data appendBytes:d.SHA256_2.bytes length:4];
     
@@ -139,7 +139,7 @@ CFAllocatorRef SecureAllocator()
 
 - (NSData *)base58ToData
 {
-    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), self.length*138/100 + 1));
+    NSMutableData *d = [NSMutableData secureDataWithCapacity:self.length*138/100 + 1];
     unsigned int b;
     BN_CTX *ctx = BN_CTX_new();
     BIGNUM base, x, y;
@@ -279,7 +279,7 @@ breakout:
 {
     if (self.length % 2) return nil;
     
-    NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), self.length/2));
+    NSMutableData *d = [NSMutableData secureDataWithCapacity:self.length/2];
     uint8_t b = 0;
     
     for (NSUInteger i = 0; i < self.length; i++) {
@@ -309,6 +309,13 @@ breakout:
     return d;
 }
 
+- (NSData *)addressToHash160
+{
+    NSData *d = self.base58checkToData;
+
+    return (d.length == 160/8 + 1) ? [d subdataWithRange:NSMakeRange(1, d.length - 1)] : nil;
+}
+
 - (BOOL)isValidBitcoinAddress
 {
     NSData *d = self.base58checkToData;
@@ -336,8 +343,8 @@ breakout:
 #endif
     }
     else if ((self.length == 30 || self.length == 22) && [self characterAtIndex:0] == 'S') { // mini private key format
-        NSMutableData *d = CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), self.length + 1));
-        
+        NSMutableData *d = [NSMutableData secureDataWithCapacity:self.length + 1];
+
         d.length = self.length;
         [self getBytes:d.mutableBytes maxLength:d.length usedLength:NULL encoding:NSUTF8StringEncoding options:0
          range:NSMakeRange(0, self.length) remainingRange:NULL];

@@ -344,9 +344,11 @@
     uint64_t txAmount = [m.wallet amountSentByTransaction:self.tx] - [m.wallet amountReceivedFromTransaction:self.tx];
     NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:txAmount],
                         [m localCurrencyStringForAmount:txAmount]];
-    
-    [[[UIAlertView alloc] initWithTitle:@"confirm payment" message:[m.wallet addressForTransaction:self.tx]
-     delegate:self cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
+
+    [[[UIAlertView alloc] initWithTitle:@"confirm payment"
+      message:[NSString stringWithFormat:@"%@%@%@", [m.wallet addressForTransaction:self.tx],
+               self.request.message ? @"\n" : @"", self.request.message ? self.request.message : @""] delegate:self
+      cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
 }
 
 - (void)confirmRequest
@@ -375,6 +377,13 @@
         [self reset:nil];
     }
     else if (self.request.amount == 0) {
+        if (! [[ZNPeerManager sharedInstance] connected]) {
+            [[[UIAlertView alloc] initWithTitle:@"not connected to the bitcoin network" message:nil
+              delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+            [self reset:nil];
+            return;
+        }
+
         ZNAmountViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNAmountViewController"];
         
         c.delegate = self;
@@ -680,7 +689,7 @@
         [self confirmTransaction];
         return;
     }
-    
+
     NSLog(@"signing transaction");
     [[[ZNWalletManager sharedInstance] wallet] signTransaction:self.tx];
     

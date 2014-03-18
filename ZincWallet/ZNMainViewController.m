@@ -74,8 +74,6 @@
     
     self.wallpaperStart = self.wallpaper.center;
 
-    //[self.navigationController.view addSubview:self.connectButton];
-
     self.urlObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNURLNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {

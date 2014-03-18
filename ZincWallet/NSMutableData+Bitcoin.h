@@ -33,6 +33,11 @@
 
 @interface NSMutableData (Bitcoin)
 
++ (NSMutableData *)secureData;
++ (NSMutableData *)secureDataWithLength:(NSUInteger)length;
++ (NSMutableData *)secureDataWithCapacity:(NSUInteger)capacity;
++ (NSMutableData *)secureDataWithData:(NSData *)data;
+
 + (size_t)sizeOfVarInt:(uint64_t)i;
 
 - (void)appendUInt8:(uint8_t)i;

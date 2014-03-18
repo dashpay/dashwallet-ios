@@ -373,13 +373,15 @@ static const char *dns_seeds[] = {
     NSUInteger elemCount = w.addresses.count + w.unspentOutputs.count;
     ZNBloomFilter *filter = [ZNBloomFilter filterWithFalsePositiveRate:BLOOM_DEFAULT_FALSEPOSITIVE_RATE
                              forElementCount:(elemCount < 200) ? elemCount*1.5 : elemCount + 100
-                             tweak:self.tweak flags:BLOOM_UPDATE_P2PUBKEY_ONLY];
+                             tweak:self.tweak //flags:BLOOM_UPDATE_P2PUBKEY_ONLY];
+                             flags:BLOOM_UPDATE_ALL];
+    //BUG: XXXX using UPDATE_P2PUBKEY_ONLY causes several send transactions to be missed when restoring a test wallet
+    // with 40+ transactions, they show up after a rescan, or without a rescan when using UPDATE_ALL, figure out why
 
-    for (NSString *address in w.addresses) {
-        NSData *d = address.base58checkToData;
+    for (NSString *address in w.addresses) { // add addresses to watch for any tx receiveing money to the wallet
+        NSData *hash = address.addressToHash160;
 
-        // add the address hash160 to watch for any tx receiveing money to the wallet
-        if (d.length == 160/8 + 1) [filter insertData:[d subdataWithRange:NSMakeRange(1, d.length - 1)]];
+        if (hash) [filter insertData:hash];
     }
 
     for (NSData *utxo in w.unspentOutputs) {
@@ -478,7 +480,7 @@ static const char *dns_seeds[] = {
     if (! self.connected) {
         if (completion) {
             completion([NSError errorWithDomain:@"ZincWallet" code:-1009
-                        userInfo:@{NSLocalizedDescriptionKey:@"transaction canceled, not connected to network"}]);
+                        userInfo:@{NSLocalizedDescriptionKey:@"not connected to the bitcoin network"}]);
         }
         return;
     }
@@ -789,11 +791,10 @@ static const char *dns_seeds[] = {
         NSArray *external = [w addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO],
                 *internal = [w addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
 
-        for (NSString *a in [external arrayByAddingObjectsFromArray:internal]) {
-            NSData *d = a.base58checkToData;
-            
-            if (d.length != 160/8 + 1) continue;
-            if ([self.bloomFilter containsData:[d subdataWithRange:NSMakeRange(1, 160/8)]]) continue;
+        for (NSString *address in [external arrayByAddingObjectsFromArray:internal]) {
+            NSData *hash = address.addressToHash160;
+
+            if (! hash || [self.bloomFilter containsData:hash]) continue;
             
             _bloomFilter = nil;
             self.filterWasReset = YES;
@@ -801,7 +802,6 @@ static const char *dns_seeds[] = {
         }
     }
 
-    //BUG: XXXX durring a wallet restore with 40+ transactions, some tx are missed that don't show up until a rescan
     if (self.filterWasReset) { // filter got reset, send the new one to all the peers
         self.filterWasReset = NO;
 

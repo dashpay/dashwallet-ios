@@ -41,6 +41,29 @@
 
 @implementation NSMutableData (Bitcoin)
 
++ (NSMutableData *)secureData
+{
+    return [self secureDataWithCapacity:0];
+}
+
++ (NSMutableData *)secureDataWithCapacity:(NSUInteger)aNumItems
+{
+    return CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), aNumItems));
+}
+
++ (NSMutableData *)secureDataWithLength:(NSUInteger)length
+{
+    NSMutableData *d = [self secureDataWithCapacity:length];
+
+    d.length = length;
+    return d;
+}
+
++ (NSMutableData *)secureDataWithData:(NSData *)data
+{
+    return CFBridgingRelease(CFDataCreateMutableCopy(SecureAllocator(), 0, (__bridge CFDataRef)data));
+}
+
 + (size_t)sizeOfVarInt:(uint64_t)i
 {
     if (i < VAR_INT16_HEADER) return sizeof(uint8_t);
