@@ -455,6 +455,7 @@ services:(uint64_t)services
         else if ([MSG_PING isEqual:type]) [self acceptPingMessage:message];
         else if ([MSG_PONG isEqual:type]) [self acceptPongMessage:message];
         else if ([MSG_MERKLEBLOCK isEqual:type]) [self acceptMerkleblockMessage:message];
+        else if ([MSG_REJECT isEqual:type]) [self acceptRejectMessage:message];
         else NSLog(@"%@:%d dropping %@, length %u, not implemented", self.host, self.port, type, (int)message.length);
     });
     CFRunLoopWakeUp([self.runLoop getCFRunLoop]);
@@ -816,6 +817,43 @@ services:(uint64_t)services
         dispatch_async(self.delegateQueue, ^{
             [self.delegate peer:self relayedBlock:block];
         });
+    }
+}
+
+- (void)acceptRejectMessage:(NSData *)message
+{
+    NSUInteger off = 0, l = 0;
+    NSString *rejected = [message stringAtOffset:0 length:&off];
+    uint8_t code = [message UInt8AtOffset:off++];
+    NSString *reason = [message stringAtOffset:off length:&l];
+    NSData *txHash = ([rejected hasPrefix:MSG_TX]) ? [message hashAtOffset:off + l] : nil;
+
+    NSLog(@"%@:%u rejected %s, reason: %@", self.host, self.port, rejected.UTF8String, reason);
+
+    if (txHash != nil) {
+        switch (code) {
+            case 0x10: // tx is invalid (bad sig, insufficient inputs, etc..)
+                reason = @"transaction is invalid";
+                break;
+            case 0x40: // tx is non-standard
+                reason = @"transaction is non-standard";
+                break;
+            case 0x41: // tx contains dust output
+                reason = @"send amount is too small, considered \"dust\"";
+                break;
+            case 0x42: // tx fee/priority too low
+                reason = @"bitcoin network fee is too low";
+                break;
+            default:
+                reason = nil;
+                break;
+        }
+
+        if (reason) {
+            dispatch_async(self.delegateQueue, ^{
+                [self.delegate peer:self rejectedTransaction:txHash forReason:reason];
+            });
+        }
     }
 }
 

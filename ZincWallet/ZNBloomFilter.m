@@ -147,24 +147,21 @@ flags:(uint8_t)flags
     _elementCount++;
 }
 
-- (void)insertTransaction:(ZNTransaction *)tx
+- (void)updateWithTransaction:(ZNTransaction *)tx
 {
-    if ((self.flags & BLOOM_UPDATE_NONE) != 0) return;
-
-    int n = -1;
     NSMutableData *d = [NSMutableData data];
+    int n = 0;
 
     for (NSData *script in tx.outputScripts) {
-        n++;
-        if ((self.flags & BLOOM_UPDATE_P2PUBKEY_ONLY) != 0 && [NSString addressWithScript:script] == nil) continue;
-
         for (NSData *elem in [script scriptDataElements]) {
             if (! [self containsData:elem]) continue;
             [d setData:tx.txHash];
             [d appendUInt32:n];
-            if (! [self containsData:d]) [self insertData:d]; // update bloom filter with matched txout
+            [self insertData:d]; // update bloom filter with matched txout
             break;
         }
+
+        n++;
     }
 }
 

@@ -61,6 +61,7 @@
 #define MSG_FILTERCLEAR @"filterclear"
 #define MSG_MERKLEBLOCK @"merkleblock"
 #define MSG_ALERT       @"alert"
+#define MSG_REJECT      @"reject" // described in BIP 61: https://gist.github.com/gavinandresen/7079034
 
 @class ZNPeer, ZNTransaction, ZNMerkleBlock;
 
@@ -76,6 +77,7 @@
 - (void)peer:(ZNPeer *)peer relayedBlock:(ZNMerkleBlock *)block;
 
 - (ZNTransaction *)peer:(ZNPeer *)peer requestedTransaction:(NSData *)txHash;
+- (void)peer:(ZNPeer *)peer rejectedTransaction:(NSData *)txHash forReason:(NSString *)reason;
 
 @end
 

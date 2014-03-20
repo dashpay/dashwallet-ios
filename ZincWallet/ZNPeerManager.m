@@ -115,9 +115,9 @@ static const char *dns_seeds[] = {
 @property (nonatomic, assign) NSUInteger taskId, connectFailures;
 @property (nonatomic, assign) BOOL filterWasReset;
 @property (nonatomic, assign) NSTimeInterval earliestKeyTime, lastRelayTime;
-@property (nonatomic, strong) NSMutableDictionary *blocks, *orphans, *checkpoints, *publishedTx, *publishedCallback;
+@property (nonatomic, strong) NSMutableDictionary *blocks, *orphans, *checkpoints, *txRelays;
+@property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
 @property (nonatomic, strong) ZNMerkleBlock *lastBlock, *lastOrphan;
-@property (nonatomic, strong) NSCountedSet *txRelayCounts;
 @property (nonatomic, strong) dispatch_queue_t q;
 @property (nonatomic, strong) id activeObserver, seedObserver;
 
@@ -148,8 +148,8 @@ static const char *dns_seeds[] = {
     self.tweak = mrand48();
     self.taskId = UIBackgroundTaskInvalid;
     self.q = dispatch_queue_create("cc.zinc.peermanager", NULL);
-    self.txRelayCounts = [NSCountedSet set];
     self.orphans = [NSMutableDictionary dictionary];
+    self.txRelays = [NSMutableDictionary dictionary];
     self.publishedTx = [NSMutableDictionary dictionary];
     self.publishedCallback = [NSMutableDictionary dictionary];
 
@@ -171,8 +171,8 @@ static const char *dns_seeds[] = {
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNWalletManagerSeedChangedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             self.earliestKeyTime = [[ZNWalletManager sharedInstance] seedCreationTime];
-            [self.txRelayCounts removeAllObjects];
             [self.orphans removeAllObjects];
+            [self.txRelays removeAllObjects];
             [self.publishedTx removeAllObjects];
             [self.publishedCallback removeAllObjects];
             [ZNMerkleBlockEntity deleteObjects:[ZNMerkleBlockEntity allObjects]];
@@ -373,10 +373,7 @@ static const char *dns_seeds[] = {
     NSUInteger elemCount = w.addresses.count + w.unspentOutputs.count;
     ZNBloomFilter *filter = [ZNBloomFilter filterWithFalsePositiveRate:BLOOM_DEFAULT_FALSEPOSITIVE_RATE
                              forElementCount:(elemCount < 200) ? elemCount*1.5 : elemCount + 100
-                             tweak:self.tweak //flags:BLOOM_UPDATE_P2PUBKEY_ONLY];
-                             flags:BLOOM_UPDATE_ALL];
-    //BUG: XXXX using UPDATE_P2PUBKEY_ONLY causes several send transactions to be missed when restoring a test wallet
-    // with 40+ transactions, they show up after a rescan, or without a rescan when using UPDATE_ALL, figure out why
+                             tweak:self.tweak flags:BLOOM_UPDATE_ALL];
 
     for (NSString *address in w.addresses) { // add addresses to watch for any tx receiveing money to the wallet
         NSData *hash = address.addressToHash160;
@@ -506,7 +503,7 @@ static const char *dns_seeds[] = {
 // transaction is considered verified when all peers have relayed it
 - (BOOL)transactionIsVerified:(NSData *)txHash
 {
-    return ([self.txRelayCounts countForObject:txHash] >= self.connectedPeers.count) ? YES : NO;
+    return ([self.txRelays[txHash] count] >= self.connectedPeers.count) ? YES : NO;
 }
 
 - (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes
@@ -516,7 +513,7 @@ static const char *dns_seeds[] = {
     if (height != TX_UNCONFIRMED) { // remove confirmed tx from publish list and relay counts
         [self.publishedTx removeObjectsForKeys:txHashes];
         [self.publishedCallback removeObjectsForKeys:txHashes];
-        [self.txRelayCounts minusSet:[NSSet setWithArray:txHashes]];
+        [self.txRelays removeObjectsForKeys:txHashes];
     }
 }
 
@@ -570,12 +567,11 @@ static const char *dns_seeds[] = {
 
 - (void)removeUnrelayedTransactions
 {
-    //BUG: XXXX this won't work if tx relays are still counted after the peer that relayed them is disconnected
     ZNWallet *w = [[ZNWalletManager sharedInstance] wallet];
 
     for (ZNTransaction *tx in w.recentTransactions) {
         if (tx.blockHeight != TX_UNCONFIRMED) break;
-        if ([self.txRelayCounts countForObject:tx.txHash] == 0) [w removeTransaction:tx.txHash];
+        if ([self.txRelays[tx.txHash] count] == 0) [w removeTransaction:tx.txHash];
     }
 }
 
@@ -720,6 +716,10 @@ static const char *dns_seeds[] = {
         self.connectFailures++;
     }
 
+    for (NSData *txHash in self.txRelays.allKeys) {
+        [self.txRelays[txHash] removeObject:peer];
+    }
+
     if ([self.downloadPeer isEqual:peer]) {
         _connected = NO;
         self.downloadPeer = nil;
@@ -772,14 +772,15 @@ static const char *dns_seeds[] = {
     // matches the filter, the remote peer will automatically add that output to the filter. That way if another
     // transaction spends the output later, it will also be matched without having to manually update the filter.
     // We do the same here with the local copy to keep the filters in sync.
-    [self.bloomFilter insertTransaction:transaction];
+    [self.bloomFilter updateWithTransaction:transaction];
 
     if ([w registerTransaction:transaction]) {
         // keep track of how many peers relay a tx, this indicates how likely it is to be confirmed in future blocks
         self.publishedTx[transaction.txHash] = transaction;
-        [self.txRelayCounts addObject:transaction.txHash];
+        if (! self.txRelays[transaction.txHash]) self.txRelays[transaction.txHash] = [NSMutableSet set];
+        [self.txRelays[transaction.txHash] addObject:peer];
 
-        if ([self.txRelayCounts countForObject:transaction.txHash] == self.connectedPeers.count) {
+        if ([self.txRelays[transaction.txHash] count] == self.connectedPeers.count) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:ZNPeerManagerTxStatusNotification
                  object:nil];
@@ -973,11 +974,12 @@ static const char *dns_seeds[] = {
     
     if (tx) {
         [self.publishedCallback removeObjectForKey:txHash];
-        [self.bloomFilter insertTransaction:tx];
-        [self.txRelayCounts addObject:txHash];
+        [self.bloomFilter updateWithTransaction:tx];
+        if (! self.txRelays[txHash]) self.txRelays[txHash] = [NSMutableSet set];
+        [self.txRelays[txHash] addObject:peer];
         [[[ZNWalletManager sharedInstance] wallet] registerTransaction:tx];
 
-        if ([self.txRelayCounts countForObject:txHash] == self.connectedPeers.count) {
+        if ([self.txRelays[txHash] count] == self.connectedPeers.count) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:ZNPeerManagerTxStatusNotification
                  object:nil];
@@ -992,6 +994,11 @@ static const char *dns_seeds[] = {
     }
 
     return tx;
+}
+
+- (void)peer:(ZNPeer *)peer rejectedTransaction:(NSData *)txHash forReason:(NSString *)reason
+{
+    // TODO: notify user if all peers reject a transaction
 }
 
 @end

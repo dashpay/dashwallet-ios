@@ -51,6 +51,6 @@ flags:(uint8_t)flags;
 - (instancetype)initWithFullMatch;
 - (BOOL)containsData:(NSData *)data;
 - (void)insertData:(NSData *)data;
-- (void)insertTransaction:(ZNTransaction *)tx;
+- (void)updateWithTransaction:(ZNTransaction *)tx;
 
 @end
