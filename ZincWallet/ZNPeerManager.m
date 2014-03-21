@@ -35,13 +35,15 @@
 #import "ZNWallet.h"
 #import "NSString+Base58.h"
 #import "NSData+Hash.h"
+#import "NSData+Bitcoin.h"
+#import "NSMutableData+Bitcoin.h"
 #import "NSManagedObject+Utils.h"
 #import <netdb.h>
 
 #define FIXED_PEERS           @"FixedPeers"
 #define MAX_CONNECTIONS       3
 #define NODE_NETWORK          1 // services value indicating a node offers full blocks, not just headers
-#define PROTOCOL_TIMEOUT      15.0
+#define PROTOCOL_TIMEOUT      30.0
 #define MAX_CONNENCT_FAILURES 20 // notify user of network problems after this many connect failures in a row
 
 #if BITCOIN_TESTNET
@@ -661,10 +663,11 @@ static const char *dns_seeds[] = {
         return;
     }
 
-    [peer sendFilterloadMessage:self.bloomFilter.data]; // load the bloom filter
-
     if (self.connected && (self.downloadPeer.lastblock >= peer.lastblock || self.lastBlock.height >= peer.lastblock)) {
-        return; // we're already connected
+        if (self.lastBlock.height < self.downloadPeer.lastblock) return; // don't load bloom filter yet if we're syncing
+        [peer sendFilterloadMessage:self.bloomFilter.data];
+        [peer sendMempoolMessage];
+        return; // we're already connected to a download peer
     }
 
     // select the peer with the lowest ping time to download the chain from if we're behind
@@ -675,6 +678,9 @@ static const char *dns_seeds[] = {
     _connected = YES;
     [self.downloadPeer disconnect];
     self.downloadPeer = peer;
+
+    _bloomFilter = nil; // make sure we're starting with a fresh bloomfilter
+    [peer sendFilterloadMessage:self.bloomFilter.data];
 
     if (self.lastBlock.height < peer.lastblock) { // start blockchain sync
         if (self.taskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
@@ -695,6 +701,12 @@ static const char *dns_seeds[] = {
     }
     else {
         [self syncStopped];
+
+        for (ZNPeer *p in self.connectedPeers) {
+            [p sendFilterloadMessage:self.bloomFilter.data];
+            [p sendMempoolMessage];
+        }
+
         [peer sendGetaddrMessage]; // request a list of other bitcoin peers
 
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -739,7 +751,7 @@ static const char *dns_seeds[] = {
 - (void)peer:(ZNPeer *)peer relayedPeers:(NSArray *)peers
 {
     NSLog(@"%@:%d relayed %d peer(s)", peer.host, peer.port, (int)peers.count);
-    self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
+    if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
     [self.peers addObjectsFromArray:peers];
     [self.peers minusSet:self.misbehavinPeers];
     [self sortPeers];
@@ -766,13 +778,13 @@ static const char *dns_seeds[] = {
     ZNWallet *w = [[ZNWalletManager sharedInstance] wallet];
 
     NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, transaction.txHash);
-    self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
+    if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
 
     // When a transaction is matched by the bloom filter, if any of its output scripts have a hash or key that also
     // matches the filter, the remote peer will automatically add that output to the filter. That way if another
     // transaction spends the output later, it will also be matched without having to manually update the filter.
     // We do the same here with the local copy to keep the filters in sync.
-    [self.bloomFilter updateWithTransaction:transaction];
+    if (peer == self.downloadPeer) [self.bloomFilter updateWithTransaction:transaction];
 
     if ([w registerTransaction:transaction]) {
         // keep track of how many peers relay a tx, this indicates how likely it is to be confirmed in future blocks
@@ -806,15 +818,19 @@ static const char *dns_seeds[] = {
     if (self.filterWasReset) { // filter got reset, send the new one to all the peers
         self.filterWasReset = NO;
 
-        for (ZNPeer *peer in self.connectedPeers) {
-            [peer sendFilterloadMessage:self.bloomFilter.data];
+        if (self.lastBlockHeight >= self.downloadPeer.lastblock) {
+            for (ZNPeer *p in self.connectedPeers) {
+                [p sendFilterloadMessage:self.bloomFilter.data];
+                [p sendMempoolMessage];
+            }
         }
+        else [peer sendFilterloadMessage:self.bloomFilter.data];
     }
 }
 
 - (void)peer:(ZNPeer *)peer relayedBlock:(ZNMerkleBlock *)block
 {
-    self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
+    if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
 
     // ignore block headers that are newer than one week before earliestKeyTime (headers have 0 totalTransactions)
     if (block.totalTransactions == 0 && block.timestamp + 7*24*60*60 > self.earliestKeyTime) return;
@@ -881,7 +897,9 @@ static const char *dns_seeds[] = {
         [self setBlockHeight:block.height forTxHashes:block.txHashes];
     }
     else if (self.blocks[block.blockHash] != nil) { // we already have the block (or at least the header)
-        NSLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, block.height);
+        if (! (block.height % 500) || block.height > peer.lastblock) {
+            NSLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, block.height);
+        }
         self.blocks[block.blockHash] = block;
 
         ZNMerkleBlock *b = self.lastBlock;
@@ -945,6 +963,12 @@ static const char *dns_seeds[] = {
         [self saveBlocks];
         [ZNMerkleBlockEntity saveContext];
         [self syncStopped];
+
+        for (ZNPeer *p in self.connectedPeers) {
+            [p sendFilterloadMessage:self.bloomFilter.data];
+            [p sendMempoolMessage];
+        }
+
         [peer sendGetaddrMessage]; // request a list of other bitcoin peers
 
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -994,11 +1018,6 @@ static const char *dns_seeds[] = {
     }
 
     return tx;
-}
-
-- (void)peer:(ZNPeer *)peer rejectedTransaction:(NSData *)txHash forReason:(NSString *)reason
-{
-    // TODO: notify user if all peers reject a transaction
 }
 
 @end

@@ -142,10 +142,12 @@
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
             [UIApplication sharedApplication].idleTimerDisabled = NO;
-            [self.progress setProgress:1.0 animated:YES];
-            [UIView animateWithDuration:0.2 animations:^{
-                self.progress.alpha = 0.0;
-            }];
+            if (self.progress.alpha > 0.5) {
+                [self.progress setProgress:1.0 animated:YES];
+                [UIView animateWithDuration:0.2 animations:^{
+                    self.progress.alpha = 0.0;
+                }];
+            }
         }];
     
     //TODO: create an error banner instead of using an alert

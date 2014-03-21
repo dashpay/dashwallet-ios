@@ -77,7 +77,6 @@
 - (void)peer:(ZNPeer *)peer relayedBlock:(ZNMerkleBlock *)block;
 
 - (ZNTransaction *)peer:(ZNPeer *)peer requestedTransaction:(NSData *)txHash;
-- (void)peer:(ZNPeer *)peer rejectedTransaction:(NSData *)txHash forReason:(NSString *)reason;
 
 @end
 
@@ -119,6 +118,7 @@ services:(uint64_t)services;
 - (void)disconnect;
 - (void)sendMessage:(NSData *)message type:(NSString *)type;
 - (void)sendFilterloadMessage:(NSData *)filter;
+- (void)sendMempoolMessage;
 - (void)sendGetaddrMessage;
 - (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop;
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop;

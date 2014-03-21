@@ -301,15 +301,15 @@ services:(uint64_t)services
 
     // the new bloom filter may contain additional wallet addresses, so re-send the most recent getdata message to get
     // any additional transactions matching the new filter
-    // TODO: XXXX verify this actually works and doesn't miss any transactions
-    if (self.currentBlockHashes.count > 0) {
-        NSMutableArray *locators = [NSMutableArray arrayWithObject:self.currentBlockHashes.lastObject];
-        
-        if (self.currentBlockHashes.count > 1) [locators addObject:self.currentBlockHashes[0]];
-        [self sendGetblocksMessageWithLocators:locators andHashStop:nil];
+    if (self.currentBlockHashes.count > 1) {
+        NSLog(@"%@:%d re-requesting %d blocks", self.host, self.port, self.currentBlockHashes.count);
+        [self sendGetdataMessageWithTxHashes:@[] andBlockHashes:self.currentBlockHashes];
     }
+}
 
-    [self sendMessage:[NSData data] type:MSG_MEMPOOL]; // reqeust any mempool transactions that match the filter
+- (void)sendMempoolMessage
+{
+    [self sendMessage:[NSData data] type:MSG_MEMPOOL];
 }
 
 - (void)sendAddrMessage
@@ -347,9 +347,6 @@ services:(uint64_t)services
 // - if at any point tx messages consume enough wallet addresses to drop below the bip32 chain gap limit, more addresses
 //   are generated and local peer sends filterload with an updated bloom filter
 // - when filterload is sent, the most recent getdata message is also repeated to get any new tx matching the new filter
-
-// BUG: XXXX verify that after a bloom filter update, the satoshi client will resend blocks that have already been sent,
-// if it doesn't then we'll need to disconnect and reconnect instead of just sending a new filterload message
 
 - (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop
 {
@@ -590,6 +587,11 @@ services:(uint64_t)services
 
     NSLog(@"%@:%u got inv with %u items", self.host, self.port, (int)count);
 
+    if (txHashes.count == MAX_GETDATA_HASHES) { // something went wrong with the bloomfilter, so disconnect
+        NSLog(@"%@:%u does not appear to be filtering transactions, disconnecting", self.host, self.port);
+        [self disconnect];
+    }
+
     // to improve chain download performance, if we received 500 block hashes, we request the next 500 block hashes
     // immediately before sending the getdata request
     if (blockHashes.count >= 500) {
@@ -823,38 +825,13 @@ services:(uint64_t)services
 - (void)acceptRejectMessage:(NSData *)message
 {
     NSUInteger off = 0, l = 0;
-    NSString *rejected = [message stringAtOffset:0 length:&off];
+    NSString *type = [message stringAtOffset:0 length:&off];
     uint8_t code = [message UInt8AtOffset:off++];
     NSString *reason = [message stringAtOffset:off length:&l];
-    NSData *txHash = ([rejected hasPrefix:MSG_TX]) ? [message hashAtOffset:off + l] : nil;
+    NSData *txHash = ([MSG_TX isEqual:type]) ? [message hashAtOffset:off + l] : nil;
 
-    NSLog(@"%@:%u rejected %s, reason: %@", self.host, self.port, rejected.UTF8String, reason);
-
-    if (txHash != nil) {
-        switch (code) {
-            case 0x10: // tx is invalid (bad sig, insufficient inputs, etc..)
-                reason = @"transaction is invalid";
-                break;
-            case 0x40: // tx is non-standard
-                reason = @"transaction is non-standard";
-                break;
-            case 0x41: // tx contains dust output
-                reason = @"send amount is too small, considered \"dust\"";
-                break;
-            case 0x42: // tx fee/priority too low
-                reason = @"bitcoin network fee is too low";
-                break;
-            default:
-                reason = nil;
-                break;
-        }
-
-        if (reason) {
-            dispatch_async(self.delegateQueue, ^{
-                [self.delegate peer:self rejectedTransaction:txHash forReason:reason];
-            });
-        }
-    }
+    NSLog(@"%@:%u rejected %@ code: 0x%x reason: \"%@\"%@%@", self.host, self.port, type, code, reason,
+          txHash ? @" txid: " : @"", txHash ? txHash : @"");
 }
 
 #pragma mark - hash
