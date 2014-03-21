@@ -63,9 +63,8 @@ typedef enum {
 @property (nonatomic, strong) id reachabilityObserver;
 @property (nonatomic, assign) uint64_t localNonce;
 @property (nonatomic, assign) NSTimeInterval startTime;
-@property (nonatomic, strong) NSMutableOrderedSet *currentBlockHashes;
 @property (nonatomic, strong) ZNMerkleBlock *currentBlock;
-@property (nonatomic, strong) NSMutableOrderedSet *currentTxHashes, *knownTxHashes;
+@property (nonatomic, strong) NSMutableOrderedSet *currentBlockHashes, *currentTxHashes, *knownTxHashes;
 @property (nonatomic, strong) NSRunLoop *runLoop;
 @property (nonatomic, strong) dispatch_queue_t q;
 
@@ -449,6 +448,7 @@ services:(uint64_t)services
         else if ([MSG_HEADERS isEqual:type]) [self acceptHeadersMessage:message];
         else if ([MSG_GETADDR isEqual:type]) [self acceptGetaddrMessage:message];
         else if ([MSG_GETDATA isEqual:type]) [self acceptGetdataMessage:message];
+        else if ([MSG_NOTFOUND isEqual:type]) [self acceptNotfoundMessage:message];
         else if ([MSG_PING isEqual:type]) [self acceptPingMessage:message];
         else if ([MSG_PONG isEqual:type]) [self acceptPongMessage:message];
         else if ([MSG_MERKLEBLOCK isEqual:type]) [self acceptMerkleblockMessage:message];
@@ -587,9 +587,9 @@ services:(uint64_t)services
 
     NSLog(@"%@:%u got inv with %u items", self.host, self.port, (int)count);
 
-    if (txHashes.count == MAX_GETDATA_HASHES) { // this was happening on testnet, some sort of DOS/spam attack?
+    if (txHashes.count > 10000) { // this was happening on testnet, some sort of DOS/spam attack?
         NSLog(@"%@:%u too many transactions, disconnecting", self.host, self.port);
-        [self disconnect]; // disconnecting seems to be the easiest wy to mitigate it
+        [self disconnect]; // disconnecting seems to be the easiest way to mitigate it
         return;
     }
 
@@ -714,13 +714,13 @@ services:(uint64_t)services
          (int)((l == 0) ? 1 : l) + (int)count*36, (int)count];
         return;
     }
-    else if (count > 50000) {
+    else if (count > MAX_GETDATA_HASHES) {
         NSLog(@"%@:%u dropping getdata message, %u is too many items, max is %d", self.host, self.port, (int)count,
               MAX_GETDATA_HASHES);
         return;
     }
     
-    NSLog(@"%@:%u got getdata", self.host, self.port);
+    NSLog(@"%@:%u got getdata with %u items", self.host, self.port, (int)count);
 
     dispatch_async(self.delegateQueue, ^{
         NSMutableData *notfound = [NSMutableData data];
@@ -757,6 +757,19 @@ services:(uint64_t)services
             [self sendMessage:msg type:MSG_NOTFOUND];
         }
     });
+}
+
+- (void)acceptNotfoundMessage:(NSData *)message
+{
+    NSUInteger l, count = [message varIntAtOffset:0 length:&l];
+
+    if (l == 0 || message.length < l + count*36) {
+        [self error:@"malformed notfount message, length is %u, should be %u for %u items", (int)message.length,
+         (int)((l == 0) ? 1 : l) + (int)count*36, (int)count];
+        return;
+    }
+
+    NSLog(@"%@:%u got notfound with %u items", self.host, self.port, (int)count);
 }
 
 - (void)acceptPingMessage:(NSData *)message
