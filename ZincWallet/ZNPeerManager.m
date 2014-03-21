@@ -35,8 +35,6 @@
 #import "ZNWallet.h"
 #import "NSString+Base58.h"
 #import "NSData+Hash.h"
-#import "NSData+Bitcoin.h"
-#import "NSMutableData+Bitcoin.h"
 #import "NSManagedObject+Utils.h"
 #import <netdb.h>
 

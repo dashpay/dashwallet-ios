@@ -63,9 +63,9 @@ typedef enum {
 @property (nonatomic, strong) id reachabilityObserver;
 @property (nonatomic, assign) uint64_t localNonce;
 @property (nonatomic, assign) NSTimeInterval startTime;
-@property (nonatomic, strong) NSArray *currentBlockHashes;
+@property (nonatomic, strong) NSMutableOrderedSet *currentBlockHashes;
 @property (nonatomic, strong) ZNMerkleBlock *currentBlock;
-@property (nonatomic, strong) NSMutableSet *currentTxHashes, *knownTxHashes;
+@property (nonatomic, strong) NSMutableOrderedSet *currentTxHashes, *knownTxHashes;
 @property (nonatomic, strong) NSRunLoop *runLoop;
 @property (nonatomic, strong) dispatch_queue_t q;
 
@@ -153,7 +153,7 @@ services:(uint64_t)services
     self.msgHeader = [NSMutableData data];
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
-    self.knownTxHashes = [NSMutableSet set];
+    self.knownTxHashes = [NSMutableOrderedSet orderedSet];
 
     NSString *label = [NSString stringWithFormat:@"cc.zinc.peer.%@:%d", self.host, self.port];
 
@@ -303,7 +303,7 @@ services:(uint64_t)services
     // any additional transactions matching the new filter
     if (self.currentBlockHashes.count > 1) {
         NSLog(@"%@:%d re-requesting %d blocks", self.host, self.port, self.currentBlockHashes.count);
-        [self sendGetdataMessageWithTxHashes:@[] andBlockHashes:self.currentBlockHashes];
+        [self sendGetdataMessageWithTxHashes:@[] andBlockHashes:self.currentBlockHashes.array];
     }
 }
 
@@ -558,7 +558,7 @@ services:(uint64_t)services
 - (void)acceptInvMessage:(NSData *)message
 {
     NSUInteger l, count = [message varIntAtOffset:0 length:&l];
-    NSMutableArray *txHashes = [NSMutableArray array], *blockHashes = [NSMutableArray array];
+    NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSet], *blockHashes = [NSMutableOrderedSet orderedSet];
     
     if (l == 0 || message.length < l + count*36) {
         [self error:@"malformed inv message, length is %u, should be %u for %u items", (int)message.length,
@@ -587,9 +587,10 @@ services:(uint64_t)services
 
     NSLog(@"%@:%u got inv with %u items", self.host, self.port, (int)count);
 
-    if (txHashes.count == MAX_GETDATA_HASHES) { // something went wrong with the bloomfilter, so disconnect
-        NSLog(@"%@:%u does not appear to be filtering transactions, disconnecting", self.host, self.port);
-        [self disconnect];
+    if (txHashes.count == MAX_GETDATA_HASHES) { // this was happening on testnet, some sort of DOS/spam attack?
+        NSLog(@"%@:%u too many transactions, disconnecting", self.host, self.port);
+        [self disconnect]; // disconnecting seems to be the easiest wy to mitigate it
+        return;
     }
 
     // to improve chain download performance, if we received 500 block hashes, we request the next 500 block hashes
@@ -598,10 +599,12 @@ services:(uint64_t)services
         [self sendGetblocksMessageWithLocators:@[blockHashes.lastObject, blockHashes[0]] andHashStop:nil];
     }
 
+    [txHashes minusOrderedSet:self.knownTxHashes];
+    [self.knownTxHashes unionOrderedSet:txHashes];
+    
     if (txHashes.count + blockHashes.count > 0) {
-        [self.knownTxHashes addObjectsFromArray:txHashes];
-        [self sendGetdataMessageWithTxHashes:txHashes andBlockHashes:blockHashes];
-        
+        [self sendGetdataMessageWithTxHashes:txHashes.array andBlockHashes:blockHashes.array];
+
         // Each merkleblock the remote peer sends us is followed by a set of tx messages for that block. We send a ping
         // to get a pong reply after the block and all its tx are sent, inicating that there are no more tx messages
         if (blockHashes.count == 1) [self sendPingMessage];
@@ -807,9 +810,9 @@ services:(uint64_t)services
     }
     //else NSLog(@"%@:%u got merkleblock %@", self.host, self.port, block.blockHash);
     
-    NSMutableSet *txHashes = [NSMutableSet setWithArray:block.txHashes];
+    NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSetWithArray:block.txHashes];
 
-    [txHashes minusSet:self.knownTxHashes];
+    [txHashes minusOrderedSet:self.knownTxHashes];
 
     if (txHashes.count > 0) { // wait til we get all the tx messages before processing the block
         self.currentBlock = block;
