@@ -164,7 +164,7 @@ static const char *dns_seeds[] = {
             [self savePeers];
             [self saveBlocks];
             [ZNMerkleBlockEntity saveContext];
-            if (self.syncProgress >= 1.0) [self.peers.array makeObjectsPerformSelector:@selector(disconnect)];
+            if (self.syncProgress >= 1.0) [self.connectedPeers makeObjectsPerformSelector:@selector(disconnect)];
         }];
 
     self.seedObserver =
@@ -182,9 +182,7 @@ static const char *dns_seeds[] = {
             _lastBlock = nil;
             _lastOrphan = nil;
 
-            for (ZNPeer *peer in self.connectedPeers) {
-                [peer disconnect];
-            }
+            [self.connectedPeers makeObjectsPerformSelector:@selector(disconnect)];
         }];
 
     return self;
@@ -552,12 +550,18 @@ static const char *dns_seeds[] = {
 - (void)syncStopped
 {
     if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateBackground) {
-        [self.peers.array makeObjectsPerformSelector:@selector(disconnect)];
+        [self.connectedPeers makeObjectsPerformSelector:@selector(disconnect)];
+        [self.connectedPeers removeAllObjects];
     }
 
     if (self.taskId != UIBackgroundTaskInvalid) {
         [[UIApplication sharedApplication] endBackgroundTask:self.taskId];
         self.taskId = UIBackgroundTaskInvalid;
+
+        for (ZNPeer *p in self.connectedPeers) { // after syncing, load filters and get mempools from connected peers
+            if (p != self.downloadPeer) [p sendFilterloadMessage:self.bloomFilter.data];
+            [p sendMempoolMessage];
+        }
     }
 
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -699,12 +703,6 @@ static const char *dns_seeds[] = {
     }
     else {
         [self syncStopped];
-
-        for (ZNPeer *p in self.connectedPeers) {
-            [p sendFilterloadMessage:self.bloomFilter.data];
-            [p sendMempoolMessage];
-        }
-
         [peer sendGetaddrMessage]; // request a list of other bitcoin peers
 
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -740,7 +738,7 @@ static const char *dns_seeds[] = {
     dispatch_async(dispatch_get_main_queue(), ^{
         if (! self.connected && self.connectFailures == MAX_CONNENCT_FAILURES) {
             [[NSNotificationCenter defaultCenter] postNotificationName:ZNPeerManagerSyncFailedNotification
-             object:nil userInfo:@{@"error":error}];
+             object:nil userInfo:error ? @{@"error":error} : nil];
         }
         else if (self.connectFailures < MAX_CONNENCT_FAILURES) [self connect];
     });
@@ -961,12 +959,6 @@ static const char *dns_seeds[] = {
         [self saveBlocks];
         [ZNMerkleBlockEntity saveContext];
         [self syncStopped];
-
-        for (ZNPeer *p in self.connectedPeers) {
-            [p sendFilterloadMessage:self.bloomFilter.data];
-            [p sendMempoolMessage];
-        }
-
         [peer sendGetaddrMessage]; // request a list of other bitcoin peers
 
         dispatch_async(dispatch_get_main_queue(), ^{
