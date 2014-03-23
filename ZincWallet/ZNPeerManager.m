@@ -805,7 +805,7 @@ static const char *dns_seeds[] = {
 
             if (! hash || [self.bloomFilter containsData:hash]) continue;
             
-            _bloomFilter = nil;
+            _bloomFilter = nil; // reset the filter so a new one will be created with the new wallet addresses
             self.filterWasReset = YES;
             break;
         }

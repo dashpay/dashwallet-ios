@@ -272,6 +272,7 @@ static NSUInteger _fetchBatchSize = 100;
 
 #pragma mark - entity methods
 
+// override this if entity name differes from class name
 + (NSString *)entityName
 {
     return NSStringFromClass([self class]);

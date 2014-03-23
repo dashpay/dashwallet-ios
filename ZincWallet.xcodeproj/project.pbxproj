@@ -25,6 +25,8 @@
 		75183B88178B4ABE0032F365 /* ZNWelcomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75183B87178B4ABE0032F365 /* ZNWelcomeViewController.m */; };
 		751E809F1789797500E3CFB2 /* gear@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 751E809D1789797500E3CFB2 /* gear@2x.png */; };
 		751E80A01789797500E3CFB2 /* refresh@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 751E809E1789797500E3CFB2 /* refresh@2x.png */; };
+		75204DF818DD0C40002FA28C /* BIP39EnglishWords.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75204DF718DD0C40002FA28C /* BIP39EnglishWords.plist */; };
+		75204DFB18DD0D93002FA28C /* ZNBIP39Mnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = 75204DFA18DD0D93002FA28C /* ZNBIP39Mnemonic.m */; };
 		752327FE17A088DA00DDEFBB /* zincwallet-big@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 752327FD17A088DA00DDEFBB /* zincwallet-big@2x.png */; };
 		752C2F8717406EEA0033F636 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 752C2F8617406EEA0033F636 /* Reachability.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		752C2F8917406FF70033F636 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 752C2F8817406FF70033F636 /* SystemConfiguration.framework */; };
@@ -932,6 +934,9 @@
 		75183B87178B4ABE0032F365 /* ZNWelcomeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNWelcomeViewController.m; sourceTree = "<group>"; };
 		751E809D1789797500E3CFB2 /* gear@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "gear@2x.png"; sourceTree = "<group>"; };
 		751E809E1789797500E3CFB2 /* refresh@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "refresh@2x.png"; sourceTree = "<group>"; };
+		75204DF718DD0C40002FA28C /* BIP39EnglishWords.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = BIP39EnglishWords.plist; sourceTree = "<group>"; };
+		75204DF918DD0D93002FA28C /* ZNBIP39Mnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNBIP39Mnemonic.h; sourceTree = "<group>"; };
+		75204DFA18DD0D93002FA28C /* ZNBIP39Mnemonic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNBIP39Mnemonic.m; sourceTree = "<group>"; };
 		752327FD17A088DA00DDEFBB /* zincwallet-big@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "zincwallet-big@2x.png"; sourceTree = "<group>"; };
 		752C2F8517406EEA0033F636 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
 		752C2F8617406EEA0033F636 /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
@@ -3287,6 +3292,7 @@
 				75B4942017C43CAC003A3FCA /* MnemonicVerbs.plist */,
 				75EAE8421752D20800FDB2D2 /* ElectrumSeedWords.plist */,
 				753E7CDA180387A600FC6BA7 /* FixedPeers.plist */,
+				75204DF718DD0C40002FA28C /* BIP39EnglishWords.plist */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -3380,6 +3386,8 @@
 				75A6ECE217BD464A0043E52D /* ZNZincMnemonic.m */,
 				847C2300179A1FD600163CEF /* ZNElectrumMnemonic.h */,
 				847C2301179A1FD600163CEF /* ZNElectrumMnemonic.m */,
+				75204DF918DD0D93002FA28C /* ZNBIP39Mnemonic.h */,
+				75204DFA18DD0D93002FA28C /* ZNBIP39Mnemonic.m */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -3813,6 +3821,7 @@
 				752327FE17A088DA00DDEFBB /* zincwallet-big@2x.png in Resources */,
 				753E7CDB180387A600FC6BA7 /* FixedPeers.plist in Resources */,
 				759145B917EB87BF0040D496 /* info-pressed@2x.png in Resources */,
+				75204DF818DD0C40002FA28C /* BIP39EnglishWords.plist in Resources */,
 				7593BD0A17A24D1500F814F6 /* cameraguide-small@2x.png in Resources */,
 				756E9CD817AD802700D316A8 /* wallpaper-welcome@2x.png in Resources */,
 				759145B717EB7CE00040D496 /* info@2x.png in Resources */,
@@ -4603,6 +4612,7 @@
 				753E7CD61801628C00FC6BA7 /* ZNPeerManager.m in Sources */,
 				75F1B87917C7356B00680E1B /* NSManagedObject+Utils.m in Sources */,
 				75F1B87D17C7506200680E1B /* ZincWallet.xcdatamodeld in Sources */,
+				75204DFB18DD0D93002FA28C /* ZNBIP39Mnemonic.m in Sources */,
 				757BFF2D17CBD0D700D1C4AF /* ZNAddressEntity.m in Sources */,
 				75AC8163181385D100ACA0C9 /* ZNMerkleBlockEntity.m in Sources */,
 				757BFF3017CC1A9100D1C4AF /* ZNTxInputEntity.m in Sources */,

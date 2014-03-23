@@ -838,6 +838,7 @@ services:(uint64_t)services
     }
 }
 
+// // described in BIP61: https://gist.github.com/gavinandresen/7079034
 - (void)acceptRejectMessage:(NSData *)message
 {
     NSUInteger off = 0, l = 0;

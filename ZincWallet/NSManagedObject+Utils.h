@@ -59,7 +59,7 @@
 
 + (void)saveContext;
 
-+ (NSString *)entityName;
++ (NSString *)entityName; // override this if entity name differs from class name
 + (NSFetchRequest *)fetchRequest;
 + (NSFetchedResultsController *)fetchedResultsController:(NSFetchRequest *)request;
 

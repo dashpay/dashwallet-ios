@@ -93,11 +93,16 @@
 //
 - (NSData *)decodePhrase:(NSString *)phrase
 {
-    NSArray *words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:WORDS ofType:@"plist"]];
     CFMutableStringRef s = CFStringCreateMutableCopy(SecureAllocator(), phrase.length, (__bridge CFStringRef)phrase);
 
+    CFStringLowercase(s, CFLocaleGetSystem());
+    CFStringFindAndReplace(s, CFSTR("."), CFSTR(" "), CFRangeMake(0, CFStringGetLength(s)), 0);
+    CFStringFindAndReplace(s, CFSTR(","), CFSTR(" "), CFRangeMake(0, CFStringGetLength(s)), 0);
+    CFStringFindAndReplace(s, CFSTR("\n"), CFSTR(" "), CFRangeMake(0, CFStringGetLength(s)), 0);
     CFStringTrimWhitespace(s);
+    while (CFStringFindAndReplace(s, CFSTR("  "), CFSTR(" "), CFRangeMake(0, CFStringGetLength(s)), 0) != 0);
 
+    NSArray *words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:WORDS ofType:@"plist"]];
     NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), s, CFSTR(" ")));
     NSMutableData *d = [NSMutableData secureDataWithCapacity:a.count*4/3];
     int32_t n = (int32_t)words.count, x, w1, w2, w3;
@@ -130,6 +135,5 @@
     x = w1 = w2 = w3 = 0;
     return d;
 }
-
 
 @end

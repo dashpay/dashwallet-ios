@@ -61,7 +61,7 @@
 #define MSG_FILTERCLEAR @"filterclear"
 #define MSG_MERKLEBLOCK @"merkleblock"
 #define MSG_ALERT       @"alert"
-#define MSG_REJECT      @"reject" // described in BIP 61: https://gist.github.com/gavinandresen/7079034
+#define MSG_REJECT      @"reject" // described in BIP61: https://gist.github.com/gavinandresen/7079034
 
 @class ZNPeer, ZNTransaction, ZNMerkleBlock;
 
