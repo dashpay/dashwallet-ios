@@ -28,6 +28,7 @@
 #import "ZNKey.h"
 #import "ZNKeySequence.h"
 #import "ZNZincMnemonic.h"
+#import "ZNBIP39Mnemonic.h"
 #import "ZNPeer.h"
 #import "ZNTransaction.h"
 #import "ZNTransactionEntity.h"
@@ -46,10 +47,12 @@
 #define LOCAL_CURRENCY_SYMBOL_KEY @"LOCAL_CURRENCY_SYMBOL"
 #define LOCAL_CURRENCY_CODE_KEY   @"LOCAL_CURRENCY_CODE"
 #define LOCAL_CURRENCY_PRICE_KEY  @"LOCAL_CURRENCY_PRICE"
+#define MNEMONIC_KEY              @"mnemonic"
 #define SEED_KEY                  @"seed"
 #define CREATION_TIME_KEY         @"creationtime"
 
-#define SEC_ATTR_SERVICE @"cc.zinc.zincwallet"
+#define SEED_ENTROPY_LENGTH    (128/8)
+#define SEC_ATTR_SERVICE       @"cc.zinc.zincwallet"
 #define DEFAULT_CURRENCY_PRICE 100000.0
 
 #define BASE_URL    @"https://blockchain.info"
@@ -160,14 +163,7 @@ static NSData *getKeychainData(NSString *key)
 
 - (NSData *)seed
 {
-    NSData *seed = getKeychainData(SEED_KEY);
-
-    if (seed != nil && seed.length != SEQUENCE_SEED_LENGTH) {
-        self.seed = nil;
-        return nil;
-    }
-
-    return seed;
+    return getKeychainData(SEED_KEY);
 }
 
 - (void)setSeed:(NSData *)seed
@@ -180,6 +176,7 @@ static NSData *getKeychainData(NSString *key)
         [NSManagedObject saveContext];
     }];
 
+    setKeychainData(nil, MNEMONIC_KEY);
     setKeychainData(nil, CREATION_TIME_KEY);
     setKeychainData(seed, SEED_KEY);
 
@@ -192,26 +189,43 @@ static NSData *getKeychainData(NSString *key)
 
 - (NSString *)seedPhrase
 {
-    id<ZNMnemonic> mnemonic = [ZNZincMnemonic sharedInstance];
+    NSData *phrase = getKeychainData(MNEMONIC_KEY);
 
-    return [mnemonic encodePhrase:self.seed];
+    if (! phrase) return [[ZNZincMnemonic sharedInstance] encodePhrase:self.seed]; // use old phrase format
+
+    return CFBridgingRelease(CFStringCreateFromExternalRepresentation(SecureAllocator(), (__bridge CFDataRef)phrase,
+                                                                      kCFStringEncodingUTF8));
 }
 
 - (void)setSeedPhrase:(NSString *)seedPhrase
 {
-    id<ZNMnemonic> mnemonic = [ZNZincMnemonic sharedInstance];
+    @autoreleasepool {
+        if (! [[ZNBIP39Mnemonic sharedInstance] phraseIsValid:seedPhrase]) { // phrase is in old format
+            self.seed = [[ZNZincMnemonic sharedInstance] decodePhrase:seedPhrase];
+            return;
+        }
 
-    self.seed = [mnemonic decodePhrase:seedPhrase];
+        ZNBIP39Mnemonic *m = [ZNBIP39Mnemonic sharedInstance];
+        
+        seedPhrase = [m encodePhrase:[m decodePhrase:seedPhrase]];
+        self.seed = [m deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
+
+        NSData *d = CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(),
+                                                                           (__bridge CFStringRef)seedPhrase,
+                                                                           kCFStringEncodingUTF8, 0));
+        
+        setKeychainData(d, MNEMONIC_KEY);
+    }
 }
 
 - (void)generateRandomSeed
 {
-    NSMutableData *seed = [NSMutableData secureDataWithLength:SEQUENCE_SEED_LENGTH];
+    NSMutableData *entropy = [NSMutableData secureDataWithLength:SEED_ENTROPY_LENGTH];
     NSTimeInterval time = [NSDate timeIntervalSinceReferenceDate];
 
-    SecRandomCopyBytes(kSecRandomDefault, seed.length, seed.mutableBytes);
+    SecRandomCopyBytes(kSecRandomDefault, entropy.length, entropy.mutableBytes);
 
-    self.seed = seed;
+    self.seedPhrase = [[ZNBIP39Mnemonic sharedInstance] encodePhrase:entropy];
 
     // we store the wallet creation time on the keychain because keychain data persists even when an app is deleted
     setKeychainData([NSData dataWithBytes:&time length:sizeof(time)], CREATION_TIME_KEY);

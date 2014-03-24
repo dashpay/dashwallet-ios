@@ -25,7 +25,6 @@
 
 #import <Foundation/Foundation.h>
 
-#define SEQUENCE_SEED_LENGTH        (128/8)
 #define SEQUENCE_GAP_LIMIT_EXTERNAL 10
 #define SEQUENCE_GAP_LIMIT_INTERNAL 3
 

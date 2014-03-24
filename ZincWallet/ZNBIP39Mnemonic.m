@@ -146,8 +146,8 @@
     CCKeyDerivationPBKDF(kCCPBKDF2, strptr, strlen(strptr), (const uint8_t *)saltptr, strlen(saltptr),
                          kCCPRFHmacAlgSHA512, 2048, key.mutableBytes, key.length);
 
-    OPENSSL_cleanse(strbuf, sizeof(strbuf));
-    OPENSSL_cleanse(saltbuf, sizeof(saltbuf));
+    if (strptr == strbuf) OPENSSL_cleanse(strbuf, sizeof(strbuf));
+    if (saltptr == saltbuf) OPENSSL_cleanse(saltbuf, sizeof(saltbuf));
     CFRelease(str);
     CFRelease(salt);
 

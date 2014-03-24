@@ -32,5 +32,6 @@
 
 - (NSString *)encodePhrase:(NSData *)data;
 - (NSData *)decodePhrase:(NSString *)phrase;
+- (BOOL)phraseIsValid:(NSString *)phrase;
 
 @end

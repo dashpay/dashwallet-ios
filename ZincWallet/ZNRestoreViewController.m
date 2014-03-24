@@ -33,6 +33,8 @@
 #define SHFT @"\xE2\x87\xA7" // upwards white arrow (utf-8)
 #define BKSP @"\xE2\x8C\xAB" // erase to the left (backspace) (utf-8)
 
+#define PHRASE_LENGTH 12
+
 @interface ZNRestoreViewController ()
 
 @property (nonatomic, strong) IBOutlet UITextView *textView;
@@ -40,7 +42,6 @@
 @property (nonatomic, strong) IBOutletCollection(UIButton) NSArray *keys;
 
 @property (nonatomic, strong) id<ZNMnemonic> mnemonic;
-@property (nonatomic, strong) NSSet *adjs, *nouns, *advs, *verbs;
 
 @end
 
@@ -70,27 +71,6 @@
     [super viewWillAppear:animated];
 
     [self.textView becomeFirstResponder];
-}
-
-- (void)viewDidAppear:(BOOL)animated
-{
-    [super viewDidAppear:animated];
-    
-    self.adjs = [NSSet setWithArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
-                 pathForResource:@"MnemonicAdjs" ofType:@"plist"]]];
-    self.nouns = [NSSet setWithArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
-                  pathForResource:@"MnemonicNouns" ofType:@"plist"]]];
-    self.advs = [NSSet setWithArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
-                 pathForResource:@"MnemonicAdvs" ofType:@"plist"]]];
-    self.verbs = [NSSet setWithArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
-                  pathForResource:@"MnemonicVerbs" ofType:@"plist"]]];
-}
-
-- (void)viewWillDisappear:(BOOL)animated
-{
-    self.adjs = self.nouns = self.advs = self.verbs = nil;
-    
-    [super viewWillDisappear:animated];
 }
 
 #pragma mark - IBAction
@@ -153,15 +133,6 @@
     NSArray *a = [s componentsSeparatedByString:@" "];
     NSString *incorrect = nil;
         
-    for (NSUInteger i = 0; i < SEQUENCE_SEED_LENGTH*3/4; i += 6) {
-        if (i < a.count && ! [self.adjs containsObject:a[i]]) incorrect = a[i];
-        else if (i + 1 < a.count && ! [self.nouns containsObject:a[i + 1]]) incorrect = a[i + 1];
-        else if (i + 2 < a.count && ! [self.advs containsObject:a[i + 2]]) incorrect = a[i + 2];
-        else if (i + 3 < a.count && ! [self.verbs containsObject:a[i + 3]]) incorrect = a[i + 3];
-        else if (i + 4 < a.count && ! [self.adjs containsObject:a[i + 4]]) incorrect = a[i + 4];
-        else if (i + 5 < a.count && ! [self.nouns containsObject:a[i + 5]]) incorrect = a[i + 5];
-    }
-
     if ([s isEqual:@"wipe"]) { // shortcut word to force the wipe option to appear
         [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"cancel"
           destructiveButtonTitle:@"wipe" otherButtonTitles:nil]
@@ -175,9 +146,9 @@
           message:[incorrect stringByAppendingString:@" is not the correct backup phrase word"] delegate:nil
           cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
     }
-    else if (a.count != SEQUENCE_SEED_LENGTH*3/4) {
+    else if (a.count != PHRASE_LENGTH) {
         [[[UIAlertView alloc] initWithTitle:nil
-          message:[NSString stringWithFormat:@"backup phrase must be %d words", SEQUENCE_SEED_LENGTH*3/4] delegate:nil
+          message:[NSString stringWithFormat:@"backup phrase must be %d words", PHRASE_LENGTH] delegate:nil
           cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
     }
     else if ([[ZNWalletManager sharedInstance] seed]) {

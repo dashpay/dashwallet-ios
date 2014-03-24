@@ -28,7 +28,8 @@
 #import "NSString+Base58.h"
 #import "NSMutableData+Bitcoin.h"
 
-#define WORDS @"ElectrumSeedWords"
+#define WORDS       @"ElectrumSeedWords"
+#define SEED_LENGTH (128/8)
 
 @implementation ZNElectrumMnemonic
 
@@ -109,8 +110,8 @@
 
     CFRelease(s);
 
-    if (a.count != SEQUENCE_SEED_LENGTH*3/4) {
-        NSLog(@"phrase should be %d words, found %d instead", SEQUENCE_SEED_LENGTH*3/4, (int)a.count);
+    if (a.count != SEED_LENGTH*3/4) {
+        NSLog(@"phrase should be %d words, found %d instead", SEED_LENGTH*3/4, (int)a.count);
         return nil;
     }
 
@@ -134,6 +135,11 @@
     
     x = w1 = w2 = w3 = 0;
     return d;
+}
+
+- (BOOL)phraseIsValid:(NSString *)phrase
+{
+    return ([self decodePhrase:phrase] == nil) ? NO : YES;
 }
 
 @end

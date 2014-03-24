@@ -106,7 +106,11 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
 
 - (NSData *)masterPublicKey
 {
-    if (! _masterPublicKey) _masterPublicKey = [self.sequence masterPublicKeyFromSeed:self.seed()];
+    if (! _masterPublicKey) {
+        @autoreleasepool {
+            _masterPublicKey = [self.sequence masterPublicKeyFromSeed:self.seed()];
+        }
+    }
     return _masterPublicKey;
 }
 
@@ -320,27 +324,26 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
 - (BOOL)signTransaction:(ZNTransaction *)transaction
 {
-    NSData *seed = self.seed();
-    NSMutableArray *pkeys = [NSMutableArray array];
-    NSMutableOrderedSet *externalIndexes = [NSMutableOrderedSet orderedSet],
-                        *internalIndexes = [NSMutableOrderedSet orderedSet];
+    @autoreleasepool {
+        NSData *seed = self.seed();
+        NSMutableArray *pkeys = [NSMutableArray array];
+        NSMutableOrderedSet *externalIndexes = [NSMutableOrderedSet orderedSet],
+                            *internalIndexes = [NSMutableOrderedSet orderedSet];
 
-    for (NSString *addr in transaction.inputAddresses) {
-        [internalIndexes addObject:@([self.internalAddresses indexOfObject:addr])];
-        [externalIndexes addObject:@([self.externalAddresses indexOfObject:addr])];
+        for (NSString *addr in transaction.inputAddresses) {
+            [internalIndexes addObject:@([self.internalAddresses indexOfObject:addr])];
+            [externalIndexes addObject:@([self.externalAddresses indexOfObject:addr])];
+        }
+        
+        [internalIndexes removeObject:@(NSNotFound)];
+        [externalIndexes removeObject:@(NSNotFound)];
+        [pkeys addObjectsFromArray:[self.sequence privateKeys:[externalIndexes array] internal:NO fromSeed:seed]];
+        [pkeys addObjectsFromArray:[self.sequence privateKeys:[internalIndexes array] internal:YES fromSeed:seed]];
+        
+        [transaction signWithPrivateKeys:pkeys];
+        
+        return [transaction isSigned];
     }
-
-    [internalIndexes removeObject:@(NSNotFound)];
-    [externalIndexes removeObject:@(NSNotFound)];
-    [pkeys addObjectsFromArray:[self.sequence privateKeys:[externalIndexes array] internal:NO fromSeed:seed]];
-    [pkeys addObjectsFromArray:[self.sequence privateKeys:[internalIndexes array] internal:YES fromSeed:seed]];
-
-    [transaction signWithPrivateKeys:pkeys];
-    
-    seed = nil;
-    pkeys = nil;
-    
-    return [transaction isSigned];
 }
 
 // true if the given transaction is associated with the wallet, false otherwise

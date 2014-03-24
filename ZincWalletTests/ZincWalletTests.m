@@ -524,6 +524,7 @@
     NSData *seed_nfkc = [m deriveKeyFromPhrase:words_nfkc withPassphrase:passphrase_nfkc];
     NSData *seed_nfd = [m deriveKeyFromPhrase:words_nfd withPassphrase:passphrase_nfd];
 
+    // test multiple different unicode representations of the same phrase
     XCTAssertEqualObjects(seed_nfkd, seed_nfc, @"[ZNBIP39Mnemonic deriveKeyFromPhrase: withPassphrase:]");
     XCTAssertEqualObjects(seed_nfkd, seed_nfkc, @"[ZNBIP39Mnemonic deriveKeyFromPhrase: withPassphrase:]");
     XCTAssertEqualObjects(seed_nfkd, seed_nfd, @"[ZNBIP39Mnemonic deriveKeyFromPhrase: withPassphrase:]");
