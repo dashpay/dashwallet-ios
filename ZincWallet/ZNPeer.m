@@ -153,6 +153,7 @@ services:(uint64_t)services
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
+    self.currentBlockHashes = [NSMutableOrderedSet orderedSet];
 
     NSString *label = [NSString stringWithFormat:@"cc.zinc.peer.%@:%d", self.host, self.port];
 
@@ -235,7 +236,7 @@ services:(uint64_t)services
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending handshake timeout
     _status = ZNPeerStatusConnected;
     dispatch_async(self.delegateQueue, ^{
-        [self.delegate peerConnected:self];
+        if (_status == ZNPeerStatusConnected) [self.delegate peerConnected:self];
     });
 }
 
@@ -297,13 +298,6 @@ services:(uint64_t)services
 - (void)sendFilterloadMessage:(NSData *)filter
 {
     [self sendMessage:filter type:MSG_FILTERLOAD];
-
-    // the new bloom filter may contain additional wallet addresses, so re-send the most recent getdata message to get
-    // any additional transactions matching the new filter
-    if (self.currentBlockHashes.count > 1) {
-        NSLog(@"%@:%d re-requesting %d blocks", self.host, self.port, self.currentBlockHashes.count);
-        [self sendGetdataMessageWithTxHashes:@[] andBlockHashes:self.currentBlockHashes.array];
-    }
 }
 
 - (void)sendMempoolMessage
@@ -359,6 +353,8 @@ services:(uint64_t)services
     }
     
     [msg appendData:hashStop ? hashStop : ZERO_HASH];
+    NSLog(@"%@:%u calling getheaders with locators: %@", self.host, self.port,
+          @[locators.firstObject, locators.lastObject]);
     [self sendMessage:msg type:MSG_GETHEADERS];
 }
 
@@ -411,6 +407,19 @@ services:(uint64_t)services
     }
     
     [self sendMessage:msg type:MSG_GETDATA];
+}
+
+// re-send the most recent getdata message to get any additional transactions following a bloom filter update
+- (void)rereqeustBlocksFrom:(NSData *)blockHash
+{
+    NSUInteger i = [self.currentBlockHashes indexOfObject:blockHash];
+
+    if (i != NSNotFound) {
+        [self.currentBlockHashes removeObjectsInRange:NSMakeRange(0, i)];
+        NSLog(@"%@:%d re-requesting %d blocks", self.host, self.port, self.currentBlockHashes.count);
+        //BUG: XXXX need to cancel queued block relays to delegate, could get confirmed tx showing as unconfirmed
+        [self sendGetdataMessageWithTxHashes:@[] andBlockHashes:self.currentBlockHashes.array];
+    }
 }
 
 - (void)sendGetaddrMessage
@@ -551,7 +560,7 @@ services:(uint64_t)services
     }
 
     dispatch_async(self.delegateQueue, ^{
-        [self.delegate peer:self relayedPeers:peers];
+        if (_status == ZNPeerStatusConnected) [self.delegate peer:self relayedPeers:peers];
     });
 }
 
@@ -596,7 +605,7 @@ services:(uint64_t)services
     // to improve chain download performance, if we received 500 block hashes, we request the next 500 block hashes
     // immediately before sending the getdata request
     if (blockHashes.count >= 500) {
-        [self sendGetblocksMessageWithLocators:@[blockHashes.lastObject, blockHashes[0]] andHashStop:nil];
+        [self sendGetblocksMessageWithLocators:@[blockHashes.lastObject, blockHashes.firstObject] andHashStop:nil];
     }
 
     [txHashes minusOrderedSet:self.knownTxHashes];
@@ -609,9 +618,14 @@ services:(uint64_t)services
         // to get a pong reply after the block and all its tx are sent, inicating that there are no more tx messages
         if (blockHashes.count == 1) [self sendPingMessage];
     }
-    
-    // keep track of the blockHashes requested in case we need to re-request them with an updated bloom filter
-    if (self.currentBlockHashes.count == 0 || blockHashes.count > 1) self.currentBlockHashes = blockHashes;
+
+    if (blockHashes.count > 0) { // remember blockHashes in case we need to re-request them with an updated bloom filter
+        [self.currentBlockHashes unionOrderedSet:blockHashes];
+        if (self.currentBlockHashes.count > BLOCK_DIFFICULTY_INTERVAL*10) {
+            [self.currentBlockHashes
+             removeObjectsInRange:NSMakeRange(0, self.currentBlockHashes.count - BLOCK_DIFFICULTY_INTERVAL*10)];
+        }
+    }
 }
 
 - (void)acceptTxMessage:(NSData *)message
@@ -626,7 +640,7 @@ services:(uint64_t)services
     NSLog(@"%@:%u got tx %@", self.host, self.port, tx.txHash);
 
     dispatch_async(self.delegateQueue, ^{
-        [self.delegate peer:self relayedTransaction:tx];
+        if (_status == ZNPeerStatusConnected) [self.delegate peer:self relayedTransaction:tx];
     });
 
     if (self.currentBlock) { // we're collecting tx messages for a merkleblock
@@ -636,7 +650,7 @@ services:(uint64_t)services
             ZNMerkleBlock *block = self.currentBlock;
 
             dispatch_async(self.delegateQueue, ^{
-                [self.delegate peer:self relayedBlock:block];
+                if (_status == ZNPeerStatusConnected) [self.delegate peer:self relayedBlock:block];
             });
             self.currentBlock = nil;
             self.currentTxHashes = nil;
@@ -672,10 +686,7 @@ services:(uint64_t)services
             NSLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, @[lastHash, firstHash]);
             [self sendGetblocksMessageWithLocators:@[lastHash, firstHash] andHashStop:nil];
         }
-        else {
-            NSLog(@"%@:%u calling getheaders with locators: %@", self.host, self.port, @[lastHash, firstHash]);
-            [self sendGetheadersMessageWithLocators:@[lastHash, firstHash] andHashStop:nil];
-        }
+        else [self sendGetheadersMessageWithLocators:@[lastHash, firstHash] andHashStop:nil];
     }
 
     NSLog(@"%@:%u got %u headers", self.host, self.port, (int)count);
@@ -691,7 +702,7 @@ services:(uint64_t)services
             }
 
             dispatch_async(self.delegateQueue, ^{
-                [self.delegate peer:self relayedBlock:block];
+                if (_status == ZNPeerStatusConnected) [self.delegate peer:self relayedBlock:block];
             });
         }
     });
@@ -833,7 +844,7 @@ services:(uint64_t)services
     }
     else {
         dispatch_async(self.delegateQueue, ^{
-            [self.delegate peer:self relayedBlock:block];
+            if (_status == ZNPeerStatusConnected) [self.delegate peer:self relayedBlock:block];
         });
     }
 }

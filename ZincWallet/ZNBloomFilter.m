@@ -157,7 +157,7 @@ flags:(uint8_t)flags
             if (! [self containsData:elem]) continue;
             [d setData:tx.txHash];
             [d appendUInt32:n];
-            if (! [self containsData:d]) [self insertData:d]; // update bloom filter with matched txout
+            [self insertData:d]; // update bloom filter with matched txout
             break;
         }
 

@@ -124,5 +124,6 @@ services:(uint64_t)services;
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop;
 - (void)sendInvMessageWithTxHash:(NSData *)txHash;
 - (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes;
+- (void)rereqeustBlocksFrom:(NSData *)blockHash; // useful to get additional transactions after a bloom filter update
 
 @end

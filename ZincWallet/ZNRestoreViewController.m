@@ -57,7 +57,7 @@
     
     self.textView.layer.cornerRadius = 5.0;
     
-    if (self.navigationController.viewControllers[0] != self) return;
+    if (self.navigationController.viewControllers.firstObject != self) return;
     
     self.textView.layer.borderColor = [[UIColor colorWithWhite:0.0 alpha:0.25] CGColor];
     self.textView.layer.borderWidth = 0.5;

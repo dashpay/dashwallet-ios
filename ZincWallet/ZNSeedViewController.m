@@ -47,12 +47,12 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    self.wallpaper.hidden = (self.navigationController.viewControllers[0] != self) ? YES : NO;
+    self.wallpaper.hidden = (self.navigationController.viewControllers.firstObject != self) ? YES : NO;
     
     self.resignActiveObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.navigationController.viewControllers[0] != self) {
+            if (self.navigationController.viewControllers.firstObject != self) {
                 [self.navigationController popViewControllerAnimated:NO];
             }
         }];
@@ -72,7 +72,7 @@
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
  
     // remove done button if we're not the root of the nav stack
-    if (self.navigationController.viewControllers[0] != self) {
+    if (self.navigationController.viewControllers.firstObject != self) {
         self.navigationItem.leftBarButtonItem = nil;
     }
 
@@ -107,7 +107,7 @@
 
 - (IBAction)done:(id)sender
 {
-    if (self.navigationController.viewControllers[0] != self) return;
+    if (self.navigationController.viewControllers.firstObject != self) return;
 
     [[[UIAlertView alloc] initWithTitle:nil message:@"you can see your backup phrase again under settings" delegate:self
       cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
