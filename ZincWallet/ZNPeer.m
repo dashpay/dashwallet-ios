@@ -667,10 +667,7 @@ services:(uint64_t)services
             self.currentTxHashes = nil;
 
             dispatch_async(self.delegateQueue, ^{
-                if (_status == ZNPeerStatusConnected) {// &&
-                    //[self.requestedBlockHashes countForObject:block.blockHash] == 0) {
-                    [self.delegate peer:self relayedBlock:block];
-                }
+                if (_status == ZNPeerStatusConnected) [self.delegate peer:self relayedBlock:block];
             });
         }
     }
@@ -868,9 +865,7 @@ services:(uint64_t)services
     }
     else {
         dispatch_async(self.delegateQueue, ^{
-            if (_status == ZNPeerStatusConnected) {// && [self.requestedBlockHashes countForObject:block.blockHash] == 0) {
-                [self.delegate peer:self relayedBlock:block];
-            }
+            if (_status == ZNPeerStatusConnected) [self.delegate peer:self relayedBlock:block];
         });
     }
 }

@@ -43,7 +43,6 @@
 #define NODE_NETWORK          1 // services value indicating a node offers full blocks, not just headers
 #define PROTOCOL_TIMEOUT      30.0
 #define MAX_CONNENCT_FAILURES 20 // notify user of network problems after this many connect failures in a row
-#define RESEND_BLOOM_FILTER_COUNT 25000
 
 #if BITCOIN_TESTNET
 

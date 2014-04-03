@@ -78,7 +78,7 @@
     
     NSLog(@"privKey:S6c56bnXQiBjk9mqSYE7ykVQ7NzrRy = %@", key.address);
 #if ! BITCOIN_TESTNET
-    STAssertEqualObjects(@"1CciesT23BNionJeXrbxmjc7ywfiyM4oLW", key.address, @"[ZNKey keyWithPrivateKey:]");
+    XCTAssertEqualObjects(@"1CciesT23BNionJeXrbxmjc7ywfiyM4oLW", key.address, @"[ZNKey keyWithPrivateKey:]");
 #endif
 
     XCTAssertTrue([@"SzavMBLoXU6kDrqtUVmffv" isValidBitcoinPrivateKey],
@@ -89,7 +89,7 @@
     
     NSLog(@"privKey:SzavMBLoXU6kDrqtUVmffv = %@", key.address);
 #if ! BITCOIN_TESTNET
-    STAssertEqualObjects(@"1CC3X2gu58d6wXUWMffpuzN9JAfTUWu4Kj", key.address, @"[ZNKey keyWithPrivateKey:]");
+    XCTAssertEqualObjects(@"1CC3X2gu58d6wXUWMffpuzN9JAfTUWu4Kj", key.address, @"[ZNKey keyWithPrivateKey:]");
 #endif
 
     // uncompressed private key
@@ -97,7 +97,7 @@
     
     NSLog(@"privKey:5Kb8kLf9zgWQnogidDA76MzPL6TsZZY36hWXMssSzNydYXYB9KF = %@", key.address);
 #if ! BITCOIN_TESTNET
-    STAssertEqualObjects(@"1CC3X2gu58d6wXUWMffpuzN9JAfTUWu4Kj", key.address, @"[ZNKey keyWithPrivateKey:]");
+    XCTAssertEqualObjects(@"1CC3X2gu58d6wXUWMffpuzN9JAfTUWu4Kj", key.address, @"[ZNKey keyWithPrivateKey:]");
 #endif
     
     // uncompressed private key export
@@ -110,7 +110,7 @@
     
     NSLog(@"privKey:KyvGbxRUoofdw3TNydWn2Z78dBHSy2odn1d3wXWN2o3SAtccFNJL = %@", key.address);
 #if ! BITCOIN_TESTNET
-    STAssertEqualObjects(@"1JMsC6fCtYWkTjPPdDrYX3we2aBrewuEM3", key.address, @"[ZNKey keyWithPrivateKey:]");
+    XCTAssertEqualObjects(@"1JMsC6fCtYWkTjPPdDrYX3we2aBrewuEM3", key.address, @"[ZNKey keyWithPrivateKey:]");
 #endif
     
     // compressed private key export
@@ -769,7 +769,7 @@
                                   "0f844fb0903b3cccc4604107a9de6a0571c4a39996a9e4bd6ab596138ecae54f5".hexToData,
                          @"[ZNElectrumSequence publicKey:forChange:masterPublicKey:]");
 #if ! BITCOIN_TESTNET
-    STAssertEqualObjects(addr, @"1FHsTashEBUNPQwC1CwVjnKUxzwgw73pU4", @"[[ZNKey keyWithPublicKey:] address]");
+    XCTAssertEqualObjects(addr, @"1FHsTashEBUNPQwC1CwVjnKUxzwgw73pU4", @"[[ZNKey keyWithPublicKey:] address]");
 #endif
 }
 

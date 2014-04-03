@@ -145,6 +145,25 @@ static void CKDPrime(NSMutableData *K, NSMutableData *c, uint32_t i)
     BN_CTX_free(ctx);
 }
 
+// helper function for serializing BIP32 master public/private keys to standard export format
+static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, NSData *chain, NSData *key)
+{
+    NSMutableData *d = [NSMutableData secureDataWithCapacity:14 + key.length + chain.length];
+
+    fingerprint = CFSwapInt32HostToBig(fingerprint);
+    child = CFSwapInt32HostToBig(child);
+
+    [d appendBytes:key.length < 33 ? BIP32_XPRV : BIP32_XPUB length:4];
+    [d appendBytes:&depth length:1];
+    [d appendBytes:&fingerprint length:sizeof(fingerprint)];
+    [d appendBytes:&child length:sizeof(child)];
+    [d appendData:chain];
+    if (key.length < 33) [d appendBytes:"\0" length:1];
+    [d appendData:key];
+
+    return [NSString base58checkWithData:d];
+}
+
 @implementation ZNBIP32Sequence
 
 #pragma mark - ZNKeySequence
@@ -231,25 +250,6 @@ static void CKDPrime(NSMutableData *K, NSMutableData *c, uint32_t i)
 
 #pragma mark - serializations
 
-- (NSString *)serializeDepth:(uint8_t)depth fingerprint:(uint32_t)fingerprint child:(uint32_t)child
-chain:(NSData *)chain key:(NSData *)key
-{
-    NSMutableData *d = [NSMutableData secureDataWithCapacity:14 + key.length + chain.length];
-    
-    fingerprint = CFSwapInt32HostToBig(fingerprint);
-    child = CFSwapInt32HostToBig(child);
-    
-    [d appendBytes:key.length < 33 ? BIP32_XPRV : BIP32_XPUB length:4];
-    [d appendBytes:&depth length:1];
-    [d appendBytes:&fingerprint length:sizeof(fingerprint)];
-    [d appendBytes:&child length:sizeof(child)];
-    [d appendData:chain];
-    if (key.length < 33) [d appendBytes:"\0" length:1];
-    [d appendData:key];
-    
-    return [NSString base58checkWithData:d];
-}
-
 - (NSString *)serializedPrivateMasterFromSeed:(NSData *)seed
 {
     if (! seed) return nil;
@@ -261,7 +261,7 @@ chain:(NSData *)chain key:(NSData *)key
     NSData *secret = [NSData dataWithBytesNoCopy:I.mutableBytes length:32 freeWhenDone:NO];
     NSData *chain = [NSData dataWithBytesNoCopy:(unsigned char *)I.mutableBytes + 32 length:32 freeWhenDone:NO];
 
-    return [self serializeDepth:0 fingerprint:0 child:0 chain:chain key:secret];
+    return serialize(0, 0, 0, chain, secret);
 }
 
 - (NSString *)serializedMasterPublicKey:(NSData *)masterPublicKey
@@ -273,7 +273,7 @@ chain:(NSData *)chain key:(NSData *)key
     NSData *pubKey = [NSData dataWithBytesNoCopy:(unsigned char *)masterPublicKey.bytes + 36
                       length:masterPublicKey.length - 36 freeWhenDone:NO];
 
-    return [self serializeDepth:1 fingerprint:fingerprint child:0 | BIP32_PRIME chain:chain key:pubKey];
+    return serialize(1, fingerprint, 0 | BIP32_PRIME, chain, pubKey);
 }
 
 

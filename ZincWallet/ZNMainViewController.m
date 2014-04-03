@@ -60,7 +60,8 @@
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
-    
+
+    //TODO: XXXX visual indicator for testnet
     //TODO: make title use dynamic font size
     ZNWalletManager *m = [ZNWalletManager sharedInstance];
 
@@ -171,6 +172,17 @@
     [self.reachability startNotifier];
 
     self.navigationController.delegate = self;
+
+#if BITCOIN_TESTNET
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(10, self.pageControl.frame.origin.y - 21, 300, 21)];
+
+    label.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:13.0];
+    label.textColor = [UIColor redColor];
+    label.textAlignment = NSTextAlignmentCenter;
+    label.text = @"testnet";
+    [self.navigationController.view insertSubview:label atIndex:0];
+#endif
+
     [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
     self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                  [m localCurrencyStringForAmount:m.wallet.balance]];

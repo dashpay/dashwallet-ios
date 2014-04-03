@@ -395,8 +395,11 @@
                 case 0:
                     c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNAboutViewController"];
                     l = (id)[c.view viewWithTag:411];
+#if BITCOIN_TESTNET
+                    l.text = [l.text stringByReplacingOccurrencesOfString:@"%ver%" withString:@"%ver% (testnet)"];
+#endif
                     l.text = [l.text stringByReplacingOccurrencesOfString:@"%ver%"
-                              withString:NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"]];
+                              withString:NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"]];
                     [ZNStoryboardSegue segueFrom:self to:c completion:nil];
                     break;
                     
