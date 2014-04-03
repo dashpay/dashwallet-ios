@@ -66,6 +66,7 @@ typedef enum {
 @property (nonatomic, strong) ZNMerkleBlock *currentBlock;
 @property (nonatomic, strong) NSMutableOrderedSet *currentBlockHashes, *currentTxHashes, *knownTxHashes;
 @property (nonatomic, strong) NSCountedSet *requestedBlockHashes;
+@property (nonatomic, assign) uint32_t filterBlockCount;
 @property (nonatomic, strong) NSRunLoop *runLoop;
 @property (nonatomic, strong) dispatch_queue_t q;
 
@@ -299,6 +300,7 @@ services:(uint64_t)services
 
 - (void)sendFilterloadMessage:(NSData *)filter
 {
+    self.filterBlockCount = 0;
     [self sendMessage:filter type:MSG_FILTERLOAD];
 }
 
@@ -409,6 +411,13 @@ services:(uint64_t)services
     }
 
     [self.requestedBlockHashes addObjectsFromArray:blockHashes];
+
+    if (self.filterBlockCount + blockHashes.count > BLOCK_DIFFICULTY_INTERVAL) {
+        NSLog(@"%@:%d rebuilding bloom filter after %d blocks", self.host, self.port, self.filterBlockCount);
+        [self sendFilterloadMessage:[self.delegate peerBloomFilter:self]];
+    }
+
+    self.filterBlockCount += blockHashes.count;
     [self sendMessage:msg type:MSG_GETDATA];
 }
 
@@ -426,7 +435,7 @@ services:(uint64_t)services
     [self sendMessage:msg type:MSG_PING];
 }
 
-// re-send the most recent getdata message to get any additional transactions following a bloom filter update
+// re-request blocks starting from blockHash, useful for getting any additional transactions after a bloom filter update
 - (void)rereqeustBlocksFrom:(NSData *)blockHash
 {
     CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
@@ -658,8 +667,8 @@ services:(uint64_t)services
             self.currentTxHashes = nil;
 
             dispatch_async(self.delegateQueue, ^{
-                if (_status == ZNPeerStatusConnected &&
-                    [self.requestedBlockHashes countForObject:block.blockHash] == 0) {
+                if (_status == ZNPeerStatusConnected) {// &&
+                    //[self.requestedBlockHashes countForObject:block.blockHash] == 0) {
                     [self.delegate peer:self relayedBlock:block];
                 }
             });
@@ -844,7 +853,10 @@ services:(uint64_t)services
     //else NSLog(@"%@:%u got merkleblock %@", self.host, self.port, block.blockHash);
 
     [self.requestedBlockHashes removeObject:block.blockHash];
-    if ([self.requestedBlockHashes countForObject:block.blockHash] > 0) return; // block was rerequested, drop this one
+    if ([self.requestedBlockHashes countForObject:block.blockHash] > 0) {
+        NSLog(@"dropping re-requested block %@", block.blockHash);
+        return; // block was re-requested, drop this one
+    }
 
     NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSetWithArray:block.txHashes];
 
@@ -855,9 +867,8 @@ services:(uint64_t)services
         self.currentTxHashes = txHashes;
     }
     else {
-        //XXX track received blocks to remove from rereqeusts
         dispatch_async(self.delegateQueue, ^{
-            if (_status == ZNPeerStatusConnected && [self.requestedBlockHashes countForObject:block.blockHash] == 0) {
+            if (_status == ZNPeerStatusConnected) {// && [self.requestedBlockHashes countForObject:block.blockHash] == 0) {
                 [self.delegate peer:self relayedBlock:block];
             }
         });

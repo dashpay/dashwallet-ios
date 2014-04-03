@@ -86,7 +86,9 @@
     self.requests = [NSMutableArray arrayWithObject:req];
     self.requestIDs = [NSMutableArray arrayWithObject:QR_ID];
     self.requestButtons = [NSMutableArray array];
-    
+
+    //TODO: XXXX implement BIP72 payment protocol url handling
+    // https://github.com/bitcoin/bips/blob/master/bip-0072.mediawiki
     self.urlObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNURLNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {

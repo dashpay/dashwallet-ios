@@ -310,9 +310,6 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 
 - (NSUInteger)hash
 {
-#warning test test
-//    NSLog(@"0x%x for hash %@", *(NSUInteger *)_blockHash.bytes, _blockHash);
-
     if (_blockHash.length < sizeof(NSUInteger)) return [super hash];
     return *(NSUInteger *)_blockHash.bytes;
 }

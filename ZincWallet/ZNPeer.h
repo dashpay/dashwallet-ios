@@ -77,6 +77,7 @@
 - (void)peer:(ZNPeer *)peer relayedBlock:(ZNMerkleBlock *)block;
 
 - (ZNTransaction *)peer:(ZNPeer *)peer requestedTransaction:(NSData *)txHash;
+- (NSData *)peerBloomFilter:(ZNPeer *)peer;
 
 @end
 
@@ -123,7 +124,6 @@ services:(uint64_t)services;
 - (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop;
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop;
 - (void)sendInvMessageWithTxHash:(NSData *)txHash;
-- (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes;
 - (void)rereqeustBlocksFrom:(NSData *)blockHash; // useful to get additional transactions after a bloom filter update
 
 @end

@@ -155,7 +155,7 @@
     if ([self nextTip]) return;
 
     UIActionSheet *a = [UIActionSheet new];
-    
+
     a.title = [@"Receive bitcoins at this address: " stringByAppendingString:self.paymentAddress];
     a.delegate = self;
     [a addButtonWithTitle:@"copy"];
@@ -174,7 +174,8 @@
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
 {
     NSString *title = [actionSheet buttonTitleAtIndex:buttonIndex];
-    
+
+    //TODO: XXXX allow user to specify a request amount
     if ([title isEqual:@"copy"]) {
         [[UIPasteboard generalPasteboard] setString:self.paymentAddress];        
         [self.view addSubview:[[[ZNBubbleView viewWithText:@"copied"
@@ -182,6 +183,9 @@
                                 fadeIn] fadeOutAfterDelay:2.0]];
     }
     else if ([title isEqual:@"email"]) {
+        //TODO: XXXX implement BIP71 payment protocol mime attachement
+        // https://github.com/bitcoin/bips/blob/master/bip-0071.mediawiki
+        
         if ([MFMailComposeViewController canSendMail]) {
             MFMailComposeViewController *c = [MFMailComposeViewController new];
             

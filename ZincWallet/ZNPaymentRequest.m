@@ -54,7 +54,6 @@
     return [self initWithData:[url.absoluteString dataUsingEncoding:NSUTF8StringEncoding]];
 }
 
-
 - (instancetype)initWithData:(NSData *)data
 {
     if (! (self = [self init])) return nil;

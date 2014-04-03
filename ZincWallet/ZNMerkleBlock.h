@@ -46,7 +46,7 @@
 
 // true if merkle tree and timestamp are valid, and proof-of-work matches the stated difficulty target
 // NOTE: this only checks if the block difficulty matches the difficulty target in the header, it does not check if the
-// target is correct for the block's height in the chain, use verifyDifficultyAtHeight: for that
+// target is correct for the block's height in the chain, use verifyDifficultyFromPreviousBlock: for that
 @property (nonatomic, readonly, getter = isValid) BOOL valid;
 
 @property (nonatomic, readonly, getter = toData) NSData *data;
@@ -62,6 +62,8 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 // true if the given tx hash is known to be included in the block
 - (BOOL)containsTxHash:(NSData *)txHash;
 
+// Verifies the block difficulty target is correct for the block's position in the chain. Transition time may be 0 if
+// height is not a multiple of BLOCK_DIFFICULTY_INTERVAL.
 - (BOOL)verifyDifficultyFromPreviousBlock:(ZNMerkleBlock*)previous andTransitionTime:(NSTimeInterval)time;
 
 @end

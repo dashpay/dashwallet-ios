@@ -85,7 +85,7 @@
     NSArray *words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:WORDS ofType:@"plist"]];
     NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), s, CFSTR(" ")));
     NSMutableData *d = [NSMutableData secureDataWithCapacity:(a.count*11 + 7)/8];
-    uint32_t n = (int32_t)words.count, x, y;
+    uint32_t n = (uint32_t)words.count, x, y;
     uint8_t b;
 
     CFRelease(s);

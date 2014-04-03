@@ -43,6 +43,7 @@
 #define NODE_NETWORK          1 // services value indicating a node offers full blocks, not just headers
 #define PROTOCOL_TIMEOUT      30.0
 #define MAX_CONNENCT_FAILURES 20 // notify user of network problems after this many connect failures in a row
+#define RESEND_BLOOM_FILTER_COUNT 25000
 
 #if BITCOIN_TESTNET
 
@@ -110,9 +111,9 @@ static const char *dns_seeds[] = {
 @property (nonatomic, strong) NSMutableOrderedSet *peers;
 @property (nonatomic, strong) NSMutableSet *connectedPeers, *misbehavinPeers;
 @property (nonatomic, strong) ZNPeer *downloadPeer;
-@property (nonatomic, assign) uint32_t tweak, syncStartHeight;
+@property (nonatomic, assign) uint32_t tweak, syncStartHeight, filterUpdateHeight;
 @property (nonatomic, strong) ZNBloomFilter *bloomFilter;
-@property (nonatomic, assign) double falsePositiveRate;
+@property (nonatomic, assign) double fpRate;
 @property (nonatomic, assign) NSUInteger taskId, connectFailures;
 @property (nonatomic, assign) NSTimeInterval earliestKeyTime, lastRelayTime;
 @property (nonatomic, strong) NSMutableDictionary *blocks, *orphans, *checkpoints, *txRelays;
@@ -347,19 +348,20 @@ static const char *dns_seeds[] = {
 {
     if (_bloomFilter) return _bloomFilter;
 
-    self.falsePositiveRate = BLOOM_DEFAULT_FALSEPOSITIVE_RATE;
+    self.filterUpdateHeight = self.lastBlockHeight;
+    self.fpRate = BLOOM_DEFAULT_FALSEPOSITIVE_RATE;
 
     if (self.lastBlockHeight + BLOCK_DIFFICULTY_INTERVAL < self.downloadPeer.lastblock) {
-        self.falsePositiveRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE; // lower false positive rate during chain sync
+        self.fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE; // lower false positive rate during chain sync
     }
     else if (self.lastBlockHeight < self.downloadPeer.lastblock) { // partially lower fp rate if we're nearly synced
-        self.falsePositiveRate -= (BLOOM_DEFAULT_FALSEPOSITIVE_RATE - BLOOM_REDUCED_FALSEPOSITIVE_RATE)*
-                                  (self.downloadPeer.lastblock - self.lastBlockHeight)/BLOCK_DIFFICULTY_INTERVAL;
+        self.fpRate -= (BLOOM_DEFAULT_FALSEPOSITIVE_RATE - BLOOM_REDUCED_FALSEPOSITIVE_RATE)*
+                       (self.downloadPeer.lastblock - self.lastBlockHeight)/BLOCK_DIFFICULTY_INTERVAL;
     }
 
     ZNWallet *w = [[ZNWalletManager sharedInstance] wallet];
     NSUInteger elemCount = w.addresses.count + w.unspentOutputs.count;
-    ZNBloomFilter *filter = [ZNBloomFilter filterWithFalsePositiveRate:self.falsePositiveRate
+    ZNBloomFilter *filter = [ZNBloomFilter filterWithFalsePositiveRate:self.fpRate
                              forElementCount:(elemCount < 200) ? elemCount*1.5 : elemCount + 100
                              tweak:self.tweak flags:BLOOM_UPDATE_ALL];
 
@@ -372,7 +374,7 @@ static const char *dns_seeds[] = {
     for (NSData *utxo in w.unspentOutputs) { // add unspent outputs to watch for any tx sending money from the wallet
         if (! [filter containsData:utxo]) [filter insertData:utxo];
     }
-    
+
     _bloomFilter = filter;
     return _bloomFilter;
 }
@@ -548,8 +550,6 @@ static const char *dns_seeds[] = {
         [[UIApplication sharedApplication] endBackgroundTask:self.taskId];
         self.taskId = UIBackgroundTaskInvalid;
 
-        _bloomFilter = nil; // make sure we use a fresh bloom filter
-
         for (ZNPeer *p in self.connectedPeers) { // after syncing, load filters and get mempools from connected peers
             if (p != self.downloadPeer) [p sendFilterloadMessage:self.bloomFilter.data];
             [p sendMempoolMessage];
@@ -680,7 +680,7 @@ static const char *dns_seeds[] = {
     [[[ZNWalletManager sharedInstance] wallet] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:NO];
     [[[ZNWalletManager sharedInstance] wallet] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:YES];
 
-    _bloomFilter = nil; // make sure we're starting with a fresh bloomfilter
+    _bloomFilter = nil; // make sure the bloom filter is updated with any newly generated addresses
     [peer sendFilterloadMessage:self.bloomFilter.data];
 
     if (self.lastBlock.height < peer.lastblock) { // start blockchain sync
@@ -771,16 +771,9 @@ static const char *dns_seeds[] = {
 - (void)peer:(ZNPeer *)peer relayedTransaction:(ZNTransaction *)transaction
 {
     ZNWallet *w = [[ZNWalletManager sharedInstance] wallet];
-    BOOL newaddresses = NO;
 
     NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, transaction.txHash);
     if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
-
-    // When a transaction is matched by the bloom filter, if any of its output scripts have a hash or key that also
-    // matches the filter, then the remote peer will automatically add that output to the filter. That way if another
-    // transaction spends the output later, it will also be matched without having to manually update the filter.
-    // We do the same here with the local copy to keep the filters in sync.
-    if (peer == self.downloadPeer) [self.bloomFilter updateWithTransaction:transaction];
 
     if ([w registerTransaction:transaction]) {
         self.publishedTx[transaction.txHash] = transaction;
@@ -810,32 +803,18 @@ static const char *dns_seeds[] = {
             [w addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:NO];
             [w addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:YES];
 
-            newaddresses = YES;
             _bloomFilter = nil; // reset the filter so a new one will be created with the new wallet addresses
+
+            if (self.lastBlockHeight >= self.downloadPeer.lastblock) {
+                for (ZNPeer *p in self.connectedPeers) {
+                    [p sendFilterloadMessage:self.bloomFilter.data];
+                }
+            }
+            else [self.downloadPeer sendFilterloadMessage:self.bloomFilter.data];
+
+            [self.downloadPeer rereqeustBlocksFrom:self.lastBlock.blockHash];
             break;
         }
-    }
-
-    // a bloom filter's false positive rate will increase with each item added to the filter, so if it has degraded
-    // by half, clear it and build a new one
-    if (_bloomFilter && _bloomFilter.length < BLOOM_MAX_FILTER_LENGTH &&
-        _bloomFilter.falsePositiveRate > self.falsePositiveRate*2) {
-        NSLog(@"bloom filter false positive rate degraded by half after adding %d items... rebuilding",
-              (int)_bloomFilter.elementCount);
-        _bloomFilter = nil;
-    }
-
-    if (! _bloomFilter) {
-        if (self.lastBlockHeight >= self.downloadPeer.lastblock) {
-            for (ZNPeer *p in self.connectedPeers) {
-                [p sendFilterloadMessage:self.bloomFilter.data];
-            }
-        }
-        else [self.downloadPeer sendFilterloadMessage:self.bloomFilter.data];
-
-        // if the new filter has addresses that weren't in the old one, we need to re-request merkleblocks from the
-        // current position forward to make sure we don't miss any transactions that match the new filter
-        if (newaddresses) [self.downloadPeer rereqeustBlocksFrom:self.lastBlock.blockHash];
     }
 }
 
@@ -845,6 +824,17 @@ static const char *dns_seeds[] = {
 
     // ignore block headers that are newer than one week before earliestKeyTime (headers have 0 totalTransactions)
     if (block.totalTransactions == 0 && block.timestamp + 7*24*60*60 > self.earliestKeyTime) return;
+
+    // track the observed bloom filter false positive rate (with a 1% low pass filter to smooth out variance)
+    if (peer == self.downloadPeer && block.totalTransactions > 0) {
+        self.fpRate = self.fpRate*0.99 + block.txHashes.count*0.01/block.totalTransactions;
+
+        if (self.fpRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) {
+            NSLog(@"%@:%d bloom filter false positive rate too high after %d blocks, disconnecting...", peer.host,
+                  peer.port, self.lastBlockHeight - self.filterUpdateHeight);
+            [self.downloadPeer disconnect];
+        }
+    }
 
     ZNMerkleBlock *prev = self.blocks[block.prevBlock];
     NSTimeInterval transitionTime = 0;
@@ -901,14 +891,16 @@ static const char *dns_seeds[] = {
     }
 
     if ([block.prevBlock isEqual:self.lastBlock.blockHash]) { // new block extends main chain
-        if (! (block.height % 500) || block.height > peer.lastblock) NSLog(@"adding block at height: %d", block.height);
+        if ((block.height % 500) == 0 || block.txHashes.count > 0 || block.height > peer.lastblock) {
+            NSLog(@"adding block at height: %d, false positive rate: %f", block.height, self.fpRate);
+        }
 
         self.blocks[block.blockHash] = block;
         self.lastBlock = block;
         [self setBlockHeight:block.height forTxHashes:block.txHashes];
     }
     else if (self.blocks[block.blockHash] != nil) { // we already have the block (or at least the header)
-        if (! (block.height % 500) || block.height > peer.lastblock) {
+        if ((block.height % 500) == 0 || block.txHashes.count > 0 || block.height > peer.lastblock) {
             NSLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, block.height);
         }
         self.blocks[block.blockHash] = block;
@@ -1003,7 +995,6 @@ static const char *dns_seeds[] = {
     
     if (tx) {
         [self.publishedCallback removeObjectForKey:txHash];
-        [self.bloomFilter updateWithTransaction:tx];
         if (! self.txRelays[txHash]) self.txRelays[txHash] = [NSMutableSet set];
         [self.txRelays[txHash] addObject:peer];
         [[[ZNWalletManager sharedInstance] wallet] registerTransaction:tx];
@@ -1022,6 +1013,13 @@ static const char *dns_seeds[] = {
     }
 
     return tx;
+}
+
+- (NSData *)peerBloomFilter:(ZNPeer *)peer
+{
+    self.fpRate = self.bloomFilter.falsePositiveRate;
+    self.filterUpdateHeight = self.lastBlockHeight;
+    return self.bloomFilter.data;
 }
 
 @end
