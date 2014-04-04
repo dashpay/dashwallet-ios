@@ -77,8 +77,14 @@ static BOOL setKeychainData(NSData *data, NSString *key)
                            (__bridge id)kSecAttrAccount:key,
                            (__bridge id)kSecAttrAccessible:(__bridge id)kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
                            (__bridge id)kSecValueData:data};
+    OSStatus status = SecItemAdd((__bridge CFDictionaryRef)item, NULL);
 
-    return (SecItemAdd((__bridge CFDictionaryRef)item, NULL) == noErr) ? YES : NO;
+    if (status != noErr) {
+        NSLog(@"SecItemAdd error status %ld", status);
+        return NO;
+    }
+
+    return YES;
 }
 
 static NSData *getKeychainData(NSString *key)
