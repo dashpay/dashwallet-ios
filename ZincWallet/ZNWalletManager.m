@@ -88,9 +88,10 @@ static NSData *getKeychainData(NSString *key)
                             (__bridge id)kSecAttrAccount:key,
                             (__bridge id)kSecReturnData:(__bridge id)kCFBooleanTrue};
     CFDataRef result = nil;
+    OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, (CFTypeRef *)&result);
 
-    if (SecItemCopyMatching((__bridge CFDictionaryRef)query, (CFTypeRef *)&result) != noErr) {
-        NSLog(@"SecItemCopyMatching error");
+    if (status != noErr) {
+        NSLog(@"SecItemCopyMatching error status %ld", status);
         return nil;
     }
 
@@ -101,6 +102,7 @@ static NSData *getKeychainData(NSString *key)
 
 @property (nonatomic, strong) ZNWallet *wallet;
 @property (nonatomic, strong) Reachability *reachability;
+@property (nonatomic, assign) BOOL hasSeed;
 
 @end
 
@@ -139,6 +141,8 @@ static NSData *getKeychainData(NSString *key)
     self.format.maximumFractionDigits = 8;
     self.format.maximum = @21000000.0;
 
+    self.hasSeed = (self.seed == nil) ? NO : YES;
+
     [self updateExchangeRate];
 
     return self;
@@ -151,7 +155,7 @@ static NSData *getKeychainData(NSString *key)
 
 - (ZNWallet *)wallet
 {
-    if (_wallet == nil && self.seed != nil) {
+    if (_wallet == nil && self.hasSeed) {
         _wallet =
             [[ZNWallet alloc] initWithContext:[NSManagedObject context] andSeed:^NSData *{
                 return self.seed;
@@ -168,7 +172,7 @@ static NSData *getKeychainData(NSString *key)
 
 - (void)setSeed:(NSData *)seed
 {
-    if (seed && [self.seed isEqual:seed]) return;
+    if (seed && self.hasSeed && [self.seed isEqual:seed]) return;
 
     [[NSManagedObject context] performBlockAndWait:^{
         [ZNAddressEntity deleteObjects:[ZNAddressEntity allObjects]];
@@ -180,6 +184,7 @@ static NSData *getKeychainData(NSString *key)
     setKeychainData(nil, CREATION_TIME_KEY);
     setKeychainData(seed, SEED_KEY);
 
+    self.hasSeed = (seed == nil) ? NO : YES;
     _wallet = nil;
 
     dispatch_async(dispatch_get_main_queue(), ^{

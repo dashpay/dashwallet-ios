@@ -25,6 +25,7 @@
 
 #import "ZNSeedViewController.h"
 #import "ZNWalletManager.h"
+#import "ZNPeerManager.h"
 #import "ZNBIP32Sequence.h"
 
 #define LABEL_MARGIN 20
@@ -78,6 +79,7 @@
 
     if (! m.wallet) {
         [m generateRandomSeed];
+        [[ZNPeerManager sharedInstance] connect];
         self.compatiblityLabel.hidden = YES;
     }
     else {

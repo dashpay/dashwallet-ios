@@ -61,7 +61,6 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
 
-    //TODO: XXXX visual indicator for testnet
     //TODO: make title use dynamic font size
     ZNWalletManager *m = [ZNWalletManager sharedInstance];
 
@@ -127,7 +126,6 @@
             if (m.wallet.balance == 0) self.navigationItem.title = @"syncing...";
             [UIApplication sharedApplication].idleTimerDisabled = YES;
             self.progress.hidden = NO;
-            self.progress.progress = 0.0;
             [UIView animateWithDuration:0.2 animations:^{
                 self.progress.alpha = 1.0;
                 self.connectButton.alpha = 0.0;
@@ -147,6 +145,8 @@
                 [self.progress setProgress:1.0 animated:YES];
                 [UIView animateWithDuration:0.2 animations:^{
                     self.progress.alpha = 0.0;
+                } completion:^(BOOL finished) {
+                    self.progress.progress = 0.0;
                 }];
             }
         }];
@@ -161,6 +161,7 @@
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
             [UIApplication sharedApplication].idleTimerDisabled = NO;
             self.progress.hidden = YES;
+            self.progress.progress = 0.0;
             self.connectButton.hidden = NO;
             self.connectButton.alpha = 0.0;
             [UIView animateWithDuration:0.2 animations:^{
@@ -285,8 +286,10 @@
 
 - (void)updateProgress
 {
-    [self.progress setProgress:[[ZNPeerManager sharedInstance] syncProgress] animated:YES];
-    if (self.progress.progress < 1.0) [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
+    double progress = [[ZNPeerManager sharedInstance] syncProgress];
+
+    if (progress > DBL_EPSILON) [self.progress setProgress:progress animated:YES];
+    if (progress < 1.0) [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
 }
 
 - (ZNPayViewController *)payController
