@@ -165,13 +165,13 @@ static const char *dns_seeds[] = {
             [self saveBlocks];
             [ZNMerkleBlockEntity saveContext];
             if (self.syncProgress >= 1.0) [self.connectedPeers makeObjectsPerformSelector:@selector(disconnect)];
-            self.syncStartHeight = 0;
         }];
 
     self.seedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNWalletManagerSeedChangedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             self.earliestKeyTime = [[ZNWalletManager sharedInstance] seedCreationTime];
+            self.syncStartHeight = 0;
             [self.orphans removeAllObjects];
             [self.txRelays removeAllObjects];
             [self.publishedTx removeAllObjects];
@@ -182,7 +182,6 @@ static const char *dns_seeds[] = {
             _bloomFilter = nil;
             _lastBlock = nil;
             _lastOrphan = nil;
-            self.syncStartHeight = 0;
             [self.connectedPeers makeObjectsPerformSelector:@selector(disconnect)];
         }];
 
@@ -207,13 +206,13 @@ static const char *dns_seeds[] = {
         NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
 
         for (ZNPeerEntity *e in [ZNPeerEntity allObjects]) {
-            if ([_peers.lastObject misbehavin] == 0) [_peers addObject:[e peer]];
+            if (e.misbehavin == 0) [_peers addObject:[e peer]];
             else [self.misbehavinPeers addObject:[e peer]];
         }
 
         if (_peers.count < MAX_CONNECTIONS) {
             // we're resorting to DNS peer discovery, so reset the misbahavin' count on any peers we already had in case
-            // something went horribly wrong and every peer was marked as bad, but set timestamp older than two weeks
+            // something went horribly wrong and every peer was marked as bad, but set timestamp older than 14 days
             for (ZNPeer *p in self.misbehavinPeers) {
                 p.misbehavin = 0;
                 p.timestamp += 14*24*60*60;
@@ -228,6 +227,7 @@ static const char *dns_seeds[] = {
                 for (int j = 0; h != NULL && h->h_addr_list[j] != NULL; j++) {
                     uint32_t addr = CFSwapInt32BigToHost(((struct in_addr *)h->h_addr_list[j])->s_addr);
 
+                    // give dns peers a timestamp between 3 and 7 days ago
                     [_peers addObject:[ZNPeer peerWithAddress:addr port:BITCOIN_STANDARD_PORT
                                        timestamp:now - 24*60*60*(3 + drand48()*4) services:NODE_NETWORK]];
                 }
@@ -242,6 +242,7 @@ static const char *dns_seeds[] = {
                 // hard coded list is taken from the satoshi client, values need to be byte swapped to be host native
                 for (NSNumber *address in [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
                                            pathForResource:FIXED_PEERS ofType:@"plist"]]) {
+                    // give hard coded peers a timestamp between 7 and 14 days ago
                     [_peers addObject:[ZNPeer peerWithAddress:CFSwapInt32(address.intValue) port:BITCOIN_STANDARD_PORT
                                        timestamp:now - 24*60*60*(7 + drand48()*7) services:NODE_NETWORK]];
                 }
@@ -265,6 +266,7 @@ static const char *dns_seeds[] = {
 
         _blocks[GENESIS_BLOCK_HASH] = GENESIS_BLOCK;
 
+        // add checkpoints to the block collection
         for (int i = 0; i < sizeof(checkpoint_array)/sizeof(*checkpoint_array); i++) {
             NSData *hash = [NSString stringWithUTF8String:checkpoint_array[i].hash].hexToData.reverse;
 
@@ -283,6 +285,7 @@ static const char *dns_seeds[] = {
     return _blocks;
 }
 
+// this is used as part of a getblocks or getheaders request
 - (NSArray *)blockLocatorArray
 {
     // append 10 most recent block hashes, decending, then continue appending, doubling the step back each time,
@@ -316,6 +319,7 @@ static const char *dns_seeds[] = {
     req.fetchLimit = 1;
     _lastBlock = [[ZNMerkleBlockEntity fetchObjects:req].lastObject merkleBlock];
 
+    // if we don't have any blocks yet, use the latest checkpoint that is at least a week older than earliestKeyTime
     for (int i = sizeof(checkpoint_array)/sizeof(*checkpoint_array) - 1; ! _lastBlock && i >= 0; i--) {
         if (checkpoint_array[i].timestamp + 7*24*60*60 - NSTimeIntervalSince1970 >= self.earliestKeyTime) continue;
         _lastBlock = [[ZNMerkleBlock alloc]
@@ -380,7 +384,7 @@ static const char *dns_seeds[] = {
 
 - (void)connect
 {
-    if (! [[ZNWalletManager sharedInstance] wallet]) return;
+    if (! [[ZNWalletManager sharedInstance] wallet]) return; // check to make sure the wallet has been created
     if (self.connectFailures >= MAX_CONNENCT_FAILURES) self.connectFailures = 0; // this attempt is a manual retry
     
     if (self.syncProgress < 1.0) {
@@ -526,7 +530,7 @@ static const char *dns_seeds[] = {
 {
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
 
-    if (now - self.lastRelayTime < PROTOCOL_TIMEOUT) {
+    if (now - self.lastRelayTime < PROTOCOL_TIMEOUT) { // the download peer relayed something in time, so restart timer
         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
         [self performSelector:@selector(syncTimeout) withObject:nil
          afterDelay:PROTOCOL_TIMEOUT - (now - self.lastRelayTime)];
@@ -550,7 +554,7 @@ static const char *dns_seeds[] = {
         [[UIApplication sharedApplication] endBackgroundTask:self.taskId];
         self.taskId = UIBackgroundTaskInvalid;
 
-        for (ZNPeer *p in self.connectedPeers) { // after syncing, load filters and get mempools from connected peers
+        for (ZNPeer *p in self.connectedPeers) { // after syncing, load filters and get mempools from the other peers
             if (p != self.downloadPeer) [p sendFilterloadMessage:self.bloomFilter.data];
             [p sendMempoolMessage];
         }
@@ -561,6 +565,7 @@ static const char *dns_seeds[] = {
     });
 }
 
+// unconfirmed transactions that aren't in the mempools of any of connected peers have likely dropped off the network
 - (void)removeUnrelayedTransactions
 {
     ZNWallet *w = [[ZNWalletManager sharedInstance] wallet];
@@ -599,9 +604,9 @@ static const char *dns_seeds[] = {
     }
 
     [[ZNPeerEntity context] performBlock:^{
-        [ZNPeerEntity deleteObjects:[ZNPeerEntity objectsMatching:@"! (address in %@)", addrs]];
+        [ZNPeerEntity deleteObjects:[ZNPeerEntity objectsMatching:@"! (address in %@)", addrs]]; // remove deleted peers
 
-        for (ZNPeerEntity *e in [ZNPeerEntity objectsMatching:@"address in %@", addrs]) {
+        for (ZNPeerEntity *e in [ZNPeerEntity objectsMatching:@"address in %@", addrs]) { // update existing peers
             ZNPeer *p = [peers member:[e peer]];
 
             if (p) {
@@ -613,7 +618,7 @@ static const char *dns_seeds[] = {
             else [e deleteObject];
         }
 
-        for (ZNPeer *p in peers) {
+        for (ZNPeer *p in peers) { // add new peers
             [[ZNPeerEntity managedObject] setAttributesFromPeer:p];
         }
     }];
@@ -694,13 +699,13 @@ static const char *dns_seeds[] = {
         });
         self.lastRelayTime = 0;
 
-        // request just block headers up to earliestKeyTime, and then merkleblocks after that
+        // request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
         if (self.lastBlock.timestamp + 7*24*60*60 >= self.earliestKeyTime) {
             [peer sendGetblocksMessageWithLocators:[self blockLocatorArray] andHashStop:nil];
         }
         else [peer sendGetheadersMessageWithLocators:[self blockLocatorArray] andHashStop:nil];
     }
-    else {
+    else { // we're already synced
         [self syncStopped];
         [peer sendGetaddrMessage]; // request a list of other bitcoin peers
         self.syncStartHeight = 0;
@@ -717,9 +722,9 @@ static const char *dns_seeds[] = {
     NSLog(@"%@:%d disconnected%@%@", peer.host, peer.port, error ? @", " : @"", error ? error : @"");
     
     if ([error.domain isEqual:@"ZincWallet"] && error.code != BITCOIN_TIMEOUT_CODE) {
-        [self peerMisbehavin:peer];
+        [self peerMisbehavin:peer]; // if it's protocol error other than timeout, the peer isn't following the rules
     }
-    else if (error) {
+    else if (error) { // timeout or some non-protocol related network error
         [self.peers removeObject:peer];
         self.connectFailures++;
     }
@@ -728,7 +733,7 @@ static const char *dns_seeds[] = {
         [self.txRelays[txHash] removeObject:peer];
     }
 
-    if ([self.downloadPeer isEqual:peer]) {
+    if ([self.downloadPeer isEqual:peer]) { // download peer disconnected
         _connected = NO;
         self.downloadPeer = nil;
         [self syncStopped];
@@ -741,7 +746,7 @@ static const char *dns_seeds[] = {
             [[NSNotificationCenter defaultCenter] postNotificationName:ZNPeerManagerSyncFailedNotification
              object:nil userInfo:error ? @{@"error":error} : nil];
         }
-        else if (self.connectFailures < MAX_CONNENCT_FAILURES) [self connect];
+        else if (self.connectFailures < MAX_CONNENCT_FAILURES) [self connect]; // try connecting to another peer
     });
 }
 
@@ -807,13 +812,14 @@ static const char *dns_seeds[] = {
 
             _bloomFilter = nil; // reset the filter so a new one will be created with the new wallet addresses
 
-            if (self.lastBlockHeight >= self.downloadPeer.lastblock) {
+            if (self.lastBlockHeight >= self.downloadPeer.lastblock) { // if we're syncing, only update download peer
                 for (ZNPeer *p in self.connectedPeers) {
                     [p sendFilterloadMessage:self.bloomFilter.data];
                 }
             }
             else [self.downloadPeer sendFilterloadMessage:self.bloomFilter.data];
 
+            // after adding addresses to the filter, re-request upcoming blocks that were requested using the old one
             [self.downloadPeer rereqeustBlocksFrom:self.lastBlock.blockHash];
             break;
         }
@@ -832,7 +838,7 @@ static const char *dns_seeds[] = {
         // 1% low pass filter, also weights each block by total transactions, using 400 tx per block as typical
         self.filterFpRate = self.filterFpRate*(1.0 - 0.01*block.totalTransactions/400) + 0.01*block.txHashes.count/400;
 
-        if (self.filterFpRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) {
+        if (self.filterFpRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) { // false positive rate sanity check
             NSLog(@"%@:%d bloom filter false positive rate too high after %d blocks, disconnecting...", peer.host,
                   peer.port, self.lastBlockHeight - self.filterUpdateHeight);
             [self.downloadPeer disconnect];
@@ -906,6 +912,7 @@ static const char *dns_seeds[] = {
         if ((block.height % 500) == 0 || block.txHashes.count > 0 || block.height > peer.lastblock) {
             NSLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, block.height);
         }
+
         self.blocks[block.blockHash] = block;
 
         ZNMerkleBlock *b = self.lastBlock;
@@ -998,10 +1005,10 @@ static const char *dns_seeds[] = {
     void (^callback)(NSError *error) = self.publishedCallback[txHash];
     
     if (tx) {
-        [self.publishedCallback removeObjectForKey:txHash];
+        [[[ZNWalletManager sharedInstance] wallet] registerTransaction:tx];
+
         if (! self.txRelays[txHash]) self.txRelays[txHash] = [NSMutableSet set];
         [self.txRelays[txHash] addObject:peer];
-        [[[ZNWalletManager sharedInstance] wallet] registerTransaction:tx];
 
         if ([self.txRelays[txHash] count] == self.connectedPeers.count) {
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -1009,6 +1016,8 @@ static const char *dns_seeds[] = {
                  object:nil];
             });
         }
+
+        [self.publishedCallback removeObjectForKey:txHash];
 
         dispatch_async(dispatch_get_main_queue(), ^{
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:txHash];

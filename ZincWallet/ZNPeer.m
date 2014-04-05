@@ -132,7 +132,7 @@ services:(uint64_t)services
 
     if (! self.reachability) self.reachability = [Reachability reachabilityWithHostName:self.host];
     
-    if (self.reachability.currentReachabilityStatus == NotReachable) {
+    if (self.reachability.currentReachabilityStatus == NotReachable) { // delay connect until network is reachable
         if (self.reachabilityObserver) return;
         
         self.reachabilityObserver =
@@ -343,7 +343,7 @@ services:(uint64_t)services
 // - remote peer responds with multiple merkleblock and tx messages
 // - if at any point tx messages consume enough wallet addresses to drop below the bip32 chain gap limit, more addresses
 //   are generated and local peer sends filterload with an updated bloom filter
-// - when filterload is sent, the most recent getdata message is also repeated to get any new tx matching the new filter
+// - after filterload is sent, getdata is sent to re-request recent blocks that may contain new tx matching the filter
 
 - (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop
 {
@@ -565,7 +565,7 @@ services:(uint64_t)services
         uint32_t address = CFSwapInt32BigToHost(*(uint32_t *)((uint8_t *)message.bytes + off + sizeof(uint32_t) + 20));
         uint16_t port = CFSwapInt16BigToHost(*(uint16_t *)((uint8_t *)message.bytes + off + sizeof(uint32_t)*2 + 20));
         
-        // if address time is more than 10min in the future or older than reference date, set to 5 days old
+        // if address time is more than 10 min in the future or older than reference date, set to 5 days old
         if (timestamp > now + 10*60 || timestamp < 0) timestamp = now - 5*24*60*60;
 
         // subtract two hours and add it to the list

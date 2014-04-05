@@ -33,7 +33,7 @@
 
 #define WORDS @"BIP39EnglishWords"
 
-// BIP39 is method for generating a determinist wallet seed from a mnemonic phrase
+// BIP39 is method for generating a deterministic wallet seed from a mnemonic phrase
 // https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 
 @implementation ZNBIP39Mnemonic
