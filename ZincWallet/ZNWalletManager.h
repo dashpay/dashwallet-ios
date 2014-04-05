@@ -29,7 +29,7 @@
 
 @class ZNWallet, ZNTransaction;
 
-@interface ZNWalletManager : NSObject
+@interface ZNWalletManager : NSObject<UIAlertViewDelegate>
 
 @property (nonatomic, readonly) ZNWallet *wallet;
 @property (nonatomic, strong) NSData *seed;

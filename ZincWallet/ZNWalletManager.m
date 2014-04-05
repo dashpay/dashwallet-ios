@@ -80,7 +80,7 @@ static BOOL setKeychainData(NSData *data, NSString *key)
     OSStatus status = SecItemAdd((__bridge CFDictionaryRef)item, NULL);
 
     if (status != noErr) {
-        NSLog(@"SecItemAdd error status %ld", status);
+        NSLog(@"SecItemAdd error status %d", (int)status);
         return NO;
     }
 
@@ -97,7 +97,7 @@ static NSData *getKeychainData(NSString *key)
     OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, (CFTypeRef *)&result);
 
     if (status != noErr) {
-        NSLog(@"SecItemCopyMatching error status %ld", status);
+        NSLog(@"SecItemCopyMatching error status %d", (int)status);
         return nil;
     }
 
@@ -188,7 +188,13 @@ static NSData *getKeychainData(NSString *key)
 
     setKeychainData(nil, MNEMONIC_KEY);
     setKeychainData(nil, CREATION_TIME_KEY);
-    setKeychainData(seed, SEED_KEY);
+    if (! setKeychainData(seed, SEED_KEY)) {
+        NSLog(@"error setting wallet seed");
+        [[[UIAlertView alloc] initWithTitle:@"couldn't create wallet"
+          message:@"error adding private keys to the iOS keychain, make sure the app has keychain entitlements"
+          delegate:self cancelButtonTitle:@"abort" otherButtonTitles:nil] show];
+        return;
+    }
 
     self.hasSeed = (seed == nil) ? NO : YES;
     _wallet = nil;
@@ -231,15 +237,17 @@ static NSData *getKeychainData(NSString *key)
 
 - (void)generateRandomSeed
 {
-    NSMutableData *entropy = [NSMutableData secureDataWithLength:SEED_ENTROPY_LENGTH];
-    NSTimeInterval time = [NSDate timeIntervalSinceReferenceDate];
+    @autoreleasepool {
+        NSMutableData *entropy = [NSMutableData secureDataWithLength:SEED_ENTROPY_LENGTH];
+        NSTimeInterval time = [NSDate timeIntervalSinceReferenceDate];
 
-    SecRandomCopyBytes(kSecRandomDefault, entropy.length, entropy.mutableBytes);
+        SecRandomCopyBytes(kSecRandomDefault, entropy.length, entropy.mutableBytes);
 
-    self.seedPhrase = [[ZNBIP39Mnemonic sharedInstance] encodePhrase:entropy];
+        self.seedPhrase = [[ZNBIP39Mnemonic sharedInstance] encodePhrase:entropy];
 
-    // we store the wallet creation time on the keychain because keychain data persists even when an app is deleted
-    setKeychainData([NSData dataWithBytes:&time length:sizeof(time)], CREATION_TIME_KEY);
+        // we store the wallet creation time on the keychain because keychain data persists even when an app is deleted
+        setKeychainData([NSData dataWithBytes:&time length:sizeof(time)], CREATION_TIME_KEY);
+    }
 }
 
 - (NSTimeInterval)seedCreationTime
@@ -453,6 +461,13 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
     }
 
     return ret;
+}
+
+#pragma mark UIAlertViewDelegate
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    abort();
 }
 
 @end
