@@ -417,7 +417,7 @@ services:(uint64_t)services
         [self sendFilterloadMessage:[self.delegate peerBloomFilter:self]];
     }
 
-    self.filterBlockCount += blockHashes.count;
+    self.filterBlockCount += (uint32_t)blockHashes.count;
     [self sendMessage:msg type:MSG_GETDATA];
 }
 
@@ -443,7 +443,7 @@ services:(uint64_t)services
 
         if (i != NSNotFound) {
             [self.currentBlockHashes removeObjectsInRange:NSMakeRange(0, i)];
-            NSLog(@"%@:%d re-requesting %d blocks", self.host, self.port, self.currentBlockHashes.count);
+            NSLog(@"%@:%d re-requesting %d blocks", self.host, self.port, (int)self.currentBlockHashes.count);
             [self sendGetdataMessageWithTxHashes:@[] andBlockHashes:self.currentBlockHashes.array];
         }
     });

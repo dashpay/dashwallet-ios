@@ -96,11 +96,11 @@
     }
 
     for (int i = 0; i < (a.count*11 + 7)/8; i++) {
-        x = [words indexOfObject:a[i*8/11]];
-        y = (i*8/11 + 1 < a.count) ? [words indexOfObject:a[i*8/11 + 1]] : 0;
+        x = (uint32_t)[words indexOfObject:a[i*8/11]];
+        y = (i*8/11 + 1 < a.count) ? (uint32_t)[words indexOfObject:a[i*8/11 + 1]] : 0;
 
-        if (x == NSNotFound || y == NSNotFound) {
-            NSLog(@"phrase contained unknown word: %@", a[i*8/11 + (x == NSNotFound ? 0 : 1)]);
+        if (x == (uint32_t)NSNotFound || y == (uint32_t)NSNotFound) {
+            NSLog(@"phrase contained unknown word: %@", a[i*8/11 + (x == (uint32_t)NSNotFound ? 0 : 1)]);
             return nil;
         }
 

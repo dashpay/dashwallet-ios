@@ -42,7 +42,7 @@
 {
     [[self managedObjectContext] performBlockAndWait:^{
         self.txHash = tx.txHash;
-        self.n = index;
+        self.n = (int32_t)index;
         self.address = tx.outputAddresses[index];
         self.script = tx.outputScripts[index];
         self.value = [tx.outputAmounts[index] longLongValue];
