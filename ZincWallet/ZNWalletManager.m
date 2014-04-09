@@ -191,7 +191,7 @@ static NSData *getKeychainData(NSString *key)
     if (! setKeychainData(seed, SEED_KEY)) {
         NSLog(@"error setting wallet seed");
         [[[UIAlertView alloc] initWithTitle:@"couldn't create wallet"
-          message:@"error adding private keys to the iOS keychain, make sure the app has keychain entitlements"
+          message:@"error adding master private key to iOS keychain, make sure app has keychain entitlements"
           delegate:self cancelButtonTitle:@"abort" otherButtonTitles:nil] show];
         return;
     }
@@ -306,7 +306,6 @@ static NSData *getKeychainData(NSString *key)
 
 // given a private key, queries blockchain for unspent outputs and calls the completion block with a signed transaction
 // that will sweep the balance into the wallet (doesn't publish the tx)
-//TODO: XXXX test this
 - (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
 completion:(void (^)(ZNTransaction *tx, NSError *error))completion
 {

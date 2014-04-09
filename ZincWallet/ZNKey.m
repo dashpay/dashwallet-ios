@@ -156,6 +156,11 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
 - (void)setPrivateKey:(NSString *)privateKey
 {
     NSData *d = privateKey.base58checkToData;
+#if BITCOIN_TESTNET
+    uint8_t version = BITCOIN_PRIVKEY_TEST;
+#else
+    uint8_t version = BITCOIN_PRIVKEY;
+#endif
 
     if ((privateKey.length == 30 || privateKey.length == 22) && [privateKey characterAtIndex:0] == 'S') {
         // mini private key format
@@ -168,7 +173,7 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
     else if (! d || d.length == 28) d = privateKey.base58ToData;
     
     if (d.length == 32) [self setSecret:d compressed:YES];
-    else if ((d.length == 33 || d.length == 34) && *(unsigned char *)d.bytes == 0x80) {
+    else if ((d.length == 33 || d.length == 34) && *(unsigned char *)d.bytes == version) {
         [self setSecret:[NSData dataWithBytesNoCopy:(unsigned char *)d.bytes + 1 length:32 freeWhenDone:NO]
          compressed:(d.length == 34) ? YES : NO];
     }
@@ -176,10 +181,17 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
 
 - (NSString *)privateKey
 {
+    if (! EC_KEY_check_key(_key)) return nil;
+    
     const BIGNUM *priv = EC_KEY_get0_private_key(_key);
     NSMutableData *d = [NSMutableData secureDataWithCapacity:34];
-    
-    [d appendBytes:"\x80" length:1];
+#if BITCOIN_TESTNET
+    uint8_t version = BITCOIN_PRIVKEY_TEST;
+#else
+    uint8_t version = BITCOIN_PRIVKEY;
+#endif
+
+    [d appendBytes:&version length:1];
     d.length = 33;
     BN_bn2bin(priv, (unsigned char *)d.mutableBytes + d.length - BN_num_bytes(priv));
     if (EC_KEY_get_conv_form(_key) == POINT_CONVERSION_COMPRESSED) [d appendBytes:"\x01" length:1];

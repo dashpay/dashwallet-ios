@@ -38,6 +38,7 @@
 @dynamic spent;
 @dynamic transaction;
 
+//BUG: XXXX test this with a null output address
 - (instancetype)setAttributesFromTx:(ZNTransaction *)tx outputIndex:(NSUInteger)index
 {
     [[self managedObjectContext] performBlockAndWait:^{

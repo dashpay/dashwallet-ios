@@ -102,8 +102,10 @@
     
     // uncompressed private key export
     NSLog(@"privKey = %@", key.privateKey);
+#if ! BITCOIN_TESTNET
     XCTAssertEqualObjects(@"5Kb8kLf9zgWQnogidDA76MzPL6TsZZY36hWXMssSzNydYXYB9KF", key.privateKey,
                           @"[ZNKey privateKey]");
+#endif
 
     // compressed private key
     key = [ZNKey keyWithPrivateKey:@"KyvGbxRUoofdw3TNydWn2Z78dBHSy2odn1d3wXWN2o3SAtccFNJL"];
@@ -115,8 +117,10 @@
     
     // compressed private key export
     NSLog(@"privKey = %@", key.privateKey);
+#if ! BITCOIN_TESTNET
     XCTAssertEqualObjects(@"KyvGbxRUoofdw3TNydWn2Z78dBHSy2odn1d3wXWN2o3SAtccFNJL", key.privateKey,
                           @"[ZNKey privateKey]");
+#endif
 }
 
 #pragma mark - testSign
@@ -663,8 +667,10 @@
 
     NSLog(@"000102030405060708090a0b0c0d0e0f/0'/1/2' prv = %@", [NSString hexWithData:d]);
 
+#if ! BITCOIN_TESTNET
     XCTAssertEqualObjects(d, @"80cbce0d719ecf7431d88e6a89fa1483e02e35092af60c042b1df2ff59fa424dca01".hexToData,
                          @"[ZNBIP32Sequence privateKey:internal:fromSeed:]");
+#endif
 
     // Test for correct zero padding of private keys, a nasty potential bug
     pk = [seq privateKey:97 internal:NO fromSeed:seed];
@@ -672,8 +678,10 @@
 
     NSLog(@"000102030405060708090a0b0c0d0e0f/0'/0/97 prv = %@", [NSString hexWithData:d]);
 
+#if ! BITCOIN_TESTNET
     XCTAssertEqualObjects(d, @"8000136c1ad038f9a00871895322a487ed14f1cdc4d22ad351cfa1a0d235975dd701".hexToData,
                          @"[ZNBIP32Sequence privateKey:internal:fromSeed:]");
+#endif
 }
 
 - (void)testBIP32SequenceMasterPublicKeyFromSeed
@@ -779,17 +787,21 @@
     NSString *pk = [seq privateKey:0 internal:NO fromSeed:@"00000000000000000000000000000000".hexToData];
     
     NSLog(@"privateKey:0 = %@", pk);
-    
+
+#if ! BITCOIN_TESTNET
     XCTAssertEqualObjects(pk, @"5Khs7w6fBkogoj1v71Mdt4g8m5kaEyRaortmK56YckgTubgnrhz",
                          @"[ZNElectrumSequence privateKey:forChange:fromSeed:]");
+#endif
 
     // Test for correct zero padding of private keys
     pk = [seq privateKey:64 internal:NO fromSeed:@"00000000000000000000000000000000".hexToData];
 
     NSLog(@"privateKey:64 = %@ = 0x%@", pk, pk.base58checkToHex);
 
+#if ! BITCOIN_TESTNET
     XCTAssertEqualObjects(pk.base58checkToHex, @"8000f7f216a82f6beb105728dbbc29e2c13446bfa1078b7bef6e0ceff2c8a1e774",
-                         @"[ZNElectrumSequence privateKey:forChange:fromSeed:]");    
+                         @"[ZNElectrumSequence privateKey:forChange:fromSeed:]");
+#endif
 }
 
 #pragma mark - testBloomFilter

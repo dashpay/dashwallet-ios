@@ -3858,7 +3858,7 @@
 			inputPaths = (
 			);
 			outputPaths = (
-				"$(SRCROOT)/openssl-1.0.1e/ssl/tls_srp.c",
+				"$(SRCROOT)/openssl-1.0.1g/ssl/tls_srp.c",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

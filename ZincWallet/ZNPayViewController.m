@@ -547,6 +547,7 @@
     NSUInteger idx = [self.requestButtons indexOfObject:sender];
     
     if ([self.requestIDs indexOfObject:QR_ID] == idx) {
+        //TODO: XXXX add an option to disable flash
         [self.navigationController presentViewController:self.zbarController animated:YES completion:^{
             NSLog(@"present qr reader complete");
         }];
@@ -636,7 +637,7 @@
                     [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide.png"]];
                 }];
 
-                if (req.paymentAddress) {
+                if (req.isValid) {
                     self.request = req;
                     [self confirmRequest];
                 }
