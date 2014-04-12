@@ -155,6 +155,15 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
 
 - (void)setPrivateKey:(NSString *)privateKey
 {
+    // mini private key format
+    if ((privateKey.length == 30 || privateKey.length == 22) && [privateKey characterAtIndex:0] == 'S') {
+        if (! [privateKey isValidBitcoinPrivateKey]) return;
+        
+        [self setSecret:[CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(),
+                         (__bridge CFStringRef)privateKey, kCFStringEncodingUTF8, 0)) SHA256] compressed:NO];
+        return;
+    }
+
     NSData *d = privateKey.base58checkToData;
 #if BITCOIN_TESTNET
     uint8_t version = BITCOIN_PRIVKEY_TEST;
@@ -162,16 +171,9 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
     uint8_t version = BITCOIN_PRIVKEY;
 #endif
 
-    if ((privateKey.length == 30 || privateKey.length == 22) && [privateKey characterAtIndex:0] == 'S') {
-        // mini private key format
-        if (! [privateKey isValidBitcoinPrivateKey]) return;
-        
-        [self setSecret:[CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(),
-                         (__bridge CFStringRef)privateKey, kCFStringEncodingUTF8, 0)) SHA256] compressed:NO];
-        return;
-    }
-    else if (! d || d.length == 28) d = privateKey.base58ToData;
-    
+    if (! d || d.length == 28) d = privateKey.base58ToData;
+    if (! d) d = privateKey.hexToData;
+
     if (d.length == 32) [self setSecret:d compressed:YES];
     else if ((d.length == 33 || d.length == 34) && *(unsigned char *)d.bytes == version) {
         [self setSecret:[NSData dataWithBytesNoCopy:(unsigned char *)d.bytes + 1 length:32 freeWhenDone:NO]

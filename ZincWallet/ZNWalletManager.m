@@ -309,7 +309,6 @@ static NSData *getKeychainData(NSString *key)
 - (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
 completion:(void (^)(ZNTransaction *tx, NSError *error))completion
 {
-    //TODO: add support for BIP38 password encrypted private keys
     NSString *address = [[ZNKey keyWithPrivateKey:privKey] address];
 
     if (! completion) return;

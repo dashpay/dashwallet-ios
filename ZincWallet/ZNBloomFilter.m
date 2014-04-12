@@ -62,8 +62,6 @@ static uint32_t murmurHash3(NSData *data, uint32_t seed)
 }
 
 // bloom filters are explained in BIP37: https://github.com/bitcoin/bips/blob/master/bip-0037.mediawiki
-//TODO: XXXX figure out what to do to prevent matching satoshidice in the false positives...
-
 @interface ZNBloomFilter ()
 
 @property (nonatomic, strong) NSMutableData *filter;

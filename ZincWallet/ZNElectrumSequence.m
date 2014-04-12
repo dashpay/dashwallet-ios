@@ -145,11 +145,6 @@
     BN_CTX *ctx = BN_CTX_new();
     __block BIGNUM sequencebn, secexpbn, order;
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
-#if BITCOIN_TESTNET
-    uint8_t version = BITCOIN_PRIVKEY_TEST;
-#else
-    uint8_t version = BITCOIN_PRIVKEY;
-#endif
 
     BN_CTX_start(ctx);
     BN_init(&sequencebn);
@@ -166,7 +161,11 @@
         
         BN_mod_add(&secexpbn, &secexpbn, &sequencebn, &order, ctx);
 
-        *(unsigned char *)pk.mutableBytes = version;
+#if BITCOIN_TESTNET
+        *(unsigned char *)pk.mutableBytes = BITCOIN_PRIVKEY_TEST;
+#else
+        *(unsigned char *)pk.mutableBytes = BITCOIN_PRIVKEY;
+#endif
         BN_bn2bin(&secexpbn, (unsigned char *)pk.mutableBytes + pk.length - BN_num_bytes(&secexpbn));
         
         [a addObject:[NSString base58checkWithData:pk]];

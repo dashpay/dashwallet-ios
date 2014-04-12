@@ -33,6 +33,7 @@
 #import "ZNBIP39Mnemonic.h"
 #import "ZNTransaction.h"
 #import "ZNKey.h"
+#import "ZNKey+BIP38.h"
 #import "ZNBloomFilter.h"
 #import "ZNMerkleBlock.h"
 #import "NSData+Hash.h"
@@ -65,6 +66,7 @@
 
 #pragma mark - testKey
 
+#if ! BITCOIN_TESTNET
 - (void)testKeyWithPrivateKey
 {
     XCTAssertFalse([@"S6c56bnXQiBjk9mqSYE7ykVQ7NzrRz" isValidBitcoinPrivateKey],
@@ -77,10 +79,7 @@
     ZNKey *key = [ZNKey keyWithPrivateKey:@"S6c56bnXQiBjk9mqSYE7ykVQ7NzrRy"];
     
     NSLog(@"privKey:S6c56bnXQiBjk9mqSYE7ykVQ7NzrRy = %@", key.address);
-#if ! BITCOIN_TESTNET
     XCTAssertEqualObjects(@"1CciesT23BNionJeXrbxmjc7ywfiyM4oLW", key.address, @"[ZNKey keyWithPrivateKey:]");
-#endif
-
     XCTAssertTrue([@"SzavMBLoXU6kDrqtUVmffv" isValidBitcoinPrivateKey],
                  @"[NSString+Base58 isValidBitcoinPrivateKey]");
 
@@ -88,40 +87,93 @@
     key = [ZNKey keyWithPrivateKey:@"SzavMBLoXU6kDrqtUVmffv"];
     
     NSLog(@"privKey:SzavMBLoXU6kDrqtUVmffv = %@", key.address);
-#if ! BITCOIN_TESTNET
     XCTAssertEqualObjects(@"1CC3X2gu58d6wXUWMffpuzN9JAfTUWu4Kj", key.address, @"[ZNKey keyWithPrivateKey:]");
-#endif
 
     // uncompressed private key
     key = [ZNKey keyWithPrivateKey:@"5Kb8kLf9zgWQnogidDA76MzPL6TsZZY36hWXMssSzNydYXYB9KF"];
     
     NSLog(@"privKey:5Kb8kLf9zgWQnogidDA76MzPL6TsZZY36hWXMssSzNydYXYB9KF = %@", key.address);
-#if ! BITCOIN_TESTNET
     XCTAssertEqualObjects(@"1CC3X2gu58d6wXUWMffpuzN9JAfTUWu4Kj", key.address, @"[ZNKey keyWithPrivateKey:]");
-#endif
-    
+
     // uncompressed private key export
     NSLog(@"privKey = %@", key.privateKey);
-#if ! BITCOIN_TESTNET
     XCTAssertEqualObjects(@"5Kb8kLf9zgWQnogidDA76MzPL6TsZZY36hWXMssSzNydYXYB9KF", key.privateKey,
                           @"[ZNKey privateKey]");
-#endif
 
     // compressed private key
     key = [ZNKey keyWithPrivateKey:@"KyvGbxRUoofdw3TNydWn2Z78dBHSy2odn1d3wXWN2o3SAtccFNJL"];
     
     NSLog(@"privKey:KyvGbxRUoofdw3TNydWn2Z78dBHSy2odn1d3wXWN2o3SAtccFNJL = %@", key.address);
-#if ! BITCOIN_TESTNET
     XCTAssertEqualObjects(@"1JMsC6fCtYWkTjPPdDrYX3we2aBrewuEM3", key.address, @"[ZNKey keyWithPrivateKey:]");
-#endif
-    
+
     // compressed private key export
     NSLog(@"privKey = %@", key.privateKey);
-#if ! BITCOIN_TESTNET
     XCTAssertEqualObjects(@"KyvGbxRUoofdw3TNydWn2Z78dBHSy2odn1d3wXWN2o3SAtccFNJL", key.privateKey,
                           @"[ZNKey privateKey]");
-#endif
 }
+#endif
+
+#pragma mark - testKeyWithBIP38Key
+
+#if ! BITCOIN_TESTNET
+- (void)testKeyWithBIP38Key
+{
+    //TODO: XXXX generate a bip38 key from a secret that's outside the order of secp256k1
+
+    // non EC multiplied, uncompressed
+    ZNKey *key = [ZNKey keyWithBIP38Key:@"6PRVWUbkzzsbcVac2qwfssoUJAN1Xhrg6bNk8J7Nzm5H7kxEbn2Nh2ZoGg"
+                  andPassphrase:@"TestingOneTwoThree"];
+
+    NSLog(@"privKey = %@", key.privateKey);
+    XCTAssertEqualObjects(@"5KN7MzqK5wt2TP1fQCYyHBtDrXdJuXbUzm4A9rKAteGu3Qi5CVR", key.privateKey,
+                          @"[ZNKey keyWithBIP38Key:andPassphrase:]");
+
+    key = [ZNKey keyWithBIP38Key:@"6PRNFFkZc2NZ6dJqFfhRoFNMR9Lnyj7dYGrzdgXXVMXcxoKTePPX1dWByq"
+           andPassphrase:@"Satoshi"];
+    NSLog(@"privKey = %@", key.privateKey);
+    XCTAssertEqualObjects(@"5HtasZ6ofTHP6HCwTqTkLDuLQisYPah7aUnSKfC7h4hMUVw2gi5", key.privateKey,
+                          @"[ZNKey keyWithBIP38Key:andPassphrase:]");
+
+    // non EC multiplied, compressed
+    key = [ZNKey keyWithBIP38Key:@"6PYNKZ1EAgYgmQfmNVamxyXVWHzK5s6DGhwP4J5o44cvXdoY7sRzhtpUeo"
+           andPassphrase:@"TestingOneTwoThree"];
+    NSLog(@"privKey = %@", key.privateKey);
+    XCTAssertEqualObjects(@"L44B5gGEpqEDRS9vVPz7QT35jcBG2r3CZwSwQ4fCewXAhAhqGVpP", key.privateKey,
+                          @"[ZNKey keyWithBIP38Key:andPassphrase:]");
+
+    key = [ZNKey keyWithBIP38Key:@"6PYLtMnXvfG3oJde97zRyLYFZCYizPU5T3LwgdYJz1fRhh16bU7u6PPmY7"
+           andPassphrase:@"Satoshi"];
+    NSLog(@"privKey = %@", key.privateKey);
+    XCTAssertEqualObjects(@"KwYgW8gcxj1JWJXhPSu4Fqwzfhp5Yfi42mdYmMa4XqK7NJxXUSK7", key.privateKey,
+                          @"[ZNKey keyWithBIP38Key:andPassphrase:]");
+
+    // EC multiplied, uncompressed, no lot/sequence number
+    key = [ZNKey keyWithBIP38Key:@"6PfQu77ygVyJLZjfvMLyhLMQbYnu5uguoJJ4kMCLqWwPEdfpwANVS76gTX"
+                   andPassphrase:@"TestingOneTwoThree"];
+    NSLog(@"privKey = %@", key.privateKey);
+    XCTAssertEqualObjects(@"5K4caxezwjGCGfnoPTZ8tMcJBLB7Jvyjv4xxeacadhq8nLisLR2", key.privateKey,
+                          @"[ZNKey keyWithBIP38Key:andPassphrase:]");
+
+    key = [ZNKey keyWithBIP38Key:@"6PfLGnQs6VZnrNpmVKfjotbnQuaJK4KZoPFrAjx1JMJUa1Ft8gnf5WxfKd"
+                   andPassphrase:@"Satoshi"];
+    NSLog(@"privKey = %@", key.privateKey);
+    XCTAssertEqualObjects(@"5KJ51SgxWaAYR13zd9ReMhJpwrcX47xTJh2D3fGPG9CM8vkv5sH", key.privateKey,
+                          @"[ZNKey keyWithBIP38Key:andPassphrase:]");
+
+    // EC multiplied, uncompressed, with lot/sequence number
+    key = [ZNKey keyWithBIP38Key:@"6PgNBNNzDkKdhkT6uJntUXwwzQV8Rr2tZcbkDcuC9DZRsS6AtHts4Ypo1j"
+                   andPassphrase:@"MOLON LABE"];
+    NSLog(@"privKey = %@", key.privateKey);
+    XCTAssertEqualObjects(@"5JLdxTtcTHcfYcmJsNVy1v2PMDx432JPoYcBTVVRHpPaxUrdtf8", key.privateKey,
+                          @"[ZNKey keyWithBIP38Key:andPassphrase:]");
+
+    key = [ZNKey keyWithBIP38Key:@"6PgGWtx25kUg8QWvwuJAgorN6k9FbE25rv5dMRwu5SKMnfpfVe5mar2ngH"
+                   andPassphrase:@"ΜΟΛΩΝ ΛΑΒΕ"];
+    NSLog(@"privKey = %@", key.privateKey);
+    XCTAssertEqualObjects(@"5KMKKuUmAkiNbA3DazMQiLfDq47qs8MAEThm4yL8R2PhV1ov33D", key.privateKey,
+                          @"[ZNKey keyWithBIP38Key:andPassphrase:]");
+}
+#endif
 
 #pragma mark - testSign
 
@@ -658,6 +710,7 @@
 
 #pragma mark - testBIP32Sequence
 
+#if ! BITCOIN_TESTNET
 - (void)testBIP32SequencePrivateKey
 {
     ZNBIP32Sequence *seq = [ZNBIP32Sequence new];
@@ -667,10 +720,9 @@
 
     NSLog(@"000102030405060708090a0b0c0d0e0f/0'/1/2' prv = %@", [NSString hexWithData:d]);
 
-#if ! BITCOIN_TESTNET
+
     XCTAssertEqualObjects(d, @"80cbce0d719ecf7431d88e6a89fa1483e02e35092af60c042b1df2ff59fa424dca01".hexToData,
                          @"[ZNBIP32Sequence privateKey:internal:fromSeed:]");
-#endif
 
     // Test for correct zero padding of private keys, a nasty potential bug
     pk = [seq privateKey:97 internal:NO fromSeed:seed];
@@ -678,11 +730,10 @@
 
     NSLog(@"000102030405060708090a0b0c0d0e0f/0'/0/97 prv = %@", [NSString hexWithData:d]);
 
-#if ! BITCOIN_TESTNET
     XCTAssertEqualObjects(d, @"8000136c1ad038f9a00871895322a487ed14f1cdc4d22ad351cfa1a0d235975dd701".hexToData,
                          @"[ZNBIP32Sequence privateKey:internal:fromSeed:]");
-#endif
 }
+#endif
 
 - (void)testBIP32SequenceMasterPublicKeyFromSeed
 {
@@ -781,6 +832,7 @@
 #endif
 }
 
+#if ! BITCOIN_TESTNET
 - (void)testElectrumSequencePrivateKey
 {
     ZNElectrumSequence *seq = [ZNElectrumSequence new];
@@ -788,21 +840,18 @@
     
     NSLog(@"privateKey:0 = %@", pk);
 
-#if ! BITCOIN_TESTNET
     XCTAssertEqualObjects(pk, @"5Khs7w6fBkogoj1v71Mdt4g8m5kaEyRaortmK56YckgTubgnrhz",
                          @"[ZNElectrumSequence privateKey:forChange:fromSeed:]");
-#endif
 
     // Test for correct zero padding of private keys
     pk = [seq privateKey:64 internal:NO fromSeed:@"00000000000000000000000000000000".hexToData];
 
     NSLog(@"privateKey:64 = %@ = 0x%@", pk, pk.base58checkToHex);
 
-#if ! BITCOIN_TESTNET
     XCTAssertEqualObjects(pk.base58checkToHex, @"8000f7f216a82f6beb105728dbbc29e2c13446bfa1078b7bef6e0ceff2c8a1e774",
                          @"[ZNElectrumSequence privateKey:forChange:fromSeed:]");
-#endif
 }
+#endif
 
 #pragma mark - testBloomFilter
 

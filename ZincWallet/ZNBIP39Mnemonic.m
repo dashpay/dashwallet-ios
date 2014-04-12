@@ -129,28 +129,21 @@
 {
     NSMutableData *key = [NSMutableData secureDataWithLength:CC_SHA512_DIGEST_LENGTH];
     CFMutableStringRef str = CFStringCreateMutableCopy(SecureAllocator(), phrase.length, (__bridge CFStringRef)phrase);
-    CFMutableStringRef salt = CFStringCreateMutableCopy(SecureAllocator(), 8 + passphrase.length, CFSTR("mnemonic"));
+    CFMutableStringRef slt = CFStringCreateMutableCopy(SecureAllocator(), 8 + passphrase.length, CFSTR("mnemonic"));
 
-    if (passphrase) CFStringAppend(salt, (__bridge CFStringRef)passphrase);
+    if (passphrase) CFStringAppend(slt, (__bridge CFStringRef)passphrase);
     CFStringNormalize(str, kCFStringNormalizationFormKD);
-    CFStringNormalize(salt, kCFStringNormalizationFormKD);
+    CFStringNormalize(slt, kCFStringNormalizationFormKD);
 
-    char strbuf[CFStringGetMaximumSizeForEncoding(CFStringGetLength(str), kCFStringEncodingUTF8)];
-    char saltbuf[CFStringGetMaximumSizeForEncoding(CFStringGetLength(salt), kCFStringEncodingUTF8)];
-    const char *strptr = CFStringGetCStringPtr(str, kCFStringEncodingUTF8);
-    const char *saltptr = CFStringGetCStringPtr(salt, kCFStringEncodingUTF8);
+    NSData *password = CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(), str,
+                                                                              kCFStringEncodingUTF8, 0));
+    NSData *salt = CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(), slt,
+                                                                          kCFStringEncodingUTF8, 0));
 
-    if (strptr == NULL && CFStringGetCString(str, strbuf, sizeof(strbuf), kCFStringEncodingUTF8)) strptr = strbuf;
-    if (saltptr == NULL && CFStringGetCString(salt, saltbuf, sizeof(saltbuf), kCFStringEncodingUTF8)) saltptr = saltbuf;
-
-    CCKeyDerivationPBKDF(kCCPBKDF2, strptr, strlen(strptr), (const uint8_t *)saltptr, strlen(saltptr),
-                         kCCPRFHmacAlgSHA512, 2048, key.mutableBytes, key.length);
-
-    if (strptr == strbuf) OPENSSL_cleanse(strbuf, sizeof(strbuf));
-    if (saltptr == saltbuf) OPENSSL_cleanse(saltbuf, sizeof(saltbuf));
+    CCKeyDerivationPBKDF(kCCPBKDF2, password.bytes, password.length, salt.bytes, salt.length, kCCPRFHmacAlgSHA512, 2048,
+                         key.mutableBytes, key.length);
     CFRelease(str);
-    CFRelease(salt);
-
+    CFRelease(slt);
     return key;
 }
 

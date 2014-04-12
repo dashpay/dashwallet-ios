@@ -32,6 +32,12 @@
 #define BITCOIN_PRIVKEY             128
 #define BITCOIN_PRIVKEY_TEST        239
 
+#define BIP38_NOEC_PREFIX           0x0142
+#define BIP38_EC_PREFIX             0x0143
+#define BIP38_NOEC_FLAG             (0x80 | 0x40)
+#define BIP38_LS_FLAG               0x04
+#define BIP38_INVALID_FLAG          (0x10 | 0x08 | 0x02 | 0x01)
+
 CFAllocatorRef SecureAllocator();
 
 @interface NSString (Base58)
@@ -54,5 +60,6 @@ CFAllocatorRef SecureAllocator();
 
 - (BOOL)isValidBitcoinAddress;
 - (BOOL)isValidBitcoinPrivateKey;
+- (BOOL)isValidBitcoinBIP38Key; // BIP38 encrypted keys: https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki
 
 @end

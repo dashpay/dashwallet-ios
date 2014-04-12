@@ -335,7 +335,7 @@ breakout:
 {
     NSData *d = self.base58checkToData;
     
-    if (d.length == 33 || d.length == 34) {
+    if (d.length == 33 || d.length == 34) { // wallet import format: https://en.bitcoin.it/wiki/Wallet_import_format
 #if BITCOIN_TESNET
         return (*(uint8_t *)d.bytes == BITCOIN_PRIVKEY_TEST) ? YES : NO;
 #else
@@ -351,7 +351,27 @@ breakout:
         [d appendBytes:"?" length:1];
         return (*(uint8_t *)d.SHA256.bytes == 0) ? YES : NO;
     }
-    else return NO;
+    else return (self.hexToData.length == 32) ? YES : NO; // hex encoded key
+}
+
+// BIP38 encrypted keys: https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki
+- (BOOL)isValidBitcoinBIP38Key
+{
+    NSData *d = self.base58checkToData;
+
+    if (d.length != 39) return NO; // invalid length
+
+    uint16_t prefix = CFSwapInt16BigToHost(*(uint16_t *)d.bytes);
+    uint8_t flag = *((uint8_t *)d.bytes + 2);
+
+    if (prefix == BIP38_NOEC_PREFIX) { // non EC multiplied key
+        return ((flag & BIP38_NOEC_FLAG) == BIP38_NOEC_FLAG && (flag & BIP38_LS_FLAG) == 0 &&
+                (flag & BIP38_INVALID_FLAG) == 0) ? YES : NO;
+    }
+    else if (prefix == BIP38_EC_PREFIX) { // EC multiplied key
+        return ((flag & BIP38_NOEC_FLAG) == 0 && (flag & BIP38_INVALID_FLAG) == 0) ? YES : NO;
+    }
+    else return NO; // invalid prefix
 }
 
 @end

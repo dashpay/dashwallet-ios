@@ -45,12 +45,14 @@
     
     //TODO: pin code
     
-    //TODO: support for BIP70 payment protocol, BIP38 pasword encrypted private keys
+    //TODO: support for BIP70 payment protocol
     
     //TODO: accessibility for the visually impaired
     
     //TODO: internationalization, use iOS localization settings for currency/exchange rates
-    
+
+    //TODO: XXXX implement background networking to keep the blockchain synced
+
     // this will notify user if bluetooth is disabled (on 4S and newer devices that support BTLE)
     //CBCentralManager *cbManager = [[CBCentralManager alloc] initWithDelegate:self queue:dispatch_get_main_queue()];
     
