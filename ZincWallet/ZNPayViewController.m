@@ -89,62 +89,62 @@
 
     //TODO: XXXX implement BIP72 payment protocol url handling
     // https://github.com/bitcoin/bips/blob/master/bip-0072.mediawiki
+
     self.urlObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNURLNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             NSURL *url = note.userInfo[@"url"];
-            
-            if ([url.scheme isEqual:@"zinc"] && [url.host isEqual:@"x-callback-url"]) {
-                
-                if ([url.path isEqual:@"/tx"]) {
-                    __block NSString *status = nil;
-                
-                    for (NSString *arg in [url.query componentsSeparatedByString:@"&"]) {
-                        NSArray *pair = [arg componentsSeparatedByString:@"="];
-                        
-                        if (pair.count == 2 && [pair[0] isEqual:@"status"]) status = pair[1];
-                    }
-                    
-                    if ([status isEqual:@"sent"]) {
-                        NSUInteger idx = [self.requests indexOfObject:self.request];
-                        
-                        if (self.tx) [m.wallet registerTransaction:self.tx];
-                        
-                        if ([self.requestIDs indexOfObject:QR_ID] != idx) {
-                            if ([self.requestIDs indexOfObject:CLIPBOARD_ID] == idx) {
-                                [[UIPasteboard generalPasteboard] setString:@""];
-                            }
-                            
-                            [self.requestIDs removeObjectAtIndex:idx];
-                            [self.requests removeObjectAtIndex:idx];
-                        }
-                    
-                        [self reset:nil];
-                    }
-                    else if ([status isEqual:@"canceled"]) [self cancel:nil];
-                }
-                else if ([url.path isEqual:@"/qr"]) {
-                    //TODO: XXXX scan qr and launch webapp
-                }
-            }
-            else if ([url.scheme isEqual:@"bitcoin"]) {
+
+            if ([url.scheme isEqual:@"bitcoin"]) {
                 ZNPaymentRequest *req = [ZNPaymentRequest requestWithURL:url];
-        
+
                 if (! req.label.length) req.label = req.paymentAddress;
-                
+
                 if (req.amount > 0 &&
                     [req.label rangeOfString:[m stringForAmount:req.amount]].location == NSNotFound) {
                     req.label = [NSString stringWithFormat:@"%@ - %@", req.label, [m stringForAmount:req.amount]];
                 }
-        
+
                 if ([self.requestIDs indexOfObject:URL_ID] != NSNotFound) {
                     [self.requests removeObjectAtIndex:[self.requestIDs indexOfObject:URL_ID]];
                     [self.requestIDs removeObjectAtIndex:[self.requestIDs indexOfObject:URL_ID]];
                 }
-        
+
                 [self.requests insertObject:req atIndex:0];
                 [self.requestIDs insertObject:URL_ID atIndex:0];
             }
+//            else if ([url.scheme isEqual:@"zinc"] && [url.host isEqual:@"x-callback-url"]) {
+//                if ([url.path isEqual:@"/tx"]) {
+//                    __block NSString *status = nil;
+//                
+//                    for (NSString *arg in [url.query componentsSeparatedByString:@"&"]) {
+//                        NSArray *pair = [arg componentsSeparatedByString:@"="];
+//                        
+//                        if (pair.count == 2 && [pair[0] isEqual:@"status"]) status = pair[1];
+//                    }
+//                    
+//                    if ([status isEqual:@"sent"]) {
+//                        NSUInteger idx = [self.requests indexOfObject:self.request];
+//                        
+//                        if (self.tx) [m.wallet registerTransaction:self.tx];
+//                        
+//                        if ([self.requestIDs indexOfObject:QR_ID] != idx) {
+//                            if ([self.requestIDs indexOfObject:CLIPBOARD_ID] == idx) {
+//                                [[UIPasteboard generalPasteboard] setString:@""];
+//                            }
+//                            
+//                            [self.requestIDs removeObjectAtIndex:idx];
+//                            [self.requests removeObjectAtIndex:idx];
+//                        }
+//                    
+//                        [self reset:nil];
+//                    }
+//                    else if ([status isEqual:@"canceled"]) [self cancel:nil];
+//                }
+//                else if ([url.path isEqual:@"/qr"]) {
+//                    //TODO: XXXX scan qr and launch webapp
+//                }
+//            }
         }];
     
     self.activeObserver =
@@ -208,7 +208,8 @@
     ZNPaymentRequest *req = [ZNPaymentRequest requestWithString:[[[UIPasteboard generalPasteboard] string]
                              stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
     
-    if (! req.valid) {
+    if (! req.valid && ! [req.paymentAddress isValidBitcoinPrivateKey] &&
+        ! [req.paymentAddress isValidBitcoinBIP38Key]) {
         req.data = nil;
         req.label = @"pay address from clipboard";
     }
@@ -444,7 +445,7 @@
 
 - (void)confirmSweep:(NSString *)privKey
 {
-    if (! [privKey isValidBitcoinPrivateKey]) return;
+    if (! [privKey isValidBitcoinPrivateKey] && ! [privKey isValidBitcoinBIP38Key]) return;
     
     ZNWalletManager *m = [ZNWalletManager sharedInstance];
     ZNBubbleView *v = [ZNBubbleView viewWithText:@"checking private key balance..."
@@ -464,7 +465,9 @@
             [self reset:nil];
             return;
         }
-        
+
+        if (! tx) return;
+
         __block uint64_t fee = tx.standardFee, amount = fee;
         
         for (NSNumber *amt in tx.outputAmounts) {
@@ -473,7 +476,7 @@
 
         self.sweepTx = tx;
         [[[UIAlertView alloc] initWithTitle:nil
-          message:[NSString stringWithFormat:@"Sweep %@ (%@) from this private key into your wallet? "
+          message:[NSString stringWithFormat:@"Send %@ (%@) from this private key into your wallet? "
           "The bitcoin network will receive a fee of %@ (%@).", [m stringForAmount:amount],
           [m localCurrencyStringForAmount:amount], [m stringForAmount:fee], [m localCurrencyStringForAmount:fee]]
           delegate:self cancelButtonTitle:@"cancel" otherButtonTitles:[NSString stringWithFormat:@"%@ (%@)",
@@ -560,12 +563,18 @@
                 }
             }
         }
-        return;
     }
-    
-    [sender setEnabled:NO];
-    self.request = self.requests[idx];
-    [self confirmRequest];
+    else {
+        ZNPaymentRequest *req = self.requests[idx];
+
+        [sender setEnabled:NO];
+
+        if (req.valid) {
+            self.request = req;
+            [self confirmRequest];
+        }
+        else [self confirmSweep:req.paymentAddress];
+    }
 }
 
 - (IBAction)reset:(id)sender
@@ -612,7 +621,7 @@
         req.data = [s dataUsingEncoding:NSUTF8StringEncoding];
         req.label = @"scan QR code";
         
-        if (! req.valid && ! [s isValidBitcoinPrivateKey]) {
+        if (! req.valid && ! [s isValidBitcoinPrivateKey] && ! [s isValidBitcoinBIP38Key]) {
             [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide-red.png"]];
 
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{

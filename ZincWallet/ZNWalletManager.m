@@ -26,6 +26,7 @@
 #import "ZNWalletManager.h"
 #import "ZNWallet.h"
 #import "ZNKey.h"
+#import "ZNKey+BIP38.h"
 #import "ZNKeySequence.h"
 #import "ZNZincMnemonic.h"
 #import "ZNBIP39Mnemonic.h"
@@ -108,7 +109,9 @@ static NSData *getKeychainData(NSString *key)
 
 @property (nonatomic, strong) ZNWallet *wallet;
 @property (nonatomic, strong) Reachability *reachability;
-@property (nonatomic, assign) BOOL hasSeed;
+@property (nonatomic, assign) BOOL hasSeed, sweepFee;
+@property (nonatomic, strong) NSString *sweepKey;
+@property (nonatomic, strong) void (^sweepCompletion)(ZNTransaction *tx, NSError *error);
 
 @end
 
@@ -309,9 +312,24 @@ static NSData *getKeychainData(NSString *key)
 - (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
 completion:(void (^)(ZNTransaction *tx, NSError *error))completion
 {
-    NSString *address = [[ZNKey keyWithPrivateKey:privKey] address];
-
     if (! completion) return;
+
+    if ([privKey isValidBitcoinBIP38Key]) {
+        UIAlertView *v = [[UIAlertView alloc] initWithTitle:@"password protected key" message:nil delegate:self
+                          cancelButtonTitle:@"cancel" otherButtonTitles:@"ok", nil];
+
+        v.alertViewStyle = UIAlertViewStyleSecureTextInput;
+        [v textFieldAtIndex:0].returnKeyType = UIReturnKeyDone;
+        [v textFieldAtIndex:0].placeholder = @"password";
+        [v show];
+
+        self.sweepKey = privKey;
+        self.sweepFee = fee;
+        self.sweepCompletion = completion;
+        return;
+    }
+
+    NSString *address = [[ZNKey keyWithPrivateKey:privKey] address];
 
     if (! address) {
         completion(nil, [NSError errorWithDomain:@"ZincWallet" code:187
@@ -465,7 +483,37 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    abort();
+    if (buttonIndex == alertView.cancelButtonIndex) {
+        if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:@"abort"]) abort();
+
+        if (self.sweepCompletion) self.sweepCompletion(nil, nil);
+        self.sweepKey = nil;
+        self.sweepCompletion = nil;
+        return;
+    }
+
+    if (! self.sweepKey || ! self.sweepCompletion) return;
+
+    NSString *passphrase = [[alertView textFieldAtIndex:0] text];
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        ZNKey *key = [ZNKey keyWithBIP38Key:self.sweepKey andPassphrase:passphrase];
+
+        if (! key) {
+            UIAlertView *v = [[UIAlertView alloc] initWithTitle:@"password protected key" message:@"bad password"
+                              delegate:self cancelButtonTitle:@"cancel" otherButtonTitles:@"ok", nil];
+
+            v.alertViewStyle = UIAlertViewStyleSecureTextInput;
+            [v textFieldAtIndex:0].returnKeyType = UIReturnKeyDone;
+            [v textFieldAtIndex:0].placeholder = @"password";
+            [v show];
+        }
+        else {
+            [self sweepPrivateKey:key.privateKey withFee:self.sweepFee completion:self.sweepCompletion];
+            self.sweepKey = nil;
+            self.sweepCompletion = nil;
+        }
+    });
 }
 
 @end

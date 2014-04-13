@@ -128,22 +128,20 @@
 - (NSData *)deriveKeyFromPhrase:(NSString *)phrase withPassphrase:(NSString *)passphrase
 {
     NSMutableData *key = [NSMutableData secureDataWithLength:CC_SHA512_DIGEST_LENGTH];
-    CFMutableStringRef str = CFStringCreateMutableCopy(SecureAllocator(), phrase.length, (__bridge CFStringRef)phrase);
-    CFMutableStringRef slt = CFStringCreateMutableCopy(SecureAllocator(), 8 + passphrase.length, CFSTR("mnemonic"));
+    NSData *password, *salt;
+    CFMutableStringRef pw = CFStringCreateMutableCopy(SecureAllocator(), phrase.length, (__bridge CFStringRef)phrase);
+    CFMutableStringRef s = CFStringCreateMutableCopy(SecureAllocator(), 8 + passphrase.length, CFSTR("mnemonic"));
 
-    if (passphrase) CFStringAppend(slt, (__bridge CFStringRef)passphrase);
-    CFStringNormalize(str, kCFStringNormalizationFormKD);
-    CFStringNormalize(slt, kCFStringNormalizationFormKD);
-
-    NSData *password = CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(), str,
-                                                                              kCFStringEncodingUTF8, 0));
-    NSData *salt = CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(), slt,
-                                                                          kCFStringEncodingUTF8, 0));
+    if (passphrase) CFStringAppend(s, (__bridge CFStringRef)passphrase);
+    CFStringNormalize(pw, kCFStringNormalizationFormKD);
+    CFStringNormalize(s, kCFStringNormalizationFormKD);
+    password = CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(), pw, kCFStringEncodingUTF8, 0));
+    salt = CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(), s, kCFStringEncodingUTF8, 0));
+    CFRelease(pw);
+    CFRelease(s);
 
     CCKeyDerivationPBKDF(kCCPBKDF2, password.bytes, password.length, salt.bytes, salt.length, kCCPRFHmacAlgSHA512, 2048,
                          key.mutableBytes, key.length);
-    CFRelease(str);
-    CFRelease(slt);
     return key;
 }
 

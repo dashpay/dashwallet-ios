@@ -365,7 +365,7 @@ breakout:
     uint8_t flag = *((uint8_t *)d.bytes + 2);
 
     if (prefix == BIP38_NOEC_PREFIX) { // non EC multiplied key
-        return ((flag & BIP38_NOEC_FLAG) == BIP38_NOEC_FLAG && (flag & BIP38_LS_FLAG) == 0 &&
+        return ((flag & BIP38_NOEC_FLAG) == BIP38_NOEC_FLAG && (flag & BIP38_LOTSEQ_FLAG) == 0 &&
                 (flag & BIP38_INVALID_FLAG) == 0) ? YES : NO;
     }
     else if (prefix == BIP38_EC_PREFIX) { // EC multiplied key

@@ -41,9 +41,6 @@
 #define BIP38_SCRYPT_EC_R     1
 #define BIP38_SCRYPT_EC_P     1
 
-#define BIP38_NOLS_MAGIC      "\x2C\xE9\xB3\xE1\xFF\x39\xE2\x53"
-#define BIP38_LS_MAGIC        "\x2C\xE9\xB3\xE1\xFF\x39\xE2\x51"
-
 #define rotl(a, b) (((a) << (b)) | ((a) >> (32 - (b))))
 
 // salsa20/8 stream cypher: http://cr.yp.to/snuffle.html
@@ -84,9 +81,10 @@ static void blockmix_salsa8(uint64_t *dest, uint64_t *src, uint64_t *b, uint32_t
     }
 }
 
-static NSData *scrypt(NSData *password, NSData *salt, int64_t n, uint32_t r, uint32_t p, NSUInteger len)
+// scrypt key derivation: http://www.tarsnap.com/scrypt.html
+static NSData *scrypt(NSData *password, NSData *salt, int64_t n, uint32_t r, uint32_t p, NSUInteger length)
 {
-    NSMutableData *d = [NSMutableData secureDataWithLength:len];
+    NSMutableData *d = [NSMutableData secureDataWithLength:length];
     uint8_t b[128*r*p];
     uint64_t x[16*r], y[16*r], z[8], *v = malloc(128*r*n);
 
@@ -140,11 +138,14 @@ static NSData *scrypt(NSData *password, NSData *salt, int64_t n, uint32_t r, uin
 
     uint16_t prefix = CFSwapInt16BigToHost(*(uint16_t *)d.bytes);
     uint8_t flag = *((uint8_t *)d.bytes + 2);
-    NSData *addresshash = [NSData dataWithBytesNoCopy:(uint8_t *)d.bytes + 3 length:4 freeWhenDone:NO];
+    NSData *addresshash = [NSData dataWithBytes:(uint8_t *)d.bytes + 3 length:4], *address, *password;
     NSMutableData *secret = [NSMutableData secureDataWithLength:32];
-    NSData *password = CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(),
-                                                                              (__bridge CFStringRef)passphrase,
-                                                                              kCFStringEncodingUTF8, 0));
+    CFMutableStringRef pw = CFStringCreateMutableCopy(SecureAllocator(), passphrase.length,
+                                                      (__bridge CFStringRef)passphrase);
+
+    CFStringNormalize(pw, kCFStringNormalizationFormC);
+    password = CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(), pw, kCFStringEncodingUTF8, 0));
+    CFRelease(pw);
 
     if (prefix == BIP38_NOEC_PREFIX) { // non EC multiplied key
         uint8_t *encrypted1 = (uint8_t *)d.bytes + 7, *encrypted2 = (uint8_t *)d.bytes + 23;
@@ -165,7 +166,7 @@ static NSData *scrypt(NSData *password, NSData *salt, int64_t n, uint32_t r, uin
         uint8_t *entropy = (uint8_t *)d.bytes + 7;
         NSMutableData *encrypted1 = [NSMutableData dataWithBytes:(uint8_t *)d.bytes + 15 length:8]; // encrypted1[0...7]
         uint8_t *encrypted2 = (uint8_t *)d.bytes + 23;
-        NSData *salt = [NSData dataWithBytesNoCopy:entropy length:(flag & BIP38_LS_FLAG) ? 4 : 8 freeWhenDone:NO];
+        NSData *salt = [NSData dataWithBytes:entropy length:(flag & BIP38_LOTSEQ_FLAG) ? 4 : 8];
         NSData *prefactor = scrypt(password, salt, BIP38_SCRYPT_N, BIP38_SCRYPT_R, BIP38_SCRYPT_P, 32), *pf;
         NSMutableData *passpoint = [NSMutableData secureDataWithLength:33], *x;
         BN_CTX *ctx = BN_CTX_new();
@@ -173,7 +174,7 @@ static NSData *scrypt(NSData *password, NSData *salt, int64_t n, uint32_t r, uin
         EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
         EC_POINT *p = EC_POINT_new(group);
 
-        if (flag & BIP38_LS_FLAG) {
+        if (flag & BIP38_LOTSEQ_FLAG) {
             x = [NSMutableData secureDataWithData:prefactor];
             [x appendBytes:entropy length:8];
             pf = x.SHA256_2;
@@ -212,7 +213,7 @@ static NSData *scrypt(NSData *password, NSData *salt, int64_t n, uint32_t r, uin
         EC_GROUP_get_order(group, &order, ctx);
         BN_bin2bn(seedb.SHA256_2.bytes, CC_SHA256_DIGEST_LENGTH, &factorb);
         BN_mod_mul(&priv, &passfactor, &factorb, &order, ctx);
-        BN_bn2bin(&priv, secret.mutableBytes + secret.length - BN_num_bytes(&priv));
+        BN_bn2bin(&priv, (unsigned char *)secret.mutableBytes + secret.length - BN_num_bytes(&priv));
 
         EC_GROUP_free(group);
         BN_free(&order);
@@ -224,8 +225,9 @@ static NSData *scrypt(NSData *password, NSData *salt, int64_t n, uint32_t r, uin
     }
 
     if (! (self = [self initWithSecret:secret compressed:flag & BIP38_COMPRESSED_FLAG])) return nil;
+    address = [self.address dataUsingEncoding:NSUTF8StringEncoding];
 
-    if (*(int *)[self.address dataUsingEncoding:NSUTF8StringEncoding].SHA256_2.bytes != *(int *)addresshash.bytes) {
+    if (address.length < sizeof(uint32_t) || *(uint32_t *)address.SHA256_2.bytes != *(uint32_t *)addresshash.bytes) {
         NSLog(@"BIP38 bad passphrase");
         return nil;
     }

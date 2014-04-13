@@ -1812,7 +1812,6 @@
 		75B4941C17C43BCE003A3FCA /* MnemonicNouns.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = MnemonicNouns.plist; sourceTree = "<group>"; };
 		75B4941E17C43C58003A3FCA /* MnemonicAdvs.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = MnemonicAdvs.plist; sourceTree = "<group>"; };
 		75B4942017C43CAC003A3FCA /* MnemonicVerbs.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = MnemonicVerbs.plist; sourceTree = "<group>"; };
-		75BAFCE718F82212000CA58B /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		75C2F3D1178D3061009F8CD3 /* cameraguide-green@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide-green@2x.png"; sourceTree = "<group>"; };
 		75C2F3D2178D3061009F8CD3 /* cameraguide-red@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide-red@2x.png"; sourceTree = "<group>"; };
 		75C2F3D3178D3061009F8CD3 /* cameraguide@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide@2x.png"; sourceTree = "<group>"; };
@@ -3424,7 +3423,6 @@
 		75D8F380173ABE3C0080D95E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				75BAFCE718F82212000CA58B /* Accelerate.framework */,
 				75F1B85B17C6CC0B00680E1B /* CoreData.framework */,
 				75F1B85C17C6CC0B00680E1B /* CoreVideo.framework */,
 				759B779617BF46AD0000510F /* CFNetwork.framework */,
