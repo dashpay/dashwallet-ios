@@ -123,11 +123,52 @@ static NSData *scrypt(NSData *password, NSData *salt, int64_t n, uint32_t r, uin
     return d;
 }
 
+// BIP38 is a method for encrypting private keys with a passphrase
+// https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki
+
 @implementation ZNKey (BIP38)
 
+// decrypts a BIP38 key using the given passphrase or retuns nil if passphrase is incorrect
 + (instancetype)keyWithBIP38Key:(NSString *)key andPassphrase:(NSString *)passphrase
 {
     return [[self alloc] initWithBIP38Key:key andPassphrase:passphrase];
+}
+
+// generates an "intermediate code" for an EC multiply mode key, salt should be 64bits of random data
++ (NSString *)BIP38IntermediateCodeWithSalt:(uint64_t)salt andPassphrase:(NSString *)passphrase;
+{
+    //TODO: implement this
+    return nil;
+}
+
+// generates an "intermediate code" for an EC multiply mode key with a lot and sequence number, lot must be less than
+// 1048576, sequence must be less than 4096, and salt should be 32bits of random data
++ (NSString *)BIP38IntermediateCodeWithLot:(uint32_t)lot sequence:(uint16_t)sequence salt:(uint32_t)salt
+passphrase:(NSString *)passphrase
+{
+    //TODO: implement this
+    return nil;
+}
+
+// generates a BIP38 key from an "intermediate code" and 24 bytes of cryptographically random data
++ (NSString *)BIP38KeyWithIntermediateCode:(NSString *)code andSeedb:(NSData *)seedb
+{
+    //TODO: implement this
+    return nil;
+}
+
+// generates a "confirmation code" from the "intermediate code" and random data previously used to create a BIP38 key
++ (NSString *)BIP38ConfirmationCodeWithIntermediateCode:(NSString *)code andSeedb:(NSData *)seedb
+{
+    //TODO: implement this
+    return nil;
+}
+
+// returns true if "confirmation code" depends on the given passphrase
++ (BOOL)BIP38ConfirmationCodeIsValid:(NSString *)code withPassphrase:(NSString *)passphrase
+{
+    //TODO: implement this
+    return NO;
 }
 
 - (instancetype)initWithBIP38Key:(NSString *)key andPassphrase:(NSString *)passphrase
@@ -184,7 +225,7 @@ static NSData *scrypt(NSData *password, NSData *salt, int64_t n, uint32_t r, uin
         BN_CTX_start(ctx);
         BN_init(&passfactor);
         BN_bin2bn(pf.bytes, (int)pf.length, &passfactor);
-        EC_POINT_mul(group, p, &passfactor, NULL, NULL, ctx);
+        EC_POINT_mul(group, p, &passfactor, NULL, NULL, ctx); // passpoint = elliptic curve point G*passfactor
         EC_POINT_point2oct(group, p, POINT_CONVERSION_COMPRESSED, passpoint.mutableBytes, passpoint.length, ctx);
         EC_POINT_clear_free(p);
 
@@ -211,8 +252,8 @@ static NSData *scrypt(NSData *password, NSData *salt, int64_t n, uint32_t r, uin
         BN_init(&priv);
         BN_init(&order);
         EC_GROUP_get_order(group, &order, ctx);
-        BN_bin2bn(seedb.SHA256_2.bytes, CC_SHA256_DIGEST_LENGTH, &factorb);
-        BN_mod_mul(&priv, &passfactor, &factorb, &order, ctx);
+        BN_bin2bn(seedb.SHA256_2.bytes, CC_SHA256_DIGEST_LENGTH, &factorb); // factorb = SHA256(SHA256(seedb))
+        BN_mod_mul(&priv, &passfactor, &factorb, &order, ctx); // secret = passfactor*factorb mod N
         BN_bn2bin(&priv, (unsigned char *)secret.mutableBytes + secret.length - BN_num_bytes(&priv));
 
         EC_GROUP_free(group);
@@ -227,12 +268,19 @@ static NSData *scrypt(NSData *password, NSData *salt, int64_t n, uint32_t r, uin
     if (! (self = [self initWithSecret:secret compressed:flag & BIP38_COMPRESSED_FLAG])) return nil;
     address = [self.address dataUsingEncoding:NSUTF8StringEncoding];
 
-    if (address.length < sizeof(uint32_t) || *(uint32_t *)address.SHA256_2.bytes != *(uint32_t *)addresshash.bytes) {
+    if (! address || *(uint32_t *)address.SHA256_2.bytes != *(uint32_t *)addresshash.bytes) {
         NSLog(@"BIP38 bad passphrase");
         return nil;
     }
 
     return self;
+}
+
+// encrypts receiver with passphrase and returns BIP38 key
+- (NSString *)BIP38KeyWithPassphrase:(NSString *)passphrase
+{
+    //TODO: implement this
+    return nil;
 }
 
 @end

@@ -172,6 +172,13 @@
     NSLog(@"privKey = %@", key.privateKey);
     XCTAssertEqualObjects(@"5KMKKuUmAkiNbA3DazMQiLfDq47qs8MAEThm4yL8R2PhV1ov33D", key.privateKey,
                           @"[ZNKey keyWithBIP38Key:andPassphrase:]");
+
+    // password NFC unicode normalization test
+    key = [ZNKey keyWithBIP38Key:@"6PRW5o9FLp4gJDDVqJQKJFTpMvdsSGJxMYHtHaQBF3ooa8mwD69bapcDQn"
+           andPassphrase:@"\u03D2\u0301\x00\U00010400\U0001F4A9"];
+    NSLog(@"privKey = %@", key.privateKey);
+    XCTAssertEqualObjects(@"5Jajm8eQ22H3pGWLEVCXyvND8dQZhiQhoLJNKjYXk9roUFTMSZ4", key.privateKey,
+                          @"[ZNKey keyWithBIP38Key:andPassphrase:]");
 }
 #endif
 

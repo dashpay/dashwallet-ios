@@ -166,7 +166,7 @@
         rect.size.height += self.customView.frame.size.height + (self.text.length > 0 ? MARGIN : 0);
     }
 
-    if (self.tipPoint.x > 1) {
+    if (self.tipPoint.x > 1) { // position bubble to point to tipPoint
         center.x = self.tipPoint.x;
         if (center.x + rect.size.width/2 > MAX_WIDTH) center.x = MAX_WIDTH - rect.size.width/2;
         else if (center.x - rect.size.width/2 < MARGIN*2) center.x = MARGIN*2 + rect.size.width/2;
@@ -178,7 +178,7 @@
     self.frame = CGRectMake(center.x - (rect.size.width + MARGIN*2)/2, center.y - (rect.size.height + MARGIN*2)/2,
                             rect.size.width + MARGIN*2, rect.size.height + MARGIN*2);
 
-    if (self.customView) {
+    if (self.customView) { // layout customView and label
         self.customView.center = CGPointMake((rect.size.width + MARGIN*2)/2,
                                              self.customView.frame.size.height/2 + MARGIN);
         self.label.frame = CGRectMake(MARGIN, self.customView.frame.size.height + MARGIN*2, self.label.frame.size.width,
@@ -186,13 +186,14 @@
     }
     else self.label.frame = CGRectMake(MARGIN, MARGIN, self.label.frame.size.width, self.frame.size.height - MARGIN*2);
 
-    if (self.tipPoint.x > 1) {
+    if (self.tipPoint.x > 1) { // draw tip arrow
         CGMutablePathRef path = CGPathCreateMutable();
         CGFloat x = self.tipPoint.x - (center.x - (rect.size.width + MARGIN*2)/2);
 
         if (! self.arrow) self.arrow = [[CAShapeLayer alloc] init];
         x = MIN(x, rect.size.width + MARGIN*2 - (RADIUS + 7.5));
         x = MAX(x, self.layer.cornerRadius + 7.5);
+
         if (self.tipDirection == ZNBubbleTipDirectionUp) {
             CGPathMoveToPoint(path, NULL, 0.0, 7.5);
             CGPathAddLineToPoint(path, NULL, 7.5, 0.0);
@@ -209,6 +210,7 @@
             self.arrow.position = CGPointMake(x, rect.size.height + MARGIN*2);
             self.arrow.anchorPoint = CGPointMake(0.5, 0.0);
         }
+
         self.arrow.path = path;
         self.arrow.strokeColor = [[UIColor clearColor] CGColor];
         self.arrow.fillColor = [self.backgroundColor CGColor];
@@ -216,7 +218,7 @@
         [self.layer addSublayer:self.arrow];
         CGPathRelease(path);
     }
-    else if (self.arrow) {
+    else if (self.arrow) { // remove tip arrow
         [self.arrow removeFromSuperlayer];
         self.arrow = nil;
     }

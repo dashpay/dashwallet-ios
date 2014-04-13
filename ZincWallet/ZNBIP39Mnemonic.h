@@ -26,6 +26,9 @@
 #import <Foundation/Foundation.h>
 #import "ZNMnemonic.h"
 
+// BIP39 is method for generating a deterministic wallet seed from a mnemonic phrase
+// https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
+
 @interface ZNBIP39Mnemonic : NSObject<ZNMnemonic>
 
 + (instancetype)sharedInstance;

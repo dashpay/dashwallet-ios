@@ -463,24 +463,24 @@
             [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription delegate:self
               cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
             [self reset:nil];
-            return;
         }
-
-        if (! tx) return;
-
-        __block uint64_t fee = tx.standardFee, amount = fee;
+        else if (tx) {
+            __block uint64_t fee = tx.standardFee, amount = fee;
         
-        for (NSNumber *amt in tx.outputAmounts) {
-            amount += amt.unsignedLongLongValue;
-        }
+            for (NSNumber *amt in tx.outputAmounts) {
+                amount += amt.unsignedLongLongValue;
+            }
 
-        self.sweepTx = tx;
-        [[[UIAlertView alloc] initWithTitle:nil
-          message:[NSString stringWithFormat:@"Send %@ (%@) from this private key into your wallet? "
-          "The bitcoin network will receive a fee of %@ (%@).", [m stringForAmount:amount],
-          [m localCurrencyStringForAmount:amount], [m stringForAmount:fee], [m localCurrencyStringForAmount:fee]]
-          delegate:self cancelButtonTitle:@"cancel" otherButtonTitles:[NSString stringWithFormat:@"%@ (%@)",
-          [m stringForAmount:amount], [m localCurrencyStringForAmount:amount]], nil] show];
+            self.sweepTx = tx;
+
+            [[[UIAlertView alloc] initWithTitle:nil
+              message:[NSString stringWithFormat:@"Send %@ (%@) from this private key into your wallet? "
+              "The bitcoin network will receive a fee of %@ (%@).", [m stringForAmount:amount],
+              [m localCurrencyStringForAmount:amount], [m stringForAmount:fee], [m localCurrencyStringForAmount:fee]]
+              delegate:self cancelButtonTitle:@"cancel" otherButtonTitles:[NSString stringWithFormat:@"%@ (%@)",
+              [m stringForAmount:amount], [m localCurrencyStringForAmount:amount]], nil] show];
+        }
+        else [self reset:nil];
     }];
 }
 
