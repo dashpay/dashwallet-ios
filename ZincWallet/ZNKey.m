@@ -174,7 +174,7 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
     if (! d || d.length == 28) d = privateKey.base58ToData;
     if (! d) d = privateKey.hexToData;
 
-    if ((d.length == 33 || d.length == 34) && *(unsigned char *)d.bytes == version) {
+    if ((d.length == 33 || d.length == 34) && *(const unsigned char *)d.bytes == version) {
         [self setSecret:[NSData dataWithBytesNoCopy:(unsigned char *)d.bytes + 1 length:32 freeWhenDone:NO]
          compressed:(d.length == 34) ? YES : NO];
     }

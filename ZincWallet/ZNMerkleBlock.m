@@ -291,7 +291,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 {
     if ((*flagIdx)/8 >= _flags.length || (*hashIdx + 1)*CC_SHA256_DIGEST_LENGTH > _hashes.length) return leaf(nil, NO);
     
-    BOOL flag = (((uint8_t *)_flags.bytes)[*flagIdx/8] & (1 << (*flagIdx % 8)));
+    BOOL flag = (((const uint8_t *)_flags.bytes)[*flagIdx/8] & (1 << (*flagIdx % 8)));
     
     (*flagIdx)++;
     
@@ -311,7 +311,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 - (NSUInteger)hash
 {
     if (_blockHash.length < sizeof(NSUInteger)) return [super hash];
-    return *(NSUInteger *)_blockHash.bytes;
+    return *(const NSUInteger *)_blockHash.bytes;
 }
 
 - (BOOL)isEqual:(id)object

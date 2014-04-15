@@ -562,8 +562,10 @@ services:(uint64_t)services
     for (NSUInteger off = l; off < l + 30*count; off += 30) {
         NSTimeInterval timestamp = [message UInt32AtOffset:off] - NSTimeIntervalSince1970;
         uint64_t services = [message UInt64AtOffset:off + sizeof(uint32_t)];
-        uint32_t address = CFSwapInt32BigToHost(*(uint32_t *)((uint8_t *)message.bytes + off + sizeof(uint32_t) + 20));
-        uint16_t port = CFSwapInt16BigToHost(*(uint16_t *)((uint8_t *)message.bytes + off + sizeof(uint32_t)*2 + 20));
+        uint32_t address = CFSwapInt32BigToHost(*(const uint32_t *)((const uint8_t *)message.bytes + off +
+                                                                    sizeof(uint32_t) + 20));
+        uint16_t port = CFSwapInt16BigToHost(*(const uint16_t *)((const uint8_t *)message.bytes + off +
+                                                                 sizeof(uint32_t)*2 + 20));
         
         // if address time is more than 10 min in the future or older than reference date, set to 5 days old
         if (timestamp > now + 10*60 || timestamp < 0) timestamp = now - 5*24*60*60;
@@ -966,7 +968,7 @@ services:(uint64_t)services
                     while (self.msgHeader.length >= sizeof(uint32_t) &&
                            [self.msgHeader UInt32AtOffset:0] != BITCOIN_MAGIC_NUMBER) {
 #if DEBUG
-                        printf("%c", *(char *)self.msgHeader.bytes);
+                        printf("%c", *(const char *)self.msgHeader.bytes);
 #endif
                         [self.msgHeader replaceBytesInRange:NSMakeRange(0, 1) withBytes:NULL length:0];
                     }
@@ -979,7 +981,7 @@ services:(uint64_t)services
                     goto reset;
                 }
                 
-                type = [NSString stringWithUTF8String:(char *)self.msgHeader.bytes + 4];
+                type = [NSString stringWithUTF8String:(const char *)self.msgHeader.bytes + 4];
                 length = [self.msgHeader UInt32AtOffset:16];
                 checksum = [self.msgHeader UInt32AtOffset:20];
                         
@@ -1002,9 +1004,9 @@ services:(uint64_t)services
                     if (self.msgPayload.length < length) continue; // wait for more stream input
                 }
                 
-                if (*(uint32_t *)self.msgPayload.SHA256_2.bytes != checksum) { // verify checksum
+                if (*(const uint32_t *)self.msgPayload.SHA256_2.bytes != checksum) { // verify checksum
                     [self error:@"error reading %@, invalid checksum %x, expected %x, payload length:%u, expected "
-                     "length:%u, SHA256_2:%@", type, *(uint32_t *)self.msgPayload.SHA256_2.bytes, checksum,
+                     "length:%u, SHA256_2:%@", type, *(const uint32_t *)self.msgPayload.SHA256_2.bytes, checksum,
                      (int)self.msgPayload.length, length, self.msgPayload.SHA256_2];
                      goto reset;
                 }

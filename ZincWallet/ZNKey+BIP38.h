@@ -41,14 +41,14 @@
 + (NSString *)BIP38IntermediateCodeWithLot:(uint32_t)lot sequence:(uint16_t)sequence salt:(uint32_t)salt
 passphrase:(NSString *)passphrase;
 
-// generates a BIP38 key from an "intermediate code" and 24 bytes of cryptographically random data
-+ (NSString *)BIP38KeyWithIntermediateCode:(NSString *)code andSeedb:(NSData *)seedb;
+// generates a BIP38 key from an "intermediate code" and 24 bytes of cryptographically random data (seedb),
+// compressed indicates if compressed pubKey format should be used for the bitcoin address, confcode (optional) will
+// be set to the "confirmation code"
++ (NSString *)BIP38KeyWithIntermediateCode:(NSString *)code seedb:(NSData *)seedb compressed:(BOOL)compressed
+confirmationCode:(NSString **)confcode;
 
-// generates a "confirmation code" from the "intermediate code" and random data previously used to create a BIP38 key
-+ (NSString *)BIP38ConfirmationCodeWithIntermediateCode:(NSString *)code andSeedb:(NSData *)seedb;
-
-// returns true if "confirmation code" depends on the given passphrase
-+ (BOOL)BIP38ConfirmationCodeIsValid:(NSString *)code withPassphrase:(NSString *)passphrase;
+// returns true if the "confirmation code" confirms that the given bitcoin address depends on the specified passphrase
++ (BOOL)confirmWithBIP38ConfirmationCode:(NSString *)code address:(NSString *)address passphrase:(NSString *)passphrase;
 
 - (instancetype)initWithBIP38Key:(NSString *)key andPassphrase:(NSString *)passphrase;
 

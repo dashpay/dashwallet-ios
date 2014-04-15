@@ -118,21 +118,29 @@
 #if ! BITCOIN_TESTNET
 - (void)testKeyWithBIP38Key
 {
+    NSString *intercode, *confcode, *privkey;
+    ZNKey *key;
+
     //TODO: XXXX generate a bip38 key from a secret that's outside the order of secp256k1
 
     // non EC multiplied, uncompressed
-    ZNKey *key = [ZNKey keyWithBIP38Key:@"6PRVWUbkzzsbcVac2qwfssoUJAN1Xhrg6bNk8J7Nzm5H7kxEbn2Nh2ZoGg"
-                  andPassphrase:@"TestingOneTwoThree"];
-
+    key = [ZNKey keyWithBIP38Key:@"6PRVWUbkzzsbcVac2qwfssoUJAN1Xhrg6bNk8J7Nzm5H7kxEbn2Nh2ZoGg"
+           andPassphrase:@"TestingOneTwoThree"];
     NSLog(@"privKey = %@", key.privateKey);
     XCTAssertEqualObjects(@"5KN7MzqK5wt2TP1fQCYyHBtDrXdJuXbUzm4A9rKAteGu3Qi5CVR", key.privateKey,
                           @"[ZNKey keyWithBIP38Key:andPassphrase:]");
+    XCTAssertEqualObjects([key BIP38KeyWithPassphrase:@"TestingOneTwoThree"],
+                          @"6PRVWUbkzzsbcVac2qwfssoUJAN1Xhrg6bNk8J7Nzm5H7kxEbn2Nh2ZoGg",
+                          @"[ZNKey BIP38KeyWithPassphrase:]");
 
     key = [ZNKey keyWithBIP38Key:@"6PRNFFkZc2NZ6dJqFfhRoFNMR9Lnyj7dYGrzdgXXVMXcxoKTePPX1dWByq"
            andPassphrase:@"Satoshi"];
     NSLog(@"privKey = %@", key.privateKey);
     XCTAssertEqualObjects(@"5HtasZ6ofTHP6HCwTqTkLDuLQisYPah7aUnSKfC7h4hMUVw2gi5", key.privateKey,
                           @"[ZNKey keyWithBIP38Key:andPassphrase:]");
+    XCTAssertEqualObjects([key BIP38KeyWithPassphrase:@"Satoshi"],
+                          @"6PRNFFkZc2NZ6dJqFfhRoFNMR9Lnyj7dYGrzdgXXVMXcxoKTePPX1dWByq",
+                          @"[ZNKey BIP38KeyWithPassphrase:]");
 
     // non EC multiplied, compressed
     key = [ZNKey keyWithBIP38Key:@"6PYNKZ1EAgYgmQfmNVamxyXVWHzK5s6DGhwP4J5o44cvXdoY7sRzhtpUeo"
@@ -140,38 +148,86 @@
     NSLog(@"privKey = %@", key.privateKey);
     XCTAssertEqualObjects(@"L44B5gGEpqEDRS9vVPz7QT35jcBG2r3CZwSwQ4fCewXAhAhqGVpP", key.privateKey,
                           @"[ZNKey keyWithBIP38Key:andPassphrase:]");
+    XCTAssertEqualObjects([key BIP38KeyWithPassphrase:@"TestingOneTwoThree"],
+                          @"6PYNKZ1EAgYgmQfmNVamxyXVWHzK5s6DGhwP4J5o44cvXdoY7sRzhtpUeo",
+                          @"[ZNKey BIP38KeyWithPassphrase:]");
 
     key = [ZNKey keyWithBIP38Key:@"6PYLtMnXvfG3oJde97zRyLYFZCYizPU5T3LwgdYJz1fRhh16bU7u6PPmY7"
            andPassphrase:@"Satoshi"];
     NSLog(@"privKey = %@", key.privateKey);
     XCTAssertEqualObjects(@"KwYgW8gcxj1JWJXhPSu4Fqwzfhp5Yfi42mdYmMa4XqK7NJxXUSK7", key.privateKey,
                           @"[ZNKey keyWithBIP38Key:andPassphrase:]");
+    XCTAssertEqualObjects([key BIP38KeyWithPassphrase:@"Satoshi"],
+                          @"6PYLtMnXvfG3oJde97zRyLYFZCYizPU5T3LwgdYJz1fRhh16bU7u6PPmY7",
+                          @"[ZNKey BIP38KeyWithPassphrase:]");
 
     // EC multiplied, uncompressed, no lot/sequence number
     key = [ZNKey keyWithBIP38Key:@"6PfQu77ygVyJLZjfvMLyhLMQbYnu5uguoJJ4kMCLqWwPEdfpwANVS76gTX"
-                   andPassphrase:@"TestingOneTwoThree"];
+           andPassphrase:@"TestingOneTwoThree"];
     NSLog(@"privKey = %@", key.privateKey);
     XCTAssertEqualObjects(@"5K4caxezwjGCGfnoPTZ8tMcJBLB7Jvyjv4xxeacadhq8nLisLR2", key.privateKey,
                           @"[ZNKey keyWithBIP38Key:andPassphrase:]");
+    intercode = [ZNKey BIP38IntermediateCodeWithSalt:0xa50dba6772cb9383llu andPassphrase:@"TestingOneTwoThree"];
+    NSLog(@"intercode = %@", intercode);
+    privkey = [ZNKey BIP38KeyWithIntermediateCode:intercode
+               seedb:@"99241d58245c883896f80843d2846672d7312e6195ca1a6c".hexToData compressed:NO
+               confirmationCode:&confcode];
+    NSLog(@"confcode = %@", confcode);
+    XCTAssertEqualObjects(@"6PfQu77ygVyJLZjfvMLyhLMQbYnu5uguoJJ4kMCLqWwPEdfpwANVS76gTX", privkey,
+                          @"[ZNKey BIP38KeyWithIntermediateCode:]");
+    XCTAssertTrue([ZNKey confirmWithBIP38ConfirmationCode:confcode address:@"1PE6TQi6HTVNz5DLwB1LcpMBALubfuN2z2"
+                   passphrase:@"TestingOneTwoThree"], @"[ZNKey confirmWithBIP38ConfirmationCode:]");
 
     key = [ZNKey keyWithBIP38Key:@"6PfLGnQs6VZnrNpmVKfjotbnQuaJK4KZoPFrAjx1JMJUa1Ft8gnf5WxfKd"
-                   andPassphrase:@"Satoshi"];
+           andPassphrase:@"Satoshi"];
     NSLog(@"privKey = %@", key.privateKey);
     XCTAssertEqualObjects(@"5KJ51SgxWaAYR13zd9ReMhJpwrcX47xTJh2D3fGPG9CM8vkv5sH", key.privateKey,
                           @"[ZNKey keyWithBIP38Key:andPassphrase:]");
+    intercode = [ZNKey BIP38IntermediateCodeWithSalt:0x67010a9573418906llu andPassphrase:@"Satoshi"];
+    NSLog(@"intercode = %@", intercode);
+    privkey = [ZNKey BIP38KeyWithIntermediateCode:intercode
+               seedb:@"49111e301d94eab339ff9f6822ee99d9f49606db3b47a497".hexToData compressed:NO
+               confirmationCode:&confcode];
+    NSLog(@"confcode = %@", confcode);
+    XCTAssertEqualObjects(@"6PfLGnQs6VZnrNpmVKfjotbnQuaJK4KZoPFrAjx1JMJUa1Ft8gnf5WxfKd", privkey,
+                          @"[ZNKey BIP38KeyWithIntermediateCode:]");
+    XCTAssertTrue([ZNKey confirmWithBIP38ConfirmationCode:confcode address:@"1CqzrtZC6mXSAhoxtFwVjz8LtwLJjDYU3V"
+                   passphrase:@"Satoshi"], @"[ZNKey confirmWithBIP38ConfirmationCode:]");
 
     // EC multiplied, uncompressed, with lot/sequence number
     key = [ZNKey keyWithBIP38Key:@"6PgNBNNzDkKdhkT6uJntUXwwzQV8Rr2tZcbkDcuC9DZRsS6AtHts4Ypo1j"
-                   andPassphrase:@"MOLON LABE"];
+           andPassphrase:@"MOLON LABE"];
     NSLog(@"privKey = %@", key.privateKey);
     XCTAssertEqualObjects(@"5JLdxTtcTHcfYcmJsNVy1v2PMDx432JPoYcBTVVRHpPaxUrdtf8", key.privateKey,
                           @"[ZNKey keyWithBIP38Key:andPassphrase:]");
+    intercode = [ZNKey BIP38IntermediateCodeWithLot:263183 sequence:1 salt:0x4fca5a97u passphrase:@"MOLON LABE"];
+    NSLog(@"intercode = %@", intercode);
+    privkey = [ZNKey BIP38KeyWithIntermediateCode:intercode
+               seedb:@"87a13b07858fa753cd3ab3f1c5eafb5f12579b6c33c9a53f".hexToData compressed:NO
+               confirmationCode:&confcode];
+    NSLog(@"confcode = %@", confcode);
+    XCTAssertEqualObjects(@"6PgNBNNzDkKdhkT6uJntUXwwzQV8Rr2tZcbkDcuC9DZRsS6AtHts4Ypo1j", privkey,
+                          @"[ZNKey BIP38KeyWithIntermediateCode:]");
+    XCTAssertTrue([ZNKey confirmWithBIP38ConfirmationCode:confcode address:@"1Jscj8ALrYu2y9TD8NrpvDBugPedmbj4Yh"
+                   passphrase:@"MOLON LABE"], @"[ZNKey confirmWithBIP38ConfirmationCode:]");
 
     key = [ZNKey keyWithBIP38Key:@"6PgGWtx25kUg8QWvwuJAgorN6k9FbE25rv5dMRwu5SKMnfpfVe5mar2ngH"
-                   andPassphrase:@"ΜΟΛΩΝ ΛΑΒΕ"];
+           andPassphrase:@"\u039c\u039f\u039b\u03a9\u039d \u039b\u0391\u0392\u0395"];
     NSLog(@"privKey = %@", key.privateKey);
     XCTAssertEqualObjects(@"5KMKKuUmAkiNbA3DazMQiLfDq47qs8MAEThm4yL8R2PhV1ov33D", key.privateKey,
                           @"[ZNKey keyWithBIP38Key:andPassphrase:]");
+    intercode = [ZNKey BIP38IntermediateCodeWithLot:806938 sequence:1 salt:0xc40ea76fu
+                 passphrase:@"\u039c\u039f\u039b\u03a9\u039d \u039b\u0391\u0392\u0395"];
+    NSLog(@"intercode = %@", intercode);
+    privkey = [ZNKey BIP38KeyWithIntermediateCode:intercode
+               seedb:@"03b06a1ea7f9219ae364560d7b985ab1fa27025aaa7e427a".hexToData compressed:NO
+               confirmationCode:&confcode];
+    NSLog(@"confcode = %@", confcode);
+    XCTAssertEqualObjects(@"6PgGWtx25kUg8QWvwuJAgorN6k9FbE25rv5dMRwu5SKMnfpfVe5mar2ngH", privkey,
+                          @"[ZNKey BIP38KeyWithIntermediateCode:]");
+    XCTAssertTrue([ZNKey confirmWithBIP38ConfirmationCode:confcode address:@"1Lurmih3KruL4xDB5FmHof38yawNtP9oGf"
+                   passphrase:@"\u039c\u039f\u039b\u03a9\u039d \u039b\u0391\u0392\u0395"],
+                  @"[ZNKey confirmWithBIP38ConfirmationCode:]");
 
     // password NFC unicode normalization test
     key = [ZNKey keyWithBIP38Key:@"6PRW5o9FLp4gJDDVqJQKJFTpMvdsSGJxMYHtHaQBF3ooa8mwD69bapcDQn"
@@ -179,6 +235,11 @@
     NSLog(@"privKey = %@", key.privateKey);
     XCTAssertEqualObjects(@"5Jajm8eQ22H3pGWLEVCXyvND8dQZhiQhoLJNKjYXk9roUFTMSZ4", key.privateKey,
                           @"[ZNKey keyWithBIP38Key:andPassphrase:]");
+
+    // incorrect password test
+    key = [ZNKey keyWithBIP38Key:@"6PRW5o9FLp4gJDDVqJQKJFTpMvdsSGJxMYHtHaQBF3ooa8mwD69bapcDQn" andPassphrase:@"foobar"];
+    NSLog(@"privKey = %@", key.privateKey);
+    XCTAssertNil(key, @"[ZNKey keyWithBIP38Key:andPassphrase:]");
 }
 #endif
 

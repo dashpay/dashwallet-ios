@@ -273,7 +273,7 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
 {
     if (masterPublicKey.length < 36) return nil;
     
-    uint32_t fingerprint = CFSwapInt32BigToHost(*(uint32_t *)masterPublicKey.bytes);
+    uint32_t fingerprint = CFSwapInt32BigToHost(*(const uint32_t *)masterPublicKey.bytes);
     NSData *chain = [NSData dataWithBytesNoCopy:(unsigned char *)masterPublicKey.bytes + 4 length:32 freeWhenDone:NO];
     NSData *pubKey = [NSData dataWithBytesNoCopy:(unsigned char *)masterPublicKey.bytes + 36
                       length:masterPublicKey.length - 36 freeWhenDone:NO];

@@ -257,7 +257,7 @@ static NSData *getKeychainData(NSString *key)
 {
     NSData *d = getKeychainData(CREATION_TIME_KEY);
 
-    return (d.length < sizeof(NSTimeInterval)) ? BITCOIN_REFERENCE_BLOCK_TIME : *(NSTimeInterval *)d.bytes;
+    return (d.length < sizeof(NSTimeInterval)) ? BITCOIN_REFERENCE_BLOCK_TIME : *(const NSTimeInterval *)d.bytes;
 }
 
 - (void)updateExchangeRate

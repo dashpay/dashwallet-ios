@@ -67,7 +67,7 @@
         CFBridgingRelease(CFArrayCreateMutable(SecureAllocator(), data.length*3/4, &kCFTypeArrayCallBacks));
 
     for (int i = 0; i*sizeof(uint32_t) < data.length; i++) {
-        x = CFSwapInt32BigToHost(*((uint32_t *)data.bytes + i));
+        x = CFSwapInt32BigToHost(*((const uint32_t *)data.bytes + i));
         w1 = x % n;
         w2 = ((x/n) + w1) % n;
         w3 = ((x/n/n) + w2) % n;

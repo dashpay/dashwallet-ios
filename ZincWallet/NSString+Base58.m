@@ -30,7 +30,7 @@
 
 #define SCRIPT_SUFFIX "\x88\xAC" // OP_EQUALVERIFY OP_CHECKSIG
 
-const char base58chars[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+static const char base58chars[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
 static void *secureAllocate(CFIndex allocSize, CFOptionFlags hint, void *info)
 {
@@ -113,7 +113,7 @@ CFAllocatorRef SecureAllocator()
         s[--i] = base58chars[BN_get_word(&r)];
     }
     
-    for (NSUInteger j = 0; j < d.length && *((uint8_t *)d.bytes + j) == 0; j++) {
+    for (NSUInteger j = 0; j < d.length && *((const uint8_t *)d.bytes + j) == 0; j++) {
         s[--i] = base58chars[0];
     }
 
@@ -205,7 +205,7 @@ breakout:
 
 + (NSString *)hexWithData:(NSData *)d
 {
-    uint8_t *bytes = (uint8_t *)d.bytes;
+    const uint8_t *bytes = d.bytes;
     NSMutableString *hex = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), d.length*2));
     
     for (NSUInteger i = 0; i < d.length; i++) {
@@ -322,7 +322,7 @@ breakout:
     
     if (d.length != 21) return NO;
     
-    uint8_t version = *(uint8_t *)d.bytes;
+    uint8_t version = *(const uint8_t *)d.bytes;
         
 #if BITCOIN_TESTNET
     return (version == BITCOIN_PUBKEY_ADDRESS_TEST || version == BITCOIN_SCRIPT_ADDRESS_TEST) ? YES : NO;
@@ -337,9 +337,9 @@ breakout:
     
     if (d.length == 33 || d.length == 34) { // wallet import format: https://en.bitcoin.it/wiki/Wallet_import_format
 #if BITCOIN_TESNET
-        return (*(uint8_t *)d.bytes == BITCOIN_PRIVKEY_TEST) ? YES : NO;
+        return (*(const uint8_t *)d.bytes == BITCOIN_PRIVKEY_TEST) ? YES : NO;
 #else
-        return (*(uint8_t *)d.bytes == BITCOIN_PRIVKEY) ? YES : NO;
+        return (*(const uint8_t *)d.bytes == BITCOIN_PRIVKEY) ? YES : NO;
 #endif
     }
     else if ((self.length == 30 || self.length == 22) && [self characterAtIndex:0] == 'S') { // mini private key format
@@ -349,7 +349,7 @@ breakout:
         [self getBytes:d.mutableBytes maxLength:d.length usedLength:NULL encoding:NSUTF8StringEncoding options:0
          range:NSMakeRange(0, self.length) remainingRange:NULL];
         [d appendBytes:"?" length:1];
-        return (*(uint8_t *)d.SHA256.bytes == 0) ? YES : NO;
+        return (*(const uint8_t *)d.SHA256.bytes == 0) ? YES : NO;
     }
     else return (self.hexToData.length == 32) ? YES : NO; // hex encoded key
 }
@@ -361,11 +361,11 @@ breakout:
 
     if (d.length != 39) return NO; // invalid length
 
-    uint16_t prefix = CFSwapInt16BigToHost(*(uint16_t *)d.bytes);
-    uint8_t flag = *((uint8_t *)d.bytes + 2);
+    uint16_t prefix = CFSwapInt16BigToHost(*(const uint16_t *)d.bytes);
+    uint8_t flag = *((const uint8_t *)d.bytes + 2);
 
     if (prefix == BIP38_NOEC_PREFIX) { // non EC multiplied key
-        return ((flag & BIP38_NOEC_FLAG) == BIP38_NOEC_FLAG && (flag & BIP38_LOTSEQ_FLAG) == 0 &&
+        return ((flag & BIP38_NOEC_FLAG) == BIP38_NOEC_FLAG && (flag & BIP38_LOTSEQUENCE_FLAG) == 0 &&
                 (flag & BIP38_INVALID_FLAG) == 0) ? YES : NO;
     }
     else if (prefix == BIP38_EC_PREFIX) { // EC multiplied key

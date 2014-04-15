@@ -393,7 +393,7 @@ sequence:(uint32_t)sequence
 - (NSUInteger)hash
 {
     if (self.txHash.length < sizeof(NSUInteger)) return [super hash];
-    return *(NSUInteger *)self.txHash.bytes;
+    return *(const NSUInteger *)self.txHash.bytes;
 }
 
 - (BOOL)isEqual:(id)object
