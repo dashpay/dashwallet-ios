@@ -362,7 +362,7 @@ breakout:
     if (d.length != 39) return NO; // invalid length
 
     uint16_t prefix = CFSwapInt16BigToHost(*(const uint16_t *)d.bytes);
-    uint8_t flag = *((const uint8_t *)d.bytes + 2);
+    uint8_t flag = ((const uint8_t *)d.bytes)[2];
 
     if (prefix == BIP38_NOEC_PREFIX) { // non EC multiplied key
         return ((flag & BIP38_NOEC_FLAG) == BIP38_NOEC_FLAG && (flag & BIP38_LOTSEQUENCE_FLAG) == 0 &&
