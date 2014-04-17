@@ -67,7 +67,7 @@
         [a addObject:words[(x >> (sizeof(x)*8 - (11 + ((i*11) % 8)))) % n]];
     }
 
-    x = 0;
+    OPENSSL_cleanse(&x, sizeof(x));
     return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (__bridge CFArrayRef)a, CFSTR(" ")));
 }
 
@@ -116,7 +116,9 @@
         return nil;
     }
 
-    x = y = b = 0;
+    OPENSSL_cleanse(&x, sizeof(x));
+    OPENSSL_cleanse(&y, sizeof(y));
+    OPENSSL_cleanse(&b, sizeof(b));
     return d;
 }
 

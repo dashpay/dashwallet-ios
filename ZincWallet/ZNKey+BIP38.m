@@ -86,7 +86,7 @@ static NSData *scrypt(NSData *password, NSData *salt, int64_t n, uint32_t r, uin
 {
     NSMutableData *d = [NSMutableData secureDataWithLength:length];
     uint8_t b[128*r*p];
-    uint64_t x[16*r], y[16*r], z[8], *v = malloc(128*r*n);
+    uint64_t x[16*r], y[16*r], z[8], *v = OPENSSL_malloc(128*r*(int)n), m;
 
     CCKeyDerivationPBKDF(kCCPBKDF2, password.bytes, password.length, salt.bytes, salt.length, kCCPRFHmacAlgSHA256, 1,
                          b, sizeof(b));
@@ -103,7 +103,7 @@ static NSData *scrypt(NSData *password, NSData *salt, int64_t n, uint32_t r, uin
             blockmix_salsa8(x, y, z, r);
         }
 
-        for (uint64_t j = 0, m; j < n; j += 2) {
+        for (uint64_t j = 0; j < n; j += 2) {
             m = CFSwapInt64LittleToHost(x[(2*r - 1)*8]) & (n - 1);
             for (uint32_t k = 0; k < 16*r; k++) x[k] ^= v[m*(16*r) + k];
             blockmix_salsa8(y, x, z, r);
@@ -119,7 +119,14 @@ static NSData *scrypt(NSData *password, NSData *salt, int64_t n, uint32_t r, uin
 
     CCKeyDerivationPBKDF(kCCPBKDF2, password.bytes, password.length, b, sizeof(b), kCCPRFHmacAlgSHA256, 1,
                          d.mutableBytes, d.length);
-    free(v);
+
+    OPENSSL_cleanse(b, sizeof(b));
+    OPENSSL_cleanse(x, sizeof(x));
+    OPENSSL_cleanse(y, sizeof(y));
+    OPENSSL_cleanse(z, sizeof(z));
+    OPENSSL_cleanse(v, 128*r*n);
+    OPENSSL_free(v);
+    OPENSSL_cleanse(&m, sizeof(m));
     return d;
 }
 

@@ -27,6 +27,7 @@
 #import "ZNKeySequence.h"
 #import "NSString+Base58.h"
 #import "NSMutableData+Bitcoin.h"
+#import <openssl/crypto.h>
 
 #define WORDS       @"ElectrumSeedWords"
 #define SEED_LENGTH (128/8)
@@ -77,7 +78,10 @@
         [a addObject:words[w3]];
     }
 
-    x = w1 = w2 = w3 = 0;
+    OPENSSL_cleanse(&x, sizeof(x));
+    OPENSSL_cleanse(&w1, sizeof(w1));
+    OPENSSL_cleanse(&w2, sizeof(w2));
+    OPENSSL_cleanse(&w3, sizeof(w3));
     return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (__bridge CFArrayRef)a, CFSTR(" ")));
 }
 
@@ -133,7 +137,10 @@
         [d appendBytes:&x length:sizeof(x)];
     }
     
-    x = w1 = w2 = w3 = 0;
+    OPENSSL_cleanse(&x, sizeof(x));
+    OPENSSL_cleanse(&w1, sizeof(w1));
+    OPENSSL_cleanse(&w2, sizeof(w2));
+    OPENSSL_cleanse(&w3, sizeof(w3));
     return d;
 }
 

@@ -27,6 +27,7 @@
 #import "ZNKeySequence.h"
 #import "NSString+Base58.h"
 #import "NSMutableData+Bitcoin.h"
+#import <openssl/crypto.h>
 
 #define ADJS  @"MnemonicAdjs"
 #define NOUNS @"MnemonicNouns"
@@ -86,7 +87,8 @@
         [s appendString:@"."];
         [a addObject:CFBridgingRelease(CFStringCreateCopy(SecureAllocator(), (__bridge CFStringRef)s))];
     }
-    
+
+    OPENSSL_cleanse(&x, sizeof(x));
     return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (__bridge CFArrayRef)a, CFSTR(" ")));
 }
  
@@ -143,7 +145,10 @@
         b = y & 0xff;
         [d appendBytes:&b length:1];
     }
-        
+
+    OPENSSL_cleanse(&x, sizeof(x));
+    OPENSSL_cleanse(&y, sizeof(y));
+    OPENSSL_cleanse(&b, sizeof(b));
     return d;
 }
 

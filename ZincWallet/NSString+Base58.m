@@ -194,7 +194,7 @@ breakout:
     d.length += BN_num_bytes(&x);
     BN_bn2bin(&x, (unsigned char *)d.mutableBytes + d.length - BN_num_bytes(&x));
 
-    b = 0;
+    OPENSSL_cleanse(&b, sizeof(b));
     BN_clear_free(&y);
     BN_clear_free(&x);
     BN_free(&base);
