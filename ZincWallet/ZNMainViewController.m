@@ -150,8 +150,7 @@
                 }];
             }
         }];
-    
-    //TODO: create an error banner instead of using an alert
+
     self.syncFailedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncFailedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {

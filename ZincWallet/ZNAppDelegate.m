@@ -24,7 +24,7 @@
 //  THE SOFTWARE.
 
 #import "ZNAppDelegate.h"
-#import "NSString+Base58.h"
+#import "ZNPeerManager.h"
 #import <MessageUI/MessageUI.h>
 
 @implementation ZNAppDelegate
@@ -32,6 +32,9 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
+
+    // use background fetch to stay synced with the blockchain
+    [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
 
     [[UINavigationBar appearance]
      setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor grayColor],
@@ -50,8 +53,6 @@
     //TODO: accessibility for the visually impaired
     
     //TODO: internationalization, use iOS localization settings for currency/exchange rates
-
-    //TODO: XXXX implement background networking to keep the blockchain synced
 
     // this will notify user if bluetooth is disabled (on 4S and newer devices that support BTLE)
     //CBCentralManager *cbManager = [[CBCentralManager alloc] initWithDelegate:self queue:dispatch_get_main_queue()];
@@ -73,6 +74,56 @@ annotation:(id)annotation
     [[NSNotificationCenter defaultCenter] postNotificationName:ZNURLNotification object:nil userInfo:@{@"url":url}];
     
     return YES;
+}
+
+- (void)application:(UIApplication *)application
+performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler
+{
+    __block id syncFinishedObserver = nil, syncFailedObserver = nil;
+    __block void (^completion)(UIBackgroundFetchResult) = completionHandler;
+    ZNPeerManager *m = [ZNPeerManager sharedInstance];
+
+    if (m.syncProgress >= 1.0) {
+        completion(UIBackgroundFetchResultNoData);
+        return;
+    }
+
+    // timeout after 25 seconds
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 25*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+        if (m.syncProgress > 0.1) {
+            if (completion) completion(UIBackgroundFetchResultNewData);
+        }
+        else if (completion) completion(UIBackgroundFetchResultFailed);
+        completion = nil;
+
+        if (syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFinishedObserver];
+        if (syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFailedObserver];
+        syncFinishedObserver = syncFailedObserver = nil;
+    });
+
+    syncFinishedObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncFinishedNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
+            if (completion) completion(UIBackgroundFetchResultNewData);
+            completion = nil;
+
+            if (syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFinishedObserver];
+            if (syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFailedObserver];
+            syncFinishedObserver = syncFailedObserver = nil;
+        }];
+    
+    syncFailedObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncFailedNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
+            if (completion) completion(UIBackgroundFetchResultFailed);
+            completion = nil;
+
+            if (syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFinishedObserver];
+            if (syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFailedObserver];
+            syncFinishedObserver = syncFailedObserver = nil;
+        }];
+
+    [m connect];
 }
 
 //#pragma mark - CBCentralManagerDelegate

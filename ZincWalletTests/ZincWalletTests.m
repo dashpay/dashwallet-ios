@@ -121,8 +121,6 @@
     NSString *intercode, *confcode, *privkey;
     ZNKey *key;
 
-    //TODO: XXXX generate a bip38 key from a secret that's outside the order of secp256k1
-
     // non EC multiplied, uncompressed
     key = [ZNKey keyWithBIP38Key:@"6PRVWUbkzzsbcVac2qwfssoUJAN1Xhrg6bNk8J7Nzm5H7kxEbn2Nh2ZoGg"
            andPassphrase:@"TestingOneTwoThree"];

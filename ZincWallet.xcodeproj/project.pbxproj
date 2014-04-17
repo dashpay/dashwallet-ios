@@ -3761,6 +3761,9 @@
 					75D8F37D173ABE3C0080D95E = {
 						DevelopmentTeam = 7CQ9MSN323;
 						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
 							com.apple.DataProtection = {
 								enabled = 1;
 							};

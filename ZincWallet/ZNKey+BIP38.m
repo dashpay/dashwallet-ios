@@ -139,17 +139,15 @@ static void getPassfactor(BIGNUM *passfactor, uint8_t flag, uint64_t entropy, NS
 {
     NSData *password = normalizePassphrase(passphrase);
     NSData *salt = [NSData dataWithBytes:&entropy length:(flag & BIP38_LOTSEQUENCE_FLAG) ? 4 : 8];
-    NSData *prefactor = scrypt(password, salt, BIP38_SCRYPT_N, BIP38_SCRYPT_R, BIP38_SCRYPT_P, 32), *pf;
+    NSData *prefactor = scrypt(password, salt, BIP38_SCRYPT_N, BIP38_SCRYPT_R, BIP38_SCRYPT_P, 32);
     NSMutableData *d;
 
-    if (flag & BIP38_LOTSEQUENCE_FLAG) {
+    if (flag & BIP38_LOTSEQUENCE_FLAG) { // passfactor = SHA256(SHA256(prefactor + entropy))
         d = [NSMutableData secureDataWithData:prefactor];
         [d appendBytes:&entropy length:sizeof(entropy)];
-        pf = d.SHA256_2; // passfactor = SHA256(SHA256(prefactor + salt + lotsequence))
+        BN_bin2bn(d.SHA256_2.bytes, CC_SHA256_DIGEST_LENGTH, passfactor);
     }
-    else pf = prefactor; // passfactor = prefactor
-
-    BN_bin2bn(pf.bytes, (int)pf.length, passfactor);
+    else BN_bin2bn(prefactor.bytes, (int)prefactor.length, passfactor); // passfactor = prefactor
 }
 
 static NSData *getPasspoint(const BIGNUM *passfactor, BN_CTX *ctx)
@@ -498,7 +496,8 @@ confirmationCode:(NSString **)confcode;
     uint16_t prefix = CFSwapInt16HostToBig(BIP38_NOEC_PREFIX);
     uint8_t flag = BIP38_NOEC_FLAG;
     NSData *password = normalizePassphrase(passphrase);
-    NSData *salt = [[self.address dataUsingEncoding:NSUTF8StringEncoding].SHA256_2 subdataWithRange:NSMakeRange(0, 4)];
+    NSData *address = [self.address dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *salt = [address.SHA256_2 subdataWithRange:NSMakeRange(0, 4)];
     NSData *derived = scrypt(password, salt, BIP38_SCRYPT_N, BIP38_SCRYPT_R, BIP38_SCRYPT_P, 64);
     const uint64_t *derived1 = (const uint64_t *)derived.bytes, *derived2 = &derived1[4];
     NSMutableData *secret = [NSMutableData secureDataWithLength:32], *encrypted1, *encrypted2, *key;
