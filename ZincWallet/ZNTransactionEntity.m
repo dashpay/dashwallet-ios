@@ -86,7 +86,7 @@
 
 - (ZNTransaction *)transaction
 {
-    __block ZNTransaction *tx = [ZNTransaction new];
+    ZNTransaction *tx = [ZNTransaction new];
     
     [[self managedObjectContext] performBlockAndWait:^{
         tx.txHash = self.txHash;

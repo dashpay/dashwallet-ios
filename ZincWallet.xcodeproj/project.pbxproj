@@ -724,6 +724,7 @@
 		759145B717EB7CE00040D496 /* info@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 759145B617EB7CE00040D496 /* info@2x.png */; };
 		759145B917EB87BF0040D496 /* info-pressed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 759145B817EB87BF0040D496 /* info-pressed@2x.png */; };
 		75920F86174AB82100C1C03D /* NSMutableData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 75920F85174AB82100C1C03D /* NSMutableData+Bitcoin.m */; };
+		759292F8190046FB00CDA950 /* flash@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 759292F7190046FB00CDA950 /* flash@2x.png */; };
 		7593BD0A17A24D1500F814F6 /* cameraguide-small@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7593BD0917A24D1500F814F6 /* cameraguide-small@2x.png */; };
 		7597028117E15B1E00CDC14A /* ZNNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7597028017E15B1E00CDC14A /* ZNNavigationBar.m */; };
 		7597028417E15B5600CDC14A /* ZNStoryboardSegue.m in Sources */ = {isa = PBXBuildFile; fileRef = 7597028317E15B5600CDC14A /* ZNStoryboardSegue.m */; };
@@ -1778,6 +1779,7 @@
 		759145B817EB87BF0040D496 /* info-pressed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "info-pressed@2x.png"; sourceTree = "<group>"; };
 		75920F84174AB82100C1C03D /* NSMutableData+Bitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableData+Bitcoin.h"; sourceTree = "<group>"; };
 		75920F85174AB82100C1C03D /* NSMutableData+Bitcoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableData+Bitcoin.m"; sourceTree = "<group>"; };
+		759292F7190046FB00CDA950 /* flash@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "flash@2x.png"; sourceTree = "<group>"; };
 		7593BD0917A24D1500F814F6 /* cameraguide-small@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide-small@2x.png"; sourceTree = "<group>"; };
 		7597027F17E15B1E00CDC14A /* ZNNavigationBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNNavigationBar.h; sourceTree = "<group>"; };
 		7597028017E15B1E00CDC14A /* ZNNavigationBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNNavigationBar.m; sourceTree = "<group>"; };
@@ -3317,6 +3319,7 @@
 				751E809E1789797500E3CFB2 /* refresh@2x.png */,
 				759145B617EB7CE00040D496 /* info@2x.png */,
 				759145B817EB87BF0040D496 /* info-pressed@2x.png */,
+				759292F7190046FB00CDA950 /* flash@2x.png */,
 				75C2F3D3178D3061009F8CD3 /* cameraguide@2x.png */,
 				75C2F3D1178D3061009F8CD3 /* cameraguide-green@2x.png */,
 				75C2F3D2178D3061009F8CD3 /* cameraguide-red@2x.png */,
@@ -3811,6 +3814,7 @@
 				75D8F38C173ABE3C0080D95E /* InfoPlist.strings in Resources */,
 				75D8F394173ABE3C0080D95E /* Default.png in Resources */,
 				75D8F396173ABE3C0080D95E /* Default@2x.png in Resources */,
+				759292F8190046FB00CDA950 /* flash@2x.png in Resources */,
 				75D8F398173ABE3C0080D95E /* Default-568h@2x.png in Resources */,
 				75D8F39B173ABE3C0080D95E /* MainStoryboard_iPhone.storyboard in Resources */,
 				75F17C4417455F2D00D9F228 /* deletetoleft-inv.png in Resources */,

@@ -27,13 +27,10 @@
 #import "NSString+Base58.h"
 #import "NSData+Hash.h"
 #import "NSMutableData+Bitcoin.h"
-#import <CommonCrypto/CommonKeyDerivation.h>
-#import <CommonCrypto/CommonCryptor.h>
-#import <openssl/crypto.h>
+#import <CommonCrypto/CommonCrypto.h>
 #import <openssl/ecdsa.h>
 #import <openssl/obj_mac.h>
 
-#define BIP38_COMPRESSED_FLAG 0x20
 #define BIP38_SCRYPT_N        16384
 #define BIP38_SCRYPT_R        8
 #define BIP38_SCRYPT_P        8
@@ -157,17 +154,17 @@ static void getPassfactor(BIGNUM *passfactor, uint8_t flag, uint64_t entropy, NS
     else BN_bin2bn(prefactor.bytes, (int)prefactor.length, passfactor); // passfactor = prefactor
 }
 
-static NSData *getPasspoint(const BIGNUM *passfactor, BN_CTX *ctx)
+static NSData *factorPoint(const BIGNUM *factor, BN_CTX *ctx)
 {
-    NSMutableData *passpoint = [NSMutableData secureDataWithLength:33];
+    NSMutableData *point = [NSMutableData secureDataWithLength:33];
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
     EC_POINT *p = EC_POINT_new(group);
 
-    EC_POINT_mul(group, p, passfactor, NULL, NULL, ctx); // passpoint = elliptic curve point G*passfactor
-    EC_POINT_point2oct(group, p, POINT_CONVERSION_COMPRESSED, passpoint.mutableBytes, passpoint.length, ctx);
+    EC_POINT_mul(group, p, factor, NULL, NULL, ctx); // point = elliptic curve point G*factor
+    EC_POINT_point2oct(group, p, POINT_CONVERSION_COMPRESSED, point.mutableBytes, point.length, ctx);
     EC_POINT_clear_free(p);
     EC_GROUP_free(group);
-    return passpoint;
+    return point;
 }
 
 static NSData *getDerived(NSData *passpoint, uint32_t addresshash, uint64_t entropy)
@@ -204,7 +201,7 @@ static NSData *getDerived(NSData *passpoint, uint32_t addresshash, uint64_t entr
 
     [code appendBytes:"\x2C\xE9\xB3\xE1\xFF\x39\xE2\x53" length:8];
     [code appendBytes:&salt length:sizeof(salt)];
-    [code appendData:getPasspoint(&passfactor, ctx)];
+    [code appendData:factorPoint(&passfactor, ctx)]; // passpoint = G*passfactor
 
     BN_clear_free(&passfactor);
     BN_CTX_end(ctx);
@@ -235,7 +232,7 @@ passphrase:(NSString *)passphrase
 
     [code appendBytes:"\x2C\xE9\xB3\xE1\xFF\x39\xE2\x51" length:8];
     [code appendData:entropy];
-    [code appendData:getPasspoint(&passfactor, ctx)];
+    [code appendData:factorPoint(&passfactor, ctx)]; // passpoint = G*passfactor
 
     BN_clear_free(&passfactor);
     BN_CTX_end(ctx);
@@ -270,6 +267,8 @@ confirmationCode:(NSString **)confcode;
     pubKey.length = EC_POINT_point2oct(group, pubKeyPoint, form, NULL, 0, ctx);
     EC_POINT_point2oct(group, pubKeyPoint, form, pubKey.mutableBytes, pubKey.length, ctx);
     EC_POINT_clear_free(pubKeyPoint);
+    EC_POINT_clear_free(p);
+    EC_GROUP_free(group);
 
     uint16_t prefix = CFSwapInt16HostToBig(BIP38_EC_PREFIX);
     uint8_t flag = compressed ? BIP38_COMPRESSED_FLAG : 0;
@@ -305,11 +304,8 @@ confirmationCode:(NSString **)confcode;
     [key appendData:encrypted2];
 
     if (confcode) {
-        NSMutableData *pointb = [NSMutableData secureDataWithLength:33], *pointbx1, *pointbx2, *c;
-
-        EC_POINT_mul(group, p, &factorb, NULL, NULL, ctx); // pointb = elliptic curve point G*factorb
-        EC_POINT_point2oct(group, p, POINT_CONVERSION_COMPRESSED, pointb.mutableBytes, pointb.length, ctx);
-
+        NSData *pointb = factorPoint(&factorb, ctx); // pointb = G*factorb
+        NSMutableData *pointbx1, *pointbx2, *c;
         uint8_t pointbprefix = ((const uint8_t *)pointb.bytes)[0] ^ (((const uint8_t *)derived2)[31] & 0x01);
 
         // pointbx1 = AES256Encrypt(pointb[1...16] xor derived1[0...15], derived2)
@@ -337,8 +333,6 @@ confirmationCode:(NSString **)confcode;
         *confcode = [NSString base58checkWithData:c];
     }
 
-    EC_POINT_clear_free(p);
-    EC_GROUP_free(group);
     BN_clear_free(&factorb);
     BN_CTX_end(ctx);
     BN_CTX_free(ctx);
@@ -368,7 +362,7 @@ confirmationCode:(NSString **)confcode;
     BN_init(&passfactor);
     getPassfactor(&passfactor, flag, entropy, passphrase);
 
-    NSData *passpoint = getPasspoint(&passfactor, ctx);
+    NSData *passpoint = factorPoint(&passfactor, ctx); // passpoint = G*passfactor
     NSData *derived = getDerived(passpoint, addresshash, entropy);
     const uint64_t *derived1 = (const uint64_t *)derived.bytes, *derived2 = &derived1[4];
     NSMutableData *pointb = [NSMutableData secureDataWithLength:33], *pubKey = [NSMutableData secureData];
@@ -401,9 +395,7 @@ confirmationCode:(NSString **)confcode;
     BN_CTX_end(ctx);
     BN_CTX_free(ctx);
 
-    if (! [[[ZNKey keyWithPublicKey:pubKey] address] isEqual:address]) return NO;
-
-    return YES;
+    return ([[[ZNKey keyWithPublicKey:pubKey] address] isEqual:address]) ? YES : NO;
 }
 
 - (instancetype)initWithBIP38Key:(NSString *)key andPassphrase:(NSString *)passphrase
@@ -447,7 +439,7 @@ confirmationCode:(NSString **)confcode;
         BN_init(&passfactor);
         getPassfactor(&passfactor, flag, entropy, passphrase);
 
-        NSData *passpoint = getPasspoint(&passfactor, ctx);
+        NSData *passpoint = factorPoint(&passfactor, ctx); // passpoint = G*passfactor
         NSData *derived = getDerived(passpoint, addresshash, entropy);
         const uint64_t *derived1 = (const uint64_t *)derived.bytes, *derived2 = &derived1[4];
         NSMutableData *seedb = [NSMutableData secureDataWithLength:24], *o = [NSMutableData secureDataWithLength:16];

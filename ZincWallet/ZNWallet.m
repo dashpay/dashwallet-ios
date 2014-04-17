@@ -281,7 +281,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
 // returns an unsigned transaction that sends the specified amount from the wallet to the given address
 - (ZNTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee
 {
-    __block uint64_t balance = 0, standardFee = 0;
+    uint64_t balance = 0, standardFee = 0;
     ZNTransaction *transaction = [ZNTransaction new];
 
     [transaction addOutputAddress:address amount:amount];

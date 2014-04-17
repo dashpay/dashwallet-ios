@@ -36,6 +36,7 @@
 #import "ZNBubbleView.h"
 #import "NSString+Base58.h"
 #import <QuartzCore/QuartzCore.h>
+#import <AVFoundation/AVFoundation.h>
 
 //#define BT_CONNECT_TIMEOUT 5.0
 #define BUTTON_HEIGHT   44.0
@@ -115,7 +116,7 @@
             }
 //            else if ([url.scheme isEqual:@"zinc"] && [url.host isEqual:@"x-callback-url"]) {
 //                if ([url.path isEqual:@"/tx"]) {
-//                    __block NSString *status = nil;
+//                    NSString *status = nil;
 //                
 //                    for (NSString *arg in [url.query componentsSeparatedByString:@"&"]) {
 //                        NSArray *pair = [arg componentsSeparatedByString:@"="];
@@ -465,7 +466,7 @@
             [self reset:nil];
         }
         else if (tx) {
-            __block uint64_t fee = tx.standardFee, amount = fee;
+            uint64_t fee = tx.standardFee, amount = fee;
         
             for (NSNumber *amt in tx.outputAmounts) {
                 amount += amt.unsignedLongLongValue;
@@ -550,16 +551,19 @@
     NSUInteger idx = [self.requestButtons indexOfObject:sender];
     
     if ([self.requestIDs indexOfObject:QR_ID] == idx) {
-        //TODO: XXXX add an option to disable flash
         [self.navigationController presentViewController:self.zbarController animated:YES completion:^{
             NSLog(@"present qr reader complete");
         }];
-        
-        // hide zbarController.view info button
+
+        BOOL hasFlash = [[AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo] hasTorch];
+        UIBarButtonItem *flashButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"flash.png"]
+                                        style:UIBarButtonItemStylePlain target:self action:@selector(flash:)];
+
+        // replace zbarController.view info button with flash toggle
         for (UIView *v in self.zbarController.view.subviews) {
             for (id t in v.subviews) {
-                if ([t isKindOfClass:[UIToolbar class]] && [[t items] count] > 0) {
-                    [t setItems:@[[t items][0]]];
+                if ([t isKindOfClass:[UIToolbar class]] && [[t items] count] > 1) {
+                    [t setItems:hasFlash ? @[[t items][0], [t items][1], flashButton] : @[[t items][0], [t items][1]]];
                 }
             }
         }
@@ -599,6 +603,13 @@
     self.request.amount = 0;
     
     if (self.navigationController.topViewController == self.parentViewController) [self reset:sender];
+}
+
+- (IBAction)flash:(id)sender
+{
+    AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+
+    device.torchMode = device.torchActive ? AVCaptureTorchModeOff : AVCaptureTorchModeOn;
 }
 
 #pragma mark - ZNAmountViewControllerDelegate

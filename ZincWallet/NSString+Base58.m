@@ -101,6 +101,7 @@ CFAllocatorRef SecureAllocator()
     BN_CTX *ctx = BN_CTX_new();
     BIGNUM base, x, r;
 
+    BN_CTX_start(ctx);
     BN_init(&base);
     BN_init(&x);
     BN_init(&r);
@@ -120,6 +121,7 @@ CFAllocatorRef SecureAllocator()
     BN_clear_free(&r);
     BN_clear_free(&x);
     BN_free(&base);
+    BN_CTX_end(ctx);
     BN_CTX_free(ctx);
     
     NSString *ret = CFBridgingRelease(CFStringCreateWithCString(SecureAllocator(), &s[i], kCFStringEncodingUTF8));
@@ -143,7 +145,8 @@ CFAllocatorRef SecureAllocator()
     unsigned int b;
     BN_CTX *ctx = BN_CTX_new();
     BIGNUM base, x, y;
-    
+
+    BN_CTX_start(ctx);
     BN_init(&base);
     BN_init(&x);
     BN_init(&y);
@@ -198,6 +201,7 @@ breakout:
     BN_clear_free(&y);
     BN_clear_free(&x);
     BN_free(&base);
+    BN_CTX_end(ctx);
     BN_CTX_free(ctx);
     
     return d;

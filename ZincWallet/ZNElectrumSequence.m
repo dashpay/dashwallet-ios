@@ -143,7 +143,7 @@
     NSData *_mpk = [[ZNKey keyWithSecret:secexp compressed:NO] publicKey];
     NSData *mpk = [NSData dataWithBytesNoCopy:(unsigned char *)_mpk.bytes + 1 length:_mpk.length - 1 freeWhenDone:NO];
     BN_CTX *ctx = BN_CTX_new();
-    __block BIGNUM sequencebn, secexpbn, order;
+    BIGNUM sequencebn, secexpbn, order;
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
 
     BN_CTX_start(ctx);

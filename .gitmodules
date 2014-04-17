@@ -1,15 +1,6 @@
-[submodule "AFNetworking"]
-	path = AFNetworking
-	url = git://github.com/AFNetworking/AFNetworking.git
 [submodule "ZBar"]
 	path = ZBar
 	url = git://github.com/ZBar/ZBar.git
 [submodule "QR-Code-Encoder-for-Objective-C"]
 	path = QR-Code-Encoder-for-Objective-C
 	url = git://github.com/myang-git/QR-Code-Encoder-for-Objective-C.git
-[submodule "MBProgressHUD"]
-	path = MBProgressHUD
-	url = git://github.com/matej/MBProgressHUD.git
-[submodule "SocketRocket"]
-	path = SocketRocket
-	url = git@github.com:square/SocketRocket.git

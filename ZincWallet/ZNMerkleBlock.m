@@ -158,10 +158,10 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 
 // true if merkle tree and timestamp are valid, and proof-of-work matches the stated difficulty target
 // NOTE: this only checks if the block difficulty matches the difficulty target in the header, it does not check if the
-// target is correct for the block's height in the chain, use verifyDifficultyAtHeight: for that
+// target is correct for the block's height in the chain, use verifyDifficultyFromPreviousBlock: for that
 - (BOOL)isValid
 {
-    __block NSMutableData *d = [NSMutableData data];
+    NSMutableData *d = [NSMutableData data];
     BIGNUM target, maxTarget, hash;
     int hashIdx = 0, flagIdx = 0;
     NSData *merkleRoot =

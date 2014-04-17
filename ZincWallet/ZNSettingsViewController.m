@@ -156,7 +156,7 @@
     static NSString *disclosureIdent = @"ZNDisclosureCell", *transactionIdent = @"ZNTransactionCell",
                     *actionIdent = @"ZNActionCell", *restoreIdent = @"ZNRestoreCell";
     UITableViewCell *cell = nil;
-    __block UILabel *textLabel, *detailTextLabel, *unconfirmedLabel, *sentLabel, *noTxLabel, *localCurrencyLabel;
+    UILabel *textLabel, *detailTextLabel, *unconfirmedLabel, *sentLabel, *noTxLabel, *localCurrencyLabel;
     
     switch (indexPath.section) {
         case 0:
