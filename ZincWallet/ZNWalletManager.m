@@ -500,8 +500,9 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
         ZNKey *key = [ZNKey keyWithBIP38Key:self.sweepKey andPassphrase:passphrase];
 
         if (! key) {
-            UIAlertView *v = [[UIAlertView alloc] initWithTitle:@"bad password" message:@"try again" delegate:self
-                              cancelButtonTitle:@"cancel" otherButtonTitles:@"ok", nil];
+            UIAlertView *v = [[UIAlertView alloc] initWithTitle:@"password protected key"
+                              message:@"bad password, try again" delegate:self cancelButtonTitle:@"cancel"
+                              otherButtonTitles:@"ok", nil];
 
             v.alertViewStyle = UIAlertViewStyleSecureTextInput;
             [v textFieldAtIndex:0].returnKeyType = UIReturnKeyDone;
