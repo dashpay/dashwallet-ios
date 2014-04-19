@@ -37,7 +37,7 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
     NSMutableData *V = [NSMutableData
                         secureDataWithCapacity:CC_SHA256_DIGEST_LENGTH + 1 + entropy.length + nonce.length],
                   *K = [NSMutableData secureDataWithCapacity:CC_SHA256_DIGEST_LENGTH],
-                  *T = [NSMutableData secureDataWithCapacity:CC_SHA256_DIGEST_LENGTH];
+                  *T = [NSMutableData secureDataWithLength:CC_SHA256_DIGEST_LENGTH];
 
     V.length = CC_SHA256_DIGEST_LENGTH;
     memset(V.mutableBytes, 0x01, V.length); // V = 0x01 0x01 0x01 ... 0x01
@@ -54,7 +54,6 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
     CCHmac(kCCHmacAlgSHA256, K.bytes, K.length, V.bytes, V.length, K.mutableBytes); // K = HMAC_K(V || 0x01 || seed)
     V.length = CC_SHA256_DIGEST_LENGTH;
     CCHmac(kCCHmacAlgSHA256, K.bytes, K.length, V.bytes, V.length, V.mutableBytes); // V = HMAC_K(V)
-    T.length = CC_SHA256_DIGEST_LENGTH;
     CCHmac(kCCHmacAlgSHA256, K.bytes, K.length, V.bytes, V.length, T.mutableBytes); // T = HMAC_K(V)
     return T;
 }

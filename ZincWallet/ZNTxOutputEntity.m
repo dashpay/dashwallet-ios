@@ -38,13 +38,12 @@
 @dynamic spent;
 @dynamic transaction;
 
-//BUG: XXXX test this with a null output address
 - (instancetype)setAttributesFromTx:(ZNTransaction *)tx outputIndex:(NSUInteger)index
 {
     [[self managedObjectContext] performBlockAndWait:^{
         self.txHash = tx.txHash;
         self.n = (int32_t)index;
-        self.address = tx.outputAddresses[index];
+        self.address = (tx.outputAddresses[index] == [NSNull null]) ? nil : tx.outputAddresses[index];
         self.script = tx.outputScripts[index];
         self.value = [tx.outputAmounts[index] longLongValue];
     }];

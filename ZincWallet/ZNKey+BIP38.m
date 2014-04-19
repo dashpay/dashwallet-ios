@@ -142,7 +142,7 @@ static NSData *normalize_passphrase(NSString *passphrase)
 static void derive_passfactor(BIGNUM *passfactor, uint8_t flag, uint64_t entropy, NSString *passphrase)
 {
     NSData *password = normalize_passphrase(passphrase);
-    NSData *salt = [NSData dataWithBytes:&entropy length:(flag & BIP38_LOTSEQUENCE_FLAG) ? 4 : 8];
+    NSData *salt = [NSData dataWithBytesNoCopy:&entropy length:(flag & BIP38_LOTSEQUENCE_FLAG) ? 4 : 8 freeWhenDone:NO];
     NSData *prefactor = scrypt(password, salt, BIP38_SCRYPT_N, BIP38_SCRYPT_R, BIP38_SCRYPT_P, 32);
     NSMutableData *d;
 
@@ -260,8 +260,7 @@ confirmationCode:(NSString **)confcode;
 
     if (d.length != 49 || seedb.length != 24) return nil;
 
-    NSData *passpoint = [d subdataWithRange:NSMakeRange(16, 33)], *pubKey;
-    NSMutableData *key = [NSMutableData secureData];
+    NSData *passpoint = [NSData dataWithBytesNoCopy:(uint8_t *)d.bytes + 16 length:33 freeWhenDone:NO], *pubKey;
     BN_CTX *ctx = BN_CTX_new();
     BIGNUM factorb;
 
@@ -277,7 +276,8 @@ confirmationCode:(NSString **)confcode;
     uint64_t entropy = *(const uint64_t *)((const uint8_t *)d.bytes + 8);
     NSData *derived = derive_key(passpoint, addresshash, entropy);
     const uint64_t *derived1 = (const uint64_t *)derived.bytes, *derived2 = &derived1[4];
-    NSMutableData *x = [NSMutableData secureDataWithLength:16], *encrypted1, *encrypted2;
+    NSMutableData *key = [NSMutableData secureData], *encrypted1, *encrypted2;
+    NSMutableData *x = [NSMutableData secureDataWithLength:16];
     size_t l;
 
     if (((const uint8_t *)d.bytes)[7] == 0x51) flag |= BIP38_LOTSEQUENCE_FLAG;
@@ -305,7 +305,7 @@ confirmationCode:(NSString **)confcode;
 
     if (confcode) {
         NSData *pointb = point_multiply(nil, &factorb, YES, ctx); // pointb = G*factorb
-        NSMutableData *pointbx1, *pointbx2, *c;
+        NSMutableData *c = [NSMutableData secureData], *pointbx1, *pointbx2;
         uint8_t pointbprefix = ((const uint8_t *)pointb.bytes)[0] ^ (((const uint8_t *)derived2)[31] & 0x01);
 
         // pointbx1 = AES256Encrypt(pointb[1...16] xor derived1[0...15], derived2)
@@ -322,7 +322,6 @@ confirmationCode:(NSString **)confcode;
         CCCrypt(kCCEncrypt, kCCAlgorithmAES, kCCOptionECBMode, derived2, 32, NULL, x.bytes, x.length,
                 pointbx2.mutableBytes, pointbx2.length, &l);
 
-        c = [NSMutableData secureData];
         [c appendBytes:"\x64\x3B\xF6\xA8\x9A" length:5];
         [c appendBytes:&flag length:sizeof(flag)];
         [c appendBytes:&addresshash length:sizeof(addresshash)];
@@ -365,7 +364,7 @@ confirmationCode:(NSString **)confcode;
     NSData *passpoint = point_multiply(nil, &passfactor, YES, ctx); // passpoint = G*passfactor
     NSData *derived = derive_key(passpoint, addresshash, entropy), *pubKey;
     const uint64_t *derived1 = (const uint64_t *)derived.bytes, *derived2 = &derived1[4];
-    NSMutableData *pointb = [NSMutableData secureDataWithLength:33];//, *pubKey = [NSMutableData secureData];
+    NSMutableData *pointb = [NSMutableData secureDataWithLength:33];
     size_t l;
 
     ((uint8_t *)pointb.mutableBytes)[0] = pointprefix ^ (((const uint8_t *)derived2)[31] & 0x01);
@@ -403,7 +402,7 @@ confirmationCode:(NSString **)confcode;
     if (prefix == BIP38_NOEC_PREFIX) { // non EC multiplied key
         // d = prefix + flag + addresshash + encrypted1 + encrypted2
         NSData *password = normalize_passphrase(passphrase);
-        NSData *salt = [NSData dataWithBytes:&addresshash length:sizeof(addresshash)];
+        NSData *salt = [NSData dataWithBytesNoCopy:&addresshash length:sizeof(addresshash) freeWhenDone:NO];
         const uint8_t *encrypted1 = (const uint8_t *)d.bytes + 7, *encrypted2 = (const uint8_t *)d.bytes + 23;
         NSData *derived = scrypt(password, salt, BIP38_SCRYPT_N, BIP38_SCRYPT_R, BIP38_SCRYPT_P, 64);
         const uint64_t *derived1 = (const uint64_t *)derived.bytes, *derived2 = &((const uint64_t *)derived.bytes)[4];
@@ -420,7 +419,7 @@ confirmationCode:(NSString **)confcode;
     else if (prefix == BIP38_EC_PREFIX) { // EC multipled key
         // d = prefix + flag + addresshash + entropy + encrypted1[0...7] + encrypted2
         uint64_t entropy = *(const uint64_t *)((const uint8_t *)d.bytes + 7);
-        NSMutableData *encrypted1 = [NSMutableData dataWithBytes:(const uint8_t *)d.bytes + 15 length:8];
+        NSMutableData *encrypted1 = [NSMutableData secureData];
         const uint8_t *encrypted2 = (const uint8_t *)d.bytes + 23;
         BN_CTX *ctx = BN_CTX_new();
         BIGNUM passfactor, factorb, priv, order;
@@ -435,9 +434,11 @@ confirmationCode:(NSString **)confcode;
         NSMutableData *seedb = [NSMutableData secureDataWithLength:24], *o = [NSMutableData secureDataWithLength:16];
         EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
 
+        [encrypted1 appendBytes:(const uint8_t *)d.bytes + 15 length:8];
+        encrypted1.length = 16;
+        
         CCCrypt(kCCDecrypt, kCCAlgorithmAES, kCCOptionECBMode, derived2, 32, NULL, encrypted2, 16,
                 o.mutableBytes, o.length, &l); // o = (encrypted1[8...15] + seedb[16...23]) xor derived1[16...31]
-        encrypted1.length = 16;
         ((uint64_t *)encrypted1.mutableBytes)[1] = ((const uint64_t *)o.bytes)[0] ^ derived1[2];
         ((uint64_t *)seedb.mutableBytes)[2] = ((const uint64_t *)o.bytes)[1] ^ derived1[3];
 

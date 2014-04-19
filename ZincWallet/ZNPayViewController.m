@@ -573,7 +573,7 @@
 
         [sender setEnabled:NO];
 
-        if (req.valid) {
+        if (! [req.paymentAddress isValidBitcoinPrivateKey] && ! [req.paymentAddress isValidBitcoinBIP38Key]) {
             self.request = req;
             [self confirmRequest];
         }
