@@ -168,7 +168,7 @@
 replacementString:(NSString *)string
 {
     ZNWalletManager *m = [ZNWalletManager sharedInstance];
-    NSUInteger point = [textField.text rangeOfString:@"."].location;
+    NSUInteger point = [textField.text rangeOfString:[m.format decimalSeparator]].location;
     NSString *t = textField.text ? [textField.text stringByReplacingCharactersInRange:range withString:string] : string;
 
     t = [m.format stringFromNumber:[m.format numberFromString:t]];
@@ -181,14 +181,14 @@ replacementString:(NSString *)string
              (point != NSNotFound && textField.text.length - point > m.format.maximumFractionDigits)) {
         return NO; // too many digits
     }
-    else if ([string isEqual:@"."] && (! textField.text.length || point == NSNotFound)) {
+    else if ([string isEqual:[m.format decimalSeparator]] && (! textField.text.length || point == NSNotFound)) {
         if (! textField.text.length) t = [m.format stringFromNumber:@0]; // if first char is '.', prepend a zero
         
-        t = [t stringByAppendingString:@"."];
+        t = [t stringByAppendingString:[m.format decimalSeparator]];
     }
     else if ([string isEqual:@"0"]) {
         if (! textField.text.length) { // if first digit is zero, append a '.'
-            t = [[m.format stringFromNumber:@0] stringByAppendingString:@"."];
+            t = [[m.format stringFromNumber:@0] stringByAppendingString:[m.format decimalSeparator]];
         }
         else if (point != NSNotFound) { // handle multiple zeros after period....
             t = [textField.text stringByAppendingString:@"0"];
@@ -196,7 +196,7 @@ replacementString:(NSString *)string
     }
 
     // don't allow values below TX_MIN_OUTPUT_AMOUNT
-    if (t.length > 0 && [t rangeOfString:@"."].location != NSNotFound &&
+    if (t.length > 0 && [t rangeOfString:[m.format decimalSeparator]].location != NSNotFound &&
         [m amountForString:[t stringByAppendingString:@"9"]] < TX_MIN_OUTPUT_AMOUNT) {
         return NO;
     }
