@@ -104,6 +104,10 @@
             self.message = [[pair[1] stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
                             stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
         }
+//        else if ([pair[0] isEqual:@"r"]) {
+//            NSString *r = [[pair[1] stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
+//                           stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+//        }
     }
 }
 

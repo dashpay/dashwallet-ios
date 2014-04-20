@@ -33,7 +33,7 @@
 @interface ZNSeedViewController ()
 
 //TODO: create a secure version of UILabel and use it for seedLabel, but make sure there's an accessibility work around
-@property (nonatomic, strong) IBOutlet UILabel *seedLabel, *warningLabel, *compatiblityLabel, *exportLabel;
+@property (nonatomic, strong) IBOutlet UILabel *seedLabel, *warningLabel;
 @property (nonatomic, strong) IBOutlet UIView *labelFrame;
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper, *logo;
 
@@ -80,15 +80,8 @@
     if (! m.wallet) {
         [m generateRandomSeed];
         [[ZNPeerManager sharedInstance] connect];
-        self.compatiblityLabel.hidden = YES;
     }
-    else {
-        self.navigationItem.rightBarButtonItem = nil;
-        self.compatiblityLabel.hidden = YES; // BIP32 isn't compatible with very much yet :(
-        self.exportLabel.text =
-            [@"BIP32 extended private key: "
-             stringByAppendingString:[[ZNBIP32Sequence new] serializedPrivateMasterFromSeed:m.seed]];
-    }
+    else self.navigationItem.rightBarButtonItem = nil;
 
     [UIView animateWithDuration:SEGUE_DURATION/2 animations:^{
         self.seedLabel.alpha = 1.0;

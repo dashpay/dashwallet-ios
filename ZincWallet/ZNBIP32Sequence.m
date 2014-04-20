@@ -281,5 +281,4 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     return serialize(1, fingerprint, 0 | BIP32_PRIME, chain, pubKey);
 }
 
-
 @end

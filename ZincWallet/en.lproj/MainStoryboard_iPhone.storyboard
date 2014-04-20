@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="5053" systemVersion="13C64" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" initialViewController="dNo-Sm-bI0">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="5056" systemVersion="13C64" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" initialViewController="dNo-Sm-bI0">
     <dependencies>
         <deployment defaultVersion="1792" identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3733"/>
@@ -1133,22 +1133,6 @@ https://github.com/voisine/zincwallet</string>
                                     <outletCollection property="gestureRecognizers" destination="AMy-Br-iCy" appends="YES" id="1Er-Fl-GaD"/>
                                 </connections>
                             </view>
-                            <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Wallet backup phrases also work in the Electrum bitcoin client and brainwallet.org/#chains" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="SHe-lM-jN1">
-                                <rect key="frame" x="40" y="470" width="240" height="63"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="15"/>
-                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
-                                <nil key="highlightedColor"/>
-                                <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                <size key="shadowOffset" width="0.0" height="1"/>
-                            </label>
-                            <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="" lineBreakMode="characterWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="05i-0O-ZM6">
-                                <rect key="frame" x="10" y="449" width="300" height="119"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="15"/>
-                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="RQC-Mn-y36">
                                 <rect key="frame" x="274" y="538" width="46" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
@@ -1188,8 +1172,6 @@ https://github.com/voisine/zincwallet</string>
                         </barButtonItem>
                     </navigationItem>
                     <connections>
-                        <outlet property="compatiblityLabel" destination="SHe-lM-jN1" id="TnK-9e-fBR"/>
-                        <outlet property="exportLabel" destination="05i-0O-ZM6" id="5ls-mP-Z3Z"/>
                         <outlet property="labelFrame" destination="rln-83-F8o" id="aCq-6m-usI"/>
                         <outlet property="logo" destination="gZK-WH-4nS" id="4Ki-Fi-VKg"/>
                         <outlet property="seedLabel" destination="G6I-gf-wQK" id="xZ9-MU-iLm"/>

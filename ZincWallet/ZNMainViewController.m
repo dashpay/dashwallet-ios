@@ -287,7 +287,7 @@
 {
     double progress = [[ZNPeerManager sharedInstance] syncProgress];
 
-    if (progress > DBL_EPSILON) [self.progress setProgress:progress animated:YES];
+    if (progress > DBL_EPSILON) [self.progress setProgress:progress animated:progress > self.progress.progress];
     if (progress < 1.0) [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
 }
 

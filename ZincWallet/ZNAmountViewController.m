@@ -204,6 +204,8 @@ replacementString:(NSString *)string
     textField.text = t;
     //self.payButton.enabled = t.length ? YES : NO;
 
+    //TODO: XXXX add local currency string
+    
     return NO;
 }
 

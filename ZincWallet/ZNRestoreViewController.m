@@ -28,6 +28,7 @@
 #import "NSString+Base58.h"
 #import "ZNKeySequence.h"
 #import "ZNZincMnemonic.h"
+#import "ZNBIP39Mnemonic.h"
 #import <QuartzCore/QuartzCore.h>
 
 #define SHFT @"\xE2\x87\xA7" // upwards white arrow (utf-8)
@@ -41,9 +42,23 @@
 @property (nonatomic, strong) IBOutlet UILabel *label;
 @property (nonatomic, strong) IBOutletCollection(UIButton) NSArray *keys;
 
-@property (nonatomic, strong) id<ZNMnemonic> mnemonic;
-
 @end
+
+static NSString *normalize_phrase(NSString *phrase)
+{
+    NSMutableString *s = CFBridgingRelease(CFStringCreateMutableCopy(SecureAllocator(), 0, (CFStringRef)phrase));
+
+    [s replaceOccurrencesOfString:@"." withString:@" " options:0 range:NSMakeRange(0, s.length)];
+    [s replaceOccurrencesOfString:@"," withString:@" " options:0 range:NSMakeRange(0, s.length)];
+    CFStringTrimWhitespace((CFMutableStringRef)s);
+    CFStringLowercase((CFMutableStringRef)s, CFLocaleGetSystem());
+
+    while ([s rangeOfString:@"  "].location != NSNotFound) {
+        [s replaceOccurrencesOfString:@"  " withString:@" " options:0 range:NSMakeRange(0, s.length)];
+    }
+
+    return s;
+}
 
 @implementation ZNRestoreViewController
 
@@ -62,8 +77,6 @@
     self.textView.layer.borderColor = [[UIColor colorWithWhite:0.0 alpha:0.25] CGColor];
     self.textView.layer.borderWidth = 0.5;
     self.textView.textColor = [UIColor blackColor];
-
-    self.mnemonic = [ZNZincMnemonic new];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -88,19 +101,18 @@
     static dispatch_once_t onceToken = 0;
     
     dispatch_once(&onceToken, ^{
-        charset = [[NSCharacterSet
-                    characterSetWithCharactersInString:@"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz., "]
-                   invertedSet];
+        NSMutableCharacterSet *set = [NSMutableCharacterSet letterCharacterSet];
+
+        [set addCharactersInString:@"., "];
+        charset = [set invertedSet];
     });
     
     NSRange selected = textView.selectedRange;
-    NSString *s = textView.text;
+    NSMutableString *s = CFBridgingRelease(CFStringCreateMutableCopy(SecureAllocator(), 0, (CFStringRef)textView.text));
     BOOL done = ([s rangeOfString:@"\n"].location != NSNotFound);
     
-    while ([s rangeOfCharacterFromSet:charset].location != NSNotFound) {
-        NSRange r = [s rangeOfCharacterFromSet:charset];
-
-        s = [[s substringToIndex:r.location] stringByAppendingString:[s substringFromIndex:r.location + 1]];
+    while ([s rangeOfCharacterFromSet:charset].location != NSNotFound) { // BUG: XXXX allow unicode characters
+        [s deleteCharactersInRange:[s rangeOfCharacterFromSet:charset]];
     }
 
     while ([s rangeOfString:@"  "].location != NSNotFound) {
@@ -108,31 +120,23 @@
     
         if (r.location != NSNotFound) {
             if (r.location + 2 == selected.location) selected.location++;
-            s = [[s substringToIndex:r.location + 1] stringByAppendingString:[s substringFromIndex:r.location + 2]];
+            [s deleteCharactersInRange:NSMakeRange(r.location + 1, 1)];
         }
-        else s = [s stringByReplacingOccurrencesOfString:@"  " withString:@". "];
+        else [s replaceOccurrencesOfString:@"  " withString:@". " options:0 range:NSMakeRange(0, s.length)];
     }
     
-    if ([s hasPrefix:@" "]) s = [s substringFromIndex:1];
+    if ([s hasPrefix:@" "]) [s deleteCharactersInRange:NSMakeRange(0, 1)];
 
     selected.location -= textView.text.length - s.length;
     textView.text = s;
     textView.selectedRange = selected;
     
     if (! done) return;
-    
-    s = [[[[s stringByReplacingOccurrencesOfString:@"." withString:@" "]
-           stringByReplacingOccurrencesOfString:@"," withString:@" "]
-          stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]
-         lowercaseString];
-        
-    while ([s rangeOfString:@"  "].location != NSNotFound) {
-        s = [s stringByReplacingOccurrencesOfString:@"  " withString:@" "];
-    }
-    
-    NSArray *a = [s componentsSeparatedByString:@" "];
-    NSString *incorrect = nil;
-        
+
+    NSString *phrase = normalize_phrase(s), *incorrect = nil;
+    NSArray *a =
+        CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)phrase, CFSTR(" ")));
+
     if ([s isEqual:@"wipe"]) { // shortcut word to force the wipe option to appear
         [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"cancel"
           destructiveButtonTitle:@"wipe" otherButtonTitles:nil]
@@ -151,8 +155,8 @@
           message:[NSString stringWithFormat:@"backup phrase must be %d words", PHRASE_LENGTH] delegate:nil
           cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
     }
-    else if ([[ZNWalletManager sharedInstance] seed]) {
-        if ([[[ZNWalletManager sharedInstance] seed] isEqual:[self.mnemonic decodePhrase:textView.text]]) {
+    else if ([[ZNWalletManager sharedInstance] wallet]) {
+        if ([phrase isEqual:normalize_phrase([[ZNWalletManager sharedInstance] seedPhrase])]) {
             [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"cancel"
               destructiveButtonTitle:@"wipe" otherButtonTitles:nil]
              showInView:[[UIApplication sharedApplication] keyWindow]];
