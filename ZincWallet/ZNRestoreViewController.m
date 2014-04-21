@@ -111,7 +111,7 @@ static NSString *normalize_phrase(NSString *phrase)
     NSMutableString *s = CFBridgingRelease(CFStringCreateMutableCopy(SecureAllocator(), 0, (CFStringRef)textView.text));
     BOOL done = ([s rangeOfString:@"\n"].location != NSNotFound);
     
-    while ([s rangeOfCharacterFromSet:charset].location != NSNotFound) { // BUG: XXXX allow unicode characters
+    while ([s rangeOfCharacterFromSet:charset].location != NSNotFound) {
         [s deleteCharactersInRange:[s rangeOfCharacterFromSet:charset]];
     }
 

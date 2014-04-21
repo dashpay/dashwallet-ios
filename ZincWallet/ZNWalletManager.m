@@ -52,13 +52,16 @@
 #define SEED_KEY                  @"seed"
 #define CREATION_TIME_KEY         @"creationtime"
 
-#define SEED_ENTROPY_LENGTH    (128/8)
-#define SEC_ATTR_SERVICE       @"cc.zinc.zincwallet"
-#define DEFAULT_CURRENCY_PRICE 100000.0
+#define SEED_ENTROPY_LENGTH     (128/8)
+#define SEC_ATTR_SERVICE        @"cc.zinc.zincwallet"
+#define DEFAULT_CURRENCY_PRICE  500.0
+#define DEFAULT_CURRENCY_CODE   @"USD"
+#define DEFAULT_CURRENCY_SYMBOL @"$"
 
 #define BASE_URL    @"https://blockchain.info"
 #define UNSPENT_URL BASE_URL "/unspent?active="
 #define ADDRESS_URL BASE_URL "/multiaddr?active="
+#define TICKER_URL  BASE_URL "/ticker"
 
 static BOOL setKeychainData(NSData *data, NSString *key)
 {
@@ -267,7 +270,7 @@ static NSData *getKeychainData(NSString *key)
 
     if (self.reachability.currentReachabilityStatus == NotReachable) return;
 
-    NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:ADDRESS_URL]
+    NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:TICKER_URL]
                          cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:10.0];
 
     [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue currentQueue]
@@ -280,21 +283,27 @@ static NSData *getKeychainData(NSString *key)
         NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
         NSError *error = nil;
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        NSString *currencyCode = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
+        NSString *symbol = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencySymbol];
 
         if (error || ! [json isKindOfClass:[NSDictionary class]] ||
-            ! [json[@"info"] isKindOfClass:[NSDictionary class]] ||
-            ! [json[@"info"][@"symbol_local"] isKindOfClass:[NSDictionary class]] ||
-            ! [json[@"info"][@"symbol_local"][@"symbol"] isKindOfClass:[NSString class]] ||
-            ! [json[@"info"][@"symbol_local"][@"code"] isKindOfClass:[NSString class]] ||
-            ! [json[@"info"][@"symbol_local"][@"conversion"] isKindOfClass:[NSNumber class]]) {
+            ! [json[DEFAULT_CURRENCY_CODE] isKindOfClass:[NSDictionary class]] ||
+            ! [json[DEFAULT_CURRENCY_CODE][@"last"] isKindOfClass:[NSNumber class]] ||
+            ([json[currencyCode] isKindOfClass:[NSDictionary class]] &&
+             ! [json[currencyCode][@"last"] isKindOfClass:[NSNumber class]])) {
             NSLog(@"unexpected response from blockchain.info:\n%@",
                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             return;
         }
 
-        [defs setObject:json[@"info"][@"symbol_local"][@"symbol"] forKey:LOCAL_CURRENCY_SYMBOL_KEY];
-        [defs setObject:json[@"info"][@"symbol_local"][@"code"] forKey:LOCAL_CURRENCY_CODE_KEY];
-        [defs setObject:json[@"info"][@"symbol_local"][@"conversion"] forKey:LOCAL_CURRENCY_PRICE_KEY];
+        if (! [json[currencyCode] isKindOfClass:[NSDictionary class]]) { // if local currency is missing, use default
+            currencyCode = DEFAULT_CURRENCY_CODE;
+            symbol = DEFAULT_CURRENCY_SYMBOL;
+        }
+
+        [defs setObject:symbol forKey:LOCAL_CURRENCY_SYMBOL_KEY];
+        [defs setObject:currencyCode forKey:LOCAL_CURRENCY_CODE_KEY];
+        [defs setObject:json[currencyCode][@"last"] forKey:LOCAL_CURRENCY_PRICE_KEY];
         [defs synchronize];
         NSLog(@"exchange rate updated to %@/%@", [self localCurrencyStringForAmount:SATOSHIS],
               [self stringForAmount:SATOSHIS]);
@@ -469,7 +478,7 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
     format.currencySymbol = symbol;
     format.currencyCode = code;
 
-    NSString *ret = [format stringFromNumber:@(amount/price)];
+    NSString *ret = [format stringFromNumber:@(price*amount/SATOSHIS)];
 
     // if the amount is too small to be represented in local currency (but is != 0) then return a string like "<$0.01"
     if (amount != 0 && [[format numberFromString:ret] isEqual:@(0.0)]) {

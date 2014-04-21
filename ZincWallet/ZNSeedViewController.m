@@ -79,6 +79,7 @@
 
     if (! m.wallet) {
         [m generateRandomSeed];
+        //BUG: XXXX the sync got stuck when testing wipe/new wallet on testnet, investigate
         [[ZNPeerManager sharedInstance] connect];
     }
     else self.navigationItem.rightBarButtonItem = nil;
