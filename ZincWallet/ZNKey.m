@@ -177,7 +177,7 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
         [self setSecret:[NSData dataWithBytesNoCopy:(unsigned char *)d.bytes + 1 length:32 freeWhenDone:NO]
          compressed:(d.length == 34) ? YES : NO];
     }
-    else if (d.length == 32) [self setSecret:d compressed:YES];
+    else if (d.length == 32) [self setSecret:d compressed:NO];
 }
 
 - (NSString *)privateKey
@@ -289,8 +289,10 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
     }
 
     EC_POINT_clear_free(p);
-    BN_clear_free(&k);
     BN_clear_free(&r);
+    BN_clear_free(&k);
+    BN_free(&halforder);
+    BN_free(&order);
     BN_CTX_end(ctx);
     BN_CTX_free(ctx);
 

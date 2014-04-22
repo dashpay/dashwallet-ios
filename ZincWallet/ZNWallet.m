@@ -430,7 +430,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     }
 }
 
-// true if no previous wallet transactions spend any of the given transaction's inputs, and no input tx are invalid
+// true if no previous wallet transactions spend any of the given transaction's inputs, and no input tx is invalid
 - (BOOL)transactionIsValid:(ZNTransaction *)transaction
 {
     if (transaction.blockHeight != TX_UNCONFIRMED) return YES;
@@ -514,8 +514,8 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     return nil;
 }
 
-// Returns the block height after which the transaction is likely be processed without including a fee. This is based on
-// the default satoshi client settings, but on the real network it's way off. In testing, a 0.01btc transaction that
+// Returns the block height after which the transaction is likely to be processed without including a fee. This is based
+// on the default satoshi client settings, but on the real network it's way off. In testing, a 0.01btc transaction that
 // was expected to take an additional 90 days worth of blocks to confirm was confirmed in under an hour by Eligius pool.
 - (uint32_t)blockHeightUntilFree:(ZNTransaction *)transaction
 {

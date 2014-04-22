@@ -49,10 +49,13 @@
     //TODO: pin code
     
     //TODO: support for BIP70 payment protocol
-    
+
+    //TODO: create a BIP and GATT specification for payment protocol over bluetooth LE
+    // https://developer.bluetooth.org/gatt/Pages/default.aspx
+
     //TODO: accessibility for the visually impaired
     
-    //TODO: internationalization, use iOS localization settings for currency/exchange rates
+    //TODO: internationalization
 
     // this will notify user if bluetooth is disabled (on 4S and newer devices that support BTLE)
     //CBCentralManager *cbManager = [[CBCentralManager alloc] initWithDelegate:self queue:dispatch_get_main_queue()];

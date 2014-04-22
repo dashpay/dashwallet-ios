@@ -38,6 +38,7 @@
 #define BIP38_SCRYPT_EC_R     1
 #define BIP38_SCRYPT_EC_P     1
 
+// bitwise left rotation, this will typically be compiled into a single instruction
 #define rotl(a, b) (((a) << (b)) | ((a) >> (32 - (b))))
 
 // salsa20/8 stream cypher: http://cr.yp.to/snuffle.html

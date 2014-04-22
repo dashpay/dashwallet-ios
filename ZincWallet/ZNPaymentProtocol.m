@@ -1,9 +1,9 @@
 //
-//  NSData+Bitcoin.h
+//  ZNPaymentProtocol.m
 //  ZincWallet
 //
-//  Created by Aaron Voisine on 10/9/13.
-//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
+//  Created by Aaron Voisine on 4/21/14.
+//  Copyright (c) 2014 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,20 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
+#import "ZNPaymentProtocol.h"
 
-@interface NSData (Bitcoin)
+@implementation ZNPaymentProtocolDetails
 
-- (uint8_t)UInt8AtOffset:(NSUInteger)offset;
-- (uint16_t)UInt16AtOffset:(NSUInteger)offset;
-- (uint32_t)UInt32AtOffset:(NSUInteger)offset;
-- (uint64_t)UInt64AtOffset:(NSUInteger)offset;
-- (uint64_t)varIntAtOffset:(NSUInteger)offset length:(NSUInteger *)length;
-- (NSData *)hashAtOffset:(NSUInteger)offset;
-- (NSString *)stringAtOffset:(NSUInteger)offset length:(NSUInteger *)length;
-- (NSData *)dataAtOffset:(NSUInteger)offset length:(NSUInteger *)length;
-- (NSArray *)scriptDataElements;
+@end
+
+@implementation ZNPaymentProtocolRequest
+
+@end
+
+@implementation ZNPaymentProtocolPayment
+
+@end
+
+@implementation ZNPaymentProtocolACK
 
 @end

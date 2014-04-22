@@ -353,7 +353,7 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
     }
 
     NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:[UNSPENT_URL stringByAppendingString:address]]
-                         cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:10.0];
+                         cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:20.0];
 
     [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue currentQueue]
     completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {

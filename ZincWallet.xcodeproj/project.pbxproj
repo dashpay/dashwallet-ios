@@ -697,6 +697,7 @@
 		753007EF1769899B00C7BB60 /* ZNSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007EE1769899B00C7BB60 /* ZNSeedViewController.m */; };
 		753007F2176A48DA00C7BB60 /* ZNRestoreViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007F1176A48DA00C7BB60 /* ZNRestoreViewController.m */; };
 		7535CCDF176BE3D2007E29C5 /* ZNButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 7535CCDE176BE3D2007E29C5 /* ZNButton.m */; };
+		753A27151906027400C92961 /* ZNPaymentProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 753A27141906027400C92961 /* ZNPaymentProtocol.m */; };
 		753A4149178E070C003B938D /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 753A4148178E070C003B938D /* AudioToolbox.framework */; };
 		753E7CD61801628C00FC6BA7 /* ZNPeerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 753E7CD2180155B400FC6BA7 /* ZNPeerManager.m */; };
 		753E7CD91802648700FC6BA7 /* ZNPeerEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 753E7CD81802648700FC6BA7 /* ZNPeerEntity.m */; };
@@ -1744,6 +1745,8 @@
 		753007F1176A48DA00C7BB60 /* ZNRestoreViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNRestoreViewController.m; sourceTree = "<group>"; };
 		7535CCDD176BE3D2007E29C5 /* ZNButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNButton.h; sourceTree = "<group>"; };
 		7535CCDE176BE3D2007E29C5 /* ZNButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNButton.m; sourceTree = "<group>"; };
+		753A27131906027400C92961 /* ZNPaymentProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNPaymentProtocol.h; sourceTree = "<group>"; };
+		753A27141906027400C92961 /* ZNPaymentProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNPaymentProtocol.m; sourceTree = "<group>"; };
 		753A4148178E070C003B938D /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		753E7CD1180155B400FC6BA7 /* ZNPeerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNPeerManager.h; sourceTree = "<group>"; };
 		753E7CD2180155B400FC6BA7 /* ZNPeerManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNPeerManager.m; sourceTree = "<group>"; };
@@ -3374,6 +3377,8 @@
 				75D450F918C41C84005571B3 /* ZNWalletManager.m */,
 				75CBEAE7173C80AD00978DBA /* ZNPaymentRequest.h */,
 				75CBEAE8173C80AD00978DBA /* ZNPaymentRequest.m */,
+				753A27131906027400C92961 /* ZNPaymentProtocol.h */,
+				753A27141906027400C92961 /* ZNPaymentProtocol.m */,
 				75F17C331744CC2100D9F228 /* ZNTransaction.h */,
 				75F17C341744CC2100D9F228 /* ZNTransaction.m */,
 				75AC815E180DFBC700ACA0C9 /* ZNBloomFilter.h */,
@@ -4597,6 +4602,7 @@
 				7505A9FA18177DC400419043 /* ZNMerkleBlock.m in Sources */,
 				752C2F8717406EEA0033F636 /* Reachability.m in Sources */,
 				752C2F8C174071520033F636 /* ZNWallet.m in Sources */,
+				753A27151906027400C92961 /* ZNPaymentProtocol.m in Sources */,
 				752C2FAF17416C620033F636 /* NSString+Base58.m in Sources */,
 				752C2FB5174171770033F636 /* NSData+Hash.m in Sources */,
 				753E7CE41806853400FC6BA7 /* NSData+Bitcoin.m in Sources */,

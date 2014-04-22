@@ -44,6 +44,18 @@
 
 @implementation ZNTransaction
 
++ (instancetype)transactionWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes
+inputScripts:(NSArray *)scripts outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
+{
+    return [[self alloc] initWithInputHashes:hashes inputIndexes:indexes inputScripts:scripts outputAddresses:addresses
+            outputAmounts:amounts];
+}
+
++ (instancetype)transactionWithMessage:(NSData *)message
+{
+    return [[self alloc] initWithMessage:message];
+}
+
 - (instancetype)init
 {
     if (! (self = [super init])) return nil;
@@ -95,7 +107,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     return self;
 }
 
-- (instancetype)initWithData:(NSData *)data
+- (instancetype)initWithMessage:(NSData *)message
 {
     if (! (self = [self init])) return nil;
  
@@ -103,40 +115,40 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     NSUInteger l = 0, off = 0, count = 0;
     NSData *d = nil;
 
-    _txHash = data.SHA256_2;
-    _version = [data UInt32AtOffset:off]; // tx version
+    _txHash = message.SHA256_2;
+    _version = [message UInt32AtOffset:off]; // tx version
     off += sizeof(uint32_t);
-    count = [data varIntAtOffset:off length:&l]; // input count
+    count = [message varIntAtOffset:off length:&l]; // input count
     off += l;
 
     for (NSUInteger i = 0; i < count; i++) { // inputs
-        d = [data hashAtOffset:off];
+        d = [message hashAtOffset:off];
         [self.hashes addObject:d ? d : [NSNull null]]; // input tx hash
         off += CC_SHA256_DIGEST_LENGTH;
-        [self.indexes addObject:@([data UInt32AtOffset:off])]; // input index
+        [self.indexes addObject:@([message UInt32AtOffset:off])]; // input index
         off += sizeof(uint32_t);
         [self.inScripts addObject:[NSNull null]]; // placeholder for input script (comes from previous transaction)
-        d = [data dataAtOffset:off length:&l];
+        d = [message dataAtOffset:off length:&l];
         [self.signatures addObject:d ? d : [NSNull null]]; // input signature
         off += l;
-        [self.sequences addObject:@([data UInt32AtOffset:off])]; // input sequence number (for replacement transactons)
+        [self.sequences addObject:@([message UInt32AtOffset:off])]; // input sequence number (for replacement tx)
         off += sizeof(uint32_t);
     }
 
-    count = [data varIntAtOffset:off length:&l]; // output count
+    count = [message varIntAtOffset:off length:&l]; // output count
     off += l;
     
     for (NSUInteger i = 0; i < count; i++) { // outputs
-        [self.amounts addObject:@([data UInt64AtOffset:off])]; // output amount
+        [self.amounts addObject:@([message UInt64AtOffset:off])]; // output amount
         off += sizeof(uint64_t);
-        d = [data dataAtOffset:off length:&l];
+        d = [message dataAtOffset:off length:&l];
         [self.outScripts addObject:d ? d : [NSNull null]]; // output script
         off += l;
         address = [NSString addressWithScript:d]; // address from output script if applicable
         [self.addresses addObject:address ? address : [NSNull null]];
     }
     
-    _lockTime = [data UInt32AtOffset:off]; // tx locktime
+    _lockTime = [message UInt32AtOffset:off]; // tx locktime
     
     return self;
 }

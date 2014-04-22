@@ -24,8 +24,10 @@
 //  THE SOFTWARE.
 
 #import "ZNPaymentRequest.h"
+#import "ZNPaymentProtocol.h"
 #import "NSString+Base58.h"
 
+// BIP21 bitcoin URI object https://github.com/bitcoin/bips/blob/master/bip-0021.mediawiki
 @implementation ZNPaymentRequest
 
 //TODO: support for BIP70 payment protocol
@@ -104,10 +106,10 @@
             self.message = [[pair[1] stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
                             stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
         }
-//        else if ([pair[0] isEqual:@"r"]) {
-//            NSString *r = [[pair[1] stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
-//                           stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-//        }
+        else if ([pair[0] isEqual:@"r"]) {
+            self.r = [NSURL URLWithString:[[pair[1] stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
+                                           stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+        }
     }
 }
 
@@ -147,6 +149,33 @@
     // TODO: validate bitcoin payment request X.509 certificate, hopefully offline
 
     return YES;
+}
+
+// fetches the request over HTTP and calls completion block
+- (void)fetchOnCompletion:(void (^)(NSError *error, ZNPaymentProtocolRequest *req))completion
+{
+    if (! self.r) {
+        if (completion) completion(nil, nil);
+        return;
+    }
+
+    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:self.r
+                                cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:20.0];
+
+    [req addValue:@"application/bitcoin-paymentrequest" forHTTPHeaderField:@"Accept"];
+
+    [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue currentQueue]
+    completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+        if (! [response.MIMEType.lowercaseString isEqual:@"application/bitcoin-paymentrequest"]) {
+            if (completion) {
+                completion([NSError errorWithDomain:@"ZincWallet" code:417
+                            userInfo:@{NSLocalizedDescriptionKey:@"unexpected response from payment server"}], nil);
+            }
+            return;
+        }
+
+        
+    }];
 }
 
 @end

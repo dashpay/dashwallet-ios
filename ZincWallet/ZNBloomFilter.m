@@ -77,6 +77,11 @@ flags:(uint8_t)flags
     return [[self alloc] initWithFalsePositiveRate:fpRate forElementCount:count tweak:tweak flags:flags];
 }
 
++ (instancetype)filterWithMessage:(NSData *)message
+{
+    return [[self alloc] initWithMessage:message];
+}
+
 // a bloom filter that matches everything is useful if a full node wants to use the filtered block protocol, which
 // doesn't send transactions with blocks if the receiving node already received the tx prior to its inclusion in the
 // block, allowing a full node to operate while using about half the network traffic.
@@ -99,6 +104,22 @@ flags:(uint8_t)flags
     _tweak = tweak;
     _flags = flags;
     
+    return self;
+}
+
+- (instancetype)initWithMessage:(NSData *)message
+{
+    if (! (self = [self init])) return nil;
+
+    NSUInteger off = 0;
+
+    self.filter = [NSMutableData dataWithData:[message dataAtOffset:0 length:&off]];
+    self.hashFuncs = [message UInt32AtOffset:off];
+    off += sizeof(uint32_t);
+    _tweak = [message UInt32AtOffset:off];
+    off += sizeof(uint32_t);
+    _flags = [message UInt8AtOffset:off];
+
     return self;
 }
 

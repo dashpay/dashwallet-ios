@@ -646,7 +646,7 @@ services:(uint64_t)services
 
 - (void)acceptTxMessage:(NSData *)message
 {
-    ZNTransaction *tx = [[ZNTransaction alloc] initWithData:message];
+    ZNTransaction *tx = [ZNTransaction transactionWithMessage:message];
     
     if (! tx) {
         [self error:@"malformed tx message: %@", message];

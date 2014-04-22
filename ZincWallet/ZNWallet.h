@@ -67,7 +67,7 @@
 // set the block heights for the given transactions
 - (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes;
 
-// true if no previous wallet transaction spends any of the given transaction's inputs, and no input tx are invalid
+// true if no previous wallet transaction spends any of the given transaction's inputs, and no input tx is invalid
 - (BOOL)transactionIsValid:(ZNTransaction *)transaction;
 
 // returns the amount received to the wallet by the transaction (total outputs to change and/or recieve addresses)
@@ -82,7 +82,7 @@
 // returns the first non-change transaction output address, or nil if there aren't any
 - (NSString *)addressForTransaction:(ZNTransaction *)transaction;
 
-// returns the block height after which the transaction is likely be processed without including a fee
+// returns the block height after which the transaction is likely to be processed without including a fee
 - (uint32_t)blockHeightUntilFree:(ZNTransaction *)transaction;
 
 @end

@@ -263,8 +263,9 @@ breakout:
     if (d.length < 4) return nil;
 
     NSData *data = CFBridgingRelease(CFDataCreate(SecureAllocator(), d.bytes, d.length - 4));
-    
-    if (memcmp((const unsigned char *)d.bytes + d.length - 4, data.SHA256_2.bytes, 4) != 0) return nil;
+
+    // verify checksum
+    if (*(uint32_t *)((const uint8_t *)d.bytes + d.length - 4) != *(uint32_t *)data.SHA256_2.bytes) return nil;
     
     return data;
 }
