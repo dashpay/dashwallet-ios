@@ -71,12 +71,6 @@ static uint32_t murmurHash3(NSData *data, uint32_t seed)
 
 @implementation ZNBloomFilter
 
-+ (instancetype)filterWithFalsePositiveRate:(double)fpRate forElementCount:(NSUInteger)count tweak:(uint32_t)tweak
-flags:(uint8_t)flags
-{
-    return [[self alloc] initWithFalsePositiveRate:fpRate forElementCount:count tweak:tweak flags:flags];
-}
-
 + (instancetype)filterWithMessage:(NSData *)message
 {
     return [[self alloc] initWithMessage:message];
@@ -88,23 +82,6 @@ flags:(uint8_t)flags
 + (instancetype)filterWithFullMatch
 {
     return [[self alloc] initWithFullMatch];
-}
-
-- (instancetype)initWithFalsePositiveRate:(double)fpRate forElementCount:(NSUInteger)count tweak:(uint32_t)tweak
-flags:(uint8_t)flags
-{
-    if (! (self = [self init])) return nil;
-
-    NSUInteger length = (-1.0/pow(M_LN2, 2))*count*log(fpRate)/8.0;
-
-    if (length > BLOOM_MAX_FILTER_LENGTH) length = BLOOM_MAX_FILTER_LENGTH;
-    self.filter = [NSMutableData dataWithLength:length < 1 ? 1 : length];
-    self.hashFuncs = ((self.filter.length*8.0)/count)*M_LN2;
-    if (self.hashFuncs > BLOOM_MAX_HASH_FUNCS) self.hashFuncs = BLOOM_MAX_HASH_FUNCS;
-    _tweak = tweak;
-    _flags = flags;
-    
-    return self;
 }
 
 - (instancetype)initWithMessage:(NSData *)message
@@ -131,6 +108,23 @@ flags:(uint8_t)flags
     self.hashFuncs = 0;
     _tweak = 0;
     _flags = BLOOM_UPDATE_NONE;
+    
+    return self;
+}
+
+- (instancetype)initWithFalsePositiveRate:(double)fpRate forElementCount:(NSUInteger)count tweak:(uint32_t)tweak
+                                    flags:(uint8_t)flags
+{
+    if (! (self = [self init])) return nil;
+
+    NSUInteger length = (-1.0/pow(M_LN2, 2))*count*log(fpRate)/8.0;
+
+    if (length > BLOOM_MAX_FILTER_LENGTH) length = BLOOM_MAX_FILTER_LENGTH;
+    self.filter = [NSMutableData dataWithLength:length < 1 ? 1 : length];
+    self.hashFuncs = ((self.filter.length*8.0)/count)*M_LN2;
+    if (self.hashFuncs > BLOOM_MAX_HASH_FUNCS) self.hashFuncs = BLOOM_MAX_HASH_FUNCS;
+    _tweak = tweak;
+    _flags = flags;
     
     return self;
 }

@@ -364,7 +364,7 @@ static const char *dns_seeds[] = {
 
     ZNWallet *w = [[ZNWalletManager sharedInstance] wallet];
     NSUInteger elemCount = w.addresses.count + w.unspentOutputs.count;
-    ZNBloomFilter *filter = [ZNBloomFilter filterWithFalsePositiveRate:self.filterFpRate
+    ZNBloomFilter *filter = [[ZNBloomFilter alloc] initWithFalsePositiveRate:self.filterFpRate
                              forElementCount:(elemCount < 200) ? elemCount*1.5 : elemCount + 100
                              tweak:self.tweak flags:BLOOM_UPDATE_ALL];
 

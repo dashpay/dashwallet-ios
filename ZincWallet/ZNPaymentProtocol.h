@@ -29,41 +29,69 @@
 
 @interface ZNPaymentProtocolDetails : NSObject
 
-@property (nonatomic, readonly) NSString *network;
-@property (nonatomic, readonly) NSArray *outputAmounts;
+@property (nonatomic, readonly) NSString *network; // default is "main"
+@property (nonatomic, readonly) NSArray *outputAmounts; // default is 0
 @property (nonatomic, readonly) NSArray *outputScripts;
-@property (nonatomic, readonly) NSTimeInterval time; // time interval since reference date, 00:00:00 01/01/01 GMT
-@property (nonatomic, readonly) NSTimeInterval expires;
-@property (nonatomic, readonly) NSString *memo;
-@property (nonatomic, readonly) NSString *paymentURL;
-@property (nonatomic, readonly) NSData *merchantData;
+@property (nonatomic, readonly) NSTimeInterval time; // optional, interval since reference date, 00:00:00 01/01/01 GMT
+@property (nonatomic, readonly) NSTimeInterval expires; // optional
+@property (nonatomic, readonly) NSString *memo; // optional
+@property (nonatomic, readonly) NSString *paymentURL; // optional
+@property (nonatomic, readonly) NSData *merchantData; // optional
+@property (nonatomic, readonly, getter = toData) NSData *data;
+
++ (instancetype)detailsWithData:(NSData *)data;
+
+- (instancetype)initWithData:(NSData *)data;
+- (instancetype)initWithNetwork:(NSString *)network outputAmounts:(NSArray *)amounts outputScripts:(NSArray *)scripts
+time:(NSTimeInterval)time expires:(NSTimeInterval)expires memo:(NSString *)memo paymentURL:(NSString *)url
+merchantData:(NSData *)data;
 
 @end
 
 @interface ZNPaymentProtocolRequest : NSObject
 
-@property (nonatomic, readonly) uint32_t version;
-@property (nonatomic, readonly) NSString *pkiType;
-@property (nonatomic, readonly) NSData *pkiData;
-@property (nonatomic, readonly) ZNPaymentProtocolDetails *details;
-@property (nonatomic, readonly) NSData *signature;
+@property (nonatomic, readonly) uint32_t version; // default is 1
+@property (nonatomic, readonly) NSString *pkiType; // default is "none"
+@property (nonatomic, readonly) NSData *pkiData; // optional
+@property (nonatomic, readonly) ZNPaymentProtocolDetails *details; // required
+@property (nonatomic, readonly) NSData *signature; // optional
+@property (nonatomic, readonly, getter = toData) NSData *data;
+
++ (instancetype)requestWithData:(NSData *)data;
+
+- (instancetype)initWithData:(NSData *)data;
+- (instancetype)initWithVersion:(uint32_t)version pkiType:(NSString *)type pkiData:(NSData *)data
+details:(ZNPaymentProtocolDetails *)details signature:(NSData *)sig;
 
 @end
 
 @interface ZNPaymentProtocolPayment : NSObject
 
-@property (nonatomic, readonly) NSData *merchantData;
-@property (nonatomic, readonly) NSArray *transactions;
-@property (nonatomic, readonly) NSArray *refundToAmounts;
+@property (nonatomic, readonly) NSData *merchantData; // optional
+@property (nonatomic, readonly) NSArray *transactions; // array of ZNTransaction objects
+@property (nonatomic, readonly) NSArray *refundToAmounts; // default is 0
 @property (nonatomic, readonly) NSArray *refundToScripts;
-@property (nonatomic, readonly) NSString *memo;
+@property (nonatomic, readonly) NSString *memo; // optional
+@property (nonatomic, readonly, getter = toData) NSData *data;
+
++ (instancetype)paymentWithData:(NSData *)data;
+
+- (instancetype)initWithData:(NSData *)data;
+- (instancetype)initWithMerchantData:(NSData *)data transactions:(NSArray *)transactions
+refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSString *)memo;
 
 @end
 
 @interface ZNPaymentProtocolACK : NSObject
 
-@property (nonatomic, readonly) ZNPaymentProtocolPayment *payment;
-@property (nonatomic, readonly) NSString *memo;
+@property (nonatomic, readonly) ZNPaymentProtocolPayment *payment; // required
+@property (nonatomic, readonly) NSString *memo; // optional
+@property (nonatomic, readonly, getter = toData) NSData *data;
+
++ (instancetype)ackWithData:(NSData *)data;
+
+- (instancetype)initWithData:(NSData *)data;
+- (instancetype)initWithPayment:(ZNPaymentProtocolPayment *)payment andMemo:(NSString *)memo;
 
 @end
 

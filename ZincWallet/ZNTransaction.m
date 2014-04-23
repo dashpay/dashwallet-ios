@@ -44,13 +44,6 @@
 
 @implementation ZNTransaction
 
-+ (instancetype)transactionWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes
-inputScripts:(NSArray *)scripts outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
-{
-    return [[self alloc] initWithInputHashes:hashes inputIndexes:indexes inputScripts:scripts outputAddresses:addresses
-            outputAmounts:amounts];
-}
-
 + (instancetype)transactionWithMessage:(NSData *)message
 {
     return [[self alloc] initWithMessage:message];
@@ -72,38 +65,6 @@ inputScripts:(NSArray *)scripts outputAddresses:(NSArray *)addresses outputAmoun
     _lockTime = TX_LOCKTIME;
     _blockHeight = TX_UNCONFIRMED;
     
-    return self;
-}
-
-- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts
-outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
-{
-    if (hashes.count != indexes.count || hashes.count != scripts.count || addresses.count != amounts.count) return nil;
-
-    if (! (self = [super init])) return nil;
-    
-    _version = TX_VERSION;
-    self.hashes = [NSMutableArray arrayWithArray:hashes];
-    self.indexes = [NSMutableArray arrayWithArray:indexes];
-    self.inScripts = [NSMutableArray arrayWithArray:scripts];
-    self.amounts = [NSMutableArray arrayWithArray:amounts];
-    self.addresses = [NSMutableArray arrayWithArray:addresses];
-    self.outScripts = [NSMutableArray arrayWithCapacity:addresses.count];
-    for (int i = 0; i < addresses.count; i++) {
-        [self.outScripts addObject:[NSMutableData data]];
-        [self.outScripts.lastObject appendScriptPubKeyForAddress:self.addresses[i]];
-    }
-    
-    self.signatures = [NSMutableArray arrayWithCapacity:hashes.count];
-    self.sequences = [NSMutableArray arrayWithCapacity:hashes.count];
-    for (int i = 0; i < hashes.count; i++) {
-        [self.signatures addObject:[NSNull null]];
-        [self.sequences addObject:@(TXIN_SEQUENCE)];
-    }
-    
-    _lockTime = TX_LOCKTIME;
-    _blockHeight = TX_UNCONFIRMED;
-
     return self;
 }
 
@@ -149,6 +110,38 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     }
     
     _lockTime = [message UInt32AtOffset:off]; // tx locktime
+    
+    return self;
+}
+
+- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts
+outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
+{
+    if (hashes.count != indexes.count || hashes.count != scripts.count || addresses.count != amounts.count) return nil;
+
+    if (! (self = [super init])) return nil;
+
+    _version = TX_VERSION;
+    self.hashes = [NSMutableArray arrayWithArray:hashes];
+    self.indexes = [NSMutableArray arrayWithArray:indexes];
+    self.inScripts = [NSMutableArray arrayWithArray:scripts];
+    self.amounts = [NSMutableArray arrayWithArray:amounts];
+    self.addresses = [NSMutableArray arrayWithArray:addresses];
+    self.outScripts = [NSMutableArray arrayWithCapacity:addresses.count];
+    for (int i = 0; i < addresses.count; i++) {
+        [self.outScripts addObject:[NSMutableData data]];
+        [self.outScripts.lastObject appendScriptPubKeyForAddress:self.addresses[i]];
+    }
+
+    self.signatures = [NSMutableArray arrayWithCapacity:hashes.count];
+    self.sequences = [NSMutableArray arrayWithCapacity:hashes.count];
+    for (int i = 0; i < hashes.count; i++) {
+        [self.signatures addObject:[NSNull null]];
+        [self.sequences addObject:@(TXIN_SEQUENCE)];
+    }
+
+    _lockTime = TX_LOCKTIME;
+    _blockHeight = TX_UNCONFIRMED;
     
     return self;
 }

@@ -31,6 +31,9 @@
 #import <openssl/ecdsa.h>
 #import <openssl/obj_mac.h>
 
+// BIP38 is a method for encrypting private keys with a passphrase
+// https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki
+
 #define BIP38_SCRYPT_N        16384
 #define BIP38_SCRYPT_R        8
 #define BIP38_SCRYPT_P        8

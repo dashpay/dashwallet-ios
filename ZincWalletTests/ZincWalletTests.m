@@ -358,7 +358,7 @@
     
     NSData *d = tx.data, *d2 = nil;
     
-    tx = [[ZNTransaction alloc] initWithData:d];
+    tx = [ZNTransaction transactionWithMessage:d];
     d2 = tx.data;
     
     XCTAssertEqualObjects(d, d2, @"[ZNTransaction initWithData:]");
@@ -923,7 +923,8 @@
 
 - (void)testBloomFilter
 {
-    ZNBloomFilter *f = [ZNBloomFilter filterWithFalsePositiveRate:.01 forElementCount:3 tweak:0 flags:BLOOM_UPDATE_ALL];
+    ZNBloomFilter *f = [[ZNBloomFilter alloc] initWithFalsePositiveRate:.01 forElementCount:3 tweak:0
+                        flags:BLOOM_UPDATE_ALL];
 
     [f insertData:@"99108ad8ed9bb6274d3980bab5a85c048f0950c8".hexToData];
 
@@ -950,7 +951,7 @@
 
 - (void)testBloomFilterWithTweak
 {
-    ZNBloomFilter *f = [ZNBloomFilter filterWithFalsePositiveRate:.01 forElementCount:3 tweak:2147483649
+    ZNBloomFilter *f = [[ZNBloomFilter alloc] initWithFalsePositiveRate:.01 forElementCount:3 tweak:2147483649
                         flags:BLOOM_UPDATE_P2PUBKEY_ONLY];
 
     [f insertData:@"99108ad8ed9bb6274d3980bab5a85c048f0950c8".hexToData];

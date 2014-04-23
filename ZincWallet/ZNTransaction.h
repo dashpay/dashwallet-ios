@@ -59,13 +59,11 @@
 @property (nonatomic, readonly, getter = toData) NSData *data;
 @property (nonatomic, readonly, getter = toHex) NSString *hex;
 
-+ (instancetype)transactionWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes
-inputScripts:(NSArray *)scripts outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts;
 + (instancetype)transactionWithMessage:(NSData *)message;
 
+- (instancetype)initWithMessage:(NSData *)message;
 - (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts
 outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts;
-- (instancetype)initWithMessage:(NSData *)message;
 
 - (void)addInputHash:(NSData *)hash index:(NSUInteger)index script:(NSData *)script;
 - (void)addInputHash:(NSData *)hash index:(NSUInteger)index script:(NSData *)script signature:(NSData *)signature
