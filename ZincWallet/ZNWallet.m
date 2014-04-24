@@ -281,12 +281,25 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
 // returns an unsigned transaction that sends the specified amount from the wallet to the given address
 - (ZNTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee
 {
-    uint64_t balance = 0, standardFee = 0;
+    NSMutableData *script = [NSMutableData data];
+
+    [script appendScriptPubKeyForAddress:address];
+
+    return [self transactionForAmounts:@[@(amount)] toOutputScripts:@[script] withFee:fee];
+}
+
+// returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
+- (ZNTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee;
+{
+    uint64_t amount = 0, balance = 0, standardFee = 0;
     ZNTransaction *transaction = [ZNTransaction new];
+    NSUInteger i = 0;
 
-    [transaction addOutputAddress:address amount:amount];
+    for (NSData *script in scripts) {
+        [transaction addOutputScript:script amount:[amounts[i] unsignedLongLongValue]];
+        amount += [amounts[i++] unsignedLongLongValue];
+    }
 
-    //TODO: implement P2SH transactions
     //TODO: make sure transaction is less than TX_MAX_SIZE
     //TODO: don't use coin generation inputs less than 100 blocks deep
     //TODO: use up all inputs for all used addresses to avoid leaving funds in addresses whose public key is revealed

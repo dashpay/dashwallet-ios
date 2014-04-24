@@ -152,10 +152,12 @@
 }
 
 // fetches the request over HTTP and calls completion block
-- (void)fetchOnCompletion:(void (^)(NSError *error, ZNPaymentProtocolRequest *req))completion
+- (void)fetchOnCompletion:(void (^)(ZNPaymentProtocolRequest *req, NSError *error))completion
 {
+    if (! completion) return;
+
     if (! self.r) {
-        if (completion) completion(nil, nil);
+        completion(nil, nil);
         return;
     }
 
@@ -166,15 +168,21 @@
 
     [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue currentQueue]
     completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-        if (! [response.MIMEType.lowercaseString isEqual:@"application/bitcoin-paymentrequest"]) {
-            if (completion) {
-                completion([NSError errorWithDomain:@"ZincWallet" code:417
-                            userInfo:@{NSLocalizedDescriptionKey:@"unexpected response from payment server"}], nil);
-            }
+        if (! [response.MIMEType.lowercaseString isEqual:@"application/bitcoin-paymentrequest"] || data.length > 50000){
+            completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
+                             userInfo:@{NSLocalizedDescriptionKey:@"unexpected response from payment server"}]);
             return;
         }
 
-        
+        ZNPaymentProtocolRequest *req = [ZNPaymentProtocolRequest requestWithData:data];
+
+        if (! req) {
+            completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
+                             userInfo:@{NSLocalizedDescriptionKey:@"unexpected response from payment server"}]);
+            return;
+        }
+
+        completion(req, nil);
     }];
 }
 

@@ -70,7 +70,7 @@ static BOOL setKeychainData(NSData *data, NSString *key)
     NSDictionary *query = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
                             (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
                             (__bridge id)kSecAttrAccount:key,
-                            (__bridge id)kSecReturnData:(__bridge id)kCFBooleanTrue};
+                            (__bridge id)kSecReturnData:(id)kCFBooleanTrue};
 
     SecItemDelete((__bridge CFDictionaryRef)query);
 
@@ -96,7 +96,7 @@ static NSData *getKeychainData(NSString *key)
     NSDictionary *query = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
                             (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
                             (__bridge id)kSecAttrAccount:key,
-                            (__bridge id)kSecReturnData:(__bridge id)kCFBooleanTrue};
+                            (__bridge id)kSecReturnData:(id)kCFBooleanTrue};
     CFDataRef result = nil;
     OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, (CFTypeRef *)&result);
 
@@ -216,7 +216,7 @@ static NSData *getKeychainData(NSString *key)
 
     if (! phrase) return [[ZNZincMnemonic sharedInstance] encodePhrase:self.seed]; // use old phrase format
 
-    return CFBridgingRelease(CFStringCreateFromExternalRepresentation(SecureAllocator(), (__bridge CFDataRef)phrase,
+    return CFBridgingRelease(CFStringCreateFromExternalRepresentation(SecureAllocator(), (CFDataRef)phrase,
                                                                       kCFStringEncodingUTF8));
 }
 
@@ -233,8 +233,7 @@ static NSData *getKeychainData(NSString *key)
         seedPhrase = [m encodePhrase:[m decodePhrase:seedPhrase]];
         self.seed = [m deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
 
-        NSData *d = CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(),
-                                                                           (__bridge CFStringRef)seedPhrase,
+        NSData *d = CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(), (CFStringRef)seedPhrase,
                                                                            kCFStringEncodingUTF8, 0));
         
         setKeychainData(d, MNEMONIC_KEY);

@@ -15,7 +15,7 @@
     #import <MobileCoreServices/MobileCoreServices.h>
 #endif
 
-#define BITCOIN_TESTNET    1
+//#define BITCOIN_TESTNET    1
 //#define WEBAPP_BASEURL     @"http://zincwallet.com"
 //#define WEBAPP_PATH        @"/tx"
 //#define WEBAPP_TIMEOUT     15

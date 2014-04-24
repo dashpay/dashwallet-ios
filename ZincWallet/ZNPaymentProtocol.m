@@ -25,6 +25,7 @@
 
 #import "ZNPaymentProtocol.h"
 #import "ZNTransaction.h"
+#import "NSData+Hash.h"
 
 // BIP70 payment protocol: https://github.com/bitcoin/bips/blob/master/bip-0070.mediawiki
 
@@ -33,22 +34,19 @@
 #define PROTOBUF_LENDELIM 2 // string, bytes, embedded messages, packed repeated fields
 #define PROTOBUF_32BIT    5 // fixed32, sfixed32, float
 
-#define pbString(d) [[NSString alloc] initWithData:(d) encoding:NSUTF8StringEncoding]
-#define pbSInt(i)   (((i) >> 1) ^ -((i) & 1))
+#define protoBufString(d) [[NSString alloc] initWithData:(d) encoding:NSUTF8StringEncoding]
 
 @interface NSData (ProtoBuf)
 
-- (uint64_t)pbVarIntAtOffeset:(NSUInteger *)off;
-- (uint64_t)pb64BitAtOffeset:(NSUInteger *)off;
-- (NSData *)pbLenDelimAtOffeset:(NSUInteger *)off;
-- (uint32_t)pb32BitAtOffeset:(NSUInteger *)off;
-- (NSUInteger)pbFieldAtOffset:(NSUInteger *)off int:(uint64_t *)i data:(NSData **)d;
+- (uint64_t)protoBufVarIntAtOffeset:(NSUInteger *)off;
+- (NSData *)protoBufLenDelimAtOffeset:(NSUInteger *)off;
+- (NSUInteger)protoBufFieldAtOffset:(NSUInteger *)off int:(uint64_t *)i data:(NSData **)d;
 
 @end
 
 @implementation NSData (ProtoBuf)
 
-- (uint64_t)pbVarIntAtOffeset:(NSUInteger *)off
+- (uint64_t)protoBufVarIntAtOffeset:(NSUInteger *)off
 {
     uint64_t r = 0;
     uint8_t b = 0x80, i = 0;
@@ -61,20 +59,10 @@
     return r;
 }
 
-- (uint64_t)pb64BitAtOffeset:(NSUInteger *)off
-{
-    uint64_t r = 0;
-
-    if (*off + sizeof(uint64_t) <= self.length) r = *(const uint64_t *)((const uint8_t *)self.bytes + *off);
-    *off += sizeof(uint64_t);
-
-    return CFSwapInt64LittleToHost(r);
-}
-
-- (NSData *)pbLenDelimAtOffeset:(NSUInteger *)off
+- (NSData *)protoBufLenDelimAtOffeset:(NSUInteger *)off
 {
     NSData *r = nil;
-    NSUInteger l = [self pbVarIntAtOffeset:off];
+    NSUInteger l = [self protoBufVarIntAtOffeset:off];
 
     if (*off + l <= self.length) r = [self subdataWithRange:NSMakeRange(*off, l)];
     *off += l;
@@ -82,25 +70,16 @@
     return r;
 }
 
-- (uint32_t)pb32BitAtOffeset:(NSUInteger *)off
+// sets either int or data depending on field type, and returns field key
+- (NSUInteger)protoBufFieldAtOffset:(NSUInteger *)off int:(uint64_t *)i data:(NSData **)d
 {
-    uint32_t r = 0;
-
-    if (*off + sizeof(uint32_t) <= self.length) r = *(const uint64_t *)((const uint8_t *)self.bytes + *off);
-    *off += sizeof(uint32_t);
-
-    return CFSwapInt32LittleToHost(r);
-}
-
-- (NSUInteger)pbFieldAtOffset:(NSUInteger *)off int:(uint64_t *)i data:(NSData **)d
-{
-    NSUInteger key = [self pbVarIntAtOffeset:off];
+    NSUInteger key = [self protoBufVarIntAtOffeset:off];
 
     switch (key & 0x7) {
-        case PROTOBUF_VARINT: if (i) *i = [self pbVarIntAtOffeset:off]; break;
-        case PROTOBUF_64BIT: if (i) *i = [self pb64BitAtOffeset:off]; break;
-        case PROTOBUF_LENDELIM: if (d) *d = [self pbLenDelimAtOffeset:off]; break;
-        case PROTOBUF_32BIT: if (i) *i = [self pb32BitAtOffeset:off]; break;
+        case PROTOBUF_VARINT: if (i) *i = [self protoBufVarIntAtOffeset:off]; break;
+        case PROTOBUF_64BIT: *off += sizeof(uint64_t); break; // not used by payment protocol
+        case PROTOBUF_LENDELIM: if (d) *d = [self protoBufLenDelimAtOffeset:off]; break;
+        case PROTOBUF_32BIT: *off += sizeof(uint32_t); break; // not used by payment protocol
         default: break;
     }
 
@@ -111,20 +90,17 @@
 
 @interface NSMutableData (ProtoBuf)
 
-- (void)pbAppendVarInt:(uint64_t)i;
-- (void)pbAppend64Bit:(uint64_t)i;
-- (void)pbAppendLenDelim:(NSData *)d;
-- (void)pbAppend32Bit:(uint32_t)i;
-- (void)pbAppendString:(NSString *)s withKey:(NSUInteger)key;
-- (void)pbAppendData:(NSData *)d withKey:(NSUInteger)key;
-- (void)pbAppendInt:(uint64_t)i withKey:(NSUInteger)key;
-- (void)pbAppendSInt:(int64_t)i withKey:(NSUInteger)key;
+- (void)appendProtoBufVarInt:(uint64_t)i;
+- (void)appendProtoBufLenDelim:(NSData *)d;
+- (void)appendProtoBufString:(NSString *)s withKey:(NSUInteger)key;
+- (void)appendProtoBufData:(NSData *)d withKey:(NSUInteger)key;
+- (void)appendProtoBufInt:(uint64_t)i withKey:(NSUInteger)key;
 
 @end
 
 @implementation NSMutableData (ProtoBuf)
 
-- (void)pbAppendVarInt:(uint64_t)i
+- (void)appendProtoBufVarInt:(uint64_t)i
 {
     do {
         uint8_t b = i & 0x7f;
@@ -135,46 +111,28 @@
     } while (i > 0);
 }
 
-- (void)pbAppend64Bit:(uint64_t)i
+- (void)appendProtoBufLenDelim:(NSData *)d
 {
-    i = CFSwapInt64HostToLittle(i);
-    [self appendBytes:&i length:sizeof(i)];
-}
-
-- (void)pbAppendLenDelim:(NSData *)d
-{
-    [self pbAppendVarInt:d.length];
+    [self appendProtoBufVarInt:d.length];
     [self appendData:d];
 }
 
-- (void)pbAppend32Bit:(uint32_t)i
+- (void)appendProtoBufString:(NSString *)s withKey:(NSUInteger)key
 {
-    i = CFSwapInt32HostToLittle(i);
-    [self appendBytes:&i length:sizeof(i)];
+    [self appendProtoBufVarInt:(key << 3) + PROTOBUF_LENDELIM];
+    [self appendProtoBufLenDelim:[s dataUsingEncoding:NSUTF8StringEncoding]];
 }
 
-- (void)pbAppendString:(NSString *)s withKey:(NSUInteger)key
+- (void)appendProtoBufData:(NSData *)d withKey:(NSUInteger)key
 {
-    [self pbAppendVarInt:(key << 3) + PROTOBUF_LENDELIM];
-    [self pbAppendLenDelim:[s dataUsingEncoding:NSUTF8StringEncoding]];
+    [self appendProtoBufVarInt:(key << 3) + PROTOBUF_LENDELIM];
+    [self appendProtoBufLenDelim:d];
 }
 
-- (void)pbAppendData:(NSData *)d withKey:(NSUInteger)key
+- (void)appendProtoBufInt:(uint64_t)i withKey:(NSUInteger)key
 {
-    [self pbAppendVarInt:(key << 3) + PROTOBUF_LENDELIM];
-    [self pbAppendLenDelim:d];
-}
-
-- (void)pbAppendInt:(uint64_t)i withKey:(NSUInteger)key
-{
-    [self pbAppendVarInt:(key << 3) + PROTOBUF_VARINT];
-    [self pbAppendVarInt:i];
-}
-
-- (void)pbAppendSInt:(int64_t)i withKey:(NSUInteger)key
-{
-    [self pbAppendVarInt:(key << 3) + PROTOBUF_VARINT];
-    [self pbAppendVarInt:(*(uint64_t *)&i >> 1) ^ -(i & 1)];
+    [self appendProtoBufVarInt:(key << 3) + PROTOBUF_VARINT];
+    [self appendProtoBufVarInt:i];
 }
 
 @end
@@ -182,37 +140,7 @@
 typedef enum {
     output_amount = 1,
     output_script = 2
-} output_t;
-
-static void parseOutput(NSData *data, uint64_t *amount, NSData **script)
-{
-    NSUInteger off = 0;
-
-    *amount = 0; // default
-    *script = [NSData data];
-
-    while (off < data.length) {
-        uint64_t i = 0;
-        NSData *d = nil;
-        output_t key = [data pbFieldAtOffset:&off int:&i data:&d];
-
-        switch (key) {
-            case output_amount: *amount = i; break;
-            case output_script: if (d) *script = d; break;
-            default: break;
-        }
-    }
-}
-
-static NSData *serializeOutput(uint64_t amount, NSData *script)
-{
-    NSMutableData *d = [NSMutableData data];
-
-    [d pbAppendInt:amount withKey:output_amount];
-    [d pbAppendData:script withKey:output_script];
-
-    return d;
-}
+} output_key_t;
 
 typedef enum {
     details_network = 1,
@@ -222,7 +150,31 @@ typedef enum {
     details_memo = 5,
     details_payment_url = 6,
     details_merchant_data = 7
-} details_t;
+} details_key_t;
+
+typedef enum {
+    request_version = 1,
+    request_pki_type = 2,
+    request_pki_data = 3,
+    request_details = 4,
+    request_signature = 5
+} request_key_t;
+
+typedef enum {
+    certificates_cert = 1
+} certificates_key_t;
+
+typedef enum {
+    payment_merchant_data = 1,
+    payment_transactions = 2,
+    payment_refund_to = 3,
+    payment_memo = 4
+} payment_key_t;
+
+typedef enum {
+    ack_payment = 1,
+    ack_memo = 2
+} ack_key_t;
 
 @implementation ZNPaymentProtocolDetails
 
@@ -266,19 +218,17 @@ merchantData:(NSData *)data
     NSMutableArray *amounts = [NSMutableArray array], *scripts = [NSMutableArray array];
 
     while (off < data.length) {
-        uint64_t i = 0;
-        NSData *d = nil;
-        details_t key = [data pbFieldAtOffset:&off int:&i data:&d];
-        uint64_t amount = 0;
-        NSData *script = nil;
+        uint64_t i = 0, amount = 0;
+        NSData *d = nil, *script = nil;
+        NSUInteger o = 0;
 
-        switch (key) {
-            case details_network: if (d) _network = pbString(d); break;
-            case details_outputs: if (d) parseOutput(d, &amount, &script); break;
+        switch ([data protoBufFieldAtOffset:&off int:&i data:&d]) {
+            case details_network: if (d) _network = protoBufString(d); break;
+            case details_outputs: while (o < d.length) [d protoBufFieldAtOffset:&o int:&amount data:&script]; break;
             case details_time: if (i) _time = i - NSTimeIntervalSince1970; break;
             case details_expires: if (i) _expires = i - NSTimeIntervalSince1970; break;
-            case details_memo: if (d) _memo = pbString(d); break;
-            case details_payment_url: if (d) _paymentURL = pbString(d); break;
+            case details_memo: if (d) _memo = protoBufString(d); break;
+            case details_payment_url: if (d) _paymentURL = protoBufString(d); break;
             case details_merchant_data: if (d) _merchantData = d; break;
             default: break;
         }
@@ -294,33 +244,28 @@ merchantData:(NSData *)data
 
 - (NSData *)toData
 {
-    NSMutableData *d = [NSMutableData data];
+    NSMutableData *d = [NSMutableData data], *output;
     NSUInteger i = 0;
 
-    [d pbAppendString:_network withKey:details_network];
+    [d appendProtoBufString:_network withKey:details_network];
 
-    for (NSData *s in _outputScripts) {
-        [d pbAppendData:serializeOutput([_outputAmounts[i++] unsignedLongLongValue], s) withKey:details_outputs];
+    for (NSData *script in _outputScripts) {
+        output = [NSMutableData data];
+        [output appendProtoBufInt:[_outputAmounts[i++] unsignedLongLongValue] withKey:output_amount];
+        [output appendProtoBufData:script withKey:output_script];
+        [d appendProtoBufData:output withKey:details_outputs];
     }
 
-    [d pbAppendInt:_time + NSTimeIntervalSince1970 withKey:details_time];
-    [d pbAppendInt:_expires + NSTimeIntervalSince1970 withKey:details_expires];
-    if (_memo) [d pbAppendString:_memo withKey:details_memo];
-    if (_paymentURL) [d pbAppendString:_paymentURL withKey:details_payment_url];
-    if (_merchantData) [d pbAppendData:_merchantData withKey:details_merchant_data];
+    if (_time) [d appendProtoBufInt:_time + NSTimeIntervalSince1970 withKey:details_time];
+    if (_expires) [d appendProtoBufInt:_expires + NSTimeIntervalSince1970 withKey:details_expires];
+    if (_memo) [d appendProtoBufString:_memo withKey:details_memo];
+    if (_paymentURL) [d appendProtoBufString:_paymentURL withKey:details_payment_url];
+    if (_merchantData) [d appendProtoBufData:_merchantData withKey:details_merchant_data];
 
     return d;
 }
 
 @end
-
-typedef enum {
-    request_version = 1,
-    request_pki_type = 2,
-    request_pki_data = 3,
-    request_details = 4,
-    request_signature = 5
-} request_t;
 
 @implementation ZNPaymentProtocolRequest
 
@@ -348,11 +293,10 @@ typedef enum {
     while (off < data.length) {
         uint64_t i = 0;
         NSData *d = nil;
-        request_t key = [data pbFieldAtOffset:&off int:&i data:&d];
 
-        switch (key) {
+        switch ([data protoBufFieldAtOffset:&off int:&i data:&d]) {
             case request_version: if (i) _version = i; break;
-            case request_pki_type: if (d) _pkiType = pbString(d); break;
+            case request_pki_type: if (d) _pkiType = protoBufString(d); break;
             case request_pki_data: if (d) _pkiData = d; break;
             case request_details: if (d) _details = [ZNPaymentProtocolDetails detailsWithData:d]; break;
             case request_signature: if (d) _signature = d; break;
@@ -365,7 +309,7 @@ typedef enum {
     return self;
 }
 
-- (instancetype)initWithVersion:(uint32_t)version pkiType:(NSString *)type pkiData:(NSData *)data
+- (instancetype)initWithVersion:(uint32_t)version pkiType:(NSString *)type certs:(NSArray *)certs
 details:(ZNPaymentProtocolDetails *)details signature:(NSData *)sig
 {
     if (! details) return nil; // required
@@ -373,7 +317,14 @@ details:(ZNPaymentProtocolDetails *)details signature:(NSData *)sig
 
     if (version) _version = version;
     if (type) _pkiType = type;
-    _pkiData = data;
+
+    NSMutableData *d = [NSMutableData data];
+
+    for (NSData *cert in certs) {
+        [d appendProtoBufData:cert withKey:certificates_cert];
+    }
+
+    if (d.length > 0) _pkiData = d;
     _details = details;
     _signature = sig;
 
@@ -384,23 +335,82 @@ details:(ZNPaymentProtocolDetails *)details signature:(NSData *)sig
 {
     NSMutableData *d = [NSMutableData data];
 
-    [d pbAppendInt:_version withKey:request_version];
-    [d pbAppendString:_pkiType withKey:request_pki_type];
-    if (_pkiData) [d pbAppendData:_pkiData withKey:request_pki_data];
-    [d pbAppendData:_details.data withKey:request_details];
-    if (_signature) [d pbAppendData:_signature withKey:request_signature];
+    [d appendProtoBufInt:_version withKey:request_version];
+    [d appendProtoBufString:_pkiType withKey:request_pki_type];
+    if (_pkiData) [d appendProtoBufData:_pkiData withKey:request_pki_data];
+    [d appendProtoBufData:_details.data withKey:request_details];
+    if (_signature) [d appendProtoBufData:_signature withKey:request_signature];
 
     return d;
 }
 
-@end
+- (NSArray *)certs
+{
+    NSMutableArray *certs = [NSMutableArray array];
+    NSUInteger off = 0;
 
-typedef enum {
-    payment_merchant_data = 1,
-    payment_transactions = 2,
-    payment_refund_to = 3,
-    payment_memo = 4
-} payment_t;
+    while (off < _pkiData.length) {
+        NSData *d = nil;
+
+        if ([_pkiData protoBufFieldAtOffset:&off int:nil data:&d] == certificates_cert && d) [certs addObject:d];
+    }
+
+    return certs;
+}
+
+- (BOOL)isValid
+{
+    if (! [_pkiType isEqual:@"none"]) {
+        NSMutableArray *certs = [NSMutableArray array];
+        NSArray *policies = @[CFBridgingRelease(SecPolicyCreateBasicX509())];
+        SecTrustRef trust = NULL;
+        SecTrustResultType trustResult;
+
+        for (NSData *d in self.certs) {
+            SecCertificateRef cert = SecCertificateCreateWithData(NULL, (__bridge CFDataRef)d);
+            
+            if (cert) [certs addObject:CFBridgingRelease(cert)];
+        }
+
+        SecTrustCreateWithCertificates((__bridge CFArrayRef)certs, (__bridge CFArrayRef)policies, &trust);
+        SecTrustEvaluate(trust, &trustResult);
+
+        NSArray *props = CFBridgingRelease(SecTrustCopyProperties(trust));
+
+        // kSecTrustResultUnspecified indicates a positive result that wasn't decided by the user
+        if (trustResult != kSecTrustResultUnspecified) {
+            _errorMessage = (props.count) ? props[0][(__bridge id)kSecPropertyTypeError] : @"missing certificate";
+            return NO;
+        }
+        else if (props.count) _commonName = props[0][(__bridge id)kSecPropertyTypeTitle];
+
+        SecKeyRef pubKey = SecTrustCopyPublicKey(trust);
+        SecPadding padding = kSecPaddingPKCS1;
+        NSData *sig = _signature, *d = nil;
+
+        _signature = [NSData data]; // set signature to 0 bytes, a signature can't sign itself
+        if ([_pkiType isEqual:@"x509+sha256"]) d = self.data.SHA256, padding = kSecPaddingPKCS1SHA256;
+        if ([_pkiType isEqual:@"x509+sha1"]) d = self.data.SHA1, padding = kSecPaddingPKCS1SHA1;
+        _signature = sig;
+
+        OSStatus status = SecKeyRawVerify(pubKey, padding, d.bytes, d.length, _signature.bytes, _signature.length);
+
+        CFRelease(pubKey);
+        if (status != errSecSuccess) {
+            _errorMessage = (d) ? @"bad signature" : @"unsupported signature type";
+            return NO;
+        }
+    }
+
+    if ([NSDate timeIntervalSinceReferenceDate] > _details.expires) {
+        _errorMessage = @"request expired";
+        return NO;
+    }
+
+    return YES;
+}
+
+@end
 
 @implementation ZNPaymentProtocolPayment
 
@@ -417,18 +427,16 @@ typedef enum {
     NSMutableArray *txs = [NSMutableArray array], *amounts = [NSMutableArray array], *scripts = [NSMutableArray array];
 
     while (off < data.length) {
-        uint64_t i = 0;
-        NSData *d = nil;
-        payment_t key = [data pbFieldAtOffset:&off int:&i data:&d];
+        uint64_t i = 0, amount = 0;
+        NSData *d = nil, *script = nil;
         ZNTransaction *tx = nil;
-        uint64_t amount = 0;
-        NSData *script = nil;
+        NSUInteger o = 0;
 
-        switch (key) {
+        switch ([data protoBufFieldAtOffset:&off int:&i data:&d]) {
             case payment_merchant_data: if (d) _merchantData = d; break;
             case payment_transactions: if (d) tx = [ZNTransaction transactionWithMessage:d]; break;
-            case payment_refund_to: if (d) parseOutput(d, &amount, &script); break;
-            case payment_memo: if (d) _memo = pbString(d); break;
+            case payment_refund_to: while (o < d.length) [d protoBufFieldAtOffset:&o int:&amount data:&script]; break;
+            case payment_memo: if (d) _memo = protoBufString(d); break;
             default: break;
         }
 
@@ -460,30 +468,28 @@ refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSSt
 
 - (NSData *)toData
 {
-    NSMutableData *d = [NSMutableData data];
+    NSMutableData *d = [NSMutableData data], *output;
     NSUInteger i = 0;
 
-    if (_merchantData) [d pbAppendData:_merchantData withKey:payment_merchant_data];
+    if (_merchantData) [d appendProtoBufData:_merchantData withKey:payment_merchant_data];
 
     for (ZNTransaction *tx in _transactions) {
-        [d pbAppendData:tx.data withKey:payment_transactions];
+        [d appendProtoBufData:tx.data withKey:payment_transactions];
     }
 
-    for (NSData *s in _refundToScripts) {
-        [d pbAppendData:serializeOutput([_refundToAmounts[i++] unsignedLongLongValue], s) withKey:payment_refund_to];
+    for (NSData *script in _refundToScripts) {
+        output = [NSMutableData data];
+        [output appendProtoBufInt:[_refundToAmounts[i++] unsignedLongLongValue] withKey:output_amount];
+        [output appendProtoBufData:script withKey:output_script];
+        [d appendProtoBufData:output withKey:payment_refund_to];
     }
 
-    if (_memo) [d pbAppendString:_memo withKey:payment_memo];
+    if (_memo) [d appendProtoBufString:_memo withKey:payment_memo];
 
     return d;
 }
 
 @end
-
-typedef enum {
-    ack_payment = 1,
-    ack_memo = 2
-} ack_t;
 
 @implementation ZNPaymentProtocolACK
 
@@ -501,11 +507,10 @@ typedef enum {
     while (off < data.length) {
         uint64_t i = 0;
         NSData *d = nil;
-        ack_t key = [data pbFieldAtOffset:&off int:&i data:&d];
 
-        switch (key) {
+        switch ([data protoBufFieldAtOffset:&off int:&i data:&d]) {
             case ack_payment: if (d) _payment = [ZNPaymentProtocolPayment paymentWithData:d]; break;
-            case ack_memo: if (d) _memo = pbString(d); break;
+            case ack_memo: if (d) _memo = protoBufString(d); break;
             default: break;
         }
     }
@@ -530,8 +535,8 @@ typedef enum {
 {
     NSMutableData *d = [NSMutableData data];
 
-    [d pbAppendData:_payment.data withKey:ack_payment];
-    if (_memo) [d pbAppendString:_memo withKey:ack_memo];
+    [d appendProtoBufData:_payment.data withKey:ack_payment];
+    if (_memo) [d appendProtoBufString:_memo withKey:ack_memo];
 
     return d;
 }

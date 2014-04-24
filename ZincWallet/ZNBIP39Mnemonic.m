@@ -68,12 +68,12 @@
     }
 
     OPENSSL_cleanse(&x, sizeof(x));
-    return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (__bridge CFArrayRef)a, CFSTR(" ")));
+    return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (CFArrayRef)a, CFSTR(" ")));
 }
 
 - (NSData *)decodePhrase:(NSString *)phrase
 {
-    CFMutableStringRef s = CFStringCreateMutableCopy(SecureAllocator(), phrase.length, (__bridge CFStringRef)phrase);
+    CFMutableStringRef s = CFStringCreateMutableCopy(SecureAllocator(), phrase.length, (CFStringRef)phrase);
 
     CFStringLowercase(s, CFLocaleGetSystem());
     CFStringFindAndReplace(s, CFSTR("."), CFSTR(" "), CFRangeMake(0, CFStringGetLength(s)), 0);
@@ -131,10 +131,10 @@
 {
     NSMutableData *key = [NSMutableData secureDataWithLength:CC_SHA512_DIGEST_LENGTH];
     NSData *password, *salt;
-    CFMutableStringRef pw = CFStringCreateMutableCopy(SecureAllocator(), phrase.length, (__bridge CFStringRef)phrase);
+    CFMutableStringRef pw = CFStringCreateMutableCopy(SecureAllocator(), phrase.length, (CFStringRef)phrase);
     CFMutableStringRef s = CFStringCreateMutableCopy(SecureAllocator(), 8 + passphrase.length, CFSTR("mnemonic"));
 
-    if (passphrase) CFStringAppend(s, (__bridge CFStringRef)passphrase);
+    if (passphrase) CFStringAppend(s, (CFStringRef)passphrase);
     CFStringNormalize(pw, kCFStringNormalizationFormKD);
     CFStringNormalize(s, kCFStringNormalizationFormKD);
     password = CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(), pw, kCFStringEncodingUTF8, 0));

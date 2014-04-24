@@ -134,8 +134,7 @@ static NSData *scrypt(NSData *password, NSData *salt, int64_t n, uint32_t r, uin
 static NSData *normalize_passphrase(NSString *passphrase)
 {
     NSData *password;
-    CFMutableStringRef pw = CFStringCreateMutableCopy(SecureAllocator(), passphrase.length,
-                                                      (__bridge CFStringRef)passphrase);
+    CFMutableStringRef pw = CFStringCreateMutableCopy(SecureAllocator(), passphrase.length, (CFStringRef)passphrase);
 
     CFStringNormalize(pw, kCFStringNormalizationFormC);
     password = CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(), pw, kCFStringEncodingUTF8, 0));

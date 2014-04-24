@@ -82,7 +82,7 @@
     OPENSSL_cleanse(&w1, sizeof(w1));
     OPENSSL_cleanse(&w2, sizeof(w2));
     OPENSSL_cleanse(&w3, sizeof(w3));
-    return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (__bridge CFArrayRef)a, CFSTR(" ")));
+    return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (CFArrayRef)a, CFSTR(" ")));
 }
 
 //def mn_decode( wlist ):
@@ -98,7 +98,7 @@
 //
 - (NSData *)decodePhrase:(NSString *)phrase
 {
-    CFMutableStringRef s = CFStringCreateMutableCopy(SecureAllocator(), phrase.length, (__bridge CFStringRef)phrase);
+    CFMutableStringRef s = CFStringCreateMutableCopy(SecureAllocator(), phrase.length, (CFStringRef)phrase);
 
     CFStringLowercase(s, CFLocaleGetSystem());
     CFStringFindAndReplace(s, CFSTR("."), CFSTR(" "), CFRangeMake(0, CFStringGetLength(s)), 0);

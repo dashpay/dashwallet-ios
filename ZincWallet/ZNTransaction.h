@@ -57,7 +57,6 @@
 @property (nonatomic, readonly) uint64_t standardFee;
 @property (nonatomic, readonly) BOOL isSigned; // checks if all signatures exist, but does not verify them
 @property (nonatomic, readonly, getter = toData) NSData *data;
-@property (nonatomic, readonly, getter = toHex) NSString *hex;
 
 + (instancetype)transactionWithMessage:(NSData *)message;
 

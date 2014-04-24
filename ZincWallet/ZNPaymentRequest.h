@@ -36,7 +36,7 @@
 @property (nonatomic, assign) uint64_t amount;
 @property (nonatomic, strong) NSURL *r; // BIP72 URL: https://github.com/bitcoin/bips/blob/master/bip-0072.mediawiki
 @property (nonatomic, strong) NSData *data;
-@property (nonatomic, readonly, getter=isValid) BOOL valid;
+@property (nonatomic, readonly) BOOL isValid;
 
 + (instancetype)requestWithData:(NSData *)data;
 + (instancetype)requestWithString:(NSString *)string;
@@ -48,6 +48,6 @@
 
 // fetches a BIP70 request over HTTP and calls completion block
 // https://github.com/bitcoin/bips/blob/master/bip-0070.mediawiki
-- (void)fetchOnCompletion:(void (^)(NSError *error, ZNPaymentProtocolRequest *req))completion;
+- (void)fetchOnCompletion:(void (^)(ZNPaymentProtocolRequest *req, NSError *error))completion;
 
 @end

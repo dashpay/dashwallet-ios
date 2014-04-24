@@ -67,8 +67,8 @@
     for (int i = 0; i < SEED_LENGTH; i += 64/8) {
         x = (((uint16_t)b[i] << 3) | ((uint16_t)b[i + 1] >> 5)) & ((1 << 11) - 1);
         [s setString:adjs[x]];
-        CFStringCapitalize((__bridge CFMutableStringRef)s, CFLocaleGetSystem());
-        [a addObject:CFBridgingRelease(CFStringCreateCopy(SecureAllocator(), (__bridge CFStringRef)s))];
+        CFStringCapitalize((CFMutableStringRef)s, CFLocaleGetSystem());
+        [a addObject:CFBridgingRelease(CFStringCreateCopy(SecureAllocator(), (CFStringRef)s))];
 
         x = (((uint16_t)b[i + 1] << 6) | ((uint16_t)b[i + 2] >> 2)) & ((1 << 11) - 1);
         [a addObject:nouns[x]];
@@ -85,16 +85,16 @@
         x = (((uint16_t)b[i + 6] << 8) | (uint16_t)b[i + 7]) & ((1 << 11) - 1);
         [s setString:nouns[x]];
         [s appendString:@"."];
-        [a addObject:CFBridgingRelease(CFStringCreateCopy(SecureAllocator(), (__bridge CFStringRef)s))];
+        [a addObject:CFBridgingRelease(CFStringCreateCopy(SecureAllocator(), (CFStringRef)s))];
     }
 
     OPENSSL_cleanse(&x, sizeof(x));
-    return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (__bridge CFArrayRef)a, CFSTR(" ")));
+    return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (CFArrayRef)a, CFSTR(" ")));
 }
  
 - (NSData *)decodePhrase:(NSString *)phrase
 {
-    CFMutableStringRef s = CFStringCreateMutableCopy(SecureAllocator(), phrase.length, (__bridge CFStringRef)phrase);
+    CFMutableStringRef s = CFStringCreateMutableCopy(SecureAllocator(), phrase.length, (CFStringRef)phrase);
     
     CFStringLowercase(s, CFLocaleGetSystem());
     CFStringFindAndReplace(s, CFSTR("."), CFSTR(" "), CFRangeMake(0, CFStringGetLength(s)), 0);

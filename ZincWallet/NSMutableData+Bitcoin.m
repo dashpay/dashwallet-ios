@@ -170,9 +170,7 @@
 
 - (void)appendScriptPubKeyForAddress:(NSString *)address
 {
-    NSData *d = address.base58checkToData;
-
-    if (d.length > 0) [self appendScriptPubKeyForHash:[d subdataWithRange:NSMakeRange(1, d.length - 1)]];
+    [self appendScriptPubKeyForHash:address.addressToHash160];
 }
 
 #pragma mark - bitcoin protocol

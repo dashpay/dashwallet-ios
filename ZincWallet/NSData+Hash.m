@@ -29,6 +29,15 @@
 
 @implementation NSData (Hash)
 
+- (NSData *)SHA1
+{
+    NSMutableData *d = [NSMutableData dataWithLength:CC_SHA1_DIGEST_LENGTH];
+
+    CC_SHA1(self.bytes, (CC_LONG)self.length, d.mutableBytes);
+
+    return d;
+}
+
 - (NSData *)SHA256
 {
     NSMutableData *d = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH];

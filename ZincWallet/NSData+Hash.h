@@ -28,6 +28,7 @@
 
 @interface NSData (Hash)
 
+- (NSData *)SHA1;
 - (NSData *)SHA256;
 - (NSData *)SHA256_2;
 - (NSData *)RMD160;

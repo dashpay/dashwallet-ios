@@ -159,7 +159,7 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
         if (! [privateKey isValidBitcoinPrivateKey]) return;
         
         [self setSecret:[CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(),
-                         (__bridge CFStringRef)privateKey, kCFStringEncodingUTF8, 0)) SHA256] compressed:NO];
+                         (CFStringRef)privateKey, kCFStringEncodingUTF8, 0)) SHA256] compressed:NO];
         return;
     }
 

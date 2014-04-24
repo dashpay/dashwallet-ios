@@ -334,11 +334,6 @@ sequence:(uint32_t)sequence
     return [self toDataWithSubscriptIndex:NSNotFound];
 }
 
-- (NSString *)toHex
-{
-    return [NSString hexWithData:self.data];
-}
-
 - (size_t)size
 {
     //TODO: not all keys come from this wallet (private keys can be swept), might cause a lower than standard tx fee

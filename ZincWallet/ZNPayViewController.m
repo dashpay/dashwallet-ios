@@ -209,7 +209,7 @@
     ZNPaymentRequest *req = [ZNPaymentRequest requestWithString:[[[UIPasteboard generalPasteboard] string]
                              stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
     
-    if (! req.valid && ! [req.paymentAddress isValidBitcoinPrivateKey] &&
+    if (! [req isValid] && ! [req.paymentAddress isValidBitcoinPrivateKey] &&
         ! [req.paymentAddress isValidBitcoinBIP38Key]) {
         req.data = nil;
         req.label = @"pay address from clipboard";
@@ -357,7 +357,7 @@
 
 - (void)confirmRequest
 {
-    if (! self.request.valid) {
+    if (! [self.request isValid]) {
         if ([self.requests indexOfObject:self.request] == [self.requestIDs indexOfObject:CLIPBOARD_ID]) {
             [[[UIAlertView alloc] initWithTitle:nil message:@"the clipboard doesn't contain a valid bitcoin address"
               delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
@@ -632,7 +632,7 @@
         req.data = [s dataUsingEncoding:NSUTF8StringEncoding];
         req.label = @"scan QR code";
         
-        if (! req.valid && ! [s isValidBitcoinPrivateKey] && ! [s isValidBitcoinBIP38Key]) {
+        if (! [req isValid] && ! [s isValidBitcoinPrivateKey] && ! [s isValidBitcoinBIP38Key]) {
             [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide-red.png"]];
 
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
@@ -657,7 +657,7 @@
                     [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide.png"]];
                 }];
 
-                if (req.isValid) {
+                if ([req isValid]) {
                     self.request = req;
                     [self confirmRequest];
                 }
@@ -723,7 +723,7 @@
         return;
     }
 
-    NSLog(@"signed transaction:\n%@", [self.tx toHex]);
+    NSLog(@"signed transaction:\n%@", [NSString hexWithData:self.tx.data]);
     
     if (! self.request || [self.requests indexOfObject:self.request] >= self.requestIDs.count) {
         [[[UIAlertView alloc] initWithTitle:@"couldn't make payment" message:@"inconsistent UI state" delegate:nil

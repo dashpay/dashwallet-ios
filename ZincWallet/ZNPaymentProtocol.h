@@ -29,14 +29,15 @@
 
 @interface ZNPaymentProtocolDetails : NSObject
 
-@property (nonatomic, readonly) NSString *network; // default is "main"
-@property (nonatomic, readonly) NSArray *outputAmounts; // default is 0
-@property (nonatomic, readonly) NSArray *outputScripts;
-@property (nonatomic, readonly) NSTimeInterval time; // optional, interval since reference date, 00:00:00 01/01/01 GMT
-@property (nonatomic, readonly) NSTimeInterval expires; // optional
-@property (nonatomic, readonly) NSString *memo; // optional
-@property (nonatomic, readonly) NSString *paymentURL; // optional
-@property (nonatomic, readonly) NSData *merchantData; // optional
+@property (nonatomic, readonly) NSString *network; // "main" or "test", default is "main"
+@property (nonatomic, readonly) NSArray *outputAmounts; // payment amounts in satoshis, default is 0
+@property (nonatomic, readonly) NSArray *outputScripts; // where to send payments, one of the standard script forms
+@property (nonatomic, readonly) NSTimeInterval time; // request creation time, seconds since 00:00:00 01/01/01, optional
+@property (nonatomic, readonly) NSTimeInterval expires; // when this request should be considered invalid, optional
+@property (nonatomic, readonly) NSString *memo; // human-readable description of request for the customer, optional
+@property (nonatomic, readonly) NSString *paymentURL; // url to send payment and get payment ack, optional
+@property (nonatomic, readonly) NSData *merchantData; // arbitrary data to include in the payment message, optional
+
 @property (nonatomic, readonly, getter = toData) NSData *data;
 
 + (instancetype)detailsWithData:(NSData *)data;
@@ -51,27 +52,33 @@ merchantData:(NSData *)data;
 @interface ZNPaymentProtocolRequest : NSObject
 
 @property (nonatomic, readonly) uint32_t version; // default is 1
-@property (nonatomic, readonly) NSString *pkiType; // default is "none"
-@property (nonatomic, readonly) NSData *pkiData; // optional
+@property (nonatomic, readonly) NSString *pkiType; // none / x509+sha256 / x509+sha1, default is "none"
+@property (nonatomic, readonly) NSData *pkiData; // depends on pkiType, optional
 @property (nonatomic, readonly) ZNPaymentProtocolDetails *details; // required
-@property (nonatomic, readonly) NSData *signature; // optional
+@property (nonatomic, readonly) NSData *signature; // pki-dependent signature, optional
+
 @property (nonatomic, readonly, getter = toData) NSData *data;
+@property (nonatomic, readonly) NSArray *certs; // array of DER encoded certificates, from pkiData
+@property (nonatomic, readonly) BOOL isValid;
+@property (nonatomic, readonly) NSString *commonName;
+@property (nonatomic, readonly) NSString *errorMessage;
 
 + (instancetype)requestWithData:(NSData *)data;
 
 - (instancetype)initWithData:(NSData *)data;
-- (instancetype)initWithVersion:(uint32_t)version pkiType:(NSString *)type pkiData:(NSData *)data
+- (instancetype)initWithVersion:(uint32_t)version pkiType:(NSString *)type certs:(NSArray *)certs
 details:(ZNPaymentProtocolDetails *)details signature:(NSData *)sig;
 
 @end
 
 @interface ZNPaymentProtocolPayment : NSObject
 
-@property (nonatomic, readonly) NSData *merchantData; // optional
-@property (nonatomic, readonly) NSArray *transactions; // array of ZNTransaction objects
-@property (nonatomic, readonly) NSArray *refundToAmounts; // default is 0
-@property (nonatomic, readonly) NSArray *refundToScripts;
-@property (nonatomic, readonly) NSString *memo; // optional
+@property (nonatomic, readonly) NSData *merchantData; // from details.merchantData, optional
+@property (nonatomic, readonly) NSArray *transactions; // array of signed ZNTransaction objs to satisfy details.outputs
+@property (nonatomic, readonly) NSArray *refundToAmounts; // refund amounts, if a refund is necessary, default is 0
+@property (nonatomic, readonly) NSArray *refundToScripts; // where to send refunds, if a refund is necessary
+@property (nonatomic, readonly) NSString *memo; // human-readable message for the merchant, optional
+
 @property (nonatomic, readonly, getter = toData) NSData *data;
 
 + (instancetype)paymentWithData:(NSData *)data;
@@ -84,8 +91,9 @@ refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSSt
 
 @interface ZNPaymentProtocolACK : NSObject
 
-@property (nonatomic, readonly) ZNPaymentProtocolPayment *payment; // required
-@property (nonatomic, readonly) NSString *memo; // optional
+@property (nonatomic, readonly) ZNPaymentProtocolPayment *payment; // payment message that triggered this ack, required
+@property (nonatomic, readonly) NSString *memo; // uman-readable message for customer, optional
+
 @property (nonatomic, readonly, getter = toData) NSData *data;
 
 + (instancetype)ackWithData:(NSData *)data;
