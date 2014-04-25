@@ -14,3 +14,7 @@ zincwallet uses "simplified payment verification" or [SPV](https://en.bitcoin.it
 Future planned features include support for [BIP70](https://en.bitcoin.it/wiki/BIP_0070) payment protocol, support for Electrum wallets, BIP32 [serialized](https://en.bitcoin.it/wiki/BIP_0032#Serialization_format) wallet import and export and watch only wallets, more detailed transaction information, support for mBTC and µBTC denominations, and exchange rates for multiple legacy national currencies.
 
 zincwallet is open source and available under the terms of the MIT license. Source code is available at https://github.com/voisine/zincwallet
+
+**WARNING:** installation on jailbroken devices is strongly discouraged
+
+Any jailbreak app can grant itself keychain entitlements to your wallet seed and rob you by self-signing as described [here](http://www.saurik.com/id/8) and including `<key>application-identifier</key><string>cc.zinc.*</string>` in its .entitlements file.
