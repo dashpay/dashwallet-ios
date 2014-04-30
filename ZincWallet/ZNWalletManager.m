@@ -112,7 +112,7 @@ static NSData *getKeychainData(NSString *key)
 
 @property (nonatomic, strong) ZNWallet *wallet;
 @property (nonatomic, strong) Reachability *reachability;
-@property (nonatomic, assign) BOOL hasSeed, sweepFee;
+@property (nonatomic, assign) BOOL sweepFee;
 @property (nonatomic, strong) NSString *sweepKey;
 @property (nonatomic, strong) void (^sweepCompletion)(ZNTransaction *tx, NSError *error);
 
@@ -153,8 +153,6 @@ static NSData *getKeychainData(NSString *key)
     self.format.maximumFractionDigits = 8;
     self.format.maximum = @21000000.0;
 
-    self.hasSeed = (self.seed == nil) ? NO : YES;
-
     [self updateExchangeRate];
 
     return self;
@@ -167,7 +165,7 @@ static NSData *getKeychainData(NSString *key)
 
 - (ZNWallet *)wallet
 {
-    if (_wallet == nil && self.hasSeed) {
+    if (_wallet == nil && self.seed) {
         _wallet =
             [[ZNWallet alloc] initWithContext:[NSManagedObject context] andSeed:^NSData *{
                 return self.seed;
@@ -184,7 +182,7 @@ static NSData *getKeychainData(NSString *key)
 
 - (void)setSeed:(NSData *)seed
 {
-    if (seed && self.hasSeed && [self.seed isEqual:seed]) return;
+    if ([seed isEqual:self.seed]) return;
 
     [[NSManagedObject context] performBlockAndWait:^{
         [ZNAddressEntity deleteObjects:[ZNAddressEntity allObjects]];
@@ -202,7 +200,6 @@ static NSData *getKeychainData(NSString *key)
         return;
     }
 
-    self.hasSeed = (seed == nil) ? NO : YES;
     _wallet = nil;
 
     dispatch_async(dispatch_get_main_queue(), ^{

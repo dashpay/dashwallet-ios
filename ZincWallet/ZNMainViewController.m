@@ -34,7 +34,7 @@
 
 @interface ZNMainViewController ()
 
-@property (nonatomic, strong) id urlObserver, activeObserver, balanceObserver, reachabilityObserver;
+@property (nonatomic, strong) id urlObserver, fileObserver, activeObserver, balanceObserver, reachabilityObserver;
 @property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 @property (nonatomic, assign) BOOL didAppear, alertVisible;
 
@@ -78,10 +78,16 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNURLNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             [self.scrollView setContentOffset:CGPointZero animated:YES];
-            
             if (m.wallet) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
         }];
-    
+
+    self.fileObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:ZNFileNotification object:nil queue:nil
+        usingBlock:^(NSNotification *note) {
+            [self.scrollView setContentOffset:CGPointZero animated:YES];
+            if (m.wallet) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
+        }];
+
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
@@ -193,6 +199,7 @@
     [self.reachability stopNotifier];
     
     if (self.urlObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.urlObserver];
+    if (self.fileObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.fileObserver];
     if (self.activeObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
     if (self.reachabilityObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];

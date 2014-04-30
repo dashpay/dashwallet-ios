@@ -6,6 +6,39 @@
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
 	<string>${PRODUCT_NAME}</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeIconFiles</key>
+			<array/>
+			<key>CFBundleTypeName</key>
+			<string>Bitcoin Payment Request</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>application/bitcoin-paymentrequest</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeIconFiles</key>
+			<array/>
+			<key>CFBundleTypeName</key>
+			<string>Bitcoin Payment</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>application/bitcoin-payment</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeIconFiles</key>
+			<array/>
+			<key>CFBundleTypeName</key>
+			<string>Bitcoin Payment ACK</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>application/bitcoin-paymentack</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIcons</key>

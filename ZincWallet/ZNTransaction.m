@@ -80,11 +80,13 @@
     _version = [message UInt32AtOffset:off]; // tx version
     off += sizeof(uint32_t);
     count = [message varIntAtOffset:off length:&l]; // input count
+    if (count == 0) return nil; // at least one input is required
     off += l;
 
     for (NSUInteger i = 0; i < count; i++) { // inputs
-        d = [message hashAtOffset:off];
-        [self.hashes addObject:d ? d : [NSNull null]]; // input tx hash
+        d = [message hashAtOffset:off]; // input tx hash
+        if (! d) return nil; // required
+        [self.hashes addObject:d];
         off += CC_SHA256_DIGEST_LENGTH;
         [self.indexes addObject:@([message UInt32AtOffset:off])]; // input index
         off += sizeof(uint32_t);
@@ -117,7 +119,8 @@
 - (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts
 outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 {
-    if (hashes.count != indexes.count || hashes.count != scripts.count || addresses.count != amounts.count) return nil;
+    if (hashes.count == 0 || hashes.count != indexes.count || hashes.count != scripts.count) return nil;
+    if (addresses.count != amounts.count) return nil;
 
     if (! (self = [super init])) return nil;
 

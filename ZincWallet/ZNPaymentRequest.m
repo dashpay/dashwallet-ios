@@ -76,8 +76,8 @@
 
     // stringByAddingPercentEscapesUsingEncoding: only encodes characters that would otherwise make the URL illegal so
     // it doesn't result in double encoding
-    NSString *s = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]
-                   stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    NSString *s = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+                  // stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     NSURL *url = [NSURL URLWithString:s];
     
     if (! url || ! url.scheme) {
@@ -107,8 +107,8 @@
                             stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
         }
         else if ([pair[0] isEqual:@"r"]) {
-            self.r = [NSURL URLWithString:[[pair[1] stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
-                                           stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+            self.r = [[pair[1] stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
+                      stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
         }
     }
 }
@@ -124,14 +124,19 @@
         [q addObject:[NSString stringWithFormat:@"amount=%.16g", (double)self.amount/SATOSHIS]];
     }
     
-    if (self.label.length) {
+    if (self.label.length > 0) {
         [q addObject:[NSString stringWithFormat:@"label=%@",
          [self.label stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
     }
     
-    if (self.message.length) {
+    if (self.message.length > 0) {
         [q addObject:[NSString stringWithFormat:@"message=%@",
          [self.message stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+    }
+
+    if (self.r.length > 0) {
+        [q addObject:[NSString stringWithFormat:@"r=%@",
+         [self.r stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
     }
     
     if (q.count > 0) {
@@ -144,7 +149,7 @@
 
 - (BOOL)isValid
 {
-    if (! [self.paymentAddress isValidBitcoinAddress]) return NO;
+    if (! [self.paymentAddress isValidBitcoinAddress] && (! self.r || ! [NSURL URLWithString:self.r])) return NO;
     
     // TODO: validate bitcoin payment request X.509 certificate, hopefully offline
 
@@ -152,16 +157,19 @@
 }
 
 // fetches the request over HTTP and calls completion block
-- (void)fetchOnCompletion:(void (^)(ZNPaymentProtocolRequest *req, NSError *error))completion
++ (void)fetch:(NSString *)url completion:(void (^)(ZNPaymentProtocolRequest *req, NSError *error))completion
 {
     if (! completion) return;
 
-    if (! self.r) {
-        completion(nil, nil);
+    NSURL *u = [NSURL URLWithString:[url stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+
+    if (! u) {
+        completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
+                         userInfo:@{NSLocalizedDescriptionKey:@"bad payment request URL"}]);
         return;
     }
 
-    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:self.r
+    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:u
                                 cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:20.0];
 
     [req addValue:@"application/bitcoin-paymentrequest" forHTTPHeaderField:@"Accept"];
@@ -184,6 +192,44 @@
 
         completion(req, nil);
     }];
+}
+
++ (void)postPayment:(ZNPaymentProtocolPayment *)payment to:(NSString *)paymentURL
+completion:(void (^)(ZNPaymentProtocolACK *ack, NSError *error))completion
+{
+    NSURL *url = [NSURL URLWithString:paymentURL];
+
+    if (! url || [url.scheme isEqual:@"http"]) { // must be https rather than http
+        completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
+                         userInfo:@{NSLocalizedDescriptionKey:@"bad payment URL"}]);
+    }
+
+    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:url
+                                cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:20.0];
+
+    [req addValue:@"application/bitcoin-payment" forHTTPHeaderField:@"Content-Type"];
+    [req addValue:@"application/bitcoin-paymentack" forHTTPHeaderField:@"Accept"];
+    [req setHTTPMethod:@"POST"];
+    [req setHTTPBody:payment.data];
+
+    [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue currentQueue]
+    completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+        if (! [response.MIMEType.lowercaseString isEqual:@"application/bitcoin-paymentack"] || data.length > 50000) {
+            completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
+                             userInfo:@{NSLocalizedDescriptionKey:@"unexpected response from payment server"}]);
+            return;
+        }
+
+        ZNPaymentProtocolACK *ack = [ZNPaymentProtocolACK ackWithData:data];
+        
+        if (! ack) {
+            completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
+                             userInfo:@{NSLocalizedDescriptionKey:@"unexpected response from payment server"}]);
+            return;
+        }
+        
+        completion(ack, nil);
+     }];
 }
 
 @end

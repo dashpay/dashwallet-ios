@@ -15,7 +15,7 @@
     #import <MobileCoreServices/MobileCoreServices.h>
 #endif
 
-//#define BITCOIN_TESTNET    1
+#define BITCOIN_TESTNET    1
 //#define WEBAPP_BASEURL     @"http://zincwallet.com"
 //#define WEBAPP_PATH        @"/tx"
 //#define WEBAPP_TIMEOUT     15
@@ -26,6 +26,7 @@
 #define PARALAX_RATIO      0.25
 #define SEGUE_DURATION     0.3
 #define ZNURLNotification  @"ZNURLNotification"
+#define ZNFileNotification @"ZNFileNotification"
 
 #if BITCOIN_TESTNET
 #warning testnet build

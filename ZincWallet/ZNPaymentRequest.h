@@ -25,16 +25,16 @@
 
 #import <Foundation/Foundation.h>
 
-@class ZNPaymentProtocolRequest;
+@class ZNPaymentProtocolRequest, ZNPaymentProtocolPayment, ZNPaymentProtocolACK;
 
-// BIP21 bitcoin URI object https://github.com/bitcoin/bips/blob/master/bip-0021.mediawiki
+// BIP21 bitcoin payment request URI https://github.com/bitcoin/bips/blob/master/bip-0021.mediawiki
 @interface ZNPaymentRequest : NSObject
 
 @property (nonatomic, strong) NSString *paymentAddress;
 @property (nonatomic, strong) NSString *label;
 @property (nonatomic, strong) NSString *message;
 @property (nonatomic, assign) uint64_t amount;
-@property (nonatomic, strong) NSURL *r; // BIP72 URL: https://github.com/bitcoin/bips/blob/master/bip-0072.mediawiki
+@property (nonatomic, strong) NSString *r; // BIP72 URI: https://github.com/bitcoin/bips/blob/master/bip-0072.mediawiki
 @property (nonatomic, strong) NSData *data;
 @property (nonatomic, readonly) BOOL isValid;
 
@@ -48,6 +48,10 @@
 
 // fetches a BIP70 request over HTTP and calls completion block
 // https://github.com/bitcoin/bips/blob/master/bip-0070.mediawiki
-- (void)fetchOnCompletion:(void (^)(ZNPaymentProtocolRequest *req, NSError *error))completion;
++ (void)fetch:(NSString *)url completion:(void (^)(ZNPaymentProtocolRequest *req, NSError *error))completion;
+
+// posts a BIP70 payment object to the specified URL
++ (void)postPayment:(ZNPaymentProtocolPayment *)payment to:(NSString *)paymentURL
+completion:(void (^)(ZNPaymentProtocolACK *ack, NSError *error))completion;
 
 @end

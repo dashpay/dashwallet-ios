@@ -44,11 +44,18 @@
      setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
      forState:UIControlStateNormal];
 
+    if (launchOptions[UIApplicationLaunchOptionsURLKey]) {
+        NSData *file = [NSData dataWithContentsOfURL:launchOptions[UIApplicationLaunchOptionsURLKey]];
+
+        if (file.length > 0) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:ZNFileNotification object:nil
+             userInfo:@{@"file":file}];
+        }
+    }
+
     //TODO: digitally sign every source release
     
     //TODO: pin code
-    
-    //TODO: support for BIP70 payment protocol
 
     //TODO: create a BIP and GATT specification for payment protocol over bluetooth LE
     // https://developer.bluetooth.org/gatt/Pages/default.aspx
@@ -56,6 +63,8 @@
     //TODO: accessibility for the visually impaired
     
     //TODO: internationalization
+
+    //TODO: full screen alert dialogs with clean transitions
 
     // this will notify user if bluetooth is disabled (on 4S and newer devices that support BTLE)
     //CBCentralManager *cbManager = [[CBCentralManager alloc] initWithDelegate:self queue:dispatch_get_main_queue()];
@@ -102,6 +111,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         if (syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFinishedObserver];
         if (syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFailedObserver];
         syncFinishedObserver = syncFailedObserver = nil;
+        //TODO: XXXX disconnect
     });
 
     syncFinishedObserver =

@@ -59,9 +59,9 @@ merchantData:(NSData *)data;
 
 @property (nonatomic, readonly, getter = toData) NSData *data;
 @property (nonatomic, readonly) NSArray *certs; // array of DER encoded certificates, from pkiData
-@property (nonatomic, readonly) BOOL isValid;
-@property (nonatomic, readonly) NSString *commonName;
-@property (nonatomic, readonly) NSString *errorMessage;
+@property (nonatomic, readonly) BOOL isValid; // true if certificate chain, signature and details.expires are all valid
+@property (nonatomic, readonly) NSString *commonName; // common name of signer (set when isValid is called)
+@property (nonatomic, readonly) NSString *errorMessage; // error message if isValid returns false
 
 + (instancetype)requestWithData:(NSData *)data;
 
@@ -92,7 +92,7 @@ refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSSt
 @interface ZNPaymentProtocolACK : NSObject
 
 @property (nonatomic, readonly) ZNPaymentProtocolPayment *payment; // payment message that triggered this ack, required
-@property (nonatomic, readonly) NSString *memo; // uman-readable message for customer, optional
+@property (nonatomic, readonly) NSString *memo; // human-readable message for customer, optional
 
 @property (nonatomic, readonly, getter = toData) NSData *data;
 

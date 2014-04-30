@@ -29,12 +29,14 @@
 #import "ZNWallet.h"
 #import "ZNPeerManager.h"
 #import "ZNPaymentRequest.h"
+#import "ZNPaymentProtocol.h"
 #import "ZNKey.h"
 #import "ZNTransaction.h"
 #import "ZNButton.h"
 #import "ZNStoryboardSegue.h"
 #import "ZNBubbleView.h"
 #import "NSString+Base58.h"
+#import "NSMutableData+Bitcoin.h"
 #import <QuartzCore/QuartzCore.h>
 #import <AVFoundation/AVFoundation.h>
 
@@ -43,7 +45,7 @@
 #define BUTTON_MARGIN   10.0
 #define CLIPBOARD_ID    @"clipboard"
 #define QR_ID           @"qr"
-#define URL_ID          @"url"
+#define LOCK            @"\xF0\x9F\x94\x92" // unicode lock symbol U+1F512 (utf-8)
 
 #define SCAN_TIP      @"Scan someone else's QR code to get their bitcoin address. "\
                        "You can send a payment to anyone with an address."
@@ -54,13 +56,13 @@
 @interface ZNPayViewController ()
 
 //@property (nonatomic, strong) GKSession *session;
-@property (nonatomic, strong) NSMutableArray *requests;
 @property (nonatomic, strong) NSMutableArray *requestIDs;
 @property (nonatomic, strong) NSMutableArray *requestButtons;
-@property (nonatomic, strong) NSString *addressInWallet;
-@property (nonatomic, strong) id urlObserver, activeObserver;
-@property (nonatomic, strong) ZNPaymentRequest *request;
+@property (nonatomic, strong) NSString *addressInWallet, *txName, *txMemo;
+@property (nonatomic, assign) BOOL txSecure;
+@property (nonatomic, strong) id urlObserver, fileObserver, activeObserver;
 @property (nonatomic, strong) ZNTransaction *sweepTx, *tx, *txWithFee;
+@property (nonatomic, strong) ZNPaymentProtocolRequest *protocolRequest;
 @property (nonatomic, strong) ZBarReaderViewController *zbarController;
 @property (nonatomic, strong) ZNBubbleView *tipView;
 
@@ -79,17 +81,8 @@
     //TODO: add a field for manually entering a payment address
     //TODO: make title use dynamic font size
     //BUG: clipboard button title is offcenter (ios7 specific font layout bug?)
-    ZNWalletManager *m = [ZNWalletManager sharedInstance];
-    ZNPaymentRequest *req = [ZNPaymentRequest new];
-    
-    req.label = @"scan QR code";
-    
-    self.requests = [NSMutableArray arrayWithObject:req];
-    self.requestIDs = [NSMutableArray arrayWithObject:QR_ID];
+    self.requestIDs = [NSMutableArray arrayWithObjects:QR_ID, CLIPBOARD_ID, nil];
     self.requestButtons = [NSMutableArray array];
-
-    //TODO: XXXX implement BIP72 payment protocol url handling
-    // https://github.com/bitcoin/bips/blob/master/bip-0072.mediawiki
 
     self.urlObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:ZNURLNotification object:nil queue:nil
@@ -97,22 +90,8 @@
             NSURL *url = note.userInfo[@"url"];
 
             if ([url.scheme isEqual:@"bitcoin"]) {
-                ZNPaymentRequest *req = [ZNPaymentRequest requestWithURL:url];
-
-                if (! req.label.length) req.label = req.paymentAddress;
-
-                if (req.amount > 0 &&
-                    [req.label rangeOfString:[m stringForAmount:req.amount]].location == NSNotFound) {
-                    req.label = [NSString stringWithFormat:@"%@ - %@", req.label, [m stringForAmount:req.amount]];
-                }
-
-                if ([self.requestIDs indexOfObject:URL_ID] != NSNotFound) {
-                    [self.requests removeObjectAtIndex:[self.requestIDs indexOfObject:URL_ID]];
-                    [self.requestIDs removeObjectAtIndex:[self.requestIDs indexOfObject:URL_ID]];
-                }
-
-                [self.requests insertObject:req atIndex:0];
-                [self.requestIDs insertObject:URL_ID atIndex:0];
+                [self confirmRequest:[ZNPaymentRequest requestWithURL:url]];
+                return;
             }
 //            else if ([url.scheme isEqual:@"zinc"] && [url.host isEqual:@"x-callback-url"]) {
 //                if ([url.path isEqual:@"/tx"]) {
@@ -145,31 +124,86 @@
 //                else if ([url.path isEqual:@"/qr"]) {
 //                    //TODO: XXXX scan qr and launch webapp
 //                }
+//
+//                return;
 //            }
+
+            [[[UIAlertView alloc] initWithTitle:@"unsupported url" message:url.absoluteString delegate:nil
+              cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+            [self reset:nil];
         }];
-    
+
+    self.fileObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:ZNFileNotification object:nil queue:nil
+        usingBlock:^(NSNotification *note) {
+            NSData *file = note.userInfo[@"file"];
+            ZNPaymentProtocolRequest *request = [ZNPaymentProtocolRequest requestWithData:file];
+
+            if (request) {
+                [self confirmProtocolRequest:request];
+                return;
+            }
+
+            // TODO: reject payments that don't match requested amounts/scripts, implement refunds
+            ZNPaymentProtocolPayment *payment = [ZNPaymentProtocolPayment paymentWithData:file];
+            
+            if (payment.transactions.count > 0) {
+                for (ZNTransaction *tx in payment.transactions) {
+                    [[ZNPeerManager sharedInstance] publishTransaction:tx completion:^(NSError *error) {
+                        if (error) {
+                            [[[UIAlertView alloc] initWithTitle:@"couldn't transmit payment to bitcoin network"
+                              message:error.localizedDescription delegate:nil cancelButtonTitle:@"ok"
+                              otherButtonTitles:nil] show];
+                        }
+                    }];
+                }
+
+                if (payment.memo.length > 0) {
+                    [[[UIAlertView alloc] initWithTitle:@"payment memo:" message:payment.memo delegate:nil
+                      cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+                }
+
+                return;
+            }
+
+            ZNPaymentProtocolACK *ack = [ZNPaymentProtocolACK ackWithData:file];
+
+            if (ack) {
+                if (ack.memo.length > 0) {
+                    [self.view addSubview:[[[ZNBubbleView viewWithText:ack.memo
+                                             center:CGPointMake(self.view.bounds.size.width/2,
+                                                                self.view.bounds.size.height/2)]
+                                            fadeIn] fadeOutAfterDelay:2.0]];
+                }
+
+                return;
+            }
+
+            [[[UIAlertView alloc] initWithTitle:@"unsupported or corrupted document" message:nil delegate:nil
+              cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+        }];
+
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            // if a tx was sent to safari and we returned to the app not from a zinc: url, something went wrong, so
-            // fall back on sending from within the app
-            if (self.tx) {
-                uint64_t txAmount = [m.wallet amountSentByTransaction:self.tx] -
-                                    [m.wallet amountReceivedFromTransaction:self.tx];
-                NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:txAmount],
-                                    [m localCurrencyStringForAmount:txAmount]];
+//            if (self.tx) {
+//                uint64_t txAmount = [m.wallet amountSentByTransaction:self.tx] -
+//                                    [m.wallet amountReceivedFromTransaction:self.tx];
+//                NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:txAmount],
+//                                    [m localCurrencyStringForAmount:txAmount]];
+//
+//                [[[UIAlertView alloc] initWithTitle:@"confirm payment" message:[m.wallet addressForTransaction:self.tx]
+//                  delegate:self cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
+//            }
 
-                [[[UIAlertView alloc] initWithTitle:@"confirm payment" message:[m.wallet addressForTransaction:self.tx]
-                  delegate:self cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
-            }
-        
-            [self layoutButtonsAnimated:YES]; // check the clipboard for changes
+            [self layoutButtonsAnimated:YES];
         }];
 }
 
 - (void)dealloc
 {
     if (self.urlObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.urlObserver];
+    if (self.fileObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.fileObserver];
     if (self.activeObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
 }
 
@@ -187,11 +221,6 @@
 //    self.session.available = YES;
 }
 
-- (void)viewDidAppear:(BOOL)animated
-{
-    [self layoutButtonsAnimated:YES];
-}
-
 - (void)viewWillDisappear:(BOOL)animated
 {
 //    self.session.available = NO;
@@ -203,42 +232,9 @@
     [super viewWillDisappear:animated];
 }
 
-- (void)checkClipboard
-{
-    ZNWalletManager *m = [ZNWalletManager sharedInstance];
-    ZNPaymentRequest *req = [ZNPaymentRequest requestWithString:[[[UIPasteboard generalPasteboard] string]
-                             stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
-    
-    if (! [req isValid] && ! [req.paymentAddress isValidBitcoinPrivateKey] &&
-        ! [req.paymentAddress isValidBitcoinBIP38Key]) {
-        req.data = nil;
-        req.label = @"pay address from clipboard";
-    }
-    
-    if (! req.label.length) req.label = req.paymentAddress;
-    
-    if (req.amount > 0 && [req.label rangeOfString:[m stringForAmount:req.amount]].location == NSNotFound) {
-        req.label = [NSString stringWithFormat:@"%@ - %@", req.label, [m stringForAmount:req.amount]];
-    }
-    
-    if ([self.requestIDs indexOfObject:CLIPBOARD_ID] < self.requests.count) {
-        [self.requests removeObjectAtIndex:[self.requestIDs indexOfObject:CLIPBOARD_ID]];
-        [self.requestIDs removeObject:CLIPBOARD_ID];
-    }
-
-    for (ZNPaymentRequest *r in self.requests) {
-        if ([req.label isEqual:r.label]) return;
-    }
-
-    [self.requests addObject:req];
-    [self.requestIDs addObject:CLIPBOARD_ID];
-}
-
 - (void)layoutButtonsAnimated:(BOOL)animated
 {
-    [self checkClipboard];
-
-    while (self.requests.count > self.requestButtons.count) {
+    while (self.requestIDs.count > self.requestButtons.count) {
         ZNButton *button = [ZNButton buttonWithType:UIButtonTypeCustom];
         UISwipeGestureRecognizer *g = [[UISwipeGestureRecognizer alloc] initWithTarget:self
                                        action:@selector(swipeLeft:)];
@@ -247,7 +243,7 @@
         button.imageEdgeInsets = UIEdgeInsetsMake(0, -10, 0, 10);
         button.alpha = animated ? 0 : 1;
         button.frame = CGRectMake(BUTTON_MARGIN*2, self.view.frame.size.height/2 + (BUTTON_HEIGHT + BUTTON_MARGIN*2)*
-                                  (self.requestButtons.count - self.requests.count/2.0 - 0.5),
+                                  (self.requestButtons.count - self.requestIDs.count/2.0 - 0.5),
                                   self.view.frame.size.width - BUTTON_MARGIN*4, BUTTON_HEIGHT);
         [button addTarget:self action:@selector(doIt:) forControlEvents:UIControlEventTouchUpInside];
 
@@ -263,41 +259,28 @@
     
         for (UIButton *button in self.requestButtons) {
             CGPoint c = CGPointMake(button.center.x, self.view.frame.size.height/2 +
-                                    (BUTTON_HEIGHT + BUTTON_MARGIN*2)*(idx - self.requests.count/2.0));
+                                    (BUTTON_HEIGHT + BUTTON_MARGIN*2)*(idx - self.requestIDs.count/2.0));
             
             button.center = c;
-            
-            if (self.request) {
-                button.enabled = NO;
-                button.alpha = idx < self.requests.count ? 0.5 : 0;
-            }
-            else {
-                button.enabled = YES;
-                button.alpha = idx < self.requests.count ? 1 : 0;
-            }
+            button.enabled = YES;
+            button.alpha = 1.0;
+            button.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:17];
 
-            if (idx < self.requestIDs.count && [self.requestIDs[idx] isEqual:QR_ID]) {
+            if ([self.requestIDs indexOfObject:QR_ID] == idx) {
                 [button setImage:[UIImage imageNamed:@"cameraguide-blue-small.png"] forState:UIControlStateNormal];
                 [button setImage:[UIImage imageNamed:@"cameraguide-small.png"] forState:UIControlStateHighlighted];
+                [button setTitle:@"scan QR code" forState:UIControlStateNormal];
+            }
+            else if ([self.requestIDs indexOfObject:CLIPBOARD_ID] == idx) {
+                [button setImage:nil forState:UIControlStateNormal];
+                [button setImage:nil forState:UIControlStateHighlighted];
+                [button setTitle:@"pay address from clipboard" forState:UIControlStateNormal];
             }
             else {
                 [button setImage:nil forState:UIControlStateNormal];
                 [button setImage:nil forState:UIControlStateHighlighted];
             }
 
-            if (idx < self.requests.count) {
-                ZNPaymentRequest *req = self.requests[idx];
-                
-                if ([req.label rangeOfString:BTC].location != NSNotFound) {
-                    button.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15];
-                }
-                else button.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:17];
-
-                [button setTitle:req.label forState:UIControlStateNormal];
-
-                if ([self.addressInWallet isEqual:req.paymentAddress]) button.enabled = NO;
-            }
-            
             idx++;
         }
         
@@ -308,7 +291,7 @@
     
     if (animated) {
         [UIView animateWithDuration:SEGUE_DURATION animations:block completion:^(BOOL finished) {
-            while (self.requestButtons.count > self.requests.count) {
+            while (self.requestButtons.count > self.requestIDs.count) {
                 [self.requestButtons.lastObject removeFromSuperview];
                 [self.requestButtons removeLastObject];
             }
@@ -317,7 +300,7 @@
     else {
         block();
 
-        while (self.requestButtons.count > self.requests.count) {
+        while (self.requestButtons.count > self.requestIDs.count) {
             [self.requestButtons.lastObject removeFromSuperview];
             [self.requestButtons removeLastObject];
         }
@@ -340,47 +323,68 @@
     return _zbarController;
 }
 
-- (void)confirmTransaction
+- (void)confirmTransaction:(ZNTransaction *)tx name:(NSString *)name memo:(NSString *)memo isSecure:(BOOL)isSecure
 {
-    if (! self.tx) return;
-
-    ZNWalletManager *m = [ZNWalletManager sharedInstance];
-    uint64_t txAmount = [m.wallet amountSentByTransaction:self.tx] - [m.wallet amountReceivedFromTransaction:self.tx];
-    NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:txAmount],
-                        [m localCurrencyStringForAmount:txAmount]];
-
-    [[[UIAlertView alloc] initWithTitle:@"confirm payment"
-      message:[NSString stringWithFormat:@"%@%@%@", [m.wallet addressForTransaction:self.tx],
-               self.request.message ? @"\n" : @"", self.request.message ? self.request.message : @""] delegate:self
-      cancelButtonTitle:@"cancel" otherButtonTitles:amount, nil] show];
-}
-
-- (void)confirmRequest
-{
-    if (! [self.request isValid]) {
-        if ([self.requests indexOfObject:self.request] == [self.requestIDs indexOfObject:CLIPBOARD_ID]) {
-            [[[UIAlertView alloc] initWithTitle:nil message:@"the clipboard doesn't contain a valid bitcoin address"
-              delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
-        }
-        else {
-            [[[UIAlertView alloc] initWithTitle:@"not a valid bitcoin address" message:self.request.paymentAddress
-              delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
-        }
-
-        [self reset:nil];
+    if (! tx) {
+        [self cancel:nil];
         return;
     }
-    
+
+    ZNWalletManager *m = [ZNWalletManager sharedInstance];
+    uint64_t txAmount = [m.wallet amountSentByTransaction:tx] - [m.wallet amountReceivedFromTransaction:tx];
+    NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:txAmount],
+                        [m localCurrencyStringForAmount:txAmount]];
+    NSString *msg = (isSecure && name.length > 0) ? LOCK @" " : @"";
+
+    if (name.length > 0) msg = [msg stringByAppendingString:name];
+    if (! isSecure && msg.length > 0) msg = [msg stringByAppendingString:@"\n"];
+    if (! isSecure || msg.length == 0) msg = [msg stringByAppendingString:[m.wallet addressForTransaction:tx]];
+    if (memo.length > 0) msg = [[msg stringByAppendingString:@"\n"] stringByAppendingString:memo];
+
+    [[[UIAlertView alloc] initWithTitle:@"confirm payment" message:msg delegate:self cancelButtonTitle:@"cancel"
+      otherButtonTitles:amount, nil] show];
+}
+
+- (void)confirmRequest:(ZNPaymentRequest *)request
+{
+    if (! [request isValid]) {
+        if ([request.paymentAddress isValidBitcoinPrivateKey] || [request.paymentAddress isValidBitcoinBIP38Key]) {
+            [self confirmSweep:request.paymentAddress];
+        }
+        else {
+            [[[UIAlertView alloc] initWithTitle:@"not a valid bitcoin address" message:request.paymentAddress
+              delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+            [self reset:nil];
+        }
+
+        return;
+    }
+
+    if (request.r.length > 0) { // payment protocol over HTTP
+        //TODO: XXXX show spinner
+        [ZNPaymentRequest fetch:request.r completion:^(ZNPaymentProtocolRequest *req, NSError *error) {
+            if (error) {
+                [[[UIAlertView alloc] initWithTitle:@"couldn't make payment" message:error.localizedDescription
+                  delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+                return;
+            }
+
+            [self confirmProtocolRequest:req];
+        }];
+
+        return;
+    }
+
     ZNWalletManager *m = [ZNWalletManager sharedInstance];
     
-    if ([m.wallet containsAddress:self.request.paymentAddress]) {
+    if ([m.wallet containsAddress:request.paymentAddress]) {
         [[[UIAlertView alloc] initWithTitle:nil message:@"this payment address is already in your wallet" delegate:nil
           cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
         
-        self.addressInWallet = self.request.paymentAddress;
+        self.addressInWallet = request.paymentAddress;
         [self reset:nil];
     }
-    else if (self.request.amount == 0) {
+    else if (request.amount == 0) {
         if (! [[ZNPeerManager sharedInstance] connected]) {
             [[[UIAlertView alloc] initWithTitle:@"not connected to the bitcoin network" message:nil
               delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
@@ -391,7 +395,7 @@
         ZNAmountViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNAmountViewController"];
         
         c.delegate = self;
-        c.request = self.request;
+        c.request = request;
         c.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                   [m localCurrencyStringForAmount:m.wallet.balance]];
         
@@ -400,48 +404,51 @@
             self.view.superview.clipsToBounds = NO;
         }];
     }
-    else if (self.request.amount < TX_MIN_OUTPUT_AMOUNT) {
+    else if (request.amount < TX_MIN_OUTPUT_AMOUNT) {
         [[[UIAlertView alloc] initWithTitle:@"couldn't make payment" message:[@"bitcoin payments can't be less than "
           stringByAppendingString:[m stringForAmount:TX_MIN_OUTPUT_AMOUNT]] delegate:nil cancelButtonTitle:@"ok"
           otherButtonTitles:nil] show];
         [self cancel:nil];
     }
     else {
-        self.tx = [m.wallet transactionFor:self.request.amount to:self.request.paymentAddress withFee:NO];
-        self.txWithFee = [m.wallet transactionFor:self.request.amount to:self.request.paymentAddress withFee:YES];
-        
-        uint64_t txFee = self.txWithFee ? [m.wallet feeForTransaction:self.txWithFee] : self.tx.standardFee;
-        NSString *fee = [m stringForAmount:txFee];
-        NSString *localCurrencyFee = [m localCurrencyStringForAmount:txFee];
-        uint32_t freeHeight = [m.wallet blockHeightUntilFree:self.tx];
-        
+        self.tx = [m.wallet transactionFor:request.amount to:request.paymentAddress withFee:NO];
+        self.txWithFee = [m.wallet transactionFor:request.amount to:request.paymentAddress withFee:YES];
+
         if (! self.tx) {
             [[[UIAlertView alloc] initWithTitle:@"insufficient funds" message:nil delegate:nil cancelButtonTitle:@"ok"
               otherButtonTitles:nil] show];
             [self cancel:nil];
         }
-        //else if (freeHeight == TX_UNCONFIRMED) {
-        else if (freeHeight > [[ZNPeerManager sharedInstance] lastBlockHeight] + 1) {
-            [[[UIAlertView alloc] initWithTitle:nil
-              message:[NSString stringWithFormat:@"the bitcoin network will receive a fee of %@ (%@)", fee,
-                       localCurrencyFee] delegate:self cancelButtonTitle:@"cancel"
-              otherButtonTitles:[NSString stringWithFormat:@"+ %@ (%@)", fee, localCurrencyFee], nil] show];
-        }
-//        else if (freeHeight > [[ZNPeerManager sharedInstance] lastBlockHeight] + 1) {
-//            NSTimeInterval t = (freeHeight - [[ZNPeerManager sharedInstance] lastBlockHeight])*600;
-//            int minutes = t/60, hours = t/(60*60), days = t/(60*60*24);
-//            NSString *time = [NSString stringWithFormat:@"%d %@%@", days ? days : (hours ? hours : minutes),
-//                              days ? @"day" : (hours ? @"hour" : @"minutes"),
-//                              days > 1 ? @"s" : (days == 0 && hours > 1 ? @"s" : @"")];
-//            
-//            [[[UIAlertView alloc]
-//              initWithTitle:[NSString stringWithFormat:@"%@ (%@) transaction fee recommended", fee, localCurrencyFee]
-//              message:[NSString stringWithFormat:@"estimated confirmation time with no fee: %@", time] delegate:self
-//              cancelButtonTitle:nil otherButtonTitles:@"no fee",
-//              [NSString stringWithFormat:@"+ %@ (%@)", fee, localCurrencyFee], nil] show];
-//        }
-        else [self confirmTransaction];
+
+        [self confirmTransaction:self.tx name:request.label memo:request.message isSecure:NO];
     }
+}
+
+- (void)confirmProtocolRequest:(ZNPaymentProtocolRequest *)request
+{
+    if (! [request isValid]) {
+        [[[UIAlertView alloc] initWithTitle:@"bad payment request" message:request.errorMessage delegate:nil
+          cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+        [self cancel:nil];
+        return;
+    }
+
+    ZNWalletManager *m = [ZNWalletManager sharedInstance];
+
+    self.tx = [m.wallet transactionForAmounts:request.details.outputAmounts
+               toOutputScripts:request.details.outputScripts withFee:NO];
+    self.txWithFee = [m.wallet transactionForAmounts:request.details.outputAmounts
+                      toOutputScripts:request.details.outputScripts withFee:YES];
+    self.protocolRequest = request;
+
+    if (! self.tx) {
+        [[[UIAlertView alloc] initWithTitle:@"insufficient funds" message:nil delegate:nil cancelButtonTitle:@"ok"
+          otherButtonTitles:nil] show];
+        [self cancel:nil];
+    }
+
+    [self confirmTransaction:self.tx name:request.commonName memo:request.details.memo
+     isSecure:([request.pkiType isEqual:@"none"]) ? NO : YES];
 }
 
 - (void)confirmSweep:(NSString *)privKey
@@ -568,29 +575,29 @@
             }
         }
     }
-    else {
-        ZNPaymentRequest *req = self.requests[idx];
+    else if ([self.requestIDs indexOfObject:CLIPBOARD_ID] == idx) {
+        NSString *s = [[[UIPasteboard generalPasteboard] string]
+                       stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        ZNPaymentRequest *req = [ZNPaymentRequest requestWithString:s];
 
-        [sender setEnabled:NO];
-
-        if (! [req.paymentAddress isValidBitcoinPrivateKey] && ! [req.paymentAddress isValidBitcoinBIP38Key]) {
-            self.request = req;
-            [self confirmRequest];
+        if (! [req isValid] && ! [s isValidBitcoinPrivateKey] && ! [s isValidBitcoinBIP38Key]) {
+            [[[UIAlertView alloc] initWithTitle:@"clipboard doesn't contain a valid bitcoin address" message:nil
+                                       delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+            [self reset:nil];
+            return;
         }
-        else [self confirmSweep:req.paymentAddress];
+
+        [self confirmRequest:req];
     }
 }
 
 - (IBAction)reset:(id)sender
 {
-    if ([self.requests indexOfObject:self.request] == [self.requestIDs indexOfObject:QR_ID]) {
-        self.request.data = nil;
-        self.request.label = @"scan QR code";
-    }
-    
     self.tx = self.txWithFee = self.sweepTx = nil;
-    self.request = nil;
-            
+    self.protocolRequest = nil;
+    self.txName = self.txMemo = nil;
+    self.txSecure = NO;
+
     if (self.navigationController.topViewController != self.parentViewController) {
         [self.navigationController popToRootViewControllerAnimated:YES];
     }
@@ -600,8 +607,10 @@
 - (IBAction)cancel:(id)sender
 {
     self.tx = self.txWithFee = self.sweepTx = nil;
-    self.request.amount = 0;
-    
+    self.protocolRequest = nil;
+    self.txName = self.txMemo = nil;
+    self.txSecure = NO;
+
     if (self.navigationController.topViewController == self.parentViewController) [self reset:sender];
 }
 
@@ -616,31 +625,30 @@
 
 - (void)amountViewController:(ZNAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
 {
-    self.request.amount = amount;
-    [self confirmRequest];
+    amountViewController.request.amount = amount;
+    [self confirmRequest:amountViewController.request];
 }
 
 #pragma mark - UIImagePickerControllerDelegate
 
 - (void)imagePickerController:(UIImagePickerController *)reader didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
-    ZNPaymentRequest *req = self.requests[[self.requestIDs indexOfObject:QR_ID]];
-    
+    // ignore additonal qr codes while we're still giving visual feedback about the current one
+    if (! [[(id)self.zbarController.cameraOverlayView image] isEqual:[UIImage imageNamed:@"cameraguide.png"]]) return;
+
     for (id result in info[ZBarReaderControllerResults]) {
         NSString *s = (id)[result data];
-        
-        req.data = [s dataUsingEncoding:NSUTF8StringEncoding];
-        req.label = @"scan QR code";
-        
-        if (! [req isValid] && ! [s isValidBitcoinPrivateKey] && ! [s isValidBitcoinBIP38Key]) {
+        ZNPaymentRequest *request = [ZNPaymentRequest requestWithString:s];
+
+        if (! [request isValid] && ! [s isValidBitcoinPrivateKey] && ! [s isValidBitcoinBIP38Key]) {
             [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide-red.png"]];
 
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
                 [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide.png"]];
                 
-                if ([s hasPrefix:@"bitcoin:"] || [self.request.paymentAddress hasPrefix:@"1"]) {
+                if ([s hasPrefix:@"bitcoin:"] || [request.paymentAddress hasPrefix:@"1"]) {
                     [[[UIAlertView alloc] initWithTitle:@"not a valid bitcoin address"
-                      message:req.paymentAddress delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil]
+                      message:request.paymentAddress delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil]
                      show];
                 }
                 else {
@@ -651,18 +659,33 @@
         }
         else {
             [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide-green.png"]];
-            
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-                [reader dismissViewControllerAnimated:YES completion:^{
-                    [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide.png"]];
-                }];
 
-                if ([req isValid]) {
-                    self.request = req;
-                    [self confirmRequest];
-                }
-                else [self confirmSweep:s];
-            });
+            if (request.r.length > 0) { // start fetching payment protocol request right away
+                [ZNPaymentRequest fetch:request.r completion:^(ZNPaymentProtocolRequest *req, NSError *error) {
+                    if (error) {
+                        [[[UIAlertView alloc] initWithTitle:@"couldn't make payment" message:error.localizedDescription
+                          delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+                        return;
+                    }
+
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [reader dismissViewControllerAnimated:YES completion:^{
+                            [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide.png"]];
+                        }];
+
+                        [self confirmProtocolRequest:req];
+                    });
+                }];
+            }
+            else {
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                    [reader dismissViewControllerAnimated:YES completion:^{
+                        [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide.png"]];
+                    }];
+
+                    [self confirmRequest:request];
+                });
+            }
         }
         
         break;
@@ -697,8 +720,11 @@
     }
     else if (! self.tx) return;
 
+    ZNWalletManager *m = [ZNWalletManager sharedInstance];
+    ZNPaymentProtocolRequest *request = self.protocolRequest;
     NSString *title = [alertView buttonTitleAtIndex:buttonIndex];
-    
+    uint32_t freeHeight = [m.wallet blockHeightUntilFree:self.tx];
+
     if ([title hasPrefix:@"+ "] || [title isEqual:@"no fee"]) {
         if ([title hasPrefix:@"+ "]) self.tx = self.txWithFee;
         
@@ -708,13 +734,36 @@
             [self cancel:nil];
             return;
         }
+    }
+    else if (self.tx != self.txWithFee && freeHeight > [[ZNPeerManager sharedInstance] lastBlockHeight] + 1) {
+        uint64_t txFee = self.txWithFee ? [m.wallet feeForTransaction:self.txWithFee] : self.tx.standardFee;
+        NSString *fee = [m stringForAmount:txFee];
+        NSString *localCurrencyFee = [m localCurrencyStringForAmount:txFee];
 
-        [self confirmTransaction];
+        //if (freeHeight != TX_UNCONFIRMED) {
+        //    NSTimeInterval t = (freeHeight - [[ZNPeerManager sharedInstance] lastBlockHeight])*600;
+        //    int minutes = t/60, hours = t/(60*60), days = t/(60*60*24);
+        //    NSString *time = [NSString stringWithFormat:@"%d %@%@", days ? days : (hours ? hours : minutes),
+        //                      days ? @"day" : (hours ? @"hour" : @"minutes"),
+        //                      days > 1 ? @"s" : (days == 0 && hours > 1 ? @"s" : @"")];
+        //
+        //    [[[UIAlertView alloc]
+        //      initWithTitle:[NSString stringWithFormat:@"%@ (%@) transaction fee recommended", fee, localCurrencyFee]
+        //      message:[NSString stringWithFormat:@"estimated confirmation time with no fee: %@", time] delegate:self
+        //      cancelButtonTitle:nil otherButtonTitles:@"no fee",
+        //      [NSString stringWithFormat:@"+ %@ (%@)", fee, localCurrencyFee], nil] show];
+        //    return;
+        //}
+
+        [[[UIAlertView alloc] initWithTitle:nil
+          message:[NSString stringWithFormat:@"the bitcoin network will receive a fee of %@ (%@)", fee,
+                   localCurrencyFee] delegate:self cancelButtonTitle:@"cancel"
+          otherButtonTitles:[NSString stringWithFormat:@"+ %@ (%@)", fee, localCurrencyFee], nil] show];
         return;
     }
 
     NSLog(@"signing transaction");
-    [[[ZNWalletManager sharedInstance] wallet] signTransaction:self.tx];
+    [m.wallet signTransaction:self.tx];
     
     if (! [self.tx isSigned]) {
         [[[UIAlertView alloc] initWithTitle:@"couldn't make payment" message:@"error signing bitcoin transaction"
@@ -724,39 +773,55 @@
     }
 
     NSLog(@"signed transaction:\n%@", [NSString hexWithData:self.tx.data]);
-    
-    if (! self.request || [self.requests indexOfObject:self.request] >= self.requestIDs.count) {
-        [[[UIAlertView alloc] initWithTitle:@"couldn't make payment" message:@"inconsistent UI state" delegate:nil
-          cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
-        [self reset:nil];
-        return;
-    }
-    
-    NSString *reqID = self.requestIDs[[self.requests indexOfObject:self.request]];
 
-    if ([reqID isEqual:QR_ID] || [reqID isEqual:CLIPBOARD_ID] || [reqID isEqual:URL_ID]) {
-        //TODO: check for duplicate transactions
-        [[ZNPeerManager sharedInstance] publishTransaction:self.tx completion:^(NSError *error) {
+    //TODO: check for duplicate transactions
+    [[ZNPeerManager sharedInstance] publishTransaction:self.tx completion:^(NSError *error) {
+        if (request.details.paymentURL.length > 0) return;
+
+        if (error) {
+            [[[UIAlertView alloc] initWithTitle:@"couldn't make payment" message:error.localizedDescription
+              delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+            [self cancel:nil];
+            return;
+        }
+
+        //BUG: XXXX important to clear clipboard after paying to clipboard address
+        [self.view addSubview:[[[ZNBubbleView viewWithText:@"sent!"
+                                 center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
+                                fadeIn] fadeOutAfterDelay:2.0]];
+        [self reset:nil];
+    }];
+
+    if (request.details.paymentURL.length > 0) {
+        uint64_t refundAmount = 0;
+        NSMutableData *refundScript = [NSMutableData data];
+
+        [refundScript appendScriptPubKeyForAddress:m.wallet.receiveAddress];
+
+        for (NSNumber *amount in request.details.outputAmounts) {
+            refundAmount += [amount unsignedLongLongValue];
+        }
+
+        ZNPaymentProtocolPayment *payment =
+            [[ZNPaymentProtocolPayment alloc] initWithMerchantData:request.details.merchantData
+             transactions:@[self.tx] refundToAmounts:@[@(refundAmount)] refundToScripts:@[refundScript] memo:nil];
+
+        [ZNPaymentRequest postPayment:payment to:request.details.paymentURL
+        completion:^(ZNPaymentProtocolACK *ack, NSError *error) {
             if (error) {
-                [[[UIAlertView alloc] initWithTitle:@"couldn't make payment" message:error.localizedDescription
+                [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription
                   delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
                 [self cancel:nil];
                 return;
             }
-            
-            if (! [reqID isEqual:QR_ID]) {
-                [self.requestIDs removeObject:reqID];
-                [self.requests removeObject:self.request];
-                
-                if ([reqID isEqual:CLIPBOARD_ID]) [[UIPasteboard generalPasteboard] setString:@""];
-            }
-            
-            [self.view addSubview:[[[ZNBubbleView viewWithText:@"sent!"
-                                     center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
+
+            [self.view addSubview:[[[ZNBubbleView viewWithText:(ack.memo.length > 0 ? ack.memo : @"sent!")
+                                    center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
                                     fadeIn] fadeOutAfterDelay:2.0]];
             [self reset:nil];
         }];
     }
+
 //    else {
 //        NSLog(@"sending signed request to %@", self.requestIDs[self.selectedIndex]);
 //        

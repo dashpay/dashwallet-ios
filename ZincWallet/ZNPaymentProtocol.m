@@ -48,37 +48,40 @@
 
 - (uint64_t)protoBufVarIntAtOffeset:(NSUInteger *)off
 {
-    uint64_t r = 0;
-    uint8_t b = 0x80, i = 0;
+    uint64_t varInt = 0;
+    uint8_t b = 0x80;
+    NSUInteger i = 0;
 
     while ((b & 0x80) && *off < self.length) {
         b = ((const uint8_t *)self.bytes)[(*off)++];
-        r += (uint64_t)(b & 0x7f) << 7*i++;
+        varInt += (uint64_t)(b & 0x7f) << 7*i++;
     }
 
-    return r;
+    return varInt;
 }
 
 - (NSData *)protoBufLenDelimAtOffeset:(NSUInteger *)off
 {
-    NSData *r = nil;
-    NSUInteger l = [self protoBufVarIntAtOffeset:off];
+    NSData *lenDelim = nil;
+    NSUInteger len = [self protoBufVarIntAtOffeset:off];
 
-    if (*off + l <= self.length) r = [self subdataWithRange:NSMakeRange(*off, l)];
-    *off += l;
+    if (*off + len <= self.length) lenDelim = [self subdataWithRange:NSMakeRange(*off, len)];
+    *off += len;
 
-    return r;
+    return lenDelim;
 }
 
 // sets either int or data depending on field type, and returns field key
 - (NSUInteger)protoBufFieldAtOffset:(NSUInteger *)off int:(uint64_t *)i data:(NSData **)d
 {
     NSUInteger key = [self protoBufVarIntAtOffeset:off];
+    uint64_t varInt = 0;
+    NSData *lenDelim = nil;
 
     switch (key & 0x7) {
-        case PROTOBUF_VARINT: if (i) *i = [self protoBufVarIntAtOffeset:off]; break;
+        case PROTOBUF_VARINT: varInt = [self protoBufVarIntAtOffeset:off]; if (i) *i = varInt; break;
         case PROTOBUF_64BIT: *off += sizeof(uint64_t); break; // not used by payment protocol
-        case PROTOBUF_LENDELIM: if (d) *d = [self protoBufLenDelimAtOffeset:off]; break;
+        case PROTOBUF_LENDELIM: lenDelim = [self protoBufLenDelimAtOffeset:off]; if (d) *d = lenDelim; break;
         case PROTOBUF_32BIT: *off += sizeof(uint32_t); break; // not used by payment protocol
         default: break;
     }
@@ -106,7 +109,7 @@
         uint8_t b = i & 0x7f;
 
         i >>= 7;
-        if (i > 0) b &= 0x80;
+        if (i > 0) b |= 0x80;
         [self appendBytes:&b length:1];
     } while (i > 0);
 }
@@ -196,7 +199,7 @@ typedef enum {
 time:(NSTimeInterval)time expires:(NSTimeInterval)expires memo:(NSString *)memo paymentURL:(NSString *)url
 merchantData:(NSData *)data
 {
-    if (amounts.count != scripts.count) return nil;
+    if (scripts.count == 0 || amounts.count != scripts.count) return nil;
     if (! (self = [self init])) return nil;
 
     if (network) _network = network;
@@ -235,6 +238,8 @@ merchantData:(NSData *)data
 
         if (script) [amounts addObject:@(amount)], [scripts addObject:script];
     }
+
+    if (scripts.count == 0) return nil; // one or more outputs required
 
     _outputAmounts = amounts;
     _outputScripts = scripts;
@@ -373,7 +378,7 @@ details:(ZNPaymentProtocolDetails *)details signature:(NSData *)sig
         }
 
         SecTrustCreateWithCertificates((__bridge CFArrayRef)certs, (__bridge CFArrayRef)policies, &trust);
-        SecTrustEvaluate(trust, &trustResult);
+        SecTrustEvaluate(trust, &trustResult); // verify certificate chain
 
         NSArray *props = CFBridgingRelease(SecTrustCopyProperties(trust));
 
@@ -393,6 +398,7 @@ details:(ZNPaymentProtocolDetails *)details signature:(NSData *)sig
         if ([_pkiType isEqual:@"x509+sha1"]) d = self.data.SHA1, padding = kSecPaddingPKCS1SHA1;
         _signature = sig;
 
+        // verify request signature
         OSStatus status = SecKeyRawVerify(pubKey, padding, d.bytes, d.length, _signature.bytes, _signature.length);
 
         CFRelease(pubKey);
@@ -402,7 +408,7 @@ details:(ZNPaymentProtocolDetails *)details signature:(NSData *)sig
         }
     }
 
-    if ([NSDate timeIntervalSinceReferenceDate] > _details.expires) {
+    if (_details.expires > 1 && [NSDate timeIntervalSinceReferenceDate] > _details.expires) {
         _errorMessage = @"request expired";
         return NO;
     }
@@ -443,6 +449,8 @@ details:(ZNPaymentProtocolDetails *)details signature:(NSData *)sig
         if (tx) [txs addObject:tx];
         if (script) [amounts addObject:@(amount)], [scripts addObject:script];
     }
+
+    if (txs.count == 0) return nil; // one or more transactions required
 
     _transactions = txs;
     _refundToAmounts = amounts;
