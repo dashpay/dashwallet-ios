@@ -46,4 +46,3 @@ Any jailbreak app can grant itself keychain entitlements to your wallet seed and
 rob you by self-signing as described [here](http://www.saurik.com/id/8) and
 including `<key>application-identifier</key><string>cc.zinc.*</string>` in its
 .entitlements file.
-
