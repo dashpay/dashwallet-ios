@@ -380,14 +380,14 @@ details:(ZNPaymentProtocolDetails *)details signature:(NSData *)sig
         SecTrustCreateWithCertificates((__bridge CFArrayRef)certs, (__bridge CFArrayRef)policies, &trust);
         SecTrustEvaluate(trust, &trustResult); // verify certificate chain
 
-        NSArray *props = CFBridgingRelease(SecTrustCopyProperties(trust));
-
         // kSecTrustResultUnspecified indicates a positive result that wasn't decided by the user
-        if (trustResult != kSecTrustResultUnspecified) {
-            _errorMessage = (props.count) ? props[0][(__bridge id)kSecPropertyTypeError] : @"missing certificate";
+        if (trustResult != kSecTrustResultUnspecified && trustResult != kSecTrustResultProceed) {
+            _errorMessage = (certs.count) ? @"untrusted certificate" : @"missing certificate";
             return NO;
         }
-        else if (props.count) _commonName = props[0][(__bridge id)kSecPropertyTypeTitle];
+        else if (certs.count) {
+            _commonName = CFBridgingRelease(SecCertificateCopySubjectSummary((__bridge SecCertificateRef)certs[0]));
+        }
 
         SecKeyRef pubKey = SecTrustCopyPublicKey(trust);
         SecPadding padding = kSecPaddingPKCS1;
@@ -449,8 +449,6 @@ details:(ZNPaymentProtocolDetails *)details signature:(NSData *)sig
         if (tx) [txs addObject:tx];
         if (script) [amounts addObject:@(amount)], [scripts addObject:script];
     }
-
-    if (txs.count == 0) return nil; // one or more transactions required
 
     _transactions = txs;
     _refundToAmounts = amounts;

@@ -361,11 +361,21 @@
     }
 
     if (request.r.length > 0) { // payment protocol over HTTP
-        //TODO: XXXX show spinner
+        UIActivityIndicatorView *spinner = [[UIActivityIndicatorView alloc]
+                                            initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+
+        self.parentViewController.navigationItem.rightBarButtonItem =
+            [[UIBarButtonItem alloc] initWithCustomView:spinner];
+        [spinner startAnimating];
+
         [ZNPaymentRequest fetch:request.r completion:^(ZNPaymentProtocolRequest *req, NSError *error) {
+            [spinner stopAnimating];
+            self.parentViewController.navigationItem.rightBarButtonItem = nil;
+
             if (error) {
                 [[[UIAlertView alloc] initWithTitle:@"couldn't make payment" message:error.localizedDescription
                   delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+                [self reset:nil];
                 return;
             }
 
@@ -429,7 +439,7 @@
     if (! [request isValid]) {
         [[[UIAlertView alloc] initWithTitle:@"bad payment request" message:request.errorMessage delegate:nil
           cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
-        [self cancel:nil];
+        [self reset:nil];
         return;
     }
 
@@ -444,7 +454,7 @@
     if (! self.tx) {
         [[[UIAlertView alloc] initWithTitle:@"insufficient funds" message:nil delegate:nil cancelButtonTitle:@"ok"
           otherButtonTitles:nil] show];
-        [self cancel:nil];
+        [self reset:nil];
     }
 
     [self confirmTransaction:self.tx name:request.commonName memo:request.details.memo
@@ -762,6 +772,8 @@
         return;
     }
 
+    //TODO: check for duplicate transactions
+    
     NSLog(@"signing transaction");
     [m.wallet signTransaction:self.tx];
     
@@ -774,7 +786,6 @@
 
     NSLog(@"signed transaction:\n%@", [NSString hexWithData:self.tx.data]);
 
-    //TODO: check for duplicate transactions
     [[ZNPeerManager sharedInstance] publishTransaction:self.tx completion:^(NSError *error) {
         if (request.details.paymentURL.length > 0) return;
 
@@ -802,6 +813,8 @@
             refundAmount += [amount unsignedLongLongValue];
         }
 
+        // TODO: keep track of commonName/memo to associate them with outputScripts
+
         ZNPaymentProtocolPayment *payment =
             [[ZNPaymentProtocolPayment alloc] initWithMerchantData:request.details.merchantData
              transactions:@[self.tx] refundToAmounts:@[@(refundAmount)] refundToScripts:@[refundScript] memo:nil];
@@ -811,13 +824,13 @@
             if (error) {
                 [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription
                   delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
-                [self cancel:nil];
+                [self reset:nil];
                 return;
             }
 
             [self.view addSubview:[[[ZNBubbleView viewWithText:(ack.memo.length > 0 ? ack.memo : @"sent!")
                                     center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
-                                    fadeIn] fadeOutAfterDelay:2.0]];
+                                    fadeIn] fadeOutAfterDelay:(ack.memo.length > 10 ? 3.0 : 2.0)]];
             [self reset:nil];
         }];
     }

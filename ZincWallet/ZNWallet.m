@@ -52,7 +52,6 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
 @property (nonatomic, strong) NSMutableSet *allAddresses, *usedAddresses, *spentOutputs, *invalidTx;
 @property (nonatomic, strong) NSMutableOrderedSet *transactions, *utxos;
 @property (nonatomic, strong) NSMutableDictionary *allTx;
-@property (nonatomic, assign) uint64_t balance;
 @property (nonatomic, strong) NSData *(^seed)();
 @property (nonatomic, strong) NSManagedObjectContext *moc;
 
@@ -231,16 +230,17 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
         }
     }
 
-    if (balance != self.balance) {
+    self.invalidTx = invalidTx;
+    self.spentOutputs = spentOutputs;
+    self.utxos = utxos;
+
+    if (balance != _balance) {
+        _balance = balance;
+
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:ZNWalletBalanceChangedNotification object:nil];
         });
     }
-
-    self.invalidTx = invalidTx;
-    self.spentOutputs = spentOutputs;
-    self.utxos = utxos;
-    self.balance = balance;
 }
 
 #pragma mark - wallet info
