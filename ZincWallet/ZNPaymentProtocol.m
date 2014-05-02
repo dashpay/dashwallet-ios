@@ -78,7 +78,7 @@
     uint64_t varInt = 0;
     NSData *lenDelim = nil;
 
-    switch (key & 0x7) {
+    switch (key & 0x07) {
         case PROTOBUF_VARINT: varInt = [self protoBufVarIntAtOffeset:off]; if (i) *i = varInt; break;
         case PROTOBUF_64BIT: *off += sizeof(uint64_t); break; // not used by payment protocol
         case PROTOBUF_LENDELIM: lenDelim = [self protoBufLenDelimAtOffeset:off]; if (d) *d = lenDelim; break;
@@ -300,7 +300,7 @@ merchantData:(NSData *)data
         NSData *d = nil;
 
         switch ([data protoBufFieldAtOffset:&off int:&i data:&d]) {
-            case request_version: if (i) _version = i; break;
+            case request_version: if (i) _version = (uint32_t)i; break;
             case request_pki_type: if (d) _pkiType = protoBufString(d); break;
             case request_pki_data: if (d) _pkiData = d; break;
             case request_details: if (d) _details = [ZNPaymentProtocolDetails detailsWithData:d]; break;

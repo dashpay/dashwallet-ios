@@ -34,7 +34,7 @@
 @interface ZNAmountViewController ()
 
 @property (nonatomic, strong) IBOutlet UITextField *amountField;
-@property (nonatomic, strong) IBOutlet UILabel *addressLabel;
+@property (nonatomic, strong) IBOutlet UILabel *localCurrencyLabel, *addressLabel;
 @property (nonatomic, strong) IBOutlet UIActivityIndicatorView *spinner;
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *payButton;
 @property (nonatomic, strong) IBOutlet UIButton *delButton;
@@ -137,6 +137,20 @@
     [super viewWillDisappear:animated];
 }
 
+- (void)updateLocalCurrencyLabel
+{
+    ZNWalletManager *m = [ZNWalletManager sharedInstance];
+    uint64_t amount = [m amountForString:self.amountField.text];
+    CGSize size = [self.amountField.text sizeWithAttributes:@{NSFontAttributeName:self.amountField.font}];
+
+    self.localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)", [m localCurrencyStringForAmount:amount]];
+    self.localCurrencyLabel.center = CGPointMake(self.amountField.frame.origin.x + self.amountField.frame.size.width -
+                                                 (size.width + 3.0 + self.localCurrencyLabel.frame.size.width/2),
+                                                 self.localCurrencyLabel.center.y);
+
+    self.localCurrencyLabel.hidden = (amount == 0) ? YES : NO;
+}
+
 #pragma mark - IBAction
 
 - (IBAction)number:(id)sender
@@ -168,7 +182,7 @@
 replacementString:(NSString *)string
 {
     ZNWalletManager *m = [ZNWalletManager sharedInstance];
-    NSUInteger point = [textField.text rangeOfString:[m.format decimalSeparator]].location;
+    NSUInteger point = [textField.text rangeOfString:m.format.decimalSeparator].location;
     NSString *t = textField.text ? [textField.text stringByReplacingCharactersInRange:range withString:string] : string;
 
     t = [m.format stringFromNumber:[m.format numberFromString:t]];
@@ -181,14 +195,14 @@ replacementString:(NSString *)string
              (point != NSNotFound && textField.text.length - point > m.format.maximumFractionDigits)) {
         return NO; // too many digits
     }
-    else if ([string isEqual:[m.format decimalSeparator]] && (! textField.text.length || point == NSNotFound)) {
+    else if ([string isEqual:m.format.decimalSeparator] && (! textField.text.length || point == NSNotFound)) {
         if (! textField.text.length) t = [m.format stringFromNumber:@0]; // if first char is '.', prepend a zero
         
-        t = [t stringByAppendingString:[m.format decimalSeparator]];
+        t = [t stringByAppendingString:m.format.decimalSeparator];
     }
     else if ([string isEqual:@"0"]) {
         if (! textField.text.length) { // if first digit is zero, append a '.'
-            t = [[m.format stringFromNumber:@0] stringByAppendingString:[m.format decimalSeparator]];
+            t = [[m.format stringFromNumber:@0] stringByAppendingString:m.format.decimalSeparator];
         }
         else if (point != NSNotFound) { // handle multiple zeros after period....
             t = [textField.text stringByAppendingString:@"0"];
@@ -196,16 +210,15 @@ replacementString:(NSString *)string
     }
 
     // don't allow values below TX_MIN_OUTPUT_AMOUNT
-    if (t.length > 0 && [t rangeOfString:[m.format decimalSeparator]].location != NSNotFound &&
+    if (t.length > 0 && [t rangeOfString:m.format.decimalSeparator].location != NSNotFound &&
         [m amountForString:[t stringByAppendingString:@"9"]] < TX_MIN_OUTPUT_AMOUNT) {
         return NO;
     }
 
     textField.text = t;
     //self.payButton.enabled = t.length ? YES : NO;
+    [self updateLocalCurrencyLabel];
 
-    //TODO: XXXX add local currency string
-    
     return NO;
 }
 

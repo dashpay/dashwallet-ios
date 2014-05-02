@@ -122,7 +122,7 @@
 //                    else if ([status isEqual:@"canceled"]) [self cancel:nil];
 //                }
 //                else if ([url.path isEqual:@"/qr"]) {
-//                    //TODO: XXXX scan qr and launch webapp
+//                    //TODO: scan qr and launch webapp
 //                }
 //
 //                return;
@@ -395,13 +395,6 @@
         [self reset:nil];
     }
     else if (request.amount == 0) {
-        if (! [[ZNPeerManager sharedInstance] connected]) {
-            [[[UIAlertView alloc] initWithTitle:@"not connected to the bitcoin network" message:nil
-              delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
-            [self reset:nil];
-            return;
-        }
-
         ZNAmountViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNAmountViewController"];
         
         c.delegate = self;
@@ -566,7 +559,9 @@
     if ([self nextTip]) return;
 
     NSUInteger idx = [self.requestButtons indexOfObject:sender];
-    
+
+    [sender setEnabled:NO];
+
     if ([self.requestIDs indexOfObject:QR_ID] == idx) {
         [self.navigationController presentViewController:self.zbarController animated:YES completion:^{
             NSLog(@"present qr reader complete");
@@ -592,7 +587,7 @@
 
         if (! [req isValid] && ! [s isValidBitcoinPrivateKey] && ! [s isValidBitcoinBIP38Key]) {
             [[[UIAlertView alloc] initWithTitle:@"clipboard doesn't contain a valid bitcoin address" message:nil
-                                       delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+              delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
             [self reset:nil];
             return;
         }
@@ -807,14 +802,15 @@
         uint64_t refundAmount = 0;
         NSMutableData *refundScript = [NSMutableData data];
 
-        [refundScript appendScriptPubKeyForAddress:m.wallet.receiveAddress];
+        // use the payment transaction's change address as the refund address
+        [refundScript appendScriptPubKeyForAddress:m.wallet.changeAddress];
 
         for (NSNumber *amount in request.details.outputAmounts) {
             refundAmount += [amount unsignedLongLongValue];
         }
 
-        // TODO: keep track of commonName/memo to associate them with outputScripts
-
+        // TODO: XXXX keep track of commonName/memo to associate them with outputScripts
+        // TODO: XXXX notify user if transaction was sent or not when payment post fails
         ZNPaymentProtocolPayment *payment =
             [[ZNPaymentProtocolPayment alloc] initWithMerchantData:request.details.merchantData
              transactions:@[self.tx] refundToAmounts:@[@(refundAmount)] refundToScripts:@[refundScript] memo:nil];

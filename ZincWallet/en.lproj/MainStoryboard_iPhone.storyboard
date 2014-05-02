@@ -59,7 +59,7 @@
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                     </view>
-                    <navigationItem key="navigationItem" title="mɃ 0.00000" id="TF6-YO-yee">
+                    <navigationItem key="navigationItem" title="ƀ 0.00" id="TF6-YO-yee">
                         <barButtonItem key="backBarButtonItem" title=" " id="Fsb-bA-8mo"/>
                         <barButtonItem key="leftBarButtonItem" image="gear.png" id="KKr-sB-LsJ">
                             <connections>
@@ -80,7 +80,7 @@
             </objects>
             <point key="canvasLocation" x="832" y="-349"/>
         </scene>
-        <!--Settings View Controller - mɃ 0.00000-->
+        <!--Settings View Controller - ƀ 0.00-->
         <scene sceneID="IWH-Ws-QLh">
             <objects>
                 <tableViewController id="ONk-2h-AQR" customClass="ZNSettingsViewController" sceneMemberID="viewController">
@@ -113,7 +113,7 @@
                                             <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                             <size key="shadowOffset" width="0.0" height="1"/>
                                         </label>
-                                        <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="left" text="B 10.0000" lineBreakMode="clip" baselineAdjustment="alignBaselines" minimumFontSize="8" id="eaS-Yc-Vbc">
+                                        <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="left" text="ƀ 1,000.00" lineBreakMode="clip" baselineAdjustment="alignBaselines" minimumFontSize="8" id="eaS-Yc-Vbc">
                                             <rect key="frame" x="190" y="19.5" width="120" height="20"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                             <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
@@ -216,7 +216,7 @@
                             </tableViewCell>
                         </prototypes>
                     </tableView>
-                    <navigationItem key="navigationItem" title="mɃ 0.00000" id="7N8-Cz-vq3">
+                    <navigationItem key="navigationItem" title="ƀ 0.00" id="7N8-Cz-vq3">
                         <barButtonItem key="backBarButtonItem" title=" " id="RaK-k5-PIH"/>
                         <barButtonItem key="leftBarButtonItem" title="done" id="szI-11-pCy">
                             <connections>
@@ -654,7 +654,7 @@ https://github.com/voisine/zincwallet</string>
             </objects>
             <point key="canvasLocation" x="1254" y="326"/>
         </scene>
-        <!--Amount View Controller - mɃ 0.00000-->
+        <!--Amount View Controller - ƀ 0.00-->
         <scene sceneID="6VG-zW-rjY">
             <objects>
                 <viewController storyboardIdentifier="ZNAmountViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="asW-9a-XhX" customClass="ZNAmountViewController" sceneMemberID="viewController">
@@ -662,7 +662,14 @@ https://github.com/voisine/zincwallet</string>
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
-                            <textField opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.67000000000000004" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="mɃ 0.00000" textAlignment="right" adjustsFontSizeToFit="NO" minimumFontSize="24" id="U70-Jh-YtO">
+                            <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="($0.00)" textAlignment="right" lineBreakMode="headTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="JVG-oa-aBe">
+                                <rect key="frame" x="20" y="87" width="212" height="21"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
+                                <color key="textColor" white="0.5" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <textField opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.67000000000000004" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="ƀ 0.00" textAlignment="right" adjustsFontSizeToFit="NO" minimumFontSize="24" id="U70-Jh-YtO">
                                 <rect key="frame" x="20" y="69" width="280" height="55"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="24"/>
@@ -927,8 +934,8 @@ https://github.com/voisine/zincwallet</string>
                                 </connections>
                             </button>
                             <view hidden="YES" contentMode="scaleToFill" id="xAt-sn-r0p">
-                                <rect key="frame" x="20" y="398" width="280" height="1"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+                                <rect key="frame" x="20" y="418" width="280" height="1"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                 <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="GNd-qX-qoG" customClass="ZNButton">
@@ -1029,7 +1036,7 @@ https://github.com/voisine/zincwallet</string>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                     </view>
-                    <navigationItem key="navigationItem" title="mɃ 0.00000" id="Ufy-kA-8Fw">
+                    <navigationItem key="navigationItem" title="ƀ 0.00" id="Ufy-kA-8Fw">
                         <barButtonItem key="rightBarButtonItem" title="pay" id="D8w-gf-PFI">
                             <connections>
                                 <action selector="pay:" destination="asW-9a-XhX" id="422-mA-SEl"/>
@@ -1041,6 +1048,7 @@ https://github.com/voisine/zincwallet</string>
                         <outlet property="addressLabel" destination="2Hb-Bj-uBt" id="3mg-RW-NcY"/>
                         <outlet property="amountField" destination="U70-Jh-YtO" id="PPC-gE-dUn"/>
                         <outlet property="delButton" destination="1V7-p4-mo1" id="UVB-WS-Sec"/>
+                        <outlet property="localCurrencyLabel" destination="JVG-oa-aBe" id="scZ-Cd-sdw"/>
                         <outlet property="payButton" destination="D8w-gf-PFI" id="U6a-qQ-dYf"/>
                         <outletCollection property="buttons" destination="GNd-qX-qoG" id="AfP-L4-Yle"/>
                         <outletCollection property="buttonRow1" destination="T4X-DS-NEf" id="jCB-yR-3GW"/>

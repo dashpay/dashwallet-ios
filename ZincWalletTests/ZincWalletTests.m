@@ -47,6 +47,12 @@
     [super setUp];
     
     // Set-up code here.
+    NSString *s = @"http://foo.bar/testing?abc=def&hij=kl m";
+
+    NSLog(@"%@", [s stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);
+    NSLog(@"%@", CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(NULL, (CFStringRef)s, NULL, CFSTR("&=;"),
+                                                                           kCFStringEncodingUTF8)));
+
 }
 
 - (void)tearDown

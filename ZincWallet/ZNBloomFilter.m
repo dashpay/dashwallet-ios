@@ -113,7 +113,7 @@ static uint32_t murmurHash3(NSData *data, uint32_t seed)
 }
 
 - (instancetype)initWithFalsePositiveRate:(double)fpRate forElementCount:(NSUInteger)count tweak:(uint32_t)tweak
-                                    flags:(uint8_t)flags
+flags:(uint8_t)flags
 {
     if (! (self = [self init])) return nil;
 

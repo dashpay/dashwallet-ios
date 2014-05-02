@@ -73,7 +73,7 @@ details:(ZNPaymentProtocolDetails *)details signature:(NSData *)sig;
 
 @interface ZNPaymentProtocolPayment : NSObject
 
-@property (nonatomic, readonly) NSData *merchantData; // from details.merchantData, optional
+@property (nonatomic, readonly) NSData *merchantData; // from request.details.merchantData, optional
 @property (nonatomic, readonly) NSArray *transactions; // array of signed ZNTransaction objs to satisfy details.outputs
 @property (nonatomic, readonly) NSArray *refundToAmounts; // refund amounts, if a refund is necessary, default is 0
 @property (nonatomic, readonly) NSArray *refundToScripts; // where to send refunds, if a refund is necessary

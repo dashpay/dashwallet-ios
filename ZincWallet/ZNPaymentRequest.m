@@ -71,13 +71,13 @@
     self.label = nil;
     self.message = nil;
     self.amount = 0;
+    self.r = nil;
 
     if (! data) return;
 
-    // stringByAddingPercentEscapesUsingEncoding: only encodes characters that would otherwise make the URL illegal so
-    // it doesn't result in double encoding
-    NSString *s = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-                  // stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    NSString *s = [[[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]
+                    stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]
+                   stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
     NSURL *url = [NSURL URLWithString:s];
     
     if (! url || ! url.scheme) {
@@ -92,22 +92,21 @@
     //TODO: correctly handle unkown but required url arguments (by reporting the request invalid)
     for (NSString *arg in [url.query componentsSeparatedByString:@"&"]) {
         NSArray *pair = [arg componentsSeparatedByString:@"="];
-
-        if (pair.count != 2) continue;
+        NSString *value = (pair.count > 1) ? [arg substringFromIndex:[pair[0] length] + 1] : nil;
         
         if ([pair[0] isEqual:@"amount"]) {
-            self.amount = ([pair[1] doubleValue] + DBL_EPSILON)*SATOSHIS;
+            self.amount = ([value doubleValue] + DBL_EPSILON)*SATOSHIS;
         }
         else if ([pair[0] isEqual:@"label"]) {
-            self.label = [[pair[1] stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
+            self.label = [[value stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
                           stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
         }
         else if ([pair[0] isEqual:@"message"]) {
-            self.message = [[pair[1] stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
+            self.message = [[value stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
                             stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
         }
         else if ([pair[0] isEqual:@"r"]) {
-            self.r = [[pair[1] stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
+            self.r = [[value stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
                       stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
         }
     }
@@ -123,20 +122,23 @@
     if (self.amount > 0) {
         [q addObject:[NSString stringWithFormat:@"amount=%.16g", (double)self.amount/SATOSHIS]];
     }
-    
+
     if (self.label.length > 0) {
         [q addObject:[NSString stringWithFormat:@"label=%@",
-         [self.label stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+         CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(NULL, (CFStringRef)self.label, NULL, CFSTR("&="),
+                                                                   kCFStringEncodingUTF8))]];
     }
     
     if (self.message.length > 0) {
         [q addObject:[NSString stringWithFormat:@"message=%@",
-         [self.message stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+         CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(NULL, (CFStringRef)self.message, NULL, CFSTR("&="),
+                                                                   kCFStringEncodingUTF8))]];
     }
 
     if (self.r.length > 0) {
         [q addObject:[NSString stringWithFormat:@"r=%@",
-         [self.r stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+         CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(NULL, (CFStringRef)self.r, NULL, CFSTR("&="),
+                                                                   kCFStringEncodingUTF8))]];
     }
     
     if (q.count > 0) {
@@ -161,7 +163,7 @@
 {
     if (! completion) return;
 
-    NSURL *u = [NSURL URLWithString:[url stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+    NSURL *u = [NSURL URLWithString:url];
 
     if (! u) {
         completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417

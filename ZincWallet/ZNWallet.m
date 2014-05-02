@@ -77,16 +77,13 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     self.utxos = [NSMutableOrderedSet orderedSet];
 
     [self.moc performBlockAndWait:^{
-        NSFetchRequest *req = [ZNAddressEntity fetchRequest];
+        for (ZNAddressEntity *e in [ZNAddressEntity allObjects]) {
+            NSMutableArray *a = e.internal ? self.internalAddresses : self.externalAddresses;
 
-        req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"index" ascending:YES]];
-        req.predicate = [NSPredicate predicateWithFormat:@"internal == YES"];
-        [self.internalAddresses setArray:[[ZNAddressEntity fetchObjects:req] valueForKey:@"address"]];
-        req.predicate = [NSPredicate predicateWithFormat:@"internal == NO"];
-        [self.externalAddresses setArray:[[ZNAddressEntity fetchObjects:req] valueForKey:@"address"]];
-
-        [self.allAddresses addObjectsFromArray:self.internalAddresses];
-        [self.allAddresses addObjectsFromArray:self.externalAddresses];
+            while (e.index >= a.count) [a addObject:[NSNull null]];
+            [a replaceObjectAtIndex:e.index withObject:e.address];
+            [self.allAddresses addObject:e.address];
+        }
 
         for (ZNTransactionEntity *e in [ZNTransactionEntity allObjects]) {
             ZNTransaction *tx = e.transaction;
