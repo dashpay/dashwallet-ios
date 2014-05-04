@@ -557,6 +557,8 @@ static const char *dns_seeds[] = {
         for (ZNPeer *p in self.connectedPeers) { // after syncing, load filters and get mempools from the other peers
             if (p != self.downloadPeer) [p sendFilterloadMessage:self.bloomFilter.data];
             [p sendMempoolMessage];
+            //BUG: XXXX sometimes a peer relays thousands of transactions after mempool msg, should detect and
+            // disconnect if it's more than BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10*<typical mempool size>*2
         }
     }
 

@@ -377,16 +377,17 @@ details:(ZNPaymentProtocolDetails *)details signature:(NSData *)sig
             if (cert) [certs addObject:CFBridgingRelease(cert)];
         }
 
+        if (certs.count > 0) {
+            _commonName = CFBridgingRelease(SecCertificateCopySubjectSummary((__bridge SecCertificateRef)certs[0]));
+        }
+
         SecTrustCreateWithCertificates((__bridge CFArrayRef)certs, (__bridge CFArrayRef)policies, &trust);
         SecTrustEvaluate(trust, &trustResult); // verify certificate chain
 
         // kSecTrustResultUnspecified indicates a positive result that wasn't decided by the user
         if (trustResult != kSecTrustResultUnspecified && trustResult != kSecTrustResultProceed) {
-            _errorMessage = (certs.count) ? @"untrusted certificate" : @"missing certificate";
+            _errorMessage = (certs.count > 0) ? @"untrusted certificate" : @"missing certificate";
             return NO;
-        }
-        else if (certs.count) {
-            _commonName = CFBridgingRelease(SecCertificateCopySubjectSummary((__bridge SecCertificateRef)certs[0]));
         }
 
         SecKeyRef pubKey = SecTrustCopyPublicKey(trust);

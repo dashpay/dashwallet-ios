@@ -46,6 +46,8 @@
 #define CLIPBOARD_ID    @"clipboard"
 #define QR_ID           @"qr"
 #define LOCK            @"\xF0\x9F\x94\x92" // unicode lock symbol U+1F512 (utf-8)
+#define REDX            @"\xE2\x9D\x8C"     // unicode cross mark U+274C, red x emoji (utf-8)
+#define NOEMOJI         @"\xEF\xB8\x8E"     // text style (non-emoji) unicode variation selector U+FE0E (utf-8)
 
 #define SCAN_TIP      @"Scan someone else's QR code to get their bitcoin address. "\
                        "You can send a payment to anyone with an address."
@@ -334,8 +336,9 @@
     uint64_t txAmount = [m.wallet amountSentByTransaction:tx] - [m.wallet amountReceivedFromTransaction:tx];
     NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:txAmount],
                         [m localCurrencyStringForAmount:txAmount]];
-    NSString *msg = (isSecure && name.length > 0) ? LOCK @" " : @"";
+    NSString *msg = (isSecure && name.length > 0) ? LOCK NOEMOJI @" " : @"";
 
+    if (! isSecure && self.protocolRequest.errorMessage.length > 0) msg = [msg stringByAppendingString:REDX @" "];
     if (name.length > 0) msg = [msg stringByAppendingString:name];
     if (! isSecure && msg.length > 0) msg = [msg stringByAppendingString:@"\n"];
     if (! isSecure || msg.length == 0) msg = [msg stringByAppendingString:[m.wallet addressForTransaction:tx]];
@@ -429,7 +432,9 @@
 
 - (void)confirmProtocolRequest:(ZNPaymentProtocolRequest *)request
 {
-    if (! [request isValid]) {
+    BOOL valid = [request isValid];
+
+    if (! valid && [request.errorMessage isEqual:@"request expired"]) {
         [[[UIAlertView alloc] initWithTitle:@"bad payment request" message:request.errorMessage delegate:nil
           cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
         [self reset:nil];
@@ -451,7 +456,7 @@
     }
 
     [self confirmTransaction:self.tx name:request.commonName memo:request.details.memo
-     isSecure:([request.pkiType isEqual:@"none"]) ? NO : YES];
+     isSecure:(valid && ! [request.pkiType isEqual:@"none"]) ? YES : NO];
 }
 
 - (void)confirmSweep:(NSString *)privKey
