@@ -24,6 +24,7 @@
 //  THE SOFTWARE.
 
 #import "ZNWelcomeViewController.h"
+#import "ZNWalletManager.h"
 
 #define WALLPAPER_ANIMATION_DURATION 30.0
 #define WALLPAPER_ANIMATION_X 240.0
@@ -57,6 +58,10 @@
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
+            if ([[ZNWalletManager sharedInstance] wallet]) { // sanity check
+                [self.navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
+            }
+
             if (self.animating) return;
             
             self.wallpaper.center = self.wallpaperStart;
@@ -110,7 +115,11 @@
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
-    
+
+    if ([[ZNWalletManager sharedInstance] wallet]) { // sanity check
+        [self.navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
+    }
+
     if (self.hasAppeared) return;
     
     self.hasAppeared = YES;
