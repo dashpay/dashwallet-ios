@@ -216,6 +216,8 @@
     ZNWalletManager *m = [ZNWalletManager sharedInstance];
     
     if (! m.wallet) {
+        if (! [[UIApplication sharedApplication] isProtectedDataAvailable]) return;
+
         UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNNewWalletNav"];
         
         [self.navigationController presentViewController:c animated:NO completion:nil];

@@ -498,6 +498,7 @@ static const char *dns_seeds[] = {
 // transaction is considered verified when all peers have relayed it
 - (BOOL)transactionIsVerified:(NSData *)txHash
 {
+    //BUG: XXXX received transactions remain unverified until disconnecting/reconnecting
     return ([self.txRelays[txHash] count] >= self.connectedPeers.count) ? YES : NO;
 }
 

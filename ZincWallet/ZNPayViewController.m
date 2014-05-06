@@ -61,7 +61,7 @@
 @property (nonatomic, strong) NSMutableArray *requestIDs;
 @property (nonatomic, strong) NSMutableArray *requestButtons;
 @property (nonatomic, strong) NSString *addressInWallet, *txName, *txMemo;
-@property (nonatomic, assign) BOOL txSecure;
+@property (nonatomic, assign) BOOL txSecure, clearClipboard;
 @property (nonatomic, strong) id urlObserver, fileObserver, activeObserver;
 @property (nonatomic, strong) ZNTransaction *sweepTx, *tx, *txWithFee;
 @property (nonatomic, strong) ZNPaymentProtocolRequest *protocolRequest;
@@ -151,18 +151,22 @@
             
             if (payment.transactions.count > 0) {
                 for (ZNTransaction *tx in payment.transactions) {
+                    [self startSpinner];
+
                     [[ZNPeerManager sharedInstance] publishTransaction:tx completion:^(NSError *error) {
+                        [self stopSpinner];
+
                         if (error) {
                             [[[UIAlertView alloc] initWithTitle:@"couldn't transmit payment to bitcoin network"
                               message:error.localizedDescription delegate:nil cancelButtonTitle:@"ok"
                               otherButtonTitles:nil] show];
                         }
+                        
+                        [self.view addSubview:[[[ZNBubbleView
+                         viewWithText:(payment.memo.length > 0 ? payment.memo : @"recieved")
+                         center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] fadeIn]
+                         fadeOutAfterDelay:(payment.memo.length > 10 ? 3.0 : 2.0)]];
                     }];
-                }
-
-                if (payment.memo.length > 0) {
-                    [[[UIAlertView alloc] initWithTitle:@"payment memo:" message:payment.memo delegate:nil
-                      cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
                 }
 
                 return;
@@ -232,6 +236,22 @@
     [self hideTips];
 
     [super viewWillDisappear:animated];
+}
+
+- (ZBarReaderViewController *)zbarController
+{
+    if (! _zbarController) {
+        _zbarController = [ZBarReaderViewController new];
+        _zbarController.readerDelegate = self;
+        _zbarController.cameraOverlayView =
+        [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"cameraguide.png"]];
+
+        CGPoint c = _zbarController.view.center;
+
+        _zbarController.cameraOverlayView.center = CGPointMake(c.x, c.y - 10.0);
+    }
+
+    return _zbarController;
 }
 
 - (void)layoutButtonsAnimated:(BOOL)animated
@@ -309,20 +329,19 @@
     }    
 }
 
-- (ZBarReaderViewController *)zbarController
+- (void)startSpinner
 {
-    if (! _zbarController) {
-        _zbarController = [ZBarReaderViewController new];
-        _zbarController.readerDelegate = self;
-        _zbarController.cameraOverlayView =
-        [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"cameraguide.png"]];
-        
-        CGPoint c = _zbarController.view.center;
-        
-        _zbarController.cameraOverlayView.center = CGPointMake(c.x, c.y - 10.0);
-    }
-    
-    return _zbarController;
+    UIActivityIndicatorView *spinner = [[UIActivityIndicatorView alloc]
+                                        initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+
+    self.parentViewController.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:spinner];
+    [spinner startAnimating];
+}
+
+- (void)stopSpinner
+{
+    [(id)self.parentViewController.navigationItem.rightBarButtonItem.customView stopAnimating];
+    self.parentViewController.navigationItem.rightBarButtonItem = nil;
 }
 
 - (void)confirmTransaction:(ZNTransaction *)tx name:(NSString *)name memo:(NSString *)memo isSecure:(BOOL)isSecure
@@ -357,32 +376,24 @@
         else {
             [[[UIAlertView alloc] initWithTitle:@"not a valid bitcoin address" message:request.paymentAddress
               delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
-            [self reset:nil];
+            [self cancel:nil];
         }
 
         return;
     }
 
     if (request.r.length > 0) { // payment protocol over HTTP
-        UIActivityIndicatorView *spinner = [[UIActivityIndicatorView alloc]
-                                            initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-
-        self.parentViewController.navigationItem.rightBarButtonItem =
-            [[UIBarButtonItem alloc] initWithCustomView:spinner];
-        [spinner startAnimating];
+        [self startSpinner];
 
         [ZNPaymentRequest fetch:request.r completion:^(ZNPaymentProtocolRequest *req, NSError *error) {
-            [spinner stopAnimating];
-            self.parentViewController.navigationItem.rightBarButtonItem = nil;
+            [self stopSpinner];
 
             if (error) {
                 [[[UIAlertView alloc] initWithTitle:@"couldn't make payment" message:error.localizedDescription
                   delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
-                [self reset:nil];
-                return;
+                [self cancel:nil];
             }
-
-            [self confirmProtocolRequest:req];
+            else [self confirmProtocolRequest:req];
         }];
 
         return;
@@ -395,7 +406,7 @@
           cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
         
         self.addressInWallet = request.paymentAddress;
-        [self reset:nil];
+        [self cancel:nil];
     }
     else if (request.amount == 0) {
         ZNAmountViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNAmountViewController"];
@@ -437,7 +448,7 @@
     if (! valid && [request.errorMessage isEqual:@"request expired"]) {
         [[[UIAlertView alloc] initWithTitle:@"bad payment request" message:request.errorMessage delegate:nil
           cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
-        [self reset:nil];
+        [self cancel:nil];
         return;
     }
 
@@ -452,7 +463,7 @@
     if (! self.tx) {
         [[[UIAlertView alloc] initWithTitle:@"insufficient funds" message:nil delegate:nil cancelButtonTitle:@"ok"
           otherButtonTitles:nil] show];
-        [self reset:nil];
+        [self cancel:nil];
     }
 
     [self confirmTransaction:self.tx name:request.commonName memo:request.details.memo
@@ -478,7 +489,7 @@
         if (error) {
             [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription delegate:self
               cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
-            [self reset:nil];
+            [self cancel:nil];
         }
         else if (tx) {
             uint64_t fee = tx.standardFee, amount = fee;
@@ -496,7 +507,7 @@
               delegate:self cancelButtonTitle:@"cancel" otherButtonTitles:[NSString stringWithFormat:@"%@ (%@)",
               [m stringForAmount:amount], [m localCurrencyStringForAmount:amount]], nil] show];
         }
-        else [self reset:nil];
+        else [self cancel:nil];
     }];
 }
 
@@ -590,28 +601,25 @@
                        stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
         ZNPaymentRequest *req = [ZNPaymentRequest requestWithString:s];
 
+        self.clearClipboard = YES;
+
         if (! [req isValid] && ! [s isValidBitcoinPrivateKey] && ! [s isValidBitcoinBIP38Key]) {
             [[[UIAlertView alloc] initWithTitle:@"clipboard doesn't contain a valid bitcoin address" message:nil
               delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
-            [self reset:nil];
-            return;
+            [self cancel:nil];
         }
-
-        [self confirmRequest:req];
+        else [self confirmRequest:req];
     }
 }
 
 - (IBAction)reset:(id)sender
 {
-    self.tx = self.txWithFee = self.sweepTx = nil;
-    self.protocolRequest = nil;
-    self.txName = self.txMemo = nil;
-    self.txSecure = NO;
-
     if (self.navigationController.topViewController != self.parentViewController) {
         [self.navigationController popToRootViewControllerAnimated:YES];
     }
-    else [self layoutButtonsAnimated:YES];
+
+    if (self.clearClipboard) [[UIPasteboard generalPasteboard] setString:@""];
+    [self cancel:sender];
 }
 
 - (IBAction)cancel:(id)sender
@@ -619,9 +627,9 @@
     self.tx = self.txWithFee = self.sweepTx = nil;
     self.protocolRequest = nil;
     self.txName = self.txMemo = nil;
-    self.txSecure = NO;
+    self.txSecure = self.clearClipboard = NO;
 
-    if (self.navigationController.topViewController == self.parentViewController) [self reset:sender];
+    [self layoutButtonsAnimated:YES];
 }
 
 - (IBAction)flash:(id)sender
@@ -675,6 +683,7 @@
                     if (error) {
                         [[[UIAlertView alloc] initWithTitle:@"couldn't make payment" message:error.localizedDescription
                           delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+                        [self cancel:nil];
                         return;
                     }
 
@@ -712,18 +721,22 @@
     }
     
     if (self.sweepTx) {
+        [self startSpinner];
+
         [[ZNPeerManager sharedInstance] publishTransaction:self.sweepTx completion:^(NSError *error) {
-            [self reset:nil];
-            
+            [self stopSpinner];
+
             if (error) {
                 [[[UIAlertView alloc] initWithTitle:@"couldn't sweep balance" message:error.localizedDescription
                   delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+                [self cancel:nil];
                 return;
             }
 
             [self.view addSubview:[[[ZNBubbleView viewWithText:@"swept!"
                                      center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
                                     fadeIn] fadeOutAfterDelay:2.0]];
+            [self reset:nil];
         }];
         
         return;
@@ -780,14 +793,17 @@
     if (! [self.tx isSigned]) {
         [[[UIAlertView alloc] initWithTitle:@"couldn't make payment" message:@"error signing bitcoin transaction"
           delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
-        [self reset:nil];
+        [self cancel:nil];
         return;
     }
 
     NSLog(@"signed transaction:\n%@", [NSString hexWithData:self.tx.data]);
 
+    [self startSpinner];
+
     [[ZNPeerManager sharedInstance] publishTransaction:self.tx completion:^(NSError *error) {
         if (request.details.paymentURL.length > 0) return;
+        [self stopSpinner];
 
         if (error) {
             [[[UIAlertView alloc] initWithTitle:@"couldn't make payment" message:error.localizedDescription
@@ -796,7 +812,6 @@
             return;
         }
 
-        //BUG: XXXX important to clear clipboard after paying to clipboard address
         [self.view addSubview:[[[ZNBubbleView viewWithText:@"sent!"
                                  center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
                                 fadeIn] fadeOutAfterDelay:2.0]];
@@ -822,10 +837,12 @@
 
         [ZNPaymentRequest postPayment:payment to:request.details.paymentURL
         completion:^(ZNPaymentProtocolACK *ack, NSError *error) {
+            [self stopSpinner];
+
             if (error) {
                 [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription
                   delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
-                [self reset:nil];
+                [self cancel:nil];
                 return;
             }
 
