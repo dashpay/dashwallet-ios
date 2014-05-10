@@ -458,6 +458,12 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     return YES;
 }
 
+// true if the given transaction has been added to the wallet
+- (BOOL)transactionIsRegistered:(ZNTransaction *)transaction
+{
+    return (self.allTx[transaction.txHash] != nil) ? YES : NO;
+}
+
 // returns the amount received to the wallet by the transaction (total outputs to change and/or recieve addresses)
 - (uint64_t)amountReceivedFromTransaction:(ZNTransaction *)transaction
 {

@@ -218,7 +218,7 @@
     [super viewWillAppear:animated];
  
     [self reset:nil];
-    
+
 //    self.session = [[GKSession alloc] initWithSessionID:GK_SESSION_ID
 //                    displayName:[UIDevice.currentDevice.name stringByAppendingString:@" Wallet"]
 //                    sessionMode:GKSessionModeClient];
@@ -813,8 +813,8 @@
         }
 
         [self.view addSubview:[[[ZNBubbleView viewWithText:@"sent!"
-                                 center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
-                                fadeIn] fadeOutAfterDelay:2.0]];
+         center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] fadeIn]
+         fadeOutAfterDelay:2.0]];
         [self reset:nil];
     }];
 
@@ -830,7 +830,6 @@
         }
 
         // TODO: XXXX keep track of commonName/memo to associate them with outputScripts
-        // TODO: XXXX notify user if transaction was sent or not when payment post fails
         ZNPaymentProtocolPayment *payment =
             [[ZNPaymentProtocolPayment alloc] initWithMerchantData:request.details.merchantData
              transactions:@[self.tx] refundToAmounts:@[@(refundAmount)] refundToScripts:@[refundScript] memo:nil];
@@ -839,9 +838,9 @@
         completion:^(ZNPaymentProtocolACK *ack, NSError *error) {
             [self stopSpinner];
 
-            if (error) {
-                [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription
-                  delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+            if (error && ! [m.wallet transactionIsRegistered:self.tx]) {
+                [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription delegate:nil
+                  cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
                 [self cancel:nil];
                 return;
             }
@@ -850,6 +849,12 @@
                                     center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
                                     fadeIn] fadeOutAfterDelay:(ack.memo.length > 10 ? 3.0 : 2.0)]];
             [self reset:nil];
+
+            if (error) { // transaction was sent despite payment protocol error
+                [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription delegate:nil
+                  cancelButtonTitle:@"ok" otherButtonTitles:nil] performSelector:@selector(show) withObject:nil
+                 afterDelay:2.0];
+            }
         }];
     }
 

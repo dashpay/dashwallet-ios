@@ -40,7 +40,7 @@
 
 #define FIXED_PEERS           @"FixedPeers"
 #define MAX_CONNECTIONS       3
-#define NODE_NETWORK          1 // services value indicating a node offers full blocks, not just headers
+#define NODE_NETWORK          1  // services value indicating a node offers full blocks, not just headers
 #define PROTOCOL_TIMEOUT      30.0
 #define MAX_CONNENCT_FAILURES 20 // notify user of network problems after this many connect failures in a row
 
@@ -480,19 +480,18 @@ static const char *dns_seeds[] = {
     self.publishedTx[transaction.txHash] = transaction;
     if (completion) self.publishedCallback[transaction.txHash] = completion;
 
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self performSelector:@selector(txTimeout:) withObject:transaction.txHash afterDelay:PROTOCOL_TIMEOUT];
-    });
-
     NSMutableSet *peers = [NSMutableSet setWithSet:self.connectedPeers];
 
     // instead of publishing to all peers, leave one out to see if the tx propogates and is relayed back to us
-    //TODO: also publish transactions directly to coinbase/bitpay/blockchain.info servers for faster POS experience
     if (peers.count > 1) [peers removeObject:[peers anyObject]];
 
-    for (ZNPeer *p in peers) {
-        [p sendInvMessageWithTxHash:transaction.txHash];
-    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self performSelector:@selector(txTimeout:) withObject:transaction.txHash afterDelay:PROTOCOL_TIMEOUT];
+
+        for (ZNPeer *p in peers) {
+            [p sendInvMessageWithTxHash:transaction.txHash];
+        }
+    });
 }
 
 // transaction is considered verified when all peers have relayed it
@@ -696,17 +695,18 @@ static const char *dns_seeds[] = {
             self.taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
         }
 
+        self.lastRelayTime = 0;
+
         dispatch_async(dispatch_get_main_queue(), ^{ // setup a timer to detect if the sync stalls
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
             [self performSelector:@selector(syncTimeout) withObject:nil afterDelay:PROTOCOL_TIMEOUT];
-        });
-        self.lastRelayTime = 0;
 
-        // request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
-        if (self.lastBlock.timestamp + 7*24*60*60 >= self.earliestKeyTime) {
-            [peer sendGetblocksMessageWithLocators:[self blockLocatorArray] andHashStop:nil];
-        }
-        else [peer sendGetheadersMessageWithLocators:[self blockLocatorArray] andHashStop:nil];
+            // request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
+            if (self.lastBlock.timestamp + 7*24*60*60 >= self.earliestKeyTime) {
+                [peer sendGetblocksMessageWithLocators:[self blockLocatorArray] andHashStop:nil];
+            }
+            else [peer sendGetheadersMessageWithLocators:[self blockLocatorArray] andHashStop:nil];
+        });
     }
     else { // we're already synced
         [self syncStopped];
@@ -836,7 +836,7 @@ static const char *dns_seeds[] = {
     // ignore block headers that are newer than one week before earliestKeyTime (headers have 0 totalTransactions)
     if (block.totalTransactions == 0 && block.timestamp + 7*24*60*60 > self.earliestKeyTime) return;
 
-    // track the observed bloom filter false positive rate (with a low pass filter to smooth out variance)
+    // track the observed bloom filter false positive rate using a low pass filter to smooth out variance
     if (peer == self.downloadPeer && block.totalTransactions > 0) {
         // 1% low pass filter, also weights each block by total transactions, using 400 tx per block as typical
         self.filterFpRate = self.filterFpRate*(1.0 - 0.01*block.totalTransactions/400) + 0.01*block.txHashes.count/400;

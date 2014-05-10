@@ -73,6 +73,9 @@
 // true if no previous wallet transaction spends any of the given transaction's inputs, and no input tx is invalid
 - (BOOL)transactionIsValid:(ZNTransaction *)transaction;
 
+// true if the given transaction has been added to the wallet
+- (BOOL)transactionIsRegistered:(ZNTransaction *)transaction;
+
 // returns the amount received to the wallet by the transaction (total outputs to change and/or recieve addresses)
 - (uint64_t)amountReceivedFromTransaction:(ZNTransaction *)transaction;
 
