@@ -652,7 +652,9 @@
 - (void)imagePickerController:(UIImagePickerController *)reader didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
     // ignore additonal qr codes while we're still giving visual feedback about the current one
-    if (! [[(id)self.zbarController.cameraOverlayView image] isEqual:[UIImage imageNamed:@"cameraguide.png"]]) return;
+    if ([[(id)self.zbarController.cameraOverlayView image] isEqual:[UIImage imageNamed:@"cameraguide-green.png"]]) {
+        return;
+    }
 
     for (id result in info[ZBarReaderControllerResults]) {
         NSString *s = (id)[result data];
@@ -838,7 +840,7 @@
         completion:^(ZNPaymentProtocolACK *ack, NSError *error) {
             [self stopSpinner];
 
-            if (error && ! [m.wallet transactionIsRegistered:self.tx]) {
+            if (error && ! [m.wallet transactionIsRegistered:self.tx.txHash]) {
                 [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription delegate:nil
                   cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
                 [self cancel:nil];

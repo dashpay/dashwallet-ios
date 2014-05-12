@@ -78,6 +78,8 @@
 			</array>
 		</dict>
 		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
 			<key>CFBundleURLName</key>
 			<string>cc.zinc.bitcoin</string>
 			<key>CFBundleURLSchemes</key>

@@ -228,7 +228,7 @@ static const char *dns_seeds[] = {
                     uint32_t addr = CFSwapInt32BigToHost(((struct in_addr *)h->h_addr_list[j])->s_addr);
 
                     // give dns peers a timestamp between 3 and 7 days ago
-                    [_peers addObject:[ZNPeer peerWithAddress:addr port:BITCOIN_STANDARD_PORT
+                    [_peers addObject:[[ZNPeer alloc] initWithAddress:addr port:BITCOIN_STANDARD_PORT
                                        timestamp:now - 24*60*60*(3 + drand48()*4) services:NODE_NETWORK]];
                 }
             }
@@ -243,8 +243,9 @@ static const char *dns_seeds[] = {
                 for (NSNumber *address in [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
                                            pathForResource:FIXED_PEERS ofType:@"plist"]]) {
                     // give hard coded peers a timestamp between 7 and 14 days ago
-                    [_peers addObject:[ZNPeer peerWithAddress:CFSwapInt32(address.intValue) port:BITCOIN_STANDARD_PORT
-                                       timestamp:now - 24*60*60*(7 + drand48()*7) services:NODE_NETWORK]];
+                    [_peers addObject:[[ZNPeer alloc] initWithAddress:CFSwapInt32(address.intValue)
+                                       port:BITCOIN_STANDARD_PORT timestamp:now - 24*60*60*(7 + drand48()*7)
+                                       services:NODE_NETWORK]];
                 }
             }
 

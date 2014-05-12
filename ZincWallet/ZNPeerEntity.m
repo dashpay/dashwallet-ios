@@ -54,7 +54,8 @@
     __block ZNPeer *peer = nil;
 
     [[self managedObjectContext] performBlockAndWait:^{
-        peer = [ZNPeer peerWithAddress:self.address port:self.port timestamp:self.timestamp services:self.services];
+        peer = [[ZNPeer alloc] initWithAddress:self.address port:self.port timestamp:self.timestamp
+                services:self.services];
         peer.misbehavin = self.misbehavin;
     }];
 

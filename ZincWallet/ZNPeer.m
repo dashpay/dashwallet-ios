@@ -81,12 +81,6 @@ typedef enum {
     return [[self alloc] initWithAddress:address andPort:port];
 }
 
-+ (instancetype)peerWithAddress:(uint32_t)address port:(uint16_t)port timestamp:(NSTimeInterval)timestamp
-services:(uint64_t)services
-{
-    return [[self alloc] initWithAddress:address port:port timestamp:timestamp services:services];
-}
-
 - (instancetype)initWithAddress:(uint32_t)address andPort:(uint16_t)port
 {
     if (! (self = [self init])) return nil;

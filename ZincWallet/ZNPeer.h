@@ -109,8 +109,6 @@ typedef enum {
 @property (nonatomic, assign) int16_t misbehavin;
 
 + (instancetype)peerWithAddress:(uint32_t)address andPort:(uint16_t)port;
-+ (instancetype)peerWithAddress:(uint32_t)address port:(uint16_t)port timestamp:(NSTimeInterval)timestamp
-services:(uint64_t)services;
 
 - (instancetype)initWithAddress:(uint32_t)address andPort:(uint16_t)port;
 - (instancetype)initWithAddress:(uint32_t)address port:(uint16_t)port timestamp:(NSTimeInterval)timestamp

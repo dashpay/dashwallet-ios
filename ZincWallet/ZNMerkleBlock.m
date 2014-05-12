@@ -33,7 +33,7 @@
 #define MAX_PROOF_OF_WORK 0x1d00ffffu   // highest value for difficulty target (higher values are less difficult)
 #define TARGET_TIMESPAN   (14*24*60*60) // the targeted timespan between difficulty target adjustments
 
-// convert difficulty target format to bignum, as per: https://github.com/bitcoin/bitcoin/blob/master/src/bignum.h#L294
+// convert difficulty target format to bignum, as per: https://github.com/bitcoin/bitcoin/blob/master/src/uint256.h#L506
 static void setCompact(BIGNUM *bn, uint32_t compact)
 {
     uint32_t size = compact >> 24, word = compact & 0x007fffff;
