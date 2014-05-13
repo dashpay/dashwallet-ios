@@ -1,6 +1,6 @@
 //
-//  ZincWalletTests.m
-//  ZincWalletTests
+//  BreadWalletTests.m
+//  BreadWalletTests
 //
 //  Created by Aaron Voisine on 5/8/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
@@ -23,7 +23,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "ZincWalletTests.h"
+#import "BreadWalletTests.h"
 
 #import "ZNWallet.h"
 #import "ZNElectrumSequence.h"
@@ -40,7 +40,7 @@
 #import "NSData+Hash.h"
 #import "NSString+Base58.h"
 
-@implementation ZincWalletTests
+@implementation BreadWalletTests
 
 - (void)setUp
 {

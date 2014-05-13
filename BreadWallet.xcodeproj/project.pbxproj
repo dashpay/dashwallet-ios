@@ -764,13 +764,13 @@
 		75D8F394173ABE3C0080D95E /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F393173ABE3C0080D95E /* Default.png */; };
 		75D8F396173ABE3C0080D95E /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F395173ABE3C0080D95E /* Default@2x.png */; };
 		75D8F398173ABE3C0080D95E /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F397173ABE3C0080D95E /* Default-568h@2x.png */; };
-		75D8F39B173ABE3C0080D95E /* MainStoryboard_iPhone.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F399173ABE3C0080D95E /* MainStoryboard_iPhone.storyboard */; };
+		75D8F39B173ABE3C0080D95E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F399173ABE3C0080D95E /* Main.storyboard */; };
 		75D8F3A1173ABE3C0080D95E /* ZNPayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3A0173ABE3C0080D95E /* ZNPayViewController.m */; };
 		75D8F3A8173ABE3D0080D95E /* ZNReceiveViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3A7173ABE3D0080D95E /* ZNReceiveViewController.mm */; };
 		75D8F3B5173ABE3D0080D95E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F381173ABE3C0080D95E /* UIKit.framework */; };
 		75D8F3B6173ABE3D0080D95E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		75D8F3BE173ABE3D0080D95E /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F3BC173ABE3D0080D95E /* InfoPlist.strings */; };
-		75D8F3C1173ABE3D0080D95E /* ZincWalletTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3C0173ABE3D0080D95E /* ZincWalletTests.m */; };
+		75D8F3C1173ABE3D0080D95E /* BreadWalletTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3C0173ABE3D0080D95E /* BreadWalletTests.m */; };
 		75E111A8178AB4AF0038173E /* button-bg-white@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75E111A4178AB4AF0038173E /* button-bg-white@2x.png */; };
 		75EAE8431752D20800FDB2D2 /* ElectrumSeedWords.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75EAE8421752D20800FDB2D2 /* ElectrumSeedWords.plist */; };
 		75EAE8471753E93A00FDB2D2 /* ZNElectrumSequence.m in Sources */ = {isa = PBXBuildFile; fileRef = 75EAE8461753E93A00FDB2D2 /* ZNElectrumSequence.m */; };
@@ -782,7 +782,7 @@
 		75F1B85E17C6CC0B00680E1B /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75F1B85C17C6CC0B00680E1B /* CoreVideo.framework */; };
 		75F1B86917C7186E00680E1B /* ZNTransactionEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F1B86817C7186E00680E1B /* ZNTransactionEntity.m */; };
 		75F1B87917C7356B00680E1B /* NSManagedObject+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F1B87817C7356B00680E1B /* NSManagedObject+Utils.m */; };
-		75F1B87D17C7506200680E1B /* ZincWallet.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 75F1B87B17C7506100680E1B /* ZincWallet.xcdatamodeld */; };
+		75F1B87D17C7506200680E1B /* BreadWallet.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 75F1B87B17C7506100680E1B /* BreadWallet.xcdatamodeld */; };
 		75F4D4B417E636860007500D /* ZNMainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F4D4B317E636860007500D /* ZNMainViewController.m */; };
 		75F9D3E6179F451F00C28B49 /* button-bg-blue-pressed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75F9D3E5179F451E00C28B49 /* button-bg-blue-pressed@2x.png */; };
 		75FD9C0317664F3000307894 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
@@ -880,7 +880,7 @@
 			containerPortal = 75D8F376173ABE3C0080D95E /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 75D8F37D173ABE3C0080D95E;
-			remoteInfo = ZincWallet;
+			remoteInfo = BreadWallet;
 		};
 		75FD9D68176658EB00307894 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1827,35 +1827,34 @@
 		75D450F818C41C84005571B3 /* ZNWalletManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNWalletManager.h; sourceTree = "<group>"; };
 		75D450F918C41C84005571B3 /* ZNWalletManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNWalletManager.m; sourceTree = "<group>"; };
 		75D7F23117E1540B006E9FC1 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
-		75D8F37E173ABE3C0080D95E /* zinc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = zinc.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		75D8F37E173ABE3C0080D95E /* BreadWallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BreadWallet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		75D8F381173ABE3C0080D95E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		75D8F383173ABE3C0080D95E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		75D8F385173ABE3C0080D95E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
-		75D8F389173ABE3C0080D95E /* ZincWallet-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ZincWallet-Info.plist"; sourceTree = "<group>"; };
+		75D8F389173ABE3C0080D95E /* BreadWallet-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "BreadWallet-Info.plist"; sourceTree = "<group>"; };
 		75D8F38B173ABE3C0080D95E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		75D8F38D173ABE3C0080D95E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		75D8F38F173ABE3C0080D95E /* ZincWallet-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ZincWallet-Prefix.pch"; sourceTree = "<group>"; };
+		75D8F38F173ABE3C0080D95E /* BreadWallet-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BreadWallet-Prefix.pch"; sourceTree = "<group>"; };
 		75D8F390173ABE3C0080D95E /* ZNAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNAppDelegate.h; sourceTree = "<group>"; };
 		75D8F391173ABE3C0080D95E /* ZNAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZNAppDelegate.m; sourceTree = "<group>"; };
 		75D8F393173ABE3C0080D95E /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
 		75D8F395173ABE3C0080D95E /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
 		75D8F397173ABE3C0080D95E /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
-		75D8F39A173ABE3C0080D95E /* en */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = en; path = en.lproj/MainStoryboard_iPhone.storyboard; sourceTree = "<group>"; };
+		75D8F39A173ABE3C0080D95E /* en */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = en; path = en.lproj/Main.storyboard; sourceTree = "<group>"; };
 		75D8F39F173ABE3C0080D95E /* ZNPayViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNPayViewController.h; sourceTree = "<group>"; };
 		75D8F3A0173ABE3C0080D95E /* ZNPayViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZNPayViewController.m; sourceTree = "<group>"; };
 		75D8F3A6173ABE3D0080D95E /* ZNReceiveViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNReceiveViewController.h; sourceTree = "<group>"; };
 		75D8F3A7173ABE3D0080D95E /* ZNReceiveViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ZNReceiveViewController.mm; sourceTree = "<group>"; };
-		75D8F3B2173ABE3D0080D95E /* ZincWalletTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZincWalletTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		75D8F3BB173ABE3D0080D95E /* ZincWalletTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ZincWalletTests-Info.plist"; sourceTree = "<group>"; };
+		75D8F3B2173ABE3D0080D95E /* BreadWalletTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BreadWalletTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		75D8F3BB173ABE3D0080D95E /* BreadWalletTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "BreadWalletTests-Info.plist"; sourceTree = "<group>"; };
 		75D8F3BD173ABE3D0080D95E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		75D8F3BF173ABE3D0080D95E /* ZincWalletTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZincWalletTests.h; sourceTree = "<group>"; };
-		75D8F3C0173ABE3D0080D95E /* ZincWalletTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZincWalletTests.m; sourceTree = "<group>"; };
+		75D8F3BF173ABE3D0080D95E /* BreadWalletTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BreadWalletTests.h; sourceTree = "<group>"; };
+		75D8F3C0173ABE3D0080D95E /* BreadWalletTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BreadWalletTests.m; sourceTree = "<group>"; };
 		75E111A4178AB4AF0038173E /* button-bg-white@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-white@2x.png"; sourceTree = "<group>"; };
 		75EAE8421752D20800FDB2D2 /* ElectrumSeedWords.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = ElectrumSeedWords.plist; sourceTree = "<group>"; };
 		75EAE8441753E8E300FDB2D2 /* ZNKeySequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNKeySequence.h; sourceTree = "<group>"; };
 		75EAE8451753E93A00FDB2D2 /* ZNElectrumSequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNElectrumSequence.h; sourceTree = "<group>"; };
 		75EAE8461753E93A00FDB2D2 /* ZNElectrumSequence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNElectrumSequence.m; sourceTree = "<group>"; };
-		75F15A5017E290C400DCDD2B /* zinc.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = zinc.entitlements; path = ../zinc.entitlements; sourceTree = "<group>"; };
 		75F17C331744CC2100D9F228 /* ZNTransaction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNTransaction.h; sourceTree = "<group>"; };
 		75F17C341744CC2100D9F228 /* ZNTransaction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNTransaction.m; sourceTree = "<group>"; };
 		75F17C4217455F2D00D9F228 /* deletetoleft-inv.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "deletetoleft-inv.png"; sourceTree = "<group>"; };
@@ -1865,7 +1864,7 @@
 		75F1B86817C7186E00680E1B /* ZNTransactionEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNTransactionEntity.m; sourceTree = "<group>"; };
 		75F1B87717C7356B00680E1B /* NSManagedObject+Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSManagedObject+Utils.h"; sourceTree = "<group>"; };
 		75F1B87817C7356B00680E1B /* NSManagedObject+Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSManagedObject+Utils.m"; sourceTree = "<group>"; };
-		75F1B87C17C7506200680E1B /* ZincWallet.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ZincWallet.xcdatamodel; sourceTree = "<group>"; };
+		75F1B87C17C7506200680E1B /* BreadWallet.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = BreadWallet.xcdatamodel; sourceTree = "<group>"; };
 		75F4D4B217E636860007500D /* ZNMainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNMainViewController.h; sourceTree = "<group>"; };
 		75F4D4B317E636860007500D /* ZNMainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNMainViewController.m; sourceTree = "<group>"; };
 		75F9D3E5179F451E00C28B49 /* button-bg-blue-pressed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-blue-pressed@2x.png"; sourceTree = "<group>"; };
@@ -3291,8 +3290,8 @@
 		75CBEAE3173C800F00978DBA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				75F1B87B17C7506100680E1B /* ZincWallet.xcdatamodeld */,
-				75D8F399173ABE3C0080D95E /* MainStoryboard_iPhone.storyboard */,
+				75F1B87B17C7506100680E1B /* BreadWallet.xcdatamodeld */,
+				75D8F399173ABE3C0080D95E /* Main.storyboard */,
 				75CBEAE4173C801900978DBA /* Images */,
 				75B4941A17C43ACA003A3FCA /* MnemonicAdjs.plist */,
 				75B4941C17C43BCE003A3FCA /* MnemonicNouns.plist */,
@@ -3408,8 +3407,8 @@
 		75D8F375173ABE3C0080D95E = {
 			isa = PBXGroup;
 			children = (
-				75D8F387173ABE3C0080D95E /* ZincWallet */,
-				75D8F3B9173ABE3D0080D95E /* ZincWalletTests */,
+				75D8F387173ABE3C0080D95E /* BreadWallet */,
+				75D8F3B9173ABE3D0080D95E /* BreadWalletTests */,
 				75D8F380173ABE3C0080D95E /* Frameworks */,
 				75D8F37F173ABE3C0080D95E /* Products */,
 			);
@@ -3418,8 +3417,8 @@
 		75D8F37F173ABE3C0080D95E /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				75D8F37E173ABE3C0080D95E /* zinc.app */,
-				75D8F3B2173ABE3D0080D95E /* ZincWalletTests.xctest */,
+				75D8F37E173ABE3C0080D95E /* BreadWallet.app */,
+				75D8F3B2173ABE3D0080D95E /* BreadWalletTests.xctest */,
 				752C2FFD1742ACFB0033F636 /* libcrypto.a */,
 				752C300D1742AD060033F636 /* libssl.a */,
 				75FD9C0217664F3000307894 /* libzbar.a */,
@@ -3452,7 +3451,7 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		75D8F387173ABE3C0080D95E /* ZincWallet */ = {
+		75D8F387173ABE3C0080D95E /* BreadWallet */ = {
 			isa = PBXGroup;
 			children = (
 				7535CCDC176BE376007E29C5 /* Views */,
@@ -3465,35 +3464,34 @@
 				75CBEAE3173C800F00978DBA /* Resources */,
 				75D8F388173ABE3C0080D95E /* Supporting Files */,
 			);
-			path = ZincWallet;
+			path = BreadWallet;
 			sourceTree = "<group>";
 		};
 		75D8F388173ABE3C0080D95E /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				75D8F389173ABE3C0080D95E /* ZincWallet-Info.plist */,
-				75F15A5017E290C400DCDD2B /* zinc.entitlements */,
+				75D8F389173ABE3C0080D95E /* BreadWallet-Info.plist */,
 				75D8F38A173ABE3C0080D95E /* InfoPlist.strings */,
 				75D8F38D173ABE3C0080D95E /* main.m */,
-				75D8F38F173ABE3C0080D95E /* ZincWallet-Prefix.pch */,
+				75D8F38F173ABE3C0080D95E /* BreadWallet-Prefix.pch */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		75D8F3B9173ABE3D0080D95E /* ZincWalletTests */ = {
+		75D8F3B9173ABE3D0080D95E /* BreadWalletTests */ = {
 			isa = PBXGroup;
 			children = (
-				75D8F3BF173ABE3D0080D95E /* ZincWalletTests.h */,
-				75D8F3C0173ABE3D0080D95E /* ZincWalletTests.m */,
+				75D8F3BF173ABE3D0080D95E /* BreadWalletTests.h */,
+				75D8F3C0173ABE3D0080D95E /* BreadWalletTests.m */,
 				75D8F3BA173ABE3D0080D95E /* Supporting Files */,
 			);
-			path = ZincWalletTests;
+			path = BreadWalletTests;
 			sourceTree = "<group>";
 		};
 		75D8F3BA173ABE3D0080D95E /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				75D8F3BB173ABE3D0080D95E /* ZincWalletTests-Info.plist */,
+				75D8F3BB173ABE3D0080D95E /* BreadWalletTests-Info.plist */,
 				75D8F3BC173ABE3D0080D95E /* InfoPlist.strings */,
 			);
 			name = "Supporting Files";
@@ -3696,9 +3694,9 @@
 			productReference = 75AF36D7176675D3004AA912 /* libqrencoder.a */;
 			productType = "com.apple.product-type.library.static";
 		};
-		75D8F37D173ABE3C0080D95E /* zinc */ = {
+		75D8F37D173ABE3C0080D95E /* BreadWallet */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 75D8F3C4173ABE3D0080D95E /* Build configuration list for PBXNativeTarget "zinc" */;
+			buildConfigurationList = 75D8F3C4173ABE3D0080D95E /* Build configuration list for PBXNativeTarget "BreadWallet" */;
 			buildPhases = (
 				75D8F37A173ABE3C0080D95E /* Sources */,
 				75D8F37B173ABE3C0080D95E /* Frameworks */,
@@ -3713,14 +3711,14 @@
 				75FD9D69176658EB00307894 /* PBXTargetDependency */,
 				75AF36F017667F0B004AA912 /* PBXTargetDependency */,
 			);
-			name = zinc;
-			productName = ZincWallet;
-			productReference = 75D8F37E173ABE3C0080D95E /* zinc.app */;
+			name = BreadWallet;
+			productName = BreadWallet;
+			productReference = 75D8F37E173ABE3C0080D95E /* BreadWallet.app */;
 			productType = "com.apple.product-type.application";
 		};
-		75D8F3B1173ABE3D0080D95E /* ZincWalletTests */ = {
+		75D8F3B1173ABE3D0080D95E /* BreadWalletTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 75D8F3C7173ABE3D0080D95E /* Build configuration list for PBXNativeTarget "ZincWalletTests" */;
+			buildConfigurationList = 75D8F3C7173ABE3D0080D95E /* Build configuration list for PBXNativeTarget "BreadWalletTests" */;
 			buildPhases = (
 				75D8F3AD173ABE3D0080D95E /* Sources */,
 				75D8F3AE173ABE3D0080D95E /* Frameworks */,
@@ -3732,9 +3730,9 @@
 			dependencies = (
 				75D8F3B8173ABE3D0080D95E /* PBXTargetDependency */,
 			);
-			name = ZincWalletTests;
-			productName = ZincWalletTests;
-			productReference = 75D8F3B2173ABE3D0080D95E /* ZincWalletTests.xctest */;
+			name = BreadWalletTests;
+			productName = BreadWalletTests;
+			productReference = 75D8F3B2173ABE3D0080D95E /* BreadWalletTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		75FD9C0117664F3000307894 /* zbar */ = {
@@ -3788,7 +3786,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 75D8F379173ABE3C0080D95E /* Build configuration list for PBXProject "ZincWallet" */;
+			buildConfigurationList = 75D8F379173ABE3C0080D95E /* Build configuration list for PBXProject "BreadWallet" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -3800,13 +3798,13 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				75D8F37D173ABE3C0080D95E /* zinc */,
+				75D8F37D173ABE3C0080D95E /* BreadWallet */,
 				752C2FFC1742ACFB0033F636 /* crypto */,
 				752C300C1742AD060033F636 /* ssl */,
 				75FD9C0117664F3000307894 /* zbar */,
 				75AF36D6176675D3004AA912 /* qrencoder */,
 				7599CC1C17E2A4B200852F9B /* submodules */,
-				75D8F3B1173ABE3D0080D95E /* ZincWalletTests */,
+				75D8F3B1173ABE3D0080D95E /* BreadWalletTests */,
 			);
 		};
 /* End PBXProject section */
@@ -3821,7 +3819,7 @@
 				75D8F396173ABE3C0080D95E /* Default@2x.png in Resources */,
 				759292F8190046FB00CDA950 /* flash@2x.png in Resources */,
 				75D8F398173ABE3C0080D95E /* Default-568h@2x.png in Resources */,
-				75D8F39B173ABE3C0080D95E /* MainStoryboard_iPhone.storyboard in Resources */,
+				75D8F39B173ABE3C0080D95E /* Main.storyboard in Resources */,
 				75F17C4417455F2D00D9F228 /* deletetoleft-inv.png in Resources */,
 				75EAE8431752D20800FDB2D2 /* ElectrumSeedWords.plist in Resources */,
 				7545424F17606C7500638B95 /* button-bg-disabled@2x.png in Resources */,
@@ -4630,7 +4628,7 @@
 				753E7CD61801628C00FC6BA7 /* ZNPeerManager.m in Sources */,
 				75F1B87917C7356B00680E1B /* NSManagedObject+Utils.m in Sources */,
 				750A8EAB18F5E5C500250364 /* ZNKey+BIP38.m in Sources */,
-				75F1B87D17C7506200680E1B /* ZincWallet.xcdatamodeld in Sources */,
+				75F1B87D17C7506200680E1B /* BreadWallet.xcdatamodeld in Sources */,
 				75204DFB18DD0D93002FA28C /* ZNBIP39Mnemonic.m in Sources */,
 				757BFF2D17CBD0D700D1C4AF /* ZNAddressEntity.m in Sources */,
 				75AC8163181385D100ACA0C9 /* ZNMerkleBlockEntity.m in Sources */,
@@ -4644,7 +4642,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				75D8F3C1173ABE3D0080D95E /* ZincWalletTests.m in Sources */,
+				75D8F3C1173ABE3D0080D95E /* BreadWalletTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4730,7 +4728,7 @@
 		};
 		75D8F3B8173ABE3D0080D95E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 75D8F37D173ABE3C0080D95E /* zinc */;
+			target = 75D8F37D173ABE3C0080D95E /* BreadWallet */;
 			targetProxy = 75D8F3B7173ABE3D0080D95E /* PBXContainerItemProxy */;
 		};
 		75FD9D69176658EB00307894 /* PBXTargetDependency */ = {
@@ -4749,12 +4747,12 @@
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
 		};
-		75D8F399173ABE3C0080D95E /* MainStoryboard_iPhone.storyboard */ = {
+		75D8F399173ABE3C0080D95E /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
 				75D8F39A173ABE3C0080D95E /* en */,
 			);
-			name = MainStoryboard_iPhone.storyboard;
+			name = Main.storyboard;
 			sourceTree = "<group>";
 		};
 		75D8F3BC173ABE3D0080D95E /* InfoPlist.strings */ = {
@@ -4774,7 +4772,7 @@
 				DSTROOT = /tmp/crypto.dst;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "ZincWallet/ZincWallet-Prefix.pch";
+				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
 				GCC_WARN_INHIBIT_ALL_WARNINGS = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/openssl",
@@ -4794,7 +4792,7 @@
 				DSTROOT = /tmp/crypto.dst;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "ZincWallet/ZincWallet-Prefix.pch";
+				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_WARN_INHIBIT_ALL_WARNINGS = YES;
 				HEADER_SEARCH_PATHS = (
@@ -4815,7 +4813,7 @@
 				DSTROOT = /tmp/ssl.dst;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "ZincWallet/ZincWallet-Prefix.pch";
+				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
 				GCC_WARN_INHIBIT_ALL_WARNINGS = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/openssl",
@@ -4833,7 +4831,7 @@
 				DSTROOT = /tmp/ssl.dst;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "ZincWallet/ZincWallet-Prefix.pch";
+				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_WARN_INHIBIT_ALL_WARNINGS = YES;
 				HEADER_SEARCH_PATHS = (
@@ -4898,7 +4896,7 @@
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -4927,7 +4925,7 @@
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				"CODE_SIGN_IDENTITY[sdk=*]" = "iPhone Distribution";
 				COPY_PHASE_STRIP = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
@@ -4946,7 +4944,7 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++98";
 				CLANG_CXX_LIBRARY = "libstdc++";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "ZincWallet/ZincWallet-Prefix.pch";
+				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/openssl/include",
@@ -4954,7 +4952,7 @@
 					"$(SRCROOT)/ZBar/include",
 					"$(SRCROOT)/iOS-WebSockets",
 				);
-				INFOPLIST_FILE = "ZincWallet/ZincWallet-Info.plist";
+				INFOPLIST_FILE = "BreadWallet/BreadWallet-Info.plist";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = 1;
@@ -4968,14 +4966,14 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++98";
 				CLANG_CXX_LIBRARY = "libstdc++";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "ZincWallet/ZincWallet-Prefix.pch";
+				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/openssl/include",
 					"$(SRCROOT)/boost",
 					"$(SRCROOT)/ZBar/include",
 					"$(SRCROOT)/iOS-WebSockets",
 				);
-				INFOPLIST_FILE = "ZincWallet/ZincWallet-Info.plist";
+				INFOPLIST_FILE = "BreadWallet/BreadWallet-Info.plist";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = 1;
@@ -4986,15 +4984,15 @@
 		75D8F3C8173ABE3D0080D95E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/zinc.app/zinc";
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/BreadWallet.app/BreadWallet";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
 					"$(DEVELOPER_FRAMEWORKS_DIR)",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "ZincWallet/ZincWallet-Prefix.pch";
-				INFOPLIST_FILE = "ZincWalletTests/ZincWalletTests-Info.plist";
+				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
+				INFOPLIST_FILE = "BreadWalletTests/BreadWalletTests-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUNDLE_LOADER)";
 			};
@@ -5010,8 +5008,8 @@
 					"$(DEVELOPER_FRAMEWORKS_DIR)",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "ZincWallet/ZincWallet-Prefix.pch";
-				INFOPLIST_FILE = "ZincWalletTests/ZincWalletTests-Info.plist";
+				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
+				INFOPLIST_FILE = "BreadWalletTests/BreadWalletTests-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUNDLE_LOADER)";
 			};
@@ -5106,7 +5104,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		75D8F379173ABE3C0080D95E /* Build configuration list for PBXProject "ZincWallet" */ = {
+		75D8F379173ABE3C0080D95E /* Build configuration list for PBXProject "BreadWallet" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				75D8F3C2173ABE3D0080D95E /* Debug */,
@@ -5115,7 +5113,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		75D8F3C4173ABE3D0080D95E /* Build configuration list for PBXNativeTarget "zinc" */ = {
+		75D8F3C4173ABE3D0080D95E /* Build configuration list for PBXNativeTarget "BreadWallet" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				75D8F3C5173ABE3D0080D95E /* Debug */,
@@ -5124,7 +5122,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		75D8F3C7173ABE3D0080D95E /* Build configuration list for PBXNativeTarget "ZincWalletTests" */ = {
+		75D8F3C7173ABE3D0080D95E /* Build configuration list for PBXNativeTarget "BreadWalletTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				75D8F3C8173ABE3D0080D95E /* Debug */,
@@ -5145,13 +5143,13 @@
 /* End XCConfigurationList section */
 
 /* Begin XCVersionGroup section */
-		75F1B87B17C7506100680E1B /* ZincWallet.xcdatamodeld */ = {
+		75F1B87B17C7506100680E1B /* BreadWallet.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
-				75F1B87C17C7506200680E1B /* ZincWallet.xcdatamodel */,
+				75F1B87C17C7506200680E1B /* BreadWallet.xcdatamodel */,
 			);
-			currentVersion = 75F1B87C17C7506200680E1B /* ZincWallet.xcdatamodel */;
-			path = ZincWallet.xcdatamodeld;
+			currentVersion = 75F1B87C17C7506200680E1B /* BreadWallet.xcdatamodel */;
+			path = BreadWallet.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
 		};
