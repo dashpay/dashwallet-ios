@@ -26,7 +26,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class BRTransactionEntity, ZNTransaction;
+@class BRTransactionEntity, BRTransaction;
 
 @interface BRTxOutputEntity : NSManagedObject
 
@@ -38,6 +38,6 @@
 @property (nonatomic) BOOL spent;
 @property (nonatomic, retain) BRTransactionEntity *transaction;
 
-- (instancetype)setAttributesFromTx:(ZNTransaction *)tx outputIndex:(NSUInteger)index;
+- (instancetype)setAttributesFromTx:(BRTransaction *)tx outputIndex:(NSUInteger)index;
 
 @end

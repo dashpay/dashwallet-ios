@@ -24,9 +24,9 @@
 //  THE SOFTWARE.
 
 #import "BRSeedViewController.h"
-#import "ZNWalletManager.h"
-#import "ZNPeerManager.h"
-#import "ZNBIP32Sequence.h"
+#import "BRWalletManager.h"
+#import "BRPeerManager.h"
+#import "BRBIP32Sequence.h"
 
 #define LABEL_MARGIN 20
 
@@ -66,7 +66,7 @@
 
 - (void)viewWillAppear:(BOOL)animated
 {
-    ZNWalletManager *m = [ZNWalletManager sharedInstance];
+    BRWalletManager *m = [BRWalletManager sharedInstance];
 
     [super viewWillAppear:animated];
  
@@ -79,7 +79,7 @@
 
     if (! m.wallet) {
         [m generateRandomSeed];
-        [[ZNPeerManager sharedInstance] connect];
+        [[BRPeerManager sharedInstance] connect];
     }
     else self.navigationItem.rightBarButtonItem = nil;
 
@@ -110,12 +110,12 @@
 
 - (IBAction)refresh:(id)sender
 {
-    [[ZNWalletManager sharedInstance] generateRandomSeed];
+    [[BRWalletManager sharedInstance] generateRandomSeed];
     
     [UIView animateWithDuration:SEGUE_DURATION/2 animations:^{
         self.seedLabel.alpha = 0.0;
     } completion:^(BOOL finished) {
-        self.seedLabel.text = [[ZNWalletManager sharedInstance] seedPhrase];
+        self.seedLabel.text = [[BRWalletManager sharedInstance] seedPhrase];
         
         [UIView animateWithDuration:SEGUE_DURATION/2 animations:^{
             self.seedLabel.alpha = 1.0;
@@ -125,7 +125,7 @@
 
 - (IBAction)copy:(id)sender
 {
-    [[UIPasteboard generalPasteboard] setString:[[ZNWalletManager sharedInstance] seedPhrase]];
+    [[UIPasteboard generalPasteboard] setString:[[BRWalletManager sharedInstance] seedPhrase]];
 }
 
 #pragma mark - UIAlertViewDelegate

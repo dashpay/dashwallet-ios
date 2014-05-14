@@ -24,7 +24,7 @@
 //  THE SOFTWARE.
 
 #import "BRMerkleBlockEntity.h"
-#import "ZNMerkleBlock.h"
+#import "BRMerkleBlock.h"
 #import "NSManagedObject+Utils.h"
 
 @implementation BRMerkleBlockEntity
@@ -41,7 +41,7 @@
 @dynamic hashes;
 @dynamic flags;
 
-- (instancetype)setAttributesFromBlock:(ZNMerkleBlock *)block;
+- (instancetype)setAttributesFromBlock:(BRMerkleBlock *)block;
 {
     [self.managedObjectContext performBlockAndWait:^{
         self.blockHash = block.blockHash;
@@ -60,12 +60,12 @@
     return self;
 }
 
-- (ZNMerkleBlock *)merkleBlock
+- (BRMerkleBlock *)merkleBlock
 {
-    __block ZNMerkleBlock *block = nil;
+    __block BRMerkleBlock *block = nil;
     
     [self.managedObjectContext performBlockAndWait:^{
-        block = [[ZNMerkleBlock alloc] initWithBlockHash:self.blockHash version:self.version prevBlock:self.prevBlock
+        block = [[BRMerkleBlock alloc] initWithBlockHash:self.blockHash version:self.version prevBlock:self.prevBlock
                  merkleRoot:self.merkleRoot timestamp:self.timestamp target:self.target nonce:self.nonce
                  totalTransactions:self.totalTransactions hashes:self.hashes flags:self.flags height:self.height];
     }];

@@ -24,9 +24,9 @@
 //  THE SOFTWARE.
 
 #import "BRReceiveViewController.h"
-#import "ZNPaymentRequest.h"
-#import "ZNWalletManager.h"
-#import "ZNWallet.h"
+#import "BRPaymentRequest.h"
+#import "BRWalletManager.h"
+#import "BRWallet.h"
 #import "BRButton.h"
 #import "BRBubbleView.h"
 #import "QREncoder.h"
@@ -79,14 +79,14 @@
     [super viewWillDisappear:animated];
 }
 
-- (ZNPaymentRequest *)paymentRequest
+- (BRPaymentRequest *)paymentRequest
 {
-    return [ZNPaymentRequest requestWithString:self.paymentAddress];
+    return [BRPaymentRequest requestWithString:self.paymentAddress];
 }
 
 - (NSString *)paymentAddress
 {
-    return [[[ZNWalletManager sharedInstance] wallet] receiveAddress];
+    return [[[BRWalletManager sharedInstance] wallet] receiveAddress];
 }
 
 - (BOOL)nextTip

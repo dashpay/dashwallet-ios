@@ -27,8 +27,8 @@
 #import "BRTxInputEntity.h"
 #import "BRTxOutputEntity.h"
 #import "BRAddressEntity.h"
-#import "ZNTransaction.h"
-#import "ZNMerkleBlock.h"
+#import "BRTransaction.h"
+#import "BRMerkleBlock.h"
 #import "NSManagedObject+Utils.h"
 #import "NSString+Base58.h"
 #import "NSMutableData+Bitcoin.h"
@@ -42,7 +42,7 @@
 @dynamic outputs;
 @dynamic lockTime;
 
-- (instancetype)setAttributesFromTx:(ZNTransaction *)tx
+- (instancetype)setAttributesFromTx:(BRTransaction *)tx
 {
     [[self managedObjectContext] performBlockAndWait:^{
         NSMutableOrderedSet *inputs = [self mutableOrderedSetValueForKey:@"inputs"];
@@ -84,9 +84,9 @@
     return self;
 }
 
-- (ZNTransaction *)transaction
+- (BRTransaction *)transaction
 {
-    ZNTransaction *tx = [ZNTransaction new];
+    BRTransaction *tx = [BRTransaction new];
     
     [[self managedObjectContext] performBlockAndWait:^{
         tx.txHash = self.txHash;

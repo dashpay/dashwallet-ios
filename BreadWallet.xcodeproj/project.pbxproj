@@ -21,17 +21,17 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		7505A9FA18177DC400419043 /* ZNMerkleBlock.m in Sources */ = {isa = PBXBuildFile; fileRef = 7505A9F918177DC400419043 /* ZNMerkleBlock.m */; };
-		750A8EAB18F5E5C500250364 /* ZNKey+BIP38.m in Sources */ = {isa = PBXBuildFile; fileRef = 750A8EAA18F5E5C500250364 /* ZNKey+BIP38.m */; };
+		7505A9FA18177DC400419043 /* BRMerkleBlock.m in Sources */ = {isa = PBXBuildFile; fileRef = 7505A9F918177DC400419043 /* BRMerkleBlock.m */; };
+		750A8EAB18F5E5C500250364 /* BRKey+BIP38.m in Sources */ = {isa = PBXBuildFile; fileRef = 750A8EAA18F5E5C500250364 /* BRKey+BIP38.m */; };
 		75183B88178B4ABE0032F365 /* BRWelcomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75183B87178B4ABE0032F365 /* BRWelcomeViewController.m */; };
 		751E809F1789797500E3CFB2 /* gear@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 751E809D1789797500E3CFB2 /* gear@2x.png */; };
 		751E80A01789797500E3CFB2 /* refresh@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 751E809E1789797500E3CFB2 /* refresh@2x.png */; };
 		75204DF818DD0C40002FA28C /* BIP39EnglishWords.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75204DF718DD0C40002FA28C /* BIP39EnglishWords.plist */; };
-		75204DFB18DD0D93002FA28C /* ZNBIP39Mnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = 75204DFA18DD0D93002FA28C /* ZNBIP39Mnemonic.m */; };
+		75204DFB18DD0D93002FA28C /* BRBIP39Mnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = 75204DFA18DD0D93002FA28C /* BRBIP39Mnemonic.m */; };
 		752327FE17A088DA00DDEFBB /* zincwallet-big@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 752327FD17A088DA00DDEFBB /* zincwallet-big@2x.png */; };
 		752C2F8717406EEA0033F636 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 752C2F8617406EEA0033F636 /* Reachability.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		752C2F8917406FF70033F636 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 752C2F8817406FF70033F636 /* SystemConfiguration.framework */; };
-		752C2F8C174071520033F636 /* ZNWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 752C2F8B174071520033F636 /* ZNWallet.m */; };
+		752C2F8C174071520033F636 /* BRWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 752C2F8B174071520033F636 /* BRWallet.m */; };
 		752C2FAB174091DD0033F636 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 752C2FAA174091DD0033F636 /* MobileCoreServices.framework */; };
 		752C2FAF17416C620033F636 /* NSString+Base58.m in Sources */ = {isa = PBXBuildFile; fileRef = 752C2FAE17416C620033F636 /* NSString+Base58.m */; };
 		752C2FB5174171770033F636 /* NSData+Hash.m in Sources */ = {isa = PBXBuildFile; fileRef = 752C2FB4174171760033F636 /* NSData+Hash.m */; };
@@ -697,16 +697,16 @@
 		753007EF1769899B00C7BB60 /* BRSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007EE1769899B00C7BB60 /* BRSeedViewController.m */; };
 		753007F2176A48DA00C7BB60 /* BRRestoreViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007F1176A48DA00C7BB60 /* BRRestoreViewController.m */; };
 		7535CCDF176BE3D2007E29C5 /* BRButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 7535CCDE176BE3D2007E29C5 /* BRButton.m */; };
-		753A27151906027400C92961 /* ZNPaymentProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 753A27141906027400C92961 /* ZNPaymentProtocol.m */; };
+		753A27151906027400C92961 /* BRPaymentProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 753A27141906027400C92961 /* BRPaymentProtocol.m */; };
 		753A4149178E070C003B938D /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 753A4148178E070C003B938D /* AudioToolbox.framework */; };
-		753E7CD61801628C00FC6BA7 /* ZNPeerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 753E7CD2180155B400FC6BA7 /* ZNPeerManager.m */; };
+		753E7CD61801628C00FC6BA7 /* BRPeerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 753E7CD2180155B400FC6BA7 /* BRPeerManager.m */; };
 		753E7CD91802648700FC6BA7 /* BRPeerEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 753E7CD81802648700FC6BA7 /* BRPeerEntity.m */; };
 		753E7CDB180387A600FC6BA7 /* FixedPeers.plist in Resources */ = {isa = PBXBuildFile; fileRef = 753E7CDA180387A600FC6BA7 /* FixedPeers.plist */; };
-		753E7CE118053B3F00FC6BA7 /* ZNPeer.m in Sources */ = {isa = PBXBuildFile; fileRef = 753E7CE018053B3F00FC6BA7 /* ZNPeer.m */; };
+		753E7CE118053B3F00FC6BA7 /* BRPeer.m in Sources */ = {isa = PBXBuildFile; fileRef = 753E7CE018053B3F00FC6BA7 /* BRPeer.m */; };
 		753E7CE41806853400FC6BA7 /* NSData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 753E7CE31806853400FC6BA7 /* NSData+Bitcoin.m */; };
 		75402998178CD08C00D4F3FD /* zincwallet@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75402997178CD08C00D4F3FD /* zincwallet@2x.png */; };
 		7545424F17606C7500638B95 /* button-bg-disabled@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7545424C17606C7500638B95 /* button-bg-disabled@2x.png */; };
-		7559FBA7174D8B1F0000E809 /* ZNKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 7559FBA6174D8B1F0000E809 /* ZNKey.m */; };
+		7559FBA7174D8B1F0000E809 /* BRKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 7559FBA6174D8B1F0000E809 /* BRKey.m */; };
 		7559FBA9174E85B10000E809 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7559FBA8174E85B10000E809 /* Security.framework */; };
 		756E9CD817AD802700D316A8 /* wallpaper-welcome@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 756E9CD717AD802700D316A8 /* wallpaper-welcome@2x.png */; };
 		7579C5DF17665B5300E89497 /* libzbar.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75FD9C0217664F3000307894 /* libzbar.a */; };
@@ -736,8 +736,8 @@
 		759CB23B175E8D4900AFA559 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB23A175E8D4900AFA559 /* AVFoundation.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		759CB23D175E8D6300AFA559 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB23C175E8D6300AFA559 /* CoreMedia.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		759CB240175F03BF00AFA559 /* BRAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759CB23F175F03BF00AFA559 /* BRAmountViewController.m */; };
-		75A6ECE317BD464A0043E52D /* ZNZincMnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = 75A6ECE217BD464A0043E52D /* ZNZincMnemonic.m */; };
-		75AC8160180DFBC700ACA0C9 /* ZNBloomFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 75AC815F180DFBC700ACA0C9 /* ZNBloomFilter.m */; };
+		75A6ECE317BD464A0043E52D /* BRZincMnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = 75A6ECE217BD464A0043E52D /* BRZincMnemonic.m */; };
+		75AC8160180DFBC700ACA0C9 /* BRBloomFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 75AC815F180DFBC700ACA0C9 /* BRBloomFilter.m */; };
 		75AC8163181385D100ACA0C9 /* BRMerkleBlockEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 75AC8162181385D100ACA0C9 /* BRMerkleBlockEntity.m */; };
 		75ADF1FE17B0EC0D006B1336 /* deletetoleft-blue.png in Resources */ = {isa = PBXBuildFile; fileRef = 75ADF1FD17B0EC0C006B1336 /* deletetoleft-blue.png */; };
 		75AF36D8176675D3004AA912 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
@@ -753,8 +753,8 @@
 		75C2F3D6178D3061009F8CD3 /* cameraguide@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75C2F3D3178D3061009F8CD3 /* cameraguide@2x.png */; };
 		75C483DD17E27B1E00CAC0BC /* icon120.png in Resources */ = {isa = PBXBuildFile; fileRef = 758FBDC717E1D33100D341BF /* icon120.png */; };
 		75C852FA18CE8A17008E1431 /* BRBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 75C852F918CE8A17008E1431 /* BRBubbleView.m */; };
-		75CBEAE9173C80AD00978DBA /* ZNPaymentRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 75CBEAE8173C80AD00978DBA /* ZNPaymentRequest.m */; };
-		75D450FA18C41C84005571B3 /* ZNWalletManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D450F918C41C84005571B3 /* ZNWalletManager.m */; };
+		75CBEAE9173C80AD00978DBA /* BRPaymentRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 75CBEAE8173C80AD00978DBA /* BRPaymentRequest.m */; };
+		75D450FA18C41C84005571B3 /* BRWalletManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D450F918C41C84005571B3 /* BRWalletManager.m */; };
 		75D8F382173ABE3C0080D95E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F381173ABE3C0080D95E /* UIKit.framework */; };
 		75D8F384173ABE3C0080D95E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		75D8F386173ABE3C0080D95E /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F385173ABE3C0080D95E /* CoreGraphics.framework */; };
@@ -773,10 +773,10 @@
 		75D8F3C1173ABE3D0080D95E /* BreadWalletTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3C0173ABE3D0080D95E /* BreadWalletTests.m */; };
 		75E111A8178AB4AF0038173E /* button-bg-white@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75E111A4178AB4AF0038173E /* button-bg-white@2x.png */; };
 		75EAE8431752D20800FDB2D2 /* ElectrumSeedWords.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75EAE8421752D20800FDB2D2 /* ElectrumSeedWords.plist */; };
-		75EAE8471753E93A00FDB2D2 /* ZNElectrumSequence.m in Sources */ = {isa = PBXBuildFile; fileRef = 75EAE8461753E93A00FDB2D2 /* ZNElectrumSequence.m */; };
+		75EAE8471753E93A00FDB2D2 /* BRElectrumSequence.m in Sources */ = {isa = PBXBuildFile; fileRef = 75EAE8461753E93A00FDB2D2 /* BRElectrumSequence.m */; };
 		75F17C2E1744CB2E00D9F228 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 752C2FFD1742ACFB0033F636 /* libcrypto.a */; };
 		75F17C2F1744CB3400D9F228 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 752C300D1742AD060033F636 /* libssl.a */; };
-		75F17C351744CC2100D9F228 /* ZNTransaction.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F17C341744CC2100D9F228 /* ZNTransaction.m */; };
+		75F17C351744CC2100D9F228 /* BRTransaction.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F17C341744CC2100D9F228 /* BRTransaction.m */; };
 		75F17C4417455F2D00D9F228 /* deletetoleft-inv.png in Resources */ = {isa = PBXBuildFile; fileRef = 75F17C4217455F2D00D9F228 /* deletetoleft-inv.png */; };
 		75F1B85D17C6CC0B00680E1B /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75F1B85B17C6CC0B00680E1B /* CoreData.framework */; };
 		75F1B85E17C6CC0B00680E1B /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75F1B85C17C6CC0B00680E1B /* CoreVideo.framework */; };
@@ -821,8 +821,8 @@
 		75FD9D511766532D00307894 /* ZBarReaderViewImpl_Capture.m in Sources */ = {isa = PBXBuildFile; fileRef = 75FD9D3B1766532D00307894 /* ZBarReaderViewImpl_Capture.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		75FD9D521766532D00307894 /* ZBarReaderViewImpl_Simulator.m in Sources */ = {isa = PBXBuildFile; fileRef = 75FD9D3C1766532D00307894 /* ZBarReaderViewImpl_Simulator.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		75FD9D531766532D00307894 /* ZBarSymbol.m in Sources */ = {isa = PBXBuildFile; fileRef = 75FD9D3D1766532D00307894 /* ZBarSymbol.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		847C2302179A1FD600163CEF /* ZNElectrumMnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = 847C2301179A1FD600163CEF /* ZNElectrumMnemonic.m */; };
-		84DC139A1799E02800F6ED91 /* ZNBIP32Sequence.m in Sources */ = {isa = PBXBuildFile; fileRef = 84DC13991799E02800F6ED91 /* ZNBIP32Sequence.m */; };
+		847C2302179A1FD600163CEF /* BRElectrumMnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = 847C2301179A1FD600163CEF /* BRElectrumMnemonic.m */; };
+		84DC139A1799E02800F6ED91 /* BRBIP32Sequence.m in Sources */ = {isa = PBXBuildFile; fileRef = 84DC13991799E02800F6ED91 /* BRBIP32Sequence.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -931,23 +931,23 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		7505A9F818177DC400419043 /* ZNMerkleBlock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNMerkleBlock.h; sourceTree = "<group>"; };
-		7505A9F918177DC400419043 /* ZNMerkleBlock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNMerkleBlock.m; sourceTree = "<group>"; };
-		750A8EA918F5E5C500250364 /* ZNKey+BIP38.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ZNKey+BIP38.h"; sourceTree = "<group>"; };
-		750A8EAA18F5E5C500250364 /* ZNKey+BIP38.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ZNKey+BIP38.m"; sourceTree = "<group>"; };
+		7505A9F818177DC400419043 /* BRMerkleBlock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRMerkleBlock.h; sourceTree = "<group>"; };
+		7505A9F918177DC400419043 /* BRMerkleBlock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRMerkleBlock.m; sourceTree = "<group>"; };
+		750A8EA918F5E5C500250364 /* BRKey+BIP38.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BRKey+BIP38.h"; sourceTree = "<group>"; };
+		750A8EAA18F5E5C500250364 /* BRKey+BIP38.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "BRKey+BIP38.m"; sourceTree = "<group>"; };
 		75183B86178B4ABE0032F365 /* BRWelcomeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRWelcomeViewController.h; sourceTree = "<group>"; };
 		75183B87178B4ABE0032F365 /* BRWelcomeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRWelcomeViewController.m; sourceTree = "<group>"; };
 		751E809D1789797500E3CFB2 /* gear@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "gear@2x.png"; sourceTree = "<group>"; };
 		751E809E1789797500E3CFB2 /* refresh@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "refresh@2x.png"; sourceTree = "<group>"; };
 		75204DF718DD0C40002FA28C /* BIP39EnglishWords.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = BIP39EnglishWords.plist; sourceTree = "<group>"; };
-		75204DF918DD0D93002FA28C /* ZNBIP39Mnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNBIP39Mnemonic.h; sourceTree = "<group>"; };
-		75204DFA18DD0D93002FA28C /* ZNBIP39Mnemonic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNBIP39Mnemonic.m; sourceTree = "<group>"; };
+		75204DF918DD0D93002FA28C /* BRBIP39Mnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBIP39Mnemonic.h; sourceTree = "<group>"; };
+		75204DFA18DD0D93002FA28C /* BRBIP39Mnemonic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBIP39Mnemonic.m; sourceTree = "<group>"; };
 		752327FD17A088DA00DDEFBB /* zincwallet-big@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "zincwallet-big@2x.png"; sourceTree = "<group>"; };
 		752C2F8517406EEA0033F636 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
 		752C2F8617406EEA0033F636 /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
 		752C2F8817406FF70033F636 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
-		752C2F8A174071520033F636 /* ZNWallet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNWallet.h; sourceTree = "<group>"; };
-		752C2F8B174071520033F636 /* ZNWallet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNWallet.m; sourceTree = "<group>"; };
+		752C2F8A174071520033F636 /* BRWallet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRWallet.h; sourceTree = "<group>"; };
+		752C2F8B174071520033F636 /* BRWallet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRWallet.m; sourceTree = "<group>"; };
 		752C2FAA174091DD0033F636 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 		752C2FAD17416C620033F636 /* NSString+Base58.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Base58.h"; sourceTree = "<group>"; };
 		752C2FAE17416C620033F636 /* NSString+Base58.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Base58.m"; sourceTree = "<group>"; };
@@ -1745,22 +1745,22 @@
 		753007F1176A48DA00C7BB60 /* BRRestoreViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRRestoreViewController.m; sourceTree = "<group>"; };
 		7535CCDD176BE3D2007E29C5 /* BRButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRButton.h; sourceTree = "<group>"; };
 		7535CCDE176BE3D2007E29C5 /* BRButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRButton.m; sourceTree = "<group>"; };
-		753A27131906027400C92961 /* ZNPaymentProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNPaymentProtocol.h; sourceTree = "<group>"; };
-		753A27141906027400C92961 /* ZNPaymentProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNPaymentProtocol.m; sourceTree = "<group>"; };
+		753A27131906027400C92961 /* BRPaymentProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRPaymentProtocol.h; sourceTree = "<group>"; };
+		753A27141906027400C92961 /* BRPaymentProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPaymentProtocol.m; sourceTree = "<group>"; };
 		753A4148178E070C003B938D /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
-		753E7CD1180155B400FC6BA7 /* ZNPeerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNPeerManager.h; sourceTree = "<group>"; };
-		753E7CD2180155B400FC6BA7 /* ZNPeerManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNPeerManager.m; sourceTree = "<group>"; };
+		753E7CD1180155B400FC6BA7 /* BRPeerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRPeerManager.h; sourceTree = "<group>"; };
+		753E7CD2180155B400FC6BA7 /* BRPeerManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPeerManager.m; sourceTree = "<group>"; };
 		753E7CD71802648700FC6BA7 /* BRPeerEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRPeerEntity.h; sourceTree = "<group>"; };
 		753E7CD81802648700FC6BA7 /* BRPeerEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPeerEntity.m; sourceTree = "<group>"; };
 		753E7CDA180387A600FC6BA7 /* FixedPeers.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = FixedPeers.plist; sourceTree = "<group>"; };
-		753E7CDF18053B3F00FC6BA7 /* ZNPeer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNPeer.h; sourceTree = "<group>"; };
-		753E7CE018053B3F00FC6BA7 /* ZNPeer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNPeer.m; sourceTree = "<group>"; };
+		753E7CDF18053B3F00FC6BA7 /* BRPeer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRPeer.h; sourceTree = "<group>"; };
+		753E7CE018053B3F00FC6BA7 /* BRPeer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPeer.m; sourceTree = "<group>"; };
 		753E7CE21806853400FC6BA7 /* NSData+Bitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Bitcoin.h"; sourceTree = "<group>"; };
 		753E7CE31806853400FC6BA7 /* NSData+Bitcoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+Bitcoin.m"; sourceTree = "<group>"; };
 		75402997178CD08C00D4F3FD /* zincwallet@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "zincwallet@2x.png"; sourceTree = "<group>"; };
 		7545424C17606C7500638B95 /* button-bg-disabled@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-disabled@2x.png"; sourceTree = "<group>"; };
-		7559FBA5174D8B1F0000E809 /* ZNKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNKey.h; sourceTree = "<group>"; };
-		7559FBA6174D8B1F0000E809 /* ZNKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNKey.m; sourceTree = "<group>"; };
+		7559FBA5174D8B1F0000E809 /* BRKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRKey.h; sourceTree = "<group>"; };
+		7559FBA6174D8B1F0000E809 /* BRKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRKey.m; sourceTree = "<group>"; };
 		7559FBA8174E85B10000E809 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		756E9CD717AD802700D316A8 /* wallpaper-welcome@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "wallpaper-welcome@2x.png"; sourceTree = "<group>"; };
 		757B1DCD17ADD53C00AA6CAB /* button-bg-blue@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-blue@2x.png"; sourceTree = "<group>"; };
@@ -1796,11 +1796,11 @@
 		759CB23C175E8D6300AFA559 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		759CB23E175F03BF00AFA559 /* BRAmountViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAmountViewController.h; sourceTree = "<group>"; };
 		759CB23F175F03BF00AFA559 /* BRAmountViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRAmountViewController.m; sourceTree = "<group>"; };
-		75A6ECE117BD464A0043E52D /* ZNZincMnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNZincMnemonic.h; sourceTree = "<group>"; };
-		75A6ECE217BD464A0043E52D /* ZNZincMnemonic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNZincMnemonic.m; sourceTree = "<group>"; };
-		75A6ECE517BD4CF60043E52D /* ZNMnemonic.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNMnemonic.h; sourceTree = "<group>"; };
-		75AC815E180DFBC700ACA0C9 /* ZNBloomFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNBloomFilter.h; sourceTree = "<group>"; };
-		75AC815F180DFBC700ACA0C9 /* ZNBloomFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNBloomFilter.m; sourceTree = "<group>"; };
+		75A6ECE117BD464A0043E52D /* BRZincMnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRZincMnemonic.h; sourceTree = "<group>"; };
+		75A6ECE217BD464A0043E52D /* BRZincMnemonic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRZincMnemonic.m; sourceTree = "<group>"; };
+		75A6ECE517BD4CF60043E52D /* BRMnemonic.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRMnemonic.h; sourceTree = "<group>"; };
+		75AC815E180DFBC700ACA0C9 /* BRBloomFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBloomFilter.h; sourceTree = "<group>"; };
+		75AC815F180DFBC700ACA0C9 /* BRBloomFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBloomFilter.m; sourceTree = "<group>"; };
 		75AC8161181385D100ACA0C9 /* BRMerkleBlockEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRMerkleBlockEntity.h; sourceTree = "<group>"; };
 		75AC8162181385D100ACA0C9 /* BRMerkleBlockEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRMerkleBlockEntity.m; sourceTree = "<group>"; };
 		75ADF1FD17B0EC0C006B1336 /* deletetoleft-blue.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "deletetoleft-blue.png"; sourceTree = "<group>"; };
@@ -1822,10 +1822,10 @@
 		75C2F3D3178D3061009F8CD3 /* cameraguide@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide@2x.png"; sourceTree = "<group>"; };
 		75C852F818CE8A17008E1431 /* BRBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBubbleView.h; sourceTree = "<group>"; };
 		75C852F918CE8A17008E1431 /* BRBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBubbleView.m; sourceTree = "<group>"; };
-		75CBEAE7173C80AD00978DBA /* ZNPaymentRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNPaymentRequest.h; sourceTree = "<group>"; };
-		75CBEAE8173C80AD00978DBA /* ZNPaymentRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNPaymentRequest.m; sourceTree = "<group>"; };
-		75D450F818C41C84005571B3 /* ZNWalletManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNWalletManager.h; sourceTree = "<group>"; };
-		75D450F918C41C84005571B3 /* ZNWalletManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNWalletManager.m; sourceTree = "<group>"; };
+		75CBEAE7173C80AD00978DBA /* BRPaymentRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRPaymentRequest.h; sourceTree = "<group>"; };
+		75CBEAE8173C80AD00978DBA /* BRPaymentRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPaymentRequest.m; sourceTree = "<group>"; };
+		75D450F818C41C84005571B3 /* BRWalletManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRWalletManager.h; sourceTree = "<group>"; };
+		75D450F918C41C84005571B3 /* BRWalletManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRWalletManager.m; sourceTree = "<group>"; };
 		75D7F23117E1540B006E9FC1 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		75D8F37E173ABE3C0080D95E /* BreadWallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BreadWallet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		75D8F381173ABE3C0080D95E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -1852,11 +1852,11 @@
 		75D8F3C0173ABE3D0080D95E /* BreadWalletTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BreadWalletTests.m; sourceTree = "<group>"; };
 		75E111A4178AB4AF0038173E /* button-bg-white@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-white@2x.png"; sourceTree = "<group>"; };
 		75EAE8421752D20800FDB2D2 /* ElectrumSeedWords.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = ElectrumSeedWords.plist; sourceTree = "<group>"; };
-		75EAE8441753E8E300FDB2D2 /* ZNKeySequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNKeySequence.h; sourceTree = "<group>"; };
-		75EAE8451753E93A00FDB2D2 /* ZNElectrumSequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNElectrumSequence.h; sourceTree = "<group>"; };
-		75EAE8461753E93A00FDB2D2 /* ZNElectrumSequence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNElectrumSequence.m; sourceTree = "<group>"; };
-		75F17C331744CC2100D9F228 /* ZNTransaction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNTransaction.h; sourceTree = "<group>"; };
-		75F17C341744CC2100D9F228 /* ZNTransaction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNTransaction.m; sourceTree = "<group>"; };
+		75EAE8441753E8E300FDB2D2 /* BRKeySequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRKeySequence.h; sourceTree = "<group>"; };
+		75EAE8451753E93A00FDB2D2 /* BRElectrumSequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRElectrumSequence.h; sourceTree = "<group>"; };
+		75EAE8461753E93A00FDB2D2 /* BRElectrumSequence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRElectrumSequence.m; sourceTree = "<group>"; };
+		75F17C331744CC2100D9F228 /* BRTransaction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRTransaction.h; sourceTree = "<group>"; };
+		75F17C341744CC2100D9F228 /* BRTransaction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTransaction.m; sourceTree = "<group>"; };
 		75F17C4217455F2D00D9F228 /* deletetoleft-inv.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "deletetoleft-inv.png"; sourceTree = "<group>"; };
 		75F1B85B17C6CC0B00680E1B /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		75F1B85C17C6CC0B00680E1B /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
@@ -1941,10 +1941,10 @@
 		75FD9D3B1766532D00307894 /* ZBarReaderViewImpl_Capture.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZBarReaderViewImpl_Capture.m; sourceTree = "<group>"; };
 		75FD9D3C1766532D00307894 /* ZBarReaderViewImpl_Simulator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZBarReaderViewImpl_Simulator.m; sourceTree = "<group>"; };
 		75FD9D3D1766532D00307894 /* ZBarSymbol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZBarSymbol.m; sourceTree = "<group>"; };
-		847C2300179A1FD600163CEF /* ZNElectrumMnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNElectrumMnemonic.h; sourceTree = "<group>"; };
-		847C2301179A1FD600163CEF /* ZNElectrumMnemonic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNElectrumMnemonic.m; sourceTree = "<group>"; };
-		84DC13981799E02800F6ED91 /* ZNBIP32Sequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNBIP32Sequence.h; sourceTree = "<group>"; };
-		84DC13991799E02800F6ED91 /* ZNBIP32Sequence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNBIP32Sequence.m; sourceTree = "<group>"; };
+		847C2300179A1FD600163CEF /* BRElectrumMnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRElectrumMnemonic.h; sourceTree = "<group>"; };
+		847C2301179A1FD600163CEF /* BRElectrumMnemonic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRElectrumMnemonic.m; sourceTree = "<group>"; };
+		84DC13981799E02800F6ED91 /* BRBIP32Sequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBIP32Sequence.h; sourceTree = "<group>"; };
+		84DC13991799E02800F6ED91 /* BRBIP32Sequence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBIP32Sequence.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -3366,40 +3366,40 @@
 			isa = PBXGroup;
 			children = (
 				75F1B86017C7164300680E1B /* Entities */,
-				7559FBA5174D8B1F0000E809 /* ZNKey.h */,
-				7559FBA6174D8B1F0000E809 /* ZNKey.m */,
-				750A8EA918F5E5C500250364 /* ZNKey+BIP38.h */,
-				750A8EAA18F5E5C500250364 /* ZNKey+BIP38.m */,
-				752C2F8A174071520033F636 /* ZNWallet.h */,
-				752C2F8B174071520033F636 /* ZNWallet.m */,
-				75D450F818C41C84005571B3 /* ZNWalletManager.h */,
-				75D450F918C41C84005571B3 /* ZNWalletManager.m */,
-				75CBEAE7173C80AD00978DBA /* ZNPaymentRequest.h */,
-				75CBEAE8173C80AD00978DBA /* ZNPaymentRequest.m */,
-				753A27131906027400C92961 /* ZNPaymentProtocol.h */,
-				753A27141906027400C92961 /* ZNPaymentProtocol.m */,
-				75F17C331744CC2100D9F228 /* ZNTransaction.h */,
-				75F17C341744CC2100D9F228 /* ZNTransaction.m */,
-				75AC815E180DFBC700ACA0C9 /* ZNBloomFilter.h */,
-				75AC815F180DFBC700ACA0C9 /* ZNBloomFilter.m */,
-				7505A9F818177DC400419043 /* ZNMerkleBlock.h */,
-				7505A9F918177DC400419043 /* ZNMerkleBlock.m */,
-				753E7CDF18053B3F00FC6BA7 /* ZNPeer.h */,
-				753E7CE018053B3F00FC6BA7 /* ZNPeer.m */,
-				753E7CD1180155B400FC6BA7 /* ZNPeerManager.h */,
-				753E7CD2180155B400FC6BA7 /* ZNPeerManager.m */,
-				75EAE8441753E8E300FDB2D2 /* ZNKeySequence.h */,
-				84DC13981799E02800F6ED91 /* ZNBIP32Sequence.h */,
-				84DC13991799E02800F6ED91 /* ZNBIP32Sequence.m */,
-				75EAE8451753E93A00FDB2D2 /* ZNElectrumSequence.h */,
-				75EAE8461753E93A00FDB2D2 /* ZNElectrumSequence.m */,
-				75A6ECE517BD4CF60043E52D /* ZNMnemonic.h */,
-				75A6ECE117BD464A0043E52D /* ZNZincMnemonic.h */,
-				75A6ECE217BD464A0043E52D /* ZNZincMnemonic.m */,
-				847C2300179A1FD600163CEF /* ZNElectrumMnemonic.h */,
-				847C2301179A1FD600163CEF /* ZNElectrumMnemonic.m */,
-				75204DF918DD0D93002FA28C /* ZNBIP39Mnemonic.h */,
-				75204DFA18DD0D93002FA28C /* ZNBIP39Mnemonic.m */,
+				7559FBA5174D8B1F0000E809 /* BRKey.h */,
+				7559FBA6174D8B1F0000E809 /* BRKey.m */,
+				750A8EA918F5E5C500250364 /* BRKey+BIP38.h */,
+				750A8EAA18F5E5C500250364 /* BRKey+BIP38.m */,
+				752C2F8A174071520033F636 /* BRWallet.h */,
+				752C2F8B174071520033F636 /* BRWallet.m */,
+				75D450F818C41C84005571B3 /* BRWalletManager.h */,
+				75D450F918C41C84005571B3 /* BRWalletManager.m */,
+				75CBEAE7173C80AD00978DBA /* BRPaymentRequest.h */,
+				75CBEAE8173C80AD00978DBA /* BRPaymentRequest.m */,
+				753A27131906027400C92961 /* BRPaymentProtocol.h */,
+				753A27141906027400C92961 /* BRPaymentProtocol.m */,
+				75F17C331744CC2100D9F228 /* BRTransaction.h */,
+				75F17C341744CC2100D9F228 /* BRTransaction.m */,
+				75AC815E180DFBC700ACA0C9 /* BRBloomFilter.h */,
+				75AC815F180DFBC700ACA0C9 /* BRBloomFilter.m */,
+				7505A9F818177DC400419043 /* BRMerkleBlock.h */,
+				7505A9F918177DC400419043 /* BRMerkleBlock.m */,
+				753E7CDF18053B3F00FC6BA7 /* BRPeer.h */,
+				753E7CE018053B3F00FC6BA7 /* BRPeer.m */,
+				753E7CD1180155B400FC6BA7 /* BRPeerManager.h */,
+				753E7CD2180155B400FC6BA7 /* BRPeerManager.m */,
+				75EAE8441753E8E300FDB2D2 /* BRKeySequence.h */,
+				84DC13981799E02800F6ED91 /* BRBIP32Sequence.h */,
+				84DC13991799E02800F6ED91 /* BRBIP32Sequence.m */,
+				75EAE8451753E93A00FDB2D2 /* BRElectrumSequence.h */,
+				75EAE8461753E93A00FDB2D2 /* BRElectrumSequence.m */,
+				75A6ECE517BD4CF60043E52D /* BRMnemonic.h */,
+				75A6ECE117BD464A0043E52D /* BRZincMnemonic.h */,
+				75A6ECE217BD464A0043E52D /* BRZincMnemonic.m */,
+				847C2300179A1FD600163CEF /* BRElectrumMnemonic.h */,
+				847C2301179A1FD600163CEF /* BRElectrumMnemonic.m */,
+				75204DF918DD0D93002FA28C /* BRBIP39Mnemonic.h */,
+				75204DFA18DD0D93002FA28C /* BRBIP39Mnemonic.m */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -4596,21 +4596,21 @@
 				75D8F392173ABE3C0080D95E /* BRAppDelegate.m in Sources */,
 				75D8F3A1173ABE3C0080D95E /* BRSendViewController.m in Sources */,
 				75D8F3A8173ABE3D0080D95E /* BRReceiveViewController.mm in Sources */,
-				75CBEAE9173C80AD00978DBA /* ZNPaymentRequest.m in Sources */,
-				7505A9FA18177DC400419043 /* ZNMerkleBlock.m in Sources */,
+				75CBEAE9173C80AD00978DBA /* BRPaymentRequest.m in Sources */,
+				7505A9FA18177DC400419043 /* BRMerkleBlock.m in Sources */,
 				752C2F8717406EEA0033F636 /* Reachability.m in Sources */,
-				752C2F8C174071520033F636 /* ZNWallet.m in Sources */,
-				753A27151906027400C92961 /* ZNPaymentProtocol.m in Sources */,
+				752C2F8C174071520033F636 /* BRWallet.m in Sources */,
+				753A27151906027400C92961 /* BRPaymentProtocol.m in Sources */,
 				752C2FAF17416C620033F636 /* NSString+Base58.m in Sources */,
 				752C2FB5174171770033F636 /* NSData+Hash.m in Sources */,
 				753E7CE41806853400FC6BA7 /* NSData+Bitcoin.m in Sources */,
 				75F4D4B417E636860007500D /* BRRootViewController.m in Sources */,
-				753E7CE118053B3F00FC6BA7 /* ZNPeer.m in Sources */,
-				75F17C351744CC2100D9F228 /* ZNTransaction.m in Sources */,
+				753E7CE118053B3F00FC6BA7 /* BRPeer.m in Sources */,
+				75F17C351744CC2100D9F228 /* BRTransaction.m in Sources */,
 				75920F86174AB82100C1C03D /* NSMutableData+Bitcoin.m in Sources */,
-				75D450FA18C41C84005571B3 /* ZNWalletManager.m in Sources */,
-				7559FBA7174D8B1F0000E809 /* ZNKey.m in Sources */,
-				75EAE8471753E93A00FDB2D2 /* ZNElectrumSequence.m in Sources */,
+				75D450FA18C41C84005571B3 /* BRWalletManager.m in Sources */,
+				7559FBA7174D8B1F0000E809 /* BRKey.m in Sources */,
+				75EAE8471753E93A00FDB2D2 /* BRElectrumSequence.m in Sources */,
 				7597028117E15B1E00CDC14A /* BRNavigationBar.m in Sources */,
 				759CB240175F03BF00AFA559 /* BRAmountViewController.m in Sources */,
 				753007EC17684A8C00C7BB60 /* BRSettingsViewController.m in Sources */,
@@ -4618,22 +4618,22 @@
 				753007F2176A48DA00C7BB60 /* BRRestoreViewController.m in Sources */,
 				7535CCDF176BE3D2007E29C5 /* BRButton.m in Sources */,
 				75183B88178B4ABE0032F365 /* BRWelcomeViewController.m in Sources */,
-				84DC139A1799E02800F6ED91 /* ZNBIP32Sequence.m in Sources */,
-				847C2302179A1FD600163CEF /* ZNElectrumMnemonic.m in Sources */,
+				84DC139A1799E02800F6ED91 /* BRBIP32Sequence.m in Sources */,
+				847C2302179A1FD600163CEF /* BRElectrumMnemonic.m in Sources */,
 				75C852FA18CE8A17008E1431 /* BRBubbleView.m in Sources */,
 				7597028417E15B5600CDC14A /* BRStoryboardSegue.m in Sources */,
 				753E7CD91802648700FC6BA7 /* BRPeerEntity.m in Sources */,
-				75A6ECE317BD464A0043E52D /* ZNZincMnemonic.m in Sources */,
+				75A6ECE317BD464A0043E52D /* BRZincMnemonic.m in Sources */,
 				75F1B86917C7186E00680E1B /* BRTransactionEntity.m in Sources */,
-				753E7CD61801628C00FC6BA7 /* ZNPeerManager.m in Sources */,
+				753E7CD61801628C00FC6BA7 /* BRPeerManager.m in Sources */,
 				75F1B87917C7356B00680E1B /* NSManagedObject+Utils.m in Sources */,
-				750A8EAB18F5E5C500250364 /* ZNKey+BIP38.m in Sources */,
+				750A8EAB18F5E5C500250364 /* BRKey+BIP38.m in Sources */,
 				75F1B87D17C7506200680E1B /* BreadWallet.xcdatamodeld in Sources */,
-				75204DFB18DD0D93002FA28C /* ZNBIP39Mnemonic.m in Sources */,
+				75204DFB18DD0D93002FA28C /* BRBIP39Mnemonic.m in Sources */,
 				757BFF2D17CBD0D700D1C4AF /* BRAddressEntity.m in Sources */,
 				75AC8163181385D100ACA0C9 /* BRMerkleBlockEntity.m in Sources */,
 				757BFF3017CC1A9100D1C4AF /* BRTxInputEntity.m in Sources */,
-				75AC8160180DFBC700ACA0C9 /* ZNBloomFilter.m in Sources */,
+				75AC8160180DFBC700ACA0C9 /* BRBloomFilter.m in Sources */,
 				757BFF3317CC1AA800D1C4AF /* BRTxOutputEntity.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

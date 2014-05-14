@@ -29,7 +29,7 @@
 #import "ZBarSDK.h"
 
 @interface BRSendViewController : UIViewController<UIAlertViewDelegate, ZBarReaderDelegate,
-ZNAmountViewControllerDelegate>//, GKSessionDelegate>
+BRAmountViewControllerDelegate>//, GKSessionDelegate>
 
 - (BOOL)hideTips;
 

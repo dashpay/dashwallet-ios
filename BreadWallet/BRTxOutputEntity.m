@@ -25,7 +25,7 @@
 
 #import "BRTxOutputEntity.h"
 #import "BRTransactionEntity.h"
-#import "ZNTransaction.h"
+#import "BRTransaction.h"
 #import "NSManagedObject+Utils.h"
 
 @implementation BRTxOutputEntity
@@ -38,7 +38,7 @@
 @dynamic spent;
 @dynamic transaction;
 
-- (instancetype)setAttributesFromTx:(ZNTransaction *)tx outputIndex:(NSUInteger)index
+- (instancetype)setAttributesFromTx:(BRTransaction *)tx outputIndex:(NSUInteger)index
 {
     [[self managedObjectContext] performBlockAndWait:^{
         self.txHash = tx.txHash;

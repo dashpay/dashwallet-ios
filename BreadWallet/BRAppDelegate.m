@@ -24,7 +24,7 @@
 //  THE SOFTWARE.
 
 #import "BRAppDelegate.h"
-#import "ZNPeerManager.h"
+#import "BRPeerManager.h"
 #import <MessageUI/MessageUI.h>
 
 @implementation BRAppDelegate
@@ -93,7 +93,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 {
     __block id syncFinishedObserver = nil, syncFailedObserver = nil;
     __block void (^completion)(UIBackgroundFetchResult) = completionHandler;
-    ZNPeerManager *m = [ZNPeerManager sharedInstance];
+    BRPeerManager *m = [BRPeerManager sharedInstance];
 
     if (m.syncProgress >= 1.0) {
         completion(UIBackgroundFetchResultNoData);
@@ -115,7 +115,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     });
 
     syncFinishedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncFinishedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             if (completion) completion(UIBackgroundFetchResultNewData);
             completion = nil;
@@ -126,7 +126,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         }];
     
     syncFailedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncFailedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             if (completion) completion(UIBackgroundFetchResultFailed);
             completion = nil;

@@ -24,7 +24,7 @@
 //  THE SOFTWARE.
 
 #import "BRPeerEntity.h"
-#import "ZNPeer.h"
+#import "BRPeer.h"
 #import "NSManagedObject+Utils.h"
 #import <arpa/inet.h>
 
@@ -36,7 +36,7 @@
 @dynamic services;
 @dynamic misbehavin;
 
-- (instancetype)setAttributesFromPeer:(ZNPeer *)peer
+- (instancetype)setAttributesFromPeer:(BRPeer *)peer
 {
     [[self managedObjectContext] performBlockAndWait:^{
         self.address = peer.address;
@@ -49,12 +49,12 @@
     return self;
 }
 
-- (ZNPeer *)peer
+- (BRPeer *)peer
 {
-    __block ZNPeer *peer = nil;
+    __block BRPeer *peer = nil;
 
     [[self managedObjectContext] performBlockAndWait:^{
-        peer = [[ZNPeer alloc] initWithAddress:self.address port:self.port timestamp:self.timestamp
+        peer = [[BRPeer alloc] initWithAddress:self.address port:self.port timestamp:self.timestamp
                 services:self.services];
         peer.misbehavin = self.misbehavin;
     }];

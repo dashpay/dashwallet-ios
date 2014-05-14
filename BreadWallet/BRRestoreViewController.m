@@ -24,11 +24,11 @@
 //  THE SOFTWARE.
 
 #import "BRRestoreViewController.h"
-#import "ZNWalletManager.h"
+#import "BRWalletManager.h"
 #import "NSString+Base58.h"
-#import "ZNKeySequence.h"
-#import "ZNZincMnemonic.h"
-#import "ZNBIP39Mnemonic.h"
+#import "BRKeySequence.h"
+#import "BRZincMnemonic.h"
+#import "BRBIP39Mnemonic.h"
 #import <QuartzCore/QuartzCore.h>
 
 #define SHFT @"\xE2\x87\xA7" // upwards white arrow (utf-8)
@@ -155,8 +155,8 @@ static NSString *normalize_phrase(NSString *phrase)
           message:[NSString stringWithFormat:@"backup phrase must be %d words", PHRASE_LENGTH] delegate:nil
           cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
     }
-    else if ([[ZNWalletManager sharedInstance] wallet]) {
-        if ([phrase isEqual:normalize_phrase([[ZNWalletManager sharedInstance] seedPhrase])]) {
+    else if ([[BRWalletManager sharedInstance] wallet]) {
+        if ([phrase isEqual:normalize_phrase([[BRWalletManager sharedInstance] seedPhrase])]) {
             [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"cancel"
               destructiveButtonTitle:@"wipe" otherButtonTitles:nil]
              showInView:[[UIApplication sharedApplication] keyWindow]];
@@ -167,7 +167,7 @@ static NSString *normalize_phrase(NSString *phrase)
         }
     }
     else {
-        [[ZNWalletManager sharedInstance] setSeedPhrase:textView.text];
+        [[BRWalletManager sharedInstance] setSeedPhrase:textView.text];
         
         textView.text = nil;
         
@@ -181,14 +181,14 @@ static NSString *normalize_phrase(NSString *phrase)
 {
     if (buttonIndex != actionSheet.destructiveButtonIndex) return;
     
-    [[ZNWalletManager sharedInstance] setSeed:nil];
+    [[BRWalletManager sharedInstance] setSeed:nil];
 
     self.textView.text = nil;
     
     UIViewController *p = self.navigationController.presentingViewController.presentingViewController;
     
     [p dismissViewControllerAnimated:NO completion:^{
-        [p presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"ZNNewWalletNav"]
+        [p presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"BRNewWalletNav"]
          animated:NO completion:nil];
     }];
 }

@@ -1,8 +1,8 @@
 //
-//  BRTxInputEntity.m
+//  BRBIP32Sequence.h
 //  BreadWallet
 //
-//  Created by Aaron Voisine on 8/26/13.
+//  Created by Aaron Voisine on 7/19/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,33 +23,17 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRTxInputEntity.h"
-#import "BRTransactionEntity.h"
-#import "BRTransaction.h"
-#import "BRTxOutputEntity.h"
-#import "NSManagedObject+Utils.h"
+#import <Foundation/Foundation.h>
+#import "BRKeySequence.h"
 
-@implementation BRTxInputEntity
+@interface BRBIP32Sequence : NSObject<BRKeySequence>
 
-@dynamic txHash;
-@dynamic n;
-@dynamic signature;
-@dynamic sequence;
-@dynamic transaction;
+- (NSData *)masterPublicKeyFromSeed:(NSData *)seed;
+- (NSData *)publicKey:(unsigned)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey;
+- (NSString *)privateKey:(unsigned)n internal:(BOOL)internal fromSeed:(NSData *)seed;
+- (NSArray *)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed;
 
-- (instancetype)setAttributesFromTx:(BRTransaction *)tx inputIndex:(NSUInteger)index
-{
-    [[self managedObjectContext] performBlockAndWait:^{
-        self.txHash = tx.inputHashes[index];
-        self.n = [tx.inputIndexes[index] intValue];
-        self.signature = (tx.inputSignatures[index] != [NSNull null]) ? tx.inputSignatures[index] : nil;
-        self.sequence = [tx.inputSequences[index] intValue];
-    
-        // mark previously unspent outputs as spent
-        [[BRTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", self.txHash, self.n].lastObject setSpent:YES];
-    }];
-    
-    return self;
-}
+- (NSString *)serializedPrivateMasterFromSeed:(NSData *)seed;
+- (NSString *)serializedMasterPublicKey:(NSData *)masterPublicKey;
 
 @end

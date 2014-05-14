@@ -26,7 +26,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class BRTransactionEntity, ZNTransaction;
+@class BRTransactionEntity, BRTransaction;
 
 @interface BRTxInputEntity : NSManagedObject
 
@@ -36,6 +36,6 @@
 @property (nonatomic) int32_t sequence;
 @property (nonatomic, retain) BRTransactionEntity *transaction;
 
-- (instancetype)setAttributesFromTx:(ZNTransaction *)tx inputIndex:(NSUInteger)index;
+- (instancetype)setAttributesFromTx:(BRTransaction *)tx inputIndex:(NSUInteger)index;
 
 @end

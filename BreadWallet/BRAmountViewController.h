@@ -25,9 +25,9 @@
 
 #import <UIKit/UIKit.h>
 
-@class BRAmountViewController, ZNPaymentRequest;
+@class BRAmountViewController, BRPaymentRequest;
 
-@protocol ZNAmountViewControllerDelegate <NSObject>
+@protocol BRAmountViewControllerDelegate <NSObject>
 @required
 
 - (void)amountViewController:(BRAmountViewController *)amountViewController selectedAmount:(uint64_t)amount;
@@ -36,7 +36,7 @@
 
 @interface BRAmountViewController : UIViewController<UITextFieldDelegate, UIAlertViewDelegate>
 
-@property (nonatomic, assign) id<ZNAmountViewControllerDelegate> delegate;
-@property (nonatomic, strong) ZNPaymentRequest *request;
+@property (nonatomic, assign) id<BRAmountViewControllerDelegate> delegate;
+@property (nonatomic, strong) BRPaymentRequest *request;
 
 @end

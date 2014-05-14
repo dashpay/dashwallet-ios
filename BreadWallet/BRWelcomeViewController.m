@@ -24,7 +24,7 @@
 //  THE SOFTWARE.
 
 #import "BRWelcomeViewController.h"
-#import "ZNWalletManager.h"
+#import "BRWalletManager.h"
 
 #define WALLPAPER_ANIMATION_DURATION 30.0
 #define WALLPAPER_ANIMATION_X 240.0
@@ -58,7 +58,7 @@
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if ([[ZNWalletManager sharedInstance] wallet]) { // sanity check
+            if ([[BRWalletManager sharedInstance] wallet]) { // sanity check
                 [self.navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
             }
 
@@ -116,7 +116,7 @@
 {
     [super viewDidAppear:animated];
 
-    if ([[ZNWalletManager sharedInstance] wallet]) { // sanity check
+    if ([[BRWalletManager sharedInstance] wallet]) { // sanity check
         [self.navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
     }
 

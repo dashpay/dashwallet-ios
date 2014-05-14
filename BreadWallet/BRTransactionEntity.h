@@ -28,7 +28,7 @@
 
 @class BRTxInputEntity;
 @class BRTxOutputEntity;
-@class ZNTransaction;
+@class BRTransaction;
 
 @interface BRTransactionEntity : NSManagedObject
 
@@ -38,8 +38,8 @@
 @property (nonatomic, retain) NSOrderedSet *outputs;
 @property (nonatomic) int32_t lockTime;
 
-- (instancetype)setAttributesFromTx:(ZNTransaction *)tx;
-- (ZNTransaction *)transaction;
+- (instancetype)setAttributesFromTx:(BRTransaction *)tx;
+- (BRTransaction *)transaction;
 
 @end
 

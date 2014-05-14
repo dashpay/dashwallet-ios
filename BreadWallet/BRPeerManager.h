@@ -1,8 +1,8 @@
 //
-//  BRTxInputEntity.m
+//  BRPeerManager.h
 //  BreadWallet
 //
-//  Created by Aaron Voisine on 8/26/13.
+//  Created by Aaron Voisine on 10/6/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,33 +23,29 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRTxInputEntity.h"
-#import "BRTransactionEntity.h"
-#import "BRTransaction.h"
-#import "BRTxOutputEntity.h"
-#import "NSManagedObject+Utils.h"
+#import <Foundation/Foundation.h>
+#import "BRPeer.h"
 
-@implementation BRTxInputEntity
+#define BRPeerManagerSyncStartedNotification  @"BRPeerManagerSyncStartedNotification"
+#define BRPeerManagerSyncFinishedNotification @"BRPeerManagerSyncFinishedNotification"
+#define BRPeerManagerSyncFailedNotification   @"BRPeerManagerSyncFailedNotification"
+#define BRPeerManagerTxStatusNotification     @"BRPeerManagerTxStatusNotification"
 
-@dynamic txHash;
-@dynamic n;
-@dynamic signature;
-@dynamic sequence;
-@dynamic transaction;
+@class BRTransaction;
 
-- (instancetype)setAttributesFromTx:(BRTransaction *)tx inputIndex:(NSUInteger)index
-{
-    [[self managedObjectContext] performBlockAndWait:^{
-        self.txHash = tx.inputHashes[index];
-        self.n = [tx.inputIndexes[index] intValue];
-        self.signature = (tx.inputSignatures[index] != [NSNull null]) ? tx.inputSignatures[index] : nil;
-        self.sequence = [tx.inputSequences[index] intValue];
-    
-        // mark previously unspent outputs as spent
-        [[BRTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", self.txHash, self.n].lastObject setSpent:YES];
-    }];
-    
-    return self;
-}
+@interface BRPeerManager : NSObject<BRPeerDelegate>
+
+@property (nonatomic, readonly) BOOL connected;
+@property (nonatomic, readonly) uint32_t lastBlockHeight;
+@property (nonatomic, readonly) double syncProgress;
+
++ (instancetype)sharedInstance;
+
+- (void)connect;
+- (void)rescan;
+- (void)publishTransaction:(BRTransaction *)transaction completion:(void (^)(NSError *error))completion;
+
+// transaction is considered verified when all peers have relayed it
+- (BOOL)transactionIsVerified:(NSData *)txHash;
 
 @end

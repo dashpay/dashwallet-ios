@@ -25,10 +25,10 @@
 
 #import "BRSettingsViewController.h"
 #import "BRSeedViewController.h"
-#import "ZNWalletManager.h"
-#import "ZNWallet.h"
-#import "ZNPeerManager.h"
-#import "ZNTransaction.h"
+#import "BRWalletManager.h"
+#import "BRWallet.h"
+#import "BRPeerManager.h"
+#import "BRTransaction.h"
 #import "BRStoryboardSegue.h"
 #import <QuartzCore/QuartzCore.h>
 
@@ -52,14 +52,14 @@
     [super viewDidLoad];
     
     self.balanceObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:ZNWalletBalanceChangedNotification object:nil queue:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            ZNWallet *w = [[ZNWalletManager sharedInstance] wallet];
+            BRWallet *w = [[BRWalletManager sharedInstance] wallet];
 
             if (! w) return;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
-                                         [[ZNWalletManager sharedInstance] stringForAmount:w.balance],
-                                         [[ZNWalletManager sharedInstance] localCurrencyStringForAmount:w.balance]];
+                                         [[BRWalletManager sharedInstance] stringForAmount:w.balance],
+                                         [[BRWalletManager sharedInstance] localCurrencyStringForAmount:w.balance]];
 
             self.transactions = [NSArray arrayWithArray:w.recentTransactions];
             
@@ -68,20 +68,20 @@
         }];
 
     self.txStatusObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerTxStatusNotification object:nil queue:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            ZNWallet *w = [[ZNWalletManager sharedInstance] wallet];
+            BRWallet *w = [[BRWalletManager sharedInstance] wallet];
 
             if (! w) return;
             [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
              withRowAnimation:UITableViewRowAnimationAutomatic];
         }];
 
-    ZNWallet *w = [[ZNWalletManager sharedInstance] wallet];
+    BRWallet *w = [[BRWalletManager sharedInstance] wallet];
 
     self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
-                                 [[ZNWalletManager sharedInstance] stringForAmount:w.balance],
-                                 [[ZNWalletManager sharedInstance] localCurrencyStringForAmount:w.balance]];
+                                 [[BRWalletManager sharedInstance] stringForAmount:w.balance],
+                                 [[BRWalletManager sharedInstance] localCurrencyStringForAmount:w.balance]];
     
     self.wallpaper = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"wallpaper-default.png"]];
     self.wallpaperStart = self.wallpaper.center;
@@ -101,7 +101,7 @@
 {
     [super viewWillAppear:animated];
     
-    self.transactions = [NSArray arrayWithArray:[[[ZNWalletManager sharedInstance] wallet] recentTransactions]];
+    self.transactions = [NSArray arrayWithArray:[[[BRWalletManager sharedInstance] wallet] recentTransactions]];
 }
 
 - (void)setBackgroundForCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)path
@@ -153,8 +153,8 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *disclosureIdent = @"ZNDisclosureCell", *transactionIdent = @"ZNTransactionCell",
-                    *actionIdent = @"ZNActionCell", *restoreIdent = @"ZNRestoreCell";
+    static NSString *disclosureIdent = @"BRDisclosureCell", *transactionIdent = @"BRTransactionCell",
+                    *actionIdent = @"BRActionCell", *restoreIdent = @"BRRestoreCell";
     UITableViewCell *cell = nil;
     UILabel *textLabel, *detailTextLabel, *unconfirmedLabel, *sentLabel, *noTxLabel, *localCurrencyLabel;
     
@@ -179,12 +179,12 @@
                 sentLabel.hidden = YES;
             }
             else {
-                ZNWalletManager *m = [ZNWalletManager sharedInstance];
-                ZNTransaction *tx = self.transactions[indexPath.row];
+                BRWalletManager *m = [BRWalletManager sharedInstance];
+                BRTransaction *tx = self.transactions[indexPath.row];
                 uint64_t received = [m.wallet amountReceivedFromTransaction:tx],
                          sent = [m.wallet amountSentByTransaction:tx];
                 NSUInteger confirms = (tx.blockHeight != TX_UNCONFIRMED) ?
-                                      ([[ZNPeerManager sharedInstance] lastBlockHeight] - tx.blockHeight) + 1 : 0;
+                                      ([[BRPeerManager sharedInstance] lastBlockHeight] - tx.blockHeight) + 1 : 0;
                 NSString *address = [m.wallet addressForTransaction:tx];
 
                 noTxLabel.hidden = YES;
@@ -199,7 +199,7 @@
                     unconfirmedLabel.text = @"INVALID";
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                 }
-                else if (confirms == 0 && ! [[ZNPeerManager sharedInstance] transactionIsVerified:tx.txHash]) {
+                else if (confirms == 0 && ! [[BRPeerManager sharedInstance] transactionIsVerified:tx.txHash]) {
                     unconfirmedLabel.text = @"unverified";
                 }
                 else if (confirms < 6) {
@@ -393,7 +393,7 @@
         case 1:
             switch (indexPath.row) {
                 case 0:
-                    c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNAboutViewController"];
+                    c = [self.storyboard instantiateViewControllerWithIdentifier:@"BRAboutViewController"];
                     l = (id)[c.view viewWithTag:411];
 #if BITCOIN_TESTNET
                     l.text = [l.text stringByReplacingOccurrencesOfString:@"%ver%" withString:@"%ver% (testnet)"];
@@ -415,7 +415,7 @@
             break;
 
         case 2:
-            [[ZNPeerManager sharedInstance] rescan];
+            [[BRPeerManager sharedInstance] rescan];
             [self done:nil];
             break;
 
@@ -459,7 +459,7 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
     }
     
     [BRStoryboardSegue segueFrom:self
-     to:[self.storyboard instantiateViewControllerWithIdentifier:@"ZNSeedViewController"] completion:nil];
+     to:[self.storyboard instantiateViewControllerWithIdentifier:@"BRSeedViewController"] completion:nil];
 }
 
 @end

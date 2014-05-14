@@ -24,11 +24,11 @@
 //  THE SOFTWARE.
 
 #import "BRAmountViewController.h"
-#import "ZNPaymentRequest.h"
-#import "ZNWalletManager.h"
-#import "ZNWallet.h"
-#import "ZNPeerManager.h"
-#import "ZNTransaction.h"
+#import "BRPaymentRequest.h"
+#import "BRWalletManager.h"
+#import "BRWallet.h"
+#import "BRPeerManager.h"
+#import "BRTransaction.h"
 #import "BRButton.h"
 
 @interface BRAmountViewController ()
@@ -50,7 +50,7 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    ZNWalletManager *m = [ZNWalletManager sharedInstance];
+    BRWalletManager *m = [BRWalletManager sharedInstance];
     
     self.amountField.placeholder = [m stringForAmount:0];
     
@@ -76,16 +76,16 @@
     }
     
     self.balanceObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:ZNWalletBalanceChangedNotification object:nil queue:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if ([[ZNPeerManager sharedInstance] syncProgress] < 1.0) return; // wait for sync before updating balance
+            if ([[BRPeerManager sharedInstance] syncProgress] < 1.0) return; // wait for sync before updating balance
 
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
         }];
     
     self.syncStartedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncStartedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncStartedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             [UIApplication sharedApplication].idleTimerDisabled = YES;
             
@@ -96,7 +96,7 @@
         }];
     
     self.syncFinishedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncFinishedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             self.navigationItem.rightBarButtonItem = self.payButton;
             [self.spinner stopAnimating];
@@ -104,7 +104,7 @@
         }];
     
     self.syncFailedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncFailedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             self.navigationItem.rightBarButtonItem = self.payButton;
             [self.spinner stopAnimating];
@@ -139,7 +139,7 @@
 
 - (void)updateLocalCurrencyLabel
 {
-    ZNWalletManager *m = [ZNWalletManager sharedInstance];
+    BRWalletManager *m = [BRWalletManager sharedInstance];
     uint64_t amount = [m amountForString:self.amountField.text];
     CGSize size = [self.amountField.text sizeWithAttributes:@{NSFontAttributeName:self.amountField.font}];
 
@@ -169,7 +169,7 @@
 
 - (IBAction)pay:(id)sender
 {
-    self.request.amount = [[ZNWalletManager sharedInstance] amountForString:self.amountField.text];
+    self.request.amount = [[BRWalletManager sharedInstance] amountForString:self.amountField.text];
 
     if (self.request.amount == 0) return;
     
@@ -181,7 +181,7 @@
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range
 replacementString:(NSString *)string
 {
-    ZNWalletManager *m = [ZNWalletManager sharedInstance];
+    BRWalletManager *m = [BRWalletManager sharedInstance];
     NSUInteger point = [textField.text rangeOfString:m.format.decimalSeparator].location;
     NSString *t = textField.text ? [textField.text stringByReplacingCharactersInRange:range withString:string] : string;
 

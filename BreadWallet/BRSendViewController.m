@@ -25,13 +25,13 @@
 
 #import "BRSendViewController.h"
 #import "BRAmountViewController.h"
-#import "ZNWalletManager.h"
-#import "ZNWallet.h"
-#import "ZNPeerManager.h"
-#import "ZNPaymentRequest.h"
-#import "ZNPaymentProtocol.h"
-#import "ZNKey.h"
-#import "ZNTransaction.h"
+#import "BRWalletManager.h"
+#import "BRWallet.h"
+#import "BRPeerManager.h"
+#import "BRPaymentRequest.h"
+#import "BRPaymentProtocol.h"
+#import "BRKey.h"
+#import "BRTransaction.h"
 #import "BRButton.h"
 #import "BRStoryboardSegue.h"
 #import "BRBubbleView.h"
@@ -63,8 +63,8 @@
 @property (nonatomic, strong) NSString *addressInWallet, *txName, *txMemo;
 @property (nonatomic, assign) BOOL txSecure, clearClipboard;
 @property (nonatomic, strong) id urlObserver, fileObserver, activeObserver;
-@property (nonatomic, strong) ZNTransaction *sweepTx, *tx, *txWithFee;
-@property (nonatomic, strong) ZNPaymentProtocolRequest *protocolRequest;
+@property (nonatomic, strong) BRTransaction *sweepTx, *tx, *txWithFee;
+@property (nonatomic, strong) BRPaymentProtocolRequest *protocolRequest;
 @property (nonatomic, strong) ZBarReaderViewController *zbarController;
 @property (nonatomic, strong) BRBubbleView *tipView;
 
@@ -92,7 +92,7 @@
             NSURL *url = note.userInfo[@"url"];
 
             if ([url.scheme isEqual:@"bitcoin"]) {
-                [self confirmRequest:[ZNPaymentRequest requestWithURL:url]];
+                [self confirmRequest:[BRPaymentRequest requestWithURL:url]];
                 return;
             }
 //            else if ([url.scheme isEqual:@"zinc"] && [url.host isEqual:@"x-callback-url"]) {
@@ -139,7 +139,7 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:BRFileNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             NSData *file = note.userInfo[@"file"];
-            ZNPaymentProtocolRequest *request = [ZNPaymentProtocolRequest requestWithData:file];
+            BRPaymentProtocolRequest *request = [BRPaymentProtocolRequest requestWithData:file];
 
             if (request) {
                 [self confirmProtocolRequest:request];
@@ -147,13 +147,13 @@
             }
 
             // TODO: reject payments that don't match requested amounts/scripts, implement refunds
-            ZNPaymentProtocolPayment *payment = [ZNPaymentProtocolPayment paymentWithData:file];
+            BRPaymentProtocolPayment *payment = [BRPaymentProtocolPayment paymentWithData:file];
             
             if (payment.transactions.count > 0) {
-                for (ZNTransaction *tx in payment.transactions) {
+                for (BRTransaction *tx in payment.transactions) {
                     [self startSpinner];
 
-                    [[ZNPeerManager sharedInstance] publishTransaction:tx completion:^(NSError *error) {
+                    [[BRPeerManager sharedInstance] publishTransaction:tx completion:^(NSError *error) {
                         [self stopSpinner];
 
                         if (error) {
@@ -172,7 +172,7 @@
                 return;
             }
 
-            ZNPaymentProtocolACK *ack = [ZNPaymentProtocolACK ackWithData:file];
+            BRPaymentProtocolACK *ack = [BRPaymentProtocolACK ackWithData:file];
 
             if (ack) {
                 if (ack.memo.length > 0) {
@@ -344,14 +344,14 @@
     self.parentViewController.navigationItem.rightBarButtonItem = nil;
 }
 
-- (void)confirmTransaction:(ZNTransaction *)tx name:(NSString *)name memo:(NSString *)memo isSecure:(BOOL)isSecure
+- (void)confirmTransaction:(BRTransaction *)tx name:(NSString *)name memo:(NSString *)memo isSecure:(BOOL)isSecure
 {
     if (! tx) {
         [self cancel:nil];
         return;
     }
 
-    ZNWalletManager *m = [ZNWalletManager sharedInstance];
+    BRWalletManager *m = [BRWalletManager sharedInstance];
     uint64_t txAmount = [m.wallet amountSentByTransaction:tx] - [m.wallet amountReceivedFromTransaction:tx];
     NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:txAmount],
                         [m localCurrencyStringForAmount:txAmount]];
@@ -367,7 +367,7 @@
       otherButtonTitles:amount, nil] show];
 }
 
-- (void)confirmRequest:(ZNPaymentRequest *)request
+- (void)confirmRequest:(BRPaymentRequest *)request
 {
     if (! [request isValid]) {
         if ([request.paymentAddress isValidBitcoinPrivateKey] || [request.paymentAddress isValidBitcoinBIP38Key]) {
@@ -385,7 +385,7 @@
     if (request.r.length > 0) { // payment protocol over HTTP
         [self startSpinner];
 
-        [ZNPaymentRequest fetch:request.r completion:^(ZNPaymentProtocolRequest *req, NSError *error) {
+        [BRPaymentRequest fetch:request.r completion:^(BRPaymentProtocolRequest *req, NSError *error) {
             [self stopSpinner];
 
             if (error) {
@@ -399,7 +399,7 @@
         return;
     }
 
-    ZNWalletManager *m = [ZNWalletManager sharedInstance];
+    BRWalletManager *m = [BRWalletManager sharedInstance];
     
     if ([m.wallet containsAddress:request.paymentAddress]) {
         [[[UIAlertView alloc] initWithTitle:nil message:@"this payment address is already in your wallet" delegate:nil
@@ -409,7 +409,7 @@
         [self cancel:nil];
     }
     else if (request.amount == 0) {
-        BRAmountViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNAmountViewController"];
+        BRAmountViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"BRAmountViewController"];
         
         c.delegate = self;
         c.request = request;
@@ -441,7 +441,7 @@
     }
 }
 
-- (void)confirmProtocolRequest:(ZNPaymentProtocolRequest *)request
+- (void)confirmProtocolRequest:(BRPaymentProtocolRequest *)request
 {
     BOOL valid = [request isValid];
 
@@ -452,7 +452,7 @@
         return;
     }
 
-    ZNWalletManager *m = [ZNWalletManager sharedInstance];
+    BRWalletManager *m = [BRWalletManager sharedInstance];
 
     self.tx = [m.wallet transactionForAmounts:request.details.outputAmounts
                toOutputScripts:request.details.outputScripts withFee:NO];
@@ -474,7 +474,7 @@
 {
     if (! [privKey isValidBitcoinPrivateKey] && ! [privKey isValidBitcoinBIP38Key]) return;
     
-    ZNWalletManager *m = [ZNWalletManager sharedInstance];
+    BRWalletManager *m = [BRWalletManager sharedInstance];
     BRBubbleView *v = [BRBubbleView viewWithText:@"checking private key balance..."
                        center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
 
@@ -483,7 +483,7 @@
     [(id)v.customView startAnimating];
     [self.view addSubview:[v fadeIn]];
 
-    [m sweepPrivateKey:privKey withFee:YES completion:^(ZNTransaction *tx, NSError *error) {
+    [m sweepPrivateKey:privKey withFee:YES completion:^(BRTransaction *tx, NSError *error) {
         [v fadeOut];
 
         if (error) {
@@ -599,7 +599,7 @@
     else if ([self.requestIDs indexOfObject:CLIPBOARD_ID] == idx) {
         NSString *s = [[[UIPasteboard generalPasteboard] string]
                        stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-        ZNPaymentRequest *req = [ZNPaymentRequest requestWithString:s];
+        BRPaymentRequest *req = [BRPaymentRequest requestWithString:s];
 
         self.clearClipboard = YES;
 
@@ -639,7 +639,7 @@
     device.torchMode = device.torchActive ? AVCaptureTorchModeOff : AVCaptureTorchModeOn;
 }
 
-#pragma mark - ZNAmountViewControllerDelegate
+#pragma mark - BRAmountViewControllerDelegate
 
 - (void)amountViewController:(BRAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
 {
@@ -658,7 +658,7 @@
 
     for (id result in info[ZBarReaderControllerResults]) {
         NSString *s = (id)[result data];
-        ZNPaymentRequest *request = [ZNPaymentRequest requestWithString:s];
+        BRPaymentRequest *request = [BRPaymentRequest requestWithString:s];
 
         if (! [request isValid] && ! [s isValidBitcoinPrivateKey] && ! [s isValidBitcoinBIP38Key]) {
             [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide-red.png"]];
@@ -681,7 +681,7 @@
             [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide-green.png"]];
 
             if (request.r.length > 0) { // start fetching payment protocol request right away
-                [ZNPaymentRequest fetch:request.r completion:^(ZNPaymentProtocolRequest *req, NSError *error) {
+                [BRPaymentRequest fetch:request.r completion:^(BRPaymentProtocolRequest *req, NSError *error) {
                     if (error) {
                         [[[UIAlertView alloc] initWithTitle:@"couldn't make payment" message:error.localizedDescription
                           delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
@@ -725,7 +725,7 @@
     if (self.sweepTx) {
         [self startSpinner];
 
-        [[ZNPeerManager sharedInstance] publishTransaction:self.sweepTx completion:^(NSError *error) {
+        [[BRPeerManager sharedInstance] publishTransaction:self.sweepTx completion:^(NSError *error) {
             [self stopSpinner];
 
             if (error) {
@@ -745,8 +745,8 @@
     }
     else if (! self.tx) return;
 
-    ZNWalletManager *m = [ZNWalletManager sharedInstance];
-    ZNPaymentProtocolRequest *request = self.protocolRequest;
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRPaymentProtocolRequest *request = self.protocolRequest;
     NSString *title = [alertView buttonTitleAtIndex:buttonIndex];
     uint32_t freeHeight = [m.wallet blockHeightUntilFree:self.tx];
 
@@ -760,13 +760,13 @@
             return;
         }
     }
-    else if (self.tx != self.txWithFee && freeHeight > [[ZNPeerManager sharedInstance] lastBlockHeight] + 1) {
+    else if (self.tx != self.txWithFee && freeHeight > [[BRPeerManager sharedInstance] lastBlockHeight] + 1) {
         uint64_t txFee = self.txWithFee ? [m.wallet feeForTransaction:self.txWithFee] : self.tx.standardFee;
         NSString *fee = [m stringForAmount:txFee];
         NSString *localCurrencyFee = [m localCurrencyStringForAmount:txFee];
 
         //if (freeHeight != TX_UNCONFIRMED) {
-        //    NSTimeInterval t = (freeHeight - [[ZNPeerManager sharedInstance] lastBlockHeight])*600;
+        //    NSTimeInterval t = (freeHeight - [[BRPeerManager sharedInstance] lastBlockHeight])*600;
         //    int minutes = t/60, hours = t/(60*60), days = t/(60*60*24);
         //    NSString *time = [NSString stringWithFormat:@"%d %@%@", days ? days : (hours ? hours : minutes),
         //                      days ? @"day" : (hours ? @"hour" : @"minutes"),
@@ -803,7 +803,7 @@
 
     [self startSpinner];
 
-    [[ZNPeerManager sharedInstance] publishTransaction:self.tx completion:^(NSError *error) {
+    [[BRPeerManager sharedInstance] publishTransaction:self.tx completion:^(NSError *error) {
         if (request.details.paymentURL.length > 0) return;
         [self stopSpinner];
 
@@ -832,12 +832,12 @@
         }
 
         // TODO: XXXX keep track of commonName/memo to associate them with outputScripts
-        ZNPaymentProtocolPayment *payment =
-            [[ZNPaymentProtocolPayment alloc] initWithMerchantData:request.details.merchantData
+        BRPaymentProtocolPayment *payment =
+            [[BRPaymentProtocolPayment alloc] initWithMerchantData:request.details.merchantData
              transactions:@[self.tx] refundToAmounts:@[@(refundAmount)] refundToScripts:@[refundScript] memo:nil];
 
-        [ZNPaymentRequest postPayment:payment to:request.details.paymentURL
-        completion:^(ZNPaymentProtocolACK *ack, NSError *error) {
+        [BRPaymentRequest postPayment:payment to:request.details.paymentURL
+        completion:^(BRPaymentProtocolACK *ack, NSError *error) {
             [self stopSpinner];
 
             if (error && ! [m.wallet transactionIsRegistered:self.tx.txHash]) {
@@ -892,7 +892,7 @@
 //    if (state == GKPeerStateAvailable) {
 //        if (! [self.requestIDs containsObject:peerID]) {
 //            [self.requestIDs addObject:peerID];
-//            [self.requests addObject:[ZNPaymentRequest new]];
+//            [self.requests addObject:[BRPaymentRequest new]];
 //            
 //            [session connectToPeer:peerID withTimeout:BT_CONNECT_TIMEOUT];
 //            
@@ -973,7 +973,7 @@
 //        return;
 //    }
 //    
-//    ZNPaymentRequest *req = self.requests[idx];
+//    BRPaymentRequest *req = self.requests[idx];
 //    
 //    [req setData:data];
 //    

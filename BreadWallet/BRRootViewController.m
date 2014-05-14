@@ -26,9 +26,9 @@
 #import "BRRootViewController.h"
 #import "BRSendViewController.h"
 #import "BRReceiveViewController.h"
-#import "ZNWalletManager.h"
-#import "ZNWallet.h"
-#import "ZNPeerManager.h"
+#import "BRWalletManager.h"
+#import "BRWallet.h"
+#import "BRPeerManager.h"
 #import <netinet/in.h>
 #import "Reachability.h"
 
@@ -62,7 +62,7 @@
     // Do any additional setup after loading the view, typically from a nib.
 
     //TODO: make title use dynamic font size
-    ZNWalletManager *m = [ZNWalletManager sharedInstance];
+    BRWalletManager *m = [BRWalletManager sharedInstance];
 
     self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     self.spinner.accessibilityLabel = @"synchronizing";
@@ -91,14 +91,14 @@
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.didAppear) [[ZNPeerManager sharedInstance] connect];
+            if (self.didAppear) [[BRPeerManager sharedInstance] connect];
         }];
 
     self.reachabilityObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             if (self.didAppear && self.reachability.currentReachabilityStatus != NotReachable) {
-                [[ZNPeerManager sharedInstance] connect];
+                [[BRPeerManager sharedInstance] connect];
             }
             else if (self.didAppear && self.reachability.currentReachabilityStatus == NotReachable) {
                 self.connectButton.hidden = NO;
@@ -110,9 +110,9 @@
         }];
     
     self.balanceObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:ZNWalletBalanceChangedNotification object:nil queue:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if ([[ZNPeerManager sharedInstance] syncProgress] < 1.0) return; // wait for sync before updating balance
+            if ([[BRPeerManager sharedInstance] syncProgress] < 1.0) return; // wait for sync before updating balance
 
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
@@ -122,7 +122,7 @@
         }];
     
     self.syncStartedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncStartedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncStartedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             if (self.navigationItem.rightBarButtonItem == nil) {
                 self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
@@ -140,7 +140,7 @@
         }];
     
     self.syncFinishedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncFinishedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             [self.spinner stopAnimating];
             self.navigationItem.rightBarButtonItem = nil;
@@ -158,7 +158,7 @@
         }];
 
     self.syncFailedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:ZNPeerManagerSyncFailedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             [self.spinner stopAnimating];
             self.navigationItem.rightBarButtonItem = nil;
@@ -213,18 +213,18 @@
     [super viewWillAppear:animated];
     
     static BOOL firstAppearance = YES;
-    ZNWalletManager *m = [ZNWalletManager sharedInstance];
+    BRWalletManager *m = [BRWalletManager sharedInstance];
     
     if (! m.wallet) {
         if (! [[UIApplication sharedApplication] isProtectedDataAvailable]) return;
 
-        UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNNewWalletNav"];
+        UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"BRNewWalletNav"];
         
         [self.navigationController presentViewController:c animated:NO completion:nil];
         return;
     }
     else if (firstAppearance && ! animated) { // BUG: somehow the splash screen is showing up when handling url
-        UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNSplashViewController"];
+        UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"BRSplashViewController"];
         
         if ([[UIScreen mainScreen] bounds].size.height < 500) { // use splash image for 3.5" screen
             [(UIImageView *)c.view setImage:[UIImage imageNamed:@"Default.png"]];
@@ -260,7 +260,7 @@
         }
     }
 
-    [[ZNPeerManager sharedInstance] connect];
+    [[BRPeerManager sharedInstance] connect];
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -280,7 +280,7 @@
 
 - (void)viewDidDisappear:(BOOL)animated
 {
-    ZNWalletManager *m = [ZNWalletManager sharedInstance];
+    BRWalletManager *m = [BRWalletManager sharedInstance];
 
     [self.spinner stopAnimating];
     self.navigationItem.rightBarButtonItem = nil;//self.refreshButton;
@@ -294,7 +294,7 @@
 
 - (void)updateProgress
 {
-    double progress = [[ZNPeerManager sharedInstance] syncProgress];
+    double progress = [[BRPeerManager sharedInstance] syncProgress];
 
     if (progress > DBL_EPSILON) [self.progress setProgress:progress animated:progress > self.progress.progress];
     if (progress < 1.0) [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
@@ -327,9 +327,9 @@
 //        [self.spinner startAnimating];
 //    }
 //    
-//    if ([[[ZNWalletManager sharedInstance] wallet] balance] == 0) self.navigationItem.title = @"syncing...";
+//    if ([[[BRWalletManager sharedInstance] wallet] balance] == 0) self.navigationItem.title = @"syncing...";
 
-    [[ZNPeerManager sharedInstance] connect];
+    [[BRPeerManager sharedInstance] connect];
 }
 
 - (IBAction)page:(id)sender

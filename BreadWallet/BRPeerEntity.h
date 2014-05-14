@@ -26,7 +26,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class ZNPeer;
+@class BRPeer;
 
 @interface BRPeerEntity : NSManagedObject
 
@@ -36,7 +36,7 @@
 @property (nonatomic) int64_t services;
 @property (nonatomic) int16_t misbehavin;
 
-- (instancetype)setAttributesFromPeer:(ZNPeer *)peer;
-- (ZNPeer *)peer;
+- (instancetype)setAttributesFromPeer:(BRPeer *)peer;
+- (BRPeer *)peer;
 
 @end

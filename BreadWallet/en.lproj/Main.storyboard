@@ -89,7 +89,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <prototypes>
-                            <tableViewCell userInteractionEnabled="NO" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="ZNTransactionCell" rowHeight="75" id="rkp-bd-k0B">
+                            <tableViewCell userInteractionEnabled="NO" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="BRTransactionCell" rowHeight="75" id="rkp-bd-k0B">
                                 <rect key="frame" x="0.0" y="86" width="320" height="75"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="rkp-bd-k0B" id="WTI-Dr-ZP8">
@@ -152,7 +152,7 @@
                                 </tableViewCellContentView>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </tableViewCell>
-                            <tableViewCell contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="ZNDisclosureCell" textLabel="x9p-Sr-kIY" style="IBUITableViewCellStyleDefault" id="7il-Ku-8re">
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="BRDisclosureCell" textLabel="x9p-Sr-kIY" style="IBUITableViewCellStyleDefault" id="7il-Ku-8re">
                                 <rect key="frame" x="0.0" y="161" width="320" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="7il-Ku-8re" id="bQj-ws-N42">
@@ -171,7 +171,7 @@
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 <color key="tintColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                             </tableViewCell>
-                            <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="ZNActionCell" textLabel="Vu3-wX-DpG" style="IBUITableViewCellStyleDefault" id="caq-uz-MMj">
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="BRActionCell" textLabel="Vu3-wX-DpG" style="IBUITableViewCellStyleDefault" id="caq-uz-MMj">
                                 <rect key="frame" x="0.0" y="205" width="320" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="caq-uz-MMj" id="1jp-K9-YCd">
@@ -191,7 +191,7 @@
                                 </tableViewCellContentView>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </tableViewCell>
-                            <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="ZNRestoreCell" textLabel="iC8-LM-OiI" style="IBUITableViewCellStyleDefault" id="JhX-8l-b0v">
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="BRRestoreCell" textLabel="iC8-LM-OiI" style="IBUITableViewCellStyleDefault" id="JhX-8l-b0v">
                                 <rect key="frame" x="0.0" y="249" width="320" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="JhX-8l-b0v" id="eck-HX-DNN">
@@ -232,7 +232,7 @@
         <!--View Controller-->
         <scene sceneID="6tF-9l-hjv">
             <objects>
-                <viewController storyboardIdentifier="ZNAboutViewController" id="b2e-Yj-tnf" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="BRAboutViewController" id="b2e-Yj-tnf" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Caj-Y4-4Ch">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -249,7 +249,7 @@
                                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="411" contentMode="left" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Cl2-sB-zuB">
                                         <rect key="frame" x="20" y="0.0" width="280" height="200"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                        <string key="text">zincwallet v%ver%
+                                        <string key="text">breadwallet v%ver%
 Copyright © 2014 Aaron Voisine
 
 This app is open source:
@@ -309,7 +309,7 @@ https://github.com/voisine/zincwallet</string>
         <!--Navigation Controller-->
         <scene sceneID="qFS-wE-zrI">
             <objects>
-                <navigationController storyboardIdentifier="ZNNewWalletNav" definesPresentationContext="YES" modalTransitionStyle="flipHorizontal" id="0YK-DC-haY" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="BRNewWalletNav" definesPresentationContext="YES" modalTransitionStyle="flipHorizontal" id="0YK-DC-haY" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" opaque="NO" contentMode="scaleToFill" id="4la-fh-n1o" customClass="BRNavigationBar">
                         <rect key="frame" x="0.0" y="-44" width="0.0" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -356,7 +356,7 @@ https://github.com/voisine/zincwallet</string>
                                     <color key="titleColor" red="0.99215692281723022" green="0.61960786581039429" blue="0.29411765933036804" alpha="1" colorSpace="deviceRGB"/>
                                 </state>
                                 <connections>
-                                    <segue destination="Xvz-1X-lXH" kind="custom" customClass="ZNStoryboardSegue" id="Oeg-BJ-Lcr"/>
+                                    <segue destination="Xvz-1X-lXH" kind="custom" customClass="BRStoryboardSegue" id="Oeg-BJ-Lcr"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" id="Apw-nM-dbF" customClass="BRButton">
@@ -370,7 +370,7 @@ https://github.com/voisine/zincwallet</string>
                                     <color key="titleColor" red="0.99215692281723022" green="0.54509806632995605" blue="0.17647059261798859" alpha="1" colorSpace="deviceRGB"/>
                                 </state>
                                 <connections>
-                                    <segue destination="V5i-az-h7s" kind="custom" customClass="ZNStoryboardSegue" id="JvW-BZ-1iN"/>
+                                    <segue destination="V5i-az-h7s" kind="custom" customClass="BRStoryboardSegue" id="JvW-BZ-1iN"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -535,7 +535,7 @@ https://github.com/voisine/zincwallet</string>
         <!--View Controller-->
         <scene sceneID="rAN-mf-8lr">
             <objects>
-                <viewController storyboardIdentifier="ZNSplashViewController" modalTransitionStyle="flipHorizontal" id="dsx-Q5-pFS" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="BRSplashViewController" modalTransitionStyle="flipHorizontal" id="dsx-Q5-pFS" sceneMemberID="viewController">
                     <imageView key="view" userInteractionEnabled="NO" contentMode="bottom" image="Default-568h.png" id="Gk0-vW-9Mh">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -657,7 +657,7 @@ https://github.com/voisine/zincwallet</string>
         <!--Amount View Controller - ƀ 0.00-->
         <scene sceneID="6VG-zW-rjY">
             <objects>
-                <viewController storyboardIdentifier="ZNAmountViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="asW-9a-XhX" customClass="BRAmountViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="BRAmountViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="asW-9a-XhX" customClass="BRAmountViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="eUy-Ub-KH0">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -1080,7 +1080,7 @@ https://github.com/voisine/zincwallet</string>
         <!--Seed View Controller-->
         <scene sceneID="YlC-6d-aqm">
             <objects>
-                <viewController storyboardIdentifier="ZNSeedViewController" id="YDc-aF-His" customClass="BRSeedViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="BRSeedViewController" id="YDc-aF-His" customClass="BRSeedViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="DI1-iM-mIf">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -1254,7 +1254,7 @@ https://github.com/voisine/zincwallet</string>
         <!--Navigation Controller-->
         <scene sceneID="qbV-Kl-jGa">
             <objects>
-                <navigationController storyboardIdentifier="ZNEraseNav" definesPresentationContext="YES" id="9BH-Hw-65r" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="BREraseNav" definesPresentationContext="YES" id="9BH-Hw-65r" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="2Ct-UV-mSm" customClass="BRNavigationBar">
                         <rect key="frame" x="0.0" y="-44" width="0.0" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
