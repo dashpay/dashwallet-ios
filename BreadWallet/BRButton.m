@@ -1,6 +1,6 @@
 //
-//  ZNButton.m
-//  ZincWallet
+//  BRButton.m
+//  BreadWallet
 //
 //  Created by Aaron Voisine on 6/14/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
@@ -23,10 +23,10 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "ZNButton.h"
+#import "BRButton.h"
 #import <QuartzCore/QuartzCore.h>
 
-@implementation ZNButton
+@implementation BRButton
 
 - (instancetype)init
 {
@@ -55,7 +55,7 @@
     return self;
 }
 
-- (void)setStyle:(ZNButtonStyle)style
+- (void)setStyle:(BRButtonStyle)style
 {
     static UIImage *white = nil, *whitepressed = nil, *blue = nil, *bluepressed = nil, *disabled = nil;
     static dispatch_once_t onceToken = 0;
@@ -74,7 +74,7 @@
     });
     
     switch (style) {
-        case ZNButtonStyleWhite:
+        case BRButtonStyleWhite:
             self.layer.shadowRadius = 3.0;
             self.layer.shadowOpacity = 0.15;
             self.layer.shadowOffset = CGSizeMake(0.0, 1.0);
@@ -90,7 +90,7 @@
 
             break;
 
-        case ZNButtonStyleBlue:
+        case BRButtonStyleBlue:
             self.layer.shadowRadius = 2.0;
             self.layer.shadowOpacity = 0.1;
             self.layer.shadowOffset = CGSizeMake(0.0, 1.0);
@@ -108,7 +108,7 @@
 
             break;
                         
-        case ZNButtonStyleNone:
+        case BRButtonStyleNone:
             self.layer.shadowOpacity = 0.0;
             [self setBackgroundImage:nil forState:UIControlStateNormal];
             [self setBackgroundImage:nil forState:UIControlStateHighlighted];

@@ -1,6 +1,6 @@
 //
-//  ZNBubbleView.m
-//  ZincWallet
+//  BRBubbleView.m
+//  BreadWallet
 //
 //  Created by Aaron Voisine on 3/10/14.
 //  Copyright (c) 2014 Aaron Voisine <voisine@gmail.com>
@@ -23,32 +23,32 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "ZNBubbleView.h"
+#import "BRBubbleView.h"
 
 #define RADIUS    15.0
 #define MARGIN    10.0
 #define MAX_WIDTH 300.0
 
-@interface ZNBubbleView ()
+@interface BRBubbleView ()
 
 @property (nonatomic, strong) UILabel *label;
 @property (nonatomic, strong) CAShapeLayer *arrow;
 
 @end
 
-@implementation ZNBubbleView
+@implementation BRBubbleView
 
 + (instancetype)viewWithText:(NSString *)text center:(CGPoint)center
 {
-    ZNBubbleView *v = [[self alloc] initWithFrame:CGRectMake(center.x - MARGIN, center.y - MARGIN, MARGIN*2, MARGIN*2)];
+    BRBubbleView *v = [[self alloc] initWithFrame:CGRectMake(center.x - MARGIN, center.y - MARGIN, MARGIN*2, MARGIN*2)];
 
     v.text = text;
     return v;
 }
 
-+ (instancetype)viewWithText:(NSString *)text tipPoint:(CGPoint)point tipDirection:(ZNBubbleTipDirection)direction
++ (instancetype)viewWithText:(NSString *)text tipPoint:(CGPoint)point tipDirection:(BRBubbleTipDirection)direction
 {
-    ZNBubbleView *v = [[self alloc] initWithFrame:CGRectMake(0, 0, MARGIN*2, MARGIN*2)];
+    BRBubbleView *v = [[self alloc] initWithFrame:CGRectMake(0, 0, MARGIN*2, MARGIN*2)];
 
     v.text = text;
     v.tipDirection = direction;
@@ -111,7 +111,7 @@
     [self setNeedsLayout];
 }
 
-- (void)setTipDirection:(ZNBubbleTipDirection)tipDirection
+- (void)setTipDirection:(BRBubbleTipDirection)tipDirection
 {
     _tipDirection = tipDirection;
     [self setNeedsLayout];
@@ -172,7 +172,7 @@
         else if (center.x - rect.size.width/2 < MARGIN*2) center.x = MARGIN*2 + rect.size.width/2;
 
         center.y = self.tipPoint.y;
-        center.y += (self.tipDirection == ZNBubbleTipDirectionUp ? 1 : -1)*((rect.size.height + MARGIN*2)/2 + RADIUS);
+        center.y += (self.tipDirection == BRBubbleTipDirectionUp ? 1 : -1)*((rect.size.height + MARGIN*2)/2 + RADIUS);
     }
 
     self.frame = CGRectMake(center.x - (rect.size.width + MARGIN*2)/2, center.y - (rect.size.height + MARGIN*2)/2,
@@ -194,7 +194,7 @@
         x = MIN(x, rect.size.width + MARGIN*2 - (RADIUS + 7.5));
         x = MAX(x, self.layer.cornerRadius + 7.5);
 
-        if (self.tipDirection == ZNBubbleTipDirectionUp) {
+        if (self.tipDirection == BRBubbleTipDirectionUp) {
             CGPathMoveToPoint(path, NULL, 0.0, 7.5);
             CGPathAddLineToPoint(path, NULL, 7.5, 0.0);
             CGPathAddLineToPoint(path, NULL, 15.0, 7.5);

@@ -1,5 +1,5 @@
 //
-// Prefix header for all source files of the 'ZincWallet' target in the 'ZincWallet' project
+// Prefix header for all source files of the 'BreadWallet' target in the 'BreadWallet' project
 //
 
 #import <Availability.h>
@@ -16,16 +16,16 @@
 #endif
 
 #define BITCOIN_TESTNET    1
-//#define WEBAPP_BASEURL     @"http://zincwallet.com"
+//#define WEBAPP_BASEURL     @"http://breadwallet.com"
 //#define WEBAPP_PATH        @"/tx"
 //#define WEBAPP_TIMEOUT     15
 //#define WEBAPP_VERSION_KEY @"WEBAPP_VERSION"
-#define GK_SESSION_ID      @"cc.zinc.zinc"
+#define GK_SESSION_ID      @"org.voisine.BreadWallet"
 #define SATOSHIS           100000000
 #define PARALAX_RATIO      0.25
 #define SEGUE_DURATION     0.3
-#define ZNURLNotification  @"ZNURLNotification"
-#define ZNFileNotification @"ZNFileNotification"
+#define BRURLNotification  @"BRURLNotification"
+#define BRFileNotification @"BRFileNotification"
 
 #if BITCOIN_TESTNET
 #warning testnet build

@@ -1,8 +1,8 @@
 //
-//  ZNButton.h
-//  ZincWallet
+//  BRNavigationBar.h
+//  BreadWallet
 //
-//  Created by Aaron Voisine on 6/14/13.
+//  Created by Aaron Voisine on 9/11/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,14 +25,6 @@
 
 #import <UIKit/UIKit.h>
 
-typedef enum {
-    ZNButtonStyleWhite,
-    ZNButtonStyleBlue,
-    ZNButtonStyleNone
-} ZNButtonStyle;
-
-@interface ZNButton : UIButton
-
-- (void)setStyle:(ZNButtonStyle)style;
+@interface BRNavigationBar : UINavigationBar
 
 @end

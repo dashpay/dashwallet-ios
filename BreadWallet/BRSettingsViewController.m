@@ -29,7 +29,7 @@
 #import "ZNWallet.h"
 #import "ZNPeerManager.h"
 #import "ZNTransaction.h"
-#import "ZNStoryboardSegue.h"
+#import "BRStoryboardSegue.h"
 #import <QuartzCore/QuartzCore.h>
 
 #define TRANSACTION_CELL_HEIGHT 75
@@ -400,7 +400,7 @@
 #endif
                     l.text = [l.text stringByReplacingOccurrencesOfString:@"%ver%"
                               withString:NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"]];
-                    [ZNStoryboardSegue segueFrom:self to:c completion:nil];
+                    [BRStoryboardSegue segueFrom:self to:c completion:nil];
                     break;
                     
                 case 1:
@@ -458,7 +458,7 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
         return;
     }
     
-    [ZNStoryboardSegue segueFrom:self
+    [BRStoryboardSegue segueFrom:self
      to:[self.storyboard instantiateViewControllerWithIdentifier:@"ZNSeedViewController"] completion:nil];
 }
 

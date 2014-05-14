@@ -27,8 +27,8 @@
 #import "ZNPaymentRequest.h"
 #import "ZNWalletManager.h"
 #import "ZNWallet.h"
-#import "ZNButton.h"
-#import "ZNBubbleView.h"
+#import "BRButton.h"
+#import "BRBubbleView.h"
 #import "QREncoder.h"
 
 #define BALANCE_TIP @"This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market."
@@ -40,12 +40,12 @@
 
 @interface BRReceiveViewController ()
 
-@property (nonatomic, strong) ZNBubbleView *tipView;
+@property (nonatomic, strong) BRBubbleView *tipView;
 
 @property (nonatomic, strong) IBOutlet UILabel *label;
 @property (nonatomic, strong) IBOutlet UIButton *infoButton;
 @property (nonatomic, strong) IBOutlet UIImageView *qrView;
-@property (nonatomic, strong) IBOutlet ZNButton *addressButton;
+@property (nonatomic, strong) IBOutlet BRButton *addressButton;
 
 @end
 
@@ -55,7 +55,7 @@
 {
     [super viewDidLoad];
     
-    self.addressButton.style = ZNButtonStyleNone;
+    self.addressButton.style = BRButtonStyleNone;
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -91,24 +91,24 @@
 
 - (BOOL)nextTip
 {
-    ZNBubbleView *v = self.tipView;
+    BRBubbleView *v = self.tipView;
 
     if (v.alpha < 0.5) return NO;
 
     if ([v.text isEqual:BALANCE_TIP]) {
-        self.tipView = [ZNBubbleView viewWithText:QR_TIP
+        self.tipView = [BRBubbleView viewWithText:QR_TIP
                         tipPoint:[self.qrView.superview convertPoint:self.qrView.center toView:self.view]
-                        tipDirection:ZNBubbleTipDirectionUp];
+                        tipDirection:BRBubbleTipDirectionUp];
     }
     else if ([v.text isEqual:QR_TIP]) {
-        self.tipView = [ZNBubbleView viewWithText:ADDRESS_TIP
+        self.tipView = [BRBubbleView viewWithText:ADDRESS_TIP
                         tipPoint:[self.addressButton.superview convertPoint:self.addressButton.center toView:self.view]
-                        tipDirection:ZNBubbleTipDirectionDown];
+                        tipDirection:BRBubbleTipDirectionDown];
     }
     else if ([v.text isEqual:ADDRESS_TIP]) {
-        self.tipView = [ZNBubbleView viewWithText:PAGE_TIP
+        self.tipView = [BRBubbleView viewWithText:PAGE_TIP
                         tipPoint:CGPointMake(self.view.bounds.size.width/2.0, self.view.superview.bounds.size.height)
-                        tipDirection:ZNBubbleTipDirectionDown];
+                        tipDirection:BRBubbleTipDirectionDown];
     }
     else self.tipView = nil;
 
@@ -138,8 +138,8 @@
 {
     if ([self nextTip]) return;
 
-    self.tipView = [ZNBubbleView viewWithText:BALANCE_TIP tipPoint:CGPointMake(self.view.bounds.size.width/2.0, 0.0)
-                    tipDirection:ZNBubbleTipDirectionUp];
+    self.tipView = [BRBubbleView viewWithText:BALANCE_TIP tipPoint:CGPointMake(self.view.bounds.size.width/2.0, 0.0)
+                    tipDirection:BRBubbleTipDirectionUp];
     self.tipView.backgroundColor = [UIColor orangeColor];
     self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
     [self.view addSubview:[self.tipView fadeIn]];
@@ -178,7 +178,7 @@
     //TODO: XXXX allow user to specify a request amount
     if ([title isEqual:@"copy"]) {
         [[UIPasteboard generalPasteboard] setString:self.paymentAddress];        
-        [self.view addSubview:[[[ZNBubbleView viewWithText:@"copied"
+        [self.view addSubview:[[[BRBubbleView viewWithText:@"copied"
                                 center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
                                 fadeIn] fadeOutAfterDelay:2.0]];
     }

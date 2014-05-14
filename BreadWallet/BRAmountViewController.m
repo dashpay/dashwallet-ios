@@ -29,7 +29,7 @@
 #import "ZNWallet.h"
 #import "ZNPeerManager.h"
 #import "ZNTransaction.h"
-#import "ZNButton.h"
+#import "BRButton.h"
 
 @interface BRAmountViewController ()
 
@@ -54,15 +54,15 @@
     
     self.amountField.placeholder = [m stringForAmount:0];
     
-    for (ZNButton *button in self.buttons) {
-        [button setStyle:ZNButtonStyleBlue];
+    for (BRButton *button in self.buttons) {
+        [button setStyle:BRButtonStyleBlue];
         button.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-UltraLight" size:50];
     }
 
     self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
 
     if ([[UIScreen mainScreen] bounds].size.height < 500) { // adjust number buttons for 3.5" screen
-        for (ZNButton *button in self.buttons) {
+        for (BRButton *button in self.buttons) {
             CGFloat y = self.view.frame.size.height - 122;
 
             if ([self.buttonRow1 containsObject:button]) y = self.view.frame.size.height - 344.0;

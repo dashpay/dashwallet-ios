@@ -32,9 +32,9 @@
 #import "ZNPaymentProtocol.h"
 #import "ZNKey.h"
 #import "ZNTransaction.h"
-#import "ZNButton.h"
-#import "ZNStoryboardSegue.h"
-#import "ZNBubbleView.h"
+#import "BRButton.h"
+#import "BRStoryboardSegue.h"
+#import "BRBubbleView.h"
 #import "NSString+Base58.h"
 #import "NSMutableData+Bitcoin.h"
 #import <QuartzCore/QuartzCore.h>
@@ -66,7 +66,7 @@
 @property (nonatomic, strong) ZNTransaction *sweepTx, *tx, *txWithFee;
 @property (nonatomic, strong) ZNPaymentProtocolRequest *protocolRequest;
 @property (nonatomic, strong) ZBarReaderViewController *zbarController;
-@property (nonatomic, strong) ZNBubbleView *tipView;
+@property (nonatomic, strong) BRBubbleView *tipView;
 
 @property (nonatomic, strong) IBOutlet UILabel *label;
 @property (nonatomic, strong) IBOutlet UIButton *infoButton;
@@ -87,7 +87,7 @@
     self.requestButtons = [NSMutableArray array];
 
     self.urlObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:ZNURLNotification object:nil queue:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:BRURLNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             NSURL *url = note.userInfo[@"url"];
 
@@ -136,7 +136,7 @@
         }];
 
     self.fileObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:ZNFileNotification object:nil queue:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:BRFileNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             NSData *file = note.userInfo[@"file"];
             ZNPaymentProtocolRequest *request = [ZNPaymentProtocolRequest requestWithData:file];
@@ -162,7 +162,7 @@
                               otherButtonTitles:nil] show];
                         }
                         
-                        [self.view addSubview:[[[ZNBubbleView
+                        [self.view addSubview:[[[BRBubbleView
                          viewWithText:(payment.memo.length > 0 ? payment.memo : @"recieved")
                          center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] fadeIn]
                          fadeOutAfterDelay:(payment.memo.length > 10 ? 3.0 : 2.0)]];
@@ -176,7 +176,7 @@
 
             if (ack) {
                 if (ack.memo.length > 0) {
-                    [self.view addSubview:[[[ZNBubbleView viewWithText:ack.memo
+                    [self.view addSubview:[[[BRBubbleView viewWithText:ack.memo
                                              center:CGPointMake(self.view.bounds.size.width/2,
                                                                 self.view.bounds.size.height/2)]
                                             fadeIn] fadeOutAfterDelay:2.0]];
@@ -257,11 +257,11 @@
 - (void)layoutButtonsAnimated:(BOOL)animated
 {
     while (self.requestIDs.count > self.requestButtons.count) {
-        ZNButton *button = [ZNButton buttonWithType:UIButtonTypeCustom];
+        BRButton *button = [BRButton buttonWithType:UIButtonTypeCustom];
         UISwipeGestureRecognizer *g = [[UISwipeGestureRecognizer alloc] initWithTarget:self
                                        action:@selector(swipeLeft:)];
         
-        button.style = ZNButtonStyleBlue;
+        button.style = BRButtonStyleBlue;
         button.imageEdgeInsets = UIEdgeInsetsMake(0, -10, 0, 10);
         button.alpha = animated ? 0 : 1;
         button.frame = CGRectMake(BUTTON_MARGIN*2, self.view.frame.size.height/2 + (BUTTON_HEIGHT + BUTTON_MARGIN*2)*
@@ -417,7 +417,7 @@
                                   [m localCurrencyStringForAmount:m.wallet.balance]];
         
         self.view.superview.clipsToBounds = YES;
-        [ZNStoryboardSegue segueFrom:self.navigationController.topViewController to:c completion:^{
+        [BRStoryboardSegue segueFrom:self.navigationController.topViewController to:c completion:^{
             self.view.superview.clipsToBounds = NO;
         }];
     }
@@ -475,7 +475,7 @@
     if (! [privKey isValidBitcoinPrivateKey] && ! [privKey isValidBitcoinBIP38Key]) return;
     
     ZNWalletManager *m = [ZNWalletManager sharedInstance];
-    ZNBubbleView *v = [ZNBubbleView viewWithText:@"checking private key balance..."
+    BRBubbleView *v = [BRBubbleView viewWithText:@"checking private key balance..."
                        center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
 
     v.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
@@ -520,20 +520,20 @@
 
 - (BOOL)nextTip
 {
-    ZNBubbleView *v = self.tipView;
+    BRBubbleView *v = self.tipView;
 
     if (v.alpha < 0.5) return NO;
 
     if ([v.text isEqual:SCAN_TIP]) {
         UIButton *b = self.requestButtons[[self.requestIDs indexOfObject:CLIPBOARD_ID]];
 
-        self.tipView = [ZNBubbleView viewWithText:CLIPBOARD_TIP tipPoint:CGPointMake(b.center.x, b.center.y + 5.0)
-                        tipDirection:ZNBubbleTipDirectionUp];
+        self.tipView = [BRBubbleView viewWithText:CLIPBOARD_TIP tipPoint:CGPointMake(b.center.x, b.center.y + 5.0)
+                        tipDirection:BRBubbleTipDirectionUp];
     }
     else if ([v.text isEqual:CLIPBOARD_TIP]) {
-        self.tipView = [ZNBubbleView viewWithText:PAGE_TIP
+        self.tipView = [BRBubbleView viewWithText:PAGE_TIP
                         tipPoint:CGPointMake(self.view.bounds.size.width/2.0, self.view.superview.bounds.size.height)
-                        tipDirection:ZNBubbleTipDirectionDown];
+                        tipDirection:BRBubbleTipDirectionDown];
     }
     else self.tipView = nil;
 
@@ -558,8 +558,8 @@
     
     UIButton *b = self.requestButtons[[self.requestIDs indexOfObject:QR_ID]];
 
-    self.tipView = [ZNBubbleView viewWithText:SCAN_TIP tipPoint:CGPointMake(b.center.x, b.center.y - 5.0)
-                    tipDirection:ZNBubbleTipDirectionDown];
+    self.tipView = [BRBubbleView viewWithText:SCAN_TIP tipPoint:CGPointMake(b.center.x, b.center.y - 5.0)
+                    tipDirection:BRBubbleTipDirectionDown];
     self.tipView.backgroundColor = [UIColor orangeColor];
     self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
     [self.view addSubview:[self.tipView fadeIn]];
@@ -735,7 +735,7 @@
                 return;
             }
 
-            [self.view addSubview:[[[ZNBubbleView viewWithText:@"swept!"
+            [self.view addSubview:[[[BRBubbleView viewWithText:@"swept!"
                                      center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
                                     fadeIn] fadeOutAfterDelay:2.0]];
             [self reset:nil];
@@ -814,7 +814,7 @@
             return;
         }
 
-        [self.view addSubview:[[[ZNBubbleView viewWithText:@"sent!"
+        [self.view addSubview:[[[BRBubbleView viewWithText:@"sent!"
          center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] fadeIn]
          fadeOutAfterDelay:2.0]];
         [self reset:nil];
@@ -847,7 +847,7 @@
                 return;
             }
 
-            [self.view addSubview:[[[ZNBubbleView viewWithText:(ack.memo.length > 0 ? ack.memo : @"sent!")
+            [self.view addSubview:[[[BRBubbleView viewWithText:(ack.memo.length > 0 ? ack.memo : @"sent!")
                                     center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
                                     fadeIn] fadeOutAfterDelay:(ack.memo.length > 10 ? 3.0 : 2.0)]];
             [self reset:nil];

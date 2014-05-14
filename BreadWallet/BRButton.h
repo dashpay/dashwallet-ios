@@ -1,8 +1,8 @@
 //
-//  ZNNavigationBar.m
-//  ZincWallet
+//  BRButton.h
+//  BreadWallet
 //
-//  Created by Aaron Voisine on 9/11/13.
+//  Created by Aaron Voisine on 6/14/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,22 +23,16 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "ZNNavigationBar.h"
+#import <UIKit/UIKit.h>
 
-@implementation ZNNavigationBar
+typedef enum {
+    BRButtonStyleWhite,
+    BRButtonStyleBlue,
+    BRButtonStyleNone
+} BRButtonStyle;
 
-- (void)drawRect:(CGRect)rect
-{
-    // Drawing code
-}
+@interface BRButton : UIButton
 
--(UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
-{
-    // this removes the "slop" area below the navbar that steals touch events
-    // http://stackoverflow.com/questions/9079907/why-does-uinavigationbar-steal-touch-events
-
-    self.userInteractionEnabled = ([self pointInside:point withEvent:event]) ? YES : NO;
-    return [super hitTest:point withEvent:event];
-}
+- (void)setStyle:(BRButtonStyle)style;
 
 @end

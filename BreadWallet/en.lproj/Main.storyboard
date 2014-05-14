@@ -310,7 +310,7 @@ https://github.com/voisine/zincwallet</string>
         <scene sceneID="qFS-wE-zrI">
             <objects>
                 <navigationController storyboardIdentifier="ZNNewWalletNav" definesPresentationContext="YES" modalTransitionStyle="flipHorizontal" id="0YK-DC-haY" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" opaque="NO" contentMode="scaleToFill" id="4la-fh-n1o" customClass="ZNNavigationBar">
+                    <navigationBar key="navigationBar" opaque="NO" contentMode="scaleToFill" id="4la-fh-n1o" customClass="BRNavigationBar">
                         <rect key="frame" x="0.0" y="-44" width="0.0" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="barTintColor" red="0.98823535439999999" green="0.69803923369999998" blue="0.4274510145" alpha="1" colorSpace="deviceRGB"/>
@@ -345,7 +345,7 @@ https://github.com/voisine/zincwallet</string>
                                 <rect key="frame" x="35" y="177" width="250" height="210"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                             </imageView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" id="Dqm-VA-7XD" customClass="ZNButton">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" id="Dqm-VA-7XD" customClass="BRButton">
                                 <rect key="frame" x="70" y="208" width="180" height="44"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
@@ -359,7 +359,7 @@ https://github.com/voisine/zincwallet</string>
                                     <segue destination="Xvz-1X-lXH" kind="custom" customClass="ZNStoryboardSegue" id="Oeg-BJ-Lcr"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" id="Apw-nM-dbF" customClass="ZNButton">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" id="Apw-nM-dbF" customClass="BRButton">
                                 <rect key="frame" x="70" y="328" width="180" height="44"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
@@ -436,7 +436,7 @@ https://github.com/voisine/zincwallet</string>
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" id="p3f-07-GNB" customClass="ZNButton">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" id="p3f-07-GNB" customClass="BRButton">
                                 <rect key="frame" x="57" y="367" width="205" height="44"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
@@ -520,7 +520,7 @@ https://github.com/voisine/zincwallet</string>
         <scene sceneID="d5q-zo-uy4">
             <objects>
                 <navigationController definesPresentationContext="YES" id="jaw-AS-YG5" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="QD8-9d-Z2F" customClass="ZNNavigationBar">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="QD8-9d-Z2F" customClass="BRNavigationBar">
                         <rect key="frame" x="0.0" y="-44" width="0.0" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -598,7 +598,7 @@ https://github.com/voisine/zincwallet</string>
                                             <bool key="isElement" value="YES"/>
                                         </accessibility>
                                     </imageView>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="jE8-Jd-YjS" customClass="ZNButton">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="jE8-Jd-YjS" customClass="BRButton">
                                         <rect key="frame" x="15" y="304" width="290" height="40"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                         <accessibility key="accessibilityConfiguration" hint="copy email sms" label="receive address"/>
@@ -698,7 +698,7 @@ https://github.com/voisine/zincwallet</string>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="DMk-p0-BIS" customClass="ZNButton">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="DMk-p0-BIS" customClass="BRButton">
                                 <rect key="frame" x="20" y="141" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <accessibility key="accessibilityConfiguration">
@@ -723,7 +723,7 @@ https://github.com/voisine/zincwallet</string>
                                     <action selector="number:" destination="asW-9a-XhX" eventType="touchUpInside" id="qCe-hu-Dg0"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="T4X-DS-NEf" customClass="ZNButton">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="T4X-DS-NEf" customClass="BRButton">
                                 <rect key="frame" x="117" y="141" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <accessibility key="accessibilityConfiguration">
@@ -748,7 +748,7 @@ https://github.com/voisine/zincwallet</string>
                                     <action selector="number:" destination="asW-9a-XhX" eventType="touchUpInside" id="uVm-O1-0cv"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="A29-Ez-f23" customClass="ZNButton">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="A29-Ez-f23" customClass="BRButton">
                                 <rect key="frame" x="213" y="141" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                                 <accessibility key="accessibilityConfiguration">
@@ -778,7 +778,7 @@ https://github.com/voisine/zincwallet</string>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                 <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="mAR-H3-a5y" customClass="ZNButton">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="mAR-H3-a5y" customClass="BRButton">
                                 <rect key="frame" x="20" y="234" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <accessibility key="accessibilityConfiguration">
@@ -803,7 +803,7 @@ https://github.com/voisine/zincwallet</string>
                                     <action selector="number:" destination="asW-9a-XhX" eventType="touchUpInside" id="fEx-5a-s2S"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="se7-1x-8BQ" customClass="ZNButton">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="se7-1x-8BQ" customClass="BRButton">
                                 <rect key="frame" x="117" y="234" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <accessibility key="accessibilityConfiguration">
@@ -828,7 +828,7 @@ https://github.com/voisine/zincwallet</string>
                                     <action selector="number:" destination="asW-9a-XhX" eventType="touchUpInside" id="uBV-6z-DpB"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="DqD-Vf-9Sm" customClass="ZNButton">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="DqD-Vf-9Sm" customClass="BRButton">
                                 <rect key="frame" x="213" y="234" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                                 <accessibility key="accessibilityConfiguration">
@@ -858,7 +858,7 @@ https://github.com/voisine/zincwallet</string>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                 <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="4Zn-55-Xum" customClass="ZNButton">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="4Zn-55-Xum" customClass="BRButton">
                                 <rect key="frame" x="20" y="328" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <accessibility key="accessibilityConfiguration">
@@ -883,7 +883,7 @@ https://github.com/voisine/zincwallet</string>
                                     <action selector="number:" destination="asW-9a-XhX" eventType="touchUpInside" id="J4r-i7-2Cr"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="qEC-MP-j7n" customClass="ZNButton">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="qEC-MP-j7n" customClass="BRButton">
                                 <rect key="frame" x="117" y="328" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <accessibility key="accessibilityConfiguration">
@@ -908,7 +908,7 @@ https://github.com/voisine/zincwallet</string>
                                     <action selector="number:" destination="asW-9a-XhX" eventType="touchUpInside" id="7RY-H3-cNK"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="CQQ-Pd-hTk" customClass="ZNButton">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="CQQ-Pd-hTk" customClass="BRButton">
                                 <rect key="frame" x="213" y="328" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                                 <accessibility key="accessibilityConfiguration">
@@ -938,7 +938,7 @@ https://github.com/voisine/zincwallet</string>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                 <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="GNd-qX-qoG" customClass="ZNButton">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="GNd-qX-qoG" customClass="BRButton">
                                 <rect key="frame" x="20" y="421" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <accessibility key="accessibilityConfiguration">
@@ -963,7 +963,7 @@ https://github.com/voisine/zincwallet</string>
                                     <action selector="number:" destination="asW-9a-XhX" eventType="touchUpInside" id="iOT-7u-y7C"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="eOF-v5-TjL" customClass="ZNButton">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="eOF-v5-TjL" customClass="BRButton">
                                 <rect key="frame" x="117" y="421" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <accessibility key="accessibilityConfiguration">
@@ -988,7 +988,7 @@ https://github.com/voisine/zincwallet</string>
                                     <action selector="number:" destination="asW-9a-XhX" eventType="touchUpInside" id="JBw-ds-Vav"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="1V7-p4-mo1" customClass="ZNButton">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="1V7-p4-mo1" customClass="BRButton">
                                 <rect key="frame" x="213" y="421" width="88" height="86"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                                 <accessibility key="accessibilityConfiguration" hint="delete" label="delete">
@@ -1255,7 +1255,7 @@ https://github.com/voisine/zincwallet</string>
         <scene sceneID="qbV-Kl-jGa">
             <objects>
                 <navigationController storyboardIdentifier="ZNEraseNav" definesPresentationContext="YES" id="9BH-Hw-65r" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="2Ct-UV-mSm" customClass="ZNNavigationBar">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="2Ct-UV-mSm" customClass="BRNavigationBar">
                         <rect key="frame" x="0.0" y="-44" width="0.0" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -1327,7 +1327,7 @@ https://github.com/voisine/zincwallet</string>
             <objects>
                 <navigationController definesPresentationContext="YES" id="dNo-Sm-bI0" sceneMemberID="viewController">
                     <nil key="simulatedBottomBarMetrics"/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="2le-zU-AuV" customClass="ZNNavigationBar">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="2le-zU-AuV" customClass="BRNavigationBar">
                         <rect key="frame" x="0.0" y="-44" width="0.0" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>

@@ -1,6 +1,6 @@
 //
-//  ZNStoryBoardSegue.m
-//  ZincWallet
+//  BRStoryBoardSegue.m
+//  BreadWallet
 //
 //  Created by Aaron Voisine on 9/11/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
@@ -23,9 +23,9 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "ZNStoryboardSegue.h"
+#import "BRStoryboardSegue.h"
 
-@implementation ZNStoryboardSegue
+@implementation BRStoryboardSegue
 
 + (void)segueFrom:(UIViewController *)from to:(UIViewController *)to completion:(void (^)())completion
 {

@@ -48,7 +48,7 @@
         NSData *file = [NSData dataWithContentsOfURL:launchOptions[UIApplicationLaunchOptionsURLKey]];
 
         if (file.length > 0) {
-            [[NSNotificationCenter defaultCenter] postNotificationName:ZNFileNotification object:nil
+            [[NSNotificationCenter defaultCenter] postNotificationName:BRFileNotification object:nil
              userInfo:@{@"file":file}];
         }
     }
@@ -83,7 +83,7 @@ annotation:(id)annotation
         return NO;
     }
     
-    [[NSNotificationCenter defaultCenter] postNotificationName:ZNURLNotification object:nil userInfo:@{@"url":url}];
+    [[NSNotificationCenter defaultCenter] postNotificationName:BRURLNotification object:nil userInfo:@{@"url":url}];
     
     return YES;
 }

@@ -696,7 +696,7 @@
 		753007EC17684A8C00C7BB60 /* BRSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007EB17684A8C00C7BB60 /* BRSettingsViewController.m */; };
 		753007EF1769899B00C7BB60 /* BRSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007EE1769899B00C7BB60 /* BRSeedViewController.m */; };
 		753007F2176A48DA00C7BB60 /* BRRestoreViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007F1176A48DA00C7BB60 /* BRRestoreViewController.m */; };
-		7535CCDF176BE3D2007E29C5 /* ZNButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 7535CCDE176BE3D2007E29C5 /* ZNButton.m */; };
+		7535CCDF176BE3D2007E29C5 /* BRButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 7535CCDE176BE3D2007E29C5 /* BRButton.m */; };
 		753A27151906027400C92961 /* ZNPaymentProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 753A27141906027400C92961 /* ZNPaymentProtocol.m */; };
 		753A4149178E070C003B938D /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 753A4148178E070C003B938D /* AudioToolbox.framework */; };
 		753E7CD61801628C00FC6BA7 /* ZNPeerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 753E7CD2180155B400FC6BA7 /* ZNPeerManager.m */; };
@@ -727,8 +727,8 @@
 		75920F86174AB82100C1C03D /* NSMutableData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 75920F85174AB82100C1C03D /* NSMutableData+Bitcoin.m */; };
 		759292F8190046FB00CDA950 /* flash@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 759292F7190046FB00CDA950 /* flash@2x.png */; };
 		7593BD0A17A24D1500F814F6 /* cameraguide-small@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7593BD0917A24D1500F814F6 /* cameraguide-small@2x.png */; };
-		7597028117E15B1E00CDC14A /* ZNNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7597028017E15B1E00CDC14A /* ZNNavigationBar.m */; };
-		7597028417E15B5600CDC14A /* ZNStoryboardSegue.m in Sources */ = {isa = PBXBuildFile; fileRef = 7597028317E15B5600CDC14A /* ZNStoryboardSegue.m */; };
+		7597028117E15B1E00CDC14A /* BRNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7597028017E15B1E00CDC14A /* BRNavigationBar.m */; };
+		7597028417E15B5600CDC14A /* BRStoryboardSegue.m in Sources */ = {isa = PBXBuildFile; fileRef = 7597028317E15B5600CDC14A /* BRStoryboardSegue.m */; };
 		759B779717BF46AD0000510F /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759B779617BF46AD0000510F /* CFNetwork.framework */; };
 		759B779917BF46FE0000510F /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 759B779817BF46FE0000510F /* libicucore.dylib */; };
 		759CB235175E8A1200AFA559 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB234175E8A1200AFA559 /* QuartzCore.framework */; };
@@ -752,7 +752,7 @@
 		75C2F3D5178D3061009F8CD3 /* cameraguide-red@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75C2F3D2178D3061009F8CD3 /* cameraguide-red@2x.png */; };
 		75C2F3D6178D3061009F8CD3 /* cameraguide@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75C2F3D3178D3061009F8CD3 /* cameraguide@2x.png */; };
 		75C483DD17E27B1E00CAC0BC /* icon120.png in Resources */ = {isa = PBXBuildFile; fileRef = 758FBDC717E1D33100D341BF /* icon120.png */; };
-		75C852FA18CE8A17008E1431 /* ZNBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 75C852F918CE8A17008E1431 /* ZNBubbleView.m */; };
+		75C852FA18CE8A17008E1431 /* BRBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 75C852F918CE8A17008E1431 /* BRBubbleView.m */; };
 		75CBEAE9173C80AD00978DBA /* ZNPaymentRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 75CBEAE8173C80AD00978DBA /* ZNPaymentRequest.m */; };
 		75D450FA18C41C84005571B3 /* ZNWalletManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D450F918C41C84005571B3 /* ZNWalletManager.m */; };
 		75D8F382173ABE3C0080D95E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F381173ABE3C0080D95E /* UIKit.framework */; };
@@ -1743,8 +1743,8 @@
 		753007EE1769899B00C7BB60 /* BRSeedViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRSeedViewController.m; sourceTree = "<group>"; };
 		753007F0176A48DA00C7BB60 /* BRRestoreViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRRestoreViewController.h; sourceTree = "<group>"; };
 		753007F1176A48DA00C7BB60 /* BRRestoreViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRRestoreViewController.m; sourceTree = "<group>"; };
-		7535CCDD176BE3D2007E29C5 /* ZNButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNButton.h; sourceTree = "<group>"; };
-		7535CCDE176BE3D2007E29C5 /* ZNButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNButton.m; sourceTree = "<group>"; };
+		7535CCDD176BE3D2007E29C5 /* BRButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRButton.h; sourceTree = "<group>"; };
+		7535CCDE176BE3D2007E29C5 /* BRButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRButton.m; sourceTree = "<group>"; };
 		753A27131906027400C92961 /* ZNPaymentProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNPaymentProtocol.h; sourceTree = "<group>"; };
 		753A27141906027400C92961 /* ZNPaymentProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNPaymentProtocol.m; sourceTree = "<group>"; };
 		753A4148178E070C003B938D /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
@@ -1784,10 +1784,10 @@
 		75920F85174AB82100C1C03D /* NSMutableData+Bitcoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableData+Bitcoin.m"; sourceTree = "<group>"; };
 		759292F7190046FB00CDA950 /* flash@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "flash@2x.png"; sourceTree = "<group>"; };
 		7593BD0917A24D1500F814F6 /* cameraguide-small@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide-small@2x.png"; sourceTree = "<group>"; };
-		7597027F17E15B1E00CDC14A /* ZNNavigationBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNNavigationBar.h; sourceTree = "<group>"; };
-		7597028017E15B1E00CDC14A /* ZNNavigationBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNNavigationBar.m; sourceTree = "<group>"; };
-		7597028217E15B5600CDC14A /* ZNStoryboardSegue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNStoryboardSegue.h; sourceTree = "<group>"; };
-		7597028317E15B5600CDC14A /* ZNStoryboardSegue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNStoryboardSegue.m; sourceTree = "<group>"; };
+		7597027F17E15B1E00CDC14A /* BRNavigationBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRNavigationBar.h; sourceTree = "<group>"; };
+		7597028017E15B1E00CDC14A /* BRNavigationBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRNavigationBar.m; sourceTree = "<group>"; };
+		7597028217E15B5600CDC14A /* BRStoryboardSegue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRStoryboardSegue.h; sourceTree = "<group>"; };
+		7597028317E15B5600CDC14A /* BRStoryboardSegue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRStoryboardSegue.m; sourceTree = "<group>"; };
 		759B779617BF46AD0000510F /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		759B779817BF46FE0000510F /* libicucore.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.dylib; path = usr/lib/libicucore.dylib; sourceTree = SDKROOT; };
 		759CB234175E8A1200AFA559 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
@@ -1820,8 +1820,8 @@
 		75C2F3D1178D3061009F8CD3 /* cameraguide-green@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide-green@2x.png"; sourceTree = "<group>"; };
 		75C2F3D2178D3061009F8CD3 /* cameraguide-red@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide-red@2x.png"; sourceTree = "<group>"; };
 		75C2F3D3178D3061009F8CD3 /* cameraguide@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide@2x.png"; sourceTree = "<group>"; };
-		75C852F818CE8A17008E1431 /* ZNBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNBubbleView.h; sourceTree = "<group>"; };
-		75C852F918CE8A17008E1431 /* ZNBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNBubbleView.m; sourceTree = "<group>"; };
+		75C852F818CE8A17008E1431 /* BRBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBubbleView.h; sourceTree = "<group>"; };
+		75C852F918CE8A17008E1431 /* BRBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBubbleView.m; sourceTree = "<group>"; };
 		75CBEAE7173C80AD00978DBA /* ZNPaymentRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNPaymentRequest.h; sourceTree = "<group>"; };
 		75CBEAE8173C80AD00978DBA /* ZNPaymentRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNPaymentRequest.m; sourceTree = "<group>"; };
 		75D450F818C41C84005571B3 /* ZNWalletManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNWalletManager.h; sourceTree = "<group>"; };
@@ -3259,14 +3259,14 @@
 		7535CCDC176BE376007E29C5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				7535CCDD176BE3D2007E29C5 /* ZNButton.h */,
-				7535CCDE176BE3D2007E29C5 /* ZNButton.m */,
-				7597027F17E15B1E00CDC14A /* ZNNavigationBar.h */,
-				7597028017E15B1E00CDC14A /* ZNNavigationBar.m */,
-				7597028217E15B5600CDC14A /* ZNStoryboardSegue.h */,
-				7597028317E15B5600CDC14A /* ZNStoryboardSegue.m */,
-				75C852F818CE8A17008E1431 /* ZNBubbleView.h */,
-				75C852F918CE8A17008E1431 /* ZNBubbleView.m */,
+				7535CCDD176BE3D2007E29C5 /* BRButton.h */,
+				7535CCDE176BE3D2007E29C5 /* BRButton.m */,
+				7597027F17E15B1E00CDC14A /* BRNavigationBar.h */,
+				7597028017E15B1E00CDC14A /* BRNavigationBar.m */,
+				7597028217E15B5600CDC14A /* BRStoryboardSegue.h */,
+				7597028317E15B5600CDC14A /* BRStoryboardSegue.m */,
+				75C852F818CE8A17008E1431 /* BRBubbleView.h */,
+				75C852F918CE8A17008E1431 /* BRBubbleView.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -4611,17 +4611,17 @@
 				75D450FA18C41C84005571B3 /* ZNWalletManager.m in Sources */,
 				7559FBA7174D8B1F0000E809 /* ZNKey.m in Sources */,
 				75EAE8471753E93A00FDB2D2 /* ZNElectrumSequence.m in Sources */,
-				7597028117E15B1E00CDC14A /* ZNNavigationBar.m in Sources */,
+				7597028117E15B1E00CDC14A /* BRNavigationBar.m in Sources */,
 				759CB240175F03BF00AFA559 /* BRAmountViewController.m in Sources */,
 				753007EC17684A8C00C7BB60 /* BRSettingsViewController.m in Sources */,
 				753007EF1769899B00C7BB60 /* BRSeedViewController.m in Sources */,
 				753007F2176A48DA00C7BB60 /* BRRestoreViewController.m in Sources */,
-				7535CCDF176BE3D2007E29C5 /* ZNButton.m in Sources */,
+				7535CCDF176BE3D2007E29C5 /* BRButton.m in Sources */,
 				75183B88178B4ABE0032F365 /* BRWelcomeViewController.m in Sources */,
 				84DC139A1799E02800F6ED91 /* ZNBIP32Sequence.m in Sources */,
 				847C2302179A1FD600163CEF /* ZNElectrumMnemonic.m in Sources */,
-				75C852FA18CE8A17008E1431 /* ZNBubbleView.m in Sources */,
-				7597028417E15B5600CDC14A /* ZNStoryboardSegue.m in Sources */,
+				75C852FA18CE8A17008E1431 /* BRBubbleView.m in Sources */,
+				7597028417E15B5600CDC14A /* BRStoryboardSegue.m in Sources */,
 				753E7CD91802648700FC6BA7 /* ZNPeerEntity.m in Sources */,
 				75A6ECE317BD464A0043E52D /* ZNZincMnemonic.m in Sources */,
 				75F1B86917C7186E00680E1B /* ZNTransactionEntity.m in Sources */,

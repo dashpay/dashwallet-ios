@@ -75,14 +75,14 @@
     self.wallpaperStart = self.wallpaper.center;
 
     self.urlObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:ZNURLNotification object:nil queue:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:BRURLNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             [self.scrollView setContentOffset:CGPointZero animated:YES];
             if (m.wallet) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
         }];
 
     self.fileObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:ZNFileNotification object:nil queue:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:BRFileNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             [self.scrollView setContentOffset:CGPointZero animated:YES];
             if (m.wallet) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
