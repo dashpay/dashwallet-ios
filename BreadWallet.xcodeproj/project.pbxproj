@@ -736,7 +736,6 @@
 		759CB23B175E8D4900AFA559 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB23A175E8D4900AFA559 /* AVFoundation.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		759CB23D175E8D6300AFA559 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB23C175E8D6300AFA559 /* CoreMedia.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		759CB240175F03BF00AFA559 /* BRAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759CB23F175F03BF00AFA559 /* BRAmountViewController.m */; };
-		75A6ECE317BD464A0043E52D /* BRZincMnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = 75A6ECE217BD464A0043E52D /* BRZincMnemonic.m */; };
 		75AC8160180DFBC700ACA0C9 /* BRBloomFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 75AC815F180DFBC700ACA0C9 /* BRBloomFilter.m */; };
 		75AC8163181385D100ACA0C9 /* BRMerkleBlockEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 75AC8162181385D100ACA0C9 /* BRMerkleBlockEntity.m */; };
 		75ADF1FE17B0EC0D006B1336 /* deletetoleft-blue.png in Resources */ = {isa = PBXBuildFile; fileRef = 75ADF1FD17B0EC0C006B1336 /* deletetoleft-blue.png */; };
@@ -744,10 +743,6 @@
 		75AF36EC17667E43004AA912 /* DataMatrix.mm in Sources */ = {isa = PBXBuildFile; fileRef = 75AF36E517667E43004AA912 /* DataMatrix.mm */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		75AF36ED17667E43004AA912 /* QR_Encode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75AF36E617667E43004AA912 /* QR_Encode.cpp */; };
 		75AF36EE17667E43004AA912 /* QREncoder.mm in Sources */ = {isa = PBXBuildFile; fileRef = 75AF36EB17667E43004AA912 /* QREncoder.mm */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		75B4941B17C43ACA003A3FCA /* MnemonicAdjs.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75B4941A17C43ACA003A3FCA /* MnemonicAdjs.plist */; };
-		75B4941D17C43BCE003A3FCA /* MnemonicNouns.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75B4941C17C43BCE003A3FCA /* MnemonicNouns.plist */; };
-		75B4941F17C43C58003A3FCA /* MnemonicAdvs.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75B4941E17C43C58003A3FCA /* MnemonicAdvs.plist */; };
-		75B4942117C43CAC003A3FCA /* MnemonicVerbs.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75B4942017C43CAC003A3FCA /* MnemonicVerbs.plist */; };
 		75C2F3D4178D3061009F8CD3 /* cameraguide-green@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75C2F3D1178D3061009F8CD3 /* cameraguide-green@2x.png */; };
 		75C2F3D5178D3061009F8CD3 /* cameraguide-red@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75C2F3D2178D3061009F8CD3 /* cameraguide-red@2x.png */; };
 		75C2F3D6178D3061009F8CD3 /* cameraguide@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75C2F3D3178D3061009F8CD3 /* cameraguide@2x.png */; };
@@ -772,8 +767,6 @@
 		75D8F3BE173ABE3D0080D95E /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F3BC173ABE3D0080D95E /* InfoPlist.strings */; };
 		75D8F3C1173ABE3D0080D95E /* BreadWalletTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3C0173ABE3D0080D95E /* BreadWalletTests.m */; };
 		75E111A8178AB4AF0038173E /* button-bg-white@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75E111A4178AB4AF0038173E /* button-bg-white@2x.png */; };
-		75EAE8431752D20800FDB2D2 /* ElectrumSeedWords.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75EAE8421752D20800FDB2D2 /* ElectrumSeedWords.plist */; };
-		75EAE8471753E93A00FDB2D2 /* BRElectrumSequence.m in Sources */ = {isa = PBXBuildFile; fileRef = 75EAE8461753E93A00FDB2D2 /* BRElectrumSequence.m */; };
 		75F17C2E1744CB2E00D9F228 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 752C2FFD1742ACFB0033F636 /* libcrypto.a */; };
 		75F17C2F1744CB3400D9F228 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 752C300D1742AD060033F636 /* libssl.a */; };
 		75F17C351744CC2100D9F228 /* BRTransaction.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F17C341744CC2100D9F228 /* BRTransaction.m */; };
@@ -821,7 +814,6 @@
 		75FD9D511766532D00307894 /* ZBarReaderViewImpl_Capture.m in Sources */ = {isa = PBXBuildFile; fileRef = 75FD9D3B1766532D00307894 /* ZBarReaderViewImpl_Capture.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		75FD9D521766532D00307894 /* ZBarReaderViewImpl_Simulator.m in Sources */ = {isa = PBXBuildFile; fileRef = 75FD9D3C1766532D00307894 /* ZBarReaderViewImpl_Simulator.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		75FD9D531766532D00307894 /* ZBarSymbol.m in Sources */ = {isa = PBXBuildFile; fileRef = 75FD9D3D1766532D00307894 /* ZBarSymbol.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		847C2302179A1FD600163CEF /* BRElectrumMnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = 847C2301179A1FD600163CEF /* BRElectrumMnemonic.m */; };
 		84DC139A1799E02800F6ED91 /* BRBIP32Sequence.m in Sources */ = {isa = PBXBuildFile; fileRef = 84DC13991799E02800F6ED91 /* BRBIP32Sequence.m */; };
 /* End PBXBuildFile section */
 
@@ -1796,8 +1788,6 @@
 		759CB23C175E8D6300AFA559 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		759CB23E175F03BF00AFA559 /* BRAmountViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAmountViewController.h; sourceTree = "<group>"; };
 		759CB23F175F03BF00AFA559 /* BRAmountViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRAmountViewController.m; sourceTree = "<group>"; };
-		75A6ECE117BD464A0043E52D /* BRZincMnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRZincMnemonic.h; sourceTree = "<group>"; };
-		75A6ECE217BD464A0043E52D /* BRZincMnemonic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRZincMnemonic.m; sourceTree = "<group>"; };
 		75A6ECE517BD4CF60043E52D /* BRMnemonic.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRMnemonic.h; sourceTree = "<group>"; };
 		75AC815E180DFBC700ACA0C9 /* BRBloomFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBloomFilter.h; sourceTree = "<group>"; };
 		75AC815F180DFBC700ACA0C9 /* BRBloomFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBloomFilter.m; sourceTree = "<group>"; };
@@ -1813,10 +1803,6 @@
 		75AF36E917667E43004AA912 /* QREncoder-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "QREncoder-Prefix.pch"; sourceTree = "<group>"; };
 		75AF36EA17667E43004AA912 /* QREncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QREncoder.h; sourceTree = "<group>"; };
 		75AF36EB17667E43004AA912 /* QREncoder.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = QREncoder.mm; sourceTree = "<group>"; };
-		75B4941A17C43ACA003A3FCA /* MnemonicAdjs.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = MnemonicAdjs.plist; sourceTree = "<group>"; };
-		75B4941C17C43BCE003A3FCA /* MnemonicNouns.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = MnemonicNouns.plist; sourceTree = "<group>"; };
-		75B4941E17C43C58003A3FCA /* MnemonicAdvs.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = MnemonicAdvs.plist; sourceTree = "<group>"; };
-		75B4942017C43CAC003A3FCA /* MnemonicVerbs.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = MnemonicVerbs.plist; sourceTree = "<group>"; };
 		75C2F3D1178D3061009F8CD3 /* cameraguide-green@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide-green@2x.png"; sourceTree = "<group>"; };
 		75C2F3D2178D3061009F8CD3 /* cameraguide-red@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide-red@2x.png"; sourceTree = "<group>"; };
 		75C2F3D3178D3061009F8CD3 /* cameraguide@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide@2x.png"; sourceTree = "<group>"; };
@@ -1851,10 +1837,7 @@
 		75D8F3BF173ABE3D0080D95E /* BreadWalletTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BreadWalletTests.h; sourceTree = "<group>"; };
 		75D8F3C0173ABE3D0080D95E /* BreadWalletTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BreadWalletTests.m; sourceTree = "<group>"; };
 		75E111A4178AB4AF0038173E /* button-bg-white@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-white@2x.png"; sourceTree = "<group>"; };
-		75EAE8421752D20800FDB2D2 /* ElectrumSeedWords.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = ElectrumSeedWords.plist; sourceTree = "<group>"; };
 		75EAE8441753E8E300FDB2D2 /* BRKeySequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRKeySequence.h; sourceTree = "<group>"; };
-		75EAE8451753E93A00FDB2D2 /* BRElectrumSequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRElectrumSequence.h; sourceTree = "<group>"; };
-		75EAE8461753E93A00FDB2D2 /* BRElectrumSequence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRElectrumSequence.m; sourceTree = "<group>"; };
 		75F17C331744CC2100D9F228 /* BRTransaction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRTransaction.h; sourceTree = "<group>"; };
 		75F17C341744CC2100D9F228 /* BRTransaction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTransaction.m; sourceTree = "<group>"; };
 		75F17C4217455F2D00D9F228 /* deletetoleft-inv.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "deletetoleft-inv.png"; sourceTree = "<group>"; };
@@ -1941,8 +1924,6 @@
 		75FD9D3B1766532D00307894 /* ZBarReaderViewImpl_Capture.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZBarReaderViewImpl_Capture.m; sourceTree = "<group>"; };
 		75FD9D3C1766532D00307894 /* ZBarReaderViewImpl_Simulator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZBarReaderViewImpl_Simulator.m; sourceTree = "<group>"; };
 		75FD9D3D1766532D00307894 /* ZBarSymbol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZBarSymbol.m; sourceTree = "<group>"; };
-		847C2300179A1FD600163CEF /* BRElectrumMnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRElectrumMnemonic.h; sourceTree = "<group>"; };
-		847C2301179A1FD600163CEF /* BRElectrumMnemonic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRElectrumMnemonic.m; sourceTree = "<group>"; };
 		84DC13981799E02800F6ED91 /* BRBIP32Sequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBIP32Sequence.h; sourceTree = "<group>"; };
 		84DC13991799E02800F6ED91 /* BRBIP32Sequence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBIP32Sequence.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -3293,11 +3274,6 @@
 				75F1B87B17C7506100680E1B /* BreadWallet.xcdatamodeld */,
 				75D8F399173ABE3C0080D95E /* Main.storyboard */,
 				75CBEAE4173C801900978DBA /* Images */,
-				75B4941A17C43ACA003A3FCA /* MnemonicAdjs.plist */,
-				75B4941C17C43BCE003A3FCA /* MnemonicNouns.plist */,
-				75B4941E17C43C58003A3FCA /* MnemonicAdvs.plist */,
-				75B4942017C43CAC003A3FCA /* MnemonicVerbs.plist */,
-				75EAE8421752D20800FDB2D2 /* ElectrumSeedWords.plist */,
 				753E7CDA180387A600FC6BA7 /* FixedPeers.plist */,
 				75204DF718DD0C40002FA28C /* BIP39EnglishWords.plist */,
 			);
@@ -3391,13 +3367,7 @@
 				75EAE8441753E8E300FDB2D2 /* BRKeySequence.h */,
 				84DC13981799E02800F6ED91 /* BRBIP32Sequence.h */,
 				84DC13991799E02800F6ED91 /* BRBIP32Sequence.m */,
-				75EAE8451753E93A00FDB2D2 /* BRElectrumSequence.h */,
-				75EAE8461753E93A00FDB2D2 /* BRElectrumSequence.m */,
 				75A6ECE517BD4CF60043E52D /* BRMnemonic.h */,
-				75A6ECE117BD464A0043E52D /* BRZincMnemonic.h */,
-				75A6ECE217BD464A0043E52D /* BRZincMnemonic.m */,
-				847C2300179A1FD600163CEF /* BRElectrumMnemonic.h */,
-				847C2301179A1FD600163CEF /* BRElectrumMnemonic.m */,
 				75204DF918DD0D93002FA28C /* BRBIP39Mnemonic.h */,
 				75204DFA18DD0D93002FA28C /* BRBIP39Mnemonic.m */,
 			);
@@ -3821,7 +3791,6 @@
 				75D8F398173ABE3C0080D95E /* Default-568h@2x.png in Resources */,
 				75D8F39B173ABE3C0080D95E /* Main.storyboard in Resources */,
 				75F17C4417455F2D00D9F228 /* deletetoleft-inv.png in Resources */,
-				75EAE8431752D20800FDB2D2 /* ElectrumSeedWords.plist in Resources */,
 				7545424F17606C7500638B95 /* button-bg-disabled@2x.png in Resources */,
 				751E809F1789797500E3CFB2 /* gear@2x.png in Resources */,
 				751E80A01789797500E3CFB2 /* refresh@2x.png in Resources */,
@@ -3847,10 +3816,6 @@
 				757B1DD517AEEB1600AA6CAB /* cameraguide-blue-small@2x.png in Resources */,
 				757B1DDA17AEFCAD00AA6CAB /* wallpaper-default@2x.png in Resources */,
 				75ADF1FE17B0EC0D006B1336 /* deletetoleft-blue.png in Resources */,
-				75B4941B17C43ACA003A3FCA /* MnemonicAdjs.plist in Resources */,
-				75B4941D17C43BCE003A3FCA /* MnemonicNouns.plist in Resources */,
-				75B4941F17C43C58003A3FCA /* MnemonicAdvs.plist in Resources */,
-				75B4942117C43CAC003A3FCA /* MnemonicVerbs.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4610,7 +4575,6 @@
 				75920F86174AB82100C1C03D /* NSMutableData+Bitcoin.m in Sources */,
 				75D450FA18C41C84005571B3 /* BRWalletManager.m in Sources */,
 				7559FBA7174D8B1F0000E809 /* BRKey.m in Sources */,
-				75EAE8471753E93A00FDB2D2 /* BRElectrumSequence.m in Sources */,
 				7597028117E15B1E00CDC14A /* BRNavigationBar.m in Sources */,
 				759CB240175F03BF00AFA559 /* BRAmountViewController.m in Sources */,
 				753007EC17684A8C00C7BB60 /* BRSettingsViewController.m in Sources */,
@@ -4619,11 +4583,9 @@
 				7535CCDF176BE3D2007E29C5 /* BRButton.m in Sources */,
 				75183B88178B4ABE0032F365 /* BRWelcomeViewController.m in Sources */,
 				84DC139A1799E02800F6ED91 /* BRBIP32Sequence.m in Sources */,
-				847C2302179A1FD600163CEF /* BRElectrumMnemonic.m in Sources */,
 				75C852FA18CE8A17008E1431 /* BRBubbleView.m in Sources */,
 				7597028417E15B5600CDC14A /* BRStoryboardSegue.m in Sources */,
 				753E7CD91802648700FC6BA7 /* BRPeerEntity.m in Sources */,
-				75A6ECE317BD464A0043E52D /* BRZincMnemonic.m in Sources */,
 				75F1B86917C7186E00680E1B /* BRTransactionEntity.m in Sources */,
 				753E7CD61801628C00FC6BA7 /* BRPeerManager.m in Sources */,
 				75F1B87917C7356B00680E1B /* NSManagedObject+Utils.m in Sources */,

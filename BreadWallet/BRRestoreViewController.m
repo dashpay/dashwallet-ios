@@ -27,7 +27,6 @@
 #import "BRWalletManager.h"
 #import "NSString+Base58.h"
 #import "BRKeySequence.h"
-#import "BRZincMnemonic.h"
 #import "BRBIP39Mnemonic.h"
 #import <QuartzCore/QuartzCore.h>
 

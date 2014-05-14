@@ -28,7 +28,6 @@
 #import "BRKey.h"
 #import "BRKey+BIP38.h"
 #import "BRKeySequence.h"
-#import "BRZincMnemonic.h"
 #import "BRBIP39Mnemonic.h"
 #import "BRPeer.h"
 #import "BRTransaction.h"
@@ -213,7 +212,7 @@ static NSData *getKeychainData(NSString *key)
 {
     NSData *phrase = getKeychainData(MNEMONIC_KEY);
 
-    if (! phrase) return [[BRZincMnemonic sharedInstance] encodePhrase:self.seed]; // use old phrase format
+    if (! phrase) return nil;
 
     return CFBridgingRelease(CFStringCreateFromExternalRepresentation(SecureAllocator(), (CFDataRef)phrase,
                                                                       kCFStringEncodingUTF8));
@@ -222,11 +221,6 @@ static NSData *getKeychainData(NSString *key)
 - (void)setSeedPhrase:(NSString *)seedPhrase
 {
     @autoreleasepool {
-        if (! [[BRBIP39Mnemonic sharedInstance] phraseIsValid:seedPhrase]) { // phrase is in old format
-            self.seed = [[BRZincMnemonic sharedInstance] decodePhrase:seedPhrase];
-            return;
-        }
-
         BRBIP39Mnemonic *m = [BRBIP39Mnemonic sharedInstance];
         
         seedPhrase = [m encodePhrase:[m decodePhrase:seedPhrase]];

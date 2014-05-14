@@ -499,7 +499,8 @@ static const char *dns_seeds[] = {
 - (BOOL)transactionIsVerified:(NSData *)txHash
 {
     //BUG: XXXX received transactions remain unverified until disconnecting/reconnecting
-    return ([self.txRelays[txHash] count] >= self.connectedPeers.count) ? YES : NO;
+    // seems like download peer's mempool isn't getting requested
+    return (self.connectedPeers.count > 1 && [self.txRelays[txHash] count] >= self.connectedPeers.count) ? YES : NO;
 }
 
 - (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes
