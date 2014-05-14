@@ -25,9 +25,9 @@
 
 #import "ZNWallet.h"
 #import "ZNKey.h"
-#import "ZNAddressEntity.h"
+#import "BRAddressEntity.h"
 #import "ZNTransaction.h"
-#import "ZNTransactionEntity.h"
+#import "BRTransactionEntity.h"
 #import "ZNKeySequence.h"
 #import "ZNBIP32Sequence.h"
 #import "NSData+Hash.h"
@@ -77,7 +77,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     self.utxos = [NSMutableOrderedSet orderedSet];
 
     [self.moc performBlockAndWait:^{
-        for (ZNAddressEntity *e in [ZNAddressEntity allObjects]) {
+        for (BRAddressEntity *e in [BRAddressEntity allObjects]) {
             NSMutableArray *a = e.internal ? self.internalAddresses : self.externalAddresses;
 
             while (e.index >= a.count) [a addObject:[NSNull null]];
@@ -85,7 +85,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
             [self.allAddresses addObject:e.address];
         }
 
-        for (ZNTransactionEntity *e in [ZNTransactionEntity allObjects]) {
+        for (BRTransactionEntity *e in [BRTransactionEntity allObjects]) {
             ZNTransaction *tx = e.transaction;
 
             self.allTx[tx.txHash] = tx;
@@ -151,7 +151,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
             }
 
             [self.moc performBlock:^{ // store new address in core data
-                ZNAddressEntity *e = [ZNAddressEntity managedObject];
+                BRAddressEntity *e = [BRAddressEntity managedObject];
 
                 e.address = addr;
                 e.index = n;
@@ -389,8 +389,8 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     [self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
 
     [self.moc performBlock:^{ // add the transaction to core data
-        if ([ZNTransactionEntity countObjectsMatching:@"txHash == %@", transaction.txHash] == 0) {
-            [[ZNTransactionEntity managedObject] setAttributesFromTx:transaction];
+        if ([BRTransactionEntity countObjectsMatching:@"txHash == %@", transaction.txHash] == 0) {
+            [[BRTransactionEntity managedObject] setAttributesFromTx:transaction];
         };
     }];
 
@@ -412,7 +412,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     [self updateBalance];
 
     [self.moc performBlock:^{ // remove transaction from core data
-        [ZNTransactionEntity deleteObjects:[ZNTransactionEntity objectsMatching:@"txHash == %@", txHash]];
+        [BRTransactionEntity deleteObjects:[BRTransactionEntity objectsMatching:@"txHash == %@", txHash]];
     }];
 }
 
@@ -433,7 +433,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
         [self updateBalance];
 
         [self.moc performBlock:^{
-            for (ZNTransactionEntity *e in [ZNTransactionEntity objectsMatching:@"txHash in %@", txHashes]) {
+            for (BRTransactionEntity *e in [BRTransactionEntity objectsMatching:@"txHash in %@", txHashes]) {
                 e.blockHeight = height;
             }
         }];

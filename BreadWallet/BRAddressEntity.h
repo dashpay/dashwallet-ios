@@ -1,8 +1,8 @@
 //
-//  ZNTxInputEntity.h
-//  ZincWallet
+//  BRAddressEntity.h
+//  BreadWallet
 //
-//  Created by Aaron Voisine on 8/26/13.
+//  Created by Aaron Voisine on 8/22/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,16 +26,10 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class ZNTransactionEntity, ZNTransaction;
+@interface BRAddressEntity : NSManagedObject
 
-@interface ZNTxInputEntity : NSManagedObject
-
-@property (nonatomic, retain) NSData *txHash;
-@property (nonatomic) int32_t n;
-@property (nonatomic, retain) NSData *signature;
-@property (nonatomic) int32_t sequence;
-@property (nonatomic, retain) ZNTransactionEntity *transaction;
-
-- (instancetype)setAttributesFromTx:(ZNTransaction *)tx inputIndex:(NSUInteger)index;
+@property (nonatomic, retain) NSString *address;
+@property (nonatomic) int32_t index;
+@property (nonatomic) BOOL internal;
 
 @end

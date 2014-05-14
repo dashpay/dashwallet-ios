@@ -1,6 +1,6 @@
 //
-//  ZNTxOutputEntity.h
-//  ZincWallet
+//  BRTxInputEntity.m
+//  BreadWallet
 //
 //  Created by Aaron Voisine on 8/26/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
@@ -23,21 +23,33 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
+#import "BRTxInputEntity.h"
+#import "BRTransactionEntity.h"
+#import "ZNTransaction.h"
+#import "BRTxOutputEntity.h"
+#import "NSManagedObject+Utils.h"
 
-@class ZNTransactionEntity, ZNTransaction;
+@implementation BRTxInputEntity
 
-@interface ZNTxOutputEntity : NSManagedObject
+@dynamic txHash;
+@dynamic n;
+@dynamic signature;
+@dynamic sequence;
+@dynamic transaction;
 
-@property (nonatomic, retain) NSData *txHash;
-@property (nonatomic) int32_t n;
-@property (nonatomic, retain) NSString *address;
-@property (nonatomic, retain) NSData *script;
-@property (nonatomic) int64_t value;
-@property (nonatomic) BOOL spent;
-@property (nonatomic, retain) ZNTransactionEntity *transaction;
-
-- (instancetype)setAttributesFromTx:(ZNTransaction *)tx outputIndex:(NSUInteger)index;
+- (instancetype)setAttributesFromTx:(ZNTransaction *)tx inputIndex:(NSUInteger)index
+{
+    [[self managedObjectContext] performBlockAndWait:^{
+        self.txHash = tx.inputHashes[index];
+        self.n = [tx.inputIndexes[index] intValue];
+        self.signature = (tx.inputSignatures[index] != [NSNull null]) ? tx.inputSignatures[index] : nil;
+        self.sequence = [tx.inputSequences[index] intValue];
+    
+        // mark previously unspent outputs as spent
+        [[BRTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", self.txHash, self.n].lastObject setSpent:YES];
+    }];
+    
+    return self;
+}
 
 @end

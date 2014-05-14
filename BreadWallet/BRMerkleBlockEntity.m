@@ -1,6 +1,6 @@
-
-//  ZNMerkleBlockEntity.m
-//  ZincWallet
+//
+//  BRMerkleBlockEntity.m
+//  BreadWallet
 //
 //  Created by Aaron Voisine on 10/19/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
@@ -23,11 +23,11 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "ZNMerkleBlockEntity.h"
+#import "BRMerkleBlockEntity.h"
 #import "ZNMerkleBlock.h"
 #import "NSManagedObject+Utils.h"
 
-@implementation ZNMerkleBlockEntity
+@implementation BRMerkleBlockEntity
 
 @dynamic blockHash;
 @dynamic height;

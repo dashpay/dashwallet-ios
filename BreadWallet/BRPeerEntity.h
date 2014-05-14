@@ -1,8 +1,8 @@
 //
-//  ZNMerkleBlockEntity.h
-//  ZincWallet
+//  BRPeerEntity.h
+//  BreadWallet
 //
-//  Created by Aaron Voisine on 10/19/13.
+//  Created by Aaron Voisine on 10/6/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,23 +26,17 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class ZNMerkleBlock;
+@class ZNPeer;
 
-@interface ZNMerkleBlockEntity : NSManagedObject
+@interface BRPeerEntity : NSManagedObject
 
-@property (nonatomic, retain) NSData *blockHash;
-@property (nonatomic) int32_t height;
-@property (nonatomic) int32_t version;
-@property (nonatomic, retain) NSData *prevBlock;
-@property (nonatomic, retain) NSData *merkleRoot;
+@property (nonatomic) int32_t address;
 @property (nonatomic) NSTimeInterval timestamp;
-@property (nonatomic) int32_t target;
-@property (nonatomic) int32_t nonce;
-@property (nonatomic) int32_t totalTransactions;
-@property (nonatomic, retain) NSData *hashes;
-@property (nonatomic, retain) NSData *flags;
+@property (nonatomic) int16_t port;
+@property (nonatomic) int64_t services;
+@property (nonatomic) int16_t misbehavin;
 
-- (instancetype)setAttributesFromBlock:(ZNMerkleBlock *)block;
-- (ZNMerkleBlock *)merkleBlock;
+- (instancetype)setAttributesFromPeer:(ZNPeer *)peer;
+- (ZNPeer *)peer;
 
 @end

@@ -1,6 +1,6 @@
 //
-//  ZNTransactionEntity.m
-//  ZincWallet
+//  BRTransactionEntity.m
+//  BreadWallet
 //
 //  Created by Aaron Voisine on 8/22/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
@@ -23,10 +23,10 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "ZNTransactionEntity.h"
-#import "ZNTxInputEntity.h"
-#import "ZNTxOutputEntity.h"
-#import "ZNAddressEntity.h"
+#import "BRTransactionEntity.h"
+#import "BRTxInputEntity.h"
+#import "BRTxOutputEntity.h"
+#import "BRAddressEntity.h"
 #import "ZNTransaction.h"
 #import "ZNMerkleBlock.h"
 #import "NSManagedObject+Utils.h"
@@ -34,7 +34,7 @@
 #import "NSMutableData+Bitcoin.h"
 #import <CommonCrypto/CommonDigest.h>
 
-@implementation ZNTransactionEntity
+@implementation BRTransactionEntity
 
 @dynamic txHash;
 @dynamic blockHeight;
@@ -53,19 +53,19 @@
         self.blockHeight = tx.blockHeight;
     
         while (inputs.count < tx.inputHashes.count) {
-            [inputs addObject:[ZNTxInputEntity managedObject]];
+            [inputs addObject:[BRTxInputEntity managedObject]];
         }
     
         while (inputs.count > tx.inputHashes.count) {
             [inputs removeObjectAtIndex:inputs.count - 1];
         }
     
-        for (ZNTxInputEntity *e in inputs) {
+        for (BRTxInputEntity *e in inputs) {
             [e setAttributesFromTx:tx inputIndex:idx++];
         }
 
         while (outputs.count < tx.outputAddresses.count) {
-            [outputs addObject:[ZNTxOutputEntity managedObject]];
+            [outputs addObject:[BRTxOutputEntity managedObject]];
         }
     
         while (outputs.count > tx.outputAddresses.count) {
@@ -74,7 +74,7 @@
 
         idx = 0;
         
-        for (ZNTxOutputEntity *e in outputs) {
+        for (BRTxOutputEntity *e in outputs) {
             [e setAttributesFromTx:tx outputIndex:idx++];
         }
         
@@ -93,11 +93,11 @@
         tx.lockTime = self.lockTime;
         tx.blockHeight = self.blockHeight;
     
-        for (ZNTxInputEntity *e in self.inputs) {
+        for (BRTxInputEntity *e in self.inputs) {
             [tx addInputHash:e.txHash index:e.n script:nil signature:e.signature sequence:e.sequence];
         }
         
-        for (ZNTxOutputEntity *e in self.outputs) {
+        for (BRTxOutputEntity *e in self.outputs) {
             [tx addOutputScript:e.script amount:e.value];
         }
     }];
@@ -107,8 +107,8 @@
 
 - (void)deleteObject
 {
-    for (ZNTxInputEntity *e in self.inputs) { // mark inputs as unspent
-        [[ZNTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", e.txHash, e.n].lastObject setSpent:NO];
+    for (BRTxInputEntity *e in self.inputs) { // mark inputs as unspent
+        [[BRTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", e.txHash, e.n].lastObject setSpent:NO];
     }
 
     [super deleteObject];

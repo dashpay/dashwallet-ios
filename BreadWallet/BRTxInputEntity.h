@@ -1,8 +1,8 @@
 //
-//  ZNPeerEntity.m
-//  ZincWallet
+//  BRTxInputEntity.h
+//  BreadWallet
 //
-//  Created by Aaron Voisine on 10/6/13.
+//  Created by Aaron Voisine on 8/26/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,43 +23,19 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "ZNPeerEntity.h"
-#import "ZNPeer.h"
-#import "NSManagedObject+Utils.h"
-#import <arpa/inet.h>
+#import <Foundation/Foundation.h>
+#import <CoreData/CoreData.h>
 
-@implementation ZNPeerEntity
+@class BRTransactionEntity, ZNTransaction;
 
-@dynamic address;
-@dynamic timestamp;
-@dynamic port;
-@dynamic services;
-@dynamic misbehavin;
+@interface BRTxInputEntity : NSManagedObject
 
-- (instancetype)setAttributesFromPeer:(ZNPeer *)peer
-{
-    [[self managedObjectContext] performBlockAndWait:^{
-        self.address = peer.address;
-        self.port = peer.port;
-        self.timestamp = peer.timestamp;
-        self.services = peer.services;
-        self.misbehavin = peer.misbehavin;
-    }];
+@property (nonatomic, retain) NSData *txHash;
+@property (nonatomic) int32_t n;
+@property (nonatomic, retain) NSData *signature;
+@property (nonatomic) int32_t sequence;
+@property (nonatomic, retain) BRTransactionEntity *transaction;
 
-    return self;
-}
-
-- (ZNPeer *)peer
-{
-    __block ZNPeer *peer = nil;
-
-    [[self managedObjectContext] performBlockAndWait:^{
-        peer = [[ZNPeer alloc] initWithAddress:self.address port:self.port timestamp:self.timestamp
-                services:self.services];
-        peer.misbehavin = self.misbehavin;
-    }];
-
-    return peer;
-}
+- (instancetype)setAttributesFromTx:(ZNTransaction *)tx inputIndex:(NSUInteger)index;
 
 @end

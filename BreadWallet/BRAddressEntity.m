@@ -1,6 +1,6 @@
 //
-//  ZNAddressEntity.m
-//  ZincWallet
+//  BRAddressEntity.m
+//  BreadWallet
 //
 //  Created by Aaron Voisine on 8/26/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
@@ -23,10 +23,10 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "ZNAddressEntity.h"
+#import "BRAddressEntity.h"
 #import "NSManagedObject+Utils.h"
 
-@implementation ZNAddressEntity
+@implementation BRAddressEntity
 
 @dynamic address;
 @dynamic index;

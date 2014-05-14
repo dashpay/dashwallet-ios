@@ -25,12 +25,12 @@
 
 #import "ZNPeerManager.h"
 #import "ZNPeer.h"
-#import "ZNPeerEntity.h"
+#import "BRPeerEntity.h"
 #import "ZNBloomFilter.h"
 #import "ZNKeySequence.h"
 #import "ZNTransaction.h"
 #import "ZNMerkleBlock.h"
-#import "ZNMerkleBlockEntity.h"
+#import "BRMerkleBlockEntity.h"
 #import "ZNWalletManager.h"
 #import "ZNWallet.h"
 #import "NSString+Base58.h"
@@ -163,7 +163,7 @@ static const char *dns_seeds[] = {
         queue:nil usingBlock:^(NSNotification *note) {
             [self savePeers];
             [self saveBlocks];
-            [ZNMerkleBlockEntity saveContext];
+            [BRMerkleBlockEntity saveContext];
             if (self.syncProgress >= 1.0) [self.connectedPeers makeObjectsPerformSelector:@selector(disconnect)];
         }];
 
@@ -176,8 +176,8 @@ static const char *dns_seeds[] = {
             [self.txRelays removeAllObjects];
             [self.publishedTx removeAllObjects];
             [self.publishedCallback removeAllObjects];
-            [ZNMerkleBlockEntity deleteObjects:[ZNMerkleBlockEntity allObjects]];
-            [ZNMerkleBlockEntity saveContext];
+            [BRMerkleBlockEntity deleteObjects:[BRMerkleBlockEntity allObjects]];
+            [BRMerkleBlockEntity saveContext];
             _blocks = nil;
             _bloomFilter = nil;
             _lastBlock = nil;
@@ -199,13 +199,13 @@ static const char *dns_seeds[] = {
 {
     if (_peers.count >= MAX_CONNECTIONS) return _peers;
 
-    [[ZNPeerEntity context] performBlockAndWait:^{
+    [[BRPeerEntity context] performBlockAndWait:^{
         if (_peers.count >= MAX_CONNECTIONS) return;
         _peers = [NSMutableOrderedSet orderedSet];
 
         NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
 
-        for (ZNPeerEntity *e in [ZNPeerEntity allObjects]) {
+        for (BRPeerEntity *e in [BRPeerEntity allObjects]) {
             if (e.misbehavin == 0) [_peers addObject:[e peer]];
             else [self.misbehavinPeers addObject:[e peer]];
         }
@@ -260,7 +260,7 @@ static const char *dns_seeds[] = {
 {
     if (_blocks.count > 0) return _blocks;
 
-    [[ZNMerkleBlockEntity context] performBlockAndWait:^{
+    [[BRMerkleBlockEntity context] performBlockAndWait:^{
         if (_blocks.count > 0) return;
         _blocks = [NSMutableDictionary dictionary];
         self.checkpoints = [NSMutableDictionary dictionary];
@@ -278,7 +278,7 @@ static const char *dns_seeds[] = {
             self.checkpoints[@(checkpoint_array[i].height)] = hash;
         }
 
-        for (ZNMerkleBlockEntity *e in [ZNMerkleBlockEntity allObjects]) {
+        for (BRMerkleBlockEntity *e in [BRMerkleBlockEntity allObjects]) {
             _blocks[e.blockHash] = [e merkleBlock];
         };
     }];
@@ -313,12 +313,12 @@ static const char *dns_seeds[] = {
 {
     if (_lastBlock) return _lastBlock;
 
-    NSFetchRequest *req = [ZNMerkleBlockEntity fetchRequest];
+    NSFetchRequest *req = [BRMerkleBlockEntity fetchRequest];
 
     req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"height" ascending:NO]];
     req.predicate = [NSPredicate predicateWithFormat:@"height >= 0 && height != %d", BLOCK_UNKOWN_HEIGHT];
     req.fetchLimit = 1;
-    _lastBlock = [[ZNMerkleBlockEntity fetchObjects:req].lastObject merkleBlock];
+    _lastBlock = [[BRMerkleBlockEntity fetchObjects:req].lastObject merkleBlock];
 
     // if we don't have any blocks yet, use the latest checkpoint that is at least a week older than earliestKeyTime
     for (int i = sizeof(checkpoint_array)/sizeof(*checkpoint_array) - 1; ! _lastBlock && i >= 0; i--) {
@@ -606,10 +606,10 @@ static const char *dns_seeds[] = {
         [addrs addObject:@((int32_t)p.address)];
     }
 
-    [[ZNPeerEntity context] performBlock:^{
-        [ZNPeerEntity deleteObjects:[ZNPeerEntity objectsMatching:@"! (address in %@)", addrs]]; // remove deleted peers
+    [[BRPeerEntity context] performBlock:^{
+        [BRPeerEntity deleteObjects:[BRPeerEntity objectsMatching:@"! (address in %@)", addrs]]; // remove deleted peers
 
-        for (ZNPeerEntity *e in [ZNPeerEntity objectsMatching:@"address in %@", addrs]) { // update existing peers
+        for (BRPeerEntity *e in [BRPeerEntity objectsMatching:@"address in %@", addrs]) { // update existing peers
             ZNPeer *p = [peers member:[e peer]];
 
             if (p) {
@@ -622,7 +622,7 @@ static const char *dns_seeds[] = {
         }
 
         for (ZNPeer *p in peers) { // add new peers
-            [[ZNPeerEntity managedObject] setAttributesFromPeer:p];
+            [[BRPeerEntity managedObject] setAttributesFromPeer:p];
         }
     }];
 }
@@ -637,16 +637,16 @@ static const char *dns_seeds[] = {
         b = self.blocks[b.prevBlock];
     }
 
-    [[ZNMerkleBlockEntity context] performBlock:^{
-        [ZNMerkleBlockEntity deleteObjects:[ZNMerkleBlockEntity objectsMatching:@"! (blockHash in %@)", blockHashes]];
+    [[BRMerkleBlockEntity context] performBlock:^{
+        [BRMerkleBlockEntity deleteObjects:[BRMerkleBlockEntity objectsMatching:@"! (blockHash in %@)", blockHashes]];
 
-        for (ZNMerkleBlockEntity *e in [ZNMerkleBlockEntity objectsMatching:@"blockHash in %@", blockHashes]) {
+        for (BRMerkleBlockEntity *e in [BRMerkleBlockEntity objectsMatching:@"blockHash in %@", blockHashes]) {
             [e setAttributesFromBlock:self.blocks[e.blockHash]];
             [blockHashes removeObject:e.blockHash];
         }
 
         for (NSData *hash in blockHashes) {
-            [[ZNMerkleBlockEntity managedObject] setAttributesFromBlock:self.blocks[hash]];
+            [[BRMerkleBlockEntity managedObject] setAttributesFromBlock:self.blocks[hash]];
         }
     }];
 }
@@ -775,7 +775,7 @@ static const char *dns_seeds[] = {
     if (peers.count < 1000) { // peer relaying is complete when we receive fewer than 1000
         [self removeUnrelayedTransactions]; // this is a good time to remove unconfirmed tx that dropped off the network
         [self savePeers];
-        [ZNPeerEntity saveContext];
+        [BRPeerEntity saveContext];
     }
 }
 
@@ -978,7 +978,7 @@ static const char *dns_seeds[] = {
 
     if (block.height == peer.lastblock && block == self.lastBlock) { // chain download is complete
         [self saveBlocks];
-        [ZNMerkleBlockEntity saveContext];
+        [BRMerkleBlockEntity saveContext];
         [self syncStopped];
         [peer sendGetaddrMessage]; // request a list of other bitcoin peers
         self.syncStartHeight = 0;

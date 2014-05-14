@@ -1,8 +1,8 @@
 //
-//  ZNTxOutputEntity.m
-//  ZincWallet
+//  BRPeerEntity.m
+//  BreadWallet
 //
-//  Created by Aaron Voisine on 8/26/13.
+//  Created by Aaron Voisine on 10/6/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,32 +23,43 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "ZNTxOutputEntity.h"
-#import "ZNTransactionEntity.h"
-#import "ZNTransaction.h"
+#import "BRPeerEntity.h"
+#import "ZNPeer.h"
 #import "NSManagedObject+Utils.h"
+#import <arpa/inet.h>
 
-@implementation ZNTxOutputEntity
+@implementation BRPeerEntity
 
-@dynamic txHash;
-@dynamic n;
 @dynamic address;
-@dynamic script;
-@dynamic value;
-@dynamic spent;
-@dynamic transaction;
+@dynamic timestamp;
+@dynamic port;
+@dynamic services;
+@dynamic misbehavin;
 
-- (instancetype)setAttributesFromTx:(ZNTransaction *)tx outputIndex:(NSUInteger)index
+- (instancetype)setAttributesFromPeer:(ZNPeer *)peer
 {
     [[self managedObjectContext] performBlockAndWait:^{
-        self.txHash = tx.txHash;
-        self.n = (int32_t)index;
-        self.address = (tx.outputAddresses[index] == [NSNull null]) ? nil : tx.outputAddresses[index];
-        self.script = tx.outputScripts[index];
-        self.value = [tx.outputAmounts[index] longLongValue];
+        self.address = peer.address;
+        self.port = peer.port;
+        self.timestamp = peer.timestamp;
+        self.services = peer.services;
+        self.misbehavin = peer.misbehavin;
     }];
-    
+
     return self;
+}
+
+- (ZNPeer *)peer
+{
+    __block ZNPeer *peer = nil;
+
+    [[self managedObjectContext] performBlockAndWait:^{
+        peer = [[ZNPeer alloc] initWithAddress:self.address port:self.port timestamp:self.timestamp
+                services:self.services];
+        peer.misbehavin = self.misbehavin;
+    }];
+
+    return peer;
 }
 
 @end

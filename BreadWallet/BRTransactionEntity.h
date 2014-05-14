@@ -1,6 +1,6 @@
 //
-//  ZNTransactionEntity.h
-//  ZincWallet
+//  BRTransactionEntity.h
+//  BreadWallet
 //
 //  Created by Aaron Voisine on 8/22/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
@@ -26,11 +26,11 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class ZNTxInputEntity;
-@class ZNTxOutputEntity;
+@class BRTxInputEntity;
+@class BRTxOutputEntity;
 @class ZNTransaction;
 
-@interface ZNTransactionEntity : NSManagedObject
+@interface BRTransactionEntity : NSManagedObject
 
 @property (nonatomic, retain) NSData *txHash;
 @property (nonatomic) int32_t blockHeight;
@@ -46,26 +46,26 @@
 // These generated accessors are all broken because NSOrderedSet is not a subclass of NSSet.
 // This known core data bug has remained unaddressed for over two years: http://openradar.appspot.com/10114310
 // Per core data release notes, use [NSObject<NSKeyValueCoding> mutableOrderedSetValueForKey:] instead.
-@interface ZNTransactionEntity (CoreDataGeneratedAccessors)
+@interface BRTransactionEntity (CoreDataGeneratedAccessors)
 
-- (void)insertObject:(ZNTxInputEntity *)value inInputsAtIndex:(NSUInteger)idx;
+- (void)insertObject:(BRTxInputEntity *)value inInputsAtIndex:(NSUInteger)idx;
 - (void)removeObjectFromInputsAtIndex:(NSUInteger)idx;
 - (void)insertInputs:(NSArray *)value atIndexes:(NSIndexSet *)indexes;
 - (void)removeInputsAtIndexes:(NSIndexSet *)indexes;
-- (void)replaceObjectInInputsAtIndex:(NSUInteger)idx withObject:(ZNTxInputEntity *)value;
+- (void)replaceObjectInInputsAtIndex:(NSUInteger)idx withObject:(BRTxInputEntity *)value;
 - (void)replaceInputsAtIndexes:(NSIndexSet *)indexes withInputs:(NSArray *)values;
-- (void)addInputsObject:(ZNTxInputEntity *)value;
-- (void)removeInputsObject:(ZNTxInputEntity *)value;
+- (void)addInputsObject:(BRTxInputEntity *)value;
+- (void)removeInputsObject:(BRTxInputEntity *)value;
 - (void)addInputs:(NSOrderedSet *)values;
 - (void)removeInputs:(NSOrderedSet *)values;
-- (void)insertObject:(ZNTxOutputEntity *)value inOutputsAtIndex:(NSUInteger)idx;
+- (void)insertObject:(BRTxOutputEntity *)value inOutputsAtIndex:(NSUInteger)idx;
 - (void)removeObjectFromOutputsAtIndex:(NSUInteger)idx;
 - (void)insertOutputs:(NSArray *)value atIndexes:(NSIndexSet *)indexes;
 - (void)removeOutputsAtIndexes:(NSIndexSet *)indexes;
-- (void)replaceObjectInOutputsAtIndex:(NSUInteger)idx withObject:(ZNTxOutputEntity *)value;
+- (void)replaceObjectInOutputsAtIndex:(NSUInteger)idx withObject:(BRTxOutputEntity *)value;
 - (void)replaceOutputsAtIndexes:(NSIndexSet *)indexes withOutputs:(NSArray *)values;
-- (void)addOutputsObject:(ZNTxOutputEntity *)value;
-- (void)removeOutputsObject:(ZNTxOutputEntity *)value;
+- (void)addOutputsObject:(BRTxOutputEntity *)value;
+- (void)removeOutputsObject:(BRTxOutputEntity *)value;
 - (void)addOutputs:(NSOrderedSet *)values;
 - (void)removeOutputs:(NSOrderedSet *)values;
 @end

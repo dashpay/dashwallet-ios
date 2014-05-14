@@ -700,7 +700,7 @@
 		753A27151906027400C92961 /* ZNPaymentProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 753A27141906027400C92961 /* ZNPaymentProtocol.m */; };
 		753A4149178E070C003B938D /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 753A4148178E070C003B938D /* AudioToolbox.framework */; };
 		753E7CD61801628C00FC6BA7 /* ZNPeerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 753E7CD2180155B400FC6BA7 /* ZNPeerManager.m */; };
-		753E7CD91802648700FC6BA7 /* ZNPeerEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 753E7CD81802648700FC6BA7 /* ZNPeerEntity.m */; };
+		753E7CD91802648700FC6BA7 /* BRPeerEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 753E7CD81802648700FC6BA7 /* BRPeerEntity.m */; };
 		753E7CDB180387A600FC6BA7 /* FixedPeers.plist in Resources */ = {isa = PBXBuildFile; fileRef = 753E7CDA180387A600FC6BA7 /* FixedPeers.plist */; };
 		753E7CE118053B3F00FC6BA7 /* ZNPeer.m in Sources */ = {isa = PBXBuildFile; fileRef = 753E7CE018053B3F00FC6BA7 /* ZNPeer.m */; };
 		753E7CE41806853400FC6BA7 /* NSData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 753E7CE31806853400FC6BA7 /* NSData+Bitcoin.m */; };
@@ -715,9 +715,9 @@
 		757B1DD217AE191400AA6CAB /* zincwallet-white@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 757B1DD117AE191400AA6CAB /* zincwallet-white@2x.png */; };
 		757B1DD517AEEB1600AA6CAB /* cameraguide-blue-small@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 757B1DD317AEEB1600AA6CAB /* cameraguide-blue-small@2x.png */; };
 		757B1DDA17AEFCAD00AA6CAB /* wallpaper-default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 757B1DD817AEFCAD00AA6CAB /* wallpaper-default@2x.png */; };
-		757BFF2D17CBD0D700D1C4AF /* ZNAddressEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BFF2C17CBD0D700D1C4AF /* ZNAddressEntity.m */; };
-		757BFF3017CC1A9100D1C4AF /* ZNTxInputEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BFF2F17CC1A9100D1C4AF /* ZNTxInputEntity.m */; };
-		757BFF3317CC1AA800D1C4AF /* ZNTxOutputEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BFF3217CC1AA800D1C4AF /* ZNTxOutputEntity.m */; };
+		757BFF2D17CBD0D700D1C4AF /* BRAddressEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BFF2C17CBD0D700D1C4AF /* BRAddressEntity.m */; };
+		757BFF3017CC1A9100D1C4AF /* BRTxInputEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BFF2F17CC1A9100D1C4AF /* BRTxInputEntity.m */; };
+		757BFF3317CC1AA800D1C4AF /* BRTxOutputEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BFF3217CC1AA800D1C4AF /* BRTxOutputEntity.m */; };
 		758B585E176BB1DE0069968F /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 758B585D176BB1DE0069968F /* MessageUI.framework */; };
 		758F2D8217669D6800102AF1 /* libqrencoder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 75AF36D7176675D3004AA912 /* libqrencoder.a */; };
 		758FBDC917E1D56C00D341BF /* icon80.png in Resources */ = {isa = PBXBuildFile; fileRef = 758FBDC817E1D56C00D341BF /* icon80.png */; };
@@ -738,7 +738,7 @@
 		759CB240175F03BF00AFA559 /* BRAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759CB23F175F03BF00AFA559 /* BRAmountViewController.m */; };
 		75A6ECE317BD464A0043E52D /* ZNZincMnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = 75A6ECE217BD464A0043E52D /* ZNZincMnemonic.m */; };
 		75AC8160180DFBC700ACA0C9 /* ZNBloomFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 75AC815F180DFBC700ACA0C9 /* ZNBloomFilter.m */; };
-		75AC8163181385D100ACA0C9 /* ZNMerkleBlockEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 75AC8162181385D100ACA0C9 /* ZNMerkleBlockEntity.m */; };
+		75AC8163181385D100ACA0C9 /* BRMerkleBlockEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 75AC8162181385D100ACA0C9 /* BRMerkleBlockEntity.m */; };
 		75ADF1FE17B0EC0D006B1336 /* deletetoleft-blue.png in Resources */ = {isa = PBXBuildFile; fileRef = 75ADF1FD17B0EC0C006B1336 /* deletetoleft-blue.png */; };
 		75AF36D8176675D3004AA912 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		75AF36EC17667E43004AA912 /* DataMatrix.mm in Sources */ = {isa = PBXBuildFile; fileRef = 75AF36E517667E43004AA912 /* DataMatrix.mm */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -780,7 +780,7 @@
 		75F17C4417455F2D00D9F228 /* deletetoleft-inv.png in Resources */ = {isa = PBXBuildFile; fileRef = 75F17C4217455F2D00D9F228 /* deletetoleft-inv.png */; };
 		75F1B85D17C6CC0B00680E1B /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75F1B85B17C6CC0B00680E1B /* CoreData.framework */; };
 		75F1B85E17C6CC0B00680E1B /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75F1B85C17C6CC0B00680E1B /* CoreVideo.framework */; };
-		75F1B86917C7186E00680E1B /* ZNTransactionEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F1B86817C7186E00680E1B /* ZNTransactionEntity.m */; };
+		75F1B86917C7186E00680E1B /* BRTransactionEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F1B86817C7186E00680E1B /* BRTransactionEntity.m */; };
 		75F1B87917C7356B00680E1B /* NSManagedObject+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F1B87817C7356B00680E1B /* NSManagedObject+Utils.m */; };
 		75F1B87D17C7506200680E1B /* BreadWallet.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 75F1B87B17C7506100680E1B /* BreadWallet.xcdatamodeld */; };
 		75F4D4B417E636860007500D /* BRRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F4D4B317E636860007500D /* BRRootViewController.m */; };
@@ -1750,8 +1750,8 @@
 		753A4148178E070C003B938D /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		753E7CD1180155B400FC6BA7 /* ZNPeerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNPeerManager.h; sourceTree = "<group>"; };
 		753E7CD2180155B400FC6BA7 /* ZNPeerManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNPeerManager.m; sourceTree = "<group>"; };
-		753E7CD71802648700FC6BA7 /* ZNPeerEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNPeerEntity.h; sourceTree = "<group>"; };
-		753E7CD81802648700FC6BA7 /* ZNPeerEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNPeerEntity.m; sourceTree = "<group>"; };
+		753E7CD71802648700FC6BA7 /* BRPeerEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRPeerEntity.h; sourceTree = "<group>"; };
+		753E7CD81802648700FC6BA7 /* BRPeerEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPeerEntity.m; sourceTree = "<group>"; };
 		753E7CDA180387A600FC6BA7 /* FixedPeers.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = FixedPeers.plist; sourceTree = "<group>"; };
 		753E7CDF18053B3F00FC6BA7 /* ZNPeer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNPeer.h; sourceTree = "<group>"; };
 		753E7CE018053B3F00FC6BA7 /* ZNPeer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNPeer.m; sourceTree = "<group>"; };
@@ -1768,12 +1768,12 @@
 		757B1DD117AE191400AA6CAB /* zincwallet-white@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "zincwallet-white@2x.png"; sourceTree = "<group>"; };
 		757B1DD317AEEB1600AA6CAB /* cameraguide-blue-small@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cameraguide-blue-small@2x.png"; sourceTree = "<group>"; };
 		757B1DD817AEFCAD00AA6CAB /* wallpaper-default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "wallpaper-default@2x.png"; sourceTree = "<group>"; };
-		757BFF2B17CBD0D700D1C4AF /* ZNAddressEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNAddressEntity.h; sourceTree = "<group>"; };
-		757BFF2C17CBD0D700D1C4AF /* ZNAddressEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNAddressEntity.m; sourceTree = "<group>"; };
-		757BFF2E17CC1A9100D1C4AF /* ZNTxInputEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNTxInputEntity.h; sourceTree = "<group>"; };
-		757BFF2F17CC1A9100D1C4AF /* ZNTxInputEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNTxInputEntity.m; sourceTree = "<group>"; };
-		757BFF3117CC1AA800D1C4AF /* ZNTxOutputEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNTxOutputEntity.h; sourceTree = "<group>"; };
-		757BFF3217CC1AA800D1C4AF /* ZNTxOutputEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNTxOutputEntity.m; sourceTree = "<group>"; };
+		757BFF2B17CBD0D700D1C4AF /* BRAddressEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAddressEntity.h; sourceTree = "<group>"; };
+		757BFF2C17CBD0D700D1C4AF /* BRAddressEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRAddressEntity.m; sourceTree = "<group>"; };
+		757BFF2E17CC1A9100D1C4AF /* BRTxInputEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRTxInputEntity.h; sourceTree = "<group>"; };
+		757BFF2F17CC1A9100D1C4AF /* BRTxInputEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTxInputEntity.m; sourceTree = "<group>"; };
+		757BFF3117CC1AA800D1C4AF /* BRTxOutputEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRTxOutputEntity.h; sourceTree = "<group>"; };
+		757BFF3217CC1AA800D1C4AF /* BRTxOutputEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTxOutputEntity.m; sourceTree = "<group>"; };
 		758B585D176BB1DE0069968F /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		758FBDC717E1D33100D341BF /* icon120.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon120.png; path = ../icon120.png; sourceTree = "<group>"; };
 		758FBDC817E1D56C00D341BF /* icon80.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon80.png; sourceTree = SOURCE_ROOT; };
@@ -1801,8 +1801,8 @@
 		75A6ECE517BD4CF60043E52D /* ZNMnemonic.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNMnemonic.h; sourceTree = "<group>"; };
 		75AC815E180DFBC700ACA0C9 /* ZNBloomFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNBloomFilter.h; sourceTree = "<group>"; };
 		75AC815F180DFBC700ACA0C9 /* ZNBloomFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNBloomFilter.m; sourceTree = "<group>"; };
-		75AC8161181385D100ACA0C9 /* ZNMerkleBlockEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNMerkleBlockEntity.h; sourceTree = "<group>"; };
-		75AC8162181385D100ACA0C9 /* ZNMerkleBlockEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNMerkleBlockEntity.m; sourceTree = "<group>"; };
+		75AC8161181385D100ACA0C9 /* BRMerkleBlockEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRMerkleBlockEntity.h; sourceTree = "<group>"; };
+		75AC8162181385D100ACA0C9 /* BRMerkleBlockEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRMerkleBlockEntity.m; sourceTree = "<group>"; };
 		75ADF1FD17B0EC0C006B1336 /* deletetoleft-blue.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "deletetoleft-blue.png"; sourceTree = "<group>"; };
 		75AF36D7176675D3004AA912 /* libqrencoder.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libqrencoder.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		75AF36E417667E43004AA912 /* DataMatrix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataMatrix.h; sourceTree = "<group>"; };
@@ -1860,8 +1860,8 @@
 		75F17C4217455F2D00D9F228 /* deletetoleft-inv.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "deletetoleft-inv.png"; sourceTree = "<group>"; };
 		75F1B85B17C6CC0B00680E1B /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		75F1B85C17C6CC0B00680E1B /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
-		75F1B86717C7186E00680E1B /* ZNTransactionEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNTransactionEntity.h; sourceTree = "<group>"; };
-		75F1B86817C7186E00680E1B /* ZNTransactionEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNTransactionEntity.m; sourceTree = "<group>"; };
+		75F1B86717C7186E00680E1B /* BRTransactionEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRTransactionEntity.h; sourceTree = "<group>"; };
+		75F1B86817C7186E00680E1B /* BRTransactionEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTransactionEntity.m; sourceTree = "<group>"; };
 		75F1B87717C7356B00680E1B /* NSManagedObject+Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSManagedObject+Utils.h"; sourceTree = "<group>"; };
 		75F1B87817C7356B00680E1B /* NSManagedObject+Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSManagedObject+Utils.m"; sourceTree = "<group>"; };
 		75F1B87C17C7506200680E1B /* BreadWallet.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = BreadWallet.xcdatamodel; sourceTree = "<group>"; };
@@ -3500,18 +3500,18 @@
 		75F1B86017C7164300680E1B /* Entities */ = {
 			isa = PBXGroup;
 			children = (
-				757BFF2B17CBD0D700D1C4AF /* ZNAddressEntity.h */,
-				757BFF2C17CBD0D700D1C4AF /* ZNAddressEntity.m */,
-				75F1B86717C7186E00680E1B /* ZNTransactionEntity.h */,
-				75F1B86817C7186E00680E1B /* ZNTransactionEntity.m */,
-				757BFF2E17CC1A9100D1C4AF /* ZNTxInputEntity.h */,
-				757BFF2F17CC1A9100D1C4AF /* ZNTxInputEntity.m */,
-				757BFF3117CC1AA800D1C4AF /* ZNTxOutputEntity.h */,
-				757BFF3217CC1AA800D1C4AF /* ZNTxOutputEntity.m */,
-				753E7CD71802648700FC6BA7 /* ZNPeerEntity.h */,
-				753E7CD81802648700FC6BA7 /* ZNPeerEntity.m */,
-				75AC8161181385D100ACA0C9 /* ZNMerkleBlockEntity.h */,
-				75AC8162181385D100ACA0C9 /* ZNMerkleBlockEntity.m */,
+				757BFF2B17CBD0D700D1C4AF /* BRAddressEntity.h */,
+				757BFF2C17CBD0D700D1C4AF /* BRAddressEntity.m */,
+				75F1B86717C7186E00680E1B /* BRTransactionEntity.h */,
+				75F1B86817C7186E00680E1B /* BRTransactionEntity.m */,
+				757BFF2E17CC1A9100D1C4AF /* BRTxInputEntity.h */,
+				757BFF2F17CC1A9100D1C4AF /* BRTxInputEntity.m */,
+				757BFF3117CC1AA800D1C4AF /* BRTxOutputEntity.h */,
+				757BFF3217CC1AA800D1C4AF /* BRTxOutputEntity.m */,
+				753E7CD71802648700FC6BA7 /* BRPeerEntity.h */,
+				753E7CD81802648700FC6BA7 /* BRPeerEntity.m */,
+				75AC8161181385D100ACA0C9 /* BRMerkleBlockEntity.h */,
+				75AC8162181385D100ACA0C9 /* BRMerkleBlockEntity.m */,
 			);
 			name = Entities;
 			sourceTree = "<group>";
@@ -4622,19 +4622,19 @@
 				847C2302179A1FD600163CEF /* ZNElectrumMnemonic.m in Sources */,
 				75C852FA18CE8A17008E1431 /* BRBubbleView.m in Sources */,
 				7597028417E15B5600CDC14A /* BRStoryboardSegue.m in Sources */,
-				753E7CD91802648700FC6BA7 /* ZNPeerEntity.m in Sources */,
+				753E7CD91802648700FC6BA7 /* BRPeerEntity.m in Sources */,
 				75A6ECE317BD464A0043E52D /* ZNZincMnemonic.m in Sources */,
-				75F1B86917C7186E00680E1B /* ZNTransactionEntity.m in Sources */,
+				75F1B86917C7186E00680E1B /* BRTransactionEntity.m in Sources */,
 				753E7CD61801628C00FC6BA7 /* ZNPeerManager.m in Sources */,
 				75F1B87917C7356B00680E1B /* NSManagedObject+Utils.m in Sources */,
 				750A8EAB18F5E5C500250364 /* ZNKey+BIP38.m in Sources */,
 				75F1B87D17C7506200680E1B /* BreadWallet.xcdatamodeld in Sources */,
 				75204DFB18DD0D93002FA28C /* ZNBIP39Mnemonic.m in Sources */,
-				757BFF2D17CBD0D700D1C4AF /* ZNAddressEntity.m in Sources */,
-				75AC8163181385D100ACA0C9 /* ZNMerkleBlockEntity.m in Sources */,
-				757BFF3017CC1A9100D1C4AF /* ZNTxInputEntity.m in Sources */,
+				757BFF2D17CBD0D700D1C4AF /* BRAddressEntity.m in Sources */,
+				75AC8163181385D100ACA0C9 /* BRMerkleBlockEntity.m in Sources */,
+				757BFF3017CC1A9100D1C4AF /* BRTxInputEntity.m in Sources */,
 				75AC8160180DFBC700ACA0C9 /* ZNBloomFilter.m in Sources */,
-				757BFF3317CC1AA800D1C4AF /* ZNTxOutputEntity.m in Sources */,
+				757BFF3317CC1AA800D1C4AF /* BRTxOutputEntity.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

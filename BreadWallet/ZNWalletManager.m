@@ -32,8 +32,8 @@
 #import "ZNBIP39Mnemonic.h"
 #import "ZNPeer.h"
 #import "ZNTransaction.h"
-#import "ZNTransactionEntity.h"
-#import "ZNAddressEntity.h"
+#import "BRTransactionEntity.h"
+#import "BRAddressEntity.h"
 #import "NSString+Base58.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSManagedObject+Utils.h"
@@ -187,8 +187,8 @@ static NSData *getKeychainData(NSString *key)
     if ([seed isEqual:self.seed]) return;
 
     [[NSManagedObject context] performBlockAndWait:^{
-        [ZNAddressEntity deleteObjects:[ZNAddressEntity allObjects]];
-        [ZNTransactionEntity deleteObjects:[ZNTransactionEntity allObjects]];
+        [BRAddressEntity deleteObjects:[BRAddressEntity allObjects]];
+        [BRTransactionEntity deleteObjects:[BRTransactionEntity allObjects]];
         [NSManagedObject saveContext];
     }];
 
