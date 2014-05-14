@@ -1,8 +1,8 @@
 //
-//  ZNAmountViewController.h
-//  ZincWallet
+//  BRReceiveViewController.h
+//  BreadWallet
 //
-//  Created by Aaron Voisine on 6/4/13.
+//  Created by Aaron Voisine on 5/8/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,19 +24,12 @@
 //  THE SOFTWARE.
 
 #import <UIKit/UIKit.h>
+//#import <GameKit/GameKit.h>
+#import <MessageUI/MessageUI.h>
 
-@class ZNAmountViewController, ZNPaymentRequest;
+@interface BRReceiveViewController : UIViewController<UIActionSheetDelegate, //GKSessionDelegate,
+MFMessageComposeViewControllerDelegate, MFMailComposeViewControllerDelegate>
 
-@protocol ZNAmountViewControllerDelegate <NSObject>
-@required
-
-- (void)amountViewController:(ZNAmountViewController *)amountViewController selectedAmount:(uint64_t)amount;
-
-@end
-
-@interface ZNAmountViewController : UIViewController<UITextFieldDelegate, UIAlertViewDelegate>
-
-@property (nonatomic, assign) id<ZNAmountViewControllerDelegate> delegate;
-@property (nonatomic, strong) ZNPaymentRequest *request;
+- (BOOL)hideTips;
 
 @end

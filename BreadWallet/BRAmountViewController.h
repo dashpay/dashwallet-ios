@@ -1,8 +1,8 @@
 //
-//  ZNFirstViewController.h
-//  ZincWallet
+//  BRAmountViewController.h
+//  BreadWallet
 //
-//  Created by Aaron Voisine on 5/8/13.
+//  Created by Aaron Voisine on 6/4/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,13 +24,19 @@
 //  THE SOFTWARE.
 
 #import <UIKit/UIKit.h>
-//#import <GameKit/GameKit.h>
-#import "ZNAmountViewController.h"
-#import "ZBarSDK.h"
 
-@interface ZNPayViewController : UIViewController<UIAlertViewDelegate, ZBarReaderDelegate,
-ZNAmountViewControllerDelegate>//, GKSessionDelegate>
+@class BRAmountViewController, ZNPaymentRequest;
 
-- (BOOL)hideTips;
+@protocol ZNAmountViewControllerDelegate <NSObject>
+@required
+
+- (void)amountViewController:(BRAmountViewController *)amountViewController selectedAmount:(uint64_t)amount;
+
+@end
+
+@interface BRAmountViewController : UIViewController<UITextFieldDelegate, UIAlertViewDelegate>
+
+@property (nonatomic, assign) id<ZNAmountViewControllerDelegate> delegate;
+@property (nonatomic, strong) ZNPaymentRequest *request;
 
 @end

@@ -1,6 +1,6 @@
 //
-//  ZNRestoreViewController.m
-//  ZincWallet
+//  BRRestoreViewController.m
+//  BreadWallet
 //
 //  Created by Aaron Voisine on 6/13/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
@@ -23,7 +23,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "ZNRestoreViewController.h"
+#import "BRRestoreViewController.h"
 #import "ZNWalletManager.h"
 #import "NSString+Base58.h"
 #import "ZNKeySequence.h"
@@ -36,7 +36,7 @@
 
 #define PHRASE_LENGTH 12
 
-@interface ZNRestoreViewController ()
+@interface BRRestoreViewController ()
 
 @property (nonatomic, strong) IBOutlet UITextView *textView;
 @property (nonatomic, strong) IBOutlet UILabel *label;
@@ -60,7 +60,7 @@ static NSString *normalize_phrase(NSString *phrase)
     return s;
 }
 
-@implementation ZNRestoreViewController
+@implementation BRRestoreViewController
 
 - (void)viewDidLoad
 {

@@ -1,8 +1,8 @@
 //
-//  ZNWelcomeViewController.h
-//  ZincWallet
+//  BRSendViewController.h
+//  BreadWallet
 //
-//  Created by Aaron Voisine on 7/8/13.
+//  Created by Aaron Voisine on 5/8/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,7 +24,13 @@
 //  THE SOFTWARE.
 
 #import <UIKit/UIKit.h>
+//#import <GameKit/GameKit.h>
+#import "BRAmountViewController.h"
+#import "ZBarSDK.h"
 
-@interface ZNWelcomeViewController : UIViewController<UINavigationControllerDelegate>
+@interface BRSendViewController : UIViewController<UIAlertViewDelegate, ZBarReaderDelegate,
+ZNAmountViewControllerDelegate>//, GKSessionDelegate>
+
+- (BOOL)hideTips;
 
 @end

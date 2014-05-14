@@ -1,6 +1,6 @@
 //
-//  ZNWelcomeViewController.m
-//  ZincWallet
+//  BRWelcomeViewController.m
+//  BreadWallet
 //
 //  Created by Aaron Voisine on 7/8/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
@@ -23,14 +23,14 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "ZNWelcomeViewController.h"
+#import "BRWelcomeViewController.h"
 #import "ZNWalletManager.h"
 
 #define WALLPAPER_ANIMATION_DURATION 30.0
 #define WALLPAPER_ANIMATION_X 240.0
 #define WALLPAPER_ANIMATION_Y 0.0
 
-@interface ZNWelcomeViewController ()
+@interface BRWelcomeViewController ()
 
 @property (nonatomic, assign) CGPoint logoStart, walletStart, restoreStart, paralaxStart, wallpaperStart;
 @property (nonatomic, assign) BOOL hasAppeared, animating;
@@ -42,7 +42,7 @@
 
 @end
 
-@implementation ZNWelcomeViewController
+@implementation BRWelcomeViewController
 
 - (void)viewDidLoad
 {

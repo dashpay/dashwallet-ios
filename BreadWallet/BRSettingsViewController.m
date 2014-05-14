@@ -1,6 +1,6 @@
 //
-//  ZNSettingsViewController.m
-//  ZincWallet
+//  BRSettingsViewController.m
+//  BreadWallet
 //
 //  Created by Aaron Voisine on 6/11/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
@@ -23,8 +23,8 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "ZNSettingsViewController.h"
-#import "ZNSeedViewController.h"
+#import "BRSettingsViewController.h"
+#import "BRSeedViewController.h"
 #import "ZNWalletManager.h"
 #import "ZNWallet.h"
 #import "ZNPeerManager.h"
@@ -34,7 +34,7 @@
 
 #define TRANSACTION_CELL_HEIGHT 75
 
-@interface ZNSettingsViewController ()
+@interface BRSettingsViewController ()
 
 @property (nonatomic, strong) NSArray *transactions;
 @property (nonatomic, strong) id balanceObserver, txStatusObserver;
@@ -43,7 +43,7 @@
 
 @end
 
-@implementation ZNSettingsViewController
+@implementation BRSettingsViewController
 
 //TODO: need settings for denomination (BTC, mBTC or uBTC), local currency, and exchange rate source
 //TODO: only show most recent 10-20 transactions and have a separate page for the rest with section headers for each day

@@ -1,8 +1,8 @@
 //
-//  ZNReceiveViewController.h
-//  ZincWallet
+//  BRRestoreViewController.h
+//  BreadWallet
 //
-//  Created by Aaron Voisine on 5/8/13.
+//  Created by Aaron Voisine on 6/13/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,12 +24,7 @@
 //  THE SOFTWARE.
 
 #import <UIKit/UIKit.h>
-//#import <GameKit/GameKit.h>
-#import <MessageUI/MessageUI.h>
 
-@interface ZNReceiveViewController : UIViewController<UIActionSheetDelegate, //GKSessionDelegate,
-MFMessageComposeViewControllerDelegate, MFMailComposeViewControllerDelegate>
-
-- (BOOL)hideTips;
+@interface BRRestoreViewController : UIViewController<UITextViewDelegate, UIActionSheetDelegate>
 
 @end

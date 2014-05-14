@@ -1,6 +1,6 @@
 //
 //  NSString+Base58.mm
-//  ZincWallet
+//  BreadWallet
 //
 //  Created by Aaron Voisine on 5/13/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>

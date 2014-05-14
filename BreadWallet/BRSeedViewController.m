@@ -1,6 +1,6 @@
 //
-//  ZNSeedViewController.m
-//  ZincWallet
+//  BRSeedViewController.m
+//  BreadWallet
 //
 //  Created by Aaron Voisine on 6/12/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
@@ -23,14 +23,14 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "ZNSeedViewController.h"
+#import "BRSeedViewController.h"
 #import "ZNWalletManager.h"
 #import "ZNPeerManager.h"
 #import "ZNBIP32Sequence.h"
 
 #define LABEL_MARGIN 20
 
-@interface ZNSeedViewController ()
+@interface BRSeedViewController ()
 
 //TODO: create a secure version of UILabel and use it for seedLabel, but make sure there's an accessibility work around
 @property (nonatomic, strong) IBOutlet UILabel *seedLabel, *warningLabel;
@@ -41,7 +41,7 @@
 
 @end
 
-@implementation ZNSeedViewController
+@implementation BRSeedViewController
 
 - (void)viewDidLoad
 {

@@ -24,11 +24,11 @@
 //  THE SOFTWARE.
 
 #import <UIKit/UIKit.h>
-#import "ZNAppDelegate.h"
+#import "BRAppDelegate.h"
 
 int main(int argc, char *argv[])
 {
     @autoreleasepool {
-        return UIApplicationMain(argc, argv, nil, NSStringFromClass([ZNAppDelegate class]));
+        return UIApplicationMain(argc, argv, nil, NSStringFromClass([BRAppDelegate class]));
     }
 }

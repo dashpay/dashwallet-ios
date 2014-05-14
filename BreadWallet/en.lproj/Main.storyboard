@@ -5,10 +5,10 @@
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3733"/>
     </dependencies>
     <scenes>
-        <!--Main View Controller - First-->
+        <!--Root View Controller - First-->
         <scene sceneID="11">
             <objects>
-                <viewController title="First" automaticallyAdjustsScrollViewInsets="NO" id="2" customClass="ZNMainViewController" sceneMemberID="viewController">
+                <viewController title="First" automaticallyAdjustsScrollViewInsets="NO" id="2" customClass="BRRootViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="16">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -83,7 +83,7 @@
         <!--Settings View Controller - ƀ 0.00-->
         <scene sceneID="IWH-Ws-QLh">
             <objects>
-                <tableViewController id="ONk-2h-AQR" customClass="ZNSettingsViewController" sceneMemberID="viewController">
+                <tableViewController id="ONk-2h-AQR" customClass="BRSettingsViewController" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" directionalLockEnabled="YES" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="SJ8-DJ-3aR">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -326,7 +326,7 @@ https://github.com/voisine/zincwallet</string>
         <!--Welcome View Controller-->
         <scene sceneID="cBw-L4-R3S">
             <objects>
-                <viewController id="QxK-Kh-aHV" customClass="ZNWelcomeViewController" sceneMemberID="viewController">
+                <viewController id="QxK-Kh-aHV" customClass="BRWelcomeViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="kX6-xW-Dgi">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -477,7 +477,7 @@ https://github.com/voisine/zincwallet</string>
         <!--Restore View Controller - backup phrase:-->
         <scene sceneID="eyO-J6-B3x">
             <objects>
-                <viewController id="V5i-az-h7s" customClass="ZNRestoreViewController" sceneMemberID="viewController">
+                <viewController id="V5i-az-h7s" customClass="BRRestoreViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="0Vw-iJ-oHv">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -548,7 +548,7 @@ https://github.com/voisine/zincwallet</string>
         <!--Receive View Controller-->
         <scene sceneID="8v2-cF-YM5">
             <objects>
-                <viewController storyboardIdentifier="ZNReceiveViewController" automaticallyAdjustsScrollViewInsets="NO" id="toP-Vb-grN" customClass="ZNReceiveViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="BRReceiveViewController" automaticallyAdjustsScrollViewInsets="NO" id="toP-Vb-grN" customClass="BRReceiveViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Fln-In-Cdh">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -657,7 +657,7 @@ https://github.com/voisine/zincwallet</string>
         <!--Amount View Controller - ƀ 0.00-->
         <scene sceneID="6VG-zW-rjY">
             <objects>
-                <viewController storyboardIdentifier="ZNAmountViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="asW-9a-XhX" customClass="ZNAmountViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ZNAmountViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="asW-9a-XhX" customClass="BRAmountViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="eUy-Ub-KH0">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -1080,7 +1080,7 @@ https://github.com/voisine/zincwallet</string>
         <!--Seed View Controller-->
         <scene sceneID="YlC-6d-aqm">
             <objects>
-                <viewController storyboardIdentifier="ZNSeedViewController" id="YDc-aF-His" customClass="ZNSeedViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ZNSeedViewController" id="YDc-aF-His" customClass="BRSeedViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="DI1-iM-mIf">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -1196,10 +1196,10 @@ https://github.com/voisine/zincwallet</string>
             </objects>
             <point key="canvasLocation" x="2090" y="1008"/>
         </scene>
-        <!--Pay View Controller-->
+        <!--Send View Controller-->
         <scene sceneID="ehz-nf-5ca">
             <objects>
-                <viewController storyboardIdentifier="ZNPayViewController" id="Th9-g2-TJH" customClass="ZNPayViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="BRSendViewController" id="Th9-g2-TJH" customClass="BRSendViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="rMm-kR-S3A">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -1270,7 +1270,7 @@ https://github.com/voisine/zincwallet</string>
         <!--Restore View Controller - confirm-->
         <scene sceneID="nsy-lO-eMP">
             <objects>
-                <viewController id="yia-gn-YeR" customClass="ZNRestoreViewController" sceneMemberID="viewController">
+                <viewController id="yia-gn-YeR" customClass="BRRestoreViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="7Xr-Fc-cgr">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>

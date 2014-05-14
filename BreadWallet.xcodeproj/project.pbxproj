@@ -23,7 +23,7 @@
 /* Begin PBXBuildFile section */
 		7505A9FA18177DC400419043 /* ZNMerkleBlock.m in Sources */ = {isa = PBXBuildFile; fileRef = 7505A9F918177DC400419043 /* ZNMerkleBlock.m */; };
 		750A8EAB18F5E5C500250364 /* ZNKey+BIP38.m in Sources */ = {isa = PBXBuildFile; fileRef = 750A8EAA18F5E5C500250364 /* ZNKey+BIP38.m */; };
-		75183B88178B4ABE0032F365 /* ZNWelcomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75183B87178B4ABE0032F365 /* ZNWelcomeViewController.m */; };
+		75183B88178B4ABE0032F365 /* BRWelcomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75183B87178B4ABE0032F365 /* BRWelcomeViewController.m */; };
 		751E809F1789797500E3CFB2 /* gear@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 751E809D1789797500E3CFB2 /* gear@2x.png */; };
 		751E80A01789797500E3CFB2 /* refresh@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 751E809E1789797500E3CFB2 /* refresh@2x.png */; };
 		75204DF818DD0C40002FA28C /* BIP39EnglishWords.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75204DF718DD0C40002FA28C /* BIP39EnglishWords.plist */; };
@@ -693,9 +693,9 @@
 		752C38391742AE200033F636 /* v3_utl.c in Sources */ = {isa = PBXBuildFile; fileRef = 752C352E1742AE1E0033F636 /* v3_utl.c */; };
 		752C383B1742AE200033F636 /* v3err.c in Sources */ = {isa = PBXBuildFile; fileRef = 752C35301742AE1E0033F636 /* v3err.c */; };
 		752C38421742BB270033F636 /* v3_conf.c in Sources */ = {isa = PBXBuildFile; fileRef = 752C38411742BB270033F636 /* v3_conf.c */; };
-		753007EC17684A8C00C7BB60 /* ZNSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007EB17684A8C00C7BB60 /* ZNSettingsViewController.m */; };
-		753007EF1769899B00C7BB60 /* ZNSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007EE1769899B00C7BB60 /* ZNSeedViewController.m */; };
-		753007F2176A48DA00C7BB60 /* ZNRestoreViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007F1176A48DA00C7BB60 /* ZNRestoreViewController.m */; };
+		753007EC17684A8C00C7BB60 /* BRSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007EB17684A8C00C7BB60 /* BRSettingsViewController.m */; };
+		753007EF1769899B00C7BB60 /* BRSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007EE1769899B00C7BB60 /* BRSeedViewController.m */; };
+		753007F2176A48DA00C7BB60 /* BRRestoreViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 753007F1176A48DA00C7BB60 /* BRRestoreViewController.m */; };
 		7535CCDF176BE3D2007E29C5 /* ZNButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 7535CCDE176BE3D2007E29C5 /* ZNButton.m */; };
 		753A27151906027400C92961 /* ZNPaymentProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 753A27141906027400C92961 /* ZNPaymentProtocol.m */; };
 		753A4149178E070C003B938D /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 753A4148178E070C003B938D /* AudioToolbox.framework */; };
@@ -735,7 +735,7 @@
 		759CB239175E8AFE00AFA559 /* libiconv.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB238175E8AFE00AFA559 /* libiconv.dylib */; };
 		759CB23B175E8D4900AFA559 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB23A175E8D4900AFA559 /* AVFoundation.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		759CB23D175E8D6300AFA559 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 759CB23C175E8D6300AFA559 /* CoreMedia.framework */; settings = {ATTRIBUTES = (Required, ); }; };
-		759CB240175F03BF00AFA559 /* ZNAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759CB23F175F03BF00AFA559 /* ZNAmountViewController.m */; };
+		759CB240175F03BF00AFA559 /* BRAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759CB23F175F03BF00AFA559 /* BRAmountViewController.m */; };
 		75A6ECE317BD464A0043E52D /* ZNZincMnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = 75A6ECE217BD464A0043E52D /* ZNZincMnemonic.m */; };
 		75AC8160180DFBC700ACA0C9 /* ZNBloomFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 75AC815F180DFBC700ACA0C9 /* ZNBloomFilter.m */; };
 		75AC8163181385D100ACA0C9 /* ZNMerkleBlockEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 75AC8162181385D100ACA0C9 /* ZNMerkleBlockEntity.m */; };
@@ -760,13 +760,13 @@
 		75D8F386173ABE3C0080D95E /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F385173ABE3C0080D95E /* CoreGraphics.framework */; };
 		75D8F38C173ABE3C0080D95E /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F38A173ABE3C0080D95E /* InfoPlist.strings */; };
 		75D8F38E173ABE3C0080D95E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F38D173ABE3C0080D95E /* main.m */; };
-		75D8F392173ABE3C0080D95E /* ZNAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F391173ABE3C0080D95E /* ZNAppDelegate.m */; };
+		75D8F392173ABE3C0080D95E /* BRAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F391173ABE3C0080D95E /* BRAppDelegate.m */; };
 		75D8F394173ABE3C0080D95E /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F393173ABE3C0080D95E /* Default.png */; };
 		75D8F396173ABE3C0080D95E /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F395173ABE3C0080D95E /* Default@2x.png */; };
 		75D8F398173ABE3C0080D95E /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F397173ABE3C0080D95E /* Default-568h@2x.png */; };
 		75D8F39B173ABE3C0080D95E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F399173ABE3C0080D95E /* Main.storyboard */; };
-		75D8F3A1173ABE3C0080D95E /* ZNPayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3A0173ABE3C0080D95E /* ZNPayViewController.m */; };
-		75D8F3A8173ABE3D0080D95E /* ZNReceiveViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3A7173ABE3D0080D95E /* ZNReceiveViewController.mm */; };
+		75D8F3A1173ABE3C0080D95E /* BRSendViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3A0173ABE3C0080D95E /* BRSendViewController.m */; };
+		75D8F3A8173ABE3D0080D95E /* BRReceiveViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 75D8F3A7173ABE3D0080D95E /* BRReceiveViewController.mm */; };
 		75D8F3B5173ABE3D0080D95E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F381173ABE3C0080D95E /* UIKit.framework */; };
 		75D8F3B6173ABE3D0080D95E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		75D8F3BE173ABE3D0080D95E /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 75D8F3BC173ABE3D0080D95E /* InfoPlist.strings */; };
@@ -783,7 +783,7 @@
 		75F1B86917C7186E00680E1B /* ZNTransactionEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F1B86817C7186E00680E1B /* ZNTransactionEntity.m */; };
 		75F1B87917C7356B00680E1B /* NSManagedObject+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F1B87817C7356B00680E1B /* NSManagedObject+Utils.m */; };
 		75F1B87D17C7506200680E1B /* BreadWallet.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 75F1B87B17C7506100680E1B /* BreadWallet.xcdatamodeld */; };
-		75F4D4B417E636860007500D /* ZNMainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F4D4B317E636860007500D /* ZNMainViewController.m */; };
+		75F4D4B417E636860007500D /* BRRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F4D4B317E636860007500D /* BRRootViewController.m */; };
 		75F9D3E6179F451F00C28B49 /* button-bg-blue-pressed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 75F9D3E5179F451E00C28B49 /* button-bg-blue-pressed@2x.png */; };
 		75FD9C0317664F3000307894 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D8F383173ABE3C0080D95E /* Foundation.framework */; };
 		75FD9C6817664FE700307894 /* config.c in Sources */ = {isa = PBXBuildFile; fileRef = 75FD9C0F17664FE600307894 /* config.c */; };
@@ -935,8 +935,8 @@
 		7505A9F918177DC400419043 /* ZNMerkleBlock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNMerkleBlock.m; sourceTree = "<group>"; };
 		750A8EA918F5E5C500250364 /* ZNKey+BIP38.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ZNKey+BIP38.h"; sourceTree = "<group>"; };
 		750A8EAA18F5E5C500250364 /* ZNKey+BIP38.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ZNKey+BIP38.m"; sourceTree = "<group>"; };
-		75183B86178B4ABE0032F365 /* ZNWelcomeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNWelcomeViewController.h; sourceTree = "<group>"; };
-		75183B87178B4ABE0032F365 /* ZNWelcomeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNWelcomeViewController.m; sourceTree = "<group>"; };
+		75183B86178B4ABE0032F365 /* BRWelcomeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRWelcomeViewController.h; sourceTree = "<group>"; };
+		75183B87178B4ABE0032F365 /* BRWelcomeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRWelcomeViewController.m; sourceTree = "<group>"; };
 		751E809D1789797500E3CFB2 /* gear@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "gear@2x.png"; sourceTree = "<group>"; };
 		751E809E1789797500E3CFB2 /* refresh@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "refresh@2x.png"; sourceTree = "<group>"; };
 		75204DF718DD0C40002FA28C /* BIP39EnglishWords.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = BIP39EnglishWords.plist; sourceTree = "<group>"; };
@@ -1737,12 +1737,12 @@
 		752C35301742AE1E0033F636 /* v3err.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = v3err.c; sourceTree = "<group>"; };
 		752C35321742AE1E0033F636 /* x509v3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x509v3.h; sourceTree = "<group>"; };
 		752C38411742BB270033F636 /* v3_conf.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = v3_conf.c; sourceTree = "<group>"; };
-		753007EA17684A8C00C7BB60 /* ZNSettingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNSettingsViewController.h; sourceTree = "<group>"; };
-		753007EB17684A8C00C7BB60 /* ZNSettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNSettingsViewController.m; sourceTree = "<group>"; };
-		753007ED1769899B00C7BB60 /* ZNSeedViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNSeedViewController.h; sourceTree = "<group>"; };
-		753007EE1769899B00C7BB60 /* ZNSeedViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNSeedViewController.m; sourceTree = "<group>"; };
-		753007F0176A48DA00C7BB60 /* ZNRestoreViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNRestoreViewController.h; sourceTree = "<group>"; };
-		753007F1176A48DA00C7BB60 /* ZNRestoreViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNRestoreViewController.m; sourceTree = "<group>"; };
+		753007EA17684A8C00C7BB60 /* BRSettingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRSettingsViewController.h; sourceTree = "<group>"; };
+		753007EB17684A8C00C7BB60 /* BRSettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRSettingsViewController.m; sourceTree = "<group>"; };
+		753007ED1769899B00C7BB60 /* BRSeedViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRSeedViewController.h; sourceTree = "<group>"; };
+		753007EE1769899B00C7BB60 /* BRSeedViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRSeedViewController.m; sourceTree = "<group>"; };
+		753007F0176A48DA00C7BB60 /* BRRestoreViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRRestoreViewController.h; sourceTree = "<group>"; };
+		753007F1176A48DA00C7BB60 /* BRRestoreViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRRestoreViewController.m; sourceTree = "<group>"; };
 		7535CCDD176BE3D2007E29C5 /* ZNButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNButton.h; sourceTree = "<group>"; };
 		7535CCDE176BE3D2007E29C5 /* ZNButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNButton.m; sourceTree = "<group>"; };
 		753A27131906027400C92961 /* ZNPaymentProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNPaymentProtocol.h; sourceTree = "<group>"; };
@@ -1794,8 +1794,8 @@
 		759CB238175E8AFE00AFA559 /* libiconv.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.dylib; path = usr/lib/libiconv.dylib; sourceTree = SDKROOT; };
 		759CB23A175E8D4900AFA559 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		759CB23C175E8D6300AFA559 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
-		759CB23E175F03BF00AFA559 /* ZNAmountViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNAmountViewController.h; sourceTree = "<group>"; };
-		759CB23F175F03BF00AFA559 /* ZNAmountViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNAmountViewController.m; sourceTree = "<group>"; };
+		759CB23E175F03BF00AFA559 /* BRAmountViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAmountViewController.h; sourceTree = "<group>"; };
+		759CB23F175F03BF00AFA559 /* BRAmountViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRAmountViewController.m; sourceTree = "<group>"; };
 		75A6ECE117BD464A0043E52D /* ZNZincMnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNZincMnemonic.h; sourceTree = "<group>"; };
 		75A6ECE217BD464A0043E52D /* ZNZincMnemonic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNZincMnemonic.m; sourceTree = "<group>"; };
 		75A6ECE517BD4CF60043E52D /* ZNMnemonic.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNMnemonic.h; sourceTree = "<group>"; };
@@ -1835,16 +1835,16 @@
 		75D8F38B173ABE3C0080D95E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		75D8F38D173ABE3C0080D95E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		75D8F38F173ABE3C0080D95E /* BreadWallet-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BreadWallet-Prefix.pch"; sourceTree = "<group>"; };
-		75D8F390173ABE3C0080D95E /* ZNAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNAppDelegate.h; sourceTree = "<group>"; };
-		75D8F391173ABE3C0080D95E /* ZNAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZNAppDelegate.m; sourceTree = "<group>"; };
+		75D8F390173ABE3C0080D95E /* BRAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRAppDelegate.h; sourceTree = "<group>"; };
+		75D8F391173ABE3C0080D95E /* BRAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BRAppDelegate.m; sourceTree = "<group>"; };
 		75D8F393173ABE3C0080D95E /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
 		75D8F395173ABE3C0080D95E /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
 		75D8F397173ABE3C0080D95E /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		75D8F39A173ABE3C0080D95E /* en */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = en; path = en.lproj/Main.storyboard; sourceTree = "<group>"; };
-		75D8F39F173ABE3C0080D95E /* ZNPayViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNPayViewController.h; sourceTree = "<group>"; };
-		75D8F3A0173ABE3C0080D95E /* ZNPayViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZNPayViewController.m; sourceTree = "<group>"; };
-		75D8F3A6173ABE3D0080D95E /* ZNReceiveViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZNReceiveViewController.h; sourceTree = "<group>"; };
-		75D8F3A7173ABE3D0080D95E /* ZNReceiveViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ZNReceiveViewController.mm; sourceTree = "<group>"; };
+		75D8F39F173ABE3C0080D95E /* BRSendViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRSendViewController.h; sourceTree = "<group>"; };
+		75D8F3A0173ABE3C0080D95E /* BRSendViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BRSendViewController.m; sourceTree = "<group>"; };
+		75D8F3A6173ABE3D0080D95E /* BRReceiveViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRReceiveViewController.h; sourceTree = "<group>"; };
+		75D8F3A7173ABE3D0080D95E /* BRReceiveViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = BRReceiveViewController.mm; sourceTree = "<group>"; };
 		75D8F3B2173ABE3D0080D95E /* BreadWalletTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BreadWalletTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		75D8F3BB173ABE3D0080D95E /* BreadWalletTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "BreadWalletTests-Info.plist"; sourceTree = "<group>"; };
 		75D8F3BD173ABE3D0080D95E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -1865,8 +1865,8 @@
 		75F1B87717C7356B00680E1B /* NSManagedObject+Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSManagedObject+Utils.h"; sourceTree = "<group>"; };
 		75F1B87817C7356B00680E1B /* NSManagedObject+Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSManagedObject+Utils.m"; sourceTree = "<group>"; };
 		75F1B87C17C7506200680E1B /* BreadWallet.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = BreadWallet.xcdatamodel; sourceTree = "<group>"; };
-		75F4D4B217E636860007500D /* ZNMainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZNMainViewController.h; sourceTree = "<group>"; };
-		75F4D4B317E636860007500D /* ZNMainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZNMainViewController.m; sourceTree = "<group>"; };
+		75F4D4B217E636860007500D /* BRRootViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRRootViewController.h; sourceTree = "<group>"; };
+		75F4D4B317E636860007500D /* BRRootViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRRootViewController.m; sourceTree = "<group>"; };
 		75F9D3E5179F451E00C28B49 /* button-bg-blue-pressed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button-bg-blue-pressed@2x.png"; sourceTree = "<group>"; };
 		75FD9C0217664F3000307894 /* libzbar.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libzbar.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		75FD9C0F17664FE600307894 /* config.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = config.c; sourceTree = "<group>"; };
@@ -3342,22 +3342,22 @@
 		75CBEAE5173C806E00978DBA /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				75F4D4B217E636860007500D /* ZNMainViewController.h */,
-				75F4D4B317E636860007500D /* ZNMainViewController.m */,
-				75D8F39F173ABE3C0080D95E /* ZNPayViewController.h */,
-				75D8F3A0173ABE3C0080D95E /* ZNPayViewController.m */,
-				75D8F3A6173ABE3D0080D95E /* ZNReceiveViewController.h */,
-				75D8F3A7173ABE3D0080D95E /* ZNReceiveViewController.mm */,
-				759CB23E175F03BF00AFA559 /* ZNAmountViewController.h */,
-				759CB23F175F03BF00AFA559 /* ZNAmountViewController.m */,
-				753007EA17684A8C00C7BB60 /* ZNSettingsViewController.h */,
-				753007EB17684A8C00C7BB60 /* ZNSettingsViewController.m */,
-				753007ED1769899B00C7BB60 /* ZNSeedViewController.h */,
-				753007EE1769899B00C7BB60 /* ZNSeedViewController.m */,
-				753007F0176A48DA00C7BB60 /* ZNRestoreViewController.h */,
-				753007F1176A48DA00C7BB60 /* ZNRestoreViewController.m */,
-				75183B86178B4ABE0032F365 /* ZNWelcomeViewController.h */,
-				75183B87178B4ABE0032F365 /* ZNWelcomeViewController.m */,
+				75F4D4B217E636860007500D /* BRRootViewController.h */,
+				75F4D4B317E636860007500D /* BRRootViewController.m */,
+				75D8F39F173ABE3C0080D95E /* BRSendViewController.h */,
+				75D8F3A0173ABE3C0080D95E /* BRSendViewController.m */,
+				75D8F3A6173ABE3D0080D95E /* BRReceiveViewController.h */,
+				75D8F3A7173ABE3D0080D95E /* BRReceiveViewController.mm */,
+				759CB23E175F03BF00AFA559 /* BRAmountViewController.h */,
+				759CB23F175F03BF00AFA559 /* BRAmountViewController.m */,
+				753007EA17684A8C00C7BB60 /* BRSettingsViewController.h */,
+				753007EB17684A8C00C7BB60 /* BRSettingsViewController.m */,
+				753007ED1769899B00C7BB60 /* BRSeedViewController.h */,
+				753007EE1769899B00C7BB60 /* BRSeedViewController.m */,
+				753007F0176A48DA00C7BB60 /* BRRestoreViewController.h */,
+				753007F1176A48DA00C7BB60 /* BRRestoreViewController.m */,
+				75183B86178B4ABE0032F365 /* BRWelcomeViewController.h */,
+				75183B87178B4ABE0032F365 /* BRWelcomeViewController.m */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -3458,8 +3458,8 @@
 				75CBEAE6173C807E00978DBA /* Models */,
 				75CBEAE5173C806E00978DBA /* Controllers */,
 				752C2FAC17416B360033F636 /* Categories */,
-				75D8F390173ABE3C0080D95E /* ZNAppDelegate.h */,
-				75D8F391173ABE3C0080D95E /* ZNAppDelegate.m */,
+				75D8F390173ABE3C0080D95E /* BRAppDelegate.h */,
+				75D8F391173ABE3C0080D95E /* BRAppDelegate.m */,
 				752C2F8417406ED40033F636 /* ThirdParty */,
 				75CBEAE3173C800F00978DBA /* Resources */,
 				75D8F388173ABE3C0080D95E /* Supporting Files */,
@@ -4593,9 +4593,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				75D8F38E173ABE3C0080D95E /* main.m in Sources */,
-				75D8F392173ABE3C0080D95E /* ZNAppDelegate.m in Sources */,
-				75D8F3A1173ABE3C0080D95E /* ZNPayViewController.m in Sources */,
-				75D8F3A8173ABE3D0080D95E /* ZNReceiveViewController.mm in Sources */,
+				75D8F392173ABE3C0080D95E /* BRAppDelegate.m in Sources */,
+				75D8F3A1173ABE3C0080D95E /* BRSendViewController.m in Sources */,
+				75D8F3A8173ABE3D0080D95E /* BRReceiveViewController.mm in Sources */,
 				75CBEAE9173C80AD00978DBA /* ZNPaymentRequest.m in Sources */,
 				7505A9FA18177DC400419043 /* ZNMerkleBlock.m in Sources */,
 				752C2F8717406EEA0033F636 /* Reachability.m in Sources */,
@@ -4604,7 +4604,7 @@
 				752C2FAF17416C620033F636 /* NSString+Base58.m in Sources */,
 				752C2FB5174171770033F636 /* NSData+Hash.m in Sources */,
 				753E7CE41806853400FC6BA7 /* NSData+Bitcoin.m in Sources */,
-				75F4D4B417E636860007500D /* ZNMainViewController.m in Sources */,
+				75F4D4B417E636860007500D /* BRRootViewController.m in Sources */,
 				753E7CE118053B3F00FC6BA7 /* ZNPeer.m in Sources */,
 				75F17C351744CC2100D9F228 /* ZNTransaction.m in Sources */,
 				75920F86174AB82100C1C03D /* NSMutableData+Bitcoin.m in Sources */,
@@ -4612,12 +4612,12 @@
 				7559FBA7174D8B1F0000E809 /* ZNKey.m in Sources */,
 				75EAE8471753E93A00FDB2D2 /* ZNElectrumSequence.m in Sources */,
 				7597028117E15B1E00CDC14A /* ZNNavigationBar.m in Sources */,
-				759CB240175F03BF00AFA559 /* ZNAmountViewController.m in Sources */,
-				753007EC17684A8C00C7BB60 /* ZNSettingsViewController.m in Sources */,
-				753007EF1769899B00C7BB60 /* ZNSeedViewController.m in Sources */,
-				753007F2176A48DA00C7BB60 /* ZNRestoreViewController.m in Sources */,
+				759CB240175F03BF00AFA559 /* BRAmountViewController.m in Sources */,
+				753007EC17684A8C00C7BB60 /* BRSettingsViewController.m in Sources */,
+				753007EF1769899B00C7BB60 /* BRSeedViewController.m in Sources */,
+				753007F2176A48DA00C7BB60 /* BRRestoreViewController.m in Sources */,
 				7535CCDF176BE3D2007E29C5 /* ZNButton.m in Sources */,
-				75183B88178B4ABE0032F365 /* ZNWelcomeViewController.m in Sources */,
+				75183B88178B4ABE0032F365 /* BRWelcomeViewController.m in Sources */,
 				84DC139A1799E02800F6ED91 /* ZNBIP32Sequence.m in Sources */,
 				847C2302179A1FD600163CEF /* ZNElectrumMnemonic.m in Sources */,
 				75C852FA18CE8A17008E1431 /* ZNBubbleView.m in Sources */,

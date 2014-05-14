@@ -1,6 +1,6 @@
 //
-//  ZNAppDelegate.h
-//  ZincWallet
+//  BRAppDelegate.h
+//  BreadWallet
 //
 //  Created by Aaron Voisine on 5/8/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
@@ -26,7 +26,7 @@
 #import <UIKit/UIKit.h>
 //#import <CoreBluetooth/CoreBluetooth.h>
 
-@interface ZNAppDelegate : UIResponder<UIApplicationDelegate>//, CBCentralManagerDelegate>
+@interface BRAppDelegate : UIResponder<UIApplicationDelegate>//, CBCentralManagerDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
 

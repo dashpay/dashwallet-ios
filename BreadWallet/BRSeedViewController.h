@@ -1,8 +1,8 @@
 //
-//  ZNRestoreViewController.h
-//  ZincWallet
+//  BRSeedViewController.h
+//  BreadWallet
 //
-//  Created by Aaron Voisine on 6/13/13.
+//  Created by Aaron Voisine on 6/12/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,6 +25,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ZNRestoreViewController : UIViewController<UITextViewDelegate, UIActionSheetDelegate>
+@interface BRSeedViewController : UIViewController<UIAlertViewDelegate>
 
 @end

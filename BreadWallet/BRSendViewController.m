@@ -1,6 +1,6 @@
 //
-//  ZNFirstViewController.m
-//  ZincWallet
+//  BRSendViewController.m
+//  BreadWallet
 //
 //  Created by Aaron Voisine on 5/8/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
@@ -23,8 +23,8 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "ZNPayViewController.h"
-#import "ZNAmountViewController.h"
+#import "BRSendViewController.h"
+#import "BRAmountViewController.h"
 #import "ZNWalletManager.h"
 #import "ZNWallet.h"
 #import "ZNPeerManager.h"
@@ -55,7 +55,7 @@
                        "A bitcoin address always starts with '1'."
 #define PAGE_TIP      @"Tap or swipe right to receive money."
 
-@interface ZNPayViewController ()
+@interface BRSendViewController ()
 
 //@property (nonatomic, strong) GKSession *session;
 @property (nonatomic, strong) NSMutableArray *requestIDs;
@@ -73,7 +73,7 @@
 
 @end
 
-@implementation ZNPayViewController
+@implementation BRSendViewController
 
 - (void)viewDidLoad
 {
@@ -409,7 +409,7 @@
         [self cancel:nil];
     }
     else if (request.amount == 0) {
-        ZNAmountViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNAmountViewController"];
+        BRAmountViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNAmountViewController"];
         
         c.delegate = self;
         c.request = request;
@@ -641,7 +641,7 @@
 
 #pragma mark - ZNAmountViewControllerDelegate
 
-- (void)amountViewController:(ZNAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
+- (void)amountViewController:(BRAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
 {
     amountViewController.request.amount = amount;
     [self confirmRequest:amountViewController.request];

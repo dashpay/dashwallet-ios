@@ -1,6 +1,6 @@
 //
-//  ZNAppDelegate.m
-//  ZincWallet
+//  BRAppDelegate.m
+//  BreadWallet
 //
 //  Created by Aaron Voisine on 5/8/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
@@ -23,11 +23,11 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "ZNAppDelegate.h"
+#import "BRAppDelegate.h"
 #import "ZNPeerManager.h"
 #import <MessageUI/MessageUI.h>
 
-@implementation ZNAppDelegate
+@implementation BRAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {

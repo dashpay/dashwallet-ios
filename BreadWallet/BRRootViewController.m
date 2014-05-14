@@ -1,6 +1,6 @@
 //
-//  ZNMainViewController.m
-//  ZincWallet
+//  BRRootViewController.m
+//  BreadWallet
 //
 //  Created by Aaron Voisine on 9/15/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
@@ -23,16 +23,16 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "ZNMainViewController.h"
-#import "ZNPayViewController.h"
-#import "ZNReceiveViewController.h"
+#import "BRRootViewController.h"
+#import "BRSendViewController.h"
+#import "BRReceiveViewController.h"
 #import "ZNWalletManager.h"
 #import "ZNWallet.h"
 #import "ZNPeerManager.h"
 #import <netinet/in.h>
 #import "Reachability.h"
 
-@interface ZNMainViewController ()
+@interface BRRootViewController ()
 
 @property (nonatomic, strong) id urlObserver, fileObserver, activeObserver, balanceObserver, reachabilityObserver;
 @property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
@@ -46,15 +46,15 @@
 @property (nonatomic, strong) IBOutlet UIProgressView *progress;
 @property (nonatomic, strong) IBOutlet UIButton *connectButton;
 
-@property (nonatomic, strong) ZNPayViewController *payController;
-@property (nonatomic, strong) ZNReceiveViewController *receiveController;
+@property (nonatomic, strong) BRSendViewController *sendController;
+@property (nonatomic, strong) BRReceiveViewController *receiveController;
 @property (nonatomic, strong) Reachability *reachability;
 
 @property (nonatomic, assign) CGPoint wallpaperStart;
 
 @end
 
-@implementation ZNMainViewController
+@implementation BRRootViewController
 
 - (void)viewDidLoad
 {
@@ -246,8 +246,8 @@
         self.scrollView.contentSize = CGSizeMake(self.scrollView.frame.size.width*2,
                                                  self.scrollView.frame.size.height);
         
-        [self.scrollView addSubview:self.payController.view];
-        [self addChildViewController:self.payController];
+        [self.scrollView addSubview:self.sendController.view];
+        [self addChildViewController:self.sendController];
         
         self.receiveController.view.frame = CGRectMake(self.scrollView.frame.size.width, 0,
                                                        self.scrollView.frame.size.width,
@@ -300,19 +300,19 @@
     if (progress < 1.0) [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
 }
 
-- (ZNPayViewController *)payController
+- (BRSendViewController *)sendController
 {
-    if (_payController) return _payController;
+    if (_sendController) return _sendController;
     
-    _payController = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNPayViewController"];
-    return _payController;
+    _sendController = [self.storyboard instantiateViewControllerWithIdentifier:@"BRSendViewController"];
+    return _sendController;
 }
 
-- (ZNReceiveViewController *)receiveController
+- (BRReceiveViewController *)receiveController
 {
     if (_receiveController) return _receiveController;
     
-    _receiveController = [self.storyboard instantiateViewControllerWithIdentifier:@"ZNReceiveViewController"];
+    _receiveController = [self.storyboard instantiateViewControllerWithIdentifier:@"BRReceiveViewController"];
     return _receiveController;
 }
 
@@ -360,7 +360,7 @@
         self.pageControl.accessibilityLabel = page ? @"send money" : @"receive money";
         self.pageControl.accessibilityHint = page ? @"receive money" : @"send money";
         
-        [(id)(page ? self.payController : self.receiveController) hideTips];
+        [(id)(page ? self.sendController : self.receiveController) hideTips];
     }
     
     self.wallpaper.center = CGPointMake(self.wallpaperStart.x - scrollView.contentOffset.x*PARALAX_RATIO,

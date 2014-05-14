@@ -1,6 +1,6 @@
 //
-//  ZNAmountViewController.m
-//  ZincWallet
+//  BRAmountViewController.m
+//  BreadWallet
 //
 //  Created by Aaron Voisine on 6/4/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
@@ -23,7 +23,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "ZNAmountViewController.h"
+#import "BRAmountViewController.h"
 #import "ZNPaymentRequest.h"
 #import "ZNWalletManager.h"
 #import "ZNWallet.h"
@@ -31,7 +31,7 @@
 #import "ZNTransaction.h"
 #import "ZNButton.h"
 
-@interface ZNAmountViewController ()
+@interface BRAmountViewController ()
 
 @property (nonatomic, strong) IBOutlet UITextField *amountField;
 @property (nonatomic, strong) IBOutlet UILabel *localCurrencyLabel, *addressLabel;
@@ -43,7 +43,7 @@
 
 @end
 
-@implementation ZNAmountViewController
+@implementation BRAmountViewController
 
 - (void)viewDidLoad
 {

@@ -1,6 +1,6 @@
 //
-//  ZNReceiveViewController.m
-//  ZincWallet
+//  BRReceiveViewController.m
+//  BreadWallet
 //
 //  Created by Aaron Voisine on 5/8/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
@@ -23,7 +23,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "ZNReceiveViewController.h"
+#import "BRReceiveViewController.h"
 #import "ZNPaymentRequest.h"
 #import "ZNWalletManager.h"
 #import "ZNWallet.h"
@@ -38,7 +38,7 @@
                      "The address will change each time you receive funds, but old addresses always work."
 #define PAGE_TIP    @"Tap or swipe left to send money."
 
-@interface ZNReceiveViewController ()
+@interface BRReceiveViewController ()
 
 @property (nonatomic, strong) ZNBubbleView *tipView;
 
@@ -49,7 +49,7 @@
 
 @end
 
-@implementation ZNReceiveViewController
+@implementation BRReceiveViewController
 
 - (void)viewDidLoad
 {
