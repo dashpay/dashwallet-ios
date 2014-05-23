@@ -43,7 +43,6 @@
 #define BTC           @"\xC9\x83"     // capital B with stroke (utf-8)
 #define BITS          @"\xC6\x80"     // lowercase b with stroke (utf-8)
 //#define BITS          @"\xE2\x90\xA2" // blank symbol (utf-8)
-#define CURRENCY_SIGN @"\xC2\xA4"     // generic currency sign (utf-8)
 #define NBSP          @"\xC2\xA0"     // no-break space (utf-8)
 #define NARROW_NBSP   @"\xE2\x80\xAF" // narrow no-break space (utf-8)
 
@@ -146,8 +145,11 @@ static NSData *getKeychainData(NSString *key)
     self.format.lenient = YES;
     self.format.numberStyle = NSNumberFormatterCurrencyStyle;
     self.format.minimumFractionDigits = 0;
-    self.format.negativeFormat =
-        [self.format.positiveFormat stringByReplacingOccurrencesOfString:CURRENCY_SIGN withString:CURRENCY_SIGN @"-"];
+    NSLog(@"%@", self.format.positiveFormat);
+    self.format.negativeFormat = [self.format.positiveFormat
+                                  stringByReplacingCharactersInRange:[self.format.positiveFormat rangeOfString:@"#"]
+                                  withString:@"-#"];
+
 //    self.format.currencySymbol = BITS NARROW_NBSP;
 //    self.format.maximumFractionDigits = 2;
 //    self.format.maximum = @21000000000000.0;
@@ -461,8 +463,9 @@ completion:(void (^)(ZNTransaction *tx, NSError *error))completion
         format = [NSNumberFormatter new];
         format.lenient = YES;
         format.numberStyle = NSNumberFormatterCurrencyStyle;
-        format.negativeFormat =
-            [format.positiveFormat stringByReplacingOccurrencesOfString:CURRENCY_SIGN withString:CURRENCY_SIGN @"-"];
+        format.negativeFormat = [format.positiveFormat
+                                 stringByReplacingCharactersInRange:[format.positiveFormat rangeOfString:@"#"]
+                                 withString:@"-#"];
     }
 
     if (! amount) return [format stringFromNumber:@(0)];
