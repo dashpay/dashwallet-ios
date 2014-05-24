@@ -201,9 +201,8 @@ replacementString:(NSString *)string
         t = [textField.text stringByReplacingCharactersInRange:range withString:string];
         if ([t isEqual:[m.format stringFromNumber:@0]]) t = @"";
     }
-    else if ((string.length > 0 && textField.text.length > 0 && t == nil) ||
-             (point != NSNotFound && textField.text.length - point > m.format.maximumFractionDigits)) {
-        return NO; // too many digits
+    else if (string.length > 0 && textField.text.length > 0 && t == nil) { // value too large or otherwise invalid
+        return NO;
     }
     else if ([string isEqual:m.format.currencyDecimalSeparator] && (! textField.text.length || point == NSNotFound)) {
         if (! textField.text.length) t = [m.format stringFromNumber:@0]; // if first char is '.', prepend a zero
