@@ -196,13 +196,16 @@ replacementString:(NSString *)string
     NSString *t = textField.text ? [textField.text stringByReplacingCharactersInRange:range withString:string] : string;
 
     t = [m.format stringFromNumber:[m.format numberFromString:t]];
+    l = [textField.text rangeOfCharacterFromSet:self.charset options:NSBackwardsSearch].location;
+    l = (l < textField.text.length) ? l + 1 : textField.text.length;
 
     if (! string.length && point != NSNotFound) { // delete trailing char
         t = [textField.text stringByReplacingCharactersInRange:range withString:string];
         if ([t isEqual:[m.format stringFromNumber:@0]]) t = @"";
     }
-    else if (string.length > 0 && textField.text.length > 0 && t == nil) { // value too large or otherwise invalid
-        return NO;
+    else if ((string.length > 0 && textField.text.length > 0 && t == nil) ||
+             (point != NSNotFound && l - point > m.format.maximumFractionDigits)) {
+        return NO; // too many digits
     }
     else if ([string isEqual:m.format.currencyDecimalSeparator] && (! textField.text.length || point == NSNotFound)) {
         if (! textField.text.length) t = [m.format stringFromNumber:@0]; // if first char is '.', prepend a zero
@@ -223,6 +226,9 @@ replacementString:(NSString *)string
             t = [textField.text stringByReplacingCharactersInRange:NSMakeRange(l, 0) withString:@"0"];
         }
     }
+
+    l = [t rangeOfCharacterFromSet:self.charset options:NSBackwardsSearch].location;
+    l = (l < t.length) ? l + 1 : t.length;
 
     // don't allow values below TX_MIN_OUTPUT_AMOUNT
     if (t.length > 0 && [t rangeOfString:m.format.currencyDecimalSeparator].location != NSNotFound) {
