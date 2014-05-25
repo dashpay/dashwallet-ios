@@ -24,9 +24,8 @@
 //  THE SOFTWARE.
 
 #import <UIKit/UIKit.h>
-//#import <CoreBluetooth/CoreBluetooth.h>
 
-@interface BRAppDelegate : UIResponder<UIApplicationDelegate>//, CBCentralManagerDelegate>
+@interface BRAppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
 

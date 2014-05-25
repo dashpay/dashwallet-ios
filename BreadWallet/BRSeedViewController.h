@@ -25,6 +25,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface BRSeedViewController : UIViewController<UIAlertViewDelegate>
+@interface BRSeedViewController : UIViewController <UIAlertViewDelegate>
 
 @end

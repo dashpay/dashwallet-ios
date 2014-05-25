@@ -28,7 +28,7 @@
 #import "BRAmountViewController.h"
 #import "ZBarSDK.h"
 
-@interface BRSendViewController : UIViewController<UIAlertViewDelegate, ZBarReaderDelegate,
+@interface BRSendViewController : UIViewController <UIAlertViewDelegate, ZBarReaderDelegate,
 BRAmountViewControllerDelegate>//, GKSessionDelegate>
 
 - (BOOL)hideTips;

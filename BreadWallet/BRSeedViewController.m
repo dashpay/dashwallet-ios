@@ -77,13 +77,13 @@
         self.navigationItem.leftBarButtonItem = nil;
     }
 
-    if (! m.wallet) {
+    if (! m.wallet && [[UIApplication sharedApplication] isProtectedDataAvailable]) {
         [m generateRandomSeed];
         [[BRPeerManager sharedInstance] connect];
     }
     else self.navigationItem.rightBarButtonItem = nil;
 
-    [UIView animateWithDuration:SEGUE_DURATION/2 animations:^{
+    [UIView animateWithDuration:0.1 animations:^{
         self.seedLabel.alpha = 1.0;
     }];
     
@@ -104,20 +104,25 @@
 {
     if (self.navigationController.viewControllers.firstObject != self) return;
 
-    [[[UIAlertView alloc] initWithTitle:nil message:@"you can see your backup phrase again under settings" delegate:self
-      cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+//    [[[UIAlertView alloc] initWithTitle:nil message:@"you can see your backup phrase again under settings" delegate:self
+//      cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+//    self.navigationController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
+    [self.navigationController.presentingViewController.presentingViewController dismissViewControllerAnimated:YES
+     completion:nil];
 }
 
 - (IBAction)refresh:(id)sender
 {
+    if (! [[UIApplication sharedApplication] isProtectedDataAvailable]) return;
+
     [[BRWalletManager sharedInstance] generateRandomSeed];
     
-    [UIView animateWithDuration:SEGUE_DURATION/2 animations:^{
+    [UIView animateWithDuration:0.1 animations:^{
         self.seedLabel.alpha = 0.0;
     } completion:^(BOOL finished) {
         self.seedLabel.text = [[BRWalletManager sharedInstance] seedPhrase];
         
-        [UIView animateWithDuration:SEGUE_DURATION/2 animations:^{
+        [UIView animateWithDuration:0.1 animations:^{
             self.seedLabel.alpha = 1.0;
         }];
     }];
@@ -128,13 +133,13 @@
     [[UIPasteboard generalPasteboard] setString:[[BRWalletManager sharedInstance] seedPhrase]];
 }
 
-#pragma mark - UIAlertViewDelegate
-
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-    self.navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
-    [self.navigationController.presentingViewController.presentingViewController dismissViewControllerAnimated:YES
-     completion:nil];
-}
+//#pragma mark - UIAlertViewDelegate
+//
+//- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+//{
+//    self.navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+//    [self.navigationController.presentingViewController.presentingViewController dismissViewControllerAnimated:YES
+//     completion:nil];
+//}
 
 @end

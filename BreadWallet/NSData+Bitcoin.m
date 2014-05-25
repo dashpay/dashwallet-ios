@@ -91,7 +91,7 @@
 
 - (NSString *)stringAtOffset:(NSUInteger)offset length:(NSUInteger *)length
 {
-    NSUInteger ll, l = [self varIntAtOffset:offset length:&ll];
+    NSUInteger ll, l = (NSUInteger)[self varIntAtOffset:offset length:&ll];
     
     if (length) *length = ll + l;
     if (ll == 0 || self.length < offset + ll + l) return nil;
@@ -101,7 +101,7 @@
 
 - (NSData *)dataAtOffset:(NSUInteger)offset length:(NSUInteger *)length
 {
-    NSUInteger ll, l = [self varIntAtOffset:offset length:&ll];
+    NSUInteger ll, l = (NSUInteger)[self varIntAtOffset:offset length:&ll];
     
     if (length) *length = ll + l;
     if (ll == 0 || self.length < offset + ll + l) return nil;

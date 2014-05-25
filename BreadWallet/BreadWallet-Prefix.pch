@@ -1,5 +1,7 @@
 //
-// Prefix header for all source files of the 'BreadWallet' target in the 'BreadWallet' project
+//  Prefix header
+//
+//  The contents of this file are implicitly included at the beginning of every source file.
 //
 
 #import <Availability.h>
@@ -11,32 +13,14 @@
 #ifdef __OBJC__
     #import <UIKit/UIKit.h>
     #import <Foundation/Foundation.h>
-    #import <SystemConfiguration/SystemConfiguration.h>
-    #import <MobileCoreServices/MobileCoreServices.h>
 #endif
 
 #define BITCOIN_TESTNET    1
-//#define WEBAPP_BASEURL     @"http://breadwallet.com"
-//#define WEBAPP_PATH        @"/tx"
-//#define WEBAPP_TIMEOUT     15
-//#define WEBAPP_VERSION_KEY @"WEBAPP_VERSION"
-#define GK_SESSION_ID      @"org.voisine.BreadWallet"
 #define SATOSHIS           100000000
 #define PARALAX_RATIO      0.25
-#define SEGUE_DURATION     0.3
 #define BRURLNotification  @"BRURLNotification"
 #define BRFileNotification @"BRFileNotification"
-
-#if BITCOIN_TESTNET
-#warning testnet build
-#endif
 
 #if ! DEBUG
 #define NSLog(...)
 #endif
-
-// defines for building third party libs
-
-#define OPENSSL_NO_HW
-#define OPENSSL_NO_GOST
-#define OPENSSL_NO_INLINE_ASM

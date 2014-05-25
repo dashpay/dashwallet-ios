@@ -24,33 +24,23 @@
 //  THE SOFTWARE.
 
 #import "BRRootViewController.h"
-#import "BRSendViewController.h"
 #import "BRReceiveViewController.h"
+#import "BRSendViewController.h"
+#import "BRPeerManager.h"
 #import "BRWalletManager.h"
 #import "BRWallet.h"
-#import "BRPeerManager.h"
-#import <netinet/in.h>
 #import "Reachability.h"
 
 @interface BRRootViewController ()
 
+@property (nonatomic, strong) IBOutlet UIProgressView *progress, *progress2;
+@property (nonatomic, strong) IBOutlet UIView *errorBar;
+@property (nonatomic, strong) IBOutlet UIGestureRecognizer *navBarTap;
+@property (nonatomic, strong) IBOutlet NSLayoutConstraint *wallpaperXLeft;
+@property (nonatomic, assign) BOOL appeared;
+@property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) id urlObserver, fileObserver, activeObserver, balanceObserver, reachabilityObserver;
 @property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
-@property (nonatomic, assign) BOOL didAppear, alertVisible;
-
-@property (nonatomic, strong) IBOutlet UIScrollView *scrollView;
-@property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
-@property (nonatomic, strong) IBOutlet UIPageControl *pageControl;
-@property (nonatomic, strong) IBOutlet UIBarButtonItem *settingsButton;
-@property (nonatomic, strong) IBOutlet UIActivityIndicatorView *spinner;
-@property (nonatomic, strong) IBOutlet UIProgressView *progress;
-@property (nonatomic, strong) IBOutlet UIButton *connectButton;
-
-@property (nonatomic, strong) BRSendViewController *sendController;
-@property (nonatomic, strong) BRReceiveViewController *receiveController;
-@property (nonatomic, strong) Reachability *reachability;
-
-@property (nonatomic, assign) CGPoint wallpaperStart;
 
 @end
 
@@ -59,56 +49,60 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    // Do any additional setup after loading the view, typically from a nib.
+    // Do any additional setup after loading the view.
 
-    //TODO: make title use dynamic font size
+    self.receiveViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"ReceiveViewController"];
+    self.sendViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"SendViewController"];
+    self.pageViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"PageViewController"];
+
+    self.pageViewController.dataSource = self;
+    [self.pageViewController setViewControllers:@[self.sendViewController]
+     direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
+    self.pageViewController.view.frame = self.view.bounds;
+    [self addChildViewController:self.pageViewController];
+    [self.view addSubview:self.pageViewController.view];
+    [self.pageViewController didMoveToParentViewController:self];
+
+    for (UIView *view in self.pageViewController.view.subviews) {
+        if (! [view isKindOfClass:[UIScrollView class]]) continue;
+        [(UIScrollView *)view setDelegate:self];
+        [(UIScrollView *)view setDelaysContentTouches:NO]; // this allows buttons to respond more quickly
+        break;
+    }
+
     BRWalletManager *m = [BRWalletManager sharedInstance];
-
-    self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-    self.spinner.accessibilityLabel = @"synchronizing";
-    
-    self.settingsButton.accessibilityLabel = @"settings";
-    self.settingsButton.accessibilityHint = @"show settings";
-    self.pageControl.accessibilityLabel = @"receive money";
-    self.pageControl.accessibilityHint = @"send money";
-    
-    self.wallpaperStart = self.wallpaper.center;
 
     self.urlObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRURLNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            [self.scrollView setContentOffset:CGPointZero animated:YES];
+//            [self.scrollView setContentOffset:CGPointZero animated:YES];
             if (m.wallet) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
         }];
 
     self.fileObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRFileNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            [self.scrollView setContentOffset:CGPointZero animated:YES];
+//            [self.scrollView setContentOffset:CGPointZero animated:YES];
             if (m.wallet) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
         }];
 
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.didAppear) [[BRPeerManager sharedInstance] connect];
+            if (self.appeared) [[BRPeerManager sharedInstance] connect];
         }];
 
     self.reachabilityObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if (self.didAppear && self.reachability.currentReachabilityStatus != NotReachable) {
+            if (self.appeared && self.reachability.currentReachabilityStatus != NotReachable) {
                 [[BRPeerManager sharedInstance] connect];
             }
-            else if (self.didAppear && self.reachability.currentReachabilityStatus == NotReachable) {
-                self.connectButton.hidden = NO;
-                self.connectButton.alpha = 0.0;
-                [UIView animateWithDuration:0.2 animations:^{
-                    self.connectButton.alpha = 1.0;
-                }];
+            else if (self.appeared && self.reachability.currentReachabilityStatus == NotReachable) {
+                [self showErrorBar];
             }
         }];
-    
+
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
@@ -116,39 +110,43 @@
 
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
-            
-            // update receive qr code if it's not on screen
-            if (self.pageControl.currentPage != 1) [[self receiveController] viewWillAppear:NO];
+
+//            // update receive qr code if it's not on screen
+//            if (self.pageControl.currentPage != 1) [[self receiveController] viewWillAppear:NO];
         }];
-    
+
     self.syncStartedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncStartedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.navigationItem.rightBarButtonItem == nil) {
-                self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
-                [self.spinner startAnimating];
-            }
-            
+//            if (self.navigationItem.rightBarButtonItem == nil) {
+//                self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
+//                [self.spinner startAnimating];
+//            }
+
+            if (self.reachability.currentReachabilityStatus != NotReachable) [self hideErrorBar];
             if (m.wallet.balance == 0) self.navigationItem.title = @"syncing...";
             [UIApplication sharedApplication].idleTimerDisabled = YES;
             self.progress.hidden = NO;
+
             [UIView animateWithDuration:0.2 animations:^{
                 self.progress.alpha = 1.0;
-                self.connectButton.alpha = 0.0;
             }];
+
             [self updateProgress];
         }];
     
     self.syncFinishedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            [self.spinner stopAnimating];
+//            [self.spinner stopAnimating];
             self.navigationItem.rightBarButtonItem = nil;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
             [UIApplication sharedApplication].idleTimerDisabled = NO;
+
             if (self.progress.alpha > 0.5) {
                 [self.progress setProgress:1.0 animated:YES];
+
                 [UIView animateWithDuration:0.2 animations:^{
                     self.progress.alpha = 0.0;
                 } completion:^(BOOL finished) {
@@ -156,48 +154,77 @@
                 }];
             }
         }];
-
+    
     self.syncFailedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            [self.spinner stopAnimating];
+//            [self.spinner stopAnimating];
             self.navigationItem.rightBarButtonItem = nil;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
             [UIApplication sharedApplication].idleTimerDisabled = NO;
             self.progress.hidden = YES;
             self.progress.progress = 0.0;
-            self.connectButton.hidden = NO;
-            self.connectButton.alpha = 0.0;
-            [UIView animateWithDuration:0.2 animations:^{
-                self.connectButton.alpha = 1.0;
-            }];
+            [self showErrorBar];
         }];
-
+    
     self.reachability = [Reachability reachabilityForInternetConnection];
     [self.reachability startNotifier];
 
-    self.navigationController.delegate = self;
+    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
+                                 [m localCurrencyStringForAmount:m.wallet.balance]];
 
 #if BITCOIN_TESTNET
-    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(10, self.pageControl.frame.origin.y - 21, 300, 21)];
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, self.view.frame.size.height - 51,
+                                                               self.view.frame.size.width, 21)];
 
     label.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:13.0];
     label.textColor = [UIColor redColor];
     label.textAlignment = NSTextAlignmentCenter;
     label.text = @"testnet";
-    [self.navigationController.view insertSubview:label atIndex:0];
+    [self.view addSubview:label];
 #endif
+}
 
-    [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
-    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                 [m localCurrencyStringForAmount:m.wallet.balance]];
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+
+    if (! [[BRWalletManager sharedInstance] wallet]) {
+        if (! [[UIApplication sharedApplication] isProtectedDataAvailable]) return;
+
+        UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"];
+
+        [self.navigationController presentViewController:c animated:NO completion:nil];
+        return;
+    }
+
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
+    [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
+    [[BRPeerManager sharedInstance] connect];
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    if (! self.appeared) {
+        self.appeared = YES;
+        
+        if ([[[BRWalletManager sharedInstance] wallet] balance] == 0) {
+            [self.pageViewController setViewControllers:@[self.receiveViewController]
+             direction:UIPageViewControllerNavigationDirectionForward animated:YES completion:nil];
+        }
+    }
+
+    if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
+
+    [super viewDidAppear:animated];
 }
 
 - (void)dealloc
 {
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
     [self.reachability stopNotifier];
-    
+
     if (self.urlObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.urlObserver];
     if (self.fileObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.fileObserver];
     if (self.activeObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
@@ -208,191 +235,97 @@
     if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
 }
 
-- (void)viewWillAppear:(BOOL)animated
-{
-    [super viewWillAppear:animated];
-    
-    static BOOL firstAppearance = YES;
-    BRWalletManager *m = [BRWalletManager sharedInstance];
-    
-    if (! m.wallet) {
-        if (! [[UIApplication sharedApplication] isProtectedDataAvailable]) return;
-
-        UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"BRNewWalletNav"];
-        
-        [self.navigationController presentViewController:c animated:NO completion:nil];
-        return;
-    }
-    else if (firstAppearance && ! animated) { // BUG: somehow the splash screen is showing up when handling url
-        UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"BRSplashViewController"];
-        
-        if ([[UIScreen mainScreen] bounds].size.height < 500) { // use splash image for 3.5" screen
-            [(UIImageView *)c.view setImage:[UIImage imageNamed:@"Default.png"]];
-        }
-        
-        [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:NO];
-        
-        [self.navigationController presentViewController:c animated:NO completion:^{
-            [self.navigationController dismissViewControllerAnimated:YES completion:^{
-                [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
-            }];
-        }];
-    }
-    else [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
-    
-    if (firstAppearance) {
-        firstAppearance = NO;
-        
-        self.scrollView.contentSize = CGSizeMake(self.scrollView.frame.size.width*2,
-                                                 self.scrollView.frame.size.height);
-        
-        [self.scrollView addSubview:self.sendController.view];
-        [self addChildViewController:self.sendController];
-        
-        self.receiveController.view.frame = CGRectMake(self.scrollView.frame.size.width, 0,
-                                                       self.scrollView.frame.size.width,
-                                                       self.scrollView.frame.size.height);
-        [self.scrollView addSubview:self.receiveController.view];
-        [self addChildViewController:self.receiveController];
-        
-        if (m.wallet.balance == 0) {
-            [self.scrollView setContentOffset:CGPointMake(self.scrollView.frame.size.width, 0) animated:NO];
-        }
-    }
-
-    [[BRPeerManager sharedInstance] connect];
-}
-
-- (void)viewDidAppear:(BOOL)animated
-{
-    [super viewDidAppear:animated];
-
-    self.didAppear = YES;
-
-    if (self.reachability.currentReachabilityStatus == NotReachable) {
-        self.connectButton.hidden = NO;
-        self.connectButton.alpha = 0.0;
-        [UIView animateWithDuration:0.2 animations:^{
-            self.connectButton.alpha = 1.0;
-        }];
-    }
-}
-
-- (void)viewDidDisappear:(BOOL)animated
-{
-    BRWalletManager *m = [BRWalletManager sharedInstance];
-
-    [self.spinner stopAnimating];
-    self.navigationItem.rightBarButtonItem = nil;//self.refreshButton;
-    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                 [m localCurrencyStringForAmount:m.wallet.balance]];
-    [UIApplication sharedApplication].idleTimerDisabled = NO;
-    self.progress.hidden = YES;
-
-    [super viewDidDisappear:animated];
-}
-
 - (void)updateProgress
 {
     double progress = [[BRPeerManager sharedInstance] syncProgress];
 
-    if (progress > DBL_EPSILON) [self.progress setProgress:progress animated:progress > self.progress.progress];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateProgress) object:nil];
+    if (progress > DBL_EPSILON) [self.progress setProgress:progress animated:(progress > self.progress.progress)];
     if (progress < 1.0) [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
 }
 
-- (BRSendViewController *)sendController
+- (void)pulse
 {
-    if (_sendController) return _sendController;
-    
-    _sendController = [self.storyboard instantiateViewControllerWithIdentifier:@"BRSendViewController"];
-    return _sendController;
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(pulse) object:nil];
+    if (self.progress.hidden) return;
+
+    [self.progress2 setProgress:self.progress.progress animated:YES];
+
+    [UIView animateWithDuration:1.5 delay:1.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+        self.progress2.alpha = 0.0;
+    } completion:^(BOOL finished) {
+        self.progress2.alpha = 1.0;
+        self.progress2.progress = 0;
+        [self performSelector:@selector(pulse) withObject:nil afterDelay:0.0];
+    }];
 }
 
-- (BRReceiveViewController *)receiveController
-{
-    if (_receiveController) return _receiveController;
+- (void)showErrorBar {
+    if (self.navigationItem.prompt != nil) return;
+    self.navigationItem.prompt = @"";
+    self.errorBar.hidden = NO;
+    self.errorBar.alpha = 0.0;
     
-    _receiveController = [self.storyboard instantiateViewControllerWithIdentifier:@"BRReceiveViewController"];
-    return _receiveController;
+    [UIView animateWithDuration:UINavigationControllerHideShowBarDuration delay:0.0
+     options:UIViewAnimationOptionCurveEaseIn animations:^{
+        self.errorBar.alpha = 1.0;
+    } completion:nil];
+
+    self.navBarTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(connect:)];
+    [self.navigationController.navigationBar addGestureRecognizer:self.navBarTap];
 }
 
-#pragma mark - IBAction
+- (void)hideErrorBar {
+    if (self.navigationItem.prompt == nil) return;
+    self.navigationItem.prompt = nil;
+    [self.navigationController.navigationBar removeGestureRecognizer:self.navBarTap];
+    self.navBarTap = nil;
+    
+    [UIView animateWithDuration:UINavigationControllerHideShowBarDuration delay:0.0
+     options:UIViewAnimationOptionCurveEaseOut animations:^{
+        self.errorBar.alpha = 0.0;
+    } completion:^(BOOL finished) {
+        if (self.navigationItem.prompt == nil) self.errorBar.hidden = YES;
+    }];
+}
 
 - (IBAction)connect:(id)sender
 {
     if (! sender && [self.reachability currentReachabilityStatus] == NotReachable) return;
-    
-//    if (self.navigationItem.rightBarButtonItem == self.refreshButton) {
-//        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
-//        [self.spinner startAnimating];
-//    }
-//    
-//    if ([[[BRWalletManager sharedInstance] wallet] balance] == 0) self.navigationItem.title = @"syncing...";
 
     [[BRPeerManager sharedInstance] connect];
 }
 
-- (IBAction)page:(id)sender
+#pragma mark UIPageViewControllerDataSource
+
+- (UIViewController *)pageViewController:(UIPageViewController *)pageViewController
+viewControllerBeforeViewController:(UIViewController *)viewController
 {
-    if (! sender) {
-        [self.scrollView
-         setContentOffset:CGPointMake((1 - self.pageControl.currentPage)*self.scrollView.frame.size.width, 0)
-         animated:YES];
-
-        return;
-    }
-
-    if ([self.scrollView isTracking] || [self.scrollView isDecelerating] ||
-        self.pageControl.currentPage == self.scrollView.contentOffset.x/self.scrollView.frame.size.width + 0.5) return;
-    
-    [self.scrollView setContentOffset:CGPointMake(self.pageControl.currentPage*self.scrollView.frame.size.width, 0)
-     animated:YES];
+    return (viewController == self.receiveViewController) ? self.sendViewController : nil;
 }
 
-#pragma mark - UIScrollViewDelegate
+- (UIViewController *)pageViewController:(UIPageViewController *)pageViewController
+viewControllerAfterViewController:(UIViewController *)viewController
+{
+    return (viewController == self.sendViewController) ? self.receiveViewController : nil;
+}
+
+- (NSInteger)presentationCountForPageViewController:(UIPageViewController *)pageViewController
+{
+    return 2;
+}
+
+- (NSInteger)presentationIndexForPageViewController:(UIPageViewController *)pageViewController
+{
+    return (pageViewController.viewControllers.lastObject == self.receiveViewController) ? 1 : 0;
+}
+
+#pragma mark UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
-    NSInteger page = scrollView.contentOffset.x/scrollView.frame.size.width + 0.5;
-    
-    if (self.pageControl.currentPage != page) {
-        self.pageControl.currentPage = scrollView.contentOffset.x/scrollView.frame.size.width + 0.5;
-        self.pageControl.accessibilityLabel = page ? @"send money" : @"receive money";
-        self.pageControl.accessibilityHint = page ? @"receive money" : @"send money";
-        
-        [(id)(page ? self.sendController : self.receiveController) hideTips];
-    }
-    
-    self.wallpaper.center = CGPointMake(self.wallpaperStart.x - scrollView.contentOffset.x*PARALAX_RATIO,
-                                        self.wallpaperStart.y);
-}
-
-#pragma mark - UINavigationControllerDelegate
-
-- (void)navigationController:(UINavigationController *)navigationController
-didShowViewController:(UIViewController *)viewController animated:(BOOL)animated
-{
-}
-
-- (void)navigationController:(UINavigationController *)navigationController
-willShowViewController:(UIViewController *)viewController animated:(BOOL)animated
-{
-    if (! animated) return;
-    
-    [UIView animateWithDuration:SEGUE_DURATION animations:^{
-        if (viewController != self) {
-            self.wallpaper.center = CGPointMake(self.wallpaperStart.x - self.view.frame.size.width*PARALAX_RATIO,
-                                                self.wallpaperStart.y);
-        }
-        else self.wallpaper.center = self.wallpaperStart;
-    }];
-}
-
-#pragma mark - UIAlertViewDelegate
-
-- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
-{
-    self.alertVisible = NO;
+    self.wallpaperXLeft.constant = (scrollView.contentOffset.x +
+                                   (scrollView.contentInset.left < 0 ? scrollView.contentInset.left : 0))*PARALAX_RATIO;
 }
 
 @end

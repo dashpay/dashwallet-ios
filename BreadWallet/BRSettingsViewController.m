@@ -24,12 +24,11 @@
 //  THE SOFTWARE.
 
 #import "BRSettingsViewController.h"
-#import "BRSeedViewController.h"
+//#import "BRSeedViewController.h"
 #import "BRWalletManager.h"
 #import "BRWallet.h"
 #import "BRPeerManager.h"
 #import "BRTransaction.h"
-#import "BRStoryboardSegue.h"
 #import <QuartzCore/QuartzCore.h>
 
 #define TRANSACTION_CELL_HEIGHT 75
@@ -82,8 +81,8 @@
     self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
                                  [[BRWalletManager sharedInstance] stringForAmount:w.balance],
                                  [[BRWalletManager sharedInstance] localCurrencyStringForAmount:w.balance]];
-    
-    self.wallpaper = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"wallpaper-default.png"]];
+
+    self.wallpaper = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"wallpaper-default"]];
     self.wallpaperStart = self.wallpaper.center;
     
     [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
@@ -153,8 +152,8 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *disclosureIdent = @"BRDisclosureCell", *transactionIdent = @"BRTransactionCell",
-                    *actionIdent = @"BRActionCell", *restoreIdent = @"BRRestoreCell";
+    static NSString *disclosureIdent = @"DisclosureCell", *transactionIdent = @"TransactionCell",
+                    *actionIdent = @"ActionCell", *restoreIdent = @"RestoreCell";
     UITableViewCell *cell = nil;
     UILabel *textLabel, *detailTextLabel, *unconfirmedLabel, *sentLabel, *noTxLabel, *localCurrencyLabel;
     
@@ -196,15 +195,15 @@
                 sentLabel.layer.borderWidth = 0.5;
 
                 if (confirms == 0 && ! [m.wallet transactionIsValid:tx]) {
-                    unconfirmedLabel.text = @"INVALID";
+                    unconfirmedLabel.text = @"INVALID  ";
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                 }
                 else if (confirms == 0 && ! [[BRPeerManager sharedInstance] transactionIsVerified:tx.txHash]) {
-                    unconfirmedLabel.text = @"unverified";
+                    unconfirmedLabel.text = @"unverified  ";
                 }
                 else if (confirms < 6) {
                     unconfirmedLabel.text =
-                        [NSString stringWithFormat:@"%d confirmation%@", (int)confirms, (confirms == 1) ? @"" : @"s"];
+                        [NSString stringWithFormat:@"%d confirmation%@ ", (int)confirms, (confirms == 1) ? @"" : @"s"];
                 }
                 else {
                     unconfirmedLabel.hidden = YES;
@@ -216,14 +215,14 @@
                     localCurrencyLabel.text =
                         [NSString stringWithFormat:@"(%@)", [m localCurrencyStringForAmount:sent]];
                     detailTextLabel.text = @"within wallet";
-                    sentLabel.text = @"moved";
+                    sentLabel.text = @"moved  ";
                 }
                 else if (sent > 0) {
                     textLabel.text = [m stringForAmount:received - sent];
                     detailTextLabel.text = [@"to: " stringByAppendingString:address];
                     localCurrencyLabel.text =
                         [NSString stringWithFormat:@"(%@)", [m localCurrencyStringForAmount:received - sent]];
-                    sentLabel.text = @"sent";
+                    sentLabel.text = @"sent  ";
                     sentLabel.textColor = [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.67];
                 }
                 else {
@@ -231,19 +230,10 @@
                     detailTextLabel.text = [@"to: " stringByAppendingString:address];
                     localCurrencyLabel.text =
                         [NSString stringWithFormat:@"(%@)", [m localCurrencyStringForAmount:received]];
-                    sentLabel.text = @"received";
+                    sentLabel.text = @"received  ";
                     sentLabel.textColor = [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
                 }
 
-                if (NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_6_1) {
-                    CGRect f = unconfirmedLabel.frame;
-
-                    f.size.width = [unconfirmedLabel.text
-                                    sizeWithAttributes:@{NSFontAttributeName:unconfirmedLabel.font}].width + 10;
-                    unconfirmedLabel.frame = f;
-                    f.size.width = [sentLabel.text sizeWithAttributes:@{NSFontAttributeName:sentLabel.font}].width + 10;
-                    sentLabel.frame = f;
-                }
                 sentLabel.layer.borderColor = sentLabel.textColor.CGColor;
                 
                 if (! detailTextLabel.text) detailTextLabel.text = @"can't decode payment address";
@@ -393,14 +383,15 @@
         case 1:
             switch (indexPath.row) {
                 case 0:
-                    c = [self.storyboard instantiateViewControllerWithIdentifier:@"BRAboutViewController"];
+                    c = [self.storyboard instantiateViewControllerWithIdentifier:@"AboutViewController"];
                     l = (id)[c.view viewWithTag:411];
 #if BITCOIN_TESTNET
                     l.text = [l.text stringByReplacingOccurrencesOfString:@"%ver%" withString:@"%ver% (testnet)"];
 #endif
                     l.text = [l.text stringByReplacingOccurrencesOfString:@"%ver%"
                               withString:NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"]];
-                    [BRStoryboardSegue segueFrom:self to:c completion:nil];
+                    //[BRStoryboardSegue segueFrom:self to:c completion:nil];
+                    [self.navigationController pushViewController:c animated:YES];
                     break;
                     
                 case 1:
@@ -440,13 +431,13 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
 {
     if (! animated) return;
     
-    [UIView animateWithDuration:SEGUE_DURATION animations:^{
-        if (viewController != self) {
-            self.wallpaper.center = CGPointMake(self.wallpaperStart.x - self.view.frame.size.width*PARALAX_RATIO,
-                                                self.wallpaperStart.y);
-        }
-        else self.wallpaper.center = self.wallpaperStart;
-    }];
+//    [UIView animateWithDuration:SEGUE_DURATION animations:^{
+//        if (viewController != self) {
+//            self.wallpaper.center = CGPointMake(self.wallpaperStart.x - self.view.frame.size.width*PARALAX_RATIO,
+//                                                self.wallpaperStart.y);
+//        }
+//        else self.wallpaper.center = self.wallpaperStart;
+//    }];
 }
 
 #pragma mark - UIAlertViewDelegate
@@ -458,8 +449,10 @@ willShowViewController:(UIViewController *)viewController animated:(BOOL)animate
         return;
     }
     
-    [BRStoryboardSegue segueFrom:self
-     to:[self.storyboard instantiateViewControllerWithIdentifier:@"BRSeedViewController"] completion:nil];
+//    [BRStoryboardSegue segueFrom:self
+//     to:[self.storyboard instantiateViewControllerWithIdentifier:@"BRSeedViewController"] completion:nil];
+    [self.navigationController
+     pushViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"] animated:YES];
 }
 
 @end

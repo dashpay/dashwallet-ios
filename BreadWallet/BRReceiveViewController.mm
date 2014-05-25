@@ -27,8 +27,7 @@
 #import "BRPaymentRequest.h"
 #import "BRWalletManager.h"
 #import "BRWallet.h"
-#import "BRButton.h"
-#import "BRBubbleView.h"
+//#import "BRBubbleView.h"
 #import "QREncoder.h"
 
 #define BALANCE_TIP @"This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market."
@@ -40,12 +39,11 @@
 
 @interface BRReceiveViewController ()
 
-@property (nonatomic, strong) BRBubbleView *tipView;
+//@property (nonatomic, strong) BRBubbleView *tipView;
 
 @property (nonatomic, strong) IBOutlet UILabel *label;
-@property (nonatomic, strong) IBOutlet UIButton *infoButton;
+@property (nonatomic, strong) IBOutlet UIButton *addressButton;
 @property (nonatomic, strong) IBOutlet UIImageView *qrView;
-@property (nonatomic, strong) IBOutlet BRButton *addressButton;
 
 @end
 
@@ -54,8 +52,8 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    
-    self.addressButton.style = BRButtonStyleNone;
+
+    self.addressButton.titleLabel.adjustsFontSizeToFitWidth = YES;
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -89,70 +87,65 @@
     return [[[BRWalletManager sharedInstance] wallet] receiveAddress];
 }
 
-- (BOOL)nextTip
-{
-    BRBubbleView *v = self.tipView;
-
-    if (v.alpha < 0.5) return NO;
-
-    if ([v.text isEqual:BALANCE_TIP]) {
-        self.tipView = [BRBubbleView viewWithText:QR_TIP
-                        tipPoint:[self.qrView.superview convertPoint:self.qrView.center toView:self.view]
-                        tipDirection:BRBubbleTipDirectionUp];
-    }
-    else if ([v.text isEqual:QR_TIP]) {
-        self.tipView = [BRBubbleView viewWithText:ADDRESS_TIP
-                        tipPoint:[self.addressButton.superview convertPoint:self.addressButton.center toView:self.view]
-                        tipDirection:BRBubbleTipDirectionDown];
-    }
-    else if ([v.text isEqual:ADDRESS_TIP]) {
-        self.tipView = [BRBubbleView viewWithText:PAGE_TIP
-                        tipPoint:CGPointMake(self.view.bounds.size.width/2.0, self.view.superview.bounds.size.height)
-                        tipDirection:BRBubbleTipDirectionDown];
-    }
-    else self.tipView = nil;
-
-    self.tipView.backgroundColor = v.backgroundColor;
-    self.tipView.font = v.font;
-    if (self.tipView) [self.view addSubview:[self.tipView fadeIn]];
-    [v fadeOut];
-    
-    return YES;
-}
+//- (BOOL)nextTip
+//{
+//    BRBubbleView *v = self.tipView;
+//
+//    if (v.alpha < 0.5) return NO;
+//
+//    if ([v.text isEqual:BALANCE_TIP]) {
+//        self.tipView = [BRBubbleView viewWithText:QR_TIP
+//                        tipPoint:[self.qrView.superview convertPoint:self.qrView.center toView:self.view]
+//                        tipDirection:BRBubbleTipDirectionUp];
+//    }
+//    else if ([v.text isEqual:QR_TIP]) {
+//        self.tipView = [BRBubbleView viewWithText:ADDRESS_TIP
+//                        tipPoint:[self.addressButton.superview convertPoint:self.addressButton.center toView:self.view]
+//                        tipDirection:BRBubbleTipDirectionDown];
+//    }
+//    else if ([v.text isEqual:ADDRESS_TIP]) {
+//        self.tipView = [BRBubbleView viewWithText:PAGE_TIP
+//                        tipPoint:CGPointMake(self.view.bounds.size.width/2.0, self.view.superview.bounds.size.height)
+//                        tipDirection:BRBubbleTipDirectionDown];
+//    }
+//    else self.tipView = nil;
+//
+//    self.tipView.backgroundColor = v.backgroundColor;
+//    self.tipView.font = v.font;
+//    if (self.tipView) [self.view addSubview:[self.tipView fadeIn]];
+//    [v fadeOut];
+//    
+//    return YES;
+//}
 
 - (BOOL)hideTips
 {
-    if (self.tipView.alpha < 0.5) return NO;
-    [self.tipView fadeOut];
+//    if (self.tipView.alpha < 0.5) return NO;
+//    [self.tipView fadeOut];
     return YES;
 }
 
 #pragma mark - IBAction
 
-- (IBAction)swipeRight:(id)sender
-{
-    [self.parentViewController performSelector:@selector(page:) withObject:nil];
-}
-
-- (IBAction)info:(id)sender
-{
-    if ([self nextTip]) return;
-
-    self.tipView = [BRBubbleView viewWithText:BALANCE_TIP tipPoint:CGPointMake(self.view.bounds.size.width/2.0, 0.0)
-                    tipDirection:BRBubbleTipDirectionUp];
-    self.tipView.backgroundColor = [UIColor orangeColor];
-    self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
-    [self.view addSubview:[self.tipView fadeIn]];
-}
-
-- (IBAction)next:(id)sender
-{
-    [self nextTip];
-}
+//- (IBAction)info:(id)sender
+//{
+//    if ([self nextTip]) return;
+//
+//    self.tipView = [BRBubbleView viewWithText:BALANCE_TIP tipPoint:CGPointMake(self.view.bounds.size.width/2.0, 0.0)
+//                    tipDirection:BRBubbleTipDirectionUp];
+//    self.tipView.backgroundColor = [UIColor orangeColor];
+//    self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+//    [self.view addSubview:[self.tipView fadeIn]];
+//}
+//
+//- (IBAction)next:(id)sender
+//{
+//    [self nextTip];
+//}
 
 - (IBAction)address:(id)sender
 {
-    if ([self nextTip]) return;
+//    if ([self nextTip]) return;
 
     UIActionSheet *a = [UIActionSheet new];
 
@@ -178,9 +171,9 @@
     //TODO: XXXX allow user to specify a request amount
     if ([title isEqual:@"copy"]) {
         [[UIPasteboard generalPasteboard] setString:self.paymentAddress];        
-        [self.view addSubview:[[[BRBubbleView viewWithText:@"copied"
-                                center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
-                                fadeIn] fadeOutAfterDelay:2.0]];
+//        [self.view addSubview:[[[BRBubbleView viewWithText:@"copied"
+//                                center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
+//                                fadeIn] fadeOutAfterDelay:2.0]];
     }
     else if ([title isEqual:@"email"]) {
         //TODO: XXXX implement BIP71 payment protocol mime attachement

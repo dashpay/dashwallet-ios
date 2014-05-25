@@ -125,7 +125,7 @@ static uint32_t getCompact(const BIGNUM *bn)
     off += sizeof(uint32_t);
     _totalTransactions = [message UInt32AtOffset:off];
     off += sizeof(uint32_t);
-    len = [message varIntAtOffset:off length:&l]*CC_SHA256_DIGEST_LENGTH;
+    len = (NSUInteger)[message varIntAtOffset:off length:&l]*CC_SHA256_DIGEST_LENGTH;
     off += l;
     _hashes = off + len > message.length ? nil : [message subdataWithRange:NSMakeRange(off, len)];
     off += len;

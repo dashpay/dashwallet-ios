@@ -25,7 +25,6 @@
 
 #import "BRAppDelegate.h"
 #import "BRPeerManager.h"
-#import <MessageUI/MessageUI.h>
 
 @implementation BRAppDelegate
 
@@ -36,10 +35,9 @@
     // use background fetch to stay synced with the blockchain
     [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
 
-    [[UINavigationBar appearance]
-     setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor grayColor],
-                              NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue" size:17.0]}];
-    
+    UIPageControl.appearance.pageIndicatorTintColor = [UIColor lightGrayColor];
+    UIPageControl.appearance.currentPageIndicatorTintColor = [UIColor blackColor];
+
     [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
      setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue-Light" size:17.0]}
      forState:UIControlStateNormal];
@@ -54,38 +52,73 @@
     }
 
     //TODO: digitally sign every source release
-    
+
     //TODO: pin code
 
     //TODO: create a BIP and GATT specification for payment protocol over bluetooth LE
     // https://developer.bluetooth.org/gatt/Pages/default.aspx
 
     //TODO: accessibility for the visually impaired
-    
+
     //TODO: internationalization
 
     //TODO: full screen alert dialogs with clean transitions
 
     // this will notify user if bluetooth is disabled (on 4S and newer devices that support BTLE)
     //CBCentralManager *cbManager = [[CBCentralManager alloc] initWithDelegate:self queue:dispatch_get_main_queue()];
-    
+
     //[self centralManagerDidUpdateState:cbManager]; // Show initial state
-    
+
     return YES;
 }
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication
 annotation:(id)annotation
 {
-    if (! [url.scheme isEqual:@"bitcoin"] && ! [url.scheme isEqual:@"zinc"]) {
+    if (! [url.scheme isEqual:@"bitcoin"] && ! [url.scheme isEqual:@"bread"]) {
         [[[UIAlertView alloc] initWithTitle:@"Not a bitcoin URL" message:url.absoluteString delegate:nil
           cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
         return NO;
     }
-    
+
     [[NSNotificationCenter defaultCenter] postNotificationName:BRURLNotification object:nil userInfo:@{@"url":url}];
     
     return YES;
+}
+
+- (void)applicationWillResignActive:(UIApplication *)application
+{
+    // Sent when the application is about to move from active to inactive state. This can occur for certain types of
+    // temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application
+    // and it begins the transition to the background state.
+    // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use
+    // this method to pause the game.
+}
+
+- (void)applicationDidEnterBackground:(UIApplication *)application
+{
+    // Use this method to release shared resources, save user data, invalidate timers, and store enough application
+    // state information to restore your application to its current state in case it is terminated later.
+    // If your application supports background execution, this method is called instead of applicationWillTerminate:
+    // when the user quits.
+}
+
+- (void)applicationWillEnterForeground:(UIApplication *)application
+{
+    // Called as part of the transition from the background to the inactive state; here you can undo many of the changes
+    // made on entering the background.
+}
+
+- (void)applicationDidBecomeActive:(UIApplication *)application
+{
+    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application
+    // was previously in the background, optionally refresh the user interface.
+}
+
+- (void)applicationWillTerminate:(UIApplication *)application
+{
+    // Called when the application is about to terminate. Save data if appropriate. See also
+    // applicationDidEnterBackground:.
 }
 
 - (void)application:(UIApplication *)application
@@ -119,12 +152,12 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         queue:nil usingBlock:^(NSNotification *note) {
             if (completion) completion(UIBackgroundFetchResultNewData);
             completion = nil;
-
+            
             if (syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFinishedObserver];
             if (syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFailedObserver];
             syncFinishedObserver = syncFailedObserver = nil;
         }];
-    
+
     syncFailedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
@@ -135,7 +168,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
             if (syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFailedObserver];
             syncFinishedObserver = syncFailedObserver = nil;
         }];
-
+    
     [m connect];
 }
 
@@ -152,4 +185,5 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 //        default: NSLog(@"BT State unknown."); break;
 //    }    
 //}
+
 @end

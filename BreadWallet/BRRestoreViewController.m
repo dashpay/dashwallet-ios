@@ -30,16 +30,11 @@
 #import "BRBIP39Mnemonic.h"
 #import <QuartzCore/QuartzCore.h>
 
-#define SHFT @"\xE2\x87\xA7" // upwards white arrow (utf-8)
-#define BKSP @"\xE2\x8C\xAB" // erase to the left (backspace) (utf-8)
-
 #define PHRASE_LENGTH 12
 
 @interface BRRestoreViewController ()
 
 @property (nonatomic, strong) IBOutlet UITextView *textView;
-@property (nonatomic, strong) IBOutlet UILabel *label;
-@property (nonatomic, strong) IBOutletCollection(UIButton) NSArray *keys;
 
 @end
 
@@ -75,7 +70,6 @@ static NSString *normalize_phrase(NSString *phrase)
     
     self.textView.layer.borderColor = [[UIColor colorWithWhite:0.0 alpha:0.25] CGColor];
     self.textView.layer.borderWidth = 0.5;
-    self.textView.textColor = [UIColor blackColor];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -187,7 +181,7 @@ static NSString *normalize_phrase(NSString *phrase)
     UIViewController *p = self.navigationController.presentingViewController.presentingViewController;
     
     [p dismissViewControllerAnimated:NO completion:^{
-        [p presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"BRNewWalletNav"]
+        [p presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"]
          animated:NO completion:nil];
     }];
 }

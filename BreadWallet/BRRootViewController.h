@@ -25,6 +25,12 @@
 
 #import <UIKit/UIKit.h>
 
-@interface BRRootViewController : UIViewController<UINavigationControllerDelegate>
+@class BRReceiveViewController, BRSendViewController;
+
+@interface BRRootViewController : UIViewController <UIPageViewControllerDataSource, UIScrollViewDelegate>
+
+@property (nonatomic, strong) IBOutlet BRReceiveViewController *receiveViewController;
+@property (nonatomic, strong) IBOutlet BRSendViewController *sendViewController;
+@property (nonatomic, strong) IBOutlet UIPageViewController *pageViewController;
 
 @end

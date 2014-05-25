@@ -32,14 +32,12 @@
 
 @interface BRWelcomeViewController ()
 
-@property (nonatomic, assign) CGPoint logoStart, walletStart, restoreStart, paralaxStart, wallpaperStart;
 @property (nonatomic, assign) BOOL hasAppeared, animating;
 @property (nonatomic, strong) id activeObserver, resignActiveObserver;
+@property (nonatomic, assign) UINavigationControllerOperation navOp;
 
-@property (nonatomic, strong) IBOutlet UIImageView *logo, *wallpaper;
-@property (nonatomic, strong) IBOutlet UIView *paralax;
-@property (nonatomic, strong) IBOutlet UIButton *walletButton, *restoreButton;
-
+@property (nonatomic, strong) IBOutlet UIView *paralax, *wallpaper;
+@property (nonatomic, strong) IBOutlet NSLayoutConstraint *logoXCenter, *walletXCenter, *restoreXCenter;
 @end
 
 @implementation BRWelcomeViewController
@@ -62,30 +60,30 @@
                 [self.navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
             }
 
-            if (self.animating) return;
-            
-            self.wallpaper.center = self.wallpaperStart;
-            
-            [UIView animateWithDuration:WALLPAPER_ANIMATION_DURATION delay:0.0
-            options:UIViewAnimationOptionCurveLinear|UIViewAnimationOptionRepeat|UIViewAnimationOptionAutoreverse
-            animations:^{
+            if (! self.animating) {
                 self.animating = YES;
-                self.wallpaper.center = CGPointMake(self.wallpaperStart.x - WALLPAPER_ANIMATION_X,
-                                                    self.wallpaperStart.y - WALLPAPER_ANIMATION_Y);
-            } completion:^(BOOL finished) { self.animating = NO; }];
+
+                [UIView animateWithDuration:WALLPAPER_ANIMATION_DURATION delay:0.0
+                 options:UIViewAnimationOptionCurveLinear|UIViewAnimationOptionRepeat|UIViewAnimationOptionAutoreverse
+                 animations:^{
+                     self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 - WALLPAPER_ANIMATION_X,
+                                                         self.wallpaper.frame.size.height/2 - WALLPAPER_ANIMATION_Y);
+                 } completion:^(BOOL finished) {
+                     self.animating = NO;
+                 }];
+            }
         }];
     
     self.resignActiveObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            self.wallpaper.center = self.wallpaperStart;
+            self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2, self.wallpaper.center.y);
         }];
 }
 
 - (void)dealloc
 {
     self.navigationController.delegate = nil;
-
     if (self.activeObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
     if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
 }
@@ -95,21 +93,15 @@
     [super viewWillAppear:animated];
     
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:NO];
-    
-    if (self.hasAppeared) return;
-    
-    self.wallpaperStart = self.wallpaper.center;
-    self.logoStart = CGPointMake(self.logo.center.x - self.view.frame.size.width, self.logo.center.y);
-    self.paralaxStart = self.paralax.center;
-    self.walletStart = self.walletButton.center;
-    self.restoreStart = self.restoreButton.center;
-    
-    self.walletButton.center = CGPointMake(self.walletStart.x + self.view.frame.size.width, self.walletStart.y);
-    self.restoreButton.center = CGPointMake(self.restoreStart.x + self.view.frame.size.width, self.restoreStart.y);
-    self.paralax.center = CGPointMake(self.paralaxStart.x + self.view.frame.size.width*PARALAX_RATIO,
-                                      self.paralaxStart.y);
-                
-    [self.navigationController.view insertSubview:self.paralax atIndex:0];
+
+    if (self.hasAppeared) {
+        self.logoXCenter.constant = self.view.frame.size.width;
+        self.navigationItem.titleView.hidden = NO;
+    }
+    else {
+        self.walletXCenter.constant = -self.view.frame.size.width;
+        self.restoreXCenter.constant = -self.view.frame.size.width;
+    }
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -120,47 +112,80 @@
         [self.navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
     }
 
-    if (self.hasAppeared) return;
-    
-    self.hasAppeared = YES;
-    
     dispatch_async(dispatch_get_main_queue(), ^{ // animation sometimes doesn't work if run directly in viewDidAppear
-        [UIView animateWithDuration:WALLPAPER_ANIMATION_DURATION delay:0.0
-        options:UIViewAnimationOptionCurveLinear|UIViewAnimationOptionRepeat|UIViewAnimationOptionAutoreverse
-        animations:^{
+        if (! self.animating) {
             self.animating = YES;
-            self.wallpaper.center = CGPointMake(self.wallpaperStart.x - WALLPAPER_ANIMATION_X,
-                                                self.wallpaperStart.y - WALLPAPER_ANIMATION_Y);
-        } completion:^(BOOL finished) { self.animating = NO; }];
-        
-        [UIView animateWithDuration:SEGUE_DURATION delay:1.0 options:0 animations:^{
-            self.walletButton.center = self.walletStart;
-            self.restoreButton.center = self.restoreStart;
-            self.logo.center = self.logoStart;
-            self.paralax.center = self.paralaxStart;
-        } completion:nil];
+
+            [UIView animateWithDuration:WALLPAPER_ANIMATION_DURATION delay:0.0
+             options:UIViewAnimationOptionCurveLinear|UIViewAnimationOptionRepeat|UIViewAnimationOptionAutoreverse
+             animations:^{
+                 self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 - WALLPAPER_ANIMATION_X,
+                                                     self.wallpaper.frame.size.height/2 - WALLPAPER_ANIMATION_Y);
+             } completion:^(BOOL finished) {
+                 self.animating = NO;
+             }];
+        }
+
+        if (! self.hasAppeared) {
+            self.hasAppeared = YES;
+            self.logoXCenter.constant = self.view.frame.size.width;
+            self.walletXCenter.constant = 0;
+            self.restoreXCenter.constant = 0;
+            self.navigationItem.titleView.hidden = NO;
+            self.navigationItem.titleView.alpha = 0.0;
+
+            [UIView animateWithDuration:0.25 delay:1.0 options:0 animations:^{
+                [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationSlide];
+                self.navigationItem.titleView.alpha = 1.0;
+                self.paralax.center = CGPointMake(self.view.frame.size.width*PARALAX_RATIO, self.paralax.center.y);
+                [self.view layoutIfNeeded];
+            } completion:nil];
+        }
     });
+}
+
+#pragma mark UIViewControllerAnimatedTransitioning
+
+// This is used for percent driven interactive transitions, as well as for container controllers that have companion
+// animations that might need to synchronize with the main animation.
+- (NSTimeInterval)transitionDuration:(id<UIViewControllerContextTransitioning>)transitionContext
+{
+    return 0.25;
+}
+
+// This method can only be a nop if the transition is interactive and not a percentDriven interactive transition.
+- (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext
+{
+    UIView *v = transitionContext.containerView;
+    UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
+                     *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
+    BOOL push = (self.navOp == UINavigationControllerOperationPush) ? YES : NO;
+
+    if (self.paralax.superview != v) {
+        self.paralax.center = CGPointMake(-v.frame.size.width*PARALAX_RATIO, 0);
+        [v insertSubview:self.paralax belowSubview:from.view];
+    }
+
+    to.view.center = CGPointMake(v.frame.size.width*(push ? 3 : -1)/2, to.view.center.y);
+    [v addSubview:to.view];
+
+    [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 options:0 animations:^{
+        to.view.center = from.view.center;
+        from.view.center = CGPointMake(v.frame.size.width*(push ? -1 : 3)/2, from.view.center.y);
+        self.paralax.center = CGPointMake(v.frame.size.width*(push ? -2 : -1)*PARALAX_RATIO, self.paralax.center.y);
+    } completion:^(BOOL finished) {
+        [transitionContext completeTransition:finished];
+    }];
 }
 
 #pragma mark - UINavigationControllerDelegate
 
-- (void)navigationController:(UINavigationController *)navigationController
-didShowViewController:(UIViewController *)viewController animated:(BOOL)animated
+- (id<UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController
+animationControllerForOperation:(UINavigationControllerOperation)operation fromViewController:(UIViewController *)fromVC
+toViewController:(UIViewController *)toVC
 {
-}
-
-- (void)navigationController:(UINavigationController *)navigationController
-willShowViewController:(UIViewController *)viewController animated:(BOOL)animated
-{
-    if (! animated) return;
-
-    [UIView animateWithDuration:SEGUE_DURATION animations:^{
-        if (viewController != self) {
-            self.paralax.center = CGPointMake(self.paralaxStart.x - self.view.frame.size.width*PARALAX_RATIO,
-                                              self.paralaxStart.y);
-        }
-        else self.paralax.center = self.paralaxStart;
-    }];
+    self.navOp = operation;
+    return self;
 }
 
 @end

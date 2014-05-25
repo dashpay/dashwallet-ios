@@ -222,7 +222,7 @@ static const char *dns_seeds[] = {
             [self.misbehavinPeers removeAllObjects];
 
             for (int i = 0; i < sizeof(dns_seeds)/sizeof(*dns_seeds); i++) { // DNS peer discovery
-                struct hostent *h = gethostbyname(dns_seeds[i]);
+                struct hostent *h = gethostbyname(dns_seeds[i]); //BUG: XXXX blocks core data if network is slow/off
 
                 for (int j = 0; h != NULL && h->h_addr_list[j] != NULL; j++) {
                     uint32_t addr = CFSwapInt32BigToHost(((struct in_addr *)h->h_addr_list[j])->s_addr);
