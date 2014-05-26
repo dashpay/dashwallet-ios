@@ -347,7 +347,7 @@
                     <connections>
                         <outlet property="errorBar" destination="RLt-8v-uP1" id="4fP-CP-ICW"/>
                         <outlet property="progress" destination="3jf-fx-Ie3" id="gCy-rS-Gao"/>
-                        <outlet property="progress2" destination="eZp-EX-faL" id="D8R-4E-QoQ"/>
+                        <outlet property="pulse" destination="eZp-EX-faL" id="RjA-bp-dr1"/>
                         <outlet property="wallpaperXLeft" destination="VZz-Wc-0FS" id="nlF-cp-RQg"/>
                     </connections>
                 </viewController>

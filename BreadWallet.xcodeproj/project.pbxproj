@@ -740,10 +740,10 @@
 		75878BC1192AEC3F002505AB /* BRReceiveViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 75878BC0192AEC3F002505AB /* BRReceiveViewController.mm */; };
 		75878BC3192AED38002505AB /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75878BC2192AED38002505AB /* MessageUI.framework */; };
 		75878BC6192B1AF0002505AB /* BRSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75878BC5192B1AF0002505AB /* BRSettingsViewController.m */; };
+		759FBB36193290F600AB4465 /* BRRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759FBB33193290F600AB4465 /* BRRootViewController.m */; };
+		759FBB37193290F600AB4465 /* BRSendViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759FBB35193290F600AB4465 /* BRSendViewController.m */; };
 		75B8346719233B550010931E /* dsa_gen.c in Sources */ = {isa = PBXBuildFile; fileRef = 75B8346619233B550010931E /* dsa_gen.c */; };
 		75B8346819233D400010931E /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7579F7D919231A5D00CA56F4 /* libcrypto.a */; };
-		75BA5D081922965C0040304C /* BRSendViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75BA5D071922965C0040304C /* BRSendViewController.m */; };
-		75BA5D0B192297620040304C /* BRRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75BA5D0A192297620040304C /* BRRootViewController.m */; };
 		75D5F3C2191EC270004AB296 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D5F3C1191EC270004AB296 /* Foundation.framework */; };
 		75D5F3C4191EC270004AB296 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D5F3C3191EC270004AB296 /* CoreGraphics.framework */; };
 		75D5F3C6191EC270004AB296 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D5F3C5191EC270004AB296 /* UIKit.framework */; };
@@ -1798,12 +1798,12 @@
 		75878BC2192AED38002505AB /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		75878BC4192B1AF0002505AB /* BRSettingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRSettingsViewController.h; sourceTree = "<group>"; };
 		75878BC5192B1AF0002505AB /* BRSettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRSettingsViewController.m; sourceTree = "<group>"; };
+		759FBB31193290F600AB4465 /* BRReceiveViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRReceiveViewController.h; sourceTree = "<group>"; };
+		759FBB32193290F600AB4465 /* BRRootViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRRootViewController.h; sourceTree = "<group>"; };
+		759FBB33193290F600AB4465 /* BRRootViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRRootViewController.m; sourceTree = "<group>"; };
+		759FBB34193290F600AB4465 /* BRSendViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRSendViewController.h; sourceTree = "<group>"; };
+		759FBB35193290F600AB4465 /* BRSendViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRSendViewController.m; sourceTree = "<group>"; };
 		75B8346619233B550010931E /* dsa_gen.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = dsa_gen.c; sourceTree = "<group>"; };
-		75BA5D03192296450040304C /* BRReceiveViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BRReceiveViewController.h; path = ../../breadwallet/BreadWallet/BRReceiveViewController.h; sourceTree = "<group>"; };
-		75BA5D061922965C0040304C /* BRSendViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BRSendViewController.h; path = ../../breadwallet/BreadWallet/BRSendViewController.h; sourceTree = "<group>"; };
-		75BA5D071922965C0040304C /* BRSendViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = BRSendViewController.m; path = ../../breadwallet/BreadWallet/BRSendViewController.m; sourceTree = "<group>"; };
-		75BA5D09192297620040304C /* BRRootViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BRRootViewController.h; path = ../../breadwallet/BreadWallet/BRRootViewController.h; sourceTree = "<group>"; };
-		75BA5D0A192297620040304C /* BRRootViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = BRRootViewController.m; path = ../../breadwallet/BreadWallet/BRRootViewController.m; sourceTree = "<group>"; };
 		75D5F3BE191EC270004AB296 /* BreadWallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BreadWallet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		75D5F3C1191EC270004AB296 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		75D5F3C3191EC270004AB296 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -3353,12 +3353,12 @@
 		75BA5D02192296010040304C /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				75BA5D09192297620040304C /* BRRootViewController.h */,
-				75BA5D0A192297620040304C /* BRRootViewController.m */,
-				75BA5D03192296450040304C /* BRReceiveViewController.h */,
+				759FBB32193290F600AB4465 /* BRRootViewController.h */,
+				759FBB33193290F600AB4465 /* BRRootViewController.m */,
+				759FBB34193290F600AB4465 /* BRSendViewController.h */,
+				759FBB35193290F600AB4465 /* BRSendViewController.m */,
+				759FBB31193290F600AB4465 /* BRReceiveViewController.h */,
 				75878BC0192AEC3F002505AB /* BRReceiveViewController.mm */,
-				75BA5D061922965C0040304C /* BRSendViewController.h */,
-				75BA5D071922965C0040304C /* BRSendViewController.m */,
 				75878BBD192ACD46002505AB /* BRAmountViewController.h */,
 				75878BBE192ACD46002505AB /* BRAmountViewController.m */,
 				75878BC4192B1AF0002505AB /* BRSettingsViewController.h */,
@@ -4421,9 +4421,7 @@
 				752E28D419234C3600DB5A3C /* BRPaymentProtocol.m in Sources */,
 				752E28D519234C3600DB5A3C /* BRPaymentRequest.m in Sources */,
 				7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */,
-				75BA5D0B192297620040304C /* BRRootViewController.m in Sources */,
 				75878BC1192AEC3F002505AB /* BRReceiveViewController.mm in Sources */,
-				75BA5D081922965C0040304C /* BRSendViewController.m in Sources */,
 				75878BBF192ACD46002505AB /* BRAmountViewController.m in Sources */,
 				75878BC6192B1AF0002505AB /* BRSettingsViewController.m in Sources */,
 				757BE7E3192C0E9D0061CB20 /* BRRestoreViewController.m in Sources */,
@@ -4435,7 +4433,9 @@
 				752E28EA19234DA200DB5A3C /* NSMutableData+Bitcoin.m in Sources */,
 				752E28EB19234DA200DB5A3C /* NSString+Base58.m in Sources */,
 				75D5F3D2191EC270004AB296 /* BRAppDelegate.m in Sources */,
+				759FBB36193290F600AB4465 /* BRRootViewController.m in Sources */,
 				752E289A192349CE00DB5A3C /* BreadWallet.xcdatamodeld in Sources */,
+				759FBB37193290F600AB4465 /* BRSendViewController.m in Sources */,
 				752E28F119234E8100DB5A3C /* Reachability.m in Sources */,
 				75D5F3CE191EC270004AB296 /* main.m in Sources */,
 			);

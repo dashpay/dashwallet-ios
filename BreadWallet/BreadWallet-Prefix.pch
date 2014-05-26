@@ -21,6 +21,10 @@
 #define BRURLNotification  @"BRURLNotification"
 #define BRFileNotification @"BRFileNotification"
 
+#if BITCOIN_TESTNET
+#warning testnet build
+#endif
+
 #if ! DEBUG
 #define NSLog(...)
 #endif

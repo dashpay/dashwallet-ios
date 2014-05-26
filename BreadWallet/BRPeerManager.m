@@ -530,6 +530,7 @@ static const char *dns_seeds[] = {
 
 - (void)syncTimeout
 {
+    //BUG: XXXX sync can stall if download peer continues to relay tx but not blocks
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
 
     if (now - self.lastRelayTime < PROTOCOL_TIMEOUT) { // the download peer relayed something in time, so restart timer

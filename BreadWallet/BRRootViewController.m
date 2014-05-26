@@ -33,7 +33,7 @@
 
 @interface BRRootViewController ()
 
-@property (nonatomic, strong) IBOutlet UIProgressView *progress, *progress2;
+@property (nonatomic, strong) IBOutlet UIProgressView *progress, *pulse;
 @property (nonatomic, strong) IBOutlet UIView *errorBar;
 @property (nonatomic, strong) IBOutlet UIGestureRecognizer *navBarTap;
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *wallpaperXLeft;
@@ -75,14 +75,18 @@
     self.urlObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRURLNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-//            [self.scrollView setContentOffset:CGPointZero animated:YES];
+            [self.pageViewController setViewControllers:@[self.sendViewController]
+             direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
+            self.wallpaperXLeft.constant = 0;
             if (m.wallet) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
         }];
 
     self.fileObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRFileNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-//            [self.scrollView setContentOffset:CGPointZero animated:YES];
+            [self.pageViewController setViewControllers:@[self.sendViewController]
+             direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
+            self.wallpaperXLeft.constant = 0;
             if (m.wallet) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
         }];
 
@@ -111,46 +115,44 @@
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
 
-//            // update receive qr code if it's not on screen
-//            if (self.pageControl.currentPage != 1) [[self receiveController] viewWillAppear:NO];
+            // update receive qr code if it's not on screen
+            if (self.pageViewController.viewControllers.lastObject != self.receiveViewController) {
+                [self.receiveViewController viewWillAppear:NO];
+            }
         }];
 
     self.syncStartedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncStartedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-//            if (self.navigationItem.rightBarButtonItem == nil) {
-//                self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
-//                [self.spinner startAnimating];
-//            }
-
             if (self.reachability.currentReachabilityStatus != NotReachable) [self hideErrorBar];
             if (m.wallet.balance == 0) self.navigationItem.title = @"syncing...";
             [UIApplication sharedApplication].idleTimerDisabled = YES;
-            self.progress.hidden = NO;
+            self.progress.hidden = self.pulse.hidden = NO;
 
             [UIView animateWithDuration:0.2 animations:^{
                 self.progress.alpha = 1.0;
             }];
 
             [self updateProgress];
+            [self performSelector:@selector(startPulse) withObject:nil afterDelay:1.0];
         }];
     
     self.syncFinishedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-//            [self.spinner stopAnimating];
-            self.navigationItem.rightBarButtonItem = nil;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
             [UIApplication sharedApplication].idleTimerDisabled = NO;
 
             if (self.progress.alpha > 0.5) {
                 [self.progress setProgress:1.0 animated:YES];
+                [self.pulse setProgress:1.0 animated:YES];
 
                 [UIView animateWithDuration:0.2 animations:^{
-                    self.progress.alpha = 0.0;
+                    self.progress.alpha = self.pulse.alpha = 0.0;
                 } completion:^(BOOL finished) {
-                    self.progress.progress = 0.0;
+                    self.progress.hidden = self.pulse.hidden = YES;
+                    self.progress.progress = self.pulse.progress = 0.0;
                 }];
             }
         }];
@@ -158,13 +160,11 @@
     self.syncFailedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-//            [self.spinner stopAnimating];
-            self.navigationItem.rightBarButtonItem = nil;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
             [UIApplication sharedApplication].idleTimerDisabled = NO;
-            self.progress.hidden = YES;
-            self.progress.progress = 0.0;
+            self.progress.hidden = self.pulse.hidden = YES;
+            self.progress.progress = self.pulse.progress = 0.0;
             [self showErrorBar];
         }];
     
@@ -240,23 +240,31 @@
     double progress = [[BRPeerManager sharedInstance] syncProgress];
 
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateProgress) object:nil];
-    if (progress > DBL_EPSILON) [self.progress setProgress:progress animated:(progress > self.progress.progress)];
+
+    if (progress > DBL_EPSILON && progress != self.progress.progress) {
+        if (progress < self.pulse.progress || self.pulse.progress == self.progress.progress) {
+            [self.pulse setProgress:progress animated:(progress > self.progress.progress)];
+        }
+
+        [self.progress setProgress:progress animated:(progress > self.progress.progress)];
+    }
+
     if (progress < 1.0) [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
 }
 
-- (void)pulse
+- (void)startPulse
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(pulse) object:nil];
     if (self.progress.hidden) return;
 
-    [self.progress2 setProgress:self.progress.progress animated:YES];
+    [self.pulse setProgress:self.progress.progress animated:(self.progress.progress > self.pulse.progress)];
 
     [UIView animateWithDuration:1.5 delay:1.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
-        self.progress2.alpha = 0.0;
+        self.pulse.alpha = 0.0;
     } completion:^(BOOL finished) {
-        self.progress2.alpha = 1.0;
-        self.progress2.progress = 0;
-        [self performSelector:@selector(pulse) withObject:nil afterDelay:0.0];
+        self.pulse.alpha = 1.0;
+        self.pulse.progress = 0;
+        [self performSelector:@selector(startPulse) withObject:nil afterDelay:0.0];
     }];
 }
 
