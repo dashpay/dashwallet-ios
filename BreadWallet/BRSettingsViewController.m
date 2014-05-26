@@ -24,7 +24,6 @@
 //  THE SOFTWARE.
 
 #import "BRSettingsViewController.h"
-//#import "BRSeedViewController.h"
 #import "BRWalletManager.h"
 #import "BRWallet.h"
 #import "BRPeerManager.h"
@@ -38,7 +37,8 @@
 @property (nonatomic, strong) NSArray *transactions;
 @property (nonatomic, strong) id balanceObserver, txStatusObserver;
 @property (nonatomic, strong) UIImageView *wallpaper;
-@property (nonatomic, assign) CGPoint wallpaperStart;
+@property (nonatomic, assign) UINavigationControllerOperation navOp;
+//@property (nonatomic, assign) CGPoint wallpaperStart;
 
 @end
 
@@ -76,18 +76,15 @@
              withRowAnimation:UITableViewRowAnimationAutomatic];
         }];
 
-    BRWallet *w = [[BRWalletManager sharedInstance] wallet];
+    BRWalletManager *m = [BRWalletManager sharedInstance];
 
-    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
-                                 [[BRWalletManager sharedInstance] stringForAmount:w.balance],
-                                 [[BRWalletManager sharedInstance] localCurrencyStringForAmount:w.balance]];
-
-    self.wallpaper = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"wallpaper-default"]];
-    self.wallpaperStart = self.wallpaper.center;
-    
+    self.wallpaper = [[UIImageView alloc] initWithFrame:self.navigationController.view.bounds];
+    self.wallpaper.image = [UIImage imageNamed:@"wallpaper-default"];
+    self.wallpaper.contentMode = UIViewContentModeLeft;
     [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
-    
     self.navigationController.delegate = self;
+    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
+                                 [m localCurrencyStringForAmount:m.wallet.balance]];
 }
 
 - (void)dealloc
@@ -419,25 +416,46 @@
     }
 }
 
-#pragma mark - UINavigationControllerDelegate
+#pragma mark UIViewControllerAnimatedTransitioning
 
-- (void)navigationController:(UINavigationController *)navigationController
-didShowViewController:(UIViewController *)viewController animated:(BOOL)animated
+// This is used for percent driven interactive transitions, as well as for container controllers that have companion
+// animations that might need to synchronize with the main animation.
+- (NSTimeInterval)transitionDuration:(id<UIViewControllerContextTransitioning>)transitionContext
 {
+    return 0.25;
 }
 
-- (void)navigationController:(UINavigationController *)navigationController
-willShowViewController:(UIViewController *)viewController animated:(BOOL)animated
+// This method can only be a nop if the transition is interactive and not a percentDriven interactive transition.
+- (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext
 {
-    if (! animated) return;
-    
-//    [UIView animateWithDuration:SEGUE_DURATION animations:^{
-//        if (viewController != self) {
-//            self.wallpaper.center = CGPointMake(self.wallpaperStart.x - self.view.frame.size.width*PARALAX_RATIO,
-//                                                self.wallpaperStart.y);
-//        }
-//        else self.wallpaper.center = self.wallpaperStart;
-//    }];
+    UIView *v = transitionContext.containerView;
+    UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
+    *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
+    BOOL push = (self.navOp == UINavigationControllerOperationPush) ? YES : NO;
+
+    if (self.wallpaper.superview != v) [v insertSubview:self.wallpaper belowSubview:from.view];
+
+    to.view.center = CGPointMake(v.frame.size.width*(push ? 3 : -1)/2, to.view.center.y);
+    [v addSubview:to.view];
+
+    [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 options:0 animations:^{
+        to.view.center = from.view.center;
+        from.view.center = CGPointMake(v.frame.size.width*(push ? -1 : 3)/2, from.view.center.y);
+        self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 -
+                                            v.frame.size.width*(push ? 1 : 0)*PARALAX_RATIO, self.wallpaper.center.y);
+    } completion:^(BOOL finished) {
+        [transitionContext completeTransition:finished];
+    }];
+}
+
+#pragma mark - UINavigationControllerDelegate
+
+- (id<UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController
+animationControllerForOperation:(UINavigationControllerOperation)operation fromViewController:(UIViewController *)fromVC
+toViewController:(UIViewController *)toVC
+{
+    self.navOp = operation;
+    return self;
 }
 
 #pragma mark - UIAlertViewDelegate

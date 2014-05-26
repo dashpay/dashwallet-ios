@@ -34,11 +34,11 @@
 @interface BRRootViewController ()
 
 @property (nonatomic, strong) IBOutlet UIProgressView *progress, *pulse;
-@property (nonatomic, strong) IBOutlet UIView *errorBar;
+@property (nonatomic, strong) IBOutlet UIView *errorBar, *wallpaper;
 @property (nonatomic, strong) IBOutlet UIGestureRecognizer *navBarTap;
-@property (nonatomic, strong) IBOutlet NSLayoutConstraint *wallpaperXLeft;
 @property (nonatomic, assign) BOOL appeared;
 @property (nonatomic, strong) Reachability *reachability;
+@property (nonatomic, assign) UINavigationControllerOperation navOp;
 @property (nonatomic, strong) id urlObserver, fileObserver, activeObserver, balanceObserver, reachabilityObserver;
 @property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 
@@ -77,7 +77,7 @@
         usingBlock:^(NSNotification *note) {
             [self.pageViewController setViewControllers:@[self.sendViewController]
              direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
-            self.wallpaperXLeft.constant = 0;
+            self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2, self.wallpaper.center.y);
             if (m.wallet) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
         }];
 
@@ -86,7 +86,7 @@
         usingBlock:^(NSNotification *note) {
             [self.pageViewController setViewControllers:@[self.sendViewController]
              direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
-            self.wallpaperXLeft.constant = 0;
+            self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2, self.wallpaper.center.y);
             if (m.wallet) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
         }];
 
@@ -134,7 +134,7 @@
             }];
 
             [self updateProgress];
-            [self performSelector:@selector(startPulse) withObject:nil afterDelay:1.0];
+            [self startPulse];
         }];
     
     self.syncFinishedObserver =
@@ -143,7 +143,6 @@
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
             [UIApplication sharedApplication].idleTimerDisabled = NO;
-
             if (self.progress.alpha > 0.5) {
                 [self.progress setProgress:1.0 animated:YES];
                 [self.pulse setProgress:1.0 animated:YES];
@@ -171,6 +170,7 @@
     self.reachability = [Reachability reachabilityForInternetConnection];
     [self.reachability startNotifier];
 
+    self.navigationController.delegate = self;
     self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                  [m localCurrencyStringForAmount:m.wallet.balance]];
 
@@ -242,11 +242,8 @@
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateProgress) object:nil];
 
     if (progress > DBL_EPSILON && progress != self.progress.progress) {
-        if (progress < self.pulse.progress || self.pulse.progress == self.progress.progress) {
-            [self.pulse setProgress:progress animated:(progress > self.progress.progress)];
-        }
-
-        [self.progress setProgress:progress animated:(progress > self.progress.progress)];
+        [self.progress setProgress:progress animated:progress > self.progress.progress];
+        [self.pulse setProgress:progress animated:progress > self.pulse.progress];
     }
 
     if (progress < 1.0) [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
@@ -257,15 +254,15 @@
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(pulse) object:nil];
     if (self.progress.hidden) return;
 
-    [self.pulse setProgress:self.progress.progress animated:(self.progress.progress > self.pulse.progress)];
+    self.pulse.alpha = 1.0;
+    [self.pulse setProgress:self.progress.progress animated:self.progress.progress > self.pulse.progress];
 
     [UIView animateWithDuration:1.5 delay:1.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
         self.pulse.alpha = 0.0;
-    } completion:^(BOOL finished) {
-        self.pulse.alpha = 1.0;
-        self.pulse.progress = 0;
-        [self performSelector:@selector(startPulse) withObject:nil afterDelay:0.0];
-    }];
+    } completion:nil];
+
+    [self.pulse performSelector:@selector(setProgress:) withObject:nil afterDelay:2.5];
+    [self performSelector:@selector(startPulse) withObject:nil afterDelay:2.51];
 }
 
 - (void)showErrorBar {
@@ -332,8 +329,56 @@ viewControllerAfterViewController:(UIViewController *)viewController
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
-    self.wallpaperXLeft.constant = (scrollView.contentOffset.x +
-                                   (scrollView.contentInset.left < 0 ? scrollView.contentInset.left : 0))*PARALAX_RATIO;
+    self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 - PARALAX_RATIO*(scrollView.contentOffset.x +
+                                        (scrollView.contentInset.left < 0 ? scrollView.contentInset.left : 0)),
+                                        self.wallpaper.center.y);
+}
+
+#pragma mark UIViewControllerAnimatedTransitioning
+
+// This is used for percent driven interactive transitions, as well as for container controllers that have companion
+// animations that might need to synchronize with the main animation.
+- (NSTimeInterval)transitionDuration:(id<UIViewControllerContextTransitioning>)transitionContext
+{
+    return 0.25;
+}
+
+// This method can only be a nop if the transition is interactive and not a percentDriven interactive transition.
+- (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext
+{
+    UIView *v = transitionContext.containerView;
+    UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
+    *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
+    BOOL push = (self.navOp == UINavigationControllerOperationPush) ? YES : NO;
+
+    if (self.wallpaper.superview != v) {
+        v.backgroundColor = self.view.backgroundColor;
+        self.view.backgroundColor = [UIColor clearColor];
+        [v insertSubview:self.wallpaper belowSubview:from.view];
+    }
+
+    to.view.center = CGPointMake(v.frame.size.width*(push ? 3 : -1)/2, to.view.center.y);
+    [v addSubview:to.view];
+
+    [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 options:0 animations:^{
+        to.view.center = from.view.center;
+        from.view.center = CGPointMake(v.frame.size.width*(push ? -1 : 3)/2, from.view.center.y);
+        self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 -
+                                            v.frame.size.width*(push ? 1 : 0)*PARALAX_RATIO, self.wallpaper.center.y);
+    } completion:^(BOOL finished) {
+        if (! push) [from.view removeFromSuperview];
+        [transitionContext completeTransition:finished];
+    }];
+}
+
+#pragma mark - UINavigationControllerDelegate
+
+- (id<UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController
+animationControllerForOperation:(UINavigationControllerOperation)operation fromViewController:(UIViewController *)fromVC
+toViewController:(UIViewController *)toVC
+{
+    self.navOp = operation;
+    return self;
 }
 
 @end

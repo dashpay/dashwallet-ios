@@ -160,6 +160,8 @@ static NSString *normalize_phrase(NSString *phrase)
         }
     }
     else {
+        //TODO: offer the user an option to move funds to a new seed if their previous wallet device was lost or stolen
+        
         [[BRWalletManager sharedInstance] setSeedPhrase:textView.text];
         
         textView.text = nil;

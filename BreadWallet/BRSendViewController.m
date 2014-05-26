@@ -37,8 +37,6 @@
 #import "NSMutableData+Bitcoin.h"
 #import <AVFoundation/AVFoundation.h>
 
-//#define BT_CONNECT_TIMEOUT 5.0
-
 #define SCAN_TIP      @"Scan someone else's QR code to get their bitcoin address. "\
 "You can send a payment to anyone with an address."
 #define CLIPBOARD_TIP @"Bitcoin addresses can also be copied to the clipboard. "\
@@ -47,7 +45,6 @@
 
 @interface BRSendViewController ()
 
-//@property (nonatomic, strong) GKSession *session;
 @property (nonatomic, strong) NSString *addressInWallet, *txName, *txMemo;
 @property (nonatomic, assign) BOOL txSecure, clearClipboard;
 @property (nonatomic, strong) id urlObserver, fileObserver;
@@ -153,13 +150,6 @@
     [super viewWillAppear:animated];
 
     [self cancel:nil];
-
-    //    self.session = [[GKSession alloc] initWithSessionID:GK_SESSION_ID
-    //                    displayName:[UIDevice.currentDevice.name stringByAppendingString:@" Wallet"]
-    //                    sessionMode:GKSessionModeClient];
-    //    self.session.delegate = self;
-    //    [self.session setDataReceiveHandler:self withContext:nil];
-    //    self.session.available = YES;
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -169,10 +159,6 @@
 
 - (void)viewWillDisappear:(BOOL)animated
 {
-    //    self.session.available = NO;
-    //    [self.session disconnectFromAllPeers];
-    //    self.session = nil;
-
     [self hideTips];
 
     [super viewWillDisappear:animated];
@@ -213,7 +199,7 @@
     if (memo.length > 0) msg = [[msg stringByAppendingString:@"\n"] stringByAppendingString:memo];
 
     [[[UIAlertView alloc] initWithTitle:@"confirm payment" message:msg delegate:self cancelButtonTitle:@"cancel"
-                      otherButtonTitles:amount, nil] show];
+      otherButtonTitles:amount, nil] show];
 }
 
 - (void)confirmRequest:(BRPaymentRequest *)request
@@ -224,7 +210,7 @@
         }
         else {
             [[[UIAlertView alloc] initWithTitle:@"not a valid bitcoin address" message:request.paymentAddress
-                                       delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+              delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
             [self cancel:nil];
         }
 
@@ -239,7 +225,7 @@
 
             if (error) {
                 [[[UIAlertView alloc] initWithTitle:@"couldn't make payment" message:error.localizedDescription
-                                           delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+                  delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
                 [self cancel:nil];
             }
             else [self confirmProtocolRequest:req];
@@ -252,7 +238,7 @@
 
     if ([m.wallet containsAddress:request.paymentAddress]) {
         [[[UIAlertView alloc] initWithTitle:nil message:@"this payment address is already in your wallet" delegate:nil
-                          cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+          cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
 
         self.addressInWallet = request.paymentAddress;
         [self cancel:nil];
@@ -278,7 +264,7 @@
 
         if (! self.tx) {
             [[[UIAlertView alloc] initWithTitle:@"insufficient funds" message:nil delegate:nil cancelButtonTitle:@"ok"
-                              otherButtonTitles:nil] show];
+              otherButtonTitles:nil] show];
             [self cancel:nil];
         }
 
@@ -292,7 +278,7 @@
 
     if (! valid && [request.errorMessage isEqual:@"request expired"]) {
         [[[UIAlertView alloc] initWithTitle:@"bad payment request" message:request.errorMessage delegate:nil
-                          cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+          cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
         [self cancel:nil];
         return;
     }
@@ -300,19 +286,19 @@
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
     self.tx = [m.wallet transactionForAmounts:request.details.outputAmounts
-                              toOutputScripts:request.details.outputScripts withFee:NO];
+               toOutputScripts:request.details.outputScripts withFee:NO];
     self.txWithFee = [m.wallet transactionForAmounts:request.details.outputAmounts
-                                     toOutputScripts:request.details.outputScripts withFee:YES];
+                      toOutputScripts:request.details.outputScripts withFee:YES];
     self.protocolRequest = request;
 
     if (! self.tx) {
         [[[UIAlertView alloc] initWithTitle:@"insufficient funds" message:nil delegate:nil cancelButtonTitle:@"ok"
-                          otherButtonTitles:nil] show];
+          otherButtonTitles:nil] show];
         [self cancel:nil];
     }
 
     [self confirmTransaction:self.tx name:request.commonName memo:request.details.memo
-                    isSecure:(valid && ! [request.pkiType isEqual:@"none"]) ? YES : NO];
+     isSecure:(valid && ! [request.pkiType isEqual:@"none"]) ? YES : NO];
 }
 
 - (void)confirmSweep:(NSString *)privKey
@@ -321,7 +307,7 @@
 
     BRWalletManager *m = [BRWalletManager sharedInstance];
 //    BRBubbleView *v = [BRBubbleView viewWithText:@"checking private key balance..."
-//                                          center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
+//                       center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
 //
 //    v.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
 //    v.customView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
@@ -333,7 +319,7 @@
 
         if (error) {
             [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription delegate:self
-                              cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+              cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
             [self cancel:nil];
         }
         else if (tx) {
@@ -373,12 +359,12 @@
 //        UIButton *b = self.requestButtons[[self.requestIDs indexOfObject:CLIPBOARD_ID]];
 //
 //        self.tipView = [BRBubbleView viewWithText:CLIPBOARD_TIP tipPoint:CGPointMake(b.center.x, b.center.y + 5.0)
-//                                     tipDirection:BRBubbleTipDirectionUp];
+//                        tipDirection:BRBubbleTipDirectionUp];
 //    }
 //    else if ([v.text isEqual:CLIPBOARD_TIP]) {
 //        self.tipView = [BRBubbleView viewWithText:PAGE_TIP
-//                                         tipPoint:CGPointMake(self.view.bounds.size.width/2.0, self.view.superview.bounds.size.height)
-//                                     tipDirection:BRBubbleTipDirectionDown];
+//                        tipPoint:CGPointMake(self.view.bounds.size.width/2.0, self.view.superview.bounds.size.height)
+//                        tipDirection:BRBubbleTipDirectionDown];
 //    }
 //    else self.tipView = nil;
 //
@@ -419,7 +405,7 @@
 //    UIButton *b = self.requestButtons[[self.requestIDs indexOfObject:QR_ID]];
 //
 //    self.tipView = [BRBubbleView viewWithText:SCAN_TIP tipPoint:CGPointMake(b.center.x, b.center.y - 5.0)
-//                                 tipDirection:BRBubbleTipDirectionDown];
+//                    tipDirection:BRBubbleTipDirectionDown];
 //    self.tipView.backgroundColor = [UIColor orangeColor];
 //    self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
 //    [self.view addSubview:[self.tipView fadeIn]];
@@ -619,7 +605,7 @@
 
         if (! self.tx) {
             [[[UIAlertView alloc] initWithTitle:@"insufficient funds" message:nil delegate:nil cancelButtonTitle:@"ok"
-                              otherButtonTitles:nil] show];
+              otherButtonTitles:nil] show];
             [self cancel:nil];
             return;
         }
@@ -723,143 +709,6 @@
             }
         }];
     }
-//    else {
-//        NSLog(@"sending signed request to %@", self.requestIDs[self.selectedIndex]);
-//
-//        NSError *error = nil;
-//
-//        [self.session sendData:[[tx toHex] dataUsingEncoding:NSUTF8StringEncoding]
-//         toPeers:@[self.requestIDs[self.selectedIndex]] withDataMode:GKSendDataReliable error:&error];
-//
-//        if (error) {
-//            [[[UIAlertView alloc] initWithTitle:@"couldn't make payment" message:error.localizedDescription
-//             delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
-//        }
-//
-//        [self.requestIDs removeObjectAtIndex:self.selectedIndex];
-//        [self.requests removeObjectAtIndex:self.selectedIndex];
-//    }
 }
-
-//#pragma mark - GKSessionDelegate
-//
-//// Indicates a state change for the given peer.
-//- (void)session:(GKSession *)session peer:(NSString *)peerID didChangeState:(GKPeerConnectionState)state
-//{
-//    NSLog(@"%@ didChangeState:%@", peerID, state == GKPeerStateAvailable ? @"available" :
-//          state == GKPeerStateUnavailable ? @"unavailable" :
-//          state == GKPeerStateConnecting ? @"connecting" :
-//          state == GKPeerStateConnected ? @"connected" :
-//          state == GKPeerStateDisconnected ? @"disconnected" : @"unkown");
-//    
-//    if (state == GKPeerStateAvailable) {
-//        if (! [self.requestIDs containsObject:peerID]) {
-//            [self.requestIDs addObject:peerID];
-//            [self.requests addObject:[BRPaymentRequest new]];
-//            
-//            [session connectToPeer:peerID withTimeout:BT_CONNECT_TIMEOUT];
-//            
-//            [self layoutButtonsAnimated:YES];
-//        }
-//    }
-//    else if (state == GKPeerStateUnavailable || state == GKPeerStateDisconnected) {
-//        if ([self.requestIDs containsObject:peerID]) {
-//            NSUInteger idx = [self.requestIDs indexOfObject:peerID];
-//            
-//            [self.requestIDs removeObjectAtIndex:idx];
-//            [self.requests removeObjectAtIndex:idx];
-//            [self layoutButtonsAnimated:YES];
-//        }
-//    }
-//}
-//
-//// Indicates a connection request was received from another peer.
-////
-//// Accept by calling -acceptConnectionFromPeer:
-//// Deny by calling -denyConnectionFromPeer:
-//- (void)session:(GKSession *)session didReceiveConnectionRequestFromPeer:(NSString *)peerID
-//{
-//    NSAssert(FALSE, @"%s:%d %s: received connection request (not in client mode)", __FILE__, __LINE__,  __func__);
-//    return;
-//    
-//    
-//    [session denyConnectionFromPeer:peerID];
-//}
-//
-//// Indicates a connection error occurred with a peer, including connection request failures or timeouts.
-//- (void)session:(GKSession *)session connectionWithPeerFailed:(NSString *)peerID withError:(NSError *)error
-//{
-//    [[[UIAlertView alloc] initWithTitle:@"couldn't make payment" message:error.localizedDescription delegate:nil
-//                      cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
-//    
-//    if (self.selectedIndex != NSNotFound && [self.requestIDs[self.selectedIndex] isEqual:peerID]) {
-//        self.selectedIndex = NSNotFound;
-//    }
-//    
-//    if ([self.requestIDs containsObject:peerID]) {
-//        NSUInteger idx = [self.requestIDs indexOfObject:peerID];
-//        
-//        [self.requestIDs removeObjectAtIndex:idx];
-//        [self.requests removeObjectAtIndex:idx];
-//        [self layoutButtonsAnimated:YES];
-//    }
-//}
-//
-//// Indicates an error occurred with the session such as failing to make available.
-//- (void)session:(GKSession *)session didFailWithError:(NSError *)error
-//{
-//    if (self.selectedIndex != NSNotFound && ! [self.requestIDs[self.selectedIndex] isEqual:CLIPBOARD_ID] &&
-//        ! [self.requestIDs[self.selectedIndex] isEqual:QR_ID]) {
-//        self.selectedIndex = NSNotFound;
-//    }
-//    
-//    NSIndexSet *indexes =
-//        [self.requestIDs indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-//            return ! [obj isEqual:CLIPBOARD_ID] && ! [obj isEqual:QR_ID];
-//        }];
-//    
-//    [self.requestIDs removeObjectsAtIndexes:indexes];
-//    [self.requests removeObjectsAtIndexes:indexes];
-//    
-//    [self layoutButtonsAnimated:YES];
-//    
-//    //[[[UIAlertView alloc] initWithTitle:@"couldn't make payment" message:error.localizedDescription delegate:nil
-//    //                  cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
-//}
-//
-//- (void)receiveData:(NSData *)data fromPeer:(NSString *)peer inSession:(GKSession *)session context:(void *)context
-//{
-//    NSUInteger idx = [self.requestIDs indexOfObject:peer];
-//    
-//    if (idx == NSNotFound) {
-//        NSAssert(FALSE, @"%s:%d %s: idx = NSNotFound", __FILE__, __LINE__,  __func__);
-//        return;
-//    }
-//    
-//    BRPaymentRequest *req = self.requests[idx];
-//    
-//    [req setData:data];
-//    
-//    if (! req.valid) {
-//        [[[UIAlertView alloc] initWithTitle:@"couldn't validate payment request"
-//          message:@"The payment reqeust did not contain a valid merchant signature" delegate:self
-//          cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
-//        
-//        if (self.selectedIndex == idx) {
-//            self.selectedIndex = NSNotFound;
-//        }
-//        
-//        [self.requestIDs removeObjectAtIndex:idx];
-//        [self.requests removeObjectAtIndex:idx];
-//        [self layoutButtonsAnimated:YES];
-//        
-//        return;
-//    }
-//    
-//    NSLog(@"got payment reqeust for %@", peer);
-//    NSLog(@"%@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-//    
-//    if (self.selectedIndex == idx) [self confirmRequest:req];
-//}
 
 @end

@@ -25,6 +25,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface BRSettingsViewController : UITableViewController <UIAlertViewDelegate, UINavigationControllerDelegate>
+@interface BRSettingsViewController : UITableViewController <UIAlertViewDelegate, UINavigationControllerDelegate,
+UIViewControllerAnimatedTransitioning>
 
 @end

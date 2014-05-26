@@ -24,12 +24,11 @@
 //  THE SOFTWARE.
 
 #import <UIKit/UIKit.h>
-//#import <GameKit/GameKit.h>
 #import "BRAmountViewController.h"
 #import "ZBarSDK.h"
 
 @interface BRSendViewController : UIViewController <UIAlertViewDelegate, ZBarReaderDelegate,
-BRAmountViewControllerDelegate>//, GKSessionDelegate>
+BRAmountViewControllerDelegate>
 
 - (BOOL)hideTips;
 
