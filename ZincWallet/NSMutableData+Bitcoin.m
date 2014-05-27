@@ -35,6 +35,7 @@
 #define OP_PUSHDATA2   0x4d
 #define OP_PUSHDATA4   0x4e
 #define OP_DUP         0x76
+#define OP_EQUAL       0x87
 #define OP_EQUALVERIFY 0x88
 #define OP_HASH160     0xa9
 #define OP_CHECKSIG    0xac
@@ -159,18 +160,33 @@
     [self appendData:d];
 }
 
-- (void)appendScriptPubKeyForHash:(NSData *)hash
-{
-    [self appendUInt8:OP_DUP];
-    [self appendUInt8:OP_HASH160];
-    [self appendScriptPushData:hash]; // script is big endian
-    [self appendUInt8:OP_EQUALVERIFY];
-    [self appendUInt8:OP_CHECKSIG];
-}
-
 - (void)appendScriptPubKeyForAddress:(NSString *)address
 {
-    [self appendScriptPubKeyForHash:address.addressToHash160];
+    static uint8_t pubkeyAddress = BITCOIN_PUBKEY_ADDRESS, scriptAddress = BITCOIN_SCRIPT_ADDRESS;
+    NSData *d = address.base58checkToData;
+
+    if (d.length != 21) return;
+
+    uint8_t version = *(const uint8_t *)d.bytes;
+    NSData *hash = [d subdataWithRange:NSMakeRange(1, d.length - 1)];
+
+#if BITCOIN_TESTNET
+    pubkeyAddress = BITCOIN_PUBKEY_ADDRESS_TEST;
+    scriptAddress = BITCOIN_SCRIPT_ADDRESS_TEST;
+#endif
+
+    if (version == pubkeyAddress) {
+        [self appendUInt8:OP_DUP];
+        [self appendUInt8:OP_HASH160];
+        [self appendScriptPushData:hash];
+        [self appendUInt8:OP_EQUALVERIFY];
+        [self appendUInt8:OP_CHECKSIG];
+    }
+    else if (version == scriptAddress) {
+        [self appendUInt8:OP_HASH160];
+        [self appendScriptPushData:hash];
+        [self appendUInt8:OP_EQUAL];
+    }
 }
 
 #pragma mark - bitcoin protocol
