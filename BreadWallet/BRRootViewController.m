@@ -134,7 +134,7 @@
             }];
 
             [self updateProgress];
-            [self startPulse];
+            //[self startPulse];
         }];
     
     self.syncFinishedObserver =
@@ -143,6 +143,7 @@
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
             [UIApplication sharedApplication].idleTimerDisabled = NO;
+
             if (self.progress.alpha > 0.5) {
                 [self.progress setProgress:1.0 animated:YES];
                 [self.pulse setProgress:1.0 animated:YES];
@@ -220,6 +221,11 @@
     [super viewDidAppear:animated];
 }
 
+- (void)viewDidLayoutSubviews
+{
+    self.wallpaper.center = CGPointMake(self.wallpaper.center.x, self.wallpaper.superview.frame.size.height/2);
+}
+
 - (void)dealloc
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
@@ -235,35 +241,49 @@
     if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
 }
 
-- (void)updateProgress
+- (void)setProgressTo:(NSNumber *)n
 {
-    double progress = [[BRPeerManager sharedInstance] syncProgress];
-
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateProgress) object:nil];
-
-    if (progress > DBL_EPSILON && progress != self.progress.progress) {
-        [self.progress setProgress:progress animated:progress > self.progress.progress];
-        [self.pulse setProgress:progress animated:progress > self.pulse.progress];
-    }
-
-    if (progress < 1.0) [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
+    self.progress.progress = [n floatValue];
 }
 
-- (void)startPulse
+- (void)updateProgress
 {
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(pulse) object:nil];
-    if (self.progress.hidden) return;
+    float progress = [[BRPeerManager sharedInstance] syncProgress];
+
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateProgress) object:nil];
+    if (progress <= DBL_EPSILON) progress = self.progress.progress;
 
     self.pulse.alpha = 1.0;
-    [self.pulse setProgress:self.progress.progress animated:self.progress.progress > self.pulse.progress];
+    [self.pulse setProgress:progress animated:progress > self.pulse.progress];
+
+    if (progress > self.progress.progress) {
+        [self performSelector:@selector(setProgressTo:) withObject:@(progress) afterDelay:1.0];
+    }
+    else self.progress.progress = progress;
 
     [UIView animateWithDuration:1.5 delay:1.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
         self.pulse.alpha = 0.0;
     } completion:nil];
 
     [self.pulse performSelector:@selector(setProgress:) withObject:nil afterDelay:2.5];
-    [self performSelector:@selector(startPulse) withObject:nil afterDelay:2.51];
+    if (progress < 1.0) [self performSelector:@selector(updateProgress) withObject:nil afterDelay:2.51];
 }
+
+//- (void)startPulse
+//{
+//    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(pulse) object:nil];
+//    if (self.progress.hidden) return;
+//
+//    self.pulse.alpha = 1.0;
+//    [self.pulse setProgress:self.progress.progress animated:self.progress.progress > self.pulse.progress];
+//
+//    [UIView animateWithDuration:1.5 delay:1.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+//        self.pulse.alpha = 0.0;
+//    } completion:nil];
+//
+//    [self.pulse performSelector:@selector(setProgress:) withObject:nil afterDelay:2.5];
+//    [self performSelector:@selector(startPulse) withObject:nil afterDelay:2.51];
+//}
 
 - (void)showErrorBar {
     if (self.navigationItem.prompt != nil) return;

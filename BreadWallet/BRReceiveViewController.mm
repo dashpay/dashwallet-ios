@@ -54,20 +54,14 @@
     [super viewDidLoad];
 
     self.addressButton.titleLabel.adjustsFontSizeToFitWidth = YES;
+    [self updateAddress];
 }
 
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-    
-    if (! [self.paymentRequest isValid]) return;
-    
-    NSString *s = [[NSString alloc] initWithData:self.paymentRequest.data encoding:NSUTF8StringEncoding];
-    
-    self.qrView.image = [QREncoder renderDataMatrix:[QREncoder encodeWithECLevel:1 version:1 string:s]
-                         imageDimension:self.qrView.frame.size.width];
-    
-    [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
+
+    [self updateAddress];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -75,6 +69,18 @@
     [self hideTips];
     
     [super viewWillDisappear:animated];
+}
+
+- (void)updateAddress
+{
+    if (! [self.paymentRequest isValid]) return;
+
+    NSString *s = [[NSString alloc] initWithData:self.paymentRequest.data encoding:NSUTF8StringEncoding];
+
+    self.qrView.image = [QREncoder renderDataMatrix:[QREncoder encodeWithECLevel:1 version:1 string:s]
+                         imageDimension:self.qrView.frame.size.width];
+
+    [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
 }
 
 - (BRPaymentRequest *)paymentRequest

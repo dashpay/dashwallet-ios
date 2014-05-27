@@ -38,7 +38,6 @@
 @property (nonatomic, strong) id balanceObserver, txStatusObserver;
 @property (nonatomic, strong) UIImageView *wallpaper;
 @property (nonatomic, assign) UINavigationControllerOperation navOp;
-//@property (nonatomic, assign) CGPoint wallpaperStart;
 
 @end
 
@@ -387,7 +386,7 @@
 #endif
                     l.text = [l.text stringByReplacingOccurrencesOfString:@"%ver%"
                               withString:NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"]];
-                    //[BRStoryboardSegue segueFrom:self to:c completion:nil];
+
                     [self.navigationController pushViewController:c animated:YES];
                     break;
                     
@@ -467,8 +466,6 @@ toViewController:(UIViewController *)toVC
         return;
     }
     
-//    [BRStoryboardSegue segueFrom:self
-//     to:[self.storyboard instantiateViewControllerWithIdentifier:@"BRSeedViewController"] completion:nil];
     [self.navigationController
      pushViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"] animated:YES];
 }

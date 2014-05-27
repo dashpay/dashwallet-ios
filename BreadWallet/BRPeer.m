@@ -171,7 +171,7 @@ services:(uint64_t)services
         [self.outputStream scheduleInRunLoop:self.runLoop forMode:NSRunLoopCommonModes];
         
         // after the reachablity check, the radios should be warmed up and we can set a short socket connect timeout
-        [self performSelector:@selector(disconnectWithError:) withObject:[NSError errorWithDomain:@"ZincWallet"
+        [self performSelector:@selector(disconnectWithError:) withObject:[NSError errorWithDomain:@"BreadWallet"
          code:BITCOIN_TIMEOUT_CODE userInfo:@{NSLocalizedDescriptionKey:@"connect timeout"}]
          afterDelay:CONNECT_TIMEOUT];
         
@@ -220,7 +220,7 @@ services:(uint64_t)services
     va_list args;
 
     va_start(args, message);
-    [self disconnectWithError:[NSError errorWithDomain:@"ZincWallet" code:500
+    [self disconnectWithError:[NSError errorWithDomain:@"BreadWallet" code:500
      userInfo:@{NSLocalizedDescriptionKey:[[NSString alloc] initWithFormat:message arguments:args]}]];
     va_end(args);
 }
@@ -539,7 +539,7 @@ services:(uint64_t)services
     }
 
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
-    NSUInteger l, count = [message varIntAtOffset:0 length:&l];
+    NSUInteger l, count = (NSUInteger)[message varIntAtOffset:0 length:&l];
     NSMutableArray *peers = [NSMutableArray array];
     
     if (count > 1000) {
@@ -576,7 +576,7 @@ services:(uint64_t)services
 
 - (void)acceptInvMessage:(NSData *)message
 {
-    NSUInteger l, count = [message varIntAtOffset:0 length:&l];
+    NSUInteger l, count = (NSUInteger)[message varIntAtOffset:0 length:&l];
     NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSet], *blockHashes = [NSMutableOrderedSet orderedSet];
     
     if (l == 0 || message.length < l + count*36) {
@@ -671,7 +671,7 @@ services:(uint64_t)services
 
 - (void)acceptHeadersMessage:(NSData *)message
 {
-    NSUInteger l, count = [message varIntAtOffset:0 length:&l], off;
+    NSUInteger l, count = (NSUInteger)[message varIntAtOffset:0 length:&l], off;
     
     if (message.length < l + 81*count) {
         [self error:@"malformed headers message, length is %u, should be %u for %u items", (int)message.length,
@@ -732,7 +732,7 @@ services:(uint64_t)services
 
 - (void)acceptGetdataMessage:(NSData *)message
 {
-    NSUInteger l, count = [message varIntAtOffset:0 length:&l];
+    NSUInteger l, count = (NSUInteger)[message varIntAtOffset:0 length:&l];
     
     if (l == 0 || message.length < l + count*36) {
         [self error:@"malformed getdata message, length is %u, should be %u for %u items", (int)message.length,
@@ -786,7 +786,7 @@ services:(uint64_t)services
 
 - (void)acceptNotfoundMessage:(NSData *)message
 {
-    NSUInteger l, count = [message varIntAtOffset:0 length:&l];
+    NSUInteger l, count = (NSUInteger)[message varIntAtOffset:0 length:&l];
 
     if (l == 0 || message.length < l + count*36) {
         [self error:@"malformed notfount message, length is %u, should be %u for %u items", (int)message.length,
@@ -923,7 +923,7 @@ services:(uint64_t)services
                 self.startTime = [NSDate timeIntervalSinceReferenceDate]; // don't count connect time in ping time
                 [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending socket connect timeout
                 [self performSelector:@selector(disconnectWithError:)
-                 withObject:[NSError errorWithDomain:@"ZincWallet" code:BITCOIN_TIMEOUT_CODE
+                 withObject:[NSError errorWithDomain:@"BreadWallet" code:BITCOIN_TIMEOUT_CODE
                              userInfo:@{NSLocalizedDescriptionKey:@"connect timeout"}] afterDelay:CONNECT_TIMEOUT];
             }
 

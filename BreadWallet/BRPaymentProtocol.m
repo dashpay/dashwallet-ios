@@ -38,15 +38,15 @@
 
 @interface NSData (ProtoBuf)
 
-- (uint64_t)protoBufVarIntAtOffeset:(NSUInteger *)off;
-- (NSData *)protoBufLenDelimAtOffeset:(NSUInteger *)off;
+- (uint64_t)protoBufVarIntAtOffset:(NSUInteger *)off;
+- (NSData *)protoBufLenDelimAtOffset:(NSUInteger *)off;
 - (NSUInteger)protoBufFieldAtOffset:(NSUInteger *)off int:(uint64_t *)i data:(NSData **)d;
 
 @end
 
 @implementation NSData (ProtoBuf)
 
-- (uint64_t)protoBufVarIntAtOffeset:(NSUInteger *)off
+- (uint64_t)protoBufVarIntAtOffset:(NSUInteger *)off
 {
     uint64_t varInt = 0;
     uint8_t b = 0x80;
@@ -60,10 +60,10 @@
     return varInt;
 }
 
-- (NSData *)protoBufLenDelimAtOffeset:(NSUInteger *)off
+- (NSData *)protoBufLenDelimAtOffset:(NSUInteger *)off
 {
     NSData *lenDelim = nil;
-    NSUInteger len = [self protoBufVarIntAtOffeset:off];
+    NSUInteger len = (NSUInteger)[self protoBufVarIntAtOffset:off];
 
     if (*off + len <= self.length) lenDelim = [self subdataWithRange:NSMakeRange(*off, len)];
     *off += len;
@@ -74,14 +74,14 @@
 // sets either int or data depending on field type, and returns field key
 - (NSUInteger)protoBufFieldAtOffset:(NSUInteger *)off int:(uint64_t *)i data:(NSData **)d
 {
-    NSUInteger key = [self protoBufVarIntAtOffeset:off];
+    NSUInteger key = (NSUInteger)[self protoBufVarIntAtOffset:off];
     uint64_t varInt = 0;
     NSData *lenDelim = nil;
 
     switch (key & 0x07) {
-        case PROTOBUF_VARINT: varInt = [self protoBufVarIntAtOffeset:off]; if (i) *i = varInt; break;
+        case PROTOBUF_VARINT: varInt = [self protoBufVarIntAtOffset:off]; if (i) *i = varInt; break;
         case PROTOBUF_64BIT: *off += sizeof(uint64_t); break; // not used by payment protocol
-        case PROTOBUF_LENDELIM: lenDelim = [self protoBufLenDelimAtOffeset:off]; if (d) *d = lenDelim; break;
+        case PROTOBUF_LENDELIM: lenDelim = [self protoBufLenDelimAtOffset:off]; if (d) *d = lenDelim; break;
         case PROTOBUF_32BIT: *off += sizeof(uint32_t); break; // not used by payment protocol
         default: break;
     }

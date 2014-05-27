@@ -47,7 +47,6 @@
 - (void)appendVarInt:(uint64_t)i;
 - (void)appendString:(NSString *)s;
 
-- (void)appendScriptPubKeyForHash:(NSData *)hash;
 - (void)appendScriptPubKeyForAddress:(NSString *)address;
 - (void)appendScriptPushData:(NSData *)d;
 

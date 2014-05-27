@@ -91,7 +91,7 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-    
+
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:NO];
 
     if (self.hasAppeared) {
@@ -144,6 +144,13 @@
     });
 }
 
+- (void)viewDidLayoutSubviews
+{
+    if (self.paralax.superview == self.view) {
+        self.paralax.center = CGPointMake(self.paralax.center.x, self.paralax.superview.frame.size.height/2);
+    }
+}
+
 #pragma mark UIViewControllerAnimatedTransitioning
 
 // This is used for percent driven interactive transitions, as well as for container controllers that have companion
@@ -162,7 +169,8 @@
     BOOL push = (self.navOp == UINavigationControllerOperationPush) ? YES : NO;
 
     if (self.paralax.superview != v) {
-        self.paralax.center = CGPointMake(-v.frame.size.width*PARALAX_RATIO, 0);
+        self.paralax.center = CGPointMake(-v.frame.size.width*PARALAX_RATIO,
+                                          (v.frame.size.height - self.paralax.frame.size.height)/2);
         [v insertSubview:self.paralax belowSubview:from.view];
     }
 

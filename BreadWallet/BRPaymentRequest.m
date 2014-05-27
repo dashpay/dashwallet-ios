@@ -152,8 +152,6 @@
 - (BOOL)isValid
 {
     if (! [self.paymentAddress isValidBitcoinAddress] && (! self.r || ! [NSURL URLWithString:self.r])) return NO;
-    
-    // TODO: validate bitcoin payment request X.509 certificate, hopefully offline
 
     return YES;
 }
@@ -166,7 +164,7 @@
     NSURL *u = [NSURL URLWithString:url];
 
     if (! u) {
-        completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
+        completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
                          userInfo:@{NSLocalizedDescriptionKey:@"bad payment request URL"}]);
         return;
     }
@@ -179,16 +177,29 @@
     [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue currentQueue]
     completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
         if (! [response.MIMEType.lowercaseString isEqual:@"application/bitcoin-paymentrequest"] || data.length > 50000){
-            completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
+            completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
                              userInfo:@{NSLocalizedDescriptionKey:@"unexpected response from payment server"}]);
             return;
         }
 
         BRPaymentProtocolRequest *req = [BRPaymentProtocolRequest requestWithData:data];
+        NSString *network = @"main";
+
+#ifdef BITCOIN_TESTNET
+        network = @"test";
+#endif
 
         if (! req) {
-            completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
+            completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
                              userInfo:@{NSLocalizedDescriptionKey:@"unexpected response from payment server"}]);
+            return;
+        }
+
+        if (! [req.details.network isEqual:network]) {
+            completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
+                             userInfo:@{NSLocalizedDescriptionKey:[NSString
+                             stringWithFormat:@"requested network \"%@\" instead of \"%@\"", req.details.network,
+                             network]}]);
             return;
         }
 
@@ -202,7 +213,7 @@ completion:(void (^)(BRPaymentProtocolACK *ack, NSError *error))completion
     NSURL *url = [NSURL URLWithString:paymentURL];
 
     if (! url || [url.scheme isEqual:@"http"]) { // must be https rather than http
-        completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
+        completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
                          userInfo:@{NSLocalizedDescriptionKey:@"bad payment URL"}]);
     }
 
@@ -217,7 +228,7 @@ completion:(void (^)(BRPaymentProtocolACK *ack, NSError *error))completion
     [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue currentQueue]
     completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
         if (! [response.MIMEType.lowercaseString isEqual:@"application/bitcoin-paymentack"] || data.length > 50000) {
-            completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
+            completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
                              userInfo:@{NSLocalizedDescriptionKey:@"unexpected response from payment server"}]);
             return;
         }
@@ -225,7 +236,7 @@ completion:(void (^)(BRPaymentProtocolACK *ack, NSError *error))completion
         BRPaymentProtocolACK *ack = [BRPaymentProtocolACK ackWithData:data];
         
         if (! ack) {
-            completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
+            completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
                              userInfo:@{NSLocalizedDescriptionKey:@"unexpected response from payment server"}]);
             return;
         }

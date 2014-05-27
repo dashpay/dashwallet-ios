@@ -3463,7 +3463,7 @@
 /* Begin PBXLegacyTarget section */
 		7579F7CF1923175300CA56F4 /* submodules */ = {
 			isa = PBXLegacyTarget;
-			buildArgumentsString = "-c 'cd $SRCROOT; git submodule init; git submodule update; true'";
+			buildArgumentsString = "-c 'cd $SRCROOT; git submodule init; git submodule update'";
 			buildConfigurationList = 7579F7D21923175300CA56F4 /* Build configuration list for PBXLegacyTarget "submodules" */;
 			buildPhases = (
 			);

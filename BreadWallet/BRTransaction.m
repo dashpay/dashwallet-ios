@@ -79,7 +79,7 @@
     _txHash = message.SHA256_2;
     _version = [message UInt32AtOffset:off]; // tx version
     off += sizeof(uint32_t);
-    count = [message varIntAtOffset:off length:&l]; // input count
+    count = (NSUInteger)[message varIntAtOffset:off length:&l]; // input count
     if (count == 0) return nil; // at least one input is required
     off += l;
 
@@ -98,7 +98,7 @@
         off += sizeof(uint32_t);
     }
 
-    count = [message varIntAtOffset:off length:&l]; // output count
+    count = (NSUInteger)[message varIntAtOffset:off length:&l]; // output count
     off += l;
     
     for (NSUInteger i = 0; i < count; i++) { // outputs

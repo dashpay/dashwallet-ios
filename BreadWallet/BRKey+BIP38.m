@@ -125,7 +125,7 @@ static NSData *scrypt(NSData *password, NSData *salt, int64_t n, uint32_t r, uin
     OPENSSL_cleanse(x, sizeof(x));
     OPENSSL_cleanse(y, sizeof(y));
     OPENSSL_cleanse(z, sizeof(z));
-    OPENSSL_cleanse(v, 128*r*n);
+    OPENSSL_cleanse(v, 128*r*(int)n);
     OPENSSL_free(v);
     OPENSSL_cleanse(&m, sizeof(m));
     return d;

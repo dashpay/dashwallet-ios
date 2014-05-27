@@ -26,10 +26,7 @@
 #import "BreadWalletTests.h"
 
 #import "BRWallet.h"
-#import "BRElectrumSequence.h"
 #import "BRBIP32Sequence.h"
-#import "BRElectrumMnemonic.h"
-#import "BRZincMnemonic.h"
 #import "BRBIP39Mnemonic.h"
 #import "BRTransaction.h"
 #import "BRKey.h"
@@ -653,128 +650,6 @@
     XCTAssertEqualObjects(seed_nfkd, seed_nfd, @"[BRBIP39Mnemonic deriveKeyFromPhrase: withPassphrase:]");
 }
 
-#pragma mark - testZincMnemonic
-
-//TODO: test zinc mnemonic
-//- (void)testZincMnemonicDecodePhrase
-//{
-//    id<BRMnemonic> mnemonic = [BRZincMnemonic sharedInstance];
-//
-//    NSData *d = [mnemonic decodePhrase:@"like just love know never want time out there make look eye"];
-//
-//    NSLog(@"like just love know never want time out there make look eye = 0x%@", [NSString hexWithData:d]);
-//
-//    //STAssertEqualObjects(d, @"00285dfe00285e0100285e0400285e07".hexToData, @"[BRWallet decodePhrase:]");
-//
-//    d = [mnemonic decodePhrase:@"kick chair mask master passion quick raise smooth unless wander actually broke"];
-//
-//    NSLog(@"kick chair mask master passion quick raise smooth unless wander actually broke = 0x%@",
-//          [NSString hexWithData:d]);
-//
-//    //STAssertEqualObjects(d, @"fea983ac0028608e0028609100286094".hexToData, @"[BRWallet decodePhrase:]");
-//
-//    // test of phrase with trailing space
-//    d = [mnemonic
-//         decodePhrase:@"kick quiet student ignore cruel danger describe accident eager darkness embrace suppose "];
-//
-//    NSLog(@"kick quiet student ignore cruel danger describe accident eager darkness embrace suppose = 0x%@",
-//          [NSString hexWithData:d]);
-//    
-//    //STAssertEqualObjects(d, @"8d02be487e1953ce2dd6c186fcc97e65".hexToData, @"[BRWallet decodePhrase:]");
-//}
-
-- (void)testZincMnemonicEncodePhrase
-{
-    id<BRMnemonic> mnemonic = [BRZincMnemonic sharedInstance];
-    
-    NSString *s = [mnemonic encodePhrase:@"00285dfe00285e0100285e0400285e07".hexToData];
-    
-    NSLog(@"0x00285dfe00285e0100285e0400285e07 = %@", s);
-    
-    XCTAssertEqualObjects([mnemonic decodePhrase:s], @"00285dfe00285e0100285e0400285e07".hexToData,
-                         @"[BRWallet encodePhrase:]");
-    
-    s = [mnemonic encodePhrase:@"00000000000000000000000000000000".hexToData];
-    
-    NSLog(@"0x00000000000000000000000000000000 = %@", s);
-
-    XCTAssertEqualObjects([mnemonic decodePhrase:s], @"00000000000000000000000000000000".hexToData,
-                         @"[BRWallet encodePhrase:]");
-    
-    s = [mnemonic encodePhrase:@"fea983ac0028608e0028609100286094".hexToData];
-    
-    NSLog(@"0xfea983ac0028608e0028609100286094 = %@", s);
-    
-    XCTAssertEqualObjects([mnemonic decodePhrase:s], @"fea983ac0028608e0028609100286094".hexToData,
-                         @"[BRWallet encodePhrase:]");
-    
-    s = [mnemonic encodePhrase:@"8d02be487e1953ce2dd6c186fcc97e65".hexToData];
-    
-    NSLog(@"0x8d02be487e1953ce2dd6c186fcc97e65 = %@", s);
-    
-    XCTAssertEqualObjects([mnemonic decodePhrase:s], @"8d02be487e1953ce2dd6c186fcc97e65".hexToData,
-                         @"[BRWallet encodePhrase:]");
-}
-
-#pragma mark - testElectrumMnemonic
-
-- (void)testElectrumMnemonicDecodePhrase
-{
-    id<BRMnemonic> mnemonic = [BRElectrumMnemonic sharedInstance];
-
-    NSData *d = [mnemonic decodePhrase:@"like just love know never want time out there make look eye"];
-
-    NSLog(@"like just love know never want time out there make look eye = 0x%@", [NSString hexWithData:d]);
-    
-    XCTAssertEqualObjects(d, @"00285dfe00285e0100285e0400285e07".hexToData, @"[BRWallet decodePhrase:]");
-    
-    d = [mnemonic decodePhrase:@"kick chair mask master passion quick raise smooth unless wander actually broke"];
-    
-    NSLog(@"kick chair mask master passion quick raise smooth unless wander actually broke = 0x%@",
-          [NSString hexWithData:d]);
-    
-    XCTAssertEqualObjects(d, @"fea983ac0028608e0028609100286094".hexToData, @"[BRWallet decodePhrase:]");
-    
-    // test of phrase with trailing space
-    d = [mnemonic
-         decodePhrase:@"kick quiet student ignore cruel danger describe accident eager darkness embrace suppose "];
-    
-    NSLog(@"kick quiet student ignore cruel danger describe accident eager darkness embrace suppose = 0x%@",
-          [NSString hexWithData:d]);
-    
-    XCTAssertEqualObjects(d, @"8d02be487e1953ce2dd6c186fcc97e65".hexToData, @"[BRWallet decodePhrase:]");
-}
-
-- (void)testElectrumMnemonicEncodePhrase
-{
-    id<BRMnemonic> mnemonic = [BRElectrumMnemonic sharedInstance];
-    
-    NSString *s = [mnemonic encodePhrase:@"00285dfe00285e0100285e0400285e07".hexToData];
-    
-    NSLog(@"0x00285dfe00285e0100285e0400285e07 = %@", s);
-    
-    XCTAssertEqualObjects(s, @"like just love know never want time out there make look eye",
-                         @"[BRWallet encodePhrase:]");
-    
-    s = [mnemonic encodePhrase:@"00000000000000000000000000000000".hexToData];
-
-    NSLog(@"0x00285dfe00285e0100285e0400285e07 = %@", s);
-    
-    s = [mnemonic encodePhrase:@"fea983ac0028608e0028609100286094".hexToData];
-    
-    NSLog(@"0x00285dfe00285e0100285e0400285e07 = %@", s);
-    
-    XCTAssertEqualObjects(s, @"kick chair mask master passion quick raise smooth unless wander actually broke",
-                         @"[BRWallet encodePhrase:]");
-    
-    s = [mnemonic encodePhrase:@"8d02be487e1953ce2dd6c186fcc97e65".hexToData];
-    
-    NSLog(@"0x8d02be487e1953ce2dd6c186fcc97e65 = %@", s);
-    
-    XCTAssertEqualObjects(s, @"kick quiet student ignore cruel danger describe accident eager darkness embrace suppose",
-                         @"[BRWallet encodePhrase:]");    
-}
-
 #pragma mark - testBIP32Sequence
 
 #if ! BITCOIN_TESTNET
@@ -854,71 +729,6 @@
      @"xpub68Gmy5EdvgibQVfPdqkBBCHxA5htiqg55crXYuXoQRKfDBFA1WEjWgP6LHhwBZeNK1VTsfTFUHCdrfp1bgwQ9xv5ski8PX9rL2dZXvgGDnw",
                          @"[BRBIP32Sequence serializedMasterPublicKey:]");
 }
-
-#pragma mark - testElectrumSequence
-
-- (void)testElectrumSequenceStretchKey
-{
-    BRElectrumSequence *seq = [BRElectrumSequence new];
-    NSData *sk = [(id)seq performSelector:@selector(stretchKey:)
-                  withObject:@"00000000000000000000000000000000".hexToData];
-
-    NSLog(@"0x00000000000000000000000000000000 stretched = 0x%@", [NSString hexWithData:sk]);
-    
-    XCTAssertEqualObjects(sk, @"7c2548ab89ffea8a6579931611969ffc0ed580ccf6048d4230762b981195abe5".hexToData,
-                         @"[BRElectrumSequence stretchKey:]");
-}
-
-- (void)testElectrumSequenceMasterPublicKeyFromSeed
-{
-    BRElectrumSequence *seq = [BRElectrumSequence new];
-    NSData *mpk = [seq masterPublicKeyFromSeed:@"00000000000000000000000000000000".hexToData];
-    
-    NSLog(@"mpk from 0x00000000000000000000000000000000 = 0x%@", [NSString hexWithData:mpk]);
-    
-    XCTAssertEqualObjects(mpk, @"4e13b0f311a55b8a5db9a32e959da9f011b131019d4cebe6141b9e2c93edcbfc"
-                               "0954c358b062a9f94111548e50bde5847a3096b8b7872dcffadb0e9579b9017b".hexToData,
-                         @"[BRElectrumSequence masterPublicKeyFromSeed:]");
-}
-
-- (void)testElectrumSequencePublicKey
-{
-    BRElectrumSequence *seq = [BRElectrumSequence new];
-    NSData *mpk = [seq masterPublicKeyFromSeed:@"00000000000000000000000000000000".hexToData];
-    NSData *pubkey = [seq publicKey:0 internal:NO masterPublicKey:mpk];
-    NSString *addr = [(BRKey *)[BRKey keyWithPublicKey:pubkey] address];
-    
-    NSLog(@"publicKey:0 = %@", [NSString hexWithData:pubkey]);
-    NSLog(@"addr:0 = %@", addr);
-    
-    XCTAssertEqualObjects(pubkey, @"040900f07c15d3fa441979e71d7ccdcca1afc30a28de07a0525a3d7655dc49cca"
-                                  "0f844fb0903b3cccc4604107a9de6a0571c4a39996a9e4bd6ab596138ecae54f5".hexToData,
-                         @"[BRElectrumSequence publicKey:forChange:masterPublicKey:]");
-#if ! BITCOIN_TESTNET
-    XCTAssertEqualObjects(addr, @"1FHsTashEBUNPQwC1CwVjnKUxzwgw73pU4", @"[[BRKey keyWithPublicKey:] address]");
-#endif
-}
-
-#if ! BITCOIN_TESTNET
-- (void)testElectrumSequencePrivateKey
-{
-    BRElectrumSequence *seq = [BRElectrumSequence new];
-    NSString *pk = [seq privateKey:0 internal:NO fromSeed:@"00000000000000000000000000000000".hexToData];
-    
-    NSLog(@"privateKey:0 = %@", pk);
-
-    XCTAssertEqualObjects(pk, @"5Khs7w6fBkogoj1v71Mdt4g8m5kaEyRaortmK56YckgTubgnrhz",
-                         @"[BRElectrumSequence privateKey:forChange:fromSeed:]");
-
-    // Test for correct zero padding of private keys
-    pk = [seq privateKey:64 internal:NO fromSeed:@"00000000000000000000000000000000".hexToData];
-
-    NSLog(@"privateKey:64 = %@ = 0x%@", pk, pk.base58checkToHex);
-
-    XCTAssertEqualObjects(pk.base58checkToHex, @"8000f7f216a82f6beb105728dbbc29e2c13446bfa1078b7bef6e0ceff2c8a1e774",
-                         @"[BRElectrumSequence privateKey:forChange:fromSeed:]");
-}
-#endif
 
 #pragma mark - testBloomFilter
 

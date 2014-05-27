@@ -428,7 +428,7 @@ static const char *dns_seeds[] = {
 
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerSyncFailedNotification
-                 object:nil userInfo:@{@"error":[NSError errorWithDomain:@"ZincWallet" code:1
+                 object:nil userInfo:@{@"error":[NSError errorWithDomain:@"BreadWallet" code:1
                                                  userInfo:@{NSLocalizedDescriptionKey:@"no peers found"}]}];
             });
         }
@@ -464,7 +464,7 @@ static const char *dns_seeds[] = {
 {
     if (! [transaction isSigned]) {
         if (completion) {
-            completion([NSError errorWithDomain:@"ZincWallet" code:401
+            completion([NSError errorWithDomain:@"BreadWallet" code:401
                         userInfo:@{NSLocalizedDescriptionKey:@"bitcoin transaction not signed"}]);
         }
         return;
@@ -472,7 +472,7 @@ static const char *dns_seeds[] = {
 
     if (! self.connected) {
         if (completion) {
-            completion([NSError errorWithDomain:@"ZincWallet" code:-1009
+            completion([NSError errorWithDomain:@"BreadWallet" code:-1009
                         userInfo:@{NSLocalizedDescriptionKey:@"not connected to the bitcoin network"}]);
         }
         return;
@@ -523,7 +523,7 @@ static const char *dns_seeds[] = {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:txHash];
 
     if (callback) {
-        callback([NSError errorWithDomain:@"ZincWallet" code:BITCOIN_TIMEOUT_CODE
+        callback([NSError errorWithDomain:@"BreadWallet" code:BITCOIN_TIMEOUT_CODE
                   userInfo:@{NSLocalizedDescriptionKey:@"transaction canceled, network timeout"}]);
     }
 }
@@ -727,7 +727,7 @@ static const char *dns_seeds[] = {
 {
     NSLog(@"%@:%d disconnected%@%@", peer.host, peer.port, error ? @", " : @"", error ? error : @"");
     
-    if ([error.domain isEqual:@"ZincWallet"] && error.code != BITCOIN_TIMEOUT_CODE) {
+    if ([error.domain isEqual:@"BreadWallet"] && error.code != BITCOIN_TIMEOUT_CODE) {
         [self peerMisbehavin:peer]; // if it's protocol error other than timeout, the peer isn't following the rules
     }
     else if (error) { // timeout or some non-protocol related network error

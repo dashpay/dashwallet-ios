@@ -293,6 +293,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     NSUInteger i = 0;
 
     for (NSData *script in scripts) {
+        if (! script.length) return nil;
         [transaction addOutputScript:script amount:[amounts[i] unsignedLongLongValue]];
         amount += [amounts[i++] unsignedLongLongValue];
     }

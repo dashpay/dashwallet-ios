@@ -337,13 +337,13 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
     NSString *address = [[BRKey keyWithPrivateKey:privKey] address];
 
     if (! address) {
-        completion(nil, [NSError errorWithDomain:@"ZincWallet" code:187
+        completion(nil, [NSError errorWithDomain:@"BreadWallet" code:187
                          userInfo:@{NSLocalizedDescriptionKey:@"not a valid private key"}]);
         return;
     }
 
     if ([self.wallet containsAddress:address]) {
-        completion(nil, [NSError errorWithDomain:@"ZincWallet" code:187
+        completion(nil, [NSError errorWithDomain:@"BreadWallet" code:187
                          userInfo:@{NSLocalizedDescriptionKey:@"this private key is already in your wallet"}]);
         return;
     }
@@ -365,7 +365,7 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
 
         if (error) {
             if ([[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] hasPrefix:@"No free outputs"]) {
-                error = [NSError errorWithDomain:@"ZincWallet" code:417
+                error = [NSError errorWithDomain:@"BreadWallet" code:417
                          userInfo:@{NSLocalizedDescriptionKey:@"this private key is empty"}];
             }
 
@@ -375,7 +375,7 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
 
         if (! [json isKindOfClass:[NSDictionary class]] ||
             ! [json[@"unspent_outputs"] isKindOfClass:[NSArray class]]) {
-            completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
+            completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
                              userInfo:@{NSLocalizedDescriptionKey:@"unexpected response from blockchain.info"}]);
             return;
         }
@@ -387,7 +387,7 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
                 ! [utxo[@"tx_output_n"] isKindOfClass:[NSNumber class]] ||
                 ! [utxo[@"script"] isKindOfClass:[NSString class]] || ! [utxo[@"script"] hexToData] ||
                 ! [utxo[@"value"] isKindOfClass:[NSNumber class]]) {
-                completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
+                completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
                                  userInfo:@{NSLocalizedDescriptionKey:@"unexpected response from blockchain.info"}]);
                 return;
             }
@@ -398,7 +398,7 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
         }
 
         if (balance == 0) {
-            completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
+            completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
                              userInfo:@{NSLocalizedDescriptionKey:@"this private key is empty"}]);
             return;
         }
@@ -408,7 +408,7 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
         if (fee) standardFee = ((tx.size + 34 + 999)/1000)*TX_FEE_PER_KB;
 
         if (standardFee + TX_MIN_OUTPUT_AMOUNT > balance) {
-            completion(nil, [NSError errorWithDomain:@"ZincWallet" code:417
+            completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
                              userInfo:@{NSLocalizedDescriptionKey:@"transaction fees would cost more than the funds "
                                         "available on this private key (due to tiny \"dust\" deposits)"}]);
             return;
@@ -417,7 +417,7 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
         [tx addOutputAddress:[self.wallet changeAddress] amount:balance - standardFee];
 
         if (! [tx signWithPrivateKeys:@[privKey]]) {
-            completion(nil, [NSError errorWithDomain:@"ZincWallet" code:401
+            completion(nil, [NSError errorWithDomain:@"BreadWallet" code:401
                              userInfo:@{NSLocalizedDescriptionKey:@"error signing transaction"}]);
             return;
         }

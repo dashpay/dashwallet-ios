@@ -31,12 +31,6 @@ breadwallet uses "simplified payment verification" or
 [SPV](https://en.bitcoin.it/wiki/Thin_Client_Security#Header-Only_Clients) mode
 for fast performance in a mobile environment.
 
-Future planned features include support for Electrum wallets, BIP32
-[serialized](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#Serialization_format)
-wallet import and export and watch only wallets, more detailed transaction
-information, support for mBTC and µBTC denominations, and exchange rates for
-multiple legacy national currencies.
-
 breadwallet is open source and available under the terms of the MIT license.
 Source code is available at https://github.com/voisine/breadwallet
 
@@ -44,5 +38,5 @@ Source code is available at https://github.com/voisine/breadwallet
 
 Any jailbreak app can grant itself keychain entitlements to your wallet seed and
 rob you by self-signing as described [here](http://www.saurik.com/id/8) and
-including `<key>application-identifier</key><string>org.voisine.*</string>` in its
-.entitlements file.
+including `<key>application-identifier</key><string>org.voisine.*</string>` in
+its .entitlements file.
