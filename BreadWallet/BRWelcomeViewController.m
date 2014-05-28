@@ -133,7 +133,8 @@
             self.navigationItem.titleView.hidden = NO;
             self.navigationItem.titleView.alpha = 0.0;
 
-            [UIView animateWithDuration:0.25 delay:1.0 options:0 animations:^{
+            [UIView animateWithDuration:0.35 delay:1.0 usingSpringWithDamping:0.8 initialSpringVelocity:0
+             options:UIViewAnimationOptionCurveEaseOut animations:^{
                 [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationSlide];
                 self.navigationItem.titleView.alpha = 1.0;
                 self.paralax.center = CGPointMake(self.view.frame.size.width*PARALAX_RATIO, self.paralax.center.y);
@@ -163,7 +164,7 @@
 // animations that might need to synchronize with the main animation.
 - (NSTimeInterval)transitionDuration:(id<UIViewControllerContextTransitioning>)transitionContext
 {
-    return 0.25;
+    return 0.35;
 }
 
 // This method can only be a nop if the transition is interactive and not a percentDriven interactive transition.
@@ -182,12 +183,14 @@
     to.view.center = CGPointMake(v.frame.size.width*(to == self ? -1 : 3)/2, to.view.center.y);
     [v addSubview:to.view];
 
-    [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 options:0 animations:^{
+    [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
+     initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
         to.view.center = from.view.center;
         from.view.center = CGPointMake(v.frame.size.width*(to == self ? 3 : -1)/2, from.view.center.y);
         self.paralax.center = CGPointMake(v.frame.size.width*(to == self ? -1 : -2)*PARALAX_RATIO,
                                           self.paralax.center.y);
     } completion:^(BOOL finished) {
+        if (to == self) [from.view removeFromSuperview];
         [transitionContext completeTransition:finished];
     }];
 }

@@ -26,6 +26,7 @@
 #import "BRSendViewController.h"
 #import "BRRootViewController.h"
 #import "BRAmountViewController.h"
+#import "BRBubbleView.h"
 #import "BRWalletManager.h"
 #import "BRWallet.h"
 #import "BRPeerManager.h"
@@ -42,6 +43,9 @@
 #define CLIPBOARD_TIP @"Bitcoin addresses can also be copied to the clipboard. "\
 "A bitcoin address always starts with '1'."
 #define PAGE_TIP      @"Tap or swipe right to receive money."
+
+#define LOCK @"\xF0\x9F\x94\x92" // unicode lock symbol U+1F512 (utf-8)
+#define REDX @"\xE2\x9D\x8C"     // unicode cross mark U+274C, red x emoji (utf-8)
 
 @interface BRSendViewController ()
 
@@ -110,10 +114,10 @@
                               otherButtonTitles:nil] show];
                         }
 
-//                        [self.view addSubview:[[[BRBubbleView
-//                         viewWithText:(payment.memo.length > 0 ? payment.memo : @"recieved")
-//                         center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] fadeIn]
-//                         fadeOutAfterDelay:(payment.memo.length > 10 ? 3.0 : 2.0)]];
+                        [self.view addSubview:[[[BRBubbleView
+                         viewWithText:(payment.memo.length > 0 ? payment.memo : @"recieved")
+                         center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
+                         popOutAfterDelay:(payment.memo.length > 10 ? 3.0 : 2.0)]];
                     }];
                 }
 
@@ -123,12 +127,12 @@
             BRPaymentProtocolACK *ack = [BRPaymentProtocolACK ackWithData:file];
             
             if (ack) {
-//                if (ack.memo.length > 0) {
-//                    [self.view addSubview:[[[BRBubbleView viewWithText:ack.memo
-//                                             center:CGPointMake(self.view.bounds.size.width/2,
-//                                                                self.view.bounds.size.height/2)]
-//                                            fadeIn] fadeOutAfterDelay:2.0]];
-//                }
+                if (ack.memo.length > 0) {
+                    [self.view
+                     addSubview:[[[BRBubbleView viewWithText:ack.memo
+                                   center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
+                                  popIn] popOutAfterDelay:2.0]];
+                }
 
                 return;
             }
@@ -188,9 +192,9 @@
     uint64_t txAmount = [m.wallet amountSentByTransaction:tx] - [m.wallet amountReceivedFromTransaction:tx];
     NSString *amount = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:txAmount],
                         [m localCurrencyStringForAmount:txAmount]];
-    NSString *msg = @"";//(isSecure && name.length > 0) ? LOCK NOEMOJI @" " : @"";
+    NSString *msg = (isSecure && name.length > 0) ? LOCK @" " : @"";
 
-    //if (! isSecure && self.protocolRequest.errorMessage.length > 0) msg = [msg stringByAppendingString:REDX @" "];
+    if (! isSecure && self.protocolRequest.errorMessage.length > 0) msg = [msg stringByAppendingString:REDX @" "];
     if (name.length > 0) msg = [msg stringByAppendingString:name];
     if (! isSecure && msg.length > 0) msg = [msg stringByAppendingString:@"\n"];
     if (! isSecure || msg.length == 0) msg = [msg stringByAppendingString:[m.wallet addressForTransaction:tx]];
@@ -304,16 +308,16 @@
     if (! [privKey isValidBitcoinPrivateKey] && ! [privKey isValidBitcoinBIP38Key]) return;
 
     BRWalletManager *m = [BRWalletManager sharedInstance];
-//    BRBubbleView *v = [BRBubbleView viewWithText:@"checking private key balance..."
-//                       center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
-//
-//    v.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
-//    v.customView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
-//    [(id)v.customView startAnimating];
-//    [self.view addSubview:[v fadeIn]];
+    BRBubbleView *v = [BRBubbleView viewWithText:@"checking private key balance..."
+                       center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
+
+    v.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+    v.customView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+    [(id)v.customView startAnimating];
+    [self.view addSubview:[v popIn]];
 
     [m sweepPrivateKey:privKey withFee:YES completion:^(BRTransaction *tx, NSError *error) {
-//        [v fadeOut];
+        [v popOut];
 
         if (error) {
             [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription delegate:self
@@ -583,9 +587,9 @@
                 return;
             }
 
-//            [self.view addSubview:[[[BRBubbleView viewWithText:@"swept!"
-//                                    center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
-//                                    fadeIn] fadeOutAfterDelay:2.0]];
+            [self.view addSubview:[[[BRBubbleView viewWithText:@"swept!"
+                                     center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
+                                    popIn] popOutAfterDelay:2.0]];
             [self reset:nil];
         }];
 
@@ -662,9 +666,9 @@
             return;
         }
 
-//        [self.view addSubview:[[[BRBubbleView viewWithText:@"sent!"
-//                                 center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
-//                                fadeIn] fadeOutAfterDelay:2.0]];
+        [self.view addSubview:[[[BRBubbleView viewWithText:@"sent!"
+                                 center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
+                                popIn] popOutAfterDelay:2.0]];
         [self reset:nil];
     }];
 
@@ -695,9 +699,9 @@
                 return;
             }
             
-//          [self.view addSubview:[[[BRBubbleView viewWithText:(ack.memo.length > 0 ? ack.memo : @"sent!")
-//                                   center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
-//                                  fadeIn] fadeOutAfterDelay:(ack.memo.length > 10 ? 3.0 : 2.0)]];
+            [self.view addSubview:[[[BRBubbleView viewWithText:(ack.memo.length > 0 ? ack.memo : @"sent!")
+                                     center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
+                                    popIn] popOutAfterDelay:(ack.memo.length > 10 ? 3.0 : 2.0)]];
             [self reset:nil];
             
             if (error) { // transaction was sent despite payment protocol error

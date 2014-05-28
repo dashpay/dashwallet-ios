@@ -27,7 +27,7 @@
 #import "BRPaymentRequest.h"
 #import "BRWalletManager.h"
 #import "BRWallet.h"
-//#import "BRBubbleView.h"
+#import "BRBubbleView.h"
 #import "QREncoder.h"
 
 #define BALANCE_TIP @"This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market."
@@ -176,10 +176,11 @@
 
     //TODO: XXXX allow user to specify a request amount
     if ([title isEqual:@"copy"]) {
-        [[UIPasteboard generalPasteboard] setString:self.paymentAddress];        
-//        [self.view addSubview:[[[BRBubbleView viewWithText:@"copied"
-//                                center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
-//                                fadeIn] fadeOutAfterDelay:2.0]];
+        [[UIPasteboard generalPasteboard] setString:self.paymentAddress];
+
+        [self.view addSubview:[[[BRBubbleView viewWithText:@"copied"
+                                center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2 - 130)]
+                                popIn] popOutAfterDelay:2.0]];
     }
     else if ([title isEqual:@"email"]) {
         //TODO: XXXX implement BIP71 payment protocol mime attachement

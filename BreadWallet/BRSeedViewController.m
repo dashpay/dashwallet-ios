@@ -104,8 +104,6 @@
 {
     if (self.navigationController.viewControllers.firstObject != self) return;
 
-//    [[[UIAlertView alloc] initWithTitle:nil message:@"you can see your backup phrase again under settings" delegate:self
-//      cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
     self.navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
     [self.navigationController.presentingViewController.presentingViewController dismissViewControllerAnimated:YES
      completion:nil];
@@ -132,14 +130,5 @@
 {
     [[UIPasteboard generalPasteboard] setString:[[BRWalletManager sharedInstance] seedPhrase]];
 }
-
-//#pragma mark - UIAlertViewDelegate
-//
-//- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
-//{
-//    self.navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
-//    [self.navigationController.presentingViewController.presentingViewController dismissViewControllerAnimated:YES
-//     completion:nil];
-//}
 
 @end

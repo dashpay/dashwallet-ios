@@ -38,7 +38,6 @@
 @property (nonatomic, strong) IBOutlet UIGestureRecognizer *navBarTap;
 @property (nonatomic, assign) BOOL appeared;
 @property (nonatomic, strong) Reachability *reachability;
-//@property (nonatomic, assign) UINavigationControllerOperation navOp;
 @property (nonatomic, strong) id urlObserver, fileObserver, activeObserver, balanceObserver, reachabilityObserver;
 @property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 
@@ -352,7 +351,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
 // animations that might need to synchronize with the main animation.
 - (NSTimeInterval)transitionDuration:(id<UIViewControllerContextTransitioning>)transitionContext
 {
-    return 0.25;
+    return 0.35;
 }
 
 // This method can only be a nop if the transition is interactive and not a percentDriven interactive transition.
@@ -371,7 +370,8 @@ viewControllerAfterViewController:(UIViewController *)viewController
     to.view.center = CGPointMake(v.frame.size.width*(to == self ? -1 : 3)/2, to.view.center.y);
     [v addSubview:to.view];
     
-    [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 options:0 animations:^{
+    [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
+     initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
         to.view.center = from.view.center;
         from.view.center = CGPointMake(v.frame.size.width*(to == self ? 3 : -1)/2, from.view.center.y);
         self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 -

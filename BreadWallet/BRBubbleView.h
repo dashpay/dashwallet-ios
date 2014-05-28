@@ -1,9 +1,9 @@
 //
-//  BRSeedViewController.h
+//  BRBubbleView.h
 //  BreadWallet
 //
-//  Created by Aaron Voisine on 6/12/13.
-//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
+//  Created by Aaron Voisine on 3/10/14.
+//  Copyright (c) 2014 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,24 @@
 
 #import <UIKit/UIKit.h>
 
-@interface BRSeedViewController : UIViewController
+typedef enum {
+    BRBubbleTipDirectionDown = 0,
+    BRBubbleTipDirectionUp
+} BRBubbleTipDirection;
+
+@interface BRBubbleView : UIView
+
+@property (nonatomic, strong) NSString *text;
+@property (nonatomic, strong) UIFont *font;
+@property (nonatomic, assign) CGPoint tipPoint;
+@property (nonatomic, assign) BRBubbleTipDirection tipDirection;
+@property (nonatomic, strong) UIView *customView;
+
++ (instancetype)viewWithText:(NSString *)text center:(CGPoint)center;
++ (instancetype)viewWithText:(NSString *)text tipPoint:(CGPoint)point tipDirection:(BRBubbleTipDirection)direction;
+
+- (instancetype)popIn;
+- (instancetype)popOut;
+- (instancetype)popOutAfterDelay:(NSTimeInterval)delay;
 
 @end
