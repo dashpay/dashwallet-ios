@@ -106,7 +106,7 @@
 
 //    [[[UIAlertView alloc] initWithTitle:nil message:@"you can see your backup phrase again under settings" delegate:self
 //      cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
-//    self.navigationController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
+    self.navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
     [self.navigationController.presentingViewController.presentingViewController dismissViewControllerAnimated:YES
      completion:nil];
 }

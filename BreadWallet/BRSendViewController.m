@@ -172,8 +172,6 @@
         _zbarController.cameraOverlayView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"cameraguide.png"]];
         _zbarController.cameraOverlayView.center = CGPointMake(_zbarController.view.center.x,
                                                                _zbarController.view.center.y - 10.0);
-        _zbarController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
-        //TODO: XXXX custom transition so it appears to cover from above
     }
 
     return _zbarController;

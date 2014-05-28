@@ -34,7 +34,6 @@
 
 @property (nonatomic, assign) BOOL hasAppeared, animating;
 @property (nonatomic, strong) id activeObserver, resignActiveObserver;
-@property (nonatomic, assign) UINavigationControllerOperation navOp;
 
 @property (nonatomic, strong) IBOutlet UIView *paralax, *wallpaper;
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *logoXCenter, *walletXCenter, *restoreXCenter;
@@ -144,6 +143,13 @@
     });
 }
 
+//- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+//    [super prepareForSegue:segue sender:sender];
+//
+//    [segue.destinationViewController setTransitioningDelegate:self];
+//    [segue.destinationViewController setModalPresentationStyle:UIModalPresentationCustom];
+//}
+
 - (void)viewDidLayoutSubviews
 {
     if (self.paralax.superview == self.view) {
@@ -166,7 +172,6 @@
     UIView *v = transitionContext.containerView;
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-    BOOL push = (self.navOp == UINavigationControllerOperationPush) ? YES : NO;
 
     if (self.paralax.superview != v) {
         self.paralax.center = CGPointMake(-v.frame.size.width*PARALAX_RATIO,
@@ -174,13 +179,14 @@
         [v insertSubview:self.paralax belowSubview:from.view];
     }
 
-    to.view.center = CGPointMake(v.frame.size.width*(push ? 3 : -1)/2, to.view.center.y);
+    to.view.center = CGPointMake(v.frame.size.width*(to == self ? -1 : 3)/2, to.view.center.y);
     [v addSubview:to.view];
 
     [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 options:0 animations:^{
         to.view.center = from.view.center;
-        from.view.center = CGPointMake(v.frame.size.width*(push ? -1 : 3)/2, from.view.center.y);
-        self.paralax.center = CGPointMake(v.frame.size.width*(push ? -2 : -1)*PARALAX_RATIO, self.paralax.center.y);
+        from.view.center = CGPointMake(v.frame.size.width*(to == self ? 3 : -1)/2, from.view.center.y);
+        self.paralax.center = CGPointMake(v.frame.size.width*(to == self ? -1 : -2)*PARALAX_RATIO,
+                                          self.paralax.center.y);
     } completion:^(BOOL finished) {
         [transitionContext completeTransition:finished];
     }];
@@ -192,7 +198,21 @@
 animationControllerForOperation:(UINavigationControllerOperation)operation fromViewController:(UIViewController *)fromVC
 toViewController:(UIViewController *)toVC
 {
-    self.navOp = operation;
+    return self;
+}
+
+//TODO: implement interactive transitions
+
+#pragma mark - UIViewControllerTransitioningDelegate
+
+- (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
+presentingController:(UIViewController *)presenting sourceController:(UIViewController *)source
+{
+    return self;
+}
+
+- (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed
+{
     return self;
 }
 

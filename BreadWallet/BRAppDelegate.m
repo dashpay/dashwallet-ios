@@ -26,6 +26,10 @@
 #import "BRAppDelegate.h"
 #import "BRPeerManager.h"
 
+#if BITCOIN_TESTNET
+#warning testnet build
+#endif
+
 @implementation BRAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions

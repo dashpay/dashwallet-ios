@@ -37,7 +37,6 @@
 @property (nonatomic, strong) NSArray *transactions;
 @property (nonatomic, strong) id balanceObserver, txStatusObserver;
 @property (nonatomic, strong) UIImageView *wallpaper;
-@property (nonatomic, assign) UINavigationControllerOperation navOp;
 
 @end
 
@@ -86,17 +85,24 @@
                                  [m localCurrencyStringForAmount:m.wallet.balance]];
 }
 
-- (void)dealloc
-{
-    if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
-    if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
-}
-
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
     
     self.transactions = [NSArray arrayWithArray:[[[BRWalletManager sharedInstance] wallet] recentTransactions]];
+}
+
+//- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+//    [super prepareForSegue:segue sender:sender];
+//
+//    [segue.destinationViewController setTransitioningDelegate:self];
+//    [segue.destinationViewController setModalPresentationStyle:UIModalPresentationCustom];
+//}
+
+- (void)dealloc
+{
+    if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
+    if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
 }
 
 - (void)setBackgroundForCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)path
@@ -415,6 +421,19 @@
     }
 }
 
+#pragma mark - UIAlertViewDelegate
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == alertView.cancelButtonIndex) {
+        [self.tableView deselectRowAtIndexPath:[self.tableView indexPathForSelectedRow] animated:YES];
+        return;
+    }
+
+    [self.navigationController
+     pushViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"] animated:YES];
+}
+
 #pragma mark UIViewControllerAnimatedTransitioning
 
 // This is used for percent driven interactive transitions, as well as for container controllers that have companion
@@ -429,19 +448,19 @@
 {
     UIView *v = transitionContext.containerView;
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
-    *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-    BOOL push = (self.navOp == UINavigationControllerOperationPush) ? YES : NO;
+                     *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
 
     if (self.wallpaper.superview != v) [v insertSubview:self.wallpaper belowSubview:from.view];
 
-    to.view.center = CGPointMake(v.frame.size.width*(push ? 3 : -1)/2, to.view.center.y);
+    to.view.center = CGPointMake(v.frame.size.width*(to == self ? -1 : 3)/2, to.view.center.y);
     [v addSubview:to.view];
 
     [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 options:0 animations:^{
         to.view.center = from.view.center;
-        from.view.center = CGPointMake(v.frame.size.width*(push ? -1 : 3)/2, from.view.center.y);
+        from.view.center = CGPointMake(v.frame.size.width*(to == self ? 3 : -1)/2, from.view.center.y);
         self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 -
-                                            v.frame.size.width*(push ? 1 : 0)*PARALAX_RATIO, self.wallpaper.center.y);
+                                            v.frame.size.width*(to == self ? 0 : 1)*PARALAX_RATIO,
+                                            self.wallpaper.center.y);
     } completion:^(BOOL finished) {
         [transitionContext completeTransition:finished];
     }];
@@ -453,21 +472,20 @@
 animationControllerForOperation:(UINavigationControllerOperation)operation fromViewController:(UIViewController *)fromVC
 toViewController:(UIViewController *)toVC
 {
-    self.navOp = operation;
     return self;
 }
 
-#pragma mark - UIAlertViewDelegate
+#pragma mark - UIViewControllerTransitioningDelegate
 
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+- (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
+presentingController:(UIViewController *)presenting sourceController:(UIViewController *)source
 {
-    if (buttonIndex == alertView.cancelButtonIndex) {
-        [self.tableView deselectRowAtIndexPath:[self.tableView indexPathForSelectedRow] animated:YES];
-        return;
-    }
-    
-    [self.navigationController
-     pushViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"] animated:YES];
+    return self;
+}
+
+- (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed
+{
+    return self;
 }
 
 @end

@@ -38,7 +38,7 @@
 @property (nonatomic, strong) IBOutlet UIGestureRecognizer *navBarTap;
 @property (nonatomic, assign) BOOL appeared;
 @property (nonatomic, strong) Reachability *reachability;
-@property (nonatomic, assign) UINavigationControllerOperation navOp;
+//@property (nonatomic, assign) UINavigationControllerOperation navOp;
 @property (nonatomic, strong) id urlObserver, fileObserver, activeObserver, balanceObserver, reachabilityObserver;
 @property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 
@@ -134,7 +134,6 @@
             }];
 
             [self updateProgress];
-            //[self startPulse];
         }];
     
     self.syncFinishedObserver =
@@ -176,13 +175,15 @@
                                  [m localCurrencyStringForAmount:m.wallet.balance]];
 
 #if BITCOIN_TESTNET
-    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, self.view.frame.size.height - 51,
-                                                               self.view.frame.size.width, 21)];
+    UILabel *label = [UILabel new];
 
     label.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:13.0];
     label.textColor = [UIColor redColor];
     label.textAlignment = NSTextAlignmentCenter;
     label.text = @"testnet";
+    [label sizeToFit];
+    label.center = CGPointMake(self.view.frame.size.width - label.frame.size.width,
+                               self.view.frame.size.height - label.frame.size.height - 5);
     [self.view addSubview:label];
 #endif
 }
@@ -220,6 +221,13 @@
 
     [super viewDidAppear:animated];
 }
+
+//- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+//    [super prepareForSegue:segue sender:sender];
+//
+//    [segue.destinationViewController setTransitioningDelegate:self];
+//    [segue.destinationViewController setModalPresentationStyle:UIModalPresentationCustom];
+//}
 
 - (void)viewDidLayoutSubviews
 {
@@ -268,22 +276,6 @@
     [self.pulse performSelector:@selector(setProgress:) withObject:nil afterDelay:2.5];
     if (progress < 1.0) [self performSelector:@selector(updateProgress) withObject:nil afterDelay:2.51];
 }
-
-//- (void)startPulse
-//{
-//    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(pulse) object:nil];
-//    if (self.progress.hidden) return;
-//
-//    self.pulse.alpha = 1.0;
-//    [self.pulse setProgress:self.progress.progress animated:self.progress.progress > self.pulse.progress];
-//
-//    [UIView animateWithDuration:1.5 delay:1.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
-//        self.pulse.alpha = 0.0;
-//    } completion:nil];
-//
-//    [self.pulse performSelector:@selector(setProgress:) withObject:nil afterDelay:2.5];
-//    [self performSelector:@selector(startPulse) withObject:nil afterDelay:2.51];
-//}
 
 - (void)showErrorBar {
     if (self.navigationItem.prompt != nil) return;
@@ -368,8 +360,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
 {
     UIView *v = transitionContext.containerView;
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
-    *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-    BOOL push = (self.navOp == UINavigationControllerOperationPush) ? YES : NO;
+                     *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
 
     if (self.wallpaper.superview != v) {
         v.backgroundColor = self.view.backgroundColor;
@@ -377,16 +368,17 @@ viewControllerAfterViewController:(UIViewController *)viewController
         [v insertSubview:self.wallpaper belowSubview:from.view];
     }
 
-    to.view.center = CGPointMake(v.frame.size.width*(push ? 3 : -1)/2, to.view.center.y);
+    to.view.center = CGPointMake(v.frame.size.width*(to == self ? -1 : 3)/2, to.view.center.y);
     [v addSubview:to.view];
-
+    
     [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 options:0 animations:^{
         to.view.center = from.view.center;
-        from.view.center = CGPointMake(v.frame.size.width*(push ? -1 : 3)/2, from.view.center.y);
+        from.view.center = CGPointMake(v.frame.size.width*(to == self ? 3 : -1)/2, from.view.center.y);
         self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 -
-                                            v.frame.size.width*(push ? 1 : 0)*PARALAX_RATIO, self.wallpaper.center.y);
+                                            v.frame.size.width*(to == self ? 0 : 1)*PARALAX_RATIO,
+                                            self.wallpaper.center.y);
     } completion:^(BOOL finished) {
-        if (! push) [from.view removeFromSuperview];
+        if (to == self) [from.view removeFromSuperview];
         [transitionContext completeTransition:finished];
     }];
 }
@@ -397,7 +389,19 @@ viewControllerAfterViewController:(UIViewController *)viewController
 animationControllerForOperation:(UINavigationControllerOperation)operation fromViewController:(UIViewController *)fromVC
 toViewController:(UIViewController *)toVC
 {
-    self.navOp = operation;
+    return self;
+}
+
+#pragma mark - UIViewControllerTransitioningDelegate
+
+- (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
+presentingController:(UIViewController *)presenting sourceController:(UIViewController *)source
+{
+    return self;
+}
+
+- (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed
+{
     return self;
 }
 
