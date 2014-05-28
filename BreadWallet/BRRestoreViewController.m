@@ -31,10 +31,12 @@
 #import <QuartzCore/QuartzCore.h>
 
 #define PHRASE_LENGTH 12
+#define WORDS         @"BIP39EnglishWords"
 
 @interface BRRestoreViewController ()
 
 @property (nonatomic, strong) IBOutlet UITextView *textView;
+@property (nonatomic, strong) NSArray *words;
 
 @end
 
@@ -70,6 +72,7 @@ static NSString *normalize_phrase(NSString *phrase)
     
     self.textView.layer.borderColor = [[UIColor colorWithWhite:0.0 alpha:0.25] CGColor];
     self.textView.layer.borderWidth = 0.5;
+    self.words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:WORDS ofType:@"plist"]];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -130,6 +133,12 @@ static NSString *normalize_phrase(NSString *phrase)
     NSArray *a =
         CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)phrase, CFSTR(" ")));
 
+    for (NSString *word in a) {
+        if ([self.words containsObject:word]) continue;
+        incorrect = word;
+        break;
+    }
+
     if ([s isEqual:@"wipe"]) { // shortcut word to force the wipe option to appear
         [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"cancel"
           destructiveButtonTitle:@"wipe" otherButtonTitles:nil]
@@ -140,13 +149,17 @@ static NSString *normalize_phrase(NSString *phrase)
         textView.selectedRange = [[textView.text lowercaseString] rangeOfString:incorrect];
         
         [[[UIAlertView alloc] initWithTitle:nil
-          message:[incorrect stringByAppendingString:@" is not the correct backup phrase word"] delegate:nil
+          message:[incorrect stringByAppendingString:@" is not a backup phrase word"] delegate:nil
           cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
     }
     else if (a.count != PHRASE_LENGTH) {
         [[[UIAlertView alloc] initWithTitle:nil
           message:[NSString stringWithFormat:@"backup phrase must be %d words", PHRASE_LENGTH] delegate:nil
           cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+    }
+    else if (! [[BRBIP39Mnemonic sharedInstance] phraseIsValid:phrase]) {
+        [[[UIAlertView alloc] initWithTitle:nil message:@"bad backup phrase" delegate:nil cancelButtonTitle:@"ok"
+          otherButtonTitles:nil] show];
     }
     else if ([[BRWalletManager sharedInstance] wallet]) {
         if ([phrase isEqual:normalize_phrase([[BRWalletManager sharedInstance] seedPhrase])]) {
