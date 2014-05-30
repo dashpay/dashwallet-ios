@@ -32,7 +32,8 @@
 #import "BRWallet.h"
 #import "Reachability.h"
 
-#define BALANCE_TIP @"This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market."
+#define BALANCE_TIP NSLocalizedString(@"This is your bitcoin balance. Bitcoin is a currency. "\
+                                       "The exchange rate changes with the market.", nil)
 
 @interface BRRootViewController ()
 
@@ -117,7 +118,7 @@
             if ([[BRPeerManager sharedInstance] syncProgress] < 1.0) return; // wait for sync before updating balance
 
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                         [m localCurrencyStringForAmount:m.wallet.balance]];
+                                            [m localCurrencyStringForAmount:m.wallet.balance]];
 
             // update receive qr code if it's not on screen
             if (self.pageViewController.viewControllers.lastObject != self.receiveViewController) {
@@ -129,7 +130,6 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncStartedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             if (self.reachability.currentReachabilityStatus != NotReachable) [self hideErrorBar];
-            if (m.wallet.balance == 0 && ! self.showTips) self.navigationItem.title = @"syncing...";
             [UIApplication sharedApplication].idleTimerDisabled = YES;
             self.progress.hidden = self.pulse.hidden = NO;
 
@@ -144,7 +144,7 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                         [m localCurrencyStringForAmount:m.wallet.balance]];
+                                            [m localCurrencyStringForAmount:m.wallet.balance]];
             [UIApplication sharedApplication].idleTimerDisabled = NO;
 
             if (self.progress.alpha > 0.5) {
@@ -164,7 +164,7 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                         [m localCurrencyStringForAmount:m.wallet.balance]];
+                                            [m localCurrencyStringForAmount:m.wallet.balance]];
             [UIApplication sharedApplication].idleTimerDisabled = NO;
             self.progress.hidden = self.pulse.hidden = YES;
             self.progress.progress = self.pulse.progress = 0.0;
@@ -176,7 +176,7 @@
 
     self.navigationController.delegate = self;
     self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                 [m localCurrencyStringForAmount:m.wallet.balance]];
+                                    [m localCurrencyStringForAmount:m.wallet.balance]];
 
 #if BITCOIN_TESTNET
     UILabel *label = [UILabel new];

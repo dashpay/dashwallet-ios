@@ -50,14 +50,13 @@
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            BRWallet *w = [[BRWalletManager sharedInstance] wallet];
+            BRWalletManager *m = [BRWalletManager sharedInstance];
 
-            if (! w) return;
-            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
-                                         [[BRWalletManager sharedInstance] stringForAmount:w.balance],
-                                         [[BRWalletManager sharedInstance] localCurrencyStringForAmount:w.balance]];
+            if (! m.wallet) return;
+            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
+                                            [m localCurrencyStringForAmount:m.wallet.balance]];
 
-            self.transactions = [NSArray arrayWithArray:w.recentTransactions];
+            self.transactions = [NSArray arrayWithArray:m.wallet.recentTransactions];
             
             [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
              withRowAnimation:UITableViewRowAnimationAutomatic];
@@ -66,11 +65,11 @@
     self.txStatusObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            BRWallet *w = [[BRWalletManager sharedInstance] wallet];
+            BRWalletManager *m = [BRWalletManager sharedInstance];
 
-            if (! w) return;
+            if (! m.wallet) return;
             [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
-             withRowAnimation:UITableViewRowAnimationAutomatic];
+             withRowAnimation:UITableViewRowAnimationAutomatic]; //BUG: random malloc error in sim
         }];
 
     BRWalletManager *m = [BRWalletManager sharedInstance];
@@ -81,7 +80,7 @@
     [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
     self.navigationController.delegate = self;
     self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                 [m localCurrencyStringForAmount:m.wallet.balance]];
+                                    [m localCurrencyStringForAmount:m.wallet.balance]];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -196,15 +195,15 @@
                 sentLabel.layer.borderWidth = 0.5;
 
                 if (confirms == 0 && ! [m.wallet transactionIsValid:tx]) {
-                    unconfirmedLabel.text = @"INVALID  ";
+                    unconfirmedLabel.text = NSLocalizedString(@"INVALID  ", nil);
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                 }
                 else if (confirms == 0 && ! [[BRPeerManager sharedInstance] transactionIsVerified:tx.txHash]) {
-                    unconfirmedLabel.text = @"unverified  ";
+                    unconfirmedLabel.text = NSLocalizedString(@"unverified  ", nil);
                 }
                 else if (confirms < 6) {
-                    unconfirmedLabel.text =
-                        [NSString stringWithFormat:@"%d confirmation%@ ", (int)confirms, (confirms == 1) ? @"" : @"s"];
+                    unconfirmedLabel.text = (confirms == 1) ? NSLocalizedString(@"1 confirmation ", nil) :
+                        [NSString stringWithFormat:NSLocalizedString(@"%d confirmations ", nil), (int)confirms];
                 }
                 else {
                     unconfirmedLabel.hidden = YES;
@@ -213,31 +212,33 @@
 
                 if (! address || (sent > 0 && [m.wallet containsAddress:address])) {
                     textLabel.text = [m stringForAmount:sent];
-                    localCurrencyLabel.text =
-                        [NSString stringWithFormat:@"(%@)", [m localCurrencyStringForAmount:sent]];
-                    detailTextLabel.text = @"within wallet";
-                    sentLabel.text = @"moved  ";
+                    localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
+                                               [m localCurrencyStringForAmount:sent]];
+                    detailTextLabel.text = NSLocalizedString(@"within wallet", nil);
+                    sentLabel.text = NSLocalizedString(@"moved  ", nil);
                 }
                 else if (sent > 0) {
                     textLabel.text = [m stringForAmount:received - sent];
-                    detailTextLabel.text = [@"to: " stringByAppendingString:address];
-                    localCurrencyLabel.text =
-                        [NSString stringWithFormat:@"(%@)", [m localCurrencyStringForAmount:received - sent]];
-                    sentLabel.text = @"sent  ";
+                    detailTextLabel.text = [NSString stringWithFormat:NSLocalizedString(@"to: %@", nil), address];
+                    localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
+                                               [m localCurrencyStringForAmount:received - sent]];
+                    sentLabel.text = NSLocalizedString(@"sent  ", nil);
                     sentLabel.textColor = [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.67];
                 }
                 else {
                     textLabel.text = [m stringForAmount:received];
-                    detailTextLabel.text = [@"to: " stringByAppendingString:address];
-                    localCurrencyLabel.text =
-                        [NSString stringWithFormat:@"(%@)", [m localCurrencyStringForAmount:received]];
-                    sentLabel.text = @"received  ";
+                    detailTextLabel.text = [NSString stringWithFormat:NSLocalizedString(@"to: %@", nil), address];
+                    localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
+                                               [m localCurrencyStringForAmount:received]];
+                    sentLabel.text = NSLocalizedString(@"received  ", nil);
                     sentLabel.textColor = [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
                 }
 
                 sentLabel.layer.borderColor = sentLabel.textColor.CGColor;
                 
-                if (! detailTextLabel.text) detailTextLabel.text = @"can't decode payment address";
+                if (! detailTextLabel.text) {
+                    detailTextLabel.text = NSLocalizedString(@"can't decode payment address", nil);
+                }
             }
             break;
             
@@ -247,11 +248,11 @@
 
             switch (indexPath.row) {
                 case 0:
-                    cell.textLabel.text = @"about";
+                    cell.textLabel.text = NSLocalizedString(@"about", nil);
                     break;
 
                 case 1:
-                    cell.textLabel.text = @"backup phrase";
+                    cell.textLabel.text = NSLocalizedString(@"backup phrase", nil);
                     break;
                     
                 default:
@@ -263,7 +264,7 @@
         case 2:
             cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
             [self setBackgroundForCell:cell atIndexPath:indexPath];
-            cell.textLabel.text = @"rescan blockchain";
+            cell.textLabel.text = NSLocalizedString(@"rescan blockchain", nil);
             break;
 
         case 3:
@@ -282,9 +283,9 @@
 //- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
 //{
 //    switch (section) {
-//        case 0: return nil;//@"recent transactions";
-//        case 1: return nil;//@"settings";
-//        case 2: return nil;//@"caution";
+//        case 0: return nil;//NSLocalizedString(@"recent transactions", nil);
+//        case 1: return nil;//NSLocalizedString(@"settings", nil);
+//        case 2: return nil;//NSLocalizedString(@"caution", nil);
 //        default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, section);
 //    }
 //    
@@ -372,9 +373,13 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
-    static NSString *warning = @"DO NOT let anyone see your backup phrase or they can spend your bitcoins.";
+    static NSString *warning = nil;
     UIViewController *c = nil;
     UILabel *l = nil;
+
+    if (! warning) {
+        warning = NSLocalizedString(@"DO NOT let anyone see your backup phrase or they can spend your bitcoins.", nil);
+    }
 
     switch (indexPath.section) {
         case 0:
@@ -396,8 +401,9 @@
                     break;
                     
                 case 1:
-                    [[[UIAlertView alloc] initWithTitle:@"WARNING" message:warning delegate:self
-                      cancelButtonTitle:@"cancel" otherButtonTitles:@"show", nil] show];
+                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil) message:warning delegate:self
+                      cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+                      otherButtonTitles:NSLocalizedString(@"show", nil), nil] show];
                     break;
                     
                 default:

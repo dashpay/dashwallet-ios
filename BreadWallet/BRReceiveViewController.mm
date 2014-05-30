@@ -31,20 +31,19 @@
 #import "BRBubbleView.h"
 #import "QREncoder.h"
 
-#define QR_TIP      @"Let others scan this QR code to get your bitcoin address. "\
-                     "Anyone can send bitcoins to your wallet by transferring them to your address."
-#define ADDRESS_TIP @"This is your bitcoin address. Tap to copy it or send it by email or sms. "\
-                     "The address will change each time you receive funds, but old addresses always work."
+#define QR_TIP      NSLocalizedString(@"Let others scan this QR code to get your bitcoin address. Anyone can send "\
+                    "bitcoins to your wallet by transferring them to your address.", nil)
+#define ADDRESS_TIP NSLocalizedString(@"This is your bitcoin address. Tap to copy it or send it by email or sms. The "\
+                    "address will change each time you receive funds, but old addresses always work.", nil)
 
 @interface BRReceiveViewController ()
 
 @property (nonatomic, strong) BRBubbleView *tipView;
+@property (nonatomic, assign) BOOL showTips;
 
 @property (nonatomic, strong) IBOutlet UILabel *label;
 @property (nonatomic, strong) IBOutlet UIButton *addressButton;
 @property (nonatomic, strong) IBOutlet UIImageView *qrView;
-
-@property (nonatomic, assign) BOOL showTips;
 
 @end
 
@@ -150,14 +149,14 @@
 
     UIActionSheet *a = [UIActionSheet new];
 
-    a.title = [@"Receive bitcoins at this address: " stringByAppendingString:self.paymentAddress];
+    a.title = [NSString stringWithFormat:NSLocalizedString(@"Receive bitcoins at this address: %@", nil), self.paymentAddress];
     a.delegate = self;
-    [a addButtonWithTitle:@"copy"];
-    if ([MFMailComposeViewController canSendMail]) [a addButtonWithTitle:@"email"];
+    [a addButtonWithTitle:NSLocalizedString(@"copy", nil)];
+    if ([MFMailComposeViewController canSendMail]) [a addButtonWithTitle:NSLocalizedString(@"email", nil)];
 #if ! TARGET_IPHONE_SIMULATOR
-    if ([MFMessageComposeViewController canSendText]) [a addButtonWithTitle:@"sms"];
+    if ([MFMessageComposeViewController canSendText]) [a addButtonWithTitle:NSLocalizedString(@"sms", nil)];
 #endif
-    [a addButtonWithTitle:@"cancel"];
+    [a addButtonWithTitle:NSLocalizedString(@"cancel", nil)];
     a.cancelButtonIndex = a.numberOfButtons - 1;
     
     [a showInView:[[UIApplication sharedApplication] keyWindow]];
@@ -170,33 +169,34 @@
     NSString *title = [actionSheet buttonTitleAtIndex:buttonIndex];
 
     //TODO: XXXX allow user to specify a request amount
-    if ([title isEqual:@"copy"]) {
+    if ([title isEqual:NSLocalizedString(@"copy", nil)]) {
         [[UIPasteboard generalPasteboard] setString:self.paymentAddress];
 
         [self.view
-         addSubview:[[[BRBubbleView viewWithText:@"copied"
+         addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"copied", nil)
                        center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2 - 130)]
                       popIn] popOutAfterDelay:2.0]];
     }
-    else if ([title isEqual:@"email"]) {
+    else if ([title isEqual:NSLocalizedString(@"email", nil)]) {
         //TODO: XXXX implement BIP71 payment protocol mime attachement
         // https://github.com/bitcoin/bips/blob/master/bip-0071.mediawiki
         
         if ([MFMailComposeViewController canSendMail]) {
             MFMailComposeViewController *c = [MFMailComposeViewController new];
             
-            [c setSubject:@"Bitcoin address"];
+            [c setSubject:NSLocalizedString(@"Bitcoin address", nil)];
             [c setMessageBody:[@"bitcoin:" stringByAppendingString:self.paymentAddress] isHTML:NO];
             c.mailComposeDelegate = self;
             [self.navigationController presentViewController:c animated:YES completion:nil];
             c.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default.png"]];
         }
         else {
-            [[[UIAlertView alloc] initWithTitle:nil message:@"email not configured on this device" delegate:nil
-              cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+            [[[UIAlertView alloc] initWithTitle:nil
+              message:NSLocalizedString(@"email not configured on this device", nil) delegate:nil
+              cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
     }
-    else if ([title isEqual:@"sms"]) {
+    else if ([title isEqual:NSLocalizedString(@"sms", nil)]) {
         if ([MFMessageComposeViewController canSendText]) {
             MFMessageComposeViewController *c = [MFMessageComposeViewController new];
             
@@ -206,8 +206,9 @@
             c.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default.png"]];
         }
         else {
-            [[[UIAlertView alloc] initWithTitle:nil message:@"sms not currently available on this device" delegate:nil
-              cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+            [[[UIAlertView alloc] initWithTitle:nil
+              message:NSLocalizedString(@"sms not currently available on this device", nil) delegate:nil
+              cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
     }    
 }

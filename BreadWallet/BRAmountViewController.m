@@ -65,7 +65,7 @@
             if ([[BRPeerManager sharedInstance] syncProgress] < 1.0) return; // wait for sync before updating balance
 
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                         [m localCurrencyStringForAmount:m.wallet.balance]];
+                                            [m localCurrencyStringForAmount:m.wallet.balance]];
         }];
     
     self.syncStartedObserver =
@@ -110,7 +110,7 @@
     
     NSString *addr = self.request.paymentAddress;
     
-    if (addr) self.addressLabel.text = [@"to: " stringByAppendingString:addr];
+    if (addr) self.addressLabel.text = [NSString stringWithFormat:NSLocalizedString(@"to: %@", nil), addr];
     //self.payButton.enabled = self.amountField.text.length ? YES : NO;
 }
 

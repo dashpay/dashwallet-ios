@@ -140,35 +140,35 @@ static NSString *normalize_phrase(NSString *phrase)
     }
 
     if ([s isEqual:@"wipe"]) { // shortcut word to force the wipe option to appear
-        [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"cancel"
-          destructiveButtonTitle:@"wipe" otherButtonTitles:nil]
+        [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+          destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
          showInView:[[UIApplication sharedApplication] keyWindow]];
     }
     else if (incorrect) {
         textView.selectedRange = [[textView.text lowercaseString] rangeOfString:incorrect];
         
         [[[UIAlertView alloc] initWithTitle:nil
-          message:[NSString stringWithFormat:@"\"%@\" is not a backup phrase word", incorrect] delegate:nil
-          cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+          message:[NSString stringWithFormat:NSLocalizedString(@"\"%@\" is not a backup phrase word", nil), incorrect]
+          delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
     }
     else if (a.count != PHRASE_LENGTH) {
         [[[UIAlertView alloc] initWithTitle:nil
-          message:[NSString stringWithFormat:@"backup phrase must be %d words", PHRASE_LENGTH] delegate:nil
-          cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+          message:[NSString stringWithFormat:NSLocalizedString(@"backup phrase must have %d words", nil), PHRASE_LENGTH]
+          delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
     }
     else if (! [[BRBIP39Mnemonic sharedInstance] phraseIsValid:phrase]) {
-        [[[UIAlertView alloc] initWithTitle:nil message:@"bad backup phrase" delegate:nil cancelButtonTitle:@"ok"
-          otherButtonTitles:nil] show];
+        [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"bad backup phrase", nil) delegate:nil
+          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
     }
     else if ([[BRWalletManager sharedInstance] wallet]) {
         if ([phrase isEqual:normalize_phrase([[BRWalletManager sharedInstance] seedPhrase])]) {
-            [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"cancel"
-              destructiveButtonTitle:@"wipe" otherButtonTitles:nil]
+            [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+              destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
              showInView:[[UIApplication sharedApplication] keyWindow]];
         }
         else {
-            [[[UIAlertView alloc] initWithTitle:nil message:@"backup phrase doesn't match" delegate:nil
-              cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+            [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"backup phrase doesn't match", nil)
+              delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
     }
     else {

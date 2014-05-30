@@ -429,7 +429,8 @@ static const char *dns_seeds[] = {
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerSyncFailedNotification
                  object:nil userInfo:@{@"error":[NSError errorWithDomain:@"BreadWallet" code:1
-                                                 userInfo:@{NSLocalizedDescriptionKey:@"no peers found"}]}];
+                                                 userInfo:@{NSLocalizedDescriptionKey:
+                                                            NSLocalizedString(@"no peers found", nil)}]}];
             });
         }
     });
@@ -465,7 +466,8 @@ static const char *dns_seeds[] = {
     if (! [transaction isSigned]) {
         if (completion) {
             completion([NSError errorWithDomain:@"BreadWallet" code:401
-                        userInfo:@{NSLocalizedDescriptionKey:@"bitcoin transaction not signed"}]);
+                        userInfo:@{NSLocalizedDescriptionKey:
+                                   NSLocalizedString(@"bitcoin transaction not signed", nil)}]);
         }
         return;
     }
@@ -473,7 +475,8 @@ static const char *dns_seeds[] = {
     if (! self.connected) {
         if (completion) {
             completion([NSError errorWithDomain:@"BreadWallet" code:-1009
-                        userInfo:@{NSLocalizedDescriptionKey:@"not connected to the bitcoin network"}]);
+                        userInfo:@{NSLocalizedDescriptionKey:
+                                   NSLocalizedString(@"not connected to the bitcoin network", nil)}]);
         }
         return;
     }
@@ -524,7 +527,8 @@ static const char *dns_seeds[] = {
 
     if (callback) {
         callback([NSError errorWithDomain:@"BreadWallet" code:BITCOIN_TIMEOUT_CODE
-                  userInfo:@{NSLocalizedDescriptionKey:@"transaction canceled, network timeout"}]);
+                  userInfo:@{NSLocalizedDescriptionKey:
+                             NSLocalizedString(@"transaction canceled, network timeout", nil)}]);
     }
 }
 

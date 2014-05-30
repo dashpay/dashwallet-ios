@@ -165,7 +165,7 @@
 
     if (! u) {
         completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
-                         userInfo:@{NSLocalizedDescriptionKey:@"bad payment request URL"}]);
+                         userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"bad payment request URL", nil)}]);
         return;
     }
 
@@ -178,7 +178,8 @@
     completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
         if (! [response.MIMEType.lowercaseString isEqual:@"application/bitcoin-paymentrequest"] || data.length > 50000){
             completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
-                             userInfo:@{NSLocalizedDescriptionKey:@"unexpected response from payment server"}]);
+                             userInfo:@{NSLocalizedDescriptionKey:
+                                        NSLocalizedString(@"unexpected response from payment server", nil)}]);
             return;
         }
 
@@ -191,15 +192,16 @@
 
         if (! req) {
             completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
-                             userInfo:@{NSLocalizedDescriptionKey:@"unexpected response from payment server"}]);
+                             userInfo:@{NSLocalizedDescriptionKey:
+                                        NSLocalizedString(@"unexpected response from payment server", nil)}]);
             return;
         }
 
         if (! [req.details.network isEqual:network]) {
             completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
-                             userInfo:@{NSLocalizedDescriptionKey:[NSString
-                             stringWithFormat:@"requested network \"%@\" instead of \"%@\"", req.details.network,
-                             network]}]);
+                             userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:
+                                         NSLocalizedString(@"requested network \"%@\" instead of \"%@\"", nil),
+                                         req.details.network, network]}]);
             return;
         }
 
@@ -214,7 +216,7 @@ completion:(void (^)(BRPaymentProtocolACK *ack, NSError *error))completion
 
     if (! url || [url.scheme isEqual:@"http"]) { // must be https rather than http
         completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
-                         userInfo:@{NSLocalizedDescriptionKey:@"bad payment URL"}]);
+                         userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"bad payment URL", nil)}]);
     }
 
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:url
@@ -229,7 +231,8 @@ completion:(void (^)(BRPaymentProtocolACK *ack, NSError *error))completion
     completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
         if (! [response.MIMEType.lowercaseString isEqual:@"application/bitcoin-paymentack"] || data.length > 50000) {
             completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
-                             userInfo:@{NSLocalizedDescriptionKey:@"unexpected response from payment server"}]);
+                             userInfo:@{NSLocalizedDescriptionKey:
+                                        NSLocalizedString(@"unexpected response from payment server", nil)}]);
             return;
         }
 
@@ -237,7 +240,8 @@ completion:(void (^)(BRPaymentProtocolACK *ack, NSError *error))completion
         
         if (! ack) {
             completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
-                             userInfo:@{NSLocalizedDescriptionKey:@"unexpected response from payment server"}]);
+                             userInfo:@{NSLocalizedDescriptionKey:
+                                        NSLocalizedString(@"unexpected response from payment server", nil)}]);
             return;
         }
         

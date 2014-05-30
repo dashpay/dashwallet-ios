@@ -34,7 +34,7 @@
 #import <netinet/in.h>
 #import "Reachability.h"
 
-#define USERAGENT [NSString stringWithFormat:@"/breadwallet:%@/", NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"]]
+#define USERAGENT [NSString stringWithFormat:@"/breadwallet:%@/",NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"]]
 
 #define HEADER_LENGTH      24
 #define MAX_MSG_LENGTH     0x02000000
@@ -172,7 +172,7 @@ services:(uint64_t)services
         
         // after the reachablity check, the radios should be warmed up and we can set a short socket connect timeout
         [self performSelector:@selector(disconnectWithError:) withObject:[NSError errorWithDomain:@"BreadWallet"
-         code:BITCOIN_TIMEOUT_CODE userInfo:@{NSLocalizedDescriptionKey:@"connect timeout"}]
+         code:BITCOIN_TIMEOUT_CODE userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"connect timeout", nil)}]
          afterDelay:CONNECT_TIMEOUT];
         
         [self.inputStream open];
@@ -924,7 +924,8 @@ services:(uint64_t)services
                 [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending socket connect timeout
                 [self performSelector:@selector(disconnectWithError:)
                  withObject:[NSError errorWithDomain:@"BreadWallet" code:BITCOIN_TIMEOUT_CODE
-                             userInfo:@{NSLocalizedDescriptionKey:@"connect timeout"}] afterDelay:CONNECT_TIMEOUT];
+                             userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"connect timeout", nil)}]
+                             afterDelay:CONNECT_TIMEOUT];
             }
 
             // fall through to send any queued output

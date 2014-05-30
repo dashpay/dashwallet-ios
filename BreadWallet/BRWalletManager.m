@@ -338,13 +338,14 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
 
     if (! address) {
         completion(nil, [NSError errorWithDomain:@"BreadWallet" code:187
-                         userInfo:@{NSLocalizedDescriptionKey:@"not a valid private key"}]);
+                         userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"not a valid private key", nil)}]);
         return;
     }
 
     if ([self.wallet containsAddress:address]) {
         completion(nil, [NSError errorWithDomain:@"BreadWallet" code:187
-                         userInfo:@{NSLocalizedDescriptionKey:@"this private key is already in your wallet"}]);
+                         userInfo:@{NSLocalizedDescriptionKey:
+                                    NSLocalizedString(@"this private key is already in your wallet", nil)}]);
         return;
     }
 
@@ -366,7 +367,7 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
         if (error) {
             if ([[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] hasPrefix:@"No free outputs"]) {
                 error = [NSError errorWithDomain:@"BreadWallet" code:417
-                         userInfo:@{NSLocalizedDescriptionKey:@"this private key is empty"}];
+                         userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"this private key is empty", nil)}];
             }
 
             completion(nil, error);
@@ -376,7 +377,8 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
         if (! [json isKindOfClass:[NSDictionary class]] ||
             ! [json[@"unspent_outputs"] isKindOfClass:[NSArray class]]) {
             completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
-                             userInfo:@{NSLocalizedDescriptionKey:@"unexpected response from blockchain.info"}]);
+                             userInfo:@{NSLocalizedDescriptionKey:
+                                        NSLocalizedString(@"unexpected response from server", nil)}]);
             return;
         }
 
@@ -388,7 +390,8 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
                 ! [utxo[@"script"] isKindOfClass:[NSString class]] || ! [utxo[@"script"] hexToData] ||
                 ! [utxo[@"value"] isKindOfClass:[NSNumber class]]) {
                 completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
-                                 userInfo:@{NSLocalizedDescriptionKey:@"unexpected response from blockchain.info"}]);
+                                 userInfo:@{NSLocalizedDescriptionKey:
+                                            NSLocalizedString(@"unexpected response from server", nil)}]);
                 return;
             }
 
@@ -399,7 +402,7 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
 
         if (balance == 0) {
             completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
-                             userInfo:@{NSLocalizedDescriptionKey:@"this private key is empty"}]);
+                             userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"this private key is empty", nil)}]);
             return;
         }
 
@@ -409,8 +412,9 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
 
         if (standardFee + TX_MIN_OUTPUT_AMOUNT > balance) {
             completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
-                             userInfo:@{NSLocalizedDescriptionKey:@"transaction fees would cost more than the funds "
-                                        "available on this private key (due to tiny \"dust\" deposits)"}]);
+                             userInfo:@{NSLocalizedDescriptionKey:
+                                        NSLocalizedString(@"transaction fees would cost more than the funds available "
+                                                          "on this private key (due to tiny \"dust\" deposits)",nil)}]);
             return;
         }
 
@@ -418,7 +422,8 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
 
         if (! [tx signWithPrivateKeys:@[privKey]]) {
             completion(nil, [NSError errorWithDomain:@"BreadWallet" code:401
-                             userInfo:@{NSLocalizedDescriptionKey:@"error signing transaction"}]);
+                             userInfo:@{NSLocalizedDescriptionKey:
+                                        NSLocalizedString(@"error signing transaction", nil)}]);
             return;
         }
 
