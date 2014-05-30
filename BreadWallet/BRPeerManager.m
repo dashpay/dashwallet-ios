@@ -427,10 +427,11 @@ static const char *dns_seeds[] = {
             self.syncStartHeight = 0;
 
             dispatch_async(dispatch_get_main_queue(), ^{
+                NSError *error = [NSError errorWithDomain:@"BreadWallet" code:1 userInfo:@{NSLocalizedDescriptionKey:
+                                  NSLocalizedString(@"no peers found", nil)}];
+
                 [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerSyncFailedNotification
-                 object:nil userInfo:@{@"error":[NSError errorWithDomain:@"BreadWallet" code:1
-                                                 userInfo:@{NSLocalizedDescriptionKey:
-                                                            NSLocalizedString(@"no peers found", nil)}]}];
+                 object:nil userInfo:@{@"error":error}];
             });
         }
     });
@@ -465,18 +466,16 @@ static const char *dns_seeds[] = {
 {
     if (! [transaction isSigned]) {
         if (completion) {
-            completion([NSError errorWithDomain:@"BreadWallet" code:401
-                        userInfo:@{NSLocalizedDescriptionKey:
-                                   NSLocalizedString(@"bitcoin transaction not signed", nil)}]);
+            completion([NSError errorWithDomain:@"BreadWallet" code:401 userInfo:@{NSLocalizedDescriptionKey:
+                        NSLocalizedString(@"bitcoin transaction not signed", nil)}]);
         }
         return;
     }
 
     if (! self.connected) {
         if (completion) {
-            completion([NSError errorWithDomain:@"BreadWallet" code:-1009
-                        userInfo:@{NSLocalizedDescriptionKey:
-                                   NSLocalizedString(@"not connected to the bitcoin network", nil)}]);
+            completion([NSError errorWithDomain:@"BreadWallet" code:-1009 userInfo:@{NSLocalizedDescriptionKey:
+                        NSLocalizedString(@"not connected to the bitcoin network", nil)}]);
         }
         return;
     }
@@ -526,9 +525,8 @@ static const char *dns_seeds[] = {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:txHash];
 
     if (callback) {
-        callback([NSError errorWithDomain:@"BreadWallet" code:BITCOIN_TIMEOUT_CODE
-                  userInfo:@{NSLocalizedDescriptionKey:
-                             NSLocalizedString(@"transaction canceled, network timeout", nil)}]);
+        callback([NSError errorWithDomain:@"BreadWallet" code:BITCOIN_TIMEOUT_CODE userInfo:@{NSLocalizedDescriptionKey:
+                  NSLocalizedString(@"transaction canceled, network timeout", nil)}]);
     }
 }
 

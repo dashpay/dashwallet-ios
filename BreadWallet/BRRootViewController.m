@@ -46,6 +46,7 @@
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) id urlObserver, fileObserver, activeObserver, balanceObserver, reachabilityObserver;
 @property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
+@property (nonatomic, assign) NSTimeInterval timeout, start;
 
 @end
 
@@ -118,7 +119,7 @@
             if ([[BRPeerManager sharedInstance] syncProgress] < 1.0) return; // wait for sync before updating balance
 
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                            [m localCurrencyStringForAmount:m.wallet.balance]];
+                                         [m localCurrencyStringForAmount:m.wallet.balance]];
 
             // update receive qr code if it's not on screen
             if (self.pageViewController.viewControllers.lastObject != self.receiveViewController) {
@@ -130,44 +131,19 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncStartedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             if (self.reachability.currentReachabilityStatus != NotReachable) [self hideErrorBar];
-            [UIApplication sharedApplication].idleTimerDisabled = YES;
-            self.progress.hidden = self.pulse.hidden = NO;
-
-            [UIView animateWithDuration:0.2 animations:^{
-                self.progress.alpha = 1.0;
-            }];
-
-            [self updateProgress];
+            [self startActivityWithTimeout:0];
         }];
     
     self.syncFinishedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                            [m localCurrencyStringForAmount:m.wallet.balance]];
-            [UIApplication sharedApplication].idleTimerDisabled = NO;
-
-            if (self.progress.alpha > 0.5) {
-                [self.progress setProgress:1.0 animated:YES];
-                [self.pulse setProgress:1.0 animated:YES];
-
-                [UIView animateWithDuration:0.2 animations:^{
-                    self.progress.alpha = self.pulse.alpha = 0.0;
-                } completion:^(BOOL finished) {
-                    self.progress.hidden = self.pulse.hidden = YES;
-                    self.progress.progress = self.pulse.progress = 0.0;
-                }];
-            }
+            if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
         }];
     
     self.syncFailedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                            [m localCurrencyStringForAmount:m.wallet.balance]];
-            [UIApplication sharedApplication].idleTimerDisabled = NO;
-            self.progress.hidden = self.pulse.hidden = YES;
-            self.progress.progress = self.pulse.progress = 0.0;
+            if (self.timeout < 1.0) [self stopActivityWithSuccess:NO];
             [self showErrorBar];
         }];
     
@@ -176,7 +152,7 @@
 
     self.navigationController.delegate = self;
     self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                    [m localCurrencyStringForAmount:m.wallet.balance]];
+                                 [m localCurrencyStringForAmount:m.wallet.balance]];
 
 #if BITCOIN_TESTNET
     UILabel *label = [UILabel new];
@@ -265,6 +241,51 @@
     if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
 }
 
+- (void)startActivityWithTimeout:(NSTimeInterval)timeout
+{
+    NSTimeInterval start = [NSDate timeIntervalSinceReferenceDate];
+
+    if (timeout > 1 && start + timeout > self.start + self.timeout) {
+        self.timeout = timeout;
+        self.start = start;
+    }
+
+    [UIApplication sharedApplication].idleTimerDisabled = YES;
+    self.progress.hidden = self.pulse.hidden = NO;
+
+    [UIView animateWithDuration:0.2 animations:^{
+        self.progress.alpha = 1.0;
+    }];
+
+    [self updateProgress];
+}
+
+- (void)stopActivityWithSuccess:(BOOL)success
+{
+    double progress = [[BRPeerManager sharedInstance] syncProgress];
+
+    self.start = self.timeout = 0.0;
+    if (progress > DBL_EPSILON && progress < 1.0) return; // not done syncing
+    [UIApplication sharedApplication].idleTimerDisabled = NO;
+    if (self.progress.alpha < 0.5) return;
+
+    if (success) {
+        [self.progress setProgress:1.0 animated:YES];
+        [self.pulse setProgress:1.0 animated:YES];
+        
+        [UIView animateWithDuration:0.2 animations:^{
+            self.progress.alpha = self.pulse.alpha = 0.0;
+        } completion:^(BOOL finished) {
+            self.progress.hidden = self.pulse.hidden = YES;
+            self.progress.progress = self.pulse.progress = 0.0;
+        }];
+    }
+    else {
+        self.progress.hidden = self.pulse.hidden = YES;
+        self.progress.progress = self.pulse.progress = 0.0;
+    }
+}
+
 - (void)setProgressTo:(NSNumber *)n
 {
     self.progress.progress = [n floatValue];
@@ -272,7 +293,10 @@
 
 - (void)updateProgress
 {
-    float progress = [[BRPeerManager sharedInstance] syncProgress];
+    NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate] - self.start;
+    double progress = [[BRPeerManager sharedInstance] syncProgress];
+
+    if (self.timeout > 1.0 && 0.1 + 0.9*t/self.timeout < progress) progress = 0.1 + 0.9*t/self.timeout;
 
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateProgress) object:nil];
     if (progress <= DBL_EPSILON) progress = self.progress.progress;

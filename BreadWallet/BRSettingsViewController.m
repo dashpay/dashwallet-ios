@@ -54,7 +54,7 @@
 
             if (! m.wallet) return;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                            [m localCurrencyStringForAmount:m.wallet.balance]];
+                                         [m localCurrencyStringForAmount:m.wallet.balance]];
 
             self.transactions = [NSArray arrayWithArray:m.wallet.recentTransactions];
             
@@ -80,7 +80,7 @@
     [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
     self.navigationController.delegate = self;
     self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                    [m localCurrencyStringForAmount:m.wallet.balance]];
+                                 [m localCurrencyStringForAmount:m.wallet.balance]];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -202,7 +202,8 @@
                     unconfirmedLabel.text = NSLocalizedString(@"unverified  ", nil);
                 }
                 else if (confirms < 6) {
-                    unconfirmedLabel.text = (confirms == 1) ? NSLocalizedString(@"1 confirmation ", nil) :
+                    unconfirmedLabel.text =
+                        (confirms == 1) ? NSLocalizedString(@"1 confirmation ", nil) :
                         [NSString stringWithFormat:NSLocalizedString(@"%d confirmations ", nil), (int)confirms];
                 }
                 else {

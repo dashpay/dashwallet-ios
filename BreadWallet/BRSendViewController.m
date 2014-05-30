@@ -100,11 +100,11 @@
             
             if (payment.transactions.count > 0) {
                 for (BRTransaction *tx in payment.transactions) {
-//                    [self startSpinner];
-                    
+                    [(id)self.parentViewController.parentViewController startActivityWithTimeout:30];
+
                     [[BRPeerManager sharedInstance] publishTransaction:tx completion:^(NSError *error) {
-//                        [self stopSpinner];
-                        
+                        [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
+
                         if (error) {
                             [[[UIAlertView alloc]
                               initWithTitle:NSLocalizedString(@"couldn't transmit payment to bitcoin network", nil)
@@ -219,10 +219,10 @@
     }
 
     if (request.r.length > 0) { // payment protocol over HTTP
-//        [self startSpinner];
+        [(id)self.parentViewController.parentViewController startActivityWithTimeout:20];
 
         [BRPaymentRequest fetch:request.r completion:^(BRPaymentProtocolRequest *req, NSError *error) {
-//            [self stopSpinner];
+            [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
 
             if (error) {
                 [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
@@ -252,7 +252,7 @@
         c.delegate = self;
         c.request = request;
         c.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                     [m localCurrencyStringForAmount:m.wallet.balance]];
+                                  [m localCurrencyStringForAmount:m.wallet.balance]];
         [self.navigationController pushViewController:c animated:YES];
     }
     else if (request.amount < TX_MIN_OUTPUT_AMOUNT) {
@@ -583,10 +583,10 @@
     }
 
     if (self.sweepTx) {
-//        [self startSpinner];
+        [(id)self.parentViewController.parentViewController startActivityWithTimeout:30];
 
         [[BRPeerManager sharedInstance] publishTransaction:self.sweepTx completion:^(NSError *error) {
-//            [self stopSpinner];
+            [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
 
             if (error) {
                 [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't sweep balance", nil)
@@ -663,11 +663,11 @@
 
     NSLog(@"signed transaction:\n%@", [NSString hexWithData:self.tx.data]);
 
-//    [self startSpinner];
+    [(id)self.parentViewController.parentViewController startActivityWithTimeout:30];
 
     [[BRPeerManager sharedInstance] publishTransaction:self.tx completion:^(NSError *error) {
         if (request.details.paymentURL.length > 0) return;
-//        [self stopSpinner];
+        [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
 
         if (error) {
             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
@@ -701,8 +701,8 @@
         
         [BRPaymentRequest postPayment:payment to:request.details.paymentURL
         completion:^(BRPaymentProtocolACK *ack, NSError *error) {
-//            [self stopSpinner];
-            
+            [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
+
             if (error && ! [m.wallet transactionIsRegistered:self.tx.txHash]) {
                 [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription delegate:nil
                   cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];

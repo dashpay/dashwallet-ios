@@ -34,7 +34,6 @@
 
 @property (nonatomic, strong) IBOutlet UITextField *amountField;
 @property (nonatomic, strong) IBOutlet UILabel *localCurrencyLabel, *addressLabel;
-//@property (nonatomic, strong) IBOutlet UIActivityIndicatorView *spinner;
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *payButton;
 @property (nonatomic, strong) IBOutlet UIButton *delButton, *decimalButton;
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *localCurrencyLabelWidth;
@@ -65,34 +64,27 @@
             if ([[BRPeerManager sharedInstance] syncProgress] < 1.0) return; // wait for sync before updating balance
 
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                            [m localCurrencyStringForAmount:m.wallet.balance]];
+                                         [m localCurrencyStringForAmount:m.wallet.balance]];
         }];
     
     self.syncStartedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncStartedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             [UIApplication sharedApplication].idleTimerDisabled = YES;
-            
-            if (self.navigationItem.rightBarButtonItem == self.payButton) {
-//                self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
-//                [self.spinner startAnimating];
-            }
         }];
     
     self.syncFinishedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             self.navigationItem.rightBarButtonItem = self.payButton;
-//            [self.spinner stopAnimating];
-//            [UIApplication sharedApplication].idleTimerDisabled = NO;
+            [UIApplication sharedApplication].idleTimerDisabled = NO;
         }];
     
     self.syncFailedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             self.navigationItem.rightBarButtonItem = self.payButton;
-//            [self.spinner stopAnimating];
-//            [UIApplication sharedApplication].idleTimerDisabled = NO;
+            [UIApplication sharedApplication].idleTimerDisabled = NO;
         }];
 }
 

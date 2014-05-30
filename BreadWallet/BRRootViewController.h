@@ -36,4 +36,7 @@ UINavigationControllerDelegate, UIViewControllerTransitioningDelegate, UIViewCon
 
 - (IBAction)tip:(id)sender;
 
+- (void)startActivityWithTimeout:(NSTimeInterval)timeout;
+- (void)stopActivityWithSuccess:(BOOL)success;
+
 @end

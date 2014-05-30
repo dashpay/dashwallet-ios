@@ -149,7 +149,8 @@
 
     UIActionSheet *a = [UIActionSheet new];
 
-    a.title = [NSString stringWithFormat:NSLocalizedString(@"Receive bitcoins at this address: %@", nil), self.paymentAddress];
+    a.title = [NSString stringWithFormat:NSLocalizedString(@"Receive bitcoins at this address: %@", nil),
+               self.paymentAddress];
     a.delegate = self;
     [a addButtonWithTitle:NSLocalizedString(@"copy", nil)];
     if ([MFMailComposeViewController canSendMail]) [a addButtonWithTitle:NSLocalizedString(@"email", nil)];
