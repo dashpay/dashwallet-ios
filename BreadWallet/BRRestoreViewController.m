@@ -145,11 +145,10 @@ static NSString *normalize_phrase(NSString *phrase)
          showInView:[[UIApplication sharedApplication] keyWindow]];
     }
     else if (incorrect) {
-        //BUG: the range should be set by word count, not string match
         textView.selectedRange = [[textView.text lowercaseString] rangeOfString:incorrect];
         
         [[[UIAlertView alloc] initWithTitle:nil
-          message:[incorrect stringByAppendingString:@" is not a backup phrase word"] delegate:nil
+          message:[NSString stringWithFormat:@"\"%@\" is not a backup phrase word", incorrect] delegate:nil
           cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
     }
     else if (a.count != PHRASE_LENGTH) {

@@ -30,6 +30,6 @@
 @interface BRSendViewController : UIViewController <UIAlertViewDelegate, ZBarReaderDelegate,
 BRAmountViewControllerDelegate>
 
-- (BOOL)hideTips;
+- (IBAction)tip:(id)sender;
 
 @end

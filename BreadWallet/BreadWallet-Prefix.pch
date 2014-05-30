@@ -21,6 +21,11 @@
 #define BRURLNotification  @"BRURLNotification"
 #define BRFileNotification @"BRFileNotification"
 
+#define ls(s)       NSLocalizedString(s, nil)
+#define lsf(s, ...) [NSString stringWithFormat:ls(s), __VA_ARGS__]
+
 #if ! DEBUG
 #define NSLog(...)
 #endif
+
+#define OPENSSL_NO_INLINE_ASM

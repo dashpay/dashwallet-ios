@@ -26,17 +26,22 @@
 #import "BRRootViewController.h"
 #import "BRReceiveViewController.h"
 #import "BRSendViewController.h"
+#import "BRBubbleView.h"
 #import "BRPeerManager.h"
 #import "BRWalletManager.h"
 #import "BRWallet.h"
 #import "Reachability.h"
+
+#define BALANCE_TIP @"This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market."
 
 @interface BRRootViewController ()
 
 @property (nonatomic, strong) IBOutlet UIProgressView *progress, *pulse;
 @property (nonatomic, strong) IBOutlet UIView *errorBar, *wallpaper;
 @property (nonatomic, strong) IBOutlet UIGestureRecognizer *navBarTap;
-@property (nonatomic, assign) BOOL appeared;
+
+@property (nonatomic, strong) BRBubbleView *tipView;
+@property (nonatomic, assign) BOOL appeared, showTips, inNextTip;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) id urlObserver, fileObserver, activeObserver, balanceObserver, reachabilityObserver;
 @property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
@@ -124,7 +129,7 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncStartedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             if (self.reachability.currentReachabilityStatus != NotReachable) [self hideErrorBar];
-            if (m.wallet.balance == 0) self.navigationItem.title = @"syncing...";
+            if (m.wallet.balance == 0 && ! self.showTips) self.navigationItem.title = @"syncing...";
             [UIApplication sharedApplication].idleTimerDisabled = YES;
             self.progress.hidden = self.pulse.hidden = NO;
 
@@ -191,12 +196,11 @@
 {
     [super viewWillAppear:animated];
 
-    if (! [[BRWalletManager sharedInstance] wallet]) {
-        if (! [[UIApplication sharedApplication] isProtectedDataAvailable]) return;
-
+    if ([[UIApplication sharedApplication] isProtectedDataAvailable] && ! [[BRWalletManager sharedInstance] wallet]) {
         UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"];
 
         [self.navigationController presentViewController:c animated:NO completion:nil];
+        self.showTips = YES;
         return;
     }
 
@@ -207,6 +211,9 @@
 
 - (void)viewDidAppear:(BOOL)animated
 {
+    self.navBarTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(navBarTap:)];
+    [self.navigationController.navigationBar addGestureRecognizer:self.navBarTap];
+
     if (! self.appeared) {
         self.appeared = YES;
         
@@ -214,11 +221,21 @@
             [self.pageViewController setViewControllers:@[self.receiveViewController]
              direction:UIPageViewControllerNavigationDirectionForward animated:YES completion:nil];
         }
+
+        if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
     }
 
     if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
 
     [super viewDidAppear:animated];
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [self.navigationController.navigationBar removeGestureRecognizer:self.navBarTap];
+    self.navBarTap = nil;
+
+    [super viewWillDisappear:animated];
 }
 
 //- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
@@ -286,17 +303,12 @@
      options:UIViewAnimationOptionCurveEaseIn animations:^{
         self.errorBar.alpha = 1.0;
     } completion:nil];
-
-    self.navBarTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(connect:)];
-    [self.navigationController.navigationBar addGestureRecognizer:self.navBarTap];
 }
 
 - (void)hideErrorBar {
     if (self.navigationItem.prompt == nil) return;
     self.navigationItem.prompt = nil;
-    [self.navigationController.navigationBar removeGestureRecognizer:self.navBarTap];
-    self.navBarTap = nil;
-    
+
     [UIView animateWithDuration:UINavigationControllerHideShowBarDuration delay:0.0
      options:UIViewAnimationOptionCurveEaseOut animations:^{
         self.errorBar.alpha = 0.0;
@@ -305,11 +317,70 @@
     }];
 }
 
+- (BOOL)nextTip
+{
+    if (self.tipView.alpha < 0.5) {
+        BOOL r;
+
+        if (self.inNextTip) return NO; // break out of recursive loop
+        self.inNextTip = YES;
+        r = [self.pageViewController.viewControllers.lastObject nextTip];
+        self.inNextTip = NO;
+        return r;
+    }
+
+    [self.tipView popOut];
+    self.tipView = nil;
+    if (self.showTips) [self.pageViewController.viewControllers.lastObject tip:self];
+    self.showTips = NO;
+    return YES;
+}
+
+#pragma mark - IBAction
+
+- (IBAction)tip:(id)sender
+{
+    if (sender == self.receiveViewController) {
+        BRSendViewController *c = self.sendViewController;
+
+        [(id)self.pageViewController setViewControllers:@[c] direction:UIPageViewControllerNavigationDirectionReverse
+        animated:YES completion:^(BOOL finished) {
+            [c tip:sender];
+        }];
+        return;
+    }
+    else if (sender == self.sendViewController) {
+        [(id)self.pageViewController setViewControllers:@[self.receiveViewController]
+         direction:UIPageViewControllerNavigationDirectionForward animated:YES completion:nil];
+        return;
+    }
+
+    self.tipView = [BRBubbleView viewWithText:BALANCE_TIP
+                    tipPoint:CGPointMake(self.view.bounds.size.width/2.0,
+                                         self.navigationController.navigationBar.frame.origin.y +
+                                         self.navigationController.navigationBar.frame.size.height - 10)
+                    tipDirection:BRBubbleTipDirectionUp];
+
+    self.tipView.backgroundColor = [UIColor orangeColor];
+    self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+    [self.view addSubview:[self.tipView popIn]];
+}
+
 - (IBAction)connect:(id)sender
 {
     if (! sender && [self.reachability currentReachabilityStatus] == NotReachable) return;
 
     [[BRPeerManager sharedInstance] connect];
+}
+
+- (IBAction)navBarTap:(id)sender
+{
+    if ([self nextTip]) return;
+
+    if (self.errorBar.hidden) {
+        [self tip:sender];
+    }
+    else [self connect:sender];
 }
 
 #pragma mark UIPageViewControllerDataSource

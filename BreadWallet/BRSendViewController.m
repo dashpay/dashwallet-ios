@@ -42,7 +42,6 @@
 "You can send a payment to anyone with an address."
 #define CLIPBOARD_TIP @"Bitcoin addresses can also be copied to the clipboard. "\
 "A bitcoin address always starts with '1'."
-#define PAGE_TIP      @"Tap or swipe right to receive money."
 
 #define LOCK @"\xF0\x9F\x94\x92" // unicode lock symbol U+1F512 (utf-8)
 #define REDX @"\xE2\x9D\x8C"     // unicode cross mark U+274C, red x emoji (utf-8)
@@ -50,12 +49,12 @@
 @interface BRSendViewController ()
 
 @property (nonatomic, strong) NSString *addressInWallet, *txName, *txMemo;
-@property (nonatomic, assign) BOOL txSecure, clearClipboard;
+@property (nonatomic, assign) BOOL txSecure, clearClipboard, showTips;
 @property (nonatomic, strong) id urlObserver, fileObserver;
 @property (nonatomic, strong) BRTransaction *sweepTx, *tx, *txWithFee;
 @property (nonatomic, strong) BRPaymentProtocolRequest *protocolRequest;
 @property (nonatomic, strong) ZBarReaderViewController *zbarController;
-//@property (nonatomic, strong) BRBubbleView *tipView;
+@property (nonatomic, strong) BRBubbleView *tipView;
 
 @property (nonatomic, strong) IBOutletCollection(UIButton) NSArray *buttons;
 
@@ -69,8 +68,6 @@
     // Do any additional setup after loading the view, typically from a nib.
 
     //TODO: add a field for manually entering a payment address
-    //TODO: make title use dynamic font size
-    //BUG: clipboard button title is offcenter (ios7 specific font layout bug?)
 
     self.urlObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRURLNotification object:nil queue:nil
@@ -344,41 +341,58 @@
     }];
 }
 
-- (BOOL)hideTips
+- (void)hideTips
 {
-//    if (self.tipView.alpha < 0.5) return NO;
-//    [self.tipView fadeOut];
+    if (self.tipView.alpha > 0.5) [self.tipView popOut];
+}
+
+- (BOOL)nextTip
+{
+    if (self.tipView.alpha < 0.5) return [(id)self.parentViewController.parentViewController nextTip];
+
+    BRBubbleView *v = self.tipView;
+
+    self.tipView = nil;
+    [v popOut];
+    
+    if ([v.text isEqual:SCAN_TIP]) {
+        UIButton *b = self.buttons.lastObject;
+
+        self.tipView = [BRBubbleView viewWithText:CLIPBOARD_TIP tipPoint:CGPointMake(b.center.x, b.center.y + 10.0)
+                        tipDirection:BRBubbleTipDirectionUp];
+        self.tipView.backgroundColor = v.backgroundColor;
+        self.tipView.font = v.font;
+        [self.view addSubview:[self.tipView popIn]];
+    }
+    else if (self.showTips && [v.text isEqual:CLIPBOARD_TIP]) {
+        self.showTips = NO;
+        [(id)self.parentViewController.parentViewController tip:self];
+    }
+
     return YES;
 }
 
-//- (BOOL)nextTip
-//{
-//    BRBubbleView *v = self.tipView;
-//
-//    if (v.alpha < 0.5) return NO;
-//
-//    if ([v.text isEqual:SCAN_TIP]) {
-//        UIButton *b = self.requestButtons[[self.requestIDs indexOfObject:CLIPBOARD_ID]];
-//
-//        self.tipView = [BRBubbleView viewWithText:CLIPBOARD_TIP tipPoint:CGPointMake(b.center.x, b.center.y + 5.0)
-//                        tipDirection:BRBubbleTipDirectionUp];
-//    }
-//    else if ([v.text isEqual:CLIPBOARD_TIP]) {
-//        self.tipView = [BRBubbleView viewWithText:PAGE_TIP
-//                        tipPoint:CGPointMake(self.view.bounds.size.width/2.0, self.view.superview.bounds.size.height)
-//                        tipDirection:BRBubbleTipDirectionDown];
-//    }
-//    else self.tipView = nil;
-//
-//    self.tipView.backgroundColor = v.backgroundColor;
-//    self.tipView.font = v.font;
-//    if (self.tipView) [self.view addSubview:[self.tipView fadeIn]];
-//    [v fadeOut];
-//
-//    return YES;
-//}
-
 #pragma mark - IBAction
+
+- (IBAction)tip:(id)sender
+{
+    if ([self nextTip]) return;
+
+    if (! [sender isKindOfClass:[UIGestureRecognizer class]] || ! [[sender view] isKindOfClass:[UILabel class]]) {
+        if (! [sender isKindOfClass:[UIViewController class]]) return;
+        self.showTips = YES;
+    }
+
+    UIButton *b = self.buttons.firstObject;
+
+    self.tipView = [BRBubbleView viewWithText:SCAN_TIP tipPoint:CGPointMake(b.center.x, b.center.y - 10.0)
+                    tipDirection:BRBubbleTipDirectionDown];
+
+
+    self.tipView.backgroundColor = [UIColor orangeColor];
+    self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+    [self.view addSubview:[self.tipView popIn]];
+}
 
 - (IBAction)swipeLeft:(id)sender
 {
@@ -400,26 +414,10 @@
     });
 }
 
-//- (IBAction)info:(id)sender
-//{
-//    if ([self nextTip]) return;
-//
-//    UIButton *b = self.requestButtons[[self.requestIDs indexOfObject:QR_ID]];
-//
-//    self.tipView = [BRBubbleView viewWithText:SCAN_TIP tipPoint:CGPointMake(b.center.x, b.center.y - 5.0)
-//                    tipDirection:BRBubbleTipDirectionDown];
-//    self.tipView.backgroundColor = [UIColor orangeColor];
-//    self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
-//    [self.view addSubview:[self.tipView fadeIn]];
-//}
-//
-//- (IBAction)next:(id)sender
-//{
-//    [self nextTip];
-//}
-
 - (IBAction)scanQR:(id)sender
 {
+    if ([self nextTip]) return;
+
     [sender setEnabled:NO];
 
     [self.navigationController presentViewController:self.zbarController animated:YES completion:^{
@@ -446,6 +444,8 @@
 
 - (IBAction)payToClipboard:(id)sender
 {
+    if ([self nextTip]) return;
+
     NSString *s = [[[UIPasteboard generalPasteboard] string]
                    stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     BRPaymentRequest *req = [BRPaymentRequest requestWithString:s];
@@ -602,11 +602,11 @@
     NSString *title = [alertView buttonTitleAtIndex:buttonIndex];
     uint32_t freeHeight = [m.wallet blockHeightUntilFree:self.tx];
 
-    if ([title hasPrefix:@"+ "] || [title isEqual:@"no fee"]) {
+    if ([title hasPrefix:@"+ "] || [title isEqual:ls(@"no fee")]) {
         if ([title hasPrefix:@"+ "]) self.tx = self.txWithFee;
 
         if (! self.tx) {
-            [[[UIAlertView alloc] initWithTitle:@"insufficient funds" message:nil delegate:nil cancelButtonTitle:@"ok"
+            [[[UIAlertView alloc] initWithTitle:ls(@"insufficient funds") message:nil delegate:nil cancelButtonTitle:ls(@"ok")
               otherButtonTitles:nil] show];
             [self cancel:nil];
             return;

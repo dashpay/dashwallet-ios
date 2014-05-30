@@ -107,11 +107,11 @@
 {
     [super viewDidAppear:animated];
 
-    if ([[BRWalletManager sharedInstance] wallet]) { // sanity check
-        [self.navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
-    }
-
     dispatch_async(dispatch_get_main_queue(), ^{ // animation sometimes doesn't work if run directly in viewDidAppear
+        if ([[BRWalletManager sharedInstance] wallet]) { // sanity check
+            [self.navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
+        }
+
         if (! self.animating) {
             self.animating = YES;
 

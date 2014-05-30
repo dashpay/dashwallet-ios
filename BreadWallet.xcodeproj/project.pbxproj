@@ -344,7 +344,6 @@
 		7579FDE219231E7700CA56F4 /* rpc_enc.c in Sources */ = {isa = PBXBuildFile; fileRef = 7579F9A119231E7600CA56F4 /* rpc_enc.c */; };
 		7579FDE319231E7700CA56F4 /* rpw.c in Sources */ = {isa = PBXBuildFile; fileRef = 7579F9A219231E7600CA56F4 /* rpw.c */; };
 		7579FDE419231E7700CA56F4 /* set_key.c in Sources */ = {isa = PBXBuildFile; fileRef = 7579F9A319231E7600CA56F4 /* set_key.c */; };
-		7579FDE519231E7700CA56F4 /* speed.c in Sources */ = {isa = PBXBuildFile; fileRef = 7579F9A419231E7600CA56F4 /* speed.c */; };
 		7579FDE619231E7700CA56F4 /* str2key.c in Sources */ = {isa = PBXBuildFile; fileRef = 7579F9A619231E7600CA56F4 /* str2key.c */; };
 		7579FDEB19231E7700CA56F4 /* xcbc_enc.c in Sources */ = {isa = PBXBuildFile; fileRef = 7579F9B419231E7600CA56F4 /* xcbc_enc.c */; };
 		7579FDEC19231E7700CA56F4 /* dh_ameth.c in Sources */ = {isa = PBXBuildFile; fileRef = 7579F9BC19231E7600CA56F4 /* dh_ameth.c */; };
@@ -732,7 +731,6 @@
 		7579FFE319231E7700CA56F4 /* v3_sxnet.c in Sources */ = {isa = PBXBuildFile; fileRef = 7579FCD719231E7700CA56F4 /* v3_sxnet.c */; };
 		7579FFE419231E7700CA56F4 /* v3_utl.c in Sources */ = {isa = PBXBuildFile; fileRef = 7579FCD819231E7700CA56F4 /* v3_utl.c */; };
 		7579FFE619231E7700CA56F4 /* v3err.c in Sources */ = {isa = PBXBuildFile; fileRef = 7579FCDA19231E7700CA56F4 /* v3err.c */; };
-		7579FFE719231E7700CA56F4 /* v3prin.c in Sources */ = {isa = PBXBuildFile; fileRef = 7579FCDB19231E7700CA56F4 /* v3prin.c */; };
 		757BE7E3192C0E9D0061CB20 /* BRRestoreViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BE7E2192C0E9D0061CB20 /* BRRestoreViewController.m */; };
 		757BE7E6192C1FF70061CB20 /* BRWelcomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BE7E5192C1FF70061CB20 /* BRWelcomeViewController.m */; };
 		757BE7E9192D4E880061CB20 /* BRSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BE7E8192D4E880061CB20 /* BRSeedViewController.m */; };
@@ -1317,7 +1315,6 @@
 		7579F9A119231E7600CA56F4 /* rpc_enc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = rpc_enc.c; sourceTree = "<group>"; };
 		7579F9A219231E7600CA56F4 /* rpw.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = rpw.c; sourceTree = "<group>"; };
 		7579F9A319231E7600CA56F4 /* set_key.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = set_key.c; sourceTree = "<group>"; };
-		7579F9A419231E7600CA56F4 /* speed.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = speed.c; sourceTree = "<group>"; };
 		7579F9A519231E7600CA56F4 /* spr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = spr.h; sourceTree = "<group>"; };
 		7579F9A619231E7600CA56F4 /* str2key.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = str2key.c; sourceTree = "<group>"; };
 		7579F9B419231E7600CA56F4 /* xcbc_enc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = xcbc_enc.c; sourceTree = "<group>"; };
@@ -1785,7 +1782,6 @@
 		7579FCD719231E7700CA56F4 /* v3_sxnet.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = v3_sxnet.c; sourceTree = "<group>"; };
 		7579FCD819231E7700CA56F4 /* v3_utl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = v3_utl.c; sourceTree = "<group>"; };
 		7579FCDA19231E7700CA56F4 /* v3err.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = v3err.c; sourceTree = "<group>"; };
-		7579FCDB19231E7700CA56F4 /* v3prin.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = v3prin.c; sourceTree = "<group>"; };
 		7579FCDC19231E7700CA56F4 /* x509v3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x509v3.h; sourceTree = "<group>"; };
 		757BE7E1192C0E9D0061CB20 /* BRRestoreViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRRestoreViewController.h; sourceTree = "<group>"; };
 		757BE7E2192C0E9D0061CB20 /* BRRestoreViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRRestoreViewController.m; sourceTree = "<group>"; };
@@ -1806,6 +1802,7 @@
 		759FBB33193290F600AB4465 /* BRRootViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRRootViewController.m; sourceTree = "<group>"; };
 		759FBB34193290F600AB4465 /* BRSendViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRSendViewController.h; sourceTree = "<group>"; };
 		759FBB35193290F600AB4465 /* BRSendViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRSendViewController.m; sourceTree = "<group>"; };
+		75A1E4901937AF9600D85BEE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
 		75B8346619233B550010931E /* dsa_gen.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = dsa_gen.c; sourceTree = "<group>"; };
 		75D5F3BE191EC270004AB296 /* BreadWallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BreadWallet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		75D5F3C1191EC270004AB296 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -2638,7 +2635,6 @@
 				7579F9A119231E7600CA56F4 /* rpc_enc.c */,
 				7579F9A219231E7600CA56F4 /* rpw.c */,
 				7579F9A319231E7600CA56F4 /* set_key.c */,
-				7579F9A419231E7600CA56F4 /* speed.c */,
 				7579F9A519231E7600CA56F4 /* spr.h */,
 				7579F9A619231E7600CA56F4 /* str2key.c */,
 				7579F9B419231E7600CA56F4 /* xcbc_enc.c */,
@@ -3349,7 +3345,6 @@
 				7579FCD719231E7700CA56F4 /* v3_sxnet.c */,
 				7579FCD819231E7700CA56F4 /* v3_utl.c */,
 				7579FCDA19231E7700CA56F4 /* v3err.c */,
-				7579FCDB19231E7700CA56F4 /* v3prin.c */,
 				7579FCDC19231E7700CA56F4 /* x509v3.h */,
 			);
 			path = x509v3;
@@ -4142,7 +4137,6 @@
 				7579FEFE19231E7700CA56F4 /* pem_seal.c in Sources */,
 				752E28F319235A0600DB5A3C /* rand_unix.c in Sources */,
 				7579FD5719231E7700CA56F4 /* bss_mem.c in Sources */,
-				7579FFE719231E7700CA56F4 /* v3prin.c in Sources */,
 				7579FDC919231E7700CA56F4 /* des.c in Sources */,
 				7579FF3819231E7700CA56F4 /* rc2cfb64.c in Sources */,
 				7579FE3119231E7700CA56F4 /* ech_key.c in Sources */,
@@ -4195,7 +4189,6 @@
 				7579FF1219231E7700CA56F4 /* pk12err.c in Sources */,
 				7579FE6319231E7700CA56F4 /* c_alld.c in Sources */,
 				7579FFBA19231E7700CA56F4 /* x509cset.c in Sources */,
-				7579FDE519231E7700CA56F4 /* speed.c in Sources */,
 				7579FD1019231E7700CA56F4 /* evp_asn1.c in Sources */,
 				7579FE0119231E7700CA56F4 /* dsa_lib.c in Sources */,
 				7579FE0619231E7700CA56F4 /* dsa_vrf.c in Sources */,
@@ -4518,6 +4511,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				75D5F3DD191EC270004AB296 /* Base */,
+				75A1E4901937AF9600D85BEE /* en */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";
@@ -4599,6 +4593,7 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
+				GCC_WARN_INHIBIT_ALL_WARNINGS = YES;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -4611,6 +4606,7 @@
 				DSTROOT = /tmp/qrencoder.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "QR-Code-Encoder-for-Objective-C/QRCodeEncoderObjectiveCAtGithub/QREncoder-Prefix.pch";
+				GCC_WARN_INHIBIT_ALL_WARNINGS = YES;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

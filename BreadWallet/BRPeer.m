@@ -34,7 +34,7 @@
 #import <netinet/in.h>
 #import "Reachability.h"
 
-#define USERAGENT [NSString stringWithFormat:@"/zincwallet:%@/", NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"]]
+#define USERAGENT [NSString stringWithFormat:@"/breadwallet:%@/", NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"]]
 
 #define HEADER_LENGTH      24
 #define MAX_MSG_LENGTH     0x02000000
@@ -152,7 +152,7 @@ services:(uint64_t)services
     self.currentBlockHashes = [NSMutableOrderedSet orderedSet];
     self.requestedBlockHashes = [NSCountedSet set];
 
-    NSString *label = [NSString stringWithFormat:@"cc.zinc.peer.%@:%d", self.host, self.port];
+    NSString *label = [NSString stringWithFormat:@"peer.%@:%d", self.host, self.port];
 
     // use a private serial queue for processing socket io
     dispatch_async(dispatch_queue_create(label.UTF8String, NULL), ^{

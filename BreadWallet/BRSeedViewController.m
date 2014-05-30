@@ -77,7 +77,7 @@
         self.navigationItem.leftBarButtonItem = nil;
     }
 
-    if (! m.wallet && [[UIApplication sharedApplication] isProtectedDataAvailable]) {
+    if ([[UIApplication sharedApplication] isProtectedDataAvailable] && ! m.wallet) {
         [m generateRandomSeed];
         [[BRPeerManager sharedInstance] connect];
     }

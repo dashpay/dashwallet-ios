@@ -24,12 +24,11 @@
 //  THE SOFTWARE.
 
 #import <UIKit/UIKit.h>
-//#import <GameKit/GameKit.h>
 #import <MessageUI/MessageUI.h>
 
-@interface BRReceiveViewController : UIViewController<UIActionSheetDelegate, //GKSessionDelegate,
+@interface BRReceiveViewController : UIViewController<UIActionSheetDelegate,
 MFMessageComposeViewControllerDelegate, MFMailComposeViewControllerDelegate>
 
-- (BOOL)hideTips;
+- (IBAction)tip:(id)sender;
 
 @end

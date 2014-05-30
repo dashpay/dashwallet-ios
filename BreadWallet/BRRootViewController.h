@@ -34,4 +34,6 @@ UINavigationControllerDelegate, UIViewControllerTransitioningDelegate, UIViewCon
 @property (nonatomic, strong) IBOutlet BRSendViewController *sendViewController;
 @property (nonatomic, strong) IBOutlet UIPageViewController *pageViewController;
 
+- (IBAction)tip:(id)sender;
+
 @end
