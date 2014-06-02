@@ -29,9 +29,6 @@
 #import "NSMutableData+Bitcoin.h"
 #import <openssl/bn.h>
 
-#define P2PKHASH_SUFFIX "\x88\xAC" // OP_EQUALVERIFY OP_CHECKSIG
-#define P2PUBKEY_SUFFIX "\xAC"     // OP_CHECKSIG
-
 static const char base58chars[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
 static void *secureAllocate(CFIndex allocSize, CFOptionFlags hint, void *info)

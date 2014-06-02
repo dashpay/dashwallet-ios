@@ -132,6 +132,10 @@
         queue:nil usingBlock:^(NSNotification *note) {
             if (self.reachability.currentReachabilityStatus != NotReachable) [self hideErrorBar];
             [self startActivityWithTimeout:0];
+
+            if (m.wallet.balance == 0 && m.seedCreationTime == BITCOIN_REFERENCE_BLOCK_TIME) {
+                self.navigationItem.title = @"syncing...";
+            }
         }];
     
     self.syncFinishedObserver =
@@ -299,28 +303,38 @@
 
 - (void)updateProgress
 {
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateProgress) object:nil];
+
+    static int counter = 0;
     NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate] - self.start;
     double progress = [[BRPeerManager sharedInstance] syncProgress];
 
     if (self.timeout > 1.0 && 0.1 + 0.9*t/self.timeout < progress) progress = 0.1 + 0.9*t/self.timeout;
-
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateProgress) object:nil];
     if (progress <= DBL_EPSILON) progress = self.progress.progress;
 
-    self.pulse.alpha = 1.0;
-    [self.pulse setProgress:progress animated:progress > self.pulse.progress];
+    if ((counter % 13) == 0) {
+        self.pulse.alpha = 1.0;
+        [self.pulse setProgress:progress animated:progress > self.pulse.progress];
+        [self.progress setProgress:progress animated:progress > self.progress.progress];
 
-    if (progress > self.progress.progress) {
-        [self performSelector:@selector(setProgressTo:) withObject:@(progress) afterDelay:1.0];
+        if (progress > self.progress.progress) {
+            [self performSelector:@selector(setProgressTo:) withObject:@(progress) afterDelay:1.0];
+        }
+        else self.progress.progress = progress;
+        
+        [UIView animateWithDuration:1.59 delay:1.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+            self.pulse.alpha = 0.0;
+        } completion:nil];
+
+        [self.pulse performSelector:@selector(setProgress:) withObject:nil afterDelay:2.59];
     }
-    else self.progress.progress = progress;
+    else if ((counter % 13) >= 5) {
+        [self.progress setProgress:progress animated:progress > self.progress.progress];
+        [self.pulse setProgress:progress animated:progress > self.pulse.progress];
+    }
 
-    [UIView animateWithDuration:1.5 delay:1.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
-        self.pulse.alpha = 0.0;
-    } completion:nil];
-
-    [self.pulse performSelector:@selector(setProgress:) withObject:nil afterDelay:2.5];
-    if (progress < 1.0) [self performSelector:@selector(updateProgress) withObject:nil afterDelay:2.51];
+    counter++;
+    if (progress < 1.0) [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
 }
 
 - (void)showErrorBar {

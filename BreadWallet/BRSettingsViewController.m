@@ -69,7 +69,7 @@
 
             if (! m.wallet) return;
             [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
-             withRowAnimation:UITableViewRowAnimationAutomatic]; //BUG: random malloc error in sim
+             withRowAnimation:UITableViewRowAnimationAutomatic];
         }];
 
     BRWalletManager *m = [BRWalletManager sharedInstance];
