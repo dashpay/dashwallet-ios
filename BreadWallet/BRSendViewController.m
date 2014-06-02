@@ -704,6 +704,7 @@
         completion:^(BRPaymentProtocolACK *ack, NSError *error) {
             [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
 
+            //BUG: XXXX consistently getting unexpected server response here from bitpay
             if (error && ! [m.wallet transactionIsRegistered:self.tx.txHash]) {
                 [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription delegate:nil
                   cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];

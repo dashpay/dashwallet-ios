@@ -188,8 +188,6 @@
         return;
     }
 
-    //BUG: XXXX set title to "syncing..." if we're restoring from backup
-
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
     [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
     [[BRPeerManager sharedInstance] connect];

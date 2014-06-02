@@ -346,8 +346,9 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
         return;
     }
 
-    NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:[UNSPENT_URL stringByAppendingString:address]]
-                         cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:20.0];
+    NSURL *u = [NSURL URLWithString:[UNSPENT_URL stringByAppendingString:address]];
+    NSURLRequest *req = [NSURLRequest requestWithURL:u cachePolicy:NSURLRequestReloadIgnoringCacheData
+                         timeoutInterval:20.0];
 
     [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue currentQueue]
     completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
@@ -374,7 +375,8 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
         if (! [json isKindOfClass:[NSDictionary class]] ||
             ! [json[@"unspent_outputs"] isKindOfClass:[NSArray class]]) {
             completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                             NSLocalizedString(@"unexpected response from server", nil)}]);
+                             [NSString stringWithFormat:NSLocalizedString(@"unexpected response from %@", nil), u.host]
+                            }]);
             return;
         }
 
@@ -386,7 +388,8 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
                 ! [utxo[@"script"] isKindOfClass:[NSString class]] || ! [utxo[@"script"] hexToData] ||
                 ! [utxo[@"value"] isKindOfClass:[NSNumber class]]) {
                 completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                                 NSLocalizedString(@"unexpected response from server", nil)}]);
+                                 [NSString stringWithFormat:NSLocalizedString(@"unexpected response from %@", nil),
+                                  u.host]}]);
                 return;
             }
 

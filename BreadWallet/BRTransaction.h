@@ -27,12 +27,10 @@
 
 #if TX_FEE_0_9_2_RULES
 #define TX_FEE_PER_KB        1000ULL     // standard tx fee per kb of tx size, rounded up to nearest kb (0.9.2 rules)
-#define TX_MIN_OUTPUT_AMOUNT 546ULL      // no tx output can be below this amount (or it won't be relayed)
 #else
-#define TX_FEE_PER_KB        10000ULL    // standard tx fee per kb of tx size, rounded up to the nearest kb
-#define TX_MIN_OUTPUT_AMOUNT 5460ULL     // no tx output can be below this amount (or it won't be relayed)
+#define TX_FEE_PER_KB        10000ULL    // standard tx fee per kb of tx size, rounded up to nearest kb
 #endif
-
+#define TX_MIN_OUTPUT_AMOUNT (TX_FEE_PER_KB*3*(34 + 148)/1000) // no txout can be below this amount (or it won't relay)
 #define TX_FREE_MAX_SIZE     1000ULL     // tx must not be larger than this size in bytes without a fee
 #define TX_FREE_MIN_PRIORITY 57600000ULL // tx must not have a priority below this value without a fee
 #define TX_MAX_SIZE          100000ULL   // no tx can be larger than this size in bytes

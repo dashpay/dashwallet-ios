@@ -403,10 +403,15 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
 - (void)removeTransaction:(NSData *)txHash
 {
     BRTransaction *transaction = self.allTx[txHash];
+    NSMutableSet *hashes = [NSMutableSet set];
 
     for (BRTransaction *tx in self.transactions) { // remove dependent transactions
         if (tx.blockHeight < transaction.blockHeight) break;
-        if (! [txHash isEqual:tx.txHash] && [tx.inputHashes containsObject:txHash]) [self removeTransaction:tx.txHash];
+        if (! [txHash isEqual:tx.txHash] && [tx.inputHashes containsObject:txHash]) [hashes addObject:hashes];
+    }
+
+    for (NSData *hash in hashes) {
+        [self removeTransaction:hash];
     }
 
     [self.allTx removeObjectForKey:txHash];
