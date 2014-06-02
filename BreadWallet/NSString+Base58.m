@@ -25,10 +25,12 @@
 
 #import "NSString+Base58.h"
 #import "NSData+Hash.h"
+#import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 #import <openssl/bn.h>
 
-#define SCRIPT_SUFFIX "\x88\xAC" // OP_EQUALVERIFY OP_CHECKSIG
+#define P2PKHASH_SUFFIX "\x88\xAC" // OP_EQUALVERIFY OP_CHECKSIG
+#define P2PUBKEY_SUFFIX "\xAC"     // OP_CHECKSIG
 
 static const char base58chars[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
@@ -221,27 +223,38 @@ breakout:
 
 + (NSString *)addressWithScript:(NSData *)script
 {
-    static NSData *suffix = nil;
-    static dispatch_once_t onceToken = 0;
-    
-    dispatch_once(&onceToken, ^{
-        suffix = [NSData dataWithBytes:SCRIPT_SUFFIX length:strlen(SCRIPT_SUFFIX)];
-    });
+    if (script == (id)[NSNull null]) return nil;
 
-    if (script == (id)[NSNull null] || script.length < suffix.length + 20 ||
-        ! [[script subdataWithRange:NSMakeRange(script.length - suffix.length, suffix.length)] isEqualToData:suffix]) {
-        return nil;
-    }
-    
+    NSArray *elem = [script scriptElements];
+    NSUInteger l = elem.count;
+    NSMutableData *d = [NSMutableData data];
+    uint8_t v = BITCOIN_PUBKEY_ADDRESS;
+
 #if BITCOIN_TESTNET
-    uint8_t x = BITCOIN_PUBKEY_ADDRESS_TEST;
-#else
-    uint8_t x = BITCOIN_PUBKEY_ADDRESS;
+    v = BITCOIN_PUBKEY_ADDRESS_TEST;
 #endif
-    NSMutableData *d = [NSMutableData dataWithBytes:&x length:1];
-    
-    [d appendBytes:(const uint8_t *)script.bytes + script.length - suffix.length - 20 length:20];
-    
+
+    if (l >= 5 && [elem[l - 3] intValue] == 20 && [elem[l - 2] intValue] == OP_EQUALVERIFY &&
+        [elem[l - 1] intValue] == OP_CHECKSIG) { // pay-to-pubkey-hash script
+        [d appendBytes:&v length:1];
+        [d appendData:elem[l - 3]];
+    }
+    else if (l >= 2 && [elem[l - 2] intValue] <= OP_PUSHDATA4 && [elem[l - 2] intValue] > 0 &&
+             [elem[l - 1] intValue] == OP_CHECKSIG) { // pay-to-pubkey script
+        [d appendBytes:&v length:1];
+        [d appendData:[elem[l - 2] hash160]];
+    }
+    else if (l >= 3 && [elem[l - 3] intValue] == OP_HASH160 && [elem[l - 2] intValue] == 20 &&
+             [elem[l - 1] intValue] == OP_EQUAL) { // pay-to-script-hash script
+        v = BITCOIN_SCRIPT_ADDRESS;
+#if BITCOIN_TESTNET
+        v = BITCOIN_SCRIPT_ADDRESS_TEST;
+#endif
+        [d appendBytes:&v length:1];
+        [d appendData:elem[l - 2]];
+    }
+    else return nil; // unknown script type
+
     return [self base58checkWithData:d];
 }
 

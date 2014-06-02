@@ -377,6 +377,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
 // records the transaction in the wallet, or returns false if it isn't associated with the wallet
 - (BOOL)registerTransaction:(BRTransaction *)transaction
 {
+    if (transaction.txHash == nil) return NO;
     if (self.allTx[transaction.txHash] != nil) return YES;
     if (! [self containsTransaction:transaction]) return NO;
 

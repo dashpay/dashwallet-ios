@@ -2180,16 +2180,16 @@
 		752E28B019234B0500DB5A3C /* Categories */ = {
 			isa = PBXGroup;
 			children = (
-				752E28DD19234DA200DB5A3C /* NSData+Bitcoin.h */,
-				752E28DE19234DA200DB5A3C /* NSData+Bitcoin.m */,
-				752E28DF19234DA200DB5A3C /* NSData+Hash.h */,
-				752E28E019234DA200DB5A3C /* NSData+Hash.m */,
-				752E28E119234DA200DB5A3C /* NSManagedObject+Utils.h */,
-				752E28E219234DA200DB5A3C /* NSManagedObject+Utils.m */,
-				752E28E319234DA200DB5A3C /* NSMutableData+Bitcoin.h */,
-				752E28E419234DA200DB5A3C /* NSMutableData+Bitcoin.m */,
 				752E28E519234DA200DB5A3C /* NSString+Base58.h */,
 				752E28E619234DA200DB5A3C /* NSString+Base58.m */,
+				752E28DF19234DA200DB5A3C /* NSData+Hash.h */,
+				752E28E019234DA200DB5A3C /* NSData+Hash.m */,
+				752E28DD19234DA200DB5A3C /* NSData+Bitcoin.h */,
+				752E28DE19234DA200DB5A3C /* NSData+Bitcoin.m */,
+				752E28E319234DA200DB5A3C /* NSMutableData+Bitcoin.h */,
+				752E28E419234DA200DB5A3C /* NSMutableData+Bitcoin.m */,
+				752E28E119234DA200DB5A3C /* NSManagedObject+Utils.h */,
+				752E28E219234DA200DB5A3C /* NSManagedObject+Utils.m */,
 			);
 			name = Categories;
 			sourceTree = "<group>";

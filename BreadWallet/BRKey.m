@@ -164,10 +164,10 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
     }
 
     NSData *d = privateKey.base58checkToData;
-#if BITCOIN_TESTNET
-    uint8_t version = BITCOIN_PRIVKEY_TEST;
-#else
     uint8_t version = BITCOIN_PRIVKEY;
+
+#if BITCOIN_TESTNET
+    version = BITCOIN_PRIVKEY_TEST;
 #endif
 
     if (! d || d.length == 28) d = privateKey.base58ToData;
@@ -186,10 +186,10 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
     
     const BIGNUM *priv = EC_KEY_get0_private_key(_key);
     NSMutableData *d = [NSMutableData secureDataWithCapacity:34];
-#if BITCOIN_TESTNET
-    uint8_t version = BITCOIN_PRIVKEY_TEST;
-#else
     uint8_t version = BITCOIN_PRIVKEY;
+
+#if BITCOIN_TESTNET
+    version = BITCOIN_PRIVKEY_TEST;
 #endif
 
     [d appendBytes:&version length:1];
@@ -232,10 +232,10 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
     if (! hash.length) return nil;
 
     NSMutableData *d = [NSMutableData secureDataWithCapacity:hash.length + 1];
-#if BITCOIN_TESTNET
-    uint8_t version = BITCOIN_PUBKEY_ADDRESS_TEST;
-#else
     uint8_t version = BITCOIN_PUBKEY_ADDRESS;
+
+#if BITCOIN_TESTNET
+    version = BITCOIN_PUBKEY_ADDRESS_TEST;
 #endif
     
     [d appendBytes:&version length:1];

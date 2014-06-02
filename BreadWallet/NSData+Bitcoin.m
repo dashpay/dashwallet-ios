@@ -26,14 +26,6 @@
 #import "NSData+Bitcoin.h"
 #import <CommonCrypto/CommonCrypto.h>
 
-#define VAR_INT16_HEADER 0xfd
-#define VAR_INT32_HEADER 0xfe
-#define VAR_INT64_HEADER 0xff
-
-#define OP_PUSHDATA1     0x4c
-#define OP_PUSHDATA2     0x4d
-#define OP_PUSHDATA4     0x4e
-
 @implementation NSData (Bitcoin)
 
 - (uint8_t)UInt8AtOffset:(NSUInteger)offset
@@ -108,17 +100,21 @@
     return [self subdataWithRange:NSMakeRange(offset + ll, l)];
 }
 
-- (NSArray *)scriptDataElements
+- (NSArray *)scriptElements
 {
     NSMutableArray *a = [NSMutableArray array];
     const uint8_t *b = (const uint8_t *)self.bytes;
     NSUInteger l, length = self.length;
     
     for (NSUInteger i = 0; i < length; i++) {
-        if (b[i] > OP_PUSHDATA4) continue;
+        if (b[i] > OP_PUSHDATA4) {
+            [a addObject:@(b[i])];
+            continue;
+        }
         
         switch (b[i]) {
             case 0:
+                [a addObject:@(0)];
                 continue;
 
             case OP_PUSHDATA1:
@@ -154,6 +150,14 @@
     }
     
     return a;
+}
+
+- (int)intValue
+{
+    if (self.length < OP_PUSHDATA1) return self.length;
+    else if (self.length <= UINT8_MAX) return OP_PUSHDATA1;
+    else if (self.length <= UINT16_MAX) return OP_PUSHDATA2;
+    else return OP_PUSHDATA4;
 }
 
 @end

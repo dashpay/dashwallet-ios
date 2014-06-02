@@ -25,16 +25,17 @@
 
 #import <Foundation/Foundation.h>
 
-#if TX_FEE_07_RULES
-#define TX_FEE_PER_KB        50000llu    // standard tx fee per kb of tx size, rounded up to the nearest kb (0.7 rules)
+#if TX_FEE_0_9_2_RULES
+#define TX_FEE_PER_KB        1000ULL     // standard tx fee per kb of tx size, rounded up to nearest kb (0.9.2 rules)
+#define TX_MIN_OUTPUT_AMOUNT 546ULL      // no tx output can be below this amount (or it won't be relayed)
 #else
-#define TX_FEE_PER_KB        10000llu    // standard tx fee per kb of tx size, rounded up to the nearest kb
+#define TX_FEE_PER_KB        10000ULL    // standard tx fee per kb of tx size, rounded up to the nearest kb
+#define TX_MIN_OUTPUT_AMOUNT 5460ULL     // no tx output can be below this amount (or it won't be relayed)
 #endif
 
-#define TX_FREE_MAX_SIZE     1000llu     // tx must not be larger than this size in bytes without a fee
-#define TX_FREE_MIN_PRIORITY 57600000llu // tx must not have a priority below this value without a fee
-#define TX_MAX_SIZE          100000llu   // no tx can be larger than this size in bytes
-#define TX_MIN_OUTPUT_AMOUNT 5460llu     // no tx output can be below this amount (or it won't be relayed)
+#define TX_FREE_MAX_SIZE     1000ULL     // tx must not be larger than this size in bytes without a fee
+#define TX_FREE_MIN_PRIORITY 57600000ULL // tx must not have a priority below this value without a fee
+#define TX_MAX_SIZE          100000ULL   // no tx can be larger than this size in bytes
 #define TX_UNCONFIRMED       INT32_MAX   // block height indicating transaction is unconfirmed
 
 @interface BRTransaction : NSObject

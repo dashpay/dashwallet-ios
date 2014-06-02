@@ -287,6 +287,8 @@
         return;
     }
 
+    //TODO: XXXX check for duplicates of already paid requests
+
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
     self.tx = [m.wallet transactionForAmounts:request.details.outputAmounts
@@ -651,9 +653,8 @@
     //TODO: check for duplicate transactions
 
     NSLog(@"signing transaction");
-    [m.wallet signTransaction:self.tx];
 
-    if (! [self.tx isSigned]) {
+    if (! [m.wallet signTransaction:self.tx]) {
         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
           message:NSLocalizedString(@"error signing bitcoin transaction", nil) delegate:nil
           cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];

@@ -119,7 +119,8 @@
 - (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts
 outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 {
-    if (hashes.count == 0 || hashes.count != indexes.count || hashes.count != scripts.count) return nil;
+    if (hashes.count == 0 || hashes.count != indexes.count) return nil;
+    if (scripts.count > 0 && hashes.count != scripts.count) return nil;
     if (addresses.count != amounts.count) return nil;
 
     if (! (self = [super init])) return nil;
@@ -127,10 +128,20 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     _version = TX_VERSION;
     self.hashes = [NSMutableArray arrayWithArray:hashes];
     self.indexes = [NSMutableArray arrayWithArray:indexes];
-    self.inScripts = [NSMutableArray arrayWithArray:scripts];
+
+    if (scripts.count > 0) {
+        self.inScripts = [NSMutableArray arrayWithArray:scripts];
+    }
+    else self.inScripts = [NSMutableArray arrayWithCapacity:hashes.count];
+
+    while (self.inScripts.count < hashes.count) {
+        [self.inScripts addObject:[NSNull null]];
+    }
+
     self.amounts = [NSMutableArray arrayWithArray:amounts];
     self.addresses = [NSMutableArray arrayWithArray:addresses];
     self.outScripts = [NSMutableArray arrayWithCapacity:addresses.count];
+
     for (int i = 0; i < addresses.count; i++) {
         [self.outScripts addObject:[NSMutableData data]];
         [self.outScripts.lastObject appendScriptPubKeyForAddress:self.addresses[i]];
@@ -138,6 +149,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 
     self.signatures = [NSMutableArray arrayWithCapacity:hashes.count];
     self.sequences = [NSMutableArray arrayWithCapacity:hashes.count];
+
     for (int i = 0; i < hashes.count; i++) {
         [self.signatures addObject:[NSNull null]];
         [self.sequences addObject:@(TXIN_SEQUENCE)];
@@ -242,7 +254,6 @@ sequence:(uint32_t)sequence
     return self.outScripts;
 }
 
-//TODO: support signing pay2pubkey outputs (typically used for coinbase outputs)
 - (BOOL)signWithPrivateKeys:(NSArray *)privateKeys
 {
     NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:privateKeys.count],
@@ -254,22 +265,26 @@ sequence:(uint32_t)sequence
         if (! key) continue;
  
         [keys addObject:key];
-        [addresses addObject:key.hash160];
+        [addresses addObject:key.address];
     }
 
     for (NSUInteger i = 0; i < self.hashes.count; i++) {
-        NSUInteger keyIdx = [addresses indexOfObject:[self.inScripts[i]
-                             subdataWithRange:NSMakeRange([self.inScripts[i] length] - 22, 20)]];
+        NSString *addr = [NSString addressWithScript:self.inScripts[i]];
+        NSUInteger keyIdx = addr ? [addresses indexOfObject:addr] : NSNotFound;
 
         if (keyIdx == NSNotFound) continue;
-    
+
         NSMutableData *sig = [NSMutableData data];
         NSData *hash = [self toDataWithSubscriptIndex:i].SHA256_2;
         NSMutableData *s = [NSMutableData dataWithData:[keys[keyIdx] sign:hash]];
+        NSArray *elem = [self.inScripts[i] scriptElements];
 
         [s appendUInt8:SIGHASH_ALL];
         [sig appendScriptPushData:s];
-        [sig appendScriptPushData:[keys[keyIdx] publicKey]];
+
+        if (elem.count >= 2 && [elem[elem.count - 2] intValue] == OP_EQUALVERIFY) { // pay-to-pubkey-hash scriptSig
+            [sig appendScriptPushData:[keys[keyIdx] publicKey]];
+        }
 
         [self.signatures replaceObjectAtIndex:i withObject:sig];
     }

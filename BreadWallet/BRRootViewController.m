@@ -138,6 +138,8 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
+            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
+                                         [m localCurrencyStringForAmount:m.wallet.balance]];
         }];
     
     self.syncFailedObserver =
@@ -145,6 +147,8 @@
         queue:nil usingBlock:^(NSNotification *note) {
             if (self.timeout < 1.0) [self stopActivityWithSuccess:NO];
             [self showErrorBar];
+            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
+                                         [m localCurrencyStringForAmount:m.wallet.balance]];
         }];
     
     self.reachability = [Reachability reachabilityForInternetConnection];
@@ -179,6 +183,8 @@
         self.showTips = YES;
         return;
     }
+
+    //BUG: XXXX set title to "syncing..." if we're restoring from backup
 
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
     [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];

@@ -37,7 +37,7 @@
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *payButton;
 @property (nonatomic, strong) IBOutlet UIButton *delButton, *decimalButton;
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *localCurrencyLabelWidth;
-@property (nonatomic, strong) id balanceObserver, syncStartedObserver, syncFinishedObserver, syncFailedObserver;
+@property (nonatomic, strong) id balanceObserver;
 @property (nonatomic, strong) NSCharacterSet *charset;
 
 @end
@@ -66,34 +66,11 @@
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
         }];
-    
-    self.syncStartedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncStartedNotification object:nil
-        queue:nil usingBlock:^(NSNotification *note) {
-            [UIApplication sharedApplication].idleTimerDisabled = YES;
-        }];
-    
-    self.syncFinishedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
-        queue:nil usingBlock:^(NSNotification *note) {
-            self.navigationItem.rightBarButtonItem = self.payButton;
-            [UIApplication sharedApplication].idleTimerDisabled = NO;
-        }];
-    
-    self.syncFailedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
-        queue:nil usingBlock:^(NSNotification *note) {
-            self.navigationItem.rightBarButtonItem = self.payButton;
-            [UIApplication sharedApplication].idleTimerDisabled = NO;
-        }];
 }
 
 - (void)dealloc
 {
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
-    if (self.syncStartedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
-    if (self.syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFinishedObserver];
-    if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
 }
 
 - (void)viewWillAppear:(BOOL)animated

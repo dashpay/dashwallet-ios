@@ -24,7 +24,6 @@
 //  THE SOFTWARE.
 
 #import "BreadWalletTests.h"
-
 #import "BRWallet.h"
 #import "BRBIP32Sequence.h"
 #import "BRBIP39Mnemonic.h"
@@ -35,6 +34,7 @@
 #import "BRMerkleBlock.h"
 #import "BRPaymentProtocol.h"
 #import "NSData+Hash.h"
+#import "NSMutableData+Bitcoin.h"
 #import "NSString+Base58.h"
 
 @implementation BreadWalletTests
@@ -52,15 +52,6 @@
     
     [super tearDown];
 }
-
-#pragma mark - testWallet
-
-//TODO: test standard free transaction no change
-//TODO: test standard free transaction with change
-//TODO: test transaction over 1k bytes
-//TODO: test free transaction who's inputs are too new to hit min free priority
-//TODO: test transaction with change below min allowable output
-//TODO: test gap limit with gaps in address chain less than the limit
 
 #pragma mark - testKey
 
@@ -321,26 +312,45 @@
 
 - (void)testTransaction
 {
-    NSData *hash = [NSMutableData dataWithLength:32], *script = [NSMutableData dataWithLength:136];
-    NSString *addr = @"1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa";
+    NSMutableData *hash = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH], *script = [NSMutableData data];
+    BRKey *k = [BRKey keyWithSecret:@"0000000000000000000000000000000000000000000000000000000000000001".hexToData
+                compressed:YES];
+
+    [script appendScriptPubKeyForAddress:k.address];
+
     BRTransaction *tx = [[BRTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@0] inputScripts:@[script]
-                         outputAddresses:@[addr, addr] outputAmounts:@[@100000000, @4900000000]];
-    
+                         outputAddresses:@[k.address, k.address] outputAmounts:@[@100000000, @4900000000]];
+
+    [tx signWithPrivateKeys:@[k.privateKey]];
+
+    XCTAssertTrue([tx isSigned], @"[BRTransaction signWithPrivateKeys:]");
+
     NSUInteger height = [tx blockHeightUntilFreeForAmounts:@[@5000000000] withBlockHeights:@[@1]];
     uint64_t priority = [tx priorityForAmounts:@[@5000000000] withAges:@[@(height - 1)]];
     
     NSLog(@"height = %lu", (unsigned long)height);
     NSLog(@"priority = %llu", priority);
     
-    XCTAssertTrue(priority >= TX_FREE_MIN_PRIORITY, @"[BRTransaction heightUntilFreeFor:atHeights:]");
+    XCTAssertTrue(priority >= TX_FREE_MIN_PRIORITY, @"[BRTransaction priorityForAmounts:withAges:]");
+
+    NSData *d = tx.data;
+
+    tx = [BRTransaction transactionWithMessage:d];
+
+    XCTAssertEqualObjects(d, tx.data, @"[BRTransaction transactionWithMessage:]");
 
     tx = [[BRTransaction alloc] initWithInputHashes:@[hash, hash, hash, hash, hash, hash, hash, hash, hash, hash]
           inputIndexes:@[@0, @0,@0, @0, @0, @0, @0, @0, @0, @0]
           inputScripts:@[script, script, script, script, script, script, script, script, script, script]
-          outputAddresses:@[addr, addr, addr, addr, addr, addr, addr, addr, addr, addr]
+          outputAddresses:@[k.address, k.address, k.address, k.address, k.address, k.address, k.address, k.address,
+                            k.address, k.address]
           outputAmounts:@[@1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000,
                           @1000000]];
-    
+
+    [tx signWithPrivateKeys:@[k.privateKey]];
+
+    XCTAssertTrue([tx isSigned], @"[BRTransaction signWithPrivateKeys:]");
+
     height = [tx blockHeightUntilFreeForAmounts:@[@1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000,
                                                   @1000000, @1000000, @1000000]
               withBlockHeights:@[@1, @2, @3, @4, @5, @6, @7, @8, @9, @10]];
@@ -352,14 +362,12 @@
     NSLog(@"height = %lu", (unsigned long)height);
     NSLog(@"priority = %llu", priority);
     
-    XCTAssertTrue(priority >= TX_FREE_MIN_PRIORITY, @"[BRTransaction heightUntilFreeFor:atHeights:]");
+    XCTAssertTrue(priority >= TX_FREE_MIN_PRIORITY, @"[BRTransaction priorityForAmounts:withAges:]");
     
-    NSData *d = tx.data, *d2 = nil;
-    
+    d = tx.data;
     tx = [BRTransaction transactionWithMessage:d];
-    d2 = tx.data;
-    
-    XCTAssertEqualObjects(d, d2, @"[BRTransaction initWithData:]");
+
+    XCTAssertEqualObjects(d, tx.data, @"[BRTransaction transactionWithMessage:]");
 }
 
 #pragma mark - testBIP39Mnemonic
@@ -728,6 +736,48 @@
     XCTAssertEqualObjects(xpub,
      @"xpub68Gmy5EdvgibQVfPdqkBBCHxA5htiqg55crXYuXoQRKfDBFA1WEjWgP6LHhwBZeNK1VTsfTFUHCdrfp1bgwQ9xv5ski8PX9rL2dZXvgGDnw",
                          @"[BRBIP32Sequence serializedMasterPublicKey:]");
+}
+
+#pragma mark - testWallet
+
+//TODO: test standard free transaction no change
+//TODO: test transaction over 1k bytes
+//TODO: test free transaction who's inputs are too new to hit min free priority
+//TODO: test transaction with change below min allowable output
+//TODO: test gap limit with gaps in address chain less than the limit
+//TODO: port all applicable tests from bitcoinj and bitcoincore
+
+- (void)testWallet
+{
+    NSMutableData *hash = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH], *script = [NSMutableData data];
+    BRKey *k = [BRKey keyWithSecret:@"0000000000000000000000000000000000000000000000000000000000000001".hexToData
+                compressed:YES];
+    BRWallet *w =
+        [[BRWallet alloc] initWithContext:nil andSeed:^NSData *{
+            return [NSData data];
+        }];
+
+    [script appendScriptPubKeyForAddress:k.address];
+
+    BRTransaction *tx = [[BRTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@(0)] inputScripts:@[script]
+                         outputAddresses:@[w.receiveAddress] outputAmounts:@[@(SATOSHIS)]];
+
+    [tx signWithPrivateKeys:@[k.privateKey]];
+    [w registerTransaction:tx];
+
+    XCTAssertEqual(w.balance, SATOSHIS, @"[BRWallet registerTransaction]");
+
+    tx = [w transactionFor:SATOSHIS/2 to:k.address withFee:NO];
+
+    XCTAssertNotNil(tx, @"[BRWallet transactionFor:to:withFee:]");
+
+    [w signTransaction:tx];
+
+    XCTAssertTrue(tx.isSigned, @"[BRWallet signTransaction]");
+
+    [w registerTransaction:tx];
+
+    XCTAssertEqual(w.balance, SATOSHIS/2, @"[BRWallet balance]");
 }
 
 #pragma mark - testBloomFilter

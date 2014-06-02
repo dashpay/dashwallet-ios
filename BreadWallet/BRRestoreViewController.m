@@ -62,7 +62,9 @@ static NSString *normalize_phrase(NSString *phrase)
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
- 
+
+     self.words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:WORDS ofType:@"plist"]];
+     
     // TODO: create secure versions of keyboard and UILabel and use in place of UITextView
     // TODO: autocomplete based on 4 letter prefixes of mnemonic words
     
@@ -72,7 +74,6 @@ static NSString *normalize_phrase(NSString *phrase)
     
     self.textView.layer.borderColor = [[UIColor colorWithWhite:0.0 alpha:0.25] CGColor];
     self.textView.layer.borderWidth = 0.5;
-    self.words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:WORDS ofType:@"plist"]];
 }
 
 - (void)viewWillAppear:(BOOL)animated

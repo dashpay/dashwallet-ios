@@ -203,8 +203,8 @@
                 }
                 else if (confirms < 6) {
                     unconfirmedLabel.text =
-                        (confirms == 1) ? NSLocalizedString(@"1 confirmation ", nil) :
-                        [NSString stringWithFormat:NSLocalizedString(@"%d confirmations ", nil), (int)confirms];
+                        (confirms == 1) ? NSLocalizedString(@"1 confirmation  ", nil) :
+                        [NSString stringWithFormat:NSLocalizedString(@"%d confirmations  ", nil), (int)confirms];
                 }
                 else {
                     unconfirmedLabel.hidden = YES;
