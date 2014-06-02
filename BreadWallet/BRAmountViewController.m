@@ -37,6 +37,7 @@
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *payButton;
 @property (nonatomic, strong) IBOutlet UIButton *delButton, *decimalButton;
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *localCurrencyLabelWidth;
+@property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
 @property (nonatomic, strong) id balanceObserver;
 @property (nonatomic, strong) NSCharacterSet *charset;
 
@@ -80,13 +81,16 @@
     NSString *addr = self.request.paymentAddress;
     
     if (addr) self.addressLabel.text = [NSString stringWithFormat:NSLocalizedString(@"to: %@", nil), addr];
+    self.wallpaper.hidden = NO;
+
     //self.payButton.enabled = self.amountField.text.length ? YES : NO;
 }
 
 - (void)viewWillDisappear:(BOOL)animated
 {
     self.request.amount = 0;
-    
+    self.wallpaper.hidden = animated;
+
     [super viewWillDisappear:animated];
 }
 

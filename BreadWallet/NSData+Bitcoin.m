@@ -154,7 +154,7 @@
 
 - (int)intValue
 {
-    if (self.length < OP_PUSHDATA1) return self.length;
+    if (self.length < OP_PUSHDATA1) return (int)self.length;
     else if (self.length <= UINT8_MAX) return OP_PUSHDATA1;
     else if (self.length <= UINT16_MAX) return OP_PUSHDATA2;
     else return OP_PUSHDATA4;
