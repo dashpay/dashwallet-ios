@@ -3553,9 +3553,9 @@
 			productReference = 7579F7D919231A5D00CA56F4 /* libcrypto.a */;
 			productType = "com.apple.product-type.library.static";
 		};
-		75D5F3BD191EC270004AB296 /* BreadWallet */ = {
+		75D5F3BD191EC270004AB296 /* breadwallet */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 75D5F3F6191EC270004AB296 /* Build configuration list for PBXNativeTarget "BreadWallet" */;
+			buildConfigurationList = 75D5F3F6191EC270004AB296 /* Build configuration list for PBXNativeTarget "breadwallet" */;
 			buildPhases = (
 				75D5F3BA191EC270004AB296 /* Sources */,
 				75D5F3BB191EC270004AB296 /* Frameworks */,
@@ -3570,7 +3570,7 @@
 				752E28921923472300DB5A3C /* PBXTargetDependency */,
 				7579F7FD19231B2100CA56F4 /* PBXTargetDependency */,
 			);
-			name = BreadWallet;
+			name = breadwallet;
 			productName = BreadWallet;
 			productReference = 75D5F3BE191EC270004AB296 /* BreadWallet.app */;
 			productType = "com.apple.product-type.application";
@@ -3629,7 +3629,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				75D5F3BD191EC270004AB296 /* BreadWallet */,
+				75D5F3BD191EC270004AB296 /* breadwallet */,
 				752E27F91923434B00DB5A3C /* ssl */,
 				7579F7D819231A5D00CA56F4 /* crypto */,
 				752224C11928227C001F1E3A /* zbar */,
@@ -4498,7 +4498,7 @@
 		};
 		75D5F3EB191EC270004AB296 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 75D5F3BD191EC270004AB296 /* BreadWallet */;
+			target = 75D5F3BD191EC270004AB296 /* breadwallet */;
 			targetProxy = 75D5F3EA191EC270004AB296 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -4785,6 +4785,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				PROVISIONING_PROFILE = "84950575-36B1-4EC2-B78D-8C2309474D7F";
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -4805,7 +4806,7 @@
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=*]" = "iPhone Distribution";
+				"CODE_SIGN_IDENTITY[sdk=*]" = "iPhone Distribution: Aaron Voisine (4R7S6N88W9)";
 				COPY_PHASE_STRIP = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -4815,6 +4816,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				PROVISIONING_PROFILE = "84950575-36B1-4EC2-B78D-8C2309474D7F";
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -4826,7 +4828,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
 				GCC_WARN_PEDANTIC = YES;
@@ -4837,7 +4838,6 @@
 				);
 				INFOPLIST_FILE = "BreadWallet/BreadWallet-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -4848,7 +4848,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
 				GCC_WARN_PEDANTIC = YES;
@@ -4859,7 +4858,6 @@
 				);
 				INFOPLIST_FILE = "BreadWallet/BreadWallet-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -4961,7 +4959,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		75D5F3F6191EC270004AB296 /* Build configuration list for PBXNativeTarget "BreadWallet" */ = {
+		75D5F3F6191EC270004AB296 /* Build configuration list for PBXNativeTarget "breadwallet" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				75D5F3F7191EC270004AB296 /* Debug */,

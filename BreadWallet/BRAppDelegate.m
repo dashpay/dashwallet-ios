@@ -68,6 +68,8 @@
 
     //TODO: full screen alert dialogs with clean transitions
 
+    //TODO: fast wallet restore using webservice
+
     // this will notify user if bluetooth is disabled (on 4S and newer devices that support BTLE)
     //CBCentralManager *cbManager = [[CBCentralManager alloc] initWithDelegate:self queue:dispatch_get_main_queue()];
 
