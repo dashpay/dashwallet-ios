@@ -1806,7 +1806,7 @@
 		75A1E4901937AF9600D85BEE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
 		75A1E4D5193869C500D85BEE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75B8346619233B550010931E /* dsa_gen.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = dsa_gen.c; sourceTree = "<group>"; };
-		75D5F3BE191EC270004AB296 /* BreadWallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BreadWallet.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		75D5F3BE191EC270004AB296 /* breadwallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = breadwallet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		75D5F3C1191EC270004AB296 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		75D5F3C3191EC270004AB296 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		75D5F3C5191EC270004AB296 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -3388,7 +3388,7 @@
 		75D5F3BF191EC270004AB296 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				75D5F3BE191EC270004AB296 /* BreadWallet.app */,
+				75D5F3BE191EC270004AB296 /* breadwallet.app */,
 				75D5F3E5191EC270004AB296 /* BreadWalletTests.xctest */,
 				7579F7D919231A5D00CA56F4 /* libcrypto.a */,
 				752E27FA1923434B00DB5A3C /* libssl.a */,
@@ -3572,7 +3572,7 @@
 			);
 			name = breadwallet;
 			productName = BreadWallet;
-			productReference = 75D5F3BE191EC270004AB296 /* BreadWallet.app */;
+			productReference = 75D5F3BE191EC270004AB296 /* breadwallet.app */;
 			productType = "com.apple.product-type.application";
 		};
 		75D5F3E4191EC270004AB296 /* BreadWalletTests */ = {
@@ -4785,7 +4785,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				PROVISIONING_PROFILE = "84950575-36B1-4EC2-B78D-8C2309474D7F";
+				PROVISIONING_PROFILE = "AC665CD7-F718-4886-B7BA-4FBBA4C48416";
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -4816,7 +4816,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				PROVISIONING_PROFILE = "84950575-36B1-4EC2-B78D-8C2309474D7F";
+				PROVISIONING_PROFILE = "AC665CD7-F718-4886-B7BA-4FBBA4C48416";
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -4827,7 +4827,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
 				GCC_WARN_PEDANTIC = YES;
@@ -4847,7 +4846,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
 				GCC_WARN_PEDANTIC = YES;

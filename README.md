@@ -1,14 +1,18 @@
-breadwallet
-----------
+![ƀ](/images/icon.png) breadwallet
+---------------------------------
 
 A [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)
 deterministic bitcoin wallet for iOS
+
+![screenshot1](/images/screenshot1.jpg)
 
 breadwallet is designed to be the most secure and user friendly bitcoin wallet
 for iOS. It is a "deterministic" wallet, meaning that all the bitcoin addresses
 and private keys are generated from a single "seed". If you know the seed, you
 can recreate the entire wallet including all balances and transaction history.
 This allows for a single convenient backup that will work forever.
+
+![screenshot2](/images/screenshot2.jpg)
 
 Wallet seeds are securely stored on the iOS keychain and never leave the device.
 They are never stored on any server. Your private keys are generated from your
@@ -30,6 +34,8 @@ secondary passcode on the app itself.
 breadwallet uses "simplified payment verification" or
 [SPV](https://en.bitcoin.it/wiki/Thin_Client_Security#Header-Only_Clients) mode
 for fast performance in a mobile environment.
+
+![screenshot3](/images/screenshot3.jpg)
 
 breadwallet is open source and available under the terms of the MIT license.
 Source code is available at https://github.com/voisine/breadwallet
