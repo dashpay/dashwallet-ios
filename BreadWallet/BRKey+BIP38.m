@@ -34,12 +34,12 @@
 // BIP38 is a method for encrypting private keys with a passphrase
 // https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki
 
-#define BIP38_SCRYPT_N        16384
-#define BIP38_SCRYPT_R        8
-#define BIP38_SCRYPT_P        8
-#define BIP38_SCRYPT_EC_N     1024
-#define BIP38_SCRYPT_EC_R     1
-#define BIP38_SCRYPT_EC_P     1
+#define BIP38_SCRYPT_N    16384
+#define BIP38_SCRYPT_R    8
+#define BIP38_SCRYPT_P    8
+#define BIP38_SCRYPT_EC_N 1024
+#define BIP38_SCRYPT_EC_R 1
+#define BIP38_SCRYPT_EC_P 1
 
 // bitwise left rotation, this will typically be compiled into a single instruction
 #define rotl(a, b) (((a) << (b)) | ((a) >> (32 - (b))))

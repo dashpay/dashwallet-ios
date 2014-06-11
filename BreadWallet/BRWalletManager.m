@@ -167,10 +167,8 @@ static NSData *getKeychainData(NSString *key)
     if (_wallet == nil && self.seed) {
         @synchronized(self) {
             if (_wallet == nil) {
-                _wallet =
-                    [[BRWallet alloc] initWithContext:[NSManagedObject context] andSeed:^NSData *{
-                        return self.seed;
-                    }];
+                _wallet = [[BRWallet alloc] initWithContext:[NSManagedObject context]
+                           andSeed:^NSData *{ return self.seed; }];
             }
         }
     }

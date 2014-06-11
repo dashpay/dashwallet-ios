@@ -1,9 +1,9 @@
 //
-//  BRRootViewController.h
+//  BRBouncyBurgerButton.h
 //  BreadWallet
 //
-//  Created by Aaron Voisine on 9/15/13.
-//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
+//  Created by Aaron Voisine on 6/5/14.
+//  Copyright (c) 2014 Aaron Voisine. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -25,19 +25,10 @@
 
 #import <UIKit/UIKit.h>
 
-@class BRReceiveViewController, BRSendViewController;
+@interface BRBouncyBurgerButton : UIButton
 
-@interface BRRootViewController : UIViewController <UIPageViewControllerDataSource, UIScrollViewDelegate,
-UINavigationControllerDelegate, UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning,
-UIGestureRecognizerDelegate>
+@property (nonatomic, assign) BOOL x;
 
-@property (nonatomic, strong) IBOutlet BRReceiveViewController *receiveViewController;
-@property (nonatomic, strong) IBOutlet BRSendViewController *sendViewController;
-@property (nonatomic, strong) IBOutlet UIPageViewController *pageViewController;
-
-- (IBAction)tip:(id)sender;
-
-- (void)startActivityWithTimeout:(NSTimeInterval)timeout;
-- (void)stopActivityWithSuccess:(BOOL)success;
+- (void)setX:(BOOL)x animate:(BOOL)animate completion:(void (^)(BOOL finished))completion;
 
 @end

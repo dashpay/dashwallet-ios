@@ -753,10 +753,7 @@
     NSMutableData *hash = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH], *script = [NSMutableData data];
     BRKey *k = [BRKey keyWithSecret:@"0000000000000000000000000000000000000000000000000000000000000001".hexToData
                 compressed:YES];
-    BRWallet *w =
-        [[BRWallet alloc] initWithContext:nil andSeed:^NSData *{
-            return [NSData data];
-        }];
+    BRWallet *w = [[BRWallet alloc] initWithContext:nil andSeed:^NSData *{ return [NSData data]; }];
 
     [script appendScriptPubKeyForAddress:k.address];
 

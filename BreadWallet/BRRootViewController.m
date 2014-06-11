@@ -27,6 +27,7 @@
 #import "BRReceiveViewController.h"
 #import "BRSendViewController.h"
 #import "BRBubbleView.h"
+#import "BRBouncyBurgerButton.h"
 #import "BRPeerManager.h"
 #import "BRWalletManager.h"
 #import "BRWallet.h"
@@ -38,8 +39,9 @@
 @interface BRRootViewController ()
 
 @property (nonatomic, strong) IBOutlet UIProgressView *progress, *pulse;
-@property (nonatomic, strong) IBOutlet UIView *errorBar, *wallpaper;
+@property (nonatomic, strong) IBOutlet UIView *errorBar, *wallpaper, *navBarBack;
 @property (nonatomic, strong) IBOutlet UIGestureRecognizer *navBarTap;
+@property (nonatomic, strong) IBOutlet BRBouncyBurgerButton *burger;
 
 @property (nonatomic, strong) BRBubbleView *tipView;
 @property (nonatomic, assign) BOOL appeared, showTips, inNextTip;
@@ -196,6 +198,7 @@
 - (void)viewDidAppear:(BOOL)animated
 {
     self.navBarTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(navBarTap:)];
+    self.navBarTap.delegate = self;
     [self.navigationController.navigationBar addGestureRecognizer:self.navBarTap];
 
     if (! self.appeared) {
@@ -222,12 +225,12 @@
     [super viewWillDisappear:animated];
 }
 
-//- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-//    [super prepareForSegue:segue sender:sender];
-//
-//    [segue.destinationViewController setTransitioningDelegate:self];
-//    [segue.destinationViewController setModalPresentationStyle:UIModalPresentationCustom];
-//}
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    [super prepareForSegue:segue sender:sender];
+
+    [segue.destinationViewController setTransitioningDelegate:self];
+    [segue.destinationViewController setModalPresentationStyle:UIModalPresentationCustom];
+}
 
 - (void)viewDidLayoutSubviews
 {
@@ -260,11 +263,7 @@
 
     [UIApplication sharedApplication].idleTimerDisabled = YES;
     self.progress.hidden = self.pulse.hidden = NO;
-
-    [UIView animateWithDuration:0.2 animations:^{
-        self.progress.alpha = 1.0;
-    }];
-
+    [UIView animateWithDuration:0.2 animations:^{ self.progress.alpha = 1.0; }];
     [self updateProgress];
 }
 
@@ -386,9 +385,7 @@
         BRSendViewController *c = self.sendViewController;
 
         [(id)self.pageViewController setViewControllers:@[c] direction:UIPageViewControllerNavigationDirectionReverse
-        animated:YES completion:^(BOOL finished) {
-            [c tip:sender];
-        }];
+        animated:YES completion:^(BOOL finished) { [c tip:sender]; }];
         return;
     }
     else if (sender == self.sendViewController) {
@@ -474,26 +471,72 @@ viewControllerAfterViewController:(UIViewController *)viewController
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
 
-    if (self.wallpaper.superview != v) {
-        v.backgroundColor = self.view.backgroundColor;
-        self.view.backgroundColor = [UIColor clearColor];
-        [v insertSubview:self.wallpaper belowSubview:from.view];
-    }
+    if (to == self || from == self) { // nav stack push/pop
+        if (self.wallpaper.superview != v) {
+            v.backgroundColor = self.view.backgroundColor;
+            self.view.backgroundColor = [UIColor clearColor];
+            [v insertSubview:self.wallpaper belowSubview:from.view];
+        }
 
-    to.view.center = CGPointMake(v.frame.size.width*(to == self ? -1 : 3)/2, to.view.center.y);
-    [v addSubview:to.view];
+        to.view.center = CGPointMake(v.frame.size.width*(to == self ? -1 : 3)/2, to.view.center.y);
+        [v addSubview:to.view];
     
-    [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
-     initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-        to.view.center = from.view.center;
-        from.view.center = CGPointMake(v.frame.size.width*(to == self ? 3 : -1)/2, from.view.center.y);
-        self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 -
-                                            v.frame.size.width*(to == self ? 0 : 1)*PARALAX_RATIO,
-                                            self.wallpaper.center.y);
-    } completion:^(BOOL finished) {
-        if (to == self) [from.view removeFromSuperview];
-        [transitionContext completeTransition:finished];
-    }];
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
+        initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+            to.view.center = from.view.center;
+            from.view.center = CGPointMake(v.frame.size.width*(to == self ? 3 : -1)/2, from.view.center.y);
+            self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 -
+                                                v.frame.size.width*(to == self ? 0 : 1)*PARALAX_RATIO,
+                                                self.wallpaper.center.y);
+        } completion:^(BOOL finished) {
+            if (to == self) [from.view removeFromSuperview];
+            [transitionContext completeTransition:finished];
+        }];
+    }
+    else if ([to isKindOfClass:[UINavigationController class]] && from == self.navigationController) { // modal display
+        to.view.center = CGPointMake(to.view.center.x, v.frame.size.height*3/2);
+        [self.navigationController.navigationBar.superview insertSubview:to.view
+         belowSubview:self.navigationController.navigationBar];
+
+        UIBarButtonItem *item = [(id)to topViewController].navigationItem.leftBarButtonItem;
+        NSString *title = self.navigationItem.title;
+
+        [(id)to topViewController].navigationItem.leftBarButtonItem = nil;
+        [(id)to topViewController].navigationItem.title = nil;
+
+        [self.burger setX:YES animate:YES completion:^(BOOL finished) {
+            [(id)to topViewController].navigationItem.leftBarButtonItem = item;
+            [(id)to topViewController].navigationItem.title = title;
+            [v addSubview:to.view];
+            [transitionContext completeTransition:finished];
+        }];
+
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0
+        options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            to.view.center = CGPointMake(to.view.center.x, v.frame.size.height/2 + 20);
+            self.navBarBack.alpha = 1.0;
+        } completion:nil];
+    }
+    else if ([from isKindOfClass:[UINavigationController class]] && to == self.navigationController) { // modal dismiss
+        UIBarButtonItem *item = [(id)from topViewController].navigationItem.leftBarButtonItem;
+
+        [(id)from topViewController].navigationItem.leftBarButtonItem = nil;
+        [(id)from topViewController].navigationItem.title = nil;
+        [self.burger setX:NO animate:YES completion:nil];
+        [v insertSubview:to.view belowSubview:from.view];
+        [self.navigationController.navigationBar.superview insertSubview:from.view
+         belowSubview:self.navigationController.navigationBar];
+
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0
+        options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            from.view.center = CGPointMake(from.view.center.x, v.frame.size.height*3/2);
+            self.navBarBack.alpha = 0.0;
+        } completion:^(BOOL finished) {
+            [(id)from topViewController].navigationItem.leftBarButtonItem = item;
+            [from.view removeFromSuperview];
+            [transitionContext completeTransition:finished];
+        }];
+    }
 }
 
 #pragma mark - UINavigationControllerDelegate
@@ -516,6 +559,13 @@ presentingController:(UIViewController *)presenting sourceController:(UIViewCont
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed
 {
     return self;
+}
+
+#pragma mark - UIGestureRecognizerDelegate
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
+{
+    return ([touch.view isKindOfClass:[UIButton class]]) ? NO : YES;
 }
 
 @end

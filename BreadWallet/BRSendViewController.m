@@ -428,9 +428,8 @@
 
     [sender setEnabled:NO];
 
-    [self.navigationController presentViewController:self.zbarController animated:YES completion:^{
-        NSLog(@"present qr reader complete");
-    }];
+    [self.navigationController presentViewController:self.zbarController animated:YES
+     completion:^{ NSLog(@"present qr reader complete"); }];
 
     BOOL hasFlash = [[AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo] hasTorch];
     UIBarButtonItem *flashButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"flash.png"]

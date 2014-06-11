@@ -72,15 +72,15 @@
              withRowAnimation:UITableViewRowAnimationAutomatic];
         }];
 
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+//    BRWalletManager *m = [BRWalletManager sharedInstance];
 
     self.wallpaper = [[UIImageView alloc] initWithFrame:self.navigationController.view.bounds];
     self.wallpaper.image = [UIImage imageNamed:@"wallpaper-default"];
     self.wallpaper.contentMode = UIViewContentModeLeft;
     [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
     self.navigationController.delegate = self;
-    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                 [m localCurrencyStringForAmount:m.wallet.balance]];
+//    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
+//                                 [m localCurrencyStringForAmount:m.wallet.balance]];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -194,6 +194,8 @@
                 sentLabel.layer.cornerRadius = 3.0;
                 sentLabel.layer.borderWidth = 0.5;
 
+                //TODO: XXXX show as "pending" if nLockTime is more than one block or 10min in the future and not all
+                // sequence numbers are final
                 if (confirms == 0 && ! [m.wallet transactionIsValid:tx]) {
                     unconfirmedLabel.text = NSLocalizedString(@"INVALID  ", nil);
                     unconfirmedLabel.backgroundColor = [UIColor redColor];

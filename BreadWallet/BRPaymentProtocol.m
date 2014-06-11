@@ -386,7 +386,8 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
 
         // kSecTrustResultUnspecified indicates a positive result that wasn't decided by the user
         if (trustResult != kSecTrustResultUnspecified && trustResult != kSecTrustResultProceed) {
-            _errorMessage = (certs.count > 0) ? @"untrusted certificate" : @"missing certificate";
+            _errorMessage = (certs.count > 0) ? NSLocalizedString(@"untrusted certificate", nil) :
+                            NSLocalizedString(@"missing certificate", nil);
             return NO;
         }
 
@@ -403,14 +404,16 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
         OSStatus status = SecKeyRawVerify(pubKey, padding, d.bytes, d.length, _signature.bytes, _signature.length);
 
         CFRelease(pubKey);
+
         if (status != errSecSuccess) {
-            _errorMessage = (d) ? @"bad signature" : @"unsupported signature type";
+            _errorMessage = (d) ? NSLocalizedString(@"bad signature", nil) :
+                            NSLocalizedString(@"unsupported signature type", nil);
             return NO;
         }
     }
 
     if (_details.expires > 1 && [NSDate timeIntervalSinceReferenceDate] > _details.expires) {
-        _errorMessage = @"request expired";
+        _errorMessage = NSLocalizedString(@"request expired", nil);
         return NO;
     }
 

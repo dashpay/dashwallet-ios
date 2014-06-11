@@ -30,7 +30,6 @@
 // BIP21 bitcoin URI object https://github.com/bitcoin/bips/blob/master/bip-0021.mediawiki
 @implementation BRPaymentRequest
 
-//TODO: support for BIP70 payment protocol
 + (instancetype)requestWithString:(NSString *)string
 {
     return [[self alloc] initWithString:string];

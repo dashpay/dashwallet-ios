@@ -206,6 +206,8 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
         [spentOutputs unionSet:spent]; // add inputs to spent output set
         n = 0;
 
+        //TODO: don't add coin generation outputs < 100 blocks deep, or non-final lockTime > 1 block/10min in future
+        //NOTE: balance/UTXOs will then need to be recalculated when best block changes
         for (NSString *address in tx.outputAddresses) { // add outputs to UTXO set
             if ([self containsAddress:address]) {
                 [utxos addObject:txOutput(tx.txHash, n)];
@@ -299,7 +301,6 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     }
 
     //TODO: make sure transaction is less than TX_MAX_SIZE
-    //TODO: don't use coin generation inputs less than 100 blocks deep
     //TODO: use up all inputs for all used addresses to avoid leaving funds in addresses whose public key is revealed
     //TODO: avoid combining addresses in a single transaction when possible to reduce information leakage
     for (NSData *o in self.utxos) {
@@ -393,7 +394,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     [self.moc performBlock:^{ // add the transaction to core data
         if ([BRTransactionEntity countObjectsMatching:@"txHash == %@", transaction.txHash] == 0) {
             [[BRTransactionEntity managedObject] setAttributesFromTx:transaction];
-        };
+        }
     }];
 
     return YES;
