@@ -494,6 +494,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
         }];
     }
     else if ([to isKindOfClass:[UINavigationController class]] && from == self.navigationController) { // modal display
+        // to.view must be added to superview prior to positioning it off screen for its navbar to underlap statusbar
         [self.navigationController.navigationBar.superview insertSubview:to.view
          belowSubview:self.navigationController.navigationBar];
         to.view.center = CGPointMake(to.view.center.x, v.frame.size.height*3/2);
@@ -514,6 +515,9 @@ viewControllerAfterViewController:(UIViewController *)viewController
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
         initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
             to.view.center = CGPointMake(to.view.center.x, v.frame.size.height/2);
+            self.pageViewController.view.center =
+                CGPointMake(self.pageViewController.view.center.x, v.frame.size.height/4);
+            self.pageViewController.view.alpha = 0.0;
         } completion:nil];
     }
     else if ([from isKindOfClass:[UINavigationController class]] && to == self.navigationController) { // modal dismiss
@@ -526,9 +530,12 @@ viewControllerAfterViewController:(UIViewController *)viewController
         [self.navigationController.navigationBar.superview insertSubview:from.view
          belowSubview:self.navigationController.navigationBar];
 
-        [UIView animateWithDuration:[self transitionDuration:transitionContext]/2 delay:0.0
-        options:UIViewAnimationOptionCurveEaseIn animations:^{
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
+        initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
             from.view.center = CGPointMake(from.view.center.x, v.frame.size.height*3/2);
+            self.pageViewController.view.center =
+                CGPointMake(self.pageViewController.view.center.x, v.frame.size.height/2);
+            self.pageViewController.view.alpha = 1.0;
         } completion:^(BOOL finished) {
             [(id)from topViewController].navigationItem.leftBarButtonItem = item;
             [from.view removeFromSuperview];
