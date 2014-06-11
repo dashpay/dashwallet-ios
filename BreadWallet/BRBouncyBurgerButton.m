@@ -1,9 +1,8 @@
 //
 //  BRBouncyBurgerButton.m
-//  BreadWallet
 //
 //  Created by Aaron Voisine on 6/5/14.
-//  Copyright (c) 2014 Aaron Voisine. All rights reserved.
+//  Copyright (c) 2014 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -43,50 +42,36 @@
             y = (self.bounds.size.height + self.contentEdgeInsets.top - self.contentEdgeInsets.bottom)/2.0;
 
     self.bar1 = [[UIView alloc] initWithFrame:CGRectMake(x - BAR_WIDTH/2.0, y - BAR_SPACING, BAR_WIDTH, BAR_HEIGHT)];
-    [self addSubview:self.bar1];
     self.bar2 = [[UIView alloc] initWithFrame:CGRectMake(x - BAR_WIDTH/2.0, y, BAR_WIDTH, BAR_HEIGHT)];
-    [self addSubview:self.bar2];
     self.bar3 = [[UIView alloc] initWithFrame:CGRectMake(x - BAR_WIDTH/2.0, y + BAR_SPACING, BAR_WIDTH, BAR_HEIGHT)];
-    [self addSubview:self.bar3];
     self.bar1.userInteractionEnabled = self.bar2.userInteractionEnabled = self.bar3.userInteractionEnabled = NO;
-    self.bar1.backgroundColor = self.bar2.backgroundColor = self.bar3.backgroundColor =
-        [self titleColorForState:self.state];
-
+    self.bar1.backgroundColor = self.bar2.backgroundColor = self.bar3.backgroundColor = self.currentTitleColor;
+    [self addSubview:self.bar1];
+    [self addSubview:self.bar2];
+    [self addSubview:self.bar3];
     return self;
 }
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder
 {
     if (! (self = [super initWithCoder:aDecoder])) return nil;
-
     return [self customInit];
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
     if (! (self = [super initWithFrame:frame])) return nil;
-
     return [self customInit];
 }
 
 - (void)setX:(BOOL)x
 {
-    [self setX:x animate:NO completion:nil];
+    [self setX:x completion:nil];
 }
 
-- (void)setX:(BOOL)x animate:(BOOL)animate completion:(void (^)(BOOL finished))completion
+- (void)setX:(BOOL)x completion:(void (^)(BOOL finished))completion;
 {
     _x = x;
-
-    if (! animate) {
-        self.bar1.transform = CGAffineTransformMakeRotation(x ? M_PI_4 : 0);
-        self.bar1.center = CGPointMake(self.bar1.center.x, self.bar2.center.y - (x ? 0 : BAR_SPACING));
-        self.bar2.alpha = (x) ? 0.0 : 1.0;
-        self.bar3.transform = CGAffineTransformMakeRotation(x ? -M_PI_4 : 0);
-        self.bar3.center = CGPointMake(self.bar3.center.x, self.bar2.center.y + (x ? 0 : BAR_SPACING));
-        if (completion) completion(YES);
-        return;
-    }
 
     [UIView animateWithDuration:0.1 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
         self.bar1.transform = CGAffineTransformMakeRotation(M_PI_4*(x ? 3 : -1)/2.0);
@@ -96,7 +81,7 @@
         self.bar3.center = CGPointMake(self.bar3.center.x, self.bar2.center.y + (x ? 0 : BAR_SPACING));
     } completion:^(BOOL finished) {
         [UIView animateWithDuration:0.8 delay:0.0 usingSpringWithDamping:0.3 initialSpringVelocity:0
-        options:UIViewAnimationOptionCurveEaseIn animations:^{
+         options:UIViewAnimationOptionCurveEaseIn animations:^{
             self.bar1.transform = CGAffineTransformMakeRotation(x ? M_PI_4 : 0);
             self.bar3.transform = CGAffineTransformMakeRotation(x ? -M_PI_4 : 0);
         } completion:completion];

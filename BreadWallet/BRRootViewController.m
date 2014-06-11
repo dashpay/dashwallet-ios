@@ -39,7 +39,7 @@
 @interface BRRootViewController ()
 
 @property (nonatomic, strong) IBOutlet UIProgressView *progress, *pulse;
-@property (nonatomic, strong) IBOutlet UIView *errorBar, *wallpaper, *navBarBack;
+@property (nonatomic, strong) IBOutlet UIView *errorBar, *wallpaper;
 @property (nonatomic, strong) IBOutlet UIGestureRecognizer *navBarTap;
 @property (nonatomic, strong) IBOutlet BRBouncyBurgerButton *burger;
 
@@ -494,9 +494,9 @@ viewControllerAfterViewController:(UIViewController *)viewController
         }];
     }
     else if ([to isKindOfClass:[UINavigationController class]] && from == self.navigationController) { // modal display
-        to.view.center = CGPointMake(to.view.center.x, v.frame.size.height*3/2);
         [self.navigationController.navigationBar.superview insertSubview:to.view
          belowSubview:self.navigationController.navigationBar];
+        to.view.center = CGPointMake(to.view.center.x, v.frame.size.height*3/2);
 
         UIBarButtonItem *item = [(id)to topViewController].navigationItem.leftBarButtonItem;
         NSString *title = self.navigationItem.title;
@@ -504,17 +504,16 @@ viewControllerAfterViewController:(UIViewController *)viewController
         [(id)to topViewController].navigationItem.leftBarButtonItem = nil;
         [(id)to topViewController].navigationItem.title = nil;
 
-        [self.burger setX:YES animate:YES completion:^(BOOL finished) {
+        [self.burger setX:YES completion:^(BOOL finished) {
             [(id)to topViewController].navigationItem.leftBarButtonItem = item;
             [(id)to topViewController].navigationItem.title = title;
             [v addSubview:to.view];
             [transitionContext completeTransition:finished];
         }];
 
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0
-        options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            to.view.center = CGPointMake(to.view.center.x, v.frame.size.height/2 + 20);
-            self.navBarBack.alpha = 1.0;
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
+        initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+            to.view.center = CGPointMake(to.view.center.x, v.frame.size.height/2);
         } completion:nil];
     }
     else if ([from isKindOfClass:[UINavigationController class]] && to == self.navigationController) { // modal dismiss
@@ -522,15 +521,14 @@ viewControllerAfterViewController:(UIViewController *)viewController
 
         [(id)from topViewController].navigationItem.leftBarButtonItem = nil;
         [(id)from topViewController].navigationItem.title = nil;
-        [self.burger setX:NO animate:YES completion:nil];
+        [self.burger setX:NO completion:nil];
         [v insertSubview:to.view belowSubview:from.view];
         [self.navigationController.navigationBar.superview insertSubview:from.view
          belowSubview:self.navigationController.navigationBar];
 
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0
-        options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        [UIView animateWithDuration:[self transitionDuration:transitionContext]/2 delay:0.0
+        options:UIViewAnimationOptionCurveEaseIn animations:^{
             from.view.center = CGPointMake(from.view.center.x, v.frame.size.height*3/2);
-            self.navBarBack.alpha = 0.0;
         } completion:^(BOOL finished) {
             [(id)from topViewController].navigationItem.leftBarButtonItem = item;
             [from.view removeFromSuperview];
