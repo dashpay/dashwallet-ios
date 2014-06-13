@@ -230,6 +230,7 @@
 
     [segue.destinationViewController setTransitioningDelegate:self];
     [segue.destinationViewController setModalPresentationStyle:UIModalPresentationCustom];
+    [self hideErrorBar];
 }
 
 - (void)viewDidLayoutSubviews
@@ -525,6 +526,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
 
         [(id)from topViewController].navigationItem.leftBarButtonItem = nil;
         [(id)from topViewController].navigationItem.title = nil;
+        if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
         [self.burger setX:NO completion:nil];
         [v insertSubview:to.view belowSubview:from.view];
         [self.navigationController.navigationBar.superview insertSubview:from.view

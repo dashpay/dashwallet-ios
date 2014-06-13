@@ -174,6 +174,8 @@
         _zbarController.cameraOverlayView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"cameraguide.png"]];
         _zbarController.cameraOverlayView.center = CGPointMake(_zbarController.view.center.x,
                                                                _zbarController.view.center.y - 10.0);
+        _zbarController.transitioningDelegate = self;
+        _zbarController.modalPresentationStyle = UIModalPresentationCustom;
     }
 
     return _zbarController;
@@ -724,6 +726,102 @@
             }
         }];
     }
+}
+
+#pragma mark UIViewControllerAnimatedTransitioning
+
+// This is used for percent driven interactive transitions, as well as for container controllers that have companion
+// animations that might need to synchronize with the main animation.
+- (NSTimeInterval)transitionDuration:(id<UIViewControllerContextTransitioning>)transitionContext
+{
+    return 0.35;
+}
+
+// This method can only be a nop if the transition is interactive and not a percentDriven interactive transition.
+- (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext
+{
+    UIView *v = transitionContext.containerView;
+    UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
+                     *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
+    UIImageView *img = [self.buttons.firstObject imageView];
+    UIView *guide = self.zbarController.cameraOverlayView;
+    CGPoint p = guide.center;
+
+    if (to == self.zbarController) {
+        [v addSubview:to.view];
+        to.view.frame = from.view.frame;
+        to.view.center = CGPointMake(to.view.center.x, v.frame.size.height*3/2);
+        guide.center = [v convertPoint:img.center fromView:img.superview];
+        guide.transform = CGAffineTransformMakeScale(img.bounds.size.width/guide.bounds.size.width,
+                                                     img.bounds.size.height/guide.bounds.size.height);
+        guide.alpha = 0;
+        [v addSubview:guide];
+
+        [UIView animateWithDuration:0.1 animations:^{
+            img.alpha = 0.0;
+            guide.alpha = 1.0;
+        }];
+
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:0.8
+        initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+            to.view.center = from.view.center;
+        } completion:^(BOOL finished) {
+            img.alpha = 1.0;
+            [transitionContext completeTransition:finished];
+        }];
+
+        [UIView animateWithDuration:0.8 delay:0.15 usingSpringWithDamping:0.5 initialSpringVelocity:0
+        options:UIViewAnimationOptionCurveEaseOut animations:^{
+            guide.center = p;
+            guide.transform = CGAffineTransformIdentity;
+        } completion:^(BOOL finished) {
+            [to.view addSubview:guide];
+        }];
+    }
+    else {
+        [v addSubview:guide];
+        [v insertSubview:to.view belowSubview:from.view];
+        [self cancel:nil];
+        img = [self.buttons.firstObject imageView];
+        img.alpha = 0.0;
+
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0
+        options:UIViewAnimationOptionCurveEaseOut animations:^{
+            guide.center = [v convertPoint:img.center fromView:img.superview];
+            guide.transform = CGAffineTransformMakeScale(img.bounds.size.width/guide.bounds.size.width,
+                                                         img.bounds.size.height/guide.bounds.size.height);
+        } completion:^(BOOL finished) {
+            [UIView animateWithDuration:0.1 animations:^{
+                img.alpha = 1.0;
+                guide.alpha = 0.0;
+            } completion:^(BOOL finished) {
+                guide.transform = CGAffineTransformIdentity;
+                guide.center = p;
+                guide.alpha = 1.0;
+                [from.view addSubview:guide];
+            }];
+        }];
+
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] - 0.15 delay:0.15
+        options:UIViewAnimationOptionCurveEaseIn animations:^{
+            from.view.center = CGPointMake(from.view.center.x, v.frame.size.height*3/2);
+        } completion:^(BOOL finished) {
+            [transitionContext completeTransition:finished];
+        }];
+    }
+}
+
+#pragma mark - UIViewControllerTransitioningDelegate
+
+- (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
+presentingController:(UIViewController *)presenting sourceController:(UIViewController *)source
+{
+    return self;
+}
+
+- (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed
+{
+    return self;
 }
 
 @end

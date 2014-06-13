@@ -27,8 +27,8 @@
 #import "BRAmountViewController.h"
 #import "ZBarSDK.h"
 
-@interface BRSendViewController : UIViewController <UIAlertViewDelegate, ZBarReaderDelegate,
-BRAmountViewControllerDelegate>
+@interface BRSendViewController : UIViewController <UIAlertViewDelegate, UIViewControllerTransitioningDelegate,
+UIViewControllerAnimatedTransitioning, ZBarReaderDelegate, BRAmountViewControllerDelegate>
 
 - (IBAction)tip:(id)sender;
 
