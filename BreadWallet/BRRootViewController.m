@@ -198,7 +198,6 @@
 - (void)viewDidAppear:(BOOL)animated
 {
     self.navBarTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(navBarTap:)];
-    self.navBarTap.delegate = self;
     [self.navigationController.navigationBar addGestureRecognizer:self.navBarTap];
 
     if (! self.appeared) {
@@ -342,7 +341,8 @@
     self.errorBar.alpha = 0.0;
     
     [UIView animateWithDuration:UINavigationControllerHideShowBarDuration delay:0.0
-     options:UIViewAnimationOptionCurveEaseIn animations:^{
+    options:UIViewAnimationOptionCurveEaseIn animations:^{
+        self.burger.center = CGPointMake(self.burger.center.x, 70.0);
         self.errorBar.alpha = 1.0;
     } completion:nil];
 }
@@ -353,6 +353,7 @@
 
     [UIView animateWithDuration:UINavigationControllerHideShowBarDuration delay:0.0
      options:UIViewAnimationOptionCurveEaseOut animations:^{
+         self.burger.center = CGPointMake(self.burger.center.x, 40.0);
         self.errorBar.alpha = 0.0;
     } completion:^(BOOL finished) {
         if (self.navigationItem.prompt == nil) self.errorBar.hidden = YES;
@@ -500,15 +501,17 @@ viewControllerAfterViewController:(UIViewController *)viewController
          belowSubview:self.navigationController.navigationBar];
         to.view.center = CGPointMake(to.view.center.x, v.frame.size.height*3/2);
 
-        UIBarButtonItem *item = [(id)to topViewController].navigationItem.leftBarButtonItem;
         NSString *title = self.navigationItem.title;
 
-        [(id)to topViewController].navigationItem.leftBarButtonItem = nil;
         [(id)to topViewController].navigationItem.title = nil;
+        [(id)to topViewController].navigationItem.leftBarButtonItem.image = nil;
+        self.navigationItem.leftBarButtonItem.image = nil;
+        [v addSubview:self.burger];
+        self.burger.hidden = NO;
 
         [self.burger setX:YES completion:^(BOOL finished) {
-            [(id)to topViewController].navigationItem.leftBarButtonItem = item;
             [(id)to topViewController].navigationItem.title = title;
+            [(id)to topViewController].navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"x"];
             [v addSubview:to.view];
             [transitionContext completeTransition:finished];
         }];
@@ -522,12 +525,10 @@ viewControllerAfterViewController:(UIViewController *)viewController
         } completion:nil];
     }
     else if ([from isKindOfClass:[UINavigationController class]] && to == self.navigationController) { // modal dismiss
-        UIBarButtonItem *item = [(id)from topViewController].navigationItem.leftBarButtonItem;
-
-        [(id)from topViewController].navigationItem.leftBarButtonItem = nil;
         [(id)from topViewController].navigationItem.title = nil;
         if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
         [self.burger setX:NO completion:nil];
+        [v addSubview:self.burger];
         [v insertSubview:to.view belowSubview:from.view];
         [self.navigationController.navigationBar.superview insertSubview:from.view
          belowSubview:self.navigationController.navigationBar];
@@ -539,8 +540,9 @@ viewControllerAfterViewController:(UIViewController *)viewController
                 CGPointMake(self.pageViewController.view.center.x, v.frame.size.height/2);
             self.pageViewController.view.alpha = 1.0;
         } completion:^(BOOL finished) {
-            [(id)from topViewController].navigationItem.leftBarButtonItem = item;
             [from.view removeFromSuperview];
+            self.burger.hidden = YES;
+            self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"burger"];
             [transitionContext completeTransition:finished];
         }];
     }
@@ -566,13 +568,6 @@ presentingController:(UIViewController *)presenting sourceController:(UIViewCont
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed
 {
     return self;
-}
-
-#pragma mark - UIGestureRecognizerDelegate
-
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
-{
-    return ([touch.view isKindOfClass:[UIButton class]]) ? NO : YES;
 }
 
 @end

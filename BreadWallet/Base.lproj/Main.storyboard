@@ -166,30 +166,10 @@
                     </tableView>
                     <navigationItem key="navigationItem" title="ƀ 0.00 ($0.00)" id="h6T-AD-8zb">
                         <barButtonItem key="backBarButtonItem" title=" " id="hWS-2G-hHE"/>
-                        <barButtonItem key="leftBarButtonItem" id="mJf-Si-41b">
-                            <view key="customView" contentMode="scaleToFill" id="SZ6-8w-u3a">
-                                <rect key="frame" x="16" y="4" width="33" height="35"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IWg-4e-aiN" customClass="BRBouncyBurgerButton">
-                                        <rect key="frame" x="0.0" y="0.0" width="33" height="35"/>
-                                        <inset key="contentEdgeInsets" minX="0.0" minY="0.0" maxX="13" maxY="0.0"/>
-                                        <state key="normal">
-                                            <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                                        </state>
-                                        <state key="highlighted">
-                                            <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="0.20000000000000001" colorSpace="calibratedRGB"/>
-                                        </state>
-                                        <userDefinedRuntimeAttributes>
-                                            <userDefinedRuntimeAttribute type="boolean" keyPath="x" value="YES"/>
-                                        </userDefinedRuntimeAttributes>
-                                        <connections>
-                                            <action selector="done:" destination="6Bl-Zl-U7O" eventType="touchUpInside" id="bdg-WO-3Po"/>
-                                        </connections>
-                                    </button>
-                                </subviews>
-                            </view>
+                        <barButtonItem key="leftBarButtonItem" image="x" id="nxH-ZN-jve">
+                            <connections>
+                                <action selector="done:" destination="6Bl-Zl-U7O" id="qIl-sF-2Yi"/>
+                            </connections>
                         </barButtonItem>
                     </navigationItem>
                 </tableViewController>
@@ -316,6 +296,13 @@
                                     <constraint firstAttribute="centerX" secondItem="UyF-OV-QVY" secondAttribute="centerX" id="tz5-fi-6UE"/>
                                 </constraints>
                             </view>
+                            <button hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9iO-jb-qZ5" customClass="BRBouncyBurgerButton">
+                                <rect key="frame" x="16" y="32" width="20" height="16"/>
+                                <state key="normal">
+                                    <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                            </button>
                             <progressView hidden="YES" opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progressViewStyle="bar" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="3jf-fx-Ie3">
                                 <rect key="frame" x="0.0" y="67" width="320" height="3"/>
                                 <color key="tintColor" red="0.0" green="0.47843137250000001" blue="1" alpha="0.67000000000000004" colorSpace="calibratedRGB"/>
@@ -341,27 +328,10 @@
                     </view>
                     <navigationItem key="navigationItem" title="ƀ 0.00 ($0.00)" id="3hG-i3-g4Y">
                         <barButtonItem key="backBarButtonItem" title=" " id="Huq-Vk-LaF"/>
-                        <barButtonItem key="leftBarButtonItem" id="Xmy-9G-fGl">
-                            <view key="customView" contentMode="scaleToFill" id="J25-8S-eWR">
-                                <rect key="frame" x="16" y="4" width="33" height="35"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9iO-jb-qZ5" customClass="BRBouncyBurgerButton">
-                                        <rect key="frame" x="0.0" y="0.0" width="33" height="35"/>
-                                        <inset key="contentEdgeInsets" minX="0.0" minY="0.0" maxX="13" maxY="0.0"/>
-                                        <state key="normal">
-                                            <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                                        </state>
-                                        <state key="highlighted">
-                                            <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="0.20000000000000001" colorSpace="calibratedRGB"/>
-                                        </state>
-                                        <connections>
-                                            <segue destination="zyy-VL-f65" kind="modal" id="hg0-Zv-Cie"/>
-                                        </connections>
-                                    </button>
-                                </subviews>
-                            </view>
+                        <barButtonItem key="leftBarButtonItem" image="burger" id="lsn-hc-KRM">
+                            <connections>
+                                <segue destination="zyy-VL-f65" kind="modal" id="Eks-ag-H7f"/>
+                            </connections>
                         </barButtonItem>
                     </navigationItem>
                     <connections>
@@ -1507,6 +1477,7 @@ https://github.com/voisine/breadwallet</string>
         <image name="breadwallet" width="93" height="15"/>
         <image name="breadwallet-big" width="257" height="151"/>
         <image name="breadwallet-white" width="97" height="18"/>
+        <image name="burger" width="20" height="16"/>
         <image name="button-bg-blue" width="11" height="30"/>
         <image name="button-bg-blue-pressed" width="11" height="44"/>
         <image name="button-bg-disabled" width="11" height="30"/>
@@ -1519,6 +1490,7 @@ https://github.com/voisine/breadwallet</string>
         <image name="refresh" width="9" height="11"/>
         <image name="wallpaper-default" width="480" height="568"/>
         <image name="wallpaper-welcome" width="757" height="568"/>
+        <image name="x" width="20" height="16"/>
     </resources>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>
