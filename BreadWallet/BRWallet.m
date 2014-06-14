@@ -175,8 +175,8 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     [self.transactions sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
         if ([obj1 blockHeight] > [obj2 blockHeight]) return NSOrderedAscending;
         if ([obj1 blockHeight] < [obj2 blockHeight]) return NSOrderedDescending;
-        if ([[obj1 inputHashes] containsObject:[obj2 txHash]]) return NSOrderedDescending;
-        if ([[obj2 inputHashes] containsObject:[obj1 txHash]]) return NSOrderedAscending;
+        if ([[obj1 inputHashes] containsObject:[obj2 txHash]]) return NSOrderedAscending;
+        if ([[obj2 inputHashes] containsObject:[obj1 txHash]]) return NSOrderedDescending;
         return NSOrderedSame;
     }];
 }
