@@ -182,8 +182,8 @@
                 BRTransaction *tx = self.transactions[indexPath.row];
                 uint64_t received = [m.wallet amountReceivedFromTransaction:tx],
                          sent = [m.wallet amountSentByTransaction:tx];
-                NSUInteger confirms = (tx.blockHeight != TX_UNCONFIRMED) ?
-                                      ([[BRPeerManager sharedInstance] lastBlockHeight] - tx.blockHeight) + 1 : 0;
+                uint32_t height = [[BRPeerManager sharedInstance] lastBlockHeight],
+                         confirms = (tx.blockHeight == TX_UNCONFIRMED) ? 0 : (height - tx.blockHeight) + 1;
                 NSString *address = [m.wallet addressForTransaction:tx];
 
                 noTxLabel.hidden = YES;
@@ -194,10 +194,12 @@
                 sentLabel.layer.cornerRadius = 3.0;
                 sentLabel.layer.borderWidth = 0.5;
 
-                //TODO: XXXX show as "pending" if nLockTime is more than one block or 10min in the future and not all
-                // sequence numbers are final
                 if (confirms == 0 && ! [m.wallet transactionIsValid:tx]) {
                     unconfirmedLabel.text = NSLocalizedString(@"INVALID  ", nil);
+                    unconfirmedLabel.backgroundColor = [UIColor redColor];
+                }
+                else if (confirms == 0 && [m.wallet transactionIsPending:tx atBlockHeight:height]) {
+                    unconfirmedLabel.text = NSLocalizedString(@"pending  ", nil);
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                 }
                 else if (confirms == 0 && ! [[BRPeerManager sharedInstance] transactionIsVerified:tx.txHash]) {

@@ -746,6 +746,7 @@
 //TODO: test transaction with change below min allowable output
 //TODO: test gap limit with gaps in address chain less than the limit
 //TODO: XXXX test removing a transaction that other transansactions depend on
+//TODO: test tx ordering for multiple tx with same block height
 //TODO: port all applicable tests from bitcoinj and bitcoincore
 
 - (void)testWallet

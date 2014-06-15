@@ -472,6 +472,27 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     return (self.allTx[txHash] != nil) ? YES : NO;
 }
 
+// returns true if transaction won't be valid by blockHeight + 1 or within the next 10 minutes
+- (BOOL)transactionIsPending:(BRTransaction *)transaction atBlockHeight:(uint32_t)blockHeight
+{
+    if (transaction.blockHeight <= blockHeight + 1) return NO; // confirmed transactions are not pending
+
+    for (NSData *txHash in transaction.inputHashes) { // check if any inputs are known to be pending
+        if ([self transactionIsPending:self.allTx[txHash] atBlockHeight:blockHeight]) return YES;
+    }
+
+    if (transaction.lockTime <= blockHeight + 1) return NO;
+
+    if (transaction.lockTime >= 500000000 &&
+        transaction.lockTime < [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 + 10*60) return NO;
+
+    for (NSNumber *sequence in transaction.inputSequences) { // lockTime is ignored if all sequence numbers are final
+        if (sequence.unsignedIntValue < UINT32_MAX) return YES;
+    }
+
+    return NO;
+}
+
 // returns the amount received to the wallet by the transaction (total outputs to change and/or recieve addresses)
 - (uint64_t)amountReceivedFromTransaction:(BRTransaction *)transaction
 {

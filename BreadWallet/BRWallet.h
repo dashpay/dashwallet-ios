@@ -76,6 +76,9 @@
 // true if the given transaction has been added to the wallet
 - (BOOL)transactionIsRegistered:(NSData *)txHash;
 
+// returns true if transaction won't be valid by blockHeight + 1 or within the next 10 minutes
+- (BOOL)transactionIsPending:(BRTransaction *)transaction atBlockHeight:(uint32_t)blockHeight;
+
 // returns the amount received to the wallet by the transaction (total outputs to change and/or recieve addresses)
 - (uint64_t)amountReceivedFromTransaction:(BRTransaction *)transaction;
 
