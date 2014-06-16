@@ -1,7 +1,7 @@
 ![ƀ](/images/icon.png) breadwallet
 ---------------------------------
 
-[![download](http://i.imgur.com/IZEApMV.png)](https://itunes.apple.com/app/breadwallet/id885251393)
+[![download](/images/Download_on_the_App_Store_Badge_US-UK_135x40.png)](https://itunes.apple.com/app/breadwallet/id885251393)
 
 A [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)
 deterministic bitcoin wallet for iOS
