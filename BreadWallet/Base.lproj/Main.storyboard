@@ -21,7 +21,7 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="3" contentMode="left" text="unconfirmed" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eJ2-5h-DO2">
-                                            <rect key="frame" x="20" y="20" width="73" height="20"/>
+                                            <rect key="frame" x="15" y="20" width="73" height="20"/>
                                             <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="20" id="alh-vl-szr"/>
@@ -32,7 +32,7 @@
                                             <size key="shadowOffset" width="0.0" height="0.0"/>
                                         </label>
                                         <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="6" contentMode="left" horizontalHuggingPriority="249" text="sent" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FjB-H2-BnK">
-                                            <rect key="frame" x="20" y="20" width="28" height="20"/>
+                                            <rect key="frame" x="15" y="20" width="28" height="20"/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="20" id="QMP-Yf-1fL"/>
                                             </constraints>
@@ -62,8 +62,8 @@
                                             <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                             <size key="shadowOffset" width="0.0" height="1"/>
                                         </label>
-                                        <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="2" contentMode="left" text="Detail" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" minimumFontSize="8" translatesAutoresizingMaskIntoConstraints="NO" id="pXc-8D-8Gh">
-                                            <rect key="frame" x="20" y="45" width="32" height="17"/>
+                                        <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="2" contentMode="left" text="Detail" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pXc-8D-8Gh">
+                                            <rect key="frame" x="15" y="45" width="295" height="17"/>
                                             <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="13"/>
                                             <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                                             <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
@@ -84,14 +84,15 @@
                                         <constraint firstItem="eJ2-5h-DO2" firstAttribute="top" secondItem="PSx-oa-hSL" secondAttribute="top" id="6yQ-fp-xao"/>
                                         <constraint firstItem="pXc-8D-8Gh" firstAttribute="top" secondItem="PSx-oa-hSL" secondAttribute="bottom" constant="5" id="836-R4-FBl"/>
                                         <constraint firstAttribute="centerY" secondItem="PSx-oa-hSL" secondAttribute="centerY" constant="7" id="D6O-5T-u8E"/>
-                                        <constraint firstItem="pXc-8D-8Gh" firstAttribute="leading" secondItem="6S0-4K-BGB" secondAttribute="leading" constant="20" id="LFK-gt-ZnC"/>
+                                        <constraint firstItem="pXc-8D-8Gh" firstAttribute="leading" secondItem="6S0-4K-BGB" secondAttribute="leading" constant="15" id="LFK-gt-ZnC"/>
                                         <constraint firstItem="PSx-oa-hSL" firstAttribute="top" secondItem="qNV-Ka-14n" secondAttribute="top" id="QxI-FL-mbY"/>
                                         <constraint firstItem="PSx-oa-hSL" firstAttribute="leading" secondItem="qNV-Ka-14n" secondAttribute="trailing" constant="5" id="Xr5-CH-ne6"/>
                                         <constraint firstAttribute="centerY" secondItem="ALa-LE-xaI" secondAttribute="centerY" constant="-0.5" id="bgs-aZ-evw"/>
                                         <constraint firstAttribute="centerX" secondItem="ALa-LE-xaI" secondAttribute="centerX" constant="0.5" id="khf-tg-Jkp"/>
+                                        <constraint firstAttribute="trailing" secondItem="pXc-8D-8Gh" secondAttribute="trailing" constant="10" id="pFm-ZB-Wet"/>
                                         <constraint firstItem="PSx-oa-hSL" firstAttribute="leading" secondItem="6S0-4K-BGB" secondAttribute="leading" constant="190" id="tNl-1A-dLS"/>
-                                        <constraint firstItem="eJ2-5h-DO2" firstAttribute="leading" secondItem="6S0-4K-BGB" secondAttribute="leading" constant="20" id="uZo-6y-ygR"/>
-                                        <constraint firstItem="FjB-H2-BnK" firstAttribute="leading" secondItem="6S0-4K-BGB" secondAttribute="leading" constant="20" id="wSt-ji-yrE"/>
+                                        <constraint firstItem="eJ2-5h-DO2" firstAttribute="leading" secondItem="6S0-4K-BGB" secondAttribute="leading" constant="15" id="uZo-6y-ygR"/>
+                                        <constraint firstItem="FjB-H2-BnK" firstAttribute="leading" secondItem="6S0-4K-BGB" secondAttribute="leading" constant="15" id="wSt-ji-yrE"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>

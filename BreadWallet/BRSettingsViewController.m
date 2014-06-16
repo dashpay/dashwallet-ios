@@ -34,7 +34,7 @@
 
 @interface BRSettingsViewController ()
 
-@property (nonatomic, strong) NSArray *transactions;
+@property (nonatomic, strong) NSArray *transactions, *txDates;
 @property (nonatomic, strong) id balanceObserver, txStatusObserver;
 @property (nonatomic, strong) UIImageView *wallpaper;
 
@@ -123,6 +123,30 @@
     [cell viewWithTag:101].hidden = (path.row + 1 < [self tableView:self.tableView numberOfRowsInSection:path.section]);
 }
 
+- (void)setTransactions:(NSArray *)transactions
+{
+    NSMutableArray *txDates = [NSMutableArray arrayWithCapacity:transactions.count];
+    NSDateFormatter *f1 = [NSDateFormatter new], *f2 = [NSDateFormatter new];
+    NSTimeInterval y = [NSDate timeIntervalSinceReferenceDate] - 365*24*60*60;
+
+    f1.dateFormat = [[NSDateFormatter dateFormatFromTemplate:@"Mdha" options:0 locale:[NSLocale currentLocale]]
+                     stringByReplacingOccurrencesOfString:@", h" withString:@" h"];
+    f2.dateFormat = [[NSDateFormatter dateFormatFromTemplate:@"yyMdha" options:0 locale:[NSLocale currentLocale]]
+                     stringByReplacingOccurrencesOfString:@", h" withString:@" h"];
+
+    for (BRTransaction *tx in transactions) {
+        NSTimeInterval t = [[BRPeerManager sharedInstance] timestampForBlockHeight:tx.blockHeight];
+        NSDateFormatter *f = (t > y) ? f1 : f2;
+
+        [txDates addObject:[[[[f stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:t - 5*60]]
+                              lowercaseString] stringByReplacingOccurrencesOfString:@" am" withString:@"a"]
+                            stringByReplacingOccurrencesOfString:@" pm" withString:@"p"]];
+    }
+
+    _transactions = transactions;
+    _txDates = txDates;
+}
+
 #pragma mark - IBAction
 
 - (IBAction)done:(id)sender
@@ -206,8 +230,7 @@
                     unconfirmedLabel.text = NSLocalizedString(@"unverified  ", nil);
                 }
                 else if (confirms < 6) {
-                    unconfirmedLabel.text =
-                        (confirms == 1) ? NSLocalizedString(@"1 confirmation  ", nil) :
+                    unconfirmedLabel.text = (confirms == 1) ? NSLocalizedString(@"1 confirmation  ", nil) :
                         [NSString stringWithFormat:NSLocalizedString(@"%d confirmations  ", nil), (int)confirms];
                 }
                 else {
@@ -224,7 +247,8 @@
                 }
                 else if (sent > 0) {
                     textLabel.text = [m stringForAmount:received - sent];
-                    detailTextLabel.text = [NSString stringWithFormat:NSLocalizedString(@"to: %@", nil), address];
+                    detailTextLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%@ to:%@", nil),
+                                            self.txDates[indexPath.row], address];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [m localCurrencyStringForAmount:received - sent]];
                     sentLabel.text = NSLocalizedString(@"sent  ", nil);
@@ -232,7 +256,8 @@
                 }
                 else {
                     textLabel.text = [m stringForAmount:received];
-                    detailTextLabel.text = [NSString stringWithFormat:NSLocalizedString(@"to: %@", nil), address];
+                    detailTextLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%@ to:%@", nil),
+                                            self.txDates[indexPath.row], address];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [m localCurrencyStringForAmount:received]];
                     sentLabel.text = NSLocalizedString(@"received  ", nil);
@@ -242,9 +267,12 @@
                 sentLabel.layer.borderColor = sentLabel.textColor.CGColor;
                 
                 if (! detailTextLabel.text) {
-                    detailTextLabel.text = NSLocalizedString(@"can't decode payment address", nil);
+                    detailTextLabel.text =
+                        [NSString stringWithFormat:NSLocalizedString(@"%@ can't decode payment address", nil),
+                         self.txDates[indexPath.row]];
                 }
             }
+
             break;
             
         case 1:
@@ -264,6 +292,7 @@
                     NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
                              (int)indexPath.row);
             }
+
             break;
             
         case 2:
@@ -415,6 +444,7 @@
                     NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
                              (int)indexPath.row);
             }
+
             break;
 
         case 2:

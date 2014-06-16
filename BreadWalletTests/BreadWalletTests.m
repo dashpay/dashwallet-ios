@@ -154,7 +154,7 @@
     NSLog(@"privKey = %@", key.privateKey);
     XCTAssertEqualObjects(@"5K4caxezwjGCGfnoPTZ8tMcJBLB7Jvyjv4xxeacadhq8nLisLR2", key.privateKey,
                           @"[BRKey keyWithBIP38Key:andPassphrase:]");
-    intercode = [BRKey BIP38IntermediateCodeWithSalt:0xa50dba6772cb9383llu andPassphrase:@"TestingOneTwoThree"];
+    intercode = [BRKey BIP38IntermediateCodeWithSalt:0xa50dba6772cb9383ULL andPassphrase:@"TestingOneTwoThree"];
     NSLog(@"intercode = %@", intercode);
     privkey = [BRKey BIP38KeyWithIntermediateCode:intercode
                seedb:@"99241d58245c883896f80843d2846672d7312e6195ca1a6c".hexToData compressed:NO
@@ -170,7 +170,7 @@
     NSLog(@"privKey = %@", key.privateKey);
     XCTAssertEqualObjects(@"5KJ51SgxWaAYR13zd9ReMhJpwrcX47xTJh2D3fGPG9CM8vkv5sH", key.privateKey,
                           @"[BRKey keyWithBIP38Key:andPassphrase:]");
-    intercode = [BRKey BIP38IntermediateCodeWithSalt:0x67010a9573418906llu andPassphrase:@"Satoshi"];
+    intercode = [BRKey BIP38IntermediateCodeWithSalt:0x67010a9573418906ULL andPassphrase:@"Satoshi"];
     NSLog(@"intercode = %@", intercode);
     privkey = [BRKey BIP38KeyWithIntermediateCode:intercode
                seedb:@"49111e301d94eab339ff9f6822ee99d9f49606db3b47a497".hexToData compressed:NO

@@ -202,16 +202,18 @@ static const char *dns_seeds[] = {
 {
     if (_peers.count >= MAX_CONNECTIONS) return _peers;
 
-    [[BRPeerEntity context] performBlockAndWait:^{
-        if (_peers.count >= MAX_CONNECTIONS) return;
+    @synchronized(self) {
+        if (_peers.count >= MAX_CONNECTIONS) return _peers;
         _peers = [NSMutableOrderedSet orderedSet];
 
         NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
 
-        for (BRPeerEntity *e in [BRPeerEntity allObjects]) {
-            if (e.misbehavin == 0) [_peers addObject:[e peer]];
-            else [self.misbehavinPeers addObject:[e peer]];
-        }
+        [[BRPeerEntity context] performBlockAndWait:^{
+            for (BRPeerEntity *e in [BRPeerEntity allObjects]) {
+                if (e.misbehavin == 0) [_peers addObject:[e peer]];
+                else [self.misbehavinPeers addObject:[e peer]];
+            }
+        }];
 
         if (_peers.count < MAX_CONNECTIONS) {
             // we're resorting to DNS peer discovery, so reset the misbahavin' count on any peers we already had in case
@@ -225,7 +227,7 @@ static const char *dns_seeds[] = {
             [self.misbehavinPeers removeAllObjects];
 
             for (int i = 0; i < sizeof(dns_seeds)/sizeof(*dns_seeds); i++) { // DNS peer discovery
-                struct hostent *h = gethostbyname(dns_seeds[i]); //BUG: XXXX blocks core data if network is slow/off
+                struct hostent *h = gethostbyname(dns_seeds[i]);
 
                 for (int j = 0; h != NULL && h->h_addr_list[j] != NULL; j++) {
                     uint32_t addr = CFSwapInt32BigToHost(((struct in_addr *)h->h_addr_list[j])->s_addr);
@@ -238,10 +240,10 @@ static const char *dns_seeds[] = {
 
 #if BITCOIN_TESTNET
             [self sortPeers];
-            return;
+            return _peers;
 #endif
             if (_peers.count < MAX_CONNECTIONS) {
-                // if dns peer discovery fails, fall back on a hard coded list of peers
+                // if DNS peer discovery fails, fall back on a hard coded list of peers
                 // hard coded list is taken from the satoshi client, values need to be byte swapped to be host native
                 for (NSNumber *address in [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
                                            pathForResource:FIXED_PEERS ofType:@"plist"]]) {
@@ -251,12 +253,11 @@ static const char *dns_seeds[] = {
                                        services:NODE_NETWORK]];
                 }
             }
-
-            [self sortPeers];
         }
-    }];
 
-    return _peers;
+        [self sortPeers];
+        return _peers;
+    }
 }
 
 - (NSMutableDictionary *)blocks
@@ -506,6 +507,43 @@ static const char *dns_seeds[] = {
     //BUG: XXXX received transactions remain unverified until disconnecting/reconnecting
     // seems like download peer's mempool isn't getting requested
     return (self.connectedPeers.count > 1 && [self.txRelays[txHash] count] >= self.connectedPeers.count) ? YES : NO;
+}
+
+// seconds since reference date, 00:00:00 01/01/01 GMT
+// NOTE: this is only accurate for the last two weeks worth of blocks, other timestamps are estimated from checkpoints
+- (NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight
+{
+    if (blockHeight == TX_UNCONFIRMED) return [NSDate timeIntervalSinceReferenceDate] + 5*60; // average confirm time
+
+    if (blockHeight > self.lastBlockHeight) { // future block, assume 10 minutes per block after last block
+        return self.lastBlock.timestamp + (blockHeight - self.lastBlockHeight)*10*60;
+    }
+
+    if (blockHeight >= self.lastBlockHeight - BLOCK_DIFFICULTY_INTERVAL) { // recent block we have the header for
+        BRMerkleBlock *block = self.lastBlock;
+
+        while (block && block.height > blockHeight) {
+            block = self.blocks[block.prevBlock];
+        }
+
+        if (block) return block.timestamp;
+    }
+
+    uint32_t h = self.lastBlockHeight;
+    NSTimeInterval t = self.lastBlock.timestamp + NSTimeIntervalSince1970;
+
+    for (int i = sizeof(checkpoint_array)/sizeof(*checkpoint_array) - 1; i >= 0; i--) { // estimate from checkpoints
+        if (checkpoint_array[i].height <= blockHeight) {
+            t = checkpoint_array[i].timestamp + (t - checkpoint_array[i].timestamp)*
+                (blockHeight - checkpoint_array[i].height)/(h - checkpoint_array[i].height);
+            return t - NSTimeIntervalSince1970;
+        }
+
+        h = checkpoint_array[i].height;
+        t = checkpoint_array[i].timestamp;
+    }
+
+    return GENESIS_BLOCK.timestamp + ((t - NSTimeIntervalSince1970) - GENESIS_BLOCK.timestamp)*blockHeight/h;
 }
 
 - (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes

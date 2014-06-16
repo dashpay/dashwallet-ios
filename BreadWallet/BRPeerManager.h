@@ -44,8 +44,7 @@
 - (void)connect;
 - (void)rescan;
 - (void)publishTransaction:(BRTransaction *)transaction completion:(void (^)(NSError *error))completion;
-
-// transaction is considered verified when all peers have relayed it
-- (BOOL)transactionIsVerified:(NSData *)txHash;
+- (BOOL)transactionIsVerified:(NSData *)txHash; // transaction is considered verified when all peers have relayed it
+- (NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight; // seconds since reference date, 00:00:00 01/01/01 GMT
 
 @end
