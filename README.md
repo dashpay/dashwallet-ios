@@ -13,10 +13,8 @@ deterministic bitcoin wallet for iOS
 breadwallet is designed to be the simplest, easiest and most secure bitcoin
 wallet for iOS 
 
-breadwallet is the first true bitcoin wallet for iOS, where you control your
+breadwallet is the first true bitcoin wallet for iOS, where you hold your
 money right on your own device without relying on any third party service 
-
-features: 
 
 - open source 
 - single backup phrase that works forever 
@@ -38,9 +36,9 @@ and private keys are generated from a single "seed". If you know the seed, you
 can recreate the entire wallet including all balances and transaction history.
 This allows for a single convenient backup that will work forever.
 
-Wallet seeds are securely stored on the iOS keychain and never leave the device.
-They are never stored on any server. Your private keys are generated from your
-seed as needed and then immediately wiped from memory. Additionally, iOS
+The wallet seed is securely stored on the iOS keychain and never leaves your
+device. It is never stored on any server. Your private keys are generated from
+your seed as needed and then immediately wiped from memory. Additionally, iOS
 keychain data persists even if the app is deleted. If you accidentally delete
 breadwallet and reinstall it, your wallet will be automatically recreated from
 the seed stored on the keychain. (Be sure to do a factory reset if you sell or
