@@ -16,6 +16,8 @@ money right on your own device without relying on any third party service
 
 ![screenshot1](/images/screenshot1.jpg)
 
+features:
+
 - open source 
 - single backup phrase that works forever 
 - private keys never leave your device 
