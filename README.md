@@ -8,13 +8,13 @@ An [SPV](https://en.bitcoin.it/wiki/Thin_Client_Security#Header-Only_Clients),
 [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)
 deterministic bitcoin wallet for iOS
 
-![screenshot1](/images/screenshot1.jpg)
-
 breadwallet is designed to be the simplest, easiest and most secure bitcoin
 wallet for iOS 
 
 breadwallet is the first true bitcoin wallet for iOS, where you hold your
 money right on your own device without relying on any third party service 
+
+![screenshot1](/images/screenshot1.jpg)
 
 - open source 
 - single backup phrase that works forever 
