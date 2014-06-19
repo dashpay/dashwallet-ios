@@ -76,6 +76,9 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     self.spentOutputs = [NSMutableSet set];
     self.utxos = [NSMutableOrderedSet orderedSet];
 
+    //BUG: XXXX when switching networks or when installing a developement build overtop an appstore build,
+    // the core data store can be inconsistent with the keychain, need to add a consistency check
+
     [self.moc performBlockAndWait:^{
         for (BRAddressEntity *e in [BRAddressEntity allObjects]) {
             NSMutableArray *a = e.internal ? self.internalAddresses : self.externalAddresses;
@@ -358,7 +361,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     }
 }
 
-// true if the given transaction is associated with the wallet, false otherwise
+// true if the given transaction is associated with the wallet (even if it hasn't been registered), false otherwise
 - (BOOL)containsTransaction:(BRTransaction *)transaction
 {
     if ([[NSSet setWithArray:transaction.outputAddresses] intersectsSet:self.allAddresses]) return YES;
@@ -424,6 +427,51 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     }];
 }
 
+// true if the given transaction has been added to the wallet
+- (BOOL)transactionIsRegistered:(NSData *)txHash
+{
+    return (self.allTx[txHash] != nil) ? YES : NO;
+}
+
+// true if no previous wallet transactions spend any of the given transaction's inputs, and no input tx is invalid
+- (BOOL)transactionIsValid:(BRTransaction *)transaction
+{
+    if (transaction.blockHeight != TX_UNCONFIRMED) return YES;
+    if (self.allTx[transaction.txHash] != nil) return [self.invalidTx containsObject:transaction.txHash] ? NO : YES;
+
+    uint32_t i = 0;
+
+    for (NSData *hash in transaction.inputHashes) {
+        BRTransaction *tx = self.allTx[hash];
+        uint32_t n = [transaction.inputIndexes[i++] unsignedIntValue];
+
+        if ((tx && ! [self transactionIsValid:tx]) || [self.spentOutputs containsObject:txOutput(hash, n)]) return NO;
+    }
+
+    return YES;
+}
+
+// returns true if transaction won't be valid by blockHeight + 1 or within the next 10 minutes
+- (BOOL)transactionIsPending:(BRTransaction *)transaction atBlockHeight:(uint32_t)blockHeight
+{
+    if (transaction.blockHeight <= blockHeight + 1) return NO; // confirmed transactions are not pending
+
+    for (NSData *txHash in transaction.inputHashes) { // check if any inputs are known to be pending
+        if ([self transactionIsPending:self.allTx[txHash] atBlockHeight:blockHeight]) return YES;
+    }
+
+    if (transaction.lockTime <= blockHeight + 1) return NO;
+
+    if (transaction.lockTime >= 500000000 &&
+        transaction.lockTime < [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 + 10*60) return NO;
+
+    for (NSNumber *sequence in transaction.inputSequences) { // lockTime is ignored if all sequence numbers are final
+        if (sequence.unsignedIntValue < UINT32_MAX) return YES;
+    }
+
+    return NO;
+}
+
 - (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes
 {
     BOOL set = NO;
@@ -446,51 +494,6 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
             }
         }];
     }
-}
-
-// true if no previous wallet transactions spend any of the given transaction's inputs, and no input tx is invalid
-- (BOOL)transactionIsValid:(BRTransaction *)transaction
-{
-    if (transaction.blockHeight != TX_UNCONFIRMED) return YES;
-    if (self.allTx[transaction.txHash] != nil) return [self.invalidTx containsObject:transaction.txHash] ? NO : YES;
-
-    uint32_t i = 0;
-
-    for (NSData *hash in transaction.inputHashes) {
-        BRTransaction *tx = self.allTx[hash];
-        uint32_t n = [transaction.inputIndexes[i++] unsignedIntValue];
-
-        if ((tx && ! [self transactionIsValid:tx]) || [self.spentOutputs containsObject:txOutput(hash, n)]) return NO;
-    }
-
-    return YES;
-}
-
-// true if the given transaction has been added to the wallet
-- (BOOL)transactionIsRegistered:(NSData *)txHash
-{
-    return (self.allTx[txHash] != nil) ? YES : NO;
-}
-
-// returns true if transaction won't be valid by blockHeight + 1 or within the next 10 minutes
-- (BOOL)transactionIsPending:(BRTransaction *)transaction atBlockHeight:(uint32_t)blockHeight
-{
-    if (transaction.blockHeight <= blockHeight + 1) return NO; // confirmed transactions are not pending
-
-    for (NSData *txHash in transaction.inputHashes) { // check if any inputs are known to be pending
-        if ([self transactionIsPending:self.allTx[txHash] atBlockHeight:blockHeight]) return YES;
-    }
-
-    if (transaction.lockTime <= blockHeight + 1) return NO;
-
-    if (transaction.lockTime >= 500000000 &&
-        transaction.lockTime < [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 + 10*60) return NO;
-
-    for (NSNumber *sequence in transaction.inputSequences) { // lockTime is ignored if all sequence numbers are final
-        if (sequence.unsignedIntValue < UINT32_MAX) return YES;
-    }
-
-    return NO;
 }
 
 // returns the amount received to the wallet by the transaction (total outputs to change and/or recieve addresses)

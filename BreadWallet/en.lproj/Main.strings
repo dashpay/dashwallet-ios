@@ -137,8 +137,8 @@
 /* Class = "IBUILabel"; text = "receive money:"; ObjectID = "qel-3J-2VC"; */
 "qel-3J-2VC.text" = "receive money:";
 
-/* Class = "IBUILabel"; text = "breadwallet v%ver%\nCopyright © 2014 Aaron Voisine\n\nThis app is open source:\nhttps://github.com/voisine/breadwallet"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "breadwallet v%ver%\nCopyright © 2014 Aaron Voisine\n\nThis app is open source:\nhttps://github.com/voisine/breadwallet";
+/* Class = "IBUILabel"; text = "breadwallet v%ver%\nCopyright © 2014 Aaron Voisine\n\nThis app is open source:\nhttp://breadwallet.com"; ObjectID = "uvz-hk-Nr4"; */
+"uvz-hk-Nr4.text" = "breadwallet v%ver%\nCopyright © 2014 Aaron Voisine\n\nThis app is open source:\nhttp://breadwallet.com";
 
 /* Class = "IBUILabel"; text = "Start a new wallet by generating a wallet backup phrase."; ObjectID = "wDZ-DN-szv"; */
 "wDZ-DN-szv.text" = "Start a new wallet by generating a wallet backup phrase.";

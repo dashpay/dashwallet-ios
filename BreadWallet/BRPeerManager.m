@@ -868,7 +868,7 @@ static const char *dns_seeds[] = {
             }
             else [self.downloadPeer sendFilterloadMessage:self.bloomFilter.data];
 
-            // after adding addresses to the filter, re-request upcoming blocks that were requested using the old one
+            // after adding addresses to the filter, re-request upcoming blocks that were requested using the old filter
             [self.downloadPeer rereqeustBlocksFrom:self.lastBlock.blockHash];
             break;
         }

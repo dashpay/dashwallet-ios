@@ -58,7 +58,6 @@
 
 #define BASE_URL    @"https://blockchain.info"
 #define UNSPENT_URL BASE_URL "/unspent?active="
-#define ADDRESS_URL BASE_URL "/multiaddr?active="
 #define TICKER_URL  BASE_URL "/ticker"
 
 static BOOL setKeychainData(NSData *data, NSString *key)

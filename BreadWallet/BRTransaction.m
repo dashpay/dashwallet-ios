@@ -204,11 +204,14 @@ sequence:(uint32_t)sequence
 - (NSArray *)inputAddresses
 {
     NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:self.inScripts.count];
+    NSInteger i = 0;
 
     for (NSData *script in self.inScripts) {
         NSString *addr = [NSString addressWithScript:script];
 
+        if (! addr) addr = [NSString addressWithScript:self.signatures[i]];
         [addresses addObject:addr ? addr : [NSNull null]];
+        i++;
     }
 
     return addresses;

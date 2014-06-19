@@ -232,17 +232,17 @@ breakout:
 #endif
 
     if (l >= 5 && [elem[l - 3] intValue] == 20 && [elem[l - 2] intValue] == OP_EQUALVERIFY &&
-        [elem[l - 1] intValue] == OP_CHECKSIG) { // pay-to-pubkey-hash script
+        [elem[l - 1] intValue] == OP_CHECKSIG) { // pay-to-pubkey-hash scriptPubKey
         [d appendBytes:&v length:1];
         [d appendData:elem[l - 3]];
     }
     else if (l >= 2 && [elem[l - 2] intValue] <= OP_PUSHDATA4 && [elem[l - 2] intValue] > 0 &&
-             [elem[l - 1] intValue] == OP_CHECKSIG) { // pay-to-pubkey script
+             ([elem[l - 1] intValue] == 65 || [elem[l - 1] intValue] == 33)) { // pay-to-pubkey-hash scriptSig
         [d appendBytes:&v length:1];
-        [d appendData:[elem[l - 2] hash160]];
+        [d appendData:[elem[l - 1] hash160]];
     }
     else if (l >= 3 && [elem[l - 3] intValue] == OP_HASH160 && [elem[l - 2] intValue] == 20 &&
-             [elem[l - 1] intValue] == OP_EQUAL) { // pay-to-script-hash script
+             [elem[l - 1] intValue] == OP_EQUAL) { // pay-to-script-hash scriptPubKey
         v = BITCOIN_SCRIPT_ADDRESS;
 #if BITCOIN_TESTNET
         v = BITCOIN_SCRIPT_ADDRESS_TEST;
@@ -250,11 +250,28 @@ breakout:
         [d appendBytes:&v length:1];
         [d appendData:elem[l - 2]];
     }
+    else if (l >= 2 && [elem[l - 2] intValue] <= OP_PUSHDATA4 && [elem[l - 2] intValue] > 0 &&
+             [elem[l - 1] intValue] <= OP_PUSHDATA4 && [elem[l - 1] intValue] > 0) { // pay-to-script-hash scriptSig
+        v = BITCOIN_SCRIPT_ADDRESS;
+#if BITCOIN_TESTNET
+        v = BITCOIN_SCRIPT_ADDRESS_TEST;
+#endif
+        [d appendBytes:&v length:1];
+        [d appendData:[elem[l - 1] hash160]];
+    }
+    else if (l >= 2 && ([elem[l - 2] intValue] == 65 || [elem[l - 2] intValue] == 33) &&
+             [elem[l - 1] intValue] == OP_CHECKSIG) { // pay-to-pubkey scriptPubKey
+        [d appendBytes:&v length:1];
+        [d appendData:[elem[l - 2] hash160]];
+    }
+    else if (l >= 1 && [elem[l - 1] intValue] <= OP_PUSHDATA4 && [elem[l - 1] intValue] > 0) {// pay-to-pubkey scriptSig
+        //TODO: implement Peter Wullie's pubKey recovery from signature
+        return nil;
+    }
     else return nil; // unknown script type
 
     return [self base58checkWithData:d];
 }
-
 
 - (NSString *)hexToBase58
 {

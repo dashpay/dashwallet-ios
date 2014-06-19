@@ -386,6 +386,8 @@
 
 - (IBAction)tip:(id)sender
 {
+    //BUG: XXXX tapping the tip should advance
+    //TODO: XXXX add "n/5" at the end of each tip during initial sequence
     if ([self nextTip]) return;
 
     if (! [sender isKindOfClass:[UIGestureRecognizer class]] || ! [[sender view] isKindOfClass:[UILabel class]]) {

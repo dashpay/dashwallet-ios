@@ -58,7 +58,7 @@
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
 - (BOOL)signTransaction:(BRTransaction *)transaction;
 
-// true if the given transaction is associated with the wallet, false otherwise
+// true if the given transaction is associated with the wallet (even if it hasn't been registered), false otherwise
 - (BOOL)containsTransaction:(BRTransaction *)transaction;
 
 // adds a transaction to the wallet, or returns false if it isn't associated with the wallet
@@ -67,17 +67,17 @@
 // removes a transaction from the wallet along with any transactions that depend on its outputs
 - (void)removeTransaction:(NSData *)txHash;
 
-// set the block heights for the given transactions
-- (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes;
+// true if the given transaction has been added to the wallet
+- (BOOL)transactionIsRegistered:(NSData *)txHash;
 
 // true if no previous wallet transaction spends any of the given transaction's inputs, and no input tx is invalid
 - (BOOL)transactionIsValid:(BRTransaction *)transaction;
 
-// true if the given transaction has been added to the wallet
-- (BOOL)transactionIsRegistered:(NSData *)txHash;
-
 // returns true if transaction won't be valid by blockHeight + 1 or within the next 10 minutes
 - (BOOL)transactionIsPending:(BRTransaction *)transaction atBlockHeight:(uint32_t)blockHeight;
+
+// set the block heights for the given transactions
+- (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes;
 
 // returns the amount received to the wallet by the transaction (total outputs to change and/or recieve addresses)
 - (uint64_t)amountReceivedFromTransaction:(BRTransaction *)transaction;

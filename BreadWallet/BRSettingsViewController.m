@@ -51,6 +51,7 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             BRWalletManager *m = [BRWalletManager sharedInstance];
+            NSUInteger count = self.transactions.count;
 
             if (! m.wallet) return;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
@@ -59,7 +60,8 @@
             self.transactions = [NSArray arrayWithArray:m.wallet.recentTransactions];
             
             [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
-             withRowAnimation:UITableViewRowAnimationAutomatic];
+             withRowAnimation:(self.transactions.count == count) ? UITableViewRowAnimationNone :
+             UITableViewRowAnimationAutomatic];
         }];
 
     self.txStatusObserver =
@@ -69,7 +71,7 @@
 
             if (! m.wallet) return;
             [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
-             withRowAnimation:UITableViewRowAnimationAutomatic];
+             withRowAnimation:UITableViewRowAnimationNone];
         }];
 
 //    BRWalletManager *m = [BRWalletManager sharedInstance];
@@ -129,10 +131,12 @@
     NSDateFormatter *f1 = [NSDateFormatter new], *f2 = [NSDateFormatter new];
     NSTimeInterval y = [NSDate timeIntervalSinceReferenceDate] - 365*24*60*60;
 
-    f1.dateFormat = [[NSDateFormatter dateFormatFromTemplate:@"Mdha" options:0 locale:[NSLocale currentLocale]]
-                     stringByReplacingOccurrencesOfString:@", h" withString:@" h"];
-    f2.dateFormat = [[NSDateFormatter dateFormatFromTemplate:@"yyMdha" options:0 locale:[NSLocale currentLocale]]
-                     stringByReplacingOccurrencesOfString:@", h" withString:@" h"];
+    f1.dateFormat = [[[NSDateFormatter dateFormatFromTemplate:@"Mdha" options:0 locale:[NSLocale currentLocale]]
+                      stringByReplacingOccurrencesOfString:@", " withString:@" "]
+                     stringByReplacingOccurrencesOfString:@" h" withString:@"@h"];
+    f2.dateFormat = [[[NSDateFormatter dateFormatFromTemplate:@"yyMdha" options:0 locale:[NSLocale currentLocale]]
+                      stringByReplacingOccurrencesOfString:@", " withString:@" "]
+                     stringByReplacingOccurrencesOfString:@" h" withString:@"@h"];
 
     for (BRTransaction *tx in transactions) {
         NSTimeInterval t = [[BRPeerManager sharedInstance] timestampForBlockHeight:tx.blockHeight];
@@ -423,6 +427,7 @@
         case 1:
             switch (indexPath.row) {
                 case 0:
+                    //TODO: XXXX make url clickable
                     c = [self.storyboard instantiateViewControllerWithIdentifier:@"AboutViewController"];
                     l = (id)[c.view viewWithTag:411];
 #if BITCOIN_TESTNET

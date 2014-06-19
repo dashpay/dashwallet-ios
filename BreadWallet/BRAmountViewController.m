@@ -49,7 +49,8 @@
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    
+
+    //BUG: XXXX when view appears after QR scan dialog, the top margin changes after appearance animation
     BRWalletManager *m = [BRWalletManager sharedInstance];
     NSMutableCharacterSet *charset = [NSMutableCharacterSet decimalDigitCharacterSet];
 
