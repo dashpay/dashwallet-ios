@@ -34,7 +34,8 @@
 
 @interface BRSettingsViewController ()
 
-@property (nonatomic, strong) NSArray *transactions, *txDates;
+@property (nonatomic, strong) NSArray *transactions;
+@property (nonatomic, strong) NSMutableDictionary *txDates;
 @property (nonatomic, strong) id balanceObserver, txStatusObserver;
 @property (nonatomic, strong) UIImageView *wallpaper;
 
@@ -76,6 +77,7 @@
 
 //    BRWalletManager *m = [BRWalletManager sharedInstance];
 
+    self.txDates = [NSMutableDictionary dictionary];
     self.wallpaper = [[UIImageView alloc] initWithFrame:self.navigationController.view.bounds];
     self.wallpaper.image = [UIImage imageNamed:@"wallpaper-default"];
     self.wallpaper.contentMode = UIViewContentModeLeft;
@@ -90,6 +92,15 @@
     [super viewWillAppear:animated];
     
     self.transactions = [NSArray arrayWithArray:[[[BRWalletManager sharedInstance] wallet] recentTransactions]];
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+
+    for (BRTransaction *tx in self.transactions) { // prefetch tx dates before user tries to scroll
+        [self txDate:tx];
+    }
 }
 
 //- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
@@ -125,30 +136,35 @@
     [cell viewWithTag:101].hidden = (path.row + 1 < [self tableView:self.tableView numberOfRowsInSection:path.section]);
 }
 
-- (void)setTransactions:(NSArray *)transactions
+- (NSString *)txDate:(BRTransaction *)tx
 {
-    NSMutableArray *txDates = [NSMutableArray arrayWithCapacity:transactions.count];
-    NSDateFormatter *f1 = [NSDateFormatter new], *f2 = [NSDateFormatter new];
-    NSTimeInterval y = [NSDate timeIntervalSinceReferenceDate] - 365*24*60*60;
+    static NSDateFormatter *f1 = nil, *f2 = nil;
+    static NSTimeInterval y = 0.0;
+    NSString *date = self.txDates[tx.txHash];
 
-    f1.dateFormat = [[[NSDateFormatter dateFormatFromTemplate:@"Mdha" options:0 locale:[NSLocale currentLocale]]
-                      stringByReplacingOccurrencesOfString:@", " withString:@" "]
-                     stringByReplacingOccurrencesOfString:@" h" withString:@"@h"];
-    f2.dateFormat = [[[NSDateFormatter dateFormatFromTemplate:@"yyMdha" options:0 locale:[NSLocale currentLocale]]
-                      stringByReplacingOccurrencesOfString:@", " withString:@" "]
-                     stringByReplacingOccurrencesOfString:@" h" withString:@"@h"];
+    if (date) return date;
 
-    for (BRTransaction *tx in transactions) {
-        NSTimeInterval t = [[BRPeerManager sharedInstance] timestampForBlockHeight:tx.blockHeight];
-        NSDateFormatter *f = (t > y) ? f1 : f2;
+    if (! f1) {
+        f1 = [NSDateFormatter new];
+        f2 = [NSDateFormatter new];
+        y = [NSDate timeIntervalSinceReferenceDate] - 365*24*60*60;
 
-        [txDates addObject:[[[[f stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:t - 5*60]]
-                              lowercaseString] stringByReplacingOccurrencesOfString:@" am" withString:@"a"]
-                            stringByReplacingOccurrencesOfString:@" pm" withString:@"p"]];
+        f1.dateFormat = [[[NSDateFormatter dateFormatFromTemplate:@"Mdha" options:0 locale:[NSLocale currentLocale]]
+                          stringByReplacingOccurrencesOfString:@", " withString:@" "]
+                         stringByReplacingOccurrencesOfString:@" h" withString:@"@h"];
+        f2.dateFormat = [[[NSDateFormatter dateFormatFromTemplate:@"yyMdha" options:0 locale:[NSLocale currentLocale]]
+                          stringByReplacingOccurrencesOfString:@", " withString:@" "]
+                         stringByReplacingOccurrencesOfString:@" h" withString:@"@h"];
     }
+    
+    NSTimeInterval t = [[BRPeerManager sharedInstance] timestampForBlockHeight:tx.blockHeight];
+    NSDateFormatter *f = (t > y) ? f1 : f2;
 
-    _transactions = transactions;
-    _txDates = txDates;
+    date = [[[[f stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:t - 5*60]]
+              lowercaseString] stringByReplacingOccurrencesOfString:@" am" withString:@"a"]
+            stringByReplacingOccurrencesOfString:@" pm" withString:@"p"];
+    self.txDates[tx.txHash] = date;
+    return date;
 }
 
 #pragma mark - IBAction
@@ -252,7 +268,7 @@
                 else if (sent > 0) {
                     textLabel.text = [m stringForAmount:received - sent];
                     detailTextLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%@ to:%@", nil),
-                                            self.txDates[indexPath.row], address];
+                                            [self txDate:tx], address];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [m localCurrencyStringForAmount:received - sent]];
                     sentLabel.text = NSLocalizedString(@"sent  ", nil);
@@ -261,7 +277,7 @@
                 else {
                     textLabel.text = [m stringForAmount:received];
                     detailTextLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%@ to:%@", nil),
-                                            self.txDates[indexPath.row], address];
+                                            [self txDate:tx], address];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [m localCurrencyStringForAmount:received]];
                     sentLabel.text = NSLocalizedString(@"received  ", nil);
@@ -273,7 +289,7 @@
                 if (! detailTextLabel.text) {
                     detailTextLabel.text =
                         [NSString stringWithFormat:NSLocalizedString(@"%@ can't decode payment address", nil),
-                         self.txDates[indexPath.row]];
+                         [self txDate:tx]];
                 }
             }
 

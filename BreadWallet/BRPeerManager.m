@@ -511,6 +511,7 @@ static const char *dns_seeds[] = {
 
 // seconds since reference date, 00:00:00 01/01/01 GMT
 // NOTE: this is only accurate for the last two weeks worth of blocks, other timestamps are estimated from checkpoints
+// BUG: XXXX this just doesn't work very well... we need to start storing tx metadata
 - (NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight
 {
     if (blockHeight == TX_UNCONFIRMED) return [NSDate timeIntervalSinceReferenceDate] + 5*60; // average confirm time
@@ -519,15 +520,18 @@ static const char *dns_seeds[] = {
         return self.lastBlock.timestamp + (blockHeight - self.lastBlockHeight)*10*60;
     }
 
-    if (blockHeight >= self.lastBlockHeight - BLOCK_DIFFICULTY_INTERVAL) { // recent block we have the header for
-        BRMerkleBlock *block = self.lastBlock;
+    if (_blocks.count > 0) {
+        if (blockHeight >= self.lastBlockHeight - BLOCK_DIFFICULTY_INTERVAL*2) { // recent block we have the header for
+            BRMerkleBlock *block = self.lastBlock;
 
-        while (block && block.height > blockHeight) {
-            block = self.blocks[block.prevBlock];
+            while (block && block.height > blockHeight) {
+                block = self.blocks[block.prevBlock];
+            }
+
+            if (block) return block.timestamp;
         }
-
-        if (block) return block.timestamp;
     }
+    else [[BRMerkleBlockEntity context] performBlock:^{ [self blocks]; }];
 
     uint32_t h = self.lastBlockHeight;
     NSTimeInterval t = self.lastBlock.timestamp + NSTimeIntervalSince1970;
@@ -747,11 +751,13 @@ static const char *dns_seeds[] = {
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
             [self performSelector:@selector(syncTimeout) withObject:nil afterDelay:PROTOCOL_TIMEOUT];
 
-            // request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
-            if (self.lastBlock.timestamp + 7*24*60*60 >= self.earliestKeyTime) {
-                [peer sendGetblocksMessageWithLocators:[self blockLocatorArray] andHashStop:nil];
-            }
-            else [peer sendGetheadersMessageWithLocators:[self blockLocatorArray] andHashStop:nil];
+            dispatch_async(self.q, ^{
+                // request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
+                if (self.lastBlock.timestamp + 7*24*60*60 >= self.earliestKeyTime) {
+                    [peer sendGetblocksMessageWithLocators:[self blockLocatorArray] andHashStop:nil];
+                }
+                else [peer sendGetheadersMessageWithLocators:[self blockLocatorArray] andHashStop:nil];
+            });
         });
     }
     else { // we're already synced
