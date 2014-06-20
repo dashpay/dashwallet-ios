@@ -9,7 +9,7 @@ An [SPV](https://en.bitcoin.it/wiki/Thin_Client_Security#Header-Only_Clients),
 deterministic bitcoin wallet for iOS
 
 breadwallet is designed to be the simplest, easiest and most secure bitcoin
-wallet for iOS 
+wallet on any platform
 
 breadwallet is the first true bitcoin wallet for iOS, where you hold your
 money right on your own device without relying on any third party service 
