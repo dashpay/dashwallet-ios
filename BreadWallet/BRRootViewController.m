@@ -469,7 +469,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
 // animations that might need to synchronize with the main animation.
 - (NSTimeInterval)transitionDuration:(id<UIViewControllerContextTransitioning>)transitionContext
 {
-    return 0.35;
+    return (transitionContext.isAnimated) ? 0.35 : 0.0;
 }
 
 // This method can only be a nop if the transition is interactive and not a percentDriven interactive transition.

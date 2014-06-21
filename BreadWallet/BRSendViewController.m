@@ -454,6 +454,7 @@
 
 - (IBAction)payToClipboard:(id)sender
 {
+    //TODO: add warning about address re-use
     if ([self nextTip]) return;
 
     NSString *s = [[[UIPasteboard generalPasteboard] string]

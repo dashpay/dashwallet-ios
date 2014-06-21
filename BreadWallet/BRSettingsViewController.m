@@ -24,6 +24,7 @@
 //  THE SOFTWARE.
 
 #import "BRSettingsViewController.h"
+#import "BRRootViewController.h"
 #import "BRWalletManager.h"
 #import "BRWallet.h"
 #import "BRPeerManager.h"
@@ -166,6 +167,19 @@
     [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
+- (IBAction)scanQR:(id)sender
+{
+    //TODO: show scanner in settings rather than dismissing
+    UINavigationController *nav = (id)self.navigationController.presentingViewController;
+
+    nav.view.alpha = 0.0;
+
+    [nav dismissViewControllerAnimated:NO completion:^{
+        [(id)[nav.viewControllers.firstObject sendViewController] scanQR:nil];
+        [UIView animateWithDuration:0.1 delay:0.5 options:0 animations:^{ nav.view.alpha = 1.0; } completion:nil];
+    }];
+}
+
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
@@ -178,7 +192,7 @@
     switch (section) {
         case 0: return self.transactions.count ? self.transactions.count : 1;
         case 1: return 2;
-        case 2: return 1;
+        case 2: return 2;
         case 3: return 1;
         default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
     }
@@ -311,7 +325,25 @@
         case 2:
             cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
             [self setBackgroundForCell:cell atIndexPath:indexPath];
-            cell.textLabel.text = NSLocalizedString(@"rescan blockchain", nil);
+
+            switch (indexPath.row) {
+                case 0:
+                    cell.textLabel.text = NSLocalizedString(@"rescan blockchain", nil);
+                    cell.imageView.image = [UIImage imageNamed:@"rescan"];
+                    cell.imageView.alpha = 0.75;
+                    break;
+
+                case 1:
+                    cell.textLabel.text = NSLocalizedString(@"import private key", nil);
+                    cell.imageView.image = [UIImage imageNamed:@"cameraguide-blue-small"];
+                    cell.imageView.alpha = 1.0;
+                    break;
+
+                default:
+                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
+                             (int)indexPath.row);
+            }
+
             break;
 
         case 3:
@@ -435,8 +467,7 @@
             if (self.transactions.count > 0) {
                 i = [[self.tableView indexPathsForVisibleRows] indexOfObject:indexPath];
                 cell = (i < self.tableView.visibleCells.count) ? self.tableView.visibleCells[i] : nil;
-                l = (id)[cell viewWithTag:2];
-                [(id)l toggleCopyMenu];
+                [(id)[cell viewWithTag:2] toggleCopyMenu];
             }
 
             break;
@@ -470,8 +501,21 @@
             break;
 
         case 2:
-            [[BRPeerManager sharedInstance] rescan];
-            [self done:nil];
+            switch (indexPath.row) {
+                case 0:
+                    [[BRPeerManager sharedInstance] rescan];
+                    [self done:nil];
+                    break;
+
+                case 1:
+                    [self scanQR:nil];
+                    break;
+
+                default:
+                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
+                             (int)indexPath.row);
+            }
+
             break;
 
         case 3: // start/restore is handled in storyboard
