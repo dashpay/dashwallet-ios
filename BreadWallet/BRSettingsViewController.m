@@ -176,7 +176,7 @@
 
     [nav dismissViewControllerAnimated:NO completion:^{
         [(id)[nav.viewControllers.firstObject sendViewController] scanQR:nil];
-        [UIView animateWithDuration:0.1 delay:0.5 options:0 animations:^{ nav.view.alpha = 1.0; } completion:nil];
+        [UIView animateWithDuration:0.1 delay:1.5 options:0 animations:^{ nav.view.alpha = 1.0; } completion:nil];
     }];
 }
 

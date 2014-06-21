@@ -106,7 +106,7 @@
         self.tipView = [BRBubbleView viewWithText:ADDRESS_TIP tipPoint:[self.addressButton.superview
                         convertPoint:CGPointMake(self.addressButton.center.x, self.addressButton.center.y - 10)
                         toView:self.view] tipDirection:BRBubbleTipDirectionDown];
-        if (self.showTips) self.tipView.text = [self.tipView.text stringByAppendingString:@" (3/5)"];
+        if (self.showTips) self.tipView.text = [self.tipView.text stringByAppendingString:@" (4/6)"];
         self.tipView.backgroundColor = v.backgroundColor;
         self.tipView.font = v.font;
         self.tipView.userInteractionEnabled = NO;
@@ -140,7 +140,7 @@
     self.tipView = [BRBubbleView viewWithText:QR_TIP
                     tipPoint:[self.qrView.superview convertPoint:self.qrView.center toView:self.view]
                     tipDirection:BRBubbleTipDirectionUp];
-    if (self.showTips) self.tipView.text = [self.tipView.text stringByAppendingString:@" (2/5)"];
+    if (self.showTips) self.tipView.text = [self.tipView.text stringByAppendingString:@" (3/6)"];
     self.tipView.backgroundColor = [UIColor orangeColor];
     self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
     [self.view addSubview:[self.tipView popIn]];

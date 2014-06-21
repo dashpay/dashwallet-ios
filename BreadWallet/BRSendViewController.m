@@ -370,7 +370,7 @@
 
         self.tipView = [BRBubbleView viewWithText:CLIPBOARD_TIP tipPoint:CGPointMake(b.center.x, b.center.y + 10.0)
                         tipDirection:BRBubbleTipDirectionUp];
-        if (self.showTips) self.tipView.text = [self.tipView.text stringByAppendingString:@" (5/5)"];
+        if (self.showTips) self.tipView.text = [self.tipView.text stringByAppendingString:@" (6/6)"];
         self.tipView.backgroundColor = v.backgroundColor;
         self.tipView.font = v.font;
         self.tipView.userInteractionEnabled = NO;
@@ -399,7 +399,7 @@
 
     self.tipView = [BRBubbleView viewWithText:SCAN_TIP tipPoint:CGPointMake(b.center.x, b.center.y - 10.0)
                     tipDirection:BRBubbleTipDirectionDown];
-    if (self.showTips) self.tipView.text = [self.tipView.text stringByAppendingString:@" (4/5)"];
+    if (self.showTips) self.tipView.text = [self.tipView.text stringByAppendingString:@" (5/6)"];
     self.tipView.backgroundColor = [UIColor orangeColor];
     self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
     [self.view addSubview:[self.tipView popIn]];

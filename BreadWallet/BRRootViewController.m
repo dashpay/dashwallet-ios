@@ -35,6 +35,7 @@
 
 #define BALANCE_TIP NSLocalizedString(@"This is your bitcoin balance. Bitcoin is a currency. "\
                                        "The exchange rate changes with the market.", nil)
+#define BITS_TIP    NSLocalizedString(@"'%@' is for 'bits'. 1 bitcoin = %@", nil)
 
 @interface BRRootViewController ()
 
@@ -43,6 +44,7 @@
 @property (nonatomic, strong) IBOutlet UIGestureRecognizer *navBarTap;
 @property (nonatomic, strong) IBOutlet BRBouncyBurgerButton *burger;
 
+@property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) BRBubbleView *tipView;
 @property (nonatomic, assign) BOOL appeared, showTips, inNextTip;
 @property (nonatomic, strong) Reachability *reachability;
@@ -73,8 +75,9 @@
 
     for (UIView *view in self.pageViewController.view.subviews) {
         if (! [view isKindOfClass:[UIScrollView class]]) continue;
-        [(UIScrollView *)view setDelegate:self];
-        [(UIScrollView *)view setDelaysContentTouches:NO]; // this allows buttons to respond more quickly
+        self.scrollView = (id)view;
+        [self.scrollView setDelegate:self];
+        [self.scrollView setDelaysContentTouches:NO]; // this allows buttons to respond more quickly
         break;
     }
 
@@ -85,7 +88,6 @@
         usingBlock:^(NSNotification *note) {
             [self.pageViewController setViewControllers:@[self.sendViewController]
              direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
-            self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2, self.wallpaper.center.y);
             if (m.wallet) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
         }];
 
@@ -94,7 +96,6 @@
         usingBlock:^(NSNotification *note) {
             [self.pageViewController setViewControllers:@[self.sendViewController]
              direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
-            self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2, self.wallpaper.center.y);
             if (m.wallet) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
         }];
 
@@ -192,6 +193,15 @@
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
     [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
     [[BRPeerManager sharedInstance] connect];
+
+    if (! self.appeared) {
+        self.appeared = YES;
+
+        if ([[[BRWalletManager sharedInstance] wallet] balance] == 0) {
+            [self.pageViewController setViewControllers:@[self.receiveViewController]
+             direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
+        }
+    }
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -199,18 +209,8 @@
     self.navBarTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(navBarTap:)];
     [self.navigationController.navigationBar addGestureRecognizer:self.navBarTap];
 
-    if (! self.appeared) {
-        self.appeared = YES;
-        
-        if ([[[BRWalletManager sharedInstance] wallet] balance] == 0) {
-            [self.pageViewController setViewControllers:@[self.receiveViewController]
-             direction:UIPageViewControllerNavigationDirectionForward animated:YES completion:nil];
-        }
-
-        if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
-    }
-
     if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
+    if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
 
     [super viewDidAppear:animated];
 }
@@ -221,6 +221,13 @@
     self.navBarTap = nil;
 
     [super viewWillDisappear:animated];
+}
+
+- (BOOL)shouldPerformSegueWithIdentifier:(NSString *)identifier sender:(id)sender
+{
+    if ([self nextTip]) return NO;
+
+    return YES;
 }
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
@@ -234,6 +241,7 @@
 - (void)viewDidLayoutSubviews
 {
     self.wallpaper.center = CGPointMake(self.wallpaper.center.x, self.wallpaper.superview.frame.size.height/2);
+    [self scrollViewDidScroll:self.scrollView];
 }
 
 - (void)dealloc
@@ -371,10 +379,33 @@
         return r;
     }
 
-    [self.tipView popOut];
+    BRBubbleView *v = self.tipView;
+
     self.tipView = nil;
-    if (self.showTips) [self.pageViewController.viewControllers.lastObject tip:self];
-    self.showTips = NO;
+    [v popOut];
+
+    if ([v.text hasPrefix:BALANCE_TIP]) {
+        BRWalletManager *m = [BRWalletManager sharedInstance];
+        UINavigationBar *b = self.navigationController.navigationBar;
+        NSString *text = [NSString stringWithFormat:BITS_TIP, [m.format.currencySymbol substringToIndex:1],
+                          [m stringForAmount:SATOSHIS]];
+        CGRect r = [self.navigationItem.title boundingRectWithSize:b.bounds.size options:0
+                    attributes:b.titleTextAttributes context:nil];
+
+        self.tipView = [BRBubbleView viewWithText:text
+                        tipPoint:CGPointMake(b.center.x + 5.0 - r.size.width/2.0,
+                                             b.frame.origin.y + b.frame.size.height - 10)
+                        tipDirection:BRBubbleTipDirectionUp];
+        self.tipView.backgroundColor = v.backgroundColor;
+        self.tipView.font = v.font;
+        self.tipView.userInteractionEnabled = NO;
+        [self.view addSubview:[self.tipView popIn]];
+    }
+    else if (self.showTips) {
+        self.showTips = NO;
+        [self.pageViewController.viewControllers.lastObject tip:self];
+    }
+
     return YES;
 }
 
@@ -390,27 +421,23 @@
         return;
     }
     else if (sender == self.sendViewController) {
+        self.scrollView.scrollEnabled = YES;
         [(id)self.pageViewController setViewControllers:@[self.receiveViewController]
          direction:UIPageViewControllerNavigationDirectionForward animated:YES completion:nil];
         return;
     }
 
-    BRWalletManager *m = [BRWalletManager sharedInstance];
-    NSString *text = BALANCE_TIP;
+    UINavigationBar *b = self.navigationController.navigationBar;
 
-    if (m.format.maximumFractionDigits != 8) {
-        text = [text stringByAppendingFormat:@" (%@ = 1BTC)", [m stringForAmount:SATOSHIS]];
-    }
-
-    self.tipView = [BRBubbleView viewWithText:text
-                    tipPoint:CGPointMake(self.view.bounds.size.width/2.0,
-                                         self.navigationController.navigationBar.frame.origin.y +
-                                         self.navigationController.navigationBar.frame.size.height - 10)
+    self.tipView = [BRBubbleView viewWithText:BALANCE_TIP
+                    tipPoint:CGPointMake(b.center.x, b.frame.origin.y + b.frame.size.height - 10)
                     tipDirection:BRBubbleTipDirectionUp];
+    if (self.showTips) self.tipView.text = [self.tipView.text stringByAppendingString:@" (1/6)"];
     self.tipView.backgroundColor = [UIColor orangeColor];
     self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
     self.tipView.userInteractionEnabled = NO;
     [self.view addSubview:[self.tipView popIn]];
+    if (self.showTips) self.scrollView.scrollEnabled = NO;
 }
 
 - (IBAction)connect:(id)sender
