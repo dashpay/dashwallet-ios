@@ -192,6 +192,7 @@
     self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"burger"];
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
     [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
+    self.pageViewController.view.alpha = 1.0;
     [[BRPeerManager sharedInstance] connect];
 
     if (! self.appeared) {
@@ -546,7 +547,6 @@ viewControllerAfterViewController:(UIViewController *)viewController
             [(id)to topViewController].navigationItem.title = title;
             [(id)to topViewController].navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"x"];
             [v addSubview:to.view];
-            [transitionContext completeTransition:finished];
         }];
 
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
@@ -556,9 +556,9 @@ viewControllerAfterViewController:(UIViewController *)viewController
                 CGPointMake(self.pageViewController.view.center.x, v.frame.size.height/4);
             self.pageViewController.view.alpha = 0.0;
         } completion:^(BOOL finished) {
-            self.pageViewController.view.alpha = 1.0;
             self.pageViewController.view.center =
                 CGPointMake(self.pageViewController.view.center.x, v.frame.size.height/2);
+            [transitionContext completeTransition:finished];
         }];
     }
     else if ([from isKindOfClass:[UINavigationController class]] && to == self.navigationController) { // modal dismiss

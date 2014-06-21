@@ -208,7 +208,6 @@
     UILabel *textLabel, *unconfirmedLabel, *sentLabel, *noTxLabel, *localCurrencyLabel;
     BRCopyLabel *detailTextLabel;
 
-    //TODO: XXXXX make to/from address copiable
     switch (indexPath.section) {
         case 0:
             cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent];
