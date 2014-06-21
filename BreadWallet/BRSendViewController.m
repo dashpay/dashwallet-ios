@@ -365,16 +365,18 @@
     self.tipView = nil;
     [v popOut];
     
-    if ([v.text isEqual:SCAN_TIP]) {
+    if ([v.text hasPrefix:SCAN_TIP]) {
         UIButton *b = self.buttons.lastObject;
 
         self.tipView = [BRBubbleView viewWithText:CLIPBOARD_TIP tipPoint:CGPointMake(b.center.x, b.center.y + 10.0)
                         tipDirection:BRBubbleTipDirectionUp];
+        if (self.showTips) self.tipView.text = [self.tipView.text stringByAppendingString:@" (5/5)"];
         self.tipView.backgroundColor = v.backgroundColor;
         self.tipView.font = v.font;
+        self.tipView.userInteractionEnabled = NO;
         [self.view addSubview:[self.tipView popIn]];
     }
-    else if (self.showTips && [v.text isEqual:CLIPBOARD_TIP]) {
+    else if (self.showTips && [v.text hasPrefix:CLIPBOARD_TIP]) {
         self.showTips = NO;
         [(id)self.parentViewController.parentViewController tip:self];
     }
@@ -386,8 +388,7 @@
 
 - (IBAction)tip:(id)sender
 {
-    //BUG: XXXX tapping the tip should advance
-    //TODO: XXXX add "n/5" at the end of each tip during initial sequence
+    //TODO: XXXXX add "n/5" at the end of each tip during initial sequence
     if ([self nextTip]) return;
 
     if (! [sender isKindOfClass:[UIGestureRecognizer class]] || ! [[sender view] isKindOfClass:[UILabel class]]) {
@@ -399,8 +400,7 @@
 
     self.tipView = [BRBubbleView viewWithText:SCAN_TIP tipPoint:CGPointMake(b.center.x, b.center.y - 10.0)
                     tipDirection:BRBubbleTipDirectionDown];
-
-
+    if (self.showTips) self.tipView.text = [self.tipView.text stringByAppendingString:@" (4/5)"];
     self.tipView.backgroundColor = [UIColor orangeColor];
     self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
     [self.view addSubview:[self.tipView popIn]];
@@ -707,7 +707,7 @@
         completion:^(BRPaymentProtocolACK *ack, NSError *error) {
             [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
 
-            //BUG: XXXX consistently getting unexpected server response here from bitpay
+            //BUG: XXXXX consistently getting unexpected server response here from bitpay
             if (error && ! [m.wallet transactionIsRegistered:self.tx.txHash]) {
                 [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription delegate:nil
                   cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];

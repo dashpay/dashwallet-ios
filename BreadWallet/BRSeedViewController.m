@@ -54,7 +54,7 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             if (self.navigationController.viewControllers.firstObject != self) {
-                [self.navigationController popViewControllerAnimated:NO]; //BUG: XXXX settings wallpaper missing after
+                [self.navigationController popViewControllerAnimated:NO]; //BUG: XXXXX settings wallpaper missing after
             }
         }];
 }

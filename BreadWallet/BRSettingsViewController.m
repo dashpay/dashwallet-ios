@@ -94,15 +94,6 @@
     self.transactions = [NSArray arrayWithArray:[[[BRWalletManager sharedInstance] wallet] recentTransactions]];
 }
 
-- (void)viewDidAppear:(BOOL)animated
-{
-    [super viewDidAppear:animated];
-
-    for (BRTransaction *tx in self.transactions) { // prefetch tx dates before user tries to scroll
-        [self txDate:tx];
-    }
-}
-
 //- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
 //    [super prepareForSegue:segue sender:sender];
 //
@@ -136,7 +127,7 @@
     [cell viewWithTag:101].hidden = (path.row + 1 < [self tableView:self.tableView numberOfRowsInSection:path.section]);
 }
 
-- (NSString *)txDate:(BRTransaction *)tx
+- (NSString *)dateForTx:(BRTransaction *)tx
 {
     static NSDateFormatter *f1 = nil, *f2 = nil;
     static NSTimeInterval y = 0.0;
@@ -200,7 +191,8 @@
                     *actionIdent = @"ActionCell", *restoreIdent = @"RestoreCell";
     UITableViewCell *cell = nil;
     UILabel *textLabel, *detailTextLabel, *unconfirmedLabel, *sentLabel, *noTxLabel, *localCurrencyLabel;
-    
+
+    //TODO: XXXXX make to/from address copiable
     switch (indexPath.section) {
         case 0:
             cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent];
@@ -268,7 +260,7 @@
                 else if (sent > 0) {
                     textLabel.text = [m stringForAmount:received - sent];
                     detailTextLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%@ to:%@", nil),
-                                            [self txDate:tx], address];
+                                            [self dateForTx:tx], address];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [m localCurrencyStringForAmount:received - sent]];
                     sentLabel.text = NSLocalizedString(@"sent  ", nil);
@@ -277,7 +269,7 @@
                 else {
                     textLabel.text = [m stringForAmount:received];
                     detailTextLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%@ to:%@", nil),
-                                            [self txDate:tx], address];
+                                            [self dateForTx:tx], address];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [m localCurrencyStringForAmount:received]];
                     sentLabel.text = NSLocalizedString(@"received  ", nil);
@@ -289,7 +281,7 @@
                 if (! detailTextLabel.text) {
                     detailTextLabel.text =
                         [NSString stringWithFormat:NSLocalizedString(@"%@ can't decode payment address", nil),
-                         [self txDate:tx]];
+                         [self dateForTx:tx]];
                 }
             }
 

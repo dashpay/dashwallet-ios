@@ -130,6 +130,9 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
     if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
 
+    // get a single address first to avoid blocking receiveAddress and changeAddress
+    if (gapLimit > 1) [self addressesWithGapLimit:1 internal:internal];
+
     @synchronized(self) {
         [a setArray:internal ? self.internalAddresses : self.externalAddresses];
         i = a.count;

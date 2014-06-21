@@ -110,9 +110,7 @@
             if (self.appeared && self.reachability.currentReachabilityStatus != NotReachable) {
                 [[BRPeerManager sharedInstance] connect];
             }
-            else if (self.appeared && self.reachability.currentReachabilityStatus == NotReachable) {
-                [self showErrorBar];
-            }
+            else if (self.appeared && self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
         }];
 
     self.balanceObserver =
@@ -190,6 +188,7 @@
         return;
     }
 
+    self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"burger"];
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
     [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
     [[BRPeerManager sharedInstance] connect];
@@ -396,14 +395,21 @@
         return;
     }
 
-    self.tipView = [BRBubbleView viewWithText:BALANCE_TIP
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    NSString *text = BALANCE_TIP;
+
+    if (m.format.maximumFractionDigits != 8) {
+        text = [text stringByAppendingFormat:@" (%@ = 1BTC)", [m stringForAmount:SATOSHIS]];
+    }
+
+    self.tipView = [BRBubbleView viewWithText:text
                     tipPoint:CGPointMake(self.view.bounds.size.width/2.0,
                                          self.navigationController.navigationBar.frame.origin.y +
                                          self.navigationController.navigationBar.frame.size.height - 10)
                     tipDirection:BRBubbleTipDirectionUp];
-
     self.tipView.backgroundColor = [UIColor orangeColor];
     self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+    self.tipView.userInteractionEnabled = NO;
     [self.view addSubview:[self.tipView popIn]];
 }
 
@@ -522,16 +528,24 @@ viewControllerAfterViewController:(UIViewController *)viewController
             self.pageViewController.view.center =
                 CGPointMake(self.pageViewController.view.center.x, v.frame.size.height/4);
             self.pageViewController.view.alpha = 0.0;
-        } completion:nil];
+        } completion:^(BOOL finished) {
+            self.pageViewController.view.alpha = 1.0;
+            self.pageViewController.view.center =
+                CGPointMake(self.pageViewController.view.center.x, v.frame.size.height/2);
+        }];
     }
     else if ([from isKindOfClass:[UINavigationController class]] && to == self.navigationController) { // modal dismiss
         [(id)from topViewController].navigationItem.title = nil;
         if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
+        [[BRPeerManager sharedInstance] connect];
         [self.burger setX:NO completion:nil];
         [v addSubview:self.burger];
         [v insertSubview:to.view belowSubview:from.view];
         [self.navigationController.navigationBar.superview insertSubview:from.view
          belowSubview:self.navigationController.navigationBar];
+        self.pageViewController.view.center =
+            CGPointMake(self.pageViewController.view.center.x, v.frame.size.height/4);
+        self.pageViewController.view.alpha = 0.0;
 
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
         initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
