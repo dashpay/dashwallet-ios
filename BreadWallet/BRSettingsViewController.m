@@ -28,6 +28,7 @@
 #import "BRWallet.h"
 #import "BRPeerManager.h"
 #import "BRTransaction.h"
+#import "BRCopyLabel.h"
 #import <QuartzCore/QuartzCore.h>
 
 #define TRANSACTION_CELL_HEIGHT 75
@@ -190,7 +191,8 @@
     static NSString *disclosureIdent = @"DisclosureCell", *transactionIdent = @"TransactionCell",
                     *actionIdent = @"ActionCell", *restoreIdent = @"RestoreCell";
     UITableViewCell *cell = nil;
-    UILabel *textLabel, *detailTextLabel, *unconfirmedLabel, *sentLabel, *noTxLabel, *localCurrencyLabel;
+    UILabel *textLabel, *unconfirmedLabel, *sentLabel, *noTxLabel, *localCurrencyLabel;
+    BRCopyLabel *detailTextLabel;
 
     //TODO: XXXXX make to/from address copiable
     switch (indexPath.section) {
@@ -250,17 +252,20 @@
                     sentLabel.hidden = NO;
                 }
 
-                if (! address || (sent > 0 && [m.wallet containsAddress:address])) {
+                if (! address && sent > 0) {
                     textLabel.text = [m stringForAmount:sent];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [m localCurrencyStringForAmount:sent]];
-                    detailTextLabel.text = NSLocalizedString(@"within wallet", nil);
+                    detailTextLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%@ within wallet", nil),
+                                            [self dateForTx:tx]];
+                    detailTextLabel.copyableText = @"";
                     sentLabel.text = NSLocalizedString(@"moved  ", nil);
                 }
                 else if (sent > 0) {
                     textLabel.text = [m stringForAmount:received - sent];
                     detailTextLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%@ to:%@", nil),
                                             [self dateForTx:tx], address];
+                    detailTextLabel.copyableText = address;
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [m localCurrencyStringForAmount:received - sent]];
                     sentLabel.text = NSLocalizedString(@"sent  ", nil);
@@ -268,7 +273,9 @@
                 }
                 else {
                     textLabel.text = [m stringForAmount:received];
-                    detailTextLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%@ to:%@", nil),
+                    detailTextLabel.copyableText = (address) ? address : @"";
+                    if (! address) address = [@" " stringByAppendingString:NSLocalizedString(@"unkown address", nil)];
+                    detailTextLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%@ from:%@", nil),
                                             [self dateForTx:tx], address];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [m localCurrencyStringForAmount:received]];
@@ -277,13 +284,7 @@
                 }
 
                 sentLabel.layer.borderColor = sentLabel.textColor.CGColor;
-                
-                if (! detailTextLabel.text) {
-                    detailTextLabel.text =
-                        [NSString stringWithFormat:NSLocalizedString(@"%@ can't decode payment address", nil),
-                         [self dateForTx:tx]];
-                }
-            }
+             }
 
             break;
             
@@ -422,14 +423,22 @@
     static NSString *warning = nil;
     UIViewController *c = nil;
     UILabel *l = nil;
+    NSUInteger i = 0;
+    UITableViewCell *cell = nil;
 
     if (! warning) {
         warning = NSLocalizedString(@"DO NOT let anyone see your backup phrase or they can spend your bitcoins.", nil);
     }
 
     switch (indexPath.section) {
-        case 0:
-            //TODO: show transaction details
+        case 0: // TODO: show transaction details
+            if (self.transactions.count > 0) {
+                i = [[self.tableView indexPathsForVisibleRows] indexOfObject:indexPath];
+                cell = (i < self.tableView.visibleCells.count) ? self.tableView.visibleCells[i] : nil;
+                l = (id)[cell viewWithTag:2];
+                [(id)l toggleCopyMenu];
+            }
+
             break;
             
         case 1:

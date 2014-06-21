@@ -88,7 +88,7 @@
 // returns the fee for the given transaction if all its inputs are from wallet transactions, UINT64_MAX otherwise
 - (uint64_t)feeForTransaction:(BRTransaction *)transaction;
 
-// returns the first non-change transaction output address, or nil if there aren't any
+// returns the first non-change output address for sends, first input address for receives, or nil if unkown
 - (NSString *)addressForTransaction:(BRTransaction *)transaction;
 
 // returns the block height after which the transaction is likely to be processed without including a fee
