@@ -221,6 +221,7 @@
 {
     [self.navigationController.navigationBar removeGestureRecognizer:self.navBarTap];
     self.navBarTap = nil;
+    [self hideTips];
 
     [super viewWillDisappear:animated];
 }
@@ -369,6 +370,12 @@
     }];
 }
 
+- (void)hideTips
+{
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(tip:) object:nil];
+    if (self.tipView.alpha > 0.5) [self.tipView popOut];
+}
+
 - (BOOL)nextTip
 {
     if (self.tipView.alpha < 0.5) {
@@ -415,7 +422,6 @@
 
 - (IBAction)tip:(id)sender
 {
-    //BUG: XXXXX double tip views following wallet wipe/new wallet
     if (sender == self.receiveViewController) {
         BRSendViewController *c = self.sendViewController;
 

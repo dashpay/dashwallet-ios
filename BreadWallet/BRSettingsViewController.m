@@ -415,48 +415,49 @@
             return TRANSACTION_CELL_HEIGHT;
 
         case 1:
-            return 44;
+            return 44.0;
             
         case 2:
-            return 44;
+            return 44.0;
 
         case 3:
-            return 44;
+            return 44.0;
 
         default:
             NSAssert(FALSE, @"%s:%d %s: unkown indexPath.section %d", __FILE__, __LINE__,  __func__,
                      (int)indexPath.section);
     }
     
-    return 44;
+    return 44.0;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
 {
-    CGFloat h = 0;
+    CGFloat h = 0.0;
     
     switch (section) {
         case 0:
-            return 22;
+            return 22.0;
             
         case 1:
-            return 22;
+            return 22.0;
 
         case 2:
-            return 22;
+            return 22.0;
 
         case 3:
-            h = tableView.frame.size.height - self.navigationController.navigationBar.frame.size.height - 20.0 - 44.0;
+            h = tableView.frame.size.height - self.navigationController.navigationBar.frame.size.height - 20.0;
+            h += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:section]];
 
-            for (int s = 0; s < section; s++) {
-                h -= [self tableView:tableView heightForHeaderInSection:s];
+            for (int s = 0; s <= section; s++) {
+                if (s < section) h -= [self tableView:tableView heightForHeaderInSection:s];
 
                 for (int r = 0; r < [self tableView:tableView numberOfRowsInSection:s]; r++) {
                     h -= [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:r inSection:s]];
                 }
             }
 
-            return h > 22 ? h : 22;
+            return h > 22.0 ? h : 22.0;
         
         default:
             NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
