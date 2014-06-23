@@ -212,8 +212,9 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
         [spentOutputs unionSet:spent]; // add inputs to spent output set
         n = 0;
 
+        //TODO: don't add outputs below TX_MIN_OUTPUT_AMOUNT
         //TODO: don't add coin generation outputs < 100 blocks deep, or non-final lockTime > 1 block/10min in future
-        //NOTE: balance/UTXOs will then need to be recalculated when best block changes
+        //NOTE: balance/UTXOs will then need to be recalculated when last block changes
         for (NSString *address in tx.outputAddresses) { // add outputs to UTXO set
             if ([self containsAddress:address]) {
                 [utxos addObject:txOutput(tx.txHash, n)];
@@ -272,6 +273,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
 
 - (NSArray *)recentTransactions
 {
+    //TODO: don't include receive transactions that don't have at least one wallet output >= TX_MIN_OUTPUT_AMOUNT
     return [self.transactions array];
 }
 
@@ -505,6 +507,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     uint64_t amount = 0;
     NSUInteger n = 0;
 
+    //TODO: don't include outputs below TX_MIN_OUTPUT_AMOUNT
     for (NSString *address in transaction.outputAddresses) {
         if ([self containsAddress:address]) amount += [transaction.outputAmounts[n] unsignedLongLongValue];
         n++;

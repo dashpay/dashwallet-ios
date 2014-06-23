@@ -11,6 +11,9 @@
 /* Class = "IBUIButton"; normalTitle = "restore from backup"; ObjectID = "4w7-k8-9wY"; */
 "4w7-k8-9wY.normalTitle" = "restore from backup";
 
+/* Class = "IBUILabel"; text = "ask"; ObjectID = "9B6-kc-khb"; */
+"9B6-kc-khb.text" = "ask";
+
 /* Class = "IBUIBarButtonItem"; title = " "; ObjectID = "9L3-gM-TgP"; */
 "9L3-gM-TgP.title" = " ";
 
@@ -61,6 +64,9 @@
 
 /* Class = "IBUILabel"; text = "not connected"; ObjectID = "UyF-OV-QVY"; */
 "UyF-OV-QVY.text" = "not connected";
+
+/* Class = "IBUILabel"; text = "remove standard fees"; ObjectID = "WB9-ti-D76"; */
+"WB9-ti-D76.text" = "remove standard fees";
 
 /* Class = "IBUIButton"; normalTitle = "1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"; ObjectID = "XV7-2s-hZs"; */
 "XV7-2s-hZs.normalTitle" = "1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW";

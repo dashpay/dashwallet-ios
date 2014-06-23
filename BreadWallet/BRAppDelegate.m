@@ -60,6 +60,8 @@
     //TODO: create a BIP and GATT specification for payment protocol over bluetooth LE
     // https://developer.bluetooth.org/gatt/Pages/default.aspx
 
+    //TODO: bitcoin protocol/payment protocol over multipeer connectivity
+
     //TODO: accessibility for the visually impaired
 
     //TODO: internationalization
@@ -69,8 +71,6 @@
     //TODO: fast wallet restore using webservice
 
     //TODO: ask user if they need to sweep to a new wallet when restoring because it was compromised
-
-    //TODO: add a settings option for importing paper wallets
 
     //TODO: detect if device is jailbroken and prompt user to wipe the wallet `if (fopen("/bin/bash", "r"))`
 

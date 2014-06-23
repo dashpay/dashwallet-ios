@@ -26,7 +26,7 @@
 #import <Foundation/Foundation.h>
 
 #define SEQUENCE_GAP_LIMIT_EXTERNAL 10
-#define SEQUENCE_GAP_LIMIT_INTERNAL 3
+#define SEQUENCE_GAP_LIMIT_INTERNAL 5
 
 @protocol BRKeySequence<NSObject>
 @required

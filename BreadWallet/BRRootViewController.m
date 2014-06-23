@@ -35,7 +35,7 @@
 
 #define BALANCE_TIP NSLocalizedString(@"This is your bitcoin balance. Bitcoin is a currency. "\
                                        "The exchange rate changes with the market.", nil)
-#define BITS_TIP    NSLocalizedString(@"'%@' is for 'bits'. 1 bitcoin = %@", nil)
+#define BITS_TIP    NSLocalizedString(@"'%@' is for 'bits'. %@ = 1 bitcoin", nil)
 
 @interface BRRootViewController ()
 
@@ -134,6 +134,7 @@
             if (self.reachability.currentReachabilityStatus != NotReachable) [self hideErrorBar];
             [self startActivityWithTimeout:0];
 
+            //TODO: display "syncing..." whenever we're a certain number of blocks behind and >24hrs after seed creation
             if (m.wallet.balance == 0 && m.seedCreationTime == BITCOIN_REFERENCE_BLOCK_TIME) {
                 self.navigationItem.title = @"syncing...";
             }
@@ -414,6 +415,7 @@
 
 - (IBAction)tip:(id)sender
 {
+    //BUG: XXXXX double tip views following wallet wipe/new wallet
     if (sender == self.receiveViewController) {
         BRSendViewController *c = self.sendViewController;
 
@@ -535,7 +537,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
          belowSubview:self.navigationController.navigationBar];
         to.view.center = CGPointMake(to.view.center.x, v.frame.size.height*3/2);
 
-        NSString *title = self.navigationItem.title;
+        BRWalletManager *m = [BRWalletManager sharedInstance];
 
         [(id)to topViewController].navigationItem.title = nil;
         [(id)to topViewController].navigationItem.leftBarButtonItem.image = nil;
@@ -544,7 +546,9 @@ viewControllerAfterViewController:(UIViewController *)viewController
         self.burger.hidden = NO;
 
         [self.burger setX:YES completion:^(BOOL finished) {
-            [(id)to topViewController].navigationItem.title = title;
+            [(id)to topViewController].navigationItem.title =
+                [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
+                 [m localCurrencyStringForAmount:m.wallet.balance]];
             [(id)to topViewController].navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"x"];
             [v addSubview:to.view];
         }];

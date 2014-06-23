@@ -180,6 +180,23 @@
     }];
 }
 
+- (IBAction)toggle:(id)sender
+{
+    UILabel *l = (id)[[sender superview] viewWithTag:2];
+
+    [[NSUserDefaults standardUserDefaults] setBool:[sender isOn] forKey:SETTINGS_SKIP_FEE_KEY];
+
+    l.hidden = NO;
+    l.alpha = ([sender isOn]) ? 0.0 : 1.0;
+
+    [UIView animateWithDuration:0.2 animations:^{
+        l.alpha = ([sender isOn]) ? 1.0 : 0.0;
+    } completion:^(BOOL finished) {
+        l.alpha = 1.0;
+        l.hidden = ([sender isOn]) ? NO : YES;
+    }];
+}
+
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
@@ -193,7 +210,7 @@
         case 0: return self.transactions.count ? self.transactions.count : 1;
         case 1: return 2;
         case 2: return 2;
-        case 3: return 1;
+        case 3: return 2;
         default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
     }
 
@@ -203,9 +220,10 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     static NSString *disclosureIdent = @"DisclosureCell", *transactionIdent = @"TransactionCell",
-                    *actionIdent = @"ActionCell", *restoreIdent = @"RestoreCell";
+                    *actionIdent = @"ActionCell", *toggleIdent = @"ToggleCell", *restoreIdent = @"RestoreCell";
     UITableViewCell *cell = nil;
-    UILabel *textLabel, *unconfirmedLabel, *sentLabel, *noTxLabel, *localCurrencyLabel;
+    UILabel *textLabel, *unconfirmedLabel, *sentLabel, *noTxLabel, *localCurrencyLabel, *toggleLabel;
+    UISwitch *toggleSwitch;
     BRCopyLabel *detailTextLabel;
 
     switch (indexPath.section) {
@@ -327,15 +345,15 @@
 
             switch (indexPath.row) {
                 case 0:
-                    cell.textLabel.text = NSLocalizedString(@"rescan blockchain", nil);
-                    cell.imageView.image = [UIImage imageNamed:@"rescan"];
-                    cell.imageView.alpha = 0.75;
-                    break;
-
-                case 1:
                     cell.textLabel.text = NSLocalizedString(@"import private key", nil);
                     cell.imageView.image = [UIImage imageNamed:@"cameraguide-blue-small"];
                     cell.imageView.alpha = 1.0;
+                    break;
+
+                case 1:
+                    cell.textLabel.text = NSLocalizedString(@"rescan blockchain", nil);
+                    cell.imageView.image = [UIImage imageNamed:@"rescan"];
+                    cell.imageView.alpha = 0.75;
                     break;
 
                 default:
@@ -346,8 +364,26 @@
             break;
 
         case 3:
-            cell = [tableView dequeueReusableCellWithIdentifier:restoreIdent];
-            [self setBackgroundForCell:cell atIndexPath:indexPath];
+            switch (indexPath.row) {
+                case 0:
+                    cell = [tableView dequeueReusableCellWithIdentifier:toggleIdent];
+                    [self setBackgroundForCell:cell atIndexPath:indexPath];
+                    toggleLabel = (id)[cell viewWithTag:2];
+                    toggleSwitch = (id)[cell viewWithTag:3];
+                    toggleSwitch.on = [[NSUserDefaults standardUserDefaults] boolForKey:SETTINGS_SKIP_FEE_KEY];
+                    toggleLabel.hidden = (toggleSwitch.on) ? NO : YES;
+                    break;
+
+                case 1:
+                    cell = [tableView dequeueReusableCellWithIdentifier:restoreIdent];
+                    [self setBackgroundForCell:cell atIndexPath:indexPath];
+                    break;
+
+                default:
+                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.section %d", __FILE__, __LINE__,  __func__,
+                             (int)indexPath.section);
+            }
+
             break;
 
         default:
@@ -502,12 +538,12 @@
         case 2:
             switch (indexPath.row) {
                 case 0:
-                    [[BRPeerManager sharedInstance] rescan];
-                    [self done:nil];
+                    [self scanQR:nil];
                     break;
 
                 case 1:
-                    [self scanQR:nil];
+                    [[BRPeerManager sharedInstance] rescan];
+                    [self done:nil];
                     break;
 
                 default:

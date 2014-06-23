@@ -25,6 +25,8 @@
 
 #import <UIKit/UIKit.h>
 
+#define SETTINGS_SKIP_FEE_KEY @"SETTINGS_SKIP_FEE"
+
 @interface BRSettingsViewController : UITableViewController <UIAlertViewDelegate, UINavigationControllerDelegate,
 UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning>
 
