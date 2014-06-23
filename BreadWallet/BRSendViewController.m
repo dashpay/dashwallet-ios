@@ -196,7 +196,7 @@ isSecure:(BOOL)isSecure
     BRWalletManager *m = [BRWalletManager sharedInstance];
     NSString *amountStr = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:amount],
                            [m localCurrencyStringForAmount:amount]];
-    NSString *msg = (isSecure && name.length > 0) ? LOCK @" " : @"";
+    NSString *msg = (isSecure && safeName.length > 0) ? LOCK @" " : @"";
 
     if (! isSecure && self.protocolRequest.errorMessage.length > 0) msg = [msg stringByAppendingString:REDX @" "];
     if (name.length > 0) msg = [msg stringByAppendingString:safeName];
@@ -281,7 +281,7 @@ isSecure:(BOOL)isSecure
              stringWithFormat:NSLocalizedString(@"The standard bitcoin network fee is %@ (%@). "
                                                 "Removing this fee may increase confirmation time.", nil),
              [m stringForAmount:self.tx.standardFee], [m localCurrencyStringForAmount:self.tx.standardFee]]
-             delegate:self cancelButtonTitle:nil//NSLocalizedString(@"cancel", nil)
+             delegate:self cancelButtonTitle:nil
              otherButtonTitles:NSLocalizedString(@"remove fee", nil), NSLocalizedString(@"continue", nil), nil] show];
             return;
         }
@@ -324,7 +324,7 @@ isSecure:(BOOL)isSecure
           stringWithFormat:NSLocalizedString(@"The standard bitcoin network fee is %@ (%@). "
                                              "Removing this fee may increase confirmation time.", nil),
           [m stringForAmount:self.tx.standardFee], [m localCurrencyStringForAmount:self.tx.standardFee]]
-          delegate:self cancelButtonTitle:nil//NSLocalizedString(@"cancel", nil)
+          delegate:self cancelButtonTitle:nil
           otherButtonTitles:NSLocalizedString(@"remove fee", nil), NSLocalizedString(@"continue", nil), nil] show];
         return;
     }
@@ -334,7 +334,7 @@ isSecure:(BOOL)isSecure
             amount += [n unsignedLongLongValue];
         }
     }
-    else amount = [m.wallet amountSentByTransaction:self.tx];
+    else amount = [m.wallet amountSentByTransaction:self.tx] - [m.wallet amountReceivedFromTransaction:self.tx];
 
     if (! self.removeFee) {
         amount += self.tx.standardFee;
