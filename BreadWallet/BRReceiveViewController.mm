@@ -196,7 +196,7 @@
         }
         else {
             [[[UIAlertView alloc] initWithTitle:nil
-              message:NSLocalizedString(@"email not configured on this device", nil) delegate:nil
+              message:NSLocalizedString(@"email not configured", nil) delegate:nil
               cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
     }
@@ -211,7 +211,7 @@
         }
         else {
             [[[UIAlertView alloc] initWithTitle:nil
-              message:NSLocalizedString(@"sms not currently available on this device", nil) delegate:nil
+              message:NSLocalizedString(@"sms not currently available", nil) delegate:nil
               cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
     }    
