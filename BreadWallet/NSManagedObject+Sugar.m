@@ -23,6 +23,7 @@
 //  THE SOFTWARE.
 
 #import "NSManagedObject+Sugar.h"
+#import <objc/runtime.h>
 
 static NSManagedObjectContextConcurrencyType _concurrencyType = NSMainQueueConcurrencyType;
 static NSUInteger _fetchBatchSize = 100;
@@ -180,11 +181,10 @@ static NSUInteger _fetchBatchSize = 100;
     _fetchBatchSize = fetchBatchSize;
 }
 
-// Returns the managed object context for the application. If the context doesn't already exist,
-// it is created and bound to the persistent store coordinator for the application.
+// returns the managed object context for the application, or if the context doesn't already exist, creates it and binds
+// it to the persistent store coordinator for the application
 + (NSManagedObjectContext *)context
 {
-    static NSManagedObjectContext *writermoc = nil, *mainmoc = nil;
     static dispatch_once_t onceToken = 0;
     
     dispatch_once(&onceToken, ^{
@@ -219,24 +219,43 @@ static NSUInteger _fetchBatchSize = 100;
         }
 
         if (coordinator) {
+            NSManagedObjectContext *writermoc = nil, *mainmoc = nil;
+
             // create a separate context for writing to the persistent store asynchronously
             writermoc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
             writermoc.persistentStoreCoordinator = coordinator;
 
             mainmoc = [[NSManagedObjectContext alloc] initWithConcurrencyType:_concurrencyType];
             mainmoc.parentContext = writermoc;
-            
-            // this will save changes to the persistent store before the application terminates.
+
+            [NSManagedObject setContext:mainmoc];
+
+            // this will save changes to the persistent store before the application terminates
             [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillTerminateNotification object:nil
              queue:nil usingBlock:^(NSNotification *note) {
                 [self saveContext];
             }];
         }
     });
-    
-    return mainmoc;
+
+    NSManagedObjectContext *context = objc_getAssociatedObject(self, @selector(context));
+
+    if (! context && self != [NSManagedObject class]) {
+        context = [NSManagedObject context];
+        [self setContext:context];
+    }
+
+    return (context == (id)[NSNull null]) ? nil : context;
 }
 
+// sets a different context for NSManagedObject+Sugar methods to use for this type of entity
++ (void)setContext:(NSManagedObjectContext *)context
+{
+    objc_setAssociatedObject(self, @selector(context), context ? context : [NSNull null],
+                             OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+// persists changes (this is called automatically for the main context when the app terminates)
 + (void)saveContext
 {
     if (! [[self context] hasChanges]) return;

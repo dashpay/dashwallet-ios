@@ -80,6 +80,9 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     // the core data store can be inconsistent with the keychain, need to add a consistency check
 
     [self.moc performBlockAndWait:^{
+        [BRAddressEntity setContext:self.moc];
+        [BRTransactionEntity setContext:self.moc];
+
         for (BRAddressEntity *e in [BRAddressEntity allObjects]) {
             NSMutableArray *a = e.internal ? self.internalAddresses : self.externalAddresses;
 

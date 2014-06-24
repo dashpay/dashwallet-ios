@@ -42,6 +42,13 @@
 @dynamic outputs;
 @dynamic lockTime;
 
++ (void)setContext:(NSManagedObjectContext *)context
+{
+    [super setContext:context];
+    [BRTxInputEntity setContext:context];
+    [BRTxOutputEntity setContext:context];
+}
+
 - (instancetype)setAttributesFromTx:(BRTransaction *)tx
 {
     [[self managedObjectContext] performBlockAndWait:^{
