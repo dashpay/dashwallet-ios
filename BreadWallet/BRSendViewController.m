@@ -604,9 +604,8 @@ isSecure:(BOOL)isSecure
                         [reader dismissViewControllerAnimated:YES completion:^{
                             [(id)self.zbarController.cameraOverlayView
                              setImage:[UIImage imageNamed:@"cameraguide.png"]];
+                            [self confirmProtocolRequest:req];
                         }];
-
-                        [self confirmProtocolRequest:req];
                     });
                 }];
             }
@@ -614,9 +613,8 @@ isSecure:(BOOL)isSecure
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
                     [reader dismissViewControllerAnimated:YES completion:^{
                         [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide.png"]];
+                        [self confirmRequest:request];
                     }];
-
-                    [self confirmRequest:request];
                 });
             }
         }
