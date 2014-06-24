@@ -518,7 +518,7 @@ isSecure:(BOOL)isSecure
 
 - (IBAction)reset:(id)sender
 {
-    if (self.navigationController.topViewController != self.parentViewController) {
+    if (self.navigationController.topViewController != self.parentViewController.parentViewController) {
         [self.navigationController popToRootViewControllerAnimated:YES];
     }
 
@@ -701,6 +701,10 @@ isSecure:(BOOL)isSecure
 //    }
 
     //TODO: check for duplicate transactions
+
+    if (self.navigationController.topViewController != self.parentViewController.parentViewController) {
+        [self.navigationController popToRootViewControllerAnimated:YES];
+    }
 
     NSLog(@"signing transaction");
 

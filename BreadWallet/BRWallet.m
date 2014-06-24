@@ -419,7 +419,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
 
     for (BRTransaction *tx in self.transactions) { // remove dependent transactions
         if (tx.blockHeight < transaction.blockHeight) break;
-        if (! [txHash isEqual:tx.txHash] && [tx.inputHashes containsObject:txHash]) [hashes addObject:hashes];
+        if (! [txHash isEqual:tx.txHash] && [tx.inputHashes containsObject:txHash]) [hashes addObject:tx.txHash];
     }
 
     for (NSData *hash in hashes) {
