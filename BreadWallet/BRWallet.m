@@ -33,7 +33,7 @@
 #import "NSData+Hash.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
-#import "NSManagedObject+Utils.h"
+#import "NSManagedObject+Sugar.h"
 
 static NSData *txOutput(NSData *txHash, uint32_t n)
 {

@@ -35,7 +35,7 @@
 #import "BRWallet.h"
 #import "NSString+Base58.h"
 #import "NSData+Hash.h"
-#import "NSManagedObject+Utils.h"
+#import "NSManagedObject+Sugar.h"
 #import <netdb.h>
 
 #define FIXED_PEERS           @"FixedPeers"

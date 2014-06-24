@@ -25,7 +25,7 @@
 
 #import "BRPeerEntity.h"
 #import "BRPeer.h"
-#import "NSManagedObject+Utils.h"
+#import "NSManagedObject+Sugar.h"
 #import <arpa/inet.h>
 
 @implementation BRPeerEntity

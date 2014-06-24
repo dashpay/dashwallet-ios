@@ -1,5 +1,5 @@
 //
-//  NSManagedObject+Utils.m
+//  NSManagedObject+Sugar.m
 //
 //  Created by Aaron Voisine on 8/22/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
@@ -22,12 +22,12 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "NSManagedObject+Utils.h"
+#import "NSManagedObject+Sugar.h"
 
 static NSManagedObjectContextConcurrencyType _concurrencyType = NSMainQueueConcurrencyType;
 static NSUInteger _fetchBatchSize = 100;
 
-@implementation NSManagedObject (Utils)
+@implementation NSManagedObject (Sugar)
 
 #pragma mark - create objects
 
@@ -108,7 +108,7 @@ static NSUInteger _fetchBatchSize = 100;
 
     [[self context] performBlockAndWait:^{
         a = [[self context] executeFetchRequest:request error:&error];
-        if (! a) NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
+        if (error) NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
     }];
      
     return a;
@@ -147,7 +147,7 @@ static NSUInteger _fetchBatchSize = 100;
 
     [[self context] performBlockAndWait:^{
         count = [[self context] countForFetchRequest:request error:&error];
-        if (count == NSNotFound) NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
+        if (error) NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
     }];
     
     return count;
@@ -168,7 +168,7 @@ static NSUInteger _fetchBatchSize = 100;
 
 #pragma mark - core data stack
 
-// call this before any NSManagedObject+Utils methods to use a concurrency type other than NSMainQueueConcurrencyType
+// call this before any NSManagedObject+Sugar methods to use a concurrency type other than NSMainQueueConcurrencyType
 + (void)setConcurrencyType:(NSManagedObjectContextConcurrencyType)type
 {
     _concurrencyType = type;
@@ -252,9 +252,8 @@ static NSUInteger _fetchBatchSize = 100;
         }
 
         [[self context].parentContext performBlock:^{
-            NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
-            NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate];
             NSError *error = nil;
+            NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
 
             // write changes to persistent store
             if ([[self context].parentContext hasChanges] && ! [[self context].parentContext save:&error]) {
@@ -264,7 +263,6 @@ static NSUInteger _fetchBatchSize = 100;
 #endif
             }
 
-            NSLog(@"context save completed in %f seconds", [NSDate timeIntervalSinceReferenceDate] - t);
             [[UIApplication sharedApplication] endBackgroundTask:taskId];
         }];
     }];
@@ -272,7 +270,7 @@ static NSUInteger _fetchBatchSize = 100;
 
 #pragma mark - entity methods
 
-// override this if entity name differes from class name
+// override this if entity name differs from class name
 + (NSString *)entityName
 {
     return NSStringFromClass([self class]);
@@ -292,30 +290,30 @@ static NSUInteger _fetchBatchSize = 100;
             sectionNameKeyPath:nil cacheName:nil];
 }
 
+// id value = entity[@"key"]; thread safe valueForKey:
+- (id)objectForKeyedSubscript:(id<NSCopying>)key
+{
+    __block id obj = nil;
+
+    [[self managedObjectContext] performBlockAndWait:^{
+        obj = [self valueForKey:(NSString *)key];
+    }];
+
+    return obj;
+}
+
+// entity[@"key"] = value; thread safe setValue:forKey:
+- (void)setObject:(id)obj forKeyedSubscript:(id<NSCopying>)key
+{
+    [[self managedObjectContext] performBlockAndWait:^{
+        [self setValue:obj forKey:(NSString *)key];
+    }];
+}
+
 - (void)deleteObject
 {
     [[self managedObjectContext] performBlockAndWait:^{
         [[self managedObjectContext] deleteObject:self];
-    }];
-}
-
-// thread safe valueForKey:
-- (id)get:(NSString *)key
-{
-    __block id value = nil;
-    
-    [[self managedObjectContext] performBlockAndWait:^{
-        value = [self valueForKey:key];
-    }];
-
-    return value;
-}
-
-// thread safe setValue:forKey:
-- (void)set:(NSString *)key to:(id)value
-{
-    [[self managedObjectContext] performBlockAndWait:^{
-        [self setValue:value forKey:key];
     }];
 }
 

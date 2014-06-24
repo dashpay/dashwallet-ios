@@ -25,7 +25,7 @@
 
 #import "BRMerkleBlockEntity.h"
 #import "BRMerkleBlock.h"
-#import "NSManagedObject+Utils.h"
+#import "NSManagedObject+Sugar.h"
 
 @implementation BRMerkleBlockEntity
 

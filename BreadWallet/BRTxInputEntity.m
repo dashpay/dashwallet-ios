@@ -27,7 +27,7 @@
 #import "BRTransactionEntity.h"
 #import "BRTransaction.h"
 #import "BRTxOutputEntity.h"
-#import "NSManagedObject+Utils.h"
+#import "NSManagedObject+Sugar.h"
 
 @implementation BRTxInputEntity
 

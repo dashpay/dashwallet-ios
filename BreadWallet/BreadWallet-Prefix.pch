@@ -15,7 +15,7 @@
     #import <Foundation/Foundation.h>
 #endif
 
-//#define BITCOIN_TESTNET    1
+#define BITCOIN_TESTNET    1
 #define SATOSHIS           100000000
 #define PARALAX_RATIO      0.25
 #define BRURLNotification  @"BRURLNotification"

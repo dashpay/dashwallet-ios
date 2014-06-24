@@ -35,7 +35,7 @@
 #import "BRAddressEntity.h"
 #import "NSString+Base58.h"
 #import "NSMutableData+Bitcoin.h"
-#import "NSManagedObject+Utils.h"
+#import "NSManagedObject+Sugar.h"
 #import <netdb.h>
 #import "Reachability.h"
 

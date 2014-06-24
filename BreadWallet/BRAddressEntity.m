@@ -24,7 +24,7 @@
 //  THE SOFTWARE.
 
 #import "BRAddressEntity.h"
-#import "NSManagedObject+Utils.h"
+#import "NSManagedObject+Sugar.h"
 
 @implementation BRAddressEntity
 

@@ -1,5 +1,5 @@
 //
-//  NSManagedObject+Utils.h
+//  NSManagedObject+Sugar.h
 //
 //  Created by Aaron Voisine on 8/22/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
@@ -24,7 +24,7 @@
 
 #import <CoreData/CoreData.h>
 
-@interface NSManagedObject (Utils)
+@interface NSManagedObject (Sugar)
 
 // create objects
 + (instancetype)managedObject;
@@ -47,7 +47,7 @@
 // delete objects
 + (NSUInteger)deleteObjects:(NSArray *)objects;
 
-// call this before any NSManagedObject+Utils methods to use a concurrency type other than NSMainQueueConcurrencyType
+// call this before any NSManagedObject+Sugar methods to use a concurrency type other than NSMainQueueConcurrencyType
 + (void)setConcurrencyType:(NSManagedObjectContextConcurrencyType)type;
 
 // set the fetchBatchSize to use when fetching objects, default is 100
@@ -63,8 +63,8 @@
 + (NSFetchRequest *)fetchRequest;
 + (NSFetchedResultsController *)fetchedResultsController:(NSFetchRequest *)request;
 
+- (id)objectForKeyedSubscript:(id<NSCopying>)key; // id value = entity[@"key"]; thread safe valueForKey:
+- (void)setObject:(id)obj forKeyedSubscript:(id<NSCopying>)key; // entity[@"key"] = value; thread safe setValue:forKey:
 - (void)deleteObject;
-- (id)get:(NSString *)key; // thread safe valueForKey:
-- (void)set:(NSString *)key to:(id)value; // thread safe setValue:forKey:
 
 @end
