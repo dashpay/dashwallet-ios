@@ -25,6 +25,7 @@
 
 #import "BRSeedViewController.h"
 #import "BRWalletManager.h"
+#import "BRWallet.h"
 #import "BRPeerManager.h"
 #import "BRBIP32Sequence.h"
 
@@ -37,7 +38,7 @@
 @property (nonatomic, strong) IBOutlet UIView *labelFrame;
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper, *logo;
 
-@property (nonatomic, strong) id resignActiveObserver;
+@property (nonatomic, strong) id resignActiveObserver, screenshotObserver;
 
 @end
 
@@ -53,10 +54,28 @@
     self.resignActiveObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            [[UIApplication sharedApplication] ignoreSnapshotOnNextApplicationLaunch];
-
             if (self.navigationController.viewControllers.firstObject != self) {
                 [self.navigationController popViewControllerAnimated:NO];
+            }
+        }];
+
+
+    //TODO: make it easy to create a new wallet and transfer balance
+    self.screenshotObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationUserDidTakeScreenshotNotification
+        object:nil queue:nil usingBlock:^(NSNotification *note) {
+            if ([[[BRWalletManager sharedInstance] wallet] balance] == 0) {
+                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
+                  message:NSLocalizedString(@"Screenshots are visible to other apps and devices. "
+                                            "Generate a new backup phrase and keep it secret.", nil)
+                  delegate:self cancelButtonTitle:NSLocalizedString(@"ignore", nil)
+                  otherButtonTitles:NSLocalizedString(@"generate new phrase", nil), nil] show];
+            }
+            else {
+                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
+                  message:NSLocalizedString(@"Screenshots are visible to other apps and devices. "
+                                            "Your funds are at risk. Transfer your balance to another wallet.", nil)
+                  delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
             }
         }];
 }
@@ -64,6 +83,7 @@
 - (void)dealloc
 {
     if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
+    if (self.screenshotObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.screenshotObserver];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -131,6 +151,18 @@
 - (IBAction)copy:(id)sender
 {
     [[UIPasteboard generalPasteboard] setString:[[BRWalletManager sharedInstance] seedPhrase]];
+}
+
+#pragma mark - UIAlertViewDelegate
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == alertView.cancelButtonIndex) return;
+
+    if ([[[BRWalletManager sharedInstance] wallet] balance] == 0 &&
+        [[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"generate new phrase", nil)]) {
+        [self refresh:nil];
+    }
 }
 
 @end

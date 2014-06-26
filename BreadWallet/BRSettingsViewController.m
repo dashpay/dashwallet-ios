@@ -105,6 +105,7 @@
 
 - (void)dealloc
 {
+    if (self.navigationController.delegate == self) self.navigationController.delegate = nil;
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
     if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
 }

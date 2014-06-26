@@ -32,6 +32,8 @@
 #import "BRWalletManager.h"
 #import "BRWallet.h"
 #import "Reachability.h"
+#import <sys/stat.h>
+#import <mach-o/dyld.h>
 
 #define BALANCE_TIP NSLocalizedString(@"This is your bitcoin balance. Bitcoin is a currency. "\
                                        "The exchange rate changes with the market.", nil)
@@ -60,6 +62,19 @@
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+
+    // detect jailbreak so we can throw up an idiot warning
+    struct stat s;
+    BOOL jailbroken = (stat("/bin/sh", &s) == 0) ? YES : NO; // if we can see /bin/sh, the app isn't sandboxed
+
+    // some anti-jailbreak detection tools re-sandbox apps, so do a secondary check for any MobileSubstrate dyld images
+    for (uint32_t count = _dyld_image_count(), i = 0; i < count && ! jailbroken; i++) {
+        if (strstr(_dyld_get_image_name(i), "MobileSubstrate")) jailbroken = YES;
+    }
+
+#if TARGET_IPHONE_SIMULATOR
+    jailbroken = NO;
+#endif
 
     self.receiveViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"ReceiveViewController"];
     self.sendViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"SendViewController"];
@@ -103,6 +118,22 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             if (self.appeared) [[BRPeerManager sharedInstance] connect];
+
+            if (jailbroken && m.wallet.balance > 0) {
+                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
+                  message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
+                                            "Any 'jailbreak' app can control this device and steal funds. "
+                                            "Wipe this wallet immediately and restore on a secure device.", nil)
+                 delegate:self cancelButtonTitle:NSLocalizedString(@"ingore", nil)
+                 otherButtonTitles:NSLocalizedString(@"wipe", nil), nil] show];
+            }
+            else if (jailbroken) {
+                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
+                  message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
+                                            "Any 'jailbreak' app can control this device and steal funds.", nil)
+                  delegate:self cancelButtonTitle:NSLocalizedString(@"ingore", nil)
+                  otherButtonTitles:NSLocalizedString(@"close app", nil), nil] show];
+            }
         }];
 
     self.reachabilityObserver =
@@ -252,6 +283,7 @@
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
     [self.reachability stopNotifier];
 
+    if (self.navigationController.delegate == self) self.navigationController.delegate = nil;
     if (self.urlObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.urlObserver];
     if (self.fileObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.fileObserver];
     if (self.activeObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
@@ -465,7 +497,38 @@
     else [self connect:sender];
 }
 
-#pragma mark UIPageViewControllerDataSource
+#pragma mark - UIAlertViewDelegate
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == alertView.cancelButtonIndex) return;
+
+    if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"close app", nil)]) abort();
+
+    if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"wipe", nil)]) {
+        [[[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"CONFIRM WIPE", nil) delegate:self
+          cancelButtonTitle:NSLocalizedString(@"cancel", nil) destructiveButtonTitle:NSLocalizedString(@"wipe", nil)
+          otherButtonTitles:nil] showInView:[[UIApplication sharedApplication] keyWindow]];
+    }
+}
+
+#pragma mark - UIActionSheetDelegate
+
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex != actionSheet.destructiveButtonIndex) return;
+
+    [[BRWalletManager sharedInstance] setSeed:nil];
+
+    UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"];
+
+    [self.navigationController presentViewController:c animated:NO completion:nil];
+
+    [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"the app will now close", nil) delegate:self
+      cancelButtonTitle:nil otherButtonTitles:NSLocalizedString(@"close app", nil), nil] show];
+}
+
+#pragma mark - UIPageViewControllerDataSource
 
 - (UIViewController *)pageViewController:(UIPageViewController *)pageViewController
 viewControllerBeforeViewController:(UIViewController *)viewController
@@ -489,7 +552,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
     return (pageViewController.viewControllers.lastObject == self.receiveViewController) ? 1 : 0;
 }
 
-#pragma mark UIScrollViewDelegate
+#pragma mark - UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
@@ -498,7 +561,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
                                         self.wallpaper.center.y);
 }
 
-#pragma mark UIViewControllerAnimatedTransitioning
+#pragma mark - UIViewControllerAnimatedTransitioning
 
 // This is used for percent driven interactive transitions, as well as for container controllers that have companion
 // animations that might need to synchronize with the main animation.

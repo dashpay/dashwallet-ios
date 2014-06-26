@@ -82,7 +82,7 @@
 
 - (void)dealloc
 {
-    self.navigationController.delegate = nil;
+    if (self.navigationController.delegate == self) self.navigationController.delegate = nil;
     if (self.activeObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
     if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
 }
