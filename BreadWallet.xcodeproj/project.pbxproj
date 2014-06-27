@@ -3689,7 +3689,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "VERSION=1.0.1g\nARCHIVE=openssl-$VERSION.tar.gz\nSHA1=b28b3bcb1dc3ee7b55024c9f795be60eb3183e3c\n\ncd $SRCROOT\nrm -rf $SRCROOT/openssl\nln -s openssl-$VERSION openssl\n\n([ -f $SRCROOT/$ARCHIVE ] && openssl sha1 $SRCROOT/$ARCHIVE | grep $SHA1) || \\\n(rm -rf $SRCROOT/openssl-* && curl -sSO http://www.openssl.org/source/$ARCHIVE && \\\nopenssl sha1 $SRCROOT/$ARCHIVE | grep $SHA1)\n\n[ -f $SRCROOT/openssl/ssl/tls_srp.c ] || tar -xvzf $ARCHIVE";
+			shellScript = "VERSION=1.0.1h\nARCHIVE=openssl-$VERSION.tar.gz\nSHA1=b2239599c8bf8f7fc48590a55205c26abe560bf8\n\ncd $SRCROOT\nrm -rf $SRCROOT/openssl\nln -s openssl-$VERSION openssl\n\n([ -f $SRCROOT/$ARCHIVE ] && openssl sha1 $SRCROOT/$ARCHIVE | grep $SHA1) || \\\n(rm -rf $SRCROOT/openssl-* && curl -sSO http://www.openssl.org/source/$ARCHIVE && \\\nopenssl sha1 $SRCROOT/$ARCHIVE | grep $SHA1)\n\n[ -f $SRCROOT/openssl/ssl/tls_srp.c ] || tar -xvzf $ARCHIVE";
 		};
 /* End PBXShellScriptBuildPhase section */
 
