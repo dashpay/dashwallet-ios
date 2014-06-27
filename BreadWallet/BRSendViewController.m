@@ -686,7 +686,7 @@ isSecure:(BOOL)isSecure
 //        //                      days > 1 ? @"s" : (days == 0 && hours > 1 ? @"s" : @"")];
 //        //
 //        //    [[[UIAlertView alloc]
-//        //      initWithTitle:[NSString stringWithFormat:@"%@ (%@) transaction fee recommended", fee, localCurrencyFee]
+//        //      initWithTitle:[NSString stringWithFormat:@"%@ (%@) transaction fee recommended", fee,localCurrencyFee]
 //        //      message:[NSString stringWithFormat:@"estimated confirmation time with no fee: %@", time] delegate:self
 //        //      cancelButtonTitle:nil otherButtonTitles:@"no fee",
 //        //      [NSString stringWithFormat:@"+ %@ (%@)", fee, localCurrencyFee], nil] show];
@@ -702,7 +702,6 @@ isSecure:(BOOL)isSecure
 
     //TODO: check for duplicate transactions
 
-    //BUG: XXXXX after this is called to pop off amount controller, the progress bar is above the navbar
     if (self.navigationController.topViewController != self.parentViewController.parentViewController) {
         [self.navigationController popToRootViewControllerAnimated:YES];
     }
@@ -711,7 +710,7 @@ isSecure:(BOOL)isSecure
 
     [(id)self.parentViewController.parentViewController startActivityWithTimeout:30];
 
-    //TODO: XXXXX don't sign on main thread
+    //TODO: XXXX don't sign on main thread
     if (! [m.wallet signTransaction:self.tx]) {
         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
           message:NSLocalizedString(@"error signing bitcoin transaction", nil) delegate:nil

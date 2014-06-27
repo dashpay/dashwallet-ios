@@ -584,9 +584,10 @@ viewControllerAfterViewController:(UIViewController *)viewController
             [v insertSubview:self.wallpaper belowSubview:from.view];
         }
 
-        to.view.center = CGPointMake(v.frame.size.width*(to == self ? -1 : 3)/2, to.view.center.y);
+        self.progress.hidden = self.pulse.hidden = YES;
         [v addSubview:to.view];
-    
+        to.view.center = CGPointMake(v.frame.size.width*(to == self ? -1 : 3)/2, to.view.center.y);
+
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
         initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
             to.view.center = from.view.center;
@@ -595,7 +596,14 @@ viewControllerAfterViewController:(UIViewController *)viewController
                                                 v.frame.size.width*(to == self ? 0 : 1)*PARALAX_RATIO,
                                                 self.wallpaper.center.y);
         } completion:^(BOOL finished) {
-            if (to == self) [from.view removeFromSuperview];
+            if (to == self) {
+                [from.view removeFromSuperview];
+                self.navigationController.navigationBarHidden = YES; // hack to fix topLayoutGuide bug
+                [self.navigationController performSelector:@selector(setNavigationBarHidden:) withObject:nil
+                afterDelay:0];
+            }
+
+            if (self.progress.progress > 0) self.progress.hidden = self.pulse.hidden = NO;
             [transitionContext completeTransition:finished];
         }];
     }
