@@ -702,12 +702,16 @@ isSecure:(BOOL)isSecure
 
     //TODO: check for duplicate transactions
 
+    //BUG: XXXXX after this is called to pop off amount controller, the progress bar is above the navbar
     if (self.navigationController.topViewController != self.parentViewController.parentViewController) {
         [self.navigationController popToRootViewControllerAnimated:YES];
     }
 
     NSLog(@"signing transaction");
 
+    [(id)self.parentViewController.parentViewController startActivityWithTimeout:30];
+
+    //TODO: XXXXX don't sign on main thread
     if (! [m.wallet signTransaction:self.tx]) {
         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
           message:NSLocalizedString(@"error signing bitcoin transaction", nil) delegate:nil
@@ -717,8 +721,6 @@ isSecure:(BOOL)isSecure
     }
 
     NSLog(@"signed transaction:\n%@", [NSString hexWithData:self.tx.data]);
-
-    [(id)self.parentViewController.parentViewController startActivityWithTimeout:30];
 
     [[BRPeerManager sharedInstance] publishTransaction:self.tx completion:^(NSError *error) {
         if (protoReq.details.paymentURL.length > 0) return;
@@ -753,12 +755,13 @@ isSecure:(BOOL)isSecure
         BRPaymentProtocolPayment *payment =
             [[BRPaymentProtocolPayment alloc] initWithMerchantData:protoReq.details.merchantData
              transactions:@[self.tx] refundToAmounts:@[@(refundAmount)] refundToScripts:@[refundScript] memo:nil];
-        
+
+        NSLog(@"posting payment to: %@", protoReq.details.paymentURL);
+
         [BRPaymentRequest postPayment:payment to:protoReq.details.paymentURL
         completion:^(BRPaymentProtocolACK *ack, NSError *error) {
             [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
 
-            //BUG: XXXXX consistently getting unexpected server response here from bitpay
             if (error && ! [m.wallet transactionIsRegistered:self.tx.txHash]) {
                 [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription delegate:nil
                   cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
@@ -773,9 +776,10 @@ isSecure:(BOOL)isSecure
             [self reset:nil];
             
             if (error) { // transaction was sent despite payment protocol error
-                [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription delegate:nil
-                  cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] performSelector:@selector(show)
-                 withObject:nil afterDelay:2.0];
+                NSLog(@"%@", error.localizedDescription);
+//                [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription delegate:nil
+//                  cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil]
+//                  performSelector:@selector(show) withObject:nil afterDelay:2.0];
             }
         }];
     }

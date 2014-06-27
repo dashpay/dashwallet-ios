@@ -132,8 +132,8 @@
 
 - (NSString *)dateForTx:(BRTransaction *)tx
 {
-    static NSDateFormatter *f1 = nil, *f2 = nil;
-    static NSTimeInterval y = 0.0;
+    static NSDateFormatter *f1 = nil, *f2 = nil, *f3 = nil;
+    static NSTimeInterval w = 0.0, y = 0.0;
     NSString *date = self.txDates[tx.txHash];
 
     if (date) return date;
@@ -141,18 +141,21 @@
     if (! f1) {
         f1 = [NSDateFormatter new];
         f2 = [NSDateFormatter new];
+        f3 = [NSDateFormatter new];
+        w = [NSDate timeIntervalSinceReferenceDate] - 7*24*60*60;
         y = [NSDate timeIntervalSinceReferenceDate] - 365*24*60*60;
 
         f1.dateFormat = [[[NSDateFormatter dateFormatFromTemplate:@"Mdha" options:0 locale:[NSLocale currentLocale]]
                           stringByReplacingOccurrencesOfString:@", " withString:@" "]
                          stringByReplacingOccurrencesOfString:@" h" withString:@"@h"];
-        f2.dateFormat = [[[NSDateFormatter dateFormatFromTemplate:@"yyMdha" options:0 locale:[NSLocale currentLocale]]
-                          stringByReplacingOccurrencesOfString:@", " withString:@" "]
-                         stringByReplacingOccurrencesOfString:@" h" withString:@"@h"];
+        f2.dateFormat = [[NSDateFormatter dateFormatFromTemplate:@"Md" options:0 locale:[NSLocale currentLocale]]
+                         stringByReplacingOccurrencesOfString:@", " withString:@" "];
+        f3.dateFormat = [[NSDateFormatter dateFormatFromTemplate:@"yyMd" options:0 locale:[NSLocale currentLocale]]
+                          stringByReplacingOccurrencesOfString:@", " withString:@" "];
     }
     
     NSTimeInterval t = [[BRPeerManager sharedInstance] timestampForBlockHeight:tx.blockHeight];
-    NSDateFormatter *f = (t > y) ? f1 : f2;
+    NSDateFormatter *f = (t > w) ? f1 : ((t > y) ? f2 : f3);
 
     date = [[[[f stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:t - 5*60]]
               lowercaseString] stringByReplacingOccurrencesOfString:@" am" withString:@"a"]

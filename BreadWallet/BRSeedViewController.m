@@ -69,7 +69,7 @@
                   message:NSLocalizedString(@"Screenshots are visible to other apps and devices. "
                                             "Generate a new backup phrase and keep it secret.", nil)
                   delegate:self cancelButtonTitle:NSLocalizedString(@"ignore", nil)
-                  otherButtonTitles:NSLocalizedString(@"generate new phrase", nil), nil] show];
+                  otherButtonTitles:NSLocalizedString(@"new phrase", nil), nil] show];
             }
             else {
                 [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
@@ -160,7 +160,7 @@
     if (buttonIndex == alertView.cancelButtonIndex) return;
 
     if ([[[BRWalletManager sharedInstance] wallet] balance] == 0 &&
-        [[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"generate new phrase", nil)]) {
+        [[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"new phrase", nil)]) {
         [self refresh:nil];
     }
 }

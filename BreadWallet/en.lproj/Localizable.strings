@@ -122,9 +122,6 @@
 "error signing transaction" = "error signing transaction";
 
 /* No comment provided by engineer. */
-"generate new phrase" = "generate new phrase";
-
-/* No comment provided by engineer. */
 "ignore" = "ignore";
 
 /* No comment provided by engineer. */
@@ -144,6 +141,9 @@
 
 /* No comment provided by engineer. */
 "moved  " = "moved  ";
+
+/* No comment provided by engineer. */
+"new phrase" = "new phrase";
 
 /* No comment provided by engineer. */
 "no peers found" = "no peers found";
@@ -192,6 +192,12 @@
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address.";
+
+/* No comment provided by engineer. */
+"Screenshots are visible to other apps and devices. Generate a new backup phrase and keep it secret." = "Screenshots are visible to other apps and devices. Generate a new backup phrase and keep it secret.";
+
+/* No comment provided by engineer. */
+"Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet.";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The bitcoin network will receive a fee of %@ (%@)." = "Send %1$@ (%2$@) from this private key into your wallet? The bitcoin network will receive a fee of %3$@ (%4$@).";

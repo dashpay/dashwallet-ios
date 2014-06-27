@@ -103,7 +103,8 @@ static const struct { uint32_t height; char *hash; time_t timestamp; uint32_t ta
 };
 
 static const char *dns_seeds[] = {
-    "seed.bitcoin.sipa.be", "dnsseed.bluematt.me", "dnsseed.bitcoin.dashjr.org", "bitseed.xf2.org"
+    "seed.bitcoin.sipa.be", "dnsseed.bluematt.me", "dnsseed.bitcoin.dashjr.org", "seed.bitcoinstats.com",
+    "seed.bitnodes.io", "bitseed.xf2.org"
 };
 
 #endif
@@ -122,7 +123,7 @@ static const char *dns_seeds[] = {
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
 @property (nonatomic, strong) BRMerkleBlock *lastBlock, *lastOrphan;
 @property (nonatomic, strong) dispatch_queue_t q;
-@property (nonatomic, strong) id activeObserver, seedObserver;
+@property (nonatomic, strong) id resignActiveObserver, seedObserver;
 
 @end
 
@@ -161,7 +162,7 @@ static const char *dns_seeds[] = {
         self.publishedTx[tx.txHash] = tx; // add unconfirmed tx to mempool
     }
 
-    self.activeObserver =
+    self.resignActiveObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             [self savePeers];
@@ -194,7 +195,7 @@ static const char *dns_seeds[] = {
 - (void)dealloc
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
-    if (self.activeObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
+    if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
     if (self.seedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.seedObserver];
 }
 

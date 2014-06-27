@@ -25,8 +25,8 @@
 
 #import <Foundation/Foundation.h>
 
-#if TX_FEE_0_9_1_RULES
-#define TX_FEE_PER_KB        10000ULL    // standard tx fee per kb of tx size, rounded up to nearest kb (0.9.1 rules)
+#if TX_FEE_0_8_RULES
+#define TX_FEE_PER_KB        10000ULL    // standard tx fee per kb of tx size, rounded up to nearest kb (0.8 rules)
 #else
 #define TX_FEE_PER_KB        1000ULL     // standard tx fee per kb of tx size, rounded up to nearest kb
 #endif

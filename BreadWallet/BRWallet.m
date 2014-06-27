@@ -186,6 +186,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
         if ([obj1 blockHeight] < [obj2 blockHeight]) return NSOrderedDescending;
         if ([[obj1 inputHashes] containsObject:[obj2 txHash]]) return NSOrderedAscending;
         if ([[obj2 inputHashes] containsObject:[obj1 txHash]]) return NSOrderedDescending;
+        // TODO: recursively compare transactions for input hashes that are in the wallet
         return NSOrderedSame;
     }];
 }
