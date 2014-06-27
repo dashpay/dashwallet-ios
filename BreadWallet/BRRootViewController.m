@@ -600,7 +600,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
                 [from.view removeFromSuperview];
                 self.navigationController.navigationBarHidden = YES; // hack to fix topLayoutGuide bug
                 [self.navigationController performSelector:@selector(setNavigationBarHidden:) withObject:nil
-                afterDelay:0];
+                 afterDelay:0];
             }
 
             if (self.progress.progress > 0) self.progress.hidden = self.pulse.hidden = NO;

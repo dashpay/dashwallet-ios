@@ -182,8 +182,8 @@
     return _zbarController;
 }
 
-- (void)confirmAmount:(uint64_t)amount address:(NSString *)address name:(NSString *)name memo:(NSString *)memo
-isSecure:(BOOL)isSecure
+- (void)confirmAmount:(uint64_t)amount fee:(uint64_t)fee address:(NSString *)address name:(NSString *)name
+memo:(NSString *)memo isSecure:(BOOL)isSecure
 {
     NSMutableString *safeName = [NSMutableString stringWithString:name ? name : @""],
                     *safeMemo = [NSMutableString stringWithString:memo ? memo : @""];
@@ -202,6 +202,12 @@ isSecure:(BOOL)isSecure
     if (name.length > 0) msg = [msg stringByAppendingString:safeName];
     if (! isSecure && msg.length > 0) msg = [msg stringByAppendingString:@"\n"];
     if (! isSecure || msg.length == 0) msg = [msg stringByAppendingString:address];
+    msg = [msg stringByAppendingFormat:@"\n%@ (%@)", [m stringForAmount:amount - fee],
+           [m localCurrencyStringForAmount:amount - fee]];
+    if (fee > 0) {
+        msg = [msg stringByAppendingFormat:NSLocalizedString(@"\nbitcoin network fee + %@ (%@)", nil),
+               [m stringForAmount:fee], [m localCurrencyStringForAmount:fee]];
+    }
     if (memo.length > 0) msg = [[msg stringByAppendingString:@"\n"] stringByAppendingString:safeMemo];
 
     [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"confirm payment", nil) message:msg delegate:self
@@ -274,6 +280,7 @@ isSecure:(BOOL)isSecure
 
         uint64_t amount = (! self.tx) ? request.amount :
                           [m.wallet amountSentByTransaction:self.tx] - [m.wallet amountReceivedFromTransaction:self.tx];
+        uint64_t fee = 0;
 
         if (self.tx && [m.wallet blockHeightUntilFree:self.tx] <= [[BRPeerManager sharedInstance] lastBlockHeight] +1 &&
             ! self.didAskFee && [[NSUserDefaults standardUserDefaults] boolForKey:SETTINGS_SKIP_FEE_KEY]) {
@@ -287,22 +294,25 @@ isSecure:(BOOL)isSecure
         }
 
         if (! self.removeFee) {
-            amount += self.tx.standardFee;
+            fee = self.tx.standardFee;
+            amount += fee;
             self.tx = [m.wallet transactionFor:request.amount to:request.paymentAddress withFee:YES];
             if (self.tx) {
                 amount = [m.wallet amountSentByTransaction:self.tx] - [m.wallet amountReceivedFromTransaction:self.tx];
+                fee = [m.wallet feeForTransaction:self.tx];
             }
         }
 
-        [self confirmAmount:amount address:request.paymentAddress name:request.label memo:request.message isSecure:NO];
+        [self confirmAmount:amount fee:fee address:request.paymentAddress name:request.label memo:request.message
+         isSecure:NO];
     }
 }
 
 - (void)confirmProtocolRequest:(BRPaymentProtocolRequest *)protoReq
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];
-    uint64_t amount = 0;
-    NSString *address = nil;
+    uint64_t amount = 0, fee = 0;
+    NSString *address = @"";
     BOOL valid = [protoReq isValid];
 
     if (! valid && [protoReq.errorMessage isEqual:NSLocalizedString(@"request expired", nil)]) {
@@ -337,20 +347,24 @@ isSecure:(BOOL)isSecure
     else amount = [m.wallet amountSentByTransaction:self.tx] - [m.wallet amountReceivedFromTransaction:self.tx];
 
     if (! self.removeFee) {
-        amount += self.tx.standardFee;
+        fee = self.tx.standardFee;
+        amount += fee;
         self.tx = [m.wallet transactionForAmounts:protoReq.details.outputAmounts
                    toOutputScripts:protoReq.details.outputScripts withFee:YES];
         if (self.tx) {
             amount = [m.wallet amountSentByTransaction:self.tx] - [m.wallet amountReceivedFromTransaction:self.tx];
+            fee = [m.wallet feeForTransaction:self.tx];
         }
     }
 
     for (NSData *script in protoReq.details.outputScripts) {
-        address = [NSString addressWithScript:script];
-        if (address) break;
+        NSString *addr = [NSString addressWithScript:script];
+
+        address = [address stringByAppendingFormat:@"%@%@", (address.length > 0) ? @", " : @"",
+                   (addr) ? addr : NSLocalizedString(@"unrecognized address", nil)];
     }
 
-    [self confirmAmount:amount address:address name:protoReq.commonName memo:protoReq.details.memo
+    [self confirmAmount:amount fee:fee address:address name:protoReq.commonName memo:protoReq.details.memo
      isSecure:(valid && ! [protoReq.pkiType isEqual:@"none"]) ? YES : NO];
 }
 

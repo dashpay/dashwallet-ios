@@ -1,4 +1,7 @@
 /* No comment provided by engineer. */
+"\nbitcoin network fee + %@ (%@)" = "\nbitcoin network fee + %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
 "%@ from:%@" = "%1$@ from:%2$@";
 
 /* No comment provided by engineer. */
@@ -261,6 +264,9 @@
 
 /* No comment provided by engineer. */
 "unkown address" = "unkown address";
+
+/* No comment provided by engineer. */
+"unrecognized address" = "unrecognized address";
 
 /* No comment provided by engineer. */
 "unsupported or corrupted document" = "unsupported or corrupted document";
