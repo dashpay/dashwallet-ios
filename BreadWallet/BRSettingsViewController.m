@@ -49,7 +49,9 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    
+
+    NSLog(@"[BRSettingsViewController viewDidLoad]");
+
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
@@ -61,7 +63,8 @@
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
 
             self.transactions = [NSArray arrayWithArray:m.wallet.recentTransactions];
-            
+
+            NSLog(@"reloading settings table");
             [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
              withRowAnimation:(self.transactions.count == count) ? UITableViewRowAnimationNone :
              UITableViewRowAnimationAutomatic];
@@ -73,6 +76,7 @@
             BRWalletManager *m = [BRWalletManager sharedInstance];
 
             if (! m.wallet) return;
+            NSLog(@"reloading settings table");
             [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
              withRowAnimation:UITableViewRowAnimationNone];
         }];
@@ -92,8 +96,19 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-    
+
     self.transactions = [NSArray arrayWithArray:[[[BRWalletManager sharedInstance] wallet] recentTransactions]];
+}
+
+- (void)viewDidDisappear:(BOOL)animated
+{
+    self.transactions = nil;
+    if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
+    self.balanceObserver = nil;
+    if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
+    self.txStatusObserver = nil;
+
+    [super viewDidDisappear:animated];
 }
 
 //- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
@@ -105,6 +120,7 @@
 
 - (void)dealloc
 {
+    NSLog(@"[BRSettingsViewController dealloc]");
     if (self.navigationController.delegate == self) self.navigationController.delegate = nil;
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
     if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];

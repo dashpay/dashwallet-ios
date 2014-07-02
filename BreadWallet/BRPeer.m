@@ -31,7 +31,6 @@
 #import "NSData+Bitcoin.h"
 #import "NSData+Hash.h"
 #import <arpa/inet.h>
-#import <netinet/in.h>
 #import "Reachability.h"
 
 #define USERAGENT [NSString stringWithFormat:@"/breadwallet:%@/",NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"]]

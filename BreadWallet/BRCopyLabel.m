@@ -73,7 +73,7 @@
     if (r.location == NSNotFound) return CGRectZero;
 
     CGRect start = [[self.text substringToIndex:r.location] boundingRectWithSize:self.bounds.size options:0
-                attributes:@{NSFontAttributeName:self.font} context:nil],
+                    attributes:@{NSFontAttributeName:self.font} context:nil],
            end = [[self.text substringFromIndex:r.location + r.length] boundingRectWithSize:self.bounds.size options:0
                   attributes:@{NSFontAttributeName:self.font} context:nil];
 

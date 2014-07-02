@@ -36,7 +36,6 @@
 #import "NSString+Base58.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
-#import <netdb.h>
 #import "Reachability.h"
 
 #define BTC         @"\xC9\x83"     // capital B with stroke (utf-8)
