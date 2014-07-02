@@ -49,7 +49,6 @@
 
 @interface BRSendViewController ()
 
-@property (nonatomic, strong) NSString *addressInWallet;
 @property (nonatomic, assign) BOOL clearClipboard, showTips, didAskFee, removeFee;
 @property (nonatomic, strong) id urlObserver, fileObserver;
 @property (nonatomic, strong) BRTransaction *tx, *sweepTx;
@@ -199,16 +198,19 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     NSString *msg = (isSecure && safeName.length > 0) ? LOCK @" " : @"";
 
     if (! isSecure && self.protocolRequest.errorMessage.length > 0) msg = [msg stringByAppendingString:REDX @" "];
-    if (name.length > 0) msg = [msg stringByAppendingString:safeName];
+    if (safeName.length > 0) msg = [msg stringByAppendingString:safeName];
     if (! isSecure && msg.length > 0) msg = [msg stringByAppendingString:@"\n"];
     if (! isSecure || msg.length == 0) msg = [msg stringByAppendingString:address];
+
     msg = [msg stringByAppendingFormat:@"\n%@ (%@)", [m stringForAmount:amount - fee],
            [m localCurrencyStringForAmount:amount - fee]];
+
     if (fee > 0) {
         msg = [msg stringByAppendingFormat:NSLocalizedString(@"\nbitcoin network fee + %@ (%@)", nil),
                [m stringForAmount:fee], [m localCurrencyStringForAmount:fee]];
     }
-    if (memo.length > 0) msg = [[msg stringByAppendingString:@"\n"] stringByAppendingString:safeMemo];
+
+    if (safeMemo.length > 0) msg = [[msg stringByAppendingString:@"\n"] stringByAppendingString:safeMemo];
 
     [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"confirm payment", nil) message:msg delegate:self
       cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:amountStr, nil] show];
@@ -254,8 +256,6 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         [[[UIAlertView alloc] initWithTitle:nil
           message:NSLocalizedString(@"this payment address is already in your wallet", nil)
           delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-
-        self.addressInWallet = request.paymentAddress;
         [self cancel:nil];
     }
     else if (request.amount == 0) {

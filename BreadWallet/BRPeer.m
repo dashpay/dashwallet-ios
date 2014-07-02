@@ -876,6 +876,7 @@ services:(uint64_t)services
 // described in BIP61: https://gist.github.com/gavinandresen/7079034
 - (void)acceptRejectMessage:(NSData *)message
 {
+#if DEBUG
     NSUInteger off = 0, l = 0;
     NSString *type = [message stringAtOffset:0 length:&off];
     uint8_t code = [message UInt8AtOffset:off++];
@@ -884,6 +885,7 @@ services:(uint64_t)services
 
     NSLog(@"%@:%u rejected %@ code: 0x%x reason: \"%@\"%@%@", self.host, self.port, type, code, reason,
           txHash ? @" txid: " : @"", txHash ? txHash : @"");
+#endif
 }
 
 #pragma mark - hash
