@@ -109,7 +109,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
 - (NSData *)masterPublicKey
 {
     if (! _masterPublicKey) {
-        @autoreleasepool {
+        @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
             _masterPublicKey = [self.sequence masterPublicKeyFromSeed:self.seed()];
         }
     }
@@ -327,7 +327,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
         // assume we will be adding a change output (additional 34 bytes)
         //TODO: calculate the median of the lowest fee-per-kb that made it into the previous 144 blocks (24hrs)
         //NOTE: consider feedback effects if everyone uses the same algorithm to calculate fees, maybe add noise
-        if (fee) standardFee = ((tx.size + 34 + 999)/1000)*TX_FEE_PER_KB;
+        if (fee) standardFee = ((transaction.size + 34 + 999)/1000)*TX_FEE_PER_KB;
             
         if (balance == amount + standardFee || balance >= amount + standardFee + TX_MIN_OUTPUT_AMOUNT) break;
     }
@@ -348,7 +348,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
 - (BOOL)signTransaction:(BRTransaction *)transaction
 {
-    @autoreleasepool {
+    @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
         NSData *seed = self.seed();
         NSMutableArray *pkeys = [NSMutableArray array];
         NSMutableOrderedSet *externalIndexes = [NSMutableOrderedSet orderedSet],

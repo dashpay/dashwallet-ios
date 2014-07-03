@@ -50,47 +50,12 @@
 {
     [super viewDidLoad];
 
-    NSLog(@"[BRSettingsViewController viewDidLoad]");
-
-    self.balanceObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
-        usingBlock:^(NSNotification *note) {
-            BRWalletManager *m = [BRWalletManager sharedInstance];
-            NSUInteger count = self.transactions.count;
-
-            if (! m.wallet) return;
-            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                         [m localCurrencyStringForAmount:m.wallet.balance]];
-
-            self.transactions = [NSArray arrayWithArray:m.wallet.recentTransactions];
-
-            NSLog(@"reloading settings table");
-            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
-             withRowAnimation:(self.transactions.count == count) ? UITableViewRowAnimationNone :
-             UITableViewRowAnimationAutomatic];
-        }];
-
-    self.txStatusObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil queue:nil
-        usingBlock:^(NSNotification *note) {
-            BRWalletManager *m = [BRWalletManager sharedInstance];
-
-            if (! m.wallet) return;
-            NSLog(@"reloading settings table");
-            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
-             withRowAnimation:UITableViewRowAnimationNone];
-        }];
-
-//    BRWalletManager *m = [BRWalletManager sharedInstance];
-
     self.txDates = [NSMutableDictionary dictionary];
     self.wallpaper = [[UIImageView alloc] initWithFrame:self.navigationController.view.bounds];
     self.wallpaper.image = [UIImage imageNamed:@"wallpaper-default"];
     self.wallpaper.contentMode = UIViewContentModeLeft;
     [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
     self.navigationController.delegate = self;
-//    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-//                                 [m localCurrencyStringForAmount:m.wallet.balance]];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -98,6 +63,47 @@
     [super viewWillAppear:animated];
 
     self.transactions = [NSArray arrayWithArray:[[[BRWalletManager sharedInstance] wallet] recentTransactions]];
+
+    if (! self.balanceObserver) {
+        self.balanceObserver =
+            [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil
+            queue:nil usingBlock:^(NSNotification *note) {
+                BRWalletManager *m = [BRWalletManager sharedInstance];
+                NSUInteger count = self.transactions.count;
+
+                if (! m.wallet) return;
+                self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
+                                             [m localCurrencyStringForAmount:m.wallet.balance]];
+
+                self.transactions = [NSArray arrayWithArray:m.wallet.recentTransactions];
+
+                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
+                 withRowAnimation:(self.transactions.count == count) ? UITableViewRowAnimationNone :
+                                  UITableViewRowAnimationAutomatic];
+            }];
+    }
+
+    if (! self.txStatusObserver) {
+        self.txStatusObserver =
+            [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil
+            queue:nil usingBlock:^(NSNotification *note) {
+                BRWalletManager *m = [BRWalletManager sharedInstance];
+                                                      
+                if (! m.wallet) return;
+                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
+                 withRowAnimation:UITableViewRowAnimationNone];
+            }];
+    }
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    
+    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
+                                 [m localCurrencyStringForAmount:m.wallet.balance]];
 }
 
 - (void)viewDidDisappear:(BOOL)animated
@@ -111,7 +117,8 @@
     [super viewDidDisappear:animated];
 }
 
-//- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+//- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+//{
 //    [super prepareForSegue:segue sender:sender];
 //
 //    [segue.destinationViewController setTransitioningDelegate:self];
@@ -120,7 +127,6 @@
 
 - (void)dealloc
 {
-    NSLog(@"[BRSettingsViewController dealloc]");
     if (self.navigationController.delegate == self) self.navigationController.delegate = nil;
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
     if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];

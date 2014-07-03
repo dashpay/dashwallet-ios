@@ -218,7 +218,7 @@ static NSData *getKeychainData(NSString *key)
 
 - (void)setSeedPhrase:(NSString *)seedPhrase
 {
-    @autoreleasepool {
+    @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
         BRBIP39Mnemonic *m = [BRBIP39Mnemonic sharedInstance];
         
         seedPhrase = [m encodePhrase:[m decodePhrase:seedPhrase]];
@@ -233,7 +233,7 @@ static NSData *getKeychainData(NSString *key)
 
 - (void)generateRandomSeed
 {
-    @autoreleasepool {
+    @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
         NSMutableData *entropy = [NSMutableData secureDataWithLength:SEED_ENTROPY_LENGTH];
         NSTimeInterval time = [NSDate timeIntervalSinceReferenceDate];
 

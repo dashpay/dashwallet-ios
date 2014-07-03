@@ -381,6 +381,43 @@
     tx = [BRTransaction transactionWithMessage:d];
 
     XCTAssertEqualObjects(d, tx.data, @"[BRTransaction transactionWithMessage:]");
+
+//    d = @"01000000073aed301293f4df26e0fab60c496d16e187eafe6aeeae5734d159b21ae826e657010000006b4830450221008fd5a1ebf4229"
+//        "5e2b432812df13b57d085357065c1ac4e22079cb0d5a1a9d9610220090f749cef9510e86463f6db7168b1f9ffb64afbe4d4cb80cd894ba"
+//        "0fc127175012103e913cbef9af1551e677949d6fb344ad6566ed8578f79f34c8dcee73e25f1372bffffffff4e0faccb37d112290df9462"
+//        "897d7170a747b00282c890639402ed87996eff75e000000006b483045022100de7027e0e1a38724bf2cbd6cd63c31b21356845f1da8863"
+//        "52b8d530b828f6b650220464c7e788db166a81c81cac509d955069d6d53ffeac79b22d239adc9afcdf6d2012103744fd61763d264eb1fc"
+//        "b9841f7cbc094e2bfab75fc535b11b49a7f8205dedcf3ffffffff551484f75d05ee2af645216c30f971867eca2d1574ea414516224d8cc"
+//        "e5bb91c000000006a47304402207110fb762178f0df9b9ecd02d979885ba79f64dcb75d54a7030c9e3edf28e78b02201d6a00e61770e2b"
+//        "dbf901ad9104a284388d5cc733b8486a1241f2dfed27bf6df012103d3c04740525ccb18fc66e3450bfc625b456bf72420d352a32e27c04"
+//        "ff4393327ffffffffa46d8d9ae0b911a762b3c2e49419a483ce9aa3fbbf7a72b73bf4847596ab6a4e000000006b483045022100f7dbb75"
+//        "ee80288d80815ed1ff9dfe5e0198c9c641dc65998887fd6467dd4656b0220736e3defb10aefe5716c2ad3fc0c5b5ce542a30ff2526b568"
+//        "4f5d8ead952debd01210291ba59bf68d5a3685ed1d4eccdea4693f31f4123cc9fc0add861b562f1e0cac6ffffffff8311a63ca546f0492"
+//        "ebe95bd5490c451af65f79ad4b037de768bd2581c3dd58d000000006a4730440220091a50941022b257111fa0f4d2903f53109153b1906"
+//        "2de0b7e05884c1b4cd75f02206e5f7c4ff0b07d44fed83ca56e556b5da30758269a208c7dd204c2dbaefcab2f012102c438dd12e32eb74"
+//        "6c9ffbde6ebf790927edbdc2c9b653934bce92e53d4f553aeffffffffca1f413234b1aa92b5fe754c57b564c08f6acdc9da70a3dda4704"
+//        "8f8751ce14e010000006b483045022100f7c9fea9f132c58deb0e8e0483e65be6a9bb154c00b782c7390cf9e5669805f702203c581e378"
+//        "8d96b7ebd2602eb973c124591218ae878ad7e273ed5f5de6c9dc3a6012103bdec6b738d91c295e8d5c90b66964428bb96936973da0b003"
+//        "7238b332c0e4a17ffffffff51d3cff7911183a11f86036ea47a903ad6ff9fffdb963adfa5ce995b4004cc0d000000006a4730440220543"
+//        "84d0d860472e551a92f10b4e487f82003197cb7c71bda38d6378d718c773c02204741a2f639886117f2491d2a0839f08d04b9318f3849c"
+//        "8fd4f76e792d22ecdfe012103d60ecfecdb21d23366a4a43bfabab7b618eb975998a83ab465396372e9ac2405ffffffff0240787d01000"
+//        "000001976a9143d7cdb9fe7fb17d1d8e5c725e3e15a62d162a5ff88acaf330d00000000001976a9148615b5423652c71ae386f5c3f8127"
+//        "f4d6556270988ac00000000".hexToData;
+//
+//    tx = [BRTransaction transactionWithMessage:d];
+//
+//    NSLog(@"tx.size = %lu standard fee: %llu", tx.size, tx.standardFee);
+//
+//    BRTransaction *tx2 = [BRTransaction new];
+//    uint64_t standardFee;
+//
+//    [tx2 addOutputScript:tx.outputScripts[0] amount:[tx.outputAmounts[0] unsignedLongLongValue]];
+//
+//    for (NSUInteger i = 0; i < tx.inputHashes.count; i++) {
+//        [tx2 addInputHash:tx.inputHashes[i] index:[tx.inputIndexes[i] unsignedIntValue] script:tx.inputScripts[i]];
+//        standardFee = ((tx2.size + 34 + 999)/1000)*TX_FEE_PER_KB;
+//        NSLog(@"standard fee: %llu", standardFee);
+//    }
 }
 
 #pragma mark - testBIP39Mnemonic
@@ -754,7 +791,6 @@
 #pragma mark - testWallet
 
 //TODO: test standard free transaction no change
-//TODO: test transaction over 1k bytes
 //TODO: test free transaction who's inputs are too new to hit min free priority
 //TODO: test transaction with change below min allowable output
 //TODO: test gap limit with gaps in address chain less than the limit
@@ -790,6 +826,71 @@
     [w registerTransaction:tx];
 
     XCTAssertEqual(w.balance, SATOSHIS/2, @"[BRWallet balance]");
+
+#if ! BITCOIN_TESTNET
+    w = [[BRWallet alloc] initWithContext:nil andSeed:^NSData *{ return [NSData data]; }];
+    
+    NSMutableSet *allAddresses = (id)w.addresses;
+
+    [allAddresses addObject:@"1DjJGdMuW6UKunUS3jAuaEcqZ2mkH1QNHc"];
+    [allAddresses addObject:@"1P5hsxGtGYEftqcP7gY63pKX7JXCfLCNiR"];
+    [allAddresses addObject:@"1htJNo75xgfHUYA7ag8hRMjwg5mREfkD7"];
+    [allAddresses addObject:@"19UZQkmaH4PqE99t5bPgA83HeXJAkoogKE"];
+    [allAddresses addObject:@"18fPNnWxGhytebu2or4c2tFcnkXVeB2aL6"];
+    [allAddresses addObject:@"16XP5vHKm2qnQHAGpmUBCwzGVxamDbGQ5N"];
+    [allAddresses addObject:@"1DieDrnPmjv4TfxXukZTKsm32PgFfwKcFA"];
+
+    [w registerTransaction:[BRTransaction transactionWithMessage:@"0100000001932bcd947e72ed69b813a7afc6a75a97bc60a26e45"
+     "e2635ca6b5b619cf650d84010000006a4730440220697f9338ecc869361094bc6ab5243cbf683a84e3f424599e3b2961dd33e018f602202a6"
+     "190a65b7ac42c9a907823e11e28991c01dd1bda7081bc99191c8304481c5501210235c032e32c490055212aecba58526a68f2ce3d0e53388c"
+     "e01efe1764214f52dbffffffff02a0860100000000001976a914b1cedc0e005cb1e929e18b14a2cbb481d4b7e65d88aca0ad3900000000001"
+     "976a9148ba16545a88d500197281540541299394194a17a88ac00000000".hexToData]];
+    [w registerTransaction:[BRTransaction transactionWithMessage:@"0100000001669313d613ee6b9e31252b7d4160ab821ab21cf059"
+     "b7d7b8a5b4c29ebba45d30000000006b483045022100e1e314053d86aff56b4bda7aab3b650732e7d8da6e79f7ab23c1fc4523c44f0d02202"
+     "a55fce6cad078ac801626fcd42c40ff43692ade3fe14cfb97f685c070dfe9ea012102ce4f2739e0acf7e6c2eb5babf6cc62d44e5de70ba1a5"
+     "9274af86bd5c1c9fa404ffffffff01301b0f00000000001976a914f2368e03acc87480f355dd917baca95e5d19e74d88ac00000000"
+     "".hexToData]];
+    [w registerTransaction:[BRTransaction transactionWithMessage:@"01000000011000b4ec5446e9d45c04fec06774468d003db4f662"
+     "0df256a22ffd6d79883688000000008a473044022022afda9e3a3589c9b286f0c6a989374f59b8c217e0de127bec612265a2b0749b022050f"
+     "dc59045592eae7aad218d0f2ac14a7f410a9195018ceecb50e6fc92060526014104a3be6b242cfbef34e63002f304eceb058fdc36797241c3"
+     "78b06fa44573e5307031cf1a4c3a1caeac128abfedd169f02db1e795788d27ff44a81a32c50645ab7cffffffff01d06c0400000000001976a"
+     "91407bb76119e91184e49882b168e5c785ecefb5b2488ac00000000".hexToData]];
+    [w registerTransaction:[BRTransaction transactionWithMessage:@"010000000104c58782c504726fa26c26b23d6cae4715311fb6db"
+     "d9ff494f5868cc0686948b010000008a47304402207643b8852c93e425d5a41b8e6e9126cce85115fe99310b680b86c69852dd386e0220691"
+     "da90f76fb4ee9519edf2afe4aa0f04d44529bf8602b00c4f31aad7d631d37014104126989db35c5088c021ef16a0d67b1cda7dac2dee20144"
+     "ff95b543b449788e5a66c6f314981dd0baffaa5057d5b972e4fb274e2799d6bae796ed2c29be97c574ffffffff0280969800000000001976a"
+     "9145cf74a97cf524c5b99a6ec29f3ab3ed4b436592988ac49981700000000001976a9148e022fdce38b1d22fb5bfe89d3e8256c650f246988"
+     "ac00000000".hexToData]];
+    [w registerTransaction:[BRTransaction transactionWithMessage:@"01000000011000b4ec5446e9d45c04fec06774468d003db4f662"
+     "0df256a22ffd6d79883688010000008b483045022100d77a298b3126b347d1576e301ba7a6ca0610124f2cb0cc47b58254cb66cbd00302205"
+     "3708a6c858dfb35a65b57381fec99e5797c33cc7d66d220469564303a62dc8a014104a331cd33c13ba323e549fdefa11af1f03f86a44a4f2e"
+     "e0883fab39d96bf9c147940afe36e2ddf6ebbef5e8a57a931d5f854abcc27b33d1ba7f424647202a7ee2ffffffff0240420f0000000000197"
+     "6a914540b5d80a4d05a2cf7035bbca524f68ef93cf79688ac60926200000000001976a914bf49bd44526f6ab157275aa938df9479bfecf003"
+     "88ac00000000".hexToData]];
+    [w registerTransaction:[BRTransaction transactionWithMessage:@"0100000002f6d5012856206e93341a40b19afb86caabe9964753"
+     "99b77d3695f484ec6fb1d4000000006b483045022100d0f7d86aea22a4fe23bb3b5de29e56983faa9fdf60052a0d8321212ca972336502201"
+     "09b11f128e24a2d3dc615ddf2124bb2d1e7506a80a944bafa5ebdf965043982012102fe5d33b9a5fe9c8799d6f8ad0cf92bd477620dd299c5"
+     "62c812295dcb6d66f6b4ffffffffe9c01e3b016c95729b13fa5db25412c89a555223f6d4378c3b65898e5b3ca8dd000000006b48304502210"
+     "092e5b28aea395ca4a916067ac18f30a9616d6cf827158e80126a657152226165022043cb34077eaf4ec01727eeb038b0b297da0c5580beb1"
+     "11b999949c36ba53d12301210382efead48069b88d35ea13e0e80f19eda6c08191f1ce668a77c8d210c5791ffeffffffff0240420f0000000"
+     "0001976a914faaaeb7f7e534ee2e18c3f15a3191dd51c36a93688ac5f700c00000000001976a9143c978b11b19d0718b4a847304340b3804d"
+     "5194a388ac00000000".hexToData]];
+    [w registerTransaction:[BRTransaction transactionWithMessage:@"01000000027560f62fa95ecdb9eb0bf200764b8eff99c717918c"
+     "743314fe1e7d4dc9899cc8010000008a47304402203e2c3beb755fe868728896482aaa197f10c4bad9749e9f4d9e607acd23726b9602202bb"
+     "0eca3031ee8c750a6688f02b422275b0b02f4353c3e9526905e297c7e2ca801410429c3b9fa9ec9aea0918ccc00c08a814f13bdd2e72273b6"
+     "2b046605f8daa8b559b2aec4706caa15b914897ea3be4ba3b200aeca22f16ed882836cad0bdf9c282affffffff8b10474e40d60efc2612614"
+     "97ed6d46d38e5219fce122c1ba2b0bc645342fef3000000008a47304402202990aa1fcbb519bf6edd798f6290930bd8c0e8e6185153af0b90"
+     "ed64249302c20220419a07a674753778ab2198f37f43b2c7f7c3ef2aac8b685090e30484a366cf960141049b3707c1b05412511a75eaa39b2"
+     "56bc7e958539e66fd02b291199df0408c62bbe70a093560cc408e52fac7ee74ed650c5f8c70b85ccc9a2ab853164d1d2a4bd3ffffffff0240"
+     "548900000000001976a9148b81a28bc33e75484783475aed1f1e78ac4c084788acbe040300000000001976a9146a5af3e825f69bec5089b42"
+     "f54c389c19673ba8488ac00000000".hexToData]];
+
+    // larger than 1k transaction
+    tx = [w transactionFor:25000000ULL to:@"16c7nyuu2D99LqJ8TQ8GSsWSyrCYDS5qBA" withFee:YES];
+    NSLog(@"fee: %llu, should be %llu", [w feeForTransaction:tx], tx.standardFee);
+
+    XCTAssertEqual([w feeForTransaction:tx], tx.standardFee, @"[BRWallet transactionFor:to:withFee:]");
+#endif
 }
 
 #pragma mark - testBloomFilter
