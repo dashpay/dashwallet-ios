@@ -117,7 +117,13 @@
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.appeared) [[BRPeerManager sharedInstance] connect];
+            if (self.appeared) {
+                UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINViewController"];
+
+                [(id)c setAppeared:YES];
+                [self.navigationController presentViewController:c animated:NO completion:nil];
+                [[BRPeerManager sharedInstance] connect];
+            }
 
             if (jailbroken && m.wallet.balance > 0) {
                 [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
@@ -207,6 +213,12 @@
                                self.view.frame.size.height - label.frame.size.height - 5);
     [self.view addSubview:label];
 #endif
+
+    if (! [[UIApplication sharedApplication] isProtectedDataAvailable] || [[BRWalletManager sharedInstance] wallet]) {
+        UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINViewController"];
+
+        [self.navigationController presentViewController:c animated:NO completion:nil];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated

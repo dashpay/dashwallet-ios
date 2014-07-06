@@ -72,15 +72,11 @@
 
     //TODO: ask user if they need to sweep to a new wallet when restoring because it was compromised
 
-    //TODO: detect if device is jailbroken and prompt user to wipe the wallet `if (fopen("/bin/bash", "r"))`
-
     //TODO: figure out deterministic builds/removing app sigs: http://www.afp548.com/2012/06/05/re-signining-ios-apps/
 
     //TODO: after two or three manual reconnect attempts when network is reachable, request a fresh peer list from DNS
 
     //TODO: implement state preservation to control things like disabling launch screenshot
-
-    //TODO: XXXXX update openssl
 
     // this will notify user if bluetooth is disabled (on 4S and newer devices that support BTLE)
     //CBCentralManager *cbManager = [[CBCentralManager alloc] initWithDelegate:self queue:dispatch_get_main_queue()];

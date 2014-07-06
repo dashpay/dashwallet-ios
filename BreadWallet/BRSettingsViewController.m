@@ -96,16 +96,6 @@
     }
 }
 
-- (void)viewDidAppear:(BOOL)animated
-{
-    [super viewDidAppear:animated];
-
-    BRWalletManager *m = [BRWalletManager sharedInstance];
-    
-    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                 [m localCurrencyStringForAmount:m.wallet.balance]];
-}
-
 - (void)viewDidDisappear:(BOOL)animated
 {
     self.transactions = nil;

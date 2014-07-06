@@ -104,6 +104,9 @@
 "couldn't transmit payment to bitcoin network" = "couldn't transmit payment to bitcoin network";
 
 /* No comment provided by engineer. */
+"delete" = "delete";
+
+/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can control this device and steal funds." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can control this device and steal funds.";
 
 /* No comment provided by engineer. */
