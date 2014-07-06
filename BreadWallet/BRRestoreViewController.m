@@ -103,83 +103,89 @@ static NSString *normalize_phrase(NSString *phrase)
         [set addCharactersInString:@"., "];
         charset = [set invertedSet];
     });
-    
-    NSRange selected = textView.selectedRange;
-    NSMutableString *s = CFBridgingRelease(CFStringCreateMutableCopy(SecureAllocator(), 0, (CFStringRef)textView.text));
-    BOOL done = ([s rangeOfString:@"\n"].location != NSNotFound);
-    
-    while ([s rangeOfCharacterFromSet:charset].location != NSNotFound) {
-        [s deleteCharactersInRange:[s rangeOfCharacterFromSet:charset]];
-    }
 
-    while ([s rangeOfString:@"  "].location != NSNotFound) {
-        NSRange r = [s rangeOfString:@".  "];
+    @autoreleasepool {  // @autoreleasepool ensures sensitive data will be dealocated immediately
+        NSRange selected = textView.selectedRange;
+        NSMutableString *s = CFBridgingRelease(CFStringCreateMutableCopy(SecureAllocator(), 0,
+                                                                         (CFStringRef)textView.text));
+        BOOL done = ([s rangeOfString:@"\n"].location != NSNotFound);
     
-        if (r.location != NSNotFound) {
-            if (r.location + 2 == selected.location) selected.location++;
-            [s deleteCharactersInRange:NSMakeRange(r.location + 1, 1)];
+        while ([s rangeOfCharacterFromSet:charset].location != NSNotFound) {
+            [s deleteCharactersInRange:[s rangeOfCharacterFromSet:charset]];
         }
-        else [s replaceOccurrencesOfString:@"  " withString:@". " options:0 range:NSMakeRange(0, s.length)];
-    }
+
+        while ([s rangeOfString:@"  "].location != NSNotFound) {
+            NSRange r = [s rangeOfString:@".  "];
     
-    if ([s hasPrefix:@" "]) [s deleteCharactersInRange:NSMakeRange(0, 1)];
-
-    selected.location -= textView.text.length - s.length;
-    textView.text = s;
-    textView.selectedRange = selected;
+            if (r.location != NSNotFound) {
+                if (r.location + 2 == selected.location) selected.location++;
+                [s deleteCharactersInRange:NSMakeRange(r.location + 1, 1)];
+            }
+            else [s replaceOccurrencesOfString:@"  " withString:@". " options:0 range:NSMakeRange(0, s.length)];
+        }
     
-    if (! done) return;
+        if ([s hasPrefix:@" "]) [s deleteCharactersInRange:NSMakeRange(0, 1)];
 
-    NSString *phrase = normalize_phrase(s), *incorrect = nil;
-    NSArray *a =
-        CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)phrase, CFSTR(" ")));
+        selected.location -= textView.text.length - s.length;
+        textView.text = s;
+        textView.selectedRange = selected;
+    
+        if (! done) return;
 
-    for (NSString *word in a) {
-        if ([self.words containsObject:word]) continue;
-        incorrect = word;
-        break;
-    }
+        NSString *phrase = normalize_phrase(s), *incorrect = nil;
+        NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)phrase,
+                                                                              CFSTR(" ")));
 
-    if ([s isEqual:@"wipe"]) { // shortcut word to force the wipe option to appear
-        [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-          destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
-         showInView:[[UIApplication sharedApplication] keyWindow]];
-    }
-    else if (incorrect) {
-        textView.selectedRange = [[textView.text lowercaseString] rangeOfString:incorrect];
-        
-        [[[UIAlertView alloc] initWithTitle:nil
-          message:[NSString stringWithFormat:NSLocalizedString(@"\"%@\" is not a backup phrase word", nil), incorrect]
-          delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-    }
-    else if (a.count != PHRASE_LENGTH) {
-        [[[UIAlertView alloc] initWithTitle:nil
-          message:[NSString stringWithFormat:NSLocalizedString(@"backup phrase must have %d words", nil), PHRASE_LENGTH]
-          delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-    }
-    else if (! [[BRBIP39Mnemonic sharedInstance] phraseIsValid:phrase]) {
-        [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"bad backup phrase", nil) delegate:nil
-          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-    }
-    else if ([[BRWalletManager sharedInstance] wallet]) {
-        if ([phrase isEqual:normalize_phrase([[BRWalletManager sharedInstance] seedPhrase])]) {
+        for (NSString *word in a) {
+            if ([self.words containsObject:word]) continue;
+            incorrect = word;
+            break;
+        }
+
+        if ([s isEqual:@"wipe"]) { // shortcut word to force the wipe option to appear
             [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
               destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
              showInView:[[UIApplication sharedApplication] keyWindow]];
         }
-        else {
-            [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"backup phrase doesn't match", nil)
-              delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+        else if (incorrect) {
+            textView.selectedRange = [[textView.text lowercaseString] rangeOfString:incorrect];
+        
+            [[[UIAlertView alloc] initWithTitle:nil
+              message:[NSString stringWithFormat:NSLocalizedString(@"\"%@\" is not a backup phrase word", nil),
+                       incorrect] delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil]
+             show];
         }
-    }
-    else {
-        //TODO: offer the user an option to move funds to a new seed if their previous wallet device was lost or stolen
+        else if (a.count != PHRASE_LENGTH) {
+            [[[UIAlertView alloc] initWithTitle:nil
+              message:[NSString stringWithFormat:NSLocalizedString(@"backup phrase must have %d words", nil),
+                       PHRASE_LENGTH] delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
+              otherButtonTitles:nil] show];
+        }
+        else if (! [[BRBIP39Mnemonic sharedInstance] phraseIsValid:phrase]) {
+            [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"bad backup phrase", nil) delegate:nil
+              cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+        }
+        else if ([[BRWalletManager sharedInstance] wallet]) {
+            if ([phrase isEqual:normalize_phrase([[BRWalletManager sharedInstance] seedPhrase])]) {
+                [[[UIActionSheet alloc] initWithTitle:nil delegate:self
+                  cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+                  destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
+                 showInView:[[UIApplication sharedApplication] keyWindow]];
+            }
+            else {
+                [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"backup phrase doesn't match", nil)
+                  delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+            }
+        }
+        else {
+            //TODO: offer the user an option to move funds to a new seed if their wallet device was lost or stolen
         
-        [[BRWalletManager sharedInstance] setSeedPhrase:textView.text];
-        
-        textView.text = nil;
-        
-        [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+            [[BRWalletManager sharedInstance] setSeedPhrase:textView.text];
+            
+            textView.text = nil;
+            
+            [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+        }
     }
 }
 

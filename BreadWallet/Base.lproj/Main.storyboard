@@ -1372,6 +1372,691 @@ http://breadwallet.com</string>
             </objects>
             <point key="canvasLocation" x="1134" y="2730"/>
         </scene>
+        <!--View Controller-->
+        <scene sceneID="Hrb-CJ-hxl">
+            <objects>
+                <viewController storyboardIdentifier="PINViewController" id="4GL-nw-juQ" customClass="BRPINViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="sLz-sp-ImT"/>
+                        <viewControllerLayoutGuide type="bottom" id="ZzD-Qc-uQy"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="pxc-C6-1Sd">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <imageView appearanceType="aqua" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="wallpaper-welcome" translatesAutoresizingMaskIntoConstraints="NO" id="xGr-ag-4pI">
+                                <rect key="frame" x="0.0" y="0.0" width="757" height="568"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            </imageView>
+                            <imageView appearanceType="aqua" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="breadwallet-big" translatesAutoresizingMaskIntoConstraints="NO" id="FJv-fU-9AC">
+                                <rect key="frame" x="32" y="209" width="257" height="151"/>
+                            </imageView>
+                            <view appearanceType="aqua" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4Lz-RL-RUK">
+                                <rect key="frame" x="150" y="20" width="20" height="49"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="20" id="ws4-tq-eIh"/>
+                                </constraints>
+                            </view>
+                            <label appearanceType="aqua" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="enter pin" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zhS-gG-oV0">
+                                <rect key="frame" x="127" y="69" width="67" height="21"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="21" id="Nda-Xb-zYK"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                <nil key="highlightedColor"/>
+                                <color key="shadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                <size key="shadowOffset" width="0.0" height="1"/>
+                            </label>
+                            <view appearanceType="aqua" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="iGw-ju-oXF">
+                                <rect key="frame" x="150" y="90" width="20" height="49"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="20" id="hX7-m4-opZ"/>
+                                </constraints>
+                            </view>
+                            <label appearanceType="aqua" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="○    ○    ○    ○" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fdh-Ze-PZW">
+                                <rect key="frame" x="98" y="139" width="125" height="21"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="21" id="BeV-Lf-L8r"/>
+                                    <constraint firstAttribute="width" constant="125" id="E3f-LF-Kuv"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <nil key="highlightedColor"/>
+                                <color key="shadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                <size key="shadowOffset" width="0.0" height="1"/>
+                            </label>
+                            <view appearanceType="aqua" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="tBV-ew-ggP">
+                                <rect key="frame" x="150" y="160" width="20" height="50"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="20" id="Yvm-Ss-0ex"/>
+                                </constraints>
+                            </view>
+                            <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="KDQ-9z-tgd">
+                                <rect key="frame" x="30" y="210" width="72" height="72"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="72" id="Qie-u5-08A"/>
+                                    <constraint firstAttribute="width" constant="72" id="Z3Z-qz-M8N"/>
+                                </constraints>
+                                <size key="titleShadowOffset" width="0.0" height="1"/>
+                                <state key="normal">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">1
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content=" ">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
+                                                <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <state key="highlighted">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">1
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content=" ">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <connections>
+                                    <action selector="number:" destination="4GL-nw-juQ" eventType="touchUpInside" id="nWd-1t-3vK"/>
+                                </connections>
+                            </button>
+                            <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ktz-66-HDX">
+                                <rect key="frame" x="124" y="210" width="72" height="72"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="72" id="HzN-6V-Jd5"/>
+                                    <constraint firstAttribute="height" constant="72" id="x6I-CD-8oX"/>
+                                </constraints>
+                                <size key="titleShadowOffset" width="0.0" height="1"/>
+                                <state key="normal">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">2
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="abc">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
+                                                <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <state key="highlighted">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">2
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="abc">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <connections>
+                                    <action selector="number:" destination="4GL-nw-juQ" eventType="touchUpInside" id="yHC-fT-P4B"/>
+                                </connections>
+                            </button>
+                            <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="AIW-cS-Arl">
+                                <rect key="frame" x="218" y="210" width="72" height="72"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="72" id="kTR-uG-a25"/>
+                                    <constraint firstAttribute="width" constant="72" id="r1v-56-L7X"/>
+                                </constraints>
+                                <size key="titleShadowOffset" width="0.0" height="1"/>
+                                <state key="normal">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">3
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="def">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
+                                                <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <state key="highlighted">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">3
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="def">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <connections>
+                                    <action selector="number:" destination="4GL-nw-juQ" eventType="touchUpInside" id="umH-VB-tee"/>
+                                </connections>
+                            </button>
+                            <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="JVc-Me-836">
+                                <rect key="frame" x="30" y="304" width="72" height="72"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="72" id="SfI-se-dGz"/>
+                                    <constraint firstAttribute="width" constant="72" id="jCC-hI-Vi9"/>
+                                </constraints>
+                                <size key="titleShadowOffset" width="0.0" height="1"/>
+                                <state key="normal">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">4
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="ghi">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
+                                                <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <state key="highlighted">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">4
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="ghi">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <connections>
+                                    <action selector="number:" destination="4GL-nw-juQ" eventType="touchUpInside" id="YpN-gp-lh1"/>
+                                </connections>
+                            </button>
+                            <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="LN4-YY-3RQ">
+                                <rect key="frame" x="124" y="304" width="72" height="72"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="72" id="Hr4-Xa-qRv"/>
+                                    <constraint firstAttribute="width" constant="72" id="LGn-ys-Mip"/>
+                                </constraints>
+                                <size key="titleShadowOffset" width="0.0" height="1"/>
+                                <state key="normal">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">5
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="jkl">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
+                                                <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <state key="highlighted">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">5
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="jkl">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <connections>
+                                    <action selector="number:" destination="4GL-nw-juQ" eventType="touchUpInside" id="kyj-dY-xej"/>
+                                </connections>
+                            </button>
+                            <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="yQz-ag-iFU">
+                                <rect key="frame" x="218" y="304" width="72" height="72"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="72" id="ONe-sC-aXf"/>
+                                    <constraint firstAttribute="width" constant="72" id="vDz-uv-KPo"/>
+                                </constraints>
+                                <size key="titleShadowOffset" width="0.0" height="1"/>
+                                <state key="normal">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">6
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="mno">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
+                                                <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <state key="highlighted">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">6
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="mno">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <connections>
+                                    <action selector="number:" destination="4GL-nw-juQ" eventType="touchUpInside" id="qTr-7F-W7u"/>
+                                </connections>
+                            </button>
+                            <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="3X5-SY-Dxe">
+                                <rect key="frame" x="30" y="398" width="72" height="72"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="72" id="N3l-e2-moU"/>
+                                    <constraint firstAttribute="width" constant="72" id="lBF-aZ-cvI"/>
+                                </constraints>
+                                <size key="titleShadowOffset" width="0.0" height="1"/>
+                                <state key="normal">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">7
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="pqrs">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
+                                                <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <state key="highlighted">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">7
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="pqrs">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <connections>
+                                    <action selector="number:" destination="4GL-nw-juQ" eventType="touchUpInside" id="dnZ-wz-UTS"/>
+                                </connections>
+                            </button>
+                            <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zKl-0k-txb">
+                                <rect key="frame" x="124" y="398" width="72" height="72"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="72" id="7Vh-xg-CNb"/>
+                                    <constraint firstAttribute="height" constant="72" id="JMx-fU-1ti"/>
+                                </constraints>
+                                <size key="titleShadowOffset" width="0.0" height="1"/>
+                                <state key="normal">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">8
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="tuv">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
+                                                <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <state key="highlighted">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">8
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="tuv">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <connections>
+                                    <action selector="number:" destination="4GL-nw-juQ" eventType="touchUpInside" id="HRs-D0-Ct0"/>
+                                </connections>
+                            </button>
+                            <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ohi-ey-IQ0">
+                                <rect key="frame" x="218" y="398" width="72" height="72"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="72" id="0rg-ec-3f1"/>
+                                    <constraint firstAttribute="height" constant="72" id="TWg-vx-ddY"/>
+                                </constraints>
+                                <size key="titleShadowOffset" width="0.0" height="1"/>
+                                <state key="normal">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">9
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="wxyz">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
+                                                <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <state key="highlighted">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">9
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="wxyz">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <connections>
+                                    <action selector="number:" destination="4GL-nw-juQ" eventType="touchUpInside" id="VTe-vx-hhj"/>
+                                </connections>
+                            </button>
+                            <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="IkG-JC-8ma" userLabel="Button - 0">
+                                <rect key="frame" x="124" y="492" width="72" height="72"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="72" id="ZTI-Tv-w6I"/>
+                                    <constraint firstAttribute="height" constant="72" id="zUq-PR-coI"/>
+                                </constraints>
+                                <size key="titleShadowOffset" width="0.0" height="1"/>
+                                <state key="normal">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">0
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content=" ">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
+                                                <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <state key="highlighted">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">0
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content=" ">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <connections>
+                                    <action selector="number:" destination="4GL-nw-juQ" eventType="touchUpInside" id="U6f-mH-MqO"/>
+                                </connections>
+                            </button>
+                            <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="right" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="lzQ-at-alt">
+                                <rect key="frame" x="218" y="504" width="52" height="60"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="52" id="3PB-JZ-JH3"/>
+                                    <constraint firstAttribute="height" constant="60" id="hov-QI-bmt"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
+                                <state key="normal" title="cancel">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <state key="highlighted">
+                                    <color key="titleColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="cancel:" destination="4GL-nw-juQ" eventType="touchUpInside" id="09L-F9-vh0"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="3X5-SY-Dxe" firstAttribute="centerY" secondItem="zKl-0k-txb" secondAttribute="centerY" id="0Hv-RD-ZWV"/>
+                            <constraint firstItem="Ktz-66-HDX" firstAttribute="leading" secondItem="KDQ-9z-tgd" secondAttribute="trailing" constant="22" id="17m-cJ-9xz"/>
+                            <constraint firstItem="JVc-Me-836" firstAttribute="centerY" secondItem="LN4-YY-3RQ" secondAttribute="centerY" id="76a-8u-wxa"/>
+                            <constraint firstItem="tBV-ew-ggP" firstAttribute="height" secondItem="iGw-ju-oXF" secondAttribute="height" id="7NM-bn-hcq"/>
+                            <constraint firstItem="Fdh-Ze-PZW" firstAttribute="centerX" secondItem="pxc-C6-1Sd" secondAttribute="centerX" id="9RY-ni-Ott"/>
+                            <constraint firstItem="Ohi-ey-IQ0" firstAttribute="centerY" secondItem="zKl-0k-txb" secondAttribute="centerY" id="AQ2-yH-zfv"/>
+                            <constraint firstAttribute="centerX" secondItem="FJv-fU-9AC" secondAttribute="centerX" id="AWO-xE-pCF"/>
+                            <constraint firstItem="yQz-ag-iFU" firstAttribute="centerY" secondItem="LN4-YY-3RQ" secondAttribute="centerY" id="C0o-2s-BLf"/>
+                            <constraint firstItem="IkG-JC-8ma" firstAttribute="centerX" secondItem="pxc-C6-1Sd" secondAttribute="centerX" id="Ggx-4Y-aau"/>
+                            <constraint firstAttribute="leading" secondItem="xGr-ag-4pI" secondAttribute="leading" id="GuF-zb-gml"/>
+                            <constraint firstItem="IkG-JC-8ma" firstAttribute="centerX" secondItem="LN4-YY-3RQ" secondAttribute="centerX" id="Hc5-12-kaq"/>
+                            <constraint firstItem="IkG-JC-8ma" firstAttribute="bottom" secondItem="lzQ-at-alt" secondAttribute="bottom" id="Hef-qx-VWp"/>
+                            <constraint firstItem="tBV-ew-ggP" firstAttribute="top" secondItem="Fdh-Ze-PZW" secondAttribute="bottom" id="JZt-hU-QhY"/>
+                            <constraint firstItem="zKl-0k-txb" firstAttribute="top" secondItem="LN4-YY-3RQ" secondAttribute="bottom" constant="22" id="MO7-mm-95N"/>
+                            <constraint firstItem="Ohi-ey-IQ0" firstAttribute="leading" secondItem="zKl-0k-txb" secondAttribute="trailing" constant="22" id="Pni-Th-B45"/>
+                            <constraint firstItem="yQz-ag-iFU" firstAttribute="leading" secondItem="LN4-YY-3RQ" secondAttribute="trailing" constant="22" id="Rdy-5g-sa4"/>
+                            <constraint firstItem="Ktz-66-HDX" firstAttribute="top" secondItem="tBV-ew-ggP" secondAttribute="bottom" id="SWH-ZH-D1i"/>
+                            <constraint firstItem="zKl-0k-txb" firstAttribute="leading" secondItem="3X5-SY-Dxe" secondAttribute="trailing" constant="22" id="UNQ-L0-fl9"/>
+                            <constraint firstItem="LN4-YY-3RQ" firstAttribute="top" secondItem="Ktz-66-HDX" secondAttribute="bottom" constant="22" id="Y6z-8i-Fkf"/>
+                            <constraint firstItem="IkG-JC-8ma" firstAttribute="centerX" secondItem="Ktz-66-HDX" secondAttribute="centerX" id="Ym7-jx-Xqt"/>
+                            <constraint firstItem="LN4-YY-3RQ" firstAttribute="leading" secondItem="JVc-Me-836" secondAttribute="trailing" constant="22" id="aWK-XD-ZHz"/>
+                            <constraint firstItem="Ktz-66-HDX" firstAttribute="centerY" secondItem="KDQ-9z-tgd" secondAttribute="centerY" id="atB-Sw-uxE"/>
+                            <constraint firstItem="lzQ-at-alt" firstAttribute="leading" secondItem="IkG-JC-8ma" secondAttribute="trailing" constant="22" id="bBs-H4-Km8"/>
+                            <constraint firstAttribute="centerX" secondItem="4Lz-RL-RUK" secondAttribute="centerX" id="bKc-j4-G8M"/>
+                            <constraint firstItem="IkG-JC-8ma" firstAttribute="top" secondItem="zKl-0k-txb" secondAttribute="bottom" constant="22" id="bSY-87-EAz"/>
+                            <constraint firstAttribute="centerY" secondItem="FJv-fU-9AC" secondAttribute="centerY" id="eQI-z2-GUo"/>
+                            <constraint firstItem="zhS-gG-oV0" firstAttribute="top" secondItem="4Lz-RL-RUK" secondAttribute="bottom" id="efZ-L7-5r9"/>
+                            <constraint firstItem="iGw-ju-oXF" firstAttribute="top" secondItem="zhS-gG-oV0" secondAttribute="bottom" id="gvo-GT-C0b"/>
+                            <constraint firstItem="AIW-cS-Arl" firstAttribute="leading" secondItem="Ktz-66-HDX" secondAttribute="trailing" constant="22" id="hYp-xV-bye"/>
+                            <constraint firstItem="ZzD-Qc-uQy" firstAttribute="top" secondItem="IkG-JC-8ma" secondAttribute="bottom" constant="5" id="jpG-Dw-uzv"/>
+                            <constraint firstItem="4Lz-RL-RUK" firstAttribute="top" secondItem="pxc-C6-1Sd" secondAttribute="top" constant="20" id="kpM-0Y-2mP"/>
+                            <constraint firstItem="AIW-cS-Arl" firstAttribute="centerY" secondItem="Ktz-66-HDX" secondAttribute="centerY" id="l26-wQ-FqZ"/>
+                            <constraint firstAttribute="centerX" secondItem="iGw-ju-oXF" secondAttribute="centerX" id="lAp-u0-FmT"/>
+                            <constraint firstItem="IkG-JC-8ma" firstAttribute="centerX" secondItem="zKl-0k-txb" secondAttribute="centerX" id="nSx-xh-Y3x"/>
+                            <constraint firstAttribute="centerX" secondItem="tBV-ew-ggP" secondAttribute="centerX" id="pi3-K2-cKV"/>
+                            <constraint firstItem="zhS-gG-oV0" firstAttribute="centerX" secondItem="pxc-C6-1Sd" secondAttribute="centerX" id="the-pr-xGB"/>
+                            <constraint firstAttribute="centerY" secondItem="xGr-ag-4pI" secondAttribute="centerY" id="wcA-gy-jnE"/>
+                            <constraint firstItem="4Lz-RL-RUK" firstAttribute="height" secondItem="iGw-ju-oXF" secondAttribute="height" id="wmO-tp-MA2"/>
+                            <constraint firstItem="Fdh-Ze-PZW" firstAttribute="top" secondItem="iGw-ju-oXF" secondAttribute="bottom" id="xkt-sQ-lkK"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="cancelButton" destination="lzQ-at-alt" id="CyI-gR-aNd"/>
+                        <outlet property="dotsLabel" destination="Fdh-Ze-PZW" id="OWZ-ZV-MpD"/>
+                        <outlet property="dotsXCenter" destination="9RY-ni-Ott" id="xXV-uu-VaX"/>
+                        <outlet property="logoXCenter" destination="AWO-xE-pCF" id="ubh-dq-3Bf"/>
+                        <outlet property="padXCenter" destination="Ggx-4Y-aau" id="b5p-FH-GgU"/>
+                        <outlet property="titleLabel" destination="zhS-gG-oV0" id="jCx-AK-LhQ"/>
+                        <outlet property="titleXCenter" destination="the-pr-xGB" id="oZe-nc-Ll0"/>
+                        <outlet property="wallpaperX" destination="GuF-zb-gml" id="EEZ-QH-Xxg"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="cip-Sn-1ZH" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1546" y="2730"/>
+        </scene>
         <!--Navigation Controller-->
         <scene sceneID="rwD-Uu-WFw">
             <objects>
