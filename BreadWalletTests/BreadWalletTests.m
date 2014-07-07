@@ -381,43 +381,6 @@
     tx = [BRTransaction transactionWithMessage:d];
 
     XCTAssertEqualObjects(d, tx.data, @"[BRTransaction transactionWithMessage:]");
-
-//    d = @"01000000073aed301293f4df26e0fab60c496d16e187eafe6aeeae5734d159b21ae826e657010000006b4830450221008fd5a1ebf4229"
-//        "5e2b432812df13b57d085357065c1ac4e22079cb0d5a1a9d9610220090f749cef9510e86463f6db7168b1f9ffb64afbe4d4cb80cd894ba"
-//        "0fc127175012103e913cbef9af1551e677949d6fb344ad6566ed8578f79f34c8dcee73e25f1372bffffffff4e0faccb37d112290df9462"
-//        "897d7170a747b00282c890639402ed87996eff75e000000006b483045022100de7027e0e1a38724bf2cbd6cd63c31b21356845f1da8863"
-//        "52b8d530b828f6b650220464c7e788db166a81c81cac509d955069d6d53ffeac79b22d239adc9afcdf6d2012103744fd61763d264eb1fc"
-//        "b9841f7cbc094e2bfab75fc535b11b49a7f8205dedcf3ffffffff551484f75d05ee2af645216c30f971867eca2d1574ea414516224d8cc"
-//        "e5bb91c000000006a47304402207110fb762178f0df9b9ecd02d979885ba79f64dcb75d54a7030c9e3edf28e78b02201d6a00e61770e2b"
-//        "dbf901ad9104a284388d5cc733b8486a1241f2dfed27bf6df012103d3c04740525ccb18fc66e3450bfc625b456bf72420d352a32e27c04"
-//        "ff4393327ffffffffa46d8d9ae0b911a762b3c2e49419a483ce9aa3fbbf7a72b73bf4847596ab6a4e000000006b483045022100f7dbb75"
-//        "ee80288d80815ed1ff9dfe5e0198c9c641dc65998887fd6467dd4656b0220736e3defb10aefe5716c2ad3fc0c5b5ce542a30ff2526b568"
-//        "4f5d8ead952debd01210291ba59bf68d5a3685ed1d4eccdea4693f31f4123cc9fc0add861b562f1e0cac6ffffffff8311a63ca546f0492"
-//        "ebe95bd5490c451af65f79ad4b037de768bd2581c3dd58d000000006a4730440220091a50941022b257111fa0f4d2903f53109153b1906"
-//        "2de0b7e05884c1b4cd75f02206e5f7c4ff0b07d44fed83ca56e556b5da30758269a208c7dd204c2dbaefcab2f012102c438dd12e32eb74"
-//        "6c9ffbde6ebf790927edbdc2c9b653934bce92e53d4f553aeffffffffca1f413234b1aa92b5fe754c57b564c08f6acdc9da70a3dda4704"
-//        "8f8751ce14e010000006b483045022100f7c9fea9f132c58deb0e8e0483e65be6a9bb154c00b782c7390cf9e5669805f702203c581e378"
-//        "8d96b7ebd2602eb973c124591218ae878ad7e273ed5f5de6c9dc3a6012103bdec6b738d91c295e8d5c90b66964428bb96936973da0b003"
-//        "7238b332c0e4a17ffffffff51d3cff7911183a11f86036ea47a903ad6ff9fffdb963adfa5ce995b4004cc0d000000006a4730440220543"
-//        "84d0d860472e551a92f10b4e487f82003197cb7c71bda38d6378d718c773c02204741a2f639886117f2491d2a0839f08d04b9318f3849c"
-//        "8fd4f76e792d22ecdfe012103d60ecfecdb21d23366a4a43bfabab7b618eb975998a83ab465396372e9ac2405ffffffff0240787d01000"
-//        "000001976a9143d7cdb9fe7fb17d1d8e5c725e3e15a62d162a5ff88acaf330d00000000001976a9148615b5423652c71ae386f5c3f8127"
-//        "f4d6556270988ac00000000".hexToData;
-//
-//    tx = [BRTransaction transactionWithMessage:d];
-//
-//    NSLog(@"tx.size = %lu standard fee: %llu", tx.size, tx.standardFee);
-//
-//    BRTransaction *tx2 = [BRTransaction new];
-//    uint64_t standardFee;
-//
-//    [tx2 addOutputScript:tx.outputScripts[0] amount:[tx.outputAmounts[0] unsignedLongLongValue]];
-//
-//    for (NSUInteger i = 0; i < tx.inputHashes.count; i++) {
-//        [tx2 addInputHash:tx.inputHashes[i] index:[tx.inputIndexes[i] unsignedIntValue] script:tx.inputScripts[i]];
-//        standardFee = ((tx2.size + 34 + 999)/1000)*TX_FEE_PER_KB;
-//        NSLog(@"standard fee: %llu", standardFee);
-//    }
 }
 
 #pragma mark - testBIP39Mnemonic

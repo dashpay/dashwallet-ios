@@ -412,7 +412,7 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
         }
     }
 
-    if (_details.expires > 1 && [NSDate timeIntervalSinceReferenceDate] > _details.expires) {
+    if (_details.expires >= 1 && [NSDate timeIntervalSinceReferenceDate] > _details.expires) {
         _errorMessage = NSLocalizedString(@"request expired", nil);
         return NO;
     }
