@@ -239,8 +239,10 @@
 
 - (void)viewDidAppear:(BOOL)animated
 {
-    self.navBarTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(navBarTap:)];
-    [self.navigationController.navigationBar addGestureRecognizer:self.navBarTap];
+    if (! self.navBarTap) {
+        self.navBarTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(navBarTap:)];
+        [self.navigationController.navigationBar addGestureRecognizer:self.navBarTap];
+    }
 
     if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
     if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
@@ -250,7 +252,7 @@
 
 - (void)viewWillDisappear:(BOOL)animated
 {
-    [self.navigationController.navigationBar removeGestureRecognizer:self.navBarTap];
+    if (self.navBarTap) [self.navigationController.navigationBar removeGestureRecognizer:self.navBarTap];
     self.navBarTap = nil;
     [self hideTips];
 
