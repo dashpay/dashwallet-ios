@@ -30,7 +30,7 @@
 #import "BRPeerManager.h"
 #import "BRTransaction.h"
 #import "BRCopyLabel.h"
-#import <QuartzCore/QuartzCore.h>
+#import "BRBubbleView.h"
 
 #define TRANSACTION_CELL_HEIGHT 75
 
@@ -40,6 +40,7 @@
 @property (nonatomic, strong) NSMutableDictionary *txDates;
 @property (nonatomic, strong) id balanceObserver, txStatusObserver;
 @property (nonatomic, strong) UIImageView *wallpaper;
+@property (nonatomic, strong) BRBubbleView *tipView;
 
 @end
 
@@ -98,6 +99,8 @@
 
 - (void)viewDidDisappear:(BOOL)animated
 {
+    if (self.tipView) [self.tipView popOut];
+    self.tipView = nil;
     self.transactions = nil;
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
     self.balanceObserver = nil;
@@ -105,6 +108,12 @@
     self.txStatusObserver = nil;
 
     [super viewDidDisappear:animated];
+}
+
+- (BOOL)shouldPerformSegueWithIdentifier:(NSString *)identifier sender:(id)sender
+{
+    if (self.tipView) return NO;
+    return YES;
 }
 
 //- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
@@ -202,6 +211,21 @@
 
     [[NSUserDefaults standardUserDefaults] setBool:[sender isOn] forKey:SETTINGS_SKIP_FEE_KEY];
 
+    if ([sender isOn]) {
+        self.tipView = [BRBubbleView
+                        viewWithText:NSLocalizedString(@"fees are only optional for high priority transactions", nil)
+                        tipPoint:[self.view convertPoint:CGPointMake([sender center].x, [sender frame].origin.y - 5.0)
+                                  fromView:[sender superview]] tipDirection:BRBubbleTipDirectionDown];
+        self.tipView.backgroundColor = [UIColor orangeColor];
+        self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+        self.tipView.userInteractionEnabled = NO;
+        [self.view addSubview:[self.tipView popIn]];
+    }
+    else if (self.tipView) {
+        [self.tipView popOut];
+        self.tipView = nil;
+    }
+
     l.hidden = NO;
     l.alpha = ([sender isOn]) ? 0.0 : 1.0;
 
@@ -241,6 +265,9 @@
     UILabel *textLabel, *unconfirmedLabel, *sentLabel, *noTxLabel, *localCurrencyLabel, *toggleLabel;
     UISwitch *toggleSwitch;
     BRCopyLabel *detailTextLabel;
+
+    if (self.tipView) [self.tipView popOut];
+    self.tipView = nil;
 
     switch (indexPath.section) {
         case 0:
@@ -514,6 +541,13 @@
         warning = NSLocalizedString(@"DO NOT let anyone see your backup phrase or they can spend your bitcoins.", nil);
     }
 
+    if (self.tipView) {
+        [self.tipView popOut];
+        self.tipView = nil;
+        [tableView deselectRowAtIndexPath:indexPath animated:NO];
+        return;
+    }
+
     switch (indexPath.section) {
         case 0: // TODO: show transaction details
             if (self.transactions.count > 0) {
@@ -607,6 +641,9 @@
     UIView *v = transitionContext.containerView;
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
+
+    if (self.tipView) [self.tipView popOut];
+    self.tipView = nil;
 
     if (self.wallpaper.superview != v) [v insertSubview:self.wallpaper belowSubview:from.view];
 
