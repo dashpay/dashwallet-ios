@@ -39,7 +39,7 @@
 @interface BRReceiveViewController ()
 
 @property (nonatomic, strong) BRBubbleView *tipView;
-@property (nonatomic, assign) BOOL showTips;
+@property (nonatomic, assign) BOOL showTips, updated;
 
 @property (nonatomic, strong) IBOutlet UILabel *label;
 @property (nonatomic, strong) IBOutlet UIButton *addressButton;
@@ -64,6 +64,13 @@
     [self updateAddress];
 }
 
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+
+    if (! self.updated) [self performSelector:@selector(updateAddress) withObject:nil afterDelay:0.1];
+}
+
 - (void)viewWillDisappear:(BOOL)animated
 {
     [self hideTips];
@@ -79,8 +86,8 @@
 
     self.qrView.image = [QREncoder renderDataMatrix:[QREncoder encodeWithECLevel:1 version:1 string:s]
                          imageDimension:self.qrView.frame.size.width];
-
     [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
+    self.updated = YES;
 }
 
 - (BRPaymentRequest *)paymentRequest
