@@ -45,6 +45,8 @@
 #define LOCAL_CURRENCY_SYMBOL_KEY @"LOCAL_CURRENCY_SYMBOL"
 #define LOCAL_CURRENCY_CODE_KEY   @"LOCAL_CURRENCY_CODE"
 #define LOCAL_CURRENCY_PRICE_KEY  @"LOCAL_CURRENCY_PRICE"
+#define PIN_KEY                   @"pin"
+#define PIN_FAIL_COUNT_KEY        @"pinfailcount"
 #define MNEMONIC_KEY              @"mnemonic"
 #define SEED_KEY                  @"seed"
 #define CREATION_TIME_KEY         @"creationtime"
@@ -189,6 +191,8 @@ static NSData *getKeychainData(NSString *key)
         [NSManagedObject saveContext];
     }];
 
+    setKeychainData(nil, PIN_KEY);
+    setKeychainData(nil, PIN_FAIL_COUNT_KEY);
     setKeychainData(nil, MNEMONIC_KEY);
     setKeychainData(nil, CREATION_TIME_KEY);
     if (! setKeychainData(seed, SEED_KEY)) {
@@ -208,17 +212,19 @@ static NSData *getKeychainData(NSString *key)
 
 - (NSString *)seedPhrase
 {
-    NSData *phrase = getKeychainData(MNEMONIC_KEY);
+    @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
+        NSData *phrase = getKeychainData(MNEMONIC_KEY);
 
-    if (! phrase) return nil;
+        if (! phrase) return nil;
 
-    return CFBridgingRelease(CFStringCreateFromExternalRepresentation(SecureAllocator(), (CFDataRef)phrase,
-                                                                      kCFStringEncodingUTF8));
+        return CFBridgingRelease(CFStringCreateFromExternalRepresentation(SecureAllocator(), (CFDataRef)phrase,
+                                                                          kCFStringEncodingUTF8));
+    }
 }
 
 - (void)setSeedPhrase:(NSString *)seedPhrase
 {
-    @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
+    @autoreleasepool {
         BRBIP39Mnemonic *m = [BRBIP39Mnemonic sharedInstance];
         
         seedPhrase = [m encodePhrase:[m decodePhrase:seedPhrase]];
@@ -231,9 +237,56 @@ static NSData *getKeychainData(NSString *key)
     }
 }
 
+- (NSString *)pin
+{
+    @autoreleasepool {
+        NSData *pin = getKeychainData(PIN_KEY);
+
+        if (! pin) return nil;
+
+        return CFBridgingRelease(CFStringCreateFromExternalRepresentation(SecureAllocator(), (CFDataRef)pin,
+                                                                          kCFStringEncodingUTF8));
+    }
+}
+
+- (void)setPin:(NSString *)pin
+{
+    @autoreleasepool {
+        if (pin.length > 0) {
+            NSData *d = CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(), (CFStringRef)pin,
+                                                                               kCFStringEncodingUTF8, 0));
+
+            setKeychainData(d, PIN_KEY);
+        }
+        else setKeychainData(nil, PIN_KEY);
+    }
+}
+
+- (NSUInteger)pinFailCount
+{
+    @autoreleasepool {
+        NSData *count = getKeychainData(PIN_FAIL_COUNT_KEY);
+
+        return (count.length > sizeof(NSUInteger)) ? *(const NSUInteger *)count.bytes : 0;
+    }
+}
+
+- (void)setPinFailCount:(NSUInteger)count
+{
+    @autoreleasepool {
+        if (count > 0) {
+            NSMutableData *d = [NSMutableData secureDataWithLength:sizeof(NSUInteger)];
+
+            *(NSUInteger *)d.mutableBytes = count;
+            setKeychainData(d, PIN_FAIL_COUNT_KEY);
+        }
+        else setKeychainData(nil, PIN_FAIL_COUNT_KEY);
+    }
+}
+
 - (void)generateRandomSeed
 {
-    @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
+    @autoreleasepool {
         NSMutableData *entropy = [NSMutableData secureDataWithLength:SEED_ENTROPY_LENGTH];
         NSTimeInterval time = [NSDate timeIntervalSinceReferenceDate];
 
