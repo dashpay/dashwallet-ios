@@ -128,6 +128,9 @@
 "error signing transaction" = "error signing transaction";
 
 /* No comment provided by engineer. */
+"fees are only optional for high priority transactions" = "fees are only optional for high priority transactions";
+
+/* No comment provided by engineer. */
 "ignore" = "ignore";
 
 /* No comment provided by engineer. */
