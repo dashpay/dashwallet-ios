@@ -24,13 +24,20 @@
 //  THE SOFTWARE.
 
 #import "BRPINViewController.h"
+#import "NSString+Base58.h"
+
+#define PIN_LENGTH 4
+#define CIRCLE     @"\xE2\x97\x8B" // white (empty) circle, unicode U+25CB (utf-8)
+#define DOT        @"\xE2\x97\x8F" // black (filled) circle, uincode U+25CF (utf-8)
 
 @interface BRPINViewController ()
 
-@property (nonatomic, strong) IBOutlet UILabel *titleLabel, *dotsLabel;
+@property (nonatomic, strong) IBOutlet UILabel *titleLabel, *dotsLabel, *dipsLabel;
+@property (nonatomic, strong) IBOutlet UIButton *cancelButton;
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *logoXCenter, *titleXCenter, *dotsXCenter, *padXCenter,
                                                           *wallpaperX;
-@property (nonatomic, strong) IBOutlet UIButton *cancelButton;
+
+@property (nonatomic, strong) NSMutableString *pin;
 
 @end
 
@@ -54,6 +61,8 @@
 {
     [super viewWillAppear:animated];
 
+    self.pin = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), PIN_LENGTH));
+
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:NO];
 }
 
@@ -76,12 +85,42 @@
     });
 }
 
+- (void)viewWillDisappear:(BOOL)animated
+{
+    self.pin = nil;
+
+    [super viewWillDisappear:animated];
+}
+
 #pragma mark - IBAction
 
 - (IBAction)number:(id)sender
 {
     [sender setAlpha:0.15];
     [UIView animateWithDuration:0.35 animations:^{ [sender setAlpha:1.0]; }];
+
+    if (self.pin.length >= PIN_LENGTH) return;
+    [self.pin appendFormat:@"%C", [[sender currentAttributedTitle].string characterAtIndex:0]];
+
+    self.dipsLabel.alpha = 0.0;
+    self.dipsLabel.transform = CGAffineTransformMakeScale(1.0, 0.0);
+    self.dipsLabel.text = DOT;
+
+    for (NSUInteger i = 1; i < self.pin.length; i++) {
+        self.dipsLabel.text = [self.dipsLabel.text stringByAppendingString:@"  " DOT];
+    }
+
+    [UIView animateWithDuration:0.15 animations:^{
+        self.dipsLabel.alpha = 1.0;
+        self.dipsLabel.transform = CGAffineTransformIdentity;
+    } completion:^(BOOL finished) {
+        self.dipsLabel.alpha = 0.0;
+        self.dotsLabel.text = self.dipsLabel.text;
+
+        for (NSUInteger i = self.pin.length; i < PIN_LENGTH; i++) {
+            self.dotsLabel.text = [self.dotsLabel.text stringByAppendingString:@"  " CIRCLE];
+        }
+    }];
 
     if ([self.cancelButton.currentTitle isEqual:NSLocalizedString(@"cancel", nil)]) {
         [UIView animateWithDuration:0.15 animations:^{
@@ -91,12 +130,43 @@
             [UIView animateWithDuration:0.15 animations:^{ self.cancelButton.alpha = 1.0; }];
         }];
     }
+
+    if (self.pin.length == PIN_LENGTH) {
+        // try pin
+    }
 }
 
 - (IBAction)cancel:(id)sender
 {
     [sender setAlpha:0.15];
     [UIView animateWithDuration:0.35 animations:^{ [sender setAlpha:1.0]; }];
+
+    if (self.pin.length > 0) {
+        self.dipsLabel.alpha = 1.0;
+        self.dipsLabel.text = DOT;
+
+        for (NSUInteger i = 1; i < self.pin.length; i++) {
+            self.dipsLabel.text = [self.dipsLabel.text stringByAppendingString:@"  " DOT];
+        }
+
+        self.dotsLabel.text = [[self.dipsLabel.text substringToIndex:self.dipsLabel.text.length - 1]
+                               stringByAppendingString:CIRCLE];
+
+        for (NSUInteger i = self.pin.length; i < PIN_LENGTH; i++) {
+            self.dotsLabel.text = [self.dotsLabel.text stringByAppendingString:@"  " CIRCLE];
+        }
+
+        [UIView animateWithDuration:0.15 animations:^{
+            self.dipsLabel.alpha = 0.0;
+            self.dipsLabel.transform = CGAffineTransformMakeScale(1.0, 0.0);
+        } completion:^(BOOL finished) {
+            self.dipsLabel.transform = CGAffineTransformIdentity;
+        }];
+
+        [self.pin deleteCharactersInRange:NSMakeRange(self.pin.length - 1, 1)];
+    }
+
+    if (self.pin.length > 0) return;
 
     if ([[sender currentTitle] isEqual:NSLocalizedString(@"delete", nil)]) {
         [UIView animateWithDuration:0.15 animations:^{
