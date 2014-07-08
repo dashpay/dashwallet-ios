@@ -34,6 +34,8 @@
 @property (nonatomic, readonly) BRWallet *wallet;
 @property (nonatomic, strong) NSData *seed;
 @property (nonatomic, strong) NSString *seedPhrase;
+@property (nonatomic, strong) NSString *pin;
+@property (nonatomic, assign) NSUInteger pinFailCount;
 @property (nonatomic, readonly) NSTimeInterval seedCreationTime; // interval since refrence date, 00:00:00 01/01/01 GMT
 @property (nonatomic, strong) NSNumberFormatter *format;
 

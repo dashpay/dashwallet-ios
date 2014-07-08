@@ -24,6 +24,7 @@
 //  THE SOFTWARE.
 
 #import "BRPINViewController.h"
+#import "BRWalletManager.h"
 #import "NSString+Base58.h"
 
 #define PIN_LENGTH 4
@@ -131,9 +132,9 @@
         }];
     }
 
-    if (self.pin.length == PIN_LENGTH) {
-        // try pin
-    }
+    if (self.pin.length < PIN_LENGTH) return;
+
+    // try pin
 }
 
 - (IBAction)cancel:(id)sender
