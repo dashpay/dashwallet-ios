@@ -520,7 +520,9 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
     NSString *code = [[NSUserDefaults standardUserDefaults] stringForKey:LOCAL_CURRENCY_CODE_KEY];
     double price = [[NSUserDefaults standardUserDefaults] doubleForKey:LOCAL_CURRENCY_PRICE_KEY];
 
-    if (! symbol.length || price <= DBL_EPSILON) return [format stringFromNumber:@(DEFAULT_CURRENCY_PRICE*amount/SATOSHIS)];
+    if (! symbol.length || price <= DBL_EPSILON) {
+        return [format stringFromNumber:@(DEFAULT_CURRENCY_PRICE*amount/SATOSHIS)];
+    }
 
     format.currencySymbol = symbol;
     format.currencyCode = code;

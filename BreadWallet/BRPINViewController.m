@@ -35,6 +35,7 @@
 
 @property (nonatomic, strong) IBOutlet UILabel *titleLabel, *dotsLabel, *dipsLabel;
 @property (nonatomic, strong) IBOutlet UIButton *cancelButton;
+@property (nonatomic, strong) IBOutletCollection(UIButton) NSArray *padButtons;
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *logoXCenter, *titleXCenter, *dotsXCenter, *padXCenter,
                                                           *wallpaperX;
 
@@ -48,6 +49,20 @@
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+
+    NSShadow *shadow = [NSShadow new];
+
+    [shadow setShadowColor:[UIColor colorWithWhite:0.0 alpha:0.15]];
+    [shadow setShadowBlurRadius:1.0];
+    [shadow setShadowOffset:CGSizeMake(0.0, 1.0)];
+
+    for (UIButton *b in self.padButtons) {
+        NSMutableAttributedString *s = [[NSMutableAttributedString alloc]
+                                        initWithAttributedString:[b attributedTitleForState:UIControlStateNormal]];
+
+        [s addAttribute:NSShadowAttributeName value:shadow range:NSMakeRange(0, s.length)];
+        [b setAttributedTitle:s forState:UIControlStateNormal];
+    }
 
     if (! self.appeared) {
         self.titleXCenter.constant = self.dotsXCenter.constant = self.padXCenter.constant = self.view.bounds.size.width;

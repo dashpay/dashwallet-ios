@@ -1996,8 +1996,9 @@ http://breadwallet.com</string>
                                     <constraint firstAttribute="height" constant="60" id="hov-QI-bmt"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
+                                <size key="titleShadowOffset" width="0.0" height="1"/>
                                 <state key="normal" title="cancel">
-                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                    <color key="titleShadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                 </state>
                                 <state key="highlighted">
                                     <color key="titleColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
@@ -2064,6 +2065,16 @@ http://breadwallet.com</string>
                         <outlet property="titleLabel" destination="zhS-gG-oV0" id="jCx-AK-LhQ"/>
                         <outlet property="titleXCenter" destination="the-pr-xGB" id="oZe-nc-Ll0"/>
                         <outlet property="wallpaperX" destination="GuF-zb-gml" id="EEZ-QH-Xxg"/>
+                        <outletCollection property="padButtons" destination="KDQ-9z-tgd" id="70j-Lk-ihc"/>
+                        <outletCollection property="padButtons" destination="Ktz-66-HDX" id="kT7-YH-fNA"/>
+                        <outletCollection property="padButtons" destination="AIW-cS-Arl" id="cg4-Ij-ybC"/>
+                        <outletCollection property="padButtons" destination="JVc-Me-836" id="3et-GQ-Vzu"/>
+                        <outletCollection property="padButtons" destination="LN4-YY-3RQ" id="i9K-6m-tYc"/>
+                        <outletCollection property="padButtons" destination="yQz-ag-iFU" id="5p2-Ke-DZE"/>
+                        <outletCollection property="padButtons" destination="3X5-SY-Dxe" id="wcr-cr-mBC"/>
+                        <outletCollection property="padButtons" destination="zKl-0k-txb" id="zkz-KI-8yy"/>
+                        <outletCollection property="padButtons" destination="Ohi-ey-IQ0" id="g91-op-RfA"/>
+                        <outletCollection property="padButtons" destination="IkG-JC-8ma" id="thr-R0-dDF"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="cip-Sn-1ZH" userLabel="First Responder" sceneMemberID="firstResponder"/>

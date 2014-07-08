@@ -27,6 +27,6 @@
 
 @interface BRPINViewController : UIViewController
 
-@property (nonatomic, assign) BOOL appeared;
+@property (nonatomic, assign) BOOL appeared; // set this to true if this is not initial pin lock following app launch
 
 @end
