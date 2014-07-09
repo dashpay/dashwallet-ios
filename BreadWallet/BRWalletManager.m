@@ -47,6 +47,7 @@
 #define LOCAL_CURRENCY_PRICE_KEY  @"LOCAL_CURRENCY_PRICE"
 #define PIN_KEY                   @"pin"
 #define PIN_FAIL_COUNT_KEY        @"pinfailcount"
+#define PIN_FAIL_HEIGHT_KEY       @"pinfailheight"
 #define MNEMONIC_KEY              @"mnemonic"
 #define SEED_KEY                  @"seed"
 #define CREATION_TIME_KEY         @"creationtime"
@@ -183,27 +184,30 @@ static NSData *getKeychainData(NSString *key)
 
 - (void)setSeed:(NSData *)seed
 {
-    if ([seed isEqual:self.seed]) return;
+    @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
+        if ([seed isEqual:self.seed]) return;
 
-    [[NSManagedObject context] performBlockAndWait:^{
-        [BRAddressEntity deleteObjects:[BRAddressEntity allObjects]];
-        [BRTransactionEntity deleteObjects:[BRTransactionEntity allObjects]];
-        [NSManagedObject saveContext];
-    }];
+        [[NSManagedObject context] performBlockAndWait:^{
+            [BRAddressEntity deleteObjects:[BRAddressEntity allObjects]];
+            [BRTransactionEntity deleteObjects:[BRTransactionEntity allObjects]];
+            [NSManagedObject saveContext];
+        }];
 
-    setKeychainData(nil, PIN_KEY);
-    setKeychainData(nil, PIN_FAIL_COUNT_KEY);
-    setKeychainData(nil, MNEMONIC_KEY);
-    setKeychainData(nil, CREATION_TIME_KEY);
-    if (! setKeychainData(seed, SEED_KEY)) {
-        NSLog(@"error setting wallet seed");
-        [[[UIAlertView alloc] initWithTitle:@"couldn't create wallet"
-          message:@"error adding master private key to iOS keychain, make sure app has keychain entitlements"
-          delegate:self cancelButtonTitle:@"abort" otherButtonTitles:nil] show];
-        return;
+        setKeychainData(nil, PIN_KEY);
+        setKeychainData(nil, PIN_FAIL_COUNT_KEY);
+        setKeychainData(nil, PIN_FAIL_HEIGHT_KEY);
+        setKeychainData(nil, MNEMONIC_KEY);
+        setKeychainData(nil, CREATION_TIME_KEY);
+        if (! setKeychainData(seed, SEED_KEY)) {
+            NSLog(@"error setting wallet seed");
+            [[[UIAlertView alloc] initWithTitle:@"couldn't create wallet"
+              message:@"error adding master private key to iOS keychain, make sure app has keychain entitlements"
+              delegate:self cancelButtonTitle:@"abort" otherButtonTitles:nil] show];
+            return;
+        }
+
+        _wallet = nil;
     }
-
-    _wallet = nil;
 
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletManagerSeedChangedNotification object:nil];
@@ -212,7 +216,7 @@ static NSData *getKeychainData(NSString *key)
 
 - (NSString *)seedPhrase
 {
-    @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
+    @autoreleasepool {
         NSData *phrase = getKeychainData(MNEMONIC_KEY);
 
         if (! phrase) return nil;
@@ -264,24 +268,38 @@ static NSData *getKeychainData(NSString *key)
 
 - (NSUInteger)pinFailCount
 {
-    @autoreleasepool {
         NSData *count = getKeychainData(PIN_FAIL_COUNT_KEY);
 
-        return (count.length > sizeof(NSUInteger)) ? *(const NSUInteger *)count.bytes : 0;
-    }
+        return (count.length < sizeof(NSUInteger)) ? 0 : *(const NSUInteger *)count.bytes;
 }
 
 - (void)setPinFailCount:(NSUInteger)count
 {
-    @autoreleasepool {
-        if (count > 0) {
-            NSMutableData *d = [NSMutableData secureDataWithLength:sizeof(NSUInteger)];
+    if (count > 0) {
+        NSMutableData *d = [NSMutableData secureDataWithLength:sizeof(NSUInteger)];
 
-            *(NSUInteger *)d.mutableBytes = count;
-            setKeychainData(d, PIN_FAIL_COUNT_KEY);
-        }
-        else setKeychainData(nil, PIN_FAIL_COUNT_KEY);
+        *(NSUInteger *)d.mutableBytes = count;
+        setKeychainData(d, PIN_FAIL_COUNT_KEY);
     }
+    else setKeychainData(nil, PIN_FAIL_COUNT_KEY);
+}
+
+- (uint32_t)pinFailHeight
+{
+    NSData *height = getKeychainData(PIN_FAIL_HEIGHT_KEY);
+
+    return (height.length < sizeof(uint32_t)) ? 0 : *(const uint32_t *)height.bytes;
+}
+
+- (void)setPinFailHeight:(uint32_t)height
+{
+    if (height > 0) {
+        NSMutableData *d = [NSMutableData secureDataWithLength:sizeof(uint32_t)];
+
+        *(uint32_t *)d.mutableBytes = height;
+        setKeychainData(d, PIN_FAIL_HEIGHT_KEY);
+    }
+    else setKeychainData(nil, PIN_FAIL_HEIGHT_KEY);
 }
 
 - (void)generateRandomSeed

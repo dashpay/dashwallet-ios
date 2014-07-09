@@ -1392,19 +1392,16 @@ http://breadwallet.com</string>
                                 <rect key="frame" x="32" y="209" width="257" height="151"/>
                             </imageView>
                             <view appearanceType="aqua" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4Lz-RL-RUK">
-                                <rect key="frame" x="150" y="20" width="20" height="50"/>
+                                <rect key="frame" x="150" y="20" width="20" height="49"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="20" id="ws4-tq-eIh"/>
                                 </constraints>
                             </view>
-                            <label appearanceType="aqua" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="enter pin" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zhS-gG-oV0">
-                                <rect key="frame" x="127" y="70" width="67" height="21"/>
+                            <label appearanceType="aqua" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="enter pin" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="280" translatesAutoresizingMaskIntoConstraints="NO" id="zhS-gG-oV0">
+                                <rect key="frame" x="20" y="69" width="280" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="21" id="Nda-Xb-zYK"/>
-                                </constraints>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                 <nil key="highlightedColor"/>
@@ -1412,7 +1409,7 @@ http://breadwallet.com</string>
                                 <size key="shadowOffset" width="0.0" height="1"/>
                             </label>
                             <view appearanceType="aqua" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="iGw-ju-oXF">
-                                <rect key="frame" x="150" y="91" width="20" height="49"/>
+                                <rect key="frame" x="150" y="90" width="20" height="49"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 <constraints>
@@ -1420,7 +1417,7 @@ http://breadwallet.com</string>
                                 </constraints>
                             </view>
                             <label appearanceType="aqua" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="○  ○  ○  ○" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fdh-Ze-PZW">
-                                <rect key="frame" x="98" y="140" width="124" height="21"/>
+                                <rect key="frame" x="98" y="139" width="124" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="21" id="BeV-Lf-L8r"/>
@@ -1433,7 +1430,7 @@ http://breadwallet.com</string>
                                 <size key="shadowOffset" width="0.0" height="1"/>
                             </label>
                             <label appearanceType="aqua" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.0" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="○  ○  ○  ○" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="M8s-wS-bZI">
-                                <rect key="frame" x="98" y="140" width="124" height="21"/>
+                                <rect key="frame" x="98" y="139" width="124" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="Menlo-Bold" family="Menlo" pointSize="20"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -1441,7 +1438,7 @@ http://breadwallet.com</string>
                                 <size key="shadowOffset" width="0.0" height="0.0"/>
                             </label>
                             <view appearanceType="aqua" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="tBV-ew-ggP">
-                                <rect key="frame" x="150" y="161" width="20" height="49"/>
+                                <rect key="frame" x="150" y="160" width="20" height="49"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 <constraints>
@@ -1449,7 +1446,7 @@ http://breadwallet.com</string>
                                 </constraints>
                             </view>
                             <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="KDQ-9z-tgd">
-                                <rect key="frame" x="30" y="210" width="72" height="72"/>
+                                <rect key="frame" x="30" y="209" width="72" height="72"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="72" id="Qie-u5-08A"/>
@@ -1473,6 +1470,26 @@ http://breadwallet.com</string>
                                                 <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 <font key="NSFont" size="13" name="HelveticaNeue"/>
                                                 <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <state key="disabled">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">1
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.33000000000000002" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content=" ">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.33000000000000002" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
                                                 <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
                                             </attributes>
                                         </fragment>
@@ -1503,7 +1520,7 @@ http://breadwallet.com</string>
                                 </connections>
                             </button>
                             <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ktz-66-HDX">
-                                <rect key="frame" x="124" y="210" width="72" height="72"/>
+                                <rect key="frame" x="124" y="209" width="72" height="72"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="72" id="HzN-6V-Jd5"/>
@@ -1527,6 +1544,26 @@ http://breadwallet.com</string>
                                                 <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 <font key="NSFont" size="13" name="HelveticaNeue"/>
                                                 <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <state key="disabled">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">2
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.33000000000000002" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="abc">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.33000000000000002" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
                                                 <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
                                             </attributes>
                                         </fragment>
@@ -1557,7 +1594,7 @@ http://breadwallet.com</string>
                                 </connections>
                             </button>
                             <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="AIW-cS-Arl">
-                                <rect key="frame" x="218" y="210" width="72" height="72"/>
+                                <rect key="frame" x="218" y="209" width="72" height="72"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="72" id="kTR-uG-a25"/>
@@ -1581,6 +1618,26 @@ http://breadwallet.com</string>
                                                 <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 <font key="NSFont" size="13" name="HelveticaNeue"/>
                                                 <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <state key="disabled">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">3
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.33000000000000002" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="def">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.33000000000000002" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
                                                 <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
                                             </attributes>
                                         </fragment>
@@ -1611,7 +1668,7 @@ http://breadwallet.com</string>
                                 </connections>
                             </button>
                             <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="JVc-Me-836">
-                                <rect key="frame" x="30" y="304" width="72" height="72"/>
+                                <rect key="frame" x="30" y="303" width="72" height="72"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="72" id="SfI-se-dGz"/>
@@ -1635,6 +1692,26 @@ http://breadwallet.com</string>
                                                 <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 <font key="NSFont" size="13" name="HelveticaNeue"/>
                                                 <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <state key="disabled">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">4
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.33000000000000002" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="ghi">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.33000000000000002" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
                                                 <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
                                             </attributes>
                                         </fragment>
@@ -1665,7 +1742,7 @@ http://breadwallet.com</string>
                                 </connections>
                             </button>
                             <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="LN4-YY-3RQ">
-                                <rect key="frame" x="124" y="304" width="72" height="72"/>
+                                <rect key="frame" x="124" y="303" width="72" height="72"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="72" id="Hr4-Xa-qRv"/>
@@ -1689,6 +1766,26 @@ http://breadwallet.com</string>
                                                 <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 <font key="NSFont" size="13" name="HelveticaNeue"/>
                                                 <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <state key="disabled">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">5
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.33000000000000002" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="jkl">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.33000000000000002" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
                                                 <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
                                             </attributes>
                                         </fragment>
@@ -1719,7 +1816,7 @@ http://breadwallet.com</string>
                                 </connections>
                             </button>
                             <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="yQz-ag-iFU">
-                                <rect key="frame" x="218" y="304" width="72" height="72"/>
+                                <rect key="frame" x="218" y="303" width="72" height="72"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="72" id="ONe-sC-aXf"/>
@@ -1743,6 +1840,26 @@ http://breadwallet.com</string>
                                                 <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 <font key="NSFont" size="13" name="HelveticaNeue"/>
                                                 <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <state key="disabled">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">6
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.33000000000000002" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="mno">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.33000000000000002" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
                                                 <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
                                             </attributes>
                                         </fragment>
@@ -1773,7 +1890,7 @@ http://breadwallet.com</string>
                                 </connections>
                             </button>
                             <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="3X5-SY-Dxe">
-                                <rect key="frame" x="30" y="398" width="72" height="72"/>
+                                <rect key="frame" x="30" y="397" width="72" height="72"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="72" id="N3l-e2-moU"/>
@@ -1797,6 +1914,26 @@ http://breadwallet.com</string>
                                                 <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 <font key="NSFont" size="13" name="HelveticaNeue"/>
                                                 <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <state key="disabled">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">7
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.33000000000000002" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="pqrs">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.33000000000000002" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
                                                 <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
                                             </attributes>
                                         </fragment>
@@ -1827,7 +1964,7 @@ http://breadwallet.com</string>
                                 </connections>
                             </button>
                             <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zKl-0k-txb">
-                                <rect key="frame" x="124" y="398" width="72" height="72"/>
+                                <rect key="frame" x="124" y="397" width="72" height="72"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="72" id="7Vh-xg-CNb"/>
@@ -1851,6 +1988,26 @@ http://breadwallet.com</string>
                                                 <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 <font key="NSFont" size="13" name="HelveticaNeue"/>
                                                 <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <state key="disabled">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">8
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.33000000000000002" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="tuv">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.33000000000000002" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
                                                 <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
                                             </attributes>
                                         </fragment>
@@ -1881,7 +2038,7 @@ http://breadwallet.com</string>
                                 </connections>
                             </button>
                             <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ohi-ey-IQ0">
-                                <rect key="frame" x="218" y="398" width="72" height="72"/>
+                                <rect key="frame" x="218" y="397" width="72" height="72"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="72" id="0rg-ec-3f1"/>
@@ -1905,6 +2062,26 @@ http://breadwallet.com</string>
                                                 <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 <font key="NSFont" size="13" name="HelveticaNeue"/>
                                                 <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <state key="disabled">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">9
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.33000000000000002" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content="wxyz">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.33000000000000002" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
                                                 <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
                                             </attributes>
                                         </fragment>
@@ -1935,7 +2112,7 @@ http://breadwallet.com</string>
                                 </connections>
                             </button>
                             <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="IkG-JC-8ma" userLabel="Button - 0">
-                                <rect key="frame" x="124" y="492" width="72" height="72"/>
+                                <rect key="frame" x="124" y="491" width="72" height="72"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="72" id="ZTI-Tv-w6I"/>
@@ -1959,6 +2136,26 @@ http://breadwallet.com</string>
                                                 <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 <font key="NSFont" size="13" name="HelveticaNeue"/>
                                                 <font key="NSOriginalFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <state key="disabled">
+                                    <attributedString key="attributedTitle">
+                                        <fragment>
+                                            <string key="content">0
+</string>
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.33000000000000002" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="50" name="HelveticaNeue-Thin"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content=" ">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="0.33000000000000002" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="13" name="HelveticaNeue"/>
                                                 <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
                                             </attributes>
                                         </fragment>
@@ -1989,7 +2186,7 @@ http://breadwallet.com</string>
                                 </connections>
                             </button>
                             <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="right" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="lzQ-at-alt">
-                                <rect key="frame" x="218" y="504" width="52" height="60"/>
+                                <rect key="frame" x="218" y="503" width="52" height="60"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="52" id="3PB-JZ-JH3"/>
@@ -2018,6 +2215,7 @@ http://breadwallet.com</string>
                             <constraint firstItem="Ohi-ey-IQ0" firstAttribute="centerY" secondItem="zKl-0k-txb" secondAttribute="centerY" id="AQ2-yH-zfv"/>
                             <constraint firstAttribute="centerX" secondItem="FJv-fU-9AC" secondAttribute="centerX" id="AWO-xE-pCF"/>
                             <constraint firstItem="yQz-ag-iFU" firstAttribute="centerY" secondItem="LN4-YY-3RQ" secondAttribute="centerY" id="C0o-2s-BLf"/>
+                            <constraint firstAttribute="trailing" secondItem="zhS-gG-oV0" secondAttribute="trailing" constant="20" id="GgJ-8P-uQn"/>
                             <constraint firstItem="IkG-JC-8ma" firstAttribute="centerX" secondItem="pxc-C6-1Sd" secondAttribute="centerX" id="Ggx-4Y-aau"/>
                             <constraint firstAttribute="leading" secondItem="xGr-ag-4pI" secondAttribute="leading" id="GuF-zb-gml"/>
                             <constraint firstItem="IkG-JC-8ma" firstAttribute="centerX" secondItem="LN4-YY-3RQ" secondAttribute="centerX" id="Hc5-12-kaq"/>
@@ -2049,7 +2247,7 @@ http://breadwallet.com</string>
                             <constraint firstAttribute="centerX" secondItem="iGw-ju-oXF" secondAttribute="centerX" id="lAp-u0-FmT"/>
                             <constraint firstItem="IkG-JC-8ma" firstAttribute="centerX" secondItem="zKl-0k-txb" secondAttribute="centerX" id="nSx-xh-Y3x"/>
                             <constraint firstAttribute="centerX" secondItem="tBV-ew-ggP" secondAttribute="centerX" id="pi3-K2-cKV"/>
-                            <constraint firstItem="zhS-gG-oV0" firstAttribute="centerX" secondItem="pxc-C6-1Sd" secondAttribute="centerX" id="the-pr-xGB"/>
+                            <constraint firstItem="zhS-gG-oV0" firstAttribute="leading" secondItem="pxc-C6-1Sd" secondAttribute="leading" constant="20" id="rpm-IL-HP4"/>
                             <constraint firstAttribute="centerY" secondItem="xGr-ag-4pI" secondAttribute="centerY" id="wcA-gy-jnE"/>
                             <constraint firstItem="4Lz-RL-RUK" firstAttribute="height" secondItem="iGw-ju-oXF" secondAttribute="height" id="wmO-tp-MA2"/>
                             <constraint firstItem="Fdh-Ze-PZW" firstAttribute="top" secondItem="iGw-ju-oXF" secondAttribute="bottom" id="xkt-sQ-lkK"/>
@@ -2063,7 +2261,6 @@ http://breadwallet.com</string>
                         <outlet property="logoXCenter" destination="AWO-xE-pCF" id="ubh-dq-3Bf"/>
                         <outlet property="padXCenter" destination="Ggx-4Y-aau" id="b5p-FH-GgU"/>
                         <outlet property="titleLabel" destination="zhS-gG-oV0" id="jCx-AK-LhQ"/>
-                        <outlet property="titleXCenter" destination="the-pr-xGB" id="oZe-nc-Ll0"/>
                         <outlet property="wallpaperX" destination="GuF-zb-gml" id="EEZ-QH-Xxg"/>
                         <outletCollection property="padButtons" destination="KDQ-9z-tgd" id="70j-Lk-ihc"/>
                         <outletCollection property="padButtons" destination="Ktz-66-HDX" id="kT7-YH-fNA"/>

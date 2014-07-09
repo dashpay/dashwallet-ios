@@ -104,6 +104,12 @@
 "couldn't transmit payment to bitcoin network" = "couldn't transmit payment to bitcoin network";
 
 /* No comment provided by engineer. */
+"day" = "day";
+
+/* No comment provided by engineer. */
+"days" = "days";
+
+/* No comment provided by engineer. */
 "delete" = "delete";
 
 /* No comment provided by engineer. */
@@ -122,6 +128,9 @@
 "email not configured" = "email not configured";
 
 /* No comment provided by engineer. */
+"enter pin" = "enter pin";
+
+/* No comment provided by engineer. */
 "error signing bitcoin transaction" = "error signing bitcoin transaction";
 
 /* No comment provided by engineer. */
@@ -129,6 +138,12 @@
 
 /* No comment provided by engineer. */
 "fees are only optional for high priority transactions" = "fees are only optional for high priority transactions";
+
+/* No comment provided by engineer. */
+"hour" = "hour";
+
+/* No comment provided by engineer. */
+"hours" = "hours";
 
 /* No comment provided by engineer. */
 "ignore" = "ignore";
@@ -144,6 +159,12 @@
 
 /* No comment provided by engineer. */
 "Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address.";
+
+/* No comment provided by engineer. */
+"locked until block #%u\n(~%@) after %u pin attempts" = "locked until block #%1$u\n(~%2$@) after %3$u pin attempts";
+
+/* No comment provided by engineer. */
+"min" = "min";
 
 /* No comment provided by engineer. */
 "missing certificate" = "missing certificate";
@@ -198,6 +219,9 @@
 
 /* No comment provided by engineer. */
 "rescan blockchain" = "rescan blockchain";
+
+/* No comment provided by engineer. */
+"reset" = "reset";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address.";
