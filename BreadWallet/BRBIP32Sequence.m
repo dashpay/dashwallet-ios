@@ -53,10 +53,13 @@
 //
 static void CKD(NSMutableData *k, NSMutableData *c, uint32_t i)
 {
+    BN_CTX *ctx = BN_CTX_new();
+
+    BN_CTX_start(ctx);
+
     NSMutableData *I = [NSMutableData secureDataWithLength:CC_SHA512_DIGEST_LENGTH];
     NSMutableData *data = [NSMutableData secureDataWithCapacity:33 + sizeof(i)];
-    BN_CTX *ctx = BN_CTX_new();
-    BIGNUM order, Ilbn, kbn;
+    BIGNUM *order = BN_CTX_get(ctx), *Ilbn = BN_CTX_get(ctx), *kbn = BN_CTX_get(ctx);
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
 
     if (i & BIP32_PRIME) {
@@ -70,25 +73,18 @@ static void CKD(NSMutableData *k, NSMutableData *c, uint32_t i)
 
     CCHmac(kCCHmacAlgSHA512, c.bytes, c.length, data.bytes, data.length, I.mutableBytes);
 
-    BN_CTX_start(ctx);
-    BN_init(&order);
-    BN_init(&Ilbn);
-    BN_init(&kbn);
-    BN_bin2bn(I.bytes, 32, &Ilbn);
-    BN_bin2bn(k.bytes, (int)k.length, &kbn);
-    EC_GROUP_get_order(group, &order, ctx);
+    BN_bin2bn(I.bytes, 32, Ilbn);
+    BN_bin2bn(k.bytes, (int)k.length, kbn);
+    EC_GROUP_get_order(group, order, ctx);
 
-    BN_mod_add(&kbn, &Ilbn, &kbn, &order, ctx);
+    BN_mod_add(kbn, Ilbn, kbn, order, ctx);
     
     k.length = 32;
     [k resetBytesInRange:NSMakeRange(0, 32)];
-    BN_bn2bin(&kbn, (unsigned char *)k.mutableBytes + 32 - BN_num_bytes(&kbn));
+    BN_bn2bin(kbn, (unsigned char *)k.mutableBytes + 32 - BN_num_bytes(kbn));
     [c replaceBytesInRange:NSMakeRange(0, c.length) withBytes:(const unsigned char *)I.bytes + 32 length:32];
 
     EC_GROUP_free(group);
-    BN_clear_free(&kbn);
-    BN_clear_free(&Ilbn);
-    BN_free(&order);
     BN_CTX_end(ctx);
     BN_CTX_free(ctx);
 }
@@ -110,12 +106,15 @@ static void CKDPrime(NSMutableData *K, NSMutableData *c, uint32_t i)
         @throw [NSException exceptionWithName:@"BRPrivateCKDException"
                 reason:@"can't derive private child key from public parent key" userInfo:nil];
     }
-    
+
+    BN_CTX *ctx = BN_CTX_new();
+
+    BN_CTX_start(ctx);
+
     NSMutableData *I = [NSMutableData secureDataWithLength:CC_SHA512_DIGEST_LENGTH];
     NSMutableData *data = [NSMutableData secureDataWithData:K];
     uint8_t form = POINT_CONVERSION_COMPRESSED;
-    BN_CTX *ctx = BN_CTX_new();
-    BIGNUM Ilbn;
+    BIGNUM *Ilbn = BN_CTX_get(ctx);
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
     EC_POINT *pubKeyPoint = EC_POINT_new(group), *IlPoint = EC_POINT_new(group);
 
@@ -124,13 +123,12 @@ static void CKDPrime(NSMutableData *K, NSMutableData *c, uint32_t i)
 
     CCHmac(kCCHmacAlgSHA512, c.bytes, c.length, data.bytes, data.length, I.mutableBytes);
 
-    BN_CTX_start(ctx);
-    BN_init(&Ilbn);
-    BN_bin2bn(I.bytes, 32, &Ilbn);
+
+    BN_bin2bn(I.bytes, 32, Ilbn);
     EC_GROUP_set_point_conversion_form(group, form);
     EC_POINT_oct2point(group, pubKeyPoint, K.bytes, K.length, ctx);
     
-    EC_POINT_mul(group, IlPoint, &Ilbn, NULL, NULL, ctx);
+    EC_POINT_mul(group, IlPoint, Ilbn, NULL, NULL, ctx);
     EC_POINT_add(group, pubKeyPoint, IlPoint, pubKeyPoint, ctx);
 
     K.length = EC_POINT_point2oct(group, pubKeyPoint, form, NULL, 0, ctx);
@@ -140,7 +138,6 @@ static void CKDPrime(NSMutableData *K, NSMutableData *c, uint32_t i)
     EC_POINT_clear_free(IlPoint);
     EC_POINT_clear_free(pubKeyPoint);
     EC_GROUP_free(group);
-    BN_clear_free(&Ilbn);
     BN_CTX_end(ctx);
     BN_CTX_free(ctx);
 }

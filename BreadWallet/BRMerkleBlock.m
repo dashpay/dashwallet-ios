@@ -258,27 +258,26 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 
     if ((_height % BLOCK_DIFFICULTY_INTERVAL) != 0) return (_target == previous.target) ? YES : NO;
 
-    int32_t timespan = (int32_t)((int64_t)previous.timestamp - (int64_t)time);
-    BIGNUM target, maxTarget, span, targetSpan, bn;
     BN_CTX *ctx = BN_CTX_new();
-    
+
+    BN_CTX_start(ctx);
+
+    int32_t timespan = (int32_t)((int64_t)previous.timestamp - (int64_t)time);
+    BIGNUM target, *maxTarget = BN_CTX_get(ctx), *span = BN_CTX_get(ctx), *targetSpan = BN_CTX_get(ctx),
+           *bn = BN_CTX_get(ctx);
+
     // limit difficulty transition to -75% or +400%
     if (timespan < TARGET_TIMESPAN/4) timespan = TARGET_TIMESPAN/4;
     if (timespan > TARGET_TIMESPAN*4) timespan = TARGET_TIMESPAN*4;
 
-    BN_CTX_start(ctx);
     BN_init(&target);
-    BN_init(&maxTarget);
-    BN_init(&span);
-    BN_init(&targetSpan);
-    BN_init(&bn);
     setCompact(&target, previous.target);
-    setCompact(&maxTarget, MAX_PROOF_OF_WORK);
-    BN_set_word(&span, timespan);
-    BN_set_word(&targetSpan, TARGET_TIMESPAN);
-    BN_mul(&bn, &target, &span, ctx);
-    BN_div(&target, NULL, &bn, &targetSpan, ctx);
-    if (BN_cmp(&target, &maxTarget) > 0) BN_copy(&target, &maxTarget); // limit to MAX_PROOF_OF_WORK
+    setCompact(maxTarget, MAX_PROOF_OF_WORK);
+    BN_set_word(span, timespan);
+    BN_set_word(targetSpan, TARGET_TIMESPAN);
+    BN_mul(bn, &target, span, ctx);
+    BN_div(&target, NULL, bn, targetSpan, ctx);
+    if (BN_cmp(&target, maxTarget) > 0) BN_copy(&target, maxTarget); // limit to MAX_PROOF_OF_WORK
     BN_CTX_end(ctx);
     BN_CTX_free(ctx);
     
