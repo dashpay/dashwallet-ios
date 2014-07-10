@@ -129,27 +129,28 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
     if (secret.length != 32 || ! _key) return;
     
     BN_CTX *ctx = BN_CTX_new();
-    BIGNUM priv;
+
+    if (! ctx) return;
+    BN_CTX_start(ctx);
+
+    BIGNUM *priv = BN_CTX_get(ctx);
     const EC_GROUP *group = EC_KEY_get0_group(_key);
     EC_POINT *pub = EC_POINT_new(group);
 
-    if (ctx) BN_CTX_start(ctx);
-    BN_init(&priv);
-    
-    if (pub && ctx) {
-        BN_bin2bn(secret.bytes, 32, &priv);
+    if (pub) {
+        BN_bin2bn(secret.bytes, 32, priv);
         
-        if (EC_POINT_mul(group, pub, &priv, NULL, NULL, ctx)) {
-            EC_KEY_set_private_key(_key, &priv);
+        if (EC_POINT_mul(group, pub, priv, NULL, NULL, ctx)) {
+            EC_KEY_set_private_key(_key, priv);
             EC_KEY_set_public_key(_key, pub);
             EC_KEY_set_conv_form(_key, compressed ? POINT_CONVERSION_COMPRESSED : POINT_CONVERSION_UNCOMPRESSED);
         }
+
+        EC_POINT_free(pub);
     }
-    
-    if (pub) EC_POINT_free(pub);
-    BN_clear_free(&priv);
-    if (ctx) BN_CTX_end(ctx);
-    if (ctx) BN_CTX_free(ctx);
+
+    BN_CTX_end(ctx);
+    BN_CTX_free(ctx);
 }
 
 - (void)setPrivateKey:(NSString *)privateKey
@@ -252,35 +253,33 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
     }
 
     BN_CTX *ctx = BN_CTX_new();
-    BIGNUM order, halforder, k, r;
+
+    BN_CTX_start(ctx);
+
+    BIGNUM *order = BN_CTX_get(ctx), *halforder = BN_CTX_get(ctx), *k = BN_CTX_get(ctx), *r = BN_CTX_get(ctx);
     const BIGNUM *priv = EC_KEY_get0_private_key(_key);
     const EC_GROUP *group = EC_KEY_get0_group(_key);
     EC_POINT *p = EC_POINT_new(group);
     NSMutableData *sig = nil, *entropy = [NSMutableData secureDataWithLength:32];
     unsigned char *b;
 
-    BN_CTX_start(ctx);
-    BN_init(&order);
-    BN_init(&halforder);
-    BN_init(&k);
-    BN_init(&r);
-    EC_GROUP_get_order(group, &order, ctx);
-    BN_rshift1(&halforder, &order);
+    EC_GROUP_get_order(group, order, ctx);
+    BN_rshift1(halforder, order);
 
     // generate k deterministicly per RFC6979: https://tools.ietf.org/html/rfc6979
     BN_bn2bin(priv, (unsigned char *)entropy.mutableBytes + entropy.length - BN_num_bytes(priv));
-    BN_bin2bn(hmac_drbg(entropy, d).bytes, CC_SHA256_DIGEST_LENGTH, &k);
+    BN_bin2bn(hmac_drbg(entropy, d).bytes, CC_SHA256_DIGEST_LENGTH, k);
 
-    EC_POINT_mul(group, p, &k, NULL, NULL, ctx); // compute r, the x-coordinate of generator*k
-    EC_POINT_get_affine_coordinates_GFp(group, p, &r, NULL, ctx);
+    EC_POINT_mul(group, p, k, NULL, NULL, ctx); // compute r, the x-coordinate of generator*k
+    EC_POINT_get_affine_coordinates_GFp(group, p, r, NULL, ctx);
 
-    BN_mod_inverse(&k, &k, &order, ctx); // compute the inverse of k
+    BN_mod_inverse(k, k, order, ctx); // compute the inverse of k
 
-    ECDSA_SIG *s = ECDSA_do_sign_ex(d.bytes, (int)d.length, &k, &r, _key);
+    ECDSA_SIG *s = ECDSA_do_sign_ex(d.bytes, (int)d.length, k, r, _key);
 
     if (s) {
         // enforce low s values, negate the value (modulo the order) if above order/2.
-        if (BN_cmp(s->s, &halforder) > 0) BN_sub(s->s, &order, s->s);
+        if (BN_cmp(s->s, halforder) > 0) BN_sub(s->s, order, s->s);
 
         sig = [NSMutableData dataWithLength:ECDSA_size(_key)];
         b = sig.mutableBytes;
@@ -289,10 +288,6 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
     }
 
     EC_POINT_clear_free(p);
-    BN_clear_free(&r);
-    BN_clear_free(&k);
-    BN_free(&halforder);
-    BN_free(&order);
     BN_CTX_end(ctx);
     BN_CTX_free(ctx);
 

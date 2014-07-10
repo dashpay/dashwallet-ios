@@ -203,19 +203,19 @@ static NSData *point_multiply(NSData *point, const BIGNUM *factor, BOOL compress
     if (! passphrase) return nil;
     salt = CFSwapInt64HostToBig(salt);
 
-    NSMutableData *code = [NSMutableData secureData];
     BN_CTX *ctx = BN_CTX_new();
-    BIGNUM passfactor;
 
     BN_CTX_start(ctx);
-    BN_init(&passfactor);
-    derive_passfactor(&passfactor, 0, salt, passphrase);
+
+    NSMutableData *code = [NSMutableData secureData];
+    BIGNUM *passfactor = BN_CTX_get(ctx);
+
+    derive_passfactor(passfactor, 0, salt, passphrase);
 
     [code appendBytes:"\x2C\xE9\xB3\xE1\xFF\x39\xE2\x53" length:8];
     [code appendBytes:&salt length:sizeof(salt)];
-    [code appendData:point_multiply(nil, &passfactor, YES, ctx)]; // passpoint = G*passfactor
+    [code appendData:point_multiply(nil, passfactor, YES, ctx)]; // passpoint = G*passfactor
 
-    BN_clear_free(&passfactor);
     BN_CTX_end(ctx);
     BN_CTX_free(ctx);
 
@@ -230,23 +230,24 @@ passphrase:(NSString *)passphrase
     if (lot >= 0x100000 || sequence >= 0x1000 || ! passphrase) return nil;
     salt = CFSwapInt32HostToBig(salt);
 
+    BN_CTX *ctx = BN_CTX_new();
+
+    BN_CTX_start(ctx);
+
     uint32_t lotsequence = CFSwapInt32HostToBig(lot*0x1000 + sequence);
     NSMutableData *entropy = [NSMutableData secureData], *code = [NSMutableData secureData];
-    BN_CTX *ctx = BN_CTX_new();
-    BIGNUM passfactor;
+    BIGNUM *passfactor = BN_CTX_get(ctx);
 
     [entropy appendBytes:&salt length:sizeof(salt)];
     [entropy appendBytes:&lotsequence length:sizeof(lotsequence)];
 
-    BN_CTX_start(ctx);
-    BN_init(&passfactor);
-    derive_passfactor(&passfactor, BIP38_LOTSEQUENCE_FLAG, *(const uint64_t *)entropy.bytes, passphrase);
+
+    derive_passfactor(passfactor, BIP38_LOTSEQUENCE_FLAG, *(const uint64_t *)entropy.bytes, passphrase);
 
     [code appendBytes:"\x2C\xE9\xB3\xE1\xFF\x39\xE2\x51" length:8];
     [code appendData:entropy];
-    [code appendData:point_multiply(nil, &passfactor, YES, ctx)]; // passpoint = G*passfactor
+    [code appendData:point_multiply(nil, passfactor, YES, ctx)]; // passpoint = G*passfactor
 
-    BN_clear_free(&passfactor);
     BN_CTX_end(ctx);
     BN_CTX_free(ctx);
 
@@ -263,14 +264,15 @@ confirmationCode:(NSString **)confcode;
 
     if (d.length != 49 || seedb.length != 24) return nil;
 
-    NSData *passpoint = [NSData dataWithBytesNoCopy:(uint8_t *)d.bytes + 16 length:33 freeWhenDone:NO], *pubKey;
     BN_CTX *ctx = BN_CTX_new();
-    BIGNUM factorb;
 
     BN_CTX_start(ctx);
-    BN_init(&factorb);
-    BN_bin2bn(seedb.SHA256_2.bytes, CC_SHA256_DIGEST_LENGTH, &factorb); // factorb = SHA256(SHA256(seedb))
-    pubKey = point_multiply(passpoint, &factorb, compressed, ctx); // pubKey = passpoint*factorb
+
+    NSData *passpoint = [NSData dataWithBytesNoCopy:(uint8_t *)d.bytes + 16 length:33 freeWhenDone:NO], *pubKey;
+    BIGNUM *factorb = BN_CTX_get(ctx);
+
+    BN_bin2bn(seedb.SHA256_2.bytes, CC_SHA256_DIGEST_LENGTH, factorb); // factorb = SHA256(SHA256(seedb))
+    pubKey = point_multiply(passpoint, factorb, compressed, ctx); // pubKey = passpoint*factorb
 
     uint16_t prefix = CFSwapInt16HostToBig(BIP38_EC_PREFIX);
     uint8_t flag = compressed ? BIP38_COMPRESSED_FLAG : 0;
@@ -307,7 +309,7 @@ confirmationCode:(NSString **)confcode;
     [key appendData:encrypted2];
 
     if (confcode) {
-        NSData *pointb = point_multiply(nil, &factorb, YES, ctx); // pointb = G*factorb
+        NSData *pointb = point_multiply(nil, factorb, YES, ctx); // pointb = G*factorb
         NSMutableData *c = [NSMutableData secureData], *pointbx1, *pointbx2;
         uint8_t pointbprefix = ((const uint8_t *)pointb.bytes)[0] ^ (((const uint8_t *)derived2)[31] & 0x01);
 
@@ -335,7 +337,6 @@ confirmationCode:(NSString **)confcode;
         *confcode = [NSString base58checkWithData:c];
     }
 
-    BN_clear_free(&factorb);
     BN_CTX_end(ctx);
     BN_CTX_free(ctx);
 
@@ -354,17 +355,18 @@ confirmationCode:(NSString **)confcode;
 
     if (*(const uint32_t *)[address dataUsingEncoding:NSUTF8StringEncoding].SHA256_2.bytes != addresshash) return NO;
 
+    BN_CTX *ctx = BN_CTX_new();
+
+    BN_CTX_start(ctx);
+
     uint64_t entropy = *(const uint64_t *)((const uint8_t *)d.bytes + 10);
     uint8_t pointprefix = ((const uint8_t *)d.bytes)[18];
     const uint8_t *pointbx1 = (const uint8_t *)d.bytes + 19, *pointbx2 = (const uint8_t *)d.bytes + 35;
-    BN_CTX *ctx = BN_CTX_new();
-    BIGNUM passfactor;
+    BIGNUM *passfactor = BN_CTX_get(ctx);
 
-    BN_CTX_start(ctx);
-    BN_init(&passfactor);
-    derive_passfactor(&passfactor, flag, entropy, passphrase);
+    derive_passfactor(passfactor, flag, entropy, passphrase);
 
-    NSData *passpoint = point_multiply(nil, &passfactor, YES, ctx); // passpoint = G*passfactor
+    NSData *passpoint = point_multiply(nil, passfactor, YES, ctx); // passpoint = G*passfactor
     NSData *derived = derive_key(passpoint, addresshash, entropy), *pubKey;
     const uint64_t *derived1 = (const uint64_t *)derived.bytes, *derived2 = &derived1[4];
     NSMutableData *pointb = [NSMutableData secureDataWithLength:33];
@@ -382,8 +384,7 @@ confirmationCode:(NSString **)confcode;
     ((uint64_t *)((uint8_t *)pointb.mutableBytes + 1))[2] ^= derived1[2];
     ((uint64_t *)((uint8_t *)pointb.mutableBytes + 1))[3] ^= derived1[3];
 
-    pubKey = point_multiply(pointb, &passfactor, flag & BIP38_COMPRESSED_FLAG, ctx); // pubKey = pointb*passfactor
-    BN_clear_free(&passfactor);
+    pubKey = point_multiply(pointb, passfactor, flag & BIP38_COMPRESSED_FLAG, ctx); // pubKey = pointb*passfactor
     BN_CTX_end(ctx);
     BN_CTX_free(ctx);
 
@@ -420,18 +421,20 @@ confirmationCode:(NSString **)confcode;
         }
     }
     else if (prefix == BIP38_EC_PREFIX) { // EC multipled key
+        BN_CTX *ctx = BN_CTX_new();
+
+        BN_CTX_start(ctx);
+
         // d = prefix + flag + addresshash + entropy + encrypted1[0...7] + encrypted2
         uint64_t entropy = *(const uint64_t *)((const uint8_t *)d.bytes + 7);
         NSMutableData *encrypted1 = [NSMutableData secureData];
         const uint8_t *encrypted2 = (const uint8_t *)d.bytes + 23;
-        BN_CTX *ctx = BN_CTX_new();
-        BIGNUM passfactor, factorb, priv, order;
+        BIGNUM *passfactor = BN_CTX_get(ctx), *factorb = BN_CTX_get(ctx), *priv = BN_CTX_get(ctx),
+               *order = BN_CTX_get(ctx);
 
-        BN_CTX_start(ctx);
-        BN_init(&passfactor);
-        derive_passfactor(&passfactor, flag, entropy, passphrase);
+        derive_passfactor(passfactor, flag, entropy, passphrase);
 
-        NSData *passpoint = point_multiply(nil, &passfactor, YES, ctx); // passpoint = G*passfactor
+        NSData *passpoint = point_multiply(nil, passfactor, YES, ctx); // passpoint = G*passfactor
         NSData *derived = derive_key(passpoint, addresshash, entropy);
         const uint64_t *derived1 = (const uint64_t *)derived.bytes, *derived2 = &derived1[4];
         NSMutableData *seedb = [NSMutableData secureDataWithLength:24], *o = [NSMutableData secureDataWithLength:16];
@@ -450,19 +453,12 @@ confirmationCode:(NSString **)confcode;
         ((uint64_t *)seedb.mutableBytes)[0] = ((const uint64_t *)o.bytes)[0] ^ derived1[0];
         ((uint64_t *)seedb.mutableBytes)[1] = ((const uint64_t *)o.bytes)[1] ^ derived1[1];
 
-        BN_init(&factorb);
-        BN_init(&priv);
-        BN_init(&order);
-        EC_GROUP_get_order(group, &order, ctx);
-        BN_bin2bn(seedb.SHA256_2.bytes, CC_SHA256_DIGEST_LENGTH, &factorb); // factorb = SHA256(SHA256(seedb))
-        BN_mod_mul(&priv, &passfactor, &factorb, &order, ctx); // secret = passfactor*factorb mod N
-        BN_bn2bin(&priv, (unsigned char *)secret.mutableBytes + secret.length - BN_num_bytes(&priv));
+        EC_GROUP_get_order(group, order, ctx);
+        BN_bin2bn(seedb.SHA256_2.bytes, CC_SHA256_DIGEST_LENGTH, factorb); // factorb = SHA256(SHA256(seedb))
+        BN_mod_mul(priv, passfactor, factorb, order, ctx); // secret = passfactor*factorb mod N
+        BN_bn2bin(priv, (unsigned char *)secret.mutableBytes + secret.length - BN_num_bytes(priv));
 
         EC_GROUP_free(group);
-        BN_free(&order);
-        BN_clear_free(&priv);
-        BN_clear_free(&factorb);
-        BN_clear_free(&passfactor);
         BN_CTX_end(ctx);
         BN_CTX_free(ctx);
     }
