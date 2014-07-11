@@ -103,7 +103,7 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
 
     [self setSecret:secret compressed:compressed];
     
-    return self;
+    return (EC_KEY_check_key(_key)) ? self : nil;
 }
 
 - (instancetype)initWithPrivateKey:(NSString *)privateKey
@@ -112,7 +112,7 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
     
     self.privateKey = privateKey;
     
-    return self;
+    return (EC_KEY_check_key(_key)) ? self : nil;
 }
 
 - (instancetype)initWithPublicKey:(NSData *)publicKey
@@ -121,7 +121,7 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
     
     self.publicKey = publicKey;
     
-    return self;
+    return (EC_KEY_check_key(_key)) ? self : nil;
 }
 
 - (void)setSecret:(NSData *)secret compressed:(BOOL)compressed
