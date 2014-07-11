@@ -274,7 +274,7 @@ static NSData *getKeychainData(NSString *key)
         NSError *error = nil;
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
         NSString *currencyCode = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
-        NSString *symbol = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencySymbol];
+        NSString *currencySymbol = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencySymbol];
 
         if (error || ! [json isKindOfClass:[NSDictionary class]] ||
             ! [json[DEFAULT_CURRENCY_CODE] isKindOfClass:[NSDictionary class]] ||
@@ -288,10 +288,10 @@ static NSData *getKeychainData(NSString *key)
 
         if (! [json[currencyCode] isKindOfClass:[NSDictionary class]]) { // if local currency is missing, use default
             currencyCode = DEFAULT_CURRENCY_CODE;
-            symbol = DEFAULT_CURRENCY_SYMBOL;
+            currencySymbol = DEFAULT_CURRENCY_SYMBOL;
         }
 
-        [defs setObject:symbol forKey:LOCAL_CURRENCY_SYMBOL_KEY];
+        [defs setObject:currencySymbol forKey:LOCAL_CURRENCY_SYMBOL_KEY];
         [defs setObject:currencyCode forKey:LOCAL_CURRENCY_CODE_KEY];
         [defs setObject:json[currencyCode][@"last"] forKey:LOCAL_CURRENCY_PRICE_KEY];
         [defs synchronize];
