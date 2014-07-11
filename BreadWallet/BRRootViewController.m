@@ -118,7 +118,7 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             if (self.appeared) {
-                UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINViewController"];
+                UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
 
                 [(id)c setAppeared:YES];
                 [self.navigationController presentViewController:c animated:NO completion:nil];
@@ -215,7 +215,7 @@
 #endif
 
     if (! [[UIApplication sharedApplication] isProtectedDataAvailable] || [[BRWalletManager sharedInstance] wallet]) {
-        UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINViewController"];
+        UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
 
         [self.navigationController presentViewController:c animated:NO completion:nil];
     }

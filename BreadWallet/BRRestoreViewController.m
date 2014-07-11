@@ -105,6 +105,7 @@ static NSString *normalize_phrase(NSString *phrase)
     });
 
     @autoreleasepool {  // @autoreleasepool ensures sensitive data will be dealocated immediately
+        BRWalletManager *m = [BRWalletManager sharedInstance];
         NSRange selected = textView.selectedRange;
         NSMutableString *s = CFBridgingRelease(CFStringCreateMutableCopy(SecureAllocator(), 0,
                                                                          (CFStringRef)textView.text));
@@ -165,12 +166,20 @@ static NSString *normalize_phrase(NSString *phrase)
             [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"bad backup phrase", nil) delegate:nil
               cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
-        else if ([[BRWalletManager sharedInstance] wallet]) {
-            if ([phrase isEqual:normalize_phrase([[BRWalletManager sharedInstance] seedPhrase])]) {
-                [[[UIActionSheet alloc] initWithTitle:nil delegate:self
-                  cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-                  destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
-                 showInView:[[UIApplication sharedApplication] keyWindow]];
+        else if (m.wallet) {
+            if ([phrase isEqual:normalize_phrase(m.seedPhrase)]) {
+                if (self.navigationController.viewControllers.firstObject != self) { // reset pin
+                    m.pin = nil;
+                    m.pinFailCount = 0;
+                    m.pinFailHeight = 0;
+                    [self.navigationController popToRootViewControllerAnimated:YES];
+                }
+                else {
+                    [[[UIActionSheet alloc] initWithTitle:nil delegate:self
+                      cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+                      destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
+                     showInView:[[UIApplication sharedApplication] keyWindow]];
+                }
             }
             else {
                 [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"backup phrase doesn't match", nil)
@@ -180,8 +189,7 @@ static NSString *normalize_phrase(NSString *phrase)
         else {
             //TODO: offer the user an option to move funds to a new seed if their wallet device was lost or stolen
         
-            [[BRWalletManager sharedInstance] setSeedPhrase:textView.text];
-            
+            m.seedPhrase = textView.text;
             textView.text = nil;
             
             [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];

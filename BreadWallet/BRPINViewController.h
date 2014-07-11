@@ -25,7 +25,8 @@
 
 #import <UIKit/UIKit.h>
 
-@interface BRPINViewController : UIViewController
+@interface BRPINViewController : UIViewController <UINavigationControllerDelegate,
+UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning>
 
 @property (nonatomic, assign) BOOL appeared; // set this to true if this is not initial pin lock following app launch
 

@@ -71,6 +71,9 @@
 "checking private key balance..." = "checking private key balance...";
 
 /* No comment provided by engineer. */
+"choose a pin" = "choose a pin";
+
+/* No comment provided by engineer. */
 "clipboard doesn't contain a valid bitcoin address" = "clipboard doesn't contain a valid bitcoin address";
 
 /* No comment provided by engineer. */
@@ -161,10 +164,7 @@
 "Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address.";
 
 /* No comment provided by engineer. */
-"locked until block #%u\n(~%@) after %u pin attempts" = "locked until block #%1$u\n(~%2$@) after %3$u pin attempts";
-
-/* No comment provided by engineer. */
-"min" = "min";
+"minutes" = "minutes";
 
 /* No comment provided by engineer. */
 "missing certificate" = "missing certificate";
@@ -209,6 +209,9 @@
 "recieved" = "recieved";
 
 /* No comment provided by engineer. */
+"reenter pin" = "reenter pin";
+
+/* No comment provided by engineer. */
 "remove fee" = "remove fee";
 
 /* No comment provided by engineer. */
@@ -221,7 +224,7 @@
 "rescan blockchain" = "rescan blockchain";
 
 /* No comment provided by engineer. */
-"reset" = "reset";
+"reset pin" = "reset pin";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address.";
@@ -314,8 +317,10 @@
 "unverified  " = "unverified  ";
 
 /* No comment provided by engineer. */
+"wallet disabled\n\ntry again after block #%u\n(about %@)" = "wallet disabled\n\ntry again after block #%1$u\n(about %2$@)";
+
+/* No comment provided by engineer. */
 "WARNING" = "WARNING";
 
 /* No comment provided by engineer. */
 "wipe" = "wipe";
-

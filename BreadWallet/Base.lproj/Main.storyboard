@@ -1370,12 +1370,53 @@ http://breadwallet.com</string>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="1tD-Z5-QRo" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1134" y="2730"/>
+            <point key="canvasLocation" x="303" y="2730"/>
+        </scene>
+        <!--Restore View Controller - backup phrase:-->
+        <scene sceneID="TqK-4C-NQ0">
+            <objects>
+                <viewController storyboardIdentifier="PINResetController" automaticallyAdjustsScrollViewInsets="NO" modalTransitionStyle="crossDissolve" id="esC-cC-bnc" customClass="BRRestoreViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="9gp-SC-VAr"/>
+                        <viewControllerLayoutGuide type="bottom" id="BNI-fi-Im9"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="KmC-up-5fL">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bTM-vD-DqT">
+                                <rect key="frame" x="12" y="69" width="296" height="269"/>
+                                <color key="backgroundColor" white="1" alpha="0.67000000000000004" colorSpace="calibratedWhite"/>
+                                <color key="textColor" red="1" green="0.49803921569999998" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
+                                <textInputTraits key="textInputTraits" autocorrectionType="yes" returnKeyType="done" enablesReturnKeyAutomatically="YES"/>
+                                <connections>
+                                    <outlet property="delegate" destination="esC-cC-bnc" id="Lc3-iy-ZaU"/>
+                                </connections>
+                            </textView>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="bTM-vD-DqT" firstAttribute="top" secondItem="KmC-up-5fL" secondAttribute="top" constant="69" id="QAK-mh-69Z"/>
+                            <constraint firstAttribute="trailing" secondItem="bTM-vD-DqT" secondAttribute="trailing" constant="12" id="RVC-Yc-aLF"/>
+                            <constraint firstItem="BNI-fi-Im9" firstAttribute="top" secondItem="bTM-vD-DqT" secondAttribute="bottom" constant="230" id="YMn-NK-J4g"/>
+                            <constraint firstItem="bTM-vD-DqT" firstAttribute="leading" secondItem="KmC-up-5fL" secondAttribute="leading" constant="12" id="ZAR-ze-mIW"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="backup phrase:" id="wJz-hG-RRz"/>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
+                    <connections>
+                        <outlet property="textView" destination="bTM-vD-DqT" id="RN3-UD-2K4"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="BmS-zI-nzE" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1546" y="2730"/>
         </scene>
         <!--View Controller-->
         <scene sceneID="Hrb-CJ-hxl">
             <objects>
-                <viewController storyboardIdentifier="PINViewController" id="4GL-nw-juQ" customClass="BRPINViewController" sceneMemberID="viewController">
+                <viewController id="4GL-nw-juQ" customClass="BRPINViewController" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="sLz-sp-ImT"/>
                         <viewControllerLayoutGuide type="bottom" id="ZzD-Qc-uQy"/>
@@ -1399,8 +1440,8 @@ http://breadwallet.com</string>
                                     <constraint firstAttribute="width" constant="20" id="ws4-tq-eIh"/>
                                 </constraints>
                             </view>
-                            <label appearanceType="aqua" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="enter pin" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="280" translatesAutoresizingMaskIntoConstraints="NO" id="zhS-gG-oV0">
-                                <rect key="frame" x="20" y="69" width="280" height="21"/>
+                            <label appearanceType="aqua" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="enter pin" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zhS-gG-oV0">
+                                <rect key="frame" x="127" y="69" width="67" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
@@ -2185,11 +2226,24 @@ http://breadwallet.com</string>
                                     <action selector="number:" destination="4GL-nw-juQ" eventType="touchUpInside" id="U6f-mH-MqO"/>
                                 </connections>
                             </button>
+                            <label hidden="YES" appearanceType="aqua" opaque="NO" clipsSubviews="YES" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="340" translatesAutoresizingMaskIntoConstraints="NO" id="iLa-SV-VmA">
+                                <rect key="frame" x="-10" y="0.0" width="340" height="568"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.5" colorSpace="calibratedWhite"/>
+                                <string key="text">wallet disabled
+
+try again after block #?
+(about 10 minutes)</string>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="20"/>
+                                <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                                <size key="shadowOffset" width="0.0" height="0.0"/>
+                            </label>
                             <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="right" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="lzQ-at-alt">
-                                <rect key="frame" x="218" y="503" width="52" height="60"/>
+                                <rect key="frame" x="210" y="503" width="60" height="60"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="52" id="3PB-JZ-JH3"/>
+                                    <constraint firstAttribute="width" constant="60" id="3PB-JZ-JH3"/>
                                     <constraint firstAttribute="height" constant="60" id="hov-QI-bmt"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
@@ -2205,17 +2259,18 @@ http://breadwallet.com</string>
                                 </connections>
                             </button>
                         </subviews>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="3X5-SY-Dxe" firstAttribute="centerY" secondItem="zKl-0k-txb" secondAttribute="centerY" id="0Hv-RD-ZWV"/>
                             <constraint firstItem="Ktz-66-HDX" firstAttribute="leading" secondItem="KDQ-9z-tgd" secondAttribute="trailing" constant="22" id="17m-cJ-9xz"/>
+                            <constraint firstItem="iLa-SV-VmA" firstAttribute="leading" secondItem="pxc-C6-1Sd" secondAttribute="leading" constant="-10" id="2ca-uX-AYR"/>
                             <constraint firstItem="JVc-Me-836" firstAttribute="centerY" secondItem="LN4-YY-3RQ" secondAttribute="centerY" id="76a-8u-wxa"/>
                             <constraint firstItem="tBV-ew-ggP" firstAttribute="height" secondItem="iGw-ju-oXF" secondAttribute="height" id="7NM-bn-hcq"/>
                             <constraint firstItem="Fdh-Ze-PZW" firstAttribute="centerX" secondItem="pxc-C6-1Sd" secondAttribute="centerX" id="9RY-ni-Ott"/>
+                            <constraint firstItem="zhS-gG-oV0" firstAttribute="centerX" secondItem="pxc-C6-1Sd" secondAttribute="centerX" id="A02-Vw-Rss"/>
                             <constraint firstItem="Ohi-ey-IQ0" firstAttribute="centerY" secondItem="zKl-0k-txb" secondAttribute="centerY" id="AQ2-yH-zfv"/>
                             <constraint firstAttribute="centerX" secondItem="FJv-fU-9AC" secondAttribute="centerX" id="AWO-xE-pCF"/>
                             <constraint firstItem="yQz-ag-iFU" firstAttribute="centerY" secondItem="LN4-YY-3RQ" secondAttribute="centerY" id="C0o-2s-BLf"/>
-                            <constraint firstAttribute="trailing" secondItem="zhS-gG-oV0" secondAttribute="trailing" constant="20" id="GgJ-8P-uQn"/>
                             <constraint firstItem="IkG-JC-8ma" firstAttribute="centerX" secondItem="pxc-C6-1Sd" secondAttribute="centerX" id="Ggx-4Y-aau"/>
                             <constraint firstAttribute="leading" secondItem="xGr-ag-4pI" secondAttribute="leading" id="GuF-zb-gml"/>
                             <constraint firstItem="IkG-JC-8ma" firstAttribute="centerX" secondItem="LN4-YY-3RQ" secondAttribute="centerX" id="Hc5-12-kaq"/>
@@ -2231,7 +2286,7 @@ http://breadwallet.com</string>
                             <constraint firstItem="IkG-JC-8ma" firstAttribute="centerX" secondItem="Ktz-66-HDX" secondAttribute="centerX" id="Ym7-jx-Xqt"/>
                             <constraint firstItem="LN4-YY-3RQ" firstAttribute="leading" secondItem="JVc-Me-836" secondAttribute="trailing" constant="22" id="aWK-XD-ZHz"/>
                             <constraint firstItem="Ktz-66-HDX" firstAttribute="centerY" secondItem="KDQ-9z-tgd" secondAttribute="centerY" id="atB-Sw-uxE"/>
-                            <constraint firstItem="lzQ-at-alt" firstAttribute="leading" secondItem="IkG-JC-8ma" secondAttribute="trailing" constant="22" id="bBs-H4-Km8"/>
+                            <constraint firstItem="lzQ-at-alt" firstAttribute="leading" secondItem="IkG-JC-8ma" secondAttribute="trailing" constant="14" id="bBs-H4-Km8"/>
                             <constraint firstAttribute="centerX" secondItem="4Lz-RL-RUK" secondAttribute="centerX" id="bKc-j4-G8M"/>
                             <constraint firstItem="IkG-JC-8ma" firstAttribute="top" secondItem="zKl-0k-txb" secondAttribute="bottom" constant="22" id="bSY-87-EAz"/>
                             <constraint firstAttribute="centerY" secondItem="FJv-fU-9AC" secondAttribute="centerY" id="eQI-z2-GUo"/>
@@ -2245,22 +2300,30 @@ http://breadwallet.com</string>
                             <constraint firstItem="4Lz-RL-RUK" firstAttribute="top" secondItem="pxc-C6-1Sd" secondAttribute="top" constant="20" id="kpM-0Y-2mP"/>
                             <constraint firstItem="AIW-cS-Arl" firstAttribute="centerY" secondItem="Ktz-66-HDX" secondAttribute="centerY" id="l26-wQ-FqZ"/>
                             <constraint firstAttribute="centerX" secondItem="iGw-ju-oXF" secondAttribute="centerX" id="lAp-u0-FmT"/>
+                            <constraint firstItem="iLa-SV-VmA" firstAttribute="top" secondItem="pxc-C6-1Sd" secondAttribute="top" id="lKh-w4-wL6"/>
                             <constraint firstItem="IkG-JC-8ma" firstAttribute="centerX" secondItem="zKl-0k-txb" secondAttribute="centerX" id="nSx-xh-Y3x"/>
+                            <constraint firstItem="ZzD-Qc-uQy" firstAttribute="top" secondItem="iLa-SV-VmA" secondAttribute="bottom" id="p5m-Ra-2gQ"/>
                             <constraint firstAttribute="centerX" secondItem="tBV-ew-ggP" secondAttribute="centerX" id="pi3-K2-cKV"/>
-                            <constraint firstItem="zhS-gG-oV0" firstAttribute="leading" secondItem="pxc-C6-1Sd" secondAttribute="leading" constant="20" id="rpm-IL-HP4"/>
+                            <constraint firstAttribute="trailing" secondItem="iLa-SV-VmA" secondAttribute="trailing" constant="-10" id="uss-Ti-GtP"/>
                             <constraint firstAttribute="centerY" secondItem="xGr-ag-4pI" secondAttribute="centerY" id="wcA-gy-jnE"/>
                             <constraint firstItem="4Lz-RL-RUK" firstAttribute="height" secondItem="iGw-ju-oXF" secondAttribute="height" id="wmO-tp-MA2"/>
                             <constraint firstItem="Fdh-Ze-PZW" firstAttribute="top" secondItem="iGw-ju-oXF" secondAttribute="bottom" id="xkt-sQ-lkK"/>
                         </constraints>
                     </view>
+                    <navigationItem key="navigationItem" id="mIA-FZ-mLP">
+                        <barButtonItem key="backBarButtonItem" title=" " id="cSD-3n-43a"/>
+                    </navigationItem>
                     <connections>
                         <outlet property="cancelButton" destination="lzQ-at-alt" id="CyI-gR-aNd"/>
                         <outlet property="dipsLabel" destination="M8s-wS-bZI" id="jdr-Jo-W5c"/>
                         <outlet property="dotsLabel" destination="Fdh-Ze-PZW" id="OWZ-ZV-MpD"/>
                         <outlet property="dotsXCenter" destination="9RY-ni-Ott" id="xXV-uu-VaX"/>
+                        <outlet property="lockLabel" destination="iLa-SV-VmA" id="Xgr-Ar-ie6"/>
                         <outlet property="logoXCenter" destination="AWO-xE-pCF" id="ubh-dq-3Bf"/>
                         <outlet property="padXCenter" destination="Ggx-4Y-aau" id="b5p-FH-GgU"/>
                         <outlet property="titleLabel" destination="zhS-gG-oV0" id="jCx-AK-LhQ"/>
+                        <outlet property="titleXCenter" destination="A02-Vw-Rss" id="6v3-4V-SSX"/>
+                        <outlet property="wallpaper" destination="xGr-ag-4pI" id="qAe-Rb-6bC"/>
                         <outlet property="wallpaperX" destination="GuF-zb-gml" id="EEZ-QH-Xxg"/>
                         <outletCollection property="padButtons" destination="KDQ-9z-tgd" id="70j-Lk-ihc"/>
                         <outletCollection property="padButtons" destination="Ktz-66-HDX" id="kT7-YH-fNA"/>
@@ -2276,7 +2339,22 @@ http://breadwallet.com</string>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="cip-Sn-1ZH" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1546" y="2730"/>
+            <point key="canvasLocation" x="1134" y="2730"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="rCK-s1-XbH">
+            <objects>
+                <navigationController storyboardIdentifier="PINNav" definesPresentationContext="YES" id="ZPI-JM-Ov5" sceneMemberID="viewController">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="aTJ-F9-vcc" customClass="BRNavigationBar">
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="4GL-nw-juQ" kind="relationship" relationship="rootViewController" id="MqT-Yb-n5f"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="uyG-nL-1e1" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="719" y="2730"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="rwD-Uu-WFw">
