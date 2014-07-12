@@ -103,6 +103,8 @@
         usingBlock:^(NSNotification *note) {
             [self.pageViewController setViewControllers:@[self.sendViewController]
              direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
+
+            //BUG: XXXXX this will dismiss pin pad!
             if (m.wallet) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
         }];
 
@@ -111,16 +113,18 @@
         usingBlock:^(NSNotification *note) {
             [self.pageViewController setViewControllers:@[self.sendViewController]
              direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
+
+            //BUG: XXXXX this will dismiss pin pad!
             if (m.wallet) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
         }];
 
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.appeared) {
+            if (self.appeared) { // BUG: XXXXX this will show multiple pin pads!
                 UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
 
-                [(id)c setAppeared:YES];
+                [[(id)c viewControllers].firstObject setAppeared:YES];
                 [self.navigationController presentViewController:c animated:NO completion:nil];
                 [[BRPeerManager sharedInstance] connect];
             }

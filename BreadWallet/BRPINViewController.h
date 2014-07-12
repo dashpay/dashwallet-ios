@@ -29,5 +29,7 @@
 UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning>
 
 @property (nonatomic, assign) BOOL appeared; // set this to true if this is not initial pin lock following app launch
+@property (nonatomic, assign) BOOL cancelable;
+@property (nonatomic, assign) BOOL changePin;
 
 @end

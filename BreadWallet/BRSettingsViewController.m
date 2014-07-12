@@ -366,6 +366,7 @@
             cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
             [self setBackgroundForCell:cell atIndexPath:indexPath];
 
+            //TODO: XXXXX change pin option
             switch (indexPath.row) {
                 case 0:
                     cell.textLabel.text = NSLocalizedString(@"about", nil);
@@ -531,15 +532,10 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
-    static NSString *warning = nil;
     UIViewController *c = nil;
     UILabel *l = nil;
     NSUInteger i = 0;
     UITableViewCell *cell = nil;
-
-    if (! warning) {
-        warning = NSLocalizedString(@"DO NOT let anyone see your backup phrase or they can spend your bitcoins.", nil);
-    }
 
     if (self.tipView) {
         [self.tipView popOut];
@@ -574,7 +570,9 @@
                     break;
                     
                 case 1:
-                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil) message:warning delegate:self
+                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
+                      message:NSLocalizedString(@"DO NOT let anyone see your backup phrase or they can spend your "
+                                                 "bitcoins.", nil) delegate:self
                       cancelButtonTitle:NSLocalizedString(@"cancel", nil)
                       otherButtonTitles:NSLocalizedString(@"show", nil), nil] show];
                     break;
@@ -622,6 +620,7 @@
         return;
     }
 
+    //TODO: XXXXX pin lock this
     [self.navigationController
      pushViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"] animated:YES];
 }

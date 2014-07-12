@@ -131,6 +131,9 @@
 "email not configured" = "email not configured";
 
 /* No comment provided by engineer. */
+"enter current pin" = "enter current pin";
+
+/* No comment provided by engineer. */
 "enter pin" = "enter pin";
 
 /* No comment provided by engineer. */
@@ -162,6 +165,9 @@
 
 /* No comment provided by engineer. */
 "Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address.";
+
+/* No comment provided by engineer. */
+"minute" = "minute";
 
 /* No comment provided by engineer. */
 "minutes" = "minutes";
@@ -318,6 +324,9 @@
 
 /* No comment provided by engineer. */
 "wallet disabled\n\ntry again after block #%u\n(about %@)" = "wallet disabled\n\ntry again after block #%1$u\n(about %2$@)";
+
+/* No comment provided by engineer. */
+"wallet disabled\n\ntry again in %@" = "wallet disabled\n\ntry again in %@";
 
 /* No comment provided by engineer. */
 "WARNING" = "WARNING";

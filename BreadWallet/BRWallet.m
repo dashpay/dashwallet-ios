@@ -471,7 +471,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
 
     if (transaction.lockTime <= blockHeight + 1) return NO;
 
-    if (transaction.lockTime >= 500000000 &&
+    if (transaction.lockTime >= TX_MAX_LOCK_HEIGHT &&
         transaction.lockTime < [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 + 10*60) return NO;
 
     for (NSNumber *sequence in transaction.inputSequences) { // lockTime is ignored if all sequence numbers are final
