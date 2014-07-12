@@ -1433,7 +1433,7 @@ http://breadwallet.com</string>
                                 <rect key="frame" x="32" y="209" width="257" height="151"/>
                             </imageView>
                             <view appearanceType="aqua" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4Lz-RL-RUK">
-                                <rect key="frame" x="150" y="20" width="20" height="49"/>
+                                <rect key="frame" x="150" y="20" width="20" height="44"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 <constraints>
@@ -1441,8 +1441,12 @@ http://breadwallet.com</string>
                                 </constraints>
                             </view>
                             <label appearanceType="aqua" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="enter pin" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zhS-gG-oV0">
-                                <rect key="frame" x="127" y="69" width="67" height="21"/>
+                                <rect key="frame" x="100" y="64" width="120" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="120" id="He0-Ux-WuK"/>
+                                    <constraint firstAttribute="height" constant="21" id="Uqk-Mb-R3E"/>
+                                </constraints>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                 <nil key="highlightedColor"/>
@@ -1450,7 +1454,7 @@ http://breadwallet.com</string>
                                 <size key="shadowOffset" width="0.0" height="1"/>
                             </label>
                             <view appearanceType="aqua" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="iGw-ju-oXF">
-                                <rect key="frame" x="150" y="90" width="20" height="49"/>
+                                <rect key="frame" x="150" y="85" width="20" height="43"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 <constraints>
@@ -1458,7 +1462,7 @@ http://breadwallet.com</string>
                                 </constraints>
                             </view>
                             <label appearanceType="aqua" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="○  ○  ○  ○" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fdh-Ze-PZW">
-                                <rect key="frame" x="98" y="139" width="124" height="21"/>
+                                <rect key="frame" x="98" y="128" width="124" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="21" id="BeV-Lf-L8r"/>
@@ -1470,16 +1474,8 @@ http://breadwallet.com</string>
                                 <color key="shadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                 <size key="shadowOffset" width="0.0" height="1"/>
                             </label>
-                            <label appearanceType="aqua" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.0" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="○  ○  ○  ○" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="M8s-wS-bZI">
-                                <rect key="frame" x="98" y="139" width="124" height="21"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" name="Menlo-Bold" family="Menlo" pointSize="20"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                <nil key="highlightedColor"/>
-                                <size key="shadowOffset" width="0.0" height="0.0"/>
-                            </label>
                             <view appearanceType="aqua" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="tBV-ew-ggP">
-                                <rect key="frame" x="150" y="160" width="20" height="49"/>
+                                <rect key="frame" x="150" y="149" width="20" height="43"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 <constraints>
@@ -1487,7 +1483,7 @@ http://breadwallet.com</string>
                                 </constraints>
                             </view>
                             <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="KDQ-9z-tgd">
-                                <rect key="frame" x="30" y="209" width="72" height="72"/>
+                                <rect key="frame" x="30" y="192" width="72" height="72"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="72" id="Qie-u5-08A"/>
@@ -1561,7 +1557,7 @@ http://breadwallet.com</string>
                                 </connections>
                             </button>
                             <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ktz-66-HDX">
-                                <rect key="frame" x="124" y="209" width="72" height="72"/>
+                                <rect key="frame" x="124" y="192" width="72" height="72"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="72" id="HzN-6V-Jd5"/>
@@ -1635,7 +1631,7 @@ http://breadwallet.com</string>
                                 </connections>
                             </button>
                             <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="AIW-cS-Arl">
-                                <rect key="frame" x="218" y="209" width="72" height="72"/>
+                                <rect key="frame" x="218" y="192" width="72" height="72"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="72" id="kTR-uG-a25"/>
@@ -1709,7 +1705,7 @@ http://breadwallet.com</string>
                                 </connections>
                             </button>
                             <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="JVc-Me-836">
-                                <rect key="frame" x="30" y="303" width="72" height="72"/>
+                                <rect key="frame" x="30" y="279" width="72" height="72"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="72" id="SfI-se-dGz"/>
@@ -1783,7 +1779,7 @@ http://breadwallet.com</string>
                                 </connections>
                             </button>
                             <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="LN4-YY-3RQ">
-                                <rect key="frame" x="124" y="303" width="72" height="72"/>
+                                <rect key="frame" x="124" y="279" width="72" height="72"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="72" id="Hr4-Xa-qRv"/>
@@ -1857,7 +1853,7 @@ http://breadwallet.com</string>
                                 </connections>
                             </button>
                             <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="yQz-ag-iFU">
-                                <rect key="frame" x="218" y="303" width="72" height="72"/>
+                                <rect key="frame" x="218" y="279" width="72" height="72"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="72" id="ONe-sC-aXf"/>
@@ -1931,7 +1927,7 @@ http://breadwallet.com</string>
                                 </connections>
                             </button>
                             <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="3X5-SY-Dxe">
-                                <rect key="frame" x="30" y="397" width="72" height="72"/>
+                                <rect key="frame" x="30" y="366" width="72" height="72"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="72" id="N3l-e2-moU"/>
@@ -2005,7 +2001,7 @@ http://breadwallet.com</string>
                                 </connections>
                             </button>
                             <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zKl-0k-txb">
-                                <rect key="frame" x="124" y="397" width="72" height="72"/>
+                                <rect key="frame" x="124" y="366" width="72" height="72"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="72" id="7Vh-xg-CNb"/>
@@ -2079,7 +2075,7 @@ http://breadwallet.com</string>
                                 </connections>
                             </button>
                             <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ohi-ey-IQ0">
-                                <rect key="frame" x="218" y="397" width="72" height="72"/>
+                                <rect key="frame" x="218" y="366" width="72" height="72"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="72" id="0rg-ec-3f1"/>
@@ -2153,7 +2149,7 @@ http://breadwallet.com</string>
                                 </connections>
                             </button>
                             <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="IkG-JC-8ma" userLabel="Button - 0">
-                                <rect key="frame" x="124" y="491" width="72" height="72"/>
+                                <rect key="frame" x="124" y="453" width="72" height="72"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="72" id="ZTI-Tv-w6I"/>
@@ -2226,7 +2222,15 @@ http://breadwallet.com</string>
                                     <action selector="number:" destination="4GL-nw-juQ" eventType="touchUpInside" id="U6f-mH-MqO"/>
                                 </connections>
                             </button>
-                            <label appearanceType="aqua" opaque="NO" clipsSubviews="YES" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="340" translatesAutoresizingMaskIntoConstraints="NO" id="iLa-SV-VmA">
+                            <view appearanceType="aqua" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fw3-OY-MiL">
+                                <rect key="frame" x="150" y="525" width="20" height="43"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="20" id="7u0-yu-4ub"/>
+                                </constraints>
+                            </view>
+                            <label hidden="YES" appearanceType="aqua" opaque="NO" clipsSubviews="YES" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="340" translatesAutoresizingMaskIntoConstraints="NO" id="iLa-SV-VmA">
                                 <rect key="frame" x="-10" y="0.0" width="340" height="568"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.5" colorSpace="calibratedWhite"/>
@@ -2263,7 +2267,7 @@ Cgo
                                 <size key="shadowOffset" width="0.0" height="1"/>
                             </label>
                             <button appearanceType="aqua" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="right" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="lzQ-at-alt">
-                                <rect key="frame" x="210" y="503" width="60" height="60"/>
+                                <rect key="frame" x="210" y="465" width="60" height="60"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="60" id="3PB-JZ-JH3"/>
@@ -2294,32 +2298,31 @@ Cgo
                             <constraint firstItem="Ohi-ey-IQ0" firstAttribute="centerY" secondItem="zKl-0k-txb" secondAttribute="centerY" id="AQ2-yH-zfv"/>
                             <constraint firstAttribute="centerX" secondItem="FJv-fU-9AC" secondAttribute="centerX" id="AWO-xE-pCF"/>
                             <constraint firstItem="yQz-ag-iFU" firstAttribute="centerY" secondItem="LN4-YY-3RQ" secondAttribute="centerY" id="C0o-2s-BLf"/>
+                            <constraint firstAttribute="centerX" secondItem="fw3-OY-MiL" secondAttribute="centerX" id="DFy-wZ-mgQ"/>
                             <constraint firstItem="IkG-JC-8ma" firstAttribute="centerX" secondItem="pxc-C6-1Sd" secondAttribute="centerX" id="Ggx-4Y-aau"/>
                             <constraint firstAttribute="leading" secondItem="xGr-ag-4pI" secondAttribute="leading" id="GuF-zb-gml"/>
                             <constraint firstItem="IkG-JC-8ma" firstAttribute="centerX" secondItem="LN4-YY-3RQ" secondAttribute="centerX" id="Hc5-12-kaq"/>
                             <constraint firstItem="IkG-JC-8ma" firstAttribute="bottom" secondItem="lzQ-at-alt" secondAttribute="bottom" id="Hef-qx-VWp"/>
                             <constraint firstItem="tBV-ew-ggP" firstAttribute="top" secondItem="Fdh-Ze-PZW" secondAttribute="bottom" id="JZt-hU-QhY"/>
-                            <constraint firstItem="zKl-0k-txb" firstAttribute="top" secondItem="LN4-YY-3RQ" secondAttribute="bottom" constant="22" id="MO7-mm-95N"/>
+                            <constraint firstItem="zKl-0k-txb" firstAttribute="top" secondItem="LN4-YY-3RQ" secondAttribute="bottom" constant="15" id="MO7-mm-95N"/>
                             <constraint firstItem="Ohi-ey-IQ0" firstAttribute="leading" secondItem="zKl-0k-txb" secondAttribute="trailing" constant="22" id="Pni-Th-B45"/>
                             <constraint firstItem="yQz-ag-iFU" firstAttribute="leading" secondItem="LN4-YY-3RQ" secondAttribute="trailing" constant="22" id="Rdy-5g-sa4"/>
                             <constraint firstItem="Ktz-66-HDX" firstAttribute="top" secondItem="tBV-ew-ggP" secondAttribute="bottom" id="SWH-ZH-D1i"/>
-                            <constraint firstItem="Fdh-Ze-PZW" firstAttribute="height" secondItem="M8s-wS-bZI" secondAttribute="height" id="TXT-2G-wts"/>
+                            <constraint firstItem="IkG-JC-8ma" firstAttribute="bottom" secondItem="fw3-OY-MiL" secondAttribute="top" id="SyP-4U-SgF"/>
                             <constraint firstItem="zKl-0k-txb" firstAttribute="leading" secondItem="3X5-SY-Dxe" secondAttribute="trailing" constant="22" id="UNQ-L0-fl9"/>
-                            <constraint firstItem="LN4-YY-3RQ" firstAttribute="top" secondItem="Ktz-66-HDX" secondAttribute="bottom" constant="22" id="Y6z-8i-Fkf"/>
+                            <constraint firstItem="LN4-YY-3RQ" firstAttribute="top" secondItem="Ktz-66-HDX" secondAttribute="bottom" constant="15" id="Y6z-8i-Fkf"/>
                             <constraint firstItem="IkG-JC-8ma" firstAttribute="centerX" secondItem="Ktz-66-HDX" secondAttribute="centerX" id="Ym7-jx-Xqt"/>
+                            <constraint firstAttribute="bottom" secondItem="fw3-OY-MiL" secondAttribute="bottom" id="Za3-xG-0DT"/>
                             <constraint firstItem="LN4-YY-3RQ" firstAttribute="leading" secondItem="JVc-Me-836" secondAttribute="trailing" constant="22" id="aWK-XD-ZHz"/>
                             <constraint firstItem="Ktz-66-HDX" firstAttribute="centerY" secondItem="KDQ-9z-tgd" secondAttribute="centerY" id="atB-Sw-uxE"/>
                             <constraint firstItem="lzQ-at-alt" firstAttribute="leading" secondItem="IkG-JC-8ma" secondAttribute="trailing" constant="14" id="bBs-H4-Km8"/>
                             <constraint firstAttribute="centerX" secondItem="4Lz-RL-RUK" secondAttribute="centerX" id="bKc-j4-G8M"/>
-                            <constraint firstItem="IkG-JC-8ma" firstAttribute="top" secondItem="zKl-0k-txb" secondAttribute="bottom" constant="22" id="bSY-87-EAz"/>
+                            <constraint firstItem="IkG-JC-8ma" firstAttribute="top" secondItem="zKl-0k-txb" secondAttribute="bottom" constant="15" id="bSY-87-EAz"/>
+                            <constraint firstItem="tBV-ew-ggP" firstAttribute="height" secondItem="fw3-OY-MiL" secondAttribute="height" id="dzY-am-ZaH"/>
                             <constraint firstAttribute="centerY" secondItem="FJv-fU-9AC" secondAttribute="centerY" id="eQI-z2-GUo"/>
                             <constraint firstItem="zhS-gG-oV0" firstAttribute="top" secondItem="4Lz-RL-RUK" secondAttribute="bottom" id="efZ-L7-5r9"/>
-                            <constraint firstItem="Fdh-Ze-PZW" firstAttribute="centerX" secondItem="M8s-wS-bZI" secondAttribute="centerX" id="fJU-C4-DOn"/>
                             <constraint firstItem="iGw-ju-oXF" firstAttribute="top" secondItem="zhS-gG-oV0" secondAttribute="bottom" id="gvo-GT-C0b"/>
                             <constraint firstItem="AIW-cS-Arl" firstAttribute="leading" secondItem="Ktz-66-HDX" secondAttribute="trailing" constant="22" id="hYp-xV-bye"/>
-                            <constraint firstItem="Fdh-Ze-PZW" firstAttribute="centerY" secondItem="M8s-wS-bZI" secondAttribute="centerY" id="hZU-42-IUp"/>
-                            <constraint firstItem="Fdh-Ze-PZW" firstAttribute="width" secondItem="M8s-wS-bZI" secondAttribute="width" id="i2d-Ls-dO5"/>
-                            <constraint firstItem="ZzD-Qc-uQy" firstAttribute="top" secondItem="IkG-JC-8ma" secondAttribute="bottom" constant="5" id="jpG-Dw-uzv"/>
                             <constraint firstItem="4Lz-RL-RUK" firstAttribute="top" secondItem="pxc-C6-1Sd" secondAttribute="top" constant="20" id="kpM-0Y-2mP"/>
                             <constraint firstItem="AIW-cS-Arl" firstAttribute="centerY" secondItem="Ktz-66-HDX" secondAttribute="centerY" id="l26-wQ-FqZ"/>
                             <constraint firstAttribute="centerX" secondItem="iGw-ju-oXF" secondAttribute="centerX" id="lAp-u0-FmT"/>
@@ -2338,7 +2341,6 @@ Cgo
                     </navigationItem>
                     <connections>
                         <outlet property="cancelButton" destination="lzQ-at-alt" id="CyI-gR-aNd"/>
-                        <outlet property="dipsLabel" destination="M8s-wS-bZI" id="jdr-Jo-W5c"/>
                         <outlet property="dotsLabel" destination="Fdh-Ze-PZW" id="OWZ-ZV-MpD"/>
                         <outlet property="dotsXCenter" destination="9RY-ni-Ott" id="xXV-uu-VaX"/>
                         <outlet property="lockLabel" destination="iLa-SV-VmA" id="Xgr-Ar-ie6"/>
@@ -2367,7 +2369,7 @@ Cgo
         <!--Navigation Controller-->
         <scene sceneID="rCK-s1-XbH">
             <objects>
-                <navigationController storyboardIdentifier="PINNav" definesPresentationContext="YES" id="ZPI-JM-Ov5" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="PINNav" definesPresentationContext="YES" useStoryboardIdentifierAsRestorationIdentifier="YES" id="ZPI-JM-Ov5" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="aTJ-F9-vcc" customClass="BRNavigationBar">
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>

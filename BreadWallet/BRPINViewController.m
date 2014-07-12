@@ -36,8 +36,8 @@
 
 @interface BRPINViewController ()
 
-@property (nonatomic, strong) IBOutlet UILabel *titleLabel, *dotsLabel, *dipsLabel, *lockLabel;
-@property (nonatomic, strong) IBOutlet UIButton *cancelButton, *resetButton;
+@property (nonatomic, strong) IBOutlet UILabel *titleLabel, *dotsLabel, *lockLabel;
+@property (nonatomic, strong) IBOutlet UIButton *cancelButton;
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
 @property (nonatomic, strong) IBOutletCollection(UIButton) NSArray *padButtons;
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *logoXCenter, *titleXCenter, *dotsXCenter, *padXCenter,
@@ -45,7 +45,7 @@
 
 @property (nonatomic, strong) NSMutableString *pin, *verifyPin;
 @property (nonatomic, strong) NSMutableSet *badPins;
-@property (nonatomic, assign) BOOL backupPhraseNote;
+@property (nonatomic, assign) BOOL success;
 @property (nonatomic, strong) id txStatusObserver;
 
 @end
@@ -102,7 +102,7 @@
 
     self.pin = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), PIN_LENGTH));
     self.badPins = [NSMutableSet set];
-
+    self.success = NO;
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:NO];
     [self checkLockout];
 }
@@ -112,6 +112,7 @@
     [super viewDidAppear:animated];
 
     [[BRPeerManager sharedInstance] connect];
+    [self performSelector:@selector(checkLockout) withObject:nil afterDelay:0.0];
 
     if (self.appeared) return;
     self.appeared = YES;
@@ -145,6 +146,12 @@
 - (void)checkLockout
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
+
+    if (! [[UIApplication sharedApplication] isProtectedDataAvailable]) {
+        [self.padButtons makeObjectsPerformSelector:@selector(setEnabled:) withObject:nil];
+        [self performSelector:@selector(checkLockout) withObject:nil afterDelay:0.1];
+        return;
+    }
 
     BRWalletManager *m = [BRWalletManager sharedInstance];
     NSUInteger failCount = m.pinFailCount, i;
@@ -183,11 +190,9 @@
             [t replaceCharactersInRange:NSMakeRange(i, t.string.length - i)
              withString:[s substringFromIndex:[s rangeOfString:@"\n\n"].location + 2]];
             self.lockLabel.attributedText = t;
-            [self.cancelButton setTitle:NSLocalizedString(@"reset pin", key) forState:UIControlStateNormal];
-
-            for (UIButton *b in self.padButtons) {
-                b.enabled = NO;
-            }
+            [self.cancelButton setTitle:NSLocalizedString(@"reset pin", nil) forState:UIControlStateNormal];
+            self.cancelButton.enabled = YES;
+            [self.padButtons makeObjectsPerformSelector:@selector(setEnabled:) withObject:nil];
 
             if (self.lockLabel.hidden) {
                 self.lockLabel.hidden = NO;
@@ -203,14 +208,17 @@
     // not locked
     if (self.pin.length > 0) return;
 
-    if (m.pin.length == PIN_LENGTH) {
-        self.titleLabel.text = (self.changePin) ? NSLocalizedString(@"enter current pin", nil) :
-                               NSLocalizedString(@"enter pin", nil);
+    if (! self.success) {
+        if (m.pin.length == PIN_LENGTH) {
+            self.titleLabel.text = (self.changePin) ? NSLocalizedString(@"enter current pin", nil) :
+                                   NSLocalizedString(@"enter pin", nil);
+        }
+        else self.titleLabel.text = NSLocalizedString(@"choose a pin", nil);
     }
-    else self.titleLabel.text = NSLocalizedString(@"choose a pin", nil);
 
     [self.cancelButton setTitle:(self.cancelable ? NSLocalizedString(@"cancel", key) : @"")
      forState:UIControlStateNormal];
+    self.cancelButton.enabled = (self.cancelable) ? YES : NO;
 
     for (UIButton *b in self.padButtons) {
         b.enabled = YES;
@@ -245,14 +253,16 @@
 
         if (! [self.cancelButton.currentTitle isEqual:NSLocalizedString(@"delete", nil)]) {
             [self.cancelButton setTitle:NSLocalizedString(@"delete", nil) forState:UIControlStateNormal];
+            self.cancelButton.enabled = YES;
         }
     }
-    else if ([self.pin isEqual:m.pin]) { // successful pin attempt
+    else if (! self.success && [self.pin isEqual:m.pin]) { // successful pin attempt
         if (m.pinFailCount > 0) {
             m.pinFailCount = 0;
             m.pinFailHeight = 0;
         }
 
+        self.success = YES;
         self.dotsLabel.text = DOT @"  " DOT @"  " DOT @"  " DOT;
 
         if (self.changePin) {
@@ -263,7 +273,7 @@
             [UIView animateWithDuration:0.1 delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
                 [self.view layoutIfNeeded];
             } completion:^(BOOL finished) {
-                self.titleLabel.text = NSLocalizedString(@"choose a pin", nil); //TODO: XXXXX this doesn't work yet
+                self.titleLabel.text = NSLocalizedString(@"choose a pin", nil);
                 self.dotsLabel.text = CIRCLE @"  " CIRCLE @"  " CIRCLE @"  " CIRCLE;
                 self.dotsXCenter.constant = self.dotsLabel.bounds.size.width/2 + self.view.bounds.size.width/2;
                 self.titleXCenter.constant = self.dotsXCenter.constant;
@@ -276,7 +286,7 @@
         }
         else [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
     }
-    else if (m.pin.length == PIN_LENGTH) { // failed pin attempt
+    else if (! self.success && m.pin.length == PIN_LENGTH) { // failed pin attempt
         if (! [self.badPins containsObject:self.pin]) {
             [self.badPins addObject:self.pin];
             self.pin = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), PIN_LENGTH));
@@ -365,6 +375,7 @@
 
     if ([[sender currentTitle] isEqual:NSLocalizedString(@"delete", nil)]) {
         [sender setTitle:(self.cancelable ? NSLocalizedString(@"cancel", nil) : @"") forState:UIControlStateNormal];
+        [sender setEnabled:self.cancelable ? YES : NO];
     }
     else if ([[sender currentTitle] isEqual:NSLocalizedString(@"reset pin", nil)]) {
         UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINResetController"];

@@ -50,8 +50,8 @@
 @property (nonatomic, strong) BRBubbleView *tipView;
 @property (nonatomic, assign) BOOL appeared, showTips, inNextTip;
 @property (nonatomic, strong) Reachability *reachability;
-@property (nonatomic, strong) id urlObserver, fileObserver, activeObserver, balanceObserver, reachabilityObserver;
-@property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
+@property (nonatomic, strong) id urlObserver, fileObserver, activeObserver, resignActiveObserver, balanceObserver;
+@property (nonatomic, strong) id reachabilityObserver, syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 @property (nonatomic, assign) NSTimeInterval timeout, start;
 
 @end
@@ -121,11 +121,19 @@
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.appeared) { // BUG: XXXXX this will show multiple pin pads!
+            if (self.appeared &&
+                ! [self.navigationController.presentedViewController.restorationIdentifier isEqual:@"PINNav"]) {
                 UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
 
                 [[(id)c viewControllers].firstObject setAppeared:YES];
-                [self.navigationController presentViewController:c animated:NO completion:nil];
+
+                if (self.navigationController.presentedViewController) {
+                    [self.navigationController dismissViewControllerAnimated:NO completion:^{
+                        [self.navigationController presentViewController:c animated:NO completion:nil];
+                    }];
+                }
+                else [self.navigationController presentViewController:c animated:NO completion:nil];
+
                 [[BRPeerManager sharedInstance] connect];
             }
 
@@ -143,6 +151,24 @@
                                             "Any 'jailbreak' app can control this device and steal funds.", nil)
                   delegate:self cancelButtonTitle:NSLocalizedString(@"ingore", nil)
                   otherButtonTitles:NSLocalizedString(@"close app", nil), nil] show];
+            }
+        }];
+
+    self.resignActiveObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
+            if (self.appeared &&
+                ! [self.navigationController.presentedViewController.restorationIdentifier isEqual:@"PINNav"]) {
+                UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
+
+                [[(id)c viewControllers].firstObject setAppeared:YES];
+
+                if (self.navigationController.presentedViewController) {
+                    [self.navigationController dismissViewControllerAnimated:NO completion:^{
+                        [self.navigationController presentViewController:c animated:NO completion:nil];
+                    }];
+                }
+                else [self.navigationController presentViewController:c animated:NO completion:nil];
             }
         }];
 
@@ -305,6 +331,7 @@
     if (self.urlObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.urlObserver];
     if (self.fileObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.fileObserver];
     if (self.activeObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
+    if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
     if (self.reachabilityObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
     if (self.syncStartedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
