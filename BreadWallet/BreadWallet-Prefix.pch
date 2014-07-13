@@ -25,5 +25,3 @@
 #if ! DEBUG
 #define NSLog(...)
 #endif
-
-#define OPENSSL_NO_INLINE_ASM

@@ -76,7 +76,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     self.spentOutputs = [NSMutableSet set];
     self.utxos = [NSMutableOrderedSet orderedSet];
 
-    //BUG: XXXX when switching networks or when installing a developement build overtop an appstore build,
+    //BUG: when switching networks or when installing a developement build overtop an appstore build,
     // the core data store can be inconsistent with the keychain, need to add a consistency check
 
     [self.moc performBlockAndWait:^{
@@ -471,7 +471,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
 
     if (transaction.lockTime <= blockHeight + 1) return NO;
 
-    if (transaction.lockTime >= 500000000 &&
+    if (transaction.lockTime >= TX_MAX_LOCK_HEIGHT &&
         transaction.lockTime < [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 + 10*60) return NO;
 
     for (NSNumber *sequence in transaction.inputSequences) { // lockTime is ignored if all sequence numbers are final

@@ -123,7 +123,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         if (syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFinishedObserver];
         if (syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFailedObserver];
         syncFinishedObserver = syncFailedObserver = nil;
-        //TODO: XXXX disconnect
+        //TODO: disconnect
     });
 
     syncFinishedObserver =

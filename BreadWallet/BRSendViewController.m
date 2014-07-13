@@ -322,7 +322,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         return;
     }
 
-    //TODO: XXXX check for duplicates of already paid requests
+    //TODO: check for duplicates of already paid requests
 
     self.protocolRequest = protoReq;
     self.tx = [m.wallet transactionForAmounts:protoReq.details.outputAmounts
@@ -724,7 +724,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
     [(id)self.parentViewController.parentViewController startActivityWithTimeout:30];
 
-    //TODO: XXXX don't sign on main thread
+    //TODO: don't sign on main thread
     if (! [m.wallet signTransaction:self.tx]) {
         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
           message:NSLocalizedString(@"error signing bitcoin transaction", nil) delegate:nil
@@ -764,7 +764,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
             refundAmount += [amount unsignedLongLongValue];
         }
 
-        // TODO: XXXX keep track of commonName/memo to associate them with outputScripts
+        // TODO: keep track of commonName/memo to associate them with outputScripts
         BRPaymentProtocolPayment *payment =
             [[BRPaymentProtocolPayment alloc] initWithMerchantData:protoReq.details.merchantData
              transactions:@[self.tx] refundToAmounts:@[@(refundAmount)] refundToScripts:@[refundScript] memo:nil];

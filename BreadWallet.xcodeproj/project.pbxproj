@@ -50,6 +50,7 @@
 		752226AA19284BE0001F1E3A /* libqrencoder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7522265A19283338001F1E3A /* libqrencoder.a */; };
 		752226AB19284BE4001F1E3A /* libzbar.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 752224C21928227C001F1E3A /* libzbar.a */; };
 		752226AD19284BFD001F1E3A /* libiconv.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 752226AC19284BFD001F1E3A /* libiconv.dylib */; };
+		75242C851968876500CF40E7 /* BRPINViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75242C841968876500CF40E7 /* BRPINViewController.m */; };
 		7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7525B618192453840041C0F2 /* BRNavigationBar.m */; };
 		752E285C192343D200DB5A3C /* bio_ssl.c in Sources */ = {isa = PBXBuildFile; fileRef = 752E281D192343D200DB5A3C /* bio_ssl.c */; };
 		752E285D192343D200DB5A3C /* d1_both.c in Sources */ = {isa = PBXBuildFile; fileRef = 752E281E192343D200DB5A3C /* d1_both.c */; };
@@ -950,6 +951,8 @@
 		75222693192833BC001F1E3A /* QREncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QREncoder.h; sourceTree = "<group>"; };
 		75222694192833BC001F1E3A /* QREncoder.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = QREncoder.mm; sourceTree = "<group>"; };
 		752226AC19284BFD001F1E3A /* libiconv.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.dylib; path = usr/lib/libiconv.dylib; sourceTree = SDKROOT; };
+		75242C831968876500CF40E7 /* BRPINViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRPINViewController.h; sourceTree = "<group>"; };
+		75242C841968876500CF40E7 /* BRPINViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPINViewController.m; sourceTree = "<group>"; };
 		7525B617192453840041C0F2 /* BRNavigationBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRNavigationBar.h; sourceTree = "<group>"; };
 		7525B618192453840041C0F2 /* BRNavigationBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRNavigationBar.m; sourceTree = "<group>"; };
 		752E27FA1923434B00DB5A3C /* libssl.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libssl.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1808,6 +1811,7 @@
 		759FBB33193290F600AB4465 /* BRRootViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = BRRootViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		759FBB34193290F600AB4465 /* BRSendViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRSendViewController.h; sourceTree = "<group>"; };
 		759FBB35193290F600AB4465 /* BRSendViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = BRSendViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
+		75A0A2031972260F0022949C /* openssl.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = openssl.pch; sourceTree = SOURCE_ROOT; };
 		75A1E4D5193869C500D85BEE /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75AA5F53194143D5003F23BD /* BRBouncyBurgerButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBouncyBurgerButton.h; sourceTree = "<group>"; };
 		75AA5F54194143D5003F23BD /* BRBouncyBurgerButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBouncyBurgerButton.m; sourceTree = "<group>"; };
@@ -2220,6 +2224,7 @@
 		7579F7FF19231D7B00CA56F4 /* openssl */ = {
 			isa = PBXGroup;
 			children = (
+				75A0A2031972260F0022949C /* openssl.pch */,
 				752E281C192343D200DB5A3C /* ssl */,
 				7579F80119231E7500CA56F4 /* crypto */,
 			);
@@ -3382,6 +3387,8 @@
 				757BE7E5192C1FF70061CB20 /* BRWelcomeViewController.m */,
 				757BE7E7192D4E880061CB20 /* BRSeedViewController.h */,
 				757BE7E8192D4E880061CB20 /* BRSeedViewController.m */,
+				75242C831968876500CF40E7 /* BRPINViewController.h */,
+				75242C841968876500CF40E7 /* BRPINViewController.m */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -4436,6 +4443,7 @@
 				752E28D619234C3600DB5A3C /* BRPeer.m in Sources */,
 				752E28D819234C3600DB5A3C /* BRPeerManager.m in Sources */,
 				752E28D419234C3600DB5A3C /* BRPaymentProtocol.m in Sources */,
+				75242C851968876500CF40E7 /* BRPINViewController.m in Sources */,
 				752E28D519234C3600DB5A3C /* BRPaymentRequest.m in Sources */,
 				7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */,
 				75878BC1192AEC3F002505AB /* BRReceiveViewController.mm in Sources */,
@@ -4646,7 +4654,7 @@
 				CLANG_ENABLE_MODULES = NO;
 				DSTROOT = /tmp/ssl.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
+				GCC_PREFIX_HEADER = openssl.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -4672,7 +4680,7 @@
 				CLANG_ENABLE_MODULES = NO;
 				DSTROOT = /tmp/ssl.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
+				GCC_PREFIX_HEADER = openssl.pch;
 				GCC_WARN_INHIBIT_ALL_WARNINGS = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -4754,7 +4762,7 @@
 				CLANG_ENABLE_MODULES = NO;
 				DSTROOT = /tmp/ssl.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
+				GCC_PREFIX_HEADER = openssl.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -4780,7 +4788,7 @@
 				CLANG_ENABLE_MODULES = NO;
 				DSTROOT = /tmp/crypto.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
+				GCC_PREFIX_HEADER = openssl.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -4923,7 +4931,7 @@
 				CLANG_ENABLE_MODULES = NO;
 				DSTROOT = /tmp/crypto.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
+				GCC_PREFIX_HEADER = openssl.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -4949,7 +4957,7 @@
 				CLANG_ENABLE_MODULES = NO;
 				DSTROOT = /tmp/crypto.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
+				GCC_PREFIX_HEADER = openssl.pch;
 				GCC_WARN_INHIBIT_ALL_WARNINGS = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",

@@ -45,6 +45,9 @@
 #define LOCAL_CURRENCY_SYMBOL_KEY @"LOCAL_CURRENCY_SYMBOL"
 #define LOCAL_CURRENCY_CODE_KEY   @"LOCAL_CURRENCY_CODE"
 #define LOCAL_CURRENCY_PRICE_KEY  @"LOCAL_CURRENCY_PRICE"
+#define PIN_KEY                   @"pin"
+#define PIN_FAIL_COUNT_KEY        @"pinfailcount"
+#define PIN_FAIL_HEIGHT_KEY       @"pinfailheight"
 #define MNEMONIC_KEY              @"mnemonic"
 #define SEED_KEY                  @"seed"
 #define CREATION_TIME_KEY         @"creationtime"
@@ -181,25 +184,30 @@ static NSData *getKeychainData(NSString *key)
 
 - (void)setSeed:(NSData *)seed
 {
-    if ([seed isEqual:self.seed]) return;
+    @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
+        if ([seed isEqual:self.seed]) return;
 
-    [[NSManagedObject context] performBlockAndWait:^{
-        [BRAddressEntity deleteObjects:[BRAddressEntity allObjects]];
-        [BRTransactionEntity deleteObjects:[BRTransactionEntity allObjects]];
-        [NSManagedObject saveContext];
-    }];
+        [[NSManagedObject context] performBlockAndWait:^{
+            [BRAddressEntity deleteObjects:[BRAddressEntity allObjects]];
+            [BRTransactionEntity deleteObjects:[BRTransactionEntity allObjects]];
+            [NSManagedObject saveContext];
+        }];
 
-    setKeychainData(nil, MNEMONIC_KEY);
-    setKeychainData(nil, CREATION_TIME_KEY);
-    if (! setKeychainData(seed, SEED_KEY)) {
-        NSLog(@"error setting wallet seed");
-        [[[UIAlertView alloc] initWithTitle:@"couldn't create wallet"
-          message:@"error adding master private key to iOS keychain, make sure app has keychain entitlements"
-          delegate:self cancelButtonTitle:@"abort" otherButtonTitles:nil] show];
-        return;
+        setKeychainData(nil, PIN_KEY);
+        setKeychainData(nil, PIN_FAIL_COUNT_KEY);
+        setKeychainData(nil, PIN_FAIL_HEIGHT_KEY);
+        setKeychainData(nil, MNEMONIC_KEY);
+        setKeychainData(nil, CREATION_TIME_KEY);
+        if (! setKeychainData(seed, SEED_KEY)) {
+            NSLog(@"error setting wallet seed");
+            [[[UIAlertView alloc] initWithTitle:@"couldn't create wallet"
+              message:@"error adding master private key to iOS keychain, make sure app has keychain entitlements"
+              delegate:self cancelButtonTitle:@"abort" otherButtonTitles:nil] show];
+            return;
+        }
+
+        _wallet = nil;
     }
-
-    _wallet = nil;
 
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletManagerSeedChangedNotification object:nil];
@@ -208,17 +216,19 @@ static NSData *getKeychainData(NSString *key)
 
 - (NSString *)seedPhrase
 {
-    NSData *phrase = getKeychainData(MNEMONIC_KEY);
+    @autoreleasepool {
+        NSData *phrase = getKeychainData(MNEMONIC_KEY);
 
-    if (! phrase) return nil;
+        if (! phrase) return nil;
 
-    return CFBridgingRelease(CFStringCreateFromExternalRepresentation(SecureAllocator(), (CFDataRef)phrase,
-                                                                      kCFStringEncodingUTF8));
+        return CFBridgingRelease(CFStringCreateFromExternalRepresentation(SecureAllocator(), (CFDataRef)phrase,
+                                                                          kCFStringEncodingUTF8));
+    }
 }
 
 - (void)setSeedPhrase:(NSString *)seedPhrase
 {
-    @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
+    @autoreleasepool {
         BRBIP39Mnemonic *m = [BRBIP39Mnemonic sharedInstance];
         
         seedPhrase = [m encodePhrase:[m decodePhrase:seedPhrase]];
@@ -231,9 +241,70 @@ static NSData *getKeychainData(NSString *key)
     }
 }
 
+- (NSString *)pin
+{
+    @autoreleasepool {
+        NSData *pin = getKeychainData(PIN_KEY);
+
+        if (! pin) return nil;
+
+        return CFBridgingRelease(CFStringCreateFromExternalRepresentation(SecureAllocator(), (CFDataRef)pin,
+                                                                          kCFStringEncodingUTF8));
+    }
+}
+
+- (void)setPin:(NSString *)pin
+{
+    @autoreleasepool {
+        if (pin.length > 0) {
+            NSData *d = CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(), (CFStringRef)pin,
+                                                                               kCFStringEncodingUTF8, 0));
+
+            setKeychainData(d, PIN_KEY);
+        }
+        else setKeychainData(nil, PIN_KEY);
+    }
+}
+
+- (NSUInteger)pinFailCount
+{
+        NSData *count = getKeychainData(PIN_FAIL_COUNT_KEY);
+
+        return (count.length < sizeof(NSUInteger)) ? 0 : *(const NSUInteger *)count.bytes;
+}
+
+- (void)setPinFailCount:(NSUInteger)count
+{
+    if (count > 0) {
+        NSMutableData *d = [NSMutableData secureDataWithLength:sizeof(NSUInteger)];
+
+        *(NSUInteger *)d.mutableBytes = count;
+        setKeychainData(d, PIN_FAIL_COUNT_KEY);
+    }
+    else setKeychainData(nil, PIN_FAIL_COUNT_KEY);
+}
+
+- (uint32_t)pinFailHeight
+{
+    NSData *height = getKeychainData(PIN_FAIL_HEIGHT_KEY);
+
+    return (height.length < sizeof(uint32_t)) ? 0 : *(const uint32_t *)height.bytes;
+}
+
+- (void)setPinFailHeight:(uint32_t)height
+{
+    if (height > 0) {
+        NSMutableData *d = [NSMutableData secureDataWithLength:sizeof(uint32_t)];
+
+        *(uint32_t *)d.mutableBytes = height;
+        setKeychainData(d, PIN_FAIL_HEIGHT_KEY);
+    }
+    else setKeychainData(nil, PIN_FAIL_HEIGHT_KEY);
+}
+
 - (void)generateRandomSeed
 {
-    @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
+    @autoreleasepool {
         NSMutableData *entropy = [NSMutableData secureDataWithLength:SEED_ENTROPY_LENGTH];
         NSTimeInterval time = [NSDate timeIntervalSinceReferenceDate];
 
@@ -467,7 +538,9 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
     NSString *code = [[NSUserDefaults standardUserDefaults] stringForKey:LOCAL_CURRENCY_CODE_KEY];
     double price = [[NSUserDefaults standardUserDefaults] doubleForKey:LOCAL_CURRENCY_PRICE_KEY];
 
-    if (! symbol.length || price <= DBL_EPSILON) return [format stringFromNumber:@(DEFAULT_CURRENCY_PRICE*amount/SATOSHIS)];
+    if (! symbol.length || price <= DBL_EPSILON) {
+        return [format stringFromNumber:@(DEFAULT_CURRENCY_PRICE*amount/SATOSHIS)];
+    }
 
     format.currencySymbol = symbol;
     format.currencyCode = code;

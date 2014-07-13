@@ -135,6 +135,11 @@
     [self.delegate amountViewController:self selectedAmount:self.request.amount];
 }
 
+- (IBAction)swapCurrency:(id)sender
+{
+    //TODO: XXXX allow user to enter amounts in local currency
+}
+
 #pragma mark - UITextFieldDelegate
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range

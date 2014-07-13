@@ -104,7 +104,7 @@ static const struct { uint32_t height; char *hash; time_t timestamp; uint32_t ta
 
 static const char *dns_seeds[] = {
     "seed.bitcoin.sipa.be", "dnsseed.bluematt.me", "dnsseed.bitcoin.dashjr.org", "seed.bitcoinstats.com",
-    "seed.bitnodes.io", "bitseed.xf2.org"
+    "seed.bitnodes.io", "seeds.bitcoin.open-nodes.org", "bitseed.xf2.org"
 };
 
 #endif
@@ -167,7 +167,7 @@ static const char *dns_seeds[] = {
         queue:nil usingBlock:^(NSNotification *note) {
             [self savePeers];
             [self saveBlocks];
-            [BRMerkleBlockEntity saveContext];
+            [BRMerkleBlockEntity saveContext]; //BUG: XXXX crashing with nil blockHash merkle blocks when backgrounding during choose pin
             if (self.syncProgress >= 1.0) [self.connectedPeers makeObjectsPerformSelector:@selector(disconnect)];
         }];
 
@@ -512,7 +512,7 @@ static const char *dns_seeds[] = {
 
 // seconds since reference date, 00:00:00 01/01/01 GMT
 // NOTE: this is only accurate for the last two weeks worth of blocks, other timestamps are estimated from checkpoints
-// BUG: XXXX this just doesn't work very well... we need to start storing tx metadata
+// BUG: this just doesn't work very well... we need to start storing tx metadata
 - (NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight
 {
     if (blockHeight == TX_UNCONFIRMED) return [NSDate timeIntervalSinceReferenceDate] + 5*60; // average confirm time

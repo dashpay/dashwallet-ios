@@ -140,8 +140,10 @@
     [UIView animateWithDuration:0.1 animations:^{
         self.seedLabel.alpha = 0.0;
     } completion:^(BOOL finished) {
-        self.seedLabel.text = [[BRWalletManager sharedInstance] seedPhrase];
-        
+        @autoreleasepool {  // @autoreleasepool ensures sensitive data will be dealocated immediately
+            self.seedLabel.text = [[BRWalletManager sharedInstance] seedPhrase];
+        }
+
         [UIView animateWithDuration:0.1 animations:^{
             self.seedLabel.alpha = 1.0;
         }];
