@@ -179,7 +179,7 @@
 {
     NSString *title = [actionSheet buttonTitleAtIndex:buttonIndex];
 
-    //TODO: XXXX allow user to specify a request amount
+    //TODO: allow user to specify a request amount
     if ([title isEqual:NSLocalizedString(@"copy", nil)]) {
         [[UIPasteboard generalPasteboard] setString:self.paymentAddress];
 
@@ -189,7 +189,7 @@
                       popIn] popOutAfterDelay:2.0]];
     }
     else if ([title isEqual:NSLocalizedString(@"email", nil)]) {
-        //TODO: XXXX implement BIP71 payment protocol mime attachement
+        //TODO: implement BIP71 payment protocol mime attachement
         // https://github.com/bitcoin/bips/blob/master/bip-0071.mediawiki
         
         if ([MFMailComposeViewController canSendMail]) {

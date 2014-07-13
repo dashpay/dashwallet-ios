@@ -76,7 +76,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     self.spentOutputs = [NSMutableSet set];
     self.utxos = [NSMutableOrderedSet orderedSet];
 
-    //BUG: XXXX when switching networks or when installing a developement build overtop an appstore build,
+    //BUG: when switching networks or when installing a developement build overtop an appstore build,
     // the core data store can be inconsistent with the keychain, need to add a consistency check
 
     [self.moc performBlockAndWait:^{

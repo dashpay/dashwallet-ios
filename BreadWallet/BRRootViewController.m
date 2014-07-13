@@ -103,9 +103,6 @@
         usingBlock:^(NSNotification *note) {
             [self.pageViewController setViewControllers:@[self.sendViewController]
              direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
-
-            //BUG: XXXXX this will dismiss pin pad!
-            if (m.wallet) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
         }];
 
     self.fileObserver =
@@ -113,15 +110,12 @@
         usingBlock:^(NSNotification *note) {
             [self.pageViewController setViewControllers:@[self.sendViewController]
              direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
-
-            //BUG: XXXXX this will dismiss pin pad!
-            if (m.wallet) [self.navigationController dismissViewControllerAnimated:NO completion:nil];
         }];
 
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.appeared &&
+            if (self.appeared && [[BRWalletManager sharedInstance] wallet] &&
                 ! [self.navigationController.presentedViewController.restorationIdentifier isEqual:@"PINNav"]) {
                 UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
 
@@ -134,6 +128,7 @@
                 }
                 else [self.navigationController presentViewController:c animated:NO completion:nil];
 
+                c.transitioningDelegate = self;
                 [[BRPeerManager sharedInstance] connect];
             }
 
@@ -157,7 +152,7 @@
     self.resignActiveObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.appeared &&
+            if (self.appeared && [[BRWalletManager sharedInstance] wallet] &&
                 ! [self.navigationController.presentedViewController.restorationIdentifier isEqual:@"PINNav"]) {
                 UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
 
@@ -169,6 +164,8 @@
                     }];
                 }
                 else [self.navigationController presentViewController:c animated:NO completion:nil];
+
+                c.transitioningDelegate = self;
             }
         }];
 
@@ -201,7 +198,7 @@
             if (self.reachability.currentReachabilityStatus != NotReachable) [self hideErrorBar];
             [self startActivityWithTimeout:0];
 
-            //TODO: display "syncing..." whenever we're a certain number of blocks behind and >24hrs after seed creation
+            //TODO: XXXX display "syncing..." when we're 2016 (1008?) blocks behind and >24hrs after seed creation
             if (m.wallet.balance == 0 && m.seedCreationTime == BITCOIN_REFERENCE_BLOCK_TIME) {
                 self.navigationItem.title = @"syncing...";
             }
@@ -244,10 +241,11 @@
     [self.view addSubview:label];
 #endif
 
-    if (! [[UIApplication sharedApplication] isProtectedDataAvailable] || [[BRWalletManager sharedInstance] wallet]) {
+    if (! [[UIApplication sharedApplication] isProtectedDataAvailable] || m.wallet) {
         UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
 
         [self.navigationController presentViewController:c animated:NO completion:nil];
+        c.transitioningDelegate = self;
     }
 }
 
@@ -255,11 +253,20 @@
 {
     [super viewWillAppear:animated];
 
-    if ([[UIApplication sharedApplication] isProtectedDataAvailable] && ! [[BRWalletManager sharedInstance] wallet]) {
-        UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"];
+    BRWalletManager *m = [BRWalletManager sharedInstance];
 
-        [self.navigationController presentViewController:c animated:NO completion:nil];
-        self.showTips = YES;
+    if ([[UIApplication sharedApplication] isProtectedDataAvailable] && ! m.wallet) {
+        UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
+
+        [[(id)c viewControllers].firstObject setAppeared:YES];
+
+        [self.navigationController presentViewController:c animated:NO completion:^{
+            c.transitioningDelegate = self;
+            [c presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"]
+             animated:NO completion:nil];
+            self.showTips = YES;
+        }];
+
         return;
     }
 
@@ -272,7 +279,7 @@
     if (! self.appeared) {
         self.appeared = YES;
 
-        if ([[[BRWalletManager sharedInstance] wallet] balance] == 0) {
+        if (m.wallet.balance == 0) {
             [self.pageViewController setViewControllers:@[self.receiveViewController]
              direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
         }
@@ -649,6 +656,18 @@ viewControllerAfterViewController:(UIViewController *)viewController
             }
 
             if (self.progress.progress > 0) self.progress.hidden = self.pulse.hidden = NO;
+            [transitionContext completeTransition:finished];
+        }];
+    }
+    else if ([from.restorationIdentifier isEqual:@"PINNav"]) {
+        to.view.frame = from.view.frame;
+        [v insertSubview:to.view belowSubview:from.view];
+
+        [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+            from.view.alpha = 0.0;
+            from.view.transform = CGAffineTransformMakeScale(0.75, 0.75);
+        } completion:^(BOOL finished) {
+            [from.view removeFromSuperview];
             [transitionContext completeTransition:finished];
         }];
     }

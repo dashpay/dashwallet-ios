@@ -45,7 +45,7 @@
 
 @property (nonatomic, strong) NSMutableString *pin, *verifyPin;
 @property (nonatomic, strong) NSMutableSet *badPins;
-@property (nonatomic, assign) BOOL success;
+@property (nonatomic, assign) BOOL success, fail;
 @property (nonatomic, strong) id txStatusObserver;
 
 @end
@@ -216,9 +216,9 @@
         else self.titleLabel.text = NSLocalizedString(@"choose a pin", nil);
     }
 
-    [self.cancelButton setTitle:(self.cancelable ? NSLocalizedString(@"cancel", key) : @"")
+    [self.cancelButton setTitle:(self.cancelable && ! self.fail) ? NSLocalizedString(@"cancel", key) : @""
      forState:UIControlStateNormal];
-    self.cancelButton.enabled = (self.cancelable) ? YES : NO;
+    self.cancelButton.enabled = (self.cancelable && ! self.fail) ? YES : NO;
 
     for (UIButton *b in self.padButtons) {
         b.enabled = YES;
@@ -262,11 +262,13 @@
             m.pinFailHeight = 0;
         }
 
+        self.fail = NO;
         self.success = YES;
         self.dotsLabel.text = DOT @"  " DOT @"  " DOT @"  " DOT;
 
         if (self.changePin) {
             self.pin.string = @"";
+            [self checkLockout];
             self.dotsXCenter.constant = -self.dotsLabel.bounds.size.width/2 - self.view.bounds.size.width/2;
             self.titleXCenter.constant = self.dotsXCenter.constant;
 
@@ -296,8 +298,8 @@
         }
         else self.pin.string = @"";
 
+        self.fail = YES;
         [self checkLockout];
-
         AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
         self.dotsLabel.text = DOT @"  " DOT @"  " DOT @"  " DOT;
         self.dotsXCenter.constant = 30.0;
@@ -315,6 +317,7 @@
     else if (self.verifyPin.length == 0) { // reenter pin
         self.verifyPin = self.pin;
         self.pin = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), PIN_LENGTH));
+        [self checkLockout];
         self.dotsLabel.text = DOT @"  " DOT @"  " DOT @"  " DOT;
         self.dotsXCenter.constant = -self.dotsLabel.bounds.size.width/2 - self.view.bounds.size.width/2;
         self.titleXCenter.constant = self.dotsXCenter.constant;
@@ -336,6 +339,7 @@
     else if (! [self.pin isEqual:self.verifyPin]) { // reenter pin mismatch
         self.verifyPin = nil;
         self.pin.string = @"";
+        [self checkLockout];
         AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
         self.dotsLabel.text = DOT @"  " DOT @"  " DOT @"  " DOT;
         self.dotsXCenter.constant = 30.0;
@@ -374,15 +378,16 @@
     if (self.pin.length > 0) return;
 
     if ([[sender currentTitle] isEqual:NSLocalizedString(@"delete", nil)]) {
-        [sender setTitle:(self.cancelable ? NSLocalizedString(@"cancel", nil) : @"") forState:UIControlStateNormal];
-        [sender setEnabled:self.cancelable ? YES : NO];
+        [sender setTitle:(self.cancelable && ! self.fail) ? NSLocalizedString(@"cancel", nil) : @""
+         forState:UIControlStateNormal];
+        [sender setEnabled:(self.cancelable && ! self.fail) ? YES : NO];
     }
     else if ([[sender currentTitle] isEqual:NSLocalizedString(@"reset pin", nil)]) {
         UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINResetController"];
 
         [self.navigationController pushViewController:c animated:YES];
     }
-    else if (self.cancelable) {
+    else if (self.cancelable && ! self.fail) {
         [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
     }
 }

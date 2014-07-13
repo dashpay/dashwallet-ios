@@ -366,7 +366,8 @@
             cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
             [self setBackgroundForCell:cell atIndexPath:indexPath];
 
-            //TODO: XXXXX change pin option
+            //TODO: XXXX change pin option
+            //TODO: XXXX local currency selector
             switch (indexPath.row) {
                 case 0:
                     cell.textLabel.text = NSLocalizedString(@"about", nil);
@@ -557,7 +558,7 @@
         case 1:
             switch (indexPath.row) {
                 case 0:
-                    //TODO: XXXX make url clickable
+                    //TODO: XXXX make url clickable, mention exchnage data source
                     c = [self.storyboard instantiateViewControllerWithIdentifier:@"AboutViewController"];
                     l = (id)[c.view viewWithTag:411];
 #if BITCOIN_TESTNET
@@ -620,7 +621,7 @@
         return;
     }
 
-    //TODO: XXXXX pin lock this
+    //TODO: XXXX pin lock this
     [self.navigationController
      pushViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"] animated:YES];
 }

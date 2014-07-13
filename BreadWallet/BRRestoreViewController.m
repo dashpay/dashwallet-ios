@@ -24,11 +24,11 @@
 //  THE SOFTWARE.
 
 #import "BRRestoreViewController.h"
+#import "BRPINViewController.h"
 #import "BRWalletManager.h"
-#import "NSString+Base58.h"
 #import "BRKeySequence.h"
 #import "BRBIP39Mnemonic.h"
-#import <QuartzCore/QuartzCore.h>
+#import "NSString+Base58.h"
 
 #define PHRASE_LENGTH 12
 #define WORDS         @"BIP39EnglishWords"
@@ -188,7 +188,6 @@ static NSString *normalize_phrase(NSString *phrase)
         }
         else {
             //TODO: offer the user an option to move funds to a new seed if their wallet device was lost or stolen
-        
             m.seedPhrase = textView.text;
             textView.text = nil;
             
@@ -210,8 +209,15 @@ static NSString *normalize_phrase(NSString *phrase)
     UIViewController *p = self.navigationController.presentingViewController.presentingViewController;
     
     [p dismissViewControllerAnimated:NO completion:^{
-        [p presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"]
-         animated:NO completion:nil];
+        UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
+
+        [[(id)c viewControllers].firstObject setAppeared:YES];
+
+        [p presentViewController:c animated:NO completion:^{
+            c.transitioningDelegate = [(id)p viewControllers].firstObject;
+            [c presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"]
+             animated:NO completion:nil];
+        }];
     }];
 }
 
