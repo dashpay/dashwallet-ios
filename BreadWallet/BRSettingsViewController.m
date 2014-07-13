@@ -636,9 +636,17 @@
         return;
     }
 
-    //TODO: XXXX pin lock this
-    [self.navigationController
-     pushViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"] animated:YES];
+    UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
+
+    [[[(id)c viewControllers] firstObject] setAppeared:YES];
+    [[[(id)c viewControllers] firstObject] setCancelable:YES];
+    c.transitioningDelegate = self;
+    
+    [self.navigationController presentViewController:c animated:YES completion:^{
+        [self.navigationController
+         pushViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"]
+         animated:NO];
+    }];
 }
 
 #pragma mark UIViewControllerAnimatedTransitioning
@@ -647,7 +655,7 @@
 // animations that might need to synchronize with the main animation.
 - (NSTimeInterval)transitionDuration:(id<UIViewControllerContextTransitioning>)transitionContext
 {
-    return 0.35;
+    return 1.35;
 }
 
 // This method can only be a nop if the transition is interactive and not a percentDriven interactive transition.
@@ -656,27 +664,48 @@
     UIView *v = transitionContext.containerView;
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-    BOOL pop = (to == self || to == self.navigationController) ? YES : NO;
+    BOOL fade = NO, pop = (to == self || to == self.navigationController) ? YES : NO;
 
     if (self.tipView) [self.tipView popOut];
     self.tipView = nil;
 
     if (self.wallpaper.superview != v) [v insertSubview:self.wallpaper belowSubview:from.view];
 
-    to.view.center = CGPointMake(v.frame.size.width*(pop ? -1 : 3)/2, to.view.center.y);
-    [v addSubview:to.view];
+    if ([from.restorationIdentifier isEqual:@"PINNav"] && self.navigationController.topViewController != self) {
+        if (! [[[(id)from viewControllers] firstObject] success]) { // pin canceled
+            [self.navigationController popViewControllerAnimated:YES];
+        }
+        else fade = YES;
+    }
 
-    [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
-     initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-        to.view.center = from.view.center;
-        from.view.center = CGPointMake(v.frame.size.width*(pop ? 3 : -1)/2, from.view.center.y);
-        self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 -
-                                            v.frame.size.width*(pop ? 0 : 1)*PARALAX_RATIO,
-                                            self.wallpaper.center.y);
-    } completion:^(BOOL finished) {
-        if (pop) [from.view removeFromSuperview];
-        [transitionContext completeTransition:finished];
-    }];
+    if (fade) {
+        to.view.frame = from.view.frame;
+        [v insertSubview:to.view belowSubview:from.view];
+        
+        [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+            from.view.alpha = 0.0;
+            from.view.transform = CGAffineTransformMakeScale(0.75, 0.75);
+        } completion:^(BOOL finished) {
+            [from.view removeFromSuperview];
+            [transitionContext completeTransition:finished];
+        }];
+    }
+    else {
+        to.view.center = CGPointMake(v.frame.size.width*(pop ? -1 : 3)/2, to.view.center.y);
+        [v addSubview:to.view];
+
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
+         initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+             to.view.center = from.view.center;
+             from.view.center = CGPointMake(v.frame.size.width*(pop ? 3 : -1)/2, from.view.center.y);
+             self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 -
+                                                 v.frame.size.width*(pop ? 0 : 1)*PARALAX_RATIO,
+                                                 self.wallpaper.center.y);
+         } completion:^(BOOL finished) {
+             if (pop) [from.view removeFromSuperview];
+             [transitionContext completeTransition:finished];
+         }];
+    }
 }
 
 #pragma mark - UINavigationControllerDelegate

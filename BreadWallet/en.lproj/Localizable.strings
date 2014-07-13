@@ -206,6 +206,9 @@
 "pending  " = "pending  ";
 
 /* No comment provided by engineer. */
+"pin changed" = "pin changed";
+
+/* No comment provided by engineer. */
 "Receive bitcoins at this address: %@" = "Receive bitcoins at this address: %@";
 
 /* No comment provided by engineer. */

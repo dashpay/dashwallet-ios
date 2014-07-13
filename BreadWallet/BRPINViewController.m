@@ -24,6 +24,7 @@
 //  THE SOFTWARE.
 
 #import "BRPINViewController.h"
+#import "BRBubbleView.h"
 #import "BRWalletManager.h"
 #import "BRPeerManager.h"
 #import "BRTransaction.h"
@@ -41,11 +42,11 @@
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
 @property (nonatomic, strong) IBOutletCollection(UIButton) NSArray *padButtons;
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *logoXCenter, *titleXCenter, *dotsXCenter, *padXCenter,
-                                                          *wallpaperX;
+                                                          *wallpaperXLeft;
 
 @property (nonatomic, strong) NSMutableString *pin, *verifyPin;
 @property (nonatomic, strong) NSMutableSet *badPins;
-@property (nonatomic, assign) BOOL success, fail;
+@property (nonatomic, assign) BOOL fail;
 @property (nonatomic, strong) id txStatusObserver;
 
 @end
@@ -86,7 +87,7 @@
     }
     else {
         self.logoXCenter.constant = self.view.bounds.size.width;
-        self.wallpaperX.constant = self.view.bounds.size.width*PARALAX_RATIO;
+        self.wallpaperXLeft.constant = self.view.bounds.size.width*PARALAX_RATIO;
     }
 
     self.txStatusObserver =
@@ -100,9 +101,10 @@
 {
     [super viewWillAppear:animated];
 
+    _success = NO;
     self.pin = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), PIN_LENGTH));
     self.badPins = [NSMutableSet set];
-    self.success = NO;
+    self.verifyPin = nil;
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:NO];
     [self checkLockout];
 }
@@ -121,7 +123,7 @@
     
     self.titleXCenter.constant = self.dotsXCenter.constant = self.padXCenter.constant = 0.0;
     self.logoXCenter.constant = self.view.bounds.size.width;
-    self.wallpaperX.constant = self.view.bounds.size.width*PARALAX_RATIO;
+    self.wallpaperXLeft.constant = self.view.bounds.size.width*PARALAX_RATIO;
 
     [UIView animateWithDuration:0.35 delay:0.1 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
      animations:^{ [self.view layoutIfNeeded]; } completion:nil];
@@ -131,6 +133,7 @@
 {
     self.pin = nil;
     self.badPins = nil;
+    self.verifyPin = nil;
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
 
     [super viewWillDisappear:animated];
@@ -262,8 +265,8 @@
             m.pinFailHeight = 0;
         }
 
+        _success = YES;
         self.fail = NO;
-        self.success = YES;
         self.dotsLabel.text = DOT @"  " DOT @"  " DOT @"  " DOT;
 
         if (self.changePin) {
@@ -359,7 +362,14 @@
         m.pin = self.verifyPin;
         self.verifyPin = nil;
         self.dotsLabel.text = DOT @"  " DOT @"  " DOT @"  " DOT;
-        [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+
+        UIViewController *p = self.navigationController.presentingViewController;
+
+        [p dismissViewControllerAnimated:YES completion:^{
+            [p.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"pin changed", nil)
+                                  center:CGPointMake(p.view.bounds.size.width/2, p.view.bounds.size.height/2)] popIn]
+                                popOutAfterDelay:2.0]];
+        }];
     }
 }
 

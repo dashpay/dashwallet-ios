@@ -32,4 +32,6 @@ UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning>
 @property (nonatomic, assign) BOOL cancelable;
 @property (nonatomic, assign) BOOL changePin;
 
+@property (nonatomic, readonly) BOOL success; // true if the user entered the correct pin
+
 @end

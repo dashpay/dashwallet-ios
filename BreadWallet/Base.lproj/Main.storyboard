@@ -2341,7 +2341,7 @@ Cgo
                         <outlet property="titleLabel" destination="zhS-gG-oV0" id="jCx-AK-LhQ"/>
                         <outlet property="titleXCenter" destination="A02-Vw-Rss" id="6v3-4V-SSX"/>
                         <outlet property="wallpaper" destination="xGr-ag-4pI" id="qAe-Rb-6bC"/>
-                        <outlet property="wallpaperX" destination="GuF-zb-gml" id="EEZ-QH-Xxg"/>
+                        <outlet property="wallpaperXLeft" destination="GuF-zb-gml" id="h2W-FC-hXI"/>
                         <outletCollection property="padButtons" destination="KDQ-9z-tgd" id="70j-Lk-ihc"/>
                         <outletCollection property="padButtons" destination="Ktz-66-HDX" id="kT7-YH-fNA"/>
                         <outletCollection property="padButtons" destination="AIW-cS-Arl" id="cg4-Ij-ybC"/>
