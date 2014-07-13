@@ -123,7 +123,7 @@
     self.logoXCenter.constant = self.view.bounds.size.width;
     self.wallpaperX.constant = self.view.bounds.size.width*PARALAX_RATIO;
 
-    [UIView animateWithDuration:0.35 delay:0.0 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
+    [UIView animateWithDuration:0.35 delay:0.1 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
      animations:^{ [self.view layoutIfNeeded]; } completion:nil];
 }
 

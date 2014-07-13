@@ -25,6 +25,7 @@
 
 #import "BRSettingsViewController.h"
 #import "BRRootViewController.h"
+#import "BRPINViewController.h"
 #import "BRWalletManager.h"
 #import "BRWallet.h"
 #import "BRPeerManager.h"
@@ -63,6 +64,7 @@
 {
     [super viewWillAppear:animated];
 
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
     self.transactions = [NSArray arrayWithArray:[[[BRWalletManager sharedInstance] wallet] recentTransactions]];
 
     if (! self.balanceObserver) {
@@ -249,7 +251,7 @@
     switch (section) {
         case 0: return self.transactions.count ? self.transactions.count : 1;
         case 1: return 2;
-        case 2: return 2;
+        case 2: return 3;
         case 3: return 2;
         default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
     }
@@ -361,30 +363,8 @@
              }
 
             break;
-            
+
         case 1:
-            cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
-            [self setBackgroundForCell:cell atIndexPath:indexPath];
-
-            //TODO: XXXX change pin option
-            //TODO: XXXX local currency selector
-            switch (indexPath.row) {
-                case 0:
-                    cell.textLabel.text = NSLocalizedString(@"about", nil);
-                    break;
-
-                case 1:
-                    cell.textLabel.text = NSLocalizedString(@"backup phrase", nil);
-                    break;
-                    
-                default:
-                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
-                             (int)indexPath.row);
-            }
-
-            break;
-            
-        case 2:
             cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
             [self setBackgroundForCell:cell atIndexPath:indexPath];
 
@@ -399,6 +379,31 @@
                     cell.textLabel.text = NSLocalizedString(@"rescan blockchain", nil);
                     cell.imageView.image = [UIImage imageNamed:@"rescan"];
                     cell.imageView.alpha = 0.75;
+                    break;
+
+                default:
+                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
+                             (int)indexPath.row);
+            }
+            
+            break;
+
+        case 2:
+            cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
+            [self setBackgroundForCell:cell atIndexPath:indexPath];
+
+            //TODO: XXXX local currency selector
+            switch (indexPath.row) {
+                case 0:
+                    cell.textLabel.text = NSLocalizedString(@"about", nil);
+                    break;
+
+                case 1:
+                    cell.textLabel.text = NSLocalizedString(@"backup phrase", nil);
+                    break;
+
+                case 2:
+                    cell.textLabel.text = NSLocalizedString(@"change pin", nil);
                     break;
 
                 default:
@@ -546,7 +551,8 @@
     }
 
     switch (indexPath.section) {
-        case 0: // TODO: show transaction details
+        case 0: // transaction
+            // TODO: show transaction details
             if (self.transactions.count > 0) {
                 i = [[self.tableView indexPathsForVisibleRows] indexOfObject:indexPath];
                 cell = (i < self.tableView.visibleCells.count) ? self.tableView.visibleCells[i] : nil;
@@ -554,10 +560,28 @@
             }
 
             break;
-            
+
         case 1:
             switch (indexPath.row) {
-                case 0:
+                case 0: // import private key
+                    [self scanQR:nil];
+                    break;
+
+                case 1: // rescan blockchain
+                    [[BRPeerManager sharedInstance] rescan];
+                    [self done:nil];
+                    break;
+
+                default:
+                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
+                             (int)indexPath.row);
+            }
+            
+            break;
+
+        case 2:
+            switch (indexPath.row) {
+                case 0: // about
                     //TODO: XXXX make url clickable, mention exchnage data source
                     c = [self.storyboard instantiateViewControllerWithIdentifier:@"AboutViewController"];
                     l = (id)[c.view viewWithTag:411];
@@ -570,30 +594,21 @@
                     [self.navigationController pushViewController:c animated:YES];
                     break;
                     
-                case 1:
+                case 1: // backup phrase
                     [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
                       message:NSLocalizedString(@"DO NOT let anyone see your backup phrase or they can spend your "
                                                  "bitcoins.", nil) delegate:self
                       cancelButtonTitle:NSLocalizedString(@"cancel", nil)
                       otherButtonTitles:NSLocalizedString(@"show", nil), nil] show];
                     break;
-                    
-                default:
-                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
-                             (int)indexPath.row);
-            }
 
-            break;
-
-        case 2:
-            switch (indexPath.row) {
-                case 0:
-                    [self scanQR:nil];
-                    break;
-
-                case 1:
-                    [[BRPeerManager sharedInstance] rescan];
-                    [self done:nil];
+                case 2: // change pin
+                    c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
+                    [[[(id)c viewControllers] firstObject] setAppeared:YES];
+                    [[[(id)c viewControllers] firstObject] setCancelable:YES];
+                    [[[(id)c viewControllers] firstObject] setChangePin:YES];
+                    c.transitioningDelegate = self;
+                    [self.navigationController presentViewController:c animated:YES completion:nil];
                     break;
 
                 default:
@@ -603,7 +618,7 @@
 
             break;
 
-        case 3: // start/restore is handled in storyboard
+        case 3: // start/restore another wallet handled by storyboard
             break;
 
         default:
@@ -641,24 +656,25 @@
     UIView *v = transitionContext.containerView;
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
+    BOOL pop = (to == self || to == self.navigationController) ? YES : NO;
 
     if (self.tipView) [self.tipView popOut];
     self.tipView = nil;
 
     if (self.wallpaper.superview != v) [v insertSubview:self.wallpaper belowSubview:from.view];
 
-    to.view.center = CGPointMake(v.frame.size.width*(to == self ? -1 : 3)/2, to.view.center.y);
+    to.view.center = CGPointMake(v.frame.size.width*(pop ? -1 : 3)/2, to.view.center.y);
     [v addSubview:to.view];
 
     [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
      initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
         to.view.center = from.view.center;
-        from.view.center = CGPointMake(v.frame.size.width*(to == self ? 3 : -1)/2, from.view.center.y);
+        from.view.center = CGPointMake(v.frame.size.width*(pop ? 3 : -1)/2, from.view.center.y);
         self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 -
-                                            v.frame.size.width*(to == self ? 0 : 1)*PARALAX_RATIO,
+                                            v.frame.size.width*(pop ? 0 : 1)*PARALAX_RATIO,
                                             self.wallpaper.center.y);
     } completion:^(BOOL finished) {
-        if (to == self) [from.view removeFromSuperview];
+        if (pop) [from.view removeFromSuperview];
         [transitionContext completeTransition:finished];
     }];
 }

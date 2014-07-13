@@ -115,7 +115,7 @@
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.appeared && [[BRWalletManager sharedInstance] wallet] &&
+            if (self.appeared && m.wallet &&
                 ! [self.navigationController.presentedViewController.restorationIdentifier isEqual:@"PINNav"]) {
                 UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
 
@@ -152,7 +152,7 @@
     self.resignActiveObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.appeared && [[BRWalletManager sharedInstance] wallet] &&
+            if (self.appeared && m.wallet &&
                 ! [self.navigationController.presentedViewController.restorationIdentifier isEqual:@"PINNav"]) {
                 UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
 
