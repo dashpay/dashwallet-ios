@@ -641,12 +641,7 @@
     [[[(id)c viewControllers] firstObject] setAppeared:YES];
     [[[(id)c viewControllers] firstObject] setCancelable:YES];
     c.transitioningDelegate = self;
-    
-    [self.navigationController presentViewController:c animated:YES completion:^{
-        [self.navigationController
-         pushViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"]
-         animated:NO];
-    }];
+    [self.navigationController presentViewController:c animated:YES completion:nil];
 }
 
 #pragma mark UIViewControllerAnimatedTransitioning
@@ -664,24 +659,20 @@
     UIView *v = transitionContext.containerView;
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-    BOOL fade = NO, pop = (to == self || to == self.navigationController) ? YES : NO;
+    BOOL pop = (to == self || to == self.navigationController) ? YES : NO;
 
     if (self.tipView) [self.tipView popOut];
     self.tipView = nil;
 
-    if (self.wallpaper.superview != v) [v insertSubview:self.wallpaper belowSubview:from.view];
+    if ([from.restorationIdentifier isEqual:@"PINNav"] && ! [[[(id)from viewControllers] firstObject] changePin] &&
+        [[[(id)from viewControllers] firstObject] success]) {
+        [self.navigationController
+         pushViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"]
+         animated:NO];
 
-    if ([from.restorationIdentifier isEqual:@"PINNav"] && self.navigationController.topViewController != self) {
-        if (! [[[(id)from viewControllers] firstObject] success]) { // pin canceled
-            [self.navigationController popViewControllerAnimated:YES];
-        }
-        else fade = YES;
-    }
-
-    if (fade) {
         to.view.frame = from.view.frame;
         [v insertSubview:to.view belowSubview:from.view];
-        
+
         [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
             from.view.alpha = 0.0;
             from.view.transform = CGAffineTransformMakeScale(0.75, 0.75);
@@ -691,6 +682,7 @@
         }];
     }
     else {
+        if (self.wallpaper.superview != v) [v insertSubview:self.wallpaper belowSubview:from.view];
         to.view.center = CGPointMake(v.frame.size.width*(pop ? -1 : 3)/2, to.view.center.y);
         [v addSubview:to.view];
 
