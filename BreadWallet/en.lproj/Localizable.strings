@@ -233,6 +233,9 @@
 "requested network \"%@\" instead of \"%@\"" = "requested network \"%1$@\" instead of \"%2$@\"";
 
 /* No comment provided by engineer. */
+"rescan" = "rescan";
+
+/* No comment provided by engineer. */
 "rescan blockchain" = "rescan blockchain";
 
 /* No comment provided by engineer. */
@@ -305,6 +308,9 @@
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)";
 
 /* No comment provided by engineer. */
+"transaction rejected" = "transaction rejected";
+
+/* No comment provided by engineer. */
 "unexpected response from %@" = "unexpected response from %@";
 
 /* No comment provided by engineer. */
@@ -339,3 +345,6 @@
 
 /* No comment provided by engineer. */
 "wipe" = "wipe";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescaning the blockchain." = "Your wallet may be out of sync.\nThis can often be fixed by rescaning the blockchain.";

@@ -119,7 +119,7 @@ static const char *dns_seeds[] = {
 @property (nonatomic, assign) double filterFpRate;
 @property (nonatomic, assign) NSUInteger taskId, connectFailures;
 @property (nonatomic, assign) NSTimeInterval earliestKeyTime, lastRelayTime;
-@property (nonatomic, strong) NSMutableDictionary *blocks, *orphans, *checkpoints, *txRelays;
+@property (nonatomic, strong) NSMutableDictionary *blocks, *orphans, *checkpoints, *txRelays, *txRejections;
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
 @property (nonatomic, strong) BRMerkleBlock *lastBlock, *lastOrphan;
 @property (nonatomic, strong) dispatch_queue_t q;
@@ -154,6 +154,7 @@ static const char *dns_seeds[] = {
     self.q = dispatch_queue_create("peermanager", NULL);
     self.orphans = [NSMutableDictionary dictionary];
     self.txRelays = [NSMutableDictionary dictionary];
+    self.txRejections = [NSMutableDictionary dictionary];
     self.publishedTx = [NSMutableDictionary dictionary];
     self.publishedCallback = [NSMutableDictionary dictionary];
 
@@ -178,6 +179,7 @@ static const char *dns_seeds[] = {
             self.syncStartHeight = 0;
             [self.orphans removeAllObjects];
             [self.txRelays removeAllObjects];
+            [self.txRejections removeAllObjects];
             [self.publishedTx removeAllObjects];
             [self.publishedCallback removeAllObjects];
             [BRMerkleBlockEntity deleteObjects:[BRMerkleBlockEntity allObjects]];
@@ -558,6 +560,7 @@ static const char *dns_seeds[] = {
     if (height != TX_UNCONFIRMED) { // remove confirmed tx from publish list and relay counts
         [self.publishedTx removeObjectsForKeys:txHashes];
         [self.publishedCallback removeObjectsForKeys:txHashes];
+        [self.txRejections removeObjectsForKeys:txHashes];
         [self.txRelays removeObjectsForKeys:txHashes];
     }
 }
@@ -787,6 +790,7 @@ static const char *dns_seeds[] = {
 
     for (NSData *txHash in self.txRelays.allKeys) {
         [self.txRelays[txHash] removeObject:peer];
+        [self.txRejections[txHash] removeObject:peer];
     }
 
     if ([self.downloadPeer isEqual:peer]) { // download peer disconnected
@@ -878,6 +882,35 @@ static const char *dns_seeds[] = {
             // after adding addresses to the filter, re-request upcoming blocks that were requested using the old filter
             [self.downloadPeer rereqeustBlocksFrom:self.lastBlock.blockHash];
             break;
+        }
+    }
+}
+
+- (void)peer:(BRPeer *)peer rejectedTransaction:(NSData *)txHash withCode:(uint8_t)code
+{
+    if ([self.txRelays[txHash] count] == self.connectedPeers.count && [self.txRelays[txHash] containsObject:peer]) {
+        [self.txRelays[txHash] removeObject:peer];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
+        });
+    }
+    else [self.txRelays[txHash] removeObject:peer];
+
+    // keep track of possible double spend rejections and notify the user to do a rescan
+    // NOTE: lots of checks here to make sure a malicious node can't annoy the user with rescan alerts
+    if (code == 0x10 && self.publishedTx[txHash] != nil && ! [self.txRejections[txHash] containsObject:peer] &&
+        [self.connectedPeers containsObject:peer]) {
+        if (! self.txRejections[txHash]) self.txRejections[txHash] = [NSMutableSet set];
+        [self.txRejections[txHash] addObject:peer];
+
+        if ([self.txRejections[txHash] count] + 1 == self.connectedPeers.count ||
+            ([self.txRejections[txHash] count] == 1 && self.connectedPeers.count == 1)) {
+            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"transaction rejected", nil)
+              message:NSLocalizedString(@"Your wallet may be out of sync.\n"
+                                        "This can often be fixed by rescaning the blockchain.", nil) delegate:self
+              cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+              otherButtonTitles:NSLocalizedString(@"rescan", nil), nil] show];
         }
     }
 }
@@ -1089,6 +1122,14 @@ static const char *dns_seeds[] = {
     self.filterFpRate = self.bloomFilter.falsePositiveRate;
     self.filterUpdateHeight = self.lastBlockHeight;
     return self.bloomFilter.data;
+}
+
+#pragma mark - UIAlertViewDelegate
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == alertView.cancelButtonIndex) return;
+    [self rescan];
 }
 
 @end

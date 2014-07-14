@@ -61,7 +61,7 @@
 #define MSG_FILTERCLEAR @"filterclear"
 #define MSG_MERKLEBLOCK @"merkleblock"
 #define MSG_ALERT       @"alert"
-#define MSG_REJECT      @"reject" // described in BIP61: https://gist.github.com/gavinandresen/7079034
+#define MSG_REJECT      @"reject" // described in BIP61: https://github.com/bitcoin/bips/blob/master/bip-0061.mediawiki
 
 @class BRPeer, BRTransaction, BRMerkleBlock;
 
@@ -72,6 +72,7 @@
 - (void)peer:(BRPeer *)peer disconnectedWithError:(NSError *)error;
 - (void)peer:(BRPeer *)peer relayedPeers:(NSArray *)peers;
 - (void)peer:(BRPeer *)peer relayedTransaction:(BRTransaction *)transaction;
+- (void)peer:(BRPeer *)peer rejectedTransaction:(NSData *)txHash withCode:(uint8_t)code;
 
 // called when the peer relays either a merkleblock or a block header, headers will have 0 totalTransactions
 - (void)peer:(BRPeer *)peer relayedBlock:(BRMerkleBlock *)block;

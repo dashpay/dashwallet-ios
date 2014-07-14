@@ -559,7 +559,7 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
     return ret;
 }
 
-#pragma mark UIAlertViewDelegate
+#pragma mark - UIAlertViewDelegate
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
