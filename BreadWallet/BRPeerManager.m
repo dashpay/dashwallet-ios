@@ -905,7 +905,7 @@ static const char *dns_seeds[] = {
         [self.txRejections[txHash] addObject:peer];
 
         if ([self.txRejections[txHash] count] + 1 == self.connectedPeers.count ||
-            ([self.txRejections[txHash] count] == 1 && self.connectedPeers.count == 1)) {
+            (self.connectedPeers.count == 1 && [self.txRejections[txHash] count] == 1)) {
             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"transaction rejected", nil)
               message:NSLocalizedString(@"Your wallet may be out of sync.\n"
                                         "This can often be fixed by rescaning the blockchain.", nil) delegate:self

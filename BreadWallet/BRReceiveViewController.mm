@@ -162,10 +162,10 @@
     a.title = [NSString stringWithFormat:NSLocalizedString(@"Receive bitcoins at this address: %@", nil),
                self.paymentAddress];
     a.delegate = self;
-    [a addButtonWithTitle:NSLocalizedString(@"copy", nil)];
-    if ([MFMailComposeViewController canSendMail]) [a addButtonWithTitle:NSLocalizedString(@"email", nil)];
+    [a addButtonWithTitle:NSLocalizedString(@"copy to clipboard", nil)];
+    if ([MFMailComposeViewController canSendMail]) [a addButtonWithTitle:NSLocalizedString(@"send as email", nil)];
 #if ! TARGET_IPHONE_SIMULATOR
-    if ([MFMessageComposeViewController canSendText]) [a addButtonWithTitle:NSLocalizedString(@"sms", nil)];
+    if ([MFMessageComposeViewController canSendText]) [a addButtonWithTitle:NSLocalizedString(@"send as message", nil)];
 #endif
     [a addButtonWithTitle:NSLocalizedString(@"cancel", nil)];
     a.cancelButtonIndex = a.numberOfButtons - 1;
@@ -180,7 +180,7 @@
     NSString *title = [actionSheet buttonTitleAtIndex:buttonIndex];
 
     //TODO: allow user to specify a request amount
-    if ([title isEqual:NSLocalizedString(@"copy", nil)]) {
+    if ([title isEqual:NSLocalizedString(@"copy to clipboard", nil)]) {
         [[UIPasteboard generalPasteboard] setString:self.paymentAddress];
 
         [self.view
@@ -188,7 +188,7 @@
                        center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2 - 130)]
                       popIn] popOutAfterDelay:2.0]];
     }
-    else if ([title isEqual:NSLocalizedString(@"email", nil)]) {
+    else if ([title isEqual:NSLocalizedString(@"send as email", nil)]) {
         //TODO: implement BIP71 payment protocol mime attachement
         // https://github.com/bitcoin/bips/blob/master/bip-0071.mediawiki
         
@@ -207,7 +207,7 @@
               cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
     }
-    else if ([title isEqual:NSLocalizedString(@"sms", nil)]) {
+    else if ([title isEqual:NSLocalizedString(@"send as message", nil)]) {
         if ([MFMessageComposeViewController canSendText]) {
             MFMessageComposeViewController *c = [MFMessageComposeViewController new];
             

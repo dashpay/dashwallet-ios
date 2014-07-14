@@ -98,7 +98,7 @@
 "copied" = "copied";
 
 /* No comment provided by engineer. */
-"copy" = "copy";
+"copy to clipboard" = "copy to clipboard";
 
 /* No comment provided by engineer. */
 "couldn't make payment" = "couldn't make payment";
@@ -126,9 +126,6 @@
 
 /* No comment provided by engineer. */
 "DO NOT let anyone see your backup phrase or they can spend your bitcoins." = "DO NOT let anyone see your backup phrase or they can spend your bitcoins.";
-
-/* No comment provided by engineer. */
-"email" = "email";
 
 /* No comment provided by engineer. */
 "email not configured" = "email not configured";
@@ -254,6 +251,12 @@
 "Send %@ (%@) from this private key into your wallet? The bitcoin network will receive a fee of %@ (%@)." = "Send %1$@ (%2$@) from this private key into your wallet? The bitcoin network will receive a fee of %3$@ (%4$@).";
 
 /* No comment provided by engineer. */
+"send as email" = "send as email";
+
+/* No comment provided by engineer. */
+"send as message" = "send as message";
+
+/* No comment provided by engineer. */
 "sent  " = "sent  ";
 
 /* No comment provided by engineer. */
@@ -264,9 +267,6 @@
 
 /* No comment provided by engineer. */
 "show" = "show";
-
-/* No comment provided by engineer. */
-"sms" = "sms";
 
 /* No comment provided by engineer. */
 "sms not currently available" = "sms not currently available";

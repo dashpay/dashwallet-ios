@@ -33,7 +33,7 @@
 
 @class BRTransaction;
 
-@interface BRPeerManager : NSObject<BRPeerDelegate>
+@interface BRPeerManager : NSObject <BRPeerDelegate, UIAlertViewDelegate>
 
 @property (nonatomic, readonly) BOOL connected;
 @property (nonatomic, readonly) uint32_t lastBlockHeight;

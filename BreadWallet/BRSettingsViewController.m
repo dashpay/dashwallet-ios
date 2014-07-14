@@ -47,7 +47,7 @@
 
 @implementation BRSettingsViewController
 
-//TODO: only show most recent 10-20 transactions and have a separate page for the rest with section headers for each day
+//TODO: XXXX only show most recent 5 tx and have a separate page for the rest with section headers for each day
 - (void)viewDidLoad
 {
     [super viewDidLoad];
