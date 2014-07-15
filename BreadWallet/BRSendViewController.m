@@ -358,7 +358,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     }
 
     for (NSData *script in protoReq.details.outputScripts) {
-        NSString *addr = [NSString addressWithScript:script];
+        NSString *addr = [NSString addressWithScriptPubKey:script];
 
         address = [address stringByAppendingFormat:@"%@%@", (address.length > 0) ? @", " : @"",
                    (addr) ? addr : NSLocalizedString(@"unrecognized address", nil)];

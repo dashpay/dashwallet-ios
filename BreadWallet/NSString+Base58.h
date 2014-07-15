@@ -46,7 +46,8 @@ CFAllocatorRef SecureAllocator();
 + (NSString *)base58WithData:(NSData *)d;
 + (NSString *)base58checkWithData:(NSData *)d;
 + (NSString *)hexWithData:(NSData *)d;
-+ (NSString *)addressWithScript:(NSData *)script;
++ (NSString *)addressWithScriptPubKey:(NSData *)script;
++ (NSString *)addressWithScriptSig:(NSData *)script;
 
 - (NSData *)base58ToData;
 - (NSString *)hexToBase58;

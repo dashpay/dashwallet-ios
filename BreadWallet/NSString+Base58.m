@@ -210,7 +210,11 @@ breakout:
     return hex;
 }
 
-+ (NSString *)addressWithScript:(NSData *)script
+// NOTE: It's important here to be permissive with scriptSig (spends) and strict with scriptPubKey (receives). If we
+// miss a receive transaction, only that transaction's funds are missed, however if we accept a receive transaction that
+// we are unable to correctly sign later, then the entire wallet balance after that point would become stuck with the
+// current coin selection code
++ (NSString *)addressWithScriptPubKey:(NSData *)script
 {
     if (script == (id)[NSNull null]) return nil;
 
@@ -223,24 +227,48 @@ breakout:
     v = BITCOIN_PUBKEY_ADDRESS_TEST;
 #endif
 
-    if (l >= 5 && [elem[l - 3] intValue] == 20 && [elem[l - 2] intValue] == OP_EQUALVERIFY &&
-        [elem[l - 1] intValue] == OP_CHECKSIG) { // pay-to-pubkey-hash scriptPubKey
+    if (l == 5 && [elem[0] intValue] == OP_DUP && [elem[1] intValue] == OP_HASH160 && [elem[2] intValue] == 20 &&
+        [elem[3] intValue] == OP_EQUALVERIFY && [elem[4] intValue] == OP_CHECKSIG) {
+        // pay-to-pubkey-hash scriptPubKey
         [d appendBytes:&v length:1];
         [d appendData:elem[l - 3]];
     }
-    else if (l >= 2 && [elem[l - 2] intValue] <= OP_PUSHDATA4 && [elem[l - 2] intValue] > 0 &&
-             ([elem[l - 1] intValue] == 65 || [elem[l - 1] intValue] == 33)) { // pay-to-pubkey-hash scriptSig
-        [d appendBytes:&v length:1];
-        [d appendData:[elem[l - 1] hash160]];
-    }
-    else if (l >= 3 && [elem[l - 3] intValue] == OP_HASH160 && [elem[l - 2] intValue] == 20 &&
-             [elem[l - 1] intValue] == OP_EQUAL) { // pay-to-script-hash scriptPubKey
+    else if (l == 3 && [elem[0] intValue] == OP_HASH160 && [elem[1] intValue] == 20 && [elem[2] intValue] == OP_EQUAL) {
+        // pay-to-script-hash scriptPubKey
         v = BITCOIN_SCRIPT_ADDRESS;
 #if BITCOIN_TESTNET
         v = BITCOIN_SCRIPT_ADDRESS_TEST;
 #endif
         [d appendBytes:&v length:1];
         [d appendData:elem[l - 2]];
+    }
+    else if (l == 2 && ([elem[0] intValue] == 65 || [elem[0] intValue] == 33) && [elem[1] intValue] == OP_CHECKSIG) {
+        // pay-to-pubkey scriptPubKey
+        [d appendBytes:&v length:1];
+        [d appendData:[elem[l - 2] hash160]];
+    }
+    else return nil; // unknown script type
+
+    return [self base58checkWithData:d];
+}
+
++ (NSString *)addressWithScriptSig:(NSData *)script
+{
+    if (script == (id)[NSNull null]) return nil;
+
+    NSArray *elem = [script scriptElements];
+    NSUInteger l = elem.count;
+    NSMutableData *d = [NSMutableData data];
+    uint8_t v = BITCOIN_PUBKEY_ADDRESS;
+
+#if BITCOIN_TESTNET
+    v = BITCOIN_PUBKEY_ADDRESS_TEST;
+#endif
+
+    if (l >= 2 && [elem[l - 2] intValue] <= OP_PUSHDATA4 && [elem[l - 2] intValue] > 0 &&
+        ([elem[l - 1] intValue] == 65 || [elem[l - 1] intValue] == 33)) { // pay-to-pubkey-hash scriptSig
+        [d appendBytes:&v length:1];
+        [d appendData:[elem[l - 1] hash160]];
     }
     else if (l >= 2 && [elem[l - 2] intValue] <= OP_PUSHDATA4 && [elem[l - 2] intValue] > 0 &&
              [elem[l - 1] intValue] <= OP_PUSHDATA4 && [elem[l - 1] intValue] > 0) { // pay-to-script-hash scriptSig
@@ -251,17 +279,12 @@ breakout:
         [d appendBytes:&v length:1];
         [d appendData:[elem[l - 1] hash160]];
     }
-    else if (l >= 2 && ([elem[l - 2] intValue] == 65 || [elem[l - 2] intValue] == 33) &&
-             [elem[l - 1] intValue] == OP_CHECKSIG) { // pay-to-pubkey scriptPubKey
-        [d appendBytes:&v length:1];
-        [d appendData:[elem[l - 2] hash160]];
-    }
     else if (l >= 1 && [elem[l - 1] intValue] <= OP_PUSHDATA4 && [elem[l - 1] intValue] > 0) {// pay-to-pubkey scriptSig
         //TODO: implement Peter Wullie's pubKey recovery from signature
         return nil;
     }
     else return nil; // unknown script type
-
+    
     return [self base58checkWithData:d];
 }
 

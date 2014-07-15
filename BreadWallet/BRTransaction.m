@@ -107,7 +107,7 @@
         d = [message dataAtOffset:off length:&l];
         [self.outScripts addObject:d ? d : [NSNull null]]; // output script
         off += l;
-        address = [NSString addressWithScript:d]; // address from output script if applicable
+        address = [NSString addressWithScriptPubKey:d]; // address from output script if applicable
         [self.addresses addObject:address ? address : [NSNull null]];
     }
     
@@ -186,7 +186,7 @@ sequence:(uint32_t)sequence
 
 - (void)addOutputScript:(NSData *)script amount:(uint64_t)amount;
 {
-    NSString *address = [NSString addressWithScript:script];
+    NSString *address = [NSString addressWithScriptPubKey:script];
 
     [self.amounts addObject:@(amount)];
     [self.outScripts addObject:script];
@@ -207,9 +207,9 @@ sequence:(uint32_t)sequence
     NSInteger i = 0;
 
     for (NSData *script in self.inScripts) {
-        NSString *addr = [NSString addressWithScript:script];
+        NSString *addr = [NSString addressWithScriptPubKey:script];
 
-        if (! addr) addr = [NSString addressWithScript:self.signatures[i]];
+        if (! addr) addr = [NSString addressWithScriptSig:self.signatures[i]];
         [addresses addObject:addr ? addr : [NSNull null]];
         i++;
     }
@@ -272,7 +272,7 @@ sequence:(uint32_t)sequence
     }
 
     for (NSUInteger i = 0; i < self.hashes.count; i++) {
-        NSString *addr = [NSString addressWithScript:self.inScripts[i]];
+        NSString *addr = [NSString addressWithScriptPubKey:self.inScripts[i]];
         NSUInteger keyIdx = addr ? [addresses indexOfObject:addr] : NSNotFound;
 
         if (keyIdx == NSNotFound) continue;
