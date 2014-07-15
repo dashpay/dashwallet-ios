@@ -348,6 +348,11 @@ static const char *dns_seeds[] = {
     return self.lastBlock.height;
 }
 
+- (uint32_t)estimatedBlockHeight
+{
+    return (self.downloadPeer.lastblock > self.lastBlockHeight) ? self.downloadPeer.lastblock : self.lastBlockHeight;
+}
+
 - (double)syncProgress
 {
     if (! self.downloadPeer) return (self.syncStartHeight == self.lastBlockHeight) ? 0.05 : 0.0;
@@ -726,6 +731,8 @@ static const char *dns_seeds[] = {
     }
 
     // select the peer with the lowest ping time to download the chain from if we're behind
+    // BUG: XXXX a malicious peer can report a higher lastblock to make us select them as the download peer, if two
+    // peers agree on lastblock, use one of them instead
     for (BRPeer *p in self.connectedPeers) {
         if ((p.pingTime < peer.pingTime && p.lastblock >= peer.lastblock) || p.lastblock > peer.lastblock) peer = p;
     }

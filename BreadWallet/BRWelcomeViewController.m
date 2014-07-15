@@ -46,10 +46,6 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
         
-    [self.navigationController.navigationBar
-     setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor whiteColor],
-                              NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue" size:17.0]}];
-    
     self.navigationController.delegate = self;
 
     self.activeObserver =

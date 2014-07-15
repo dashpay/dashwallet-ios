@@ -195,11 +195,13 @@
     self.syncStartedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncStartedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
+            BRPeerManager *p = [BRPeerManager sharedInstance];
+
             if (self.reachability.currentReachabilityStatus != NotReachable) [self hideErrorBar];
             [self startActivityWithTimeout:0];
 
-            //TODO: XXXX display "syncing..." when we're 2016 (1008?) blocks behind and >24hrs after seed creation
-            if (m.wallet.balance == 0 && m.seedCreationTime == BITCOIN_REFERENCE_BLOCK_TIME) {
+            if (p.lastBlockHeight + 2016/2 < p.estimatedBlockHeight &&
+                m.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
                 self.navigationItem.title = @"syncing...";
             }
         }];

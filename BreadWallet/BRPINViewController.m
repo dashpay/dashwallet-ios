@@ -58,10 +58,6 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
 
-    [self.navigationController.navigationBar
-     setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor whiteColor],
-                              NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue" size:17.0]}];
-
     self.navigationController.delegate = self;
     
     NSShadow *shadow = [NSShadow new];
@@ -366,9 +362,11 @@
         UIViewController *p = self.navigationController.presentingViewController;
 
         [p dismissViewControllerAnimated:YES completion:^{
-            [p.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"pin changed", nil)
-                                  center:CGPointMake(p.view.bounds.size.width/2, p.view.bounds.size.height/2)] popIn]
-                                popOutAfterDelay:2.0]];
+            if (self.changePin) {
+                [p.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"pin changed", nil)
+                                     center:CGPointMake(p.view.bounds.size.width/2, p.view.bounds.size.height/2)] popIn]
+                                    popOutAfterDelay:2.0]];
+            }
         }];
     }
 }

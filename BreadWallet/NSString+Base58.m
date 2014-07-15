@@ -231,7 +231,7 @@ breakout:
         [elem[3] intValue] == OP_EQUALVERIFY && [elem[4] intValue] == OP_CHECKSIG) {
         // pay-to-pubkey-hash scriptPubKey
         [d appendBytes:&v length:1];
-        [d appendData:elem[l - 3]];
+        [d appendData:elem[2]];
     }
     else if (l == 3 && [elem[0] intValue] == OP_HASH160 && [elem[1] intValue] == 20 && [elem[2] intValue] == OP_EQUAL) {
         // pay-to-script-hash scriptPubKey
@@ -240,12 +240,12 @@ breakout:
         v = BITCOIN_SCRIPT_ADDRESS_TEST;
 #endif
         [d appendBytes:&v length:1];
-        [d appendData:elem[l - 2]];
+        [d appendData:elem[1]];
     }
     else if (l == 2 && ([elem[0] intValue] == 65 || [elem[0] intValue] == 33) && [elem[1] intValue] == OP_CHECKSIG) {
         // pay-to-pubkey scriptPubKey
         [d appendBytes:&v length:1];
-        [d appendData:[elem[l - 2] hash160]];
+        [d appendData:[elem[0] hash160]];
     }
     else return nil; // unknown script type
 

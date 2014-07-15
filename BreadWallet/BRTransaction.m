@@ -325,7 +325,6 @@ sequence:(uint32_t)sequence
         }
         else if (i == subscriptIndex) {
             //TODO: to fully match the reference implementation, OP_CODESEPARATOR related checksig logic should go here
-            //BUG: XXXX is it possible to send a tx that the wallet can't sign?
             [d appendVarInt:[self.inScripts[i] length]];
             [d appendData:self.inScripts[i]];
         }

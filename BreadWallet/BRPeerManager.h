@@ -37,6 +37,7 @@
 
 @property (nonatomic, readonly) BOOL connected;
 @property (nonatomic, readonly) uint32_t lastBlockHeight;
+@property (nonatomic, readonly) uint32_t estimatedBlockHeight; // last block height reported by current download peer
 @property (nonatomic, readonly) double syncProgress;
 
 + (instancetype)sharedInstance;
