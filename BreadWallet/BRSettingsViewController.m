@@ -239,6 +239,11 @@
     }];
 }
 
+- (IBAction)about:(id)sender
+{
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://breadwallet.com"]];
+}
+
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
@@ -542,6 +547,7 @@
     UILabel *l = nil;
     NSUInteger i = 0;
     UITableViewCell *cell = nil;
+    NSMutableAttributedString *s = nil;
 
     if (self.tipView) {
         [self.tipView popOut];
@@ -582,15 +588,17 @@
         case 2:
             switch (indexPath.row) {
                 case 0: // about
-                    //TODO: XXXX make url clickable, mention exchnage data source
                     c = [self.storyboard instantiateViewControllerWithIdentifier:@"AboutViewController"];
                     l = (id)[c.view viewWithTag:411];
+                    s = [[NSMutableAttributedString alloc] initWithAttributedString:l.attributedText];
 #if BITCOIN_TESTNET
-                    l.text = [l.text stringByReplacingOccurrencesOfString:@"%ver%" withString:@"%ver% (testnet)"];
+                    [s replaceCharactersInRange:[s.string rangeOfString:@"%net%"] withString:@"%net% (testnet)"];
 #endif
-                    l.text = [l.text stringByReplacingOccurrencesOfString:@"%ver%"
-                              withString:NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"]];
-
+                    [s replaceCharactersInRange:[s.string rangeOfString:@"%ver%"]
+                     withString:NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"]];
+                    [s replaceCharactersInRange:[s.string rangeOfString:@"%net%"] withString:@""];
+                    l.attributedText = s;
+                    [l.superview.gestureRecognizers.firstObject addTarget:self action:@selector(about:)];
                     [self.navigationController pushViewController:c animated:YES];
                     break;
                     
@@ -644,7 +652,7 @@
     [self.navigationController presentViewController:c animated:YES completion:nil];
 }
 
-#pragma mark UIViewControllerAnimatedTransitioning
+#pragma mark - UIViewControllerAnimatedTransitioning
 
 // This is used for percent driven interactive transitions, as well as for container controllers that have companion
 // animations that might need to synchronize with the main animation.
