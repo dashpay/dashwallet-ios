@@ -54,7 +54,6 @@
 @property (nonatomic, strong) BRTransaction *tx, *sweepTx;
 @property (nonatomic, strong) BRPaymentRequest *request;
 @property (nonatomic, strong) BRPaymentProtocolRequest *protocolRequest;
-@property (nonatomic, strong) ZBarReaderViewController *zbarController;
 @property (nonatomic, strong) BRBubbleView *tipView;
 
 @property (nonatomic, strong) IBOutletCollection(UIButton) NSArray *buttons;
@@ -156,7 +155,6 @@
 
 - (void)viewDidAppear:(BOOL)animated
 {
-    [self zbarController]; // pre-load zbarController
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -164,21 +162,6 @@
     [self hideTips];
 
     [super viewWillDisappear:animated];
-}
-
-- (ZBarReaderViewController *)zbarController
-{
-    if (! _zbarController) {
-        _zbarController = [ZBarReaderViewController new];
-        _zbarController.readerDelegate = self;
-        _zbarController.cameraOverlayView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"cameraguide.png"]];
-        _zbarController.cameraOverlayView.center = CGPointMake(_zbarController.view.center.x,
-                                                               _zbarController.view.center.y - 10.0);
-        _zbarController.transitioningDelegate = self;
-        _zbarController.modalPresentationStyle = UIModalPresentationCustom;
-    }
-
-    return _zbarController;
 }
 
 - (void)confirmAmount:(uint64_t)amount fee:(uint64_t)fee address:(NSString *)address name:(NSString *)name
@@ -323,6 +306,8 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     }
 
     //TODO: check for duplicates of already paid requests
+
+    //TODO: XXXX handle 0 amounts, amount below tx_min_output_amount, and own address
 
     self.protocolRequest = protoReq;
     self.tx = [m.wallet transactionForAmounts:protoReq.details.outputAmounts
@@ -489,25 +474,25 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
     [sender setEnabled:NO];
 
-    [self.navigationController presentViewController:self.zbarController animated:YES
-     completion:^{ NSLog(@"present qr reader complete"); }];
+//    [self.navigationController presentViewController:self.zbarController animated:YES
+//     completion:^{ NSLog(@"present qr reader complete"); }];
 
     BOOL hasFlash = [[AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo] hasTorch];
     UIBarButtonItem *flashButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"flash.png"]
                                     style:UIBarButtonItemStylePlain target:self action:@selector(flash:)];
 
-    // replace zbarController.view info button with flash toggle
-    for (UIView *v in self.zbarController.view.subviews) {
-        for (id t in v.subviews) {
-            if ([t isKindOfClass:[UIToolbar class]] && [[t items] count] > 1) {
-                UIBarButtonItem *cancelButton =
-                    [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop
-                     target:[(UIBarButtonItem *)[t items][0] target] action:[(UIBarButtonItem *)[t items][0] action]];
-
-                [t setItems:hasFlash ? @[cancelButton, [t items][1], flashButton] : @[cancelButton, [t items][1]]];
-            }
-        }
-    }
+//    // replace zbarController.view info button with flash toggle
+//    for (UIView *v in self.zbarController.view.subviews) {
+//        for (id t in v.subviews) {
+//            if ([t isKindOfClass:[UIToolbar class]] && [[t items] count] > 1) {
+//                UIBarButtonItem *cancelButton =
+//                    [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop
+//                     target:[(UIBarButtonItem *)[t items][0] target] action:[(UIBarButtonItem *)[t items][0] action]];
+//
+//                [t setItems:hasFlash ? @[cancelButton, [t items][1], flashButton] : @[cancelButton, [t items][1]]];
+//            }
+//        }
+//    }
 }
 
 - (IBAction)payToClipboard:(id)sender
@@ -574,67 +559,67 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
 - (void)imagePickerController:(UIImagePickerController *)reader didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
-    // ignore additonal qr codes while we're still giving visual feedback about the current one
-    if ([[(id)self.zbarController.cameraOverlayView image] isEqual:[UIImage imageNamed:@"cameraguide-green.png"]]) {
-        return;
-    }
-
-    for (id result in info[ZBarReaderControllerResults]) {
-        NSString *s = (id)[result data];
-        BRPaymentRequest *request = [BRPaymentRequest requestWithString:s];
-
-        if (! [request isValid] && ! [s isValidBitcoinPrivateKey] && ! [s isValidBitcoinBIP38Key]) {
-            [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide-red.png"]];
-
-            // display red camera guide for 0.5 seconds
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-                [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide.png"]];
-
-                if ([s hasPrefix:@"bitcoin:"] || [request.paymentAddress hasPrefix:@"1"]) {
-                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"not a valid bitcoin address", nil)
-                      message:request.paymentAddress delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
-                      otherButtonTitles:nil] show];
-                }
-                else {
-                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"not a bitcoin QR code", nil) message:nil
-                      delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-                }
-            });
-        }
-        else {
-            [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide-green.png"]];
-
-            if (request.r.length > 0) { // start fetching payment protocol request right away
-                [BRPaymentRequest fetch:request.r completion:^(BRPaymentProtocolRequest *req, NSError *error) {
-                    if (error) {
-                        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
-                          message:error.localizedDescription delegate:nil
-                          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-                        [self cancel:nil];
-                        return;
-                    }
-
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [reader dismissViewControllerAnimated:YES completion:^{
-                            [(id)self.zbarController.cameraOverlayView
-                             setImage:[UIImage imageNamed:@"cameraguide.png"]];
-                            [self confirmProtocolRequest:req];
-                        }];
-                    });
-                }];
-            }
-            else {
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-                    [reader dismissViewControllerAnimated:YES completion:^{
-                        [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide.png"]];
-                        [self confirmRequest:request];
-                    }];
-                });
-            }
-        }
-
-        break;
-    }
+//    // ignore additonal qr codes while we're still giving visual feedback about the current one
+//    if ([[(id)self.zbarController.cameraOverlayView image] isEqual:[UIImage imageNamed:@"cameraguide-green.png"]]) {
+//        return;
+//    }
+//
+//    for (id result in info[ZBarReaderControllerResults]) {
+//        NSString *s = (id)[result data];
+//        BRPaymentRequest *request = [BRPaymentRequest requestWithString:s];
+//
+//        if (! [request isValid] && ! [s isValidBitcoinPrivateKey] && ! [s isValidBitcoinBIP38Key]) {
+//            [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide-red.png"]];
+//
+//            // display red camera guide for 0.5 seconds
+//            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+//                [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide.png"]];
+//
+//                if ([s hasPrefix:@"bitcoin:"] || [request.paymentAddress hasPrefix:@"1"]) {
+//                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"not a valid bitcoin address", nil)
+//                      message:request.paymentAddress delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
+//                      otherButtonTitles:nil] show];
+//                }
+//                else {
+//                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"not a bitcoin QR code", nil) message:nil
+//                      delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+//                }
+//            });
+//        }
+//        else {
+//            [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide-green.png"]];
+//
+//            if (request.r.length > 0) { // start fetching payment protocol request right away
+//                [BRPaymentRequest fetch:request.r completion:^(BRPaymentProtocolRequest *req, NSError *error) {
+//                    if (error) {
+//                        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
+//                          message:error.localizedDescription delegate:nil
+//                          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+//                        [self cancel:nil];
+//                        return;
+//                    }
+//
+//                    dispatch_async(dispatch_get_main_queue(), ^{
+//                        [reader dismissViewControllerAnimated:YES completion:^{
+//                            [(id)self.zbarController.cameraOverlayView
+//                             setImage:[UIImage imageNamed:@"cameraguide.png"]];
+//                            [self confirmProtocolRequest:req];
+//                        }];
+//                    });
+//                }];
+//            }
+//            else {
+//                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+//                    [reader dismissViewControllerAnimated:YES completion:^{
+//                        [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide.png"]];
+//                        [self confirmRequest:request];
+//                    }];
+//                });
+//            }
+//        }
+//
+//        break;
+//    }
 }
 
 #pragma mark - UIAlertViewDelegate
@@ -814,42 +799,42 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
     UIImageView *img = [self.buttons.firstObject imageView];
-    UIView *guide = self.zbarController.cameraOverlayView;
-    CGPoint p = guide.center;
-
-    if (to == self.zbarController) {
-        [v addSubview:to.view];
-        to.view.frame = from.view.frame;
-        to.view.center = CGPointMake(to.view.center.x, v.frame.size.height*3/2);
-        guide.center = [v convertPoint:img.center fromView:img.superview];
-        guide.transform = CGAffineTransformMakeScale(img.bounds.size.width/guide.bounds.size.width,
-                                                     img.bounds.size.height/guide.bounds.size.height);
-        guide.alpha = 0;
-        [v addSubview:guide];
-
-        [UIView animateWithDuration:0.1 animations:^{
-            img.alpha = 0.0;
-            guide.alpha = 1.0;
-        }];
-
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:0.8
-        initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseIn animations:^{
-            to.view.center = from.view.center;
-        } completion:^(BOOL finished) {
-            img.alpha = 1.0;
-            [transitionContext completeTransition:finished];
-        }];
-
-        [UIView animateWithDuration:0.8 delay:0.15 usingSpringWithDamping:0.5 initialSpringVelocity:0
-        options:UIViewAnimationOptionCurveEaseOut animations:^{
-            guide.center = p;
-            guide.transform = CGAffineTransformIdentity;
-        } completion:^(BOOL finished) {
-            [to.view addSubview:guide];
-        }];
-    }
-    else {
-        [v addSubview:guide];
+//    UIView *guide = self.zbarController.cameraOverlayView;
+//    CGPoint p = guide.center;
+//
+//    if (to == self.zbarController) {
+//        [v addSubview:to.view];
+//        to.view.frame = from.view.frame;
+//        to.view.center = CGPointMake(to.view.center.x, v.frame.size.height*3/2);
+//        guide.center = [v convertPoint:img.center fromView:img.superview];
+//        guide.transform = CGAffineTransformMakeScale(img.bounds.size.width/guide.bounds.size.width,
+//                                                     img.bounds.size.height/guide.bounds.size.height);
+//        guide.alpha = 0;
+//        [v addSubview:guide];
+//
+//        [UIView animateWithDuration:0.1 animations:^{
+//            img.alpha = 0.0;
+//            guide.alpha = 1.0;
+//        }];
+//
+//        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:0.8
+//        initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+//            to.view.center = from.view.center;
+//        } completion:^(BOOL finished) {
+//            img.alpha = 1.0;
+//            [transitionContext completeTransition:finished];
+//        }];
+//
+//        [UIView animateWithDuration:0.8 delay:0.15 usingSpringWithDamping:0.5 initialSpringVelocity:0
+//        options:UIViewAnimationOptionCurveEaseOut animations:^{
+//            guide.center = p;
+//            guide.transform = CGAffineTransformIdentity;
+//        } completion:^(BOOL finished) {
+//            [to.view addSubview:guide];
+//        }];
+//    }
+//    else {
+//        [v addSubview:guide];
         [v insertSubview:to.view belowSubview:from.view];
         [self cancel:nil];
         img = [self.buttons.firstObject imageView];
@@ -857,18 +842,18 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0
         options:UIViewAnimationOptionCurveEaseOut animations:^{
-            guide.center = [v convertPoint:img.center fromView:img.superview];
-            guide.transform = CGAffineTransformMakeScale(img.bounds.size.width/guide.bounds.size.width,
-                                                         img.bounds.size.height/guide.bounds.size.height);
+//            guide.center = [v convertPoint:img.center fromView:img.superview];
+//            guide.transform = CGAffineTransformMakeScale(img.bounds.size.width/guide.bounds.size.width,
+//                                                         img.bounds.size.height/guide.bounds.size.height);
         } completion:^(BOOL finished) {
             [UIView animateWithDuration:0.1 animations:^{
                 img.alpha = 1.0;
-                guide.alpha = 0.0;
+//                guide.alpha = 0.0;
             } completion:^(BOOL finished) {
-                guide.transform = CGAffineTransformIdentity;
-                guide.center = p;
-                guide.alpha = 1.0;
-                [from.view addSubview:guide];
+//                guide.transform = CGAffineTransformIdentity;
+//                guide.center = p;
+//                guide.alpha = 1.0;
+//                [from.view addSubview:guide];
             }];
         }];
 
@@ -878,7 +863,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:finished];
         }];
-    }
+//    }
 }
 
 #pragma mark - UIViewControllerTransitioningDelegate
