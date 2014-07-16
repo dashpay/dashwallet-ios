@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="5056" systemVersion="14A283o" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="BeO-Yt-c4D">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="5056" systemVersion="13E28" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="BeO-Yt-c4D">
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3733"/>
     </dependencies>
@@ -294,14 +294,14 @@
                                 <rect key="frame" x="0.0" y="25" width="320" height="26"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="M7x-tC-dff">
-                                        <rect key="frame" x="0.0" y="0.0" width="320" height="0.5"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="320" height="1"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="0.5" id="71x-I5-Oh5"/>
                                         </constraints>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="RXe-Yw-Kar">
-                                        <rect key="frame" x="0.0" y="25.5" width="320" height="0.5"/>
+                                        <rect key="frame" x="0.0" y="26" width="320" height="1"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="0.5" id="t4s-d2-Hm2"/>
@@ -385,6 +385,67 @@
             </objects>
             <point key="canvasLocation" x="719" y="671"/>
         </scene>
+        <!--Scan View Controller-->
+        <scene sceneID="2f7-Nl-i6P">
+            <objects>
+                <viewController storyboardIdentifier="ScanViewController" id="7bs-mx-vI1" customClass="BRScanViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="muf-Jv-fkV"/>
+                        <viewControllerLayoutGuide type="bottom" id="dRA-mr-I7p"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="uIe-6C-u6o">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0ab-wc-I93">
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                            </view>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="cameraguide" translatesAutoresizingMaskIntoConstraints="NO" id="uEW-dq-bFQ">
+                                <rect key="frame" x="43" y="145" width="234" height="234"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            </imageView>
+                            <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" barStyle="black" translatesAutoresizingMaskIntoConstraints="NO" id="C6f-EJ-S6p">
+                                <rect key="frame" x="0.0" y="524" width="320" height="44"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="44" id="Fal-Ts-Ea7"/>
+                                </constraints>
+                                <items>
+                                    <barButtonItem systemItem="stop" id="oms-iL-fLr">
+                                        <connections>
+                                            <action selector="done:" destination="7bs-mx-vI1" id="1H8-Zs-kno"/>
+                                        </connections>
+                                    </barButtonItem>
+                                    <barButtonItem style="plain" systemItem="flexibleSpace" id="mOH-I8-TnD"/>
+                                    <barButtonItem image="flash" id="RGj-jO-DmC">
+                                        <connections>
+                                            <action selector="flash:" destination="7bs-mx-vI1" id="cgY-nC-nZX"/>
+                                        </connections>
+                                    </barButtonItem>
+                                </items>
+                                <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            </toolbar>
+                        </subviews>
+                        <constraints>
+                            <constraint firstAttribute="centerY" secondItem="uEW-dq-bFQ" secondAttribute="centerY" constant="22" id="2Cz-mU-x3b"/>
+                            <constraint firstAttribute="trailing" secondItem="C6f-EJ-S6p" secondAttribute="trailing" id="O4G-pM-neC"/>
+                            <constraint firstAttribute="centerX" secondItem="uEW-dq-bFQ" secondAttribute="centerX" id="ldQ-SP-pN3"/>
+                            <constraint firstItem="C6f-EJ-S6p" firstAttribute="leading" secondItem="uIe-6C-u6o" secondAttribute="leading" id="t9k-Wc-Dkb"/>
+                            <constraint firstItem="dRA-mr-I7p" firstAttribute="top" secondItem="C6f-EJ-S6p" secondAttribute="bottom" id="tFw-YY-inX"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="cameraGuide" destination="uEW-dq-bFQ" id="4es-3t-tbW"/>
+                        <outlet property="cameraView" destination="0ab-wc-I93" id="uec-RJ-LgA"/>
+                        <outlet property="toolbar" destination="C6f-EJ-S6p" id="SVJ-N8-aTF"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="kwG-7M-PRF" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1134" y="671"/>
+        </scene>
         <!--Amount View Controller - ƀ 0.00 ($0.00)-->
         <scene sceneID="53j-BI-jfv">
             <objects>
@@ -422,7 +483,7 @@
                                 </connections>
                             </textField>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pRz-u7-mvg">
-                                <rect key="frame" x="20" y="125" width="280" height="0.5"/>
+                                <rect key="frame" x="20" y="125" width="280" height="1"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.25" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="0.5" id="Gek-ri-xHU"/>
@@ -657,7 +718,7 @@
                                 </connections>
                             </button>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9gG-xZ-TIV">
-                                <rect key="frame" x="20" y="521" width="280" height="0.5"/>
+                                <rect key="frame" x="20" y="521" width="280" height="1"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.25" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="0.5" id="hKb-WQ-FN0"/>
@@ -762,7 +823,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Eo1-Mc-5Xo" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1134" y="671"/>
+            <point key="canvasLocation" x="1546" y="671"/>
         </scene>
         <!--Receive View Controller-->
         <scene sceneID="1OV-CI-Wjb">
@@ -1190,7 +1251,7 @@
                                 <rect key="frame" x="0.0" y="184" width="320" height="200"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Wyo-tk-JbR">
-                                        <rect key="frame" x="0.0" y="0.0" width="320" height="0.5"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="320" height="1"/>
                                         <color key="backgroundColor" white="0.67000000000000004" alpha="1" colorSpace="calibratedWhite"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="0.5" id="yy7-el-RW3"/>
@@ -1268,7 +1329,7 @@ Cg
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="G4X-xw-xAl">
-                                        <rect key="frame" x="0.0" y="199" width="320" height="0.5"/>
+                                        <rect key="frame" x="0.0" y="199" width="320" height="1"/>
                                         <color key="backgroundColor" white="0.67000000000000004" alpha="1" colorSpace="calibratedWhite"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="0.5" id="UhR-to-ytR"/>
@@ -1318,7 +1379,7 @@ Cg
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Cly-dd-Cif" userLabel="First Responder" sceneMemberID="firstResponder"/>
                 <tapGestureRecognizer id="68Y-ha-WTV"/>
             </objects>
-            <point key="canvasLocation" x="1546" y="671"/>
+            <point key="canvasLocation" x="1949" y="671"/>
         </scene>
         <!--View Controller-->
         <scene sceneID="r00-Cf-6PH">
@@ -1386,7 +1447,7 @@ Cg
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                             <subviews>
                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" image="breadwallet-white" translatesAutoresizingMaskIntoConstraints="NO" id="8lh-UZ-tbs">
-                                    <rect key="frame" x="0.0" y="0.0" width="97.5" height="18"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="98" height="18"/>
                                 </imageView>
                             </subviews>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
@@ -2494,7 +2555,7 @@ Cgo
                                 <rect key="frame" x="0.0" y="264" width="320" height="105"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="LK7-eX-ZgB">
-                                        <rect key="frame" x="0.0" y="0.0" width="320" height="0.5"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="320" height="1"/>
                                         <color key="backgroundColor" white="0.67000000000000004" alpha="1" colorSpace="calibratedWhite"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="0.5" id="l2b-EL-NOY"/>
@@ -2507,7 +2568,7 @@ Cgo
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mcG-j3-eTm">
-                                        <rect key="frame" x="0.0" y="104.5" width="320" height="0.5"/>
+                                        <rect key="frame" x="0.0" y="105" width="320" height="1"/>
                                         <color key="backgroundColor" white="0.67000000000000004" alpha="1" colorSpace="calibratedWhite"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="0.5" id="B43-b5-4Rt"/>
@@ -2601,10 +2662,12 @@ Cgo
         <image name="button-bg-disabled" width="11" height="30"/>
         <image name="button-bg-white" width="11" height="30"/>
         <image name="button-bg-white-pressed" width="11" height="30"/>
+        <image name="cameraguide" width="234" height="234"/>
         <image name="cameraguide-blue-small" width="20" height="20"/>
         <image name="cameraguide-small" width="20" height="20"/>
         <image name="deletetoleft" width="29" height="23"/>
         <image name="deletetoleft-pressed" width="29" height="23"/>
+        <image name="flash" width="33" height="33"/>
         <image name="refresh" width="9" height="11"/>
         <image name="wallpaper-default" width="480" height="568"/>
         <image name="wallpaper-welcome" width="757" height="568"/>

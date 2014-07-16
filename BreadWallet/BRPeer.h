@@ -90,8 +90,8 @@ typedef enum {
 
 @interface BRPeer : NSObject<NSStreamDelegate>
 
-@property (nonatomic, assign) id<BRPeerDelegate> delegate;
-@property (nonatomic, strong) dispatch_queue_t delegateQueue; // default is main queue
+@property (nonatomic, readonly) id<BRPeerDelegate> delegate;
+@property (nonatomic, readonly) dispatch_queue_t delegateQueue;
 
 // set this to the timestamp when the wallet was created to improve initial sync time (interval since refrence date)
 @property (nonatomic, assign) NSTimeInterval earliestKeyTime;
@@ -114,6 +114,7 @@ typedef enum {
 - (instancetype)initWithAddress:(uint32_t)address andPort:(uint16_t)port;
 - (instancetype)initWithAddress:(uint32_t)address port:(uint16_t)port timestamp:(NSTimeInterval)timestamp
 services:(uint64_t)services;
+- (void)setDelegate:(id<BRPeerDelegate>)delegate queue:(dispatch_queue_t)delegateQueue;
 - (void)connect;
 - (void)disconnect;
 - (void)sendMessage:(NSData *)message type:(NSString *)type;

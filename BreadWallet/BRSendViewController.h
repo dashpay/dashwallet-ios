@@ -24,10 +24,11 @@
 //  THE SOFTWARE.
 
 #import <UIKit/UIKit.h>
+#import <AVFoundation/AVFoundation.h>
 #import "BRAmountViewController.h"
 
 @interface BRSendViewController : UIViewController <UIAlertViewDelegate, UIViewControllerTransitioningDelegate,
-UIViewControllerAnimatedTransitioning, BRAmountViewControllerDelegate>
+UIViewControllerAnimatedTransitioning, BRAmountViewControllerDelegate, AVCaptureMetadataOutputObjectsDelegate>
 
 - (IBAction)tip:(id)sender;
 

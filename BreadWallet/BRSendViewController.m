@@ -25,6 +25,7 @@
 
 #import "BRSendViewController.h"
 #import "BRRootViewController.h"
+#import "BRScanViewController.h"
 #import "BRAmountViewController.h"
 #import "BRSettingsViewController.h"
 #import "BRBubbleView.h"
@@ -37,7 +38,6 @@
 #import "BRTransaction.h"
 #import "NSString+Base58.h"
 #import "NSMutableData+Bitcoin.h"
-#import <AVFoundation/AVFoundation.h>
 
 #define SCAN_TIP      NSLocalizedString(@"Scan someone else's QR code to get their bitcoin address. "\
                                          "You can send a payment to anyone with an address.", nil)
@@ -55,6 +55,7 @@
 @property (nonatomic, strong) BRPaymentRequest *request;
 @property (nonatomic, strong) BRPaymentProtocolRequest *protocolRequest;
 @property (nonatomic, strong) BRBubbleView *tipView;
+@property (nonatomic, strong) BRScanViewController *scanController;
 
 @property (nonatomic, strong) IBOutletCollection(UIButton) NSArray *buttons;
 
@@ -155,6 +156,9 @@
 
 - (void)viewDidAppear:(BOOL)animated
 {
+    if (! self.scanController) {
+        self.scanController = [self.storyboard instantiateViewControllerWithIdentifier:@"ScanViewController"];
+    }
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -473,26 +477,8 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     if ([self nextTip]) return;
 
     [sender setEnabled:NO];
-
-//    [self.navigationController presentViewController:self.zbarController animated:YES
-//     completion:^{ NSLog(@"present qr reader complete"); }];
-
-    BOOL hasFlash = [[AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo] hasTorch];
-    UIBarButtonItem *flashButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"flash.png"]
-                                    style:UIBarButtonItemStylePlain target:self action:@selector(flash:)];
-
-//    // replace zbarController.view info button with flash toggle
-//    for (UIView *v in self.zbarController.view.subviews) {
-//        for (id t in v.subviews) {
-//            if ([t isKindOfClass:[UIToolbar class]] && [[t items] count] > 1) {
-//                UIBarButtonItem *cancelButton =
-//                    [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop
-//                     target:[(UIBarButtonItem *)[t items][0] target] action:[(UIBarButtonItem *)[t items][0] action]];
-//
-//                [t setItems:hasFlash ? @[cancelButton, [t items][1], flashButton] : @[cancelButton, [t items][1]]];
-//            }
-//        }
-//    }
+    self.scanController.delegate = self;
+    [self.navigationController presentViewController:self.scanController animated:YES completion:nil];
 }
 
 - (IBAction)payToClipboard:(id)sender
@@ -540,13 +526,6 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     }
 }
 
-- (IBAction)flash:(id)sender
-{
-    AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-
-    device.torchMode = device.torchActive ? AVCaptureTorchModeOff : AVCaptureTorchModeOn;
-}
-
 #pragma mark - BRAmountViewControllerDelegate
 
 - (void)amountViewController:(BRAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
@@ -555,71 +534,72 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     [self confirmRequest:amountViewController.request];
 }
 
-#pragma mark - UIImagePickerControllerDelegate
+#pragma mark - AVCaptureMetadataOutputObjectsDelegate
 
-- (void)imagePickerController:(UIImagePickerController *)reader didFinishPickingMediaWithInfo:(NSDictionary *)info
+- (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputMetadataObjects:(NSArray *)metadataObjects
+fromConnection:(AVCaptureConnection *)connection
 {
-//    // ignore additonal qr codes while we're still giving visual feedback about the current one
-//    if ([[(id)self.zbarController.cameraOverlayView image] isEqual:[UIImage imageNamed:@"cameraguide-green.png"]]) {
-//        return;
-//    }
-//
-//    for (id result in info[ZBarReaderControllerResults]) {
-//        NSString *s = (id)[result data];
-//        BRPaymentRequest *request = [BRPaymentRequest requestWithString:s];
-//
-//        if (! [request isValid] && ! [s isValidBitcoinPrivateKey] && ! [s isValidBitcoinBIP38Key]) {
-//            [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide-red.png"]];
-//
-//            // display red camera guide for 0.5 seconds
-//            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-//                [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide.png"]];
-//
-//                if ([s hasPrefix:@"bitcoin:"] || [request.paymentAddress hasPrefix:@"1"]) {
-//                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"not a valid bitcoin address", nil)
-//                      message:request.paymentAddress delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
-//                      otherButtonTitles:nil] show];
-//                }
-//                else {
-//                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"not a bitcoin QR code", nil) message:nil
-//                      delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-//                }
-//            });
-//        }
-//        else {
-//            [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide-green.png"]];
-//
-//            if (request.r.length > 0) { // start fetching payment protocol request right away
-//                [BRPaymentRequest fetch:request.r completion:^(BRPaymentProtocolRequest *req, NSError *error) {
-//                    if (error) {
-//                        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
-//                          message:error.localizedDescription delegate:nil
-//                          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-//                        [self cancel:nil];
-//                        return;
-//                    }
-//
-//                    dispatch_async(dispatch_get_main_queue(), ^{
-//                        [reader dismissViewControllerAnimated:YES completion:^{
-//                            [(id)self.zbarController.cameraOverlayView
-//                             setImage:[UIImage imageNamed:@"cameraguide.png"]];
-//                            [self confirmProtocolRequest:req];
-//                        }];
-//                    });
-//                }];
-//            }
-//            else {
-//                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-//                    [reader dismissViewControllerAnimated:YES completion:^{
-//                        [(id)self.zbarController.cameraOverlayView setImage:[UIImage imageNamed:@"cameraguide.png"]];
-//                        [self confirmRequest:request];
-//                    }];
-//                });
-//            }
-//        }
-//
-//        break;
-//    }
+    // ignore additonal qr codes while we're still giving visual feedback about the current one
+    if ([self.scanController.cameraGuide.image isEqual:[UIImage imageNamed:@"cameraguide-green"]] ||
+        [self.scanController.cameraGuide.image isEqual:[UIImage imageNamed:@"cameraguide-red"]]) return;
+
+    for (AVMetadataMachineReadableCodeObject *o in metadataObjects) {
+        if (! [o.type isEqual:AVMetadataObjectTypeQRCode]) continue;
+
+        NSString *s = o.stringValue;
+        BRPaymentRequest *request = [BRPaymentRequest requestWithString:s];
+
+        if (! [request isValid] && ! [s isValidBitcoinPrivateKey] && ! [s isValidBitcoinBIP38Key]) {
+            self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide-red"];
+
+            // display red camera guide for 0.5 seconds
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide"];
+
+                if ([s hasPrefix:@"bitcoin:"] || [request.paymentAddress hasPrefix:@"1"]) {
+                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"not a valid bitcoin address", nil)
+                      message:request.paymentAddress delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
+                      otherButtonTitles:nil] show];
+                }
+                else {
+                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"not a bitcoin QR code", nil) message:nil
+                      delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+                }
+            });
+        }
+        else {
+            self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide-green"];
+
+            if (request.r.length > 0) { // start fetching payment protocol request right away
+                [BRPaymentRequest fetch:request.r completion:^(BRPaymentProtocolRequest *req, NSError *error) {
+                    if (error) {
+                        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
+                          message:error.localizedDescription delegate:nil
+                          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+                        [self cancel:nil];
+                        return;
+                    }
+
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [self.navigationController dismissViewControllerAnimated:YES completion:^{
+                            self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide"];
+                            [self confirmProtocolRequest:req];
+                        }];
+                    });
+                }];
+            }
+            else {
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                    [self.navigationController dismissViewControllerAnimated:YES completion:^{
+                        self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide"];
+                        [self confirmRequest:request];
+                    }];
+                });
+            }
+        }
+
+        break;
+    }
 }
 
 #pragma mark - UIAlertViewDelegate
