@@ -1,9 +1,9 @@
 //
-//  BRSendViewController.h
+//  BRScanViewController.h
 //  BreadWallet
 //
-//  Created by Aaron Voisine on 5/8/13.
-//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
+//  Created by Administrator on 7/15/14.
+//  Copyright (c) 2014 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -25,11 +25,10 @@
 
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
-#import "BRAmountViewController.h"
 
-@interface BRSendViewController : UIViewController <UIAlertViewDelegate, UIViewControllerTransitioningDelegate,
-UIViewControllerAnimatedTransitioning, BRAmountViewControllerDelegate, AVCaptureMetadataOutputObjectsDelegate>
+@interface BRScanViewController : UIViewController <AVCaptureMetadataOutputObjectsDelegate>
 
-- (IBAction)tip:(id)sender;
+@property (nonatomic, assign) id<AVCaptureMetadataOutputObjectsDelegate> delegate;
+@property (nonatomic, strong) IBOutlet UIImageView *cameraGuide;
 
 @end

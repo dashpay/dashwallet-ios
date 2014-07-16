@@ -424,8 +424,7 @@ static const char *dns_seeds[] = {
             BRPeer *p = peers[(NSUInteger)(pow(lrand48() % peers.count, 2)/peers.count)];
 
             if (p && ! [self.connectedPeers containsObject:p]) {
-                p.delegate = self;
-                p.delegateQueue = self.q;
+                [p setDelegate:self queue:self.q];
                 p.earliestKeyTime = self.earliestKeyTime;
                 [self.connectedPeers addObject:p];
                 [p connect];

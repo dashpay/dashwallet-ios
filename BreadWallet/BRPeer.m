@@ -58,6 +58,8 @@ typedef enum {
 
 @interface BRPeer ()
 
+@property (nonatomic, assign) id<BRPeerDelegate> delegate;
+@property (nonatomic, strong) dispatch_queue_t delegateQueue;
 @property (nonatomic, strong) NSInputStream *inputStream;
 @property (nonatomic, strong) NSOutputStream *outputStream;
 @property (nonatomic, strong) NSMutableData *msgHeader, *msgPayload, *outputBuffer;
@@ -110,9 +112,10 @@ services:(uint64_t)services
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
 
-- (dispatch_queue_t)delegateQueue
+- (void)setDelegate:(id<BRPeerDelegate>)delegate queue:(dispatch_queue_t)delegateQueue
 {
-    return _delegateQueue ? _delegateQueue : dispatch_get_main_queue();
+    _delegate = delegate;
+    _delegateQueue = delegateQueue;
 }
 
 - (NSString *)host
@@ -126,7 +129,7 @@ services:(uint64_t)services
 - (void)connect
 {
     if (self.status != BRPeerStatusDisconnected) return;
-
+    if (! self.delegateQueue) _delegateQueue = dispatch_get_main_queue();
     if (! self.reachability) self.reachability = [Reachability reachabilityWithHostName:self.host];
     
     if (self.reachability.currentReachabilityStatus == NotReachable) { // delay connect until network is reachable
@@ -196,7 +199,13 @@ services:(uint64_t)services
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel connect timeout
     
     _status = BRPeerStatusDisconnected;
-    
+
+    if (self.reachabilityObserver) {
+        [self.reachability stopNotifier];
+        [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
+        self.reachabilityObserver = nil;
+    }
+
     if (! self.runLoop) return;
     
     // can't use dispatch_async here because the runloop blocks the queue, so schedule on the runloop instead

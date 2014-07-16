@@ -1,0 +1,116 @@
+//
+//  BRScanViewController.m
+//  BreadWallet
+//
+//  Created by Administrator on 7/15/14.
+//  Copyright (c) 2014 Aaron Voisine <voisine@gmail.com>
+//
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+//
+//  The above copyright notice and this permission notice shall be included in
+//  all copies or substantial portions of the Software.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//  THE SOFTWARE.
+
+#import "BRScanViewController.h"
+
+@interface BRScanViewController ()
+
+@property (nonatomic, strong) IBOutlet UIView *cameraView;
+@property (nonatomic, strong) IBOutlet UIToolbar *toolbar;
+
+@property (nonatomic, strong) AVCaptureSession *session;
+@property (nonatomic, strong) AVCaptureVideoPreviewLayer *preview;
+
+@end
+
+@implementation BRScanViewController
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+
+    AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+
+    if (! device.hasTorch) self.toolbar.items = @[self.toolbar.items[0]];
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+
+    NSError *error = nil;
+    AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+    AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:device error:&error];
+    AVCaptureMetadataOutput *output = [AVCaptureMetadataOutput new];
+
+    if ([device lockForConfiguration:&error]) {
+        if (device.isAutoFocusRangeRestrictionSupported) {
+            device.autoFocusRangeRestriction = AVCaptureAutoFocusRangeRestrictionNear;
+        }
+        
+        if ([device isFocusModeSupported:AVCaptureFocusModeContinuousAutoFocus]) {
+            device.focusMode = AVCaptureFocusModeContinuousAutoFocus;
+        }
+        
+        [device unlockForConfiguration];
+    }
+    
+    self.session = [AVCaptureSession new];
+    if (error) NSLog(@"%@", [error localizedDescription]);
+    if (input) [self.session addInput:input];
+    [self.session addOutput:output];
+    [output setMetadataObjectsDelegate:self.delegate queue:dispatch_get_main_queue()];
+
+    if ([output.availableMetadataObjectTypes containsObject:AVMetadataObjectTypeQRCode]) {
+        output.metadataObjectTypes = @[AVMetadataObjectTypeQRCode];
+    }
+
+    self.preview = [[AVCaptureVideoPreviewLayer alloc] initWithSession:self.session];
+    self.preview.videoGravity = AVLayerVideoGravityResizeAspectFill;
+    self.preview.frame = self.view.layer.bounds;
+    [self.cameraView.layer addSublayer:self.preview];
+    [self.session performSelector:@selector(startRunning) withObject:nil afterDelay:0.1];
+}
+
+- (void)viewDidDisappear:(BOOL)animated
+{
+    [self.session stopRunning];
+    self.session = nil;
+    [self.preview removeFromSuperlayer];
+    self.preview = nil;
+
+    [super viewDidDisappear:animated];
+}
+
+#pragma mark - IBAction
+
+- (IBAction)flash:(id)sender
+{
+    NSError *error = nil;
+    AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+
+    if ([device lockForConfiguration:&error]) {
+        device.torchMode = device.torchActive ? AVCaptureTorchModeOff : AVCaptureTorchModeOn;
+        [device unlockForConfiguration];
+    }
+}
+
+- (IBAction)done:(id)sender
+{
+    [self.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+}
+
+@end
