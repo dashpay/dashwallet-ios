@@ -140,7 +140,7 @@ CFAllocatorRef SecureAllocator()
 
     BN_CTX_start(ctx);
 
-    NSMutableData *d = [NSMutableData secureDataWithCapacity:self.length*138/100 + 1];
+    NSMutableData *d = [NSMutableData secureDataWithCapacity:self.length + 1];
     unsigned int b;
     BIGNUM *base = BN_CTX_get(ctx), *x = BN_CTX_get(ctx), *y = BN_CTX_get(ctx);
 

@@ -200,7 +200,7 @@ services:(uint64_t)services
     
     _status = BRPeerStatusDisconnected;
 
-    if (self.reachabilityObserver) {
+    if (self.reachabilityObserver) { //BUG: XXXX causing exec_bad_access for info in ReachabilityCallback line 90 ?
         [self.reachability stopNotifier];
         [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
         self.reachabilityObserver = nil;

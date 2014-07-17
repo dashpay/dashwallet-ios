@@ -26,9 +26,12 @@
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 
-@interface BRScanViewController : UIViewController <AVCaptureMetadataOutputObjectsDelegate>
+@interface BRScanViewController : UIViewController
 
 @property (nonatomic, assign) id<AVCaptureMetadataOutputObjectsDelegate> delegate;
+@property (nonatomic, strong) IBOutlet UILabel *message;
 @property (nonatomic, strong) IBOutlet UIImageView *cameraGuide;
+
+- (void)stop;
 
 @end

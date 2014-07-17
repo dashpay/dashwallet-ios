@@ -56,6 +56,8 @@
     AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:device error:&error];
     AVCaptureMetadataOutput *output = [AVCaptureMetadataOutput new];
 
+    if (error) NSLog(@"%@", [error localizedDescription]);
+    
     if ([device lockForConfiguration:&error]) {
         if (device.isAutoFocusRangeRestrictionSupported) {
             device.autoFocusRangeRestriction = AVCaptureAutoFocusRangeRestrictionNear;
@@ -69,7 +71,6 @@
     }
     
     self.session = [AVCaptureSession new];
-    if (error) NSLog(@"%@", [error localizedDescription]);
     if (input) [self.session addInput:input];
     [self.session addOutput:output];
     [output setMetadataObjectsDelegate:self.delegate queue:dispatch_get_main_queue()];
@@ -82,7 +83,10 @@
     self.preview.videoGravity = AVLayerVideoGravityResizeAspectFill;
     self.preview.frame = self.view.layer.bounds;
     [self.cameraView.layer addSublayer:self.preview];
-    [self.session performSelector:@selector(startRunning) withObject:nil afterDelay:0.1];
+
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        [self.session startRunning];
+    });
 }
 
 - (void)viewDidDisappear:(BOOL)animated
@@ -93,6 +97,11 @@
     self.preview = nil;
 
     [super viewDidDisappear:animated];
+}
+
+- (void)stop
+{
+    [self.session removeOutput:self.session.outputs.firstObject];
 }
 
 #pragma mark - IBAction

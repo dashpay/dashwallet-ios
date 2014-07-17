@@ -76,6 +76,7 @@
             NSURL *url = note.userInfo[@"url"];
             
             if ([url.scheme isEqual:@"bitcoin"]) {
+                //BUG: XXXX this bypasses lock screen
                 [self confirmRequest:[BRPaymentRequest requestWithURL:url]];
                 return;
             }
@@ -92,6 +93,7 @@
             BRPaymentProtocolRequest *request = [BRPaymentProtocolRequest requestWithData:file];
             
             if (request) {
+                //BUG: XXXX this bypasses lock screen
                 [self confirmProtocolRequest:request];
                 return;
             }
@@ -432,6 +434,12 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     return YES;
 }
 
+- (void)resetQRGuide
+{
+    self.scanController.message.text = nil;
+    self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide"];
+}
+
 #pragma mark - IBAction
 
 - (IBAction)tip:(id)sender
@@ -478,6 +486,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
     [sender setEnabled:NO];
     self.scanController.delegate = self;
+    self.scanController.transitioningDelegate = self;
     [self.navigationController presentViewController:self.scanController animated:YES completion:nil];
 }
 
@@ -539,10 +548,6 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputMetadataObjects:(NSArray *)metadataObjects
 fromConnection:(AVCaptureConnection *)connection
 {
-    // ignore additonal qr codes while we're still giving visual feedback about the current one
-    if ([self.scanController.cameraGuide.image isEqual:[UIImage imageNamed:@"cameraguide-green"]] ||
-        [self.scanController.cameraGuide.image isEqual:[UIImage imageNamed:@"cameraguide-red"]]) return;
-
     for (AVMetadataMachineReadableCodeObject *o in metadataObjects) {
         if (! [o.type isEqual:AVMetadataObjectTypeQRCode]) continue;
 
@@ -550,25 +555,21 @@ fromConnection:(AVCaptureConnection *)connection
         BRPaymentRequest *request = [BRPaymentRequest requestWithString:s];
 
         if (! [request isValid] && ! [s isValidBitcoinPrivateKey] && ! [s isValidBitcoinBIP38Key]) {
+            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(resetQRGuide) object:nil];
             self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide-red"];
 
-            // display red camera guide for 0.5 seconds
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-                self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide"];
+            if ([s hasPrefix:@"bitcoin:"] || [request.paymentAddress hasPrefix:@"1"]) {
+                self.scanController.message.text = [NSString stringWithFormat:@"%@\n%@",
+                                                    NSLocalizedString(@"not a valid bitcoin address", nil),
+                                                    request.paymentAddress];
+            }
+            else self.scanController.message.text = NSLocalizedString(@"not a bitcoin QR code", nil);
 
-                if ([s hasPrefix:@"bitcoin:"] || [request.paymentAddress hasPrefix:@"1"]) {
-                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"not a valid bitcoin address", nil)
-                      message:request.paymentAddress delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
-                      otherButtonTitles:nil] show];
-                }
-                else {
-                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"not a bitcoin QR code", nil) message:nil
-                      delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-                }
-            });
+            [self performSelector:@selector(resetQRGuide) withObject:nil afterDelay:0.35];
         }
         else {
             self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide-green"];
+            [self.scanController stop];
 
             if (request.r.length > 0) { // start fetching payment protocol request right away
                 [BRPaymentRequest fetch:request.r completion:^(BRPaymentProtocolRequest *req, NSError *error) {
@@ -582,19 +583,17 @@ fromConnection:(AVCaptureConnection *)connection
 
                     dispatch_async(dispatch_get_main_queue(), ^{
                         [self.navigationController dismissViewControllerAnimated:YES completion:^{
-                            self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide"];
                             [self confirmProtocolRequest:req];
+                            [self resetQRGuide];
                         }];
                     });
                 }];
             }
             else {
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-                    [self.navigationController dismissViewControllerAnimated:YES completion:^{
-                        self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide"];
-                        [self confirmRequest:request];
-                    }];
-                });
+                [self.navigationController dismissViewControllerAnimated:YES completion:^{
+                    [self confirmRequest:request];
+                    [self resetQRGuide];
+                }];
             }
         }
 
@@ -779,42 +778,45 @@ fromConnection:(AVCaptureConnection *)connection
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
     UIImageView *img = [self.buttons.firstObject imageView];
-//    UIView *guide = self.zbarController.cameraOverlayView;
-//    CGPoint p = guide.center;
-//
-//    if (to == self.zbarController) {
-//        [v addSubview:to.view];
-//        to.view.frame = from.view.frame;
-//        to.view.center = CGPointMake(to.view.center.x, v.frame.size.height*3/2);
-//        guide.center = [v convertPoint:img.center fromView:img.superview];
-//        guide.transform = CGAffineTransformMakeScale(img.bounds.size.width/guide.bounds.size.width,
-//                                                     img.bounds.size.height/guide.bounds.size.height);
-//        guide.alpha = 0;
-//        [v addSubview:guide];
-//
-//        [UIView animateWithDuration:0.1 animations:^{
-//            img.alpha = 0.0;
-//            guide.alpha = 1.0;
-//        }];
-//
-//        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:0.8
-//        initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseIn animations:^{
-//            to.view.center = from.view.center;
-//        } completion:^(BOOL finished) {
-//            img.alpha = 1.0;
-//            [transitionContext completeTransition:finished];
-//        }];
-//
-//        [UIView animateWithDuration:0.8 delay:0.15 usingSpringWithDamping:0.5 initialSpringVelocity:0
-//        options:UIViewAnimationOptionCurveEaseOut animations:^{
-//            guide.center = p;
-//            guide.transform = CGAffineTransformIdentity;
-//        } completion:^(BOOL finished) {
-//            [to.view addSubview:guide];
-//        }];
-//    }
-//    else {
-//        [v addSubview:guide];
+    UIView *guide = self.scanController.cameraGuide;
+    CGPoint p;
+
+    [self.scanController.view layoutIfNeeded];
+    p = guide.center;
+
+    if (to == self.scanController) {
+        [v addSubview:to.view];
+        to.view.frame = from.view.frame;
+        to.view.center = CGPointMake(to.view.center.x, v.frame.size.height*3/2);
+        guide.center = [v convertPoint:img.center fromView:img.superview];
+        guide.transform = CGAffineTransformMakeScale(img.bounds.size.width/guide.bounds.size.width,
+                                                     img.bounds.size.height/guide.bounds.size.height);
+        guide.alpha = 0;
+        [v addSubview:guide];
+
+        [UIView animateWithDuration:0.1 animations:^{
+            img.alpha = 0.0;
+            guide.alpha = 1.0;
+        }];
+
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:0.8
+        initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+            to.view.center = from.view.center;
+        } completion:^(BOOL finished) {
+            img.alpha = 1.0;
+            [transitionContext completeTransition:finished];
+        }];
+
+        [UIView animateWithDuration:0.8 delay:0.15 usingSpringWithDamping:0.5 initialSpringVelocity:0
+        options:UIViewAnimationOptionCurveEaseOut animations:^{
+            guide.center = p;
+            guide.transform = CGAffineTransformIdentity;
+        } completion:^(BOOL finished) {
+            [to.view addSubview:guide];
+        }];
+    }
+    else {
+        [v addSubview:guide];
         [v insertSubview:to.view belowSubview:from.view];
         [self cancel:nil];
         img = [self.buttons.firstObject imageView];
@@ -822,18 +824,18 @@ fromConnection:(AVCaptureConnection *)connection
 
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0
         options:UIViewAnimationOptionCurveEaseOut animations:^{
-//            guide.center = [v convertPoint:img.center fromView:img.superview];
-//            guide.transform = CGAffineTransformMakeScale(img.bounds.size.width/guide.bounds.size.width,
-//                                                         img.bounds.size.height/guide.bounds.size.height);
+            guide.center = [v convertPoint:img.center fromView:img.superview];
+            guide.transform = CGAffineTransformMakeScale(img.bounds.size.width/guide.bounds.size.width,
+                                                         img.bounds.size.height/guide.bounds.size.height);
         } completion:^(BOOL finished) {
             [UIView animateWithDuration:0.1 animations:^{
                 img.alpha = 1.0;
-//                guide.alpha = 0.0;
+                guide.alpha = 0.0;
             } completion:^(BOOL finished) {
-//                guide.transform = CGAffineTransformIdentity;
-//                guide.center = p;
-//                guide.alpha = 1.0;
-//                [from.view addSubview:guide];
+                guide.transform = CGAffineTransformIdentity;
+                guide.center = p;
+                guide.alpha = 1.0;
+                [from.view addSubview:guide];
             }];
         }];
 
@@ -843,7 +845,7 @@ fromConnection:(AVCaptureConnection *)connection
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:finished];
         }];
-//    }
+    }
 }
 
 #pragma mark - UIViewControllerTransitioningDelegate

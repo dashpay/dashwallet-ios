@@ -402,6 +402,15 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumFontSize="8" adjustsLetterSpacingToFitWidth="YES" preferredMaxLayoutWidth="260" translatesAutoresizingMaskIntoConstraints="NO" id="5aq-jh-ZjP">
+                                <rect key="frame" x="30" y="41" width="260" height="83"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
+                                <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                                <color key="shadowColor" white="0.0" alpha="0.5" colorSpace="calibratedWhite"/>
+                                <size key="shadowOffset" width="0.0" height="1"/>
+                            </label>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="cameraguide" translatesAutoresizingMaskIntoConstraints="NO" id="uEW-dq-bFQ">
                                 <rect key="frame" x="43" y="145" width="234" height="234"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -431,14 +440,20 @@
                         <constraints>
                             <constraint firstAttribute="centerY" secondItem="uEW-dq-bFQ" secondAttribute="centerY" constant="22" id="2Cz-mU-x3b"/>
                             <constraint firstAttribute="trailing" secondItem="C6f-EJ-S6p" secondAttribute="trailing" id="O4G-pM-neC"/>
+                            <constraint firstItem="5aq-jh-ZjP" firstAttribute="top" secondItem="uIe-6C-u6o" secondAttribute="top" constant="41" id="ZAl-5G-nOr"/>
+                            <constraint firstItem="uEW-dq-bFQ" firstAttribute="top" secondItem="5aq-jh-ZjP" secondAttribute="bottom" constant="21" id="g7i-Yz-Zv6"/>
+                            <constraint firstAttribute="centerX" secondItem="5aq-jh-ZjP" secondAttribute="centerX" id="laG-65-Xdx"/>
                             <constraint firstAttribute="centerX" secondItem="uEW-dq-bFQ" secondAttribute="centerX" id="ldQ-SP-pN3"/>
+                            <constraint firstItem="5aq-jh-ZjP" firstAttribute="leading" secondItem="uIe-6C-u6o" secondAttribute="leading" constant="30" id="sts-ix-Scc"/>
                             <constraint firstItem="C6f-EJ-S6p" firstAttribute="leading" secondItem="uIe-6C-u6o" secondAttribute="leading" id="t9k-Wc-Dkb"/>
                             <constraint firstItem="dRA-mr-I7p" firstAttribute="top" secondItem="C6f-EJ-S6p" secondAttribute="bottom" id="tFw-YY-inX"/>
+                            <constraint firstAttribute="trailing" secondItem="5aq-jh-ZjP" secondAttribute="trailing" constant="30" id="vm7-L0-gIa"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="cameraGuide" destination="uEW-dq-bFQ" id="4es-3t-tbW"/>
                         <outlet property="cameraView" destination="0ab-wc-I93" id="uec-RJ-LgA"/>
+                        <outlet property="message" destination="5aq-jh-ZjP" id="GTP-kY-im2"/>
                         <outlet property="toolbar" destination="C6f-EJ-S6p" id="SVJ-N8-aTF"/>
                     </connections>
                 </viewController>
