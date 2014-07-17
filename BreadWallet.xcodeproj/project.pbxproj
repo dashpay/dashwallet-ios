@@ -7,11 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		7522265B19283338001F1E3A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D5F3C1191EC270004AB296 /* Foundation.framework */; };
-		7522269D192833BC001F1E3A /* DataMatrix.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7522268E192833BC001F1E3A /* DataMatrix.mm */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		7522269E192833BC001F1E3A /* QR_Encode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7522268F192833BC001F1E3A /* QR_Encode.cpp */; };
-		7522269F192833BC001F1E3A /* QREncoder.mm in Sources */ = {isa = PBXBuildFile; fileRef = 75222694192833BC001F1E3A /* QREncoder.mm */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		752226AA19284BE0001F1E3A /* libqrencoder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7522265A19283338001F1E3A /* libqrencoder.a */; };
 		752226AD19284BFD001F1E3A /* libiconv.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 752226AC19284BFD001F1E3A /* libiconv.dylib */; };
 		75242C851968876500CF40E7 /* BRPINViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75242C841968876500CF40E7 /* BRPINViewController.m */; };
 		7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7525B618192453840041C0F2 /* BRNavigationBar.m */; };
@@ -700,7 +695,7 @@
 		757BE7E6192C1FF70061CB20 /* BRWelcomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BE7E5192C1FF70061CB20 /* BRWelcomeViewController.m */; };
 		757BE7E9192D4E880061CB20 /* BRSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BE7E8192D4E880061CB20 /* BRSeedViewController.m */; };
 		75878BBF192ACD46002505AB /* BRAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75878BBE192ACD46002505AB /* BRAmountViewController.m */; };
-		75878BC1192AEC3F002505AB /* BRReceiveViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 75878BC0192AEC3F002505AB /* BRReceiveViewController.mm */; };
+		75878BC1192AEC3F002505AB /* BRReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75878BC0192AEC3F002505AB /* BRReceiveViewController.m */; };
 		75878BC3192AED38002505AB /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75878BC2192AED38002505AB /* MessageUI.framework */; };
 		75878BC6192B1AF0002505AB /* BRSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75878BC5192B1AF0002505AB /* BRSettingsViewController.m */; };
 		759816E719357D6F005060EA /* BRBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 759816E619357D6F005060EA /* BRBubbleView.m */; };
@@ -727,20 +722,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		752226A6192833CE001F1E3A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 75D5F3B6191EC270004AB296 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 7579F7CF1923175300CA56F4;
-			remoteInfo = submodules;
-		};
-		752226A8192833DA001F1E3A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 75D5F3B6191EC270004AB296 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 7522265919283338001F1E3A;
-			remoteInfo = qrencoder;
-		};
 		752E28911923472300DB5A3C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 75D5F3B6191EC270004AB296 /* Project object */;
@@ -762,13 +743,6 @@
 			remoteGlobalIDString = 7579F7D819231A5D00CA56F4;
 			remoteInfo = crypto;
 		};
-		7579FFE819231F5C00CA56F4 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 75D5F3B6191EC270004AB296 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 7579F7CF1923175300CA56F4;
-			remoteInfo = submodules;
-		};
 		75D5F3EA191EC270004AB296 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 75D5F3B6191EC270004AB296 /* Project object */;
@@ -779,15 +753,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		7522265819283338001F1E3A /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "include/$(PRODUCT_NAME)";
-			dstSubfolderSpec = 16;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		752E27F81923434B00DB5A3C /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -809,14 +774,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		7522265A19283338001F1E3A /* libqrencoder.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libqrencoder.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		7522268D192833BC001F1E3A /* DataMatrix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataMatrix.h; sourceTree = "<group>"; };
-		7522268E192833BC001F1E3A /* DataMatrix.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DataMatrix.mm; sourceTree = "<group>"; };
-		7522268F192833BC001F1E3A /* QR_Encode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = QR_Encode.cpp; sourceTree = "<group>"; };
-		75222690192833BC001F1E3A /* QR_Encode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QR_Encode.h; sourceTree = "<group>"; };
-		75222692192833BC001F1E3A /* QREncoder-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "QREncoder-Prefix.pch"; sourceTree = "<group>"; };
-		75222693192833BC001F1E3A /* QREncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QREncoder.h; sourceTree = "<group>"; };
-		75222694192833BC001F1E3A /* QREncoder.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = QREncoder.mm; sourceTree = "<group>"; };
 		752226AC19284BFD001F1E3A /* libiconv.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.dylib; path = usr/lib/libiconv.dylib; sourceTree = SDKROOT; };
 		75242C831968876500CF40E7 /* BRPINViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRPINViewController.h; sourceTree = "<group>"; };
 		75242C841968876500CF40E7 /* BRPINViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPINViewController.m; sourceTree = "<group>"; };
@@ -1667,7 +1624,7 @@
 		757BE7E8192D4E880061CB20 /* BRSeedViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRSeedViewController.m; sourceTree = "<group>"; };
 		75878BBD192ACD46002505AB /* BRAmountViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAmountViewController.h; sourceTree = "<group>"; };
 		75878BBE192ACD46002505AB /* BRAmountViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = BRAmountViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
-		75878BC0192AEC3F002505AB /* BRReceiveViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = BRReceiveViewController.mm; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		75878BC0192AEC3F002505AB /* BRReceiveViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = BRReceiveViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		75878BC2192AED38002505AB /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		75878BC4192B1AF0002505AB /* BRSettingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRSettingsViewController.h; sourceTree = "<group>"; };
 		75878BC5192B1AF0002505AB /* BRSettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = BRSettingsViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
@@ -1706,14 +1663,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		7522265719283338001F1E3A /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				7522265B19283338001F1E3A /* Foundation.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		752E27F71923434B00DB5A3C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -1733,7 +1682,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				752226AD19284BFD001F1E3A /* libiconv.dylib in Frameworks */,
-				752226AA19284BE0001F1E3A /* libqrencoder.a in Frameworks */,
 				752E28901923471400DB5A3C /* libssl.a in Frameworks */,
 				75B8346819233D400010931E /* libcrypto.a in Frameworks */,
 				75878BC3192AED38002505AB /* MessageUI.framework in Frameworks */,
@@ -1756,28 +1704,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		7522267C192833BC001F1E3A /* QR-Code-Encoder-for-Objective-C */ = {
-			isa = PBXGroup;
-			children = (
-				7522268C192833BC001F1E3A /* QRCodeEncoderObjectiveCAtGithub */,
-			);
-			path = "QR-Code-Encoder-for-Objective-C";
-			sourceTree = SOURCE_ROOT;
-		};
-		7522268C192833BC001F1E3A /* QRCodeEncoderObjectiveCAtGithub */ = {
-			isa = PBXGroup;
-			children = (
-				7522268D192833BC001F1E3A /* DataMatrix.h */,
-				7522268E192833BC001F1E3A /* DataMatrix.mm */,
-				7522268F192833BC001F1E3A /* QR_Encode.cpp */,
-				75222690192833BC001F1E3A /* QR_Encode.h */,
-				75222692192833BC001F1E3A /* QREncoder-Prefix.pch */,
-				75222693192833BC001F1E3A /* QREncoder.h */,
-				75222694192833BC001F1E3A /* QREncoder.mm */,
-			);
-			path = QRCodeEncoderObjectiveCAtGithub;
-			sourceTree = "<group>";
-		};
 		752E281C192343D200DB5A3C /* ssl */ = {
 			isa = PBXGroup;
 			children = (
@@ -1935,7 +1861,6 @@
 			children = (
 				752E28EF19234E8100DB5A3C /* Reachability.h */,
 				752E28F019234E8100DB5A3C /* Reachability.m */,
-				7522267C192833BC001F1E3A /* QR-Code-Encoder-for-Objective-C */,
 				7579F7FF19231D7B00CA56F4 /* openssl */,
 			);
 			name = ThirdParty;
@@ -3096,7 +3021,7 @@
 				759FBB34193290F600AB4465 /* BRSendViewController.h */,
 				759FBB35193290F600AB4465 /* BRSendViewController.m */,
 				759FBB31193290F600AB4465 /* BRReceiveViewController.h */,
-				75878BC0192AEC3F002505AB /* BRReceiveViewController.mm */,
+				75878BC0192AEC3F002505AB /* BRReceiveViewController.m */,
 				75878BBD192ACD46002505AB /* BRAmountViewController.h */,
 				75878BBE192ACD46002505AB /* BRAmountViewController.m */,
 				75878BC4192B1AF0002505AB /* BRSettingsViewController.h */,
@@ -3132,7 +3057,6 @@
 				75D5F3E5191EC270004AB296 /* BreadWalletTests.xctest */,
 				7579F7D919231A5D00CA56F4 /* libcrypto.a */,
 				752E27FA1923434B00DB5A3C /* libssl.a */,
-				7522265A19283338001F1E3A /* libqrencoder.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -3203,42 +3127,7 @@
 		};
 /* End PBXGroup section */
 
-/* Begin PBXLegacyTarget section */
-		7579F7CF1923175300CA56F4 /* submodules */ = {
-			isa = PBXLegacyTarget;
-			buildArgumentsString = "-c 'cd $SRCROOT; git submodule init; git submodule update'";
-			buildConfigurationList = 7579F7D21923175300CA56F4 /* Build configuration list for PBXLegacyTarget "submodules" */;
-			buildPhases = (
-			);
-			buildToolPath = /bin/sh;
-			buildWorkingDirectory = "";
-			dependencies = (
-			);
-			name = submodules;
-			passBuildSettingsInEnvironment = 1;
-			productName = submodules;
-		};
-/* End PBXLegacyTarget section */
-
 /* Begin PBXNativeTarget section */
-		7522265919283338001F1E3A /* qrencoder */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 7522267619283339001F1E3A /* Build configuration list for PBXNativeTarget "qrencoder" */;
-			buildPhases = (
-				7522265619283338001F1E3A /* Sources */,
-				7522265719283338001F1E3A /* Frameworks */,
-				7522265819283338001F1E3A /* CopyFiles */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				752226A7192833CE001F1E3A /* PBXTargetDependency */,
-			);
-			name = qrencoder;
-			productName = qrencoder;
-			productReference = 7522265A19283338001F1E3A /* libqrencoder.a */;
-			productType = "com.apple.product-type.library.static";
-		};
 		752E27F91923434B00DB5A3C /* ssl */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 752E281A1923434B00DB5A3C /* Build configuration list for PBXNativeTarget "ssl" */;
@@ -3286,8 +3175,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				7579FFE919231F5C00CA56F4 /* PBXTargetDependency */,
-				752226A9192833DA001F1E3A /* PBXTargetDependency */,
 				752E28921923472300DB5A3C /* PBXTargetDependency */,
 				7579F7FD19231B2100CA56F4 /* PBXTargetDependency */,
 			);
@@ -3353,8 +3240,6 @@
 				75D5F3BD191EC270004AB296 /* breadwallet */,
 				752E27F91923434B00DB5A3C /* ssl */,
 				7579F7D819231A5D00CA56F4 /* crypto */,
-				7522265919283338001F1E3A /* qrencoder */,
-				7579F7CF1923175300CA56F4 /* submodules */,
 				75D5F3E4191EC270004AB296 /* BreadWalletTests */,
 			);
 		};
@@ -3402,16 +3287,6 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		7522265619283338001F1E3A /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				7522269D192833BC001F1E3A /* DataMatrix.mm in Sources */,
-				7522269F192833BC001F1E3A /* QREncoder.mm in Sources */,
-				7522269E192833BC001F1E3A /* QR_Encode.cpp in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		752E27F61923434B00DB5A3C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -4106,7 +3981,7 @@
 				75242C851968876500CF40E7 /* BRPINViewController.m in Sources */,
 				752E28D519234C3600DB5A3C /* BRPaymentRequest.m in Sources */,
 				7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */,
-				75878BC1192AEC3F002505AB /* BRReceiveViewController.mm in Sources */,
+				75878BC1192AEC3F002505AB /* BRReceiveViewController.m in Sources */,
 				75878BBF192ACD46002505AB /* BRAmountViewController.m in Sources */,
 				759816E719357D6F005060EA /* BRBubbleView.m in Sources */,
 				75878BC6192B1AF0002505AB /* BRSettingsViewController.m in Sources */,
@@ -4138,16 +4013,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		752226A7192833CE001F1E3A /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 7579F7CF1923175300CA56F4 /* submodules */;
-			targetProxy = 752226A6192833CE001F1E3A /* PBXContainerItemProxy */;
-		};
-		752226A9192833DA001F1E3A /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 7522265919283338001F1E3A /* qrencoder */;
-			targetProxy = 752226A8192833DA001F1E3A /* PBXContainerItemProxy */;
-		};
 		752E28921923472300DB5A3C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 752E27F91923434B00DB5A3C /* ssl */;
@@ -4162,11 +4027,6 @@
 			isa = PBXTargetDependency;
 			target = 7579F7D819231A5D00CA56F4 /* crypto */;
 			targetProxy = 7579F7FC19231B2100CA56F4 /* PBXContainerItemProxy */;
-		};
-		7579FFE919231F5C00CA56F4 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 7579F7CF1923175300CA56F4 /* submodules */;
-			targetProxy = 7579FFE819231F5C00CA56F4 /* PBXContainerItemProxy */;
 		};
 		75D5F3EB191EC270004AB296 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -4212,36 +4072,6 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		7522267719283339001F1E3A /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				DSTROOT = /tmp/qrencoder.dst;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "QR-Code-Encoder-for-Objective-C/QRCodeEncoderObjectiveCAtGithub/QREncoder-Prefix.pch";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				GCC_WARN_INHIBIT_ALL_WARNINGS = YES;
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-			};
-			name = Debug;
-		};
-		7522267819283339001F1E3A /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				DSTROOT = /tmp/qrencoder.dst;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "QR-Code-Encoder-for-Objective-C/QRCodeEncoderObjectiveCAtGithub/QREncoder-Prefix.pch";
-				GCC_WARN_INHIBIT_ALL_WARNINGS = YES;
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-			};
-			name = Release;
-		};
 		752E28161923434B00DB5A3C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -4402,41 +4232,6 @@
 			};
 			name = GCov_Build;
 		};
-		754F4BCD194BBA94004AD9CA /* GCov_Build */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				DSTROOT = /tmp/qrencoder.dst;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "QR-Code-Encoder-for-Objective-C/QRCodeEncoderObjectiveCAtGithub/QREncoder-Prefix.pch";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				GCC_WARN_INHIBIT_ALL_WARNINGS = YES;
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-			};
-			name = GCov_Build;
-		};
-		754F4BCE194BBA94004AD9CA /* GCov_Build */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				DEBUGGING_SYMBOLS = YES;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-			};
-			name = GCov_Build;
-		};
 		754F4BCF194BBA94004AD9CA /* GCov_Build */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -4458,36 +4253,6 @@
 				WRAPPER_EXTENSION = xctest;
 			};
 			name = GCov_Build;
-		};
-		7579F7D01923175300CA56F4 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				DEBUGGING_SYMBOLS = YES;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-			};
-			name = Debug;
-		};
-		7579F7D11923175300CA56F4 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-			};
-			name = Release;
 		};
 		7579F7F619231A5D00CA56F4 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -4690,32 +4455,12 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		7522267619283339001F1E3A /* Build configuration list for PBXNativeTarget "qrencoder" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				7522267719283339001F1E3A /* Debug */,
-				754F4BCD194BBA94004AD9CA /* GCov_Build */,
-				7522267819283339001F1E3A /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		752E281A1923434B00DB5A3C /* Build configuration list for PBXNativeTarget "ssl" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				752E28161923434B00DB5A3C /* Debug */,
 				754F4BCA194BBA94004AD9CA /* GCov_Build */,
 				752E28171923434B00DB5A3C /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		7579F7D21923175300CA56F4 /* Build configuration list for PBXLegacyTarget "submodules" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				7579F7D01923175300CA56F4 /* Debug */,
-				754F4BCE194BBA94004AD9CA /* GCov_Build */,
-				7579F7D11923175300CA56F4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

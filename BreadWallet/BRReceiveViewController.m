@@ -29,7 +29,6 @@
 #import "BRWalletManager.h"
 #import "BRWallet.h"
 #import "BRBubbleView.h"
-#import "QREncoder.h"
 
 #define QR_TIP      NSLocalizedString(@"Let others scan this QR code to get your bitcoin address. Anyone can send "\
                     "bitcoins to your wallet by transferring them to your address.", nil)
@@ -84,8 +83,23 @@
 
     NSString *s = [[NSString alloc] initWithData:self.paymentRequest.data encoding:NSUTF8StringEncoding];
 
-    self.qrView.image = [QREncoder renderDataMatrix:[QREncoder encodeWithECLevel:1 version:1 string:s]
-                         imageDimension:self.qrView.frame.size.width];
+    if (self.paymentRequest.data.length > 0) {
+        CIFilter *f = [CIFilter filterWithName:@"CIQRCodeGenerator"];
+
+        [f setValue:[s dataUsingEncoding:NSISOLatin1StringEncoding] forKey:@"inputMessage"];
+        [f setValue:@"H" forKey:@"inputCorrectionLevel"];
+
+        CGImageRef i = [[CIContext contextWithOptions:nil] createCGImage:f.outputImage fromRect:f.outputImage.extent];
+
+        UIGraphicsBeginImageContext(self.qrView.bounds.size);
+        CGContextSetInterpolationQuality(UIGraphicsGetCurrentContext(), kCGInterpolationNone);
+        CGContextDrawImage(UIGraphicsGetCurrentContext(),CGContextGetClipBoundingBox(UIGraphicsGetCurrentContext()), i);
+        self.qrView.image = [UIImage imageWithCGImage:UIGraphicsGetImageFromCurrentImageContext().CGImage scale:1.0
+                             orientation:UIImageOrientationDownMirrored];
+        UIGraphicsEndImageContext();
+        CGImageRelease(i);
+    }
+
     [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
     self.updated = YES;
 }
