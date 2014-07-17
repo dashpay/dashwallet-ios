@@ -82,23 +82,21 @@
     if (! [self.paymentRequest isValid]) return;
 
     NSString *s = [[NSString alloc] initWithData:self.paymentRequest.data encoding:NSUTF8StringEncoding];
+    CIFilter *filter = [CIFilter filterWithName:@"CIQRCodeGenerator"];
 
-    if (self.paymentRequest.data.length > 0) {
-        CIFilter *f = [CIFilter filterWithName:@"CIQRCodeGenerator"];
+    [filter setValue:[s dataUsingEncoding:NSISOLatin1StringEncoding] forKey:@"inputMessage"];
+    [filter setValue:@"L" forKey:@"inputCorrectionLevel"];
 
-        [f setValue:[s dataUsingEncoding:NSISOLatin1StringEncoding] forKey:@"inputMessage"];
-        [f setValue:@"H" forKey:@"inputCorrectionLevel"];
+    CGImageRef img = [[CIContext contextWithOptions:nil] createCGImage:filter.outputImage
+                      fromRect:filter.outputImage.extent];
 
-        CGImageRef i = [[CIContext contextWithOptions:nil] createCGImage:f.outputImage fromRect:f.outputImage.extent];
-
-        UIGraphicsBeginImageContext(self.qrView.bounds.size);
-        CGContextSetInterpolationQuality(UIGraphicsGetCurrentContext(), kCGInterpolationNone);
-        CGContextDrawImage(UIGraphicsGetCurrentContext(),CGContextGetClipBoundingBox(UIGraphicsGetCurrentContext()), i);
-        self.qrView.image = [UIImage imageWithCGImage:UIGraphicsGetImageFromCurrentImageContext().CGImage scale:1.0
-                             orientation:UIImageOrientationDownMirrored];
-        UIGraphicsEndImageContext();
-        CGImageRelease(i);
-    }
+    UIGraphicsBeginImageContext(self.qrView.bounds.size);
+    CGContextSetInterpolationQuality(UIGraphicsGetCurrentContext(), kCGInterpolationNone);
+    CGContextDrawImage(UIGraphicsGetCurrentContext(), CGContextGetClipBoundingBox(UIGraphicsGetCurrentContext()), img);
+    self.qrView.image = [UIImage imageWithCGImage:UIGraphicsGetImageFromCurrentImageContext().CGImage scale:1.0
+                         orientation:UIImageOrientationDownMirrored];
+    UIGraphicsEndImageContext();
+    CGImageRelease(img);
 
     [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
     self.updated = YES;
