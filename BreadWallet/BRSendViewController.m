@@ -50,7 +50,6 @@
 @interface BRSendViewController ()
 
 @property (nonatomic, assign) BOOL clearClipboard, showTips, didAskFee, removeFee;
-@property (nonatomic, strong) id urlObserver, fileObserver;
 @property (nonatomic, strong) BRTransaction *tx, *sweepTx;
 @property (nonatomic, strong) BRPaymentRequest *request;
 @property (nonatomic, strong) BRPaymentProtocolRequest *protocolRequest;
@@ -67,86 +66,6 @@
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
-
-    //TODO: add a field for manually entering a payment address
-
-    self.urlObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:BRURLNotification object:nil queue:nil
-        usingBlock:^(NSNotification *note) {
-            NSURL *url = note.userInfo[@"url"];
-            
-            if ([url.scheme isEqual:@"bitcoin"]) {
-                //BUG: XXXX this bypasses lock screen
-                [self confirmRequest:[BRPaymentRequest requestWithURL:url]];
-                return;
-            }
-
-            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"unsupported url", nil) message:url.absoluteString
-              delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-            [self reset:nil];
-        }];
-
-    self.fileObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:BRFileNotification object:nil queue:nil
-        usingBlock:^(NSNotification *note) {
-            NSData *file = note.userInfo[@"file"];
-            BRPaymentProtocolRequest *request = [BRPaymentProtocolRequest requestWithData:file];
-            
-            if (request) {
-                //BUG: XXXX this bypasses lock screen
-                [self confirmProtocolRequest:request];
-                return;
-            }
-
-            // TODO: reject payments that don't match requested amounts/scripts, implement refunds
-            BRPaymentProtocolPayment *payment = [BRPaymentProtocolPayment paymentWithData:file];
-            
-            if (payment.transactions.count > 0) {
-                for (BRTransaction *tx in payment.transactions) {
-                    [(id)self.parentViewController.parentViewController startActivityWithTimeout:30];
-
-                    [[BRPeerManager sharedInstance] publishTransaction:tx completion:^(NSError *error) {
-                        [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
-
-                        if (error) {
-                            [[[UIAlertView alloc]
-                              initWithTitle:NSLocalizedString(@"couldn't transmit payment to bitcoin network", nil)
-                              message:error.localizedDescription delegate:nil
-                              cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-                        }
-
-                        [self.view addSubview:[[[BRBubbleView
-                         viewWithText:(payment.memo.length > 0 ? payment.memo : NSLocalizedString(@"recieved", nil))
-                         center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
-                         popOutAfterDelay:(payment.memo.length > 10 ? 3.0 : 2.0)]];
-                    }];
-                }
-
-                return;
-            }
-            
-            BRPaymentProtocolACK *ack = [BRPaymentProtocolACK ackWithData:file];
-            
-            if (ack) {
-                if (ack.memo.length > 0) {
-                    [self.view
-                     addSubview:[[[BRBubbleView viewWithText:ack.memo
-                                   center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
-                                  popIn] popOutAfterDelay:2.0]];
-                }
-
-                return;
-            }
-            
-            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"unsupported or corrupted document", nil) message:nil
-              delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-        }];
-}
-
-- (void)dealloc
-{
-    if (self.urlObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.urlObserver];
-    if (self.fileObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.fileObserver];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -168,6 +87,69 @@
     [self hideTips];
 
     [super viewWillDisappear:animated];
+}
+
+- (void)handleURL:(NSURL *)url
+{
+    if ([url.scheme isEqual:@"bitcoin"]) {
+        [self confirmRequest:[BRPaymentRequest requestWithURL:url]];
+    }
+    else {
+        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"unsupported url", nil) message:url.absoluteString
+          delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+    }
+}
+
+- (void)handleFile:(NSData *)file
+{
+    BRPaymentProtocolRequest *request = [BRPaymentProtocolRequest requestWithData:file];
+
+    if (request) {
+        [self confirmProtocolRequest:request];
+        return;
+    }
+
+    // TODO: reject payments that don't match requested amounts/scripts, implement refunds
+    BRPaymentProtocolPayment *payment = [BRPaymentProtocolPayment paymentWithData:file];
+            
+    if (payment.transactions.count > 0) {
+        for (BRTransaction *tx in payment.transactions) {
+            [(id)self.parentViewController.parentViewController startActivityWithTimeout:30];
+
+            [[BRPeerManager sharedInstance] publishTransaction:tx completion:^(NSError *error) {
+                [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
+                
+                if (error) {
+                    [[[UIAlertView alloc]
+                      initWithTitle:NSLocalizedString(@"couldn't transmit payment to bitcoin network", nil)
+                      message:error.localizedDescription delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
+                      otherButtonTitles:nil] show];
+                }
+
+                [self.view addSubview:[[[BRBubbleView
+                 viewWithText:(payment.memo.length > 0 ? payment.memo : NSLocalizedString(@"recieved", nil))
+                 center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
+                 popOutAfterDelay:(payment.memo.length > 10 ? 3.0 : 2.0)]];
+            }];
+        }
+
+        return;
+    }
+    
+    BRPaymentProtocolACK *ack = [BRPaymentProtocolACK ackWithData:file];
+            
+    if (ack) {
+        if (ack.memo.length > 0) {
+            [self.view addSubview:[[[BRBubbleView viewWithText:ack.memo
+             center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
+             popOutAfterDelay:2.0]];
+        }
+
+        return;
+    }
+
+    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"unsupported or corrupted document", nil) message:nil
+      delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
 }
 
 - (void)confirmAmount:(uint64_t)amount fee:(uint64_t)fee address:(NSString *)address name:(NSString *)name

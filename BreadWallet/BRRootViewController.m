@@ -26,6 +26,7 @@
 #import "BRRootViewController.h"
 #import "BRReceiveViewController.h"
 #import "BRSendViewController.h"
+#import "BRPINViewController.h"
 #import "BRBubbleView.h"
 #import "BRBouncyBurgerButton.h"
 #import "BRPeerManager.h"
@@ -50,6 +51,8 @@
 @property (nonatomic, strong) BRBubbleView *tipView;
 @property (nonatomic, assign) BOOL appeared, showTips, inNextTip;
 @property (nonatomic, strong) Reachability *reachability;
+@property (nonatomic, strong) NSURL *url;
+@property (nonatomic, strong) NSData *file;
 @property (nonatomic, strong) id urlObserver, fileObserver, activeObserver, resignActiveObserver, balanceObserver;
 @property (nonatomic, strong) id reachabilityObserver, syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 @property (nonatomic, assign) NSTimeInterval timeout, start;
@@ -101,6 +104,7 @@
     self.urlObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRURLNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
+            self.url = note.userInfo[@"url"];
             [self.pageViewController setViewControllers:@[self.sendViewController]
              direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
         }];
@@ -108,6 +112,7 @@
     self.fileObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRFileNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
+            self.file = note.userInfo[@"file"];
             [self.pageViewController setViewControllers:@[self.sendViewController]
              direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
         }];
@@ -117,9 +122,9 @@
         queue:nil usingBlock:^(NSNotification *note) {
             if (self.appeared && m.wallet &&
                 ! [self.navigationController.presentedViewController.restorationIdentifier isEqual:@"PINNav"]) {
-                UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
+                UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
 
-                [[(id)c viewControllers].firstObject setAppeared:YES];
+                [c.viewControllers.firstObject setAppeared:YES];
 
                 if (self.navigationController.presentedViewController) {
                     [self.navigationController dismissViewControllerAnimated:NO completion:^{
@@ -154,9 +159,9 @@
         queue:nil usingBlock:^(NSNotification *note) {
             if (self.appeared && m.wallet &&
                 ! [self.navigationController.presentedViewController.restorationIdentifier isEqual:@"PINNav"]) {
-                UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
+                UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
 
-                [[(id)c viewControllers].firstObject setAppeared:YES];
+                [c.viewControllers.firstObject setAppeared:YES];
 
                 if (self.navigationController.presentedViewController) {
                     [self.navigationController dismissViewControllerAnimated:NO completion:^{
@@ -167,6 +172,9 @@
 
                 c.transitioningDelegate = self;
             }
+
+            self.url = nil;
+            self.file = nil;
         }];
 
     self.reachabilityObserver =
@@ -244,9 +252,12 @@
 #endif
 
     if (! [[UIApplication sharedApplication] isProtectedDataAvailable] || m.wallet) {
-        UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
+        UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
 
-        [self.navigationController presentViewController:c animated:NO completion:nil];
+        [self.navigationController presentViewController:c animated:NO completion:^{
+            [c.viewControllers.firstObject setAppeared:YES animated:YES];
+        }];
+
         c.transitioningDelegate = self;
     }
 }
@@ -258,9 +269,9 @@
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
     if ([[UIApplication sharedApplication] isProtectedDataAvailable] && ! m.wallet) {
-        UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
+        UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
 
-        [[(id)c viewControllers].firstObject setAppeared:YES];
+        [c.viewControllers.firstObject setAppeared:YES];
 
         [self.navigationController presentViewController:c animated:NO completion:^{
             c.transitioningDelegate = self;
@@ -297,6 +308,12 @@
 
     if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
     if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
+
+    if (self.url) [self.sendViewController handleURL:self.url];
+    if (self.file) [self.sendViewController handleFile:self.file];
+
+    self.url = nil;
+    self.file = nil;
 
     [super viewDidAppear:animated];
 }

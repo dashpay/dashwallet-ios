@@ -86,13 +86,14 @@
 
     [filter setValue:[s dataUsingEncoding:NSISOLatin1StringEncoding] forKey:@"inputMessage"];
     [filter setValue:@"L" forKey:@"inputCorrectionLevel"];
+    UIGraphicsBeginImageContext(self.qrView.bounds.size);
 
+    CGContextRef context = UIGraphicsGetCurrentContext();
     CGImageRef img = [[CIContext contextWithOptions:nil] createCGImage:filter.outputImage
                       fromRect:filter.outputImage.extent];
 
-    UIGraphicsBeginImageContext(self.qrView.bounds.size);
-    CGContextSetInterpolationQuality(UIGraphicsGetCurrentContext(), kCGInterpolationNone);
-    CGContextDrawImage(UIGraphicsGetCurrentContext(), CGContextGetClipBoundingBox(UIGraphicsGetCurrentContext()), img);
+    CGContextSetInterpolationQuality(context, kCGInterpolationNone);
+    CGContextDrawImage(context, CGContextGetClipBoundingBox(context), img);
     self.qrView.image = [UIImage imageWithCGImage:UIGraphicsGetImageFromCurrentImageContext().CGImage scale:1.0
                          orientation:UIImageOrientationDownMirrored];
     UIGraphicsEndImageContext();
