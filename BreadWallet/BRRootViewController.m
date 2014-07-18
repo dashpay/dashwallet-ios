@@ -196,7 +196,7 @@
 
             // update receive qr code if it's not on screen
             if (self.pageViewController.viewControllers.lastObject != self.receiveViewController) {
-                [self.receiveViewController viewWillAppear:NO];
+                [self.receiveViewController updateAddress];
             }
         }];
 

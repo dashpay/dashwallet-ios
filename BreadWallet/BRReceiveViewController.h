@@ -31,4 +31,6 @@ MFMessageComposeViewControllerDelegate, MFMailComposeViewControllerDelegate>
 
 - (IBAction)tip:(id)sender;
 
+- (void)updateAddress;
+
 @end

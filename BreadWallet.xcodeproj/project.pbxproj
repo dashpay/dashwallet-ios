@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		752226AD19284BFD001F1E3A /* libiconv.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 752226AC19284BFD001F1E3A /* libiconv.dylib */; };
 		75242C851968876500CF40E7 /* BRPINViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75242C841968876500CF40E7 /* BRPINViewController.m */; };
 		7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7525B618192453840041C0F2 /* BRNavigationBar.m */; };
 		752E285C192343D200DB5A3C /* bio_ssl.c in Sources */ = {isa = PBXBuildFile; fileRef = 752E281D192343D200DB5A3C /* bio_ssl.c */; };
@@ -57,7 +56,6 @@
 		752E288B192343D200DB5A3C /* t1_reneg.c in Sources */ = {isa = PBXBuildFile; fileRef = 752E2858192343D200DB5A3C /* t1_reneg.c */; };
 		752E288C192343D200DB5A3C /* t1_srvr.c in Sources */ = {isa = PBXBuildFile; fileRef = 752E2859192343D200DB5A3C /* t1_srvr.c */; };
 		752E288D192343D200DB5A3C /* tls_srp.c in Sources */ = {isa = PBXBuildFile; fileRef = 752E285B192343D200DB5A3C /* tls_srp.c */; };
-		752E28901923471400DB5A3C /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 752E27FA1923434B00DB5A3C /* libssl.a */; };
 		752E289A192349CE00DB5A3C /* BreadWallet.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 752E2898192349CE00DB5A3C /* BreadWallet.xcdatamodeld */; };
 		752E28AA19234AE300DB5A3C /* BRAddressEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E289F19234AE300DB5A3C /* BRAddressEntity.m */; };
 		752E28AB19234AE300DB5A3C /* BRMerkleBlockEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E28A119234AE300DB5A3C /* BRMerkleBlockEntity.m */; };
@@ -774,7 +772,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		752226AC19284BFD001F1E3A /* libiconv.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.dylib; path = usr/lib/libiconv.dylib; sourceTree = SDKROOT; };
 		75242C831968876500CF40E7 /* BRPINViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRPINViewController.h; sourceTree = "<group>"; };
 		75242C841968876500CF40E7 /* BRPINViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPINViewController.m; sourceTree = "<group>"; };
 		7525B617192453840041C0F2 /* BRNavigationBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRNavigationBar.h; sourceTree = "<group>"; };
@@ -1681,8 +1678,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				752226AD19284BFD001F1E3A /* libiconv.dylib in Frameworks */,
-				752E28901923471400DB5A3C /* libssl.a in Frameworks */,
 				75B8346819233D400010931E /* libcrypto.a in Frameworks */,
 				75878BC3192AED38002505AB /* MessageUI.framework in Frameworks */,
 				75D5F3C4191EC270004AB296 /* CoreGraphics.framework in Frameworks */,
@@ -3064,7 +3059,6 @@
 		75D5F3C0191EC270004AB296 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				752226AC19284BFD001F1E3A /* libiconv.dylib */,
 				75878BC2192AED38002505AB /* MessageUI.framework */,
 				75D5F3C1191EC270004AB296 /* Foundation.framework */,
 				75D5F3C3191EC270004AB296 /* CoreGraphics.framework */,
@@ -3278,7 +3272,7 @@
 			inputPaths = (
 			);
 			outputPaths = (
-				"$(SRCROOT)/openssl-1.0.1g/ssl/tls_srp.c",
+				"$(SRCROOT)/openssl-1.0.1h/ssl/tls_srp.c",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

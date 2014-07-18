@@ -78,13 +78,7 @@
         [b setAttributedTitle:s forState:UIControlStateNormal];
     }
 
-    if (! self.appeared) {
-        self.logoXCenter.constant = self.view.bounds.size.width;
-        self.wallpaperXLeft.constant = self.view.bounds.size.width*PARALAX_RATIO;
-    }
-    else {
-        self.titleXCenter.constant = self.dotsXCenter.constant = self.padXCenter.constant = self.view.bounds.size.width;
-    }
+    self.titleXCenter.constant = self.dotsXCenter.constant = self.padXCenter.constant = self.view.bounds.size.width;
 
     self.txStatusObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil

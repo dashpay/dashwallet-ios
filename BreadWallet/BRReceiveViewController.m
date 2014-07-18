@@ -92,15 +92,17 @@
     CGImageRef img = [[CIContext contextWithOptions:nil] createCGImage:filter.outputImage
                       fromRect:filter.outputImage.extent];
 
-    CGContextSetInterpolationQuality(context, kCGInterpolationNone);
-    CGContextDrawImage(context, CGContextGetClipBoundingBox(context), img);
-    self.qrView.image = [UIImage imageWithCGImage:UIGraphicsGetImageFromCurrentImageContext().CGImage scale:1.0
-                         orientation:UIImageOrientationDownMirrored];
+    if (context) {
+        CGContextSetInterpolationQuality(context, kCGInterpolationNone);
+        CGContextDrawImage(context, CGContextGetClipBoundingBox(context), img);
+        self.qrView.image = [UIImage imageWithCGImage:UIGraphicsGetImageFromCurrentImageContext().CGImage scale:1.0
+                             orientation:UIImageOrientationDownMirrored];
+        [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
+        self.updated = YES;
+    }
+
     UIGraphicsEndImageContext();
     CGImageRelease(img);
-
-    [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
-    self.updated = YES;
 }
 
 - (BRPaymentRequest *)paymentRequest
