@@ -378,12 +378,14 @@
                     cell.textLabel.text = NSLocalizedString(@"import private key", nil);
                     cell.imageView.image = [UIImage imageNamed:@"cameraguide-blue-small"];
                     cell.imageView.alpha = 1.0;
+                    cell.accessoryType = UITableViewCellAccessoryNone;
                     break;
 
                 case 1:
                     cell.textLabel.text = NSLocalizedString(@"rescan blockchain", nil);
                     cell.imageView.image = [UIImage imageNamed:@"rescan"];
                     cell.imageView.alpha = 0.75;
+                    cell.accessoryType = UITableViewCellAccessoryDetailButton;
                     break;
 
                 default:
@@ -633,6 +635,28 @@
             NSAssert(FALSE, @"%s:%d %s: unkown indexPath.section %d", __FILE__, __LINE__,  __func__,
                      (int)indexPath.section);
     }
+}
+
+- (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath
+{
+    if (self.tipView) {
+        [self.tipView popOut];
+        self.tipView = nil;
+        return;
+    }
+
+    NSUInteger i = [[self.tableView indexPathsForVisibleRows] indexOfObject:indexPath];
+    UITableViewCell *cell = (i < self.tableView.visibleCells.count) ? self.tableView.visibleCells[i] : nil;
+
+    self.tipView = [BRBubbleView viewWithText:NSLocalizedString(@"Rescan blockchain if you think you may have missing "
+                                                                "transactions, or are having trouble sending. "
+                                                                "Rescaning can take several minutes.", nil)
+                    tipPoint:[self.view convertPoint:CGPointMake(cell.bounds.size.width - 18.0, 10.0) fromView:cell]
+                    tipDirection:BRBubbleTipDirectionDown];
+    self.tipView.backgroundColor = [UIColor orangeColor];
+    self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+    self.tipView.userInteractionEnabled = NO;
+    [self.view addSubview:[self.tipView popIn]];
 }
 
 #pragma mark - UIAlertViewDelegate

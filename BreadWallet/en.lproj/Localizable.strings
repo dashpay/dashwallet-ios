@@ -236,6 +236,9 @@
 "rescan blockchain" = "rescan blockchain";
 
 /* No comment provided by engineer. */
+"Rescan blockchain if you think you may have missing transactions, or are having trouble sending. Rescaning can take several minutes." = "Rescan blockchain if you think you may have missing transactions, or are having trouble sending. Rescaning can take several minutes.";
+
+/* No comment provided by engineer. */
 "reset pin" = "reset pin";
 
 /* No comment provided by engineer. */
