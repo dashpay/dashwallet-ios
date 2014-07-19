@@ -78,7 +78,13 @@
         [b setAttributedTitle:s forState:UIControlStateNormal];
     }
 
-    self.titleXCenter.constant = self.dotsXCenter.constant = self.padXCenter.constant = self.view.bounds.size.width;
+    if (self.appeared) {
+        self.logoXCenter.constant = self.view.bounds.size.width;
+        self.wallpaperXLeft.constant = self.view.bounds.size.width*PARALAX_RATIO;
+    }
+    else {
+        self.titleXCenter.constant = self.dotsXCenter.constant = self.padXCenter.constant = self.view.bounds.size.width;
+    }
 
     self.txStatusObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil
@@ -95,7 +101,8 @@
     self.pin = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), PIN_LENGTH));
     self.badPins = [NSMutableSet set];
     self.verifyPin = nil;
-    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:NO];
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:animated];
+    [[UIApplication sharedApplication] setStatusBarHidden:(self.appeared) ? NO : YES withAnimation:animated];
     [self checkLockout];
 }
 
@@ -104,7 +111,17 @@
     [super viewDidAppear:animated];
 
     [[BRPeerManager sharedInstance] connect];
-    [self setAppeared:self.appeared animated:YES];
+
+    if (! self.appeared) {
+        [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
+        self.titleXCenter.constant = self.dotsXCenter.constant = self.padXCenter.constant = 0.0;
+        self.logoXCenter.constant = self.view.bounds.size.width;
+        self.wallpaperXLeft.constant = self.view.bounds.size.width*PARALAX_RATIO;
+
+        [UIView animateWithDuration:0.35 delay:0.1 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
+         animations:^{ [self.view layoutIfNeeded]; } completion:nil];
+    }
+
     [self performSelector:@selector(checkLockout) withObject:nil afterDelay:0.0];
 }
 
@@ -123,35 +140,6 @@
     if (self.navigationController.delegate == self) self.navigationController.delegate = nil;
     if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
-}
-
-- (void)setAppeared:(BOOL)appeared
-{
-    [self setAppeared:appeared animated:NO];
-}
-
-- (void)setAppeared:(BOOL)appeared animated:(BOOL)animated
-{
-    _appeared = appeared;
-
-    [[UIApplication sharedApplication] setStatusBarHidden:(appeared) ? NO : YES
-     withAnimation:(animated) ? UIStatusBarAnimationFade : UIStatusBarAnimationNone];
-
-    if (appeared) {
-        self.titleXCenter.constant = self.dotsXCenter.constant = self.padXCenter.constant = 0.0;
-        self.logoXCenter.constant = self.view.bounds.size.width;
-        self.wallpaperXLeft.constant = self.view.bounds.size.width*PARALAX_RATIO;
-    }
-    else {
-        self.wallpaperXLeft.constant = self.logoXCenter.constant = 0;
-        self.titleXCenter.constant = self.dotsXCenter.constant = self.padXCenter.constant =
-            self.view.bounds.size.width;
-    }
-
-    if (animated) {
-        [UIView animateWithDuration:0.35 delay:0.0 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
-         animations:^{ [self.view layoutIfNeeded]; } completion:nil];
-    }
 }
 
 - (void)checkLockout

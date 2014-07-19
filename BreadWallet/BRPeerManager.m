@@ -168,7 +168,7 @@ static const char *dns_seeds[] = {
         queue:nil usingBlock:^(NSNotification *note) {
             [self savePeers];
             [self saveBlocks];
-            [BRMerkleBlockEntity saveContext]; //BUG: XXXX crashing with nil blockHash merkle blocks when backgrounding during choose pin
+            [BRMerkleBlockEntity saveContext];
             if (self.syncProgress >= 1.0) [self.connectedPeers makeObjectsPerformSelector:@selector(disconnect)];
         }];
 

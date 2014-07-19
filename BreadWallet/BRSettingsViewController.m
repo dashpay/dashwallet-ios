@@ -41,7 +41,6 @@
 @property (nonatomic, strong) NSMutableDictionary *txDates;
 @property (nonatomic, strong) id balanceObserver, txStatusObserver;
 @property (nonatomic, strong) UIImageView *wallpaper;
-@property (nonatomic, strong) BRBubbleView *tipView;
 
 @end
 
@@ -101,8 +100,6 @@
 
 - (void)viewDidDisappear:(BOOL)animated
 {
-    if (self.tipView) [self.tipView popOut];
-    self.tipView = nil;
     self.transactions = nil;
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
     self.balanceObserver = nil;
@@ -110,12 +107,6 @@
     self.txStatusObserver = nil;
 
     [super viewDidDisappear:animated];
-}
-
-- (BOOL)shouldPerformSegueWithIdentifier:(NSString *)identifier sender:(id)sender
-{
-    if (self.tipView) return NO;
-    return YES;
 }
 
 //- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
@@ -213,21 +204,6 @@
 
     [[NSUserDefaults standardUserDefaults] setBool:[sender isOn] forKey:SETTINGS_SKIP_FEE_KEY];
 
-    if ([sender isOn]) {
-        self.tipView = [BRBubbleView
-                        viewWithText:NSLocalizedString(@"fees are only optional for high priority transactions", nil)
-                        tipPoint:[self.view convertPoint:CGPointMake([sender center].x, [sender frame].origin.y - 5.0)
-                                  fromView:[sender superview]] tipDirection:BRBubbleTipDirectionDown];
-        self.tipView.backgroundColor = [UIColor orangeColor];
-        self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
-        self.tipView.userInteractionEnabled = NO;
-        [self.view addSubview:[self.tipView popIn]];
-    }
-    else if (self.tipView) {
-        [self.tipView popOut];
-        self.tipView = nil;
-    }
-
     l.hidden = NO;
     l.alpha = ([sender isOn]) ? 0.0 : 1.0;
 
@@ -248,7 +224,7 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    return 4;
+    return 5;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -257,7 +233,8 @@
         case 0: return self.transactions.count ? self.transactions.count : 1;
         case 1: return 2;
         case 2: return 3;
-        case 3: return 2;
+        case 3: return 1;
+        case 4: return 1;
         default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
     }
 
@@ -272,9 +249,6 @@
     UILabel *textLabel, *unconfirmedLabel, *sentLabel, *noTxLabel, *localCurrencyLabel, *toggleLabel;
     UISwitch *toggleSwitch;
     BRCopyLabel *detailTextLabel;
-
-    if (self.tipView) [self.tipView popOut];
-    self.tipView = nil;
 
     switch (indexPath.section) {
         case 0:
@@ -370,32 +344,6 @@
             break;
 
         case 1:
-            cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
-            [self setBackgroundForCell:cell atIndexPath:indexPath];
-
-            switch (indexPath.row) {
-                case 0:
-                    cell.textLabel.text = NSLocalizedString(@"import private key", nil);
-                    cell.imageView.image = [UIImage imageNamed:@"cameraguide-blue-small"];
-                    cell.imageView.alpha = 1.0;
-                    cell.accessoryType = UITableViewCellAccessoryNone;
-                    break;
-
-                case 1:
-                    cell.textLabel.text = NSLocalizedString(@"rescan blockchain", nil);
-                    cell.imageView.image = [UIImage imageNamed:@"rescan"];
-                    cell.imageView.alpha = 0.75;
-                    cell.accessoryType = UITableViewCellAccessoryDetailButton;
-                    break;
-
-                default:
-                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
-                             (int)indexPath.row);
-            }
-            
-            break;
-
-        case 2:
             cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
             [self setBackgroundForCell:cell atIndexPath:indexPath];
 
@@ -409,10 +357,6 @@
                     cell.textLabel.text = NSLocalizedString(@"backup phrase", nil);
                     break;
 
-                case 2:
-                    cell.textLabel.text = NSLocalizedString(@"change pin", nil);
-                    break;
-
                 default:
                     NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
                              (int)indexPath.row);
@@ -420,27 +364,48 @@
 
             break;
 
-        case 3:
+        case 2:
+            cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
+            [self setBackgroundForCell:cell atIndexPath:indexPath];
+
             switch (indexPath.row) {
                 case 0:
-                    cell = [tableView dequeueReusableCellWithIdentifier:toggleIdent];
-                    [self setBackgroundForCell:cell atIndexPath:indexPath];
-                    toggleLabel = (id)[cell viewWithTag:2];
-                    toggleSwitch = (id)[cell viewWithTag:3];
-                    toggleSwitch.on = [[NSUserDefaults standardUserDefaults] boolForKey:SETTINGS_SKIP_FEE_KEY];
-                    toggleLabel.hidden = (toggleSwitch.on) ? NO : YES;
+                    cell.textLabel.text = NSLocalizedString(@"change pin", nil);
+                    cell.imageView.image = [UIImage imageNamed:@"pin"];
+                    cell.imageView.alpha = 0.75;
                     break;
 
                 case 1:
-                    cell = [tableView dequeueReusableCellWithIdentifier:restoreIdent];
-                    [self setBackgroundForCell:cell atIndexPath:indexPath];
+                    cell.textLabel.text = NSLocalizedString(@"import private key", nil);
+                    cell.imageView.image = [UIImage imageNamed:@"cameraguide-blue-small"];
+                    cell.imageView.alpha = 1.0;
+                    break;
+
+                case 2:
+                    cell.textLabel.text = NSLocalizedString(@"rescan blockchain", nil);
+                    cell.imageView.image = [UIImage imageNamed:@"rescan"];
+                    cell.imageView.alpha = 0.75;
                     break;
 
                 default:
-                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.section %d", __FILE__, __LINE__,  __func__,
-                             (int)indexPath.section);
+                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
+                             (int)indexPath.row);
             }
+            
+            break;
 
+        case 3:
+            cell = [tableView dequeueReusableCellWithIdentifier:toggleIdent];
+            [self setBackgroundForCell:cell atIndexPath:indexPath];
+            toggleLabel = (id)[cell viewWithTag:2];
+            toggleSwitch = (id)[cell viewWithTag:3];
+            toggleSwitch.on = [[NSUserDefaults standardUserDefaults] boolForKey:SETTINGS_SKIP_FEE_KEY];
+            toggleLabel.hidden = (toggleSwitch.on) ? NO : YES;
+            break;
+
+        case 4:
+            cell = [tableView dequeueReusableCellWithIdentifier:restoreIdent];
+            [self setBackgroundForCell:cell atIndexPath:indexPath];
             break;
 
         default:
@@ -451,38 +416,42 @@
     return cell;
 }
 
-//- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
-//{
-//    switch (section) {
-//        case 0: return nil;//NSLocalizedString(@"recent transactions", nil);
-//        case 1: return nil;//NSLocalizedString(@"settings", nil);
-//        case 2: return nil;//NSLocalizedString(@"caution", nil);
-//        default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, section);
-//    }
-//    
-//    return nil;
-//}
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
+{
+    switch (section) {
+        case 0:
+            return nil;
+
+        case 1:
+            return nil;
+            
+        case 2:
+            return nil;
+
+        case 3:
+            return NSLocalizedString(@"rescan blockchain if you think you may have missing transactions or are having "
+                                     "trouble sending (rescaning can take several minutes)", nil);
+
+        case 4:
+            return NSLocalizedString(@"fees are only optional for high priority transactions", nil);
+
+        default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, section);
+    }
+    
+    return nil;
+}
 
 #pragma mark - Table view delegate
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     switch (indexPath.section) {
-        case 0:
-            return TRANSACTION_CELL_HEIGHT;
-
-        case 1:
-            return 44.0;
-            
-        case 2:
-            return 44.0;
-
-        case 3:
-            return 44.0;
-
-        default:
-            NSAssert(FALSE, @"%s:%d %s: unkown indexPath.section %d", __FILE__, __LINE__,  __func__,
-                     (int)indexPath.section);
+        case 0: return TRANSACTION_CELL_HEIGHT;
+        case 1: return 44.0;
+        case 2: return 44.0;
+        case 3: return 44.0;
+        case 4: return 44.0;
+        default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)indexPath.section);
     }
     
     return 44.0;
@@ -490,34 +459,13 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
 {
-    CGFloat h = 0.0;
-    
     switch (section) {
-        case 0:
-            return 22.0;
-            
-        case 1:
-            return 22.0;
-
-        case 2:
-            return 22.0;
-
-        case 3:
-            h = tableView.frame.size.height - self.navigationController.navigationBar.frame.size.height - 20.0;
-            h += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:section]];
-
-            for (int s = 0; s <= section; s++) {
-                if (s < section) h -= [self tableView:tableView heightForHeaderInSection:s];
-
-                for (int r = 0; r < [self tableView:tableView numberOfRowsInSection:s]; r++) {
-                    h -= [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:r inSection:s]];
-                }
-            }
-
-            return h > 22.0 ? h : 22.0;
-        
-        default:
-            NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
+        case 0: return 22.0;
+        case 1: return 22.0;
+        case 2: return 22.0;
+        case 3: return 80.0;
+        case 4: return 50.0;
+        default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
     }
 
     return 22;
@@ -525,17 +473,18 @@
 
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
 {
-    UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width,
+    UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, self.view.frame.size.width,
                                                          [self tableView:tableView heightForHeaderInSection:section])];
-    UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(10, v.frame.size.height - 22.0,
-                                                           self.view.frame.size.width - 20, 22.0)];
+    UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(15.0, 0.0, v.frame.size.width - 20.0,
+                                                           v.frame.size.height - 22.0)];
     
     l.text = [self tableView:tableView titleForHeaderInSection:section];
     l.backgroundColor = [UIColor clearColor];
-    l.font = [UIFont fontWithName:@"HelveticaNeue" size:15];
-    l.textColor = [UIColor grayColor];
+    l.font = [UIFont fontWithName:@"HelveticaNeue" size:13];
+    l.textColor = [UIColor colorWithWhite:0.5 alpha:1.0];
     l.shadowColor = [UIColor colorWithWhite:1.0 alpha:1.0];
     l.shadowOffset = CGSizeMake(0.0, 1.0);
+    l.numberOfLines = 0;
     v.backgroundColor = [UIColor clearColor];
     [v addSubview:l];
     
@@ -545,18 +494,11 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
-    UIViewController *c = nil;
+    UINavigationController *c = nil;
     UILabel *l = nil;
     NSUInteger i = 0;
     UITableViewCell *cell = nil;
     NSMutableAttributedString *s = nil;
-
-    if (self.tipView) {
-        [self.tipView popOut];
-        self.tipView = nil;
-        [tableView deselectRowAtIndexPath:indexPath animated:NO];
-        return;
-    }
 
     switch (indexPath.section) {
         case 0: // transaction
@@ -570,24 +512,6 @@
             break;
 
         case 1:
-            switch (indexPath.row) {
-                case 0: // import private key
-                    [self scanQR:nil];
-                    break;
-
-                case 1: // rescan blockchain
-                    [[BRPeerManager sharedInstance] rescan];
-                    [self done:nil];
-                    break;
-
-                default:
-                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
-                             (int)indexPath.row);
-            }
-            
-            break;
-
-        case 2:
             switch (indexPath.row) {
                 case 0: // about
                     c = [self.storyboard instantiateViewControllerWithIdentifier:@"AboutViewController"];
@@ -612,13 +536,31 @@
                       otherButtonTitles:NSLocalizedString(@"show", nil), nil] show];
                     break;
 
-                case 2: // change pin
+                default:
+                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
+                             (int)indexPath.row);
+            }
+
+            break;
+
+        case 2:
+            switch (indexPath.row) {
+                case 0: // change pin
                     c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-                    [[[(id)c viewControllers] firstObject] setAppeared:YES];
-                    [[[(id)c viewControllers] firstObject] setCancelable:YES];
-                    [[[(id)c viewControllers] firstObject] setChangePin:YES];
+                    [c.viewControllers.firstObject setCancelable:YES];
+                    [c.viewControllers.firstObject setChangePin:YES];
                     c.transitioningDelegate = self;
                     [self.navigationController presentViewController:c animated:YES completion:nil];
+                    [c.viewControllers.firstObject setAppeared:YES];
+                    break;
+
+                case 1: // import private key
+                    [self scanQR:nil];
+                    break;
+
+                case 2: // rescan blockchain
+                    [[BRPeerManager sharedInstance] rescan];
+                    [self done:nil];
                     break;
 
                 default:
@@ -628,35 +570,16 @@
 
             break;
 
-        case 3: // start/restore another wallet handled by storyboard
+        case 3:
+            break;
+
+        case 4: // start/restore another wallet handled by storyboard
             break;
 
         default:
             NSAssert(FALSE, @"%s:%d %s: unkown indexPath.section %d", __FILE__, __LINE__,  __func__,
                      (int)indexPath.section);
     }
-}
-
-- (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath
-{
-    if (self.tipView) {
-        [self.tipView popOut];
-        self.tipView = nil;
-        return;
-    }
-
-    NSUInteger i = [[self.tableView indexPathsForVisibleRows] indexOfObject:indexPath];
-    UITableViewCell *cell = (i < self.tableView.visibleCells.count) ? self.tableView.visibleCells[i] : nil;
-
-    self.tipView = [BRBubbleView viewWithText:NSLocalizedString(@"Rescan blockchain if you think you may have missing "
-                                                                "transactions, or are having trouble sending. "
-                                                                "Rescaning can take several minutes.", nil)
-                    tipPoint:[self.view convertPoint:CGPointMake(cell.bounds.size.width - 18.0, 10.0) fromView:cell]
-                    tipDirection:BRBubbleTipDirectionDown];
-    self.tipView.backgroundColor = [UIColor orangeColor];
-    self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
-    self.tipView.userInteractionEnabled = NO;
-    [self.view addSubview:[self.tipView popIn]];
 }
 
 #pragma mark - UIAlertViewDelegate
@@ -668,10 +591,10 @@
         return;
     }
 
-    UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
+    UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
 
-    [[[(id)c viewControllers] firstObject] setAppeared:YES];
-    [[[(id)c viewControllers] firstObject] setCancelable:YES];
+    [c.viewControllers.firstObject setAppeared:YES];
+    [c.viewControllers.firstObject setCancelable:YES];
     c.transitioningDelegate = self;
     [self.navigationController presentViewController:c animated:YES completion:nil];
 }
@@ -692,9 +615,6 @@
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
     BOOL pop = (to == self || to == self.navigationController) ? YES : NO;
-
-    if (self.tipView) [self.tipView popOut];
-    self.tipView = nil;
 
     if ([from.restorationIdentifier isEqual:@"PINNav"] && ! [[[(id)from viewControllers] firstObject] changePin] &&
         [[[(id)from viewControllers] firstObject] success]) {

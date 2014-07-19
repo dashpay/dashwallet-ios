@@ -254,10 +254,7 @@
     if (! [[UIApplication sharedApplication] isProtectedDataAvailable] || m.wallet) {
         UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
 
-        [self.navigationController presentViewController:c animated:NO completion:^{
-            [c.viewControllers.firstObject setAppeared:YES animated:YES];
-        }];
-
+        [self.navigationController presentViewController:c animated:NO completion:nil];
         c.transitioningDelegate = self;
     }
 }

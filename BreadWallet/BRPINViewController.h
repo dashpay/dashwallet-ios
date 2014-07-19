@@ -34,6 +34,4 @@ UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning>
 
 @property (nonatomic, readonly) BOOL success; // true if the user entered the correct pin
 
-- (void)setAppeared:(BOOL)appeared animated:(BOOL)animated;
-
 @end

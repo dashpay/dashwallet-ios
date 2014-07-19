@@ -123,7 +123,6 @@ static void CKDPrime(NSMutableData *K, NSMutableData *c, uint32_t i)
 
     CCHmac(kCCHmacAlgSHA512, c.bytes, c.length, data.bytes, data.length, I.mutableBytes);
 
-
     BN_bin2bn(I.bytes, 32, Ilbn);
     EC_GROUP_set_point_conversion_form(group, form);
     EC_POINT_oct2point(group, pubKeyPoint, K.bytes, K.length, ctx);
