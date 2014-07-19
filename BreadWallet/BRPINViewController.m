@@ -153,16 +153,19 @@
     }
 
     BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRPeerManager *p = [BRPeerManager sharedInstance];
     NSUInteger failCount = m.pinFailCount, i;
 
     if (failCount > 2) {
-        uint32_t lastHeight = [[BRPeerManager sharedInstance] lastBlockHeight], failHeight = m.pinFailHeight,
+        uint32_t lastHeight = p.lastBlockHeight, failHeight = m.pinFailHeight,
                  wait = (failCount > 16) ? TX_MAX_LOCK_HEIGHT - lastHeight : pow(5, failCount - 4),
                  now = [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970;
 
         if (failHeight >= TX_MAX_LOCK_HEIGHT) wait = pow(5, failCount - 3)*60; // wait is in seconds instead of blocks
 
         if ((failHeight < TX_MAX_LOCK_HEIGHT && failHeight + wait > lastHeight) || failHeight + wait > now) { // locked
+            if (p.estimatedBlockHeight > lastHeight) lastHeight = p.estimatedBlockHeight;
+
             uint32_t minutes = (failHeight < TX_MAX_LOCK_HEIGHT) ? (failHeight + wait - lastHeight)*10 :
                                (failHeight + wait + 59 - now)/60;
             uint32_t hours = minutes/60, days = hours/24;
@@ -289,11 +292,18 @@
     }
     else if (! self.success && m.pin.length == PIN_LENGTH) { // failed pin attempt
         if (! [self.badPins containsObject:self.pin]) {
+            BRPeerManager *p = [BRPeerManager sharedInstance];
+
             [self.badPins addObject:self.pin];
             self.pin = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), PIN_LENGTH));
             m.pinFailCount++;
-            m.pinFailHeight = (m.pinFailCount > 3) ? [[BRPeerManager sharedInstance] lastBlockHeight] :
-                              [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970;
+
+            if (m.pinFailCount > 3) {
+                m.pinFailHeight =
+                    (p.estimatedBlockHeight > p.lastBlockHeight && p.estimatedBlockHeight < TX_MAX_LOCK_HEIGHT) ?
+                    p.estimatedBlockHeight : p.lastBlockHeight;
+            }
+            else m.pinFailHeight = [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970;
         }
         else self.pin.string = @"";
 

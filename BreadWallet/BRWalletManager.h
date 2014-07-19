@@ -38,7 +38,11 @@
 @property (nonatomic, assign) NSUInteger pinFailCount; // number of consecutive failed pin attempts
 @property (nonatomic, assign) uint32_t pinFailHeight; // blockchain height at most recent failed pin attempt
 @property (nonatomic, readonly) NSTimeInterval seedCreationTime; // interval since refrence date, 00:00:00 01/01/01 GMT
-@property (nonatomic, strong) NSNumberFormatter *format;
+@property (nonatomic, readonly) NSNumberFormatter *format;
+@property (nonatomic, readonly) NSNumberFormatter *localFormat;
+@property (nonatomic, copy) NSString *localCurrencyCode;
+@property (nonatomic, readonly) double localCurrencyPrice;
+@property (nonatomic, readonly) NSArray *currencyCodes;
 
 + (instancetype)sharedInstance;
 

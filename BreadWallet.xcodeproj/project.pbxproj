@@ -3017,6 +3017,8 @@
 				759FBB35193290F600AB4465 /* BRSendViewController.m */,
 				759FBB31193290F600AB4465 /* BRReceiveViewController.h */,
 				75878BC0192AEC3F002505AB /* BRReceiveViewController.m */,
+				84F68C881975E9E2002FC300 /* BRScanViewController.h */,
+				84F68C891975E9E2002FC300 /* BRScanViewController.m */,
 				75878BBD192ACD46002505AB /* BRAmountViewController.h */,
 				75878BBE192ACD46002505AB /* BRAmountViewController.m */,
 				75878BC4192B1AF0002505AB /* BRSettingsViewController.h */,
@@ -3029,8 +3031,6 @@
 				757BE7E8192D4E880061CB20 /* BRSeedViewController.m */,
 				75242C831968876500CF40E7 /* BRPINViewController.h */,
 				75242C841968876500CF40E7 /* BRPINViewController.m */,
-				84F68C881975E9E2002FC300 /* BRScanViewController.h */,
-				84F68C891975E9E2002FC300 /* BRScanViewController.m */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";

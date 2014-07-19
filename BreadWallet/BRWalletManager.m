@@ -45,6 +45,7 @@
 #define LOCAL_CURRENCY_SYMBOL_KEY @"LOCAL_CURRENCY_SYMBOL"
 #define LOCAL_CURRENCY_CODE_KEY   @"LOCAL_CURRENCY_CODE"
 #define LOCAL_CURRENCY_PRICE_KEY  @"LOCAL_CURRENCY_PRICE"
+#define CURRENCY_CODES_KEY        @"CURRENCY_CODES"
 #define PIN_KEY                   @"pin"
 #define PIN_FAIL_COUNT_KEY        @"pinfailcount"
 #define PIN_FAIL_HEIGHT_KEY       @"pinfailheight"
@@ -139,7 +140,7 @@ static NSData *getKeychainData(NSString *key)
 
     self.reachability = [Reachability reachabilityForInternetConnection];
 
-    self.format = [NSNumberFormatter new];
+    _format = [NSNumberFormatter new];
     self.format.lenient = YES;
     self.format.numberStyle = NSNumberFormatterCurrencyStyle;
     self.format.minimumFractionDigits = 0;
@@ -152,6 +153,27 @@ static NSData *getKeychainData(NSString *key)
 //    self.format.currencySymbol = BTC NARROW_NBSP;
 //    self.format.maximumFractionDigits = 8;
 //    self.format.maximum = @21000000.0;
+
+    _localFormat = [NSNumberFormatter new];
+    self.localFormat.lenient = YES;
+    self.localFormat.numberStyle = NSNumberFormatterCurrencyStyle;
+    self.localFormat.negativeFormat = self.format.negativeFormat;
+
+    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+
+    _localCurrencyCode = [defs stringForKey:LOCAL_CURRENCY_CODE_KEY],
+    _localCurrencyPrice = [defs doubleForKey:LOCAL_CURRENCY_PRICE_KEY];
+    _currencyCodes = [defs arrayForKey:CURRENCY_CODES_KEY];
+
+    if (self.localCurrencyCode) {
+        self.localFormat.currencyCode = self.localCurrencyCode;
+        self.localFormat.currencySymbol = [defs stringForKey:LOCAL_CURRENCY_SYMBOL_KEY];
+    }
+    else {
+        self.localFormat.currencyCode = _localCurrencyCode = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
+        self.localFormat.currencySymbol = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencySymbol];
+        //BUG: if locale changed since last time, we'll start with an incorrect price
+    }
 
     [self updateExchangeRate];
 
@@ -324,6 +346,12 @@ static NSData *getKeychainData(NSString *key)
     return (d.length < sizeof(NSTimeInterval)) ? BITCOIN_REFERENCE_BLOCK_TIME : *(const NSTimeInterval *)d.bytes;
 }
 
+- (void)setLocalCurrencyCode:(NSString *)localCurrencyCode
+{
+    _localCurrencyCode = [localCurrencyCode copy];
+    [self updateExchangeRate];
+}
+
 - (void)updateExchangeRate
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateExchangeRate) object:nil];
@@ -344,27 +372,39 @@ static NSData *getKeychainData(NSString *key)
         NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
         NSError *error = nil;
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-        NSString *currencyCode = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
-        NSString *currencySymbol = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencySymbol];
 
         if (error || ! [json isKindOfClass:[NSDictionary class]] ||
             ! [json[DEFAULT_CURRENCY_CODE] isKindOfClass:[NSDictionary class]] ||
             ! [json[DEFAULT_CURRENCY_CODE][@"last"] isKindOfClass:[NSNumber class]] ||
-            ([json[currencyCode] isKindOfClass:[NSDictionary class]] &&
-             ! [json[currencyCode][@"last"] isKindOfClass:[NSNumber class]])) {
+            ([json[self.localCurrencyCode] isKindOfClass:[NSDictionary class]] &&
+             (! [json[self.localCurrencyCode][@"last"] isKindOfClass:[NSNumber class]] ||
+              ! [json[self.localCurrencyCode][@"symbol"] isKindOfClass:[NSString class]]))) {
             NSLog(@"unexpected response from %@:\n%@", req.URL.host,
                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             return;
         }
 
-        if (! [json[currencyCode] isKindOfClass:[NSDictionary class]]) { // if local currency is missing, use default
-            currencyCode = DEFAULT_CURRENCY_CODE;
-            currencySymbol = DEFAULT_CURRENCY_SYMBOL;
+        // if local currency is missing, use default
+        if (! [json[self.localCurrencyCode] isKindOfClass:[NSDictionary class]]) {
+            self.localFormat.currencyCode = _localCurrencyCode = DEFAULT_CURRENCY_CODE;
+            self.localFormat.currencySymbol = DEFAULT_CURRENCY_SYMBOL;
+        }
+        else self.localFormat.currencySymbol = json[self.localCurrencyCode][@"symbol"];
+
+        _localCurrencyPrice = [json[self.localCurrencyCode][@"last"] doubleValue];
+        _currencyCodes = [NSArray arrayWithArray:json.allKeys];
+
+        if ([self.localCurrencyCode isEqual:[[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode]]) {
+            [defs removeObjectForKey:LOCAL_CURRENCY_SYMBOL_KEY];
+            [defs removeObjectForKey:LOCAL_CURRENCY_CODE_KEY];
+        }
+        else {
+            [defs setObject:self.localFormat.currencySymbol forKey:LOCAL_CURRENCY_SYMBOL_KEY];
+            [defs setObject:self.localCurrencyCode forKey:LOCAL_CURRENCY_CODE_KEY];
         }
 
-        [defs setObject:currencySymbol forKey:LOCAL_CURRENCY_SYMBOL_KEY];
-        [defs setObject:currencyCode forKey:LOCAL_CURRENCY_CODE_KEY];
-        [defs setObject:json[currencyCode][@"last"] forKey:LOCAL_CURRENCY_PRICE_KEY];
+        [defs setObject:@(self.localCurrencyPrice) forKey:LOCAL_CURRENCY_PRICE_KEY];
+        [defs setObject:self.currencyCodes forKey:CURRENCY_CODES_KEY];
         [defs synchronize];
         NSLog(@"exchange rate updated to %@/%@", [self localCurrencyStringForAmount:SATOSHIS],
               [self stringForAmount:SATOSHIS]);
@@ -521,39 +561,21 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
 
 - (NSString *)localCurrencyStringForAmount:(int64_t)amount
 {
-    static NSNumberFormatter *format = nil;
+    if (amount == 0) return [self.localFormat stringFromNumber:@(0)];
 
-    if (! format) {
-        format = [NSNumberFormatter new];
-        format.lenient = YES;
-        format.numberStyle = NSNumberFormatterCurrencyStyle;
-        format.negativeFormat = [format.positiveFormat
-                                 stringByReplacingCharactersInRange:[format.positiveFormat rangeOfString:@"#"]
-                                 withString:@"-#"];
-    }
-
-    if (amount == 0) return [format stringFromNumber:@(0)];
-
-    NSString *symbol = [[NSUserDefaults standardUserDefaults] stringForKey:LOCAL_CURRENCY_SYMBOL_KEY];
-    NSString *code = [[NSUserDefaults standardUserDefaults] stringForKey:LOCAL_CURRENCY_CODE_KEY];
-    double price = [[NSUserDefaults standardUserDefaults] doubleForKey:LOCAL_CURRENCY_PRICE_KEY];
-
-    if (! symbol.length || price <= DBL_EPSILON) {
-        return [format stringFromNumber:@(DEFAULT_CURRENCY_PRICE*amount/SATOSHIS)];
-    }
-
-    format.currencySymbol = symbol;
-    format.currencyCode = code;
-
-    NSString *ret = [format stringFromNumber:@(price*amount/SATOSHIS)];
+    NSString *ret = [self.localFormat stringFromNumber:@(self.localCurrencyPrice*amount/SATOSHIS)];
 
     // if the amount is too small to be represented in local currency (but is != 0) then return a string like "<$0.01"
-    if (amount > 0 && price*amount/SATOSHIS + DBL_EPSILON < 1.0/pow(10.0, format.maximumFractionDigits)) {
-        ret = [@"<" stringByAppendingString:[format stringFromNumber:@(1.0/pow(10.0, format.maximumFractionDigits))]];
+    if (amount > 0 && self.localCurrencyPrice*amount/SATOSHIS + DBL_EPSILON <
+        1.0/pow(10.0, self.localFormat.maximumFractionDigits)) {
+        ret = [@"<" stringByAppendingString:[self.localFormat
+               stringFromNumber:@(1.0/pow(10.0, self.localFormat.maximumFractionDigits))]];
     }
-    else if (amount < 0 && price*amount/SATOSHIS - DBL_EPSILON > -1.0/pow(10.0, format.maximumFractionDigits)) {
+    else if (amount < 0 && self.localCurrencyPrice*amount/SATOSHIS - DBL_EPSILON >
+             -1.0/pow(10.0, self.localFormat.maximumFractionDigits)) {
         // technically should be '>', but '<' is more intuitive
-        ret = [@"<" stringByAppendingString:[format stringFromNumber:@(-1.0/pow(10.0, format.maximumFractionDigits))]];
+        ret = [@"<" stringByAppendingString:[self.localFormat
+               stringFromNumber:@(-1.0/pow(10.0, self.localFormat.maximumFractionDigits))]];
     }
 
     return ret;

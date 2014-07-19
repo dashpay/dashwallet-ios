@@ -41,6 +41,9 @@
 @property (nonatomic, strong) NSMutableDictionary *txDates;
 @property (nonatomic, strong) id balanceObserver, txStatusObserver;
 @property (nonatomic, strong) UIImageView *wallpaper;
+@property (nonatomic, strong) UITableViewController *selectorController;
+@property (nonatomic, strong) NSArray *selectorOptions;
+@property (nonatomic, strong) NSString *selectedOption;
 
 @end
 
@@ -81,7 +84,7 @@
 
                 [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
                  withRowAnimation:(self.transactions.count == count) ? UITableViewRowAnimationNone :
-                                  UITableViewRowAnimationAutomatic];
+                                   UITableViewRowAnimationAutomatic];
             }];
     }
 
@@ -96,17 +99,6 @@
                  withRowAnimation:UITableViewRowAnimationNone];
             }];
     }
-}
-
-- (void)viewDidDisappear:(BOOL)animated
-{
-    self.transactions = nil;
-    if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
-    self.balanceObserver = nil;
-    if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
-    self.txStatusObserver = nil;
-
-    [super viewDidDisappear:animated];
 }
 
 //- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
@@ -124,7 +116,7 @@
     if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
 }
 
-- (void)setBackgroundForCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)path
+- (void)setBackgroundForCell:(UITableViewCell *)cell tableView:(UITableView *)tableView indexPath:(NSIndexPath *)path
 {
     if (! cell.backgroundView) {
         UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0, 0, cell.frame.size.width, 0.5)];
@@ -132,16 +124,16 @@
         v.tag = 100;
         cell.backgroundView = [[UIView alloc] initWithFrame:cell.frame];
         cell.backgroundView.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.67];
-        v.backgroundColor = self.tableView.separatorColor;
+        v.backgroundColor = tableView.separatorColor;
         [cell.backgroundView addSubview:v];
         v = [[UIView alloc] initWithFrame:CGRectMake(0, cell.frame.size.height - 0.5, cell.frame.size.width, 0.5)];
         v.tag = 101;
-        v.backgroundColor = self.tableView.separatorColor;
+        v.backgroundColor = tableView.separatorColor;
         [cell.backgroundView addSubview:v];
     }
     
     [cell viewWithTag:100].frame = CGRectMake(path.row == 0 ? 0 : 15, 0, cell.frame.size.width, 0.5);
-    [cell viewWithTag:101].hidden = (path.row + 1 < [self tableView:self.tableView numberOfRowsInSection:path.section]);
+    [cell viewWithTag:101].hidden = (path.row + 1 < [self tableView:tableView numberOfRowsInSection:path.section]);
 }
 
 - (NSString *)dateForTx:(BRTransaction *)tx
@@ -171,8 +163,8 @@
     NSTimeInterval t = [[BRPeerManager sharedInstance] timestampForBlockHeight:tx.blockHeight];
     NSDateFormatter *f = (t > w) ? f1 : ((t > y) ? f2 : f3);
 
-    date = [[[[f stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:t - 5*60]]
-              lowercaseString] stringByReplacingOccurrencesOfString:@" am" withString:@"a"]
+    date = [[[[f stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:t - 5*60]] lowercaseString]
+             stringByReplacingOccurrencesOfString:@" am" withString:@"a"]
             stringByReplacingOccurrencesOfString:@" pm" withString:@"p"];
     self.txDates[tx.txHash] = date;
     return date;
@@ -182,6 +174,11 @@
 
 - (IBAction)done:(id)sender
 {
+    if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
+    self.balanceObserver = nil;
+    if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
+    self.txStatusObserver = nil;
+
     [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
@@ -224,16 +221,19 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
+    if (tableView == self.selectorController.tableView) return 1;
     return 5;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
+    if (tableView == self.selectorController.tableView) return self.selectorOptions.count;
+
     switch (section) {
         case 0: return self.transactions.count ? self.transactions.count : 1;
         case 1: return 2;
         case 2: return 3;
-        case 3: return 1;
+        case 3: return 2;
         case 4: return 1;
         default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
     }
@@ -243,17 +243,36 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *disclosureIdent = @"DisclosureCell", *transactionIdent = @"TransactionCell",
-                    *actionIdent = @"ActionCell", *toggleIdent = @"ToggleCell", *restoreIdent = @"RestoreCell";
+    static NSString *transactionIdent = @"TransactionCell", *disclosureIdent = @"DisclosureCell",
+                    *actionIdent = @"ActionCell", *selectorIdent = @"SelectorCell", *toggleIdent = @"ToggleCell",
+                    *restoreIdent = @"RestoreCell", *selectorOptionCell = @"SelectorOptionCell";
     UITableViewCell *cell = nil;
     UILabel *textLabel, *unconfirmedLabel, *sentLabel, *noTxLabel, *localCurrencyLabel, *toggleLabel;
     UISwitch *toggleSwitch;
     BRCopyLabel *detailTextLabel;
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+
+    if (tableView == self.selectorController.tableView) {
+        if (! (cell = [tableView dequeueReusableCellWithIdentifier:selectorOptionCell])) {
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault
+                    reuseIdentifier:selectorOptionCell];
+        }
+
+        [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
+        cell.textLabel.text = self.selectorOptions[indexPath.row];
+
+        if ([self.selectedOption isEqual:self.selectorOptions[indexPath.row]]) {
+            cell.accessoryType = UITableViewCellAccessoryCheckmark;
+        }
+        else cell.accessoryType = UITableViewCellAccessoryNone;
+
+        return cell;
+    }
 
     switch (indexPath.section) {
         case 0:
             cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent];
-            [self setBackgroundForCell:cell atIndexPath:indexPath];
+            [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
             
             textLabel = (id)[cell viewWithTag:1];
             detailTextLabel = (id)[cell viewWithTag:2];
@@ -271,7 +290,6 @@
                 sentLabel.hidden = YES;
             }
             else {
-                BRWalletManager *m = [BRWalletManager sharedInstance];
                 BRTransaction *tx = self.transactions[indexPath.row];
                 uint64_t received = [m.wallet amountReceivedFromTransaction:tx],
                          sent = [m.wallet amountSentByTransaction:tx];
@@ -345,9 +363,8 @@
 
         case 1:
             cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
-            [self setBackgroundForCell:cell atIndexPath:indexPath];
+            [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
 
-            //TODO: XXXX local currency selector
             switch (indexPath.row) {
                 case 0:
                     cell.textLabel.text = NSLocalizedString(@"about", nil);
@@ -366,7 +383,7 @@
 
         case 2:
             cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
-            [self setBackgroundForCell:cell atIndexPath:indexPath];
+            [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
 
             switch (indexPath.row) {
                 case 0:
@@ -395,17 +412,32 @@
             break;
 
         case 3:
-            cell = [tableView dequeueReusableCellWithIdentifier:toggleIdent];
-            [self setBackgroundForCell:cell atIndexPath:indexPath];
-            toggleLabel = (id)[cell viewWithTag:2];
-            toggleSwitch = (id)[cell viewWithTag:3];
-            toggleSwitch.on = [[NSUserDefaults standardUserDefaults] boolForKey:SETTINGS_SKIP_FEE_KEY];
-            toggleLabel.hidden = (toggleSwitch.on) ? NO : YES;
+            switch (indexPath.row) {
+                case 0:
+                    cell = [tableView dequeueReusableCellWithIdentifier:selectorIdent];
+                    [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
+                    cell.detailTextLabel.text = m.localCurrencyCode;
+                    break;
+
+                case 1:
+                    cell = [tableView dequeueReusableCellWithIdentifier:toggleIdent];
+                    [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
+                    toggleLabel = (id)[cell viewWithTag:2];
+                    toggleSwitch = (id)[cell viewWithTag:3];
+                    toggleSwitch.on = [[NSUserDefaults standardUserDefaults] boolForKey:SETTINGS_SKIP_FEE_KEY];
+                    toggleLabel.hidden = (toggleSwitch.on) ? NO : YES;
+                    break;
+
+                default:
+                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
+                             (int)indexPath.row);
+            }
+
             break;
 
         case 4:
             cell = [tableView dequeueReusableCellWithIdentifier:restoreIdent];
-            [self setBackgroundForCell:cell atIndexPath:indexPath];
+            [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
             break;
 
         default:
@@ -418,6 +450,8 @@
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
+    if (tableView == self.selectorController.tableView) return nil;
+
     switch (section) {
         case 0:
             return nil;
@@ -428,9 +462,9 @@
         case 2:
             return nil;
 
-        case 3:
-            return NSLocalizedString(@"rescan blockchain if you think you may have missing transactions or are having "
-                                     "trouble sending (rescaning can take several minutes)", nil);
+        case 3: //BUG: XXXX this should be using footer, not header
+            return NSLocalizedString(@"rescan blockchain if you think you may have missing transactions, "
+                                     "or are having trouble sending (rescaning can take several minutes)", nil);
 
         case 4:
             return NSLocalizedString(@"fees are only optional for high priority transactions", nil);
@@ -445,6 +479,8 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    if (tableView == self.selectorController.tableView) return 44.0;
+
     switch (indexPath.section) {
         case 0: return TRANSACTION_CELL_HEIGHT;
         case 1: return 44.0;
@@ -459,6 +495,8 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
 {
+    if (tableView == self.selectorController.tableView) return 22;
+
     switch (section) {
         case 0: return 22.0;
         case 1: return 22.0;
@@ -499,6 +537,18 @@
     NSUInteger i = 0;
     UITableViewCell *cell = nil;
     NSMutableAttributedString *s = nil;
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+
+    if (tableView == self.selectorController.tableView) {
+        self.selectedOption = self.selectorOptions[indexPath.row];
+        m.localCurrencyCode = self.selectedOption;
+
+        [tableView reloadData];
+        [tableView selectRowAtIndexPath:indexPath animated:NO scrollPosition:UITableViewScrollPositionNone];
+        [tableView deselectRowAtIndexPath:indexPath animated:YES];
+        [self.tableView reloadData];
+        return;
+    }
 
     switch (indexPath.section) {
         case 0: // transaction
@@ -571,9 +621,26 @@
             break;
 
         case 3:
+            switch (indexPath.row) {
+                case 0: // local currency
+                    self.selectorOptions = m.currencyCodes;
+                    self.selectedOption = m.localCurrencyCode;
+                    self.selectorController = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
+                    self.selectorController.transitioningDelegate = self;
+                    self.selectorController.tableView.dataSource = self;
+                    self.selectorController.tableView.delegate = self;
+                    self.selectorController.tableView.backgroundColor = [UIColor clearColor];
+                    self.selectorController.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+                    [self.navigationController pushViewController:self.selectorController animated:YES];
+                    break;
+
+                case 1: // remove standard fees
+                    break;
+            }
+
             break;
 
-        case 4: // start/restore another wallet handled by storyboard
+        case 4: // start/restore another wallet (handled by storyboard)
             break;
 
         default:
@@ -639,16 +706,16 @@
         [v addSubview:to.view];
 
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
-         initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-             to.view.center = from.view.center;
-             from.view.center = CGPointMake(v.frame.size.width*(pop ? 3 : -1)/2, from.view.center.y);
-             self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 -
-                                                 v.frame.size.width*(pop ? 0 : 1)*PARALAX_RATIO,
-                                                 self.wallpaper.center.y);
-         } completion:^(BOOL finished) {
-             if (pop) [from.view removeFromSuperview];
-             [transitionContext completeTransition:finished];
-         }];
+        initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+            to.view.center = from.view.center;
+            from.view.center = CGPointMake(v.frame.size.width*(pop ? 3 : -1)/2, from.view.center.y);
+            self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 -
+                                                v.frame.size.width*(pop ? 0 : 1)*PARALAX_RATIO,
+                                                self.wallpaper.center.y);
+        } completion:^(BOOL finished) {
+            if (pop) [from.view removeFromSuperview];
+            [transitionContext completeTransition:finished];
+        }];
     }
 }
 
