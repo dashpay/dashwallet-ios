@@ -142,14 +142,14 @@
                   message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
                                             "Any 'jailbreak' app can control this device and steal funds. "
                                             "Wipe this wallet immediately and restore on a secure device.", nil)
-                 delegate:self cancelButtonTitle:NSLocalizedString(@"ingore", nil)
+                 delegate:self cancelButtonTitle:NSLocalizedString(@"ignore", nil)
                  otherButtonTitles:NSLocalizedString(@"wipe", nil), nil] show];
             }
             else if (jailbroken) {
                 [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
                   message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
                                             "Any 'jailbreak' app can control this device and steal funds.", nil)
-                  delegate:self cancelButtonTitle:NSLocalizedString(@"ingore", nil)
+                  delegate:self cancelButtonTitle:NSLocalizedString(@"ignore", nil)
                   otherButtonTitles:NSLocalizedString(@"close app", nil), nil] show];
             }
         }];
