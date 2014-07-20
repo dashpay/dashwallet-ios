@@ -513,10 +513,22 @@
                             <imageView hidden="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="wallpaper-default" translatesAutoresizingMaskIntoConstraints="NO" id="ihm-bL-FFP">
                                 <rect key="frame" x="-59" y="0.0" width="480" height="568"/>
                             </imageView>
-                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="($0.00)" textAlignment="right" lineBreakMode="clip" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZH0-Ng-7xb">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Zbe-Kx-XvG">
+                                <rect key="frame" x="154" y="85" width="30" height="30"/>
+                                <state key="normal" title="◉">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="pressSwapButton:" destination="4fz-p1-NND" eventType="touchDown" id="dcp-Dn-0hs"/>
+                                    <action selector="releaseSwapButton:" destination="4fz-p1-NND" eventType="touchCancel" id="Zog-EN-RCG"/>
+                                    <action selector="releaseSwapButton:" destination="4fz-p1-NND" eventType="touchUpOutside" id="xEh-Xl-7eU"/>
+                                    <action selector="swapCurrency:" destination="4fz-p1-NND" eventType="touchUpInside" id="HPi-aA-2L9"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="($0.00)" textAlignment="right" lineBreakMode="clip" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZH0-Ng-7xb">
                                 <rect key="frame" x="181" y="89" width="51" height="21"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
-                                <color key="textColor" white="0.5" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <textField opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.67000001668930054" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="ƀ 0.00" textAlignment="right" adjustsFontSizeToFit="NO" minimumFontSize="24" translatesAutoresizingMaskIntoConstraints="NO" id="DLS-lz-uxJ">
@@ -787,6 +799,7 @@
                             <constraint firstAttribute="trailing" secondItem="DLS-lz-uxJ" secondAttribute="trailing" constant="20" id="2v3-2d-Z9s"/>
                             <constraint firstItem="MOQ-nc-fFL" firstAttribute="leading" secondItem="p8P-3o-INx" secondAttribute="trailing" constant="8" id="3nI-7V-rXv"/>
                             <constraint firstItem="NyY-8N-uhK" firstAttribute="width" secondItem="LgR-qo-dYy" secondAttribute="width" id="5OR-8Q-Meb"/>
+                            <constraint firstItem="Zbe-Kx-XvG" firstAttribute="baseline" secondItem="ZH0-Ng-7xb" secondAttribute="baseline" id="8Od-aB-qSh"/>
                             <constraint firstItem="MOQ-nc-fFL" firstAttribute="top" secondItem="NyY-8N-uhK" secondAttribute="bottom" constant="8" id="8S1-HS-oZ9"/>
                             <constraint firstItem="Mvz-cZ-Yby" firstAttribute="top" secondItem="MOQ-nc-fFL" secondAttribute="bottom" constant="8" id="AYI-b1-qOf"/>
                             <constraint firstItem="ZXO-dD-jiQ" firstAttribute="leading" secondItem="YoG-MG-mOk" secondAttribute="leading" constant="20" id="BDN-kQ-gEZ"/>
@@ -818,6 +831,7 @@
                             <constraint firstItem="dBP-3X-1o6" firstAttribute="top" secondItem="LgR-qo-dYy" secondAttribute="bottom" constant="8" id="eMw-kl-IZR"/>
                             <constraint firstItem="Ktu-9p-xOl" firstAttribute="bottom" secondItem="0kA-9K-S7C" secondAttribute="bottom" id="fcw-DR-dBO"/>
                             <constraint firstItem="0kA-9K-S7C" firstAttribute="height" secondItem="dBP-3X-1o6" secondAttribute="height" id="hIL-oN-kYY"/>
+                            <constraint firstItem="ZH0-Ng-7xb" firstAttribute="leading" secondItem="Zbe-Kx-XvG" secondAttribute="trailing" constant="-3" id="iJE-Dm-71X"/>
                             <constraint firstAttribute="trailing" secondItem="LgR-qo-dYy" secondAttribute="trailing" constant="20" id="izK-Ag-DuN"/>
                             <constraint firstItem="Mvz-cZ-Yby" firstAttribute="width" secondItem="0kA-9K-S7C" secondAttribute="width" id="kEa-1A-upP"/>
                             <constraint firstItem="b8y-tJ-xAB" firstAttribute="leading" secondItem="YoG-MG-mOk" secondAttribute="leading" constant="20" id="l1D-i8-l51"/>
