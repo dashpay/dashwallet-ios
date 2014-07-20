@@ -147,6 +147,7 @@ static NSData *getKeychainData(NSString *key)
     self.format.negativeFormat = [self.format.positiveFormat
                                   stringByReplacingCharactersInRange:[self.format.positiveFormat rangeOfString:@"#"]
                                   withString:@"-#"];
+    self.format.currencyCode = @"XBT";
     self.format.currencySymbol = BITS NARROW_NBSP;
     self.format.maximumFractionDigits = 2;
     self.format.maximum = @21000000000000.0;
@@ -166,12 +167,13 @@ static NSData *getKeychainData(NSString *key)
     _currencyCodes = [defs arrayForKey:CURRENCY_CODES_KEY];
 
     if (self.localCurrencyCode) {
-        self.localFormat.currencyCode = self.localCurrencyCode;
         self.localFormat.currencySymbol = [defs stringForKey:LOCAL_CURRENCY_SYMBOL_KEY];
+        self.localFormat.currencyCode = self.localCurrencyCode;
     }
     else {
-        self.localFormat.currencyCode = _localCurrencyCode = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
         self.localFormat.currencySymbol = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencySymbol];
+        self.localFormat.currencyCode = _localCurrencyCode =
+            [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
         //BUG: if locale changed since last time, we'll start with an incorrect price
     }
 
@@ -220,6 +222,7 @@ static NSData *getKeychainData(NSString *key)
         setKeychainData(nil, PIN_FAIL_HEIGHT_KEY);
         setKeychainData(nil, MNEMONIC_KEY);
         setKeychainData(nil, CREATION_TIME_KEY);
+        
         if (! setKeychainData(seed, SEED_KEY)) {
             NSLog(@"error setting wallet seed");
             [[[UIAlertView alloc] initWithTitle:@"couldn't create wallet"
@@ -386,12 +389,12 @@ static NSData *getKeychainData(NSString *key)
 
         // if local currency is missing, use default
         if (! [json[self.localCurrencyCode] isKindOfClass:[NSDictionary class]]) {
-            self.localFormat.currencyCode = _localCurrencyCode = DEFAULT_CURRENCY_CODE;
             self.localFormat.currencySymbol = DEFAULT_CURRENCY_SYMBOL;
+            self.localFormat.currencyCode = _localCurrencyCode = DEFAULT_CURRENCY_CODE;
         }
         else {
-            self.localFormat.currencyCode = self.localCurrencyCode;
             self.localFormat.currencySymbol = json[self.localCurrencyCode][@"symbol"];
+            self.localFormat.currencyCode = self.localCurrencyCode;
         }
 
         _localCurrencyPrice = [json[self.localCurrencyCode][@"last"] doubleValue];

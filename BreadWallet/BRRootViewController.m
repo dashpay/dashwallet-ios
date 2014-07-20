@@ -286,6 +286,8 @@
     self.pageViewController.view.alpha = 1.0;
     [[BRPeerManager sharedInstance] connect];
 
+    //TODO: try making the balance start at zero and quickly increase to the actual balance, ala city guides
+
     if (! self.appeared) {
         self.appeared = YES;
 
@@ -624,9 +626,9 @@ viewControllerAfterViewController:(UIViewController *)viewController
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
-    self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 - PARALAX_RATIO*(scrollView.contentOffset.x +
-                                        (scrollView.contentInset.left < 0 ? scrollView.contentInset.left : 0)),
-                                        self.wallpaper.center.y);
+    CGFloat off = scrollView.contentOffset.x + (scrollView.contentInset.left < 0 ? scrollView.contentInset.left : 0);
+
+    self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 - PARALAX_RATIO*off, self.wallpaper.center.y);
 }
 
 #pragma mark - UIViewControllerAnimatedTransitioning
@@ -676,6 +678,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
         }];
     }
     else if ([from.restorationIdentifier isEqual:@"PINNav"]) {
+        //TODO: try out different animations, maybe something where the numbers pop out one after the next
         to.view.frame = from.view.frame;
         [v insertSubview:to.view belowSubview:from.view];
 

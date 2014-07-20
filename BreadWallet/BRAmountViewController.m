@@ -36,7 +36,6 @@
 @property (nonatomic, strong) IBOutlet UILabel *localCurrencyLabel, *addressLabel;
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *payButton;
 @property (nonatomic, strong) IBOutlet UIButton *delButton, *decimalButton;
-@property (nonatomic, strong) IBOutlet NSLayoutConstraint *localCurrencyLabelWidth;
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
 @property (nonatomic, strong) id balanceObserver;
 @property (nonatomic, strong) NSCharacterSet *charset;
@@ -99,12 +98,9 @@
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];
     uint64_t amount = [m amountForString:self.amountField.text];
-    CGSize size = [self.amountField.text sizeWithAttributes:@{NSFontAttributeName:self.amountField.font}];
 
     self.localCurrencyLabel.hidden = (amount == 0) ? YES : NO;
     self.localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)", [m localCurrencyStringForAmount:amount]];
-    self.localCurrencyLabelWidth.constant = self.amountField.frame.origin.x + self.amountField.frame.size.width -
-                                            (self.localCurrencyLabel.frame.origin.x + size.width + 6);
 }
 
 #pragma mark - IBAction
@@ -191,6 +187,8 @@ replacementString:(NSString *)string
     }
 
     textField.text = t;
+    if (t.length > 0 && textField.placeholder.length > 0) textField.placeholder = nil;
+    if (t.length == 0 && textField.placeholder.length == 0) textField.placeholder = [m stringForAmount:0];
     //self.payButton.enabled = t.length ? YES : NO;
     [self updateLocalCurrencyLabel];
 
