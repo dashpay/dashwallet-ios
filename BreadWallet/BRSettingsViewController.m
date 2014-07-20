@@ -253,11 +253,7 @@
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
     if (tableView == self.selectorController.tableView) {
-        if (! (cell = [tableView dequeueReusableCellWithIdentifier:selectorOptionCell])) {
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault
-                    reuseIdentifier:selectorOptionCell];
-        }
-
+        cell = [self.tableView dequeueReusableCellWithIdentifier:selectorOptionCell];
         [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
         cell.textLabel.text = self.selectorOptions[indexPath.row];
 
@@ -462,7 +458,7 @@
         case 2:
             return nil;
 
-        case 3: //BUG: XXXX this should be using footer, not header
+        case 3:
             return NSLocalizedString(@"rescan blockchain if you think you may have missing transactions, "
                                      "or are having trouble sending (rescaning can take several minutes)", nil);
 
@@ -495,18 +491,15 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
 {
-    if (tableView == self.selectorController.tableView) return 22;
+    NSString *s = [self tableView:tableView titleForHeaderInSection:section];
 
-    switch (section) {
-        case 0: return 22.0;
-        case 1: return 22.0;
-        case 2: return 22.0;
-        case 3: return 80.0;
-        case 4: return 50.0;
-        default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
-    }
+    if (s.length == 0) return 22.0;
 
-    return 22;
+    CGRect r = [s boundingRectWithSize:CGSizeMake(self.view.frame.size.width - 20.0, CGFLOAT_MAX)
+                options:NSStringDrawingUsesLineFragmentOrigin
+                attributes:@{NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue" size:13]} context:nil];
+    
+    return r.size.height + 22.0 + 10.0;
 }
 
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
@@ -525,7 +518,20 @@
     l.numberOfLines = 0;
     v.backgroundColor = [UIColor clearColor];
     [v addSubview:l];
-    
+
+    return v;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
+{
+    return (section + 1 == [self numberOfSectionsInTableView:tableView]) ? 22.0 : 0.0;
+}
+
+- (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section
+{
+    UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, self.view.frame.size.width,
+                                                         [self tableView:tableView heightForFooterInSection:section])];
+    v.backgroundColor = [UIColor clearColor];
     return v;
 }
 
@@ -623,7 +629,8 @@
         case 3:
             switch (indexPath.row) {
                 case 0: // local currency
-                    self.selectorOptions = m.currencyCodes;
+                    self.selectorOptions =
+                        [m.currencyCodes sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
                     self.selectedOption = m.localCurrencyCode;
                     self.selectorController = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
                     self.selectorController.transitioningDelegate = self;
@@ -631,7 +638,19 @@
                     self.selectorController.tableView.delegate = self;
                     self.selectorController.tableView.backgroundColor = [UIColor clearColor];
                     self.selectorController.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+                    self.selectorController.title = NSLocalizedString(@"local currency", nil);
                     [self.navigationController pushViewController:self.selectorController animated:YES];
+
+                    NSUInteger i = [self.selectorOptions indexOfObject:self.selectedOption];
+
+                    if (i != NSNotFound) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [self.selectorController.tableView
+                             scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:i inSection:0]
+                             atScrollPosition:UITableViewScrollPositionMiddle animated:NO];
+                        });
+                    }
+
                     break;
 
                 case 1: // remove standard fees

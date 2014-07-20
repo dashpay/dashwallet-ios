@@ -389,7 +389,10 @@ static NSData *getKeychainData(NSString *key)
             self.localFormat.currencyCode = _localCurrencyCode = DEFAULT_CURRENCY_CODE;
             self.localFormat.currencySymbol = DEFAULT_CURRENCY_SYMBOL;
         }
-        else self.localFormat.currencySymbol = json[self.localCurrencyCode][@"symbol"];
+        else {
+            self.localFormat.currencyCode = self.localCurrencyCode;
+            self.localFormat.currencySymbol = json[self.localCurrencyCode][@"symbol"];
+        }
 
         _localCurrencyPrice = [json[self.localCurrencyCode][@"last"] doubleValue];
         _currencyCodes = [NSArray arrayWithArray:json.allKeys];

@@ -167,6 +167,9 @@
 "Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address.";
 
 /* No comment provided by engineer. */
+"local currency" = "local currency";
+
+/* No comment provided by engineer. */
 "minute" = "minute";
 
 /* No comment provided by engineer. */
