@@ -35,6 +35,9 @@
 /* Class = "IBUILabel"; text = "This is your wallet backup phrase."; ObjectID = "EQG-Km-ZKY"; */
 "EQG-Km-ZKY.text" = "This is your wallet backup phrase.";
 
+/* Class = "IBUILabel"; text = "○  ○  ○  ○"; ObjectID = "Fdh-Ze-PZW"; */
+"Fdh-Ze-PZW.text" = "○  ○  ○  ○";
+
 /* Class = "IBUILabel"; text = "sent"; ObjectID = "FjB-H2-BnK"; */
 "FjB-H2-BnK.text" = "sent";
 
@@ -65,6 +68,9 @@
 /* Class = "IBUILabel"; text = "not connected"; ObjectID = "UyF-OV-QVY"; */
 "UyF-OV-QVY.text" = "not connected";
 
+/* Class = "IBUILabel"; text = "Title"; ObjectID = "VM4-Ie-x8Z"; */
+"VM4-Ie-x8Z.text" = "Title";
+
 /* Class = "IBUILabel"; text = "remove standard fees"; ObjectID = "WB9-ti-D76"; */
 "WB9-ti-D76.text" = "remove standard fees";
 
@@ -85,6 +91,12 @@
 
 /* Class = "IBUIButton"; normalTitle = "pay address from clipboard"; ObjectID = "bfj-xS-5rN"; */
 "bfj-xS-5rN.normalTitle" = "pay address from clipboard";
+
+/* Class = "IBUILabel"; text = "local currency"; ObjectID = "byz-51-A0c"; */
+"byz-51-A0c.text" = "local currency";
+
+/* Class = "IBUIBarButtonItem"; title = " "; ObjectID = "cSD-3n-43a"; */
+"cSD-3n-43a.title" = " ";
 
 /* Class = "IBUIButton"; normalTitle = "scan QR code"; ObjectID = "ce6-Wi-wk4"; */
 "ce6-Wi-wk4.normalTitle" = "scan QR code";
@@ -110,6 +122,12 @@
 /* Class = "IBUILabel"; text = "Title"; ObjectID = "fVX-tM-tZx"; */
 "fVX-tM-tZx.text" = "Title";
 
+/* Class = "IBUILabel"; text = "USD"; ObjectID = "gQu-dT-kF0"; */
+"gQu-dT-kF0.text" = "USD";
+
+/* Class = "IBUIBarButtonItem"; title = "done"; ObjectID = "gx4-Ct-xk4"; */
+"gx4-Ct-xk4.title" = "done";
+
 /* Class = "IBUINavigationItem"; title = "ƀ 0.00 ($0.00)"; ObjectID = "h6T-AD-8zb"; */
 "h6T-AD-8zb.title" = "ƀ 0.00 ($0.00)";
 
@@ -121,6 +139,9 @@
 
 /* Class = "IBUILabel"; text = "send money:"; ObjectID = "l5l-JR-LKA"; */
 "l5l-JR-LKA.text" = "send money:";
+
+/* Class = "IBUIButton"; normalTitle = "cancel"; ObjectID = "lzQ-at-alt"; */
+"lzQ-at-alt.normalTitle" = "cancel";
 
 /* Class = "IBUILabel"; text = "KEEP IT SECRET. Anyone who sees your backup phrase can spend your bitcoins."; ObjectID = "nEz-ij-2aZ"; */
 "nEz-ij-2aZ.text" = "KEEP IT SECRET. Anyone who sees your backup phrase can spend your bitcoins.";
@@ -143,8 +164,11 @@
 /* Class = "IBUILabel"; text = "receive money:"; ObjectID = "qel-3J-2VC"; */
 "qel-3J-2VC.text" = "receive money:";
 
-/* Class = "IBUILabel"; text = "breadwallet v%ver%\nCopyright © 2014 Aaron Voisine\n\nThis app is open source:\nhttp://breadwallet.com"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "breadwallet v%ver%\nCopyright © 2014 Aaron Voisine\n\nThis app is open source:\nhttp://breadwallet.com";
-
 /* Class = "IBUILabel"; text = "Start a new wallet by generating a wallet backup phrase."; ObjectID = "wDZ-DN-szv"; */
 "wDZ-DN-szv.text" = "Start a new wallet by generating a wallet backup phrase.";
+
+/* Class = "IBUINavigationItem"; title = "backup phrase:"; ObjectID = "wJz-hG-RRz"; */
+"wJz-hG-RRz.title" = "backup phrase:";
+
+/* Class = "IBUILabel"; text = "enter pin"; ObjectID = "zhS-gG-oV0"; */
+"zhS-gG-oV0.text" = "enter pin";

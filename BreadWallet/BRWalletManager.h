@@ -55,6 +55,7 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion;
 
 - (int64_t)amountForString:(NSString *)string;
 - (NSString *)stringForAmount:(int64_t)amount;
+- (int64_t)amountForLocalCurrencyString:(NSString *)string;
 - (NSString *)localCurrencyStringForAmount:(int64_t)amount;
 
 @end

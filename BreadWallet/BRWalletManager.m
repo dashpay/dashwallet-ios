@@ -542,7 +542,6 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
 
 #pragma mark - string helpers
 
-// TODO: make this work with local currency amounts
 - (int64_t)amountForString:(NSString *)string
 {
     return ([[self.format numberFromString:string] doubleValue] + DBL_EPSILON)*
@@ -563,6 +562,32 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
     self.format.minimumFractionDigits = min;
 
     return r;
+}
+
+// NOTE: For now these local currency methods assume that a satoshi has a smaller value than the smallest unit of any
+// local currency. They will need to be revisited when that is no longer a safe assumption.
+- (int64_t)amountForLocalCurrencyString:(NSString *)string
+{
+    if (self.localCurrencyPrice <= DBL_EPSILON) return 0;
+    if ([string hasPrefix:@"<"]) string = [string substringFromIndex:1];
+
+    int64_t local = ([[self.localFormat numberFromString:string] doubleValue] + DBL_EPSILON)*
+                     pow(10.0, self.localFormat.maximumFractionDigits);
+
+    if (local == 0) return 0;
+
+    int64_t min = llabs(local)*SATOSHIS/(self.localCurrencyPrice*pow(10.0, self.localFormat.maximumFractionDigits)) + 1,
+            max = (llabs(local) + 1)*SATOSHIS/
+                  (self.localCurrencyPrice*pow(10.0, self.localFormat.maximumFractionDigits)) - 1,
+            amount = (min + max)/2, p = 10;
+
+
+    while ((amount/p)*p >= min) { // find lowest decimal precision that still matches local currency string
+        p *= 10;
+    }
+
+    p /= 10;
+    return (local < 0) ? -(amount/p)*p : (amount/p)*p;
 }
 
 - (NSString *)localCurrencyStringForAmount:(int64_t)amount
