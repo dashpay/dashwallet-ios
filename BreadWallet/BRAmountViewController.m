@@ -175,12 +175,15 @@
     uint64_t amount =
         [m amountForLocalCurrencyString:(self.swapped) ? [s substringWithRange:NSMakeRange(1, s.length - 2)] : s];
 
-    self.localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
-                                    (self.swapped) ? [m stringForAmount:amount] :
-                                    [m localCurrencyStringForAmount:amount]];
+    self.localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)", (self.swapped) ? [m stringForAmount:amount] :
+                                                                       [m localCurrencyStringForAmount:amount]];
     self.amountField.text = (self.swapped) ? [m localCurrencyStringForAmount:amount] : [m stringForAmount:amount];
-    self.amountField.placeholder = (self.swapped) ? [m localCurrencyStringForAmount:0] : [m stringForAmount:0];
-    if (amount == 0) self.amountField.text = nil;
+
+    if (amount == 0) {
+        self.amountField.placeholder = self.amountField.text;
+        self.amountField.text = nil;
+    }
+    else self.amountField.placeholder = nil;
 
     [UIView animateWithDuration:0.07 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
         self.swapLeftLabel.transform = CGAffineTransformMakeScale(scale*1.25, scale*1.25);
@@ -200,6 +203,7 @@
         self.swapLeftLabel.center = self.swapRightLabel.center =
             CGPointMake(self.localCurrencyLabel.center.x/2 + self.amountField.center.x/2,
                         self.localCurrencyLabel.center.y/2 + self.amountField.center.y/2) ;
+        [self.view layoutIfNeeded];
     } completion:^(BOOL finished) {
         self.swapLeftLabel.text = self.localCurrencyLabel.text;
         self.swapRightLabel.text =

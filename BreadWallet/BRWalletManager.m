@@ -581,7 +581,6 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
                   (self.localCurrencyPrice*pow(10.0, self.localFormat.maximumFractionDigits)) - 1,
             amount = (min + max)/2, p = 10;
 
-
     while ((amount/p)*p >= min) { // find lowest decimal precision that still matches local currency string
         p *= 10;
     }
