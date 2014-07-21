@@ -113,7 +113,7 @@
     self.localCurrencyLabel.text =
         [NSString stringWithFormat:@"(%@)",
          self.swapped ? [m stringForAmount:amount] : [m localCurrencyStringForAmount:amount]];
-    self.localCurrencyLabel.textColor = (amount > 0) ? [UIColor darkGrayColor] : [UIColor lightGrayColor];
+    self.localCurrencyLabel.textColor = (amount > 0) ? [UIColor darkGrayColor] : [UIColor colorWithWhite:0.8 alpha:1.0];
 }
 
 #pragma mark - IBAction
@@ -203,7 +203,6 @@
         self.swapLeftLabel.center = self.swapRightLabel.center =
             CGPointMake(self.localCurrencyLabel.center.x/2 + self.amountField.center.x/2,
                         self.localCurrencyLabel.center.y/2 + self.amountField.center.y/2) ;
-        [self.view layoutIfNeeded];
     } completion:^(BOOL finished) {
         self.swapLeftLabel.text = self.localCurrencyLabel.text;
         self.swapRightLabel.text =
