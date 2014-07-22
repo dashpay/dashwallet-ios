@@ -259,7 +259,7 @@
                                     [UIColor colorWithWhite:0.75 alpha:1.0];
 
     [UIView animateWithDuration:0.1 animations:^{
-        self.swapLeftLabel.transform = CGAffineTransformMakeScale(0.85, 0.85);
+        //self.swapLeftLabel.transform = CGAffineTransformMakeScale(0.85, 0.85);
         self.swapLeftLabel.textColor = self.swapRightLabel.textColor;
         self.swapRightLabel.textColor = self.localCurrencyLabel.textColor;
         self.swapLeftLabel.text = [[self.swapLeftLabel.text stringByReplacingOccurrencesOfString:@"(" withString:@""]
@@ -270,7 +270,7 @@
 - (IBAction)releaseSwapButton:(id)sender
 {
     [UIView animateWithDuration:0.1 animations:^{
-        self.swapLeftLabel.transform = CGAffineTransformIdentity;
+        //self.swapLeftLabel.transform = CGAffineTransformIdentity;
         self.swapLeftLabel.textColor = self.localCurrencyLabel.textColor;
     } completion:^(BOOL finished) {
         self.swapLeftLabel.hidden = self.swapRightLabel.hidden = YES;
