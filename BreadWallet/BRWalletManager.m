@@ -150,10 +150,10 @@ static NSData *getKeychainData(NSString *key)
     self.format.currencyCode = @"XBT";
     self.format.currencySymbol = BITS NARROW_NBSP;
     self.format.maximumFractionDigits = 2;
-    self.format.maximum = @21000000000000.0;
 //    self.format.currencySymbol = BTC NARROW_NBSP;
 //    self.format.maximumFractionDigits = 8;
-//    self.format.maximum = @21000000.0;
+
+    self.format.maximum = @(MAX_MONEY/pow(10.0, self.format.maximumFractionDigits));
 
     _localFormat = [NSNumberFormatter new];
     self.localFormat.lenient = YES;
@@ -164,6 +164,7 @@ static NSData *getKeychainData(NSString *key)
 
     _localCurrencyCode = [defs stringForKey:LOCAL_CURRENCY_CODE_KEY],
     _localCurrencyPrice = [defs doubleForKey:LOCAL_CURRENCY_PRICE_KEY];
+    self.localFormat.maximum = @((MAX_MONEY/SATOSHIS)*(self.localCurrencyPrice - DBL_EPSILON));
     _currencyCodes = [defs arrayForKey:CURRENCY_CODES_KEY];
 
     if (self.localCurrencyCode) {
@@ -398,8 +399,9 @@ static NSData *getKeychainData(NSString *key)
         }
 
         _localCurrencyPrice = [json[self.localCurrencyCode][@"last"] doubleValue];
+        self.localFormat.maximum = @((MAX_MONEY/SATOSHIS)*(self.localCurrencyPrice - DBL_EPSILON));
         _currencyCodes = [NSArray arrayWithArray:json.allKeys];
-
+        
         if ([self.localCurrencyCode isEqual:[[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode]]) {
             [defs removeObjectForKey:LOCAL_CURRENCY_SYMBOL_KEY];
             [defs removeObjectForKey:LOCAL_CURRENCY_CODE_KEY];
@@ -576,10 +578,13 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
 
     if (local == 0) return 0;
 
-    int64_t min = llabs(local)*SATOSHIS/(self.localCurrencyPrice*pow(10.0, self.localFormat.maximumFractionDigits)) + 1,
-            max = (llabs(local) + 1)*SATOSHIS/
-                  (self.localCurrencyPrice*pow(10.0, self.localFormat.maximumFractionDigits)) - 1,
-            amount = (min + max)/2, p = 10;
+    uint64_t min = llabs(local)*SATOSHIS/
+                   (uint64_t)(self.localCurrencyPrice*pow(10.0, self.localFormat.maximumFractionDigits)) + 1,
+             max = (llabs(local) + 1)*SATOSHIS/
+                   (self.localCurrencyPrice*(uint64_t)pow(10.0, self.localFormat.maximumFractionDigits)) - 1,
+             amount = (min + max)/2, p = 10;
+
+    if (amount >= MAX_MONEY) return (local < 0) ? -MAX_MONEY : MAX_MONEY;
 
     while ((amount/p)*p >= min) { // find lowest decimal precision that still matches local currency string
         p *= 10;
