@@ -74,6 +74,8 @@
 
     //TODO: after two or three manual reconnect attempts when network is reachable, request a fresh peer list from DNS
 
+    //TODO: if the user cruizes through the backup phrase view and doesn't revisit after 24hrs, show an alert
+
     // this will notify user if bluetooth is disabled (on 4S and newer devices that support BTLE)
     //CBCentralManager *cbManager = [[CBCentralManager alloc] initWithDelegate:self queue:dispatch_get_main_queue()];
 

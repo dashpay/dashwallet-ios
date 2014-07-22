@@ -62,9 +62,11 @@
 
     self.swapLeftLabel = [UILabel new];
     self.swapLeftLabel.font = self.localCurrencyLabel.font;
+    self.swapLeftLabel.textAlignment = self.localCurrencyLabel.textAlignment;
 
     self.swapRightLabel = [UILabel new];
     self.swapRightLabel.font = self.amountField.font;
+    self.swapRightLabel.textAlignment = self.amountField.textAlignment;
 
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
@@ -110,10 +112,10 @@
 
     self.swapLeftLabel.hidden = YES;
     self.localCurrencyLabel.hidden = NO;
-    self.localCurrencyLabel.text =
-        [NSString stringWithFormat:@"(%@)",
-         self.swapped ? [m stringForAmount:amount] : [m localCurrencyStringForAmount:amount]];
-    self.localCurrencyLabel.textColor = (amount > 0) ? [UIColor darkGrayColor] : [UIColor colorWithWhite:0.8 alpha:1.0];
+    self.localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)", (self.swapped) ? [m stringForAmount:amount] :
+                                                                       [m localCurrencyStringForAmount:amount]];
+    self.localCurrencyLabel.textColor = (amount > 0) ? [UIColor colorWithWhite:0.67 alpha:1.0] :
+                                        [UIColor colorWithWhite:0.8 alpha:1.0];
 }
 
 #pragma mark - IBAction
@@ -152,22 +154,22 @@
 {
     self.swapped = ! self.swapped;
 
-    self.swapRightLabel.text = self.amountField.text;
-    self.swapRightLabel.textColor =
-        (self.amountField.text.length > 0) ? self.amountField.textColor : [UIColor colorWithWhite:0.8 alpha:1.0];
-    [self.swapRightLabel sizeToFit];
-    self.swapRightLabel.center = self.amountField.center;
-    [self.amountField.superview addSubview:self.swapRightLabel];
-    self.swapRightLabel.hidden = NO;
-    self.amountField.hidden = YES;
-
     self.swapLeftLabel.text = self.localCurrencyLabel.text;
-    self.swapLeftLabel.textColor = self.localCurrencyLabel.textColor;
-    [self.swapLeftLabel sizeToFit];
-    self.swapLeftLabel.center = self.localCurrencyLabel.center;
+    self.swapLeftLabel.textColor = (self.amountField.text.length > 0) ? self.amountField.textColor :
+                                   [UIColor colorWithWhite:0.8 alpha:1.0];
+    self.swapLeftLabel.frame = self.localCurrencyLabel.frame;
     [self.localCurrencyLabel.superview addSubview:self.swapLeftLabel];
     self.swapLeftLabel.hidden = NO;
     self.localCurrencyLabel.hidden = YES;
+
+    self.swapRightLabel.text = (self.amountField.text.length > 0) ? self.amountField.text :
+                               self.amountField.placeholder;
+    self.swapRightLabel.textColor = (self.amountField.text.length > 0) ? self.amountField.textColor :
+                                    [UIColor colorWithWhite:0.8 alpha:1.0];
+    self.swapRightLabel.frame = self.amountField.frame;
+    [self.amountField.superview addSubview:self.swapRightLabel];
+    self.swapRightLabel.hidden = NO;
+    self.amountField.hidden = YES;
 
     CGFloat scale = self.swapRightLabel.font.pointSize/self.swapLeftLabel.font.pointSize;
     BRWalletManager *m = [BRWalletManager sharedInstance];
@@ -188,36 +190,31 @@
     [UIView animateWithDuration:0.07 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
         self.swapLeftLabel.transform = CGAffineTransformMakeScale(scale*1.25, scale*1.25);
         self.swapRightLabel.transform = CGAffineTransformMakeScale(0.75/scale, 0.75/scale);
+    } completion:nil];
+
+    [UIView animateWithDuration:0.07 delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+        self.swapLeftLabel.center = self.swapRightLabel.center =
+            CGPointMake(self.localCurrencyLabel.frame.origin.x + self.localCurrencyLabel.bounds.size.width/2 +
+                        self.amountField.bounds.size.width/2,
+                        self.localCurrencyLabel.center.y/2 + self.amountField.center.y/2);
     } completion:^(BOOL finished) {
         self.swapRightLabel.transform = CGAffineTransformMakeScale(scale*1.25, scale*1.25);
         self.swapLeftLabel.transform = CGAffineTransformMakeScale(0.75/scale, 0.75/scale);
+        self.swapLeftLabel.text = self.localCurrencyLabel.text;
+        self.swapRightLabel.text =
+            (self.amountField.text.length > 0) ? self.amountField.text : self.amountField.placeholder;
+        self.swapLeftLabel.textColor = self.localCurrencyLabel.textColor;
 
         [UIView animateWithDuration:0.7 delay:0.0 usingSpringWithDamping:0.5 initialSpringVelocity:0.0
         options:UIViewAnimationOptionCurveEaseIn animations:^{
             self.swapLeftLabel.transform = CGAffineTransformIdentity;
             self.swapRightLabel.transform = CGAffineTransformIdentity;
         } completion:nil];
-    }];
-
-    [UIView animateWithDuration:0.07 delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
-        self.swapLeftLabel.center = self.swapRightLabel.center =
-            CGPointMake(self.localCurrencyLabel.center.x/2 + self.amountField.center.x/2,
-                        self.localCurrencyLabel.center.y/2 + self.amountField.center.y/2) ;
-    } completion:^(BOOL finished) {
-        self.swapLeftLabel.text = self.localCurrencyLabel.text;
-        self.swapRightLabel.text =
-            (self.amountField.text.length > 0) ? self.amountField.text : self.amountField.placeholder;
 
         [UIView animateWithDuration:0.7 delay:0.0 usingSpringWithDamping:0.5 initialSpringVelocity:0.0
         options:UIViewAnimationOptionCurveEaseOut animations:^{
-            [self.swapLeftLabel sizeToFit];
-            [self.swapRightLabel sizeToFit];
-            self.swapLeftLabel.center =
-                CGPointMake(self.localCurrencyLabel.frame.origin.x + self.swapLeftLabel.bounds.size.width/2 ,
-                            self.localCurrencyLabel.center.y);
-            self.swapRightLabel.center =
-                CGPointMake(self.amountField.frame.origin.x + self.amountField.bounds.size.width -
-                            self.swapRightLabel.bounds.size.width/2, self.amountField.center.y);
+            self.swapLeftLabel.frame = self.localCurrencyLabel.frame;
+            self.swapRightLabel.frame = self.amountField.frame;
         } completion:nil];
     }];
 }
@@ -226,14 +223,24 @@
 {
     self.swapLeftLabel.text = self.localCurrencyLabel.text;
     self.swapLeftLabel.textColor = self.localCurrencyLabel.textColor;
-    [self.swapLeftLabel sizeToFit];
-    self.swapLeftLabel.center = self.localCurrencyLabel.center;
+    self.swapLeftLabel.frame = self.localCurrencyLabel.frame;
     [self.localCurrencyLabel.superview addSubview:self.swapLeftLabel];
     self.swapLeftLabel.hidden = NO;
     self.localCurrencyLabel.hidden = YES;
 
+    self.swapRightLabel.text = (self.amountField.text.length > 0) ? self.amountField.text :
+                               self.amountField.placeholder;
+    self.swapRightLabel.textColor = (self.amountField.text.length > 0) ? self.amountField.textColor :
+                                    [UIColor colorWithWhite:0.8 alpha:1.0];
+    self.swapRightLabel.frame = self.amountField.frame;
+    [self.amountField.superview addSubview:self.swapRightLabel];
+    self.swapRightLabel.hidden = NO;
+    self.amountField.hidden = YES;
+
     [UIView animateWithDuration:0.1 animations:^{
         self.swapLeftLabel.transform = CGAffineTransformMakeScale(0.85, 0.85);
+        self.swapLeftLabel.textColor = self.swapRightLabel.textColor;
+        self.swapRightLabel.textColor = self.localCurrencyLabel.textColor;
     }];
 }
 
@@ -241,9 +248,12 @@
 {
     [UIView animateWithDuration:0.1 animations:^{
         self.swapLeftLabel.transform = CGAffineTransformIdentity;
+        self.swapLeftLabel.textColor = self.localCurrencyLabel.textColor;
+        self.swapRightLabel.textColor = (self.amountField.text.length > 0) ? self.amountField.textColor :
+                                        [UIColor colorWithWhite:0.8 alpha:1.0];
     } completion:^(BOOL finished) {
-        self.swapLeftLabel.hidden = YES;
-        self.localCurrencyLabel.hidden = NO;
+        self.swapLeftLabel.hidden = self.swapRightLabel.hidden = YES;
+        self.localCurrencyLabel.hidden = self.amountField.hidden = NO;
     }];
 }
 
