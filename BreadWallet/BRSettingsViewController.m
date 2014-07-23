@@ -38,6 +38,7 @@
 @interface BRSettingsViewController ()
 
 @property (nonatomic, strong) NSArray *transactions;
+@property (nonatomic, assign) BOOL moreTx;
 @property (nonatomic, strong) NSMutableDictionary *txDates;
 @property (nonatomic, strong) id balanceObserver, txStatusObserver;
 @property (nonatomic, strong) UIImageView *wallpaper;
@@ -67,23 +68,32 @@
     [super viewWillAppear:animated];
 
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
-    self.transactions = [NSArray arrayWithArray:[[[BRWalletManager sharedInstance] wallet] recentTransactions]];
+    
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    NSArray *a = m.wallet.recentTransactions;
+    
+    self.transactions = [a subarrayWithRange:NSMakeRange(0, a.count > 5 ? 5 : a.count)];
+    self.moreTx = (a.count > 5) ? YES : NO;
 
     if (! self.balanceObserver) {
         self.balanceObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
-                BRWalletManager *m = [BRWalletManager sharedInstance];
-                NSUInteger count = self.transactions.count;
+                BRTransaction *tx = self.transactions.firstObject;
+                NSArray *a = m.wallet.recentTransactions;
 
                 if (! m.wallet) return;
+
+                if (self.transactions.count <= 5 && a.count > 5) {
+                    self.transactions = [a subarrayWithRange:NSMakeRange(0, 5)];
+                    self.moreTx = YES;
+                }
+                
                 self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                              [m localCurrencyStringForAmount:m.wallet.balance]];
 
-                self.transactions = [NSArray arrayWithArray:m.wallet.recentTransactions];
-
                 [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
-                 withRowAnimation:(self.transactions.count == count) ? UITableViewRowAnimationNone :
+                 withRowAnimation:(self.transactions.firstObject == tx) ? UITableViewRowAnimationNone :
                                    UITableViewRowAnimationAutomatic];
             }];
     }
@@ -92,8 +102,6 @@
         self.txStatusObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
-                BRWalletManager *m = [BRWalletManager sharedInstance];
-                                                      
                 if (! m.wallet) return;
                 [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
                  withRowAnimation:UITableViewRowAnimationNone];
@@ -230,12 +238,24 @@
     if (tableView == self.selectorController.tableView) return self.selectorOptions.count;
 
     switch (section) {
-        case 0: return self.transactions.count ? self.transactions.count : 1;
-        case 1: return 2;
-        case 2: return 3;
-        case 3: return 2;
-        case 4: return 1;
-        default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
+        case 0:
+            if (self.transactions.count == 0) return 1;
+            return (self.moreTx) ? self.transactions.count + 1 : self.transactions.count;
+
+        case 1:
+            return 2;
+
+        case 2:
+            return 3;
+
+        case 3:
+            return 2;
+
+        case 4:
+            return 1;
+            
+        default:
+            NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
     }
 
     return 0;
@@ -243,9 +263,9 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *transactionIdent = @"TransactionCell", *disclosureIdent = @"DisclosureCell",
-                    *actionIdent = @"ActionCell", *selectorIdent = @"SelectorCell", *toggleIdent = @"ToggleCell",
-                    *restoreIdent = @"RestoreCell", *selectorOptionCell = @"SelectorOptionCell";
+    static NSString *transactionIdent = @"TransactionCell", *moreIdent = @"MoreCell", *actionIdent = @"ActionCell",
+                    *toggleIdent = @"ToggleCell", *selectorIdent = @"SelectorCell", *restoreIdent = @"RestoreCell",
+                    *disclosureIdent = @"DisclosureCell", *selectorOptionCell = @"SelectorOptionCell";
     UITableViewCell *cell = nil;
     UILabel *textLabel, *unconfirmedLabel, *sentLabel, *noTxLabel, *localCurrencyLabel, *toggleLabel;
     UISwitch *toggleSwitch;
@@ -267,6 +287,12 @@
 
     switch (indexPath.section) {
         case 0:
+            if (indexPath.row > 0 && indexPath.row >= self.transactions.count) {
+                cell = [tableView dequeueReusableCellWithIdentifier:moreIdent];
+                [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
+                return cell;
+            }
+        
             cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent];
             [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
             
@@ -478,7 +504,7 @@
     if (tableView == self.selectorController.tableView) return 44.0;
 
     switch (indexPath.section) {
-        case 0: return TRANSACTION_CELL_HEIGHT;
+        case 0: return (indexPath.row == 0 || indexPath.row < self.transactions.count) ? TRANSACTION_CELL_HEIGHT : 44.0;
         case 1: return 44.0;
         case 2: return 44.0;
         case 3: return 44.0;
@@ -543,6 +569,7 @@
     NSUInteger i = 0;
     UITableViewCell *cell = nil;
     NSMutableAttributedString *s = nil;
+    NSMutableArray *a;
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
     if (tableView == self.selectorController.tableView) {
@@ -558,8 +585,23 @@
 
     switch (indexPath.section) {
         case 0: // transaction
-            // TODO: show transaction details
-            if (self.transactions.count > 0) {
+            if (indexPath.row > 0 && indexPath.row >= self.transactions.count) {
+                [tableView beginUpdates];
+                self.transactions = [NSArray arrayWithArray:m.wallet.recentTransactions];
+                self.moreTx = NO;
+                [tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:5 inSection:0]]
+                 withRowAnimation:UITableViewRowAnimationFade];
+                a = [NSMutableArray arrayWithCapacity:self.transactions.count - 5];
+                
+                for (NSUInteger i = 5; i < self.transactions.count; i++) {
+                    [a addObject:[NSIndexPath indexPathForRow:i inSection:0]];
+                }
+                
+                [tableView insertRowsAtIndexPaths:a withRowAnimation:UITableViewRowAnimationTop];
+                [tableView endUpdates];
+            }
+            else if (self.transactions.count > 0) {
+                // TODO: show transaction details
                 i = [[self.tableView indexPathsForVisibleRows] indexOfObject:indexPath];
                 cell = (i < self.tableView.visibleCells.count) ? self.tableView.visibleCells[i] : nil;
                 [(id)[cell viewWithTag:2] toggleCopyMenu];

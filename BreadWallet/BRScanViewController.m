@@ -87,7 +87,7 @@
     self.preview.frame = self.view.layer.bounds;
     [self.cameraView.layer addSublayer:self.preview];
 
-   dispatch_async(dispatch_queue_create("scanner", NULL), ^{
+    dispatch_async(dispatch_queue_create("qrscanner", NULL), ^{
         [self.session startRunning];
     });
 }
