@@ -802,23 +802,18 @@ fromConnection:(AVCaptureConnection *)connection
         [v insertSubview:to.view belowSubview:from.view];
         [self cancel:nil];
         img = [self.buttons.firstObject imageView];
-        img.alpha = 0.0;
 
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0
-        options:UIViewAnimationOptionCurveEaseOut animations:^{
+        [UIView animateWithDuration:0.8 delay:0.0 usingSpringWithDamping:0.5 initialSpringVelocity:0
+        options:UIViewAnimationOptionCurveEaseIn animations:^{
             guide.center = [v convertPoint:img.center fromView:img.superview];
             guide.transform = CGAffineTransformMakeScale(img.bounds.size.width/guide.bounds.size.width,
                                                          img.bounds.size.height/guide.bounds.size.height);
+            guide.alpha = 0.0;
         } completion:^(BOOL finished) {
-            [UIView animateWithDuration:0.1 animations:^{
-                img.alpha = 1.0;
-                guide.alpha = 0.0;
-            } completion:^(BOOL finished) {
-                guide.transform = CGAffineTransformIdentity;
-                guide.center = p;
-                guide.alpha = 1.0;
-                [from.view addSubview:guide];
-            }];
+            guide.transform = CGAffineTransformIdentity;
+            guide.center = p;
+            guide.alpha = 1.0;
+            [from.view addSubview:guide];
         }];
 
         [UIView animateWithDuration:[self transitionDuration:transitionContext] - 0.15 delay:0.15

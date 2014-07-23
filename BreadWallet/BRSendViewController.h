@@ -27,8 +27,8 @@
 #import <AVFoundation/AVFoundation.h>
 #import "BRAmountViewController.h"
 
-@interface BRSendViewController : UIViewController <UIAlertViewDelegate, UIViewControllerTransitioningDelegate,
-UIViewControllerAnimatedTransitioning, BRAmountViewControllerDelegate, AVCaptureMetadataOutputObjectsDelegate>
+@interface BRSendViewController : UIViewController <UIAlertViewDelegate, BRAmountViewControllerDelegate,
+AVCaptureMetadataOutputObjectsDelegate, UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning>
 
 - (IBAction)tip:(id)sender;
 

@@ -73,7 +73,6 @@ typedef enum {
 @property (nonatomic, strong) NSCountedSet *requestedBlockHashes;
 @property (nonatomic, assign) uint32_t filterBlockCount;
 @property (nonatomic, strong) NSRunLoop *runLoop;
-@property (nonatomic, strong) dispatch_queue_t q;
 
 @end
 

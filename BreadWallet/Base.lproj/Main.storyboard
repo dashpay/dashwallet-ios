@@ -453,8 +453,14 @@
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="cameraguide" translatesAutoresizingMaskIntoConstraints="NO" id="uEW-dq-bFQ">
                                 <rect key="frame" x="43" y="145" width="234" height="234"/>
                             </imageView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1VG-Fh-Hjg">
+                                <rect key="frame" x="0.0" y="524" width="320" height="44"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.25" colorSpace="calibratedWhite"/>
+                            </view>
                             <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" barStyle="black" translatesAutoresizingMaskIntoConstraints="NO" id="C6f-EJ-S6p">
                                 <rect key="frame" x="0.0" y="524" width="320" height="44"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="44" id="Fal-Ts-Ea7"/>
                                 </constraints>
@@ -476,15 +482,19 @@
                         </subviews>
                         <constraints>
                             <constraint firstAttribute="centerY" secondItem="uEW-dq-bFQ" secondAttribute="centerY" constant="22" id="2Cz-mU-x3b"/>
+                            <constraint firstItem="1VG-Fh-Hjg" firstAttribute="centerX" secondItem="C6f-EJ-S6p" secondAttribute="centerX" id="LwS-JR-bbp"/>
                             <constraint firstAttribute="trailing" secondItem="C6f-EJ-S6p" secondAttribute="trailing" id="O4G-pM-neC"/>
+                            <constraint firstItem="1VG-Fh-Hjg" firstAttribute="height" secondItem="C6f-EJ-S6p" secondAttribute="height" id="Qsx-iX-xfy"/>
                             <constraint firstItem="5aq-jh-ZjP" firstAttribute="top" secondItem="uIe-6C-u6o" secondAttribute="top" constant="41" id="ZAl-5G-nOr"/>
                             <constraint firstItem="uEW-dq-bFQ" firstAttribute="top" secondItem="5aq-jh-ZjP" secondAttribute="bottom" constant="21" id="g7i-Yz-Zv6"/>
                             <constraint firstAttribute="centerX" secondItem="5aq-jh-ZjP" secondAttribute="centerX" id="laG-65-Xdx"/>
                             <constraint firstAttribute="centerX" secondItem="uEW-dq-bFQ" secondAttribute="centerX" id="ldQ-SP-pN3"/>
+                            <constraint firstItem="1VG-Fh-Hjg" firstAttribute="width" secondItem="C6f-EJ-S6p" secondAttribute="width" id="pl2-MI-KML"/>
                             <constraint firstItem="5aq-jh-ZjP" firstAttribute="leading" secondItem="uIe-6C-u6o" secondAttribute="leading" constant="30" id="sts-ix-Scc"/>
                             <constraint firstItem="C6f-EJ-S6p" firstAttribute="leading" secondItem="uIe-6C-u6o" secondAttribute="leading" id="t9k-Wc-Dkb"/>
                             <constraint firstItem="dRA-mr-I7p" firstAttribute="top" secondItem="C6f-EJ-S6p" secondAttribute="bottom" id="tFw-YY-inX"/>
                             <constraint firstAttribute="trailing" secondItem="5aq-jh-ZjP" secondAttribute="trailing" constant="30" id="vm7-L0-gIa"/>
+                            <constraint firstItem="1VG-Fh-Hjg" firstAttribute="centerY" secondItem="C6f-EJ-S6p" secondAttribute="centerY" id="xeC-xQ-Nki"/>
                         </constraints>
                     </view>
                     <connections>

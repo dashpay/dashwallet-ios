@@ -45,6 +45,9 @@
     AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
 
     if (! device.hasTorch) self.toolbar.items = @[self.toolbar.items[0]];
+    
+    [self.toolbar setBackgroundImage:[UIImage new] forToolbarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefault];
+    [self.toolbar setShadowImage:[UIImage new] forToolbarPosition:UIToolbarPositionAny];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -84,7 +87,7 @@
     self.preview.frame = self.view.layer.bounds;
     [self.cameraView.layer addSublayer:self.preview];
 
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+   dispatch_async(dispatch_queue_create("scanner", NULL), ^{
         [self.session startRunning];
     });
 }
