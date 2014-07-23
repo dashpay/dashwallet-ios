@@ -84,11 +84,12 @@
 
                 if (! m.wallet) return;
 
-                if (self.transactions.count <= 5 && a.count > 5) {
-                    self.transactions = [a subarrayWithRange:NSMakeRange(0, 5)];
-                    self.moreTx = YES;
+                if (self.moreTx) {
+                    self.transactions = [a subarrayWithRange:NSMakeRange(0, a.count > 5 ? 5 : a.count)];
+                    self.moreTx = (a.count > 5) ? YES : NO;
                 }
-                
+                else self.transactions = [NSArray arrayWithArray:a];
+
                 self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                              [m localCurrencyStringForAmount:m.wallet.balance]];
 
