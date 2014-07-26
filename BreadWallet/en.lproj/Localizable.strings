@@ -2,6 +2,9 @@
 "\nbitcoin network fee + %@ (%@)" = "\nbitcoin network fee + %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
+" - included in block #%d" = " - included in block #%d";
+
+/* No comment provided by engineer. */
 "%@ from:%@" = "%1$@ from:%2$@";
 
 /* No comment provided by engineer. */
@@ -177,6 +180,9 @@
 
 /* No comment provided by engineer. */
 "missing certificate" = "missing certificate";
+
+/* No comment provided by engineer. */
+"more..." = "more...";
 
 /* No comment provided by engineer. */
 "moved  " = "moved  ";

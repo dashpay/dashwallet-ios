@@ -126,7 +126,7 @@
 
     if ([v.text hasPrefix:QR_TIP]) {
         self.tipView = [BRBubbleView viewWithText:ADDRESS_TIP tipPoint:[self.addressButton.superview
-                        convertPoint:CGPointMake(self.addressButton.center.x, self.addressButton.center.y - 10)
+                        convertPoint:CGPointMake(self.addressButton.center.x, self.addressButton.center.y - 10.0)
                         toView:self.view] tipDirection:BRBubbleTipDirectionDown];
         if (self.showTips) self.tipView.text = [self.tipView.text stringByAppendingString:@" (4/6)"];
         self.tipView.backgroundColor = v.backgroundColor;
@@ -200,7 +200,7 @@
 
         [self.view
          addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"copied", nil)
-                       center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2 - 130)]
+                       center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0 - 130.0)]
                       popIn] popOutAfterDelay:2.0]];
     }
     else if ([title isEqual:NSLocalizedString(@"send as email", nil)]) {
@@ -217,8 +217,7 @@
             c.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default"]];
         }
         else {
-            [[[UIAlertView alloc] initWithTitle:nil
-              message:NSLocalizedString(@"email not configured", nil) delegate:nil
+            [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"email not configured", nil) delegate:nil
               cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
     }
@@ -232,9 +231,8 @@
             c.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default"]];
         }
         else {
-            [[[UIAlertView alloc] initWithTitle:nil
-              message:NSLocalizedString(@"sms not currently available", nil) delegate:nil
-              cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+            [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"sms not currently available", nil)
+              delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
     }    
 }

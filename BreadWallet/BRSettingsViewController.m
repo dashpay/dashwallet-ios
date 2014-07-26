@@ -25,6 +25,7 @@
 
 #import "BRSettingsViewController.h"
 #import "BRRootViewController.h"
+#import "BRTxDetailViewController.h"
 #import "BRPINViewController.h"
 #import "BRWalletManager.h"
 #import "BRWallet.h"
@@ -226,7 +227,7 @@
     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://breadwallet.com"]];
 }
 
-#pragma mark - Table view data source
+#pragma mark - UITableViewDataSource
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
@@ -264,9 +265,9 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *transactionIdent = @"TransactionCell", *moreIdent = @"MoreCell", *actionIdent = @"ActionCell",
-                    *toggleIdent = @"ToggleCell", *selectorIdent = @"SelectorCell", *restoreIdent = @"RestoreCell",
-                    *disclosureIdent = @"DisclosureCell", *selectorOptionCell = @"SelectorOptionCell";
+    static NSString *transactionIdent = @"TransactionCell", *actionIdent = @"ActionCell", *toggleIdent = @"ToggleCell",
+                    *disclosureIdent = @"DisclosureCell", *selectorIdent = @"SelectorCell",
+                    *restoreIdent = @"RestoreCell", *selectorOptionCell = @"SelectorOptionCell";
     UITableViewCell *cell = nil;
     UILabel *textLabel, *unconfirmedLabel, *sentLabel, *noTxLabel, *localCurrencyLabel, *toggleLabel;
     UISwitch *toggleSwitch;
@@ -289,8 +290,10 @@
     switch (indexPath.section) {
         case 0:
             if (indexPath.row > 0 && indexPath.row >= self.transactions.count) {
-                cell = [tableView dequeueReusableCellWithIdentifier:moreIdent];
+                cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
                 [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
+                cell.textLabel.text = NSLocalizedString(@"more...", nil);
+                cell.imageView.image = nil;
                 return cell;
             }
         
@@ -365,7 +368,7 @@
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [m localCurrencyStringForAmount:received - sent]];
                     sentLabel.text = NSLocalizedString(@"sent  ", nil);
-                    sentLabel.textColor = [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.67];
+                    sentLabel.textColor = [UIColor colorWithRed:1.0 green:0.33 blue:0.33 alpha:1.0];
                 }
                 else {
                     textLabel.text = [m stringForAmount:received];
@@ -492,13 +495,14 @@
         case 4:
             return NSLocalizedString(@"fees are only optional for high priority transactions", nil);
 
-        default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
+        default:
+            NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
     }
     
     return nil;
 }
 
-#pragma mark - Table view delegate
+#pragma mark - UITableViewDelegate
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -565,10 +569,10 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
-    UINavigationController *c = nil;
+    UIViewController *c = nil;
     UILabel *l = nil;
-    NSUInteger i = 0;
-    UITableViewCell *cell = nil;
+//    NSUInteger i = 0;
+//    UITableViewCell *cell = nil;
     NSMutableAttributedString *s = nil;
     NSMutableArray *a;
     BRWalletManager *m = [BRWalletManager sharedInstance];
@@ -602,10 +606,13 @@
                 [tableView endUpdates];
             }
             else if (self.transactions.count > 0) {
-                // TODO: show transaction details
-                i = [[self.tableView indexPathsForVisibleRows] indexOfObject:indexPath];
-                cell = (i < self.tableView.visibleCells.count) ? self.tableView.visibleCells[i] : nil;
-                [(id)[cell viewWithTag:2] toggleCopyMenu];
+                c = [self.storyboard instantiateViewControllerWithIdentifier:@"TxDetailViewController"];
+                [(id)c setTransaction:self.transactions[indexPath.row]];
+                [(id)c setTxDateString:[self dateForTx:self.transactions[indexPath.row]]];
+                [self.navigationController pushViewController:c animated:YES];
+//                i = [[self.tableView indexPathsForVisibleRows] indexOfObject:indexPath];
+//                cell = (i < self.tableView.visibleCells.count) ? self.tableView.visibleCells[i] : nil;
+//                [(id)[cell viewWithTag:2] toggleCopyMenu];
             }
 
             break;
@@ -646,11 +653,11 @@
             switch (indexPath.row) {
                 case 0: // change pin
                     c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-                    [c.viewControllers.firstObject setCancelable:YES];
-                    [c.viewControllers.firstObject setChangePin:YES];
+                    [[[(id)c viewControllers] firstObject] setCancelable:YES];
+                    [[[(id)c viewControllers] firstObject] setChangePin:YES];
                     c.transitioningDelegate = self;
                     [self.navigationController presentViewController:c animated:YES completion:nil];
-                    [c.viewControllers.firstObject setAppeared:YES];
+                    [[[(id)c viewControllers] firstObject] setAppeared:YES];
                     break;
 
                 case 1: // import private key
@@ -672,8 +679,8 @@
         case 3:
             switch (indexPath.row) {
                 case 0: // local currency
-                    self.selectorOptions =
-                        [m.currencyCodes sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+                    self.selectorOptions = [m.currencyCodes
+                                            sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
                     self.selectedOption = m.localCurrencyCode;
                     self.selectorController = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
                     self.selectorController.transitioningDelegate = self;

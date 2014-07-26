@@ -42,7 +42,7 @@
 @property (nonatomic, readonly) NSNumberFormatter *localFormat;
 @property (nonatomic, copy) NSString *localCurrencyCode;
 @property (nonatomic, readonly) double localCurrencyPrice;
-@property (nonatomic, readonly) NSArray *currencyCodes;
+@property (nonatomic, readonly) NSArray *currencyCodes; // list of supported local currencies
 
 + (instancetype)sharedInstance;
 
