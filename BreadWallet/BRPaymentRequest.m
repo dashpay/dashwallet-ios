@@ -156,7 +156,8 @@
 }
 
 // fetches the request over HTTP and calls completion block
-+ (void)fetch:(NSString *)url completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion
++ (void)fetch:(NSString *)url timeout:(NSTimeInterval)timeout
+completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion
 {
     if (! completion) return;
 
@@ -169,7 +170,7 @@
     }
 
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:u
-                                cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:20.0];
+                                cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:timeout];
 
     [req addValue:@"application/bitcoin-paymentrequest" forHTTPHeaderField:@"Accept"];
 
@@ -207,7 +208,7 @@
     }];
 }
 
-+ (void)postPayment:(BRPaymentProtocolPayment *)payment to:(NSString *)paymentURL
++ (void)postPayment:(BRPaymentProtocolPayment *)payment to:(NSString *)paymentURL timeout:(NSTimeInterval)timeout
 completion:(void (^)(BRPaymentProtocolACK *ack, NSError *error))completion
 {
     NSURL *u = [NSURL URLWithString:paymentURL];
@@ -218,7 +219,7 @@ completion:(void (^)(BRPaymentProtocolACK *ack, NSError *error))completion
     }
 
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:u
-                                cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:20.0];
+                                cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:timeout];
 
     [req addValue:@"application/bitcoin-payment" forHTTPHeaderField:@"Content-Type"];
     [req addValue:@"application/bitcoin-paymentack" forHTTPHeaderField:@"Accept"];

@@ -25,7 +25,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class BRAmountViewController, BRPaymentRequest;
+@class BRAmountViewController;
 
 @protocol BRAmountViewControllerDelegate <NSObject>
 @required
@@ -37,6 +37,6 @@
 @interface BRAmountViewController : UIViewController<UITextFieldDelegate, UIAlertViewDelegate>
 
 @property (nonatomic, assign) id<BRAmountViewControllerDelegate> delegate;
-@property (nonatomic, strong) BRPaymentRequest *request;
+@property (nonatomic, strong) NSString *to;
 
 @end

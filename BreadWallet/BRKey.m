@@ -172,7 +172,7 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
 #endif
 
     if (! d || d.length == 28) d = privateKey.base58ToData;
-    if (! d) d = privateKey.hexToData;
+    if (d.length < 32 || d.length > 34) d = privateKey.hexToData;
 
     if ((d.length == 33 || d.length == 34) && *(const unsigned char *)d.bytes == version) {
         [self setSecret:[NSData dataWithBytesNoCopy:(unsigned char *)d.bytes + 1 length:32 freeWhenDone:NO]

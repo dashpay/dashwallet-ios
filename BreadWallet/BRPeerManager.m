@@ -910,8 +910,7 @@ static const char *dns_seeds[] = {
         if (! self.txRejections[txHash]) self.txRejections[txHash] = [NSMutableSet set];
         [self.txRejections[txHash] addObject:peer];
 
-        if ([self.txRejections[txHash] count] + 1 == self.connectedPeers.count ||
-            (self.connectedPeers.count == 1 && [self.txRejections[txHash] count] == 1)) {
+        if ([self.txRejections[txHash] count] > 1 || self.connectedPeers.count < 3) {
             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"transaction rejected", nil)
               message:NSLocalizedString(@"Your wallet may be out of sync.\n"
                                         "This can often be fixed by rescaning the blockchain.", nil) delegate:self

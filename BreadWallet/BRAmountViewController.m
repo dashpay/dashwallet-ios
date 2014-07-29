@@ -37,10 +37,12 @@
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *payButton;
 @property (nonatomic, strong) IBOutlet UIButton *delButton, *decimalButton;
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
-@property (nonatomic, strong) id balanceObserver;
+
+@property (nonatomic, assign) uint64_t amount;
 @property (nonatomic, strong) NSCharacterSet *charset;
 @property (nonatomic, strong) UILabel *swapLeftLabel, *swapRightLabel;
 @property (nonatomic, assign) BOOL swapped;
+@property (nonatomic, strong) id balanceObserver;
 
 @end
 
@@ -91,9 +93,10 @@
 {
     [super viewWillAppear:animated];
     
-    NSString *addr = self.request.paymentAddress;
+    if (self.to.length > 0) {
+        self.addressLabel.text = [NSString stringWithFormat:NSLocalizedString(@"to: %@", nil), self.to];
+    }
     
-    if (addr) self.addressLabel.text = [NSString stringWithFormat:NSLocalizedString(@"to: %@", nil), addr];
     self.wallpaper.hidden = NO;
 
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
@@ -102,7 +105,7 @@
 
 - (void)viewWillDisappear:(BOOL)animated
 {
-    self.request.amount = 0;
+    self.amount = 0;
     self.wallpaper.hidden = animated;
 
     [super viewWillDisappear:animated];
@@ -145,12 +148,12 @@
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
-    self.request.amount = (self.swapped) ? [m amountForLocalCurrencyString:self.amountField.text] :
-                          [m amountForString:self.amountField.text];
+    self.amount = (self.swapped) ? [m amountForLocalCurrencyString:self.amountField.text] :
+                  [m amountForString:self.amountField.text];
 
-    if (self.request.amount == 0) return;
+    if (self.amount == 0) return;
     
-    [self.delegate amountViewController:self selectedAmount:self.request.amount];
+    [self.delegate amountViewController:self selectedAmount:self.amount];
 }
 
 - (IBAction)swapCurrency:(id)sender

@@ -53,6 +53,7 @@
 @property (nonatomic, strong) BRTransaction *tx, *sweepTx;
 @property (nonatomic, strong) BRPaymentRequest *request;
 @property (nonatomic, strong) BRPaymentProtocolRequest *protocolRequest;
+@property (nonatomic, assign) uint64_t protoReqAmount;
 @property (nonatomic, strong) BRBubbleView *tipView;
 @property (nonatomic, strong) BRScanViewController *scanController;
 
@@ -204,9 +205,9 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     }
 
     if (request.r.length > 0) { // payment protocol over HTTP
-        [(id)self.parentViewController.parentViewController startActivityWithTimeout:20];
+        [(id)self.parentViewController.parentViewController startActivityWithTimeout:20.0];
 
-        [BRPaymentRequest fetch:request.r completion:^(BRPaymentProtocolRequest *req, NSError *error) {
+        [BRPaymentRequest fetch:request.r timeout:20.0 completion:^(BRPaymentProtocolRequest *req, NSError *error) {
             [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
 
             if (error) {
@@ -232,8 +233,8 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     else if (request.amount == 0) {
         BRAmountViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"AmountViewController"];
 
+        self.request = request;
         c.delegate = self;
-        c.request = request;
         c.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                   [m localCurrencyStringForAmount:m.wallet.balance]];
         [self.navigationController pushViewController:c animated:YES];
@@ -284,7 +285,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     BRWalletManager *m = [BRWalletManager sharedInstance];
     uint64_t amount = 0, fee = 0;
     NSString *address = @"";
-    BOOL valid = [protoReq isValid];
+    BOOL valid = [protoReq isValid], outputTooSmall = NO;
 
     if (! valid && [protoReq.errorMessage isEqual:NSLocalizedString(@"request expired", nil)]) {
         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"bad payment request", nil) message:protoReq.errorMessage
@@ -295,50 +296,97 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
     //TODO: check for duplicates of already paid requests
 
-    //TODO: XXXX handle 0 amounts, amount below tx_min_output_amount, and own address
-
-    self.protocolRequest = protoReq;
-    self.tx = [m.wallet transactionForAmounts:protoReq.details.outputAmounts
-               toOutputScripts:protoReq.details.outputScripts withFee:NO];
-
-    if (self.tx && [m.wallet blockHeightUntilFree:self.tx] <= [[BRPeerManager sharedInstance] lastBlockHeight] + 1 &&
-        ! self.didAskFee && [[NSUserDefaults standardUserDefaults] boolForKey:SETTINGS_SKIP_FEE_KEY]) {
-        [[[UIAlertView alloc] initWithTitle:nil message:[NSString
-          stringWithFormat:NSLocalizedString(@"The standard bitcoin network fee is %@ (%@). "
-                                             "Removing this fee may increase confirmation time.", nil),
-          [m stringForAmount:self.tx.standardFee], [m localCurrencyStringForAmount:self.tx.standardFee]]
-          delegate:self cancelButtonTitle:nil
-          otherButtonTitles:NSLocalizedString(@"remove fee", nil), NSLocalizedString(@"continue", nil), nil] show];
-        return;
+    for (NSNumber *n in protoReq.details.outputAmounts) {
+        if ([n unsignedLongLongValue] < TX_MIN_OUTPUT_AMOUNT) outputTooSmall = YES;
+        amount += [n unsignedLongLongValue];
     }
 
-    if (! self.tx) {
-        for (NSNumber *n in protoReq.details.outputAmounts) {
-            amount += [n unsignedLongLongValue];
+    if ([m.wallet containsAddress:[NSString addressWithScriptPubKey:protoReq.details.outputScripts.firstObject]]) {
+        [[[UIAlertView alloc] initWithTitle:nil
+          message:NSLocalizedString(@"this payment address is already in your wallet", nil)
+          delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+        [self cancel:nil];
+    }
+    else if (amount == 0 && self.protoReqAmount == 0) {
+        BRAmountViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"AmountViewController"];
+        
+        self.protocolRequest = protoReq;
+        c.delegate = self;
+        c.to = [NSString addressWithScriptPubKey:protoReq.details.outputScripts.firstObject];
+        c.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
+                                  [m localCurrencyStringForAmount:m.wallet.balance]];
+        [self.navigationController pushViewController:c animated:YES];
+    }
+    else if (amount > 0 && amount < TX_MIN_OUTPUT_AMOUNT) {
+        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
+          message:[NSString stringWithFormat:NSLocalizedString(@"bitcoin payments can't be less than %@", nil),
+                   [m stringForAmount:TX_MIN_OUTPUT_AMOUNT]] delegate:nil
+          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+        [self cancel:nil];
+    }
+    else if (amount > 0 && outputTooSmall) {
+        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
+          message:[NSString stringWithFormat:NSLocalizedString(@"bitcoin transaction outputs can't be less than %@",
+                                                               nil), [m stringForAmount:TX_MIN_OUTPUT_AMOUNT]]
+          delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+        [self cancel:nil];
+    }
+    else {
+        self.protocolRequest = protoReq;
+        
+        if (self.protoReqAmount > 0) {
+            self.tx = [m.wallet transactionForAmounts:@[@(self.protoReqAmount)]
+                       toOutputScripts:@[protoReq.details.outputScripts.firstObject] withFee:NO];
         }
-    }
-    else amount = [m.wallet amountSentByTransaction:self.tx] - [m.wallet amountReceivedFromTransaction:self.tx];
+        else {
+            self.tx = [m.wallet transactionForAmounts:protoReq.details.outputAmounts
+                       toOutputScripts:protoReq.details.outputScripts withFee:NO];
+        }
 
-    if (! self.removeFee) {
-        fee = self.tx.standardFee;
-        amount += fee;
-        self.tx = [m.wallet transactionForAmounts:protoReq.details.outputAmounts
-                   toOutputScripts:protoReq.details.outputScripts withFee:YES];
+        if (self.tx && [m.wallet blockHeightUntilFree:self.tx] <= [[BRPeerManager sharedInstance] lastBlockHeight] +1 &&
+            ! self.didAskFee && [[NSUserDefaults standardUserDefaults] boolForKey:SETTINGS_SKIP_FEE_KEY]) {
+            [[[UIAlertView alloc] initWithTitle:nil
+              message:[NSString stringWithFormat:NSLocalizedString(@"The standard bitcoin network fee is %@ (%@). "
+                                                                   "Removing this fee may increase confirmation time.",
+                                                                   nil), [m stringForAmount:self.tx.standardFee],
+                       [m localCurrencyStringForAmount:self.tx.standardFee]] delegate:self cancelButtonTitle:nil
+              otherButtonTitles:NSLocalizedString(@"remove fee", nil), NSLocalizedString(@"continue", nil), nil] show];
+            return;
+        }
+
         if (self.tx) {
             amount = [m.wallet amountSentByTransaction:self.tx] - [m.wallet amountReceivedFromTransaction:self.tx];
-            fee = [m.wallet feeForTransaction:self.tx];
         }
+        
+        if (! self.removeFee) {
+            fee = self.tx.standardFee;
+            amount += fee;
+
+            if (self.protoReqAmount > 0) {
+                self.tx = [m.wallet transactionForAmounts:@[@(self.protoReqAmount)]
+                           toOutputScripts:@[protoReq.details.outputScripts.firstObject] withFee:YES];
+            }
+            else {
+                self.tx = [m.wallet transactionForAmounts:protoReq.details.outputAmounts
+                           toOutputScripts:protoReq.details.outputScripts withFee:YES];
+            }
+
+            if (self.tx) {
+                amount = [m.wallet amountSentByTransaction:self.tx] - [m.wallet amountReceivedFromTransaction:self.tx];
+                fee = [m.wallet feeForTransaction:self.tx];
+            }
+        }
+
+        for (NSData *script in protoReq.details.outputScripts) {
+            NSString *addr = [NSString addressWithScriptPubKey:script];
+            
+            address = [address stringByAppendingFormat:@"%@%@", (address.length > 0) ? @", " : @"",
+                       (addr) ? addr : NSLocalizedString(@"unrecognized address", nil)];
+        }
+
+        [self confirmAmount:amount fee:fee address:address name:protoReq.commonName memo:protoReq.details.memo
+         isSecure:(valid && ! [protoReq.pkiType isEqual:@"none"]) ? YES : NO];
     }
-
-    for (NSData *script in protoReq.details.outputScripts) {
-        NSString *addr = [NSString addressWithScriptPubKey:script];
-
-        address = [address stringByAppendingFormat:@"%@%@", (address.length > 0) ? @", " : @"",
-                   (addr) ? addr : NSLocalizedString(@"unrecognized address", nil)];
-    }
-
-    [self confirmAmount:amount fee:fee address:address name:protoReq.commonName memo:protoReq.details.memo
-     isSecure:(valid && ! [protoReq.pkiType isEqual:@"none"]) ? YES : NO];
 }
 
 - (void)confirmSweep:(NSString *)privKey
@@ -480,6 +528,16 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     NSString *s = [[[UIPasteboard generalPasteboard] string]
                    stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     BRPaymentRequest *req = [BRPaymentRequest requestWithString:s];
+    NSData *d = [s hexToData];
+
+    if (d.length == 32) { // if the clipboard contains a txHash, we know it's not a hex encoded private key
+        for (BRTransaction *tx in [[[BRWalletManager sharedInstance] wallet] recentTransactions]) {
+            if (! [tx.txHash isEqual:d]) continue;
+            req = nil;
+            s = nil;
+            break;
+        }
+    }
 
     [sender setEnabled:NO];
     self.clearClipboard = YES;
@@ -508,6 +566,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     self.sweepTx = nil;
     self.request = nil;
     self.protocolRequest = nil;
+    self.protoReqAmount = 0;
     self.clearClipboard = NO;
     self.didAskFee = NO;
     self.removeFee = NO;
@@ -521,8 +580,13 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
 - (void)amountViewController:(BRAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
 {
-    amountViewController.request.amount = amount;
-    [self confirmRequest:amountViewController.request];
+    if (self.protocolRequest) {
+        [self confirmProtocolRequest:self.protocolRequest];
+    }
+    else if (self.request) {
+        self.request.amount = amount;
+        [self confirmRequest:self.request];
+    }
 }
 
 #pragma mark - AVCaptureMetadataOutputObjectsDelegate
@@ -554,8 +618,11 @@ fromConnection:(AVCaptureConnection *)connection
             [self.scanController stop];
 
             if (request.r.length > 0) { // start fetching payment protocol request right away
-                [BRPaymentRequest fetch:request.r completion:^(BRPaymentProtocolRequest *req, NSError *error) {
-                    if (error) {
+                [BRPaymentRequest fetch:request.r timeout:5.0
+                completion:^(BRPaymentProtocolRequest *req, NSError *error) {
+                    if (error) request.r = nil;
+                    
+                    if (error && ! [request isValid]) {
                         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
                           message:error.localizedDescription delegate:nil
                           cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
@@ -565,7 +632,11 @@ fromConnection:(AVCaptureConnection *)connection
 
                     dispatch_async(dispatch_get_main_queue(), ^{
                         [self.navigationController dismissViewControllerAnimated:YES completion:^{
-                            [self confirmProtocolRequest:req];
+                            if (error) {
+                                [self confirmRequest:request];
+                            }
+                            else [self confirmProtocolRequest:req];
+
                             [self resetQRGuide];
                         }];
                     });
@@ -668,7 +739,7 @@ fromConnection:(AVCaptureConnection *)connection
 
     NSLog(@"signing transaction");
 
-    [(id)self.parentViewController.parentViewController startActivityWithTimeout:30];
+    [(id)self.parentViewController.parentViewController startActivityWithTimeout:30.0];
 
     //TODO: don't sign on main thread
     if (! [m.wallet signTransaction:self.tx]) {
@@ -717,7 +788,7 @@ fromConnection:(AVCaptureConnection *)connection
 
         NSLog(@"posting payment to: %@", protoReq.details.paymentURL);
 
-        [BRPaymentRequest postPayment:payment to:protoReq.details.paymentURL
+        [BRPaymentRequest postPayment:payment to:protoReq.details.paymentURL timeout:20.0
         completion:^(BRPaymentProtocolACK *ack, NSError *error) {
             [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
 
