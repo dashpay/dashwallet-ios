@@ -37,6 +37,7 @@
 
 @property (nonatomic, strong) NSArray *outputText, *outputDetail, *outputAmount;
 @property (nonatomic, assign) int64_t sent, received;
+@property (nonatomic, strong) id txStatusObserver;
 
 @end
 
@@ -50,6 +51,32 @@
     // self.clearsSelectionOnViewWillAppear = NO;
 }
 
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+
+    if (! self.txStatusObserver) {
+        self.txStatusObserver =
+            [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil
+            queue:nil usingBlock:^(NSNotification *note) {
+                [self.tableView reloadData];
+            }];
+    }
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
+    self.txStatusObserver = nil;
+    
+    [super viewWillDisappear:animated];
+}
+
+- (void)dealloc
+{
+    if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
+}
+
 - (void)setTransaction:(BRTransaction *)transaction
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];
@@ -61,6 +88,7 @@
     self.sent = [m.wallet amountSentByTransaction:transaction];
     self.received = [m.wallet amountReceivedFromTransaction:transaction];
     
+    //BUG: wallet moves will show up as a spend with only a network fee and inputs
     for (NSString *address in transaction.outputAddresses) {
         uint64_t amt = [transaction.outputAmounts[i++] unsignedLongLongValue];
     
@@ -150,6 +178,7 @@
             switch (indexPath.row) {
                 case 0:
                     cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCell" forIndexPath:indexPath];
+                    cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                     textLabel = (id)[cell viewWithTag:1];
                     detailLabel = (id)[cell viewWithTag:2];
                     subtitleLabel = (id)[cell viewWithTag:3];
@@ -161,6 +190,7 @@
                     
                 case 1:
                     cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCell" forIndexPath:indexPath];
+                    cell.selectionStyle = UITableViewCellSelectionStyleNone;
                     textLabel = (id)[cell viewWithTag:1];
                     detailLabel = (id)[cell viewWithTag:2];
                     subtitleLabel = (id)[cell viewWithTag:3];
@@ -176,8 +206,8 @@
                     else if (! [m.wallet transactionIsValid:self.transaction]) {
                         detailLabel.text = NSLocalizedString(@"double spend", nil);
                     }
-                    else if (! [m.wallet transactionIsPending:self.transaction
-                                atBlockHeight:[[BRPeerManager sharedInstance] lastBlockHeight]]) {
+                    else if ([m.wallet transactionIsPending:self.transaction
+                              atBlockHeight:[[BRPeerManager sharedInstance] lastBlockHeight]]) {
                         detailLabel.text = NSLocalizedString(@"transaction is post-dated", nil);
                     }
                     else if (! [[BRPeerManager sharedInstance] transactionIsVerified:self.transaction.txHash]) {
@@ -311,7 +341,7 @@
     l.text = [self tableView:tableView titleForHeaderInSection:section];
     l.backgroundColor = [UIColor clearColor];
     l.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:17];
-    l.textColor = [UIColor darkGrayColor];
+    l.textColor = [UIColor blackColor];
     l.shadowColor = [UIColor whiteColor];
     l.shadowOffset = CGSizeMake(0.0, 1.0);
     l.numberOfLines = 0;
@@ -319,6 +349,17 @@
     [v addSubview:l];
     
     return v;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSUInteger i = [[self.tableView indexPathsForVisibleRows] indexOfObject:indexPath];
+    UITableViewCell *cell = (i < self.tableView.visibleCells.count) ? self.tableView.visibleCells[i] : nil;
+    BRCopyLabel *l = (id)[cell viewWithTag:2];
+    
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    l.selectedColor = [UIColor clearColor];
+    if (cell.selectionStyle != UITableViewCellSelectionStyleNone) [l toggleCopyMenu];
 }
 
 @end

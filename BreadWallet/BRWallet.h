@@ -91,6 +91,9 @@
 // returns the first non-change output address for sends, first input address for receives, or nil if unkown
 - (NSString *)addressForTransaction:(BRTransaction *)transaction;
 
+// historical wallet balance after the given transaction, or current balance if transaction is not registered in wallet
+- (uint64_t)balanceAfterTransaction:(BRTransaction *)transaction;
+
 // returns the block height after which the transaction is likely to be processed without including a fee
 - (uint32_t)blockHeightUntilFree:(BRTransaction *)transaction;
 

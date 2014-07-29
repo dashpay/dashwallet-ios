@@ -52,6 +52,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
 @property (nonatomic, strong) NSMutableSet *allAddresses, *usedAddresses, *spentOutputs, *invalidTx;
 @property (nonatomic, strong) NSMutableOrderedSet *transactions, *utxos;
 @property (nonatomic, strong) NSMutableDictionary *allTx;
+@property (nonatomic, strong) NSArray *balanceHistory;
 @property (nonatomic, strong) NSData *(^seed)();
 @property (nonatomic, strong) NSManagedObjectContext *moc;
 
@@ -196,6 +197,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     uint64_t balance = 0;
     NSMutableOrderedSet *utxos = [NSMutableOrderedSet orderedSet];
     NSMutableSet *spentOutputs = [NSMutableSet set], *invalidTx = [NSMutableSet set];
+    NSMutableArray *balanceHistory = [NSMutableArray array];
 
     for (BRTransaction *tx in [self.transactions reverseObjectEnumerator]) {
         NSMutableSet *spent = [NSMutableSet set];
@@ -238,11 +240,14 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
             [utxos removeObject:o];
             balance -= [transaction.outputAmounts[n] unsignedLongLongValue];
         }
+        
+        [balanceHistory insertObject:@(balance) atIndex:0];
     }
 
     self.invalidTx = invalidTx;
     self.spentOutputs = spentOutputs;
     self.utxos = utxos;
+    self.balanceHistory = balanceHistory;
 
     if (balance != _balance) {
         _balance = balance;
@@ -570,6 +575,14 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     }
 
     return nil;
+}
+
+// historical wallet balance after the given transaction, or current balance if transaction is not registered in wallet
+- (uint64_t)balanceAfterTransaction:(BRTransaction *)transaction
+{
+    NSUInteger i = [self.transactions indexOfObject:transaction];
+    
+    return (i < self.balanceHistory.count) ? [self.balanceHistory[i] unsignedLongLongValue] : self.balance;
 }
 
 // Returns the block height after which the transaction is likely to be processed without including a fee. This is based
