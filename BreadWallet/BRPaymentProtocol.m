@@ -179,6 +179,12 @@ typedef enum {
     ack_memo = 2
 } ack_key_t;
 
+@interface BRPaymentProtocolDetails ()
+
+@property (nonatomic, assign) BOOL skipNetwork;
+
+@end
+
 @implementation BRPaymentProtocolDetails
 
 + (instancetype)detailsWithData:(NSData *)data
@@ -220,13 +226,15 @@ merchantData:(NSData *)data
     NSUInteger off = 0;
     NSMutableArray *amounts = [NSMutableArray array], *scripts = [NSMutableArray array];
 
+    _skipNetwork = YES;
+
     while (off < data.length) {
         uint64_t i = 0, amount = 0;
         NSData *d = nil, *script = nil;
         NSUInteger o = 0;
 
         switch ([data protoBufFieldAtOffset:&off int:&i data:&d]) {
-            case details_network: if (d) _network = protoBufString(d); break;
+            case details_network: if (d) _network = protoBufString(d), _skipNetwork = NO; break;
             case details_outputs: while (o < d.length) [d protoBufFieldAtOffset:&o int:&amount data:&script]; break;
             case details_time: if (i) _time = i - NSTimeIntervalSince1970; break;
             case details_expires: if (i) _expires = i - NSTimeIntervalSince1970; break;
@@ -252,7 +260,7 @@ merchantData:(NSData *)data
     NSMutableData *d = [NSMutableData data], *output;
     NSUInteger i = 0;
 
-    [d appendProtoBufString:_network withKey:details_network];
+    if (! _skipNetwork) [d appendProtoBufString:_network withKey:details_network];
 
     for (NSData *script in _outputScripts) {
         output = [NSMutableData data];
@@ -269,6 +277,12 @@ merchantData:(NSData *)data
 
     return d;
 }
+
+@end
+
+@interface BRPaymentProtocolRequest ()
+
+@property (nonatomic, assign) BOOL skipVersion, skipPkiType;
 
 @end
 
@@ -295,13 +309,15 @@ merchantData:(NSData *)data
 
     NSUInteger off = 0;
 
+    _skipVersion = _skipPkiType = YES;
+
     while (off < data.length) {
         uint64_t i = 0;
         NSData *d = nil;
 
         switch ([data protoBufFieldAtOffset:&off int:&i data:&d]) {
-            case request_version: if (i) _version = (uint32_t)i; break;
-            case request_pki_type: if (d) _pkiType = protoBufString(d); break;
+            case request_version: if (i) _version = (uint32_t)i, _skipVersion = NO; break;
+            case request_pki_type: if (d) _pkiType = protoBufString(d), _skipPkiType = NO; break;
             case request_pki_data: if (d) _pkiData = d; break;
             case request_details: if (d) _details = [BRPaymentProtocolDetails detailsWithData:d]; break;
             case request_signature: if (d) _signature = d; break;
@@ -340,8 +356,8 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
 {
     NSMutableData *d = [NSMutableData data];
 
-    [d appendProtoBufInt:_version withKey:request_version];
-    [d appendProtoBufString:_pkiType withKey:request_pki_type];
+    if (! _skipVersion) [d appendProtoBufInt:_version withKey:request_version];
+    if (! _skipPkiType) [d appendProtoBufString:_pkiType withKey:request_pki_type];
     if (_pkiData) [d appendProtoBufData:_pkiData withKey:request_pki_data];
     [d appendProtoBufData:_details.data withKey:request_details];
     if (_signature) [d appendProtoBufData:_signature withKey:request_signature];

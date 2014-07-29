@@ -581,6 +581,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 - (void)amountViewController:(BRAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
 {
     if (self.protocolRequest) {
+        self.protoReqAmount = amount;
         [self confirmProtocolRequest:self.protocolRequest];
     }
     else if (self.request) {
