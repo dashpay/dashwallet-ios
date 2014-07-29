@@ -35,6 +35,9 @@
 
 @interface BRTxDetailViewController ()
 
+@property (nonatomic, strong) NSArray *outputText, *outputDetail, *outputAmount;
+@property (nonatomic, assign) int64_t sent, received;
+
 @end
 
 @implementation BRTxDetailViewController
@@ -47,199 +50,209 @@
     // self.clearsSelectionOnViewWillAppear = NO;
 }
 
+- (void)setTransaction:(BRTransaction *)transaction
+{
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    NSMutableArray *text = [NSMutableArray array], *detail = [NSMutableArray array], *amount = [NSMutableArray array];
+    uint64_t fee = [m.wallet feeForTransaction:transaction];
+    NSUInteger i = 0;
+    
+    _transaction = transaction;
+    self.sent = [m.wallet amountSentByTransaction:transaction];
+    self.received = [m.wallet amountReceivedFromTransaction:transaction];
+    
+    for (NSString *address in transaction.outputAddresses) {
+        uint64_t amt = [transaction.outputAmounts[i++] unsignedLongLongValue];
+    
+        if (address == (id)[NSNull null]) {
+            if (self.sent > 0) {
+                [text addObject:NSLocalizedString(@"unkown address", nil)];
+                [detail addObject:NSLocalizedString(@"payment output", nil)];
+                [amount addObject:@(-amt)];
+            }
+        }
+        else if ([m.wallet containsAddress:address]) {
+            if (self.sent == 0) {
+                [text addObject:address];
+                [detail addObject:NSLocalizedString(@"wallet address", nil)];
+                [amount addObject:@(amt)];
+            }
+        }
+        else if (self.sent > 0) {
+            [text addObject:address];
+            [detail addObject:NSLocalizedString(@"payment address", nil)];
+            [amount addObject:@(-amt)];
+        }
+    }
+
+    if (fee > 0 && fee != UINT64_MAX) {
+        [text addObject:@""];
+        [detail addObject:NSLocalizedString(@"bitcoin network fee", nil)];
+        [amount addObject:@(-fee)];
+    }
+    
+    self.outputText = text;
+    self.outputDetail = detail;
+    self.outputAmount = amount;
+}
+
+- (void)setBackgroundForCell:(UITableViewCell *)cell indexPath:(NSIndexPath *)path
+{
+    if (! cell.backgroundView) {
+        UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0, 0, cell.frame.size.width, 0.5)];
+        
+        v.tag = 100;
+        cell.backgroundView = [[UIView alloc] initWithFrame:cell.frame];
+        cell.backgroundView.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.67];
+        v.backgroundColor = self.tableView.separatorColor;
+        [cell.backgroundView addSubview:v];
+        v = [[UIView alloc] initWithFrame:CGRectMake(0, cell.frame.size.height - 0.5, cell.frame.size.width, 0.5)];
+        v.tag = 101;
+        v.backgroundColor = self.tableView.separatorColor;
+        [cell.backgroundView addSubview:v];
+    }
+    
+    [cell viewWithTag:100].frame = CGRectMake(path.row == 0 ? 0 : 15, 0, cell.frame.size.width, 0.5);
+    [cell viewWithTag:101].hidden = (path.row + 1 < [self tableView:self.tableView numberOfRowsInSection:path.section]);
+}
+
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     // Return the number of sections.
-    return 4;
+    return 3;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
-    uint64_t sent = [m.wallet amountSentByTransaction:self.transaction],
-             fee = [m.wallet feeForTransaction:self.transaction];
-    NSUInteger feecount = (fee > 0 && fee < UINT64_MAX) ? 1 : 0;
-
+    // Return the number of rows in the section.
     switch (section) {
-        case 0:
-            return 1;
-
-        case 1:
-            return 1;
-
-        case 2:
-            return (sent > 0) ?
-                   self.transaction.outputAddresses.count + feecount : self.transaction.inputAddresses.count;
-            
-        case 3:
-            return (sent > 0) ?
-                   self.transaction.inputAddresses.count : self.transaction.outputAddresses.count + feecount;
-
+        case 0: return 3;
+        case 1: return (self.sent > 0) ? self.outputText.count : self.transaction.inputAddresses.count;
+        case 2: return (self.sent > 0) ? self.transaction.inputAddresses.count : self.outputText.count;
         default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
     }
 
-    // Return the number of rows in the section.
     return 1;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *transactionIdent = @"TransactionCell", *infoIdent = @"InfoCell", *detailIdent = @"DetailCell";
     UITableViewCell *cell;
-    BRCopyLabel *textLabel, *detailTextLabel;
-    UILabel *unconfirmedLabel, *sentLabel, *localCurrencyLabel;
+    BRCopyLabel *detailLabel;
+    UILabel *textLabel, *subtitleLabel, *amountLabel, *localCurrencyLabel;
     BRWalletManager *m = [BRWalletManager sharedInstance];
-    uint64_t received, sent;
-    uint32_t height, confirms;
-    BOOL to;
     
     // Configure the cell...
     switch (indexPath.section) {
         case 0:
-            cell = [tableView dequeueReusableCellWithIdentifier:infoIdent forIndexPath:indexPath];
-            textLabel = (id)[cell viewWithTag:1];
-            textLabel.text = [NSString hexWithData:self.transaction.txHash];
-            break;
-
-        case 1:
-            cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent forIndexPath:indexPath];
-            textLabel = (id)[cell viewWithTag:1];
-            detailTextLabel = (id)[cell viewWithTag:2];
-            unconfirmedLabel = (id)[cell viewWithTag:3];
-            localCurrencyLabel = (id)[cell viewWithTag:5];
-            sentLabel = (id)[cell viewWithTag:6];
-
-            received = [m.wallet amountReceivedFromTransaction:self.transaction];
-            sent = [m.wallet amountSentByTransaction:self.transaction];
-            height = [[BRPeerManager sharedInstance] lastBlockHeight];
-            confirms = (self.transaction.blockHeight == TX_UNCONFIRMED) ? 0 :
-                       (height - self.transaction.blockHeight) + 1;
-            
-            unconfirmedLabel.hidden = NO;
-            unconfirmedLabel.layer.cornerRadius = 3.0;
-            unconfirmedLabel.backgroundColor = [UIColor lightGrayColor];
-            sentLabel.hidden = YES;
-            sentLabel.layer.cornerRadius = 3.0;
-            sentLabel.layer.borderWidth = 0.5;
-            detailTextLabel.text = self.txDateString;
-            
-            if (confirms == 0 && ! [m.wallet transactionIsValid:self.transaction]) {
-                unconfirmedLabel.text = NSLocalizedString(@"INVALID  ", nil);
-                unconfirmedLabel.backgroundColor = [UIColor redColor];
-            }
-            else if (confirms == 0 && [m.wallet transactionIsPending:self.transaction atBlockHeight:height]) {
-                unconfirmedLabel.text = NSLocalizedString(@"pending  ", nil);
-                unconfirmedLabel.backgroundColor = [UIColor redColor];
-            }
-            else if (confirms == 0 && ! [[BRPeerManager sharedInstance] transactionIsVerified:self.transaction.txHash]){
-                unconfirmedLabel.text = NSLocalizedString(@"unverified  ", nil);
-            }
-            else if (confirms < 6) {
-                unconfirmedLabel.text = (confirms == 1) ? NSLocalizedString(@"1 confirmation  ", nil) :
-                [NSString stringWithFormat:NSLocalizedString(@"%d confirmations  ", nil), (int)confirms];
-            }
-            else {
-                unconfirmedLabel.hidden = YES;
-                sentLabel.hidden = NO;
-            }
-            
-            if (! [m.wallet addressForTransaction:self.transaction] && sent > 0) {
-                textLabel.text = [m stringForAmount:sent];
-                localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
-                                           [m localCurrencyStringForAmount:sent]];
-                detailTextLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%@ within wallet", nil),
-                                        self.txDateString];
-                sentLabel.text = NSLocalizedString(@"moved  ", nil);
-            }
-            else if (sent > 0) {
-                textLabel.text = [m stringForAmount:received - sent];
-                localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
-                                           [m localCurrencyStringForAmount:received - sent]];
-                sentLabel.text = NSLocalizedString(@"sent  ", nil);
-                sentLabel.textColor = [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.67];
-            }
-            else {
-                textLabel.text = [m stringForAmount:received];
-                detailTextLabel.text = self.txDateString;
-                localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
-                                           [m localCurrencyStringForAmount:received]];
-                sentLabel.text = NSLocalizedString(@"received  ", nil);
-                sentLabel.textColor = [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
-            }
-            
-            sentLabel.layer.borderColor = sentLabel.textColor.CGColor;
-
-            if (self.transaction.blockHeight != TX_UNCONFIRMED) {
-                detailTextLabel.text = [detailTextLabel.text
-                                        stringByAppendingFormat:NSLocalizedString(@" - confirmed in block #%d", nil),
-                                        self.transaction.blockHeight];
-            }
-            
-            break;
-            
-        case 2: // drop through
-        case 3:
-            cell = [tableView dequeueReusableCellWithIdentifier:detailIdent forIndexPath:indexPath];
-            textLabel = (id)[cell viewWithTag:1];
-            detailTextLabel = (id)[cell viewWithTag:2];
-            sent = [m.wallet amountSentByTransaction:self.transaction];
-            to = ((sent > 0 && indexPath.section == 2) || (sent == 0 && indexPath.section == 3)) ? YES : NO;
-
-            if (to && indexPath.row >= self.transaction.outputAddresses.count) {
-                textLabel.text = NSLocalizedString(@"bitcoin network fee", nil);
-                detailTextLabel.textColor = [UIColor colorWithRed:1.0 green:0.33 blue:0.33 alpha:1.0];
-                detailTextLabel.text = [m stringForAmount:[m.wallet feeForTransaction:self.transaction]];
-            }
-            else if (to && self.transaction.outputAddresses[indexPath.row] != (id)[NSNull null]) {
-                textLabel.text = self.transaction.outputAddresses[indexPath.row];
-                
-                if ([m.wallet containsAddress:self.transaction.outputAddresses[indexPath.row]]) {
-                    detailTextLabel.textColor = (sent > 0) ? [UIColor lightGrayColor] :
-                                                [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
-                    detailTextLabel.text = [NSString stringWithFormat:@"%@ - %@",
-                                            [m stringForAmount:[self.transaction.outputAmounts[indexPath.row]
-                                                                unsignedLongLongValue]],
-                                            (sent > 0) ? NSLocalizedString(@"change address", nil) :
-                                            NSLocalizedString(@"wallet address", nil)];
-                }
-                else {
-                    detailTextLabel.textColor = (sent > 0) ? [UIColor colorWithRed:1.0 green:0.33 blue:0.33 alpha:1.0] :
-                                                [UIColor lightGrayColor];
-                    detailTextLabel.text = [NSString stringWithFormat:@"%@ - %@",
-                                            [m stringForAmount:[self.transaction.outputAmounts[indexPath.row]
-                                                                unsignedLongLongValue]],
-                                            (sent > 0) ? NSLocalizedString(@"payment address", nil) :
-                                            NSLocalizedString(@"other payment/change", nil)];
-                }
-            }
-            else if (to) {
-                textLabel.text = NSLocalizedString(@"unkown address", nil);
-                detailTextLabel.textColor = [UIColor lightGrayColor];
-                detailTextLabel.text = [NSString stringWithFormat:@"%@ - %@",
-                                        [m stringForAmount:[self.transaction.outputAmounts[indexPath.row]
-                                                            unsignedLongLongValue]],
-                                        (sent > 0) ? NSLocalizedString(@"payment output", nil) :
-                                        NSLocalizedString(@"other payment/change", nil)];
-            }
-            else {
-                detailTextLabel.textColor = [UIColor lightGrayColor];
-                
-                if (self.transaction.inputAddresses[indexPath.row] != (id)[NSNull null]) {
-                    textLabel.text = self.transaction.inputAddresses[indexPath.row];
+            switch (indexPath.row) {
+                case 0:
+                    cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCell" forIndexPath:indexPath];
+                    textLabel = (id)[cell viewWithTag:1];
+                    detailLabel = (id)[cell viewWithTag:2];
+                    subtitleLabel = (id)[cell viewWithTag:3];
+                    [self setBackgroundForCell:cell indexPath:indexPath];
+                    textLabel.text = NSLocalizedString(@"id:", nil);
+                    detailLabel.text = [NSString hexWithData:self.transaction.txHash];
+                    subtitleLabel.text = nil;
+                    break;
                     
-                    if ([m.wallet containsAddress:self.transaction.inputAddresses[indexPath.row]]) {
-                        detailTextLabel.text = NSLocalizedString(@"wallet address", nil);
+                case 1:
+                    cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCell" forIndexPath:indexPath];
+                    textLabel = (id)[cell viewWithTag:1];
+                    detailLabel = (id)[cell viewWithTag:2];
+                    subtitleLabel = (id)[cell viewWithTag:3];
+                    [self setBackgroundForCell:cell indexPath:indexPath];
+                    textLabel.text = NSLocalizedString(@"status:", nil);
+                    subtitleLabel.text = nil;
+                    
+                    if (self.transaction.blockHeight != TX_UNCONFIRMED) {
+                        detailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"confirmed in block #%d", nil),
+                                            self.transaction.blockHeight, self.txDateString];
+                        subtitleLabel.text = self.txDateString;
                     }
-                    else detailTextLabel.text = NSLocalizedString(@"sender's address", nil);
-                }
-                else {
-                    textLabel.text = NSLocalizedString(@"unkown address", nil);
-                    detailTextLabel.text = NSLocalizedString(@"sender's input", nil);
-                }
+                    else if (! [m.wallet transactionIsValid:self.transaction]) {
+                        detailLabel.text = NSLocalizedString(@"double spend", nil);
+                    }
+                    else if (! [m.wallet transactionIsPending:self.transaction
+                                atBlockHeight:[[BRPeerManager sharedInstance] lastBlockHeight]]) {
+                        detailLabel.text = NSLocalizedString(@"transaction is post-dated", nil);
+                    }
+                    else if (! [[BRPeerManager sharedInstance] transactionIsVerified:self.transaction.txHash]) {
+                        detailLabel.text = NSLocalizedString(@"waiting for network relay", nil);
+                    }
+                    else detailLabel.text = NSLocalizedString(@"waiting for confirmation", nil);
+                    
+                    break;
+                    
+                case 2:
+                    cell = [tableView dequeueReusableCellWithIdentifier:@"TransactionCell"];
+                    [self setBackgroundForCell:cell indexPath:indexPath];
+                    textLabel = (id)[cell viewWithTag:1];
+                    localCurrencyLabel = (id)[cell viewWithTag:5];
+                    textLabel.text = [m stringForAmount:self.received - self.sent];
+                    localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
+                                               [m localCurrencyStringForAmount:self.received - self.sent]];
+                    break;
+                    
+                default:
+                    break;
             }
             
+            break;
+            
+        case 1: // drop through
+        case 2:
+            if ((self.sent > 0 && indexPath.section == 1) || (self.sent == 0 && indexPath.section == 2)) {
+                if ([self.outputText[indexPath.row] length] == 0) {
+                    cell = [tableView dequeueReusableCellWithIdentifier:@"SubtitleCell" forIndexPath:indexPath];
+                }
+                else cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCell" forIndexPath:indexPath];
+
+                detailLabel = (id)[cell viewWithTag:2];
+                subtitleLabel = (id)[cell viewWithTag:3];
+                amountLabel = (id)[cell viewWithTag:1];
+                localCurrencyLabel = (id)[cell viewWithTag:5];
+                detailLabel.text = self.outputText[indexPath.row];
+                subtitleLabel.text = self.outputDetail[indexPath.row];
+                amountLabel.text = [m stringForAmount:[self.outputAmount[indexPath.row] longLongValue]];
+                amountLabel.textColor = (self.sent > 0) ? [UIColor colorWithRed:1.0 green:0.33 blue:0.33 alpha:1.0] :
+                                        [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
+                localCurrencyLabel.textColor = amountLabel.textColor;
+                localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
+                                           [m localCurrencyStringForAmount:[self.outputAmount[indexPath.row]
+                                                                            longLongValue]]];
+            }
+            else if (self.transaction.inputAddresses[indexPath.row] != (id)[NSNull null]) {
+                cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCell" forIndexPath:indexPath];
+                detailLabel = (id)[cell viewWithTag:2];
+                subtitleLabel = (id)[cell viewWithTag:3];
+                amountLabel = (id)[cell viewWithTag:1];
+                localCurrencyLabel = (id)[cell viewWithTag:5];
+                detailLabel.text = self.transaction.inputAddresses[indexPath.row];
+                amountLabel.text = nil;
+                localCurrencyLabel.text = nil;
+                
+                if ([m.wallet containsAddress:self.transaction.inputAddresses[indexPath.row]]) {
+                    subtitleLabel.text = NSLocalizedString(@"wallet address", nil);
+                }
+                else subtitleLabel.text = NSLocalizedString(@"sender's address", nil);
+            }
+            else {
+                cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCell" forIndexPath:indexPath];
+                detailLabel = (id)[cell viewWithTag:2];
+                subtitleLabel = (id)[cell viewWithTag:3];
+                amountLabel = (id)[cell viewWithTag:1];
+                localCurrencyLabel = (id)[cell viewWithTag:5];
+                detailLabel.text = NSLocalizedString(@"unkown address", nil);
+                subtitleLabel.text = NSLocalizedString(@"sender's input", nil);
+                amountLabel.text = nil;
+                localCurrencyLabel.text = nil;
+            }
+
+            [self setBackgroundForCell:cell indexPath:indexPath];
             break;
             
         default:
@@ -252,22 +265,10 @@
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
     switch (section) {
-        case 0:
-            return NSLocalizedString(@"transaction id:", nil);
-            
-        case 1:
-            return @"summary:";
-
-        case 2:
-            return ([[[BRWalletManager sharedInstance] wallet] amountSentByTransaction:self.transaction] > 0) ?
-                   NSLocalizedString(@"to:", nil) : NSLocalizedString(@"from:", nil);
-            
-        case 3:
-            return ([[[BRWalletManager sharedInstance] wallet] amountSentByTransaction:self.transaction] > 0) ?
-                   NSLocalizedString(@"from:", nil) : NSLocalizedString(@"to:", nil);
-
-        default:
-            NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
+        case 0: return nil;
+        case 1: return (self.sent > 0) ? NSLocalizedString(@"to:", nil) : NSLocalizedString(@"from:", nil);
+        case 2: return (self.sent > 0) ? NSLocalizedString(@"from:", nil) : NSLocalizedString(@"to:", nil);
+        default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
     }
     
     return nil;
@@ -279,14 +280,45 @@
 {
     switch (indexPath.section) {
         case 0: return 44.0;
-        case 1: return TRANSACTION_CELL_HEIGHT;
+        case 1: return (self.sent > 0 && [self.outputText[indexPath.row] length] == 0) ? 40 : 60.0;
         case 2: return 60.0;
-        case 3: return 60.0;
         default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)indexPath.section);
     }
     
     return 44.0;
 }
 
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    NSString *s = [self tableView:tableView titleForHeaderInSection:section];
+    
+    if (s.length == 0) return 22.0;
+    
+    CGRect r = [s boundingRectWithSize:CGSizeMake(self.view.frame.size.width - 30.0, CGFLOAT_MAX)
+                options:NSStringDrawingUsesLineFragmentOrigin
+                attributes:@{NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue-Light" size:17]} context:nil];
+    
+    return r.size.height + 12.0;
+}
+
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
+{
+    UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, self.view.frame.size.width,
+                                                         [self tableView:tableView heightForHeaderInSection:section])];
+    UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(15.0, 10.0, v.frame.size.width - 30.0,
+                                                           v.frame.size.height - 12.0)];
+    
+    l.text = [self tableView:tableView titleForHeaderInSection:section];
+    l.backgroundColor = [UIColor clearColor];
+    l.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:17];
+    l.textColor = [UIColor darkGrayColor];
+    l.shadowColor = [UIColor whiteColor];
+    l.shadowOffset = CGSizeMake(0.0, 1.0);
+    l.numberOfLines = 0;
+    v.backgroundColor = [UIColor clearColor];
+    [v addSubview:l];
+    
+    return v;
+}
 
 @end

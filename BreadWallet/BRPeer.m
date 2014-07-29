@@ -114,7 +114,7 @@ services:(uint64_t)services
 - (void)setDelegate:(id<BRPeerDelegate>)delegate queue:(dispatch_queue_t)delegateQueue
 {
     _delegate = delegate;
-    _delegateQueue = delegateQueue;
+    _delegateQueue = (delegateQueue) ? delegateQueue : dispatch_get_main_queue();
 }
 
 - (NSString *)host
@@ -122,13 +122,12 @@ services:(uint64_t)services
     struct in_addr addr = { CFSwapInt32HostToBig(self.address) };
     char s[INET_ADDRSTRLEN];
 
-    return [NSString stringWithUTF8String:inet_ntop(AF_INET, &addr, s, INET_ADDRSTRLEN)];
+    return [NSString stringWithUTF8String:inet_ntop(AF_INET, &addr, &s[0], INET_ADDRSTRLEN)];
 }
 
 - (void)connect
 {
     if (self.status != BRPeerStatusDisconnected) return;
-    if (! self.delegateQueue) _delegateQueue = dispatch_get_main_queue();
     if (! self.reachability) self.reachability = [Reachability reachabilityWithHostName:self.host];
     
     if (self.reachability.currentReachabilityStatus == NotReachable) { // delay connect until network is reachable
@@ -137,10 +136,13 @@ services:(uint64_t)services
         self.reachabilityObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification
             object:self.reachability queue:nil usingBlock:^(NSNotification *note) {
-                if (self.reachability.currentReachabilityStatus != NotReachable) [self connect];
+                if (self.reachabilityObserver != nil && self.reachability.currentReachabilityStatus != NotReachable) {
+                    [self connect];
+                }
             }];
         
         [self.reachability startNotifier];
+        return;
     }
     else if (self.reachabilityObserver) {
         [self.reachability stopNotifier];

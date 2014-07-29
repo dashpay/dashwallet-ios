@@ -149,7 +149,7 @@
 - (NSString *)dateForTx:(BRTransaction *)tx
 {
     static NSDateFormatter *f1 = nil, *f2 = nil, *f3 = nil;
-    static NSTimeInterval w = 0.0, y = 0.0;
+    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate], w = now - 6*24*60*60, y = now - 365*24*60*60;
     NSString *date = self.txDates[tx.txHash];
 
     if (date) return date;
@@ -158,8 +158,6 @@
         f1 = [NSDateFormatter new];
         f2 = [NSDateFormatter new];
         f3 = [NSDateFormatter new];
-        w = [NSDate timeIntervalSinceReferenceDate] - 7*24*60*60;
-        y = [NSDate timeIntervalSinceReferenceDate] - 365*24*60*60;
 
         f1.dateFormat = [[[NSDateFormatter dateFormatFromTemplate:@"Mdha" options:0 locale:[NSLocale currentLocale]]
                           stringByReplacingOccurrencesOfString:@", " withString:@" "]
@@ -326,31 +324,29 @@
                 noTxLabel.hidden = YES;
                 sentLabel.hidden = YES;
                 unconfirmedLabel.hidden = NO;
-                unconfirmedLabel.layer.cornerRadius = 3.0;
-                unconfirmedLabel.backgroundColor = [UIColor lightGrayColor];
-                sentLabel.layer.cornerRadius = 3.0;
-                sentLabel.layer.borderWidth = 0.5;
 
                 if (confirms == 0 && ! [m.wallet transactionIsValid:tx]) {
-                    unconfirmedLabel.text = NSLocalizedString(@"INVALID  ", nil);
+                    unconfirmedLabel.text = NSLocalizedString(@"INVALID", nil);
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                 }
                 else if (confirms == 0 && [m.wallet transactionIsPending:tx atBlockHeight:height]) {
-                    unconfirmedLabel.text = NSLocalizedString(@"pending  ", nil);
+                    unconfirmedLabel.text = NSLocalizedString(@"pending", nil);
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                 }
                 else if (confirms == 0 && ! [[BRPeerManager sharedInstance] transactionIsVerified:tx.txHash]) {
-                    unconfirmedLabel.text = NSLocalizedString(@"unverified  ", nil);
+                    unconfirmedLabel.text = NSLocalizedString(@"unverified", nil);
                 }
                 else if (confirms < 6) {
-                    unconfirmedLabel.text = (confirms == 1) ? NSLocalizedString(@"1 confirmation  ", nil) :
-                        [NSString stringWithFormat:NSLocalizedString(@"%d confirmations  ", nil), (int)confirms];
+                    unconfirmedLabel.text = (confirms == 1) ? NSLocalizedString(@"1 confirmation", nil) :
+                                            [NSString stringWithFormat:NSLocalizedString(@"%d confirmations", nil),
+                                             (int)confirms];
                 }
                 else {
+                    unconfirmedLabel.text = nil;
                     unconfirmedLabel.hidden = YES;
                     sentLabel.hidden = NO;
                 }
-
+                
                 if (! address && sent > 0) {
                     textLabel.text = [m stringForAmount:sent];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
@@ -358,7 +354,7 @@
                     detailTextLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%@ within wallet", nil),
                                             [self dateForTx:tx]];
                     detailTextLabel.copyableText = @"";
-                    sentLabel.text = NSLocalizedString(@"moved  ", nil);
+                    sentLabel.text = NSLocalizedString(@"moved", nil);
                 }
                 else if (sent > 0) {
                     textLabel.text = [m stringForAmount:received - sent];
@@ -367,7 +363,7 @@
                     detailTextLabel.copyableText = address;
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [m localCurrencyStringForAmount:received - sent]];
-                    sentLabel.text = NSLocalizedString(@"sent  ", nil);
+                    sentLabel.text = NSLocalizedString(@"sent", nil);
                     sentLabel.textColor = [UIColor colorWithRed:1.0 green:0.33 blue:0.33 alpha:1.0];
                 }
                 else {
@@ -378,12 +374,23 @@
                                             [self dateForTx:tx], address];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [m localCurrencyStringForAmount:received]];
-                    sentLabel.text = NSLocalizedString(@"received  ", nil);
+                    sentLabel.text = NSLocalizedString(@"received", nil);
                     sentLabel.textColor = [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
                 }
 
-                sentLabel.layer.borderColor = sentLabel.textColor.CGColor;
-             }
+                if (! unconfirmedLabel.hidden) {
+                    unconfirmedLabel.layer.cornerRadius = 3.0;
+                    unconfirmedLabel.backgroundColor = [UIColor lightGrayColor];
+                    unconfirmedLabel.text = [unconfirmedLabel.text stringByAppendingString:@"  "];
+                }
+                else {
+                    sentLabel.layer.cornerRadius = 3.0;
+                    sentLabel.layer.borderWidth = 0.5;
+                    sentLabel.text = [sentLabel.text stringByAppendingString:@"  "];
+                    sentLabel.layer.borderColor = sentLabel.textColor.CGColor;
+                    sentLabel.highlightedTextColor = sentLabel.textColor;
+                }
+            }
 
             break;
 
@@ -543,8 +550,8 @@
     l.text = [self tableView:tableView titleForHeaderInSection:section];
     l.backgroundColor = [UIColor clearColor];
     l.font = [UIFont fontWithName:@"HelveticaNeue" size:13];
-    l.textColor = [UIColor colorWithWhite:0.5 alpha:1.0];
-    l.shadowColor = [UIColor colorWithWhite:1.0 alpha:1.0];
+    l.textColor = [UIColor grayColor];
+    l.shadowColor = [UIColor whiteColor];
     l.shadowOffset = CGSizeMake(0.0, 1.0);
     l.numberOfLines = 0;
     v.backgroundColor = [UIColor clearColor];
