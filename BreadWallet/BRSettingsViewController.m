@@ -73,7 +73,6 @@
     BRWalletManager *m = [BRWalletManager sharedInstance];
     NSArray *a = m.wallet.recentTransactions;
     
-    //BUG: XXXX this gets all screwed up when we push/pop the navstack
     self.transactions = [a subarrayWithRange:NSMakeRange(0, (a.count > 5 && self.moreTx) ? 5 : a.count)];
 
     if (! self.balanceObserver) {
@@ -325,11 +324,11 @@
                          balance = [m.wallet balanceAfterTransaction:tx];
                 uint32_t height = [[BRPeerManager sharedInstance] lastBlockHeight],
                          confirms = (tx.blockHeight == TX_UNCONFIRMED) ? 0 : (height - tx.blockHeight) + 1;
-                //NSString *address = [m.wallet addressForTransaction:tx];
 
                 noTxLabel.hidden = YES;
                 sentLabel.hidden = YES;
                 unconfirmedLabel.hidden = NO;
+                detailTextLabel.text = [self dateForTx:tx];
                 balanceLabel.text = [m stringForAmount:balance];
                 localBalanceLabel.text = [NSString stringWithFormat:@"(%@)", [m localCurrencyStringForAmount:balance]];
 
@@ -359,16 +358,11 @@
                     textLabel.text = [m stringForAmount:sent];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [m localCurrencyStringForAmount:sent]];
-                    detailTextLabel.text = //[NSString stringWithFormat:NSLocalizedString(@"%@ within wallet", nil),
-                                            [self dateForTx:tx];//];
-                    //detailTextLabel.copyableText = @"";
                     sentLabel.text = NSLocalizedString(@"moved", nil);
+                    sentLabel.textColor = [UIColor blackColor];
                 }
                 else if (sent > 0) {
                     textLabel.text = [m stringForAmount:received - sent];
-                    detailTextLabel.text = //[NSString stringWithFormat:NSLocalizedString(@"%@ to:%@", nil),
-                                            [self dateForTx:tx];//, address];
-                    //detailTextLabel.copyableText = address;
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [m localCurrencyStringForAmount:received - sent]];
                     sentLabel.text = NSLocalizedString(@"sent", nil);
@@ -376,10 +370,6 @@
                 }
                 else {
                     textLabel.text = [m stringForAmount:received];
-                    //detailTextLabel.copyableText = (address) ? address : @"";
-                    //if (! address) address = [@" " stringByAppendingString:NSLocalizedString(@"unkown address", nil)];
-                    detailTextLabel.text = //[NSString stringWithFormat:NSLocalizedString(@"%@ from:%@", nil),
-                                            [self dateForTx:tx];//, address];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [m localCurrencyStringForAmount:received]];
                     sentLabel.text = NSLocalizedString(@"received", nil);

@@ -36,7 +36,7 @@
 @interface BRTxDetailViewController ()
 
 @property (nonatomic, strong) NSArray *outputText, *outputDetail, *outputAmount;
-@property (nonatomic, assign) int64_t sent, received;
+@property (nonatomic, assign) int64_t sent, received, moved;
 @property (nonatomic, strong) id txStatusObserver;
 
 @end
@@ -87,8 +87,8 @@
     _transaction = transaction;
     self.sent = [m.wallet amountSentByTransaction:transaction];
     self.received = [m.wallet amountReceivedFromTransaction:transaction];
-    
-    //BUG: wallet moves will show up as a spend with only a network fee and inputs
+    self.moved = (! [m.wallet addressForTransaction:self.transaction] && self.sent > 0) ? self.sent : 0;
+
     for (NSString *address in transaction.outputAddresses) {
         uint64_t amt = [transaction.outputAmounts[i++] unsignedLongLongValue];
     
@@ -100,7 +100,7 @@
             }
         }
         else if ([m.wallet containsAddress:address]) {
-            if (self.sent == 0) {
+            if (self.sent == 0 || self.moved > 0) {
                 [text addObject:address];
                 [detail addObject:NSLocalizedString(@"wallet address", nil)];
                 [amount addObject:@(amt)];
@@ -222,9 +222,18 @@
                     [self setBackgroundForCell:cell indexPath:indexPath];
                     textLabel = (id)[cell viewWithTag:1];
                     localCurrencyLabel = (id)[cell viewWithTag:5];
-                    textLabel.text = [m stringForAmount:self.received - self.sent];
-                    localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
-                                               [m localCurrencyStringForAmount:self.received - self.sent]];
+
+                    if (self.moved > 0) {
+                        textLabel.text = [m stringForAmount:self.moved];
+                        localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
+                                                   [m localCurrencyStringForAmount:self.moved]];
+                    }
+                    else {
+                        textLabel.text = [m stringForAmount:self.received - self.sent];
+                        localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
+                                                   [m localCurrencyStringForAmount:self.received - self.sent]];
+                    }
+                    
                     break;
                     
                 default:
