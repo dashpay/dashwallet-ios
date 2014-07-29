@@ -74,16 +74,16 @@
     _x = x;
 
     [UIView animateWithDuration:0.1 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-        self.bar1.transform = CGAffineTransformMakeRotation(M_PI_4*(x ? 3 : -1)/2.0);
-        self.bar1.center = CGPointMake(self.bar1.center.x, self.bar2.center.y - (x ? 0 : BAR_SPACING));
+        self.bar1.transform = CGAffineTransformMakeRotation(M_PI_4*(x ? 1.5 : -0.35));
+        self.bar1.center = CGPointMake(self.bar1.center.x, self.bar2.center.y - (x ? 0.0 : BAR_SPACING));
         self.bar2.alpha = (x) ? 0.0 : 1.0;
-        self.bar3.transform = CGAffineTransformMakeRotation(M_PI_4*(x ? -3 : 1)/2.0);
-        self.bar3.center = CGPointMake(self.bar3.center.x, self.bar2.center.y + (x ? 0 : BAR_SPACING));
+        self.bar3.transform = CGAffineTransformMakeRotation(M_PI_4*(x ? -1.5 : 0.35));
+        self.bar3.center = CGPointMake(self.bar3.center.x, self.bar2.center.y + (x ? 0.0 : BAR_SPACING));
     } completion:^(BOOL finished) {
-        [UIView animateWithDuration:0.8 delay:0.0 usingSpringWithDamping:0.3 initialSpringVelocity:0
+        [UIView animateWithDuration:0.8 delay:0.0 usingSpringWithDamping:0.3 initialSpringVelocity:0.0
          options:UIViewAnimationOptionCurveEaseIn animations:^{
-            self.bar1.transform = CGAffineTransformMakeRotation(x ? M_PI_4 : 0);
-            self.bar3.transform = CGAffineTransformMakeRotation(x ? -M_PI_4 : 0);
+            self.bar1.transform = CGAffineTransformMakeRotation(x ? M_PI_4 : 0.0);
+            self.bar3.transform = CGAffineTransformMakeRotation(x ? -M_PI_4 : 0.0);
         } completion:completion];
     }];
 }

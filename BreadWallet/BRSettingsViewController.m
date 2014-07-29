@@ -25,6 +25,7 @@
 
 #import "BRSettingsViewController.h"
 #import "BRRootViewController.h"
+#import "BRTxDetailViewController.h"
 #import "BRPINViewController.h"
 #import "BRWalletManager.h"
 #import "BRWallet.h"
@@ -50,7 +51,6 @@
 
 @implementation BRSettingsViewController
 
-//TODO: XXXX only show most recent 5 tx and have a separate page for the rest with section headers for each day
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -61,6 +61,7 @@
     self.wallpaper.contentMode = UIViewContentModeLeft;
     [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
     self.navigationController.delegate = self;
+    self.moreTx = ([BRWalletManager sharedInstance].wallet.recentTransactions.count > 5) ? YES : NO;
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -72,8 +73,7 @@
     BRWalletManager *m = [BRWalletManager sharedInstance];
     NSArray *a = m.wallet.recentTransactions;
     
-    self.transactions = [a subarrayWithRange:NSMakeRange(0, a.count > 5 ? 5 : a.count)];
-    self.moreTx = (a.count > 5) ? YES : NO;
+    self.transactions = [a subarrayWithRange:NSMakeRange(0, (a.count > 5 && self.moreTx) ? 5 : a.count)];
 
     if (! self.balanceObserver) {
         self.balanceObserver =
@@ -148,7 +148,7 @@
 - (NSString *)dateForTx:(BRTransaction *)tx
 {
     static NSDateFormatter *f1 = nil, *f2 = nil, *f3 = nil;
-    static NSTimeInterval w = 0.0, y = 0.0;
+    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate], w = now - 6*24*60*60, y = now - 365*24*60*60;
     NSString *date = self.txDates[tx.txHash];
 
     if (date) return date;
@@ -157,8 +157,6 @@
         f1 = [NSDateFormatter new];
         f2 = [NSDateFormatter new];
         f3 = [NSDateFormatter new];
-        w = [NSDate timeIntervalSinceReferenceDate] - 7*24*60*60;
-        y = [NSDate timeIntervalSinceReferenceDate] - 365*24*60*60;
 
         f1.dateFormat = [[[NSDateFormatter dateFormatFromTemplate:@"Mdha" options:0 locale:[NSLocale currentLocale]]
                           stringByReplacingOccurrencesOfString:@", " withString:@" "]
@@ -226,7 +224,7 @@
     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://breadwallet.com"]];
 }
 
-#pragma mark - Table view data source
+#pragma mark - UITableViewDataSource
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
@@ -264,11 +262,12 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *transactionIdent = @"TransactionCell", *moreIdent = @"MoreCell", *actionIdent = @"ActionCell",
-                    *toggleIdent = @"ToggleCell", *selectorIdent = @"SelectorCell", *restoreIdent = @"RestoreCell",
-                    *disclosureIdent = @"DisclosureCell", *selectorOptionCell = @"SelectorOptionCell";
+    static NSString *transactionIdent = @"TransactionCell", *actionIdent = @"ActionCell", *toggleIdent = @"ToggleCell",
+                    *disclosureIdent = @"DisclosureCell", *selectorIdent = @"SelectorCell",
+                    *restoreIdent = @"RestoreCell", *selectorOptionCell = @"SelectorOptionCell";
     UITableViewCell *cell = nil;
-    UILabel *textLabel, *unconfirmedLabel, *sentLabel, *noTxLabel, *localCurrencyLabel, *toggleLabel;
+    UILabel *textLabel, *unconfirmedLabel, *sentLabel, *noTxLabel, *localCurrencyLabel, *balanceLabel,
+            *localBalanceLabel, *toggleLabel;
     UISwitch *toggleSwitch;
     BRCopyLabel *detailTextLabel;
     BRWalletManager *m = [BRWalletManager sharedInstance];
@@ -289,8 +288,10 @@
     switch (indexPath.section) {
         case 0:
             if (indexPath.row > 0 && indexPath.row >= self.transactions.count) {
-                cell = [tableView dequeueReusableCellWithIdentifier:moreIdent];
+                cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
                 [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
+                cell.textLabel.text = NSLocalizedString(@"more...", nil);
+                cell.imageView.image = nil;
                 return cell;
             }
         
@@ -303,84 +304,91 @@
             noTxLabel = (id)[cell viewWithTag:4];
             localCurrencyLabel = (id)[cell viewWithTag:5];
             sentLabel = (id)[cell viewWithTag:6];
+            balanceLabel = (id)[cell viewWithTag:7];
+            localBalanceLabel = (id)[cell viewWithTag:8];
 
             if (self.transactions.count == 0) {
                 noTxLabel.hidden = NO;
                 textLabel.text = nil;
                 localCurrencyLabel.text = nil;
                 detailTextLabel.text = nil;
+                balanceLabel.text = nil;
+                localBalanceLabel.text = nil;
                 unconfirmedLabel.hidden = YES;
                 sentLabel.hidden = YES;
             }
             else {
                 BRTransaction *tx = self.transactions[indexPath.row];
                 uint64_t received = [m.wallet amountReceivedFromTransaction:tx],
-                         sent = [m.wallet amountSentByTransaction:tx];
+                         sent = [m.wallet amountSentByTransaction:tx],
+                         balance = [m.wallet balanceAfterTransaction:tx];
                 uint32_t height = [[BRPeerManager sharedInstance] lastBlockHeight],
                          confirms = (tx.blockHeight == TX_UNCONFIRMED) ? 0 : (height - tx.blockHeight) + 1;
-                NSString *address = [m.wallet addressForTransaction:tx];
 
                 noTxLabel.hidden = YES;
                 sentLabel.hidden = YES;
                 unconfirmedLabel.hidden = NO;
-                unconfirmedLabel.layer.cornerRadius = 3.0;
-                unconfirmedLabel.backgroundColor = [UIColor lightGrayColor];
-                sentLabel.layer.cornerRadius = 3.0;
-                sentLabel.layer.borderWidth = 0.5;
+                detailTextLabel.text = [self dateForTx:tx];
+                balanceLabel.text = [m stringForAmount:balance];
+                localBalanceLabel.text = [NSString stringWithFormat:@"(%@)", [m localCurrencyStringForAmount:balance]];
 
                 if (confirms == 0 && ! [m.wallet transactionIsValid:tx]) {
-                    unconfirmedLabel.text = NSLocalizedString(@"INVALID  ", nil);
+                    unconfirmedLabel.text = NSLocalizedString(@"INVALID", nil);
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                 }
                 else if (confirms == 0 && [m.wallet transactionIsPending:tx atBlockHeight:height]) {
-                    unconfirmedLabel.text = NSLocalizedString(@"pending  ", nil);
+                    unconfirmedLabel.text = NSLocalizedString(@"pending", nil);
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                 }
                 else if (confirms == 0 && ! [[BRPeerManager sharedInstance] transactionIsVerified:tx.txHash]) {
-                    unconfirmedLabel.text = NSLocalizedString(@"unverified  ", nil);
+                    unconfirmedLabel.text = NSLocalizedString(@"unverified", nil);
                 }
                 else if (confirms < 6) {
-                    unconfirmedLabel.text = (confirms == 1) ? NSLocalizedString(@"1 confirmation  ", nil) :
-                        [NSString stringWithFormat:NSLocalizedString(@"%d confirmations  ", nil), (int)confirms];
+                    unconfirmedLabel.text = (confirms == 1) ? NSLocalizedString(@"1 confirmation", nil) :
+                                            [NSString stringWithFormat:NSLocalizedString(@"%d confirmations", nil),
+                                             (int)confirms];
                 }
                 else {
+                    unconfirmedLabel.text = nil;
                     unconfirmedLabel.hidden = YES;
                     sentLabel.hidden = NO;
                 }
-
-                if (! address && sent > 0) {
+                
+                if (! [m.wallet addressForTransaction:tx] && sent > 0) {
                     textLabel.text = [m stringForAmount:sent];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [m localCurrencyStringForAmount:sent]];
-                    detailTextLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%@ within wallet", nil),
-                                            [self dateForTx:tx]];
-                    detailTextLabel.copyableText = @"";
-                    sentLabel.text = NSLocalizedString(@"moved  ", nil);
+                    sentLabel.text = NSLocalizedString(@"moved", nil);
+                    sentLabel.textColor = [UIColor blackColor];
                 }
                 else if (sent > 0) {
                     textLabel.text = [m stringForAmount:received - sent];
-                    detailTextLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%@ to:%@", nil),
-                                            [self dateForTx:tx], address];
-                    detailTextLabel.copyableText = address;
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [m localCurrencyStringForAmount:received - sent]];
-                    sentLabel.text = NSLocalizedString(@"sent  ", nil);
-                    sentLabel.textColor = [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.67];
+                    sentLabel.text = NSLocalizedString(@"sent", nil);
+                    sentLabel.textColor = [UIColor colorWithRed:1.0 green:0.33 blue:0.33 alpha:1.0];
                 }
                 else {
                     textLabel.text = [m stringForAmount:received];
-                    detailTextLabel.copyableText = (address) ? address : @"";
-                    if (! address) address = [@" " stringByAppendingString:NSLocalizedString(@"unkown address", nil)];
-                    detailTextLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%@ from:%@", nil),
-                                            [self dateForTx:tx], address];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [m localCurrencyStringForAmount:received]];
-                    sentLabel.text = NSLocalizedString(@"received  ", nil);
+                    sentLabel.text = NSLocalizedString(@"received", nil);
                     sentLabel.textColor = [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
                 }
 
-                sentLabel.layer.borderColor = sentLabel.textColor.CGColor;
-             }
+                if (! unconfirmedLabel.hidden) {
+                    unconfirmedLabel.layer.cornerRadius = 3.0;
+                    unconfirmedLabel.backgroundColor = [UIColor lightGrayColor];
+                    unconfirmedLabel.text = [unconfirmedLabel.text stringByAppendingString:@"  "];
+                }
+                else {
+                    sentLabel.layer.cornerRadius = 3.0;
+                    sentLabel.layer.borderWidth = 0.5;
+                    sentLabel.text = [sentLabel.text stringByAppendingString:@"  "];
+                    sentLabel.layer.borderColor = sentLabel.textColor.CGColor;
+                    sentLabel.highlightedTextColor = sentLabel.textColor;
+                }
+            }
 
             break;
 
@@ -492,13 +500,14 @@
         case 4:
             return NSLocalizedString(@"fees are only optional for high priority transactions", nil);
 
-        default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
+        default:
+            NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
     }
     
     return nil;
 }
 
-#pragma mark - Table view delegate
+#pragma mark - UITableViewDelegate
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -539,8 +548,8 @@
     l.text = [self tableView:tableView titleForHeaderInSection:section];
     l.backgroundColor = [UIColor clearColor];
     l.font = [UIFont fontWithName:@"HelveticaNeue" size:13];
-    l.textColor = [UIColor colorWithWhite:0.5 alpha:1.0];
-    l.shadowColor = [UIColor colorWithWhite:1.0 alpha:1.0];
+    l.textColor = [UIColor grayColor];
+    l.shadowColor = [UIColor whiteColor];
     l.shadowOffset = CGSizeMake(0.0, 1.0);
     l.numberOfLines = 0;
     v.backgroundColor = [UIColor clearColor];
@@ -565,10 +574,10 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
-    UINavigationController *c = nil;
+    UIViewController *c = nil;
     UILabel *l = nil;
-    NSUInteger i = 0;
-    UITableViewCell *cell = nil;
+//    NSUInteger i = 0;
+//    UITableViewCell *cell = nil;
     NSMutableAttributedString *s = nil;
     NSMutableArray *a;
     BRWalletManager *m = [BRWalletManager sharedInstance];
@@ -602,10 +611,13 @@
                 [tableView endUpdates];
             }
             else if (self.transactions.count > 0) {
-                // TODO: show transaction details
-                i = [[self.tableView indexPathsForVisibleRows] indexOfObject:indexPath];
-                cell = (i < self.tableView.visibleCells.count) ? self.tableView.visibleCells[i] : nil;
-                [(id)[cell viewWithTag:2] toggleCopyMenu];
+                c = [self.storyboard instantiateViewControllerWithIdentifier:@"TxDetailViewController"];
+                [(id)c setTransaction:self.transactions[indexPath.row]];
+                [(id)c setTxDateString:[self dateForTx:self.transactions[indexPath.row]]];
+                [self.navigationController pushViewController:c animated:YES];
+//                i = [[self.tableView indexPathsForVisibleRows] indexOfObject:indexPath];
+//                cell = (i < self.tableView.visibleCells.count) ? self.tableView.visibleCells[i] : nil;
+//                [(id)[cell viewWithTag:2] toggleCopyMenu];
             }
 
             break;
@@ -646,11 +658,11 @@
             switch (indexPath.row) {
                 case 0: // change pin
                     c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-                    [c.viewControllers.firstObject setCancelable:YES];
-                    [c.viewControllers.firstObject setChangePin:YES];
+                    [[[(id)c viewControllers] firstObject] setCancelable:YES];
+                    [[[(id)c viewControllers] firstObject] setChangePin:YES];
                     c.transitioningDelegate = self;
                     [self.navigationController presentViewController:c animated:YES completion:nil];
-                    [c.viewControllers.firstObject setAppeared:YES];
+                    [[[(id)c viewControllers] firstObject] setAppeared:YES];
                     break;
 
                 case 1: // import private key
@@ -672,8 +684,8 @@
         case 3:
             switch (indexPath.row) {
                 case 0: // local currency
-                    self.selectorOptions =
-                        [m.currencyCodes sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+                    self.selectorOptions = [m.currencyCodes
+                                            sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
                     self.selectedOption = m.localCurrencyCode;
                     self.selectorController = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
                     self.selectorController.transitioningDelegate = self;

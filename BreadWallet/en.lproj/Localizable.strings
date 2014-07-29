@@ -2,6 +2,9 @@
 "\nbitcoin network fee + %@ (%@)" = "\nbitcoin network fee + %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
+" - included in block #%d" = " - included in block #%d";
+
+/* No comment provided by engineer. */
 "%@ from:%@" = "%1$@ from:%2$@";
 
 /* No comment provided by engineer. */
@@ -14,10 +17,10 @@
 "%@ within wallet" = "%@ within wallet";
 
 /* No comment provided by engineer. */
-"%d confirmations  " = "%d confirmations  ";
+"%d confirmations" = "%d confirmations";
 
 /* No comment provided by engineer. */
-"1 confirmation  " = "1 confirmation  ";
+"1 confirmation" = "1 confirmation";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a backup phrase word" = "\"%@\" is not a backup phrase word";
@@ -56,6 +59,9 @@
 "Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1'." = "Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1'.";
 
 /* No comment provided by engineer. */
+"bitcoin network fee" = "bitcoin network fee";
+
+/* No comment provided by engineer. */
 "bitcoin payments can't be less than %@" = "bitcoin payments can't be less than %@";
 
 /* No comment provided by engineer. */
@@ -87,6 +93,9 @@
 
 /* No comment provided by engineer. */
 "CONFIRM WIPE" = "CONFIRM WIPE";
+
+/* No comment provided by engineer. */
+"confirmed in block #%d" = "confirmed in block #%d";
 
 /* No comment provided by engineer. */
 "connect timeout" = "connect timeout";
@@ -128,6 +137,9 @@
 "DO NOT let anyone see your backup phrase or they can spend your bitcoins." = "DO NOT let anyone see your backup phrase or they can spend your bitcoins.";
 
 /* No comment provided by engineer. */
+"double spend" = "double spend";
+
+/* No comment provided by engineer. */
 "email not configured" = "email not configured";
 
 /* No comment provided by engineer. */
@@ -146,10 +158,16 @@
 "fees are only optional for high priority transactions" = "fees are only optional for high priority transactions";
 
 /* No comment provided by engineer. */
+"from:" = "from:";
+
+/* No comment provided by engineer. */
 "hour" = "hour";
 
 /* No comment provided by engineer. */
 "hours" = "hours";
+
+/* No comment provided by engineer. */
+"id:" = "id:";
 
 /* No comment provided by engineer. */
 "ignore" = "ignore";
@@ -161,7 +179,7 @@
 "insufficient funds" = "insufficient funds";
 
 /* No comment provided by engineer. */
-"INVALID  " = "INVALID  ";
+"INVALID" = "INVALID";
 
 /* No comment provided by engineer. */
 "Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address.";
@@ -179,7 +197,10 @@
 "missing certificate" = "missing certificate";
 
 /* No comment provided by engineer. */
-"moved  " = "moved  ";
+"more..." = "more...";
+
+/* No comment provided by engineer. */
+"moved" = "moved";
 
 /* No comment provided by engineer. */
 "new phrase" = "new phrase";
@@ -203,7 +224,13 @@
 "ok" = "ok";
 
 /* No comment provided by engineer. */
-"pending  " = "pending  ";
+"payment address" = "payment address";
+
+/* No comment provided by engineer. */
+"payment output" = "payment output";
+
+/* No comment provided by engineer. */
+"pending" = "pending";
 
 /* No comment provided by engineer. */
 "pin changed" = "pin changed";
@@ -263,7 +290,13 @@
 "send as message" = "send as message";
 
 /* No comment provided by engineer. */
-"sent  " = "sent  ";
+"sender's address" = "sender's address";
+
+/* No comment provided by engineer. */
+"sender's input" = "sender's input";
+
+/* No comment provided by engineer. */
+"sent" = "sent";
 
 /* No comment provided by engineer. */
 "sent!" = "sent!";
@@ -276,6 +309,9 @@
 
 /* No comment provided by engineer. */
 "sms not currently available" = "sms not currently available";
+
+/* No comment provided by engineer. */
+"status:" = "status:";
 
 /* No comment provided by engineer. */
 "swept!" = "swept!";
@@ -305,6 +341,9 @@
 "this private key is empty" = "this private key is empty";
 
 /* No comment provided by engineer. */
+"to:" = "to:";
+
+/* No comment provided by engineer. */
 "to: %@" = "to: %@";
 
 /* No comment provided by engineer. */
@@ -312,6 +351,9 @@
 
 /* No comment provided by engineer. */
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)";
+
+/* No comment provided by engineer. */
+"transaction is post-dated" = "transaction is post-dated";
 
 /* No comment provided by engineer. */
 "transaction rejected" = "transaction rejected";
@@ -338,7 +380,16 @@
 "untrusted certificate" = "untrusted certificate";
 
 /* No comment provided by engineer. */
-"unverified  " = "unverified  ";
+"unverified" = "unverified";
+
+/* No comment provided by engineer. */
+"waiting for confirmation" = "waiting for confirmation";
+
+/* No comment provided by engineer. */
+"waiting for network relay" = "waiting for network relay";
+
+/* No comment provided by engineer. */
+"wallet address" = "wallet address";
 
 /* No comment provided by engineer. */
 "wallet disabled\n\ntry again after block #%u\n(about %@)" = "wallet disabled\n\ntry again after block #%1$u\n(about %2$@)";

@@ -464,8 +464,8 @@
     self.navigationItem.prompt = nil;
 
     [UIView animateWithDuration:UINavigationControllerHideShowBarDuration delay:0.0
-     options:UIViewAnimationOptionCurveEaseOut animations:^{
-         self.burger.center = CGPointMake(self.burger.center.x, 40.0);
+    options:UIViewAnimationOptionCurveEaseOut animations:^{
+        self.burger.center = CGPointMake(self.burger.center.x, 40.0);
         self.errorBar.alpha = 0.0;
     } completion:^(BOOL finished) {
         if (self.navigationItem.prompt == nil) self.errorBar.hidden = YES;
@@ -678,7 +678,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
         }];
     }
     else if ([from.restorationIdentifier isEqual:@"PINNav"]) {
-        //TODO: try out different animations, maybe something where the numbers pop out one after the next
+        //TODO: XXXX try out different animations, maybe something where the numbers pop out one after the next
         to.view.frame = from.view.frame;
         [v insertSubview:to.view belowSubview:from.view];
 
@@ -705,44 +705,45 @@ viewControllerAfterViewController:(UIViewController *)viewController
         self.burger.hidden = NO;
 
         [self.burger setX:YES completion:^(BOOL finished) {
-            [(id)to topViewController].navigationItem.title =
-                [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                 [m localCurrencyStringForAmount:m.wallet.balance]];
             [(id)to topViewController].navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"x"];
+            [(id)to topViewController].navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
+                                                               [m stringForAmount:m.wallet.balance],
+                                                               [m localCurrencyStringForAmount:m.wallet.balance]];
             [v addSubview:to.view];
         }];
 
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
         initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
             to.view.center = CGPointMake(to.view.center.x, v.frame.size.height/2);
-            self.pageViewController.view.center =
-                CGPointMake(self.pageViewController.view.center.x, v.frame.size.height/4);
             self.pageViewController.view.alpha = 0.0;
+            self.pageViewController.view.center = CGPointMake(self.pageViewController.view.center.x,
+                                                              v.frame.size.height/4.0);
         } completion:^(BOOL finished) {
-            self.pageViewController.view.center =
-                CGPointMake(self.pageViewController.view.center.x, v.frame.size.height/2);
+            self.pageViewController.view.center = CGPointMake(self.pageViewController.view.center.x,
+                                                              v.frame.size.height/2.0);
             [transitionContext completeTransition:finished];
         }];
     }
     else if ([from isKindOfClass:[UINavigationController class]] && to == self.navigationController) { // modal dismiss
-        [(id)from topViewController].navigationItem.title = nil;
-        if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
         [[BRPeerManager sharedInstance] connect];
-        [self.burger setX:NO completion:nil];
-        [v addSubview:self.burger];
-        [v insertSubview:to.view belowSubview:from.view];
+        if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
+        
         [self.navigationController.navigationBar.superview insertSubview:from.view
          belowSubview:self.navigationController.navigationBar];
-        self.pageViewController.view.center =
-            CGPointMake(self.pageViewController.view.center.x, v.frame.size.height/4);
+        [v insertSubview:to.view belowSubview:from.view];
+        [(id)from topViewController].navigationItem.title = nil;
+        [v addSubview:self.burger];
+        [self.burger setX:NO completion:nil];
         self.pageViewController.view.alpha = 0.0;
+        self.pageViewController.view.center = CGPointMake(self.pageViewController.view.center.x,
+                                                          v.frame.size.height/4.0);
 
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
         initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
             from.view.center = CGPointMake(from.view.center.x, v.frame.size.height*3/2);
-            self.pageViewController.view.center =
-                CGPointMake(self.pageViewController.view.center.x, v.frame.size.height/2);
             self.pageViewController.view.alpha = 1.0;
+            self.pageViewController.view.center = CGPointMake(self.pageViewController.view.center.x,
+                                                              v.frame.size.height/2);
         } completion:^(BOOL finished) {
             [from.view removeFromSuperview];
             self.burger.hidden = YES;
