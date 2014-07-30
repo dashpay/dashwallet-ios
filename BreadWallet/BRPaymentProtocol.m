@@ -181,7 +181,7 @@ typedef enum {
 
 @interface BRPaymentProtocolDetails ()
 
-@property (nonatomic, assign) BOOL skipNetwork;
+@property (nonatomic, strong) NSString *network;
 
 @end
 
@@ -190,15 +190,6 @@ typedef enum {
 + (instancetype)detailsWithData:(NSData *)data
 {
     return [[self alloc] initWithData:data];
-}
-
-- (instancetype)init
-{
-    if (! (self = [super init])) return nil;
-
-    _network = @"main"; // default
-
-    return self;
 }
 
 - (instancetype)initWithNetwork:(NSString *)network outputAmounts:(NSArray *)amounts outputScripts:(NSArray *)scripts
@@ -226,15 +217,13 @@ merchantData:(NSData *)data
     NSUInteger off = 0;
     NSMutableArray *amounts = [NSMutableArray array], *scripts = [NSMutableArray array];
 
-    _skipNetwork = YES;
-
     while (off < data.length) {
         uint64_t i = 0, amount = 0;
         NSData *d = nil, *script = nil;
         NSUInteger o = 0;
 
         switch ([data protoBufFieldAtOffset:&off int:&i data:&d]) {
-            case details_network: if (d) _network = protoBufString(d), _skipNetwork = NO; break;
+            case details_network: if (d) _network = protoBufString(d); break;
             case details_outputs: while (o < d.length) [d protoBufFieldAtOffset:&o int:&amount data:&script]; break;
             case details_time: if (i) _time = i - NSTimeIntervalSince1970; break;
             case details_expires: if (i) _expires = i - NSTimeIntervalSince1970; break;
@@ -255,12 +244,17 @@ merchantData:(NSData *)data
     return self;
 }
 
+- (NSString *)network
+{
+    return (_network) ? _network : @"main";
+}
+
 - (NSData *)toData
 {
     NSMutableData *d = [NSMutableData data], *output;
     NSUInteger i = 0;
 
-    if (! _skipNetwork) [d appendProtoBufString:_network withKey:details_network];
+    if (_network) [d appendProtoBufString:_network withKey:details_network];
 
     for (NSData *script in _outputScripts) {
         output = [NSMutableData data];
@@ -282,7 +276,8 @@ merchantData:(NSData *)data
 
 @interface BRPaymentProtocolRequest ()
 
-@property (nonatomic, assign) BOOL skipVersion, skipPkiType;
+@property (nonatomic, assign) uint32_t version;
+@property (nonatomic, strong) NSString *pkiType;
 
 @end
 
@@ -293,31 +288,19 @@ merchantData:(NSData *)data
     return [[self alloc] initWithData:data];
 }
 
-- (instancetype)init
-{
-    if (! (self = [super init])) return nil;
-
-    _version = 1; // default
-    _pkiType = @"none"; // default
-
-    return self;
-}
-
 - (instancetype)initWithData:(NSData *)data
 {
     if (! (self = [self init])) return nil;
 
     NSUInteger off = 0;
 
-    _skipVersion = _skipPkiType = YES;
-
     while (off < data.length) {
         uint64_t i = 0;
         NSData *d = nil;
 
         switch ([data protoBufFieldAtOffset:&off int:&i data:&d]) {
-            case request_version: if (i) _version = (uint32_t)i, _skipVersion = NO; break;
-            case request_pki_type: if (d) _pkiType = protoBufString(d), _skipPkiType = NO; break;
+            case request_version: if (i) _version = (uint32_t)i; break;
+            case request_pki_type: if (d) _pkiType = protoBufString(d); break;
             case request_pki_data: if (d) _pkiData = d; break;
             case request_details: if (d) _details = [BRPaymentProtocolDetails detailsWithData:d]; break;
             case request_signature: if (d) _signature = d; break;
@@ -352,12 +335,22 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
     return self;
 }
 
+- (uint32_t)version
+{
+    return (_version) ? _version : 1;
+}
+
+- (NSString *)pkiType
+{
+    return (_pkiType) ? _pkiType : @"none";
+}
+
 - (NSData *)toData
 {
     NSMutableData *d = [NSMutableData data];
 
-    if (! _skipVersion) [d appendProtoBufInt:_version withKey:request_version];
-    if (! _skipPkiType) [d appendProtoBufString:_pkiType withKey:request_pki_type];
+    if (_version) [d appendProtoBufInt:_version withKey:request_version];
+    if (_pkiType) [d appendProtoBufString:_pkiType withKey:request_pki_type];
     if (_pkiData) [d appendProtoBufData:_pkiData withKey:request_pki_data];
     [d appendProtoBufData:_details.data withKey:request_details];
     if (_signature) [d appendProtoBufData:_signature withKey:request_signature];
@@ -370,10 +363,10 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
     NSMutableArray *certs = [NSMutableArray array];
     NSUInteger off = 0;
 
-    while (off < _pkiData.length) {
+    while (off < self.pkiData.length) {
         NSData *d = nil;
 
-        if ([_pkiData protoBufFieldAtOffset:&off int:nil data:&d] == certificates_cert && d) [certs addObject:d];
+        if ([self.pkiData protoBufFieldAtOffset:&off int:nil data:&d] == certificates_cert && d) [certs addObject:d];
     }
 
     return certs;
@@ -381,7 +374,7 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
 
 - (BOOL)isValid
 {
-    if (! [_pkiType isEqual:@"none"]) {
+    if (! [self.pkiType isEqual:@"none"]) {
         NSMutableArray *certs = [NSMutableArray array];
         NSArray *policies = @[CFBridgingRelease(SecPolicyCreateBasicX509())];
         SecTrustRef trust = NULL;
@@ -412,8 +405,8 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
         NSData *sig = _signature, *d = nil;
 
         _signature = [NSData data]; // set signature to 0 bytes, a signature can't sign itself
-        if ([_pkiType isEqual:@"x509+sha256"]) d = self.data.SHA256, padding = kSecPaddingPKCS1SHA256;
-        if ([_pkiType isEqual:@"x509+sha1"]) d = self.data.SHA1, padding = kSecPaddingPKCS1SHA1;
+        if ([self.pkiType isEqual:@"x509+sha256"]) d = self.data.SHA256, padding = kSecPaddingPKCS1SHA256;
+        if ([self.pkiType isEqual:@"x509+sha1"]) d = self.data.SHA1, padding = kSecPaddingPKCS1SHA1;
         _signature = sig;
 
         // verify request signature
@@ -428,7 +421,7 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
         }
     }
 
-    if (_details.expires >= 1 && [NSDate timeIntervalSinceReferenceDate] > _details.expires) {
+    if (self.details.expires >= 1 && [NSDate timeIntervalSinceReferenceDate] > self.details.expires) {
         _errorMessage = NSLocalizedString(@"request expired", nil);
         return NO;
     }
