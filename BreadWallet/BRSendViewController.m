@@ -47,6 +47,14 @@
 #define LOCK @"\xF0\x9F\x94\x92" // unicode lock symbol U+1F512 (utf-8)
 #define REDX @"\xE2\x9D\x8C"     // unicode cross mark U+274C, red x emoji (utf-8)
 
+static NSString *sanitizeString(NSString *s)
+{
+    NSMutableString *sane = [NSMutableString stringWithString:s ? s : @""];
+    
+    CFStringTransform((CFMutableStringRef)sane, NULL, kCFStringTransformToUnicodeName, NO);
+    return sane;
+}
+
 @interface BRSendViewController ()
 
 @property (nonatomic, assign) BOOL clearClipboard, showTips, didAskFee, removeFee;
@@ -156,23 +164,17 @@
 - (void)confirmAmount:(uint64_t)amount fee:(uint64_t)fee address:(NSString *)address name:(NSString *)name
 memo:(NSString *)memo isSecure:(BOOL)isSecure
 {
-    NSMutableString *safeName = [NSMutableString stringWithString:name ? name : @""],
-                    *safeMemo = [NSMutableString stringWithString:memo ? memo : @""];
-
-    // sanitize strings before displaying to user
-    CFStringTransform((CFMutableStringRef)safeName, NULL, kCFStringTransformToUnicodeName, NO);
-    CFStringTransform((CFMutableStringRef)safeMemo, NULL, kCFStringTransformToUnicodeName, NO);
-    address = [NSString base58WithData:[address base58ToData]];
-
     BRWalletManager *m = [BRWalletManager sharedInstance];
     NSString *amountStr = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:amount],
                            [m localCurrencyStringForAmount:amount]];
-    NSString *msg = (isSecure && safeName.length > 0) ? LOCK @" " : @"";
+    NSString *msg = (isSecure && name.length > 0) ? LOCK @" " : @"";
 
     if (! isSecure && self.protocolRequest.errorMessage.length > 0) msg = [msg stringByAppendingString:REDX @" "];
-    if (safeName.length > 0) msg = [msg stringByAppendingString:safeName];
+    if (name.length > 0) msg = [msg stringByAppendingString:sanitizeString(name)];
     if (! isSecure && msg.length > 0) msg = [msg stringByAppendingString:@"\n"];
-    if (! isSecure || msg.length == 0) msg = [msg stringByAppendingString:address];
+    if (! isSecure || msg.length == 0) {
+        msg = [msg stringByAppendingString:[NSString base58WithData:[address base58ToData]]];
+    }
 
     msg = [msg stringByAppendingFormat:@"\n%@ (%@)", [m stringForAmount:amount - fee],
            [m localCurrencyStringForAmount:amount - fee]];
@@ -182,7 +184,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
                [m stringForAmount:fee], [m localCurrencyStringForAmount:fee]];
     }
 
-    if (safeMemo.length > 0) msg = [[msg stringByAppendingString:@"\n"] stringByAppendingString:safeMemo];
+    if (memo.length > 0) msg = [[msg stringByAppendingString:@"\n"] stringByAppendingString:sanitizeString(memo)];
 
     [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"confirm payment", nil) message:msg delegate:self
       cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:amountStr, nil] show];
@@ -233,8 +235,10 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     else if (request.amount == 0) {
         BRAmountViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"AmountViewController"];
 
-        self.request = request;
+        c.info = request;
         c.delegate = self;
+        c.to = (request.label.length > 0) ? sanitizeString(request.label) :
+               [NSString base58WithData:[request.paymentAddress base58ToData]];
         c.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                   [m localCurrencyStringForAmount:m.wallet.balance]];
         [self.navigationController pushViewController:c animated:YES];
@@ -310,9 +314,20 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     else if (amount == 0 && self.protoReqAmount == 0) {
         BRAmountViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"AmountViewController"];
         
-        self.protocolRequest = protoReq;
+        c.info = protoReq;
         c.delegate = self;
-        c.to = [NSString addressWithScriptPubKey:protoReq.details.outputScripts.firstObject];
+
+        if (protoReq.commonName.length > 0) {
+            if (valid && ! [protoReq.pkiType isEqual:@"none"]) {
+                c.to = [LOCK @" " stringByAppendingString:sanitizeString(protoReq.commonName)];
+            }
+            else if (protoReq.errorMessage.length > 0) {
+                c.to = [REDX @" " stringByAppendingString:sanitizeString(protoReq.commonName)];
+            }
+            else c.to = sanitizeString(protoReq.commonName);
+        }
+        else c.to = [NSString addressWithScriptPubKey:protoReq.details.outputScripts.firstObject];
+        
         c.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                   [m localCurrencyStringForAmount:m.wallet.balance]];
         [self.navigationController pushViewController:c animated:YES];
@@ -580,13 +595,13 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
 - (void)amountViewController:(BRAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
 {
-    if (self.protocolRequest) {
+    if ([amountViewController.info isKindOfClass:[BRPaymentProtocolRequest class]]) {
         self.protoReqAmount = amount;
-        [self confirmProtocolRequest:self.protocolRequest];
+        [self confirmProtocolRequest:amountViewController.info];
     }
-    else if (self.request) {
-        self.request.amount = amount;
-        [self confirmRequest:self.request];
+    else if ([amountViewController.info isKindOfClass:[BRPaymentRequest class]]) {
+        [amountViewController.info setAmount:amount];
+        [self confirmRequest:amountViewController.info];
     }
 }
 

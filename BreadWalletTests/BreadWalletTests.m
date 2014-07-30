@@ -62,10 +62,11 @@
     // test bad input
     NSString *s = [NSString base58WithData:[@"#&$@*^(*#!^" base58ToData]];
 
-    NSAssert(s.length == 0, @"[NSString base58WithData:]");
+    XCTAssertTrue(s.length == 0, @"[NSString base58WithData:]");
 
     s = [NSString base58WithData:[@"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz" base58ToData]];
-    NSAssert([@"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz" isEqual:s], @"[NSString base58WithData:]");
+    XCTAssertEqualObjects(@"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz", s,
+                          @"[NSString base58WithData:]");
 }
 
 #pragma mark - testKey
@@ -1127,7 +1128,6 @@
     
     NSLog(@"commonName:%@", req.commonName);
     XCTAssertEqualObjects(req.commonName, @"coinbase.com",  @"[BRPaymentProtocolRequest commonName]");
-
 }
 
 @end

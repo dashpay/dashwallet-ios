@@ -288,7 +288,11 @@
                  animations:^{ [self.view layoutIfNeeded]; } completion:nil];
             }];
         }
-        else [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+        else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+            });
+        }
     }
     else if (! self.success && m.pin.length == PIN_LENGTH) { // failed pin attempt
         if (! [self.badPins containsObject:self.pin]) {
@@ -371,13 +375,15 @@
 
         UIViewController *p = self.navigationController.presentingViewController;
 
-        [p dismissViewControllerAnimated:YES completion:^{
-            if (self.changePin) {
-                [p.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"pin changed", nil)
-                                     center:CGPointMake(p.view.bounds.size.width/2, p.view.bounds.size.height/2)] popIn]
-                                    popOutAfterDelay:2.0]];
-            }
-        }];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [p dismissViewControllerAnimated:YES completion:^{
+                if (self.changePin) {
+                    [p.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"pin changed", nil)
+                                         center:CGPointMake(p.view.bounds.size.width/2, p.view.bounds.size.height/2)]
+                                         popIn] popOutAfterDelay:2.0]];
+                }
+            }];
+        });
     }
 }
 
