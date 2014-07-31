@@ -370,6 +370,8 @@
     }
     else { // set new pin
         m.pin = self.verifyPin;
+        m.pinFailCount = 0;
+        m.pinFailHeight = 0;
         self.verifyPin = nil;
         self.dotsLabel.text = DOT @"  " DOT @"  " DOT @"  " DOT;
 

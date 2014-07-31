@@ -301,13 +301,10 @@ static NSData *getKeychainData(NSString *key)
 
 - (void)setPinFailCount:(NSUInteger)count
 {
-    if (count > 0) {
-        NSMutableData *d = [NSMutableData secureDataWithLength:sizeof(NSUInteger)];
+    NSMutableData *d = [NSMutableData secureDataWithLength:sizeof(NSUInteger)];
 
-        *(NSUInteger *)d.mutableBytes = count;
-        setKeychainData(d, PIN_FAIL_COUNT_KEY);
-    }
-    else setKeychainData(nil, PIN_FAIL_COUNT_KEY);
+    *(NSUInteger *)d.mutableBytes = count;
+    setKeychainData(d, PIN_FAIL_COUNT_KEY);
 }
 
 - (uint32_t)pinFailHeight

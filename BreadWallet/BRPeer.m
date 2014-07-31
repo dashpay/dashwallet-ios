@@ -893,6 +893,7 @@ services:(uint64_t)services
 
     NSLog(@"%@:%u rejected %@ code: 0x%x reason: \"%@\"%@%@", self.host, self.port, type, code, reason,
           txHash ? @" txid: " : @"", txHash ? txHash : @"");
+    reason = nil; // fixes an unused variable warning for non-debug builds
 
     if (txHash.length == CC_SHA256_DIGEST_LENGTH) { // most likely a double spend due to tx missing from wallet
         dispatch_async(self.delegateQueue, ^{

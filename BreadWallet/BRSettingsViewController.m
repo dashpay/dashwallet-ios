@@ -94,9 +94,11 @@
                 self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                              [m localCurrencyStringForAmount:m.wallet.balance]];
 
-                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
-                 withRowAnimation:(self.transactions.firstObject == tx) ? UITableViewRowAnimationNone :
-                                   UITableViewRowAnimationAutomatic];
+                if (self.transactions.firstObject != tx) {
+                    [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
+                     withRowAnimation:UITableViewRowAnimationAutomatic];
+                }
+                else [self.tableView reloadData];
             }];
     }
 
@@ -105,10 +107,21 @@
             [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
                 if (! m.wallet) return;
-                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
-                 withRowAnimation:UITableViewRowAnimationNone];
+                [self.tableView reloadData];
             }];
     }
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    if (self.navigationController.isBeingDismissed) {
+        if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
+        self.balanceObserver = nil;
+        if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
+        self.txStatusObserver = nil;
+    }
+
+    [super viewWillDisappear:animated];
 }
 
 //- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
@@ -182,11 +195,6 @@
 
 - (IBAction)done:(id)sender
 {
-    if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
-    self.balanceObserver = nil;
-    if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
-    self.txStatusObserver = nil;
-
     [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
