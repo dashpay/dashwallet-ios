@@ -762,8 +762,7 @@
         [self.navigationController
          pushViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"]
          animated:NO];
-
-        [[[(id)from viewControllers] firstObject] animateTransition:transitionContext];
+        [self.pinNav.viewControllers.firstObject animateTransition:transitionContext];
     }
     else {
         if (self.wallpaper.superview != v) [v insertSubview:self.wallpaper belowSubview:from.view];

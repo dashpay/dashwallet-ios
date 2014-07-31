@@ -207,7 +207,7 @@
 
             if (p.lastBlockHeight + 2016/2 < p.estimatedBlockHeight &&
                 m.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
-                self.navigationItem.title = @"syncing...";
+                self.navigationItem.title = NSLocalizedString(@"syncing...", nil);
             }
         }];
     
