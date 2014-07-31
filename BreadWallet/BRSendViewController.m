@@ -184,7 +184,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
                [m stringForAmount:fee], [m localCurrencyStringForAmount:fee]];
     }
 
-    if (memo.length > 0) msg = [[msg stringByAppendingString:@"\n"] stringByAppendingString:sanitizeString(memo)];
+    if (memo.length > 0) msg = [msg stringByAppendingFormat:@"\n%@", sanitizeString(memo)];
 
     [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"confirm payment", nil) message:msg delegate:self
       cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:amountStr, nil] show];

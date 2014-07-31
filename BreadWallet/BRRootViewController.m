@@ -47,6 +47,7 @@
 @property (nonatomic, strong) IBOutlet UIGestureRecognizer *navBarTap;
 @property (nonatomic, strong) IBOutlet BRBouncyBurgerButton *burger;
 
+@property (nonatomic, strong) UINavigationController *pinNav;
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) BRBubbleView *tipView;
 @property (nonatomic, assign) BOOL appeared, showTips, inNextTip;
@@ -120,20 +121,18 @@
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.appeared && m.wallet &&
-                ! [self.navigationController.presentedViewController.restorationIdentifier isEqual:@"PINNav"]) {
-                UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-
-                [c.viewControllers.firstObject setAppeared:YES];
+            if (self.appeared && m.wallet && self.navigationController.presentedViewController != self.pinNav) {
+                self.pinNav = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
+                [self.pinNav.viewControllers.firstObject setAppeared:YES];
 
                 if (self.navigationController.presentedViewController) {
                     [self.navigationController dismissViewControllerAnimated:NO completion:^{
-                        [self.navigationController presentViewController:c animated:NO completion:nil];
+                        [self.navigationController presentViewController:self.pinNav animated:NO completion:nil];
                     }];
                 }
-                else [self.navigationController presentViewController:c animated:NO completion:nil];
+                else [self.navigationController presentViewController:self.pinNav animated:NO completion:nil];
 
-                c.transitioningDelegate = self;
+                self.pinNav.transitioningDelegate = self.pinNav.viewControllers.firstObject;
                 [[BRPeerManager sharedInstance] connect];
             }
 
@@ -157,20 +156,18 @@
     self.resignActiveObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.appeared && m.wallet &&
-                ! [self.navigationController.presentedViewController.restorationIdentifier isEqual:@"PINNav"]) {
-                UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-
-                [c.viewControllers.firstObject setAppeared:YES];
+            if (self.appeared && m.wallet && self.navigationController.presentedViewController != self.pinNav) {
+                self.pinNav = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
+                [self.pinNav.viewControllers.firstObject setAppeared:YES];
 
                 if (self.navigationController.presentedViewController) {
                     [self.navigationController dismissViewControllerAnimated:NO completion:^{
-                        [self.navigationController presentViewController:c animated:NO completion:nil];
+                        [self.navigationController presentViewController:self.pinNav animated:NO completion:nil];
                     }];
                 }
-                else [self.navigationController presentViewController:c animated:NO completion:nil];
+                else [self.navigationController presentViewController:self.pinNav animated:NO completion:nil];
 
-                c.transitioningDelegate = self;
+                self.pinNav.transitioningDelegate = self.pinNav.viewControllers.firstObject;
             }
 
             self.url = nil;
@@ -252,10 +249,9 @@
 #endif
 
     if (! [[UIApplication sharedApplication] isProtectedDataAvailable] || m.wallet) {
-        UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-
-        [self.navigationController presentViewController:c animated:NO completion:nil];
-        c.transitioningDelegate = self;
+        self.pinNav = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
+        [self.navigationController presentViewController:self.pinNav animated:NO completion:nil];
+        self.pinNav.transitioningDelegate = self.pinNav.viewControllers.firstObject;
     }
 }
 
@@ -266,13 +262,12 @@
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
     if ([[UIApplication sharedApplication] isProtectedDataAvailable] && ! m.wallet) {
-        UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
+        self.pinNav = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
+        [self.pinNav.viewControllers.firstObject setAppeared:YES];
 
-        [c.viewControllers.firstObject setAppeared:YES];
-
-        [self.navigationController presentViewController:c animated:NO completion:^{
-            c.transitioningDelegate = self;
-            [c presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"]
+        [self.navigationController presentViewController:self.pinNav animated:NO completion:^{
+            self.pinNav.transitioningDelegate = self.pinNav.viewControllers.firstObject;
+            [self.pinNav presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"]
              animated:NO completion:nil];
             self.showTips = YES;
         }];
@@ -674,19 +669,6 @@ viewControllerAfterViewController:(UIViewController *)viewController
             }
 
             if (self.progress.progress > 0) self.progress.hidden = self.pulse.hidden = NO;
-            [transitionContext completeTransition:finished];
-        }];
-    }
-    else if ([from.restorationIdentifier isEqual:@"PINNav"]) {
-        //TODO: XXXX try out different animations, maybe something where the numbers pop out one after the next
-        to.view.frame = from.view.frame;
-        [v insertSubview:to.view belowSubview:from.view];
-
-        [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            from.view.alpha = 0.0;
-            from.view.transform = CGAffineTransformMakeScale(0.75, 0.75);
-        } completion:^(BOOL finished) {
-            [from.view removeFromSuperview];
             [transitionContext completeTransition:finished];
         }];
     }

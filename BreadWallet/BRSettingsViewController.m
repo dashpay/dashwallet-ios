@@ -46,6 +46,7 @@
 @property (nonatomic, strong) UITableViewController *selectorController;
 @property (nonatomic, strong) NSArray *selectorOptions;
 @property (nonatomic, strong) NSString *selectedOption;
+@property (nonatomic, strong) UINavigationController *pinNav;
 
 @end
 
@@ -657,12 +658,12 @@
         case 2:
             switch (indexPath.row) {
                 case 0: // change pin
-                    c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-                    [[[(id)c viewControllers] firstObject] setCancelable:YES];
-                    [[[(id)c viewControllers] firstObject] setChangePin:YES];
-                    c.transitioningDelegate = self;
-                    [self.navigationController presentViewController:c animated:YES completion:nil];
-                    [[[(id)c viewControllers] firstObject] setAppeared:YES];
+                    self.pinNav = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
+                    [self.pinNav.viewControllers.firstObject setCancelable:YES];
+                    [self.pinNav.viewControllers.firstObject setChangePin:YES];
+                    self.pinNav.transitioningDelegate = self;
+                    [self.navigationController presentViewController:self.pinNav animated:YES completion:nil];
+                    [self.pinNav.viewControllers.firstObject setAppeared:YES];
                     break;
 
                 case 1: // import private key
@@ -732,12 +733,11 @@
         return;
     }
 
-    UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-
-    [c.viewControllers.firstObject setAppeared:YES];
-    [c.viewControllers.firstObject setCancelable:YES];
-    c.transitioningDelegate = self;
-    [self.navigationController presentViewController:c animated:YES completion:nil];
+    self.pinNav = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
+    [self.pinNav.viewControllers.firstObject setAppeared:YES];
+    [self.pinNav.viewControllers.firstObject setCancelable:YES];
+    self.pinNav.transitioningDelegate = self;
+    [self.navigationController presentViewController:self.pinNav animated:YES completion:nil];
 }
 
 #pragma mark - UIViewControllerAnimatedTransitioning
@@ -757,22 +757,13 @@
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
     BOOL pop = (to == self || to == self.navigationController) ? YES : NO;
 
-    if ([from.restorationIdentifier isEqual:@"PINNav"] && ! [[[(id)from viewControllers] firstObject] changePin] &&
-        [[[(id)from viewControllers] firstObject] success]) {
+    if (from == self.pinNav && ! [self.pinNav.viewControllers.firstObject changePin] &&
+        [self.pinNav.viewControllers.firstObject success]) {
         [self.navigationController
          pushViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"]
          animated:NO];
 
-        to.view.frame = from.view.frame;
-        [v insertSubview:to.view belowSubview:from.view];
-
-        [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            from.view.alpha = 0.0;
-            from.view.transform = CGAffineTransformMakeScale(0.75, 0.75);
-        } completion:^(BOOL finished) {
-            [from.view removeFromSuperview];
-            [transitionContext completeTransition:finished];
-        }];
+        [[[(id)from viewControllers] firstObject] animateTransition:transitionContext];
     }
     else {
         if (self.wallpaper.superview != v) [v insertSubview:self.wallpaper belowSubview:from.view];

@@ -2762,7 +2762,7 @@ Cgo
         <!--Navigation Controller-->
         <scene sceneID="rCK-s1-XbH">
             <objects>
-                <navigationController storyboardIdentifier="PINNav" definesPresentationContext="YES" useStoryboardIdentifierAsRestorationIdentifier="YES" id="ZPI-JM-Ov5" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="PINNav" definesPresentationContext="YES" id="ZPI-JM-Ov5" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="aTJ-F9-vcc" customClass="BRNavigationBar">
                         <autoresizingMask key="autoresizingMask"/>
                         <textAttributes key="titleTextAttributes">

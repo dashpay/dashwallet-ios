@@ -432,25 +432,40 @@
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
     *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
 
-    if (self.wallpaper.superview != v) {
-        [v insertSubview:self.wallpaper belowSubview:from.view];
+    if (from == self.navigationController) {
+        //TODO: XXXX try out different animations, maybe something where the numbers pop out one after the next
+        to.view.frame = from.view.frame;
+        [v insertSubview:to.view belowSubview:from.view];
+        
+        [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+            from.view.alpha = 0.0;
+            from.view.transform = CGAffineTransformMakeScale(0.75, 0.75);
+        } completion:^(BOOL finished) {
+            [from.view removeFromSuperview];
+            [transitionContext completeTransition:finished];
+        }];
     }
+    else {
+        if (self.wallpaper.superview != v) {
+            [v insertSubview:self.wallpaper belowSubview:from.view];
+        }
 
-    to.view.center = CGPointMake(v.frame.size.width*(to == self ? -1 : 3)/2, to.view.center.y);
-    [v addSubview:to.view];
+        to.view.center = CGPointMake(v.frame.size.width*(to == self ? -1 : 3)/2, to.view.center.y);
+        [v addSubview:to.view];
 
-    [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
-    initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-        self.lockLabel.alpha = (to == self) ? 1.0 : 0.0;
-        to.view.center = from.view.center;
-        from.view.center = CGPointMake(v.frame.size.width*(to == self ? 3 : -1)/2, from.view.center.y);
-        self.wallpaper.center = CGPointMake(self.wallpaper.bounds.size.width/2 -
-                                            v.bounds.size.width*(to == self ? 1 : 2)*PARALAX_RATIO,
-                                            self.wallpaper.center.y);
-    } completion:^(BOOL finished) {
-        if (to == self) [from.view removeFromSuperview];
-        [transitionContext completeTransition:finished];
-    }];
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
+        initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+            self.lockLabel.alpha = (to == self) ? 1.0 : 0.0;
+            to.view.center = from.view.center;
+            from.view.center = CGPointMake(v.frame.size.width*(to == self ? 3 : -1)/2, from.view.center.y);
+            self.wallpaper.center = CGPointMake(self.wallpaper.bounds.size.width/2 -
+                                                v.bounds.size.width*(to == self ? 1 : 2)*PARALAX_RATIO,
+                                                self.wallpaper.center.y);
+        } completion:^(BOOL finished) {
+            if (to == self) [from.view removeFromSuperview];
+            [transitionContext completeTransition:finished];
+        }];
+    }
 }
 
 #pragma mark - UINavigationControllerDelegate
