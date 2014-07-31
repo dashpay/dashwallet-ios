@@ -316,13 +316,10 @@ static NSData *getKeychainData(NSString *key)
 
 - (void)setPinFailHeight:(uint32_t)height
 {
-    if (height > 0) {
-        NSMutableData *d = [NSMutableData secureDataWithLength:sizeof(uint32_t)];
+    NSMutableData *d = [NSMutableData secureDataWithLength:sizeof(uint32_t)];
 
-        *(uint32_t *)d.mutableBytes = height;
-        setKeychainData(d, PIN_FAIL_HEIGHT_KEY);
-    }
-    else setKeychainData(nil, PIN_FAIL_HEIGHT_KEY);
+    *(uint32_t *)d.mutableBytes = height;
+    setKeychainData(d, PIN_FAIL_HEIGHT_KEY);
 }
 
 - (void)generateRandomSeed

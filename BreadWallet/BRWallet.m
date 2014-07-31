@@ -182,14 +182,27 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
 // each block, however correct transaction ordering cannot be relied upon for determining wallet balance or UTXO set
 - (void)sortTransactions
 {
-    [self.transactions sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
-        if ([obj1 blockHeight] > [obj2 blockHeight]) return NSOrderedAscending;
-        if ([obj1 blockHeight] < [obj2 blockHeight]) return NSOrderedDescending;
-        if ([[obj1 inputHashes] containsObject:[obj2 txHash]]) return NSOrderedAscending;
-        if ([[obj2 inputHashes] containsObject:[obj1 txHash]]) return NSOrderedDescending;
-        // TODO: recursively compare transactions for input hashes that are in the wallet
-        return NSOrderedSame;
-    }];
+    NSComparator compareTx;
+    __block __weak NSComparator weakCompareTx = compareTx =
+        ^NSComparisonResult(BRTransaction *tx1, BRTransaction *tx2) {
+            if (! tx1 || ! tx2) return NSOrderedSame;
+            if (tx1.blockHeight > tx2.blockHeight) return NSOrderedAscending;
+            if (tx1.blockHeight < tx2.blockHeight) return NSOrderedDescending;
+            if ([tx1.inputHashes containsObject:tx2.txHash]) return NSOrderedAscending;
+            if ([tx2.inputHashes containsObject:tx1.txHash]) return NSOrderedDescending;
+            
+            for (NSData *txHash in tx1.inputHashes) { // recursively compare inputs
+                if (weakCompareTx(self.allTx[txHash], tx2) == NSOrderedAscending) return NSOrderedAscending;
+            }
+            
+            for (NSData *txHash in tx2.inputHashes) {
+                if (weakCompareTx(tx1, self.allTx[txHash]) == NSOrderedDescending) return NSOrderedDescending;
+            }
+            
+            return NSOrderedSame;
+        };
+    
+    [self.transactions sortUsingComparator:compareTx];
 }
 
 - (void)updateBalance
