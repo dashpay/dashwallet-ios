@@ -362,11 +362,13 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    if (self.sent == 0 && indexPath.section == 1) return; // don't allow user to copy receive from addresses
+    
     NSUInteger i = [[self.tableView indexPathsForVisibleRows] indexOfObject:indexPath];
     UITableViewCell *cell = (i < self.tableView.visibleCells.count) ? self.tableView.visibleCells[i] : nil;
     BRCopyLabel *l = (id)[cell viewWithTag:2];
     
-    [tableView deselectRowAtIndexPath:indexPath animated:YES];
     l.selectedColor = [UIColor clearColor];
     if (cell.selectionStyle != UITableViewCellSelectionStyleNone) [l toggleCopyMenu];
 }
