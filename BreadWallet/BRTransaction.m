@@ -92,7 +92,7 @@
         off += sizeof(uint32_t);
         [self.inScripts addObject:[NSNull null]]; // placeholder for input script (comes from previous transaction)
         d = [message dataAtOffset:off length:&l];
-        [self.signatures addObject:d ? d : [NSNull null]]; // input signature
+        [self.signatures addObject:(d.length > 0) ? d : [NSNull null]]; // input signature
         off += l;
         [self.sequences addObject:@([message UInt32AtOffset:off])]; // input sequence number (for replacement tx)
         off += sizeof(uint32_t);
@@ -319,7 +319,7 @@ sequence:(uint32_t)sequence
         [d appendData:self.hashes[i]];
         [d appendUInt32:[self.indexes[i] unsignedIntValue]];
 
-        if ([self isSigned] && subscriptIndex == NSNotFound) {
+        if (self.signatures[i] != [NSNull null] && subscriptIndex == NSNotFound) {
             [d appendVarInt:[self.signatures[i] length]];
             [d appendData:self.signatures[i]];
         }
