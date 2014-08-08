@@ -396,6 +396,15 @@
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                             </button>
+                            <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="88.8%" textAlignment="right" lineBreakMode="clip" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xl3-sr-16q">
+                                <rect key="frame" x="271" y="34" width="39" height="17"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="13"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                                <nil key="highlightedColor"/>
+                                <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <size key="shadowOffset" width="0.0" height="1"/>
+                            </label>
                             <progressView hidden="YES" opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progressViewStyle="bar" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="3jf-fx-Ie3">
                                 <rect key="frame" x="0.0" y="67" width="320" height="3"/>
                                 <color key="tintColor" red="0.0" green="0.47843137250000001" blue="1" alpha="0.67000000000000004" colorSpace="calibratedRGB"/>
@@ -407,6 +416,7 @@
                         </subviews>
                         <color key="backgroundColor" red="0.93725490199999995" green="0.93725490199999995" blue="0.95686274510000002" alpha="1" colorSpace="calibratedRGB"/>
                         <constraints>
+                            <constraint firstAttribute="trailing" secondItem="xl3-sr-16q" secondAttribute="trailing" constant="10" id="3k8-ws-pJj"/>
                             <constraint firstItem="3jf-fx-Ie3" firstAttribute="top" secondItem="T5D-51-5Zh" secondAttribute="bottom" constant="3" id="4Ce-60-WVD"/>
                             <constraint firstItem="eZp-EX-faL" firstAttribute="height" secondItem="3jf-fx-Ie3" secondAttribute="height" id="6zZ-el-P8q"/>
                             <constraint firstItem="eZp-EX-faL" firstAttribute="top" secondItem="3jf-fx-Ie3" secondAttribute="top" id="9l1-ho-yfK"/>
@@ -415,6 +425,7 @@
                             <constraint firstItem="eZp-EX-faL" firstAttribute="width" secondItem="3jf-fx-Ie3" secondAttribute="width" id="apV-cg-uLz"/>
                             <constraint firstItem="8tO-ay-0Bj" firstAttribute="leading" secondItem="AWe-IQ-Tyq" secondAttribute="leading" id="arr-E1-TSF"/>
                             <constraint firstItem="RLt-8v-uP1" firstAttribute="leading" secondItem="AWe-IQ-Tyq" secondAttribute="leading" id="ddw-21-LZp"/>
+                            <constraint firstItem="3jf-fx-Ie3" firstAttribute="top" secondItem="xl3-sr-16q" secondAttribute="bottom" constant="16" id="gfO-KX-sOw"/>
                             <constraint firstAttribute="centerY" secondItem="8tO-ay-0Bj" secondAttribute="centerY" id="mSN-0i-5hc"/>
                             <constraint firstAttribute="trailing" secondItem="3jf-fx-Ie3" secondAttribute="trailing" id="oFV-nb-wcI"/>
                             <constraint firstItem="RLt-8v-uP1" firstAttribute="top" secondItem="AWe-IQ-Tyq" secondAttribute="top" constant="25" id="q16-mU-HUZ"/>
@@ -432,6 +443,7 @@
                     <connections>
                         <outlet property="burger" destination="9iO-jb-qZ5" id="tCc-2P-ehW"/>
                         <outlet property="errorBar" destination="RLt-8v-uP1" id="4fP-CP-ICW"/>
+                        <outlet property="percent" destination="xl3-sr-16q" id="vtI-XF-1n5"/>
                         <outlet property="progress" destination="3jf-fx-Ie3" id="gCy-rS-Gao"/>
                         <outlet property="pulse" destination="eZp-EX-faL" id="RjA-bp-dr1"/>
                         <outlet property="wallpaper" destination="8tO-ay-0Bj" id="4uW-BH-cZG"/>

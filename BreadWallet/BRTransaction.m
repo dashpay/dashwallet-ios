@@ -319,11 +319,11 @@ sequence:(uint32_t)sequence
         [d appendData:self.hashes[i]];
         [d appendUInt32:[self.indexes[i] unsignedIntValue]];
 
-        if (self.signatures[i] != [NSNull null] && subscriptIndex == NSNotFound) {
+        if (subscriptIndex == NSNotFound && self.signatures[i] != [NSNull null]) {
             [d appendVarInt:[self.signatures[i] length]];
             [d appendData:self.signatures[i]];
         }
-        else if (i == subscriptIndex) {
+        else if (subscriptIndex == i && self.inScripts[i] != [NSNull null]) {
             //TODO: to fully match the reference implementation, OP_CODESEPARATOR related checksig logic should go here
             [d appendVarInt:[self.inScripts[i] length]];
             [d appendData:self.inScripts[i]];

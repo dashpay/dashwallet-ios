@@ -43,6 +43,7 @@
 @interface BRRootViewController ()
 
 @property (nonatomic, strong) IBOutlet UIProgressView *progress, *pulse;
+@property (nonatomic, strong) IBOutlet UILabel *percent;
 @property (nonatomic, strong) IBOutlet UIView *errorBar, *wallpaper;
 @property (nonatomic, strong) IBOutlet UIGestureRecognizer *navBarTap;
 @property (nonatomic, strong) IBOutlet BRBouncyBurgerButton *burger;
@@ -187,7 +188,7 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             if ([[BRPeerManager sharedInstance] syncProgress] < 1.0) return; // wait for sync before updating balance
-
+            [self triggerBackupDialog];
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
 
@@ -207,6 +208,7 @@
 
             if (p.lastBlockHeight + 2016/2 < p.estimatedBlockHeight &&
                 m.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
+                self.percent.hidden = NO;
                 self.navigationItem.title = NSLocalizedString(@"syncing...", nil);
             }
         }];
@@ -215,6 +217,8 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
+            [self triggerBackupDialog];
+            self.percent.hidden = YES;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
         }];
@@ -224,6 +228,8 @@
         queue:nil usingBlock:^(NSNotification *note) {
             if (self.timeout < 1.0) [self stopActivityWithSuccess:NO];
             [self showErrorBar];
+            [self triggerBackupDialog];
+            self.percent.hidden = YES;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
         }];
@@ -438,6 +444,7 @@
     }
 
     counter++;
+    self.percent.text = [NSString stringWithFormat:@"%0.1f%%", (progress > 0.1 ? progress - 0.1 : 0.0)*111.0];
     if (progress < 1.0) [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
 }
 
@@ -512,6 +519,29 @@
     }
 
     return YES;
+}
+
+- (void)triggerBackupDialog
+{
+    if (! [[NSUserDefaults standardUserDefaults] boolForKey:WALLET_NEEDS_BACKUP_KEY] ||
+        [[[BRWalletManager sharedInstance] wallet] balance] == 0) return;
+    
+    //TODO: XXXX
+    // Congratulations! You received bitcoin.
+    //
+    // IMPORTANT: You need to backup your wallet incase your phone is ever lost or breaks.
+    // X remind me later        backup wallet >
+    //
+    // backup your wallet by writing down your wallet backup phrase on paper and keeping it in a safe place
+    // X remind me later        next >
+    //
+    // DO NOT let anyone see your backup phrase or they can spend your bitcoins.
+    // DO NOT take a screenshot. They are visible to other apps and devices.
+    // X remind me later        show backup phrase >
+    //
+    // This is your wallet backup phrase. WRITE IT DOWN and keep it in a safe place.
+    // Loose it an you may loose your bitcoins forever.
+    // X remind me later        done
 }
 
 #pragma mark - IBAction

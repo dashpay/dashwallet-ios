@@ -25,6 +25,7 @@
 
 #import <Foundation/Foundation.h>
 
+#define WALLET_NEEDS_BACKUP_KEY @"WALLET_NEEDS_BACKUP"
 #define BRWalletManagerSeedChangedNotification @"BRWalletManagerSeedChangedNotification"
 
 @class BRWallet, BRTransaction;
