@@ -30,6 +30,7 @@
 #import "BRWallet.h"
 #import "BRCopyLabel.h"
 #import "NSString+Base58.h"
+#import "NSData+Hash.h"
 
 #define TRANSACTION_CELL_HEIGHT 75
 
@@ -184,7 +185,7 @@
                     subtitleLabel = (id)[cell viewWithTag:3];
                     [self setBackgroundForCell:cell indexPath:indexPath];
                     textLabel.text = NSLocalizedString(@"id:", nil);
-                    detailLabel.text = [NSString hexWithData:self.transaction.txHash];
+                    detailLabel.text = [NSString hexWithData:self.transaction.txHash.reverse];
                     subtitleLabel.text = nil;
                     break;
                     
