@@ -27,8 +27,8 @@
 #import "BRWallet.h"
 #import "BRKey.h"
 #import "BRKey+BIP38.h"
-#import "BRKeySequence.h"
 #import "BRBIP39Mnemonic.h"
+#import "BRBIP32Sequence.h"
 #import "BRPeer.h"
 #import "BRTransaction.h"
 #import "BRTransactionEntity.h"
@@ -111,6 +111,7 @@ static NSData *getKeychainData(NSString *key)
 @interface BRWalletManager()
 
 @property (nonatomic, strong) BRWallet *wallet;
+@property (nonatomic, strong) id<BRKeySequence> sequence;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, assign) BOOL sweepFee;
 @property (nonatomic, strong) NSString *sweepKey;
@@ -193,13 +194,45 @@ static NSData *getKeychainData(NSString *key)
     if (_wallet == nil && self.seed) {
         @synchronized(self) {
             if (_wallet == nil) {
-                _wallet = [[BRWallet alloc] initWithContext:[NSManagedObject context]
-                           andSeed:^NSData *{ return self.seed; }];
+                _wallet = [[BRWallet alloc] initWithContext:[NSManagedObject context] sequence:self.sequence
+                           seed:^NSData *{ return self.seed; }];
+
+                // we need to verify that the keychain matches core data, since they have different access and backup
+                // policies it's possible for them to diverge
+                if (_wallet.addresses.count > 0) {
+                    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                        BRKey *k = [BRKey keyWithPrivateKey:[self.sequence privateKey:0 internal:NO
+                                                             fromSeed:self.seed]];
+                    
+                        if (! [_wallet containsAddress:k.address]) {
+                            [[NSManagedObject context] performBlockAndWait:^{
+                                [BRAddressEntity deleteObjects:[BRAddressEntity allObjects]];
+                                [BRTransactionEntity deleteObjects:[BRTransactionEntity allObjects]];
+                                [NSManagedObject saveContext];
+                            }];
+                        
+                            _wallet = nil;
+                        
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                [[NSNotificationCenter defaultCenter]
+                                 postNotificationName:BRWalletManagerSeedChangedNotification object:nil];
+                                [[NSNotificationCenter defaultCenter]
+                                 postNotificationName:BRWalletBalanceChangedNotification object:nil];
+                            });
+                        }
+                    });
+                }
             }
         }
     }
 
     return _wallet;
+}
+
+- (id<BRKeySequence>)sequence
+{
+    if (! _sequence) _sequence = [BRBIP32Sequence new];
+    return _sequence;
 }
 
 - (NSData *)seed

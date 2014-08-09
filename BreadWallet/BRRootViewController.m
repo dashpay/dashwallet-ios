@@ -334,7 +334,8 @@
     return YES;
 }
 
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
     [super prepareForSegue:segue sender:sender];
 
     [segue.destinationViewController setTransitioningDelegate:self];
@@ -448,7 +449,8 @@
     if (progress < 1.0) [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
 }
 
-- (void)showErrorBar {
+- (void)showErrorBar
+{
     if (self.navigationItem.prompt != nil) return;
     self.navigationItem.prompt = @"";
     self.errorBar.hidden = NO;
@@ -461,7 +463,8 @@
     } completion:nil];
 }
 
-- (void)hideErrorBar {
+- (void)hideErrorBar
+{
     if (self.navigationItem.prompt == nil) return;
     self.navigationItem.prompt = nil;
 

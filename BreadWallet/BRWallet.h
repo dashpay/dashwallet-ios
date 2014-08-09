@@ -24,6 +24,7 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
+#import "BRKeySequence.h"
 
 #define BRWalletBalanceChangedNotification @"BRWalletBalanceChangedNotification"
 
@@ -38,7 +39,8 @@
 @property (nonatomic, readonly) NSArray *unspentOutputs; // NSData objects containing serialized UTXOs
 @property (nonatomic, readonly) NSArray *recentTransactions; // BRTransaction objects sorted by date, most recent first
 
-- (instancetype)initWithContext:(NSManagedObjectContext *)context andSeed:(NSData *(^)())seed;
+- (instancetype)initWithContext:(NSManagedObjectContext *)context sequence:(id<BRKeySequence>)sequence
+seed:(NSData *(^)())seed;
 
 // true if the address is known to belong to the wallet
 - (BOOL)containsAddress:(NSString *)address;

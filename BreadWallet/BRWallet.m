@@ -29,7 +29,6 @@
 #import "BRTransaction.h"
 #import "BRTransactionEntity.h"
 #import "BRKeySequence.h"
-#import "BRBIP32Sequence.h"
 #import "NSData+Hash.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
@@ -49,8 +48,10 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
 @property (nonatomic, strong) id<BRKeySequence> sequence;
 @property (nonatomic, strong) NSData *masterPublicKey;
 @property (nonatomic, strong) NSMutableArray *internalAddresses, *externalAddresses;
-@property (nonatomic, strong) NSMutableSet *allAddresses, *usedAddresses, *spentOutputs, *invalidTx;
-@property (nonatomic, strong) NSMutableOrderedSet *transactions, *utxos;
+@property (nonatomic, strong) NSMutableSet *allAddresses, *usedAddresses;
+@property (nonatomic, strong) NSSet *spentOutputs, *invalidTx;
+@property (nonatomic, strong) NSMutableOrderedSet *transactions;
+@property (nonatomic, strong) NSOrderedSet *utxos;
 @property (nonatomic, strong) NSMutableDictionary *allTx;
 @property (nonatomic, strong) NSArray *balanceHistory;
 @property (nonatomic, strong) NSData *(^seed)();
@@ -60,13 +61,14 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
 
 @implementation BRWallet
 
-- (instancetype)initWithContext:(NSManagedObjectContext *)context andSeed:(NSData *(^)())seed
+- (instancetype)initWithContext:(NSManagedObjectContext *)context sequence:(id<BRKeySequence>)sequence
+seed:(NSData *(^)())seed
 {
     if (! (self = [super init])) return nil;
 
     self.moc = context;
+    self.sequence = sequence;
     self.seed = seed;
-    self.sequence = [BRBIP32Sequence new];
     self.allTx = [NSMutableDictionary dictionary];
     self.transactions = [NSMutableOrderedSet orderedSet];
     self.internalAddresses = [NSMutableArray array];
@@ -76,9 +78,6 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     self.invalidTx = [NSMutableSet set];
     self.spentOutputs = [NSMutableSet set];
     self.utxos = [NSMutableOrderedSet orderedSet];
-
-    //BUG: when switching networks or when installing a developement build overtop an appstore build,
-    // the core data store can be inconsistent with the keychain, need to add a consistency check
 
     [self.moc performBlockAndWait:^{
         [BRAddressEntity setContext:self.moc];
@@ -114,6 +113,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
             _masterPublicKey = [self.sequence masterPublicKeyFromSeed:self.seed()];
         }
     }
+    
     return _masterPublicKey;
 }
 
@@ -134,8 +134,10 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
     if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
 
-    // get a single address first to avoid blocking receiveAddress and changeAddress
-    if (a.count == 0 && gapLimit > 1) [self addressesWithGapLimit:1 internal:internal];
+    if (gapLimit > 1) { // get receiveAddress and changeAddress first to avoid blocking
+        [self receiveAddress];
+        [self changeAddress];
+    }
 
     @synchronized(self) {
         [a setArray:internal ? self.internalAddresses : self.externalAddresses];
