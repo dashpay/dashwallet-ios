@@ -38,6 +38,7 @@
 #import "BRTransaction.h"
 #import "NSString+Base58.h"
 #import "NSMutableData+Bitcoin.h"
+#import "NSData+Hash.h"
 
 #define SCAN_TIP      NSLocalizedString(@"Scan someone else's QR code to get their bitcoin address. "\
                                          "You can send a payment to anyone with an address.", nil)
@@ -543,7 +544,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     NSString *s = [[[UIPasteboard generalPasteboard] string]
                    stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     BRPaymentRequest *req = [BRPaymentRequest requestWithString:s];
-    NSData *d = [s hexToData];
+    NSData *d = s.hexToData.reverse;
 
     if (d.length == 32) { // if the clipboard contains a txHash, we know it's not a hex encoded private key
         for (BRTransaction *tx in [[[BRWalletManager sharedInstance] wallet] recentTransactions]) {

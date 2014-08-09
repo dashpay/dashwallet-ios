@@ -172,9 +172,10 @@
         f2 = [NSDateFormatter new];
         f3 = [NSDateFormatter new];
 
-        f1.dateFormat = [[[NSDateFormatter dateFormatFromTemplate:@"Mdha" options:0 locale:[NSLocale currentLocale]]
-                          stringByReplacingOccurrencesOfString:@", " withString:@" "]
-                         stringByReplacingOccurrencesOfString:@" h" withString:@"@h"];
+        f1.dateFormat = [[[[NSDateFormatter dateFormatFromTemplate:@"Mdja" options:0 locale:[NSLocale currentLocale]]
+                           stringByReplacingOccurrencesOfString:@", " withString:@" "]
+                          stringByReplacingOccurrencesOfString:@" h" withString:@"@h"]
+                         stringByReplacingOccurrencesOfString:@" k" withString:@"@k"];
         f2.dateFormat = [[NSDateFormatter dateFormatFromTemplate:@"Md" options:0 locale:[NSLocale currentLocale]]
                          stringByReplacingOccurrencesOfString:@", " withString:@" "];
         f3.dateFormat = [[NSDateFormatter dateFormatFromTemplate:@"yyMd" options:0 locale:[NSLocale currentLocale]]
@@ -184,9 +185,10 @@
     NSTimeInterval t = [[BRPeerManager sharedInstance] timestampForBlockHeight:tx.blockHeight];
     NSDateFormatter *f = (t > w) ? f1 : ((t > y) ? f2 : f3);
 
-    date = [[[[f stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:t - 5*60]] lowercaseString]
-             stringByReplacingOccurrencesOfString:@" am" withString:@"a"]
-            stringByReplacingOccurrencesOfString:@" pm" withString:@"p"];
+    date = [[[[[f stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:t - 5*60]] lowercaseString]
+              stringByReplacingOccurrencesOfString:@" am" withString:@"a"]
+             stringByReplacingOccurrencesOfString:@" pm" withString:@"p"]
+            stringByReplacingOccurrencesOfString:@"@0" withString:@"@"];
     self.txDates[tx.txHash] = date;
     return date;
 }
