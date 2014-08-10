@@ -513,7 +513,8 @@
                                      "or are having trouble sending (rescaning can take several minutes)", nil);
 
         case 4:
-            return NSLocalizedString(@"fees are only optional for high priority transactions", nil);
+            return NSLocalizedString(@"bitcoin network fees are only optional for high priority transactions "
+                                     "(removal may cause delays)", nil);
 
         default:
             NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);

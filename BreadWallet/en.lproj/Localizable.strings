@@ -155,7 +155,7 @@
 "error signing transaction" = "error signing transaction";
 
 /* No comment provided by engineer. */
-"fees are only optional for high priority transactions" = "fees are only optional for high priority transactions";
+"bitcoin network fees are only optional for high priority transactions (removal may cause delays)" = "bitcoin network fees are only optional for high priority transactions (removal may cause delays)";
 
 /* No comment provided by engineer. */
 "from:" = "from:";
