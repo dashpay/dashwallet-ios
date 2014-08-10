@@ -264,9 +264,9 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
             ! self.didAskFee && [[NSUserDefaults standardUserDefaults] boolForKey:SETTINGS_SKIP_FEE_KEY]) {
             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"bitcoin network fee", nil)
               message:[NSString stringWithFormat:NSLocalizedString(@"The standard bitcoin network fee is %@ (%@). "
-                                                                   "Removing this fee may increase confirmation time.",
-                                                                   nil), [m stringForAmount:self.tx.standardFee],
-                       [m localCurrencyStringForAmount:self.tx.standardFee]] delegate:self cancelButtonTitle:nil
+                                                                   "Removing this fee may delay confirmation.", nil),
+                       [m stringForAmount:self.tx.standardFee], [m localCurrencyStringForAmount:self.tx.standardFee]]
+              delegate:self cancelButtonTitle:nil
               otherButtonTitles:NSLocalizedString(@"remove fee", nil), NSLocalizedString(@"continue", nil), nil] show];
             return;
         }
@@ -506,25 +506,6 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     self.tipView.backgroundColor = [UIColor orangeColor];
     self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
     [self.view addSubview:[self.tipView popIn]];
-}
-
-- (IBAction)swipeLeft:(id)sender
-{
-    // the following is a hack to avoid triggering a crash bug in UIQueuingScrollView described here:
-    // http://stackoverflow.com/questions/19939030/how-to-solve-failed-to-determine-navigation-direction-for-scroll-bug
-    // we do the animated scroll manually and call pageviewcontroller setviewcontrollers without animation afterward
-    for (UIView *view in self.parentViewController.view.subviews) {
-        if (! [view isKindOfClass:[UIScrollView class]]) continue;
-        [(id)view setContentOffset:CGPointMake([(id)view contentOffset].x + view.frame.size.width,
-                                               [(id)view contentOffset].y) animated:YES];
-        break;
-    }
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        [(id)self.parentViewController
-         setViewControllers:@[[(id)self.parentViewController.parentViewController receiveViewController]]
-         direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
-    });
 }
 
 - (IBAction)scanQR:(id)sender

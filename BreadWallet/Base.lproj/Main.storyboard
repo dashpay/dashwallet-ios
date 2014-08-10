@@ -1065,8 +1065,9 @@
                                     <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                     <color key="titleShadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
-                                <state key="disabled" image="cameraguide-small" backgroundImage="button-bg-disabled">
-                                    <color key="titleColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                                <state key="disabled" image="cameraguide-small" backgroundImage="button-bg-blue-pressed">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <color key="titleShadowColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 </state>
                                 <state key="highlighted" image="cameraguide-small" backgroundImage="button-bg-blue-pressed">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -1074,7 +1075,6 @@
                                 </state>
                                 <connections>
                                     <action selector="scanQR:" destination="RsQ-W7-grB" eventType="touchUpInside" id="wbh-n6-WR8"/>
-                                    <outletCollection property="gestureRecognizers" destination="Xfo-pk-sAE" appends="YES" id="xOJ-Xf-SmG"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bfj-xS-5rN">
@@ -1090,8 +1090,9 @@
                                     <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                     <color key="titleShadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
-                                <state key="disabled" backgroundImage="button-bg-disabled">
-                                    <color key="titleColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                                <state key="disabled" backgroundImage="button-bg-blue-pressed">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <color key="titleShadowColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 </state>
                                 <state key="highlighted" backgroundImage="button-bg-blue-pressed">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -1099,7 +1100,6 @@
                                 </state>
                                 <connections>
                                     <action selector="payToClipboard:" destination="RsQ-W7-grB" eventType="touchUpInside" id="qNZ-Ff-JNL"/>
-                                    <outletCollection property="gestureRecognizers" destination="SxL-2a-FGb" appends="YES" id="16X-sF-wTW"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -1122,16 +1122,6 @@
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="6F7-JO-CPd" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <swipeGestureRecognizer delaysTouchesEnded="NO" direction="left" id="Xfo-pk-sAE">
-                    <connections>
-                        <action selector="swipeLeft:" destination="RsQ-W7-grB" id="E7q-S4-5z7"/>
-                    </connections>
-                </swipeGestureRecognizer>
-                <swipeGestureRecognizer delaysTouchesEnded="NO" direction="left" id="SxL-2a-FGb">
-                    <connections>
-                        <action selector="swipeLeft:" destination="RsQ-W7-grB" id="pVG-EU-uHc"/>
-                    </connections>
-                </swipeGestureRecognizer>
                 <tapGestureRecognizer id="EKr-Gi-AHW">
                     <connections>
                         <action selector="tip:" destination="RsQ-W7-grB" id="L5a-Ga-HSE"/>

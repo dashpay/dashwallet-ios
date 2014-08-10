@@ -96,8 +96,8 @@
     for (UIView *view in self.pageViewController.view.subviews) {
         if (! [view isKindOfClass:[UIScrollView class]]) continue;
         self.scrollView = (id)view;
-        [self.scrollView setDelegate:self];
-        [self.scrollView setDelaysContentTouches:NO]; // this allows buttons to respond more quickly
+        self.scrollView.delegate = self;
+        //self.scrollView.delaysContentTouches = NO; // this allows buttons to respond more quickly
         break;
     }
 
@@ -713,17 +713,17 @@ viewControllerAfterViewController:(UIViewController *)viewController
 
         BRWalletManager *m = [BRWalletManager sharedInstance];
 
-        [(id)to topViewController].navigationItem.title = nil;
-        [(id)to topViewController].navigationItem.leftBarButtonItem.image = nil;
+        [[(id)to viewControllers].firstObject navigationItem].title = nil;
+        [[(id)to viewControllers].firstObject navigationItem].leftBarButtonItem.image = nil;
         self.navigationItem.leftBarButtonItem.image = nil;
         [v addSubview:self.burger];
         self.burger.hidden = NO;
 
         [self.burger setX:YES completion:^(BOOL finished) {
-            [(id)to topViewController].navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"x"];
-            [(id)to topViewController].navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
-                                                               [m stringForAmount:m.wallet.balance],
-                                                               [m localCurrencyStringForAmount:m.wallet.balance]];
+            [[(id)to viewControllers].firstObject navigationItem].leftBarButtonItem.image = [UIImage imageNamed:@"x"];
+            [[(id)to viewControllers].firstObject navigationItem].title =
+                [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
+                 [m localCurrencyStringForAmount:m.wallet.balance]];
             [v addSubview:to.view];
         }];
 
