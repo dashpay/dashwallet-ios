@@ -140,7 +140,8 @@
             if (jailbroken && m.wallet.balance > 0) {
                 [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
                   message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
-                                            "Any 'jailbreak' app can control this device and steal funds. "
+                                            "Any 'jailbreak' app can access any other app's keychain data "
+                                            "(and steal your bitcoins). "
                                             "Wipe this wallet immediately and restore on a secure device.", nil)
                  delegate:self cancelButtonTitle:NSLocalizedString(@"ignore", nil)
                  otherButtonTitles:NSLocalizedString(@"wipe", nil), nil] show];
@@ -148,7 +149,8 @@
             else if (jailbroken) {
                 [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
                   message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
-                                            "Any 'jailbreak' app can control this device and steal funds.", nil)
+                                            "Any 'jailbreak' app can access any other app's keychain data "
+                                            "(and steal your bitcoins).", nil)
                   delegate:self cancelButtonTitle:NSLocalizedString(@"ignore", nil)
                   otherButtonTitles:NSLocalizedString(@"close app", nil), nil] show];
             }
