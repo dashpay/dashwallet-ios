@@ -100,6 +100,7 @@
     return [self subdataWithRange:NSMakeRange(offset + ll, l)];
 }
 
+// an array of NSNumber and NSData objects representing each script element
 - (NSArray *)scriptElements
 {
     NSMutableArray *a = [NSMutableArray array];
@@ -152,6 +153,7 @@
     return a;
 }
 
+// returns the opcode used to store the receiver in a script (i.e. OP_PUSHDATA1)
 - (int)intValue
 {
     if (self.length < OP_PUSHDATA1) return (int)self.length;

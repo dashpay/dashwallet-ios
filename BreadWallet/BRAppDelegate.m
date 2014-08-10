@@ -74,8 +74,6 @@
 
     //TODO: after two or three manual reconnect attempts when network is reachable, request a fresh peer list from DNS
 
-    //TODO: XXXX show sync progress with percentage or best block timestamp
-
     //TODO: XXXX skip backup phrase on wallet creation and show when first bitcoins are received instead
 
     // this will notify user if bluetooth is disabled (on 4S and newer devices that support BTLE)
