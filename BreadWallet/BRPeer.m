@@ -33,7 +33,8 @@
 #import <arpa/inet.h>
 #import "Reachability.h"
 
-#define USERAGENT [NSString stringWithFormat:@"/breadwallet:%@/",NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"]]
+#define USERAGENT [NSString stringWithFormat:@"/breadwallet:%@/",\
+                   NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"]]
 
 #define HEADER_LENGTH      24
 #define MAX_MSG_LENGTH     0x02000000
