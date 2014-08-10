@@ -246,10 +246,11 @@
         case 1: // drop through
         case 2:
             if ((self.sent > 0 && indexPath.section == 1) || (self.sent == 0 && indexPath.section == 2)) {
-                if ([self.outputText[indexPath.row] length] == 0) {
-                    cell = [tableView dequeueReusableCellWithIdentifier:@"SubtitleCell" forIndexPath:indexPath];
+                if ([self.outputText[indexPath.row] length] > 0) {
+                    cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCell" forIndexPath:indexPath];
+                    cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                 }
-                else cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCell" forIndexPath:indexPath];
+                else cell = [tableView dequeueReusableCellWithIdentifier:@"SubtitleCell" forIndexPath:indexPath];
 
                 detailLabel = (id)[cell viewWithTag:2];
                 subtitleLabel = (id)[cell viewWithTag:3];
@@ -277,17 +278,22 @@
                 
                 if ([m.wallet containsAddress:self.transaction.inputAddresses[indexPath.row]]) {
                     subtitleLabel.text = NSLocalizedString(@"wallet address", nil);
+                    cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                 }
-                else subtitleLabel.text = NSLocalizedString(@"sender's address", nil);
+                else {
+                    subtitleLabel.text = NSLocalizedString(@"spent address", nil);
+                    cell.selectionStyle = UITableViewCellSelectionStyleNone; // don't allow copying receive from address
+                }
             }
             else {
                 cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCell" forIndexPath:indexPath];
+                cell.selectionStyle = UITableViewCellSelectionStyleNone;
                 detailLabel = (id)[cell viewWithTag:2];
                 subtitleLabel = (id)[cell viewWithTag:3];
                 amountLabel = (id)[cell viewWithTag:1];
                 localCurrencyLabel = (id)[cell viewWithTag:5];
                 detailLabel.text = NSLocalizedString(@"unkown address", nil);
-                subtitleLabel.text = NSLocalizedString(@"sender's input", nil);
+                subtitleLabel.text = NSLocalizedString(@"spent input", nil);
                 amountLabel.text = nil;
                 localCurrencyLabel.text = nil;
             }
@@ -363,15 +369,13 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    if (self.sent == 0 && indexPath.section == 1) return; // don't allow user to copy receive from addresses
-    
     NSUInteger i = [[self.tableView indexPathsForVisibleRows] indexOfObject:indexPath];
     UITableViewCell *cell = (i < self.tableView.visibleCells.count) ? self.tableView.visibleCells[i] : nil;
     BRCopyLabel *l = (id)[cell viewWithTag:2];
     
     l.selectedColor = [UIColor clearColor];
     if (cell.selectionStyle != UITableViewCellSelectionStyleNone) [l toggleCopyMenu];
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 @end

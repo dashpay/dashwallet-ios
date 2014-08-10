@@ -290,10 +290,10 @@
 "send as message" = "send as message";
 
 /* No comment provided by engineer. */
-"sender's address" = "sender's address";
+"spent address" = "spent address";
 
 /* No comment provided by engineer. */
-"sender's input" = "sender's input";
+"spent input" = "spent input";
 
 /* No comment provided by engineer. */
 "sent" = "sent";
