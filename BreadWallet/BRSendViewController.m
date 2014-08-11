@@ -188,6 +188,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
                [m stringForAmount:fee], [m localCurrencyStringForAmount:fee]];
     }
 
+    //TODO: XXXX full screen dialog with clean transitions
     [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"confirm payment", nil) message:msg delegate:self
       cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:amountStr, nil] show];
 }
@@ -543,9 +544,9 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     if (! [req isValid] && ! [s isValidBitcoinPrivateKey] && ! [s isValidBitcoinBIP38Key]) {
         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"clipboard doesn't contain a valid bitcoin address", nil)
           message:nil delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-        [self cancel:nil];
+        [self performSelector:@selector(cancel:) withObject:self afterDelay:0.1];
     }
-    else [self confirmRequest:req];
+    else [self performSelector:@selector(confirmRequest:) withObject:req afterDelay:0.1]; // delayed to show blue button
 }
 
 - (IBAction)reset:(id)sender
