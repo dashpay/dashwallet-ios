@@ -124,6 +124,7 @@
 
 - (IBAction)done:(id)sender
 {
+    //TODO: XXXXX show 'remind me later' as the only option for 10-15 seconds
     if (self.navigationController.viewControllers.firstObject != self) return;
 
     self.navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;

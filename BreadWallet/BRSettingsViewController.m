@@ -631,9 +631,7 @@
                 [(id)c setTransaction:self.transactions[indexPath.row]];
                 [(id)c setTxDateString:[self dateForTx:self.transactions[indexPath.row]]];
                 [self.navigationController pushViewController:c animated:YES];
-//                i = [[self.tableView indexPathsForVisibleRows] indexOfObject:indexPath];
-//                cell = (i < self.tableView.visibleCells.count) ? self.tableView.visibleCells[i] : nil;
-//                [(id)[cell viewWithTag:2] toggleCopyMenu];
+                [tableView deselectRowAtIndexPath:indexPath animated:YES];
             }
 
             break;

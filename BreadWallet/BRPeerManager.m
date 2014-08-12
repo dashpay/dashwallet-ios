@@ -38,11 +38,11 @@
 #import "NSManagedObject+Sugar.h"
 #import <netdb.h>
 
-#define FIXED_PEERS           @"FixedPeers"
-#define MAX_CONNECTIONS       3
-#define NODE_NETWORK          1  // services value indicating a node offers full blocks, not just headers
-#define PROTOCOL_TIMEOUT      30.0
-#define MAX_CONNENCT_FAILURES 20 // notify user of network problems after this many connect failures in a row
+#define FIXED_PEERS          @"FixedPeers"
+#define MAX_CONNECTIONS      3
+#define NODE_NETWORK         1  // services value indicating a node offers full blocks, not just headers
+#define PROTOCOL_TIMEOUT     30.0
+#define MAX_CONNECT_FAILURES 20 // notify user of network problems after this many connect failures in a row
 
 #if BITCOIN_TESTNET
 
@@ -219,16 +219,6 @@ static const char *dns_seeds[] = {
         }];
 
         if (_peers.count < MAX_CONNECTIONS) {
-            // we're resorting to DNS peer discovery, so reset the misbahavin' count on any peers we already had in case
-            // something went horribly wrong and every peer was marked as bad, but set timestamp older than 14 days
-            for (BRPeer *p in self.misbehavinPeers) {
-                p.misbehavin = 0;
-                p.timestamp += 14*24*60*60;
-                [_peers addObject:p];
-            }
-
-            [self.misbehavinPeers removeAllObjects];
-
             for (int i = 0; i < sizeof(dns_seeds)/sizeof(*dns_seeds); i++) { // DNS peer discovery
                 struct hostent *h = gethostbyname(dns_seeds[i]);
 
@@ -398,7 +388,7 @@ static const char *dns_seeds[] = {
 - (void)connect
 {
     if (! [[BRWalletManager sharedInstance] wallet]) return; // check to make sure the wallet has been created
-    if (self.connectFailures >= MAX_CONNENCT_FAILURES) self.connectFailures = 0; // this attempt is a manual retry
+    if (self.connectFailures >= MAX_CONNECT_FAILURES) self.connectFailures = 0; // this attempt is a manual retry
     
     if (self.syncProgress < 1.0) {
         if (self.syncStartHeight == 0) self.syncStartHeight = self.lastBlockHeight;
@@ -628,6 +618,8 @@ static const char *dns_seeds[] = {
 // unconfirmed transactions that aren't in the mempools of any of connected peers have likely dropped off the network
 - (void)removeUnrelayedTransactions
 {
+    //TODO: XXXXX don't remove transactions until they are 24hrs old, or conflict with a confirmed transaction, or were
+    // rejected by all peers
     BRWallet *w = [[BRWalletManager sharedInstance] wallet];
 
     for (BRTransaction *tx in w.recentTransactions) {
@@ -803,16 +795,23 @@ static const char *dns_seeds[] = {
         _connected = NO;
         self.downloadPeer = nil;
         [self syncStopped];
-        if (self.connectFailures > MAX_CONNENCT_FAILURES) self.connectFailures = MAX_CONNENCT_FAILURES;
+        if (self.connectFailures > MAX_CONNECT_FAILURES) self.connectFailures = MAX_CONNECT_FAILURES;
     }
 
     dispatch_async(dispatch_get_main_queue(), ^{
-        if (! self.connected && self.connectFailures == MAX_CONNENCT_FAILURES) {
+        if (! self.connected && self.connectFailures == MAX_CONNECT_FAILURES) {
             self.syncStartHeight = 0;
+        
+            // clear out stored peers so we get a fresh list from DNS on next connect attempt
+            [self.connectedPeers removeAllObjects];
+            [self.misbehavinPeers removeAllObjects];
+            [BRPeerEntity deleteObjects:[BRPeerEntity allObjects]];
+            _peers = nil;
+
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerSyncFailedNotification
              object:nil userInfo:error ? @{@"error":error} : nil];
         }
-        else if (self.connectFailures < MAX_CONNENCT_FAILURES) [self connect]; // try connecting to another peer
+        else if (self.connectFailures < MAX_CONNECT_FAILURES) [self connect]; // try connecting to another peer
     });
 }
 
