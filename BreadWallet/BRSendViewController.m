@@ -48,8 +48,6 @@
 #define LOCK @"\xF0\x9F\x94\x92" // unicode lock symbol U+1F512 (utf-8)
 #define REDX @"\xE2\x9D\x8C"     // unicode cross mark U+274C, red x emoji (utf-8)
 
-#define BUTTON_HEIGHT 44.0
-
 static NSString *sanitizeString(NSString *s)
 {
     NSMutableString *sane = [NSMutableString stringWithString:s ? s : @""];
@@ -69,9 +67,9 @@ static NSString *sanitizeString(NSString *s)
 @property (nonatomic, strong) BRScanViewController *scanController;
 @property (nonatomic, strong) id clipboardObserver;
 
+@property (nonatomic, strong) IBOutlet UILabel *sendLabel;
 @property (nonatomic, strong) IBOutlet UIButton *scanButton, *clipboardButton;
-@property (nonatomic, strong) IBOutlet UILabel *clipboardLabel;
-@property (nonatomic, strong) IBOutlet NSLayoutConstraint *clipboardButtonHeight;
+@property (nonatomic, strong) IBOutlet UITextView *clipboardText;
 
 @end
 
@@ -82,12 +80,12 @@ static NSString *sanitizeString(NSString *s)
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-    [self.clipboardButton addObserver:self forKeyPath:@"highlighted" options:NSKeyValueObservingOptionNew context:NULL];
+    self.clipboardText.textContainerInset = UIEdgeInsetsZero;
     
     self.clipboardObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIPasteboardChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            [self cancel:nil];
+            if (! self.clipboardText.isFirstResponder) [self cancel:nil];
         }];
 }
 
@@ -539,7 +537,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 {
     if ([self nextTip]) return;
 
-    NSString *s = [[[UIPasteboard generalPasteboard] string]
+    NSString *s = [self.clipboardText.text
                    stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     BRPaymentRequest *req = [BRPaymentRequest requestWithString:s];
     NSData *d = s.hexToData.reverse;
@@ -554,7 +552,6 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     }
 
     [sender setEnabled:NO];
-    self.clipboardLabel.highlighted = YES;
     self.clearClipboard = YES;
 
     if (! [req isValid] && ! [s isValidBitcoinPrivateKey] && ! [s isValidBitcoinBIP38Key]) {
@@ -577,23 +574,6 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
 - (IBAction)cancel:(id)sender
 {
-    NSString *s = [[[UIPasteboard generalPasteboard] string]
-                   stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    BRPaymentRequest *req = [BRPaymentRequest requestWithString:s];
-    NSMutableAttributedString *t = [[NSMutableAttributedString alloc]
-                                    initWithAttributedString:self.clipboardLabel.attributedText];
-
-    self.clipboardButton.contentEdgeInsets = UIEdgeInsetsZero;
-    self.clipboardButtonHeight.constant = BUTTON_HEIGHT;
-    
-    if ([req.paymentAddress isValidBitcoinAddress]) {
-        self.clipboardButton.contentEdgeInsets = UIEdgeInsetsMake(-8.0, 0.0, 8.0, 0.0);
-        [t replaceCharactersInRange:NSMakeRange(0, t.length) withString:req.paymentAddress];
-        self.clipboardButtonHeight.constant = BUTTON_HEIGHT + 8.0;
-    }
-    else [t replaceCharactersInRange:NSMakeRange(0, t.length) withString:@""];
-
-    self.clipboardLabel.attributedText = t;
     self.tx = nil;
     self.sweepTx = nil;
     self.request = nil;
@@ -603,7 +583,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     self.didAskFee = NO;
     self.removeFee = NO;
     self.scanButton.enabled = self.clipboardButton.enabled = YES;
-    self.clipboardLabel.highlighted = NO;
+    self.clipboardText.text = [[UIPasteboard generalPasteboard] string];
 }
 
 #pragma mark - BRAmountViewControllerDelegate
@@ -846,6 +826,33 @@ fromConnection:(AVCaptureConnection *)connection
     }
 }
 
+#pragma mark UITextViewDelegate
+
+- (void)textViewDidBeginEditing:(UITextView *)textView
+{
+    [UIView animateWithDuration:0.35 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        self.view.center = CGPointMake(self.view.center.x, self.view.bounds.size.height/2.0 - 100.0);
+        self.sendLabel.alpha = 0.0;
+    } completion:nil];
+}
+
+- (void)textViewDidEndEditing:(UITextView *)textView
+{
+    [UIView animateWithDuration:0.35 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+        self.view.center = CGPointMake(self.view.center.x, self.view.bounds.size.height/2.0);
+        self.sendLabel.alpha = 1.0;
+    } completion:nil];
+    
+    [[UIPasteboard generalPasteboard] setString:textView.text];
+}
+
+- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
+{
+    if ([text rangeOfString:@"\n"].location == NSNotFound) return YES;
+    [textView resignFirstResponder];
+    return NO;
+}
+
 #pragma mark UIViewControllerAnimatedTransitioning
 
 // This is used for percent driven interactive transitions, as well as for container controllers that have companion
@@ -938,14 +945,6 @@ presentingController:(UIViewController *)presenting sourceController:(UIViewCont
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed
 {
     return self;
-}
-
-#pragma mark - key/value observer
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change
-context:(void *)context
-{
-    self.clipboardLabel.highlighted = (! self.clipboardButton.enabled || self.clipboardButton.highlighted) ? YES : NO;
 }
 
 @end

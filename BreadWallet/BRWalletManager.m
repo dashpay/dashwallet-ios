@@ -205,6 +205,9 @@ static NSData *getKeychainData(NSString *key)
                                                              fromSeed:self.seed]];
                     
                         if (! [_wallet containsAddress:k.address]) {
+#if DEBUG
+                            abort(); // don't wipe core data for debug builds
+#endif
                             [[NSManagedObject context] performBlockAndWait:^{
                                 [BRAddressEntity deleteObjects:[BRAddressEntity allObjects]];
                                 [BRTransactionEntity deleteObjects:[BRTransactionEntity allObjects]];
