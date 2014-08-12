@@ -48,6 +48,8 @@
 #define LOCK @"\xF0\x9F\x94\x92" // unicode lock symbol U+1F512 (utf-8)
 #define REDX @"\xE2\x9D\x8C"     // unicode cross mark U+274C, red x emoji (utf-8)
 
+#define BUTTON_HEIGHT 44.0
+
 static NSString *sanitizeString(NSString *s)
 {
     NSMutableString *sane = [NSMutableString stringWithString:s ? s : @""];
@@ -65,8 +67,11 @@ static NSString *sanitizeString(NSString *s)
 @property (nonatomic, assign) uint64_t protoReqAmount;
 @property (nonatomic, strong) BRBubbleView *tipView;
 @property (nonatomic, strong) BRScanViewController *scanController;
+@property (nonatomic, strong) id clipboardObserver;
 
-@property (nonatomic, strong) IBOutletCollection(UIButton) NSArray *buttons;
+@property (nonatomic, strong) IBOutlet UIButton *scanButton, *clipboardButton;
+@property (nonatomic, strong) IBOutlet UILabel *clipboardLabel;
+@property (nonatomic, strong) IBOutlet NSLayoutConstraint *clipboardButtonHeight;
 
 @end
 
@@ -76,6 +81,14 @@ static NSString *sanitizeString(NSString *s)
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
+    
+    [self.clipboardButton addObserver:self forKeyPath:@"highlighted" options:NSKeyValueObservingOptionNew context:NULL];
+    
+    self.clipboardObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIPasteboardChangedNotification object:nil queue:nil
+        usingBlock:^(NSNotification *note) {
+            [self cancel:nil];
+        }];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -97,6 +110,11 @@ static NSString *sanitizeString(NSString *s)
     [self hideTips];
 
     [super viewWillDisappear:animated];
+}
+
+- (void)dealloc
+{
+    if (self.clipboardObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.clipboardObserver];
 }
 
 - (void)handleURL:(NSURL *)url
@@ -464,9 +482,8 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     [v popOut];
     
     if ([v.text hasPrefix:SCAN_TIP]) {
-        UIButton *b = self.buttons.lastObject;
-
-        self.tipView = [BRBubbleView viewWithText:CLIPBOARD_TIP tipPoint:CGPointMake(b.center.x, b.center.y + 10.0)
+        self.tipView = [BRBubbleView viewWithText:CLIPBOARD_TIP
+                        tipPoint:CGPointMake(self.clipboardButton.center.x, self.clipboardButton.center.y + 10.0)
                         tipDirection:BRBubbleTipDirectionUp];
         if (self.showTips) self.tipView.text = [self.tipView.text stringByAppendingString:@" (6/6)"];
         self.tipView.backgroundColor = v.backgroundColor;
@@ -499,9 +516,8 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         self.showTips = YES;
     }
 
-    UIButton *b = self.buttons.firstObject;
-
-    self.tipView = [BRBubbleView viewWithText:SCAN_TIP tipPoint:CGPointMake(b.center.x, b.center.y - 10.0)
+    self.tipView = [BRBubbleView viewWithText:SCAN_TIP
+                    tipPoint:CGPointMake(self.scanButton.center.x, self.scanButton.center.y - 10.0)
                     tipDirection:BRBubbleTipDirectionDown];
     if (self.showTips) self.tipView.text = [self.tipView.text stringByAppendingString:@" (5/6)"];
     self.tipView.backgroundColor = [UIColor orangeColor];
@@ -521,7 +537,6 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
 - (IBAction)payToClipboard:(id)sender
 {
-    //TODO: XXXX show clipboard address on button
     if ([self nextTip]) return;
 
     NSString *s = [[[UIPasteboard generalPasteboard] string]
@@ -539,6 +554,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     }
 
     [sender setEnabled:NO];
+    self.clipboardLabel.highlighted = YES;
     self.clearClipboard = YES;
 
     if (! [req isValid] && ! [s isValidBitcoinPrivateKey] && ! [s isValidBitcoinBIP38Key]) {
@@ -561,6 +577,23 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
 - (IBAction)cancel:(id)sender
 {
+    NSString *s = [[[UIPasteboard generalPasteboard] string]
+                   stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    BRPaymentRequest *req = [BRPaymentRequest requestWithString:s];
+    NSMutableAttributedString *t = [[NSMutableAttributedString alloc]
+                                    initWithAttributedString:self.clipboardLabel.attributedText];
+
+    self.clipboardButton.contentEdgeInsets = UIEdgeInsetsZero;
+    self.clipboardButtonHeight.constant = BUTTON_HEIGHT;
+    
+    if ([req.paymentAddress isValidBitcoinAddress]) {
+        self.clipboardButton.contentEdgeInsets = UIEdgeInsetsMake(-8.0, 0.0, 8.0, 0.0);
+        [t replaceCharactersInRange:NSMakeRange(0, t.length) withString:req.paymentAddress];
+        self.clipboardButtonHeight.constant = BUTTON_HEIGHT + 8.0;
+    }
+    else [t replaceCharactersInRange:NSMakeRange(0, t.length) withString:@""];
+
+    self.clipboardLabel.attributedText = t;
     self.tx = nil;
     self.sweepTx = nil;
     self.request = nil;
@@ -569,10 +602,8 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     self.clearClipboard = NO;
     self.didAskFee = NO;
     self.removeFee = NO;
-
-    for (UIButton *button in self.buttons) {
-        button.enabled = YES;
-    }
+    self.scanButton.enabled = self.clipboardButton.enabled = YES;
+    self.clipboardLabel.highlighted = NO;
 }
 
 #pragma mark - BRAmountViewControllerDelegate
@@ -830,7 +861,7 @@ fromConnection:(AVCaptureConnection *)connection
     UIView *v = transitionContext.containerView;
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-    UIImageView *img = [self.buttons.firstObject imageView];
+    UIImageView *img = self.scanButton.imageView;
     UIView *guide = self.scanController.cameraGuide;
     CGPoint p;
 
@@ -872,7 +903,7 @@ fromConnection:(AVCaptureConnection *)connection
         [v addSubview:guide];
         [v insertSubview:to.view belowSubview:from.view];
         [self cancel:nil];
-        img = [self.buttons.firstObject imageView];
+        img = self.scanButton.imageView;
 
         [UIView animateWithDuration:0.8 delay:0.0 usingSpringWithDamping:0.5 initialSpringVelocity:0
         options:UIViewAnimationOptionCurveEaseIn animations:^{
@@ -907,6 +938,14 @@ presentingController:(UIViewController *)presenting sourceController:(UIViewCont
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed
 {
     return self;
+}
+
+#pragma mark - key/value observer
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change
+context:(void *)context
+{
+    self.clipboardLabel.highlighted = (! self.clipboardButton.enabled || self.clipboardButton.highlighted) ? YES : NO;
 }
 
 @end
