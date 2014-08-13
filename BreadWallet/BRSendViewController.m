@@ -58,7 +58,7 @@ static NSString *sanitizeString(NSString *s)
 
 @interface BRSendViewController ()
 
-@property (nonatomic, assign) BOOL clearClipboard, showTips, didAskFee, removeFee;
+@property (nonatomic, assign) BOOL clearClipboard, useClipboard, showTips, didAskFee, removeFee;
 @property (nonatomic, strong) BRTransaction *tx, *sweepTx;
 @property (nonatomic, strong) BRPaymentRequest *request;
 @property (nonatomic, strong) BRPaymentProtocolRequest *protocolRequest;
@@ -85,7 +85,10 @@ static NSString *sanitizeString(NSString *s)
     self.clipboardObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIPasteboardChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if (! self.clipboardText.isFirstResponder) [self cancel:nil];
+            if (! self.clipboardText.isFirstResponder) {
+                [self cancel:nil];
+            }
+            else self.useClipboard = YES;
         }];
 }
 
@@ -537,7 +540,12 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 {
     if ([self nextTip]) return;
 
-    NSString *s = [self.clipboardText.text
+    if (self.useClipboard) {
+        [self cancel:nil];
+    }
+    else [[UIPasteboard generalPasteboard] setString:self.clipboardText.text];
+
+    NSString *s = [[[UIPasteboard generalPasteboard] string]
                    stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     BRPaymentRequest *req = [BRPaymentRequest requestWithString:s];
     NSData *d = s.hexToData.reverse;
@@ -579,9 +587,8 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     self.request = nil;
     self.protocolRequest = nil;
     self.protoReqAmount = 0;
-    self.clearClipboard = NO;
-    self.didAskFee = NO;
-    self.removeFee = NO;
+    self.clearClipboard = self.useClipboard = NO;
+    self.didAskFee = self.removeFee = NO;
     self.scanButton.enabled = self.clipboardButton.enabled = YES;
     self.clipboardText.text = [[UIPasteboard generalPasteboard] string];
 }
@@ -830,6 +837,8 @@ fromConnection:(AVCaptureConnection *)connection
 
 - (void)textViewDidBeginEditing:(UITextView *)textView
 {
+    self.useClipboard = NO;
+    
     [UIView animateWithDuration:0.35 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         self.view.center = CGPointMake(self.view.center.x, self.view.bounds.size.height/2.0 - 100.0);
         self.sendLabel.alpha = 0.0;
@@ -848,6 +857,7 @@ fromConnection:(AVCaptureConnection *)connection
 
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
 {
+    self.useClipboard = NO;
     if ([text rangeOfString:@"\n"].location == NSNotFound) return YES;
     [textView resignFirstResponder];
     return NO;
