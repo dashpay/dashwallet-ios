@@ -85,10 +85,14 @@ static NSString *sanitizeString(NSString *s)
     self.clipboardObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIPasteboardChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if (self.clipboardText.isFirstResponder) {
-                self.useClipboard = YES;
+            if (! self.clipboardText.isFirstResponder) {
+                if (! [self.clipboardText.text isEqual:[[UIPasteboard generalPasteboard] string]]) {
+                    self.clipboardText.text = [[UIPasteboard generalPasteboard] string];
+                    [self.clipboardText scrollRangeToVisible:NSMakeRange(0, 0)];
+                }
             }
-            else self.clipboardText.text = [[UIPasteboard generalPasteboard] string];
+            else self.useClipboard = YES;
+
         }];
 }
 
@@ -475,6 +479,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
 - (BOOL)nextTip
 {
+    [self.clipboardText resignFirstResponder];
     if (self.tipView.alpha < 0.5) return [(id)self.parentViewController.parentViewController nextTip];
 
     BRBubbleView *v = self.tipView;
@@ -540,34 +545,32 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 {
     if ([self nextTip]) return;
 
-    if (self.useClipboard) {
-        self.clipboardText.text = [[UIPasteboard generalPasteboard] string];
-    }
-    else [[UIPasteboard generalPasteboard] setString:self.clipboardText.text];
-
-    NSString *s = [[[UIPasteboard generalPasteboard] string]
+    NSString *p = [[[UIPasteboard generalPasteboard] string]
                    stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    BRPaymentRequest *req = [BRPaymentRequest requestWithString:s];
-    NSData *d = s.hexToData.reverse;
-
-    if (d.length == 32) { // if the clipboard contains a txHash, we know it's not a hex encoded private key
-        for (BRTransaction *tx in [[[BRWalletManager sharedInstance] wallet] recentTransactions]) {
-            if (! [tx.txHash isEqual:d]) continue;
-            req = nil;
-            s = nil;
-            break;
-        }
-    }
+    NSCharacterSet *c = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
 
     [sender setEnabled:NO];
     self.clearClipboard = YES;
 
-    if (! [req isValid] && ! [s isValidBitcoinPrivateKey] && ! [s isValidBitcoinBIP38Key]) {
-        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"clipboard doesn't contain a valid bitcoin address", nil)
-          message:nil delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-        [self performSelector:@selector(cancel:) withObject:self afterDelay:0.1];
+    for (NSString *s in [@[p] arrayByAddingObjectsFromArray:[p componentsSeparatedByCharactersInSet:c]]) {
+        BRPaymentRequest *req = [BRPaymentRequest requestWithString:s];
+        NSData *d = s.hexToData.reverse;
+
+        // if the clipboard contains a txHash, we know it's not a hex encoded private key
+        if (d.length == 32 &&
+            [[[[[BRWalletManager sharedInstance] wallet] recentTransactions] valueForKey:@"txHash"] containsObject:d]) {
+            continue;
+        }
+
+        if ([req isValid] || [s isValidBitcoinPrivateKey] || [s isValidBitcoinBIP38Key]) {
+            [self performSelector:@selector(confirmRequest:) withObject:req afterDelay:0.1]; // delayed to show blue button
+            return;
+        }
     }
-    else [self performSelector:@selector(confirmRequest:) withObject:req afterDelay:0.1]; // delayed to show blue button
+    
+    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"clipboard doesn't contain a valid bitcoin address", nil)
+      message:nil delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+    [self performSelector:@selector(cancel:) withObject:self afterDelay:0.1];
 }
 
 - (IBAction)reset:(id)sender
@@ -590,7 +593,11 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     self.clearClipboard = self.useClipboard = NO;
     self.didAskFee = self.removeFee = NO;
     self.scanButton.enabled = self.clipboardButton.enabled = YES;
-    self.clipboardText.text = [[UIPasteboard generalPasteboard] string];
+
+    if (! [self.clipboardText.text isEqual:[[UIPasteboard generalPasteboard] string]]) {
+        self.clipboardText.text = [[UIPasteboard generalPasteboard] string];
+        [self.clipboardText scrollRangeToVisible:NSMakeRange(0, 0)];
+    }
 }
 
 #pragma mark - BRAmountViewControllerDelegate
