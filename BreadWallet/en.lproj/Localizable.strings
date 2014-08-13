@@ -326,7 +326,7 @@
 "the bitcoin network will receive a fee of %@ (%@)" = "the bitcoin network will receive a fee of %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"The standard bitcoin network fee is %@ (%@). Removing this fee may delay confirmation." = "The standard bitcoin network fee is %1$@ (%2$@). Removing this fee may delay confirmation.";
+"the standard bitcoin network fee for this transaction is %@ (%@)\n\nremoving this fee may delay confirmation" = "the standard bitcoin network fee for this transaction is %1$@ (%2$@)\n\nremoving this fee may delay confirmation";
 
 /* No comment provided by engineer. */
 "This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work.";

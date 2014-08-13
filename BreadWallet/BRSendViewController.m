@@ -283,8 +283,9 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         if (self.tx && [m.wallet blockHeightUntilFree:self.tx] <= [[BRPeerManager sharedInstance] lastBlockHeight] +1 &&
             ! self.didAskFee && [[NSUserDefaults standardUserDefaults] boolForKey:SETTINGS_SKIP_FEE_KEY]) {
             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"bitcoin network fee", nil)
-              message:[NSString stringWithFormat:NSLocalizedString(@"The standard bitcoin network fee is %@ (%@). "
-                                                                   "Removing this fee may delay confirmation.", nil),
+              message:[NSString stringWithFormat:NSLocalizedString(@"the standard bitcoin network fee for this "
+                                                                   "transaction is %@ (%@)\n\nremoving this fee may "
+                                                                   "delay confirmation", nil),
                        [m stringForAmount:self.tx.standardFee], [m localCurrencyStringForAmount:self.tx.standardFee]]
               delegate:self cancelButtonTitle:nil
               otherButtonTitles:NSLocalizedString(@"remove fee", nil), NSLocalizedString(@"continue", nil), nil] show];
@@ -382,11 +383,12 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
         if (self.tx && [m.wallet blockHeightUntilFree:self.tx] <= [[BRPeerManager sharedInstance] lastBlockHeight] +1 &&
             ! self.didAskFee && [[NSUserDefaults standardUserDefaults] boolForKey:SETTINGS_SKIP_FEE_KEY]) {
-            [[[UIAlertView alloc] initWithTitle:nil
-              message:[NSString stringWithFormat:NSLocalizedString(@"The standard bitcoin network fee is %@ (%@). "
-                                                                   "Removing this fee may increase confirmation time.",
-                                                                   nil), [m stringForAmount:self.tx.standardFee],
-                       [m localCurrencyStringForAmount:self.tx.standardFee]] delegate:self cancelButtonTitle:nil
+            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"bitcoin network fee", nil)
+              message:[NSString stringWithFormat:NSLocalizedString(@"the standard bitcoin network fee for this "
+                                                                   "transaction is %@ (%@)\n\nRemoving this fee may "
+                                                                   "delay confirmation", nil),
+                       [m stringForAmount:self.tx.standardFee], [m localCurrencyStringForAmount:self.tx.standardFee]]
+              delegate:self cancelButtonTitle:nil
               otherButtonTitles:NSLocalizedString(@"remove fee", nil), NSLocalizedString(@"continue", nil), nil] show];
             return;
         }
