@@ -80,7 +80,7 @@ static NSString *sanitizeString(NSString *s)
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-    self.clipboardText.textContainerInset = UIEdgeInsetsZero;
+    self.clipboardText.textContainerInset = UIEdgeInsetsMake(8.0, 0.0, 0.0, 0.0);
     
     self.clipboardObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIPasteboardChangedNotification object:nil queue:nil
@@ -838,6 +838,7 @@ fromConnection:(AVCaptureConnection *)connection
 - (void)textViewDidBeginEditing:(UITextView *)textView
 {
     self.useClipboard = NO;
+    [textView scrollRangeToVisible:textView.selectedRange];
     
     [UIView animateWithDuration:0.35 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         self.view.center = CGPointMake(self.view.center.x, self.view.bounds.size.height/2.0 - 100.0);
@@ -860,7 +861,7 @@ fromConnection:(AVCaptureConnection *)connection
 
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
 {
-    if ([text rangeOfString:@"\n"].location == 0 && text.length == 1) {
+    if ([text isEqual:@"\n"]) {
         [textView resignFirstResponder];
         return NO;
     }
