@@ -85,10 +85,10 @@ static NSString *sanitizeString(NSString *s)
     self.clipboardObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIPasteboardChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if (! self.clipboardText.isFirstResponder) {
-                [self cancel:nil];
+            if (self.clipboardText.isFirstResponder) {
+                self.useClipboard = YES;
             }
-            else self.useClipboard = YES;
+            else self.clipboardText.text = [[UIPasteboard generalPasteboard] string];
         }];
 }
 
@@ -541,7 +541,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     if ([self nextTip]) return;
 
     if (self.useClipboard) {
-        [self cancel:nil];
+        self.clipboardText.text = [[UIPasteboard generalPasteboard] string];
     }
     else [[UIPasteboard generalPasteboard] setString:self.clipboardText.text];
 
@@ -852,15 +852,21 @@ fromConnection:(AVCaptureConnection *)connection
         self.sendLabel.alpha = 1.0;
     } completion:nil];
     
-    [[UIPasteboard generalPasteboard] setString:textView.text];
+    if (self.useClipboard) {
+        textView.text = [[UIPasteboard generalPasteboard] string];
+    }
+    else [[UIPasteboard generalPasteboard] setString:textView.text];
 }
 
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
 {
-    self.useClipboard = NO;
-    if ([text rangeOfString:@"\n"].location == NSNotFound) return YES;
-    [textView resignFirstResponder];
-    return NO;
+    if ([text rangeOfString:@"\n"].location == 0 && text.length == 1) {
+        [textView resignFirstResponder];
+        return NO;
+    }
+    
+    if (text.length > 0 || range.length > 0) self.useClipboard = NO;
+    return YES;
 }
 
 #pragma mark UIViewControllerAnimatedTransitioning
