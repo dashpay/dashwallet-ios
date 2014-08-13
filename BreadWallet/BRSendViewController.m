@@ -85,14 +85,10 @@ static NSString *sanitizeString(NSString *s)
     self.clipboardObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIPasteboardChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if (! self.clipboardText.isFirstResponder) {
-                if (! [self.clipboardText.text isEqual:[[UIPasteboard generalPasteboard] string]]) {
-                    self.clipboardText.text = [[UIPasteboard generalPasteboard] string];
-                    [self.clipboardText scrollRangeToVisible:NSMakeRange(0, 0)];
-                }
+            if (self.clipboardText.isFirstResponder) {
+                self.useClipboard = YES;
             }
-            else self.useClipboard = YES;
-
+            else [self updateClipboardText];
         }];
 }
 
@@ -511,6 +507,42 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide"];
 }
 
+- (void)updateClipboardText
+{
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    NSString *p = [[[UIPasteboard generalPasteboard] string]
+                   stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    NSCharacterSet *c = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
+
+    self.clipboardText.text = nil;
+    if (! p) p = @"";
+    
+    for (NSString *s in [@[p] arrayByAddingObjectsFromArray:[p componentsSeparatedByCharactersInSet:c]]) {
+        BRPaymentRequest *req = [BRPaymentRequest requestWithString:s];
+        NSData *d = s.hexToData.reverse;
+        
+        // if the clipboard contains a known txHash, we know it's not a hex encoded private key
+        if (d.length == 32 && [[m.wallet.recentTransactions valueForKey:@"txHash"] containsObject:d]) continue;
+        
+        if ([req.paymentAddress isValidBitcoinAddress]) {
+            self.clipboardText.text = (req.label.length > 0) ? sanitizeString(req.label) : req.paymentAddress;
+            break;
+        }
+        else if ([req isValid] || [s isValidBitcoinPrivateKey] || [s isValidBitcoinBIP38Key]) {
+            self.clipboardText.text = sanitizeString(s);
+            break;
+        }
+    }
+
+    if (self.clipboardText.text.length == 0) self.clipboardText.text = sanitizeString(p);
+
+    if ([self.clipboardText.text sizeWithAttributes:@{NSFontAttributeName:self.clipboardText.font}].width < 210.0) {
+        self.clipboardText.text = [@"    " stringByAppendingString:self.clipboardText.text];
+    }
+    
+    [self.clipboardText scrollRangeToVisible:NSMakeRange(0, 0)];
+}
+
 #pragma mark - IBAction
 
 - (IBAction)tip:(id)sender
@@ -545,25 +577,24 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 {
     if ([self nextTip]) return;
 
+    BRWalletManager *m = [BRWalletManager sharedInstance];
     NSString *p = [[[UIPasteboard generalPasteboard] string]
                    stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     NSCharacterSet *c = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
 
     [sender setEnabled:NO];
     self.clearClipboard = YES;
+    if (! p) p = @"";
 
     for (NSString *s in [@[p] arrayByAddingObjectsFromArray:[p componentsSeparatedByCharactersInSet:c]]) {
         BRPaymentRequest *req = [BRPaymentRequest requestWithString:s];
         NSData *d = s.hexToData.reverse;
 
-        // if the clipboard contains a txHash, we know it's not a hex encoded private key
-        if (d.length == 32 &&
-            [[[[[BRWalletManager sharedInstance] wallet] recentTransactions] valueForKey:@"txHash"] containsObject:d]) {
-            continue;
-        }
-
+        // if the clipboard contains a known txHash, we know it's not a hex encoded private key
+        if (d.length == 32 && [[m.wallet.recentTransactions valueForKey:@"txHash"] containsObject:d]) continue;
+        
         if ([req isValid] || [s isValidBitcoinPrivateKey] || [s isValidBitcoinBIP38Key]) {
-            [self performSelector:@selector(confirmRequest:) withObject:req afterDelay:0.1]; // delayed to show blue button
+            [self performSelector:@selector(confirmRequest:) withObject:req afterDelay:0.1];// delayed to show highlight
             return;
         }
     }
@@ -593,11 +624,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     self.clearClipboard = self.useClipboard = NO;
     self.didAskFee = self.removeFee = NO;
     self.scanButton.enabled = self.clipboardButton.enabled = YES;
-
-    if (! [self.clipboardText.text isEqual:[[UIPasteboard generalPasteboard] string]]) {
-        self.clipboardText.text = [[UIPasteboard generalPasteboard] string];
-        [self.clipboardText scrollRangeToVisible:NSMakeRange(0, 0)];
-    }
+    [self updateClipboardText];
 }
 
 #pragma mark - BRAmountViewControllerDelegate
@@ -845,6 +872,7 @@ fromConnection:(AVCaptureConnection *)connection
 - (void)textViewDidBeginEditing:(UITextView *)textView
 {
     self.useClipboard = NO;
+    self.clipboardText.text = [[UIPasteboard generalPasteboard] string];
     [textView scrollRangeToVisible:textView.selectedRange];
     
     [UIView animateWithDuration:0.35 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
@@ -860,10 +888,8 @@ fromConnection:(AVCaptureConnection *)connection
         self.sendLabel.alpha = 1.0;
     } completion:nil];
     
-    if (self.useClipboard) {
-        textView.text = [[UIPasteboard generalPasteboard] string];
-    }
-    else [[UIPasteboard generalPasteboard] setString:textView.text];
+    if (! self.useClipboard) [[UIPasteboard generalPasteboard] setString:textView.text];
+    [self updateClipboardText];
 }
 
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
