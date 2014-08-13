@@ -385,7 +385,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
             ! self.didAskFee && [[NSUserDefaults standardUserDefaults] boolForKey:SETTINGS_SKIP_FEE_KEY]) {
             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"bitcoin network fee", nil)
               message:[NSString stringWithFormat:NSLocalizedString(@"the standard bitcoin network fee for this "
-                                                                   "transaction is %@ (%@)\n\nRemoving this fee may "
+                                                                   "transaction is %@ (%@)\n\nremoving this fee may "
                                                                    "delay confirmation", nil),
                        [m stringForAmount:self.tx.standardFee], [m localCurrencyStringForAmount:self.tx.standardFee]]
               delegate:self cancelButtonTitle:nil
@@ -516,8 +516,8 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
                    stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     NSCharacterSet *c = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
 
-    self.clipboardText.text = nil;
     if (! p) p = @"";
+    self.clipboardText.text = @"";
     
     for (NSString *s in [@[p] arrayByAddingObjectsFromArray:[p componentsSeparatedByCharactersInSet:c]]) {
         BRPaymentRequest *req = [BRPaymentRequest requestWithString:s];
@@ -535,8 +535,6 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
             break;
         }
     }
-
-    if (self.clipboardText.text.length == 0) self.clipboardText.text = sanitizeString(p);
 
     if ([self.clipboardText.text sizeWithAttributes:@{NSFontAttributeName:self.clipboardText.font}].width < 210.0) {
         self.clipboardText.text = [@"    " stringByAppendingString:self.clipboardText.text];
