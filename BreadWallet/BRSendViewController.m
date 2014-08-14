@@ -120,6 +120,7 @@ static NSString *sanitizeString(NSString *s)
 
 - (void)handleURL:(NSURL *)url
 {
+    //TODO: XXXX custom url splash image per: "Providing Launch Images for Custom URL Schemes."
     if ([url.scheme isEqual:@"bitcoin"]) {
         [self confirmRequest:[BRPaymentRequest requestWithURL:url]];
     }

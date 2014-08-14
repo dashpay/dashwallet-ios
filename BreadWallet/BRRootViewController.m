@@ -236,6 +236,8 @@
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
         }];
     
+    //TODO: XXXX applicationProtectedDataDidBecomeAvailable observer
+    
     self.reachability = [Reachability reachabilityForInternetConnection];
     [self.reachability startNotifier];
 

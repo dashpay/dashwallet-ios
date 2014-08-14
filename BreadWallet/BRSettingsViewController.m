@@ -277,12 +277,12 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *transactionIdent = @"TransactionCell", *actionIdent = @"ActionCell", *toggleIdent = @"ToggleCell",
-                    *disclosureIdent = @"DisclosureCell", *selectorIdent = @"SelectorCell",
-                    *restoreIdent = @"RestoreCell", *selectorOptionCell = @"SelectorOptionCell";
+    static NSString *noTxIdent = @"NoTxCell", *transactionIdent = @"TransactionCell", *actionIdent = @"ActionCell",
+                    *toggleIdent = @"ToggleCell", *disclosureIdent = @"DisclosureCell", *restoreIdent = @"RestoreCell",
+                    *selectorIdent = @"SelectorCell", *selectorOptionCell = @"SelectorOptionCell";
     UITableViewCell *cell = nil;
-    UILabel *textLabel, *unconfirmedLabel, *sentLabel, *noTxLabel, *localCurrencyLabel, *balanceLabel,
-            *localBalanceLabel, *toggleLabel;
+    UILabel *textLabel, *unconfirmedLabel, *sentLabel, *localCurrencyLabel, *balanceLabel, *localBalanceLabel,
+            *toggleLabel;
     UISwitch *toggleSwitch;
     BRCopyLabel *detailTextLabel;
     BRWalletManager *m = [BRWalletManager sharedInstance];
@@ -304,35 +304,19 @@
         case 0:
             if (indexPath.row > 0 && indexPath.row >= self.transactions.count) {
                 cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
-                [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
                 cell.textLabel.text = NSLocalizedString(@"more...", nil);
                 cell.imageView.image = nil;
-                return cell;
             }
-        
-            cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent];
-            [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
-            
-            textLabel = (id)[cell viewWithTag:1];
-            detailTextLabel = (id)[cell viewWithTag:2];
-            unconfirmedLabel = (id)[cell viewWithTag:3];
-            noTxLabel = (id)[cell viewWithTag:4];
-            localCurrencyLabel = (id)[cell viewWithTag:5];
-            sentLabel = (id)[cell viewWithTag:6];
-            balanceLabel = (id)[cell viewWithTag:7];
-            localBalanceLabel = (id)[cell viewWithTag:8];
+            else if (self.transactions.count > 0) {
+                cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent];
+                textLabel = (id)[cell viewWithTag:1];
+                detailTextLabel = (id)[cell viewWithTag:2];
+                unconfirmedLabel = (id)[cell viewWithTag:3];
+                localCurrencyLabel = (id)[cell viewWithTag:5];
+                sentLabel = (id)[cell viewWithTag:6];
+                balanceLabel = (id)[cell viewWithTag:7];
+                localBalanceLabel = (id)[cell viewWithTag:8];
 
-            if (self.transactions.count == 0) {
-                noTxLabel.hidden = NO;
-                textLabel.text = nil;
-                localCurrencyLabel.text = nil;
-                detailTextLabel.text = nil;
-                balanceLabel.text = nil;
-                localBalanceLabel.text = nil;
-                unconfirmedLabel.hidden = YES;
-                sentLabel.hidden = YES;
-            }
-            else {
                 BRTransaction *tx = self.transactions[indexPath.row];
                 uint64_t received = [m.wallet amountReceivedFromTransaction:tx],
                          sent = [m.wallet amountSentByTransaction:tx],
@@ -340,7 +324,6 @@
                 uint32_t height = [[BRPeerManager sharedInstance] lastBlockHeight],
                          confirms = (tx.blockHeight == TX_UNCONFIRMED) ? 0 : (height - tx.blockHeight) + 1;
 
-                noTxLabel.hidden = YES;
                 sentLabel.hidden = YES;
                 unconfirmedLabel.hidden = NO;
                 detailTextLabel.text = [self dateForTx:tx];
@@ -404,12 +387,12 @@
                     sentLabel.highlightedTextColor = sentLabel.textColor;
                 }
             }
-
+            else cell = [tableView dequeueReusableCellWithIdentifier:noTxIdent];
+            
             break;
 
         case 1:
             cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
-            [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
 
             switch (indexPath.row) {
                 case 0:
@@ -429,7 +412,6 @@
 
         case 2:
             cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
-            [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
 
             switch (indexPath.row) {
                 case 0:
@@ -461,13 +443,11 @@
             switch (indexPath.row) {
                 case 0:
                     cell = [tableView dequeueReusableCellWithIdentifier:selectorIdent];
-                    [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
                     cell.detailTextLabel.text = m.localCurrencyCode;
                     break;
 
                 case 1:
                     cell = [tableView dequeueReusableCellWithIdentifier:toggleIdent];
-                    [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
                     toggleLabel = (id)[cell viewWithTag:2];
                     toggleSwitch = (id)[cell viewWithTag:3];
                     toggleSwitch.on = [[NSUserDefaults standardUserDefaults] boolForKey:SETTINGS_SKIP_FEE_KEY];
@@ -483,7 +463,6 @@
 
         case 4:
             cell = [tableView dequeueReusableCellWithIdentifier:restoreIdent];
-            [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
             break;
 
         default:
@@ -491,6 +470,7 @@
                      (int)indexPath.section);
     }
     
+    [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
     return cell;
 }
 
@@ -650,6 +630,13 @@
                     [s replaceCharactersInRange:[s.string rangeOfString:@"%net%"] withString:@""];
                     l.attributedText = s;
                     [l.superview.gestureRecognizers.firstObject addTarget:self action:@selector(about:)];
+                    
+#ifdef DEBUG
+                    [(UITextView *)[c.view viewWithTag:412]
+                     setText:[[[NSUserDefaults standardUserDefaults] objectForKey:@"debug_backgroundfetch"]
+                              description]];
+#endif
+                    
                     [self.navigationController pushViewController:c animated:YES];
                     break;
                     

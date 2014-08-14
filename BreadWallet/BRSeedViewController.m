@@ -34,9 +34,10 @@
 @interface BRSeedViewController ()
 
 //TODO: create a secure version of UILabel and use it for seedLabel, but make sure there's an accessibility work around
-@property (nonatomic, strong) IBOutlet UILabel *seedLabel, *warningLabel;
-@property (nonatomic, strong) IBOutlet UIView *labelFrame;
-@property (nonatomic, strong) IBOutlet UIImageView *wallpaper, *logo;
+@property (nonatomic, strong) IBOutlet UILabel *seedLabel;
+@property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
+@property (nonatomic, strong) IBOutlet UIToolbar *toolbar;
+@property (nonatomic, strong) IBOutlet UIBarButtonItem *doneButton;
 
 @property (nonatomic, strong) id resignActiveObserver, screenshotObserver;
 
@@ -96,14 +97,15 @@
  
     // remove done button if we're not the root of the nav stack
     if (self.navigationController.viewControllers.firstObject != self) {
-        self.navigationItem.leftBarButtonItem = nil;
+        self.toolbar.hidden = YES;
+        //self.navigationItem.leftBarButtonItem = nil;
     }
 
     if ([[UIApplication sharedApplication] isProtectedDataAvailable] && ! m.wallet) {
         [m generateRandomSeed];
         [[BRPeerManager sharedInstance] connect];
     }
-    else self.navigationItem.rightBarButtonItem = nil;
+    //else self.navigationItem.rightBarButtonItem = nil;
 
     [UIView animateWithDuration:0.1 animations:^{
         self.seedLabel.alpha = 1.0;
@@ -124,12 +126,16 @@
 
 - (IBAction)done:(id)sender
 {
-    //TODO: XXXXX show 'remind me later' as the only option for 10-15 seconds
     if (self.navigationController.viewControllers.firstObject != self) return;
 
     self.navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
     [self.navigationController.presentingViewController.presentingViewController dismissViewControllerAnimated:YES
      completion:nil];
+}
+
+- (IBAction)remind:(id)sender
+{
+    
 }
 
 - (IBAction)refresh:(id)sender
