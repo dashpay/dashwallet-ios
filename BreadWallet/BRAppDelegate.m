@@ -37,6 +37,7 @@
     // Override point for customization after application launch.
 
     // use background fetch to stay synced with the blockchain
+    // BUG: XXXX this doesn't seem to work, is it compatible with data protection settings?
     [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
 
     UIPageControl.appearance.pageIndicatorTintColor = [UIColor lightGrayColor];

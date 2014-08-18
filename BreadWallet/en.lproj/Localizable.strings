@@ -137,7 +137,10 @@
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device.";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your backup phrase or they can spend your bitcoins." = "DO NOT let anyone see your backup phrase or they can spend your bitcoins.";
+"DO NOT let anyone see your backup phrase or they can spend your bitcoins.\n\nDO NOT take a screenshot. They are visible to other apps and devices." = "DO NOT let anyone see your backup phrase or they can spend your bitcoins.\n\nDO NOT take a screenshot. They are visible to other apps and devices.";
+
+/* No comment provided by engineer. */
+"done" = "done";
 
 /* No comment provided by engineer. */
 "double spend" = "double spend";
@@ -389,7 +392,7 @@
 "waiting for confirmation" = "waiting for confirmation";
 
 /* No comment provided by engineer. */
-"waiting for network relay" = "waiting for network relay";
+"waiting for network propagation" = "waiting for network propagation";
 
 /* No comment provided by engineer. */
 "wallet address" = "wallet address";

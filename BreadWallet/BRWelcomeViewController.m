@@ -37,6 +37,8 @@
 
 @property (nonatomic, strong) IBOutlet UIView *paralax, *wallpaper;
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *logoXCenter, *walletXCenter, *restoreXCenter;
+@property (nonatomic, strong) IBOutlet UIButton *generateButton;
+
 @end
 
 @implementation BRWelcomeViewController
@@ -140,18 +142,64 @@
     });
 }
 
-//- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-//    [super prepareForSegue:segue sender:sender];
-//
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    [super prepareForSegue:segue sender:sender];
+
 //    [segue.destinationViewController setTransitioningDelegate:self];
 //    [segue.destinationViewController setModalPresentationStyle:UIModalPresentationCustom];
-//}
+
+    self.generateButton = (id)[[segue.destinationViewController view] viewWithTag:1];
+    [self.generateButton addTarget:self action:@selector(generate:) forControlEvents:UIControlEventTouchUpInside];
+}
 
 - (void)viewDidLayoutSubviews
 {
     if (self.paralax.superview == self.view) {
         self.paralax.center = CGPointMake(self.paralax.center.x, self.paralax.superview.frame.size.height/2);
     }
+}
+
+- (void)indicate
+{
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(indicate) object:nil];
+    
+    static NSMutableAttributedString *title = nil;
+    static int count = 0;
+    
+    if (! title) {
+        title = [[NSMutableAttributedString alloc]
+                 initWithAttributedString:[self.generateButton attributedTitleForState:UIControlStateDisabled]];
+    }
+    
+    [title addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:1.0 green:0.5 blue:0.0 alpha:1.0]
+     range:NSMakeRange(12, 6)];
+
+    if (count++ % 4) {
+        [title addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:1.0 green:0.5 blue:0.0 alpha:0.3]
+         range:NSMakeRange(11 + ((count - 1) % 4)*2, 1)];
+    }
+    
+    [self.generateButton setAttributedTitle:title forState:UIControlStateDisabled];
+    self.generateButton.enabled = YES;
+    self.generateButton.enabled = NO;
+    [self performSelector:@selector(indicate) withObject:nil afterDelay:0.5];
+}
+
+#pragma mark IBAction
+
+- (IBAction)generate:(id)sender
+{
+    // make the user wait a few seconds so they'll get bored enough to read the information on the screen
+    [self.navigationController.navigationBar.topItem setHidesBackButton:YES animated:YES];
+    [sender setEnabled:NO];
+    [self indicate];
+
+    UINavigationController *seedNav = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedNav"];
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 7*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+        [NSObject cancelPreviousPerformRequestsWithTarget:self];
+        [self.navigationController presentViewController:seedNav animated:YES completion:nil];
+    });
 }
 
 #pragma mark UIViewControllerAnimatedTransitioning

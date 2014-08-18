@@ -362,14 +362,14 @@
                             <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="RLt-8v-uP1" userLabel="Error Bar">
                                 <rect key="frame" x="0.0" y="25" width="320" height="26"/>
                                 <subviews>
-                                    <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="M7x-tC-dff">
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="M7x-tC-dff">
                                         <rect key="frame" x="0.0" y="0.0" width="320" height="1"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="0.5" id="71x-I5-Oh5"/>
                                         </constraints>
                                     </view>
-                                    <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="RXe-Yw-Kar">
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="RXe-Yw-Kar">
                                         <rect key="frame" x="0.0" y="25" width="320" height="1"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                         <constraints>
@@ -594,7 +594,7 @@
                                     <outlet property="delegate" destination="4fz-p1-NND" id="Vem-vt-UiS"/>
                                 </connections>
                             </textField>
-                            <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="pRz-u7-mvg">
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pRz-u7-mvg">
                                 <rect key="frame" x="20" y="125" width="280" height="1"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.25" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                 <constraints>
@@ -829,7 +829,7 @@
                                     <action selector="del:" destination="4fz-p1-NND" eventType="touchUpInside" id="9Ve-9y-xFG"/>
                                 </connections>
                             </button>
-                            <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9gG-xZ-TIV">
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9gG-xZ-TIV">
                                 <rect key="frame" x="20" y="522" width="280" height="1"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.25" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                 <constraints>
@@ -1572,7 +1572,7 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ePg-dk-slQ">
                                 <rect key="frame" x="0.0" y="184" width="320" height="200"/>
                                 <subviews>
-                                    <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Wyo-tk-JbR">
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Wyo-tk-JbR">
                                         <rect key="frame" x="0.0" y="0.0" width="320" height="1"/>
                                         <color key="backgroundColor" white="0.67000000000000004" alpha="1" colorSpace="calibratedWhite"/>
                                         <constraints>
@@ -1629,7 +1629,7 @@ Cg
                                         </attributedString>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="G4X-xw-xAl">
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="G4X-xw-xAl">
                                         <rect key="frame" x="0.0" y="199" width="320" height="1"/>
                                         <color key="backgroundColor" white="0.67000000000000004" alpha="1" colorSpace="calibratedWhite"/>
                                         <constraints>
@@ -1704,49 +1704,91 @@ Cg
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="start a new wallet by generating a wallet backup phrase" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="264" translatesAutoresizingMaskIntoConstraints="NO" id="wDZ-DN-szv">
-                                <rect key="frame" x="28" y="146" width="264" height="42"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="17"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="266" translatesAutoresizingMaskIntoConstraints="NO" id="wDZ-DN-szv">
+                                <rect key="frame" x="27" y="137" width="266" height="94"/>
+                                <attributedString key="attributedText">
+                                    <fragment>
+                                        <string key="content">start a new wallet by generating a wallet backup phrase
+</string>
+                                        <attributes>
+                                            <color key="NSColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                            <font key="NSFont" size="17" name="HelveticaNeue-Bold"/>
+                                            <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="truncatingTail" baseWritingDirection="natural"/>
+                                        </attributes>
+                                    </fragment>
+                                    <fragment>
+                                        <string key="content">
+Use it to restore your wallet on another device if this one is ever lost or broken.</string>
+                                        <attributes>
+                                            <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                            <font key="NSFont" size="15" name="HelveticaNeue"/>
+                                            <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="truncatingTail" baseWritingDirection="natural"/>
+                                        </attributes>
+                                    </fragment>
+                                </attributedString>
                                 <nil key="highlightedColor"/>
                                 <color key="shadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                 <size key="shadowOffset" width="0.0" height="1"/>
                             </label>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="1337" contentMode="left" text="KEEP IT SECRET. Anyone who sees your backup phrase can spend your bitcoins." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="297" translatesAutoresizingMaskIntoConstraints="NO" id="nEz-ij-2aZ">
-                                <rect key="frame" x="12" y="200" width="297" height="39"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="16"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                <nil key="highlightedColor"/>
-                                <color key="shadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
-                                <size key="shadowOffset" width="0.0" height="1"/>
-                            </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="A4M-yq-26d">
+                            <button opaque="NO" tag="1" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="A4M-yq-26d">
                                 <rect key="frame" x="57" y="362" width="205" height="44"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="44" id="8HY-tn-QvG"/>
                                     <constraint firstAttribute="width" constant="205" id="opI-fF-cVd"/>
                                 </constraints>
-                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
-                                <state key="normal" title="generate backup phrase" backgroundImage="button-bg-white">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <state key="normal" backgroundImage="button-bg-white">
+                                    <attributedString key="attributedTitle">
+                                        <fragment content="generate backup phrase">
+                                            <attributes>
+                                                <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <font key="NSFont" size="17" name="HelveticaNeue"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
                                 </state>
-                                <state key="disabled" backgroundImage="button-bg-disabled"/>
+                                <state key="disabled" backgroundImage="button-bg-white-pressed">
+                                    <attributedString key="attributedTitle">
+                                        <fragment content="  generating">
+                                            <attributes>
+                                                <color key="NSColor" red="0.99215692280000001" green="0.50196081400000003" blue="0.13725490870000001" alpha="1" colorSpace="deviceRGB"/>
+                                                <font key="NSFont" size="17" name="HelveticaNeue"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content=" ● ● ●">
+                                            <attributes>
+                                                <color key="NSColor" red="0.99215692280000001" green="0.50196081400000003" blue="0.13725490870000001" alpha="1" colorSpace="deviceRGB"/>
+                                                <font key="NSFont" size="9" name="HelveticaNeue"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
                                 <state key="highlighted" backgroundImage="button-bg-white-pressed">
-                                    <color key="titleColor" red="0.99215692280000001" green="0.50196081400000003" blue="0.13725490870000001" alpha="1" colorSpace="deviceRGB"/>
-                                    <color key="titleShadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <attributedString key="attributedTitle">
+                                        <fragment content="  generating">
+                                            <attributes>
+                                                <color key="NSColor" red="0.98039215686274506" green="0.41568627450980394" blue="0.10980392156862745" alpha="1" colorSpace="calibratedRGB"/>
+                                                <font key="NSFont" size="17" name="HelveticaNeue"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                        <fragment content=" ● ● ●">
+                                            <attributes>
+                                                <color key="NSColor" red="0.98039215686274506" green="0.41568627450980394" blue="0.10980392156862745" alpha="1" colorSpace="calibratedRGB"/>
+                                                <font key="NSFont" size="9" name="HelveticaNeue"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
                                 </state>
-                                <connections>
-                                    <segue destination="go5-eQ-1NR" kind="modal" modalTransitionStyle="flipHorizontal" id="saz-V6-W63"/>
-                                </connections>
                             </button>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstAttribute="centerX" secondItem="wDZ-DN-szv" secondAttribute="centerX" id="Ci7-vy-9rd"/>
-                            <constraint firstAttribute="centerX" secondItem="nEz-ij-2aZ" secondAttribute="centerX" id="PF3-gN-gUh"/>
-                            <constraint firstAttribute="centerY" secondItem="wDZ-DN-szv" secondAttribute="centerY" constant="117" id="dJv-Ep-XBg"/>
-                            <constraint firstAttribute="centerY" secondItem="nEz-ij-2aZ" secondAttribute="centerY" constant="65" id="o4d-EW-Icy"/>
+                            <constraint firstAttribute="centerY" secondItem="wDZ-DN-szv" secondAttribute="centerY" constant="100" id="dJv-Ep-XBg"/>
                             <constraint firstAttribute="centerX" secondItem="A4M-yq-26d" secondAttribute="centerX" id="uWk-tD-YFh"/>
                             <constraint firstItem="A4M-yq-26d" firstAttribute="centerY" secondItem="ttV-Ha-QVS" secondAttribute="centerY" constant="100" id="wJO-uI-4MN"/>
                         </constraints>
@@ -2801,7 +2843,7 @@ Cgo
         <!--Navigation Controller-->
         <scene sceneID="rwD-Uu-WFw">
             <objects>
-                <navigationController definesPresentationContext="YES" modalTransitionStyle="flipHorizontal" id="go5-eQ-1NR" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="SeedNav" definesPresentationContext="YES" modalTransitionStyle="flipHorizontal" id="go5-eQ-1NR" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="naK-xP-h9B" customClass="BRNavigationBar">
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -2829,7 +2871,7 @@ Cgo
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                             </imageView>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="280" translatesAutoresizingMaskIntoConstraints="NO" id="EQG-Km-ZKY">
-                                <rect key="frame" x="20" y="150" width="280" height="74"/>
+                                <rect key="frame" x="20" y="144" width="280" height="80"/>
                                 <attributedString key="attributedText">
                                     <fragment content="this is your wallet backup phrase:">
                                         <attributes>
@@ -2840,7 +2882,7 @@ Cgo
                                     </fragment>
                                     <fragment>
                                         <string key="content" base64-UTF8="YES">
-Cgo
+Cg
 </string>
                                         <attributes>
                                             <color key="NSColor" white="0.40000000000000002" alpha="1" colorSpace="calibratedWhite"/>
@@ -2849,7 +2891,26 @@ Cgo
                                             <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
                                         </attributes>
                                     </fragment>
-                                    <fragment content="WRITE IT DOWN and keep it safe. Lose it and you may lose your bitcoins forever.">
+                                    <fragment>
+                                        <string key="content" base64-UTF8="YES">
+Cg
+</string>
+                                        <attributes>
+                                            <color key="NSColor" white="0.40000000000000002" alpha="1" colorSpace="calibratedWhite"/>
+                                            <font key="NSFont" size="16" name="HelveticaNeue-Light"/>
+                                            <font key="NSOriginalFont" size="16" name="HelveticaNeue-Light"/>
+                                            <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                        </attributes>
+                                    </fragment>
+                                    <fragment content="WR">
+                                        <attributes>
+                                            <color key="NSColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                            <font key="NSFont" size="16" name="HelveticaNeue-Light"/>
+                                            <font key="NSOriginalFont" size="16" name="HelveticaNeue-Light"/>
+                                            <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                        </attributes>
+                                    </fragment>
+                                    <fragment content="ITE IT DOWN and keep it safe. Lose it and you may lose your bitcoins forever.">
                                         <attributes>
                                             <color key="NSColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                             <font key="NSFont" size="16" name="HelveticaNeue-Light"/>
@@ -2864,7 +2925,7 @@ Cgo
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ZPH-1d-tW9">
                                 <rect key="frame" x="0.0" y="264" width="320" height="105"/>
                                 <subviews>
-                                    <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="LK7-eX-ZgB">
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="LK7-eX-ZgB">
                                         <rect key="frame" x="0.0" y="0.0" width="320" height="1"/>
                                         <color key="backgroundColor" white="0.67000000000000004" alpha="1" colorSpace="calibratedWhite"/>
                                         <constraints>
@@ -2877,7 +2938,7 @@ Cgo
                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="mcG-j3-eTm">
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mcG-j3-eTm">
                                         <rect key="frame" x="0.0" y="104" width="320" height="1"/>
                                         <color key="backgroundColor" white="0.67000000000000004" alpha="1" colorSpace="calibratedWhite"/>
                                         <constraints>
@@ -2911,34 +2972,53 @@ Cgo
                                     <action selector="copy:" destination="IA2-75-hxO" eventType="touchUpInside" id="Cg2-jk-qEx"/>
                                 </connections>
                             </button>
-                            <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="8KJ-Le-F0y">
+                            <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="8KJ-Le-F0y">
                                 <rect key="frame" x="0.0" y="524" width="320" height="44"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="44" id="tfj-bh-pvf"/>
+                                </constraints>
                                 <items>
-                                    <barButtonItem title="remind me later" id="7ZZ-kY-bvj">
-                                        <connections>
-                                            <action selector="remind:" destination="IA2-75-hxO" id="kQN-mJ-oJB"/>
-                                        </connections>
-                                    </barButtonItem>
                                     <barButtonItem style="plain" systemItem="flexibleSpace" id="S2f-nr-mrg"/>
-                                    <barButtonItem title="done" id="QQS-Me-RNh">
+                                    <barButtonItem title="remind me later" id="QQS-Me-RNh">
                                         <connections>
                                             <action selector="done:" destination="IA2-75-hxO" id="gSn-Kd-vS7"/>
                                         </connections>
                                     </barButtonItem>
                                 </items>
                             </toolbar>
+                            <switch hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="AzK-CK-zn8">
+                                <rect key="frame" x="195" y="431" width="51" height="31"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <connections>
+                                    <action selector="writeChanged:" destination="IA2-75-hxO" eventType="valueChanged" id="ZIO-mZ-Ufz"/>
+                                </connections>
+                            </switch>
+                            <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="I wrote it down:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cyp-mV-Bhd">
+                                <rect key="frame" x="74" y="369" width="113" height="155"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <constraints>
+                            <constraint firstItem="AzK-CK-zn8" firstAttribute="leading" secondItem="cyp-mV-Bhd" secondAttribute="trailing" constant="8" id="3ev-ee-WaB"/>
                             <constraint firstAttribute="trailing" secondItem="f0J-5L-WJY" secondAttribute="trailing" id="97N-Hh-Wkc"/>
+                            <constraint firstItem="8KJ-Le-F0y" firstAttribute="leading" secondItem="7xM-f1-iRp" secondAttribute="leading" id="Duy-qc-fl9"/>
                             <constraint firstItem="ZPH-1d-tW9" firstAttribute="centerY" secondItem="7xM-f1-iRp" secondAttribute="centerY" constant="32" id="FT9-CA-Rxu"/>
+                            <constraint firstItem="NXP-4T-hz3" firstAttribute="top" secondItem="8KJ-Le-F0y" secondAttribute="bottom" id="Jkm-eH-Kvj"/>
+                            <constraint firstAttribute="centerX" secondItem="cyp-mV-Bhd" secondAttribute="centerX" constant="30" id="MPp-p2-sIb"/>
+                            <constraint firstItem="8KJ-Le-F0y" firstAttribute="top" secondItem="cyp-mV-Bhd" secondAttribute="bottom" id="N7H-dH-cdD"/>
+                            <constraint firstItem="cyp-mV-Bhd" firstAttribute="top" secondItem="ZPH-1d-tW9" secondAttribute="bottom" id="OfR-ik-g8N"/>
                             <constraint firstItem="EQG-Km-ZKY" firstAttribute="centerX" secondItem="ZPH-1d-tW9" secondAttribute="centerX" constant="-0.5" id="iYR-xb-lmt"/>
+                            <constraint firstItem="cyp-mV-Bhd" firstAttribute="centerY" secondItem="AzK-CK-zn8" secondAttribute="centerY" id="jj4-DL-t3E"/>
                             <constraint firstAttribute="trailing" secondItem="ZPH-1d-tW9" secondAttribute="trailing" id="mck-cz-C1z"/>
                             <constraint firstAttribute="bottom" secondItem="f0J-5L-WJY" secondAttribute="bottom" id="raz-kN-0dS"/>
                             <constraint firstItem="ZPH-1d-tW9" firstAttribute="top" secondItem="EQG-Km-ZKY" secondAttribute="bottom" constant="40" id="uLa-WH-pVa"/>
                             <constraint firstItem="ZPH-1d-tW9" firstAttribute="leading" secondItem="7xM-f1-iRp" secondAttribute="leading" id="urF-Kc-dFa"/>
+                            <constraint firstAttribute="trailing" secondItem="8KJ-Le-F0y" secondAttribute="trailing" id="zoK-lE-ReZ"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="pSA-60-Zeg">
@@ -2955,10 +3035,12 @@ Cgo
                         </view>
                     </navigationItem>
                     <connections>
-                        <outlet property="doneButton" destination="QQS-Me-RNh" id="tdu-zd-mqB"/>
+                        <outlet property="remindButton" destination="QQS-Me-RNh" id="Jkq-bu-28n"/>
                         <outlet property="seedLabel" destination="dz8-9E-hrc" id="EuI-Ib-8iZ"/>
                         <outlet property="toolbar" destination="8KJ-Le-F0y" id="nRb-6n-qUI"/>
                         <outlet property="wallpaper" destination="dqh-Fj-S7p" id="9zN-jz-mcU"/>
+                        <outlet property="writeLabel" destination="cyp-mV-Bhd" id="n4P-Pf-Hxe"/>
+                        <outlet property="writeToggle" destination="AzK-CK-zn8" id="ebq-zf-Aiz"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="JSy-df-Y4R" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -2968,7 +3050,7 @@ Cgo
                     </connections>
                 </tapGestureRecognizer>
             </objects>
-            <point key="canvasLocation" x="1546" y="1354"/>
+            <point key="canvasLocation" x="1949" y="2045"/>
         </scene>
     </scenes>
     <resources>

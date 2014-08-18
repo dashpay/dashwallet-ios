@@ -212,7 +212,8 @@
                         detailLabel.text = NSLocalizedString(@"transaction is post-dated", nil);
                     }
                     else if (! [[BRPeerManager sharedInstance] transactionIsVerified:self.transaction.txHash]) {
-                        detailLabel.text = NSLocalizedString(@"waiting for network relay", nil);
+                        detailLabel.text = NSLocalizedString(@"waiting for network propagation", nil);
+                        //TODO: XXXXX show percent propagated, (and remember it so it doesn't ever go backwards?)
                     }
                     else detailLabel.text = NSLocalizedString(@"waiting for confirmation", nil);
                     

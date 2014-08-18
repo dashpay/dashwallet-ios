@@ -537,9 +537,6 @@ services:(uint64_t)services
     [self didConnect];
 }
 
-//NOTE: since we connect only intermitently, a hostile node could flush the address list with bad values that would take
-// several minutes to clear, after which we would fall back on DNS seeding.
-// TODO: keep around at least 1000 nodes we've personally connected to.
 // TODO: relay addresses
 - (void)acceptAddrMessage:(NSData *)message
 {

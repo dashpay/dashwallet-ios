@@ -167,7 +167,7 @@
 
     if (date) return date;
 
-    if (! f1) {
+    if (! f1) { //BUG: need to watch for NSCurrentLocaleDidChangeNotification
         f1 = [NSDateFormatter new];
         f2 = [NSDateFormatter new];
         f3 = [NSDateFormatter new];
@@ -643,7 +643,8 @@
                 case 1: // backup phrase
                     [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
                       message:NSLocalizedString(@"DO NOT let anyone see your backup phrase or they can spend your "
-                                                 "bitcoins.", nil) delegate:self
+                                                "bitcoins.\n\nDO NOT take a screenshot. They are visible to other "
+                                                "apps and devices.", nil) delegate:self
                       cancelButtonTitle:NSLocalizedString(@"cancel", nil)
                       otherButtonTitles:NSLocalizedString(@"show", nil), nil] show];
                     break;

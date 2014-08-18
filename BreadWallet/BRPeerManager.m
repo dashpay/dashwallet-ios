@@ -486,8 +486,9 @@ static const char *dns_seeds[] = {
 
     NSMutableSet *peers = [NSMutableSet setWithSet:self.connectedPeers];
 
-    // instead of publishing to all peers, leave one out to see if the tx propogates and is relayed back to us
-    if (peers.count > 1) [peers removeObject:[peers anyObject]];
+    // instead of publishing to all peers, leave out the download peer to see if the tx propogates and gets relayed back
+    // TODO: XXXX connect to a random peer with an empty or fake bloom filter just for publishing
+    if (peers.count > 1) [peers removeObject:self.downloadPeer];
 
     dispatch_async(dispatch_get_main_queue(), ^{
         [self performSelector:@selector(txTimeout:) withObject:transaction.txHash afterDelay:PROTOCOL_TIMEOUT];
