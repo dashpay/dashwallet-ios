@@ -2894,21 +2894,23 @@ Cgo
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                             </imageView>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="280" translatesAutoresizingMaskIntoConstraints="NO" id="EQG-Km-ZKY">
-                                <rect key="frame" x="20" y="144" width="280" height="80"/>
+                                <rect key="frame" x="29" y="149" width="262.5" height="74.5"/>
                                 <attributedString key="attributedText">
-                                    <fragment content="this is your wallet backup phrase:">
+                                    <fragment content="this is your wallet backup phrase">
                                         <attributes>
-                                            <color key="NSColor" white="0.40000000000000002" alpha="1" colorSpace="calibratedWhite"/>
-                                            <font key="NSFont" size="18" name="HelveticaNeue-Medium"/>
+                                            <color key="NSColor" white="0.5" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                            <font key="NSFont" size="17" name="HelveticaNeue-Medium"/>
                                             <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
                                         </attributes>
                                     </fragment>
                                     <fragment>
                                         <string key="content">
 
-WRITE IT DOWN and keep it safe. Lose it and you may lose your bitcoins forever.</string>
+WRITE IT DOWN and keep it safe. Lose
+it and you may lose your bitcoins forever.</string>
                                         <attributes>
-                                            <font key="NSFont" size="16" name="HelveticaNeue-Light"/>
+                                            <color key="NSColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
+                                            <font key="NSFont" size="15" name="HelveticaNeue-Light"/>
                                             <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
                                         </attributes>
                                     </fragment>
@@ -2927,8 +2929,7 @@ WRITE IT DOWN and keep it safe. Lose it and you may lose your bitcoins forever.<
                                             <constraint firstAttribute="height" constant="0.5" id="l2b-EL-NOY"/>
                                         </constraints>
                                     </view>
-                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.0" contentMode="left" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="296" translatesAutoresizingMaskIntoConstraints="NO" id="dz8-9E-hrc">
-                                        <rect key="frame" x="12" y="0.0" width="296" height="105"/>
+                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.0" contentMode="left" text="" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" useAutomaticPreferredMaxLayoutWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="dz8-9E-hrc">
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                                         <nil key="highlightedColor"/>
@@ -2944,19 +2945,35 @@ WRITE IT DOWN and keep it safe. Lose it and you may lose your bitcoins forever.<
                                 <color key="backgroundColor" white="1" alpha="0.67000000000000004" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                 <gestureRecognizers/>
                                 <constraints>
-                                    <constraint firstItem="dz8-9E-hrc" firstAttribute="top" secondItem="ZPH-1d-tW9" secondAttribute="top" id="8z0-HX-EEo"/>
+                                    <constraint firstAttribute="centerX" secondItem="dz8-9E-hrc" secondAttribute="centerX" id="8Le-xq-Vck"/>
                                     <constraint firstItem="mcG-j3-eTm" firstAttribute="leading" secondItem="ZPH-1d-tW9" secondAttribute="leading" id="9pA-Sp-DBl"/>
                                     <constraint firstItem="LK7-eX-ZgB" firstAttribute="leading" secondItem="ZPH-1d-tW9" secondAttribute="leading" id="ELg-7b-hdf"/>
                                     <constraint firstAttribute="height" constant="105" id="Gfe-SM-JDn"/>
                                     <constraint firstItem="LK7-eX-ZgB" firstAttribute="top" secondItem="ZPH-1d-tW9" secondAttribute="top" id="JiJ-0L-w7U"/>
-                                    <constraint firstAttribute="trailing" secondItem="dz8-9E-hrc" secondAttribute="trailing" constant="12" id="Ksv-pc-3WK"/>
-                                    <constraint firstAttribute="bottom" secondItem="dz8-9E-hrc" secondAttribute="bottom" id="URd-XW-4Yy"/>
+                                    <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="dz8-9E-hrc" secondAttribute="trailing" constant="12" id="Ksv-pc-3WK"/>
                                     <constraint firstAttribute="trailing" secondItem="LK7-eX-ZgB" secondAttribute="trailing" id="cd1-Z4-TGT"/>
                                     <constraint firstAttribute="trailing" secondItem="mcG-j3-eTm" secondAttribute="trailing" id="ejg-TN-bTL"/>
                                     <constraint firstAttribute="bottom" secondItem="mcG-j3-eTm" secondAttribute="bottom" id="qyN-ab-YLO"/>
-                                    <constraint firstItem="dz8-9E-hrc" firstAttribute="leading" secondItem="ZPH-1d-tW9" secondAttribute="leading" constant="12" id="uiv-dF-zNv"/>
+                                    <constraint firstAttribute="centerY" secondItem="dz8-9E-hrc" secondAttribute="centerY" id="tjh-cL-7bM"/>
+                                    <constraint firstItem="dz8-9E-hrc" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="ZPH-1d-tW9" secondAttribute="leading" constant="12" id="uiv-dF-zNv"/>
                                 </constraints>
                             </view>
+                            <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="I wrote it down:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" useAutomaticPreferredMaxLayoutWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cyp-mV-Bhd">
+                                <rect key="frame" x="88.5" y="369" width="113" height="155"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
+                                <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
+                                <nil key="highlightedColor"/>
+                                <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <size key="shadowOffset" width="0.0" height="1"/>
+                            </label>
+                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PJj-7p-7Bt">
+                                <rect key="frame" x="186.5" y="416.5" width="62" height="62"/>
+                                <inset key="contentEdgeInsets" minX="20" minY="20" maxX="20" maxY="20"/>
+                                <state key="normal" image="checkbox-empty"/>
+                                <connections>
+                                    <action selector="toggleWrite:" destination="IA2-75-hxO" eventType="touchUpInside" id="VRe-cL-QDl"/>
+                                </connections>
+                            </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="f0J-5L-WJY" userLabel="Button -">
                                 <rect key="frame" x="285" y="538" width="35" height="30"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="15"/>
@@ -2982,30 +2999,19 @@ WRITE IT DOWN and keep it safe. Lose it and you may lose your bitcoins forever.<
                                     </barButtonItem>
                                 </items>
                             </toolbar>
-                            <switch hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="AzK-CK-zn8">
-                                <rect key="frame" x="195" y="431" width="51" height="31"/>
-                                <connections>
-                                    <action selector="writeChanged:" destination="IA2-75-hxO" eventType="valueChanged" id="ZIO-mZ-Ufz"/>
-                                </connections>
-                            </switch>
-                            <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="I wrote it down:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" useAutomaticPreferredMaxLayoutWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cyp-mV-Bhd">
-                                <rect key="frame" x="74" y="369" width="113" height="155"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstItem="AzK-CK-zn8" firstAttribute="leading" secondItem="cyp-mV-Bhd" secondAttribute="trailing" constant="8" id="3ev-ee-WaB"/>
                             <constraint firstAttribute="trailing" secondItem="f0J-5L-WJY" secondAttribute="trailing" id="97N-Hh-Wkc"/>
+                            <constraint firstItem="PJj-7p-7Bt" firstAttribute="leading" secondItem="cyp-mV-Bhd" secondAttribute="trailing" constant="-15" id="Be0-6P-U91"/>
                             <constraint firstItem="8KJ-Le-F0y" firstAttribute="leading" secondItem="7xM-f1-iRp" secondAttribute="leading" id="Duy-qc-fl9"/>
                             <constraint firstItem="ZPH-1d-tW9" firstAttribute="centerY" secondItem="7xM-f1-iRp" secondAttribute="centerY" constant="32" id="FT9-CA-Rxu"/>
+                            <constraint firstItem="cyp-mV-Bhd" firstAttribute="centerY" secondItem="PJj-7p-7Bt" secondAttribute="centerY" constant="-1" id="ICm-10-8ef"/>
                             <constraint firstItem="NXP-4T-hz3" firstAttribute="top" secondItem="8KJ-Le-F0y" secondAttribute="bottom" id="Jkm-eH-Kvj"/>
-                            <constraint firstAttribute="centerX" secondItem="cyp-mV-Bhd" secondAttribute="centerX" constant="30" id="MPp-p2-sIb"/>
+                            <constraint firstAttribute="centerX" secondItem="cyp-mV-Bhd" secondAttribute="centerX" constant="15" id="MPp-p2-sIb"/>
                             <constraint firstItem="8KJ-Le-F0y" firstAttribute="top" secondItem="cyp-mV-Bhd" secondAttribute="bottom" id="N7H-dH-cdD"/>
                             <constraint firstItem="cyp-mV-Bhd" firstAttribute="top" secondItem="ZPH-1d-tW9" secondAttribute="bottom" id="OfR-ik-g8N"/>
                             <constraint firstItem="EQG-Km-ZKY" firstAttribute="centerX" secondItem="ZPH-1d-tW9" secondAttribute="centerX" constant="-0.5" id="iYR-xb-lmt"/>
-                            <constraint firstItem="cyp-mV-Bhd" firstAttribute="centerY" secondItem="AzK-CK-zn8" secondAttribute="centerY" id="jj4-DL-t3E"/>
                             <constraint firstAttribute="trailing" secondItem="ZPH-1d-tW9" secondAttribute="trailing" id="mck-cz-C1z"/>
                             <constraint firstAttribute="bottom" secondItem="f0J-5L-WJY" secondAttribute="bottom" id="raz-kN-0dS"/>
                             <constraint firstItem="ZPH-1d-tW9" firstAttribute="top" secondItem="EQG-Km-ZKY" secondAttribute="bottom" constant="40" id="uLa-WH-pVa"/>
@@ -3031,8 +3037,8 @@ WRITE IT DOWN and keep it safe. Lose it and you may lose your bitcoins forever.<
                         <outlet property="seedLabel" destination="dz8-9E-hrc" id="EuI-Ib-8iZ"/>
                         <outlet property="toolbar" destination="8KJ-Le-F0y" id="nRb-6n-qUI"/>
                         <outlet property="wallpaper" destination="dqh-Fj-S7p" id="9zN-jz-mcU"/>
+                        <outlet property="writeButton" destination="PJj-7p-7Bt" id="IMB-qQ-bdm"/>
                         <outlet property="writeLabel" destination="cyp-mV-Bhd" id="n4P-Pf-Hxe"/>
-                        <outlet property="writeToggle" destination="AzK-CK-zn8" id="ebq-zf-Aiz"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="JSy-df-Y4R" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -3058,6 +3064,7 @@ WRITE IT DOWN and keep it safe. Lose it and you may lose your bitcoins forever.<
         <image name="cameraguide" width="234" height="234"/>
         <image name="cameraguide-blue-small" width="20" height="20"/>
         <image name="cameraguide-small" width="20" height="20"/>
+        <image name="checkbox-empty" width="22" height="22"/>
         <image name="deletetoleft" width="29" height="23"/>
         <image name="deletetoleft-pressed" width="29" height="23"/>
         <image name="flash" width="33" height="33"/>

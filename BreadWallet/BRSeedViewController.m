@@ -36,7 +36,7 @@
 
 //TODO: create a secure version of UILabel and use it for seedLabel, but make sure there's an accessibility work around
 @property (nonatomic, strong) IBOutlet UILabel *seedLabel, *writeLabel;
-@property (nonatomic, strong) IBOutlet UISwitch *writeToggle;
+@property (nonatomic, strong) IBOutlet UIButton *writeButton;
 @property (nonatomic, strong) IBOutlet UIToolbar *toolbar;
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *remindButton, *doneButton;
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
@@ -132,7 +132,10 @@
     if (self.navigationController.viewControllers.firstObject != self) {
         self.toolbar.hidden = YES;
     }
-    else [self performSelector:@selector(showWriteToggle) withObject:nil afterDelay:WRITE_TOGGLE_DELAY];
+    
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:WALLET_NEEDS_BACKUP_KEY]) {
+        [self performSelector:@selector(showWriteToggle) withObject:nil afterDelay:WRITE_TOGGLE_DELAY];
+    }
     
     @autoreleasepool {  // @autoreleasepool ensures sensitive data will be dealocated immediately
         self.seedLabel.text = [[BRWalletManager sharedInstance] seedPhrase];
@@ -154,11 +157,11 @@
 
 - (void)showWriteToggle
 {
-    self.writeLabel.alpha = self.writeToggle.alpha = 0.0;
-    self.writeLabel.hidden = self.writeToggle.hidden = NO;
+    self.writeLabel.alpha = self.writeButton.alpha = 0.0;
+    self.writeLabel.hidden = self.writeButton.hidden = NO;
     
     [UIView animateWithDuration:0.5 animations:^{
-        self.writeLabel.alpha = self.writeToggle.alpha = 1.0;
+        self.writeLabel.alpha = self.writeButton.alpha = 1.0;
     }];
 }
 
@@ -195,18 +198,22 @@
     }];
 }
 
-- (IBAction)writeChanged:(id)sender
+- (IBAction)toggleWrite:(id)sender
 {
-    if (self.writeToggle.on) {
+    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+
+    if ([defs boolForKey:WALLET_NEEDS_BACKUP_KEY]) {
         [self.toolbar setItems:@[self.toolbar.items[0], self.doneButton] animated:YES];
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:WALLET_NEEDS_BACKUP_KEY];
+        [self.writeButton setImage:[UIImage imageNamed:@"checkbox-checked"] forState:UIControlStateNormal];
+        [defs removeObjectForKey:WALLET_NEEDS_BACKUP_KEY];
     }
     else {
         [self.toolbar setItems:@[self.toolbar.items[0], self.remindButton] animated:YES];
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:WALLET_NEEDS_BACKUP_KEY];
+        [self.writeButton setImage:[UIImage imageNamed:@"checkbox-empty"] forState:UIControlStateNormal];
+        [defs setBool:YES forKey:WALLET_NEEDS_BACKUP_KEY];
     }
     
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    [defs synchronize];
 }
 
 - (IBAction)copy:(id)sender
