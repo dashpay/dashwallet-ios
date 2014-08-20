@@ -2,6 +2,9 @@
 "\nbitcoin network fee + %@ (%@)" = "\nbitcoin network fee + %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
+"\nDO NOT let anyone see your backup phrase or they can spend your bitcoins.\n\nDO NOT take a screenshot. Screenshots are visible to other apps and devices.\n" = "\nDO NOT let anyone see your backup phrase or they can spend your bitcoins.\n\nDO NOT take a screenshot. Screenshots are visible to other apps and devices.\n";
+
+/* No comment provided by engineer. */
 " - included in block #%d" = " - included in block #%d";
 
 /* No comment provided by engineer. */
@@ -135,9 +138,6 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device.";
-
-/* No comment provided by engineer. */
-"DO NOT let anyone see your backup phrase or they can spend your bitcoins.\n\nDO NOT take a screenshot. They are visible to other apps and devices." = "DO NOT let anyone see your backup phrase or they can spend your bitcoins.\n\nDO NOT take a screenshot. They are visible to other apps and devices.";
 
 /* No comment provided by engineer. */
 "done" = "done";

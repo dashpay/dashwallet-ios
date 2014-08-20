@@ -763,9 +763,9 @@
 		752E28F219235A0600DB5A3C /* rand_unix.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = rand_unix.c; sourceTree = "<group>"; };
 		752E28F419235B3000DB5A3C /* BIP39EnglishWords.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = BIP39EnglishWords.plist; sourceTree = "<group>"; };
 		752E28F519235B3000DB5A3C /* FixedPeers.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = FixedPeers.plist; sourceTree = "<group>"; };
+		753A3A6619A3F711003DE600 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
 		7548CF3519556FD700EF827F /* BRCopyLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCopyLabel.h; sourceTree = "<group>"; };
 		7548CF3619556FD700EF827F /* BRCopyLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCopyLabel.m; sourceTree = "<group>"; };
-		7560A84F19A2A90A004AAF0F /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
 		7579F7D919231A5D00CA56F4 /* libcrypto.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libcrypto.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		7579F80319231E7500CA56F4 /* aes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aes.h; sourceTree = "<group>"; };
 		7579F80419231E7500CA56F4 /* aes_cbc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = aes_cbc.c; sourceTree = "<group>"; };
@@ -1737,6 +1737,7 @@
 				752E28EF19234E8100DB5A3C /* Reachability.h */,
 				752E28F019234E8100DB5A3C /* Reachability.m */,
 				7579F7FF19231D7B00CA56F4 /* openssl */,
+				75A0A2031972260F0022949C /* openssl.pch */,
 			);
 			name = ThirdParty;
 			sourceTree = "<group>";
@@ -1744,7 +1745,6 @@
 		7579F7FF19231D7B00CA56F4 /* openssl */ = {
 			isa = PBXGroup;
 			children = (
-				75A0A2031972260F0022949C /* openssl.pch */,
 				84C92C1B197C3E0300BD1664 /* include */,
 				84C92BFF197C3DF600BD1664 /* MacOS */,
 				7579F80119231E7500CA56F4 /* crypto */,
@@ -3953,7 +3953,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				75D5F3DD191EC270004AB296 /* Base */,
-				7560A84F19A2A90A004AAF0F /* en */,
+				753A3A6619A3F711003DE600 /* en */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";

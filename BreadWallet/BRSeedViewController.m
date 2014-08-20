@@ -30,7 +30,7 @@
 #import "BRBIP32Sequence.h"
 
 #define LABEL_MARGIN       20.0
-#define WROTE_TOGGLE_DELAY 10.0
+#define WRITE_TOGGLE_DELAY 10.0
 
 @interface BRSeedViewController ()
 
@@ -132,7 +132,7 @@
     if (self.navigationController.viewControllers.firstObject != self) {
         self.toolbar.hidden = YES;
     }
-    else [self performSelector:@selector(showWroteToggle) withObject:nil afterDelay:WROTE_TOGGLE_DELAY];
+    else [self performSelector:@selector(showWriteToggle) withObject:nil afterDelay:WRITE_TOGGLE_DELAY];
     
     @autoreleasepool {  // @autoreleasepool ensures sensitive data will be dealocated immediately
         self.seedLabel.text = [[BRWalletManager sharedInstance] seedPhrase];
@@ -152,7 +152,7 @@
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
 
-- (void)showWroteToggle
+- (void)showWriteToggle
 {
     self.writeLabel.alpha = self.writeToggle.alpha = 0.0;
     self.writeLabel.hidden = self.writeToggle.hidden = NO;

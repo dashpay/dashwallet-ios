@@ -34,10 +34,12 @@
 
 @property (nonatomic, assign) BOOL hasAppeared, animating;
 @property (nonatomic, strong) id activeObserver, resignActiveObserver;
+@property (nonatomic, strong) UINavigationController *seedNav;
 
 @property (nonatomic, strong) IBOutlet UIView *paralax, *wallpaper;
+@property (nonatomic, strong) IBOutlet UILabel *startLabel, *warningLabel;
+@property (nonatomic, strong) IBOutlet UIButton *generateButton, *okButton;
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *logoXCenter, *walletXCenter, *restoreXCenter;
-@property (nonatomic, strong) IBOutlet UIButton *generateButton;
 
 @end
 
@@ -147,9 +149,25 @@
 
 //    [segue.destinationViewController setTransitioningDelegate:self];
 //    [segue.destinationViewController setModalPresentationStyle:UIModalPresentationCustom];
-
+    
+    self.startLabel = (id)[[segue.destinationViewController view] viewWithTag:4];
+    self.warningLabel = (id)[[segue.destinationViewController view] viewWithTag:2];
     self.generateButton = (id)[[segue.destinationViewController view] viewWithTag:1];
     [self.generateButton addTarget:self action:@selector(generate:) forControlEvents:UIControlEventTouchUpInside];
+    self.okButton = (id)[[segue.destinationViewController view] viewWithTag:3];
+    [self.okButton addTarget:self action:@selector(ok:) forControlEvents:UIControlEventTouchUpInside];
+    
+    NSTextAttachment *noEye = [NSTextAttachment new], *noShot = [NSTextAttachment new];
+    NSMutableAttributedString *s = [[NSMutableAttributedString alloc]
+                                    initWithAttributedString:self.warningLabel.attributedText];
+    
+    noEye.image = [UIImage imageNamed:@"no-eye"];
+    [s replaceCharactersInRange:[s.string rangeOfString:@"%no-eye%"]
+     withAttributedString:[NSAttributedString attributedStringWithAttachment:noEye]];
+    noShot.image = [UIImage imageNamed:@"no-shot"];
+    [s replaceCharactersInRange:[s.string rangeOfString:@"%no-shot%"]
+     withAttributedString:[NSAttributedString attributedStringWithAttachment:noShot]];
+    self.warningLabel.attributedText = s;
 }
 
 - (void)viewDidLayoutSubviews
@@ -172,11 +190,11 @@
     }
     
     [title addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:1.0 green:0.5 blue:0.0 alpha:1.0]
-     range:NSMakeRange(12, 6)];
+     range:NSMakeRange(title.string.length - 6, 6)];
 
     if (count++ % 4) {
         [title addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithRed:1.0 green:0.5 blue:0.0 alpha:0.3]
-         range:NSMakeRange(11 + ((count - 1) % 4)*2, 1)];
+         range:NSMakeRange(title.string.length + ((count - 1) % 4)*2 - 7, 1)];
     }
     
     [self.generateButton setAttributedTitle:title forState:UIControlStateDisabled];
@@ -194,12 +212,27 @@
     [sender setEnabled:NO];
     [self indicate];
 
-    UINavigationController *seedNav = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedNav"];
+    self.seedNav = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedNav"];
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 7*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         [NSObject cancelPreviousPerformRequestsWithTarget:self];
-        [self.navigationController presentViewController:seedNav animated:YES completion:nil];
+        //[self.navigationController presentViewController:self.seedNav animated:YES completion:nil];
+        
+        self.warningLabel.hidden = self.okButton.hidden = NO;
+        self.warningLabel.alpha = self.okButton.alpha = 0.0;
+        
+        [UIView animateWithDuration:0.5 animations:^{
+            self.warningLabel.alpha = self.okButton.alpha = 1.0;
+            self.navigationController.navigationBar.topItem.titleView.alpha = 0.33*0.5;
+            self.startLabel.alpha = 0.33;
+            self.generateButton.alpha = 0.0;
+        }];
     });
+}
+
+- (IBAction)ok:(id)sender
+{
+    [self.navigationController presentViewController:self.seedNav animated:YES completion:nil];
 }
 
 #pragma mark UIViewControllerAnimatedTransitioning
