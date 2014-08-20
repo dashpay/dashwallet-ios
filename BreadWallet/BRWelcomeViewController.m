@@ -38,7 +38,7 @@
 
 @property (nonatomic, strong) IBOutlet UIView *paralax, *wallpaper;
 @property (nonatomic, strong) IBOutlet UILabel *startLabel, *warningLabel;
-@property (nonatomic, strong) IBOutlet UIButton *generateButton, *okButton;
+@property (nonatomic, strong) IBOutlet UIButton *generateButton, *showButton;
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *logoXCenter, *walletXCenter, *restoreXCenter;
 
 @end
@@ -154,8 +154,8 @@
     self.warningLabel = (id)[[segue.destinationViewController view] viewWithTag:2];
     self.generateButton = (id)[[segue.destinationViewController view] viewWithTag:1];
     [self.generateButton addTarget:self action:@selector(generate:) forControlEvents:UIControlEventTouchUpInside];
-    self.okButton = (id)[[segue.destinationViewController view] viewWithTag:3];
-    [self.okButton addTarget:self action:@selector(ok:) forControlEvents:UIControlEventTouchUpInside];
+    self.showButton = (id)[[segue.destinationViewController view] viewWithTag:3];
+    [self.showButton addTarget:self action:@selector(show:) forControlEvents:UIControlEventTouchUpInside];
     
     NSTextAttachment *noEye = [NSTextAttachment new], *noShot = [NSTextAttachment new];
     NSMutableAttributedString *s = [[NSMutableAttributedString alloc]
@@ -218,11 +218,11 @@
         [NSObject cancelPreviousPerformRequestsWithTarget:self];
         //[self.navigationController presentViewController:self.seedNav animated:YES completion:nil];
         
-        self.warningLabel.hidden = self.okButton.hidden = NO;
-        self.warningLabel.alpha = self.okButton.alpha = 0.0;
+        self.warningLabel.hidden = self.showButton.hidden = NO;
+        self.warningLabel.alpha = self.showButton.alpha = 0.0;
         
         [UIView animateWithDuration:0.5 animations:^{
-            self.warningLabel.alpha = self.okButton.alpha = 1.0;
+            self.warningLabel.alpha = self.showButton.alpha = 1.0;
             self.navigationController.navigationBar.topItem.titleView.alpha = 0.33*0.5;
             self.startLabel.alpha = 0.33;
             self.generateButton.alpha = 0.0;
@@ -230,7 +230,7 @@
     });
 }
 
-- (IBAction)ok:(id)sender
+- (IBAction)show:(id)sender
 {
     [self.navigationController presentViewController:self.seedNav animated:YES completion:nil];
 }
