@@ -20,6 +20,9 @@
 /* Class = "IBUIBarButtonItem"; title = " "; ObjectID = "9L3-gM-TgP"; */
 "9L3-gM-TgP.title" = " ";
 
+/* Class = "IBUIButton"; normalTitle = "generate backup phrase"; ObjectID = "A4M-yq-26d"; */
+"A4M-yq-26d.normalTitle" = "generate backup phrase";
+
 /* Class = "IBUITextField"; placeholder = "ƀ 0.00"; ObjectID = "DLS-lz-uxJ"; */
 "DLS-lz-uxJ.placeholder" = "ƀ 0.00";
 
@@ -139,6 +142,9 @@
 
 /* Class = "IBUILabel"; text = "unconfirmed"; ObjectID = "eJ2-5h-DO2"; */
 "eJ2-5h-DO2.text" = "unconfirmed";
+
+/* Class = "IBUIButton"; normalTitle = "show"; ObjectID = "efL-Cj-Aho"; */
+"efL-Cj-Aho.normalTitle" = "show";
 
 /* Class = "IBUIButton"; normalTitle = "        "; ObjectID = "f0J-5L-WJY"; */
 "f0J-5L-WJY.normalTitle" = "        ";

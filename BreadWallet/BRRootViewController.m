@@ -27,7 +27,6 @@
 #import "BRReceiveViewController.h"
 #import "BRSendViewController.h"
 #import "BRPINViewController.h"
-#import "BRSettingsViewController.h"
 #import "BRBubbleView.h"
 #import "BRBouncyBurgerButton.h"
 #import "BRPeerManager.h"
@@ -42,8 +41,6 @@
 #define BITS_TIP    NSLocalizedString(@"%@ is for 'bits'. %@ = 1 bitcoin.", nil)
 
 #define BACKUP_DIALOG_TIME_KEY @"BACKUP_DIALOG_TIME"
-
-#define RIGHT_ARROW @"\xE3\x80\x89" // unicode right angle bracket U+3009 (utf-8)
 
 @interface BRRootViewController ()
 

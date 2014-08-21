@@ -30,7 +30,7 @@
 #import "BRBIP32Sequence.h"
 
 #define LABEL_MARGIN       20.0
-#define WRITE_TOGGLE_DELAY 10.0
+#define WRITE_TOGGLE_DELAY 15.0
 
 @interface BRSeedViewController ()
 

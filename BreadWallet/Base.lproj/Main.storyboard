@@ -1699,58 +1699,21 @@ Use it to restore your wallet on another device if this one is ever lost or brok
                                 <color key="shadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                 <size key="shadowOffset" width="0.0" height="1"/>
                             </label>
-                            <button opaque="NO" tag="1" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="A4M-yq-26d">
+                            <button opaque="NO" tag="1" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="A4M-yq-26d">
                                 <rect key="frame" x="57" y="362" width="205" height="44"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="44" id="8HY-tn-QvG"/>
                                     <constraint firstAttribute="width" constant="205" id="opI-fF-cVd"/>
                                 </constraints>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
-                                <state key="normal" backgroundImage="button-bg-white">
-                                    <attributedString key="attributedTitle">
-                                        <fragment content="generate backup phrase">
-                                            <attributes>
-                                                <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                                <font key="NSFont" size="17" name="HelveticaNeue"/>
-                                            </attributes>
-                                        </fragment>
-                                    </attributedString>
-                                </state>
-                                <state key="disabled" backgroundImage="button-bg-white-pressed">
-                                    <attributedString key="attributedTitle">
-                                        <fragment content="  generating">
-                                            <attributes>
-                                                <color key="NSColor" red="0.99215692280000001" green="0.50196081400000003" blue="0.13725490870000001" alpha="1" colorSpace="deviceRGB"/>
-                                                <font key="NSFont" size="17" name="HelveticaNeue"/>
-                                                <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
-                                            </attributes>
-                                        </fragment>
-                                        <fragment content=" ● ● ●">
-                                            <attributes>
-                                                <color key="NSColor" red="0.99215692280000001" green="0.50196081400000003" blue="0.13725490870000001" alpha="1" colorSpace="deviceRGB"/>
-                                                <font key="NSFont" size="9" name="HelveticaNeue"/>
-                                                <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
-                                            </attributes>
-                                        </fragment>
-                                    </attributedString>
+                                <state key="normal" title="generate backup phrase" backgroundImage="button-bg-white">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <color key="titleShadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                 </state>
                                 <state key="highlighted" backgroundImage="button-bg-white-pressed">
-                                    <attributedString key="attributedTitle">
-                                        <fragment content="  generating">
-                                            <attributes>
-                                                <color key="NSColor" red="0.98039215686274506" green="0.41568627450980394" blue="0.10980392156862745" alpha="1" colorSpace="calibratedRGB"/>
-                                                <font key="NSFont" size="17" name="HelveticaNeue"/>
-                                                <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
-                                            </attributes>
-                                        </fragment>
-                                        <fragment content=" ● ● ●">
-                                            <attributes>
-                                                <color key="NSColor" red="0.98039215686274506" green="0.41568627450980394" blue="0.10980392156862745" alpha="1" colorSpace="calibratedRGB"/>
-                                                <font key="NSFont" size="9" name="HelveticaNeue"/>
-                                                <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
-                                            </attributes>
-                                        </fragment>
-                                    </attributedString>
+                                    <color key="titleColor" red="0.99215692280000001" green="0.5411764979" blue="0.16862745579999999" alpha="1" colorSpace="deviceRGB"/>
+                                    <color key="titleShadowColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
                                 </state>
                             </button>
                             <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="2" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" useAutomaticPreferredMaxLayoutWidth="YES" preferredMaxLayoutWidth="320" translatesAutoresizingMaskIntoConstraints="NO" id="rLQ-Ub-gHT">
