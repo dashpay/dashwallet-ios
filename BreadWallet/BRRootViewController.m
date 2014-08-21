@@ -27,6 +27,7 @@
 #import "BRReceiveViewController.h"
 #import "BRSendViewController.h"
 #import "BRPINViewController.h"
+#import "BRSettingsViewController.h"
 #import "BRBubbleView.h"
 #import "BRBouncyBurgerButton.h"
 #import "BRPeerManager.h"
@@ -39,6 +40,10 @@
 #define BALANCE_TIP NSLocalizedString(@"This is your bitcoin balance. Bitcoin is a currency. "\
                                        "The exchange rate changes with the market.", nil)
 #define BITS_TIP    NSLocalizedString(@"%@ is for 'bits'. %@ = 1 bitcoin.", nil)
+
+#define BACKUP_DIALOG_TIME_KEY @"BACKUP_DIALOG_TIME"
+
+#define RIGHT_ARROW @"\xE3\x80\x89" // unicode right angle bracket U+3009 (utf-8)
 
 @interface BRRootViewController ()
 
@@ -190,7 +195,7 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             if ([[BRPeerManager sharedInstance] syncProgress] < 1.0) return; // wait for sync before updating balance
-            [self triggerBackupDialog];
+            [self showBackupDialogIfNeeded];
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
 
@@ -219,7 +224,7 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
-            [self triggerBackupDialog];
+            [self showBackupDialogIfNeeded];
             self.percent.hidden = YES;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
@@ -230,7 +235,7 @@
         queue:nil usingBlock:^(NSNotification *note) {
             if (self.timeout < 1.0) [self stopActivityWithSuccess:NO];
             [self showErrorBar];
-            [self triggerBackupDialog];
+            [self showBackupDialogIfNeeded];
             self.percent.hidden = YES;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
@@ -263,6 +268,8 @@
         [self.navigationController presentViewController:self.pinNav animated:NO completion:nil];
         self.pinNav.transitioningDelegate = self.pinNav.viewControllers.firstObject;
     }
+    
+    [self showBackupDialogIfNeeded];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -319,6 +326,8 @@
     self.url = nil;
     self.file = nil;
 
+    [self showBackupDialogIfNeeded];
+
     [super viewDidAppear:animated];
 }
 
@@ -345,6 +354,15 @@
     [segue.destinationViewController setTransitioningDelegate:self];
     [segue.destinationViewController setModalPresentationStyle:UIModalPresentationCustom];
     [self hideErrorBar];
+    
+    if (sender == self) { // show backup phrase
+        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
+          message:NSLocalizedString(@"\nDO NOT let anyone see your backup phrase or they can spend your bitcoins.\n\n"
+                                    "DO NOT take a screenshot. Screenshots are visible to other apps and devices.\n",
+                                    nil) delegate:[[(id)segue.destinationViewController viewControllers] firstObject]
+          cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:NSLocalizedString(@"show", nil), nil]
+         show];
+    }
 }
 
 - (void)viewDidLayoutSubviews
@@ -528,27 +546,28 @@
     return YES;
 }
 
-- (void)triggerBackupDialog
+- (void)showBackupDialogIfNeeded
 {
-    if (! [[NSUserDefaults standardUserDefaults] boolForKey:WALLET_NEEDS_BACKUP_KEY] ||
-        [[[BRWalletManager sharedInstance] wallet] balance] == 0) return;
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+
+    if (self.navigationController.visibleViewController != self || ! [defs boolForKey:WALLET_NEEDS_BACKUP_KEY] ||
+        m.wallet.balance == 0 || [defs doubleForKey:BACKUP_DIALOG_TIME_KEY] > now - 36*60*60) return;
     
-    //TODO: XXXX
-    // Congratulations! You received bitcoin.
-    //
-    // IMPORTANT: You need to backup your wallet incase your phone is ever lost or breaks.
-    // X remind me later        backup wallet >
-    //
-    // backup your wallet by writing down your wallet backup phrase on paper and keeping it in a safe place
-    // X remind me later        next >
-    //
-    // DO NOT let anyone see your backup phrase or they can spend your bitcoins.
-    // DO NOT take a screenshot. They are visible to other apps and devices.
-    // X remind me later        show backup phrase >
-    //
-    // This is your wallet backup phrase. WRITE IT DOWN and keep it in a safe place.
-    // Loose it an you may loose your bitcoins forever.
-    // X remind me later        done
+    BOOL first = ([defs doubleForKey:BACKUP_DIALOG_TIME_KEY] < 1.0) ? YES : NO;
+    
+    [defs setDouble:now forKey:BACKUP_DIALOG_TIME_KEY];
+    
+    [[[UIAlertView alloc]
+      initWithTitle:(first) ? NSLocalizedString(@"you received bitcoin!", nil) : NSLocalizedString(@"IMPORTANT", nil)
+      message:[NSString
+               stringWithFormat:NSLocalizedString(@"\n%@\n\nwrite down your backup phrase and use it to restore on "
+                                                  "another device if this one is ever lost or broken", nil),
+               (first) ? NSLocalizedString(@"next, backup your wallet", nil) :
+               NSLocalizedString(@"BACKUP YOUR WALLET", nil)] delegate:self
+      cancelButtonTitle:NSLocalizedString(@"do it later", nil) otherButtonTitles:NSLocalizedString(@"backup", nil), nil]
+     show];
 }
 
 #pragma mark - IBAction
@@ -599,37 +618,6 @@
     else [self connect:sender];
 }
 
-#pragma mark - UIAlertViewDelegate
-
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-    if (buttonIndex == alertView.cancelButtonIndex) return;
-
-    if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"close app", nil)]) abort();
-
-    if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"wipe", nil)]) {
-        [[[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"CONFIRM WIPE", nil) delegate:self
-          cancelButtonTitle:NSLocalizedString(@"cancel", nil) destructiveButtonTitle:NSLocalizedString(@"wipe", nil)
-          otherButtonTitles:nil] showInView:[[UIApplication sharedApplication] keyWindow]];
-    }
-}
-
-#pragma mark - UIActionSheetDelegate
-
-- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-    if (buttonIndex != actionSheet.destructiveButtonIndex) return;
-
-    [[BRWalletManager sharedInstance] setSeed:nil];
-
-    UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"];
-
-    [self.navigationController presentViewController:c animated:NO completion:nil];
-
-    [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"the app will now close", nil) delegate:self
-      cancelButtonTitle:nil otherButtonTitles:NSLocalizedString(@"close app", nil), nil] show];
-}
-
 #pragma mark - UIPageViewControllerDataSource
 
 - (UIViewController *)pageViewController:(UIPageViewController *)pageViewController
@@ -659,8 +647,42 @@ viewControllerAfterViewController:(UIViewController *)viewController
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
     CGFloat off = scrollView.contentOffset.x + (scrollView.contentInset.left < 0 ? scrollView.contentInset.left : 0);
-
+    
     self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 - PARALAX_RATIO*off, self.wallpaper.center.y);
+}
+
+#pragma mark - UIAlertViewDelegate
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == alertView.cancelButtonIndex) return;
+
+    if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"close app", nil)]) abort();
+
+    if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"wipe", nil)]) {
+        [[[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"CONFIRM WIPE", nil) delegate:self
+          cancelButtonTitle:NSLocalizedString(@"cancel", nil) destructiveButtonTitle:NSLocalizedString(@"wipe", nil)
+          otherButtonTitles:nil] showInView:[[UIApplication sharedApplication] keyWindow]];
+        return;
+    }
+    
+    [self performSegueWithIdentifier:@"SettingsSegue" sender:self];
+}
+
+#pragma mark - UIActionSheetDelegate
+
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex != actionSheet.destructiveButtonIndex) return;
+
+    [[BRWalletManager sharedInstance] setSeed:nil];
+
+    UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"];
+
+    [self.navigationController presentViewController:c animated:NO completion:nil];
+
+    [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"the app will now close", nil) delegate:self
+      cancelButtonTitle:nil otherButtonTitles:NSLocalizedString(@"close app", nil), nil] show];
 }
 
 #pragma mark - UIViewControllerAnimatedTransitioning

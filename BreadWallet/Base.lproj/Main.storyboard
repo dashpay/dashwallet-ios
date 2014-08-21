@@ -447,7 +447,7 @@
                         <barButtonItem key="backBarButtonItem" title=" " id="Huq-Vk-LaF"/>
                         <barButtonItem key="leftBarButtonItem" image="burger" id="lsn-hc-KRM">
                             <connections>
-                                <segue destination="zyy-VL-f65" kind="modal" id="Eks-ag-H7f"/>
+                                <segue destination="zyy-VL-f65" kind="modal" identifier="SettingsSegue" id="Eks-ag-H7f"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
@@ -2898,7 +2898,7 @@ Cgo
                                 <attributedString key="attributedText">
                                     <fragment content="this is your wallet backup phrase">
                                         <attributes>
-                                            <color key="NSColor" white="0.5" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                            <color key="NSColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
                                             <font key="NSFont" size="17" name="HelveticaNeue-Medium"/>
                                             <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
                                         </attributes>

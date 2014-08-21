@@ -1,4 +1,7 @@
 /* No comment provided by engineer. */
+"\n%@\n\nwrite down your backup phrase and use it to restore on another device if this one is ever lost or broken" = "\n%@\n\nwrite down your backup phrase and use it to restore on another device if this one is ever lost or broken";
+
+/* No comment provided by engineer. */
 "\nbitcoin network fee + %@ (%@)" = "\nbitcoin network fee + %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
@@ -32,6 +35,9 @@
 "about" = "about";
 
 /* No comment provided by engineer. */
+"backup" = "backup";
+
+/* No comment provided by engineer. */
 "backup phrase" = "backup phrase";
 
 /* No comment provided by engineer. */
@@ -39,6 +45,9 @@
 
 /* No comment provided by engineer. */
 "backup phrase must have %d words" = "backup phrase must have %d words";
+
+/* No comment provided by engineer. */
+"BACKUP YOUR WALLET" = "BACKUP YOUR WALLET";
 
 /* No comment provided by engineer. */
 "bad backup phrase" = "bad backup phrase";
@@ -140,6 +149,9 @@
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device.";
 
 /* No comment provided by engineer. */
+"do it later" = "do it later";
+
+/* No comment provided by engineer. */
 "done" = "done";
 
 /* No comment provided by engineer. */
@@ -182,6 +194,9 @@
 "insufficient funds" = "insufficient funds";
 
 /* No comment provided by engineer. */
+"IMPORTANT" = "IMPORTANT";
+
+/* No comment provided by engineer. */
 "INVALID" = "INVALID";
 
 /* No comment provided by engineer. */
@@ -207,6 +222,9 @@
 
 /* No comment provided by engineer. */
 "new phrase" = "new phrase";
+
+/* No comment provided by engineer. */
+"next, backup your wallet" = "next, backup your wallet";
 
 /* No comment provided by engineer. */
 "no peers found" = "no peers found";
@@ -408,6 +426,9 @@
 
 /* No comment provided by engineer. */
 "wipe" = "wipe";
+
+/* No comment provided by engineer. */
+"you received bitcoin!" = "you received bitcoin!";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescaning the blockchain." = "Your wallet may be out of sync.\nThis can often be fixed by rescaning the blockchain.";
