@@ -114,7 +114,7 @@
         }
     }
 
-    if (fee > 0 && fee != UINT64_MAX) {
+    if (self.sent > 0 && fee > 0 && fee != UINT64_MAX) {
         [text addObject:@""];
         [detail addObject:NSLocalizedString(@"bitcoin network fee", nil)];
         [amount addObject:@(-fee)];
@@ -269,6 +269,7 @@
             }
             else if (self.transaction.inputAddresses[indexPath.row] != (id)[NSNull null]) {
                 cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCell" forIndexPath:indexPath];
+                cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                 detailLabel = (id)[cell viewWithTag:2];
                 subtitleLabel = (id)[cell viewWithTag:3];
                 amountLabel = (id)[cell viewWithTag:1];
@@ -279,12 +280,8 @@
                 
                 if ([m.wallet containsAddress:self.transaction.inputAddresses[indexPath.row]]) {
                     subtitleLabel.text = NSLocalizedString(@"wallet address", nil);
-                    cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                 }
-                else {
-                    subtitleLabel.text = NSLocalizedString(@"spent address", nil);
-                    cell.selectionStyle = UITableViewCellSelectionStyleNone; // don't allow copying receive from address
-                }
+                else subtitleLabel.text = NSLocalizedString(@"spent address", nil);
             }
             else {
                 cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCell" forIndexPath:indexPath];

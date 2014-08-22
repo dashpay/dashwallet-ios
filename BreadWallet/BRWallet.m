@@ -96,6 +96,7 @@ seed:(NSData *(^)())seed
 
             self.allTx[tx.txHash] = tx;
             [self.transactions addObject:tx];
+            [self.usedAddresses addObjectsFromArray:tx.inputAddresses];
             [self.usedAddresses addObjectsFromArray:tx.outputAddresses];
         }
     }];
@@ -301,10 +302,16 @@ seed:(NSData *(^)())seed
     return [self.transactions array];
 }
 
-// true if the address is known to belong to the wallet
+// true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address
 {
     return (address && [self.allAddresses containsObject:address]) ? YES : NO;
+}
+
+// true if the address was previously used as an input or output in any wallet transaction
+- (BOOL)addressIsUsed:(NSString *)address
+{
+    return (address && [self.usedAddresses containsObject:address]) ? YES : NO;
 }
 
 #pragma mark - transactions
@@ -414,9 +421,10 @@ seed:(NSData *(^)())seed
     if (self.allTx[transaction.txHash] != nil) return YES;
     if (! [self containsTransaction:transaction]) return NO;
 
-    [self.usedAddresses addObjectsFromArray:transaction.outputAddresses];
     self.allTx[transaction.txHash] = transaction;
     [self.transactions insertObject:transaction atIndex:0];
+    [self.usedAddresses addObjectsFromArray:transaction.inputAddresses];
+    [self.usedAddresses addObjectsFromArray:transaction.outputAddresses];
     [self updateBalance];
 
     // when a wallet address is used in a transaction, generate a new address to replace it
