@@ -350,6 +350,12 @@ static const char *dns_seeds[] = {
     return 0.1 + 0.9*(self.lastBlockHeight - self.syncStartHeight)/(self.downloadPeer.lastblock - self.syncStartHeight);
 }
 
+// number of connected peers
+- (NSUInteger)peerCount
+{
+    return self.connectedPeers.count;
+}
+
 - (BRBloomFilter *)bloomFilter
 {
     if (_bloomFilter) return _bloomFilter;
@@ -499,12 +505,10 @@ static const char *dns_seeds[] = {
     });
 }
 
-// transaction is considered verified when all peers have relayed it
-- (BOOL)transactionIsVerified:(NSData *)txHash
+// number of connected peers that have relayed the transaction
+- (NSUInteger)relayCountForTransaction:(NSData *)txHash
 {
-    //BUG: XXXX received transactions remain unverified until disconnecting/reconnecting
-    // seems like download peer's mempool isn't getting requested
-    return (self.connectedPeers.count > 1 && [self.txRelays[txHash] count] >= self.connectedPeers.count) ? YES : NO;
+    return [self.txRelays[txHash] count];
 }
 
 // seconds since reference date, 00:00:00 01/01/01 GMT
@@ -813,6 +817,8 @@ static const char *dns_seeds[] = {
              object:nil userInfo:error ? @{@"error":error} : nil];
         }
         else if (self.connectFailures < MAX_CONNECT_FAILURES) [self connect]; // try connecting to another peer
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
     });
 }
 
@@ -853,9 +859,10 @@ static const char *dns_seeds[] = {
 
         // keep track of how many peers relay a tx, this indicates how likely it is to be confirmed in future blocks
         if (! self.txRelays[transaction.txHash]) self.txRelays[transaction.txHash] = [NSMutableSet set];
-        [self.txRelays[transaction.txHash] addObject:peer];
 
-        if ([self.txRelays[transaction.txHash] count] == self.connectedPeers.count) { // tx was relayed by all peers
+        if (! [self.txRelays[transaction.txHash] containsObject:peer]) {
+            [self.txRelays[transaction.txHash] addObject:peer];
+        
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification
                  object:nil];
@@ -894,14 +901,13 @@ static const char *dns_seeds[] = {
 
 - (void)peer:(BRPeer *)peer rejectedTransaction:(NSData *)txHash withCode:(uint8_t)code
 {
-    if ([self.txRelays[txHash] count] == self.connectedPeers.count && [self.txRelays[txHash] containsObject:peer]) {
+    if ([self.txRelays[txHash] containsObject:peer]) {
         [self.txRelays[txHash] removeObject:peer];
 
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
         });
     }
-    else [self.txRelays[txHash] removeObject:peer];
 
     // keep track of possible double spend rejections and notify the user to do a rescan
     // NOTE: lots of checks here to make sure a malicious node can't annoy the user with rescan alerts
@@ -1104,12 +1110,9 @@ static const char *dns_seeds[] = {
         if (! self.txRelays[txHash]) self.txRelays[txHash] = [NSMutableSet set];
         [self.txRelays[txHash] addObject:peer];
 
-        if ([self.txRelays[txHash] count] == self.connectedPeers.count) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification
-                 object:nil];
-            });
-        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
+        });
 
         [self.publishedCallback removeObjectForKey:txHash];
 

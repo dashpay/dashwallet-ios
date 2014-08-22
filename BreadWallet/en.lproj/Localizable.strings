@@ -305,6 +305,9 @@
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet.";
 
 /* No comment provided by engineer. */
+"seen by %d of %d peers" = "seen by %d of %d peers";
+
+/* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The bitcoin network will receive a fee of %@ (%@)." = "Send %1$@ (%2$@) from this private key into your wallet? The bitcoin network will receive a fee of %3$@ (%4$@).";
 
 /* No comment provided by engineer. */

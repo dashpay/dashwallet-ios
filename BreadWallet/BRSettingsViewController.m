@@ -323,6 +323,8 @@
                          balance = [m.wallet balanceAfterTransaction:tx];
                 uint32_t height = [[BRPeerManager sharedInstance] lastBlockHeight],
                          confirms = (tx.blockHeight == TX_UNCONFIRMED) ? 0 : (height - tx.blockHeight) + 1;
+                NSUInteger peerCount = [[BRPeerManager sharedInstance] peerCount],
+                           relayCount = [[BRPeerManager sharedInstance] relayCountForTransaction:tx.txHash];
 
                 sentLabel.hidden = YES;
                 unconfirmedLabel.hidden = NO;
@@ -338,7 +340,7 @@
                     unconfirmedLabel.text = NSLocalizedString(@"pending", nil);
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                 }
-                else if (confirms == 0 && ! [[BRPeerManager sharedInstance] transactionIsVerified:tx.txHash]) {
+                else if (confirms == 0 && (peerCount == 0 || relayCount < peerCount)) {
                     unconfirmedLabel.text = NSLocalizedString(@"unverified", nil);
                 }
                 else if (confirms < 6) {

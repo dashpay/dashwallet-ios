@@ -172,6 +172,8 @@
     BRCopyLabel *detailLabel;
     UILabel *textLabel, *subtitleLabel, *amountLabel, *localCurrencyLabel;
     BRWalletManager *m = [BRWalletManager sharedInstance];
+    NSUInteger peerCount = [[BRPeerManager sharedInstance] peerCount],
+               relayCount = [[BRPeerManager sharedInstance] relayCountForTransaction:self.transaction.txHash];
     
     // Configure the cell...
     switch (indexPath.section) {
@@ -211,9 +213,11 @@
                               atBlockHeight:[[BRPeerManager sharedInstance] lastBlockHeight]]) {
                         detailLabel.text = NSLocalizedString(@"transaction is post-dated", nil);
                     }
-                    else if (! [[BRPeerManager sharedInstance] transactionIsVerified:self.transaction.txHash]) {
+                    else if (peerCount > 0 && relayCount < peerCount) {
                         detailLabel.text = NSLocalizedString(@"waiting for network propagation", nil);
-                        //TODO: XXXXX show percent propagated, (and remember it so it doesn't ever go backwards?)
+                        subtitleLabel.text = [NSString
+                                              stringWithFormat:NSLocalizedString(@"seen by %d of %d peers", nil),
+                                              relayCount, peerCount];
                     }
                     else detailLabel.text = NSLocalizedString(@"waiting for confirmation", nil);
                     
