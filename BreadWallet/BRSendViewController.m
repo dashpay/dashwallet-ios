@@ -258,7 +258,8 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
           delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         [self cancel:nil];
     }
-    else if (! [self.okAddress isEqual:request.paymentAddress] && [m.wallet addressIsUsed:request.paymentAddress]) {
+    else if (! [self.okAddress isEqual:request.paymentAddress] && [m.wallet addressIsUsed:request.paymentAddress] &&
+             [[[UIPasteboard generalPasteboard] string] isEqual:request.paymentAddress]) {
         self.request = request;
         self.okAddress = request.paymentAddress;
         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
@@ -348,7 +349,8 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
           delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         [self cancel:nil];
     }
-    else if (! [self.okAddress isEqual:address] && [m.wallet addressIsUsed:address]) {
+    else if (! [self.okAddress isEqual:address] && [m.wallet addressIsUsed:address] &&
+             [[[UIPasteboard generalPasteboard] string] isEqual:address]) {
         self.protocolRequest = protoReq;
         self.okAddress = address;
         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
@@ -414,7 +416,6 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
                        [m stringForAmount:self.tx.standardFee], [m localCurrencyStringForAmount:self.tx.standardFee]]
               delegate:self cancelButtonTitle:nil
               otherButtonTitles:NSLocalizedString(@"remove fee", nil), NSLocalizedString(@"continue", nil), nil] show];
-            //BUG: XXXXX this will break if okAddress is set (tx will get canceled)
             return;
         }
 
