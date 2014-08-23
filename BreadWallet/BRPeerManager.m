@@ -353,9 +353,13 @@ static const char *dns_seeds[] = {
 // number of connected peers
 - (NSUInteger)peerCount
 {
-    return [[self.connectedPeers
-             objectsPassingTest:^BOOL(id obj, BOOL *stop) { return ([obj status] == BRPeerStatusConnected) ? YES : NO;}]
-            count];
+    NSUInteger count = 0;
+
+    for (BRPeer *peer in self.connectedPeers) {
+        if (peer.status == BRPeerStatusConnected) count++;
+    }
+
+    return count;
 }
 
 - (BRBloomFilter *)bloomFilter

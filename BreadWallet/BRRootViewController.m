@@ -673,6 +673,8 @@ viewControllerAfterViewController:(UIViewController *)viewController
     if (buttonIndex != actionSheet.destructiveButtonIndex) return;
 
     [[BRWalletManager sharedInstance] setSeed:nil];
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:WALLET_NEEDS_BACKUP_KEY];
+    [[NSUserDefaults standardUserDefaults] synchronize];
 
     UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"];
 
