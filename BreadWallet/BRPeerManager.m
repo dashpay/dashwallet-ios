@@ -606,10 +606,11 @@ static const char *dns_seeds[] = {
     if (self.taskId != UIBackgroundTaskInvalid) {
         [[UIApplication sharedApplication] endBackgroundTask:self.taskId];
         self.taskId = UIBackgroundTaskInvalid;
-
+        
         for (BRPeer *p in self.connectedPeers) { // after syncing, load filters and get mempools from the other peers
             if (p != self.downloadPeer) [p sendFilterloadMessage:self.bloomFilter.data];
             [p sendMempoolMessage];
+            
             //BUG: XXXX sometimes a peer relays thousands of transactions after mempool msg, should detect and
             // disconnect if it's more than BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10*<typical mempool size>*2
         }
@@ -623,8 +624,6 @@ static const char *dns_seeds[] = {
 // unconfirmed transactions that aren't in the mempools of any of connected peers have likely dropped off the network
 - (void)removeUnrelayedTransactions
 {
-    //TODO: XXXXX don't remove transactions until they are 24hrs old, or conflict with a confirmed transaction, or were
-    // rejected by all peers
     BRWallet *w = [[BRWalletManager sharedInstance] wallet];
 
     for (BRTransaction *tx in w.recentTransactions) {
@@ -747,11 +746,11 @@ static const char *dns_seeds[] = {
     _bloomFilter = nil; // make sure the bloom filter is updated with any newly generated addresses
     [peer sendFilterloadMessage:self.bloomFilter.data];
 
+    if (self.taskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
+        self.taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
+    }
+    
     if (self.lastBlock.height < peer.lastblock) { // start blockchain sync
-        if (self.taskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
-            self.taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
-        }
-
         self.lastRelayTime = 0;
 
         dispatch_async(dispatch_get_main_queue(), ^{ // setup a timer to detect if the sync stalls
