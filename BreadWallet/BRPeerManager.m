@@ -840,8 +840,12 @@ static const char *dns_seeds[] = {
         [self.peers removeObject:self.peers.lastObject];
     }
 
-    if (peers.count < 1000) { // peer relaying is complete when we receive fewer than 1000
-        [self removeUnrelayedTransactions]; // this is a good time to remove unconfirmed tx that dropped off the network
+    if (peers.count > 1 && peers.count < 1000) { // peer relaying is complete when we receive fewer than 1000
+        // this is a good time to remove unconfirmed tx that dropped off the network
+        if (self.connectedPeers.count == MAX_CONNECTIONS && self.lastBlockHeight >= self.downloadPeer.lastblock) {
+            [self removeUnrelayedTransactions];
+        }
+
         [self savePeers];
         [BRPeerEntity saveContext];
     }
