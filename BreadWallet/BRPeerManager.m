@@ -353,7 +353,9 @@ static const char *dns_seeds[] = {
 // number of connected peers
 - (NSUInteger)peerCount
 {
-    return self.connectedPeers.count;
+    return [[self.connectedPeers
+             objectsPassingTest:^BOOL(id obj, BOOL *stop) { return ([obj status] == BRPeerStatusConnected) ? YES : NO;}]
+            count];
 }
 
 - (BRBloomFilter *)bloomFilter
@@ -494,7 +496,7 @@ static const char *dns_seeds[] = {
 
     // instead of publishing to all peers, leave out the download peer to see if the tx propogates and gets relayed back
     // TODO: XXXX connect to a random peer with an empty or fake bloom filter just for publishing
-    if (peers.count > 1) [peers removeObject:self.downloadPeer];
+    if (self.peerCount > 1) [peers removeObject:self.downloadPeer];
 
     dispatch_async(dispatch_get_main_queue(), ^{
         [self performSelector:@selector(txTimeout:) withObject:transaction.txHash afterDelay:PROTOCOL_TIMEOUT];
@@ -841,7 +843,7 @@ static const char *dns_seeds[] = {
 
     if (peers.count > 1 && peers.count < 1000) { // peer relaying is complete when we receive fewer than 1000
         // this is a good time to remove unconfirmed tx that dropped off the network
-        if (self.connectedPeers.count == MAX_CONNECTIONS && self.lastBlockHeight >= self.downloadPeer.lastblock) {
+        if (self.peerCount == MAX_CONNECTIONS && self.lastBlockHeight >= self.downloadPeer.lastblock) {
             [self removeUnrelayedTransactions];
         }
 
@@ -919,7 +921,7 @@ static const char *dns_seeds[] = {
         if (! self.txRejections[txHash]) self.txRejections[txHash] = [NSMutableSet set];
         [self.txRejections[txHash] addObject:peer];
 
-        if ([self.txRejections[txHash] count] > 1 || self.connectedPeers.count < 3) {
+        if ([self.txRejections[txHash] count] > 1 || self.peerCount < 3) {
             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"transaction rejected", nil)
               message:NSLocalizedString(@"Your wallet may be out of sync.\n"
                                         "This can often be fixed by rescaning the blockchain.", nil) delegate:self

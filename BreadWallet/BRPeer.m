@@ -129,6 +129,9 @@ services:(uint64_t)services
 - (void)connect
 {
     if (self.status != BRPeerStatusDisconnected) return;
+    _status = BRPeerStatusConnecting;
+    _pingTime = DBL_MAX;
+
     if (! self.reachability) self.reachability = [Reachability reachabilityWithHostName:self.host];
     
     if (self.reachability.currentReachabilityStatus == NotReachable) { // delay connect until network is reachable
@@ -151,8 +154,6 @@ services:(uint64_t)services
         self.reachabilityObserver = nil;
     }
 
-    _status = BRPeerStatusConnecting;
-    _pingTime = DBL_MAX;
     self.msgHeader = [NSMutableData data];
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
