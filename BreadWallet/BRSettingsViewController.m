@@ -337,7 +337,7 @@
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                 }
                 else if (confirms == 0 && [m.wallet transactionIsPending:tx atBlockHeight:height]) {
-                    unconfirmedLabel.text = NSLocalizedString(@"pending", nil);
+                    unconfirmedLabel.text = NSLocalizedString(@"post-dated", nil);
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                 }
                 else if (confirms == 0 && (peerCount == 0 || relayCount < peerCount)) {

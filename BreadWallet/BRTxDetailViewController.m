@@ -214,10 +214,8 @@
                         detailLabel.text = NSLocalizedString(@"transaction is post-dated", nil);
                     }
                     else if (peerCount > 0 && relayCount < peerCount) {
-                        detailLabel.text = NSLocalizedString(@"waiting for network propagation", nil);
-                        subtitleLabel.text = [NSString
-                                              stringWithFormat:NSLocalizedString(@"seen by %d of %d peers", nil),
-                                              relayCount, peerCount];
+                        detailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"seen by %d of %d peers", nil),
+                                            relayCount, peerCount];
                     }
                     else detailLabel.text = NSLocalizedString(@"waiting for confirmation", nil);
                     

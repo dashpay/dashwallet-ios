@@ -254,10 +254,10 @@
 "payment output" = "payment output";
 
 /* No comment provided by engineer. */
-"pending" = "pending";
+"pin changed" = "pin changed";
 
 /* No comment provided by engineer. */
-"pin changed" = "pin changed";
+"post-dated" = "post-dated";
 
 /* No comment provided by engineer. */
 "Receive bitcoins at this address: %@" = "Receive bitcoins at this address: %@";
@@ -414,9 +414,6 @@
 
 /* No comment provided by engineer. */
 "waiting for confirmation" = "waiting for confirmation";
-
-/* No comment provided by engineer. */
-"waiting for network propagation" = "waiting for network propagation";
 
 /* No comment provided by engineer. */
 "wallet address" = "wallet address";
