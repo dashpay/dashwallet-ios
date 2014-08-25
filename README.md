@@ -47,7 +47,7 @@ will work forever. If your device is ever lost or broken, use your backup
 phrase to restore your balance and transaction history on another device. This
 is possible because breadwallet is a 
 [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)
-"deterministic" wallet, meaning that all the bitcoin addresses and private
+"deterministic" wallet, meaning that all your bitcoin addresses and private
 keys are generated from a single "seed".
 
 ![screenshot2](/images/screenshot2.jpg)
