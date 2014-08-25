@@ -4,13 +4,13 @@
 [![download](/images/Download_on_the_App_Store_Badge_US-UK_135x40.png)]
 (https://itunes.apple.com/app/breadwallet/id885251393)
 
-bitcoin done right 
+**bitcoin done right**
 
 the simplest and most secure bitcoin wallet on any platform 
 
 ![screenshot1](/images/screenshot1.jpg)
 
-features: 
+**features:**
 
 - the first real bitcoin client for iOS 
 - doesn't rely on any server or web service 
@@ -23,7 +23,7 @@ features:
 
 ![screenshot3](/images/screenshot3.jpg)
 
-security:
+**security:**
 
 breadwallet represents a major step forward in bitcoin wallet security. It is
 designed to be secure against malware, security issues with other apps, and
@@ -31,7 +31,7 @@ even physical theft. It makes full use of the security features provided by iOS,
 including AES hardware encryption, app sandboxing and data protection, code
 signing, and keychain services.
 
-reliability:
+**reliability:**
 
 Unlike other iOS bitcoin wallets, breadwallet is a real bitcoin client. There
 are no external web services or servers to get hacked or go down, so you always
@@ -40,7 +40,7 @@ have access to your money. It uses "simplified payment verification" or
 to retrive data directly from the bitcoin network with the fast performance you
 need in a mobile environment.
 
-convenience:
+**convenience:**
 
 Your entire wallet is backed up with a single convenient backup phrase that
 will work forever. If your device is ever lost or broken, use your backup
