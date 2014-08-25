@@ -29,14 +29,17 @@
 #import "BRPeerManager.h"
 #import "BRBIP32Sequence.h"
 
-#define LABEL_MARGIN 20
+#define LABEL_MARGIN       20.0
+#define WRITE_TOGGLE_DELAY 15.0
 
 @interface BRSeedViewController ()
 
 //TODO: create a secure version of UILabel and use it for seedLabel, but make sure there's an accessibility work around
-@property (nonatomic, strong) IBOutlet UILabel *seedLabel, *warningLabel;
-@property (nonatomic, strong) IBOutlet UIView *labelFrame;
-@property (nonatomic, strong) IBOutlet UIImageView *wallpaper, *logo;
+@property (nonatomic, strong) IBOutlet UILabel *seedLabel, *writeLabel;
+@property (nonatomic, strong) IBOutlet UIButton *writeButton;
+@property (nonatomic, strong) IBOutlet UIToolbar *toolbar;
+@property (nonatomic, strong) IBOutlet UIBarButtonItem *remindButton, *doneButton;
+@property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
 
 @property (nonatomic, strong) id resignActiveObserver, screenshotObserver;
 
@@ -44,12 +47,44 @@
 
 @implementation BRSeedViewController
 
+- (instancetype)customInit
+{
+    if ([[UIApplication sharedApplication] isProtectedDataAvailable] && ! [[BRWalletManager sharedInstance] wallet]) {
+        [[BRWalletManager sharedInstance] generateRandomSeed];
+        [[BRPeerManager sharedInstance] connect];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:WALLET_NEEDS_BACKUP_KEY];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }
+
+    return self;
+}
+
+- (instancetype)init
+{
+    if (! (self = [super init])) return nil;
+    return [self customInit];
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder
+{
+    if (! (self = [super initWithCoder:aDecoder])) return nil;
+    return [self customInit];
+}
+
+- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    if (! (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil])) return nil;
+    return [self customInit];
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
     self.wallpaper.hidden = (self.navigationController.viewControllers.firstObject != self) ? YES : NO;
+    self.doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"done", nil)
+                       style:UIBarButtonItemStyleBordered target:self action:@selector(done:)];
     
     self.resignActiveObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
@@ -82,34 +117,33 @@
 
 - (void)dealloc
 {
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
     if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
     if (self.screenshotObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.screenshotObserver];
 }
 
 - (void)viewWillAppear:(BOOL)animated
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
-
     [super viewWillAppear:animated];
  
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
  
     // remove done button if we're not the root of the nav stack
     if (self.navigationController.viewControllers.firstObject != self) {
-        self.navigationItem.leftBarButtonItem = nil;
+        self.toolbar.hidden = YES;
     }
-
-    if ([[UIApplication sharedApplication] isProtectedDataAvailable] && ! m.wallet) {
-        [m generateRandomSeed];
-        [[BRPeerManager sharedInstance] connect];
+    
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:WALLET_NEEDS_BACKUP_KEY]) {
+        [self performSelector:@selector(showWriteToggle) withObject:nil afterDelay:WRITE_TOGGLE_DELAY];
     }
-    else self.navigationItem.rightBarButtonItem = nil;
-
+    
+    @autoreleasepool {  // @autoreleasepool ensures sensitive data will be dealocated immediately
+        self.seedLabel.text = [[BRWalletManager sharedInstance] seedPhrase];
+    }
+    
     [UIView animateWithDuration:0.1 animations:^{
         self.seedLabel.alpha = 1.0;
     }];
-    
-    self.seedLabel.text = m.seedPhrase;
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -118,6 +152,17 @@
 
     // don't leave the seed phrase laying around in memory any longer than necessary
     self.seedLabel.text = @"";
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
+}
+
+- (void)showWriteToggle
+{
+    self.writeLabel.alpha = self.writeButton.alpha = 0.0;
+    self.writeLabel.hidden = self.writeButton.hidden = NO;
+    
+    [UIView animateWithDuration:0.5 animations:^{
+        self.writeLabel.alpha = self.writeButton.alpha = 1.0;
+    }];
 }
 
 #pragma mark - IBAction
@@ -125,7 +170,7 @@
 - (IBAction)done:(id)sender
 {
     if (self.navigationController.viewControllers.firstObject != self) return;
-
+    
     self.navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
     [self.navigationController.presentingViewController.presentingViewController dismissViewControllerAnimated:YES
      completion:nil];
@@ -136,11 +181,14 @@
     if (! [[UIApplication sharedApplication] isProtectedDataAvailable]) return;
 
     [[BRWalletManager sharedInstance] generateRandomSeed];
+    [[BRPeerManager sharedInstance] connect];
+    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:WALLET_NEEDS_BACKUP_KEY];
+    [[NSUserDefaults standardUserDefaults] synchronize];
     
     [UIView animateWithDuration:0.1 animations:^{
         self.seedLabel.alpha = 0.0;
     } completion:^(BOOL finished) {
-        @autoreleasepool {  // @autoreleasepool ensures sensitive data will be dealocated immediately
+        @autoreleasepool {
             self.seedLabel.text = [[BRWalletManager sharedInstance] seedPhrase];
         }
 
@@ -148,6 +196,24 @@
             self.seedLabel.alpha = 1.0;
         }];
     }];
+}
+
+- (IBAction)toggleWrite:(id)sender
+{
+    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+
+    if ([defs boolForKey:WALLET_NEEDS_BACKUP_KEY]) {
+        [self.toolbar setItems:@[self.toolbar.items[0], self.doneButton] animated:YES];
+        [self.writeButton setImage:[UIImage imageNamed:@"checkbox-checked"] forState:UIControlStateNormal];
+        [defs removeObjectForKey:WALLET_NEEDS_BACKUP_KEY];
+    }
+    else {
+        [self.toolbar setItems:@[self.toolbar.items[0], self.remindButton] animated:YES];
+        [self.writeButton setImage:[UIImage imageNamed:@"checkbox-empty"] forState:UIControlStateNormal];
+        [defs setBool:YES forKey:WALLET_NEEDS_BACKUP_KEY];
+    }
+    
+    [defs synchronize];
 }
 
 - (IBAction)copy:(id)sender

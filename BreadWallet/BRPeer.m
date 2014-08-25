@@ -33,7 +33,8 @@
 #import <arpa/inet.h>
 #import "Reachability.h"
 
-#define USERAGENT [NSString stringWithFormat:@"/breadwallet:%@/",NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"]]
+#define USERAGENT [NSString stringWithFormat:@"/breadwallet:%@/",\
+                   NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"]]
 
 #define HEADER_LENGTH      24
 #define MAX_MSG_LENGTH     0x02000000
@@ -128,6 +129,9 @@ services:(uint64_t)services
 - (void)connect
 {
     if (self.status != BRPeerStatusDisconnected) return;
+    _status = BRPeerStatusConnecting;
+    _pingTime = DBL_MAX;
+
     if (! self.reachability) self.reachability = [Reachability reachabilityWithHostName:self.host];
     
     if (self.reachability.currentReachabilityStatus == NotReachable) { // delay connect until network is reachable
@@ -150,8 +154,6 @@ services:(uint64_t)services
         self.reachabilityObserver = nil;
     }
 
-    _status = BRPeerStatusConnecting;
-    _pingTime = DBL_MAX;
     self.msgHeader = [NSMutableData data];
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
@@ -536,9 +538,6 @@ services:(uint64_t)services
     [self didConnect];
 }
 
-//NOTE: since we connect only intermitently, a hostile node could flush the address list with bad values that would take
-// several minutes to clear, after which we would fall back on DNS seeding.
-// TODO: keep around at least 1000 nodes we've personally connected to.
 // TODO: relay addresses
 - (void)acceptAddrMessage:(NSData *)message
 {

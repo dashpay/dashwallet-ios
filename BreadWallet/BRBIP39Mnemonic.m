@@ -24,7 +24,6 @@
 //  THE SOFTWARE.
 
 #import "BRBIP39Mnemonic.h"
-#import "BRKeySequence.h"
 #import "NSString+Base58.h"
 #import "NSData+Hash.h"
 #import "NSMutableData+Bitcoin.h"

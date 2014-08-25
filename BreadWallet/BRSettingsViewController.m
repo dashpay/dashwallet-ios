@@ -167,14 +167,20 @@
 
     if (date) return date;
 
-    if (! f1) {
+    if (! f1) { //BUG: need to watch for NSCurrentLocaleDidChangeNotification
         f1 = [NSDateFormatter new];
         f2 = [NSDateFormatter new];
         f3 = [NSDateFormatter new];
 
-        f1.dateFormat = [[[NSDateFormatter dateFormatFromTemplate:@"Mdha" options:0 locale:[NSLocale currentLocale]]
-                          stringByReplacingOccurrencesOfString:@", " withString:@" "]
-                         stringByReplacingOccurrencesOfString:@" h" withString:@"@h"];
+        f1.dateFormat = [[[[[[[NSDateFormatter dateFormatFromTemplate:@"Mdja" options:0 locale:[NSLocale currentLocale]]
+                              stringByReplacingOccurrencesOfString:@", " withString:@" "]
+                             stringByReplacingOccurrencesOfString:@" a" withString:@"a"]
+                            stringByReplacingOccurrencesOfString:@"hh" withString:@"h"]
+                           stringByReplacingOccurrencesOfString:@" ha" withString:@"@ha"]
+                          stringByReplacingOccurrencesOfString:@"HH" withString:@"H"]
+                         stringByReplacingOccurrencesOfString:@"H " withString:@"H'h' "];
+        f1.dateFormat = [f1.dateFormat stringByReplacingOccurrencesOfString:@"H" withString:@"H'h'"
+                         options:NSBackwardsSearch|NSAnchoredSearch range:NSMakeRange(0, f1.dateFormat.length)];
         f2.dateFormat = [[NSDateFormatter dateFormatFromTemplate:@"Md" options:0 locale:[NSLocale currentLocale]]
                          stringByReplacingOccurrencesOfString:@", " withString:@" "];
         f3.dateFormat = [[NSDateFormatter dateFormatFromTemplate:@"yyMd" options:0 locale:[NSLocale currentLocale]]
@@ -185,8 +191,8 @@
     NSDateFormatter *f = (t > w) ? f1 : ((t > y) ? f2 : f3);
 
     date = [[[[f stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:t - 5*60]] lowercaseString]
-             stringByReplacingOccurrencesOfString:@" am" withString:@"a"]
-            stringByReplacingOccurrencesOfString:@" pm" withString:@"p"];
+             stringByReplacingOccurrencesOfString:@"am" withString:@"a"]
+            stringByReplacingOccurrencesOfString:@"pm" withString:@"p"];
     self.txDates[tx.txHash] = date;
     return date;
 }
@@ -271,12 +277,12 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *transactionIdent = @"TransactionCell", *actionIdent = @"ActionCell", *toggleIdent = @"ToggleCell",
-                    *disclosureIdent = @"DisclosureCell", *selectorIdent = @"SelectorCell",
-                    *restoreIdent = @"RestoreCell", *selectorOptionCell = @"SelectorOptionCell";
+    static NSString *noTxIdent = @"NoTxCell", *transactionIdent = @"TransactionCell", *actionIdent = @"ActionCell",
+                    *toggleIdent = @"ToggleCell", *disclosureIdent = @"DisclosureCell", *restoreIdent = @"RestoreCell",
+                    *selectorIdent = @"SelectorCell", *selectorOptionCell = @"SelectorOptionCell";
     UITableViewCell *cell = nil;
-    UILabel *textLabel, *unconfirmedLabel, *sentLabel, *noTxLabel, *localCurrencyLabel, *balanceLabel,
-            *localBalanceLabel, *toggleLabel;
+    UILabel *textLabel, *unconfirmedLabel, *sentLabel, *localCurrencyLabel, *balanceLabel, *localBalanceLabel,
+            *toggleLabel;
     UISwitch *toggleSwitch;
     BRCopyLabel *detailTextLabel;
     BRWalletManager *m = [BRWalletManager sharedInstance];
@@ -298,43 +304,28 @@
         case 0:
             if (indexPath.row > 0 && indexPath.row >= self.transactions.count) {
                 cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
-                [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
                 cell.textLabel.text = NSLocalizedString(@"more...", nil);
                 cell.imageView.image = nil;
-                return cell;
             }
-        
-            cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent];
-            [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
-            
-            textLabel = (id)[cell viewWithTag:1];
-            detailTextLabel = (id)[cell viewWithTag:2];
-            unconfirmedLabel = (id)[cell viewWithTag:3];
-            noTxLabel = (id)[cell viewWithTag:4];
-            localCurrencyLabel = (id)[cell viewWithTag:5];
-            sentLabel = (id)[cell viewWithTag:6];
-            balanceLabel = (id)[cell viewWithTag:7];
-            localBalanceLabel = (id)[cell viewWithTag:8];
+            else if (self.transactions.count > 0) {
+                cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent];
+                textLabel = (id)[cell viewWithTag:1];
+                detailTextLabel = (id)[cell viewWithTag:2];
+                unconfirmedLabel = (id)[cell viewWithTag:3];
+                localCurrencyLabel = (id)[cell viewWithTag:5];
+                sentLabel = (id)[cell viewWithTag:6];
+                balanceLabel = (id)[cell viewWithTag:7];
+                localBalanceLabel = (id)[cell viewWithTag:8];
 
-            if (self.transactions.count == 0) {
-                noTxLabel.hidden = NO;
-                textLabel.text = nil;
-                localCurrencyLabel.text = nil;
-                detailTextLabel.text = nil;
-                balanceLabel.text = nil;
-                localBalanceLabel.text = nil;
-                unconfirmedLabel.hidden = YES;
-                sentLabel.hidden = YES;
-            }
-            else {
                 BRTransaction *tx = self.transactions[indexPath.row];
                 uint64_t received = [m.wallet amountReceivedFromTransaction:tx],
                          sent = [m.wallet amountSentByTransaction:tx],
                          balance = [m.wallet balanceAfterTransaction:tx];
                 uint32_t height = [[BRPeerManager sharedInstance] lastBlockHeight],
                          confirms = (tx.blockHeight == TX_UNCONFIRMED) ? 0 : (height - tx.blockHeight) + 1;
+                NSUInteger peerCount = [[BRPeerManager sharedInstance] peerCount],
+                           relayCount = [[BRPeerManager sharedInstance] relayCountForTransaction:tx.txHash];
 
-                noTxLabel.hidden = YES;
                 sentLabel.hidden = YES;
                 unconfirmedLabel.hidden = NO;
                 detailTextLabel.text = [self dateForTx:tx];
@@ -346,10 +337,10 @@
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                 }
                 else if (confirms == 0 && [m.wallet transactionIsPending:tx atBlockHeight:height]) {
-                    unconfirmedLabel.text = NSLocalizedString(@"pending", nil);
+                    unconfirmedLabel.text = NSLocalizedString(@"post-dated", nil);
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                 }
-                else if (confirms == 0 && ! [[BRPeerManager sharedInstance] transactionIsVerified:tx.txHash]) {
+                else if (confirms == 0 && (peerCount == 0 || relayCount < peerCount)) {
                     unconfirmedLabel.text = NSLocalizedString(@"unverified", nil);
                 }
                 else if (confirms < 6) {
@@ -398,12 +389,12 @@
                     sentLabel.highlightedTextColor = sentLabel.textColor;
                 }
             }
-
+            else cell = [tableView dequeueReusableCellWithIdentifier:noTxIdent];
+            
             break;
 
         case 1:
             cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
-            [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
 
             switch (indexPath.row) {
                 case 0:
@@ -423,7 +414,6 @@
 
         case 2:
             cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
-            [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
 
             switch (indexPath.row) {
                 case 0:
@@ -455,13 +445,11 @@
             switch (indexPath.row) {
                 case 0:
                     cell = [tableView dequeueReusableCellWithIdentifier:selectorIdent];
-                    [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
                     cell.detailTextLabel.text = m.localCurrencyCode;
                     break;
 
                 case 1:
                     cell = [tableView dequeueReusableCellWithIdentifier:toggleIdent];
-                    [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
                     toggleLabel = (id)[cell viewWithTag:2];
                     toggleSwitch = (id)[cell viewWithTag:3];
                     toggleSwitch.on = [[NSUserDefaults standardUserDefaults] boolForKey:SETTINGS_SKIP_FEE_KEY];
@@ -477,7 +465,6 @@
 
         case 4:
             cell = [tableView dequeueReusableCellWithIdentifier:restoreIdent];
-            [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
             break;
 
         default:
@@ -485,6 +472,7 @@
                      (int)indexPath.section);
     }
     
+    [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
     return cell;
 }
 
@@ -507,7 +495,8 @@
                                      "or are having trouble sending (rescaning can take several minutes)", nil);
 
         case 4:
-            return NSLocalizedString(@"fees are only optional for high priority transactions", nil);
+            return NSLocalizedString(@"bitcoin network fees are only optional for high priority transactions "
+                                     "(removal may cause delays)", nil);
 
         default:
             NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
@@ -624,9 +613,7 @@
                 [(id)c setTransaction:self.transactions[indexPath.row]];
                 [(id)c setTxDateString:[self dateForTx:self.transactions[indexPath.row]]];
                 [self.navigationController pushViewController:c animated:YES];
-//                i = [[self.tableView indexPathsForVisibleRows] indexOfObject:indexPath];
-//                cell = (i < self.tableView.visibleCells.count) ? self.tableView.visibleCells[i] : nil;
-//                [(id)[cell viewWithTag:2] toggleCopyMenu];
+                [tableView deselectRowAtIndexPath:indexPath animated:YES];
             }
 
             break;
@@ -645,13 +632,21 @@
                     [s replaceCharactersInRange:[s.string rangeOfString:@"%net%"] withString:@""];
                     l.attributedText = s;
                     [l.superview.gestureRecognizers.firstObject addTarget:self action:@selector(about:)];
+                    
+#ifdef DEBUG
+                    [(UITextView *)[c.view viewWithTag:412]
+                     setText:[[[NSUserDefaults standardUserDefaults] objectForKey:@"debug_backgroundfetch"]
+                              description]];
+#endif
+                    
                     [self.navigationController pushViewController:c animated:YES];
                     break;
                     
                 case 1: // backup phrase
                     [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
-                      message:NSLocalizedString(@"DO NOT let anyone see your backup phrase or they can spend your "
-                                                 "bitcoins.", nil) delegate:self
+                      message:NSLocalizedString(@"\nDO NOT let anyone see your backup phrase or they can spend your "
+                                                "bitcoins.\n\nDO NOT take a screenshot. Screenshots are visible to "
+                                                "other apps and devices.\n", nil) delegate:self
                       cancelButtonTitle:NSLocalizedString(@"cancel", nil)
                       otherButtonTitles:NSLocalizedString(@"show", nil), nil] show];
                     break;

@@ -39,13 +39,14 @@
 @property (nonatomic, readonly) uint32_t lastBlockHeight;
 @property (nonatomic, readonly) uint32_t estimatedBlockHeight; // last block height reported by current download peer
 @property (nonatomic, readonly) double syncProgress;
+@property (nonatomic, readonly) NSUInteger peerCount; // number of connected peers
 
 + (instancetype)sharedInstance;
 
 - (void)connect;
 - (void)rescan;
 - (void)publishTransaction:(BRTransaction *)transaction completion:(void (^)(NSError *error))completion;
-- (BOOL)transactionIsVerified:(NSData *)txHash; // transaction is considered verified when all peers have relayed it
+- (NSUInteger)relayCountForTransaction:(NSData *)txHash; // number of connected peers that have relayed the transaction
 - (NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight; // seconds since reference date, 00:00:00 01/01/01 GMT
 
 @end

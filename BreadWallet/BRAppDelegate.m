@@ -37,6 +37,7 @@
     // Override point for customization after application launch.
 
     // use background fetch to stay synced with the blockchain
+    // BUG: XXXX this doesn't seem to work, is it compatible with data protection settings?
     [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
 
     UIPageControl.appearance.pageIndicatorTintColor = [UIColor lightGrayColor];
@@ -64,17 +65,11 @@
 
     //TODO: internationalization
 
-    //TODO: full screen alert dialogs with clean transitions
-
     //TODO: fast wallet restore using webservice and/or utxo p2p message
 
     //TODO: ask user if they need to sweep to a new wallet when restoring because it was compromised
 
     //TODO: figure out deterministic builds/removing app sigs: http://www.afp548.com/2012/06/05/re-signining-ios-apps/
-
-    //TODO: after two or three manual reconnect attempts when network is reachable, request a fresh peer list from DNS
-
-    //TODO: if the user cruizes through the backup phrase view and doesn't revisit after 24hrs, show an alert
 
     // this will notify user if bluetooth is disabled (on 4S and newer devices that support BTLE)
     //CBCentralManager *cbManager = [[CBCentralManager alloc] initWithDelegate:self queue:dispatch_get_main_queue()];
@@ -110,6 +105,18 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         return;
     }
 
+#if DEBUG
+    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+    NSMutableArray *a = [[defs arrayForKey:@"debug_backgroundfetch"] mutableCopy];
+    NSInteger i = a.count;
+    NSMutableDictionary *d = [@{@"start_height":@(m.lastBlockHeight),
+                                @"start_stamp":@([NSDate timeIntervalSinceReferenceDate])} mutableCopy];
+
+    [a insertObject:d atIndex:i];
+    [defs setObject:a forKey:@"debug_backgroundfetch"];
+    [defs synchronize];
+#endif
+
     // timeout after 25 seconds
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 25*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         if (m.syncProgress > 0.1) {
@@ -122,6 +129,15 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         if (syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFailedObserver];
         syncFinishedObserver = syncFailedObserver = nil;
         //TODO: disconnect
+        
+#if DEBUG
+        [d setObject:@(m.syncProgress) forKey:@"timeout_progress"];
+        [d setObject:@(m.lastBlockHeight) forKey:@"timeout_height"];
+        [d setObject:@([NSDate timeIntervalSinceReferenceDate]) forKey:@"timeout_stamp"];
+        [a insertObject:d atIndex:i];
+        [defs setObject:a forKey:@"debug_backgroundfetch"];
+        [defs synchronize];
+#endif
     });
 
     syncFinishedObserver =
@@ -133,6 +149,14 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
             if (syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFinishedObserver];
             if (syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFailedObserver];
             syncFinishedObserver = syncFailedObserver = nil;
+
+#if DEBUG
+            [d setObject:@(m.lastBlockHeight) forKey:@"finished_height"];
+            [d setObject:@([NSDate timeIntervalSinceReferenceDate]) forKey:@"finished_stamp"];
+            [a insertObject:d atIndex:i];
+            [defs setObject:a forKey:@"debug_backgroundfetch"];
+            [defs synchronize];
+#endif
         }];
 
     syncFailedObserver =
@@ -144,6 +168,14 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
             if (syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFinishedObserver];
             if (syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFailedObserver];
             syncFinishedObserver = syncFailedObserver = nil;
+            
+#if DEBUG
+            [d setObject:@(m.lastBlockHeight) forKey:@"failed_height"];
+            [d setObject:@([NSDate timeIntervalSinceReferenceDate]) forKey:@"failed_stamp"];
+            [a insertObject:d atIndex:i];
+            [defs setObject:a forKey:@"debug_backgroundfetch"];
+            [defs synchronize];
+#endif
         }];
     
     [m connect];

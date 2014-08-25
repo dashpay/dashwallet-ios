@@ -203,9 +203,10 @@ static NSString *normalize_phrase(NSString *phrase)
     if (buttonIndex != actionSheet.destructiveButtonIndex) return;
     
     [[BRWalletManager sharedInstance] setSeed:nil];
-
     self.textView.text = nil;
-    
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:WALLET_NEEDS_BACKUP_KEY];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+
     UIViewController *p = self.navigationController.presentingViewController.presentingViewController;
     
     [p dismissViewControllerAnimated:NO completion:^{

@@ -30,6 +30,7 @@
 #import "BRWallet.h"
 #import "BRCopyLabel.h"
 #import "NSString+Base58.h"
+#import "NSData+Hash.h"
 
 #define TRANSACTION_CELL_HEIGHT 75
 
@@ -113,7 +114,7 @@
         }
     }
 
-    if (fee > 0 && fee != UINT64_MAX) {
+    if (self.sent > 0 && fee > 0 && fee != UINT64_MAX) {
         [text addObject:@""];
         [detail addObject:NSLocalizedString(@"bitcoin network fee", nil)];
         [amount addObject:@(-fee)];
@@ -171,6 +172,8 @@
     BRCopyLabel *detailLabel;
     UILabel *textLabel, *subtitleLabel, *amountLabel, *localCurrencyLabel;
     BRWalletManager *m = [BRWalletManager sharedInstance];
+    NSUInteger peerCount = [[BRPeerManager sharedInstance] peerCount],
+               relayCount = [[BRPeerManager sharedInstance] relayCountForTransaction:self.transaction.txHash];
     
     // Configure the cell...
     switch (indexPath.section) {
@@ -184,7 +187,7 @@
                     subtitleLabel = (id)[cell viewWithTag:3];
                     [self setBackgroundForCell:cell indexPath:indexPath];
                     textLabel.text = NSLocalizedString(@"id:", nil);
-                    detailLabel.text = [NSString hexWithData:self.transaction.txHash];
+                    detailLabel.text = [NSString hexWithData:self.transaction.txHash.reverse];
                     subtitleLabel.text = nil;
                     break;
                     
@@ -210,8 +213,9 @@
                               atBlockHeight:[[BRPeerManager sharedInstance] lastBlockHeight]]) {
                         detailLabel.text = NSLocalizedString(@"transaction is post-dated", nil);
                     }
-                    else if (! [[BRPeerManager sharedInstance] transactionIsVerified:self.transaction.txHash]) {
-                        detailLabel.text = NSLocalizedString(@"waiting for network relay", nil);
+                    else if (peerCount > 0 && relayCount < peerCount) {
+                        detailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"seen by %d of %d peers", nil),
+                                            relayCount, peerCount];
                     }
                     else detailLabel.text = NSLocalizedString(@"waiting for confirmation", nil);
                     
@@ -245,10 +249,11 @@
         case 1: // drop through
         case 2:
             if ((self.sent > 0 && indexPath.section == 1) || (self.sent == 0 && indexPath.section == 2)) {
-                if ([self.outputText[indexPath.row] length] == 0) {
-                    cell = [tableView dequeueReusableCellWithIdentifier:@"SubtitleCell" forIndexPath:indexPath];
+                if ([self.outputText[indexPath.row] length] > 0) {
+                    cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCell" forIndexPath:indexPath];
+                    cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                 }
-                else cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCell" forIndexPath:indexPath];
+                else cell = [tableView dequeueReusableCellWithIdentifier:@"SubtitleCell" forIndexPath:indexPath];
 
                 detailLabel = (id)[cell viewWithTag:2];
                 subtitleLabel = (id)[cell viewWithTag:3];
@@ -266,6 +271,7 @@
             }
             else if (self.transaction.inputAddresses[indexPath.row] != (id)[NSNull null]) {
                 cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCell" forIndexPath:indexPath];
+                cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                 detailLabel = (id)[cell viewWithTag:2];
                 subtitleLabel = (id)[cell viewWithTag:3];
                 amountLabel = (id)[cell viewWithTag:1];
@@ -277,16 +283,17 @@
                 if ([m.wallet containsAddress:self.transaction.inputAddresses[indexPath.row]]) {
                     subtitleLabel.text = NSLocalizedString(@"wallet address", nil);
                 }
-                else subtitleLabel.text = NSLocalizedString(@"sender's address", nil);
+                else subtitleLabel.text = NSLocalizedString(@"spent address", nil);
             }
             else {
                 cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCell" forIndexPath:indexPath];
+                cell.selectionStyle = UITableViewCellSelectionStyleNone;
                 detailLabel = (id)[cell viewWithTag:2];
                 subtitleLabel = (id)[cell viewWithTag:3];
                 amountLabel = (id)[cell viewWithTag:1];
                 localCurrencyLabel = (id)[cell viewWithTag:5];
                 detailLabel.text = NSLocalizedString(@"unkown address", nil);
-                subtitleLabel.text = NSLocalizedString(@"sender's input", nil);
+                subtitleLabel.text = NSLocalizedString(@"spent input", nil);
                 amountLabel.text = nil;
                 localCurrencyLabel.text = nil;
             }
@@ -366,9 +373,9 @@
     UITableViewCell *cell = (i < self.tableView.visibleCells.count) ? self.tableView.visibleCells[i] : nil;
     BRCopyLabel *l = (id)[cell viewWithTag:2];
     
-    [tableView deselectRowAtIndexPath:indexPath animated:YES];
     l.selectedColor = [UIColor clearColor];
     if (cell.selectionStyle != UITableViewCellSelectionStyleNone) [l toggleCopyMenu];
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 @end

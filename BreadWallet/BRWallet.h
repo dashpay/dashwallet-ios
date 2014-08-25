@@ -24,6 +24,7 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
+#import "BRKeySequence.h"
 
 #define BRWalletBalanceChangedNotification @"BRWalletBalanceChangedNotification"
 
@@ -38,10 +39,14 @@
 @property (nonatomic, readonly) NSArray *unspentOutputs; // NSData objects containing serialized UTXOs
 @property (nonatomic, readonly) NSArray *recentTransactions; // BRTransaction objects sorted by date, most recent first
 
-- (instancetype)initWithContext:(NSManagedObjectContext *)context andSeed:(NSData *(^)())seed;
+- (instancetype)initWithContext:(NSManagedObjectContext *)context sequence:(id<BRKeySequence>)sequence
+seed:(NSData *(^)())seed;
 
-// true if the address is known to belong to the wallet
+// true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address;
+
+// true if the address was previously used as an input or output in any wallet transaction
+- (BOOL)addressIsUsed:(NSString *)address;
 
 // Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
 // found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
