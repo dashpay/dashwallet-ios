@@ -333,9 +333,9 @@ sequence:(uint32_t)sequence
         [d appendUInt32:[self.sequences[i] unsignedIntValue]];
     }
     
-    [d appendVarInt:self.addresses.count];
+    [d appendVarInt:self.amounts.count];
     
-    for (NSUInteger i = 0; i < self.addresses.count; i++) {
+    for (NSUInteger i = 0; i < self.amounts.count; i++) {
         [d appendUInt64:[self.amounts[i] unsignedLongLongValue]];
         [d appendVarInt:[self.outScripts[i] length]];
         [d appendData:self.outScripts[i]];

@@ -336,7 +336,7 @@
                     unconfirmedLabel.text = NSLocalizedString(@"INVALID", nil);
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                 }
-                else if (confirms == 0 && [m.wallet transactionIsPending:tx atBlockHeight:height]) {
+                else if (confirms == 0 && [m.wallet transactionIsPostdated:tx atBlockHeight:height]) {
                     unconfirmedLabel.text = NSLocalizedString(@"post-dated", nil);
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                 }

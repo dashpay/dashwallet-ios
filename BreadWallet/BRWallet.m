@@ -489,12 +489,12 @@ seed:(NSData *(^)())seed
 }
 
 // returns true if transaction won't be valid by blockHeight + 1 or within the next 10 minutes
-- (BOOL)transactionIsPending:(BRTransaction *)transaction atBlockHeight:(uint32_t)blockHeight
+- (BOOL)transactionIsPostdated:(BRTransaction *)transaction atBlockHeight:(uint32_t)blockHeight
 {
     if (transaction.blockHeight <= blockHeight + 1) return NO; // confirmed transactions are not pending
 
     for (NSData *txHash in transaction.inputHashes) { // check if any inputs are known to be pending
-        if ([self transactionIsPending:self.allTx[txHash] atBlockHeight:blockHeight]) return YES;
+        if ([self transactionIsPostdated:self.allTx[txHash] atBlockHeight:blockHeight]) return YES;
     }
 
     if (transaction.lockTime <= blockHeight + 1) return NO;
