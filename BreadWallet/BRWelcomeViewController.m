@@ -39,7 +39,7 @@
 @property (nonatomic, strong) IBOutlet UIView *paralax, *wallpaper;
 @property (nonatomic, strong) IBOutlet UILabel *startLabel, *warningLabel;
 @property (nonatomic, strong) IBOutlet UIButton *generateButton, *showButton;
-@property (nonatomic, strong) IBOutlet NSLayoutConstraint *logoXCenter, *walletXCenter, *restoreXCenter;
+@property (nonatomic, strong) IBOutlet NSLayoutConstraint *logoXCenter, *walletXCenter, *restoreXCenter, *paralaxXLeft;
 
 @end
 
@@ -58,19 +58,7 @@
             if ([[BRWalletManager sharedInstance] wallet]) { // sanity check
                 [self.navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
             }
-
-            if (! self.animating) {
-                self.animating = YES;
-
-                [UIView animateWithDuration:WALLPAPER_ANIMATION_DURATION delay:0.0
-                 options:UIViewAnimationOptionCurveLinear|UIViewAnimationOptionRepeat|UIViewAnimationOptionAutoreverse
-                 animations:^{
-                     self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2.0 - WALLPAPER_ANIMATION_X,
-                                                         self.wallpaper.frame.size.height/2.0 - WALLPAPER_ANIMATION_Y);
-                 } completion:^(BOOL finished) {
-                     self.animating = NO;
-                 }];
-            }
+            else [self animateWallpaper];
         }];
     
     self.resignActiveObserver =
@@ -111,25 +99,15 @@
         if ([[BRWalletManager sharedInstance] wallet]) { // sanity check
             [self.navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
         }
-
-        if (! self.animating) {
-            self.animating = YES;
-
-            [UIView animateWithDuration:WALLPAPER_ANIMATION_DURATION delay:0.0
-             options:UIViewAnimationOptionCurveLinear|UIViewAnimationOptionRepeat|UIViewAnimationOptionAutoreverse
-             animations:^{
-                 self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2.0 - WALLPAPER_ANIMATION_X,
-                                                     self.wallpaper.frame.size.height/2.0 - WALLPAPER_ANIMATION_Y);
-             } completion:^(BOOL finished) {
-                 self.animating = NO;
-             }];
-        }
-
+        
+        [self animateWallpaper];
+        
         if (! self.hasAppeared) {
             self.hasAppeared = YES;
             self.logoXCenter.constant = self.view.frame.size.width;
             self.walletXCenter.constant = 0.0;
             self.restoreXCenter.constant = 0.0;
+            self.paralaxXLeft.constant = self.view.frame.size.width*PARALAX_RATIO;
             self.navigationItem.titleView.hidden = NO;
             self.navigationItem.titleView.alpha = 0.0;
 
@@ -137,8 +115,7 @@
              options:UIViewAnimationOptionCurveEaseOut animations:^{
                 [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationSlide];
                 self.navigationItem.titleView.alpha = 1.0;
-                self.paralax.center = CGPointMake(self.view.frame.size.width*PARALAX_RATIO, self.paralax.center.y);
-                [self.view layoutIfNeeded];
+                [self.view.superview layoutIfNeeded];
             } completion:nil];
         }
     });
@@ -172,11 +149,39 @@
     }
 }
 
-- (void)viewDidLayoutSubviews
+- (void)animateWallpaper
 {
-    if (self.paralax.superview == self.view) {
-        self.paralax.center = CGPointMake(self.paralax.center.x, self.paralax.superview.frame.size.height/2.0);
+    if (self.animating) return;
+    self.animating = YES;
+    
+    if (self.paralax.superview != self.view.superview) {
+        NSLayoutConstraint *c = self.paralaxXLeft;
+        UIView *v = self.view.superview;
+    
+        self.paralaxXLeft = [NSLayoutConstraint constraintWithItem:(c.firstItem == self.paralax ? c.firstItem : v)
+                             attribute:c.firstAttribute relatedBy:c.relation
+                             toItem:(c.secondItem == self.paralax ? c.secondItem : v) attribute:c.secondAttribute
+                             multiplier:c.multiplier constant:c.constant];
+        [v insertSubview:self.paralax belowSubview:self.view];
+        [v addConstraint:self.paralaxXLeft];
+
+        NSArray *a = self.wallpaper.superview.constraints;
+        
+        [self.wallpaper.superview
+         removeConstraints:[a objectsAtIndexes:[a indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+            return ([obj firstItem] == self.wallpaper || [obj secondItem] == self.wallpaper) ? YES : NO;
+        }]]];
+        
+        [v layoutIfNeeded];
     }
+    
+    [UIView animateWithDuration:WALLPAPER_ANIMATION_DURATION delay:0.0
+    options:UIViewAnimationOptionCurveLinear|UIViewAnimationOptionRepeat|UIViewAnimationOptionAutoreverse animations:^{
+        self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2.0 - WALLPAPER_ANIMATION_X,
+                                            self.wallpaper.frame.size.height/2.0 - WALLPAPER_ANIMATION_Y);
+    } completion:^(BOOL finished) {
+        self.animating = NO;
+    }];
 }
 
 #pragma mark IBAction
@@ -217,25 +222,21 @@
 // This method can only be a nop if the transition is interactive and not a percentDriven interactive transition.
 - (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext
 {
+//    NSLayoutConstraint *c = self.paralaxXLeft;
     UIView *v = transitionContext.containerView;
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
 
-    if (self.paralax.superview != v) {
-        self.paralax.center = CGPointMake(-v.frame.size.width*PARALAX_RATIO,
-                                          (v.frame.size.height - self.paralax.frame.size.height)/2);
-        [v insertSubview:self.paralax belowSubview:from.view];
-    }
-
     to.view.center = CGPointMake(v.frame.size.width*(to == self ? -1 : 3)/2.0, to.view.center.y);
     [v addSubview:to.view];
 
+    self.paralaxXLeft.constant = v.frame.size.width*(to == self ? 1 : 2)*PARALAX_RATIO;
+    
     [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
-     initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+    initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
         to.view.center = from.view.center;
         from.view.center = CGPointMake(v.frame.size.width*(to == self ? 3 : -1)/2.0, from.view.center.y);
-        self.paralax.center = CGPointMake(v.frame.size.width*(to == self ? -1 : -2)*PARALAX_RATIO,
-                                          self.paralax.center.y);
+        [self.paralax.superview layoutIfNeeded];
     } completion:^(BOOL finished) {
         if (to == self) [from.view removeFromSuperview];
         [transitionContext completeTransition:finished];

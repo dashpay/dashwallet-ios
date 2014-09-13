@@ -4024,6 +4024,7 @@
 					"$(SRCROOT)/openssl/include",
 				);
 				INFOPLIST_FILE = "BreadWallet/BreadWallet-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -4211,6 +4212,7 @@
 					"$(SRCROOT)/openssl/include",
 				);
 				INFOPLIST_FILE = "BreadWallet/BreadWallet-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -4230,6 +4232,7 @@
 					"$(SRCROOT)/openssl/include",
 				);
 				INFOPLIST_FILE = "BreadWallet/BreadWallet-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};

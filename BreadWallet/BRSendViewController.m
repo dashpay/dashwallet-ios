@@ -879,6 +879,7 @@ fromConnection:(AVCaptureConnection *)connection
 
 - (void)textViewDidBeginEditing:(UITextView *)textView
 {
+    //BUG: XXXX this needs to take keyboard size into account
     self.useClipboard = NO;
     self.clipboardText.text = [[UIPasteboard generalPasteboard] string];
     [textView scrollRangeToVisible:textView.selectedRange];

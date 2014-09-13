@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="6245" systemVersion="13E28" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="BeO-Yt-c4D">
     <dependencies>
-        <deployment defaultVersion="1808" identifier="iOS"/>
         <development version="5100" identifier="xcode"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6238"/>
         <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
@@ -1201,14 +1200,19 @@
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1xc-b5-vde" userLabel="paralax">
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1xc-b5-vde" userLabel="paralax">
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                                 <subviews>
                                     <imageView userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="wallpaper-welcome" translatesAutoresizingMaskIntoConstraints="NO" id="pb2-E7-2ep">
                                         <rect key="frame" x="0.0" y="0.0" width="757" height="568"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                     </imageView>
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="568" id="290-N4-Kpx"/>
+                                    <constraint firstAttribute="width" constant="320" id="sXY-hv-AdA"/>
+                                </constraints>
                             </view>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="breadwallet-big" translatesAutoresizingMaskIntoConstraints="NO" id="Q5d-52-Dwn">
                                 <rect key="frame" x="32" y="209" width="257" height="151"/>
@@ -1259,9 +1263,11 @@
                             <constraint firstAttribute="centerX" secondItem="Q5d-52-Dwn" secondAttribute="centerX" id="C2B-IW-4b6"/>
                             <constraint firstAttribute="centerY" secondItem="dOa-zm-TDG" secondAttribute="centerY" constant="52" id="DZj-AR-xVU"/>
                             <constraint firstAttribute="centerX" secondItem="4w7-k8-9wY" secondAttribute="centerX" id="cgR-0k-6zT"/>
+                            <constraint firstAttribute="centerY" secondItem="1xc-b5-vde" secondAttribute="centerY" id="fLN-8q-7aM"/>
                             <constraint firstItem="4w7-k8-9wY" firstAttribute="centerY" secondItem="TKd-gT-9T7" secondAttribute="centerY" constant="52" id="hF3-1s-SMx"/>
                             <constraint firstAttribute="centerX" secondItem="dOa-zm-TDG" secondAttribute="centerX" id="ksL-p8-tmf"/>
                             <constraint firstAttribute="centerY" secondItem="Q5d-52-Dwn" secondAttribute="centerY" id="qxA-ba-UkT"/>
+                            <constraint firstAttribute="leading" secondItem="1xc-b5-vde" secondAttribute="leading" id="ydv-pT-OnM"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="XZh-nX-qeL">
@@ -1281,6 +1287,7 @@
                     <connections>
                         <outlet property="logoXCenter" destination="C2B-IW-4b6" id="B75-cw-VfP"/>
                         <outlet property="paralax" destination="1xc-b5-vde" id="FHg-2c-agG"/>
+                        <outlet property="paralaxXLeft" destination="ydv-pT-OnM" id="z4J-pb-pgt"/>
                         <outlet property="restoreXCenter" destination="cgR-0k-6zT" id="tsk-mk-Z87"/>
                         <outlet property="walletXCenter" destination="ksL-p8-tmf" id="QAd-Ce-GxS"/>
                         <outlet property="wallpaper" destination="pb2-E7-2ep" id="UeF-CY-KaD"/>
@@ -1306,14 +1313,14 @@
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                             </imageView>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Enter this wallet's backup phrase to wipe it and start/restore another. Your current balance remains on this phrase." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="289" translatesAutoresizingMaskIntoConstraints="NO" id="YC6-rN-4P5">
-                                <rect key="frame" x="16" y="64" width="289" height="62"/>
+                                <rect key="frame" x="16.5" y="64" width="288.5" height="61.5"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
                                 <nil key="highlightedColor"/>
                                 <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <size key="shadowOffset" width="0.0" height="1"/>
                             </label>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3D6-D7-2JP">
-                                <rect key="frame" x="12" y="138" width="296" height="201"/>
+                                <rect key="frame" x="12" y="137.5" width="296" height="200.5"/>
                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.67000000000000004" colorSpace="calibratedRGB"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="yes" returnKeyType="done" enablesReturnKeyAutomatically="YES"/>
@@ -1324,7 +1331,7 @@
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstItem="BcR-mZ-OBQ" firstAttribute="top" secondItem="3D6-D7-2JP" secondAttribute="bottom" constant="229" id="6gr-Qb-fmy"/>
+                            <constraint firstItem="BcR-mZ-OBQ" firstAttribute="top" secondItem="3D6-D7-2JP" secondAttribute="bottom" constant="230" id="6gr-Qb-fmy"/>
                             <constraint firstItem="3D6-D7-2JP" firstAttribute="leading" secondItem="u2L-lU-MXZ" secondAttribute="leading" constant="12" id="H1q-RD-UrJ"/>
                             <constraint firstItem="3D6-D7-2JP" firstAttribute="top" secondItem="YC6-rN-4P5" secondAttribute="bottom" constant="12" id="Hzn-9K-qd0"/>
                             <constraint firstAttribute="trailing" secondItem="3D6-D7-2JP" secondAttribute="trailing" constant="12" id="NtE-Jt-OpD"/>
@@ -1341,6 +1348,7 @@
                     </navigationItem>
                     <connections>
                         <outlet property="textView" destination="3D6-D7-2JP" id="8Hz-y5-cm1"/>
+                        <outlet property="textViewYBottom" destination="6gr-Qb-fmy" id="zwf-II-ORN"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Fhe-MK-1Of" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1833,6 +1841,7 @@ Use it to restore your wallet on another device if this one is ever lost or brok
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
                     <connections>
                         <outlet property="textView" destination="CsT-dR-Qwt" id="xA1-20-sSU"/>
+                        <outlet property="textViewYBottom" destination="bS4-GF-j7U" id="048-5h-sk5"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="1tD-Z5-QRo" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1874,6 +1883,7 @@ Use it to restore your wallet on another device if this one is ever lost or brok
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
                     <connections>
                         <outlet property="textView" destination="bTM-vD-DqT" id="RN3-UD-2K4"/>
+                        <outlet property="textViewYBottom" destination="YMn-NK-J4g" id="sDF-14-4XV"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="BmS-zI-nzE" userLabel="First Responder" sceneMemberID="firstResponder"/>
