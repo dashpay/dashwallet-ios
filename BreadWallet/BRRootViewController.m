@@ -742,15 +742,10 @@ viewControllerAfterViewController:(UIViewController *)viewController
         [[(id)to viewControllers].firstObject navigationItem].leftBarButtonItem.image = nil;
         self.navigationItem.leftBarButtonItem.image = nil;
         [v addSubview:self.burger];
+        [v layoutIfNeeded];
+        self.burger.center = CGPointMake(26.0, 40.0);
         self.burger.hidden = NO;
-
-        [self.burger setX:YES completion:^(BOOL finished) {
-            [[(id)to viewControllers].firstObject navigationItem].leftBarButtonItem.image = [UIImage imageNamed:@"x"];
-            [[(id)to viewControllers].firstObject navigationItem].title =
-                [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                 [m localCurrencyStringForAmount:m.wallet.balance]];
-            [v addSubview:to.view];
-        }];
+        [self.burger setX:YES completion:nil];
 
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
         initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
@@ -761,18 +756,23 @@ viewControllerAfterViewController:(UIViewController *)viewController
         } completion:^(BOOL finished) {
             self.pageViewController.view.center = CGPointMake(self.pageViewController.view.center.x,
                                                               v.frame.size.height/2.0);
+            [[(id)to viewControllers].firstObject navigationItem].leftBarButtonItem.image = [UIImage imageNamed:@"x"];
+            [[(id)to viewControllers].firstObject navigationItem].title =
+                [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
+                 [m localCurrencyStringForAmount:m.wallet.balance]];
+            [v addSubview:to.view];
             [transitionContext completeTransition:finished];
         }];
     }
     else if ([from isKindOfClass:[UINavigationController class]] && to == self.navigationController) { // modal dismiss
         [[BRPeerManager sharedInstance] connect];
-        if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
         
         [self.navigationController.navigationBar.superview insertSubview:from.view
          belowSubview:self.navigationController.navigationBar];
-        [v insertSubview:to.view belowSubview:from.view];
         [(id)from topViewController].navigationItem.title = nil;
-        [v addSubview:self.burger];
+        self.burger.hidden = NO;
+        [v layoutIfNeeded];
+        self.burger.center = CGPointMake(26.0, 40.0);
         [self.burger setX:NO completion:nil];
         self.pageViewController.view.alpha = 0.0;
         self.pageViewController.view.center = CGPointMake(self.pageViewController.view.center.x,
@@ -789,6 +789,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
             self.burger.hidden = YES;
             self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"burger"];
             [transitionContext completeTransition:finished];
+            if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
         }];
     }
 }

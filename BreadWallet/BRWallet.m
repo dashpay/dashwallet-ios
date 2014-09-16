@@ -421,6 +421,8 @@ seed:(NSData *(^)())seed
     if (self.allTx[transaction.txHash] != nil) return YES;
     if (! [self containsTransaction:transaction]) return NO;
 
+    //TODO: XXXX verify signatures when possible
+
     self.allTx[transaction.txHash] = transaction;
     [self.transactions insertObject:transaction atIndex:0];
     [self.usedAddresses addObjectsFromArray:transaction.inputAddresses];
