@@ -149,6 +149,7 @@ static NSData *getKeychainData(NSString *key)
                                   withString:@"-#"];
     self.format.currencyCode = @"XBT";
     self.format.currencySymbol = BITS NARROW_NBSP;
+    self.format.internationalCurrencySymbol = self.format.currencySymbol;
     self.format.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
     self.format.maximumFractionDigits = 2;
 //    self.format.currencySymbol = BTC NARROW_NBSP;
