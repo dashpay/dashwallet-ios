@@ -222,7 +222,6 @@
 // This method can only be a nop if the transition is interactive and not a percentDriven interactive transition.
 - (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext
 {
-//    NSLayoutConstraint *c = self.paralaxXLeft;
     UIView *v = transitionContext.containerView;
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
