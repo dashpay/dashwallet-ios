@@ -878,6 +878,13 @@ fromConnection:(AVCaptureConnection *)connection
 
 #pragma mark UITextViewDelegate
 
+- (BOOL)textViewShouldBeginEditing:(UITextView *)textView
+{
+    if ([self nextTip]) return NO;
+    
+    return YES;
+}
+
 - (void)textViewDidBeginEditing:(UITextView *)textView
 {
     //BUG: XXXX this needs to take keyboard size into account
