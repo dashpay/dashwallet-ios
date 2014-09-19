@@ -104,7 +104,7 @@ static const struct { uint32_t height; char *hash; time_t timestamp; uint32_t ta
 
 static const char *dns_seeds[] = {
     "seed.bitcoin.sipa.be", "dnsseed.bluematt.me", "dnsseed.bitcoin.dashjr.org", "seed.bitcoinstats.com",
-    "seed.bitnodes.io", "seeds.bitcoin.open-nodes.org", "bitseed.xf2.org"
+    "seed.bitnodes.io", "bitseed.xf2.org"
 };
 
 #endif
@@ -630,11 +630,11 @@ static const char *dns_seeds[] = {
 // unconfirmed transactions that aren't in the mempools of any of connected peers have likely dropped off the network
 - (void)removeUnrelayedTransactions
 {
-    BRWallet *w = [[BRWalletManager sharedInstance] wallet];
+    BRWalletManager *m = [BRWalletManager sharedInstance];
 
-    for (BRTransaction *tx in w.recentTransactions) {
+    for (BRTransaction *tx in m.wallet.recentTransactions) {
         if (tx.blockHeight != TX_UNCONFIRMED) break;
-        if ([self.txRelays[tx.txHash] count] == 0) [w removeTransaction:tx.txHash];
+        if ([self.txRelays[tx.txHash] count] == 0) [m.wallet removeTransaction:tx.txHash];
     }
 }
 

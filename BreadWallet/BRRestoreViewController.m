@@ -36,7 +36,9 @@
 @interface BRRestoreViewController ()
 
 @property (nonatomic, strong) IBOutlet UITextView *textView;
+@property (nonatomic, strong) IBOutlet NSLayoutConstraint *textViewYBottom;
 @property (nonatomic, strong) NSArray *words;
+@property (nonatomic, strong) id keyboardObserver;
 
 @end
 
@@ -70,6 +72,17 @@ static NSString *normalize_phrase(NSString *phrase)
     
     self.textView.layer.cornerRadius = 5.0;
     
+    self.keyboardObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIKeyboardWillShowNotification object:nil queue:nil
+        usingBlock:^(NSNotification *note) {
+            [UIView animateWithDuration:[note.userInfo[UIKeyboardAnimationDurationUserInfoKey] floatValue] delay:0.0
+             options:[note.userInfo[UIKeyboardAnimationCurveUserInfoKey] integerValue] animations:^{
+                 self.textViewYBottom.constant =
+                     [note.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue].size.height + 12.0;
+                 [self.view layoutIfNeeded];
+             } completion:nil];
+        }];
+    
     if (self.navigationController.viewControllers.firstObject != self) return;
     
     self.textView.layer.borderColor = [[UIColor colorWithWhite:0.0 alpha:0.25] CGColor];
@@ -81,6 +94,11 @@ static NSString *normalize_phrase(NSString *phrase)
     [super viewWillAppear:animated];
 
     [self.textView becomeFirstResponder];
+}
+
+- (void)dealloc
+{
+    if (self.keyboardObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.keyboardObserver];
 }
 
 #pragma mark - IBAction

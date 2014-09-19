@@ -57,7 +57,6 @@
 #define SEC_ATTR_SERVICE        @"org.voisine.breadwallet"
 #define DEFAULT_CURRENCY_PRICE  500.0
 #define DEFAULT_CURRENCY_CODE   @"USD"
-#define DEFAULT_CURRENCY_SYMBOL @"$"
 
 #define BASE_URL    @"https://blockchain.info"
 #define UNSPENT_URL BASE_URL "/unspent?active="
@@ -144,12 +143,13 @@ static NSData *getKeychainData(NSString *key)
     _format = [NSNumberFormatter new];
     self.format.lenient = YES;
     self.format.numberStyle = NSNumberFormatterCurrencyStyle;
-    self.format.minimumFractionDigits = 0;
     self.format.negativeFormat = [self.format.positiveFormat
                                   stringByReplacingCharactersInRange:[self.format.positiveFormat rangeOfString:@"#"]
                                   withString:@"-#"];
     self.format.currencyCode = @"XBT";
     self.format.currencySymbol = BITS NARROW_NBSP;
+    self.format.internationalCurrencySymbol = self.format.currencySymbol;
+    self.format.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
     self.format.maximumFractionDigits = 2;
 //    self.format.currencySymbol = BTC NARROW_NBSP;
 //    self.format.maximumFractionDigits = 8;
@@ -172,7 +172,7 @@ static NSData *getKeychainData(NSString *key)
         self.localFormat.currencySymbol = [defs stringForKey:LOCAL_CURRENCY_SYMBOL_KEY];
         self.localFormat.currencyCode = self.localCurrencyCode;
     }
-    else {
+    else if ([[UIApplication sharedApplication] isProtectedDataAvailable]) {
         self.localFormat.currencySymbol = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencySymbol];
         self.localFormat.currencyCode = _localCurrencyCode =
             [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
@@ -382,7 +382,20 @@ static NSData *getKeychainData(NSString *key)
 
 - (void)setLocalCurrencyCode:(NSString *)localCurrencyCode
 {
+    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+    
     _localCurrencyCode = [localCurrencyCode copy];
+    
+    if ([self.localCurrencyCode isEqual:[[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode]]) {
+        [defs removeObjectForKey:LOCAL_CURRENCY_CODE_KEY];
+    }
+    else {
+        [defs setObject:self.localCurrencyCode forKey:LOCAL_CURRENCY_CODE_KEY];
+    }
+    
+    [defs removeObjectForKey:LOCAL_CURRENCY_SYMBOL_KEY];
+    [defs removeObjectForKey:LOCAL_CURRENCY_PRICE_KEY];
+    
     [self updateExchangeRate];
 }
 
@@ -407,6 +420,9 @@ static NSData *getKeychainData(NSString *key)
         NSError *error = nil;
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
 
+        _localCurrencyCode = [defs stringForKey:LOCAL_CURRENCY_CODE_KEY];
+        if (! self.localCurrencyCode) _localCurrencyCode = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
+
         if (error || ! [json isKindOfClass:[NSDictionary class]] ||
             ! [json[DEFAULT_CURRENCY_CODE] isKindOfClass:[NSDictionary class]] ||
             ! [json[DEFAULT_CURRENCY_CODE][@"last"] isKindOfClass:[NSNumber class]] ||
@@ -420,7 +436,6 @@ static NSData *getKeychainData(NSString *key)
 
         // if local currency is missing, use default
         if (! [json[self.localCurrencyCode] isKindOfClass:[NSDictionary class]]) {
-            self.localFormat.currencySymbol = DEFAULT_CURRENCY_SYMBOL;
             self.localFormat.currencyCode = _localCurrencyCode = DEFAULT_CURRENCY_CODE;
         }
         else {

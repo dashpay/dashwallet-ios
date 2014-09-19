@@ -121,7 +121,7 @@ static NSString *sanitizeString(NSString *s)
 
 - (void)handleURL:(NSURL *)url
 {
-    //TODO: XXXX custom url splash image per: "Providing Launch Images for Custom URL Schemes."
+    //TODO: XXX custom url splash image per: "Providing Launch Images for Custom URL Schemes."
     if ([url.scheme isEqual:@"bitcoin"]) {
         [self confirmRequest:[BRPaymentRequest requestWithURL:url]];
     }
@@ -211,7 +211,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
     self.okAddress = nil;
 
-    //TODO: XXXX full screen dialog with clean transitions
+    //TODO: XXX full screen dialog with clean transitions
     [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"confirm payment", nil) message:msg delegate:self
       cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:amountStr, nil] show];
 }
@@ -826,6 +826,7 @@ fromConnection:(AVCaptureConnection *)connection
             [self cancel:nil];
         }
         else {
+            //TODO: XXXX show full screen sent dialog with tx info, "you sent b10,000 to bob"
             [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
                                      center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
                                     popIn] popOutAfterDelay:2.0]];
@@ -877,8 +878,16 @@ fromConnection:(AVCaptureConnection *)connection
 
 #pragma mark UITextViewDelegate
 
+- (BOOL)textViewShouldBeginEditing:(UITextView *)textView
+{
+    if ([self nextTip]) return NO;
+    
+    return YES;
+}
+
 - (void)textViewDidBeginEditing:(UITextView *)textView
 {
+    //BUG: XXXX this needs to take keyboard size into account
     self.useClipboard = NO;
     self.clipboardText.text = [[UIPasteboard generalPasteboard] string];
     [textView scrollRangeToVisible:textView.selectedRange];
@@ -928,20 +937,19 @@ fromConnection:(AVCaptureConnection *)connection
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
     UIImageView *img = self.scanButton.imageView;
     UIView *guide = self.scanController.cameraGuide;
-    CGPoint p;
+    //CGPoint p;
 
     [self.scanController.view layoutIfNeeded];
-    p = guide.center;
+    //p = guide.center;
 
     if (to == self.scanController) {
         [v addSubview:to.view];
         to.view.frame = from.view.frame;
         to.view.center = CGPointMake(to.view.center.x, v.frame.size.height*3/2);
-        guide.center = [v convertPoint:img.center fromView:img.superview];
+        //guide.center = [from.view convertPoint:img.center fromView:img.superview];
         guide.transform = CGAffineTransformMakeScale(img.bounds.size.width/guide.bounds.size.width,
                                                      img.bounds.size.height/guide.bounds.size.height);
         guide.alpha = 0;
-        [v addSubview:guide];
 
         [UIView animateWithDuration:0.1 animations:^{
             img.alpha = 0.0;
@@ -958,29 +966,26 @@ fromConnection:(AVCaptureConnection *)connection
 
         [UIView animateWithDuration:0.8 delay:0.15 usingSpringWithDamping:0.5 initialSpringVelocity:0
         options:UIViewAnimationOptionCurveEaseOut animations:^{
-            guide.center = p;
+            //guide.center = p;
             guide.transform = CGAffineTransformIdentity;
         } completion:^(BOOL finished) {
             [to.view addSubview:guide];
         }];
     }
     else {
-        [v addSubview:guide];
         [v insertSubview:to.view belowSubview:from.view];
         [self cancel:nil];
-        img = self.scanButton.imageView;
 
         [UIView animateWithDuration:0.8 delay:0.0 usingSpringWithDamping:0.5 initialSpringVelocity:0
         options:UIViewAnimationOptionCurveEaseIn animations:^{
-            guide.center = [v convertPoint:img.center fromView:img.superview];
+            //guide.center = [to.view convertPoint:img.center fromView:img.superview];
             guide.transform = CGAffineTransformMakeScale(img.bounds.size.width/guide.bounds.size.width,
                                                          img.bounds.size.height/guide.bounds.size.height);
             guide.alpha = 0.0;
         } completion:^(BOOL finished) {
             guide.transform = CGAffineTransformIdentity;
-            guide.center = p;
+            //guide.center = p;
             guide.alpha = 1.0;
-            [from.view addSubview:guide];
         }];
 
         [UIView animateWithDuration:[self transitionDuration:transitionContext] - 0.15 delay:0.15

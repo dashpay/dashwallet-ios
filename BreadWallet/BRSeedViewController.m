@@ -84,7 +84,7 @@
     
     self.wallpaper.hidden = (self.navigationController.viewControllers.firstObject != self) ? YES : NO;
     self.doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"done", nil)
-                       style:UIBarButtonItemStyleBordered target:self action:@selector(done:)];
+                       style:UIBarButtonItemStylePlain target:self action:@selector(done:)];
     
     self.resignActiveObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil

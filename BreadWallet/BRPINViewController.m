@@ -102,7 +102,12 @@
     self.badPins = [NSMutableSet set];
     self.verifyPin = nil;
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:animated];
-    [[UIApplication sharedApplication] setStatusBarHidden:(self.appeared) ? NO : YES withAnimation:animated];
+    
+    if (self.appeared) {
+        self.logoXCenter.constant = self.view.bounds.size.width;
+        self.wallpaperXLeft.constant = self.view.bounds.size.width*PARALAX_RATIO;
+    }
+
     [self checkLockout];
 }
 
@@ -113,13 +118,12 @@
     [[BRPeerManager sharedInstance] connect];
 
     if (! self.appeared) {
-        [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
         self.titleXCenter.constant = self.dotsXCenter.constant = self.padXCenter.constant = 0.0;
         self.logoXCenter.constant = self.view.bounds.size.width;
         self.wallpaperXLeft.constant = self.view.bounds.size.width*PARALAX_RATIO;
 
         [UIView animateWithDuration:0.35 delay:0.1 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
-         animations:^{ [self.view layoutIfNeeded]; } completion:nil];
+        animations:^{ [self.view layoutIfNeeded]; } completion:nil];
     }
 
     [self performSelector:@selector(checkLockout) withObject:nil afterDelay:0.0];
@@ -432,12 +436,13 @@
 {
     UIView *v = transitionContext.containerView;
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
-    *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
+                     *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
 
     if (from == self.navigationController) {
-        //TODO: XXXX try out different animations, maybe something where the numbers pop out one after the next
+        //TODO: XXX try out different animations, maybe something where the numbers pop out one after the next
         to.view.frame = from.view.frame;
         [v insertSubview:to.view belowSubview:from.view];
+        [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
         
         [UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
             from.view.alpha = 0.0;

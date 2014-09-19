@@ -1,0 +1,41 @@
+<svg version="1.1" baseProfile="full"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     xmlns:ev="http://www.w3.org/2001/xml-events">
+<defs>
+<filter id="drop-shadow">
+<feGaussianBlur in="SourceAlpha" stdDeviation="3"/> 
+<feOffset dx="0" dy="2" result="offsetblur"/>
+<feComponentTransfer><feFuncA type="linear" slope="0.15"/></feComponentTransfer>
+<feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter>
+</defs>
+<g stroke="white" fill-opacity="0" filter="url(#drop-shadow)">
+<g id="bread" stroke-width="20" stroke-linecap="round" 
+   transform="translate(25,15)">
+<g id="b"><path d="m0,0 v+80" /><circle cx="40" cy="80" r="40" />
+<path d="m-15,15 h+45" stroke-width="15" /></g>
+<g id="r" transform="translate(149,0)">
+<path d="m0,40 a40,40 0 0,0 -40,40 v+40" /></g>
+<g id="e" transform="translate(165,0)">
+<path d="m5,95 l+70,-35 m0,0 a40,40 0 1,0 -0,40" /></g>
+<g id="a" transform="translate(266,0)"><path d="m80,80 v+40" />
+<circle cx="40" cy="80" r="40" /></g>
+<g id="d" transform="translate(375,0)"><path d="m80,0 v+80" />
+<circle cx="40" cy="80" r="40" /></g>
+</g>
+<g id="wallet" stroke-width="5" stroke-linecap="round"
+   transform="translate(25,175)">
+<g id="w">
+<path d="m0,40 v+50 a30,30 0 1,0 60,0 v-50 m0,50 a30,30 0 1,0 60,0 v-50" /></g>
+<g id="a" transform="translate(147,0)"><path d="m80,80 v+40" />
+<circle cx="40" cy="80" r="40" /></g>
+<g id="l" transform="translate(256,0)"><path d="m0,0 v+120" /></g>
+<g id="l" transform="translate(289,0)"><path d="m0,0 v+120" /></g>
+<g id="e" transform="translate(318,0)">
+<path d="m5,95 l+70,-35 m0,0 a40,40 0 1,0 -0,40" /></g>
+<g id="t" transform="translate(420,0)">
+<path d="m30,40 h-30 m0,-20 v+70 a30,30 0 0,0 30,30" /></g>
+</g>
+</g>
+</svg>
