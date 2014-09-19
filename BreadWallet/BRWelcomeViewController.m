@@ -79,8 +79,8 @@
 {
     [super viewWillAppear:animated];
 
-    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:NO];
-
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:animated];
+    
     if (self.hasAppeared) {
         self.logoXCenter.constant = self.view.frame.size.width;
         self.navigationItem.titleView.hidden = NO;
@@ -173,6 +173,7 @@
         }]]];
         
         [v layoutIfNeeded];
+        self.paralax.center = CGPointMake(self.paralax.center.x, v.bounds.size.height/2.0);
     }
     
     [UIView animateWithDuration:WALLPAPER_ANIMATION_DURATION delay:0.0
@@ -228,6 +229,7 @@
 
     to.view.center = CGPointMake(v.frame.size.width*(to == self ? -1 : 3)/2.0, to.view.center.y);
     [v addSubview:to.view];
+    [v layoutIfNeeded];
 
     self.paralaxXLeft.constant = v.frame.size.width*(to == self ? 1 : 2)*PARALAX_RATIO;
     

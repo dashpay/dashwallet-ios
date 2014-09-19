@@ -46,7 +46,7 @@
 
 @property (nonatomic, strong) IBOutlet UIProgressView *progress, *pulse;
 @property (nonatomic, strong) IBOutlet UILabel *percent;
-@property (nonatomic, strong) IBOutlet UIView *errorBar, *wallpaper;
+@property (nonatomic, strong) IBOutlet UIView *errorBar, *wallpaper, *splash;
 @property (nonatomic, strong) IBOutlet UIGestureRecognizer *navBarTap;
 @property (nonatomic, strong) IBOutlet BRBouncyBurgerButton *burger;
 
@@ -92,7 +92,7 @@
      direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
     self.pageViewController.view.frame = self.view.bounds;
     [self addChildViewController:self.pageViewController];
-    [self.view addSubview:self.pageViewController.view];
+    [self.view insertSubview:self.pageViewController.view belowSubview:self.splash];
     [self.pageViewController didMoveToParentViewController:self];
 
     for (UIView *view in self.pageViewController.view.subviews) {
@@ -238,7 +238,7 @@
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
         }];
     
-    //TODO: XXXX applicationProtectedDataDidBecomeAvailable observer
+    //TODO: XXX applicationProtectedDataDidBecomeAvailable observer
     
     self.reachability = [Reachability reachabilityForInternetConnection];
     [self.reachability startNotifier];
@@ -262,7 +262,13 @@
 
     if (! [[UIApplication sharedApplication] isProtectedDataAvailable] || m.wallet) {
         self.pinNav = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-        [self.navigationController presentViewController:self.pinNav animated:NO completion:nil];
+
+        [self.navigationController presentViewController:self.pinNav animated:NO completion:^{
+            self.splash.hidden = YES;
+            self.navigationController.navigationBar.hidden = NO;
+            [[UIApplication sharedApplication] setStatusBarHidden:NO];
+        }];
+        
         self.pinNav.transitioningDelegate = self.pinNav.viewControllers.firstObject;
     }
     
@@ -277,12 +283,15 @@
 
     if ([[UIApplication sharedApplication] isProtectedDataAvailable] && ! m.wallet) {
         self.pinNav = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-        [self.pinNav.viewControllers.firstObject setAppeared:YES];
 
         [self.navigationController presentViewController:self.pinNav animated:NO completion:^{
             self.pinNav.transitioningDelegate = self.pinNav.viewControllers.firstObject;
             [self.pinNav presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"]
-             animated:NO completion:nil];
+            animated:NO completion:^{
+                self.splash.hidden = YES;
+                self.navigationController.navigationBar.hidden = NO;
+                [self.pinNav.viewControllers.firstObject setAppeared:YES];
+            }];
             self.showTips = YES;
         }];
 
@@ -290,8 +299,6 @@
     }
 
     self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"burger"];
-    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
-    [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
     self.pageViewController.view.alpha = 1.0;
     [[BRPeerManager sharedInstance] connect];
 
@@ -314,16 +321,21 @@
         [self.navigationController.navigationBar addGestureRecognizer:self.navBarTap];
     }
 
+    self.splash.hidden = YES;
+    self.navigationController.navigationBar.hidden = NO;
     if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
-    if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
 
-    if (self.url) [self.sendViewController handleURL:self.url];
-    if (self.file) [self.sendViewController handleFile:self.file];
+    if (self.navigationController.visibleViewController == self) {
+        [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
+        [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
+        if (self.url) [self.sendViewController handleURL:self.url];
+        if (self.file) [self.sendViewController handleFile:self.file];
+        self.url = nil;
+        self.file = nil;
 
-    self.url = nil;
-    self.file = nil;
-
-    [self showBackupDialogIfNeeded];
+        if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
+        [self showBackupDialogIfNeeded];
+    }
 
     [super viewDidAppear:animated];
 }
