@@ -195,6 +195,8 @@
     NSString *title = [actionSheet buttonTitleAtIndex:buttonIndex];
 
     //TODO: allow user to specify a request amount
+    //TODO: allow user to create a payment protocol request object, and use merge avoidance techniques:
+    //      https://medium.com/@octskyward/merge-avoidance-7f95a386692f
     if ([title isEqual:NSLocalizedString(@"copy to clipboard", nil)]) {
         [[UIPasteboard generalPasteboard] setString:self.paymentAddress];
 

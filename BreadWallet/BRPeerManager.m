@@ -499,7 +499,7 @@ static const char *dns_seeds[] = {
     NSMutableSet *peers = [NSMutableSet setWithSet:self.connectedPeers];
 
     // instead of publishing to all peers, leave out the download peer to see if the tx propogates and gets relayed back
-    // TODO: XXXX connect to a random peer with an empty or fake bloom filter just for publishing
+    // TODO: XXX connect to a random peer with an empty or fake bloom filter just for publishing
     if (self.peerCount > 1) [peers removeObject:self.downloadPeer];
 
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -628,6 +628,7 @@ static const char *dns_seeds[] = {
 }
 
 // unconfirmed transactions that aren't in the mempools of any of connected peers have likely dropped off the network
+// TODO: XXXX make sure this is getting called, and if it's for a transaction we sent, recommend a rescan
 - (void)removeUnrelayedTransactions
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];
@@ -732,7 +733,7 @@ static const char *dns_seeds[] = {
     }
 
     // select the peer with the lowest ping time to download the chain from if we're behind
-    // BUG: XXXX a malicious peer can report a higher lastblock to make us select them as the download peer, if two
+    // BUG: XXX a malicious peer can report a higher lastblock to make us select them as the download peer, if two
     // peers agree on lastblock, use one of them instead
     for (BRPeer *p in self.connectedPeers) {
         if ((p.pingTime < peer.pingTime && p.lastblock >= peer.lastblock) || p.lastblock > peer.lastblock) peer = p;

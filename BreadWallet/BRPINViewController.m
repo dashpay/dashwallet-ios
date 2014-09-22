@@ -169,6 +169,7 @@
 
         if ((failHeight < TX_MAX_LOCK_HEIGHT && failHeight + wait > lastHeight) || failHeight + wait > now) { // locked
             if (p.estimatedBlockHeight > lastHeight) lastHeight = p.estimatedBlockHeight;
+            if (failHeight < TX_MAX_LOCK_HEIGHT && failHeight > lastHeight) lastHeight = failHeight;
 
             uint32_t minutes = (failHeight < TX_MAX_LOCK_HEIGHT) ? (failHeight + wait - lastHeight)*10 :
                                (failHeight + wait + 59 - now)/60;
