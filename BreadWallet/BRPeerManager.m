@@ -753,6 +753,9 @@ static const char *dns_seeds[] = {
     _bloomFilter = nil; // make sure the bloom filter is updated with any newly generated addresses
     [peer sendFilterloadMessage:self.bloomFilter.data];
 
+    [self.orphans removeAllObjects]; // clear out orphans there were received on the old filter
+    self.lastOrphan = nil;
+
     if (self.taskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
         self.taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
     }
@@ -901,6 +904,9 @@ static const char *dns_seeds[] = {
                 }
             }
             else [self.downloadPeer sendFilterloadMessage:self.bloomFilter.data];
+
+            [self.orphans removeAllObjects]; // clear out orphans that were received on the old filter
+            self.lastOrphan = nil;
 
             // after adding addresses to the filter, re-request upcoming blocks that were requested using the old filter
             [self.downloadPeer rereqeustBlocksFrom:self.lastBlock.blockHash];

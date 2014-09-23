@@ -10,47 +10,41 @@ the simplest and most secure bitcoin wallet on any platform
 
 ![screenshot1](/images/screenshot1.jpg)
 
-**features:**
+**the first standalone iOS bitcoin wallet:**
 
-- the first real bitcoin client for iOS 
-- doesn't rely on any server or web service 
-- single backup phrase that works forever 
-- private keys never leave your device 
-- "simplified payment verification" for fast mobile performance 
-- import password protected paper wallets 
-- "payment protocol" payee identity certification
-- open source
+Unlike other iOS bitcoin wallets, breadwallet is a real standalone bitcoin
+client. There is no server to get hacked or go down, so you can always access
+your money. Using
+[SPV](https://en.bitcoin.it/wiki/Thin_Client_Security#Header-Only_Clients)
+mode, breadwallet connects directly to the bitcoin network with the fast
+performance you need on a mobile device.
 
-![screenshot3](/images/screenshot3.jpg)
+**the next step in wallet security:**
 
-**security:**
+breadwallet is designed to protect you from malware, browser security holes,
+*even physical theft*. With AES hardware encryption, app sandboxing, keychain
+and code signatures, breadwallet represents a significant security advance over
+web and desktop wallets, and other mobile platforms.
 
-breadwallet represents a major step forward in bitcoin wallet security. It is
-designed to be secure against malware, security issues with other apps, and
-even physical theft. It makes full use of the security features provided by iOS,
-including AES hardware encryption, app sandboxing and data protection, code
-signing, and keychain services.
+**beautiful simplicity:**
 
-**reliability:**
-
-Unlike other iOS bitcoin wallets, breadwallet is a real bitcoin client. There
-are no external web services or servers to get hacked or go down, so you always
-have access to your money. It uses "simplified payment verification" or
-[SPV](https://en.bitcoin.it/wiki/Thin_Client_Security#Header-Only_Clients) mode
-to retrive data directly from the bitcoin network with the fast performance you
-need in a mobile environment.
-
-**convenience:**
-
-Your entire wallet is backed up with a single convenient backup phrase that
-will work forever. If your device is ever lost or broken, use your backup
-phrase to restore your balance and transaction history on another device. This
-is possible because breadwallet is a 
-[BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)
-"deterministic" wallet, meaning that all your bitcoin addresses and private
-keys are generated from a single "seed".
+Simplicity is breadwallet's core design principle. A simple backup phrase is
+all you need to restore your wallet on another device if yours is ever lost or
+broken.  Because breadwallet is  
+[deterministic](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki),
+your balance and transaction history can be recovered from just your backup
+phrase.
 
 ![screenshot2](/images/screenshot2.jpg)
+
+**features:**
+
+- ["simplified payment verification"](https://github.com/bitcoin/bips/blob/master/bip-0037.mediawiki) for fast mobile performance
+- no server to get hacked or go down
+- single backup phrase that works forever
+- private keys never leave your device
+- import [password protected](https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki) paper wallets
+- ["payment protocol"](https://github.com/bitcoin/bips/blob/master/bip-0070.mediawiki) payee identity certification
 
 breadwallet is open source and available under the terms of the MIT license.
 Source code is available at https://github.com/voisine/breadwallet
