@@ -123,7 +123,7 @@ static const char *dns_seeds[] = {
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
 @property (nonatomic, strong) BRMerkleBlock *lastBlock, *lastOrphan;
 @property (nonatomic, strong) dispatch_queue_t q;
-@property (nonatomic, strong) id resignActiveObserver, seedObserver;
+@property (nonatomic, strong) id backgroundObserver, seedObserver;
 
 @end
 
@@ -163,8 +163,8 @@ static const char *dns_seeds[] = {
         self.publishedTx[tx.txHash] = tx; // add unconfirmed tx to mempool
     }
 
-    self.resignActiveObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
+    self.backgroundObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             [self savePeers];
             [self saveBlocks];
@@ -197,7 +197,7 @@ static const char *dns_seeds[] = {
 - (void)dealloc
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
-    if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
+    if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
     if (self.seedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.seedObserver];
 }
 

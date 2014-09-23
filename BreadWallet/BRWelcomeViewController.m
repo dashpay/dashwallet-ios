@@ -33,7 +33,7 @@
 @interface BRWelcomeViewController ()
 
 @property (nonatomic, assign) BOOL hasAppeared, animating;
-@property (nonatomic, strong) id activeObserver, resignActiveObserver;
+@property (nonatomic, strong) id foregroundObserver, backgroundObserver;
 @property (nonatomic, strong) UINavigationController *seedNav;
 
 @property (nonatomic, strong) IBOutlet UIView *paralax, *wallpaper;
@@ -52,8 +52,8 @@
         
     self.navigationController.delegate = self;
 
-    self.activeObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
+    self.foregroundObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillEnterForegroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             if ([[BRWalletManager sharedInstance] wallet]) { // sanity check
                 [self.navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
@@ -61,8 +61,8 @@
             else [self animateWallpaper];
         }];
     
-    self.resignActiveObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
+    self.backgroundObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2, self.wallpaper.center.y);
         }];
@@ -71,8 +71,8 @@
 - (void)dealloc
 {
     if (self.navigationController.delegate == self) self.navigationController.delegate = nil;
-    if (self.activeObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
-    if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
+    if (self.foregroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.foregroundObserver];
+    if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
 }
 
 - (void)viewWillAppear:(BOOL)animated

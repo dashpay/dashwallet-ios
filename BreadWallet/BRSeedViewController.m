@@ -41,7 +41,7 @@
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *remindButton, *doneButton;
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
 
-@property (nonatomic, strong) id resignActiveObserver, screenshotObserver;
+@property (nonatomic, strong) id backgroundObserver, screenshotObserver;
 
 @end
 
@@ -86,8 +86,8 @@
     self.doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"done", nil)
                        style:UIBarButtonItemStylePlain target:self action:@selector(done:)];
     
-    self.resignActiveObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
+    self.backgroundObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             if (self.navigationController.viewControllers.firstObject != self) {
                 [self.navigationController popViewControllerAnimated:NO];
@@ -118,7 +118,7 @@
 - (void)dealloc
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
-    if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
+    if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
     if (self.screenshotObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.screenshotObserver];
 }
 

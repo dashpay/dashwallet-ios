@@ -57,7 +57,7 @@
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) NSURL *url;
 @property (nonatomic, strong) NSData *file;
-@property (nonatomic, strong) id urlObserver, fileObserver, activeObserver, resignActiveObserver, balanceObserver;
+@property (nonatomic, strong) id urlObserver, fileObserver, foregroundObserver, backgroundObserver, balanceObserver;
 @property (nonatomic, strong) id reachabilityObserver, syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 @property (nonatomic, assign) NSTimeInterval timeout, start;
 
@@ -121,8 +121,8 @@
              direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
         }];
 
-    self.activeObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
+    self.foregroundObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillEnterForegroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             if (self.appeared && m.wallet && self.navigationController.presentedViewController != self.pinNav) {
                 self.pinNav = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
@@ -158,8 +158,8 @@
             }
         }];
 
-    self.resignActiveObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
+    self.backgroundObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             if (self.appeared && m.wallet && self.navigationController.presentedViewController != self.pinNav) {
                 self.pinNav = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
@@ -388,8 +388,8 @@
     if (self.navigationController.delegate == self) self.navigationController.delegate = nil;
     if (self.urlObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.urlObserver];
     if (self.fileObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.fileObserver];
-    if (self.activeObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
-    if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
+    if (self.foregroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.foregroundObserver];
+    if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
     if (self.reachabilityObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
     if (self.syncStartedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
