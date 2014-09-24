@@ -628,7 +628,6 @@ static const char *dns_seeds[] = {
 }
 
 // unconfirmed transactions that aren't in the mempools of any of connected peers have likely dropped off the network
-// TODO: XXXX make sure this is getting called, and if it's for a transaction we sent, recommend a rescan
 - (void)removeUnrelayedTransactions
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];
@@ -636,6 +635,7 @@ static const char *dns_seeds[] = {
     for (BRTransaction *tx in m.wallet.recentTransactions) {
         if (tx.blockHeight != TX_UNCONFIRMED) break;
         if ([self.txRelays[tx.txHash] count] == 0) [m.wallet removeTransaction:tx.txHash];
+        // TODO: XXXX if this is for a transaction we sent, recommend a rescan
     }
 }
 
@@ -729,6 +729,7 @@ static const char *dns_seeds[] = {
         if (self.lastBlock.height < self.downloadPeer.lastblock) return; // don't load bloom filter yet if we're syncing
         [peer sendFilterloadMessage:self.bloomFilter.data];
         [peer sendMempoolMessage];
+        [peer sendGetaddrMessage]; // request a list of other bitcoin peers
         return; // we're already connected to a download peer
     }
 
