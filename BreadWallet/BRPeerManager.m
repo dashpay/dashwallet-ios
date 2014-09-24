@@ -825,7 +825,11 @@ static const char *dns_seeds[] = {
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerSyncFailedNotification
              object:nil userInfo:error ? @{@"error":error} : nil];
         }
-        else if (self.connectFailures < MAX_CONNECT_FAILURES) [self connect]; // try connecting to another peer
+        else if (self.connectFailures < MAX_CONNECT_FAILURES &&
+                 ((peer == self.downloadPeer && peer.lastblock > self.lastBlockHeight) ||
+                  [[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground)) {
+            [self connect]; // try connecting to another peer
+        }
         
         [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
     });
