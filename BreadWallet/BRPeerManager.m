@@ -169,7 +169,10 @@ static const char *dns_seeds[] = {
             [self savePeers];
             [self saveBlocks];
             [BRMerkleBlockEntity saveContext];
-            if (self.syncProgress >= 1.0) [self.connectedPeers makeObjectsPerformSelector:@selector(disconnect)];
+
+            if (self.taskId == UIBackgroundTaskInvalid) {
+                [self.connectedPeers makeObjectsPerformSelector:@selector(disconnect)];
+            }
         }];
 
     self.seedObserver =
@@ -405,6 +408,10 @@ static const char *dns_seeds[] = {
     if (self.syncProgress < 1.0) {
         if (self.syncStartHeight == 0) self.syncStartHeight = self.lastBlockHeight;
 
+        if (self.taskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
+            self.taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
+        }
+
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerSyncStartedNotification object:nil];
         });
@@ -613,12 +620,14 @@ static const char *dns_seeds[] = {
         [[UIApplication sharedApplication] endBackgroundTask:self.taskId];
         self.taskId = UIBackgroundTaskInvalid;
         
-        for (BRPeer *p in self.connectedPeers) { // after syncing, load filters and get mempools from the other peers
-            if (p != self.downloadPeer) [p sendFilterloadMessage:self.bloomFilter.data];
-            [p sendMempoolMessage];
+        if ([[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground) {
+            for (BRPeer *p in self.connectedPeers) { // after syncing, load filters and get mempools from other peers
+                if (p != self.downloadPeer) [p sendFilterloadMessage:self.bloomFilter.data];
+                [p sendMempoolMessage];
             
-            //BUG: XXXX sometimes a peer relays thousands of transactions after mempool msg, should detect and
-            // disconnect if it's more than BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10*<typical mempool size>*2
+                //BUG: XXXX sometimes a peer relays thousands of transactions after mempool msg, should detect and
+                // disconnect if it's more than BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10*<typical mempool size>*2
+            }
         }
     }
 
@@ -756,10 +765,6 @@ static const char *dns_seeds[] = {
 
     [self.orphans removeAllObjects]; // clear out orphans there were received on the old filter
     self.lastOrphan = nil;
-
-    if (self.taskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
-        self.taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
-    }
     
     if (self.lastBlock.height < peer.lastblock) { // start blockchain sync
         self.lastRelayTime = 0;
@@ -809,12 +814,12 @@ static const char *dns_seeds[] = {
     if ([self.downloadPeer isEqual:peer]) { // download peer disconnected
         _connected = NO;
         self.downloadPeer = nil;
-        [self syncStopped];
         if (self.connectFailures > MAX_CONNECT_FAILURES) self.connectFailures = MAX_CONNECT_FAILURES;
     }
 
     dispatch_async(dispatch_get_main_queue(), ^{
         if (! self.connected && self.connectFailures == MAX_CONNECT_FAILURES) {
+            [self syncStopped];
             self.syncStartHeight = 0;
         
             // clear out stored peers so we get a fresh list from DNS on next connect attempt
@@ -826,9 +831,8 @@ static const char *dns_seeds[] = {
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerSyncFailedNotification
              object:nil userInfo:error ? @{@"error":error} : nil];
         }
-        else if (self.connectFailures < MAX_CONNECT_FAILURES &&
-                 ((peer == self.downloadPeer && peer.lastblock > self.lastBlockHeight) ||
-                  [[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground)) {
+        else if (self.connectFailures < MAX_CONNECT_FAILURES && (self.taskId != UIBackgroundTaskInvalid ||
+                 [[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground)) {
             [self connect]; // try connecting to another peer
         }
         
@@ -867,15 +871,15 @@ static const char *dns_seeds[] = {
 
 - (void)peer:(BRPeer *)peer relayedTransaction:(BRTransaction *)transaction
 {
-    BRWallet *w = [[BRWalletManager sharedInstance] wallet];
+    BRWalletManager *m = [BRWalletManager sharedInstance];
 
     NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, transaction.txHash);
     if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
 
-    if ([w registerTransaction:transaction]) {
+    if ([m.wallet registerTransaction:transaction]) {
         self.publishedTx[transaction.txHash] = transaction;
 
-        // keep track of how many peers relay a tx, this indicates how likely it is to be confirmed in future blocks
+        // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
         if (! self.txRelays[transaction.txHash]) self.txRelays[transaction.txHash] = [NSMutableSet set];
 
         if (! [self.txRelays[transaction.txHash] containsObject:peer]) {
@@ -889,8 +893,8 @@ static const char *dns_seeds[] = {
 
         // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
         // unused addresses are still matched by the bloom filter
-        NSArray *external = [w addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO],
-                *internal = [w addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
+        NSArray *external = [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO],
+                *internal = [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
 
         for (NSString *address in [external arrayByAddingObjectsFromArray:internal]) {
             NSData *hash = address.addressToHash160;
@@ -898,8 +902,8 @@ static const char *dns_seeds[] = {
             if (! hash || [self.bloomFilter containsData:hash]) continue;
 
             // generate additional addresses so we don't have to update the filter after each new transaction
-            [w addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:NO];
-            [w addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:YES];
+            [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:NO];
+            [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:YES];
 
             _bloomFilter = nil; // reset the filter so a new one will be created with the new wallet addresses
 
@@ -916,6 +920,26 @@ static const char *dns_seeds[] = {
             // after adding addresses to the filter, re-request upcoming blocks that were requested using the old filter
             [self.downloadPeer rereqeustBlocksFrom:self.lastBlock.blockHash];
             break;
+        }
+    }
+}
+
+- (void)peer:(BRPeer *)peer hasTransaction:(NSData *)txHash
+{
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    
+    NSLog(@"%@:%d has transaction %@", peer.host, peer.port, txHash);
+    
+    if (self.publishedTx[txHash] != nil || [m.wallet transactionIsRegistered:txHash]) {
+        // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
+        if (! self.txRelays[txHash]) self.txRelays[txHash] = [NSMutableSet set];
+        
+        if (! [self.txRelays[txHash] containsObject:peer]) {
+            [self.txRelays[txHash] addObject:peer];
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
+            });
         }
     }
 }
@@ -1128,9 +1152,6 @@ static const char *dns_seeds[] = {
     if (tx) {
         [[[BRWalletManager sharedInstance] wallet] registerTransaction:tx];
 
-        if (! self.txRelays[txHash]) self.txRelays[txHash] = [NSMutableSet set];
-        [self.txRelays[txHash] addObject:peer];
-
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
         });
@@ -1140,6 +1161,12 @@ static const char *dns_seeds[] = {
         dispatch_async(dispatch_get_main_queue(), ^{
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:txHash];
             if (callback) callback(nil);
+        });
+        
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC/10), self.q, ^{
+            if (self.taskId == UIBackgroundTaskInvalid && peer.status == BRPeerStatusConnected) {
+                [peer sendMempoolMessage];
+            }
         });
     }
 

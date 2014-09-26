@@ -72,6 +72,7 @@
 - (void)peer:(BRPeer *)peer disconnectedWithError:(NSError *)error;
 - (void)peer:(BRPeer *)peer relayedPeers:(NSArray *)peers;
 - (void)peer:(BRPeer *)peer relayedTransaction:(BRTransaction *)transaction;
+- (void)peer:(BRPeer *)peer hasTransaction:(NSData *)txHash;
 - (void)peer:(BRPeer *)peer rejectedTransaction:(NSData *)txHash withCode:(uint8_t)code;
 
 // called when the peer relays either a merkleblock or a block header, headers will have 0 totalTransactions
@@ -124,6 +125,7 @@ services:(uint64_t)services;
 - (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop;
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop;
 - (void)sendInvMessageWithTxHash:(NSData *)txHash;
+- (void)sendPingMessage;
 - (void)rereqeustBlocksFrom:(NSData *)blockHash; // useful to get additional transactions after a bloom filter update
 
 @end

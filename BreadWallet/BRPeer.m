@@ -630,7 +630,18 @@ services:(uint64_t)services
         [self sendGetblocksMessageWithLocators:@[blockHashes.lastObject, blockHashes.firstObject] andHashStop:nil];
     }
 
-    [txHashes minusOrderedSet:self.knownTxHashes];
+    if ([txHashes intersectsOrderedSet:self.knownTxHashes]) { // remove transactions we already have
+        for (NSData *hash in txHashes) {
+            if (! [self.knownTxHashes containsObject:hash]) continue;
+
+            dispatch_async(self.delegateQueue, ^{
+                if (_status == BRPeerStatusConnected) [self.delegate peer:self hasTransaction:hash];
+            });
+        }
+    
+        [txHashes minusOrderedSet:self.knownTxHashes];
+    }
+    
     [self.knownTxHashes unionOrderedSet:txHashes];
     
     if (txHashes.count + blockHashes.count > 0) {
@@ -833,7 +844,8 @@ services:(uint64_t)services
         return;
     }
     else if (self.startTime < 1) {
-        NSLog(@"%@:%d got unexpected pong", self.host, self.port);
+        // no need to log this, it happens when more than one ping was sent before we got back a pong
+        //NSLog(@"%@:%d got unexpected pong", self.host, self.port);
         return;
     }
 
@@ -843,7 +855,7 @@ services:(uint64_t)services
     _pingTime = self.pingTime*0.5 + pingTime*0.5;
     self.startTime = 0;
     
-    NSLog(@"%@:%u got pong in %fs", self.host, self.port, self.pingTime);
+    NSLog(@"%@:%u got pong in %fs", self.host, self.port, self.pingTime);    
 }
 
 - (void)acceptMerkleblockMessage:(NSData *)message
