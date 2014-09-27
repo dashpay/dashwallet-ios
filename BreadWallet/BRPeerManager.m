@@ -119,7 +119,7 @@ static const char *dns_seeds[] = {
 @property (nonatomic, assign) double filterFpRate;
 @property (nonatomic, assign) NSUInteger taskId, connectFailures;
 @property (nonatomic, assign) NSTimeInterval earliestKeyTime, lastRelayTime;
-@property (nonatomic, strong) NSMutableDictionary *blocks, *orphans, *checkpoints, *txRelays, *txRejections;
+@property (nonatomic, strong) NSMutableDictionary *blocks, *orphans, *checkpoints, *txRelays;
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
 @property (nonatomic, strong) BRMerkleBlock *lastBlock, *lastOrphan;
 @property (nonatomic, strong) dispatch_queue_t q;
@@ -154,7 +154,6 @@ static const char *dns_seeds[] = {
     self.q = dispatch_queue_create("peermanager", NULL);
     self.orphans = [NSMutableDictionary dictionary];
     self.txRelays = [NSMutableDictionary dictionary];
-    self.txRejections = [NSMutableDictionary dictionary];
     self.publishedTx = [NSMutableDictionary dictionary];
     self.publishedCallback = [NSMutableDictionary dictionary];
 
@@ -182,7 +181,6 @@ static const char *dns_seeds[] = {
             self.syncStartHeight = 0;
             [self.orphans removeAllObjects];
             [self.txRelays removeAllObjects];
-            [self.txRejections removeAllObjects];
             [self.publishedTx removeAllObjects];
             [self.publishedCallback removeAllObjects];
             [BRMerkleBlockEntity deleteObjects:[BRMerkleBlockEntity allObjects]];
@@ -572,7 +570,6 @@ static const char *dns_seeds[] = {
     if (height != TX_UNCONFIRMED) { // remove confirmed tx from publish list and relay counts
         [self.publishedTx removeObjectsForKeys:txHashes];
         [self.publishedCallback removeObjectsForKeys:txHashes];
-        [self.txRejections removeObjectsForKeys:txHashes];
         [self.txRelays removeObjectsForKeys:txHashes];
     }
 }
@@ -640,11 +637,34 @@ static const char *dns_seeds[] = {
 - (void)removeUnrelayedTransactions
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];
+    BOOL rescan = NO;
 
     for (BRTransaction *tx in m.wallet.recentTransactions) {
         if (tx.blockHeight != TX_UNCONFIRMED) break;
-        if ([self.txRelays[tx.txHash] count] == 0) [m.wallet removeTransaction:tx.txHash];
-        // TODO: XXXX if this is for a transaction we sent, recommend a rescan
+
+        if ([self.txRelays[tx.txHash] count] == 0) {
+            // if this is for a transaction we sent, and inputs were all confirmed, and it wasn't already known to be
+            // invalid, then recommend a rescan
+            if (! rescan && [m.wallet amountSentByTransaction:tx] > 0 && [m.wallet transactionIsValid:tx]) {
+                rescan = YES;
+                
+                for (NSData *hash in tx.inputHashes) {
+                    if ([[m.wallet transactionForHash:hash] blockHeight] != TX_UNCONFIRMED) continue;
+                    rescan = NO;
+                    break;
+                }
+            }
+            
+            [m.wallet removeTransaction:tx.txHash];
+        }
+    }
+    
+    if (rescan) {
+        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"transaction rejected", nil)
+          message:NSLocalizedString(@"Your wallet may be out of sync.\n"
+                                    "This can often be fixed by rescaning the blockchain.", nil) delegate:self
+          cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+          otherButtonTitles:NSLocalizedString(@"rescan", nil), nil] show];
     }
 }
 
@@ -808,7 +828,6 @@ static const char *dns_seeds[] = {
 
     for (NSData *txHash in self.txRelays.allKeys) {
         [self.txRelays[txHash] removeObject:peer];
-        [self.txRejections[txHash] removeObject:peer];
     }
 
     if ([self.downloadPeer isEqual:peer]) { // download peer disconnected
@@ -930,7 +949,7 @@ static const char *dns_seeds[] = {
     
     NSLog(@"%@:%d has transaction %@", peer.host, peer.port, txHash);
     
-    if (self.publishedTx[txHash] != nil || [m.wallet transactionIsRegistered:txHash]) {
+    if (self.publishedTx[txHash] != nil || [m.wallet transactionForHash:txHash] != nil) {
         // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
         if (! self.txRelays[txHash]) self.txRelays[txHash] = [NSMutableSet set];
         
@@ -952,22 +971,6 @@ static const char *dns_seeds[] = {
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
         });
-    }
-
-    // keep track of possible double spend rejections and notify the user to do a rescan
-    // NOTE: lots of checks here to make sure a malicious node can't annoy the user with rescan alerts
-    if (code == 0x10 && self.publishedTx[txHash] != nil && ! [self.txRejections[txHash] containsObject:peer] &&
-        [self.connectedPeers containsObject:peer]) {
-        if (! self.txRejections[txHash]) self.txRejections[txHash] = [NSMutableSet set];
-        [self.txRejections[txHash] addObject:peer];
-
-        if ([self.txRejections[txHash] count] > 1 || self.peerCount < 3) {
-            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"transaction rejected", nil)
-              message:NSLocalizedString(@"Your wallet may be out of sync.\n"
-                                        "This can often be fixed by rescaning the blockchain.", nil) delegate:self
-              cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-              otherButtonTitles:NSLocalizedString(@"rescan", nil), nil] show];
-        }
     }
 }
 

@@ -467,9 +467,9 @@ seed:(NSData *(^)())seed
 }
 
 // true if the given transaction has been added to the wallet
-- (BOOL)transactionIsRegistered:(NSData *)txHash
+- (BRTransaction *)transactionForHash:(NSData *)txHash
 {
-    return (self.allTx[txHash] != nil) ? YES : NO;
+    return self.allTx[txHash];
 }
 
 // true if no previous wallet transactions spend any of the given transaction's inputs, and no input tx is invalid

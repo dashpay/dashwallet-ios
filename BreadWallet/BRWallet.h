@@ -72,8 +72,8 @@ seed:(NSData *(^)())seed;
 // removes a transaction from the wallet along with any transactions that depend on its outputs
 - (void)removeTransaction:(NSData *)txHash;
 
-// true if the given transaction has been added to the wallet
-- (BOOL)transactionIsRegistered:(NSData *)txHash;
+// returns the transaction with the given hash if it's been registered in the wallet
+- (BRTransaction *)transactionForHash:(NSData *)txHash;
 
 // true if no previous wallet transaction spends any of the given transaction's inputs, and no input tx is invalid
 - (BOOL)transactionIsValid:(BRTransaction *)transaction;
