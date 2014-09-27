@@ -26,7 +26,6 @@
 #import "BRRootViewController.h"
 #import "BRReceiveViewController.h"
 #import "BRSendViewController.h"
-#import "BRPINViewController.h"
 #import "BRBubbleView.h"
 #import "BRBouncyBurgerButton.h"
 #import "BRPeerManager.h"
@@ -50,7 +49,6 @@
 @property (nonatomic, strong) IBOutlet UIGestureRecognizer *navBarTap;
 @property (nonatomic, strong) IBOutlet BRBouncyBurgerButton *burger;
 
-@property (nonatomic, strong) UINavigationController *pinNav;
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) BRBubbleView *tipView;
 @property (nonatomic, assign) BOOL appeared, showTips, inNextTip;
@@ -124,18 +122,14 @@
     self.foregroundObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillEnterForegroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.appeared && m.wallet && self.navigationController.presentedViewController != self.pinNav) {
-                self.pinNav = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-                [self.pinNav.viewControllers.firstObject setAppeared:YES];
-
+            if (self.appeared && m.wallet) {
                 if (self.navigationController.presentedViewController) {
                     [self.navigationController dismissViewControllerAnimated:NO completion:^{
-                        [self.navigationController presentViewController:self.pinNav animated:NO completion:nil];
+                        //TODO: XXXX require auth
                     }];
                 }
-                else [self.navigationController presentViewController:self.pinNav animated:NO completion:nil];
+//                else //TODO: XXXX require auth
 
-                self.pinNav.transitioningDelegate = self.pinNav.viewControllers.firstObject;
                 [[BRPeerManager sharedInstance] connect];
             }
 
@@ -161,18 +155,14 @@
     self.backgroundObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.appeared && m.wallet && self.navigationController.presentedViewController != self.pinNav) {
-                self.pinNav = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-                [self.pinNav.viewControllers.firstObject setAppeared:YES];
+            if (self.appeared && m.wallet) {
 
                 if (self.navigationController.presentedViewController) {
                     [self.navigationController dismissViewControllerAnimated:NO completion:^{
-                        [self.navigationController presentViewController:self.pinNav animated:NO completion:nil];
+                        //TODO: XXXX lock down app
                     }];
                 }
-                else [self.navigationController presentViewController:self.pinNav animated:NO completion:nil];
-
-                self.pinNav.transitioningDelegate = self.pinNav.viewControllers.firstObject;
+//                else //TODO: XXXX lock down app
             }
 
             self.url = nil;
@@ -261,15 +251,10 @@
 #endif
 
     if (! [[UIApplication sharedApplication] isProtectedDataAvailable] || m.wallet) {
-        self.pinNav = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-
-        [self.navigationController presentViewController:self.pinNav animated:NO completion:^{
-            self.splash.hidden = YES;
-            self.navigationController.navigationBar.hidden = NO;
-            [[UIApplication sharedApplication] setStatusBarHidden:NO];
-        }];
-        
-        self.pinNav.transitioningDelegate = self.pinNav.viewControllers.firstObject;
+        // TODO: XXXX require auth
+        self.splash.hidden = YES;
+        self.navigationController.navigationBar.hidden = NO;
+        [[UIApplication sharedApplication] setStatusBarHidden:NO];
     }
     
     [self showBackupDialogIfNeeded];
@@ -282,18 +267,13 @@
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
     if ([[UIApplication sharedApplication] isProtectedDataAvailable] && ! m.wallet) {
-        self.pinNav = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-
-        [self.navigationController presentViewController:self.pinNav animated:NO completion:^{
-            self.pinNav.transitioningDelegate = self.pinNav.viewControllers.firstObject;
-            [self.pinNav presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"]
-            animated:NO completion:^{
-                self.splash.hidden = YES;
-                self.navigationController.navigationBar.hidden = NO;
-                [self.pinNav.viewControllers.firstObject setAppeared:YES];
-            }];
-            self.showTips = YES;
+        [self.navigationController
+        presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"] animated:NO
+        completion:^{
+            self.splash.hidden = YES;
+            self.navigationController.navigationBar.hidden = NO;
         }];
+        self.showTips = YES;
 
         return;
     }

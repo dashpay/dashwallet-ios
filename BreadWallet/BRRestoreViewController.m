@@ -24,7 +24,6 @@
 //  THE SOFTWARE.
 
 #import "BRRestoreViewController.h"
-#import "BRPINViewController.h"
 #import "BRWalletManager.h"
 #import "BRKeySequence.h"
 #import "BRBIP39Mnemonic.h"
@@ -228,15 +227,8 @@ static NSString *normalize_phrase(NSString *phrase)
     UIViewController *p = self.navigationController.presentingViewController.presentingViewController;
     
     [p dismissViewControllerAnimated:NO completion:^{
-        UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-
-        [[(id)c viewControllers].firstObject setAppeared:YES];
-
-        [p presentViewController:c animated:NO completion:^{
-            c.transitioningDelegate = [(id)p viewControllers].firstObject;
-            [c presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"]
-             animated:NO completion:nil];
-        }];
+        [p presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"] animated:NO
+         completion:nil];
     }];
 }
 

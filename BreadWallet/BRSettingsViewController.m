@@ -26,7 +26,6 @@
 #import "BRSettingsViewController.h"
 #import "BRRootViewController.h"
 #import "BRTxDetailViewController.h"
-#import "BRPINViewController.h"
 #import "BRWalletManager.h"
 #import "BRWallet.h"
 #import "BRPeerManager.h"
@@ -46,7 +45,6 @@
 @property (nonatomic, strong) UITableViewController *selectorController;
 @property (nonatomic, strong) NSArray *selectorOptions;
 @property (nonatomic, strong) NSString *selectedOption;
-@property (nonatomic, strong) UINavigationController *pinNav;
 
 @end
 
@@ -260,7 +258,7 @@
             return 2;
 
         case 2:
-            return 3;
+            return 2;
 
         case 3:
             return 2;
@@ -417,18 +415,12 @@
 
             switch (indexPath.row) {
                 case 0:
-                    cell.textLabel.text = NSLocalizedString(@"change pin", nil);
-                    cell.imageView.image = [UIImage imageNamed:@"pin"];
-                    cell.imageView.alpha = 0.75;
-                    break;
-
-                case 1:
                     cell.textLabel.text = NSLocalizedString(@"import private key", nil);
                     cell.imageView.image = [UIImage imageNamed:@"cameraguide-blue-small"];
                     cell.imageView.alpha = 1.0;
                     break;
 
-                case 2:
+                case 1:
                     cell.textLabel.text = NSLocalizedString(@"rescan blockchain", nil);
                     cell.imageView.image = [UIImage imageNamed:@"rescan"];
                     cell.imageView.alpha = 0.75;
@@ -660,20 +652,11 @@
 
         case 2:
             switch (indexPath.row) {
-                case 0: // change pin
-                    self.pinNav = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-                    [self.pinNav.viewControllers.firstObject setCancelable:YES];
-                    [self.pinNav.viewControllers.firstObject setChangePin:YES];
-                    self.pinNav.transitioningDelegate = self;
-                    [self.navigationController presentViewController:self.pinNav animated:YES completion:nil];
-                    [self.pinNav.viewControllers.firstObject setAppeared:YES];
-                    break;
-
-                case 1: // import private key
+                case 0: // import private key
                     [self scanQR:nil];
                     break;
 
-                case 2: // rescan blockchain
+                case 1: // rescan blockchain
                     [[BRPeerManager sharedInstance] rescan];
                     [self done:nil];
                     break;
@@ -736,11 +719,10 @@
         return;
     }
 
-    self.pinNav = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-    [self.pinNav.viewControllers.firstObject setAppeared:YES];
-    [self.pinNav.viewControllers.firstObject setCancelable:YES];
-    self.pinNav.transitioningDelegate = self;
-    [self.navigationController presentViewController:self.pinNav animated:YES completion:nil];
+    //TODO: XXXX require auth
+    
+    [self.navigationController
+     pushViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"] animated:YES];
 }
 
 #pragma mark - UIViewControllerAnimatedTransitioning
@@ -760,30 +742,20 @@
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
     BOOL pop = (to == self || to == self.navigationController) ? YES : NO;
 
-    if (from == self.pinNav && ! [self.pinNav.viewControllers.firstObject changePin] &&
-        [self.pinNav.viewControllers.firstObject success]) {
-        [self.navigationController
-         pushViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"]
-         animated:NO];
-        [self.pinNav.viewControllers.firstObject animateTransition:transitionContext];
-    }
-    else {
-        if (self.wallpaper.superview != v) [v insertSubview:self.wallpaper belowSubview:from.view];
-        to.view.center = CGPointMake(v.frame.size.width*(pop ? -1 : 3)/2, to.view.center.y);
-        [v addSubview:to.view];
+    if (self.wallpaper.superview != v) [v insertSubview:self.wallpaper belowSubview:from.view];
+    to.view.center = CGPointMake(v.frame.size.width*(pop ? -1 : 3)/2, to.view.center.y);
+    [v addSubview:to.view];
 
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
-        initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            to.view.center = from.view.center;
-            from.view.center = CGPointMake(v.frame.size.width*(pop ? 3 : -1)/2, from.view.center.y);
-            self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 -
-                                                v.frame.size.width*(pop ? 0 : 1)*PARALAX_RATIO,
-                                                self.wallpaper.center.y);
-        } completion:^(BOOL finished) {
-            if (pop) [from.view removeFromSuperview];
-            [transitionContext completeTransition:finished];
-        }];
-    }
+    [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
+    initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+        to.view.center = from.view.center;
+        from.view.center = CGPointMake(v.frame.size.width*(pop ? 3 : -1)/2, from.view.center.y);
+        self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 -
+                                            v.frame.size.width*(pop ? 0 : 1)*PARALAX_RATIO, self.wallpaper.center.y);
+    } completion:^(BOOL finished) {
+        if (pop) [from.view removeFromSuperview];
+        [transitionContext completeTransition:finished];
+    }];
 }
 
 #pragma mark - UINavigationControllerDelegate

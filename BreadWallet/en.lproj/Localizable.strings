@@ -92,13 +92,7 @@
 "caution" = "caution";
 
 /* No comment provided by engineer. */
-"change pin" = "change pin";
-
-/* No comment provided by engineer. */
 "checking private key balance..." = "checking private key balance...";
-
-/* No comment provided by engineer. */
-"choose a pin" = "choose a pin";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid bitcoin address" = "clipboard doesn't contain a valid bitcoin address";
@@ -162,12 +156,6 @@
 
 /* No comment provided by engineer. */
 "email not configured" = "email not configured";
-
-/* No comment provided by engineer. */
-"enter current pin" = "enter current pin";
-
-/* No comment provided by engineer. */
-"enter pin" = "enter pin";
 
 /* No comment provided by engineer. */
 "error signing bitcoin transaction" = "error signing bitcoin transaction";
@@ -254,9 +242,6 @@
 "payment output" = "payment output";
 
 /* No comment provided by engineer. */
-"pin changed" = "pin changed";
-
-/* No comment provided by engineer. */
 "post-dated" = "post-dated";
 
 /* No comment provided by engineer. */
@@ -270,9 +255,6 @@
 
 /* No comment provided by engineer. */
 "recieved" = "recieved";
-
-/* No comment provided by engineer. */
-"reenter pin" = "reenter pin";
 
 /* No comment provided by engineer. */
 "remove fee" = "remove fee";
@@ -291,9 +273,6 @@
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescaning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescaning can take several minutes)";
-
-/* No comment provided by engineer. */
-"reset pin" = "reset pin";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address.";

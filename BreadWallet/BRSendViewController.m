@@ -857,7 +857,7 @@ fromConnection:(AVCaptureConnection *)connection
         completion:^(BRPaymentProtocolACK *ack, NSError *error) {
             [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
 
-            if (error && ! [m.wallet transactionForHash:self.tx.txHash]) {
+            if (error && [m.wallet transactionForHash:self.tx.txHash] == nil) {
                 [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription delegate:nil
                   cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
                 [self cancel:nil];
