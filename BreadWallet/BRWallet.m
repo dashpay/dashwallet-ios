@@ -62,12 +62,13 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
 @implementation BRWallet
 
 - (instancetype)initWithContext:(NSManagedObjectContext *)context sequence:(id<BRKeySequence>)sequence
-seed:(NSData *(^)())seed
+masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)())seed
 {
     if (! (self = [super init])) return nil;
 
     self.moc = context;
     self.sequence = sequence;
+    self.masterPublicKey = masterPublicKey;
     self.seed = seed;
     self.allTx = [NSMutableDictionary dictionary];
     self.transactions = [NSMutableOrderedSet orderedSet];

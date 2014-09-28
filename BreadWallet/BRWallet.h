@@ -40,7 +40,7 @@
 @property (nonatomic, readonly) NSArray *recentTransactions; // BRTransaction objects sorted by date, most recent first
 
 - (instancetype)initWithContext:(NSManagedObjectContext *)context sequence:(id<BRKeySequence>)sequence
-seed:(NSData *(^)())seed;
+masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)())seed;
 
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address;

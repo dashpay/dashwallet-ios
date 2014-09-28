@@ -46,12 +46,15 @@
 #define LOCAL_CURRENCY_CODE_KEY   @"LOCAL_CURRENCY_CODE"
 #define LOCAL_CURRENCY_PRICE_KEY  @"LOCAL_CURRENCY_PRICE"
 #define CURRENCY_CODES_KEY        @"CURRENCY_CODES"
+
 #define PIN_KEY                   @"pin"
 #define PIN_FAIL_COUNT_KEY        @"pinfailcount"
 #define PIN_FAIL_HEIGHT_KEY       @"pinfailheight"
+
 #define MNEMONIC_KEY              @"mnemonic"
 #define SEED_KEY                  @"seed"
 #define CREATION_TIME_KEY         @"creationtime"
+#define MASTER_PK_KEY             @"masterpk"
 
 #define SEED_ENTROPY_LENGTH     (128/8)
 #define SEC_ATTR_SERVICE        @"org.voisine.breadwallet"
@@ -170,22 +173,24 @@ static NSData *getKeychainData(NSString *key)
     self.localFormat.numberStyle = NSNumberFormatterCurrencyStyle;
     self.localFormat.negativeFormat = self.format.negativeFormat;
 
-    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+    if ([[UIApplication sharedApplication] isProtectedDataAvailable]) {
+        NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
 
-    _localCurrencyCode = [defs stringForKey:LOCAL_CURRENCY_CODE_KEY],
-    _localCurrencyPrice = [defs doubleForKey:LOCAL_CURRENCY_PRICE_KEY];
-    self.localFormat.maximum = @((MAX_MONEY/SATOSHIS)*self.localCurrencyPrice);
-    _currencyCodes = [defs arrayForKey:CURRENCY_CODES_KEY];
+        _localCurrencyCode = [defs stringForKey:LOCAL_CURRENCY_CODE_KEY],
+        _localCurrencyPrice = [defs doubleForKey:LOCAL_CURRENCY_PRICE_KEY];
+        self.localFormat.maximum = @((MAX_MONEY/SATOSHIS)*self.localCurrencyPrice);
+        _currencyCodes = [defs arrayForKey:CURRENCY_CODES_KEY];
 
-    if (self.localCurrencyCode) {
-        self.localFormat.currencySymbol = [defs stringForKey:LOCAL_CURRENCY_SYMBOL_KEY];
-        self.localFormat.currencyCode = self.localCurrencyCode;
-    }
-    else if ([[UIApplication sharedApplication] isProtectedDataAvailable]) {
-        self.localFormat.currencySymbol = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencySymbol];
-        self.localFormat.currencyCode = _localCurrencyCode =
-            [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
-        //BUG: if locale changed since last time, we'll start with an incorrect price
+        if (self.localCurrencyCode) {
+            self.localFormat.currencySymbol = [defs stringForKey:LOCAL_CURRENCY_SYMBOL_KEY];
+            self.localFormat.currencyCode = self.localCurrencyCode;
+        }
+        else {
+            self.localFormat.currencySymbol = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencySymbol];
+            self.localFormat.currencyCode = _localCurrencyCode =
+                [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
+            //BUG: if locale changed since last time, we'll start with an incorrect price
+        }
     }
 
     [self updateExchangeRate];
@@ -204,7 +209,7 @@ static NSData *getKeychainData(NSString *key)
         @synchronized(self) {
             if (_wallet == nil) {
                 _wallet = [[BRWallet alloc] initWithContext:[NSManagedObject context] sequence:self.sequence
-                           seed:^NSData *{ return self.seed; }];
+                           masterPublicKey:self.masterPublicKey seed:^NSData *{ return self.seed; }];
 
                 // we need to verify that the keychain matches core data, since they have different access and backup
                 // policies it's possible for them to diverge
@@ -247,6 +252,11 @@ static NSData *getKeychainData(NSString *key)
     return _sequence;
 }
 
+- (NSData *)masterPublicKey
+{
+    return getKeychainData(MASTER_PK_KEY);
+}
+
 - (NSData *)seed
 {
     return getKeychainData(SEED_KEY);
@@ -263,11 +273,9 @@ static NSData *getKeychainData(NSString *key)
             [NSManagedObject saveContext];
         }];
 
-        setKeychainData(nil, PIN_KEY);
-        setKeychainData(nil, PIN_FAIL_COUNT_KEY);
-        setKeychainData(nil, PIN_FAIL_HEIGHT_KEY);
         setKeychainData(nil, MNEMONIC_KEY);
         setKeychainData(nil, CREATION_TIME_KEY);
+        setKeychainData(nil, MASTER_PK_KEY);
         
         if (! setKeychainData(seed, SEED_KEY)) {
             NSLog(@"error setting wallet seed");
@@ -277,6 +285,7 @@ static NSData *getKeychainData(NSString *key)
             return;
         }
 
+        setKeychainData([self.sequence masterPublicKeyFromSeed:seed], MASTER_PK_KEY);
         _wallet = nil;
     }
 
@@ -310,61 +319,6 @@ static NSData *getKeychainData(NSString *key)
         
         setKeychainData(d, MNEMONIC_KEY);
     }
-}
-
-- (NSString *)pin
-{
-    @autoreleasepool {
-        NSData *pin = getKeychainData(PIN_KEY);
-
-        if (! pin) return nil;
-
-        return CFBridgingRelease(CFStringCreateFromExternalRepresentation(SecureAllocator(), (CFDataRef)pin,
-                                                                          kCFStringEncodingUTF8));
-    }
-}
-
-- (void)setPin:(NSString *)pin
-{
-    @autoreleasepool {
-        if (pin.length > 0) {
-            NSData *d = CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(), (CFStringRef)pin,
-                                                                               kCFStringEncodingUTF8, 0));
-
-            setKeychainData(d, PIN_KEY);
-        }
-        else setKeychainData(nil, PIN_KEY);
-    }
-}
-
-- (NSUInteger)pinFailCount
-{
-        NSData *count = getKeychainData(PIN_FAIL_COUNT_KEY);
-
-        return (count.length < sizeof(NSUInteger)) ? 0 : *(const NSUInteger *)count.bytes;
-}
-
-- (void)setPinFailCount:(NSUInteger)count
-{
-    NSMutableData *d = [NSMutableData secureDataWithLength:sizeof(NSUInteger)];
-
-    *(NSUInteger *)d.mutableBytes = count;
-    setKeychainData(d, PIN_FAIL_COUNT_KEY);
-}
-
-- (uint32_t)pinFailHeight
-{
-    NSData *height = getKeychainData(PIN_FAIL_HEIGHT_KEY);
-
-    return (height.length < sizeof(uint32_t)) ? 0 : *(const uint32_t *)height.bytes;
-}
-
-- (void)setPinFailHeight:(uint32_t)height
-{
-    NSMutableData *d = [NSMutableData secureDataWithLength:sizeof(uint32_t)];
-
-    *(uint32_t *)d.mutableBytes = height;
-    setKeychainData(d, PIN_FAIL_HEIGHT_KEY);
 }
 
 - (void)generateRandomSeed

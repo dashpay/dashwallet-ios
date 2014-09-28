@@ -35,9 +35,6 @@
 @property (nonatomic, readonly) BRWallet *wallet;
 @property (nonatomic, copy) NSData *seed;
 @property (nonatomic, copy) NSString *seedPhrase;
-@property (nonatomic, copy) NSString *pin;
-@property (nonatomic, assign) NSUInteger pinFailCount; // number of consecutive failed pin attempts
-@property (nonatomic, assign) uint32_t pinFailHeight; // blockchain height at most recent failed pin attempt
 @property (nonatomic, readonly) NSTimeInterval seedCreationTime; // interval since refrence date, 00:00:00 01/01/01 GMT
 @property (nonatomic, readonly) NSNumberFormatter *format;
 @property (nonatomic, readonly) NSNumberFormatter *localFormat;
