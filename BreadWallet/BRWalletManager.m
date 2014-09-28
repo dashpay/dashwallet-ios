@@ -66,28 +66,39 @@ static BOOL setKeychainData(NSData *data, NSString *key)
 {
     if (! key) return NO;
 
-    NSDictionary *query = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
+    NSDictionary *q = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
+                        (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
+                        (__bridge id)kSecAttrAccount:key};
+
+    if (SecItemCopyMatching((__bridge CFDictionaryRef)q, NULL) == errSecItemNotFound) {
+        if (! data) return YES;
+
+        NSDictionary *i = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
                             (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
                             (__bridge id)kSecAttrAccount:key,
-                            (__bridge id)kSecReturnData:(id)kCFBooleanTrue};
-
-    SecItemDelete((__bridge CFDictionaryRef)query);
-
-    if (! data) return YES;
-
-    NSDictionary *item = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
-                           (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
-                           (__bridge id)kSecAttrAccount:key,
-                           (__bridge id)kSecAttrAccessible:(__bridge id)kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
-                           (__bridge id)kSecValueData:data};
-    OSStatus status = SecItemAdd((__bridge CFDictionaryRef)item, NULL);
-
-    if (status != noErr) {
+                            (__bridge id)kSecAttrAccessible:(__bridge id)kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
+                            (__bridge id)kSecValueData:data};
+        OSStatus status = SecItemAdd((__bridge CFDictionaryRef)i, NULL);
+        
+        if (status == noErr) return YES;
         NSLog(@"SecItemAdd error status %d", (int)status);
         return NO;
     }
+    
+    if (! data) {
+        OSStatus status = SecItemDelete((__bridge CFDictionaryRef)q);
 
-    return YES;
+        if (status == noErr) return YES;
+        NSLog(@"SecItemDelete error status %d", (int)status);
+        return NO;
+    }
+
+    NSDictionary *u = @{(__bridge id)kSecValueData:data};
+    OSStatus status = SecItemUpdate((__bridge CFDictionaryRef)q, (__bridge CFDictionaryRef)u);
+    
+    if (status == noErr) return YES;
+    NSLog(@"SecItemUpdate error status %d", (int)status);
+    return NO;
 }
 
 static NSData *getKeychainData(NSString *key)
@@ -99,12 +110,10 @@ static NSData *getKeychainData(NSString *key)
     CFDataRef result = nil;
     OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, (CFTypeRef *)&result);
 
-    if (status != noErr) {
-        NSLog(@"SecItemCopyMatching error status %d", (int)status);
-        return nil;
-    }
-
-    return CFBridgingRelease(result);
+    if (status == errSecItemNotFound) return nil;
+    if (status == noErr) return CFBridgingRelease(result);
+    NSLog(@"SecItemCopyMatching error status %d", (int)status);
+    return nil;
 }
 
 @interface BRWalletManager()
