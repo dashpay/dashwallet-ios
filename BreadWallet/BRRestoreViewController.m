@@ -185,18 +185,10 @@ static NSString *normalize_phrase(NSString *phrase)
         }
         else if (m.wallet) {
             if ([phrase isEqual:normalize_phrase(m.seedPhrase)]) {
-                if (self.navigationController.viewControllers.firstObject != self) { // reset pin
-                    m.pin = nil;
-                    m.pinFailCount = 0;
-                    m.pinFailHeight = 0;
-                    [self.navigationController popToRootViewControllerAnimated:YES];
-                }
-                else {
-                    [[[UIActionSheet alloc] initWithTitle:nil delegate:self
-                      cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-                      destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
-                     showInView:[[UIApplication sharedApplication] keyWindow]];
-                }
+                [[[UIActionSheet alloc] initWithTitle:nil delegate:self
+                  cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+                  destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
+                  showInView:[[UIApplication sharedApplication] keyWindow]];
             }
             else {
                 [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"backup phrase doesn't match", nil)
@@ -219,7 +211,7 @@ static NSString *normalize_phrase(NSString *phrase)
 {
     if (buttonIndex != actionSheet.destructiveButtonIndex) return;
     
-    [[BRWalletManager sharedInstance] setSeed:nil];
+    [[BRWalletManager sharedInstance] setSeedPhrase:nil];
     self.textView.text = nil;
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:WALLET_NEEDS_BACKUP_KEY];
     [[NSUserDefaults standardUserDefaults] synchronize];

@@ -664,7 +664,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
 {
     if (buttonIndex != actionSheet.destructiveButtonIndex) return;
 
-    [[BRWalletManager sharedInstance] setSeed:nil];
+    [[BRWalletManager sharedInstance] setSeedPhrase:nil];
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:WALLET_NEEDS_BACKUP_KEY];
     [[NSUserDefaults standardUserDefaults] synchronize];
 

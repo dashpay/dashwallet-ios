@@ -42,46 +42,58 @@
 #define BITS        @"\xC6\x80"     // lowercase b with stroke (utf-8)
 #define NARROW_NBSP @"\xE2\x80\xAF" // narrow no-break space (utf-8)
 
+#define BASE_URL    @"https://blockchain.info"
+#define UNSPENT_URL BASE_URL "/unspent?active="
+#define TICKER_URL  BASE_URL "/ticker"
+
+#define SEED_ENTROPY_LENGTH    (128/8)
+#define SEC_ATTR_SERVICE       @"org.voisine.breadwallet"
+#define DEFAULT_CURRENCY_PRICE 500.0
+#define DEFAULT_CURRENCY_CODE  @"USD"
+
 #define LOCAL_CURRENCY_SYMBOL_KEY @"LOCAL_CURRENCY_SYMBOL"
 #define LOCAL_CURRENCY_CODE_KEY   @"LOCAL_CURRENCY_CODE"
 #define LOCAL_CURRENCY_PRICE_KEY  @"LOCAL_CURRENCY_PRICE"
 #define CURRENCY_CODES_KEY        @"CURRENCY_CODES"
 
-#define PIN_KEY                   @"pin"
-#define PIN_FAIL_COUNT_KEY        @"pinfailcount"
-#define PIN_FAIL_HEIGHT_KEY       @"pinfailheight"
+#define MNEMONIC_KEY      @"mnemonic"
+#define CREATION_TIME_KEY @"creationtime"
+#define MASTER_PUBKEY_KEY @"masterpubkey"
 
-#define MNEMONIC_KEY              @"mnemonic"
-#define SEED_KEY                  @"seed"
-#define CREATION_TIME_KEY         @"creationtime"
-#define MASTER_PK_KEY             @"masterpk"
+// deprecated
+#define SEED_KEY            @"seed"
+#define PIN_KEY             @"pin"
+#define PIN_FAIL_COUNT_KEY  @"pinfailcount"
+#define PIN_FAIL_HEIGHT_KEY @"pinfailheight"
 
-#define SEED_ENTROPY_LENGTH     (128/8)
-#define SEC_ATTR_SERVICE        @"org.voisine.breadwallet"
-#define DEFAULT_CURRENCY_PRICE  500.0
-#define DEFAULT_CURRENCY_CODE   @"USD"
-
-#define BASE_URL    @"https://blockchain.info"
-#define UNSPENT_URL BASE_URL "/unspent?active="
-#define TICKER_URL  BASE_URL "/ticker"
-
-static BOOL setKeychainData(NSData *data, NSString *key)
+static BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
 {
     if (! key) return NO;
 
-    NSDictionary *q = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
-                        (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
-                        (__bridge id)kSecAttrAccount:key};
+    CFErrorRef error = NULL;
+    SecAccessControlRef access = (data) ?
+        SecAccessControlCreateWithFlags(kCFAllocatorDefault,
+                                        (authenticated) ? kSecAttrAccessibleWhenUnlockedThisDeviceOnly :
+                                        kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
+                                        (authenticated) ? kSecAccessControlUserPresence : 0, &error) : NULL;
+    NSDictionary *query = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
+                            (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
+                            (__bridge id)kSecAttrAccount:key};
 
-    if (SecItemCopyMatching((__bridge CFDictionaryRef)q, NULL) == errSecItemNotFound) {
+    if (data && (access == NULL || error)) {
+        NSLog(@"SecAccessControlRef: %@", error);
+        return NO;
+    }
+    
+    if (SecItemCopyMatching((__bridge CFDictionaryRef)query, NULL) == errSecItemNotFound) {
         if (! data) return YES;
 
-        NSDictionary *i = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
-                            (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
-                            (__bridge id)kSecAttrAccount:key,
-                            (__bridge id)kSecAttrAccessible:(__bridge id)kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
-                            (__bridge id)kSecValueData:data};
-        OSStatus status = SecItemAdd((__bridge CFDictionaryRef)i, NULL);
+        NSDictionary *item = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
+                               (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
+                               (__bridge id)kSecAttrAccount:key,
+                               (__bridge id)kSecAttrAccessControl:(__bridge_transfer id)access,
+                               (__bridge id)kSecValueData:data};
+        OSStatus status = SecItemAdd((__bridge CFDictionaryRef)item, NULL);
         
         if (status == noErr) return YES;
         NSLog(@"SecItemAdd error status %d", (int)status);
@@ -89,27 +101,29 @@ static BOOL setKeychainData(NSData *data, NSString *key)
     }
     
     if (! data) {
-        OSStatus status = SecItemDelete((__bridge CFDictionaryRef)q);
+        OSStatus status = SecItemDelete((__bridge CFDictionaryRef)query);
 
         if (status == noErr) return YES;
         NSLog(@"SecItemDelete error status %d", (int)status);
         return NO;
     }
 
-    NSDictionary *u = @{(__bridge id)kSecValueData:data};
-    OSStatus status = SecItemUpdate((__bridge CFDictionaryRef)q, (__bridge CFDictionaryRef)u);
+    NSDictionary *update = @{(__bridge id)kSecAttrAccessControl:(__bridge_transfer id)access,
+                             (__bridge id)kSecValueData:data};
+    OSStatus status = SecItemUpdate((__bridge CFDictionaryRef)query, (__bridge CFDictionaryRef)update);
     
     if (status == noErr) return YES;
     NSLog(@"SecItemUpdate error status %d", (int)status);
     return NO;
 }
 
-static NSData *getKeychainData(NSString *key)
+static NSData *getKeychainData(NSString *key, NSString *authprompt)
 {
     NSDictionary *query = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
                             (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
                             (__bridge id)kSecAttrAccount:key,
-                            (__bridge id)kSecReturnData:(id)kCFBooleanTrue};
+                            (__bridge id)kSecReturnData:@YES,
+                            (__bridge id)kSecUseOperationPrompt:(authprompt) ? authprompt : @""};
     CFDataRef result = nil;
     OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, (CFTypeRef *)&result);
 
@@ -205,7 +219,7 @@ static NSData *getKeychainData(NSString *key)
 
 - (BRWallet *)wallet
 {
-    if (_wallet == nil && self.seed) {
+    if (_wallet == nil && self.seedPhrase) {
         @synchronized(self) {
             if (_wallet == nil) {
                 _wallet = [[BRWallet alloc] initWithContext:[NSManagedObject context] sequence:self.sequence
@@ -254,50 +268,25 @@ static NSData *getKeychainData(NSString *key)
 
 - (NSData *)masterPublicKey
 {
-    return getKeychainData(MASTER_PK_KEY);
+    return getKeychainData(MASTER_PUBKEY_KEY, nil);
 }
 
 - (NSData *)seed
 {
-    return getKeychainData(SEED_KEY);
-}
-
-- (void)setSeed:(NSData *)seed
-{
-    @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
-        if ([seed isEqual:self.seed]) return;
-
-        [[NSManagedObject context] performBlockAndWait:^{
-            [BRAddressEntity deleteObjects:[BRAddressEntity allObjects]];
-            [BRTransactionEntity deleteObjects:[BRTransactionEntity allObjects]];
-            [NSManagedObject saveContext];
-        }];
-
-        setKeychainData(nil, MNEMONIC_KEY);
-        setKeychainData(nil, CREATION_TIME_KEY);
-        setKeychainData(nil, MASTER_PK_KEY);
-        
-        if (! setKeychainData(seed, SEED_KEY)) {
-            NSLog(@"error setting wallet seed");
-            [[[UIAlertView alloc] initWithTitle:@"couldn't create wallet"
-              message:@"error adding master private key to iOS keychain, make sure app has keychain entitlements"
-              delegate:self cancelButtonTitle:@"abort" otherButtonTitles:nil] show];
-            return;
-        }
-
-        setKeychainData([self.sequence masterPublicKeyFromSeed:seed], MASTER_PK_KEY);
-        _wallet = nil;
+    @autoreleasepool {
+        BRBIP39Mnemonic *m = [BRBIP39Mnemonic sharedInstance];
+        NSString *phrase = self.seedPhrase;
+    
+        if (phrase.length == 0) return nil;
+    
+        return [m deriveKeyFromPhrase:phrase withPassphrase:nil];
     }
-
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletManagerSeedChangedNotification object:nil];
-    });
 }
 
 - (NSString *)seedPhrase
 {
     @autoreleasepool {
-        NSData *phrase = getKeychainData(MNEMONIC_KEY);
+        NSData *phrase = getKeychainData(MNEMONIC_KEY, nil);
 
         if (! phrase) return nil;
 
@@ -308,17 +297,43 @@ static NSData *getKeychainData(NSString *key)
 
 - (void)setSeedPhrase:(NSString *)seedPhrase
 {
-    @autoreleasepool {
+    @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
         BRBIP39Mnemonic *m = [BRBIP39Mnemonic sharedInstance];
         
-        seedPhrase = [m encodePhrase:[m decodePhrase:seedPhrase]];
-        self.seed = [m deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
+        if (seedPhrase) seedPhrase = [m encodePhrase:[m decodePhrase:seedPhrase]];
 
-        NSData *d = CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(), (CFStringRef)seedPhrase,
-                                                                           kCFStringEncodingUTF8, 0));
+        [[NSManagedObject context] performBlockAndWait:^{
+            [BRAddressEntity deleteObjects:[BRAddressEntity allObjects]];
+            [BRTransactionEntity deleteObjects:[BRTransactionEntity allObjects]];
+            [NSManagedObject saveContext];
+        }];
         
-        setKeychainData(d, MNEMONIC_KEY);
+        setKeychainData(nil, CREATION_TIME_KEY, NO);
+        setKeychainData(nil, MASTER_PUBKEY_KEY, NO);
+        
+        NSData *mnemonic = (seedPhrase) ?
+                           CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(),
+                                                                                  (CFStringRef)seedPhrase,
+                                                                                  kCFStringEncodingUTF8, 0)) : nil,
+               *masterPubKey = (seedPhrase) ?
+                               [self.sequence
+                                masterPublicKeyFromSeed:[m deriveKeyFromPhrase:seedPhrase withPassphrase:nil]] : nil;
+
+        if (! setKeychainData(mnemonic, MNEMONIC_KEY, YES)) {
+            NSLog(@"error setting wallet seed");
+            [[[UIAlertView alloc] initWithTitle:@"couldn't create wallet"
+              message:@"error adding master private key to iOS keychain, make sure app has keychain entitlements"
+              delegate:self cancelButtonTitle:@"abort" otherButtonTitles:nil] show];
+            return;
+        }
+        
+        setKeychainData(masterPubKey, MASTER_PUBKEY_KEY, NO);
+        _wallet = nil;
     }
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletManagerSeedChangedNotification object:nil];
+    });
 }
 
 - (void)generateRandomSeed
@@ -332,13 +347,13 @@ static NSData *getKeychainData(NSString *key)
         self.seedPhrase = [[BRBIP39Mnemonic sharedInstance] encodePhrase:entropy];
 
         // we store the wallet creation time on the keychain because keychain data persists even when an app is deleted
-        setKeychainData([NSData dataWithBytes:&time length:sizeof(time)], CREATION_TIME_KEY);
+        setKeychainData([NSData dataWithBytes:&time length:sizeof(time)], CREATION_TIME_KEY, NO);
     }
 }
 
 - (NSTimeInterval)seedCreationTime
 {
-    NSData *d = getKeychainData(CREATION_TIME_KEY);
+    NSData *d = getKeychainData(CREATION_TIME_KEY, nil);
 
     return (d.length < sizeof(NSTimeInterval)) ? BITCOIN_REFERENCE_BLOCK_TIME : *(const NSTimeInterval *)d.bytes;
 }

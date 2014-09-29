@@ -33,8 +33,8 @@
 @interface BRWalletManager : NSObject<UIAlertViewDelegate>
 
 @property (nonatomic, readonly) BRWallet *wallet;
-@property (nonatomic, copy) NSData *seed;
 @property (nonatomic, copy) NSString *seedPhrase;
+@property (nonatomic, readonly) NSData *seed;
 @property (nonatomic, readonly) NSTimeInterval seedCreationTime; // interval since refrence date, 00:00:00 01/01/01 GMT
 @property (nonatomic, readonly) NSNumberFormatter *format;
 @property (nonatomic, readonly) NSNumberFormatter *localFormat;
