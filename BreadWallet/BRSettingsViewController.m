@@ -26,6 +26,7 @@
 #import "BRSettingsViewController.h"
 #import "BRRootViewController.h"
 #import "BRTxDetailViewController.h"
+#import "BRSeedViewController.h"
 #import "BRWalletManager.h"
 #import "BRWallet.h"
 #import "BRPeerManager.h"
@@ -719,10 +720,9 @@
         return;
     }
 
-    //TODO: XXXX require auth
+    BRSeedViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
     
-    [self.navigationController
-     pushViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"] animated:YES];
+    if (c.authSuccess) [self.navigationController pushViewController:c animated:YES];
 }
 
 #pragma mark - UIViewControllerAnimatedTransitioning
@@ -754,7 +754,7 @@
                                             v.frame.size.width*(pop ? 0 : 1)*PARALAX_RATIO, self.wallpaper.center.y);
     } completion:^(BOOL finished) {
         if (pop) [from.view removeFromSuperview];
-        [transitionContext completeTransition:finished];
+        [transitionContext completeTransition:YES];
     }];
 }
 

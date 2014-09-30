@@ -27,4 +27,6 @@
 
 @interface BRSeedViewController : UIViewController <UIAlertViewDelegate>
 
+@property (nonatomic, readonly) BOOL authSuccess;
+
 @end

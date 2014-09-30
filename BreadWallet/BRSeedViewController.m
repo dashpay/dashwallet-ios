@@ -41,7 +41,8 @@
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *remindButton, *doneButton;
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
 
-@property (nonatomic, strong) id backgroundObserver, screenshotObserver;
+@property (nonatomic, strong) NSString *seedPhrase;
+@property (nonatomic, strong) id resignActiveObserver, screenshotObserver;
 
 @end
 
@@ -52,11 +53,14 @@
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
     if ([[UIApplication sharedApplication] isProtectedDataAvailable] && ! m.wallet) {
-        [m generateRandomSeed];
+        self.seedPhrase = [m generateRandomSeed];
         [[BRPeerManager sharedInstance] connect];
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:WALLET_NEEDS_BACKUP_KEY];
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
+    else self.seedPhrase = m.seedPhrase; // this triggers authentication request
+
+    if (self.seedPhrase.length > 0) _authSuccess = YES;
 
     return self;
 }
@@ -88,15 +92,6 @@
     self.doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"done", nil)
                        style:UIBarButtonItemStylePlain target:self action:@selector(done:)];
     
-    self.backgroundObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
-        queue:nil usingBlock:^(NSNotification *note) {
-            if (self.navigationController.viewControllers.firstObject != self) {
-                [self.navigationController popViewControllerAnimated:NO];
-            }
-        }];
-
-
     //TODO: make it easy to create a new wallet and transfer balance
     self.screenshotObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationUserDidTakeScreenshotNotification
@@ -115,12 +110,18 @@
                   delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
             }
         }];
+    
+    
+    @autoreleasepool {  // @autoreleasepool ensures sensitive data will be dealocated immediately
+        self.seedLabel.text = self.seedPhrase;
+        self.seedPhrase = nil;
+    }
 }
 
 - (void)dealloc
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
-    if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
+    if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
     if (self.screenshotObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.screenshotObserver];
 }
 
@@ -139,13 +140,22 @@
         [self performSelector:@selector(showWriteToggle) withObject:nil afterDelay:WRITE_TOGGLE_DELAY];
     }
     
-    @autoreleasepool {  // @autoreleasepool ensures sensitive data will be dealocated immediately
-        self.seedLabel.text = [[BRWalletManager sharedInstance] seedPhrase];
-    }
-    
     [UIView animateWithDuration:0.1 animations:^{
         self.seedLabel.alpha = 1.0;
     }];
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+
+    self.resignActiveObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
+         queue:nil usingBlock:^(NSNotification *note) {
+            if (self.navigationController.viewControllers.firstObject != self) {
+                [self.navigationController popViewControllerAnimated:NO];
+            }
+        }];
 }
 
 - (void)viewWillDisappear:(BOOL)animated

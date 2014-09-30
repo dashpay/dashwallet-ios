@@ -793,27 +793,30 @@ fromConnection:(AVCaptureConnection *)connection
         [self cancel:nil];
         return;
     }
-
+    
+    NSLog(@"signing transaction");
+    
     //TODO: check for duplicate transactions
+    //TODO: don't sign on main thread
+    if (! [m.wallet signTransaction:self.tx]) {
+        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
+                                    message:NSLocalizedString(@"error signing bitcoin transaction", nil) delegate:nil
+                          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+        [self cancel:nil];
+        return;
+    }
+    else if (! [self.tx isSigned]) {  // if there's no error but the tx isn't signed, then the user canceled
+        [self cancel:nil];
+        return;
+    }
+    
+    NSLog(@"signed transaction:\n%@", [NSString hexWithData:self.tx.data]);
 
     if (self.navigationController.topViewController != self.parentViewController.parentViewController) {
         [self.navigationController popToRootViewControllerAnimated:YES];
     }
 
-    NSLog(@"signing transaction");
-
     [(id)self.parentViewController.parentViewController startActivityWithTimeout:30.0];
-
-    //TODO: don't sign on main thread
-    if (! [m.wallet signTransaction:self.tx]) {
-        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
-          message:NSLocalizedString(@"error signing bitcoin transaction", nil) delegate:nil
-          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-        [self cancel:nil];
-        return;
-    }
-
-    NSLog(@"signed transaction:\n%@", [NSString hexWithData:self.tx.data]);
 
     [[BRPeerManager sharedInstance] publishTransaction:self.tx completion:^(NSError *error) {
         if (protoReq.details.paymentURL.length > 0) return;
@@ -961,7 +964,7 @@ fromConnection:(AVCaptureConnection *)connection
             to.view.center = from.view.center;
         } completion:^(BOOL finished) {
             img.alpha = 1.0;
-            [transitionContext completeTransition:finished];
+            [transitionContext completeTransition:YES];
         }];
 
         [UIView animateWithDuration:0.8 delay:0.15 usingSpringWithDamping:0.5 initialSpringVelocity:0
@@ -992,7 +995,7 @@ fromConnection:(AVCaptureConnection *)connection
         options:UIViewAnimationOptionCurveEaseIn animations:^{
             from.view.center = CGPointMake(from.view.center.x, v.frame.size.height*3/2);
         } completion:^(BOOL finished) {
-            [transitionContext completeTransition:finished];
+            [transitionContext completeTransition:YES];
         }];
     }
 }

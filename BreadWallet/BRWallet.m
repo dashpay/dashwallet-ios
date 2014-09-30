@@ -382,6 +382,8 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)())seed
         NSMutableOrderedSet *externalIndexes = [NSMutableOrderedSet orderedSet],
                             *internalIndexes = [NSMutableOrderedSet orderedSet];
 
+        if (! seed) return YES; // user canceled authentication
+        
         for (NSString *addr in transaction.inputAddresses) {
             [internalIndexes addObject:@([self.internalAddresses indexOfObject:addr])];
             [externalIndexes addObject:@([self.externalAddresses indexOfObject:addr])];

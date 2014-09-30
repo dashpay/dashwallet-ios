@@ -44,7 +44,7 @@
 
 + (instancetype)sharedInstance;
 
-- (void)generateRandomSeed;
+- (NSString *)generateRandomSeed; // generates a random seed and stores it, returns the associated seedPhrase
 
 // given a private key, queries blockchain for unspent outputs and calls the completion block with a signed transaction
 // that will sweep the balance into wallet (doesn't publish the tx)

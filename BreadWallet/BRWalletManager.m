@@ -356,7 +356,7 @@ static NSData *getKeychainData(NSString *key, NSString *authprompt)
     });
 }
 
-- (void)generateRandomSeed
+- (NSString *)generateRandomSeed
 {
     @autoreleasepool {
         NSMutableData *entropy = [NSMutableData secureDataWithLength:SEED_ENTROPY_LENGTH];
@@ -364,10 +364,14 @@ static NSData *getKeychainData(NSString *key, NSString *authprompt)
 
         SecRandomCopyBytes(kSecRandomDefault, entropy.length, entropy.mutableBytes);
 
-        self.seedPhrase = [[BRBIP39Mnemonic sharedInstance] encodePhrase:entropy];
+        NSString *phrase = [[BRBIP39Mnemonic sharedInstance] encodePhrase:entropy];
+
+        self.seedPhrase = phrase;
 
         // we store the wallet creation time on the keychain because keychain data persists even when an app is deleted
         setKeychainData([NSData dataWithBytes:&time length:sizeof(time)], CREATION_TIME_KEY, NO);
+        
+        return phrase;
     }
 }
 
