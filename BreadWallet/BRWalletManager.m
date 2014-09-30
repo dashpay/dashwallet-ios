@@ -141,6 +141,7 @@ static NSData *getKeychainData(NSString *key, NSString *authprompt)
 @property (nonatomic, assign) BOOL sweepFee;
 @property (nonatomic, strong) NSString *sweepKey;
 @property (nonatomic, strong) void (^sweepCompletion)(BRTransaction *tx, NSError *error);
+@property (nonatomic, strong) id protectedObserver;
 
 @end
 
@@ -187,77 +188,96 @@ static NSData *getKeychainData(NSString *key, NSString *authprompt)
     self.localFormat.numberStyle = NSNumberFormatterCurrencyStyle;
     self.localFormat.negativeFormat = self.format.negativeFormat;
 
-    if ([[UIApplication sharedApplication] isProtectedDataAvailable]) {
-        NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+    self.protectedObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationProtectedDataDidBecomeAvailable object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
+            [self protectedInit];
+        }];
 
-        _localCurrencyCode = [defs stringForKey:LOCAL_CURRENCY_CODE_KEY],
-        _localCurrencyPrice = [defs doubleForKey:LOCAL_CURRENCY_PRICE_KEY];
-        self.localFormat.maximum = @((MAX_MONEY/SATOSHIS)*self.localCurrencyPrice);
-        _currencyCodes = [defs arrayForKey:CURRENCY_CODES_KEY];
-
-        if (self.localCurrencyCode) {
-            self.localFormat.currencySymbol = [defs stringForKey:LOCAL_CURRENCY_SYMBOL_KEY];
-            self.localFormat.currencyCode = self.localCurrencyCode;
-        }
-        else {
-            self.localFormat.currencySymbol = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencySymbol];
-            self.localFormat.currencyCode = _localCurrencyCode =
-                [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
-            //BUG: if locale changed since last time, we'll start with an incorrect price
-        }
-    }
-
-    [self updateExchangeRate];
+    if ([[UIApplication sharedApplication] isProtectedDataAvailable]) [self protectedInit];
 
     return self;
 }
 
+- (void)protectedInit
+{
+    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+    
+    _localCurrencyCode = [defs stringForKey:LOCAL_CURRENCY_CODE_KEY],
+    _localCurrencyPrice = [defs doubleForKey:LOCAL_CURRENCY_PRICE_KEY];
+    self.localFormat.maximum = @((MAX_MONEY/SATOSHIS)*self.localCurrencyPrice);
+    _currencyCodes = [defs arrayForKey:CURRENCY_CODES_KEY];
+    
+    if (self.localCurrencyCode) {
+        self.localFormat.currencySymbol = [defs stringForKey:LOCAL_CURRENCY_SYMBOL_KEY];
+        self.localFormat.currencyCode = self.localCurrencyCode;
+    }
+    else {
+        self.localFormat.currencySymbol = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencySymbol];
+        self.localFormat.currencyCode = _localCurrencyCode =
+        [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
+        //BUG: if locale changed since last time, we'll start with an incorrect price
+    }
+    
+    [self updateExchangeRate];
+}
+
 - (void)dealloc
 {
+    if (self.protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.protectedObserver];
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
 
 - (BRWallet *)wallet
 {
-    if (_wallet == nil && self.seedPhrase) {
-        @synchronized(self) {
-            if (_wallet == nil) {
-                _wallet = [[BRWallet alloc] initWithContext:[NSManagedObject context] sequence:self.sequence
-                           masterPublicKey:self.masterPublicKey seed:^NSData *{ return self.seed; }];
+    if (_wallet || ! [[UIApplication sharedApplication] isProtectedDataAvailable]) return _wallet;
 
-                // we need to verify that the keychain matches core data, since they have different access and backup
-                // policies it's possible for them to diverge
-                if (_wallet.addresses.count > 0) {
-                    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                        BRKey *k = [BRKey keyWithPrivateKey:[self.sequence privateKey:0 internal:NO
-                                                             fromSeed:self.seed]];
-                    
-                        if (! [_wallet containsAddress:k.address]) {
-#if DEBUG
-                            abort(); // don't wipe core data for debug builds
-#endif
-                            [[NSManagedObject context] performBlockAndWait:^{
-                                [BRAddressEntity deleteObjects:[BRAddressEntity allObjects]];
-                                [BRTransactionEntity deleteObjects:[BRTransactionEntity allObjects]];
-                                [NSManagedObject saveContext];
-                            }];
-                        
-                            _wallet = nil;
-                        
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                                [[NSNotificationCenter defaultCenter]
-                                 postNotificationName:BRWalletManagerSeedChangedNotification object:nil];
-                                [[NSNotificationCenter defaultCenter]
-                                 postNotificationName:BRWalletBalanceChangedNotification object:nil];
-                            });
-                        }
-                    });
-                }
-            }
-        }
+    if (getKeychainData(SEED_KEY, nil)) { // upgrade from old non-authenticated keychain
+        NSLog(@"upgrading to authenticated keychain scheme");
+        setKeychainData([self.sequence masterPublicKeyFromSeed:self.seed], MASTER_PUBKEY_KEY, NO);
+        setKeychainData(getKeychainData(MNEMONIC_KEY, nil), MNEMONIC_KEY, YES);
+        setKeychainData(nil, SEED_KEY, NO);
+        setKeychainData(nil, PIN_KEY, NO);
+        setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
+        setKeychainData(nil, PIN_FAIL_HEIGHT_KEY, NO);
     }
+    
+    if (! self.masterPublicKey) return _wallet;
+    
+    @synchronized(self) {
+        if (_wallet) return _wallet;
+            
+        _wallet = [[BRWallet alloc] initWithContext:[NSManagedObject context] sequence:self.sequence
+                   masterPublicKey:self.masterPublicKey seed:^NSData *{ return self.seed; }];
 
-    return _wallet;
+        // verify that keychain matches core data, with different access and backup policies it's possible to diverge
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            BRKey *k = [BRKey keyWithPublicKey:[self.sequence publicKey:0 internal:NO
+                                                masterPublicKey:self.masterPublicKey]];
+                    
+            if (_wallet.addresses.count > 0 && ! [_wallet containsAddress:k.address]) {
+#if DEBUG
+                abort(); // don't wipe core data for debug builds
+#endif
+                [[NSManagedObject context] performBlockAndWait:^{
+                    [BRAddressEntity deleteObjects:[BRAddressEntity allObjects]];
+                    [BRTransactionEntity deleteObjects:[BRTransactionEntity allObjects]];
+                    [NSManagedObject saveContext];
+                }];
+                
+                _wallet = nil;
+                    
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletManagerSeedChangedNotification
+                     object:nil];
+                    [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletBalanceChangedNotification
+                     object:nil];
+                });
+            }
+        });
+        
+        return _wallet;
+    }
 }
 
 - (id<BRKeySequence>)sequence

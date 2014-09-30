@@ -49,8 +49,10 @@
 
 - (instancetype)customInit
 {
-    if ([[UIApplication sharedApplication] isProtectedDataAvailable] && ! [[BRWalletManager sharedInstance] wallet]) {
-        [[BRWalletManager sharedInstance] generateRandomSeed];
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+
+    if ([[UIApplication sharedApplication] isProtectedDataAvailable] && ! m.wallet) {
+        [m generateRandomSeed];
         [[BRPeerManager sharedInstance] connect];
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:WALLET_NEEDS_BACKUP_KEY];
         [[NSUserDefaults standardUserDefaults] synchronize];
