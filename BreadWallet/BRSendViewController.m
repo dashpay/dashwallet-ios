@@ -800,8 +800,8 @@ fromConnection:(AVCaptureConnection *)connection
     //TODO: don't sign on main thread
     if (! [m.wallet signTransaction:self.tx]) {
         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
-                                    message:NSLocalizedString(@"error signing bitcoin transaction", nil) delegate:nil
-                          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+          message:NSLocalizedString(@"error signing bitcoin transaction", nil) delegate:nil
+          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         [self cancel:nil];
         return;
     }
