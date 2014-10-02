@@ -26,7 +26,7 @@
 #import "BRSettingsViewController.h"
 #import "BRRootViewController.h"
 #import "BRTxDetailViewController.h"
-#import "BRPINViewController.h"
+#import "BRSeedViewController.h"
 #import "BRWalletManager.h"
 #import "BRWallet.h"
 #import "BRPeerManager.h"
@@ -38,6 +38,9 @@
 
 @interface BRSettingsViewController ()
 
+@property (nonatomic, strong) IBOutlet UIView *logo;
+@property (nonatomic, strong) IBOutlet UIBarButtonItem *lock;
+
 @property (nonatomic, strong) NSArray *transactions;
 @property (nonatomic, assign) BOOL moreTx;
 @property (nonatomic, strong) NSMutableDictionary *txDates;
@@ -46,7 +49,6 @@
 @property (nonatomic, strong) UITableViewController *selectorController;
 @property (nonatomic, strong) NSArray *selectorOptions;
 @property (nonatomic, strong) NSString *selectedOption;
-@property (nonatomic, strong) UINavigationController *pinNav;
 
 @end
 
@@ -63,6 +65,7 @@
     [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
     self.navigationController.delegate = self;
     self.moreTx = ([BRWalletManager sharedInstance].wallet.recentTransactions.count > 5) ? YES : NO;
+    if ([[BRWalletManager sharedInstance] didAuthenticate]) [self unlock:nil];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -75,6 +78,7 @@
     NSArray *a = m.wallet.recentTransactions;
     
     self.transactions = [a subarrayWithRange:NSMakeRange(0, (a.count > 5 && self.moreTx) ? 5 : a.count)];
+    if (m.didAuthenticate) [self unlock:nil];
 
     if (! self.balanceObserver) {
         self.balanceObserver =
@@ -204,6 +208,17 @@
     [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
+- (IBAction)unlock:(id)sender
+{
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+
+    if (sender && ! m.didAuthenticate && ! [m authenticateWithPrompt:nil]) return;
+    
+    self.navigationItem.titleView = nil;
+    self.navigationItem.rightBarButtonItem = nil;
+    [self.tableView reloadData];
+}
+
 - (IBAction)scanQR:(id)sender
 {
     //TODO: show scanner in settings rather than dismissing
@@ -260,7 +275,7 @@
             return 2;
 
         case 2:
-            return 3;
+            return 2;
 
         case 3:
             return 2;
@@ -329,8 +344,9 @@
                 sentLabel.hidden = YES;
                 unconfirmedLabel.hidden = NO;
                 detailTextLabel.text = [self dateForTx:tx];
-                balanceLabel.text = [m stringForAmount:balance];
-                localBalanceLabel.text = [NSString stringWithFormat:@"(%@)", [m localCurrencyStringForAmount:balance]];
+                balanceLabel.text = (m.didAuthenticate) ? [m stringForAmount:balance] : nil;
+                localBalanceLabel.text = (m.didAuthenticate) ?
+                    [NSString stringWithFormat:@"(%@)", [m localCurrencyStringForAmount:balance]] : nil;
 
                 if (confirms == 0 && ! [m.wallet transactionIsValid:tx]) {
                     unconfirmedLabel.text = NSLocalizedString(@"INVALID", nil);
@@ -417,18 +433,12 @@
 
             switch (indexPath.row) {
                 case 0:
-                    cell.textLabel.text = NSLocalizedString(@"change pin", nil);
-                    cell.imageView.image = [UIImage imageNamed:@"pin"];
-                    cell.imageView.alpha = 0.75;
-                    break;
-
-                case 1:
                     cell.textLabel.text = NSLocalizedString(@"import private key", nil);
                     cell.imageView.image = [UIImage imageNamed:@"cameraguide-blue-small"];
                     cell.imageView.alpha = 1.0;
                     break;
 
-                case 2:
+                case 1:
                     cell.textLabel.text = NSLocalizedString(@"rescan blockchain", nil);
                     cell.imageView.image = [UIImage imageNamed:@"rescan"];
                     cell.imageView.alpha = 0.75;
@@ -574,8 +584,6 @@
     //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
     UIViewController *c = nil;
     UILabel *l = nil;
-//    NSUInteger i = 0;
-//    UITableViewCell *cell = nil;
     NSMutableAttributedString *s = nil;
     NSMutableArray *a;
     BRWalletManager *m = [BRWalletManager sharedInstance];
@@ -593,7 +601,12 @@
 
     switch (indexPath.section) {
         case 0: // transaction
-            if (indexPath.row > 0 && indexPath.row >= self.transactions.count) {
+            [tableView deselectRowAtIndexPath:indexPath animated:YES];
+            
+            if (indexPath.row > 0 && indexPath.row >= self.transactions.count) { // more...
+                if (! m.didAuthenticate && ! [m authenticateWithPrompt:nil]) break;
+                [self unlock:nil];
+                
                 [tableView beginUpdates];
                 self.transactions = [NSArray arrayWithArray:m.wallet.recentTransactions];
                 self.moreTx = NO;
@@ -613,7 +626,6 @@
                 [(id)c setTransaction:self.transactions[indexPath.row]];
                 [(id)c setTxDateString:[self dateForTx:self.transactions[indexPath.row]]];
                 [self.navigationController pushViewController:c animated:YES];
-                [tableView deselectRowAtIndexPath:indexPath animated:YES];
             }
 
             break;
@@ -660,20 +672,11 @@
 
         case 2:
             switch (indexPath.row) {
-                case 0: // change pin
-                    self.pinNav = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-                    [self.pinNav.viewControllers.firstObject setCancelable:YES];
-                    [self.pinNav.viewControllers.firstObject setChangePin:YES];
-                    self.pinNav.transitioningDelegate = self;
-                    [self.navigationController presentViewController:self.pinNav animated:YES completion:nil];
-                    [self.pinNav.viewControllers.firstObject setAppeared:YES];
-                    break;
-
-                case 1: // import private key
+                case 0: // import private key
                     [self scanQR:nil];
                     break;
 
-                case 2: // rescan blockchain
+                case 1: // rescan blockchain
                     [[BRPeerManager sharedInstance] rescan];
                     [self done:nil];
                     break;
@@ -736,11 +739,12 @@
         return;
     }
 
-    self.pinNav = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-    [self.pinNav.viewControllers.firstObject setAppeared:YES];
-    [self.pinNav.viewControllers.firstObject setCancelable:YES];
-    self.pinNav.transitioningDelegate = self;
-    [self.navigationController presentViewController:self.pinNav animated:YES completion:nil];
+    BRSeedViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
+    
+    if (c.authSuccess) {
+        [self.navigationController pushViewController:c animated:YES];
+    }
+    else [self.tableView deselectRowAtIndexPath:[self.tableView indexPathForSelectedRow] animated:YES];
 }
 
 #pragma mark - UIViewControllerAnimatedTransitioning
@@ -760,30 +764,20 @@
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
     BOOL pop = (to == self || to == self.navigationController) ? YES : NO;
 
-    if (from == self.pinNav && ! [self.pinNav.viewControllers.firstObject changePin] &&
-        [self.pinNav.viewControllers.firstObject success]) {
-        [self.navigationController
-         pushViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"]
-         animated:NO];
-        [self.pinNav.viewControllers.firstObject animateTransition:transitionContext];
-    }
-    else {
-        if (self.wallpaper.superview != v) [v insertSubview:self.wallpaper belowSubview:from.view];
-        to.view.center = CGPointMake(v.frame.size.width*(pop ? -1 : 3)/2, to.view.center.y);
-        [v addSubview:to.view];
+    if (self.wallpaper.superview != v) [v insertSubview:self.wallpaper belowSubview:from.view];
+    to.view.center = CGPointMake(v.frame.size.width*(pop ? -1 : 3)/2, to.view.center.y);
+    [v addSubview:to.view];
 
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
-        initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            to.view.center = from.view.center;
-            from.view.center = CGPointMake(v.frame.size.width*(pop ? 3 : -1)/2, from.view.center.y);
-            self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 -
-                                                v.frame.size.width*(pop ? 0 : 1)*PARALAX_RATIO,
-                                                self.wallpaper.center.y);
-        } completion:^(BOOL finished) {
-            if (pop) [from.view removeFromSuperview];
-            [transitionContext completeTransition:finished];
-        }];
-    }
+    [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
+    initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+        to.view.center = from.view.center;
+        from.view.center = CGPointMake(v.frame.size.width*(pop ? 3 : -1)/2, from.view.center.y);
+        self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 -
+                                            v.frame.size.width*(pop ? 0 : 1)*PARALAX_RATIO, self.wallpaper.center.y);
+    } completion:^(BOOL finished) {
+        if (pop) [from.view removeFromSuperview];
+        [transitionContext completeTransition:YES];
+    }];
 }
 
 #pragma mark - UINavigationControllerDelegate

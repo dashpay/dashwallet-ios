@@ -2,6 +2,9 @@
 "\n%@\n\nwrite down your backup phrase and use it to restore on another device if this one is ever lost or broken" = "\n%@\n\nwrite down your backup phrase and use it to restore on another device if this one is ever lost or broken";
 
 /* No comment provided by engineer. */
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
+
+/* No comment provided by engineer. */
 "\nADDRESS ALREADY USED\n\nbitcoin addresses are intented for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\n\nbitcoin addresses are intented for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
 
 /* No comment provided by engineer. */
@@ -9,6 +12,9 @@
 
 /* No comment provided by engineer. */
 "\nDO NOT let anyone see your backup phrase or they can spend your bitcoins.\n\nDO NOT take a screenshot. Screenshots are visible to other apps and devices.\n" = "\nDO NOT let anyone see your backup phrase or they can spend your bitcoins.\n\nDO NOT take a screenshot. Screenshots are visible to other apps and devices.\n";
+
+/* No comment provided by engineer. */
+"\ngo to settings and turn passcode on to access restricted areas of your wallet" = "\ngo to settings and turn passcode on to access restricted areas of your wallet";
 
 /* No comment provided by engineer. */
 " - included in block #%d" = " - included in block #%d";
@@ -92,13 +98,7 @@
 "caution" = "caution";
 
 /* No comment provided by engineer. */
-"change pin" = "change pin";
-
-/* No comment provided by engineer. */
 "checking private key balance..." = "checking private key balance...";
-
-/* No comment provided by engineer. */
-"choose a pin" = "choose a pin";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid bitcoin address" = "clipboard doesn't contain a valid bitcoin address";
@@ -164,10 +164,7 @@
 "email not configured" = "email not configured";
 
 /* No comment provided by engineer. */
-"enter current pin" = "enter current pin";
-
-/* No comment provided by engineer. */
-"enter pin" = "enter pin";
+"turn device passcode on" = "turn device passcode on";
 
 /* No comment provided by engineer. */
 "error signing bitcoin transaction" = "error signing bitcoin transaction";
@@ -254,9 +251,6 @@
 "payment output" = "payment output";
 
 /* No comment provided by engineer. */
-"pin changed" = "pin changed";
-
-/* No comment provided by engineer. */
 "post-dated" = "post-dated";
 
 /* No comment provided by engineer. */
@@ -270,9 +264,6 @@
 
 /* No comment provided by engineer. */
 "recieved" = "recieved";
-
-/* No comment provided by engineer. */
-"reenter pin" = "reenter pin";
 
 /* No comment provided by engineer. */
 "remove fee" = "remove fee";
@@ -291,9 +282,6 @@
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescaning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescaning can take several minutes)";
-
-/* No comment provided by engineer. */
-"reset pin" = "reset pin";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address.";

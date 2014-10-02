@@ -189,7 +189,14 @@
 
 - (IBAction)generate:(id)sender
 {
-    // make the user wait a few seconds so they'll get bored enough to read the information on the screen
+    if (! [[BRWalletManager sharedInstance] isPasscodeEnabled]) {
+        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"turn device passcode on", nil)
+          message:NSLocalizedString(@"\nA device passcode is needed to safeguard your wallet. Go to settings and turn "
+                                    "passcode on to continue.", nil)
+          delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+        return;
+    }
+
     [self.navigationController.navigationBar.topItem setHidesBackButton:YES animated:YES];
     [sender setEnabled:NO];
 
@@ -240,7 +247,7 @@
         [self.paralax.superview layoutIfNeeded];
     } completion:^(BOOL finished) {
         if (to == self) [from.view removeFromSuperview];
-        [transitionContext completeTransition:finished];
+        [transitionContext completeTransition:YES];
     }];
 }
 

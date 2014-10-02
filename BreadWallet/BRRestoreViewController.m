@@ -24,7 +24,6 @@
 //  THE SOFTWARE.
 
 #import "BRRestoreViewController.h"
-#import "BRPINViewController.h"
 #import "BRWalletManager.h"
 #import "BRKeySequence.h"
 #import "BRBIP39Mnemonic.h"
@@ -162,9 +161,12 @@ static NSString *normalize_phrase(NSString *phrase)
         }
 
         if ([s isEqual:@"wipe"]) { // shortcut word to force the wipe option to appear
-            [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-              destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
-             showInView:[[UIApplication sharedApplication] keyWindow]];
+            if ([m authenticateWithPrompt:nil]) {
+                [[[UIActionSheet alloc] initWithTitle:nil delegate:self
+                  cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+                  destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
+                  showInView:[[UIApplication sharedApplication] keyWindow]];
+            }
         }
         else if (incorrect) {
             textView.selectedRange = [[textView.text lowercaseString] rangeOfString:incorrect];
@@ -185,23 +187,21 @@ static NSString *normalize_phrase(NSString *phrase)
               cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
         else if (m.wallet) {
-            if ([phrase isEqual:normalize_phrase(m.seedPhrase)]) {
-                if (self.navigationController.viewControllers.firstObject != self) { // reset pin
-                    m.pin = nil;
-                    m.pinFailCount = 0;
-                    m.pinFailHeight = 0;
-                    [self.navigationController popToRootViewControllerAnimated:YES];
-                }
-                else {
+            @autoreleasepool {
+                NSString *seedPhrase = m.seedPhrase;
+        
+                if (seedPhrase && [phrase isEqual:normalize_phrase(seedPhrase)]) {
                     [[[UIActionSheet alloc] initWithTitle:nil delegate:self
                       cancelButtonTitle:NSLocalizedString(@"cancel", nil)
                       destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
                      showInView:[[UIApplication sharedApplication] keyWindow]];
+                
                 }
-            }
-            else {
-                [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"backup phrase doesn't match", nil)
-                  delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+                else if (seedPhrase) {
+                    [[[UIAlertView alloc] initWithTitle:nil
+                      message:NSLocalizedString(@"backup phrase doesn't match", nil) delegate:nil
+                      cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+                }
             }
         }
         else {
@@ -220,7 +220,7 @@ static NSString *normalize_phrase(NSString *phrase)
 {
     if (buttonIndex != actionSheet.destructiveButtonIndex) return;
     
-    [[BRWalletManager sharedInstance] setSeed:nil];
+    [[BRWalletManager sharedInstance] setSeedPhrase:nil];
     self.textView.text = nil;
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:WALLET_NEEDS_BACKUP_KEY];
     [[NSUserDefaults standardUserDefaults] synchronize];
@@ -228,15 +228,8 @@ static NSString *normalize_phrase(NSString *phrase)
     UIViewController *p = self.navigationController.presentingViewController.presentingViewController;
     
     [p dismissViewControllerAnimated:NO completion:^{
-        UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-
-        [[(id)c viewControllers].firstObject setAppeared:YES];
-
-        [p presentViewController:c animated:NO completion:^{
-            c.transitioningDelegate = [(id)p viewControllers].firstObject;
-            [c presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"]
-             animated:NO completion:nil];
-        }];
+        [p presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"] animated:NO
+         completion:nil];
     }];
 }
 

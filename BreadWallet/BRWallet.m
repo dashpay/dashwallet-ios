@@ -62,12 +62,13 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
 @implementation BRWallet
 
 - (instancetype)initWithContext:(NSManagedObjectContext *)context sequence:(id<BRKeySequence>)sequence
-seed:(NSData *(^)())seed
+masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)())seed
 {
     if (! (self = [super init])) return nil;
 
     self.moc = context;
     self.sequence = sequence;
+    self.masterPublicKey = masterPublicKey;
     self.seed = seed;
     self.allTx = [NSMutableDictionary dictionary];
     self.transactions = [NSMutableOrderedSet orderedSet];
@@ -276,26 +277,31 @@ seed:(NSData *(^)())seed
 
 #pragma mark - wallet info
 
+// returns the first unused external address
 - (NSString *)receiveAddress
 {
     return [self addressesWithGapLimit:1 internal:NO].lastObject;
 }
 
+// returns the first unused internal address
 - (NSString *)changeAddress
 {
     return [self addressesWithGapLimit:1 internal:YES].lastObject;
 }
 
+// all previously generated internal and external addresses
 - (NSSet *)addresses
 {
     return self.allAddresses;
 }
 
+// NSData objects containing serialized UTXOs
 - (NSArray *)unspentOutputs
 {
     return [self.utxos array];
 }
 
+// BRTransaction objects sorted by date, most recent first
 - (NSArray *)recentTransactions
 {
     //TODO: don't include receive transactions that don't have at least one wallet output >= TX_MIN_OUTPUT_AMOUNT
@@ -381,6 +387,8 @@ seed:(NSData *(^)())seed
         NSMutableOrderedSet *externalIndexes = [NSMutableOrderedSet orderedSet],
                             *internalIndexes = [NSMutableOrderedSet orderedSet];
 
+        if (! seed) return YES; // user canceled authentication
+        
         for (NSString *addr in transaction.inputAddresses) {
             [internalIndexes addObject:@([self.internalAddresses indexOfObject:addr])];
             [externalIndexes addObject:@([self.externalAddresses indexOfObject:addr])];
@@ -511,6 +519,7 @@ seed:(NSData *(^)())seed
     return NO;
 }
 
+// set the block heights for the given transactions
 - (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes
 {
     BOOL set = NO;

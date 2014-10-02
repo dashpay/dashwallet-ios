@@ -42,69 +42,121 @@
 #define BITS        @"\xC6\x80"     // lowercase b with stroke (utf-8)
 #define NARROW_NBSP @"\xE2\x80\xAF" // narrow no-break space (utf-8)
 
-#define LOCAL_CURRENCY_SYMBOL_KEY @"LOCAL_CURRENCY_SYMBOL"
-#define LOCAL_CURRENCY_CODE_KEY   @"LOCAL_CURRENCY_CODE"
-#define LOCAL_CURRENCY_PRICE_KEY  @"LOCAL_CURRENCY_PRICE"
-#define CURRENCY_CODES_KEY        @"CURRENCY_CODES"
-#define PIN_KEY                   @"pin"
-#define PIN_FAIL_COUNT_KEY        @"pinfailcount"
-#define PIN_FAIL_HEIGHT_KEY       @"pinfailheight"
-#define MNEMONIC_KEY              @"mnemonic"
-#define SEED_KEY                  @"seed"
-#define CREATION_TIME_KEY         @"creationtime"
-
-#define SEED_ENTROPY_LENGTH     (128/8)
-#define SEC_ATTR_SERVICE        @"org.voisine.breadwallet"
-#define DEFAULT_CURRENCY_PRICE  500.0
-#define DEFAULT_CURRENCY_CODE   @"USD"
-
 #define BASE_URL    @"https://blockchain.info"
 #define UNSPENT_URL BASE_URL "/unspent?active="
 #define TICKER_URL  BASE_URL "/ticker"
 
-static BOOL setKeychainData(NSData *data, NSString *key)
-{
-    if (! key) return NO;
+#define SEED_ENTROPY_LENGTH    (128/8)
+#define SEC_ATTR_SERVICE       @"org.voisine.breadwallet"
+#define DEFAULT_CURRENCY_PRICE 500.0
+#define DEFAULT_CURRENCY_CODE  @"USD"
 
+#define LOCAL_CURRENCY_SYMBOL_KEY @"LOCAL_CURRENCY_SYMBOL"
+#define LOCAL_CURRENCY_CODE_KEY   @"LOCAL_CURRENCY_CODE"
+#define LOCAL_CURRENCY_PRICE_KEY  @"LOCAL_CURRENCY_PRICE"
+#define CURRENCY_CODES_KEY        @"CURRENCY_CODES"
+
+#define MNEMONIC_KEY        @"mnemonic"
+#define CREATION_TIME_KEY   @"creationtime"
+#define MASTER_PUBKEY_KEY   @"masterpubkey"
+#define PASSCODE_DETECT_KEY @"passcodedetect"
+
+// deprecated
+#define SEED_KEY            @"seed"
+#define PIN_KEY             @"pin"
+#define PIN_FAIL_COUNT_KEY  @"pinfailcount"
+#define PIN_FAIL_HEIGHT_KEY @"pinfailheight"
+
+static BOOL isPasscodeEnabled()
+{
     NSDictionary *query = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
                             (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
-                            (__bridge id)kSecAttrAccount:key,
-                            (__bridge id)kSecReturnData:(id)kCFBooleanTrue};
-
-    SecItemDelete((__bridge CFDictionaryRef)query);
-
-    if (! data) return YES;
+                            (__bridge id)kSecAttrAccount:PASSCODE_DETECT_KEY};
+    
+    if (SecItemCopyMatching((__bridge CFDictionaryRef)query, nil) != errSecItemNotFound) return YES;
 
     NSDictionary *item = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
                            (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
-                           (__bridge id)kSecAttrAccount:key,
-                           (__bridge id)kSecAttrAccessible:(__bridge id)kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
-                           (__bridge id)kSecValueData:data};
-    OSStatus status = SecItemAdd((__bridge CFDictionaryRef)item, NULL);
+                           (__bridge id)kSecAttrAccount:PASSCODE_DETECT_KEY,
+                           (__bridge id)kSecAttrAccessible:(__bridge id)kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly,
+                           (__bridge id)kSecValueData:[NSData data]};
+        
+    return (SecItemAdd((__bridge CFDictionaryRef)item, NULL) != errSecDecode) ? YES : NO;
+}
 
-    if (status != noErr) {
+static BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
+{
+    if (! key) return NO;
+
+    CFErrorRef error = NULL;
+    SecAccessControlRef access = (data) ?
+        SecAccessControlCreateWithFlags(kCFAllocatorDefault,
+                                        (authenticated) ? kSecAttrAccessibleWhenUnlockedThisDeviceOnly :
+                                        kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
+                                        (authenticated) ? kSecAccessControlUserPresence : 0, &error) : NULL;
+    NSDictionary *query = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
+                            (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
+                            (__bridge id)kSecAttrAccount:key};
+
+    if (data && (access == NULL || error)) {
+        NSLog(@"SecAccessControlRef: %@", error);
+        return NO;
+    }
+    
+    if (SecItemCopyMatching((__bridge CFDictionaryRef)query, NULL) == errSecItemNotFound) {
+        if (! data) return YES;
+
+        NSDictionary *item = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
+                               (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
+                               (__bridge id)kSecAttrAccount:key,
+                               (__bridge id)kSecAttrAccessControl:(__bridge_transfer id)access,
+                               (__bridge id)kSecValueData:data};
+        OSStatus status = SecItemAdd((__bridge CFDictionaryRef)item, NULL);
+        
+        if (status == noErr) return YES;
         NSLog(@"SecItemAdd error status %d", (int)status);
         return NO;
     }
+    
+    if (! data) {
+        OSStatus status = SecItemDelete((__bridge CFDictionaryRef)query);
 
-    return YES;
+        if (status == noErr) return YES;
+        NSLog(@"SecItemDelete error status %d", (int)status);
+        return NO;
+    }
+
+    NSDictionary *update = @{(__bridge id)kSecAttrAccessControl:(__bridge_transfer id)access,
+                             (__bridge id)kSecValueData:data};
+    OSStatus status = SecItemUpdate((__bridge CFDictionaryRef)query, (__bridge CFDictionaryRef)update);
+    
+    if (status == noErr) return YES;
+    NSLog(@"SecItemUpdate error status %d", (int)status);
+    return NO;
 }
 
-static NSData *getKeychainData(NSString *key)
+static NSData *getKeychainData(NSString *key, NSString *authprompt)
 {
     NSDictionary *query = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
                             (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
                             (__bridge id)kSecAttrAccount:key,
-                            (__bridge id)kSecReturnData:(id)kCFBooleanTrue};
+                            (__bridge id)kSecReturnData:@YES,
+                            (__bridge id)kSecUseOperationPrompt:(authprompt) ? authprompt : @""};
     CFDataRef result = nil;
     OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, (CFTypeRef *)&result);
 
-    if (status != noErr) {
-        NSLog(@"SecItemCopyMatching error status %d", (int)status);
-        return nil;
+    if (status == errSecItemNotFound) return nil;
+    if (status == noErr) return CFBridgingRelease(result);
+    
+    if (status == errSecAuthFailed && ! isPasscodeEnabled()) {
+        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"turn device passcode on", nil)
+         message:NSLocalizedString(@"\ngo to settings and turn passcode on to access restricted areas of your wallet",
+                                   nil) delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
+         otherButtonTitles:nil] show];
     }
-
-    return CFBridgingRelease(result);
+    
+    NSLog(@"SecItemCopyMatching error status %d", (int)status);
+    return nil;
 }
 
 @interface BRWalletManager()
@@ -115,6 +167,7 @@ static NSData *getKeychainData(NSString *key)
 @property (nonatomic, assign) BOOL sweepFee;
 @property (nonatomic, strong) NSString *sweepKey;
 @property (nonatomic, strong) void (^sweepCompletion)(BRTransaction *tx, NSError *error);
+@property (nonatomic, strong) id protectedObserver;
 
 @end
 
@@ -161,75 +214,96 @@ static NSData *getKeychainData(NSString *key)
     self.localFormat.numberStyle = NSNumberFormatterCurrencyStyle;
     self.localFormat.negativeFormat = self.format.negativeFormat;
 
-    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+    self.protectedObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationProtectedDataDidBecomeAvailable object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
+            [self protectedInit];
+        }];
 
-    _localCurrencyCode = [defs stringForKey:LOCAL_CURRENCY_CODE_KEY],
-    _localCurrencyPrice = [defs doubleForKey:LOCAL_CURRENCY_PRICE_KEY];
-    self.localFormat.maximum = @((MAX_MONEY/SATOSHIS)*self.localCurrencyPrice);
-    _currencyCodes = [defs arrayForKey:CURRENCY_CODES_KEY];
-
-    if (self.localCurrencyCode) {
-        self.localFormat.currencySymbol = [defs stringForKey:LOCAL_CURRENCY_SYMBOL_KEY];
-        self.localFormat.currencyCode = self.localCurrencyCode;
-    }
-    else if ([[UIApplication sharedApplication] isProtectedDataAvailable]) {
-        self.localFormat.currencySymbol = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencySymbol];
-        self.localFormat.currencyCode = _localCurrencyCode =
-            [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
-        //BUG: if locale changed since last time, we'll start with an incorrect price
-    }
-
-    [self updateExchangeRate];
+    if ([[UIApplication sharedApplication] isProtectedDataAvailable]) [self protectedInit];
 
     return self;
 }
 
+- (void)protectedInit
+{
+    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+    
+    _localCurrencyCode = [defs stringForKey:LOCAL_CURRENCY_CODE_KEY],
+    _localCurrencyPrice = [defs doubleForKey:LOCAL_CURRENCY_PRICE_KEY];
+    self.localFormat.maximum = @((MAX_MONEY/SATOSHIS)*self.localCurrencyPrice);
+    _currencyCodes = [defs arrayForKey:CURRENCY_CODES_KEY];
+    
+    if (self.localCurrencyCode) {
+        self.localFormat.currencySymbol = [defs stringForKey:LOCAL_CURRENCY_SYMBOL_KEY];
+        self.localFormat.currencyCode = self.localCurrencyCode;
+    }
+    else {
+        self.localFormat.currencySymbol = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencySymbol];
+        self.localFormat.currencyCode = _localCurrencyCode =
+        [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
+        //BUG: if locale changed since last time, we'll start with an incorrect price
+    }
+    
+    [self updateExchangeRate];
+}
+
 - (void)dealloc
 {
+    if (self.protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.protectedObserver];
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
 
 - (BRWallet *)wallet
 {
-    if (_wallet == nil && self.seed) {
-        @synchronized(self) {
-            if (_wallet == nil) {
-                _wallet = [[BRWallet alloc] initWithContext:[NSManagedObject context] sequence:self.sequence
-                           seed:^NSData *{ return self.seed; }];
+    if (_wallet || ! [[UIApplication sharedApplication] isProtectedDataAvailable]) return _wallet;
 
-                // we need to verify that the keychain matches core data, since they have different access and backup
-                // policies it's possible for them to diverge
-                if (_wallet.addresses.count > 0) {
-                    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                        BRKey *k = [BRKey keyWithPrivateKey:[self.sequence privateKey:0 internal:NO
-                                                             fromSeed:self.seed]];
-                    
-                        if (! [_wallet containsAddress:k.address]) {
-#if DEBUG
-                            abort(); // don't wipe core data for debug builds
-#endif
-                            [[NSManagedObject context] performBlockAndWait:^{
-                                [BRAddressEntity deleteObjects:[BRAddressEntity allObjects]];
-                                [BRTransactionEntity deleteObjects:[BRTransactionEntity allObjects]];
-                                [NSManagedObject saveContext];
-                            }];
-                        
-                            _wallet = nil;
-                        
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                                [[NSNotificationCenter defaultCenter]
-                                 postNotificationName:BRWalletManagerSeedChangedNotification object:nil];
-                                [[NSNotificationCenter defaultCenter]
-                                 postNotificationName:BRWalletBalanceChangedNotification object:nil];
-                            });
-                        }
-                    });
-                }
-            }
-        }
+    if (getKeychainData(SEED_KEY, nil)) { // upgrade from old non-authenticated keychain
+        NSLog(@"upgrading to authenticated keychain scheme");
+        setKeychainData([self.sequence masterPublicKeyFromSeed:self.seed], MASTER_PUBKEY_KEY, NO);
+        setKeychainData(getKeychainData(MNEMONIC_KEY, nil), MNEMONIC_KEY, YES);
+        setKeychainData(nil, SEED_KEY, NO);
+        setKeychainData(nil, PIN_KEY, NO);
+        setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
+        setKeychainData(nil, PIN_FAIL_HEIGHT_KEY, NO);
     }
+    
+    if (! self.masterPublicKey) return _wallet;
+    
+    @synchronized(self) {
+        if (_wallet) return _wallet;
+            
+        _wallet = [[BRWallet alloc] initWithContext:[NSManagedObject context] sequence:self.sequence
+                   masterPublicKey:self.masterPublicKey seed:^NSData *{ return self.seed; }];
 
-    return _wallet;
+        // verify that keychain matches core data, with different access and backup policies it's possible to diverge
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            BRKey *k = [BRKey keyWithPublicKey:[self.sequence publicKey:0 internal:NO
+                                                masterPublicKey:self.masterPublicKey]];
+                    
+            if (_wallet.addresses.count > 0 && ! [_wallet containsAddress:k.address]) {
+#if DEBUG
+                abort(); // don't wipe core data for debug builds
+#endif
+                [[NSManagedObject context] performBlockAndWait:^{
+                    [BRAddressEntity deleteObjects:[BRAddressEntity allObjects]];
+                    [BRTransactionEntity deleteObjects:[BRTransactionEntity allObjects]];
+                    [NSManagedObject saveContext];
+                }];
+                
+                _wallet = nil;
+                    
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletManagerSeedChangedNotification
+                     object:nil];
+                    [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletBalanceChangedNotification
+                     object:nil];
+                });
+            }
+        });
+        
+        return _wallet;
+    }
 }
 
 - (id<BRKeySequence>)sequence
@@ -238,148 +312,139 @@ static NSData *getKeychainData(NSString *key)
     return _sequence;
 }
 
-- (NSData *)seed
+- (NSData *)masterPublicKey
 {
-    return getKeychainData(SEED_KEY);
+    return getKeychainData(MASTER_PUBKEY_KEY, nil);
 }
 
-- (void)setSeed:(NSData *)seed
+// requesting seed will trigger authentication
+- (NSData *)seed
+{
+    return [self seedWithPrompt:nil];
+}
+
+// requesting seedPhrase will trigger authentication
+- (NSString *)seedPhrase
+{
+    return [self seedPhraseWithPrompt:nil];
+}
+
+- (void)setSeedPhrase:(NSString *)seedPhrase
 {
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
-        if ([seed isEqual:self.seed]) return;
+        BRBIP39Mnemonic *m = [BRBIP39Mnemonic sharedInstance];
+        
+        if (seedPhrase) seedPhrase = [m encodePhrase:[m decodePhrase:seedPhrase]];
 
         [[NSManagedObject context] performBlockAndWait:^{
             [BRAddressEntity deleteObjects:[BRAddressEntity allObjects]];
             [BRTransactionEntity deleteObjects:[BRTransactionEntity allObjects]];
             [NSManagedObject saveContext];
         }];
-
-        setKeychainData(nil, PIN_KEY);
-        setKeychainData(nil, PIN_FAIL_COUNT_KEY);
-        setKeychainData(nil, PIN_FAIL_HEIGHT_KEY);
-        setKeychainData(nil, MNEMONIC_KEY);
-        setKeychainData(nil, CREATION_TIME_KEY);
         
-        if (! setKeychainData(seed, SEED_KEY)) {
+        setKeychainData(nil, CREATION_TIME_KEY, NO);
+        setKeychainData(nil, MASTER_PUBKEY_KEY, NO);
+        
+        NSData *mnemonic = (seedPhrase) ?
+                           CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(),
+                                                                                  (CFStringRef)seedPhrase,
+                                                                                  kCFStringEncodingUTF8, 0)) : nil,
+               *masterPubKey = (seedPhrase) ?
+                               [self.sequence
+                                masterPublicKeyFromSeed:[m deriveKeyFromPhrase:seedPhrase withPassphrase:nil]] : nil;
+
+        if (! setKeychainData(mnemonic, MNEMONIC_KEY, YES)) {
             NSLog(@"error setting wallet seed");
-            [[[UIAlertView alloc] initWithTitle:@"couldn't create wallet"
-              message:@"error adding master private key to iOS keychain, make sure app has keychain entitlements"
-              delegate:self cancelButtonTitle:@"abort" otherButtonTitles:nil] show];
+
+            if (seedPhrase) {
+                [[[UIAlertView alloc] initWithTitle:@"couldn't create wallet"
+                  message:@"error adding master private key to iOS keychain, make sure app has keychain entitlements"
+                  delegate:self cancelButtonTitle:@"abort" otherButtonTitles:nil] show];
+            }
+
             return;
         }
-
+        
+        setKeychainData(masterPubKey, MASTER_PUBKEY_KEY, NO);
         _wallet = nil;
     }
-
+    
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletManagerSeedChangedNotification object:nil];
     });
 }
 
-- (NSString *)seedPhrase
+// interval since refrence date, 00:00:00 01/01/01 GMT
+- (NSTimeInterval)seedCreationTime
+{
+    NSData *d = getKeychainData(CREATION_TIME_KEY, nil);
+
+    return (d.length < sizeof(NSTimeInterval)) ? BITCOIN_REFERENCE_BLOCK_TIME : *(const NSTimeInterval *)d.bytes;
+}
+
+// true if device passcode is enabled
+- (BOOL)isPasscodeEnabled
+{
+    return isPasscodeEnabled();
+}
+
+ // generates a random seed, saves to keychain and returns the associated seedPhrase
+- (NSString *)generateRandomSeed
 {
     @autoreleasepool {
-        NSData *phrase = getKeychainData(MNEMONIC_KEY);
+        NSMutableData *entropy = [NSMutableData secureDataWithLength:SEED_ENTROPY_LENGTH];
+        NSTimeInterval time = [NSDate timeIntervalSinceReferenceDate];
+        
+        SecRandomCopyBytes(kSecRandomDefault, entropy.length, entropy.mutableBytes);
+        
+        NSString *phrase = [[BRBIP39Mnemonic sharedInstance] encodePhrase:entropy];
+        
+        self.seedPhrase = phrase;
+        
+        // we store the wallet creation time on the keychain because keychain data persists even when an app is deleted
+        setKeychainData([NSData dataWithBytes:&time length:sizeof(time)], CREATION_TIME_KEY, NO);
+        
+        return phrase;
+    }
+}
 
+// authenticates user and returns seed
+- (NSData *)seedWithPrompt:(NSString *)authprompt
+{
+    @autoreleasepool {
+        BRBIP39Mnemonic *m = [BRBIP39Mnemonic sharedInstance];
+        NSString *phrase = [self seedPhraseWithPrompt:authprompt];
+        
+        if (phrase.length == 0) return nil;
+        return [m deriveKeyFromPhrase:phrase withPassphrase:nil];
+    }
+}
+
+// authenticates user and returns seedPhrase
+- (NSString *)seedPhraseWithPrompt:(NSString *)authprompt
+{
+    @autoreleasepool {
+        NSData *phrase = getKeychainData(MNEMONIC_KEY, authprompt);
+        
         if (! phrase) return nil;
-
+        
+        self.didAuthenticate = YES;
         return CFBridgingRelease(CFStringCreateFromExternalRepresentation(SecureAllocator(), (CFDataRef)phrase,
                                                                           kCFStringEncodingUTF8));
     }
 }
 
-- (void)setSeedPhrase:(NSString *)seedPhrase
+// prompts user to authenticate with touch id or passcode
+- (BOOL)authenticateWithPrompt:(NSString *)authprompt
 {
     @autoreleasepool {
-        BRBIP39Mnemonic *m = [BRBIP39Mnemonic sharedInstance];
-        
-        seedPhrase = [m encodePhrase:[m decodePhrase:seedPhrase]];
-        self.seed = [m deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
-
-        NSData *d = CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(), (CFStringRef)seedPhrase,
-                                                                           kCFStringEncodingUTF8, 0));
-        
-        setKeychainData(d, MNEMONIC_KEY);
+        if (! getKeychainData(MNEMONIC_KEY, authprompt)) return NO;
+        self.didAuthenticate = YES;
+        return YES;
     }
 }
 
-- (NSString *)pin
-{
-    @autoreleasepool {
-        NSData *pin = getKeychainData(PIN_KEY);
-
-        if (! pin) return nil;
-
-        return CFBridgingRelease(CFStringCreateFromExternalRepresentation(SecureAllocator(), (CFDataRef)pin,
-                                                                          kCFStringEncodingUTF8));
-    }
-}
-
-- (void)setPin:(NSString *)pin
-{
-    @autoreleasepool {
-        if (pin.length > 0) {
-            NSData *d = CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(), (CFStringRef)pin,
-                                                                               kCFStringEncodingUTF8, 0));
-
-            setKeychainData(d, PIN_KEY);
-        }
-        else setKeychainData(nil, PIN_KEY);
-    }
-}
-
-- (NSUInteger)pinFailCount
-{
-        NSData *count = getKeychainData(PIN_FAIL_COUNT_KEY);
-
-        return (count.length < sizeof(NSUInteger)) ? 0 : *(const NSUInteger *)count.bytes;
-}
-
-- (void)setPinFailCount:(NSUInteger)count
-{
-    NSMutableData *d = [NSMutableData secureDataWithLength:sizeof(NSUInteger)];
-
-    *(NSUInteger *)d.mutableBytes = count;
-    setKeychainData(d, PIN_FAIL_COUNT_KEY);
-}
-
-- (uint32_t)pinFailHeight
-{
-    NSData *height = getKeychainData(PIN_FAIL_HEIGHT_KEY);
-
-    return (height.length < sizeof(uint32_t)) ? 0 : *(const uint32_t *)height.bytes;
-}
-
-- (void)setPinFailHeight:(uint32_t)height
-{
-    NSMutableData *d = [NSMutableData secureDataWithLength:sizeof(uint32_t)];
-
-    *(uint32_t *)d.mutableBytes = height;
-    setKeychainData(d, PIN_FAIL_HEIGHT_KEY);
-}
-
-- (void)generateRandomSeed
-{
-    @autoreleasepool {
-        NSMutableData *entropy = [NSMutableData secureDataWithLength:SEED_ENTROPY_LENGTH];
-        NSTimeInterval time = [NSDate timeIntervalSinceReferenceDate];
-
-        SecRandomCopyBytes(kSecRandomDefault, entropy.length, entropy.mutableBytes);
-
-        self.seedPhrase = [[BRBIP39Mnemonic sharedInstance] encodePhrase:entropy];
-
-        // we store the wallet creation time on the keychain because keychain data persists even when an app is deleted
-        setKeychainData([NSData dataWithBytes:&time length:sizeof(time)], CREATION_TIME_KEY);
-    }
-}
-
-- (NSTimeInterval)seedCreationTime
-{
-    NSData *d = getKeychainData(CREATION_TIME_KEY);
-
-    return (d.length < sizeof(NSTimeInterval)) ? BITCOIN_REFERENCE_BLOCK_TIME : *(const NSTimeInterval *)d.bytes;
-}
-
+// local currency ISO code
 - (void)setLocalCurrencyCode:(NSString *)localCurrencyCode
 {
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];

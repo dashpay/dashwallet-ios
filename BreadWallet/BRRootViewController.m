@@ -26,7 +26,6 @@
 #import "BRRootViewController.h"
 #import "BRReceiveViewController.h"
 #import "BRSendViewController.h"
-#import "BRPINViewController.h"
 #import "BRBubbleView.h"
 #import "BRBouncyBurgerButton.h"
 #import "BRPeerManager.h"
@@ -46,17 +45,15 @@
 
 @property (nonatomic, strong) IBOutlet UIProgressView *progress, *pulse;
 @property (nonatomic, strong) IBOutlet UILabel *percent;
-@property (nonatomic, strong) IBOutlet UIView *errorBar, *wallpaper, *splash;
+@property (nonatomic, strong) IBOutlet UIView *errorBar, *wallpaper, *splash, *logo;
 @property (nonatomic, strong) IBOutlet UIGestureRecognizer *navBarTap;
+@property (nonatomic, strong) IBOutlet UIBarButtonItem *lock;
 @property (nonatomic, strong) IBOutlet BRBouncyBurgerButton *burger;
 
-@property (nonatomic, strong) UINavigationController *pinNav;
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) BRBubbleView *tipView;
 @property (nonatomic, assign) BOOL appeared, showTips, inNextTip;
 @property (nonatomic, strong) Reachability *reachability;
-@property (nonatomic, strong) NSURL *url;
-@property (nonatomic, strong) NSData *file;
 @property (nonatomic, strong) id urlObserver, fileObserver, foregroundObserver, backgroundObserver, balanceObserver;
 @property (nonatomic, strong) id reachabilityObserver, syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 @property (nonatomic, assign) NSTimeInterval timeout, start;
@@ -108,36 +105,25 @@
     self.urlObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRURLNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            self.url = note.userInfo[@"url"];
-            [self.pageViewController setViewControllers:@[self.sendViewController]
-             direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
+            BRSendViewController *c = self.sendViewController;
+        
+            [self.pageViewController setViewControllers:@[c] direction:UIPageViewControllerNavigationDirectionForward
+             animated:NO completion:^(BOOL finished) { [c handleURL:note.userInfo[@"url"]]; }];
         }];
 
     self.fileObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRFileNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            self.file = note.userInfo[@"file"];
-            [self.pageViewController setViewControllers:@[self.sendViewController]
-             direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
+            BRSendViewController *c = self.sendViewController;
+
+            [self.pageViewController setViewControllers:@[c] direction:UIPageViewControllerNavigationDirectionForward
+             animated:NO completion:^(BOOL finished) { [c handleFile:note.userInfo[@"file"]]; }];
         }];
 
     self.foregroundObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillEnterForegroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.appeared && m.wallet && self.navigationController.presentedViewController != self.pinNav) {
-                self.pinNav = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-                [self.pinNav.viewControllers.firstObject setAppeared:YES];
-
-                if (self.navigationController.presentedViewController) {
-                    [self.navigationController dismissViewControllerAnimated:NO completion:^{
-                        [self.navigationController presentViewController:self.pinNav animated:NO completion:nil];
-                    }];
-                }
-                else [self.navigationController presentViewController:self.pinNav animated:NO completion:nil];
-
-                self.pinNav.transitioningDelegate = self.pinNav.viewControllers.firstObject;
-                [[BRPeerManager sharedInstance] connect];
-            }
+            if (self.appeared && m.wallet) [[BRPeerManager sharedInstance] connect];
 
             if (jailbroken && m.wallet.balance > 0) {
                 [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
@@ -161,28 +147,26 @@
     self.backgroundObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.appeared && m.wallet && self.navigationController.presentedViewController != self.pinNav) {
-                self.pinNav = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-                [self.pinNav.viewControllers.firstObject setAppeared:YES];
+            if (self.appeared && m.wallet) { // lockdown the app
+                m.didAuthenticate = NO;
+                self.navigationItem.titleView = self.logo;
+                self.navigationItem.rightBarButtonItem = self.lock;
+
+                if (self.navigationController.topViewController != self) {
+                    [self.navigationController popToRootViewControllerAnimated:YES];
+                }
 
                 if (self.navigationController.presentedViewController) {
-                    [self.navigationController dismissViewControllerAnimated:NO completion:^{
-                        [self.navigationController presentViewController:self.pinNav animated:NO completion:nil];
-                    }];
+                    [self.navigationController dismissViewControllerAnimated:YES completion:nil];
                 }
-                else [self.navigationController presentViewController:self.pinNav animated:NO completion:nil];
-
-                self.pinNav.transitioningDelegate = self.pinNav.viewControllers.firstObject;
             }
-
-            self.url = nil;
-            self.file = nil;
         }];
 
     self.reachabilityObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if (self.appeared && self.reachability.currentReachabilityStatus != NotReachable) {
+            if (self.appeared && self.reachability.currentReachabilityStatus != NotReachable &&
+                [[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground) {
                 [[BRPeerManager sharedInstance] connect];
             }
             else if (self.appeared && self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
@@ -261,15 +245,10 @@
 #endif
 
     if (! [[UIApplication sharedApplication] isProtectedDataAvailable] || m.wallet) {
-        self.pinNav = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-
-        [self.navigationController presentViewController:self.pinNav animated:NO completion:^{
-            self.splash.hidden = YES;
-            self.navigationController.navigationBar.hidden = NO;
-            [[UIApplication sharedApplication] setStatusBarHidden:NO];
-        }];
-        
-        self.pinNav.transitioningDelegate = self.pinNav.viewControllers.firstObject;
+        // TODO: XXXX require auth
+        self.splash.hidden = YES;
+        self.navigationController.navigationBar.hidden = NO;
+        [[UIApplication sharedApplication] setStatusBarHidden:NO];
     }
     
     [self showBackupDialogIfNeeded];
@@ -282,25 +261,25 @@
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
     if ([[UIApplication sharedApplication] isProtectedDataAvailable] && ! m.wallet) {
-        self.pinNav = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-
-        [self.navigationController presentViewController:self.pinNav animated:NO completion:^{
-            self.pinNav.transitioningDelegate = self.pinNav.viewControllers.firstObject;
-            [self.pinNav presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"]
-            animated:NO completion:^{
-                self.splash.hidden = YES;
-                self.navigationController.navigationBar.hidden = NO;
-                [self.pinNav.viewControllers.firstObject setAppeared:YES];
-            }];
-            self.showTips = YES;
+        [self.navigationController
+        presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"] animated:NO
+        completion:^{
+            self.splash.hidden = YES;
+            self.navigationController.navigationBar.hidden = NO;
         }];
 
+        self.showTips = YES;
+        [self unlock:nil];
         return;
     }
 
     self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"burger"];
     self.pageViewController.view.alpha = 1.0;
-    [[BRPeerManager sharedInstance] connect];
+    if (m.didAuthenticate) [self unlock:nil];
+
+    if ([[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground) {
+        [[BRPeerManager sharedInstance] connect];
+    }
 
     //TODO: try making the balance start at zero and quickly increase to the actual balance, ala city guides
 
@@ -328,10 +307,6 @@
     if (self.navigationController.visibleViewController == self) {
         [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
         [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
-        if (self.url) [self.sendViewController handleURL:self.url];
-        if (self.file) [self.sendViewController handleFile:self.file];
-        self.url = nil;
-        self.file = nil;
 
         if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
         [self showBackupDialogIfNeeded];
@@ -610,6 +585,16 @@
     if (self.showTips) self.scrollView.scrollEnabled = NO;
 }
 
+- (IBAction)unlock:(id)sender
+{
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    
+    if (sender && ! m.didAuthenticate && ! [m authenticateWithPrompt:nil]) return;
+    
+    self.navigationItem.titleView = nil;
+    self.navigationItem.rightBarButtonItem = nil;
+}
+
 - (IBAction)connect:(id)sender
 {
     if (! sender && [self.reachability currentReachabilityStatus] == NotReachable) return;
@@ -684,7 +669,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
 {
     if (buttonIndex != actionSheet.destructiveButtonIndex) return;
 
-    [[BRWalletManager sharedInstance] setSeed:nil];
+    [[BRWalletManager sharedInstance] setSeedPhrase:nil];
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:WALLET_NEEDS_BACKUP_KEY];
     [[NSUserDefaults standardUserDefaults] synchronize];
 
@@ -708,6 +693,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
 // This method can only be a nop if the transition is interactive and not a percentDriven interactive transition.
 - (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext
 {
+    BRWalletManager *m = [BRWalletManager sharedInstance];
     UIView *v = transitionContext.containerView;
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
@@ -739,7 +725,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
             }
 
             if (self.progress.progress > 0) self.progress.hidden = self.pulse.hidden = NO;
-            [transitionContext completeTransition:finished];
+            [transitionContext completeTransition:YES];
         }];
     }
     else if ([to isKindOfClass:[UINavigationController class]] && from == self.navigationController) { // modal display
@@ -748,10 +734,14 @@ viewControllerAfterViewController:(UIViewController *)viewController
          belowSubview:self.navigationController.navigationBar];
         to.view.center = CGPointMake(to.view.center.x, v.frame.size.height*3/2);
 
-        BRWalletManager *m = [BRWalletManager sharedInstance];
+        UINavigationItem *item = [[(id)to viewControllers].firstObject navigationItem];
+        UIView *titleView = item.titleView;
+        UIBarButtonItem *rightButton = item.rightBarButtonItem;
 
-        [[(id)to viewControllers].firstObject navigationItem].title = nil;
-        [[(id)to viewControllers].firstObject navigationItem].leftBarButtonItem.image = nil;
+        item.title = nil;
+        item.leftBarButtonItem.image = nil;
+        item.titleView = nil;
+        item.rightBarButtonItem = nil;
         self.navigationItem.leftBarButtonItem.image = nil;
         [v addSubview:self.burger];
         [v layoutIfNeeded];
@@ -768,17 +758,21 @@ viewControllerAfterViewController:(UIViewController *)viewController
         } completion:^(BOOL finished) {
             self.pageViewController.view.center = CGPointMake(self.pageViewController.view.center.x,
                                                               v.frame.size.height/2.0);
-            [[(id)to viewControllers].firstObject navigationItem].leftBarButtonItem.image = [UIImage imageNamed:@"x"];
-            [[(id)to viewControllers].firstObject navigationItem].title =
-                [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                 [m localCurrencyStringForAmount:m.wallet.balance]];
+            item.rightBarButtonItem = rightButton;
+            item.titleView = titleView;
+            item.leftBarButtonItem.image = [UIImage imageNamed:@"x"];
+            item.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
+                          [m localCurrencyStringForAmount:m.wallet.balance]];
             [v addSubview:to.view];
-            [transitionContext completeTransition:finished];
+            [transitionContext completeTransition:YES];
         }];
     }
     else if ([from isKindOfClass:[UINavigationController class]] && to == self.navigationController) { // modal dismiss
-        [[BRPeerManager sharedInstance] connect];
+        if ([[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground) {
+            [[BRPeerManager sharedInstance] connect];
+        }
         
+        if (m.didAuthenticate) [self unlock:nil];
         [self.navigationController.navigationBar.superview insertSubview:from.view
          belowSubview:self.navigationController.navigationBar];
         [(id)from topViewController].navigationItem.title = nil;
@@ -800,7 +794,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
             [from.view removeFromSuperview];
             self.burger.hidden = YES;
             self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"burger"];
-            [transitionContext completeTransition:finished];
+            [transitionContext completeTransition:YES];
             if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
         }];
     }

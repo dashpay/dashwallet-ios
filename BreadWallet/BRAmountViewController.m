@@ -37,6 +37,7 @@
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *payButton;
 @property (nonatomic, strong) IBOutlet UIButton *delButton, *decimalButton;
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
+@property (nonatomic, strong) IBOutlet UIView *logo;
 
 @property (nonatomic, assign) uint64_t amount;
 @property (nonatomic, strong) NSCharacterSet *charset;
@@ -101,6 +102,7 @@
 
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
     [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
+    if ([[BRWalletManager sharedInstance] didAuthenticate]) [self unlock:nil];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -125,6 +127,16 @@
 }
 
 #pragma mark - IBAction
+
+- (IBAction)unlock:(id)sender
+{
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    
+    if (sender && ! m.didAuthenticate && ! [m authenticateWithPrompt:nil]) return;
+    
+    self.navigationItem.titleView = nil;
+    self.navigationItem.rightBarButtonItem = nil;
+}
 
 - (IBAction)number:(id)sender
 {
