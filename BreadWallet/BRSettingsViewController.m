@@ -215,6 +215,7 @@
     
     self.navigationItem.titleView = nil;
     self.navigationItem.rightBarButtonItem = nil;
+    [self.tableView reloadData];
 }
 
 - (IBAction)scanQR:(id)sender
@@ -342,8 +343,9 @@
                 sentLabel.hidden = YES;
                 unconfirmedLabel.hidden = NO;
                 detailTextLabel.text = [self dateForTx:tx];
-                balanceLabel.text = [m stringForAmount:balance];
-                localBalanceLabel.text = [NSString stringWithFormat:@"(%@)", [m localCurrencyStringForAmount:balance]];
+                balanceLabel.text = (m.didAuthenticate) ? [m stringForAmount:balance] : nil;
+                localBalanceLabel.text = (m.didAuthenticate) ?
+                    [NSString stringWithFormat:@"(%@)", [m localCurrencyStringForAmount:balance]] : nil;
 
                 if (confirms == 0 && ! [m.wallet transactionIsValid:tx]) {
                     unconfirmedLabel.text = NSLocalizedString(@"INVALID", nil);
