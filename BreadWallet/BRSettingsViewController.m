@@ -722,7 +722,10 @@
 
     BRSeedViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
     
-    if (c.authSuccess) [self.navigationController pushViewController:c animated:YES];
+    if (c.authSuccess) {
+        [self.navigationController pushViewController:c animated:YES];
+    }
+    else [self.tableView deselectRowAtIndexPath:[self.tableView indexPathForSelectedRow] animated:YES];
 }
 
 #pragma mark - UIViewControllerAnimatedTransitioning

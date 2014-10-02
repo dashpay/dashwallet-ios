@@ -2,6 +2,9 @@
 "\n%@\n\nwrite down your backup phrase and use it to restore on another device if this one is ever lost or broken" = "\n%@\n\nwrite down your backup phrase and use it to restore on another device if this one is ever lost or broken";
 
 /* No comment provided by engineer. */
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
+
+/* No comment provided by engineer. */
 "\nADDRESS ALREADY USED\n\nbitcoin addresses are intented for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\n\nbitcoin addresses are intented for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
 
 /* No comment provided by engineer. */
@@ -9,6 +12,9 @@
 
 /* No comment provided by engineer. */
 "\nDO NOT let anyone see your backup phrase or they can spend your bitcoins.\n\nDO NOT take a screenshot. Screenshots are visible to other apps and devices.\n" = "\nDO NOT let anyone see your backup phrase or they can spend your bitcoins.\n\nDO NOT take a screenshot. Screenshots are visible to other apps and devices.\n";
+
+/* No comment provided by engineer. */
+"\ngo to settings and turn passcode on to access restricted areas of your wallet" = "\ngo to settings and turn passcode on to access restricted areas of your wallet";
 
 /* No comment provided by engineer. */
 " - included in block #%d" = " - included in block #%d";
@@ -156,6 +162,9 @@
 
 /* No comment provided by engineer. */
 "email not configured" = "email not configured";
+
+/* No comment provided by engineer. */
+"turn device passcode on" = "turn device passcode on";
 
 /* No comment provided by engineer. */
 "error signing bitcoin transaction" = "error signing bitcoin transaction";

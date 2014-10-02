@@ -56,15 +56,33 @@
 #define LOCAL_CURRENCY_PRICE_KEY  @"LOCAL_CURRENCY_PRICE"
 #define CURRENCY_CODES_KEY        @"CURRENCY_CODES"
 
-#define MNEMONIC_KEY      @"mnemonic"
-#define CREATION_TIME_KEY @"creationtime"
-#define MASTER_PUBKEY_KEY @"masterpubkey"
+#define MNEMONIC_KEY        @"mnemonic"
+#define CREATION_TIME_KEY   @"creationtime"
+#define MASTER_PUBKEY_KEY   @"masterpubkey"
+#define PASSCODE_DETECT_KEY @"passcodedetect"
 
 // deprecated
 #define SEED_KEY            @"seed"
 #define PIN_KEY             @"pin"
 #define PIN_FAIL_COUNT_KEY  @"pinfailcount"
 #define PIN_FAIL_HEIGHT_KEY @"pinfailheight"
+
+static BOOL isPasscodeEnabled()
+{
+    NSDictionary *query = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
+                            (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
+                            (__bridge id)kSecAttrAccount:PASSCODE_DETECT_KEY};
+    
+    if (SecItemCopyMatching((__bridge CFDictionaryRef)query, nil) != errSecItemNotFound) return YES;
+
+    NSDictionary *item = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
+                           (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
+                           (__bridge id)kSecAttrAccount:PASSCODE_DETECT_KEY,
+                           (__bridge id)kSecAttrAccessible:(__bridge id)kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly,
+                           (__bridge id)kSecValueData:[NSData data]};
+        
+    return (SecItemAdd((__bridge CFDictionaryRef)item, NULL) != errSecDecode) ? YES : NO;
+}
 
 static BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
 {
@@ -129,6 +147,14 @@ static NSData *getKeychainData(NSString *key, NSString *authprompt)
 
     if (status == errSecItemNotFound) return nil;
     if (status == noErr) return CFBridgingRelease(result);
+    
+    if (status == errSecAuthFailed && ! isPasscodeEnabled()) {
+        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"turn device passcode on", nil)
+         message:NSLocalizedString(@"\ngo to settings and turn passcode on to access restricted areas of your wallet",
+                                   nil) delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
+         otherButtonTitles:nil] show];
+    }
+    
     NSLog(@"SecItemCopyMatching error status %d", (int)status);
     return nil;
 }
@@ -380,6 +406,11 @@ static NSData *getKeychainData(NSString *key, NSString *authprompt)
     NSData *d = getKeychainData(CREATION_TIME_KEY, nil);
 
     return (d.length < sizeof(NSTimeInterval)) ? BITCOIN_REFERENCE_BLOCK_TIME : *(const NSTimeInterval *)d.bytes;
+}
+
+- (BOOL)isPasscodeEnabled
+{
+    return isPasscodeEnabled();
 }
 
 - (void)setLocalCurrencyCode:(NSString *)localCurrencyCode

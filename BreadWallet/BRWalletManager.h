@@ -36,6 +36,7 @@
 @property (nonatomic, copy) NSString *seedPhrase;
 @property (nonatomic, readonly) NSData *seed;
 @property (nonatomic, readonly) NSTimeInterval seedCreationTime; // interval since refrence date, 00:00:00 01/01/01 GMT
+@property (nonatomic, readonly, getter=isPasscodeEnabled) BOOL passcodeEnabled; // true if device passcode is enabled
 @property (nonatomic, readonly) NSNumberFormatter *format;
 @property (nonatomic, readonly) NSNumberFormatter *localFormat;
 @property (nonatomic, copy) NSString *localCurrencyCode;
