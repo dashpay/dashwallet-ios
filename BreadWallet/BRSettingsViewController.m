@@ -38,6 +38,9 @@
 
 @interface BRSettingsViewController ()
 
+@property (nonatomic, strong) IBOutlet UIView *logo;
+@property (nonatomic, strong) IBOutlet UIBarButtonItem *lock;
+
 @property (nonatomic, strong) NSArray *transactions;
 @property (nonatomic, assign) BOOL moreTx;
 @property (nonatomic, strong) NSMutableDictionary *txDates;
@@ -74,6 +77,7 @@
     NSArray *a = m.wallet.recentTransactions;
     
     self.transactions = [a subarrayWithRange:NSMakeRange(0, (a.count > 5 && self.moreTx) ? 5 : a.count)];
+    if (m.didAuthenticate) [self unlock:nil];
 
     if (! self.balanceObserver) {
         self.balanceObserver =
@@ -201,6 +205,16 @@
 - (IBAction)done:(id)sender
 {
     [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (IBAction)unlock:(id)sender
+{
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+
+    if (sender && ! m.didAuthenticate && ! [m authenticateWithPrompt:nil]) return;
+    
+    self.navigationItem.titleView = nil;
+    self.navigationItem.rightBarButtonItem = nil;
 }
 
 - (IBAction)scanQR:(id)sender
@@ -567,8 +581,6 @@
     //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
     UIViewController *c = nil;
     UILabel *l = nil;
-//    NSUInteger i = 0;
-//    UITableViewCell *cell = nil;
     NSMutableAttributedString *s = nil;
     NSMutableArray *a;
     BRWalletManager *m = [BRWalletManager sharedInstance];
@@ -586,7 +598,12 @@
 
     switch (indexPath.section) {
         case 0: // transaction
-            if (indexPath.row > 0 && indexPath.row >= self.transactions.count) {
+            [tableView deselectRowAtIndexPath:indexPath animated:YES];
+            
+            if (indexPath.row > 0 && indexPath.row >= self.transactions.count) { // more...
+                if (! m.didAuthenticate && ! [m authenticateWithPrompt:nil]) break;
+                [self unlock:nil];
+                
                 [tableView beginUpdates];
                 self.transactions = [NSArray arrayWithArray:m.wallet.recentTransactions];
                 self.moreTx = NO;
@@ -606,7 +623,6 @@
                 [(id)c setTransaction:self.transactions[indexPath.row]];
                 [(id)c setTxDateString:[self dateForTx:self.transactions[indexPath.row]]];
                 [self.navigationController pushViewController:c animated:YES];
-                [tableView deselectRowAtIndexPath:indexPath animated:YES];
             }
 
             break;

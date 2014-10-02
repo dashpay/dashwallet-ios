@@ -317,28 +317,16 @@ static NSData *getKeychainData(NSString *key, NSString *authprompt)
     return getKeychainData(MASTER_PUBKEY_KEY, nil);
 }
 
+// requesting seed will trigger authentication
 - (NSData *)seed
 {
-    @autoreleasepool {
-        BRBIP39Mnemonic *m = [BRBIP39Mnemonic sharedInstance];
-        NSString *phrase = self.seedPhrase;
-    
-        if (phrase.length == 0) return nil;
-    
-        return [m deriveKeyFromPhrase:phrase withPassphrase:nil];
-    }
+    return [self seedWithPrompt:nil];
 }
 
+// requesting seedPhrase will trigger authentication
 - (NSString *)seedPhrase
 {
-    @autoreleasepool {
-        NSData *phrase = getKeychainData(MNEMONIC_KEY, nil);
-
-        if (! phrase) return nil;
-
-        return CFBridgingRelease(CFStringCreateFromExternalRepresentation(SecureAllocator(), (CFDataRef)phrase,
-                                                                          kCFStringEncodingUTF8));
-    }
+    return [self seedPhraseWithPrompt:nil];
 }
 
 - (void)setSeedPhrase:(NSString *)seedPhrase
@@ -367,9 +355,13 @@ static NSData *getKeychainData(NSString *key, NSString *authprompt)
 
         if (! setKeychainData(mnemonic, MNEMONIC_KEY, YES)) {
             NSLog(@"error setting wallet seed");
-            [[[UIAlertView alloc] initWithTitle:@"couldn't create wallet"
-              message:@"error adding master private key to iOS keychain, make sure app has keychain entitlements"
-              delegate:self cancelButtonTitle:@"abort" otherButtonTitles:nil] show];
+
+            if (seedPhrase) {
+                [[[UIAlertView alloc] initWithTitle:@"couldn't create wallet"
+                  message:@"error adding master private key to iOS keychain, make sure app has keychain entitlements"
+                  delegate:self cancelButtonTitle:@"abort" otherButtonTitles:nil] show];
+            }
+
             return;
         }
         
@@ -382,25 +374,7 @@ static NSData *getKeychainData(NSString *key, NSString *authprompt)
     });
 }
 
-- (NSString *)generateRandomSeed
-{
-    @autoreleasepool {
-        NSMutableData *entropy = [NSMutableData secureDataWithLength:SEED_ENTROPY_LENGTH];
-        NSTimeInterval time = [NSDate timeIntervalSinceReferenceDate];
-
-        SecRandomCopyBytes(kSecRandomDefault, entropy.length, entropy.mutableBytes);
-
-        NSString *phrase = [[BRBIP39Mnemonic sharedInstance] encodePhrase:entropy];
-
-        self.seedPhrase = phrase;
-
-        // we store the wallet creation time on the keychain because keychain data persists even when an app is deleted
-        setKeychainData([NSData dataWithBytes:&time length:sizeof(time)], CREATION_TIME_KEY, NO);
-        
-        return phrase;
-    }
-}
-
+// interval since refrence date, 00:00:00 01/01/01 GMT
 - (NSTimeInterval)seedCreationTime
 {
     NSData *d = getKeychainData(CREATION_TIME_KEY, nil);
@@ -408,11 +382,69 @@ static NSData *getKeychainData(NSString *key, NSString *authprompt)
     return (d.length < sizeof(NSTimeInterval)) ? BITCOIN_REFERENCE_BLOCK_TIME : *(const NSTimeInterval *)d.bytes;
 }
 
+// true if device passcode is enabled
 - (BOOL)isPasscodeEnabled
 {
     return isPasscodeEnabled();
 }
 
+ // generates a random seed, saves to keychain and returns the associated seedPhrase
+- (NSString *)generateRandomSeed
+{
+    @autoreleasepool {
+        NSMutableData *entropy = [NSMutableData secureDataWithLength:SEED_ENTROPY_LENGTH];
+        NSTimeInterval time = [NSDate timeIntervalSinceReferenceDate];
+        
+        SecRandomCopyBytes(kSecRandomDefault, entropy.length, entropy.mutableBytes);
+        
+        NSString *phrase = [[BRBIP39Mnemonic sharedInstance] encodePhrase:entropy];
+        
+        self.seedPhrase = phrase;
+        
+        // we store the wallet creation time on the keychain because keychain data persists even when an app is deleted
+        setKeychainData([NSData dataWithBytes:&time length:sizeof(time)], CREATION_TIME_KEY, NO);
+        
+        return phrase;
+    }
+}
+
+// authenticates user and returns seed
+- (NSData *)seedWithPrompt:(NSString *)authprompt
+{
+    @autoreleasepool {
+        BRBIP39Mnemonic *m = [BRBIP39Mnemonic sharedInstance];
+        NSString *phrase = [self seedPhraseWithPrompt:authprompt];
+        
+        if (phrase.length == 0) return nil;
+        return [m deriveKeyFromPhrase:phrase withPassphrase:nil];
+    }
+}
+
+// authenticates user and returns seedPhrase
+- (NSString *)seedPhraseWithPrompt:(NSString *)authprompt
+{
+    @autoreleasepool {
+        NSData *phrase = getKeychainData(MNEMONIC_KEY, authprompt);
+        
+        if (! phrase) return nil;
+        
+        self.didAuthenticate = YES;
+        return CFBridgingRelease(CFStringCreateFromExternalRepresentation(SecureAllocator(), (CFDataRef)phrase,
+                                                                          kCFStringEncodingUTF8));
+    }
+}
+
+// prompts user to authenticate with touch id or passcode
+- (BOOL)authenticateWithPrompt:(NSString *)authprompt
+{
+    @autoreleasepool {
+        if (! getKeychainData(MNEMONIC_KEY, authprompt)) return NO;
+        self.didAuthenticate = YES;
+        return YES;
+    }
+}
+
+// local currency ISO code
 - (void)setLocalCurrencyCode:(NSString *)localCurrencyCode
 {
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];

@@ -33,19 +33,23 @@
 @interface BRWalletManager : NSObject<UIAlertViewDelegate>
 
 @property (nonatomic, readonly) BRWallet *wallet;
-@property (nonatomic, copy) NSString *seedPhrase;
-@property (nonatomic, readonly) NSData *seed;
+@property (nonatomic, copy) NSString *seedPhrase; // requesting seedPhrase will trigger authentication
+@property (nonatomic, readonly) NSData *seed; // requesting seed will trigger authentication
 @property (nonatomic, readonly) NSTimeInterval seedCreationTime; // interval since refrence date, 00:00:00 01/01/01 GMT
 @property (nonatomic, readonly, getter=isPasscodeEnabled) BOOL passcodeEnabled; // true if device passcode is enabled
-@property (nonatomic, readonly) NSNumberFormatter *format;
-@property (nonatomic, readonly) NSNumberFormatter *localFormat;
-@property (nonatomic, copy) NSString *localCurrencyCode;
-@property (nonatomic, readonly) double localCurrencyPrice;
+@property (nonatomic, assign) BOOL didAuthenticate; // true if the user authenticated after this was last set to false
+@property (nonatomic, readonly) NSNumberFormatter *format; // bitcoin currency formatter
+@property (nonatomic, readonly) NSNumberFormatter *localFormat; // local currency formatter
+@property (nonatomic, copy) NSString *localCurrencyCode; // local currency ISO code
+@property (nonatomic, readonly) double localCurrencyPrice; // exchange rate in local currency units per bitcoin
 @property (nonatomic, readonly) NSArray *currencyCodes; // list of supported local currencies
 
 + (instancetype)sharedInstance;
 
-- (NSString *)generateRandomSeed; // generates a random seed and stores it, returns the associated seedPhrase
+- (NSString *)generateRandomSeed; // generates a random seed, saves to keychain and returns the associated seedPhrase
+- (NSString *)seedPhraseWithPrompt:(NSString *)authprompt; // authenticates user and returns seedPhrase
+- (NSData *)seedWithPrompt:(NSString *)authprompt; // authenticates user and returns seed
+- (BOOL)authenticateWithPrompt:(NSString *)authprompt; // prompts user to authenticate with touch id or passcode
 
 // given a private key, queries blockchain for unspent outputs and calls the completion block with a signed transaction
 // that will sweep the balance into wallet (doesn't publish the tx)

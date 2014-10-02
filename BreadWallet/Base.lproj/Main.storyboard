@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="6245" systemVersion="13F34" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="BeO-Yt-c4D">
     <dependencies>
-        <deployment defaultVersion="1808" identifier="iOS"/>
         <development version="5100" identifier="xcode"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6238"/>
         <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
@@ -265,14 +264,34 @@
                             <outlet property="delegate" destination="6Bl-Zl-U7O" id="4sa-PK-yuR"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="ƀ 0.00 ($0.00)" id="h6T-AD-8zb">
+                    <navigationItem key="navigationItem" id="h6T-AD-8zb">
+                        <nil key="title"/>
                         <barButtonItem key="backBarButtonItem" title=" " id="hWS-2G-hHE"/>
                         <barButtonItem key="leftBarButtonItem" image="x" id="nxH-ZN-jve">
                             <connections>
                                 <action selector="done:" destination="6Bl-Zl-U7O" id="qIl-sF-2Yi"/>
                             </connections>
                         </barButtonItem>
+                        <view key="titleView" contentMode="scaleToFill" id="zEA-kZ-fl3">
+                            <rect key="frame" x="113" y="14.5" width="94" height="15"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <subviews>
+                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" image="breadwallet" translatesAutoresizingMaskIntoConstraints="NO" id="Nbk-cZ-ENN">
+                                    <rect key="frame" x="0.0" y="0.5" width="94" height="15"/>
+                                </imageView>
+                            </subviews>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                        </view>
+                        <barButtonItem key="rightBarButtonItem" image="lock" id="75b-JT-mWa">
+                            <connections>
+                                <action selector="unlock:" destination="6Bl-Zl-U7O" id="6ER-Av-knW"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
+                    <connections>
+                        <outlet property="lock" destination="75b-JT-mWa" id="zf4-ZS-Bqe"/>
+                        <outlet property="logo" destination="zEA-kZ-fl3" id="kKE-Jj-XAb"/>
+                    </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="T2h-wo-kmJ" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
@@ -339,7 +358,7 @@
             </objects>
             <point key="canvasLocation" x="303" y="666"/>
         </scene>
-        <!--ƀ 0.00 ($0.00)-->
+        <!--Root View Controller-->
         <scene sceneID="rg1-cK-IKM">
             <objects>
                 <viewController storyboardIdentifier="RootViewController" id="EIj-WB-eQ8" customClass="BRRootViewController" sceneMemberID="viewController">
@@ -473,17 +492,35 @@
                             <constraint firstItem="3jf-fx-Ie3" firstAttribute="leading" secondItem="AWe-IQ-Tyq" secondAttribute="leading" id="uBE-0A-BAn"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="ƀ 0.00 ($0.00)" id="3hG-i3-g4Y">
+                    <navigationItem key="navigationItem" id="3hG-i3-g4Y">
+                        <nil key="title"/>
                         <barButtonItem key="backBarButtonItem" title=" " id="Huq-Vk-LaF"/>
                         <barButtonItem key="leftBarButtonItem" image="burger" id="lsn-hc-KRM">
                             <connections>
                                 <segue destination="zyy-VL-f65" kind="modal" identifier="SettingsSegue" id="Eks-ag-H7f"/>
                             </connections>
                         </barButtonItem>
+                        <view key="titleView" contentMode="scaleToFill" id="Rxa-kr-LOc">
+                            <rect key="frame" x="113" y="14.5" width="94" height="15"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <subviews>
+                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" image="breadwallet" translatesAutoresizingMaskIntoConstraints="NO" id="KqJ-6D-LUi">
+                                    <rect key="frame" x="0.0" y="0.5" width="94" height="15"/>
+                                </imageView>
+                            </subviews>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                        </view>
+                        <barButtonItem key="rightBarButtonItem" image="lock" id="5HU-Pa-e1l">
+                            <connections>
+                                <action selector="unlock:" destination="EIj-WB-eQ8" id="9QI-HD-GsJ"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <connections>
                         <outlet property="burger" destination="9iO-jb-qZ5" id="tCc-2P-ehW"/>
                         <outlet property="errorBar" destination="RLt-8v-uP1" id="4fP-CP-ICW"/>
+                        <outlet property="lock" destination="5HU-Pa-e1l" id="ol2-6y-1sz"/>
+                        <outlet property="logo" destination="Rxa-kr-LOc" id="eiU-Dg-jxe"/>
                         <outlet property="percent" destination="xl3-sr-16q" id="vtI-XF-1n5"/>
                         <outlet property="progress" destination="3jf-fx-Ie3" id="gCy-rS-Gao"/>
                         <outlet property="pulse" destination="eZp-EX-faL" id="RjA-bp-dr1"/>
@@ -576,7 +613,7 @@
             </objects>
             <point key="canvasLocation" x="1134" y="671"/>
         </scene>
-        <!--ƀ 0.00 ($0.00)-->
+        <!--Amount View Controller-->
         <scene sceneID="53j-BI-jfv">
             <objects>
                 <viewController storyboardIdentifier="AmountViewController" id="4fz-p1-NND" customClass="BRAmountViewController" sceneMemberID="viewController">
@@ -944,7 +981,18 @@
                         </constraints>
                     </view>
                     <toolbarItems/>
-                    <navigationItem key="navigationItem" title="ƀ 0.00 ($0.00)" id="Ddo-ce-xs5">
+                    <navigationItem key="navigationItem" id="Ddo-ce-xs5">
+                        <nil key="title"/>
+                        <view key="titleView" contentMode="scaleToFill" id="kcu-Y5-KKx">
+                            <rect key="frame" x="113" y="14.5" width="94" height="15"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <subviews>
+                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" image="breadwallet" translatesAutoresizingMaskIntoConstraints="NO" id="9BJ-r6-3Av">
+                                    <rect key="frame" x="0.0" y="0.0" width="94" height="15"/>
+                                </imageView>
+                            </subviews>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                        </view>
                         <barButtonItem key="rightBarButtonItem" title="pay" id="f4B-BU-eu2">
                             <connections>
                                 <action selector="pay:" destination="4fz-p1-NND" id="85R-5b-LgN"/>
@@ -957,6 +1005,7 @@
                         <outlet property="amountField" destination="DLS-lz-uxJ" id="XOK-Fn-8me"/>
                         <outlet property="decimalButton" destination="Ktu-9p-xOl" id="qyG-qy-iXG"/>
                         <outlet property="localCurrencyLabel" destination="ZH0-Ng-7xb" id="wMB-Kc-0v7"/>
+                        <outlet property="logo" destination="kcu-Y5-KKx" id="A38-Nr-VHh"/>
                         <outlet property="payButton" destination="f4B-BU-eu2" id="mcd-0H-ogI"/>
                         <outlet property="wallpaper" destination="ihm-bL-FFP" id="NCc-Ta-T3E"/>
                     </connections>
@@ -1683,11 +1732,11 @@ this app is open source
                     </view>
                     <navigationItem key="navigationItem" id="ulo-B9-Nv5">
                         <nil key="title"/>
-                        <view key="titleView" contentMode="scaleToFill" id="kcu-Y5-KKx">
+                        <view key="titleView" contentMode="scaleToFill" id="zYA-4z-JxL">
                             <rect key="frame" x="113" y="14.5" width="94" height="15"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <subviews>
-                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" image="breadwallet" translatesAutoresizingMaskIntoConstraints="NO" id="9BJ-r6-3Av">
+                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" image="breadwallet" translatesAutoresizingMaskIntoConstraints="NO" id="dIg-nc-obY">
                                     <rect key="frame" x="0.0" y="0.0" width="94" height="15"/>
                                 </imageView>
                             </subviews>
@@ -2085,6 +2134,7 @@ it and you may lose your bitcoins forever.</string>
         <image name="deletetoleft" width="29" height="23"/>
         <image name="deletetoleft-pressed" width="29" height="23"/>
         <image name="flash" width="33" height="33"/>
+        <image name="lock" width="13" height="16"/>
         <image name="refresh" width="9" height="11"/>
         <image name="wallpaper-default" width="480" height="568"/>
         <image name="wallpaper-welcome" width="757" height="568"/>

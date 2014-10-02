@@ -45,8 +45,9 @@
 
 @property (nonatomic, strong) IBOutlet UIProgressView *progress, *pulse;
 @property (nonatomic, strong) IBOutlet UILabel *percent;
-@property (nonatomic, strong) IBOutlet UIView *errorBar, *wallpaper, *splash;
+@property (nonatomic, strong) IBOutlet UIView *errorBar, *wallpaper, *splash, *logo;
 @property (nonatomic, strong) IBOutlet UIGestureRecognizer *navBarTap;
+@property (nonatomic, strong) IBOutlet UIBarButtonItem *lock;
 @property (nonatomic, strong) IBOutlet BRBouncyBurgerButton *burger;
 
 @property (nonatomic, strong) UIScrollView *scrollView;
@@ -122,16 +123,7 @@
     self.foregroundObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillEnterForegroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.appeared && m.wallet) {
-//                if (self.navigationController.presentedViewController) {
-//                    [self.navigationController dismissViewControllerAnimated:YES completion:^{
-//                        //TODO: XXXX require auth
-//                    }];
-//                }
-////                else //TODO: XXXX require auth
-
-                [[BRPeerManager sharedInstance] connect];
-            }
+            if (self.appeared && m.wallet) [[BRPeerManager sharedInstance] connect];
 
             if (jailbroken && m.wallet.balance > 0) {
                 [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
@@ -155,14 +147,18 @@
     self.backgroundObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.appeared && m.wallet) {
+            if (self.appeared && m.wallet) { // lockdown the app
+                m.didAuthenticate = NO;
+                self.navigationItem.titleView = self.logo;
+                self.navigationItem.rightBarButtonItem = self.lock;
+
+                if (self.navigationController.topViewController != self) {
+                    [self.navigationController popToRootViewControllerAnimated:YES];
+                }
 
                 if (self.navigationController.presentedViewController) {
-                    [self.navigationController dismissViewControllerAnimated:YES completion:^{
-                        //TODO: XXXX lock down app
-                    }];
+                    [self.navigationController dismissViewControllerAnimated:YES completion:nil];
                 }
-//                else //TODO: XXXX lock down app
             }
         }];
 
@@ -271,13 +267,15 @@
             self.splash.hidden = YES;
             self.navigationController.navigationBar.hidden = NO;
         }];
-        self.showTips = YES;
 
+        self.showTips = YES;
+        [self unlock:nil];
         return;
     }
 
     self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"burger"];
     self.pageViewController.view.alpha = 1.0;
+    if (m.didAuthenticate) [self unlock:nil];
 
     if ([[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground) {
         [[BRPeerManager sharedInstance] connect];
@@ -587,6 +585,16 @@
     if (self.showTips) self.scrollView.scrollEnabled = NO;
 }
 
+- (IBAction)unlock:(id)sender
+{
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    
+    if (sender && ! m.didAuthenticate && ! [m authenticateWithPrompt:nil]) return;
+    
+    self.navigationItem.titleView = nil;
+    self.navigationItem.rightBarButtonItem = nil;
+}
+
 - (IBAction)connect:(id)sender
 {
     if (! sender && [self.reachability currentReachabilityStatus] == NotReachable) return;
@@ -685,6 +693,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
 // This method can only be a nop if the transition is interactive and not a percentDriven interactive transition.
 - (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext
 {
+    BRWalletManager *m = [BRWalletManager sharedInstance];
     UIView *v = transitionContext.containerView;
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
@@ -725,8 +734,6 @@ viewControllerAfterViewController:(UIViewController *)viewController
          belowSubview:self.navigationController.navigationBar];
         to.view.center = CGPointMake(to.view.center.x, v.frame.size.height*3/2);
 
-        BRWalletManager *m = [BRWalletManager sharedInstance];
-
         [[(id)to viewControllers].firstObject navigationItem].title = nil;
         [[(id)to viewControllers].firstObject navigationItem].leftBarButtonItem.image = nil;
         self.navigationItem.leftBarButtonItem.image = nil;
@@ -758,6 +765,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
             [[BRPeerManager sharedInstance] connect];
         }
         
+        if (m.didAuthenticate) [self unlock:nil];
         [self.navigationController.navigationBar.superview insertSubview:from.view
          belowSubview:self.navigationController.navigationBar];
         [(id)from topViewController].navigationItem.title = nil;

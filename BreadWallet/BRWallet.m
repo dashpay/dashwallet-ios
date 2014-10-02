@@ -277,26 +277,31 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)())seed
 
 #pragma mark - wallet info
 
+// returns the first unused external address
 - (NSString *)receiveAddress
 {
     return [self addressesWithGapLimit:1 internal:NO].lastObject;
 }
 
+// returns the first unused internal address
 - (NSString *)changeAddress
 {
     return [self addressesWithGapLimit:1 internal:YES].lastObject;
 }
 
+// all previously generated internal and external addresses
 - (NSSet *)addresses
 {
     return self.allAddresses;
 }
 
+// NSData objects containing serialized UTXOs
 - (NSArray *)unspentOutputs
 {
     return [self.utxos array];
 }
 
+// BRTransaction objects sorted by date, most recent first
 - (NSArray *)recentTransactions
 {
     //TODO: don't include receive transactions that don't have at least one wallet output >= TX_MIN_OUTPUT_AMOUNT
@@ -514,6 +519,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)())seed
     return NO;
 }
 
+// set the block heights for the given transactions
 - (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes
 {
     BOOL set = NO;
