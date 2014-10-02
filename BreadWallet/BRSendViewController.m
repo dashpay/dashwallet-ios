@@ -788,8 +788,11 @@ fromConnection:(AVCaptureConnection *)connection
     }
 
     if (! self.tx) {
-        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"insufficient funds", nil) message:nil delegate:nil
-          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+        if (m.didAuthenticate || [m authenticateWithPrompt:nil]) {
+            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"insufficient funds", nil) message:nil delegate:nil
+              cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+        }
+        
         [self cancel:nil];
         return;
     }
@@ -805,7 +808,7 @@ fromConnection:(AVCaptureConnection *)connection
         [self cancel:nil];
         return;
     }
-    else if (! [self.tx isSigned]) {  // if there's no error but the tx isn't signed, then the user canceled
+    else if (! [self.tx isSigned]) { // if there's no error but the tx isn't signed, then the user didn't authenticate
         [self cancel:nil];
         return;
     }
