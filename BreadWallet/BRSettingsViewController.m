@@ -65,6 +65,7 @@
     [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
     self.navigationController.delegate = self;
     self.moreTx = ([BRWalletManager sharedInstance].wallet.recentTransactions.count > 5) ? YES : NO;
+    if ([[BRWalletManager sharedInstance] didAuthenticate]) [self unlock:nil];
 }
 
 - (void)viewWillAppear:(BOOL)animated
