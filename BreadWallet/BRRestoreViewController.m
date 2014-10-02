@@ -161,9 +161,12 @@ static NSString *normalize_phrase(NSString *phrase)
         }
 
         if ([s isEqual:@"wipe"]) { // shortcut word to force the wipe option to appear
-            [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-              destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
-             showInView:[[UIApplication sharedApplication] keyWindow]];
+            if ([m authenticateWithPrompt:nil]) {
+                [[[UIActionSheet alloc] initWithTitle:nil delegate:self
+                  cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+                  destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
+                  showInView:[[UIApplication sharedApplication] keyWindow]];
+            }
         }
         else if (incorrect) {
             textView.selectedRange = [[textView.text lowercaseString] rangeOfString:incorrect];
@@ -184,15 +187,21 @@ static NSString *normalize_phrase(NSString *phrase)
               cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
         else if (m.wallet) {
-            if ([phrase isEqual:normalize_phrase(m.seedPhrase)]) {
-                [[[UIActionSheet alloc] initWithTitle:nil delegate:self
-                  cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-                  destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
-                  showInView:[[UIApplication sharedApplication] keyWindow]];
-            }
-            else {
-                [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"backup phrase doesn't match", nil)
-                  delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+            @autoreleasepool {
+                NSString *seedPhrase = m.seedPhrase;
+        
+                if (seedPhrase && [phrase isEqual:normalize_phrase(seedPhrase)]) {
+                    [[[UIActionSheet alloc] initWithTitle:nil delegate:self
+                      cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+                      destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
+                     showInView:[[UIApplication sharedApplication] keyWindow]];
+                
+                }
+                else if (seedPhrase) {
+                    [[[UIAlertView alloc] initWithTitle:nil
+                      message:NSLocalizedString(@"backup phrase doesn't match", nil) delegate:nil
+                      cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+                }
             }
         }
         else {
