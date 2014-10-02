@@ -734,8 +734,14 @@ viewControllerAfterViewController:(UIViewController *)viewController
          belowSubview:self.navigationController.navigationBar];
         to.view.center = CGPointMake(to.view.center.x, v.frame.size.height*3/2);
 
-        [[(id)to viewControllers].firstObject navigationItem].title = nil;
-        [[(id)to viewControllers].firstObject navigationItem].leftBarButtonItem.image = nil;
+        UINavigationItem *item = [[(id)to viewControllers].firstObject navigationItem];
+        UIView *titleView = item.titleView;
+        UIBarButtonItem *rightButton = item.rightBarButtonItem;
+
+        item.title = nil;
+        item.leftBarButtonItem.image = nil;
+        item.titleView = nil;
+        item.rightBarButtonItem = nil;
         self.navigationItem.leftBarButtonItem.image = nil;
         [v addSubview:self.burger];
         [v layoutIfNeeded];
@@ -752,10 +758,11 @@ viewControllerAfterViewController:(UIViewController *)viewController
         } completion:^(BOOL finished) {
             self.pageViewController.view.center = CGPointMake(self.pageViewController.view.center.x,
                                                               v.frame.size.height/2.0);
-            [[(id)to viewControllers].firstObject navigationItem].leftBarButtonItem.image = [UIImage imageNamed:@"x"];
-            [[(id)to viewControllers].firstObject navigationItem].title =
-                [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                 [m localCurrencyStringForAmount:m.wallet.balance]];
+            item.rightBarButtonItem = rightButton;
+            item.titleView = titleView;
+            item.leftBarButtonItem.image = [UIImage imageNamed:@"x"];
+            item.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
+                          [m localCurrencyStringForAmount:m.wallet.balance]];
             [v addSubview:to.view];
             [transitionContext completeTransition:YES];
         }];
