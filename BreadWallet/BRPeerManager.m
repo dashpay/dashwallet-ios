@@ -662,7 +662,7 @@ static const char *dns_seeds[] = {
     if (rescan) {
         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"transaction rejected", nil)
           message:NSLocalizedString(@"Your wallet may be out of sync.\n"
-                                    "This can often be fixed by rescaning the blockchain.", nil) delegate:self
+                                    "This can often be fixed by rescanning the blockchain.", nil) delegate:self
           cancelButtonTitle:NSLocalizedString(@"cancel", nil)
           otherButtonTitles:NSLocalizedString(@"rescan", nil), nil] show];
     }
@@ -1081,7 +1081,7 @@ static const char *dns_seeds[] = {
             return;
         }
 
-        // special case, if a new block is mined while we're rescaning the chain, mark as orphan til we're caught up
+        // special case, if a new block is mined while we're rescanning the chain, mark as orphan til we're caught up
         if (self.lastBlock.height < peer.lastblock && block.height > self.lastBlock.height + 1) {
             NSLog(@"marking new block at height %d as orphan until rescan completes", block.height);
             self.orphans[block.prevBlock] = block;

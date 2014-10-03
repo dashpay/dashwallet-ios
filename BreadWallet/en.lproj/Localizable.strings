@@ -263,9 +263,6 @@
 "recent transactions" = "recent transactions";
 
 /* No comment provided by engineer. */
-"recieved" = "recieved";
-
-/* No comment provided by engineer. */
 "remove fee" = "remove fee";
 
 /* No comment provided by engineer. */
@@ -281,7 +278,7 @@
 "rescan blockchain" = "rescan blockchain";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescaning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescaning can take several minutes)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address.";
@@ -422,4 +419,4 @@
 "you received bitcoin!" = "you received bitcoin!";
 
 /* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescaning the blockchain." = "Your wallet may be out of sync.\nThis can often be fixed by rescaning the blockchain.";
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain.";

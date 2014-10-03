@@ -158,7 +158,7 @@ static NSString *sanitizeString(NSString *s)
                 }
 
                 [self.view addSubview:[[[BRBubbleView
-                 viewWithText:(payment.memo.length > 0 ? payment.memo : NSLocalizedString(@"recieved", nil))
+                 viewWithText:(payment.memo.length > 0 ? payment.memo : NSLocalizedString(@"received", nil))
                  center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
                  popOutAfterDelay:(payment.memo.length > 10 ? 3.0 : 2.0)]];
             }];

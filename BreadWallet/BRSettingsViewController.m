@@ -502,7 +502,7 @@
 
         case 3:
             return NSLocalizedString(@"rescan blockchain if you think you may have missing transactions, "
-                                     "or are having trouble sending (rescaning can take several minutes)", nil);
+                                     "or are having trouble sending (rescanning can take several minutes)", nil);
 
         case 4:
             return NSLocalizedString(@"bitcoin network fees are only optional for high priority transactions "
