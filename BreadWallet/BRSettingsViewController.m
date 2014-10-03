@@ -622,6 +622,9 @@
                 [tableView endUpdates];
             }
             else if (self.transactions.count > 0) {
+                if ([m.wallet amountSentByTransaction:self.transactions[indexPath.row]] > 0 &&
+                    ! m.didAuthenticate && ! [m authenticateWithPrompt:nil]) break;
+            
                 c = [self.storyboard instantiateViewControllerWithIdentifier:@"TxDetailViewController"];
                 [(id)c setTransaction:self.transactions[indexPath.row]];
                 [(id)c setTxDateString:[self dateForTx:self.transactions[indexPath.row]]];
