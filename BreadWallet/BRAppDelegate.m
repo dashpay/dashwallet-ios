@@ -56,9 +56,6 @@
         }
     }
 
-    //TODO: create a BIP and GATT specification for payment protocol over bluetooth LE
-    // https://developer.bluetooth.org/gatt/Pages/default.aspx
-
     //TODO: bitcoin protocol/payment protocol over multipeer connectivity
 
     //TODO: accessibility for the visually impaired
@@ -70,11 +67,6 @@
     //TODO: ask user if they need to sweep to a new wallet when restoring because it was compromised
 
     //TODO: figure out deterministic builds/removing app sigs: http://www.afp548.com/2012/06/05/re-signining-ios-apps/
-
-    // this will notify user if bluetooth is disabled (on 4S and newer devices that support BTLE)
-    //CBCentralManager *cbManager = [[CBCentralManager alloc] initWithDelegate:self queue:dispatch_get_main_queue()];
-
-    //[self centralManagerDidUpdateState:cbManager]; // Show initial state
 
     return YES;
 }
@@ -88,7 +80,9 @@ annotation:(id)annotation
         return NO;
     }
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:BRURLNotification object:nil userInfo:@{@"url":url}];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC/10), dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:BRURLNotification object:nil userInfo:@{@"url":url}];
+    });
     
     return YES;
 }
@@ -180,19 +174,5 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     
     [m connect];
 }
-
-//#pragma mark - CBCentralManagerDelegate
-//
-//- (void)centralManagerDidUpdateState:(CBCentralManager *)cbManager
-//{
-//    switch (cbManager.state) {
-//        case CBCentralManagerStateResetting: NSLog(@"system BT connection momentarily lost."); break;
-//        case CBCentralManagerStateUnsupported: NSLog(@"BT Low Energy not suppoerted."); break;
-//        case CBCentralManagerStateUnauthorized: NSLog(@"BT Low Energy not authorized."); break;
-//        case CBCentralManagerStatePoweredOff: NSLog(@"BT off."); break;
-//        case CBCentralManagerStatePoweredOn: NSLog(@"BT on."); break;
-//        default: NSLog(@"BT State unknown."); break;
-//    }    
-//}
 
 @end

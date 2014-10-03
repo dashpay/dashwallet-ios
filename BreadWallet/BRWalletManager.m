@@ -174,7 +174,7 @@ static NSData *getKeychainData(NSString *key, NSString *authprompt)
          otherButtonTitles:nil] show];
     }
 #if DEBUG
-    else {
+    else if (status != errSecAuthFailed) {
         [[[UIAlertView alloc] initWithTitle:nil
           message:[NSString stringWithFormat:@"SecItemCopyMatching error status %d", (int)status] delegate:nil
           cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];

@@ -38,7 +38,8 @@
 @interface BRReceiveViewController ()
 
 @property (nonatomic, strong) BRBubbleView *tipView;
-@property (nonatomic, assign) BOOL showTips, updated;
+@property (nonatomic, assign) BOOL showTips;
+@property (nonatomic, strong) id protectedObserver;
 
 @property (nonatomic, strong) IBOutlet UILabel *label;
 @property (nonatomic, strong) IBOutlet UIButton *addressButton;
@@ -52,22 +53,15 @@
 {
     [super viewDidLoad];
 
+    self.protectedObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationProtectedDataDidBecomeAvailable object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
+            [self updateAddress];
+        }];
+
+    [self.addressButton setTitle:nil forState:UIControlStateNormal];
     self.addressButton.titleLabel.adjustsFontSizeToFitWidth = YES;
     [self updateAddress];
-}
-
-- (void)viewWillAppear:(BOOL)animated
-{
-    [super viewWillAppear:animated];
-
-    [self updateAddress];
-}
-
-- (void)viewDidAppear:(BOOL)animated
-{
-    [super viewDidAppear:animated];
-
-    if (! self.updated) [self performSelector:@selector(updateAddress) withObject:nil afterDelay:0.1];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -75,6 +69,11 @@
     [self hideTips];
     
     [super viewWillDisappear:animated];
+}
+
+- (void)dealloc
+{
+    if (self.protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.protectedObserver];
 }
 
 - (void)updateAddress
@@ -98,7 +97,6 @@
         self.qrView.image = [UIImage imageWithCGImage:UIGraphicsGetImageFromCurrentImageContext().CGImage scale:1.0
                              orientation:UIImageOrientationDownMirrored];
         [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
-        self.updated = YES;
     }
 
     UIGraphicsEndImageContext();
