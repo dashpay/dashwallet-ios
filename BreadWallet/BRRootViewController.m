@@ -606,10 +606,13 @@
 {
     if ([self nextTip]) return;
 
-    if (self.errorBar.hidden) {
-        [self tip:sender];
+    if (! self.errorBar.hidden) {
+        [self connect:sender];
     }
-    else [self connect:sender];
+    else if (! [[BRWalletManager sharedInstance] didAuthenticate]) {
+        [self unlock:sender];
+    }
+    else [self tip:sender];
 }
 
 #pragma mark - UIPageViewControllerDataSource
