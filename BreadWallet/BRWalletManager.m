@@ -99,6 +99,10 @@ static BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
                             (__bridge id)kSecAttrAccount:key};
 
     if (data && (access == NULL || error)) {
+#if DEBUG
+        [[[UIAlertView alloc] initWithTitle:nil message:[NSString stringWithFormat:@"SecAccessControlRef: %@", error]
+          delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+#endif
         NSLog(@"SecAccessControlRef: %@", error);
         return NO;
     }
@@ -115,6 +119,11 @@ static BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
         
         if (status == noErr) return YES;
         NSLog(@"SecItemAdd error status %d", (int)status);
+#if DEBUG
+        [[[UIAlertView alloc] initWithTitle:nil
+          message:[NSString stringWithFormat:@"SecItemAdd error status %d", (int)status] delegate:nil
+          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+#endif
         return NO;
     }
     
@@ -123,6 +132,11 @@ static BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
 
         if (status == noErr) return YES;
         NSLog(@"SecItemDelete error status %d", (int)status);
+#if DEBUG
+        [[[UIAlertView alloc] initWithTitle:nil
+          message:[NSString stringWithFormat:@"SecItemDelete error status %d", (int)status] delegate:nil
+          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+#endif
         return NO;
     }
 
@@ -132,6 +146,11 @@ static BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
     
     if (status == noErr) return YES;
     NSLog(@"SecItemUpdate error status %d", (int)status);
+#if DEBUG
+    [[[UIAlertView alloc] initWithTitle:nil
+      message:[NSString stringWithFormat:@"SecItemUpdate error status %d", (int)status] delegate:nil
+      cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+#endif
     return NO;
 }
 
@@ -154,6 +173,13 @@ static NSData *getKeychainData(NSString *key, NSString *authprompt)
                                    nil) delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
          otherButtonTitles:nil] show];
     }
+#if DEBUG
+    else {
+        [[[UIAlertView alloc] initWithTitle:nil
+          message:[NSString stringWithFormat:@"SecItemCopyMatching error status %d", (int)status] delegate:nil
+          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+    }
+#endif
     
     NSLog(@"SecItemCopyMatching error status %d", (int)status);
     return nil;
