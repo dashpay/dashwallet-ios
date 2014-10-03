@@ -27,6 +27,7 @@
 #import "NSString+Base58.h"
 #import "NSData+Hash.h"
 #import "NSMutableData+Bitcoin.h"
+#import "ccMemory.h"
 #import <CommonCrypto/CommonCrypto.h>
 #import <openssl/ecdsa.h>
 #import <openssl/obj_mac.h>
@@ -70,15 +71,15 @@ static void salsa20_8(uint32_t b[16])
 
 static void blockmix_salsa8(uint64_t *dest, const uint64_t *src, uint64_t *b, uint32_t r)
 {
-    memcpy(b, &src[(2*r - 1)*8], 64);
+    CC_XMEMCPY(b, &src[(2*r - 1)*8], 64);
 
     for (uint32_t i = 0; i < 2*r; i += 2) {
         for (uint32_t j = 0; j < 8; j++) b[j] ^= src[i*8 + j];
         salsa20_8((uint32_t *)b);
-        memcpy(&dest[i*4], b, 64);
+        CC_XMEMCPY(&dest[i*4], b, 64);
         for (uint32_t j = 0; j < 8; j++) b[j] ^= src[i*8 + 8 + j];
         salsa20_8((uint32_t *)b);
-        memcpy(&dest[i*4 + r*8], b, 64);
+        CC_XMEMCPY(&dest[i*4 + r*8], b, 64);
     }
 }
 
@@ -87,7 +88,7 @@ static NSData *scrypt(NSData *password, NSData *salt, int64_t n, uint32_t r, uin
 {
     NSMutableData *d = [NSMutableData secureDataWithLength:length];
     uint8_t b[128*r*p];
-    uint64_t x[16*r], y[16*r], z[8], *v = OPENSSL_malloc(128*r*(int)n), m;
+    uint64_t x[16*r], y[16*r], z[8], *v = CC_XMALLOC(128*r*(int)n), m;
 
     CCKeyDerivationPBKDF(kCCPBKDF2, password.bytes, password.length, salt.bytes, salt.length, kCCPRFHmacAlgSHA256, 1,
                          b, sizeof(b));
@@ -98,9 +99,9 @@ static NSData *scrypt(NSData *password, NSData *salt, int64_t n, uint32_t r, uin
         }
 
         for (uint64_t j = 0; j < n; j += 2) {
-            memcpy(&v[j*(16*r)], x, 128*r);
+            CC_XMEMCPY(&v[j*(16*r)], x, 128*r);
             blockmix_salsa8(y, x, z, r);
-            memcpy(&v[(j + 1)*(16*r)], y, 128*r);
+            CC_XMEMCPY(&v[(j + 1)*(16*r)], y, 128*r);
             blockmix_salsa8(x, y, z, r);
         }
 
@@ -121,13 +122,13 @@ static NSData *scrypt(NSData *password, NSData *salt, int64_t n, uint32_t r, uin
     CCKeyDerivationPBKDF(kCCPBKDF2, password.bytes, password.length, b, sizeof(b), kCCPRFHmacAlgSHA256, 1,
                          d.mutableBytes, d.length);
 
-    OPENSSL_cleanse(b, sizeof(b));
-    OPENSSL_cleanse(x, sizeof(x));
-    OPENSSL_cleanse(y, sizeof(y));
-    OPENSSL_cleanse(z, sizeof(z));
-    OPENSSL_cleanse(v, 128*r*(int)n);
-    OPENSSL_free(v);
-    OPENSSL_cleanse(&m, sizeof(m));
+    CC_XZEROMEM(b, sizeof(b));
+    CC_XZEROMEM(x, sizeof(x));
+    CC_XZEROMEM(y, sizeof(y));
+    CC_XZEROMEM(z, sizeof(z));
+    CC_XZEROMEM(v, 128*r*(int)n);
+    CC_XFREE(v, 28*r*(int)n);
+    CC_XZEROMEM(&m, sizeof(m));
     return d;
 }
 

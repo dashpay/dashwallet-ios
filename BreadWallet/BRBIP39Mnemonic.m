@@ -27,8 +27,8 @@
 #import "NSString+Base58.h"
 #import "NSData+Hash.h"
 #import "NSMutableData+Bitcoin.h"
+#import "ccMemory.h"
 #import <CommonCrypto/CommonKeyDerivation.h>
-#import <openssl/crypto.h>
 
 #define WORDS @"BIP39EnglishWords"
 
@@ -66,7 +66,7 @@
         [a addObject:words[(x >> (sizeof(x)*8 - (11 + ((i*11) % 8)))) % n]];
     }
 
-    OPENSSL_cleanse(&x, sizeof(x));
+    CC_XZEROMEM(&x, sizeof(x));
     return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (CFArrayRef)a, CFSTR(" ")));
 }
 
@@ -115,9 +115,9 @@
         return nil;
     }
 
-    OPENSSL_cleanse(&x, sizeof(x));
-    OPENSSL_cleanse(&y, sizeof(y));
-    OPENSSL_cleanse(&b, sizeof(b));
+    CC_XZEROMEM(&x, sizeof(x));
+    CC_XZEROMEM(&y, sizeof(y));
+    CC_XZEROMEM(&b, sizeof(b));
     return d;
 }
 
