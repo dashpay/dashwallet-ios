@@ -39,7 +39,6 @@
 #import <netdb.h>
 
 #define FIXED_PEERS          @"FixedPeers"
-#define MAX_CONNECTIONS      3
 #define NODE_NETWORK         1  // services value indicating a node offers full blocks, not just headers
 #define PROTOCOL_TIMEOUT     30.0
 #define MAX_CONNECT_FAILURES 20 // notify user of network problems after this many connect failures in a row
@@ -204,10 +203,10 @@ static const char *dns_seeds[] = {
 
 - (NSMutableOrderedSet *)peers
 {
-    if (_peers.count >= MAX_CONNECTIONS) return _peers;
+    if (_peers.count >= PEER_MAX_CONNECTIONS) return _peers;
 
     @synchronized(self) {
-        if (_peers.count >= MAX_CONNECTIONS) return _peers;
+        if (_peers.count >= PEER_MAX_CONNECTIONS) return _peers;
         _peers = [NSMutableOrderedSet orderedSet];
 
         NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
@@ -219,7 +218,7 @@ static const char *dns_seeds[] = {
             }
         }];
 
-        if (_peers.count < MAX_CONNECTIONS) {
+        if (_peers.count < PEER_MAX_CONNECTIONS) {
             for (int i = 0; i < sizeof(dns_seeds)/sizeof(*dns_seeds); i++) { // DNS peer discovery
                 struct hostent *h = gethostbyname(dns_seeds[i]);
 
@@ -236,7 +235,7 @@ static const char *dns_seeds[] = {
             [self sortPeers];
             return _peers;
 #endif
-            if (_peers.count < MAX_CONNECTIONS) {
+            if (_peers.count < PEER_MAX_CONNECTIONS) {
                 // if DNS peer discovery fails, fall back on a hard coded list of peers
                 // hard coded list is taken from the satoshi client, values need to be byte swapped to be host native
                 for (NSNumber *address in [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
@@ -420,13 +419,13 @@ static const char *dns_seeds[] = {
             return ([obj status] == BRPeerStatusDisconnected) ? YES : NO;
         }]];
 
-        if (self.connectedPeers.count >= MAX_CONNECTIONS) return; // we're already connected to MAX_CONNECTIONS peers
+        if (self.connectedPeers.count >= PEER_MAX_CONNECTIONS) return; //already connected to PEER_MAX_CONNECTIONS peers
 
         NSMutableOrderedSet *peers = [NSMutableOrderedSet orderedSetWithOrderedSet:self.peers];
 
         if (peers.count > 100) [peers removeObjectsInRange:NSMakeRange(100, peers.count - 100)];
 
-        while (peers.count > 0 && self.connectedPeers.count < MAX_CONNECTIONS) {
+        while (peers.count > 0 && self.connectedPeers.count < PEER_MAX_CONNECTIONS) {
             // pick a random peer biased towards peers with more recent timestamps
             BRPeer *p = peers[(NSUInteger)(pow(lrand48() % peers.count, 2)/peers.count)];
 
@@ -877,7 +876,7 @@ static const char *dns_seeds[] = {
 
     if (peers.count > 1 && peers.count < 1000) { // peer relaying is complete when we receive fewer than 1000
         // this is a good time to remove unconfirmed tx that dropped off the network
-        if (self.peerCount == MAX_CONNECTIONS && self.lastBlockHeight >= self.downloadPeer.lastblock) {
+        if (self.peerCount == PEER_MAX_CONNECTIONS && self.lastBlockHeight >= self.downloadPeer.lastblock) {
             [self removeUnrelayedTransactions];
         }
 

@@ -31,6 +31,8 @@
 #define BRPeerManagerSyncFailedNotification   @"BRPeerManagerSyncFailedNotification"
 #define BRPeerManagerTxStatusNotification     @"BRPeerManagerTxStatusNotification"
 
+#define PEER_MAX_CONNECTIONS 3
+
 @class BRTransaction;
 
 @interface BRPeerManager : NSObject <BRPeerDelegate, UIAlertViewDelegate>
