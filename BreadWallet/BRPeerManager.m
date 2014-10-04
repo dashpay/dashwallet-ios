@@ -590,7 +590,6 @@ static const char *dns_seeds[] = {
 
 - (void)syncTimeout
 {
-    //BUG: XXXX sync can stall if download peer continues to relay tx but not blocks
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
 
     if (now - self.lastRelayTime < PROTOCOL_TIMEOUT) { // the download peer relayed something in time, so restart timer
@@ -862,7 +861,6 @@ static const char *dns_seeds[] = {
 - (void)peer:(BRPeer *)peer relayedPeers:(NSArray *)peers
 {
     NSLog(@"%@:%d relayed %d peer(s)", peer.host, peer.port, (int)peers.count);
-    if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
     [self.peers addObjectsFromArray:peers];
     [self.peers minusSet:self.misbehavinPeers];
     [self sortPeers];
@@ -893,7 +891,6 @@ static const char *dns_seeds[] = {
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
     NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, transaction.txHash);
-    if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
 
     if ([m.wallet registerTransaction:transaction]) {
         self.publishedTx[transaction.txHash] = transaction;
@@ -976,8 +973,6 @@ static const char *dns_seeds[] = {
 
 - (void)peer:(BRPeer *)peer relayedBlock:(BRMerkleBlock *)block
 {
-    if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
-
     // ignore block headers that are newer than one week before earliestKeyTime (headers have 0 totalTransactions)
     if (block.totalTransactions == 0 && block.timestamp + 7*24*60*60 > self.earliestKeyTime) return;
 
@@ -1055,6 +1050,7 @@ static const char *dns_seeds[] = {
         self.blocks[block.blockHash] = block;
         self.lastBlock = block;
         [self setBlockHeight:block.height forTxHashes:block.txHashes];
+        if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
     }
     else if (self.blocks[block.blockHash] != nil) { // we already have the block (or at least the header)
         if ((block.height % 500) == 0 || block.txHashes.count > 0 || block.height > peer.lastblock) {
