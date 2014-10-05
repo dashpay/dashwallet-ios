@@ -29,9 +29,6 @@
 "%@ to:%@" = "%1$@ to:%2$@";
 
 /* No comment provided by engineer. */
-"%@ within wallet" = "%@ within wallet";
-
-/* No comment provided by engineer. */
 "%d confirmations" = "%d confirmations";
 
 /* No comment provided by engineer. */
@@ -257,7 +254,7 @@
 "Receive bitcoins at this address: %@" = "Receive bitcoins at this address: %@";
 
 /* No comment provided by engineer. */
-"received  " = "received  ";
+"received" = "received";
 
 /* No comment provided by engineer. */
 "recent transactions" = "recent transactions";
@@ -398,7 +395,7 @@
 "unverified" = "unverified";
 
 /* No comment provided by engineer. */
-"waiting for confirmation" = "waiting for confirmation";
+"verified, waiting for confirmation" = "verified, waiting for confirmation";
 
 /* No comment provided by engineer. */
 "wallet address" = "wallet address";

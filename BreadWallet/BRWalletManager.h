@@ -29,12 +29,15 @@
 #define BRWalletManagerSeedChangedNotification @"BRWalletManagerSeedChangedNotification"
 
 @class BRWallet, BRTransaction;
+@protocol BRKeySequence;
 
 @interface BRWalletManager : NSObject<UIAlertViewDelegate>
 
 @property (nonatomic, readonly) BRWallet *wallet;
-@property (nonatomic, copy) NSString *seedPhrase; // requesting seedPhrase will trigger authentication
+@property (nonatomic, readonly) id<BRKeySequence> sequence;
+@property (nonatomic, readonly) NSData *masterPublicKey; // master public key used to generate wallet addresses
 @property (nonatomic, readonly) NSData *seed; // requesting seed will trigger authentication
+@property (nonatomic, copy) NSString *seedPhrase; // requesting seedPhrase will trigger authentication
 @property (nonatomic, readonly) NSTimeInterval seedCreationTime; // interval since refrence date, 00:00:00 01/01/01 GMT
 @property (nonatomic, readonly, getter=isPasscodeEnabled) BOOL passcodeEnabled; // true if device passcode is enabled
 @property (nonatomic, assign) BOOL didAuthenticate; // true if the user authenticated after this was last set to false

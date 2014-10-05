@@ -261,6 +261,14 @@
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
     if ([[UIApplication sharedApplication] isProtectedDataAvailable] && ! m.wallet) {
+        if (m.masterPublicKey && ! m.passcodeEnabled) {
+            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"turn device passcode on", nil)
+              message:NSLocalizedString(@"\nA device passcode is needed to safeguard your wallet. Go to settings and "
+                                        "turn passcode on to continue.", nil)
+              delegate:self cancelButtonTitle:nil otherButtonTitles:NSLocalizedString(@"close app", nil), nil] show];
+              return;
+        }
+        
         [self.navigationController
         presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"] animated:NO
         completion:^{
@@ -300,16 +308,18 @@
         [self.navigationController.navigationBar addGestureRecognizer:self.navBarTap];
     }
 
-    self.splash.hidden = YES;
-    self.navigationController.navigationBar.hidden = NO;
-    if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
+    if ([[BRWalletManager sharedInstance] wallet]) {
+        self.splash.hidden = YES;
+        self.navigationController.navigationBar.hidden = NO;
+        if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
 
-    if (self.navigationController.visibleViewController == self) {
-        [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
-        [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
+        if (self.navigationController.visibleViewController == self) {
+            [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
+            [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
 
-        if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
-        [self showBackupDialogIfNeeded];
+            if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
+            [self showBackupDialogIfNeeded];
+        }
     }
 
     [super viewDidAppear:animated];
@@ -572,6 +582,8 @@
         return;
     }
 
+    // BUG: XXXX don't show balance tip while "syncing..." is shown
+    
     UINavigationBar *b = self.navigationController.navigationBar;
 
     self.tipView = [BRBubbleView viewWithText:BALANCE_TIP

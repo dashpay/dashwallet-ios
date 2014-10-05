@@ -217,7 +217,7 @@
                         detailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"seen by %d of %d peers", nil),
                                             relayCount, peerCount];
                     }
-                    else detailLabel.text = NSLocalizedString(@"waiting for confirmation", nil);
+                    else detailLabel.text = NSLocalizedString(@"verified, waiting for confirmation", nil);
                     
                     break;
                     

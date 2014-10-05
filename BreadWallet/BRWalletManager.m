@@ -287,11 +287,15 @@ static NSData *getKeychainData(NSString *key, NSString *authprompt)
     if (getKeychainData(SEED_KEY, nil)) { // upgrade from old non-authenticated keychain
         NSLog(@"upgrading to authenticated keychain scheme");
         setKeychainData([self.sequence masterPublicKeyFromSeed:self.seed], MASTER_PUBKEY_KEY, NO);
-        setKeychainData(getKeychainData(MNEMONIC_KEY, nil), MNEMONIC_KEY, YES);
-        setKeychainData(nil, SEED_KEY, NO);
-        setKeychainData(nil, PIN_KEY, NO);
-        setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
-        setKeychainData(nil, PIN_FAIL_HEIGHT_KEY, NO);
+        self.didAuthenticate = NO;
+
+        if (setKeychainData(getKeychainData(MNEMONIC_KEY, nil), MNEMONIC_KEY, YES)) {
+            setKeychainData(nil, SEED_KEY, NO);
+            setKeychainData(nil, PIN_KEY, NO);
+            setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
+            setKeychainData(nil, PIN_FAIL_HEIGHT_KEY, NO);
+        }
+        else if (! self.passcodeEnabled) return nil;
     }
     
     if (! self.masterPublicKey) return _wallet;
@@ -338,6 +342,7 @@ static NSData *getKeychainData(NSString *key, NSString *authprompt)
     return _sequence;
 }
 
+// master public key used to generate wallet addresses
 - (NSData *)masterPublicKey
 {
     return getKeychainData(MASTER_PUBKEY_KEY, nil);
