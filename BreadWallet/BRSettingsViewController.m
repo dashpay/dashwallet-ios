@@ -44,7 +44,7 @@
 @property (nonatomic, strong) NSArray *transactions;
 @property (nonatomic, assign) BOOL moreTx;
 @property (nonatomic, strong) NSMutableDictionary *txDates;
-@property (nonatomic, strong) id balanceObserver, txStatusObserver;
+@property (nonatomic, strong) id balanceObserver, txStatusObserver, backgroundObserver;
 @property (nonatomic, strong) UIImageView *wallpaper;
 @property (nonatomic, strong) UITableViewController *selectorController;
 @property (nonatomic, strong) NSArray *selectorOptions;
@@ -65,6 +65,15 @@
     [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
     self.navigationController.delegate = self;
     self.moreTx = ([BRWalletManager sharedInstance].wallet.recentTransactions.count > 5) ? YES : NO;
+
+    self.backgroundObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
+            self.navigationItem.titleView = self.logo;
+            self.navigationItem.rightBarButtonItem = self.lock;
+            [self.tableView reloadData];
+        }];
+
     if ([[BRWalletManager sharedInstance] didAuthenticate]) [self unlock:nil];
 }
 
@@ -141,6 +150,7 @@
     if (self.navigationController.delegate == self) self.navigationController.delegate = nil;
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
     if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
+    if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
 }
 
 - (void)setBackgroundForCell:(UITableViewCell *)cell tableView:(UITableView *)tableView indexPath:(NSIndexPath *)path

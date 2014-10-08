@@ -43,7 +43,7 @@
 @property (nonatomic, strong) NSCharacterSet *charset;
 @property (nonatomic, strong) UILabel *swapLeftLabel, *swapRightLabel;
 @property (nonatomic, assign) BOOL swapped;
-@property (nonatomic, strong) id balanceObserver;
+@property (nonatomic, strong) id balanceObserver, backgroundObserver;
 
 @end
 
@@ -83,11 +83,18 @@
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
         }];
+    
+    self.backgroundObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
+            self.navigationItem.titleView = self.logo;
+        }];
 }
 
 - (void)dealloc
 {
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
+    if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -135,7 +142,6 @@
     if (sender && ! m.didAuthenticate && ! [m authenticateWithPrompt:nil]) return;
     
     self.navigationItem.titleView = nil;
-    self.navigationItem.rightBarButtonItem = nil;
 }
 
 - (IBAction)number:(id)sender

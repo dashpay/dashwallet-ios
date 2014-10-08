@@ -832,7 +832,7 @@ fromConnection:(AVCaptureConnection *)connection
             [self cancel:nil];
         }
         else {
-            //TODO: XXXX show full screen sent dialog with tx info, "you sent b10,000 to bob"
+            //TODO: show full screen sent dialog with tx info, "you sent b10,000 to bob"
             [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
                                      center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
                                     popIn] popOutAfterDelay:2.0]];

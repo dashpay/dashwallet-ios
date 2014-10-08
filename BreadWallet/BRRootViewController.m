@@ -105,6 +105,14 @@
     self.urlObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRURLNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
+            if (self.navigationController.topViewController != self) {
+                [self.navigationController popToRootViewControllerAnimated:YES];
+            }
+            
+            if (self.navigationController.presentedViewController) {
+                [self.navigationController dismissViewControllerAnimated:YES completion:nil];
+            }
+        
             BRSendViewController *c = self.sendViewController;
         
             [self.pageViewController setViewControllers:@[c] direction:UIPageViewControllerNavigationDirectionForward
@@ -114,6 +122,14 @@
     self.fileObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRFileNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
+            if (self.navigationController.topViewController != self) {
+                [self.navigationController popToRootViewControllerAnimated:YES];
+            }
+            
+            if (self.navigationController.presentedViewController) {
+                [self.navigationController dismissViewControllerAnimated:YES completion:nil];
+            }
+        
             BRSendViewController *c = self.sendViewController;
 
             [self.pageViewController setViewControllers:@[c] direction:UIPageViewControllerNavigationDirectionForward
@@ -150,15 +166,9 @@
             if (self.appeared && m.wallet) { // lockdown the app
                 m.didAuthenticate = NO;
                 self.navigationItem.titleView = self.logo;
+                self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"burger"];
                 self.navigationItem.rightBarButtonItem = self.lock;
-
-                if (self.navigationController.topViewController != self) {
-                    [self.navigationController popToRootViewControllerAnimated:YES];
-                }
-
-                if (self.navigationController.presentedViewController) {
-                    [self.navigationController dismissViewControllerAnimated:YES completion:nil];
-                }
+                self.pageViewController.view.alpha = 1.0;
             }
         }];
 
@@ -197,6 +207,7 @@
             if (p.lastBlockHeight + 2016/2 < p.estimatedBlockHeight &&
                 m.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
                 self.percent.hidden = NO;
+                //BUG: XXXX this doesn't show if app is locked
                 self.navigationItem.title = NSLocalizedString(@"syncing...", nil);
             }
         }];
@@ -245,7 +256,6 @@
 #endif
 
     if (! [[UIApplication sharedApplication] isProtectedDataAvailable] || m.wallet) {
-        // TODO: XXXX require auth
         self.splash.hidden = YES;
         self.navigationController.navigationBar.hidden = NO;
         [[UIApplication sharedApplication] setStatusBarHidden:NO];
@@ -311,6 +321,7 @@
     if ([[BRWalletManager sharedInstance] wallet]) {
         self.splash.hidden = YES;
         self.navigationController.navigationBar.hidden = NO;
+        self.pageViewController.view.alpha = 1.0;
         if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
 
         if (self.navigationController.visibleViewController == self) {
@@ -583,7 +594,6 @@
     }
 
     // BUG: XXXX don't show balance tip while "syncing..." is shown
-    
     UINavigationBar *b = self.navigationController.navigationBar;
 
     self.tipView = [BRBubbleView viewWithText:BALANCE_TIP
