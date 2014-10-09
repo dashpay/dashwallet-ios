@@ -1820,15 +1820,17 @@ Use it to restore your wallet on another device if this one is ever lost or brok
                                         <string key="content">
                                         
                                 %no-eye%
-
       DO NOT let anyone see your backup
       phrase or they can spend your bitcoins.
 
-
                                 %no-shot%
-
       DO NOT take a screenshot. Screenshots
       are visible to other apps and devices.
+
+                                %no-key%
+      DO NOT type your backup phrase into
+      password managers or elsewhere. Other
+      devices may be infected.
 
 
 </string>
@@ -1995,7 +1997,7 @@ it and you may lose your bitcoins forever.</string>
                                             <constraint firstAttribute="height" constant="0.5" id="l2b-EL-NOY"/>
                                         </constraints>
                                     </view>
-                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.0" contentMode="left" misplaced="YES" text="" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="280" translatesAutoresizingMaskIntoConstraints="NO" id="dz8-9E-hrc">
+                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.0" contentMode="left" text="" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="280" translatesAutoresizingMaskIntoConstraints="NO" id="dz8-9E-hrc">
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                                         <nil key="highlightedColor"/>

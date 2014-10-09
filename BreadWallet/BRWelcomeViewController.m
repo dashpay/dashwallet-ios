@@ -135,7 +135,8 @@
     [self.showButton addTarget:self action:@selector(show:) forControlEvents:UIControlEventTouchUpInside];
     
     if (self.warningLabel) {
-        NSTextAttachment *noEye = [NSTextAttachment new], *noShot = [NSTextAttachment new];
+        NSTextAttachment *noEye = [NSTextAttachment new], *noShot = [NSTextAttachment new],
+                         *noKey = [NSTextAttachment new];
         NSMutableAttributedString *s = [[NSMutableAttributedString alloc]
                                         initWithAttributedString:self.warningLabel.attributedText];
     
@@ -145,6 +146,9 @@
         noShot.image = [UIImage imageNamed:@"no-shot"];
         [s replaceCharactersInRange:[s.string rangeOfString:@"%no-shot%"]
          withAttributedString:[NSAttributedString attributedStringWithAttachment:noShot]];
+        noKey.image = [UIImage imageNamed:@"no-key"];
+        [s replaceCharactersInRange:[s.string rangeOfString:@"%no-key%"]
+         withAttributedString:[NSAttributedString attributedStringWithAttachment:noKey]];
         self.warningLabel.attributedText = s;
     }
 }

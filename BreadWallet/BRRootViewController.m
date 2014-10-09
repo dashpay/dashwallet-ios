@@ -290,6 +290,7 @@
             self.navigationController.navigationBar.hidden = NO;
         }];
 
+        m.didAuthenticate = YES;
         self.showTips = YES;
         [self unlock:nil];
         return;

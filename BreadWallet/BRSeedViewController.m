@@ -92,6 +92,54 @@
     self.doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"done", nil)
                        style:UIBarButtonItemStylePlain target:self action:@selector(done:)];
     
+    @autoreleasepool {  // @autoreleasepool ensures sensitive data will be dealocated immediately
+        self.seedLabel.text = self.seedPhrase;
+        self.seedPhrase = nil;
+    }
+}
+
+- (void)dealloc
+{
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
+    if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
+    if (self.screenshotObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.screenshotObserver];
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+ 
+    NSTimeInterval delay = WRITE_TOGGLE_DELAY;
+ 
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
+ 
+    // remove done button if we're not the root of the nav stack
+    if (self.navigationController.viewControllers.firstObject != self) {
+        self.toolbar.hidden = YES;
+    }
+    else delay *= 2; // extra delay before showing toggle when starting a new wallet
+    
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:WALLET_NEEDS_BACKUP_KEY]) {
+        [self performSelector:@selector(showWriteToggle) withObject:nil afterDelay:delay];
+    }
+    
+    [UIView animateWithDuration:0.1 animations:^{
+        self.seedLabel.alpha = 1.0;
+    }];
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+
+    self.resignActiveObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
+            if (self.navigationController.viewControllers.firstObject != self) {
+                [self.navigationController popViewControllerAnimated:NO];
+            }
+        }];
+    
     //TODO: make it easy to create a new wallet and transfer balance
     self.screenshotObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationUserDidTakeScreenshotNotification
@@ -110,52 +158,6 @@
                   delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
             }
         }];
-    
-    
-    @autoreleasepool {  // @autoreleasepool ensures sensitive data will be dealocated immediately
-        self.seedLabel.text = self.seedPhrase;
-        self.seedPhrase = nil;
-    }
-}
-
-- (void)dealloc
-{
-    [NSObject cancelPreviousPerformRequestsWithTarget:self];
-    if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
-    if (self.screenshotObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.screenshotObserver];
-}
-
-- (void)viewWillAppear:(BOOL)animated
-{
-    [super viewWillAppear:animated];
- 
-    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
- 
-    // remove done button if we're not the root of the nav stack
-    if (self.navigationController.viewControllers.firstObject != self) {
-        self.toolbar.hidden = YES;
-    }
-    
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:WALLET_NEEDS_BACKUP_KEY]) {
-        [self performSelector:@selector(showWriteToggle) withObject:nil afterDelay:WRITE_TOGGLE_DELAY];
-    }
-    
-    [UIView animateWithDuration:0.1 animations:^{
-        self.seedLabel.alpha = 1.0;
-    }];
-}
-
-- (void)viewDidAppear:(BOOL)animated
-{
-    [super viewDidAppear:animated];
-
-    self.resignActiveObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
-         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.navigationController.viewControllers.firstObject != self) {
-                [self.navigationController popViewControllerAnimated:NO];
-            }
-        }];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -165,6 +167,8 @@
     // don't leave the seed phrase laying around in memory any longer than necessary
     self.seedLabel.text = @"";
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
+    if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
+    if (self.screenshotObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.screenshotObserver];
 }
 
 - (void)showWriteToggle

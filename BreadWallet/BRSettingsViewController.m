@@ -670,7 +670,9 @@
                     [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
                       message:NSLocalizedString(@"\nDO NOT let anyone see your backup phrase or they can spend your "
                                                 "bitcoins.\n\nDO NOT take a screenshot. Screenshots are visible to "
-                                                "other apps and devices.\n", nil) delegate:self
+                                                "other apps and devices.\n\nDO NOT type your backup phrase into "
+                                                "password managers or elsewhere. Other devices may be infected.\n",
+                                                nil) delegate:self
                       cancelButtonTitle:NSLocalizedString(@"cancel", nil)
                       otherButtonTitles:NSLocalizedString(@"show", nil), nil] show];
                     break;
