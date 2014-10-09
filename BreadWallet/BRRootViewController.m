@@ -190,6 +190,9 @@
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
 
+            // TODO: XXXX show new tx indicator if appropriate
+            // TODO: XXXX update receive address whenever it changes if we're not syncing
+
             // update receive qr code if it's not on screen
             if (self.pageViewController.viewControllers.lastObject != self.receiveViewController) {
                 [self.receiveViewController updateAddress];
@@ -220,6 +223,7 @@
             self.percent.hidden = YES;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
+            // TODO: XXXX update receive address if needed
         }];
     
     self.syncFailedObserver =
@@ -327,7 +331,8 @@
         if (self.navigationController.visibleViewController == self) {
             [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
             [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
-
+            
+            //TODO: XXXX add swipe gesture recognizers to advance tip when scroll is disabled
             if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
             [self showBackupDialogIfNeeded];
         }

@@ -100,8 +100,8 @@
                 [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
                   message:NSLocalizedString(@"Screenshots are visible to other apps and devices. "
                                             "Generate a new backup phrase and keep it secret.", nil)
-                  delegate:self cancelButtonTitle:NSLocalizedString(@"ignore", nil)
-                  otherButtonTitles:NSLocalizedString(@"new phrase", nil), nil] show];
+                  delegate:self cancelButtonTitle:nil otherButtonTitles:NSLocalizedString(@"new phrase", nil), nil]
+                 show];
             }
             else {
                 [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
