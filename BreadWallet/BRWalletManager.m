@@ -715,9 +715,11 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
     if ([string hasPrefix:@"<"]) string = [string substringFromIndex:1];
 
     int64_t local = ([[self.localFormat numberFromString:string] doubleValue] + DBL_EPSILON)*
-                     pow(10.0, self.localFormat.maximumFractionDigits);
+                     pow(10.0, self.localFormat.maximumFractionDigits),
+            overflowbits = 0;
 
     if (local == 0) return 0;
+    while (llabs(local) + 1 > INT64_MAX/SATOSHIS) local /= 2, overflowbits++; // make sure we won't overflow an int64_t
 
     int64_t min = llabs(local)*SATOSHIS/
                   (int64_t)(self.localCurrencyPrice*pow(10.0, self.localFormat.maximumFractionDigits)) + 1,
@@ -725,9 +727,10 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
                   (int64_t)(self.localCurrencyPrice*pow(10.0, self.localFormat.maximumFractionDigits)) - 1,
             amount = (min + max)/2, p = 10;
 
+    while (overflowbits > 0) local *= 2, min *= 2, max *= 2, amount *= 2, overflowbits--;
     if (amount >= MAX_MONEY) return (local < 0) ? -MAX_MONEY : MAX_MONEY;
 
-    while ((amount/p)*p >= min) { // find lowest decimal precision that still matches local currency string
+    while ((amount/p)*p >= min && p <= INT64_MAX/10) { // find lowest decimal precision matching local currency string
         p *= 10;
     }
 
