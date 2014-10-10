@@ -45,6 +45,7 @@
 @property (nonatomic, assign) BOOL moreTx;
 @property (nonatomic, strong) NSMutableDictionary *txDates;
 @property (nonatomic, strong) id balanceObserver, txStatusObserver, backgroundObserver;
+@property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 @property (nonatomic, strong) UIImageView *wallpaper;
 @property (nonatomic, strong) UITableViewController *selectorController;
 @property (nonatomic, strong) NSArray *selectorOptions;
@@ -104,6 +105,7 @@
                 }
                 else self.transactions = [NSArray arrayWithArray:a];
 
+                if (! m.didAuthenticate) self.navigationItem.titleView = self.logo;
                 self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                              [m localCurrencyStringForAmount:m.wallet.balance]];
 
@@ -123,6 +125,40 @@
                 [self.tableView reloadData];
             }];
     }
+    
+    if (! self.syncStartedObserver) {
+        self.syncStartedObserver =
+            [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncStartedNotification object:nil
+            queue:nil usingBlock:^(NSNotification *note) {
+                BRPeerManager *p = [BRPeerManager sharedInstance];
+            
+                if (p.lastBlockHeight + 2016/2 < p.estimatedBlockHeight &&
+                    m.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
+                    self.navigationItem.titleView = nil;
+                    self.navigationItem.title = NSLocalizedString(@"syncing...", nil);
+                }
+            }];
+    }
+    
+    if (! self.syncFinishedObserver) {
+        self.syncFinishedObserver =
+            [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
+            queue:nil usingBlock:^(NSNotification *note) {
+                if (! m.didAuthenticate) self.navigationItem.titleView = self.logo;
+                self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
+                                             [m localCurrencyStringForAmount:m.wallet.balance]];
+            }];
+    }
+    
+    if (! self.syncFailedObserver) {
+        self.syncFailedObserver =
+            [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
+            queue:nil usingBlock:^(NSNotification *note) {
+                if (! m.didAuthenticate) self.navigationItem.titleView = self.logo;
+                self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
+                                             [m localCurrencyStringForAmount:m.wallet.balance]];
+            }];
+    }
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -132,6 +168,12 @@
         self.balanceObserver = nil;
         if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
         self.txStatusObserver = nil;
+        if (self.syncStartedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
+        self.syncStartedObserver = nil;
+        if (self.syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFinishedObserver];
+        self.syncFinishedObserver = nil;
+        if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
+        self.syncFailedObserver = nil;
     }
 
     [super viewWillDisappear:animated];
@@ -151,6 +193,9 @@
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
     if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
     if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
+    if (self.syncStartedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
+    if (self.syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFinishedObserver];
+    if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
 }
 
 - (void)setBackgroundForCell:(UITableViewCell *)cell tableView:(UITableView *)tableView indexPath:(NSIndexPath *)path

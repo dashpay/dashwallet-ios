@@ -78,12 +78,12 @@
 
 - (void)updateAddress
 {
-    if (! [self.paymentRequest isValid]) return;
+    if (! [self.paymentRequest isValid] || [self.paymentAddress isEqual:self.addressButton.currentTitle]) return;
 
     NSString *s = [[NSString alloc] initWithData:self.paymentRequest.data encoding:NSUTF8StringEncoding];
     CIFilter *filter = [CIFilter filterWithName:@"CIQRCodeGenerator"];
 
-    [filter setValue:[s dataUsingEncoding:NSISOLatin1StringEncoding] forKey:@"inputMessage"];
+    [filter setValue:[s dataUsingEncoding:NSUTF8StringEncoding] forKey:@"inputMessage"];
     [filter setValue:@"L" forKey:@"inputCorrectionLevel"];
     UIGraphicsBeginImageContext(self.qrView.bounds.size);
 

@@ -98,13 +98,6 @@
     }
 }
 
-- (void)dealloc
-{
-    [NSObject cancelPreviousPerformRequestsWithTarget:self];
-    if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
-    if (self.screenshotObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.screenshotObserver];
-}
-
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
@@ -132,32 +125,36 @@
 {
     [super viewDidAppear:animated];
 
-    self.resignActiveObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
-        queue:nil usingBlock:^(NSNotification *note) {
-            if (self.navigationController.viewControllers.firstObject != self) {
-                [self.navigationController popViewControllerAnimated:NO];
-            }
-        }];
+    if (! self.resignActiveObserver) {
+        self.resignActiveObserver =
+            [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification
+            object:nil queue:nil usingBlock:^(NSNotification *note) {
+                if (self.navigationController.viewControllers.firstObject != self) {
+                    [self.navigationController popViewControllerAnimated:NO];
+                }
+            }];
+    }
     
     //TODO: make it easy to create a new wallet and transfer balance
-    self.screenshotObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationUserDidTakeScreenshotNotification
-        object:nil queue:nil usingBlock:^(NSNotification *note) {
-            if ([[[BRWalletManager sharedInstance] wallet] balance] == 0) {
-                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
-                  message:NSLocalizedString(@"Screenshots are visible to other apps and devices. "
-                                            "Generate a new backup phrase and keep it secret.", nil)
-                  delegate:self cancelButtonTitle:nil otherButtonTitles:NSLocalizedString(@"new phrase", nil), nil]
-                 show];
-            }
-            else {
-                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
-                  message:NSLocalizedString(@"Screenshots are visible to other apps and devices. "
-                                            "Your funds are at risk. Transfer your balance to another wallet.", nil)
-                  delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-            }
-        }];
+    if (! self.screenshotObserver) {
+        self.screenshotObserver =
+            [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationUserDidTakeScreenshotNotification
+            object:nil queue:nil usingBlock:^(NSNotification *note) {
+                if ([[[BRWalletManager sharedInstance] wallet] balance] == 0) {
+                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
+                      message:NSLocalizedString(@"Screenshots are visible to other apps and devices. "
+                                                "Generate a new backup phrase and keep it secret.", nil)
+                      delegate:self cancelButtonTitle:nil otherButtonTitles:NSLocalizedString(@"new phrase", nil), nil]
+                     show];
+                }
+                else {
+                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
+                      message:NSLocalizedString(@"Screenshots are visible to other apps and devices. "
+                                                "Your funds are at risk. Transfer your balance to another wallet.", nil)
+                      delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+                }
+            }];
+    }
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -166,6 +163,15 @@
 
     // don't leave the seed phrase laying around in memory any longer than necessary
     self.seedLabel.text = @"";
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
+    if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
+    self.resignActiveObserver = nil;
+    if (self.screenshotObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.screenshotObserver];
+    self.screenshotObserver = nil;
+}
+
+- (void)dealloc
+{
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
     if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
     if (self.screenshotObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.screenshotObserver];

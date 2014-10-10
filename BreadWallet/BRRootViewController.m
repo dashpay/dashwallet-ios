@@ -187,16 +187,12 @@
         usingBlock:^(NSNotification *note) {
             if ([[BRPeerManager sharedInstance] syncProgress] < 1.0) return; // wait for sync before updating balance
             [self showBackupDialogIfNeeded];
+            if (! m.didAuthenticate) self.navigationItem.titleView = self.logo;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
-
+            [self.receiveViewController updateAddress];
+            
             // TODO: XXXX show new tx indicator if appropriate
-            // TODO: XXXX update receive address whenever it changes if we're not syncing
-
-            // update receive qr code if it's not on screen
-            if (self.pageViewController.viewControllers.lastObject != self.receiveViewController) {
-                [self.receiveViewController updateAddress];
-            }
         }];
 
     self.syncStartedObserver =
@@ -210,7 +206,7 @@
             if (p.lastBlockHeight + 2016/2 < p.estimatedBlockHeight &&
                 m.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
                 self.percent.hidden = NO;
-                //BUG: XXXX this doesn't show if app is locked
+                self.navigationItem.titleView = nil;
                 self.navigationItem.title = NSLocalizedString(@"syncing...", nil);
             }
         }];
@@ -221,9 +217,10 @@
             if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
             [self showBackupDialogIfNeeded];
             self.percent.hidden = YES;
+            if (! m.didAuthenticate) self.navigationItem.titleView = self.logo;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
-            // TODO: XXXX update receive address if needed
+            [self.receiveViewController updateAddress];
         }];
     
     self.syncFailedObserver =
@@ -233,11 +230,13 @@
             [self showErrorBar];
             [self showBackupDialogIfNeeded];
             self.percent.hidden = YES;
+            if (! m.didAuthenticate) self.navigationItem.titleView = self.logo;
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
+            [self.receiveViewController updateAddress];
         }];
     
-    //TODO: XXX applicationProtectedDataDidBecomeAvailable observer
+    //TODO: XXXX applicationProtectedDataDidBecomeAvailable observer
     
     self.reachability = [Reachability reachabilityForInternetConnection];
     [self.reachability startNotifier];
@@ -599,7 +598,6 @@
         return;
     }
 
-    // BUG: XXXX don't show balance tip while "syncing..." is shown
     UINavigationBar *b = self.navigationController.navigationBar;
 
     self.tipView = [BRBubbleView viewWithText:BALANCE_TIP
@@ -640,7 +638,7 @@
     else if (! [[BRWalletManager sharedInstance] didAuthenticate]) {
         [self unlock:sender];
     }
-    else [self tip:sender];
+    else if (! [self.navigationItem.title isEqual:NSLocalizedString(@"syncing...", nil)]) [self tip:sender];
 }
 
 #pragma mark - UIPageViewControllerDataSource
