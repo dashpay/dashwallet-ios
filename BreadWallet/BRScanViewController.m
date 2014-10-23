@@ -54,6 +54,7 @@
 {
     [super viewWillAppear:animated];
 
+    // TODO: XXXX detect if camera access is denied and alert the user to change camera privacy settings
     NSError *error = nil;
     AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
     AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:device error:&error];

@@ -54,7 +54,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
 @property (nonatomic, strong) NSOrderedSet *utxos;
 @property (nonatomic, strong) NSMutableDictionary *allTx;
 @property (nonatomic, strong) NSArray *balanceHistory;
-@property (nonatomic, strong) NSData *(^seed)();
+@property (nonatomic, strong) NSData *(^seed)(NSString *authprompt, uint64_t amount);
 @property (nonatomic, strong) NSManagedObjectContext *moc;
 
 @end
@@ -62,7 +62,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
 @implementation BRWallet
 
 - (instancetype)initWithContext:(NSManagedObjectContext *)context sequence:(id<BRKeySequence>)sequence
-masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)())seed
+masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt, uint64_t amount))seed
 {
     if (! (self = [super init])) return nil;
 
@@ -112,7 +112,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)())seed
 {
     if (! _masterPublicKey) {
         @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
-            _masterPublicKey = [self.sequence masterPublicKeyFromSeed:self.seed()];
+            _masterPublicKey = [self.sequence masterPublicKeyFromSeed:self.seed(nil, 0)];
         }
     }
     
@@ -211,7 +211,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)())seed
 
 - (void)updateBalance
 {
-    uint64_t balance = 0;
+    uint64_t balance = 0, prevBalance = 0, totalSent = 0, totalReceived = 0;
     NSMutableOrderedSet *utxos = [NSMutableOrderedSet orderedSet];
     NSMutableSet *spentOutputs = [NSMutableSet set], *invalidTx = [NSMutableSet set];
     NSMutableArray *balanceHistory = [NSMutableArray array];
@@ -258,13 +258,18 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)())seed
             balance -= [transaction.outputAmounts[n] unsignedLongLongValue];
         }
         
+        if (prevBalance < balance) totalReceived += balance - prevBalance;
+        if (balance < prevBalance) totalSent += prevBalance - balance;
         [balanceHistory insertObject:@(balance) atIndex:0];
+        prevBalance = balance;
     }
 
     self.invalidTx = invalidTx;
     self.spentOutputs = spentOutputs;
     self.utxos = utxos;
     self.balanceHistory = balanceHistory;
+    _totalSent = totalSent;
+    _totalReceived = totalReceived;
 
     if (balance != _balance) {
         _balance = balance;
@@ -379,10 +384,11 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)())seed
 }
 
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
-- (BOOL)signTransaction:(BRTransaction *)transaction
+- (BOOL)signTransaction:(BRTransaction *)transaction withPrompt:(NSString *)authprompt
 {
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
-        NSData *seed = self.seed();
+        int64_t amount = [self amountSentByTransaction:transaction] - [self amountReceivedFromTransaction:transaction];
+        NSData *seed = self.seed(authprompt, (amount > 0) ? amount : 0);
         NSMutableArray *pkeys = [NSMutableArray array];
         NSMutableOrderedSet *externalIndexes = [NSMutableOrderedSet orderedSet],
                             *internalIndexes = [NSMutableOrderedSet orderedSet];

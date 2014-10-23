@@ -420,6 +420,9 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
             return NO;
         }
     }
+    else if (self.certs.firstObject) { // non-standard extention to include an un-certified request name
+        _commonName = [[NSString alloc] initWithData:self.certs.firstObject encoding:NSUTF8StringEncoding];
+    }
 
     if (self.details.expires >= 1 && [NSDate timeIntervalSinceReferenceDate] > self.details.expires) {
         _errorMessage = NSLocalizedString(@"request expired", nil);

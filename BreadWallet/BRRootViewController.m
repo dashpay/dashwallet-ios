@@ -615,7 +615,7 @@
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];
     
-    if (sender && ! m.didAuthenticate && ! [m authenticateWithPrompt:nil]) return;
+    if (sender && ! m.didAuthenticate && ! [m authenticateWithPrompt:nil andTouchId:YES]) return;
     
     self.navigationItem.titleView = nil;
     self.navigationItem.rightBarButtonItem = nil;
@@ -639,6 +639,8 @@
         [self unlock:sender];
     }
     else if (! [self.navigationItem.title isEqual:NSLocalizedString(@"syncing...", nil)]) [self tip:sender];
+    
+    //TODO: XXXX show block number if syncing
 }
 
 #pragma mark - UIPageViewControllerDataSource

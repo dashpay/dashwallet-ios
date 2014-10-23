@@ -26,6 +26,7 @@
 #import "BRPaymentRequest.h"
 #import "BRPaymentProtocol.h"
 #import "NSString+Base58.h"
+#import "NSMutableData+Bitcoin.h"
 
 // BIP21 bitcoin URI object https://github.com/bitcoin/bips/blob/master/bip-0021.mediawiki
 @implementation BRPaymentRequest
@@ -153,6 +154,29 @@
     if (! [self.paymentAddress isValidBitcoinAddress] && (! self.r || ! [NSURL URLWithString:self.r])) return NO;
 
     return YES;
+}
+
+// reciever converted to BIP70 request object
+- (BRPaymentProtocolRequest *)protocolRequest
+{
+    static NSString *network = @"main";
+#if BITCOIN_TESTNET
+    network = @"test";
+#endif
+    NSData *name = [self.label dataUsingEncoding:NSUTF8StringEncoding];
+    NSMutableData *script = [NSMutableData data];
+    
+    [script appendScriptPubKeyForAddress:self.paymentAddress];
+    
+    BRPaymentProtocolDetails *details =
+        [[BRPaymentProtocolDetails alloc] initWithNetwork:network outputAmounts:@[@(self.amount)]
+         outputScripts:@[script] time:[[NSDate date] timeIntervalSinceReferenceDate]
+         expires:UINT32_MAX - NSTimeIntervalSince1970 memo:self.message paymentURL:nil merchantData:nil];
+    BRPaymentProtocolRequest *request =
+        [[BRPaymentProtocolRequest alloc] initWithVersion:1 pkiType:@"none" certs:(name ? @[name] : nil) details:details
+         signature:nil];
+    
+    return request;
 }
 
 // fetches the request over HTTP and calls completion block

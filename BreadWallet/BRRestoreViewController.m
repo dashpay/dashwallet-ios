@@ -161,7 +161,7 @@ static NSString *normalize_phrase(NSString *phrase)
         }
 
         if ([s isEqual:@"wipe"]) { // shortcut word to force the wipe option to appear
-            if ([m authenticateWithPrompt:nil]) {
+            if ([m authenticateWithPrompt:nil andTouchId:YES]) {
                 [[[UIActionSheet alloc] initWithTitle:nil delegate:self
                   cancelButtonTitle:NSLocalizedString(@"cancel", nil)
                   destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]

@@ -37,6 +37,7 @@
 @property (nonatomic, strong) NSString *r; // BIP72 URI: https://github.com/bitcoin/bips/blob/master/bip-0072.mediawiki
 @property (nonatomic, strong) NSData *data;
 @property (nonatomic, readonly) BOOL isValid;
+@property (nonatomic, readonly) BRPaymentProtocolRequest *protocolRequest; // reciever converted to BIP70 request object
 
 + (instancetype)requestWithData:(NSData *)data;
 + (instancetype)requestWithString:(NSString *)string;

@@ -267,7 +267,7 @@
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
-    if (sender && ! m.didAuthenticate && ! [m authenticateWithPrompt:nil]) return;
+    if (sender && ! m.didAuthenticate && ! [m authenticateWithPrompt:nil andTouchId:YES]) return;
     
     self.navigationItem.titleView = nil;
     self.navigationItem.rightBarButtonItem = nil;
@@ -658,7 +658,7 @@
             [tableView deselectRowAtIndexPath:indexPath animated:YES];
             
             if (indexPath.row > 0 && indexPath.row >= self.transactions.count) { // more...
-                if (! m.didAuthenticate && ! [m authenticateWithPrompt:nil]) break;
+                if (! m.didAuthenticate && ! [m authenticateWithPrompt:nil andTouchId:YES]) break;
                 [self unlock:nil];
                 
                 [tableView beginUpdates];
@@ -677,7 +677,7 @@
             }
             else if (self.transactions.count > 0) {
                 if ([m.wallet amountSentByTransaction:self.transactions[indexPath.row]] > 0 &&
-                    ! m.didAuthenticate && ! [m authenticateWithPrompt:nil]) break;
+                    ! m.didAuthenticate && ! [m authenticateWithPrompt:nil andTouchId:YES]) break;
             
                 c = [self.storyboard instantiateViewControllerWithIdentifier:@"TxDetailViewController"];
                 [(id)c setTransaction:self.transactions[indexPath.row]];

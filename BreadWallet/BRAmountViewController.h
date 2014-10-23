@@ -38,6 +38,5 @@
 
 @property (nonatomic, assign) id<BRAmountViewControllerDelegate> delegate;
 @property (nonatomic, strong) NSString *to;
-@property (nonatomic, strong) id info;
 
 @end

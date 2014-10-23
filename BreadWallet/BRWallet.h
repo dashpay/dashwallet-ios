@@ -38,9 +38,11 @@
 @property (nonatomic, readonly) NSSet *addresses; // all previously generated internal and external addresses
 @property (nonatomic, readonly) NSArray *unspentOutputs; // NSData objects containing serialized UTXOs
 @property (nonatomic, readonly) NSArray *recentTransactions; // BRTransaction objects sorted by date, most recent first
+@property (nonatomic, readonly) uint64_t totalSent; // the total amount spent from the wallet (excluding change)
+@property (nonatomic, readonly) uint64_t totalReceived; // the total amount received to the wallet (excluding change)
 
 - (instancetype)initWithContext:(NSManagedObjectContext *)context sequence:(id<BRKeySequence>)sequence
-masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)())seed;
+masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt, uint64_t amount))seed;
 
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address;
@@ -61,7 +63,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)())seed;
 - (BRTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee;
 
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
-- (BOOL)signTransaction:(BRTransaction *)transaction;
+- (BOOL)signTransaction:(BRTransaction *)transaction withPrompt:(NSString *)authprompt;
 
 // true if the given transaction is associated with the wallet (even if it hasn't been registered), false otherwise
 - (BOOL)containsTransaction:(BRTransaction *)transaction;

@@ -5,7 +5,7 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\nbitcoin addresses are intented for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\n\nbitcoin addresses are intented for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
+"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
 
 /* No comment provided by engineer. */
 "\nbitcoin network fee + %@ (%@)" = "\nbitcoin network fee + %1$@ (%2$@)";
@@ -18,6 +18,9 @@
 
 /* No comment provided by engineer. */
 " - included in block #%d" = " - included in block #%d";
+
+/* No comment provided by engineer. */
+"%@\t%@\t%@\t%@\npasscode for %@" = "%1$@\t%2$@\t%3$@\t%4$@\npasscode for %5$@";
 
 /* No comment provided by engineer. */
 "%@ from:%@" = "%1$@ from:%2$@";

@@ -139,7 +139,7 @@
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];
     
-    if (sender && ! m.didAuthenticate && ! [m authenticateWithPrompt:nil]) return;
+    if (sender && ! m.didAuthenticate && ! [m authenticateWithPrompt:nil andTouchId:YES]) return;
     
     self.navigationItem.titleView = nil;
 }

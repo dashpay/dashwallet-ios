@@ -188,6 +188,7 @@
     }
     else self.label.frame = CGRectMake(MARGIN, MARGIN, self.label.frame.size.width, self.frame.size.height - MARGIN*2);
 
+    //BUG: XXXX arrow isn't flush with top bubble on iphone 6 displays
     if (self.tipPoint.x > 1) { // draw tip arrow
         CGMutablePathRef path = CGPathCreateMutable();
         CGFloat x = self.tipPoint.x - (center.x - (rect.size.width + MARGIN*2)/2);
