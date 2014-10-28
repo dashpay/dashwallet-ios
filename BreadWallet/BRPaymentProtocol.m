@@ -182,6 +182,7 @@ typedef enum {
 @interface BRPaymentProtocolDetails ()
 
 @property (nonatomic, strong) NSString *network;
+@property (nonatomic, strong) NSArray *outputAmounts;
 
 @end
 
@@ -218,7 +219,7 @@ merchantData:(NSData *)data
     NSMutableArray *amounts = [NSMutableArray array], *scripts = [NSMutableArray array];
 
     while (off < data.length) {
-        uint64_t i = 0, amount = 0;
+        uint64_t i = 0, amount = UINT64_MAX;
         NSData *d = nil, *script = nil;
         NSUInteger o = 0;
 
@@ -249,16 +250,31 @@ merchantData:(NSData *)data
     return (_network) ? _network : @"main";
 }
 
+- (NSArray *)outputAmounts
+{
+    if (! [_outputAmounts containsObject:@(UINT64_MAX)]) return _outputAmounts;
+
+    NSMutableArray *amounts = [NSMutableArray arrayWithArray:_outputAmounts];
+    
+    while ([amounts containsObject:@(UINT64_MAX)]) {
+        [amounts replaceObjectAtIndex:[amounts indexOfObject:@(UINT64_MAX)] withObject:@(0)];
+    }
+    
+    return amounts;
+}
+
 - (NSData *)toData
 {
     NSMutableData *d = [NSMutableData data], *output;
     NSUInteger i = 0;
+    uint64_t amount;
 
     if (_network) [d appendProtoBufString:_network withKey:details_network];
 
     for (NSData *script in _outputScripts) {
         output = [NSMutableData data];
-        [output appendProtoBufInt:[_outputAmounts[i++] unsignedLongLongValue] withKey:output_amount];
+        amount = [_outputAmounts[i++] unsignedLongLongValue];
+        if (amount != UINT64_MAX) [output appendProtoBufInt:amount withKey:output_amount];
         [output appendProtoBufData:script withKey:output_script];
         [d appendProtoBufData:output withKey:details_outputs];
     }
