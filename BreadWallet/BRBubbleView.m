@@ -188,7 +188,6 @@
     }
     else self.label.frame = CGRectMake(MARGIN, MARGIN, self.label.frame.size.width, self.frame.size.height - MARGIN*2);
 
-    //BUG: XXXX arrow isn't flush with top bubble on iphone 6 displays
     if (self.tipPoint.x > 1) { // draw tip arrow
         CGMutablePathRef path = CGPathCreateMutable();
         CGFloat x = self.tipPoint.x - (center.x - (rect.size.width + MARGIN*2)/2);
@@ -202,7 +201,7 @@
             CGPathAddLineToPoint(path, NULL, 7.5, 0.0);
             CGPathAddLineToPoint(path, NULL, 15.0, 7.5);
             CGPathAddLineToPoint(path, NULL, 0.0, 7.5);
-            self.arrow.position = CGPointMake(x, 0.0);
+            self.arrow.position = CGPointMake(x, 0.5);
             self.arrow.anchorPoint = CGPointMake(0.5, 1.0);
         }
         else {
@@ -210,7 +209,7 @@
             CGPathAddLineToPoint(path, NULL, 7.5, 7.5);
             CGPathAddLineToPoint(path, NULL, 15.0, 0.0);
             CGPathAddLineToPoint(path, NULL, 0.0, 0.0);
-            self.arrow.position = CGPointMake(x, rect.size.height + MARGIN*2);
+            self.arrow.position = CGPointMake(x, rect.size.height + MARGIN*2 - 0.5);
             self.arrow.anchorPoint = CGPointMake(0.5, 0.0);
         }
 
