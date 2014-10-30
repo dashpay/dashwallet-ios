@@ -252,7 +252,7 @@
     date = [[[[f stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:t - 5*60]] lowercaseString]
              stringByReplacingOccurrencesOfString:@"am" withString:@"a"]
             stringByReplacingOccurrencesOfString:@"pm" withString:@"p"];
-    self.txDates[tx.txHash] = date;
+    if (tx.blockHeight != TX_UNCONFIRMED) self.txDates[tx.txHash] = date;
     return date;
 }
 

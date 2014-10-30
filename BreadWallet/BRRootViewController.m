@@ -26,6 +26,7 @@
 #import "BRRootViewController.h"
 #import "BRReceiveViewController.h"
 #import "BRSendViewController.h"
+#import "BRAppDelegate.h"
 #import "BRBubbleView.h"
 #import "BRBouncyBurgerButton.h"
 #import "BRPeerManager.h"
@@ -302,8 +303,6 @@
     if ([[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground) {
         [[BRPeerManager sharedInstance] connect];
     }
-
-    //TODO: try making the balance start at zero and quickly increase to the actual balance, ala city guides
 
     if (! self.appeared) {
         self.appeared = YES;

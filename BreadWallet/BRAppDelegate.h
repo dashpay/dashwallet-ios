@@ -25,6 +25,9 @@
 
 #import <UIKit/UIKit.h>
 
+#define BRURLNotification  @"BRURLNotification"
+#define BRFileNotification @"BRFileNotification"
+
 @interface BRAppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;

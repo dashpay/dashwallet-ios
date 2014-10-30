@@ -54,7 +54,17 @@
 {
     [super viewWillAppear:animated];
 
-    // TODO: XXXX detect if camera access is denied and alert the user to change camera privacy settings
+    if ([AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo] == AVAuthorizationStatusDenied) {
+        [[[UIAlertView alloc]
+          initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"%@ is not allowed to access the camera", nil),
+                         DISPLAY_NAME]
+          message:[NSString stringWithFormat:NSLocalizedString(@"\nallow camera access in\n"
+                                                               "Settings->Privacy->Camera->%@", nil),
+                   NSBundle.mainBundle.infoDictionary[@"CFBundleDisplayName"]] delegate:nil
+          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+        return;
+    }
+
     NSError *error = nil;
     AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
     AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:device error:&error];

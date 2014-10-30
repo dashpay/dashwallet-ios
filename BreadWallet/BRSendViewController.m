@@ -328,7 +328,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     
     self.request = protoReq;
     
-    if (self.amount > 0) {
+    if (self.amount > 0) { //BUG: XXXX crash, protoreq is nil if you cancel and tap pay a second time
         tx = [m.wallet transactionForAmounts:@[@(self.amount)]
               toOutputScripts:@[protoReq.details.outputScripts.firstObject] withFee:NO];
     }
