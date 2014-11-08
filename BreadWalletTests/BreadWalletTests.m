@@ -795,7 +795,8 @@
     XCTAssertEqual(w.balance, SATOSHIS/2, @"[BRWallet balance]");
 
 #if ! BITCOIN_TESTNET
-    w = [[BRWallet alloc] initWithContext:nil sequence:[BRBIP32Sequence new] seed:^NSData *{ return [NSData data]; }];
+    w = [[BRWallet alloc] initWithContext:nil sequence:[BRBIP32Sequence new] masterPublicKey:nil
+         seed:^NSData *(NSString *authprompt, uint64_t amount) { return [NSData data]; }];
     
     NSMutableSet *allAddresses = (id)w.addresses;
 
