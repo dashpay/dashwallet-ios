@@ -32,6 +32,7 @@
 #import "BRPeerManager.h"
 #import "BRWalletManager.h"
 #import "BRWallet.h"
+#import "UIImage+Blur.h"
 #import "Reachability.h"
 #import <sys/stat.h>
 #import <mach-o/dyld.h>
@@ -46,7 +47,7 @@
 
 @property (nonatomic, strong) IBOutlet UIProgressView *progress, *pulse;
 @property (nonatomic, strong) IBOutlet UILabel *percent;
-@property (nonatomic, strong) IBOutlet UIView *errorBar, *wallpaper, *splash, *logo;
+@property (nonatomic, strong) IBOutlet UIView *errorBar, *wallpaper, *splash, *logo, *blur;
 @property (nonatomic, strong) IBOutlet UIGestureRecognizer *navBarTap;
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *lock;
 @property (nonatomic, strong) IBOutlet BRBouncyBurgerButton *burger;
@@ -57,6 +58,7 @@
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) id urlObserver, fileObserver, foregroundObserver, backgroundObserver, balanceObserver;
 @property (nonatomic, strong) id reachabilityObserver, syncStartedObserver, syncFinishedObserver, syncFailedObserver;
+@property (nonatomic, strong) id activeObserver, resignActiveObserver;
 @property (nonatomic, assign) NSTimeInterval timeout, start;
 
 @end
@@ -171,6 +173,28 @@
                 self.navigationItem.rightBarButtonItem = self.lock;
                 self.pageViewController.view.alpha = 1.0;
             }
+        }];
+    
+    self.activeObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
+            [self.blur removeFromSuperview];
+            self.blur = nil;
+        }];
+
+    self.resignActiveObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
+            UIGraphicsBeginImageContext([UIScreen mainScreen].bounds.size);
+            [[UIApplication sharedApplication].keyWindow drawViewHierarchyInRect:[UIScreen mainScreen].bounds
+              afterScreenUpdates:NO];
+
+            UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
+
+            UIGraphicsEndImageContext();
+            [self.blur removeFromSuperview];
+            self.blur = [[UIImageView alloc] initWithImage:[img blurWithRadius:3]];
+            [[UIApplication sharedApplication].keyWindow.subviews.lastObject addSubview:self.blur];
         }];
 
     self.reachabilityObserver =
@@ -390,6 +414,8 @@
     if (self.fileObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.fileObserver];
     if (self.foregroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.foregroundObserver];
     if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
+    if (self.activeObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
+    if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
     if (self.reachabilityObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
     if (self.syncStartedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
