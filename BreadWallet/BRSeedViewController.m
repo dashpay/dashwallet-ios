@@ -240,7 +240,9 @@
 
 - (IBAction)copy:(id)sender
 {
+#if DEBUG
     [[UIPasteboard generalPasteboard] setString:[[BRWalletManager sharedInstance] seedPhrase]];
+#endif
 }
 
 #pragma mark - UIAlertViewDelegate

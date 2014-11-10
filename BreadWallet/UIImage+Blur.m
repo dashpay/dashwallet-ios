@@ -32,50 +32,47 @@
 {
     UIGraphicsBeginImageContext(self.size);
 
+    CGContextRef context = UIGraphicsGetCurrentContext();
     CGRect rect = { CGPointZero, self.size };
     uint32_t r = floor(radius*[[UIScreen mainScreen] scale]*3.0*sqrt(2.0*M_PI)/4.0 + 0.5);
-    CGContextRef incontext = UIGraphicsGetCurrentContext();
     
-    CGContextScaleCTM(incontext, 1.0, -1.0);
-    CGContextTranslateCTM(incontext, 0.0, -self.size.height);
-    CGContextDrawImage(incontext, rect, self.CGImage);
+    CGContextScaleCTM(context, 1.0, -1.0);
+    CGContextTranslateCTM(context, 0.0, -self.size.height);
+    CGContextDrawImage(context, rect, self.CGImage);
 
     vImage_Buffer inbuf = {
-        CGBitmapContextGetData(incontext),
-        CGBitmapContextGetHeight(incontext),
-        CGBitmapContextGetWidth(incontext),
-        CGBitmapContextGetBytesPerRow(incontext)
+        CGBitmapContextGetData(context),
+        CGBitmapContextGetHeight(context),
+        CGBitmapContextGetWidth(context),
+        CGBitmapContextGetBytesPerRow(context)
     };
     
     UIGraphicsBeginImageContext(self.size);
-
-    CGContextRef outcontext = UIGraphicsGetCurrentContext();
+    context = UIGraphicsGetCurrentContext();
+    
     vImage_Buffer outbuf = {
-        CGBitmapContextGetData(outcontext),
-        CGBitmapContextGetHeight(outcontext),
-        CGBitmapContextGetWidth(outcontext),
-        CGBitmapContextGetBytesPerRow(outcontext)
+        CGBitmapContextGetData(context),
+        CGBitmapContextGetHeight(context),
+        CGBitmapContextGetWidth(context),
+        CGBitmapContextGetBytesPerRow(context)
     };
 
     if (r % 2 == 0) r += 1; // make sure radius is odd for three box-blur method
     vImageBoxConvolve_ARGB8888(&inbuf, &outbuf, NULL, 0, 0, r, r, 0, kvImageEdgeExtend);
     vImageBoxConvolve_ARGB8888(&outbuf, &inbuf, NULL, 0, 0, r, r, 0, kvImageEdgeExtend);
     vImageBoxConvolve_ARGB8888(&inbuf, &outbuf, NULL, 0, 0, r, r, 0, kvImageEdgeExtend);
-    
-    UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
 
+    UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
+    
     UIGraphicsEndImageContext();
     UIGraphicsBeginImageContext(self.size);
-
-    CGContextRef context = UIGraphicsGetCurrentContext();
-
+    context = UIGraphicsGetCurrentContext();
     CGContextScaleCTM(context, 1.0, -1.0);
     CGContextTranslateCTM(context, 0.0, -self.size.height);
     CGContextDrawImage(context, rect, self.CGImage); // draw base image
     CGContextSaveGState(context);
     CGContextDrawImage(context, rect, img.CGImage); // draw effect image
     CGContextRestoreGState(context);
-    
     img = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     return img;

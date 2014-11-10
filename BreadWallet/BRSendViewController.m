@@ -328,7 +328,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     
     self.request = protoReq;
     
-    if (self.amount > 0) { //BUG: XXXX crash, protoreq is nil if you cancel and tap pay a second time
+    if (self.amount > 0) {
         tx = [m.wallet transactionForAmounts:@[@(self.amount)]
               toOutputScripts:@[protoReq.details.outputScripts.firstObject] withFee:NO];
     }
@@ -652,13 +652,13 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     }
 
     if (self.clearClipboard) [[UIPasteboard generalPasteboard] setString:@""];
+    self.request = nil;
     [self cancel:sender];
 }
 
 - (IBAction)cancel:(id)sender
 {
     self.sweepTx = nil;
-    self.request = nil;
     self.amount = 0;
     self.okAddress = nil;
     self.clearClipboard = self.useClipboard = NO;

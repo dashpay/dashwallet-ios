@@ -469,7 +469,8 @@ static NSString *getKeychainString(NSString *key)
         NSError *error = nil;
         __block NSInteger authcode = 0;
         
-        if ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error]) {
+        if ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error] &&
+            getKeychainInt(PIN_FAIL_COUNT_KEY) == 0) {
             context.localizedFallbackTitle = NSLocalizedString(@"enter passcode", nil);
             
             [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
