@@ -185,16 +185,20 @@
     self.resignActiveObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            UIGraphicsBeginImageContext([UIScreen mainScreen].bounds.size);
-            [[UIApplication sharedApplication].keyWindow drawViewHierarchyInRect:[UIScreen mainScreen].bounds
-              afterScreenUpdates:NO];
+            UIView *v = [UIApplication sharedApplication].keyWindow;
+            UIImage *img;
+            
+            if (! [v viewWithTag:-411]) { // only take a screenshot if no views are marked highly sensitive
+                UIGraphicsBeginImageContext([UIScreen mainScreen].bounds.size);
+                [v drawViewHierarchyInRect:[UIScreen mainScreen].bounds afterScreenUpdates:NO];
+                img = UIGraphicsGetImageFromCurrentImageContext();
+                UIGraphicsEndImageContext();
+            }
+            else img = [UIImage imageNamed:@"wallpaper-default"];
 
-            UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
-
-            UIGraphicsEndImageContext();
             [self.blur removeFromSuperview];
             self.blur = [[UIImageView alloc] initWithImage:[img blurWithRadius:3]];
-            [[UIApplication sharedApplication].keyWindow.subviews.lastObject addSubview:self.blur];
+            [v.subviews.lastObject addSubview:self.blur];
         }];
 
     self.reachabilityObserver =
