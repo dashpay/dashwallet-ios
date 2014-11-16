@@ -73,7 +73,6 @@
 // depreceated
 #define SEED_KEY            @"seed"
 
-
 static BOOL isPasscodeEnabled()
 {
     NSError *error = nil;

@@ -721,14 +721,18 @@ fromConnection:(AVCaptureConnection *)connection
 
                     dispatch_async(dispatch_get_main_queue(), ^{
                         [self.navigationController dismissViewControllerAnimated:YES completion:^{
-                            if (error) {
-                                [self confirmRequest:request];
-                            }
-                            else [self confirmProtocolRequest:req];
-
                             [self resetQRGuide];
                         }];
                     });
+
+                    if (error) {
+                        [self performSelectorOnMainThread:@selector(confirmRequest:) withObject:request
+                         waitUntilDone:NO];
+                    }
+                    else {
+                        [self performSelectorOnMainThread:@selector(confirmProtocolRequest:) withObject:req
+                         waitUntilDone:NO];
+                    }
                 }];
             }
             else {
