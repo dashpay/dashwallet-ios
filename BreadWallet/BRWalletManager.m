@@ -260,6 +260,9 @@ static NSString *getKeychainString(NSString *key)
 {
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     
+    if (self.protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.protectedObserver];
+    self.protectedObserver = nil;
+    
     _localCurrencyCode = [defs stringForKey:LOCAL_CURRENCY_CODE_KEY],
     _localCurrencyPrice = [defs doubleForKey:LOCAL_CURRENCY_PRICE_KEY];
     self.localFormat.maximum = @((MAX_MONEY/SATOSHIS)*self.localCurrencyPrice);
@@ -317,6 +320,7 @@ static NSString *getKeychainString(NSString *key)
                                                 masterPublicKey:self.masterPublicKey]];
                     
             if (_wallet.addresses.count > 0 && ! [_wallet containsAddress:k.address]) {
+                NSLog(@"wallet doesn't contain address: %@", k.address);
 #if DEBUG
                 abort(); // don't wipe core data for debug builds
 #endif
@@ -470,7 +474,7 @@ static NSString *getKeychainString(NSString *key)
         
         if ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error] &&
             getKeychainInt(PIN_FAIL_COUNT_KEY) == 0) {
-            context.localizedFallbackTitle = NSLocalizedString(@"enter passcode", nil);
+            context.localizedFallbackTitle = NSLocalizedString(@"passcode", nil);
             
             [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
             localizedReason:(authprompt ? authprompt : @" ") reply:^(BOOL success, NSError *error) {

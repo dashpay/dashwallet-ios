@@ -107,6 +107,17 @@ static NSString *normalize_phrase(NSString *phrase)
     [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
+- (IBAction)wipe:(id)sender
+{
+    if ([[BRWalletManager sharedInstance] authenticateWithPrompt:nil andTouchId:YES]) {
+        [[[UIActionSheet alloc] initWithTitle:nil delegate:self
+          cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+          destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
+         showInView:[[UIApplication sharedApplication] keyWindow]];
+    }
+    else [self.textView becomeFirstResponder];
+}
+
 #pragma mark - UITextViewDelegate
 
 - (void)textViewDidChange:(UITextView *)textView
@@ -161,12 +172,8 @@ static NSString *normalize_phrase(NSString *phrase)
         }
 
         if ([s isEqual:@"wipe"]) { // shortcut word to force the wipe option to appear
-            if ([m authenticateWithPrompt:nil andTouchId:YES]) {
-                [[[UIActionSheet alloc] initWithTitle:nil delegate:self
-                  cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-                  destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
-                  showInView:[[UIApplication sharedApplication] keyWindow]];
-            }
+            [self.textView resignFirstResponder];
+            [self performSelector:@selector(wipe:) withObject:nil afterDelay:0.0];
         }
         else if (incorrect) {
             textView.selectedRange = [[textView.text lowercaseString] rangeOfString:incorrect];
@@ -218,7 +225,10 @@ static NSString *normalize_phrase(NSString *phrase)
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    if (buttonIndex != actionSheet.destructiveButtonIndex) return;
+    if (buttonIndex != actionSheet.destructiveButtonIndex) {
+        [self.textView becomeFirstResponder];
+        return;
+    }
     
     [[BRWalletManager sharedInstance] setSeedPhrase:nil];
     self.textView.text = nil;

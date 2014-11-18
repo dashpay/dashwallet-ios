@@ -127,7 +127,7 @@ static NSData *scrypt(NSData *password, NSData *salt, int64_t n, uint32_t r, uin
     CC_XZEROMEM(y, sizeof(y));
     CC_XZEROMEM(z, sizeof(z));
     CC_XZEROMEM(v, 128*r*(int)n);
-    CC_XFREE(v, 28*r*(int)n);
+    CC_XFREE(v, 128*r*(int)n);
     CC_XZEROMEM(&m, sizeof(m));
     return d;
 }

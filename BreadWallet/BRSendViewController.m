@@ -724,7 +724,8 @@ fromConnection:(AVCaptureConnection *)connection
                             [self resetQRGuide];
                         }];
                     });
-
+                    
+                    // using performSelectorOnMainThread instead of dispatch_async fixes the frozen pincode keyboard bug
                     if (error) {
                         [self performSelectorOnMainThread:@selector(confirmRequest:) withObject:request
                          waitUntilDone:NO];
@@ -736,10 +737,8 @@ fromConnection:(AVCaptureConnection *)connection
                 }];
             }
             else {
-                [self.navigationController dismissViewControllerAnimated:YES completion:^{
-                    [self confirmRequest:request];
-                    [self resetQRGuide];
-                }];
+                [self.navigationController dismissViewControllerAnimated:YES completion:^{ [self resetQRGuide]; }];
+                [self confirmRequest:request];
             }
         }
 
