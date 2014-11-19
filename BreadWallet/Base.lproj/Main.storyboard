@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="6250" systemVersion="14A389" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="BeO-Yt-c4D">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="6250" systemVersion="14B25" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="BeO-Yt-c4D">
     <dependencies>
         <deployment identifier="iOS"/>
         <development version="5100" identifier="xcode"/>
@@ -1820,16 +1820,15 @@ Use it to restore your wallet on another device if this one is ever lost or brok
                                     <fragment>
                                         <string key="content">
                                         
+                                        
                                 %no-eye%
       DO NOT let anyone see your backup
       phrase or they can spend your bitcoins.
 
-                                %no-shot%
-      DO NOT take a screenshot. Screenshots
-      are visible to other apps and devices.
+
 
                                 %no-key%
-      DO NOT type your backup phrase into
+      NEVER type your backup phrase into
       password managers or elsewhere. Other
       devices may be infected.
 
@@ -1963,7 +1962,7 @@ Use it to restore your wallet on another device if this one is ever lost or brok
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                             </imageView>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="280" translatesAutoresizingMaskIntoConstraints="NO" id="EQG-Km-ZKY">
-                                <rect key="frame" x="29" y="149" width="262.5" height="74.5"/>
+                                <rect key="frame" x="28" y="131" width="263" height="92.5"/>
                                 <attributedString key="attributedText">
                                     <fragment content="this is your wallet backup phrase">
                                         <attributes>
@@ -1975,8 +1974,7 @@ Use it to restore your wallet on another device if this one is ever lost or brok
                                     <fragment>
                                         <string key="content">
 
-WRITE IT DOWN and keep it safe. Lose
-it and you may lose your bitcoins forever.</string>
+WRITE IT DOWN and keep it safe. Your phrase is the only way to recover your wallet if this device is ever lost or broken.</string>
                                         <attributes>
                                             <color key="NSColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
                                             <font key="NSFont" size="15" name="HelveticaNeue-Light"/>
@@ -2080,7 +2078,7 @@ it and you may lose your bitcoins forever.</string>
                             <constraint firstAttribute="centerX" secondItem="cyp-mV-Bhd" secondAttribute="centerX" constant="15" id="MPp-p2-sIb"/>
                             <constraint firstItem="8KJ-Le-F0y" firstAttribute="top" secondItem="cyp-mV-Bhd" secondAttribute="bottom" id="N7H-dH-cdD"/>
                             <constraint firstItem="cyp-mV-Bhd" firstAttribute="top" secondItem="ZPH-1d-tW9" secondAttribute="bottom" id="OfR-ik-g8N"/>
-                            <constraint firstItem="EQG-Km-ZKY" firstAttribute="centerX" secondItem="ZPH-1d-tW9" secondAttribute="centerX" constant="-0.5" id="iYR-xb-lmt"/>
+                            <constraint firstItem="EQG-Km-ZKY" firstAttribute="centerX" secondItem="ZPH-1d-tW9" secondAttribute="centerX" id="iYR-xb-lmt"/>
                             <constraint firstAttribute="trailing" secondItem="ZPH-1d-tW9" secondAttribute="trailing" id="mck-cz-C1z"/>
                             <constraint firstAttribute="bottom" secondItem="f0J-5L-WJY" secondAttribute="bottom" id="raz-kN-0dS"/>
                             <constraint firstItem="ZPH-1d-tW9" firstAttribute="top" secondItem="EQG-Km-ZKY" secondAttribute="bottom" constant="40" id="uLa-WH-pVa"/>

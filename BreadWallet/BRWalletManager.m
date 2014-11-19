@@ -554,6 +554,7 @@ static NSString *getKeychainString(NSString *key)
         }
     }
 
+    //TODO: XXXX replace all alert views with darkened initial warning screen type dialog
     self.alertView = [[UIAlertView alloc]
                       initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"%@\t%@\t%@\t%@%@", nil), CIRCLE,
                                      CIRCLE, CIRCLE, CIRCLE, (title) ? title : @""] message:message delegate:self
