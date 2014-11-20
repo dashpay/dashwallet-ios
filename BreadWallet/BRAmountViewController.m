@@ -75,6 +75,8 @@
     self.swapRightLabel.textAlignment = self.amountField.textAlignment;
     self.swapRightLabel.hidden = YES;
 
+    [self updateLocalCurrencyLabel];
+
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {

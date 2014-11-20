@@ -47,6 +47,7 @@
 
 #define LOCK @"\xF0\x9F\x94\x92" // unicode lock symbol U+1F512 (utf-8)
 #define REDX @"\xE2\x9D\x8C"     // unicode cross mark U+274C, red x emoji (utf-8)
+#define NBSP @"\xC2\xA0"         // no-break space (utf-8)
 
 static NSString *sanitizeString(NSString *s)
 {
@@ -329,6 +330,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     self.request = protoReq;
     
     if (self.amount > 0) {
+        amount = self.amount;
         tx = [m.wallet transactionForAmounts:@[@(self.amount)]
               toOutputScripts:@[protoReq.details.outputScripts.firstObject] withFee:NO];
     }
