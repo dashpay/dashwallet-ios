@@ -17,5 +17,3 @@ profile
 *.moved-aside
 DerivedData
 .idea/
-openssl
-openssl-*
