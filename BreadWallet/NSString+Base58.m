@@ -62,7 +62,7 @@ static void *secureReallocate(void *ptr, CFIndex newsize, CFOptionFlags hint, vo
 
     if (newptr) {
         if (size) {
-            CC_XMEMCPY(newptr, ptr, size < newsize ? size : newsize);
+            CC_XMEMCPY(newptr, ptr, (size < newsize) ? size : newsize);
             secureDeallocate(ptr, info);
         }
 

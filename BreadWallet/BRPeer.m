@@ -703,7 +703,7 @@ services:(uint64_t)services
     }
 
     // To improve chain download performance, if this message contains 2000 headers then request the next 2000 headers
-    // immediately, and switching to requesting blocks when we receive a header newer than earliestKeyTime
+    // immediately, and switch to requesting blocks when we receive a header newer than earliestKeyTime
     NSTimeInterval t = [message UInt32AtOffset:l + 81*(count - 1) + 68] - NSTimeIntervalSince1970;
 
     if (count >= 2000 || t + 7*24*60*60 >= self.earliestKeyTime - 2*60*60) {

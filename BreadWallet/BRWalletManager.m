@@ -584,7 +584,12 @@ static NSString *getKeychainString(NSString *key)
         if (! [self.failedPins containsObject:self.pinField.text]) { // only count unique failed attempts
             if (failCount == 7) { // wipe wallet after 8 failed pin attempts and 24+ hours of lockout
                 self.seedPhrase = nil;
-                abort();
+                
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC/10), dispatch_get_main_queue(), ^{
+                    abort();
+                });
+                
+                return NO;
             }
 
             [self.failedPins addObject:self.pinField.text];
@@ -598,14 +603,16 @@ static NSString *getKeychainString(NSString *key)
         self.pinField.text = nil;
         
         // walking the view hierarchy is prone to breaking, but it's still functional even if the animation doesn't work
-        UIView *v = self.pinField.superview.superview.superview;
-            
+        UIView *v = self.pinField.superview.superview.superview.subviews.firstObject;
+        CGPoint p = v.center;
+                
         [UIView animateWithDuration:0.05 delay:0.1 options:UIViewAnimationOptionCurveEaseInOut animations:^{ // shake
-            v.center = CGPointMake(v.center.x + 30.0, v.center.y);
+            v.center = CGPointMake(p.x + 30.0, p.y);
         } completion:^(BOOL finished) {
-            [self textField:self.pinField shouldChangeCharactersInRange:NSMakeRange(0, 0) replacementString:@""];
             [UIView animateWithDuration:0.5 delay:0.0 usingSpringWithDamping:0.2 initialSpringVelocity:0.0 options:0
-            animations:^{ v.center = CGPointMake(v.center.x - 30.0, v.center.y); } completion:nil];
+            animations:^{ v.center = p; } completion:^(BOOL finished) {
+                [self textField:self.pinField shouldChangeCharactersInRange:NSMakeRange(0, 0) replacementString:@""];
+            }];
 
             if (failCount >= 3) {
                 [self.alertView dismissWithClickedButtonIndex:self.alertView.cancelButtonIndex animated:YES];
@@ -628,15 +635,16 @@ static NSString *getKeychainString(NSString *key)
             return NO;
         }
 
-        UIView *v = self.pinField.superview.superview.superview;
+        UIView *v = self.pinField.superview.superview.superview.subviews.firstObject;
+        CGPoint p = v.center;
 
         [UIView animateWithDuration:0.1 delay:0.1 options:UIViewAnimationOptionCurveEaseIn animations:^{
-            v.center = CGPointMake(v.center.x - v.bounds.size.width, v.center.y);
+            v.center = CGPointMake(p.x - v.bounds.size.width, p.y);
         } completion:^(BOOL finished) {
-            v.center = CGPointMake(v.center.x + v.bounds.size.width*2, v.center.y);
+            v.center = CGPointMake(p.x + v.bounds.size.width*2, p.y);
             self.alertView.message = NSLocalizedString(@"\nchoose passcode", nil);
             [UIView animateWithDuration:0.3 delay:0.0 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
-             animations:^{ v.center = CGPointMake(v.center.x - v.bounds.size.width, v.center.y); } completion:nil];
+             animations:^{ v.center = p; } completion:nil];
         }];
     }
     else {
@@ -659,16 +667,17 @@ static NSString *getKeychainString(NSString *key)
         pin = self.pinField.text;
         self.pinField.text = nil;
         
-        UIView *v = self.pinField.superview.superview.superview;
+        UIView *v = self.pinField.superview.superview.superview.subviews.firstObject;
+        CGPoint p = v.center;
         
         [UIView animateWithDuration:0.1 delay:0.1 options:UIViewAnimationOptionCurveEaseIn animations:^{ // verify pin
-            v.center = CGPointMake(v.center.x - v.bounds.size.width, v.center.y);
+            v.center = CGPointMake(p.x - v.bounds.size.width, p.y);
         } completion:^(BOOL finished) {
-            v.center = CGPointMake(v.center.x + v.bounds.size.width*2, v.center.y);
+            v.center = CGPointMake(p.x + v.bounds.size.width*2, p.y);
             self.alertView.message = NSLocalizedString(@"\nverify passcode", nil);
             [self textField:self.pinField shouldChangeCharactersInRange:NSMakeRange(0, 0) replacementString:@""];
             [UIView animateWithDuration:0.3 delay:0.0 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
-             animations:^{ v.center = CGPointMake(v.center.x - v.bounds.size.width, v.center.y); } completion:nil];
+             animations:^{ v.center = p; } completion:nil];
         }];
 
         while (self.alertView.visible && self.pinField.text.length < 4) {
@@ -688,12 +697,13 @@ static NSString *getKeychainString(NSString *key)
         self.pinField.text = nil;
         
         [UIView animateWithDuration:0.05 delay:0.1 options:UIViewAnimationOptionCurveEaseInOut animations:^{ // shake
-            v.center = CGPointMake(v.center.x + 30.0, v.center.y);
+            v.center = CGPointMake(p.x + 30.0, p.y);
         } completion:^(BOOL finished) {
             self.alertView.message = NSLocalizedString(@"\nchoose passcode", nil);
-            [self textField:self.pinField shouldChangeCharactersInRange:NSMakeRange(0, 0) replacementString:@""];
             [UIView animateWithDuration:0.5 delay:0.0 usingSpringWithDamping:0.2 initialSpringVelocity:0.0 options:0
-             animations:^{ v.center = CGPointMake(v.center.x - 30.0, v.center.y); } completion:nil];
+            animations:^{ v.center = p; } completion:^(BOOL finished) {
+                [self textField:self.pinField shouldChangeCharactersInRange:NSMakeRange(0, 0) replacementString:@""];
+            }];
         }];
     }
     
