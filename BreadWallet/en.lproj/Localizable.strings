@@ -11,7 +11,7 @@
 "\nbitcoin network fee + %@ (%@)" = "\nbitcoin network fee + %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your backup phrase or they can spend your bitcoins.\n\nDO NOT take a screenshot. Screenshots are visible to other apps and devices.\n\nDO NOT type your backup phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nDO NOT let anyone see your backup phrase or they can spend your bitcoins.\n\nDO NOT take a screenshot. Screenshots are visible to other apps and devices.\n\nDO NOT type your backup phrase into password managers or elsewhere. Other devices may be infected.\n";
+"\nDO NOT let anyone see your backup phrase or they can spend your bitcoins.\n\nNEVER type your backup phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nDO NOT let anyone see your backup phrase or they can spend your bitcoins.\n\nNEVER type your backup phrase into password managers or elsewhere. Other devices may be infected.\n";
 
 /* No comment provided by engineer. */
 "\ngo to settings and turn passcode on to access restricted areas of your wallet" = "\ngo to settings and turn passcode on to access restricted areas of your wallet";
@@ -20,7 +20,7 @@
 " - included in block #%d" = " - included in block #%d";
 
 /* No comment provided by engineer. */
-"%@\t%@\t%@\t%@\npasscode for %@" = "%1$@\t%2$@\t%3$@\t%4$@\npasscode for %5$@";
+"passcode for %@" = "passcode for %@";
 
 /* No comment provided by engineer. */
 "%@ from:%@" = "%1$@ from:%2$@";

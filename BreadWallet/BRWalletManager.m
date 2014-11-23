@@ -497,7 +497,7 @@ static NSString *getKeychainString(NSString *key)
         else if (error) NSLog(@"[LAContext canEvaluatePolicy:] %@", error.localizedDescription);
     }
     
-    if ([self authenticatePinWithTitle:[NSString stringWithFormat:NSLocalizedString(@"\npasscode for %@", nil),
+    if ([self authenticatePinWithTitle:[NSString stringWithFormat:NSLocalizedString(@"passcode for %@", nil),
                                         DISPLAY_NAME] message:authprompt]) {
         if (self.alertView.visible) {
             [self.alertView dismissWithClickedButtonIndex:self.alertView.cancelButtonIndex animated:YES];
@@ -556,9 +556,9 @@ static NSString *getKeychainString(NSString *key)
 
     //TODO: XXXX replace all alert views with darkened initial warning screen type dialog
     self.alertView = [[UIAlertView alloc]
-                      initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"%@\t%@\t%@\t%@%@", nil), CIRCLE,
-                                     CIRCLE, CIRCLE, CIRCLE, (title) ? title : @""] message:message delegate:self
-                      cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
+                      initWithTitle:[NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
+                                     (title) ? title : @""] message:message delegate:self
+                      cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:nil];
     self.pinField = nil;
     [self.alertView setValue:self.pinField forKey:@"accessoryView"];
     [self.alertView show];
@@ -628,9 +628,11 @@ static NSString *getKeychainString(NSString *key)
 - (BOOL)setPin
 {
     NSString *pin = getKeychainString(PIN_KEY);
+    NSString *title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
+                       NSLocalizedString(@"choose passcode", nil)];
 
     if (pin.length == 4) {
-        if (! [self authenticatePinWithTitle:nil message:NSLocalizedString(@"\nenter old passcode", nil)]) {
+        if (! [self authenticatePinWithTitle:NSLocalizedString(@"enter old passcode", nil) message:nil]) {
             [self.alertView dismissWithClickedButtonIndex:self.alertView.cancelButtonIndex animated:YES];
             return NO;
         }
@@ -641,17 +643,15 @@ static NSString *getKeychainString(NSString *key)
         [UIView animateWithDuration:0.1 delay:0.1 options:UIViewAnimationOptionCurveEaseIn animations:^{
             v.center = CGPointMake(p.x - v.bounds.size.width, p.y);
         } completion:^(BOOL finished) {
-            self.alertView.message = NSLocalizedString(@"\nchoose passcode", nil);
+            self.alertView.title = title;
             v.center = CGPointMake(p.x + v.bounds.size.width*2, p.y);
             [UIView animateWithDuration:0.3 delay:0.0 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
              animations:^{ v.center = p; } completion:nil];
         }];
     }
     else {
-        self.alertView = [[UIAlertView alloc]
-                          initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"%@\t%@\t%@\t%@", nil), CIRCLE,
-                                         CIRCLE, CIRCLE, CIRCLE] message:NSLocalizedString(@"\nchoose passcode", nil)
-                          delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
+        self.alertView = [[UIAlertView alloc] initWithTitle:title message:nil delegate:self
+                          cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:nil];
         self.pinField = nil;
         [self.alertView setValue:self.pinField forKey:@"accessoryView"];
         [self.alertView show];
@@ -673,7 +673,8 @@ static NSString *getKeychainString(NSString *key)
         [UIView animateWithDuration:0.1 delay:0.1 options:UIViewAnimationOptionCurveEaseIn animations:^{ // verify pin
             v.center = CGPointMake(p.x - v.bounds.size.width, p.y);
         } completion:^(BOOL finished) {
-            self.alertView.message = NSLocalizedString(@"\nverify passcode", nil);
+            self.alertView.title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
+                                    NSLocalizedString(@"verify passcode", nil)];
             v.center = CGPointMake(p.x + v.bounds.size.width*2, p.y);
             [self textField:self.pinField shouldChangeCharactersInRange:NSMakeRange(0, 0) replacementString:@""];
             [UIView animateWithDuration:0.3 delay:0.0 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
@@ -701,7 +702,7 @@ static NSString *getKeychainString(NSString *key)
         } completion:^(BOOL finished) {
             [UIView animateWithDuration:0.5 delay:0.0 usingSpringWithDamping:0.2 initialSpringVelocity:0.0 options:0
             animations:^{ v.center = p; } completion:^(BOOL finished) {
-                self.alertView.message = NSLocalizedString(@"\nchoose passcode", nil);
+                self.alertView.title = title;
                 [self textField:self.pinField shouldChangeCharactersInRange:NSMakeRange(0, 0) replacementString:@""];
             }];
         }];
@@ -841,12 +842,13 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
     if (! completion) return;
 
     if ([privKey isValidBitcoinBIP38Key]) {
-        UIAlertView *v = [[UIAlertView alloc] initWithTitle:@"password protected key" message:nil delegate:self
-                          cancelButtonTitle:@"cancel" otherButtonTitles:@"ok", nil];
+        UIAlertView *v = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"password protected key", nil)
+                          message:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+                          otherButtonTitles:NSLocalizedString(@"ok", nil), nil];
 
         v.alertViewStyle = UIAlertViewStyleSecureTextInput;
         [v textFieldAtIndex:0].returnKeyType = UIReturnKeyDone;
-        [v textFieldAtIndex:0].placeholder = @"password";
+        [v textFieldAtIndex:0].placeholder = NSLocalizedString(@"password", nil);
         [v show];
 
         self.sweepKey = privKey;
@@ -1050,9 +1052,8 @@ replacementString:(NSString *)string
 {
     if ([LAContext class]) return; // fix is for iOS 7 only
     
-    UIView *v = textField.superview.superview.superview.superview.superview;
-    
-    v.center = CGPointMake(v.center.x, v.center.y - 108.0);
+    textField.superview.superview.superview.superview.superview.center =
+        CGPointMake([UIScreen mainScreen].bounds.size.width/2.0, [UIScreen mainScreen].bounds.size.height/2.0 - 108.0);
 }
 
 #pragma mark - UIAlertViewDelegate
@@ -1078,13 +1079,14 @@ replacementString:(NSString *)string
         BRKey *key = [BRKey keyWithBIP38Key:self.sweepKey andPassphrase:passphrase];
 
         if (! key) {
-            UIAlertView *v = [[UIAlertView alloc] initWithTitle:@"password protected key"
-                              message:@"bad password, try again" delegate:self cancelButtonTitle:@"cancel"
-                              otherButtonTitles:@"ok", nil];
+            UIAlertView *v = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"password protected key", nil)
+                              message:NSLocalizedString(@"bad password, try again", nil) delegate:self
+                              cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+                              otherButtonTitles:NSLocalizedString(@"ok", nil), nil];
 
             v.alertViewStyle = UIAlertViewStyleSecureTextInput;
             [v textFieldAtIndex:0].returnKeyType = UIReturnKeyDone;
-            [v textFieldAtIndex:0].placeholder = @"password";
+            [v textFieldAtIndex:0].placeholder = NSLocalizedString(@"password", nil);
             [v show];
         }
         else {
