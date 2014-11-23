@@ -556,13 +556,13 @@
         return r;
     }
 
+    BRWalletManager *m = [BRWalletManager sharedInstance];
     BRBubbleView *v = self.tipView;
 
     self.tipView = nil;
     [v popOut];
 
     if ([v.text hasPrefix:BALANCE_TIP]) {
-        BRWalletManager *m = [BRWalletManager sharedInstance];
         UINavigationBar *b = self.navigationController.navigationBar;
         NSString *text = [NSString stringWithFormat:BITS_TIP, m.format.currencySymbol, [m stringForAmount:SATOSHIS]];
         CGRect r = [self.navigationItem.title boundingRectWithSize:b.bounds.size options:0
@@ -623,7 +623,9 @@
     else if (sender == self.sendViewController) {
         self.scrollView.scrollEnabled = YES;
         [(id)self.pageViewController setViewControllers:@[self.receiveViewController]
-         direction:UIPageViewControllerNavigationDirectionForward animated:YES completion:nil];
+        direction:UIPageViewControllerNavigationDirectionForward animated:YES completion:^(BOOL finished) {
+            [[BRWalletManager sharedInstance] setPin];
+        }];
         return;
     }
 

@@ -603,7 +603,7 @@ static NSString *getKeychainString(NSString *key)
         self.pinField.text = nil;
         
         // walking the view hierarchy is prone to breaking, but it's still functional even if the animation doesn't work
-        UIView *v = self.pinField.superview.superview.superview.subviews.firstObject;
+        UIView *v = self.pinField.superview.superview.superview;
         CGPoint p = v.center;
                 
         [UIView animateWithDuration:0.05 delay:0.1 options:UIViewAnimationOptionCurveEaseInOut animations:^{ // shake
@@ -635,14 +635,14 @@ static NSString *getKeychainString(NSString *key)
             return NO;
         }
 
-        UIView *v = self.pinField.superview.superview.superview.subviews.firstObject;
+        UIView *v = self.pinField.superview.superview.superview;
         CGPoint p = v.center;
 
         [UIView animateWithDuration:0.1 delay:0.1 options:UIViewAnimationOptionCurveEaseIn animations:^{
             v.center = CGPointMake(p.x - v.bounds.size.width, p.y);
         } completion:^(BOOL finished) {
-            v.center = CGPointMake(p.x + v.bounds.size.width*2, p.y);
             self.alertView.message = NSLocalizedString(@"\nchoose passcode", nil);
+            v.center = CGPointMake(p.x + v.bounds.size.width*2, p.y);
             [UIView animateWithDuration:0.3 delay:0.0 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
              animations:^{ v.center = p; } completion:nil];
         }];
@@ -667,14 +667,14 @@ static NSString *getKeychainString(NSString *key)
         pin = self.pinField.text;
         self.pinField.text = nil;
         
-        UIView *v = self.pinField.superview.superview.superview.subviews.firstObject;
+        UIView *v = self.pinField.superview.superview.superview;
         CGPoint p = v.center;
         
         [UIView animateWithDuration:0.1 delay:0.1 options:UIViewAnimationOptionCurveEaseIn animations:^{ // verify pin
             v.center = CGPointMake(p.x - v.bounds.size.width, p.y);
         } completion:^(BOOL finished) {
-            v.center = CGPointMake(p.x + v.bounds.size.width*2, p.y);
             self.alertView.message = NSLocalizedString(@"\nverify passcode", nil);
+            v.center = CGPointMake(p.x + v.bounds.size.width*2, p.y);
             [self textField:self.pinField shouldChangeCharactersInRange:NSMakeRange(0, 0) replacementString:@""];
             [UIView animateWithDuration:0.3 delay:0.0 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
              animations:^{ v.center = p; } completion:nil];
@@ -699,9 +699,9 @@ static NSString *getKeychainString(NSString *key)
         [UIView animateWithDuration:0.05 delay:0.1 options:UIViewAnimationOptionCurveEaseInOut animations:^{ // shake
             v.center = CGPointMake(p.x + 30.0, p.y);
         } completion:^(BOOL finished) {
-            self.alertView.message = NSLocalizedString(@"\nchoose passcode", nil);
             [UIView animateWithDuration:0.5 delay:0.0 usingSpringWithDamping:0.2 initialSpringVelocity:0.0 options:0
             animations:^{ v.center = p; } completion:^(BOOL finished) {
+                self.alertView.message = NSLocalizedString(@"\nchoose passcode", nil);
                 [self textField:self.pinField shouldChangeCharactersInRange:NSMakeRange(0, 0) replacementString:@""];
             }];
         }];
@@ -1045,10 +1045,22 @@ replacementString:(NSString *)string
     return YES;
 }
 
+// iOS 7 doesn't adjust the alerView position to account for the keyboard when using an accessoryView
+- (void)textFieldDidBeginEditing:(UITextField *)textField
+{
+    if ([LAContext class]) return; // fix is for iOS 7 only
+    
+    UIView *v = textField.superview.superview.superview.superview.superview;
+    
+    v.center = CGPointMake(v.center.x, v.center.y - 108.0);
+}
+
 #pragma mark - UIAlertViewDelegate
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
+    if (alertView == self.alertView) self.alertView = nil;
+
     if (buttonIndex == alertView.cancelButtonIndex) {
         if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:@"abort"]) abort();
 
