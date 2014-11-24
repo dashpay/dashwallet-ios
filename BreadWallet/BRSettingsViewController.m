@@ -70,9 +70,13 @@
     self.backgroundObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
+            NSArray *a = [BRWalletManager sharedInstance].wallet.recentTransactions;
+
+            self.transactions = [a subarrayWithRange:NSMakeRange(0, a.count > 5 ? 5 : a.count)];
+            self.moreTx = (a.count > 5) ? YES : NO;
+            [self.tableView reloadData];
             self.navigationItem.titleView = self.logo;
             self.navigationItem.rightBarButtonItem = self.lock;
-            [self.tableView reloadData];
         }];
 
     if ([[BRWalletManager sharedInstance] didAuthenticate]) [self unlock:nil];
@@ -307,6 +311,42 @@
 - (IBAction)about:(id)sender
 {
     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://breadwallet.com"]];
+}
+
+- (IBAction)showTx:(id)sender
+{
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+
+    if ([m.wallet amountSentByTransaction:sender] > 0 &&
+        ! m.didAuthenticate && ! [m authenticateWithPrompt:nil andTouchId:YES]) return;
+    
+    BRTxDetailViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"TxDetailViewController"];
+    c.transaction = sender;
+    c.txDateString = [self dateForTx:sender];
+    [self.navigationController pushViewController:c animated:YES];
+}
+
+- (IBAction)more:(id)sender
+{
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    
+    if (! m.didAuthenticate && ! [m authenticateWithPrompt:nil andTouchId:YES]) return;
+    [self unlock:nil];
+    
+    [self.tableView beginUpdates];
+    self.transactions = [NSArray arrayWithArray:m.wallet.recentTransactions];
+    self.moreTx = NO;
+    [self.tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:5 inSection:0]]
+     withRowAnimation:UITableViewRowAnimationFade];
+    
+    NSMutableArray *a = [NSMutableArray arrayWithCapacity:self.transactions.count - 5];
+    
+    for (NSUInteger i = 5; i < self.transactions.count; i++) {
+        [a addObject:[NSIndexPath indexPathForRow:i inSection:0]];
+    }
+    
+    [self.tableView insertRowsAtIndexPaths:a withRowAnimation:UITableViewRowAnimationTop];
+    [self.tableView endUpdates];
 }
 
 #pragma mark - UITableViewDataSource
@@ -639,7 +679,6 @@
     UIViewController *c = nil;
     UILabel *l = nil;
     NSMutableAttributedString *s = nil;
-    NSMutableArray *a;
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
     if (tableView == self.selectorController.tableView) {
@@ -658,31 +697,10 @@
             [tableView deselectRowAtIndexPath:indexPath animated:YES];
             
             if (indexPath.row > 0 && indexPath.row >= self.transactions.count) { // more...
-                if (! m.didAuthenticate && ! [m authenticateWithPrompt:nil andTouchId:YES]) break;
-                [self unlock:nil];
-                
-                [tableView beginUpdates];
-                self.transactions = [NSArray arrayWithArray:m.wallet.recentTransactions];
-                self.moreTx = NO;
-                [tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:5 inSection:0]]
-                 withRowAnimation:UITableViewRowAnimationFade];
-                a = [NSMutableArray arrayWithCapacity:self.transactions.count - 5];
-                
-                for (NSUInteger i = 5; i < self.transactions.count; i++) {
-                    [a addObject:[NSIndexPath indexPathForRow:i inSection:0]];
-                }
-                
-                [tableView insertRowsAtIndexPaths:a withRowAnimation:UITableViewRowAnimationTop];
-                [tableView endUpdates];
+                [self performSelector:@selector(more:) withObject:nil afterDelay:0.0];
             }
             else if (self.transactions.count > 0) {
-                if ([m.wallet amountSentByTransaction:self.transactions[indexPath.row]] > 0 &&
-                    ! m.didAuthenticate && ! [m authenticateWithPrompt:nil andTouchId:YES]) break;
-            
-                c = [self.storyboard instantiateViewControllerWithIdentifier:@"TxDetailViewController"];
-                [(id)c setTransaction:self.transactions[indexPath.row]];
-                [(id)c setTxDateString:[self dateForTx:self.transactions[indexPath.row]]];
-                [self.navigationController pushViewController:c animated:YES];
+                [self performSelector:@selector(showTx:) withObject:self.transactions[indexPath.row] afterDelay:0.0];
             }
 
             break;

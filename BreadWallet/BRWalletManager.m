@@ -1050,7 +1050,7 @@ replacementString:(NSString *)string
 // iOS 7 doesn't adjust the alerView position to account for the keyboard when using an accessoryView
 - (void)textFieldDidBeginEditing:(UITextField *)textField
 {
-    if ([LAContext class]) return; // fix is for iOS 7 only
+    if ([LAContext class]) return; // fix is needed for iOS 7 only
     
     textField.superview.superview.superview.superview.superview.center =
         CGPointMake([UIScreen mainScreen].bounds.size.width/2.0, [UIScreen mainScreen].bounds.size.height/2.0 - 108.0);
