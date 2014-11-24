@@ -78,8 +78,6 @@
             self.navigationItem.titleView = self.logo;
             self.navigationItem.rightBarButtonItem = self.lock;
         }];
-
-    if ([[BRWalletManager sharedInstance] didAuthenticate]) [self unlock:nil];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -92,7 +90,7 @@
     NSArray *a = m.wallet.recentTransactions;
     
     self.transactions = [a subarrayWithRange:NSMakeRange(0, (a.count > 5 && self.moreTx) ? 5 : a.count)];
-    if (m.didAuthenticate) [self unlock:nil]; // BUG: XXXX this doesn't seem to work on iOS 7
+    if (m.didAuthenticate) [self unlock:nil];
 
     if (! self.balanceObserver) {
         self.balanceObserver =

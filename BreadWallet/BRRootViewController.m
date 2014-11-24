@@ -820,8 +820,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
         } completion:^(BOOL finished) {
             self.pageViewController.view.center = CGPointMake(self.pageViewController.view.center.x,
                                                               v.frame.size.height/2.0);
-            item.rightBarButtonItem = rightButton;
-            item.titleView = titleView;
+            if (! m.didAuthenticate) item.rightBarButtonItem = rightButton, item.titleView = titleView;
             item.leftBarButtonItem.image = [UIImage imageNamed:@"x"];
             item.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                           [m localCurrencyStringForAmount:m.wallet.balance]];
