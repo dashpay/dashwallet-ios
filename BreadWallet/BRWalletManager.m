@@ -439,9 +439,10 @@ static NSString *getKeychainString(NSString *key)
     return;
 #endif
 
-    // if average block size increases past 500kb, start increasing tx fee up to 100bits/kb when block size hits 800kb
+    // if average block size increases past 650kb, start increasing tx fee up to 410bits/kb when block size hits 850kb,
+    // we want to increase the fee/kb to where we just beat a typical 247byte tx with a 100bit fee
     self.wallet.feePerKb = TX_FEE_PER_KB;
-    if (size > 500*1024) self.wallet.feePerKb *= (size < 800*1024) ? 10*(size - 500*1024)/(300*1024) : 10;
+    if (size > 650*1024) self.wallet.feePerKb *= (size < 850*1024) ? 41*(size - 650*1024)/(200*1024) : 41;
 }
 
  // generates a random seed, saves to keychain and returns the associated seedPhrase
