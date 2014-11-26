@@ -79,6 +79,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     self.invalidTx = [NSMutableSet set];
     self.spentOutputs = [NSMutableSet set];
     self.utxos = [NSMutableOrderedSet orderedSet];
+    self.feePerKb = TX_FEE_PER_KB;
 
     [self.moc performBlockAndWait:^{
         [BRAddressEntity setContext:self.moc];
@@ -340,7 +341,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
 - (BRTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee;
 {
-    uint64_t amount = 0, balance = 0, standardFee = 0;
+    uint64_t amount = 0, balance = 0, feeAmount = 0;
     BRTransaction *transaction = [BRTransaction new];
     NSUInteger i = 0;
 
@@ -361,23 +362,25 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 
         [transaction addInputHash:tx.txHash index:n script:tx.outputScripts[n]];
         balance += [tx.outputAmounts[n] unsignedLongLongValue];
-            
-        // assume we will be adding a change output (additional 34 bytes)
-        //TODO: calculate the median of the lowest fee-per-kb that made it into the previous 144 blocks (24hrs)
-        //NOTE: consider feedback effects if everyone uses the same algorithm to calculate fees, maybe add noise
-        if (fee) standardFee = ((transaction.size + 34 + 999)/1000)*TX_FEE_PER_KB;
-            
-        if (balance == amount + standardFee || balance >= amount + standardFee + TX_MIN_OUTPUT_AMOUNT) break;
+        
+        if (fee) {
+            size_t size = transaction.size + 34; // assume we will be adding a change output (additional 34 bytes)
+        
+            feeAmount = ((size + 999)/1000)*TX_FEE_PER_KB;
+            if (size*self.feePerKb > feeAmount) feeAmount = size*self.feePerKb;
+        }
+        
+        if (balance == amount + feeAmount || balance >= amount + feeAmount + TX_MIN_OUTPUT_AMOUNT) break;
     }
     
-    if (balance < amount + standardFee) { // insufficent funds
-        NSLog(@"Insufficient funds. %llu is less than transaction amount:%llu", balance, amount + standardFee);
+    if (balance < amount + feeAmount) { // insufficent funds
+        NSLog(@"Insufficient funds. %llu is less than transaction amount:%llu", balance, amount + feeAmount);
         return nil;
     }
     
     //TODO: randomly swap order of outputs so the change address isn't publicy known
-    if (balance - (amount + standardFee) >= TX_MIN_OUTPUT_AMOUNT) {
-        [transaction addOutputAddress:self.changeAddress amount:balance - (amount + standardFee)];
+    if (balance - (amount + feeAmount) >= TX_MIN_OUTPUT_AMOUNT) {
+        [transaction addOutputAddress:self.changeAddress amount:balance - (amount + feeAmount)];
     }
     
     return transaction;

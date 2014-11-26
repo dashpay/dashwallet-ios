@@ -161,6 +161,73 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     return self;
 }
 
+- (NSArray *)inputHashes
+{
+    return self.hashes;
+}
+
+- (NSArray *)inputIndexes
+{
+    return self.indexes;
+}
+
+- (NSArray *)inputScripts
+{
+    return self.inScripts;
+}
+
+- (NSArray *)inputSignatures
+{
+    return self.signatures;
+}
+
+- (NSArray *)inputSequences
+{
+    return self.sequences;
+}
+
+- (NSArray *)outputAmounts
+{
+    return self.amounts;
+}
+
+- (NSArray *)outputAddresses
+{
+    return self.addresses;
+}
+
+- (NSArray *)outputScripts
+{
+    return self.outScripts;
+}
+
+- (size_t)size
+{
+    //TODO: not all keys come from this wallet (private keys can be swept), might cause a lower than standard tx fee
+    size_t sigSize = 149; // electrum seeds generate uncompressed keys, bip32 uses compressed
+//    size_t sigSize = 181;
+    
+    return 8 + [NSMutableData sizeOfVarInt:self.hashes.count] + [NSMutableData sizeOfVarInt:self.addresses.count] +
+    sigSize*self.hashes.count + 34*self.addresses.count;
+}
+
+- (uint64_t)standardFee
+{
+    return ((self.size + 999)/1000)*TX_FEE_PER_KB;
+}
+
+// checks if all signatures exist, but does not verify them
+- (BOOL)isSigned
+{
+    return (self.signatures.count > 0 && self.signatures.count == self.hashes.count &&
+            ! [self.signatures containsObject:[NSNull null]]);
+}
+
+- (NSData *)toData
+{
+    return [self toDataWithSubscriptIndex:NSNotFound];
+}
+
 - (void)addInputHash:(NSData *)hash index:(NSUInteger)index script:(NSData *)script
 {
     [self addInputHash:hash index:index script:script signature:nil sequence:TXIN_SEQUENCE];
@@ -217,95 +284,6 @@ sequence:(uint32_t)sequence
     return addresses;
 }
 
-- (NSArray *)inputHashes
-{
-    return self.hashes;
-}
-
-- (NSArray *)inputIndexes
-{
-    return self.indexes;
-}
-
-- (NSArray *)inputScripts
-{
-    return self.inScripts;
-}
-
-- (NSArray *)inputSignatures
-{
-    return self.signatures;
-}
-
-- (NSArray *)inputSequences
-{
-    return self.sequences;
-}
-
-- (NSArray *)outputAmounts
-{
-    return self.amounts;
-}
-
-- (NSArray *)outputAddresses
-{
-    return self.addresses;
-}
-
-- (NSArray *)outputScripts
-{
-    return self.outScripts;
-}
-
-- (BOOL)signWithPrivateKeys:(NSArray *)privateKeys
-{
-    NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:privateKeys.count],
-                   *keys = [NSMutableArray arrayWithCapacity:privateKeys.count];
-    
-    for (NSString *pk in privateKeys) {
-        BRKey *key = [BRKey keyWithPrivateKey:pk];
-
-        if (! key) continue;
- 
-        [keys addObject:key];
-        [addresses addObject:key.address];
-    }
-
-    for (NSUInteger i = 0; i < self.hashes.count; i++) {
-        NSString *addr = [NSString addressWithScriptPubKey:self.inScripts[i]];
-        NSUInteger keyIdx = addr ? [addresses indexOfObject:addr] : NSNotFound;
-
-        if (keyIdx == NSNotFound) continue;
-
-        NSMutableData *sig = [NSMutableData data];
-        NSData *hash = [self toDataWithSubscriptIndex:i].SHA256_2;
-        NSMutableData *s = [NSMutableData dataWithData:[keys[keyIdx] sign:hash]];
-        NSArray *elem = [self.inScripts[i] scriptElements];
-
-        [s appendUInt8:SIGHASH_ALL];
-        [sig appendScriptPushData:s];
-
-        if (elem.count >= 2 && [elem[elem.count - 2] intValue] == OP_EQUALVERIFY) { // pay-to-pubkey-hash scriptSig
-            [sig appendScriptPushData:[keys[keyIdx] publicKey]];
-        }
-
-        [self.signatures replaceObjectAtIndex:i withObject:sig];
-    }
-    
-    if (! [self isSigned]) return NO;
-    
-    _txHash = self.data.SHA256_2;
-        
-    return YES;
-}
-
-// checks if all signatures exist, but does not verify them
-- (BOOL)isSigned
-{
-    return (self.signatures.count > 0 && self.signatures.count == self.hashes.count &&
-            ! [self.signatures containsObject:[NSNull null]]);
-}
-
 // Returns the binary transaction data that needs to be hashed and signed with the private key for the tx input at
 // subscriptIndex. A subscriptIndex of NSNotFound will return the entire signed transaction
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex
@@ -350,19 +328,46 @@ sequence:(uint32_t)sequence
     return d;
 }
 
-- (NSData *)toData
+- (BOOL)signWithPrivateKeys:(NSArray *)privateKeys
 {
-    return [self toDataWithSubscriptIndex:NSNotFound];
-}
-
-- (size_t)size
-{
-    //TODO: not all keys come from this wallet (private keys can be swept), might cause a lower than standard tx fee
-    size_t sigSize = 149; // electrum seeds generate uncompressed keys, bip32 uses compressed
-//    size_t sigSize = 181;
-
-    return 8 + [NSMutableData sizeOfVarInt:self.hashes.count] + [NSMutableData sizeOfVarInt:self.addresses.count] +
-           sigSize*self.hashes.count + 34*self.addresses.count;
+    NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:privateKeys.count],
+    *keys = [NSMutableArray arrayWithCapacity:privateKeys.count];
+    
+    for (NSString *pk in privateKeys) {
+        BRKey *key = [BRKey keyWithPrivateKey:pk];
+        
+        if (! key) continue;
+        
+        [keys addObject:key];
+        [addresses addObject:key.address];
+    }
+    
+    for (NSUInteger i = 0; i < self.hashes.count; i++) {
+        NSString *addr = [NSString addressWithScriptPubKey:self.inScripts[i]];
+        NSUInteger keyIdx = addr ? [addresses indexOfObject:addr] : NSNotFound;
+        
+        if (keyIdx == NSNotFound) continue;
+        
+        NSMutableData *sig = [NSMutableData data];
+        NSData *hash = [self toDataWithSubscriptIndex:i].SHA256_2;
+        NSMutableData *s = [NSMutableData dataWithData:[keys[keyIdx] sign:hash]];
+        NSArray *elem = [self.inScripts[i] scriptElements];
+        
+        [s appendUInt8:SIGHASH_ALL];
+        [sig appendScriptPushData:s];
+        
+        if (elem.count >= 2 && [elem[elem.count - 2] intValue] == OP_EQUALVERIFY) { // pay-to-pubkey-hash scriptSig
+            [sig appendScriptPushData:[keys[keyIdx] publicKey]];
+        }
+        
+        [self.signatures replaceObjectAtIndex:i withObject:sig];
+    }
+    
+    if (! [self isSigned]) return NO;
+    
+    _txHash = self.data.SHA256_2;
+    
+    return YES;
 }
 
 // priority = sum(input_amount_in_satoshis*input_age_in_blocks)/size_in_bytes
@@ -404,11 +409,6 @@ sequence:(uint32_t)sequence
     // however we should be okay up to the largest current bitcoin balance in existence for the next 40 years or so,
     // and the worst case is paying a transaction fee when it's not needed
     return (uint32_t)((TX_FREE_MIN_PRIORITY*(uint64_t)self.size + amountsByHeights + amountTotal - 1ULL)/amountTotal);
-}
-
-- (uint64_t)standardFee
-{
-    return ((self.size + 999)/1000)*TX_FEE_PER_KB;
 }
 
 - (NSUInteger)hash

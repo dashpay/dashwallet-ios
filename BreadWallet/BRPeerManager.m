@@ -277,8 +277,15 @@ static const char *dns_seeds[] = {
         }
 
         for (BRMerkleBlockEntity *e in [BRMerkleBlockEntity allObjects]) {
-            _blocks[e.blockHash] = [e merkleBlock];
+            BRMerkleBlock *b = e.merkleBlock;
+
+            _blocks[e.blockHash] = b;
+            
+            // track moving average transactions per block using a 1% low pass filter
+            if (b.totalTransactions > 0) _averageTxPerBlock = _averageTxPerBlock*0.99 + b.totalTransactions*0.01;
         };
+        
+        [[BRWalletManager sharedInstance] setAverageBlockSize:self.averageTxPerBlock*TX_AVERAGE_SIZE];
     }];
 
     return _blocks;
@@ -978,8 +985,8 @@ static const char *dns_seeds[] = {
 
     // track the observed bloom filter false positive rate using a low pass filter to smooth out variance
     if (peer == self.downloadPeer && block.totalTransactions > 0) {
-        // 1% low pass filter, also weights each block by total transactions, using 400 tx per block as typical
-        self.filterFpRate = self.filterFpRate*(1.0 - 0.01*block.totalTransactions/400) + 0.01*block.txHashes.count/400;
+        // 1% low pass filter, also weights each block by total transactions, using 600 tx per block as typical
+        self.filterFpRate = self.filterFpRate*(1.0 - 0.01*block.totalTransactions/600) + 0.01*block.txHashes.count/600;
 
         if (self.filterFpRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) { // false positive rate sanity check
             NSLog(@"%@:%d bloom filter false positive rate too high after %d blocks, disconnecting...", peer.host,
@@ -1051,6 +1058,9 @@ static const char *dns_seeds[] = {
         self.lastBlock = block;
         [self setBlockHeight:block.height forTxHashes:block.txHashes];
         if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
+
+        // track moving average transactions per block using a 1% low pass filter
+        if (block.totalTransactions > 0) _averageTxPerBlock = _averageTxPerBlock*0.99 + block.totalTransactions*0.01;
     }
     else if (self.blocks[block.blockHash] != nil) { // we already have the block (or at least the header)
         if ((block.height % 500) == 0 || block.txHashes.count > 0 || block.height > peer.lastblock) {
@@ -1122,6 +1132,7 @@ static const char *dns_seeds[] = {
         [self syncStopped];
         [peer sendGetaddrMessage]; // request a list of other bitcoin peers
         self.syncStartHeight = 0;
+        [[BRWalletManager sharedInstance] setAverageBlockSize:self.averageTxPerBlock*TX_AVERAGE_SIZE];
 
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerSyncFinishedNotification

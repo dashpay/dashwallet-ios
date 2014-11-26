@@ -40,6 +40,7 @@
 @property (nonatomic, readonly) NSArray *recentTransactions; // BRTransaction objects sorted by date, most recent first
 @property (nonatomic, readonly) uint64_t totalSent; // the total amount spent from the wallet (excluding change)
 @property (nonatomic, readonly) uint64_t totalReceived; // the total amount received to the wallet (excluding change)
+@property (nonatomic, assign) uint64_t feePerKb; // fee per kb of transaction size to use when including tx fee
 
 - (instancetype)initWithContext:(NSManagedObjectContext *)context sequence:(id<BRKeySequence>)sequence
 masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt, uint64_t amount))seed;

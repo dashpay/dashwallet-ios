@@ -90,7 +90,7 @@ annotation:(id)annotation
 - (void)application:(UIApplication *)application
 performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler
 {
-    __block id syncFinishedObserver = nil, syncFailedObserver = nil;
+    __block id syncFinishedObserver = nil, syncFailedObserver = nil, protectedObserver = nil;
     __block void (^completion)(UIBackgroundFetchResult) = completionHandler;
     BRPeerManager *m = [BRPeerManager sharedInstance];
 
@@ -99,40 +99,25 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         return;
     }
 
-#if DEBUG
-    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-    NSMutableArray *a = [[defs arrayForKey:@"debug_backgroundfetch"] mutableCopy];
-    NSInteger i = a.count;
-    NSMutableDictionary *d = [@{@"start_height":@(m.lastBlockHeight),
-                                @"start_stamp":@([NSDate timeIntervalSinceReferenceDate])} mutableCopy];
-
-    [a insertObject:d atIndex:i];
-    [defs setObject:a forKey:@"debug_backgroundfetch"];
-    [defs synchronize];
-#endif
-
     // timeout after 25 seconds
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 25*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        if (m.syncProgress > 0.1) {
-            if (completion) completion(UIBackgroundFetchResultNewData);
+        if (completion) {
+            completion(m.syncProgress > 0.1 ? UIBackgroundFetchResultNewData : UIBackgroundFetchResultFailed);
+            completion = nil;
         }
-        else if (completion) completion(UIBackgroundFetchResultFailed);
-        completion = nil;
 
+        if (protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:protectedObserver];
         if (syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFinishedObserver];
         if (syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFailedObserver];
-        syncFinishedObserver = syncFailedObserver = nil;
+        protectedObserver = syncFinishedObserver = syncFailedObserver = nil;
         //TODO: disconnect
-        
-#if DEBUG
-        [d setObject:@(m.syncProgress) forKey:@"timeout_progress"];
-        [d setObject:@(m.lastBlockHeight) forKey:@"timeout_height"];
-        [d setObject:@([NSDate timeIntervalSinceReferenceDate]) forKey:@"timeout_stamp"];
-        [a insertObject:d atIndex:i];
-        [defs setObject:a forKey:@"debug_backgroundfetch"];
-        [defs synchronize];
-#endif
     });
+
+    protectedObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationProtectedDataDidBecomeAvailable object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
+            [m connect];
+        }];
 
     syncFinishedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
@@ -140,17 +125,10 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
             if (completion) completion(UIBackgroundFetchResultNewData);
             completion = nil;
             
+            if (protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:protectedObserver];
             if (syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFinishedObserver];
             if (syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFailedObserver];
-            syncFinishedObserver = syncFailedObserver = nil;
-
-#if DEBUG
-            [d setObject:@(m.lastBlockHeight) forKey:@"finished_height"];
-            [d setObject:@([NSDate timeIntervalSinceReferenceDate]) forKey:@"finished_stamp"];
-            [a insertObject:d atIndex:i];
-            [defs setObject:a forKey:@"debug_backgroundfetch"];
-            [defs synchronize];
-#endif
+            protectedObserver = syncFinishedObserver = syncFailedObserver = nil;
         }];
 
     syncFailedObserver =
@@ -159,17 +137,10 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
             if (completion) completion(UIBackgroundFetchResultFailed);
             completion = nil;
 
+            if (protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:protectedObserver];
             if (syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFinishedObserver];
             if (syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFailedObserver];
-            syncFinishedObserver = syncFailedObserver = nil;
-            
-#if DEBUG
-            [d setObject:@(m.lastBlockHeight) forKey:@"failed_height"];
-            [d setObject:@([NSDate timeIntervalSinceReferenceDate]) forKey:@"failed_stamp"];
-            [a insertObject:d atIndex:i];
-            [defs setObject:a forKey:@"debug_backgroundfetch"];
-            [defs synchronize];
-#endif
+            protectedObserver = syncFinishedObserver = syncFailedObserver = nil;
         }];
     
     [m connect];

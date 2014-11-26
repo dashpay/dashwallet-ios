@@ -432,6 +432,18 @@ static NSString *getKeychainString(NSString *key)
     return isPasscodeEnabled();
 }
 
+- (void)setAverageBlockSize:(size_t)size
+{
+    _averageBlockSize = size;
+#if TX_FEE_0_8_RULES
+    return;
+#endif
+
+    // if average block size increases past 500kb, start increasing tx fee up to 100bits/kb when block size hits 800kb
+    self.wallet.feePerKb = TX_FEE_PER_KB;
+    if (size > 500*1024) self.wallet.feePerKb *= (size < 800*1024) ? 10*(size - 500*1024)/(300*1024) : 10;
+}
+
  // generates a random seed, saves to keychain and returns the associated seedPhrase
 - (NSString *)generateRandomSeed
 {
@@ -463,6 +475,8 @@ static NSString *getKeychainString(NSString *key)
     if (! touchid) setKeychainInt(self.wallet.totalSent + amount + self.spendingLimit, SPEND_LIMIT_KEY, NO);
     return self.seed;
 }
+
+#pragma mark - authentication
 
 // prompts user to authenticate with touch id or passcode
 - (BOOL)authenticateWithPrompt:(NSString *)authprompt andTouchId:(BOOL)touchId
@@ -736,6 +750,8 @@ static NSString *getKeychainString(NSString *key)
     return [[NSUserDefaults standardUserDefaults] doubleForKey:SECURE_TIME_KEY];
 }
 
+#pragma mark - exchange rate
+
 // local currency ISO code
 - (void)setLocalCurrencyCode:(NSString *)localCurrencyCode
 {
@@ -833,6 +849,8 @@ static NSString *getKeychainString(NSString *key)
         });
     }];
 }
+
+#pragma mark - sweep private key
 
 // given a private key, queries blockchain for unspent outputs and calls the completion block with a signed transaction
 // that will sweep the balance into the wallet (doesn't publish the tx)

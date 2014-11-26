@@ -718,12 +718,6 @@
                     l.attributedText = s;
                     [l.superview.gestureRecognizers.firstObject addTarget:self action:@selector(about:)];
                     
-#ifdef DEBUG
-                    [(UITextView *)[c.view viewWithTag:412]
-                     setText:[[[NSUserDefaults standardUserDefaults] objectForKey:@"debug_backgroundfetch"]
-                              description]];
-#endif
-                    
                     [self.navigationController pushViewController:c animated:YES];
                     break;
                     
