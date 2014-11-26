@@ -367,7 +367,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             size_t size = transaction.size + 34; // assume we will be adding a change output (additional 34 bytes)
         
             feeAmount = ((size + 999)/1000)*TX_FEE_PER_KB;
-            if (size*self.feePerKb > feeAmount) feeAmount = size*self.feePerKb;
+            if (size*self.feePerKb/1000 > feeAmount) feeAmount = size*self.feePerKb/1000;
         }
         
         if (balance == amount + feeAmount || balance >= amount + feeAmount + TX_MIN_OUTPUT_AMOUNT) break;
