@@ -191,17 +191,11 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     NSString *prompt = (isSecure && name.length > 0) ? LOCK @" " : @"";
 
     //BUG: XXXX limit the length of name and memo to avoid having the amount clipped
-
     if (! isSecure && self.request.errorMessage.length > 0) prompt = [prompt stringByAppendingString:REDX @" "];
     if (name.length > 0) prompt = [prompt stringByAppendingString:sanitizeString(name)];
     if (! isSecure && prompt.length > 0) prompt = [prompt stringByAppendingString:@"\n"];
-
-    if (! isSecure || prompt.length == 0) {
-        prompt = [prompt stringByAppendingString:[NSString base58WithData:[address base58ToData]]];
-    }
-
+    if (! isSecure || prompt.length == 0) prompt = [prompt stringByAppendingString:address];
     if (memo.length > 0) prompt = [prompt stringByAppendingFormat:@"\n\n%@", sanitizeString(memo)];
-    
     prompt = [prompt stringByAppendingFormat:@"\n\n%@ (%@)", [m stringForAmount:amount - fee],
               [m localCurrencyStringForAmount:amount - fee]];
 

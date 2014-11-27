@@ -55,6 +55,7 @@
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) BRBubbleView *tipView;
 @property (nonatomic, assign) BOOL appeared, showTips, inNextTip;
+@property (nonatomic, assign) uint64_t balance;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) id urlObserver, fileObserver, foregroundObserver, backgroundObserver, balanceObserver;
 @property (nonatomic, strong) id reachabilityObserver, syncStartedObserver, syncFinishedObserver, syncFailedObserver;
@@ -99,7 +100,6 @@
         if (! [view isKindOfClass:[UIScrollView class]]) continue;
         self.scrollView = (id)view;
         self.scrollView.delegate = self;
-        //self.scrollView.delaysContentTouches = NO; // this allows buttons to respond more quickly
         break;
     }
 
@@ -217,11 +217,8 @@
             if ([[BRPeerManager sharedInstance] syncProgress] < 1.0) return; // wait for sync before updating balance
             [self showBackupDialogIfNeeded];
             if (! m.didAuthenticate) self.navigationItem.titleView = self.logo;
-            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                         [m localCurrencyStringForAmount:m.wallet.balance]];
             [self.receiveViewController updateAddress];
-            
-            // TODO: XXXX show new tx indicator if appropriate
+            self.balance = m.wallet.balance;
         }];
 
     self.syncStartedObserver =
@@ -247,9 +244,8 @@
             [self showBackupDialogIfNeeded];
             self.percent.hidden = YES;
             if (! m.didAuthenticate) self.navigationItem.titleView = self.logo;
-            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                         [m localCurrencyStringForAmount:m.wallet.balance]];
             [self.receiveViewController updateAddress];
+            self.balance = m.wallet.balance;
         }];
     
     self.syncFailedObserver =
@@ -263,6 +259,7 @@
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
             [self.receiveViewController updateAddress];
+            self.balance = m.wallet.balance;
         }];
     
     //TODO: XXXX applicationProtectedDataDidBecomeAvailable observer
@@ -270,9 +267,10 @@
     self.reachability = [Reachability reachabilityForInternetConnection];
     [self.reachability startNotifier];
 
+    _balance = m.wallet.balance; // initialize balance without triggering recieve alert
+    self.balance = self.balance;
+    
     self.navigationController.delegate = self;
-    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                 [m localCurrencyStringForAmount:m.wallet.balance]];
 
 #if BITCOIN_TESTNET
     UILabel *label = [UILabel new];
@@ -425,6 +423,23 @@
     if (self.syncStartedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
     if (self.syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFinishedObserver];
     if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
+}
+
+- (void)setBalance:(uint64_t)balance
+{
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+
+    if (balance > _balance) {
+        [self.view addSubview:[[[BRBubbleView viewWithText:[NSString
+         stringWithFormat:NSLocalizedString(@"received %@ (%@)", nil), [m stringForAmount:balance - _balance],
+         [m localCurrencyStringForAmount:balance - _balance]]
+         center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
+         popOutAfterDelay:2.0]];
+    }
+
+    _balance = balance;
+    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:balance],
+                                 [m localCurrencyStringForAmount:balance]];
 }
 
 - (void)startActivityWithTimeout:(NSTimeInterval)timeout

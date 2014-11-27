@@ -58,7 +58,7 @@
 #if TX_FEE_0_8_RULES
 #define DEFAULT_FEE_PER_KB     0                        // use standard minimum fee instead
 #else
-#define DEFAULT_FEE_PER_KB     (TX_FEE_PER_KB*1100/247) // slightly higher than typical 247byte tx with a 10bit fee
+#define DEFAULT_FEE_PER_KB     (TX_FEE_PER_KB*1100/247) // slightly higher than a typical 247byte tx with a 10bit fee
 #endif
 
 #define LOCAL_CURRENCY_SYMBOL_KEY @"LOCAL_CURRENCY_SYMBOL"
@@ -447,7 +447,7 @@ static NSString *getKeychainString(NSString *key)
     return;
 #endif
 
-    // if average block size increases past 650kb, start increasing tx fee up to 410bits/kb when block size hits 850kb,
+    // if average block size increases past 650kb, start increasing tx fee up to a max of 10x when block size hits 850kb
     // we want to increase the fee/kb to where we just beat a typical 247byte tx with a 100bit fee
     self.wallet.feePerKb = DEFAULT_FEE_PER_KB;
     if (size > 650*1000) self.wallet.feePerKb *= (size < 850*1000) ? 10*(size - 650*1000)/(200*1000) : 10;
