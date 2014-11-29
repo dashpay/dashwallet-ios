@@ -379,7 +379,7 @@ static NSString *getKeychainString(NSString *key)
 // requesting seedPhrase will trigger authentication
 - (NSString *)seedPhrase
 {
-    return getKeychainString(MNEMONIC_KEY);
+    return [self seedPhraseWithPrompt:nil];
 }
 
 - (void)setSeedPhrase:(NSString *)seedPhrase
@@ -485,6 +485,12 @@ static NSString *getKeychainString(NSString *key)
     return self.seed;
 }
 
+// authenticates user and returns seedPhrase
+- (NSString *)seedPhraseWithPrompt:(NSString *)authprompt
+{
+    return ([self authenticateWithPrompt:authprompt andTouchId:NO]) ? getKeychainString(MNEMONIC_KEY) : nil;
+}
+
 #pragma mark - authentication
 
 // prompts user to authenticate with touch id or passcode
@@ -524,7 +530,6 @@ static NSString *getKeychainString(NSString *key)
                                         DISPLAY_NAME] message:authprompt]) {
         if (self.alertView.visible) {
             [self.alertView dismissWithClickedButtonIndex:self.alertView.cancelButtonIndex animated:YES];
-            [self.pinField performSelector:@selector(resignFirstResponder) withObject:nil afterDelay:0.1];
         }
         
         self.didAuthenticate = YES;
@@ -562,9 +567,20 @@ static NSString *getKeychainString(NSString *key)
             if (wait < 2.0) wait = 1.0, unit = NSLocalizedString(@"minute", nil);
             if (wait >= 60.0) wait /= 60.0, unit = NSLocalizedString((wait < 2.0) ? @"hour" : @"hours", nil);
         
-            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"wallet disabled", nil)
-              message:[NSString stringWithFormat:NSLocalizedString(@"\ntry again in %d %@", nil), (int)wait, unit]
-              delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+            if (! self.alertView.isVisible) {
+                self.alertView = [UIAlertView new];
+                [self.alertView addButtonWithTitle:NSLocalizedString(@"reset", nil)];
+                [self.alertView addButtonWithTitle:NSLocalizedString(@"ok", nil)];
+                self.alertView.cancelButtonIndex = 1;
+            }
+            
+            [self.pinField resignFirstResponder];
+            [self.alertView setValue:nil forKey:@"accessoryView"];
+            self.alertView.title = NSLocalizedString(@"wallet disabled", nil);
+            self.alertView.message = [NSString stringWithFormat:NSLocalizedString(@"\ntry again in %d %@", nil),
+                                      (int)wait, unit];
+            self.alertView.delegate = self;
+            if (! self.alertView.isVisible) [self.alertView show];
             return NO;
         }
         else if (failCount < 7) {
@@ -621,6 +637,8 @@ static NSString *getKeychainString(NSString *key)
             if (self.secureTime + NSTimeIntervalSince1970 > failHeight) {
                 setKeychainInt(self.secureTime + NSTimeIntervalSince1970, PIN_FAIL_HEIGHT_KEY, NO);
             }
+            
+            if (failCount >= 3) return [self authenticatePinWithTitle:title message:message];
         }
         
         self.pinField.text = nil;
@@ -636,14 +654,9 @@ static NSString *getKeychainString(NSString *key)
             animations:^{ v.center = p; } completion:^(BOOL finished) {
                 [self textField:self.pinField shouldChangeCharactersInRange:NSMakeRange(0, 0) replacementString:@""];
             }];
-
-            if (failCount >= 3) {
-                [self.alertView dismissWithClickedButtonIndex:self.alertView.cancelButtonIndex animated:YES];
-            }
         }];
     }
 
-    [self.pinField performSelector:@selector(resignFirstResponder) withObject:nil afterDelay:0.1];
     return NO;
 }
 
@@ -673,8 +686,8 @@ static NSString *getKeychainString(NSString *key)
         }];
     }
     else {
-        self.alertView = [[UIAlertView alloc] initWithTitle:title message:nil delegate:self
-                          cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:nil];
+        self.alertView = [[UIAlertView alloc] initWithTitle:title message:@"\n" delegate:self cancelButtonTitle:nil
+                          otherButtonTitles:nil];
         self.pinField = nil;
         [self.alertView setValue:self.pinField forKey:@"accessoryView"];
         [self.alertView show];
@@ -714,7 +727,6 @@ static NSString *getKeychainString(NSString *key)
             self.pinField.text = nil;
             setKeychainString(pin, PIN_KEY, NO);
             [self.alertView dismissWithClickedButtonIndex:self.alertView.cancelButtonIndex animated:YES];
-            [self.pinField performSelector:@selector(resignFirstResponder) withObject:nil afterDelay:0.1];
             return YES;
         }
         
@@ -731,7 +743,6 @@ static NSString *getKeychainString(NSString *key)
         }];
     }
     
-    [self.pinField performSelector:@selector(resignFirstResponder) withObject:nil afterDelay:0.1];
     return NO;
 }
 
@@ -1083,10 +1094,51 @@ replacementString:(NSString *)string
         CGPointMake([UIScreen mainScreen].bounds.size.width/2.0, [UIScreen mainScreen].bounds.size.height/2.0 - 108.0);
 }
 
+#pragma mark - UITextViewDelegate
+
+- (void)textViewDidChange:(UITextView *)textView
+{
+    BRBIP39Mnemonic *m = [BRBIP39Mnemonic sharedInstance];
+    
+    @autoreleasepool {  // @autoreleasepool ensures sensitive data will be dealocated immediately
+        if ([textView.text rangeOfString:@"\n"].location != NSNotFound) {
+            textView.text = [m normalizePhrase:textView.text];
+            
+            if (! [m phraseIsValid:[m normalizePhrase:textView.text]]) {
+                self.alertView.title = NSLocalizedString(@"bad backup phrase", nil);
+                [self.alertView performSelector:@selector(setTitle:) withObject:NSLocalizedString(@"backup phrase", nil)
+                 afterDelay:3.0];
+            }
+            else if (! [[m normalizePhrase:textView.text] isEqual:getKeychainString(MNEMONIC_KEY)]) {
+                self.alertView.title = NSLocalizedString(@"backup phrase doesn't match", nil);
+                [self.alertView performSelector:@selector(setTitle:) withObject:NSLocalizedString(@"backup phrase", nil)
+                 afterDelay:3.0];
+            }
+            else {
+                setKeychainData(nil, SPEND_LIMIT_KEY, NO);
+                setKeychainData(nil, PIN_KEY, NO);
+                setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
+                setKeychainData(nil, PIN_FAIL_HEIGHT_KEY, NO);
+                [self.alertView dismissWithClickedButtonIndex:0 animated:YES];
+                [self performSelector:@selector(setPin) withObject:nil afterDelay:0.0];
+            }
+        }
+    }
+}
+
+- (void)textViewDidBeginEditing:(UITextView *)textView
+{
+    if ([LAContext class]) return; // fix is needed for iOS 7 only
+    
+    textView.superview.superview.superview.superview.superview.center =
+        CGPointMake([UIScreen mainScreen].bounds.size.width/2.0, [UIScreen mainScreen].bounds.size.height/2.0 - 108.0);
+}
+
 #pragma mark - UIAlertViewDelegate
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
+    [NSObject cancelPreviousPerformRequestsWithTarget:alertView];
     if (alertView == self.alertView) self.alertView = nil;
 
     if (buttonIndex == alertView.cancelButtonIndex) {
@@ -1097,8 +1149,24 @@ replacementString:(NSString *)string
         self.sweepCompletion = nil;
         return;
     }
+    
+    if (! self.sweepKey || ! self.sweepCompletion) {
+        if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"reset", nil)]) {
+            self.alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"backup phrase", nil) message:nil
+                              delegate:nil cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:nil];
+            UITextView *v = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, 260, 180)];
 
-    if (! self.sweepKey || ! self.sweepCompletion) return;
+            v.keyboardType = UIKeyboardTypeASCIICapable;
+            v.returnKeyType = UIReturnKeyDone;
+            v.delegate = self;
+            v.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+            [self.alertView setValue:v forKey:@"accessoryView"];
+            [self.alertView show];
+            [v becomeFirstResponder];
+        }
+        
+        return;
+    }
 
     NSString *passphrase = [[alertView textFieldAtIndex:0] text];
 

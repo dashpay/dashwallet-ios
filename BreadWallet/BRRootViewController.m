@@ -256,8 +256,6 @@
             [self showBackupDialogIfNeeded];
             self.percent.hidden = YES;
             if (! m.didAuthenticate) self.navigationItem.titleView = self.logo;
-            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                         [m localCurrencyStringForAmount:m.wallet.balance]];
             [self.receiveViewController updateAddress];
             self.balance = m.wallet.balance;
         }];

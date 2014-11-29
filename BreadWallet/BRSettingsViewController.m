@@ -697,7 +697,7 @@
             if (indexPath.row > 0 && indexPath.row >= self.transactions.count) { // more...
                 [self performSelector:@selector(more:) withObject:nil afterDelay:0.0];
             }
-            else if (self.transactions.count > 0) {
+            else if (self.transactions.count > 0) { // transaction details
                 [self performSelector:@selector(showTx:) withObject:self.transactions[indexPath.row] afterDelay:0.0];
             }
 

@@ -41,22 +41,6 @@
 
 @end
 
-static NSString *normalize_phrase(NSString *phrase)
-{
-    NSMutableString *s = CFBridgingRelease(CFStringCreateMutableCopy(SecureAllocator(), 0, (CFStringRef)phrase));
-
-    [s replaceOccurrencesOfString:@"." withString:@" " options:0 range:NSMakeRange(0, s.length)];
-    [s replaceOccurrencesOfString:@"," withString:@" " options:0 range:NSMakeRange(0, s.length)];
-    CFStringTrimWhitespace((CFMutableStringRef)s);
-    CFStringLowercase((CFMutableStringRef)s, CFLocaleGetSystem());
-
-    while ([s rangeOfString:@"  "].location != NSNotFound) {
-        [s replaceOccurrencesOfString:@"  " withString:@" " options:0 range:NSMakeRange(0, s.length)];
-    }
-
-    return s;
-}
-
 @implementation BRRestoreViewController
 
 - (void)viewDidLoad
@@ -100,22 +84,29 @@ static NSString *normalize_phrase(NSString *phrase)
     if (self.keyboardObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.keyboardObserver];
 }
 
+- (void)wipeWithPhrase:(NSString *)phrase
+{
+    @autoreleasepool {
+        NSString *seedPhrase = [[BRWalletManager sharedInstance] seedPhrase];
+        
+        if (seedPhrase && ([phrase isEqual:seedPhrase] || [phrase isEqual:@"wipe"])) {
+            [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+              destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
+             showInView:[[UIApplication sharedApplication] keyWindow]];
+        }
+        else if (seedPhrase) {
+            [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"backup phrase doesn't match", nil)
+              delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+        }
+        else [self.textView becomeFirstResponder];
+    }
+}
+
 #pragma mark - IBAction
 
 - (IBAction)cancel:(id)sender
 {
     [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
-}
-
-- (IBAction)wipe:(id)sender
-{
-    if ([[BRWalletManager sharedInstance] authenticateWithPrompt:nil andTouchId:YES]) {
-        [[[UIActionSheet alloc] initWithTitle:nil delegate:self
-          cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-          destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
-         showInView:[[UIApplication sharedApplication] keyWindow]];
-    }
-    else [self.textView becomeFirstResponder];
 }
 
 #pragma mark - UITextViewDelegate
@@ -161,7 +152,7 @@ static NSString *normalize_phrase(NSString *phrase)
     
         if (! done) return;
 
-        NSString *phrase = normalize_phrase(s), *incorrect = nil;
+        NSString *phrase = [[BRBIP39Mnemonic sharedInstance] normalizePhrase:s], *incorrect = nil;
         NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)phrase,
                                                                               CFSTR(" ")));
 
@@ -173,7 +164,7 @@ static NSString *normalize_phrase(NSString *phrase)
 
         if ([s isEqual:@"wipe"]) { // shortcut word to force the wipe option to appear
             [self.textView resignFirstResponder];
-            [self performSelector:@selector(wipe:) withObject:nil afterDelay:0.0];
+            [self performSelector:@selector(wipeWithPhrase:) withObject:s afterDelay:0.0];
         }
         else if (incorrect) {
             textView.selectedRange = [[textView.text lowercaseString] rangeOfString:incorrect];
@@ -194,22 +185,8 @@ static NSString *normalize_phrase(NSString *phrase)
               cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
         else if (m.wallet) {
-            @autoreleasepool {
-                NSString *seedPhrase = m.seedPhrase;
-        
-                if (seedPhrase && [phrase isEqual:normalize_phrase(seedPhrase)]) {
-                    [[[UIActionSheet alloc] initWithTitle:nil delegate:self
-                      cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-                      destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
-                     showInView:[[UIApplication sharedApplication] keyWindow]];
-                
-                }
-                else if (seedPhrase) {
-                    [[[UIAlertView alloc] initWithTitle:nil
-                      message:NSLocalizedString(@"backup phrase doesn't match", nil) delegate:nil
-                      cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-                }
-            }
+            [self.textView resignFirstResponder];
+            [self performSelector:@selector(wipeWithPhrase:) withObject:s afterDelay:0.0];
         }
         else {
             //TODO: offer the user an option to move funds to a new seed if their wallet device was lost or stolen

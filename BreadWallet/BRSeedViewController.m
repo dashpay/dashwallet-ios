@@ -202,7 +202,7 @@
 {
     if (! [[UIApplication sharedApplication] isProtectedDataAvailable]) return;
 
-    [[BRWalletManager sharedInstance] generateRandomSeed];
+    self.seedPhrase = [[BRWalletManager sharedInstance] generateRandomSeed];
     [[BRPeerManager sharedInstance] connect];
     [[NSUserDefaults standardUserDefaults] setBool:YES forKey:WALLET_NEEDS_BACKUP_KEY];
     [[NSUserDefaults standardUserDefaults] synchronize];
@@ -210,13 +210,8 @@
     [UIView animateWithDuration:0.1 animations:^{
         self.seedLabel.alpha = 0.0;
     } completion:^(BOOL finished) {
-        @autoreleasepool {
-            self.seedLabel.text = [[BRWalletManager sharedInstance] seedPhrase];
-        }
-
-        [UIView animateWithDuration:0.1 animations:^{
-            self.seedLabel.alpha = 1.0;
-        }];
+        self.seedLabel.text = self.seedPhrase;
+        [UIView animateWithDuration:0.1 animations:^{ self.seedLabel.alpha = 1.0; }];
     }];
 }
 

@@ -72,22 +72,12 @@
 
 - (NSData *)decodePhrase:(NSString *)phrase
 {
-    CFMutableStringRef s = CFStringCreateMutableCopy(SecureAllocator(), phrase.length, (CFStringRef)phrase);
-
-    CFStringLowercase(s, CFLocaleGetSystem());
-    CFStringFindAndReplace(s, CFSTR("."), CFSTR(" "), CFRangeMake(0, CFStringGetLength(s)), 0);
-    CFStringFindAndReplace(s, CFSTR(","), CFSTR(" "), CFRangeMake(0, CFStringGetLength(s)), 0);
-    CFStringFindAndReplace(s, CFSTR("\n"), CFSTR(" "), CFRangeMake(0, CFStringGetLength(s)), 0);
-    CFStringTrimWhitespace(s);
-    while (CFStringFindAndReplace(s, CFSTR("  "), CFSTR(" "), CFRangeMake(0, CFStringGetLength(s)), 0) != 0);
-
     NSArray *words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:WORDS ofType:@"plist"]];
-    NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), s, CFSTR(" ")));
+    NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(),
+                                   (CFStringRef)[self normalizePhrase:phrase], CFSTR(" ")));
     NSMutableData *d = [NSMutableData secureDataWithCapacity:(a.count*11 + 7)/8];
     uint32_t n = (uint32_t)words.count, x, y;
     uint8_t b;
-
-    CFRelease(s);
 
     if ((a.count % 3) != 0 || a.count > 24) {
         NSLog(@"phrase has wrong number of words");
@@ -124,6 +114,23 @@
 - (BOOL)phraseIsValid:(NSString *)phrase
 {
     return ([self decodePhrase:phrase] == nil) ? NO : YES;
+}
+
+- (NSString *)normalizePhrase:(NSString *)phrase
+{
+    NSMutableString *s = CFBridgingRelease(CFStringCreateMutableCopy(SecureAllocator(), 0, (CFStringRef)phrase));
+        
+    [s replaceOccurrencesOfString:@"." withString:@" " options:0 range:NSMakeRange(0, s.length)];
+    [s replaceOccurrencesOfString:@"," withString:@" " options:0 range:NSMakeRange(0, s.length)];
+    [s replaceOccurrencesOfString:@"\n" withString:@" " options:0 range:NSMakeRange(0, s.length)];
+    CFStringTrimWhitespace((CFMutableStringRef)s);
+    CFStringLowercase((CFMutableStringRef)s, CFLocaleGetSystem());
+    
+    while ([s rangeOfString:@"  "].location != NSNotFound) {
+        [s replaceOccurrencesOfString:@"  " withString:@" " options:0 range:NSMakeRange(0, s.length)];
+    }
+    
+    return s;
 }
 
 - (NSData *)deriveKeyFromPhrase:(NSString *)phrase withPassphrase:(NSString *)passphrase

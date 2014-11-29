@@ -31,7 +31,7 @@
 @class BRWallet, BRTransaction;
 @protocol BRKeySequence;
 
-@interface BRWalletManager : NSObject<UIAlertViewDelegate, UITextFieldDelegate>
+@interface BRWalletManager : NSObject<UIAlertViewDelegate, UITextFieldDelegate, UITextViewDelegate>
 
 @property (nonatomic, readonly) BRWallet *wallet;
 @property (nonatomic, readonly) id<BRKeySequence> sequence;
@@ -53,6 +53,7 @@
 
 - (NSString *)generateRandomSeed; // generates a random seed, saves to keychain and returns the associated seedPhrase
 - (NSData *)seedWithPrompt:(NSString *)authprompt forAmount:(uint64_t)amount; // authenticates user and returns seed
+- (NSString *)seedPhraseWithPrompt:(NSString *)authprompt; // authenticates user and returns seedPhrase
 - (BOOL)authenticateWithPrompt:(NSString *)authprompt andTouchId:(BOOL)touchId; // prompts user to authenticate
 - (BOOL)setPin; // prompts the user to set or change wallet pin and returns true if the pin was successfully set
 
