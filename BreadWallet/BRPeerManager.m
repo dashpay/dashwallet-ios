@@ -42,6 +42,7 @@
 #define NODE_NETWORK         1  // services value indicating a node offers full blocks, not just headers
 #define PROTOCOL_TIMEOUT     30.0
 #define MAX_CONNECT_FAILURES 20 // notify user of network problems after this many connect failures in a row
+#define CHECKPOINT_COUNT     (sizeof(checkpoint_array)/sizeof(*checkpoint_array))
 
 #if BITCOIN_TESTNET
 
@@ -266,7 +267,7 @@ static const char *dns_seeds[] = {
         _blocks[GENESIS_BLOCK_HASH] = GENESIS_BLOCK;
 
         // add checkpoints to the block collection
-        for (int i = 0; i < sizeof(checkpoint_array)/sizeof(*checkpoint_array); i++) {
+        for (int i = 0; i < CHECKPOINT_COUNT; i++) {
             NSData *hash = [NSString stringWithUTF8String:checkpoint_array[i].hash].hexToData.reverse;
 
             _blocks[hash] = [[BRMerkleBlock alloc] initWithBlockHash:hash version:1 prevBlock:nil merkleRoot:nil
@@ -326,7 +327,7 @@ static const char *dns_seeds[] = {
     _lastBlock = [[BRMerkleBlockEntity fetchObjects:req].lastObject merkleBlock];
 
     // if we don't have any blocks yet, use the latest checkpoint that is at least a week older than earliestKeyTime
-    for (int i = sizeof(checkpoint_array)/sizeof(*checkpoint_array) - 1; ! _lastBlock && i >= 0; i--) {
+    for (int i = CHECKPOINT_COUNT - 1; ! _lastBlock && i >= 0; i--) {
         if (checkpoint_array[i].timestamp + 7*24*60*60 - NSTimeIntervalSince1970 >= self.earliestKeyTime) continue;
         _lastBlock = [[BRMerkleBlock alloc]
                       initWithBlockHash:[NSString stringWithUTF8String:checkpoint_array[i].hash].hexToData.reverse
@@ -471,7 +472,7 @@ static const char *dns_seeds[] = {
     _lastBlock = nil;
 
     // start the chain download from the most recent checkpoint that's at least a week older than earliestKeyTime
-    for (int i = sizeof(checkpoint_array)/sizeof(*checkpoint_array) - 1; ! _lastBlock && i >= 0; i--) {
+    for (int i = CHECKPOINT_COUNT - 1; ! _lastBlock && i >= 0; i--) {
         if (checkpoint_array[i].timestamp + 7*24*60*60 - NSTimeIntervalSince1970 >= self.earliestKeyTime) continue;
         self.lastBlock = self.blocks[[NSString stringWithUTF8String:checkpoint_array[i].hash].hexToData.reverse];
     }
@@ -556,7 +557,7 @@ static const char *dns_seeds[] = {
     uint32_t h = self.lastBlockHeight;
     NSTimeInterval t = self.lastBlock.timestamp + NSTimeIntervalSince1970;
 
-    for (int i = sizeof(checkpoint_array)/sizeof(*checkpoint_array) - 1; i >= 0; i--) { // estimate from checkpoints
+    for (int i = CHECKPOINT_COUNT - 1; i >= 0; i--) { // estimate from checkpoints
         if (checkpoint_array[i].height <= blockHeight) {
             t = checkpoint_array[i].timestamp + (t - checkpoint_array[i].timestamp)*
                 (blockHeight - checkpoint_array[i].height)/(h - checkpoint_array[i].height);
@@ -1081,7 +1082,7 @@ static const char *dns_seeds[] = {
         }
     }
     else { // new block is on a fork
-        if (block.height <= BITCOIN_REFERENCE_BLOCK_HEIGHT) { // fork is older than the most recent checkpoint
+        if (block.height <= checkpoint_array[CHECKPOINT_COUNT - 1].height) { // fork is older than last checkpoint
             NSLog(@"ignoring block on fork older than most recent checkpoint, fork height: %d, blockHash: %@",
                   block.height, block.blockHash);
             return;

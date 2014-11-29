@@ -29,7 +29,6 @@
 #import "BRKey+BIP38.h"
 #import "BRBIP39Mnemonic.h"
 #import "BRBIP32Sequence.h"
-#import "BRPeer.h"
 #import "BRTransaction.h"
 #import "BRTransactionEntity.h"
 #import "BRAddressEntity.h"
@@ -410,7 +409,7 @@ static NSString *getKeychainString(NSString *key)
 {
     NSData *d = getKeychainData(CREATION_TIME_KEY);
 
-    return (d.length < sizeof(NSTimeInterval)) ? BITCOIN_REFERENCE_BLOCK_TIME : *(const NSTimeInterval *)d.bytes;
+    return (d.length < sizeof(NSTimeInterval)) ? BIP39_CREATION_TIME : *(const NSTimeInterval *)d.bytes;
 }
 
 // true if device passcode is enabled
