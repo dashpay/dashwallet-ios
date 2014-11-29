@@ -220,7 +220,9 @@ static const char *dns_seeds[] = {
             }
         }];
 
-        if (_peers.count < PEER_MAX_CONNECTIONS) {
+        [self sortPeers];
+
+        if (_peers.count < PEER_MAX_CONNECTIONS || [_peers[PEER_MAX_CONNECTIONS - 1] timestamp] < now - 3*24*60*60) {
             for (int i = 0; i < sizeof(dns_seeds)/sizeof(*dns_seeds); i++) { // DNS peer discovery
                 struct hostent *h = gethostbyname(dns_seeds[i]);
 
@@ -266,8 +268,7 @@ static const char *dns_seeds[] = {
 
         _blocks[GENESIS_BLOCK_HASH] = GENESIS_BLOCK;
 
-        // add checkpoints to the block collection
-        for (int i = 0; i < CHECKPOINT_COUNT; i++) {
+        for (int i = 0; i < CHECKPOINT_COUNT; i++) { // add checkpoints to the block collection
             NSData *hash = [NSString stringWithUTF8String:checkpoint_array[i].hash].hexToData.reverse;
 
             _blocks[hash] = [[BRMerkleBlock alloc] initWithBlockHash:hash version:1 prevBlock:nil merkleRoot:nil
@@ -326,7 +327,7 @@ static const char *dns_seeds[] = {
     req.fetchLimit = 1;
     _lastBlock = [[BRMerkleBlockEntity fetchObjects:req].lastObject merkleBlock];
 
-    // if we don't have any blocks yet, use the latest checkpoint that is at least a week older than earliestKeyTime
+    // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
     for (int i = CHECKPOINT_COUNT - 1; ! _lastBlock && i >= 0; i--) {
         if (checkpoint_array[i].timestamp + 7*24*60*60 - NSTimeIntervalSince1970 >= self.earliestKeyTime) continue;
         _lastBlock = [[BRMerkleBlock alloc]
