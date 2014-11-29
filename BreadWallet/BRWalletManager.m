@@ -75,9 +75,7 @@
 #define PIN_KEY             @"pin"
 #define PIN_FAIL_COUNT_KEY  @"pinfailcount"
 #define PIN_FAIL_HEIGHT_KEY @"pinfailheight"
-
-// depreceated
-#define SEED_KEY            @"seed"
+#define SEED_KEY            @"seed" // depreceated
 
 static BOOL isPasscodeEnabled()
 {
@@ -141,14 +139,6 @@ static NSData *getKeychainData(NSString *key)
 
     if (status == errSecItemNotFound) return nil;
     if (status == noErr) return CFBridgingRelease(result);
-    
-    if (status == errSecAuthFailed && ! isPasscodeEnabled()) {
-        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"turn device passcode on", nil)
-         message:NSLocalizedString(@"\ngo to settings and turn passcode on to access restricted areas of your wallet",
-                                   nil) delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
-         otherButtonTitles:nil] show];
-    }
-    
     NSLog(@"SecItemCopyMatching error status %d", (int)status);
     return nil;
 }
@@ -227,8 +217,9 @@ static NSString *getKeychainString(NSString *key)
 
     [NSManagedObject setConcurrencyType:NSPrivateQueueConcurrencyType];
 
-    self.failedPins = [NSMutableSet set];
+    self.sequence = [BRBIP32Sequence new];
     self.reachability = [Reachability reachabilityForInternetConnection];
+    self.failedPins = [NSMutableSet set];
 
     _format = [NSNumberFormatter new];
     self.format.lenient = YES;
@@ -281,7 +272,7 @@ static NSString *getKeychainString(NSString *key)
     else {
         self.localFormat.currencySymbol = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencySymbol];
         self.localFormat.currencyCode = _localCurrencyCode =
-        [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
+            [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
         //BUG: if locale changed since last time, we'll start with an incorrect price
     }
     
@@ -301,12 +292,7 @@ static NSString *getKeychainString(NSString *key)
     if (getKeychainData(SEED_KEY)) { // upgrade from old keychain scheme
         NSLog(@"upgrading to authenticated keychain scheme");
         setKeychainData([self.sequence masterPublicKeyFromSeed:self.seed], MASTER_PUBKEY_KEY, NO);
-        self.didAuthenticate = NO;
-
-        if (setKeychainData(getKeychainData(MNEMONIC_KEY), MNEMONIC_KEY, YES)) {
-            setKeychainData(nil, SEED_KEY, NO);
-        }
-        else if (! self.passcodeEnabled) return nil;
+        if (setKeychainData(getKeychainData(MNEMONIC_KEY), MNEMONIC_KEY, YES)) setKeychainData(nil, SEED_KEY, NO);
     }
     
     if (! self.masterPublicKey) return _wallet;
@@ -353,12 +339,6 @@ static NSString *getKeychainString(NSString *key)
     }
 }
 
-- (id<BRKeySequence>)sequence
-{
-    if (! _sequence) _sequence = [BRBIP32Sequence new];
-    return _sequence;
-}
-
 // master public key used to generate wallet addresses
 - (NSData *)masterPublicKey
 {
@@ -368,11 +348,10 @@ static NSString *getKeychainString(NSString *key)
 - (NSData *)seed
 {
     @autoreleasepool {
-        BRBIP39Mnemonic *m = [BRBIP39Mnemonic sharedInstance];
         NSString *phrase = getKeychainString(MNEMONIC_KEY);
         
         if (phrase.length == 0) return nil;
-        return [m deriveKeyFromPhrase:phrase withPassphrase:nil];
+        return [[BRBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:phrase withPassphrase:nil];
     }
 }
 
@@ -468,7 +447,6 @@ static NSString *getKeychainString(NSString *key)
         
         // we store the wallet creation time on the keychain because keychain data persists even when an app is deleted
         setKeychainData([NSData dataWithBytes:&time length:sizeof(time)], CREATION_TIME_KEY, NO);
-        
         return phrase;
     }
 }
@@ -583,14 +561,10 @@ static NSString *getKeychainString(NSString *key)
             if (! self.alertView.isVisible) [self.alertView show];
             return NO;
         }
-        else if (failCount < 7) {
-            message = [NSString stringWithFormat:NSLocalizedString(@"\n%d attempts remaining\n%@", nil), 8 - failCount,
-                       message ? message : @""];
-        }
-        else {
-            message = [NSString stringWithFormat:NSLocalizedString(@"\n1 attempt remaining\n%@", nil),
-                       message ? message : @""];
-        }
+        
+        message = [(failCount >= 7 ? NSLocalizedString(@"\n1 attempt remaining\n", nil) :
+                    [NSString stringWithFormat:NSLocalizedString(@"\n%d attempts remaining\n", nil), 8 - failCount])
+                   stringByAppendingString:message];
     }
 
     //TODO: XXXX replace all alert views with darkened initial warning screen type dialog
@@ -598,7 +572,7 @@ static NSString *getKeychainString(NSString *key)
                       initWithTitle:[NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
                                      (title) ? title : @""] message:message delegate:self
                       cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:nil];
-    self.pinField = nil;
+    self.pinField = nil; // reset pinField so a new one is created
     [self.alertView setValue:self.pinField forKey:@"accessoryView"];
     [self.alertView show];
     [self.pinField becomeFirstResponder];
@@ -621,7 +595,7 @@ static NSString *getKeychainString(NSString *key)
         }
 
         if (! [self.failedPins containsObject:self.pinField.text]) { // only count unique failed attempts
-            if (failCount == 7) { // wipe wallet after 8 failed pin attempts and 24+ hours of lockout
+            if (++failCount == 8) { // wipe wallet after 8 failed pin attempts and 24+ hours of lockout
                 self.seedPhrase = nil;
                 
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC/10), dispatch_get_main_queue(), ^{
@@ -631,14 +605,14 @@ static NSString *getKeychainString(NSString *key)
                 return NO;
             }
 
-            [self.failedPins addObject:self.pinField.text];
-            setKeychainInt(++failCount, PIN_FAIL_COUNT_KEY, NO);
+            setKeychainInt(failCount, PIN_FAIL_COUNT_KEY, NO);
 
             if (self.secureTime + NSTimeIntervalSince1970 > failHeight) {
                 setKeychainInt(self.secureTime + NSTimeIntervalSince1970, PIN_FAIL_HEIGHT_KEY, NO);
             }
-            
-            if (failCount >= 3) return [self authenticatePinWithTitle:title message:message];
+
+            [self.failedPins addObject:self.pinField.text];
+            if (failCount >= 3) return [self authenticatePinWithTitle:title message:message]; // wallet disabled
         }
         
         self.pinField.text = nil;
@@ -665,7 +639,7 @@ static NSString *getKeychainString(NSString *key)
 {
     NSString *pin = getKeychainString(PIN_KEY);
     NSString *title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
-                       NSLocalizedString(@"choose passcode", nil)];
+                       [NSString stringWithFormat:NSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
 
     if (pin.length == 4) {
         if (! [self authenticatePinWithTitle:NSLocalizedString(@"enter old passcode", nil) message:nil]) {
@@ -686,9 +660,9 @@ static NSString *getKeychainString(NSString *key)
         }];
     }
     else {
-        self.alertView = [[UIAlertView alloc] initWithTitle:title message:@"\n" delegate:self cancelButtonTitle:nil
+        self.alertView = [[UIAlertView alloc] initWithTitle:title message:@" " delegate:self cancelButtonTitle:nil
                           otherButtonTitles:nil];
-        self.pinField = nil;
+        self.pinField = nil; // reset pinField so a new one is created
         [self.alertView setValue:self.pinField forKey:@"accessoryView"];
         [self.alertView show];
         [self.pinField becomeFirstResponder];
@@ -1072,12 +1046,7 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range
 replacementString:(NSString *)string
 {
-    NSMutableString *passcode = CFBridgingRelease(CFStringCreateMutableCopy(SecureAllocator(), 4,
-                                                                            (CFStringRef)textField.text));
-    
-    CFStringReplace((CFMutableStringRef)passcode, CFRangeMake(range.location, range.length), (CFStringRef)string);
-
-    NSUInteger l = passcode.length;
+    NSUInteger l = textField.text.length + string.length - range.length;
 
     self.alertView.title = [NSString stringWithFormat:@"%@\t%@\t%@\t%@%@", (l > 0 ? DOT : CIRCLE),
                             (l > 1 ? DOT : CIRCLE), (l > 2 ? DOT : CIRCLE), (l > 3 ? DOT : CIRCLE),
@@ -1100,7 +1069,7 @@ replacementString:(NSString *)string
 {
     BRBIP39Mnemonic *m = [BRBIP39Mnemonic sharedInstance];
     
-    @autoreleasepool {  // @autoreleasepool ensures sensitive data will be dealocated immediately
+    @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
         if ([textView.text rangeOfString:@"\n"].location != NSNotFound) {
             textView.text = [m normalizePhrase:textView.text];
             
@@ -1147,49 +1116,44 @@ replacementString:(NSString *)string
         if (self.sweepCompletion) self.sweepCompletion(nil, nil);
         self.sweepKey = nil;
         self.sweepCompletion = nil;
-        return;
     }
-    
-    if (! self.sweepKey || ! self.sweepCompletion) {
-        if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"reset", nil)]) {
-            self.alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"backup phrase", nil) message:nil
-                              delegate:nil cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:nil];
-            UITextView *v = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, 260, 180)];
+    else if (self.sweepKey && self.sweepCompletion) {
+        NSString *passphrase = [[alertView textFieldAtIndex:0] text];
 
-            v.keyboardType = UIKeyboardTypeASCIICapable;
-            v.returnKeyType = UIReturnKeyDone;
-            v.delegate = self;
-            v.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
-            [self.alertView setValue:v forKey:@"accessoryView"];
-            [self.alertView show];
-            [v becomeFirstResponder];
-        }
-        
-        return;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            BRKey *key = [BRKey keyWithBIP38Key:self.sweepKey andPassphrase:passphrase];
+
+            if (! key) {
+                UIAlertView *v = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"password protected key", nil)
+                                  message:NSLocalizedString(@"bad password, try again", nil) delegate:self
+                                  cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+                                  otherButtonTitles:NSLocalizedString(@"ok", nil), nil];
+
+                v.alertViewStyle = UIAlertViewStyleSecureTextInput;
+                [v textFieldAtIndex:0].returnKeyType = UIReturnKeyDone;
+                [v textFieldAtIndex:0].placeholder = NSLocalizedString(@"password", nil);
+                [v show];
+            }
+            else {
+                [self sweepPrivateKey:key.privateKey withFee:self.sweepFee completion:self.sweepCompletion];
+                self.sweepKey = nil;
+                self.sweepCompletion = nil;
+            }
+        });
     }
-
-    NSString *passphrase = [[alertView textFieldAtIndex:0] text];
-
-    dispatch_async(dispatch_get_main_queue(), ^{
-        BRKey *key = [BRKey keyWithBIP38Key:self.sweepKey andPassphrase:passphrase];
-
-        if (! key) {
-            UIAlertView *v = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"password protected key", nil)
-                              message:NSLocalizedString(@"bad password, try again", nil) delegate:self
-                              cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-                              otherButtonTitles:NSLocalizedString(@"ok", nil), nil];
-
-            v.alertViewStyle = UIAlertViewStyleSecureTextInput;
-            [v textFieldAtIndex:0].returnKeyType = UIReturnKeyDone;
-            [v textFieldAtIndex:0].placeholder = NSLocalizedString(@"password", nil);
-            [v show];
-        }
-        else {
-            [self sweepPrivateKey:key.privateKey withFee:self.sweepFee completion:self.sweepCompletion];
-            self.sweepKey = nil;
-            self.sweepCompletion = nil;
-        }
-    });
+    else if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"reset", nil)]) {
+        UITextView *t = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, 260, 180)];
+            
+        t.keyboardType = UIKeyboardTypeASCIICapable;
+        t.returnKeyType = UIReturnKeyDone;
+        t.delegate = self;
+        t.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+        self.alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"backup phrase", nil) message:nil
+                          delegate:nil cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:nil];
+        [self.alertView setValue:t forKey:@"accessoryView"];
+        [self.alertView show];
+        [t becomeFirstResponder];
+    }
 }
 
 @end
