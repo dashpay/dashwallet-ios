@@ -1026,12 +1026,12 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
 
     // if the amount is too small to be represented in local currency (but is != 0) then return a string like "<$0.01"
     if (amount > 0 && self.localCurrencyPrice*amount/SATOSHIS + DBL_EPSILON <
-        1.0/pow(10.0, self.localFormat.maximumFractionDigits)) {
+        0.9/pow(10.0, self.localFormat.maximumFractionDigits)) {
         ret = [@"<" stringByAppendingString:[self.localFormat
                stringFromNumber:@(1.0/pow(10.0, self.localFormat.maximumFractionDigits))]];
     }
     else if (amount < 0 && self.localCurrencyPrice*amount/SATOSHIS - DBL_EPSILON >
-             -1.0/pow(10.0, self.localFormat.maximumFractionDigits)) {
+             -0.9/pow(10.0, self.localFormat.maximumFractionDigits)) {
         // technically should be '>', but '<' is more intuitive
         ret = [@"<" stringByAppendingString:[self.localFormat
                stringFromNumber:@(-1.0/pow(10.0, self.localFormat.maximumFractionDigits))]];

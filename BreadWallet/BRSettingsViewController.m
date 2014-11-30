@@ -110,6 +110,9 @@
                 if (! m.didAuthenticate) self.navigationItem.titleView = self.logo;
                 self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                              [m localCurrencyStringForAmount:m.wallet.balance]];
+                self.selectorController.title = [NSString stringWithFormat:@"%@ = %@",
+                                                 [m localCurrencyStringForAmount:SATOSHIS/m.localCurrencyPrice],
+                                                 [m stringForAmount:SATOSHIS/m.localCurrencyPrice]];
 
                 if (self.transactions.firstObject != tx) {
                     [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
@@ -682,7 +685,6 @@
     if (tableView == self.selectorController.tableView) {
         self.selectedOption = self.selectorOptions[indexPath.row];
         m.localCurrencyCode = self.selectedOption;
-
         [tableView reloadData];
         [tableView selectRowAtIndexPath:indexPath animated:NO scrollPosition:UITableViewScrollPositionNone];
         [tableView deselectRowAtIndexPath:indexPath animated:YES];
@@ -768,7 +770,9 @@
                     self.selectorController.tableView.delegate = self;
                     self.selectorController.tableView.backgroundColor = [UIColor clearColor];
                     self.selectorController.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-                    self.selectorController.title = NSLocalizedString(@"local currency", nil);
+                    self.selectorController.title = [NSString stringWithFormat:@"%@ = %@",
+                                                     [m localCurrencyStringForAmount:SATOSHIS/m.localCurrencyPrice],
+                                                     [m stringForAmount:SATOSHIS/m.localCurrencyPrice]];
                     [self.navigationController pushViewController:self.selectorController animated:YES];
 
                     NSUInteger i = [self.selectorOptions indexOfObject:self.selectedOption];

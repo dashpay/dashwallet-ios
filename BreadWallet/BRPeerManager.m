@@ -250,9 +250,10 @@ static const char *dns_seeds[] = {
                                        services:NODE_NETWORK]];
                 }
             }
+            
+            [self sortPeers];
         }
 
-        [self sortPeers];
         return _peers;
     }
 }
