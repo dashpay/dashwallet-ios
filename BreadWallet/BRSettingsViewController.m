@@ -42,7 +42,7 @@
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *lock;
 
 @property (nonatomic, strong) NSArray *transactions;
-@property (nonatomic, assign) BOOL moreTx;
+@property (nonatomic, assign) BOOL moreTx, touchId;
 @property (nonatomic, strong) NSMutableDictionary *txDates;
 @property (nonatomic, strong) id balanceObserver, txStatusObserver, backgroundObserver;
 @property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
@@ -50,6 +50,7 @@
 @property (nonatomic, strong) UITableViewController *selectorController;
 @property (nonatomic, strong) NSArray *selectorOptions;
 @property (nonatomic, strong) NSString *selectedOption;
+@property (nonatomic, assign) NSUInteger selectorType;
 
 @end
 
@@ -59,18 +60,21 @@
 {
     [super viewDidLoad];
 
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+
     self.txDates = [NSMutableDictionary dictionary];
     self.wallpaper = [[UIImageView alloc] initWithFrame:self.navigationController.view.bounds];
     self.wallpaper.image = [UIImage imageNamed:@"wallpaper-default"];
     self.wallpaper.contentMode = UIViewContentModeLeft;
     [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
     self.navigationController.delegate = self;
-    self.moreTx = ([BRWalletManager sharedInstance].wallet.recentTransactions.count > 5) ? YES : NO;
+    self.moreTx = (m.wallet.recentTransactions.count > 5) ? YES : NO;
+    self.touchId = m.touchIdEnabled;
 
     self.backgroundObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            NSArray *a = [BRWalletManager sharedInstance].wallet.recentTransactions;
+            NSArray *a = m.wallet.recentTransactions;
 
             self.transactions = [a subarrayWithRange:NSMakeRange(0, a.count > 5 ? 5 : a.count)];
             self.moreTx = (a.count > 5) ? YES : NO;
@@ -110,9 +114,12 @@
                 if (! m.didAuthenticate) self.navigationItem.titleView = self.logo;
                 self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                              [m localCurrencyStringForAmount:m.wallet.balance]];
-                self.selectorController.title = [NSString stringWithFormat:@"%@ = %@",
-                                                 [m localCurrencyStringForAmount:SATOSHIS/m.localCurrencyPrice],
-                                                 [m stringForAmount:SATOSHIS/m.localCurrencyPrice]];
+
+                if (self.selectorType == 1) {
+                    self.selectorController.title = [NSString stringWithFormat:@"%@ = %@",
+                                                     [m localCurrencyStringForAmount:SATOSHIS/m.localCurrencyPrice],
+                                                     [m stringForAmount:SATOSHIS/m.localCurrencyPrice]];
+                }
 
                 if (self.transactions.firstObject != tx) {
                     [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
@@ -201,6 +208,18 @@
     if (self.syncStartedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
     if (self.syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFinishedObserver];
     if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
+}
+
+- (UITableViewController *)selectorController
+{
+    if (_selectorController) return _selectorController;
+    _selectorController = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
+    _selectorController.transitioningDelegate = self;
+    _selectorController.tableView.dataSource = self;
+    _selectorController.tableView.delegate = self;
+    _selectorController.tableView.backgroundColor = [UIColor clearColor];
+    _selectorController.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    return _selectorController;
 }
 
 - (void)setBackgroundForCell:(UITableViewCell *)cell tableView:(UITableView *)tableView indexPath:(NSIndexPath *)path
@@ -374,7 +393,7 @@
             return 2;
 
         case 3:
-            return 2;
+            return (self.touchId) ? 3 : 2;
 
         case 4:
             return 1;
@@ -547,13 +566,19 @@
             break;
 
         case 3:
-            switch (indexPath.row) {
+            switch ((self.touchId) ? indexPath.row : indexPath.row + 1) {
                 case 0:
                     cell = [tableView dequeueReusableCellWithIdentifier:selectorIdent];
-                    cell.detailTextLabel.text = m.localCurrencyCode;
+                    cell.textLabel.text = NSLocalizedString(@"touch id limit", nil);
+                    cell.detailTextLabel.text = [m stringForAmount:m.spendingLimit];
                     break;
 
                 case 1:
+                    cell = [tableView dequeueReusableCellWithIdentifier:selectorIdent];
+                    cell.detailTextLabel.text = m.localCurrencyCode;
+                    break;
+                
+                case 2:
                     cell = [tableView dequeueReusableCellWithIdentifier:toggleIdent];
                     toggleLabel = (id)[cell viewWithTag:2];
                     toggleSwitch = (id)[cell viewWithTag:3];
@@ -684,7 +709,12 @@
 
     if (tableView == self.selectorController.tableView) {
         self.selectedOption = self.selectorOptions[indexPath.row];
-        m.localCurrencyCode = self.selectedOption;
+
+        if (self.selectorType == 0) {
+            m.spendingLimit = (indexPath.row > 0) ? pow(10, indexPath.row + 6) : 0;
+        }
+        else m.localCurrencyCode = self.selectedOption;
+        
         [tableView reloadData];
         [tableView selectRowAtIndexPath:indexPath animated:NO scrollPosition:UITableViewScrollPositionNone];
         [tableView deselectRowAtIndexPath:indexPath animated:YES];
@@ -759,17 +789,28 @@
             break;
 
         case 3:
-            switch (indexPath.row) {
-                case 0: // local currency
+            self.selectorType = (self.touchId) ? indexPath.row : indexPath.row + 1;
+
+            switch (self.selectorType) {
+                case 0: // touch id spending limit
+                    self.selectorOptions = @[NSLocalizedString(@"always require passcode", nil),
+                                             [NSString stringWithFormat:@"%@      (%@)", [m stringForAmount:10000000],
+                                              [m localCurrencyStringForAmount:10000000]],
+                                             [NSString stringWithFormat:@"%@   (%@)", [m stringForAmount:100000000],
+                                              [m localCurrencyStringForAmount:100000000]],
+                                             [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:1000000000],
+                                              [m localCurrencyStringForAmount:1000000000]]];
+                    if (m.spendingLimit > 1000000000) m.spendingLimit = 1000000000;
+                    self.selectedOption = self.selectorOptions[(log10(m.spendingLimit) < 6) ? 0 :
+                                                               (NSUInteger)log10(m.spendingLimit) - 6];
+                    self.selectorController.title = NSLocalizedString(@"touch id spending limit", nil);
+                    [self.navigationController pushViewController:self.selectorController animated:YES];
+                    break;
+                    
+                case 1: // local currency
                     self.selectorOptions = [m.currencyCodes
                                             sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
                     self.selectedOption = m.localCurrencyCode;
-                    self.selectorController = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
-                    self.selectorController.transitioningDelegate = self;
-                    self.selectorController.tableView.dataSource = self;
-                    self.selectorController.tableView.delegate = self;
-                    self.selectorController.tableView.backgroundColor = [UIColor clearColor];
-                    self.selectorController.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
                     self.selectorController.title = [NSString stringWithFormat:@"%@ = %@",
                                                      [m localCurrencyStringForAmount:SATOSHIS/m.localCurrencyPrice],
                                                      [m stringForAmount:SATOSHIS/m.localCurrencyPrice]];
@@ -787,7 +828,7 @@
 
                     break;
 
-                case 1: // remove standard fees
+                case 2: // remove standard fees
                     break;
             }
 

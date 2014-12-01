@@ -76,15 +76,6 @@
 #define PIN_FAIL_HEIGHT_KEY @"pinfailheight"
 #define SEED_KEY            @"seed" // depreceated
 
-static BOOL isPasscodeEnabled()
-{
-    NSError *error = nil;
-
-    if (! [LAContext class]) return YES; // we can only check for passcode on iOS 8 and above
-    if ([[LAContext new] canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error]) return YES;
-    return (error && error.code == LAErrorPasscodeNotSet) ? NO : YES;
-}
-
 static BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
 {
     if (! key) return NO;
@@ -412,12 +403,24 @@ static NSString *getKeychainString(NSString *key)
     return (d.length < sizeof(NSTimeInterval)) ? BIP39_CREATION_TIME : *(const NSTimeInterval *)d.bytes;
 }
 
+// true if touch id is enabled
+- (BOOL)isTouchIdEnabled
+{
+    return ([LAContext class] &&
+            [[LAContext new] canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil]) ? YES : NO;
+}
+
 // true if device passcode is enabled
 - (BOOL)isPasscodeEnabled
 {
-    return isPasscodeEnabled();
+    NSError *error = nil;
+    
+    if (! [LAContext class]) return YES; // we can only check for passcode on iOS 8 and above
+    if ([[LAContext new] canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error]) return YES;
+    return (error && error.code == LAErrorPasscodeNotSet) ? NO : YES;
 }
 
+// set this to enable basic floating fee calculation
 - (void)setAverageBlockSize:(size_t)size
 {
     _averageBlockSize = size;
@@ -431,7 +434,7 @@ static NSString *getKeychainString(NSString *key)
     if (size > 650*1000) self.wallet.feePerKb *= (size < 850*1000) ? 10*(size - 650*1000)/(200*1000) : 10;
 }
 
- // generates a random seed, saves to keychain and returns the associated seedPhrase
+// generates a random seed, saves to keychain and returns the associated seedPhrase
 - (NSString *)generateRandomSeed
 {
     @autoreleasepool {
@@ -719,12 +722,12 @@ static NSString *getKeychainString(NSString *key)
     return NO;
 }
 
+// amount that can be spent using touch id without pin entry
 - (uint64_t)spendingLimit
 {
     // it's ok to store this in userdefaults because increasing the value only takes effect after next pin entry
-    uint64_t limit = [[NSUserDefaults standardUserDefaults] doubleForKey:SPEND_LIMIT_AMOUNT_KEY];
-
-    return (limit) ? limit : SATOSHIS;
+    if (! [[NSUserDefaults standardUserDefaults] objectForKey:SPEND_LIMIT_AMOUNT_KEY]) return SATOSHIS;
+    return [[NSUserDefaults standardUserDefaults] doubleForKey:SPEND_LIMIT_AMOUNT_KEY] + DBL_EPSILON;
 }
 
 - (void)setSpendingLimit:(uint64_t)spendingLimit
