@@ -351,8 +351,9 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     }
 
     //TODO: make sure transaction is less than TX_MAX_SIZE
-    //TODO: use up all inputs for all used addresses to avoid leaving funds in addresses whose public key is revealed
+    //TODO: use up all UTXOs for all used addresses to avoid leaving funds in addresses whose public key is revealed
     //TODO: avoid combining addresses in a single transaction when possible to reduce information leakage
+    //TODO: use any UTXOs received from output addresses to mitigate an attacker double spending and requesting a refund
     for (NSData *o in self.utxos) {
         BRTransaction *tx = self.allTx[[o hashAtOffset:0]];
         uint32_t n = [o UInt32AtOffset:CC_SHA256_DIGEST_LENGTH];
@@ -491,6 +492,8 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 // true if no previous wallet transactions spend any of the given transaction's inputs, and no input tx is invalid
 - (BOOL)transactionIsValid:(BRTransaction *)transaction
 {
+    //TODO: XXX attempted double spends should cause conflicted tx to remain unverified until they're confirmed
+
     if (transaction.blockHeight != TX_UNCONFIRMED) return YES;
     if (self.allTx[transaction.txHash] != nil) return [self.invalidTx containsObject:transaction.txHash] ? NO : YES;
 

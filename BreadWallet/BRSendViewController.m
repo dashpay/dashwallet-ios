@@ -259,10 +259,13 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
     //TODO: check for duplicates of already paid requests
 
-    for (NSNumber *n in protoReq.details.outputAmounts) {
-        if ([n unsignedLongLongValue] < TX_MIN_OUTPUT_AMOUNT) outputTooSmall = YES;
-        amount += [n unsignedLongLongValue];
+    if (self.amount == 0) {
+        for (NSNumber *n in protoReq.details.outputAmounts) {
+            if ([n unsignedLongLongValue] > 0 && [n unsignedLongLongValue] < TX_MIN_OUTPUT_AMOUNT) outputTooSmall = YES;
+            amount += [n unsignedLongLongValue];
+        }
     }
+    else amount = self.amount;
 
     if ([m.wallet containsAddress:address]) {
         [[[UIAlertView alloc] initWithTitle:nil
@@ -283,7 +286,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
           otherButtonTitles:NSLocalizedString(@"ignore", nil), NSLocalizedString(@"cancel", nil), nil] show];
           return;
     }
-    else if (amount == 0 && self.amount == 0) {
+    else if (amount == 0) {
         BRAmountViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"AmountViewController"];
         
         c.delegate = self;
@@ -305,7 +308,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         [self.navigationController pushViewController:c animated:YES];
         return;
     }
-    else if (amount > 0 && amount < TX_MIN_OUTPUT_AMOUNT) {
+    else if (amount < TX_MIN_OUTPUT_AMOUNT) {
         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
           message:[NSString stringWithFormat:NSLocalizedString(@"bitcoin payments can't be less than %@", nil),
                    [m stringForAmount:TX_MIN_OUTPUT_AMOUNT]] delegate:nil
@@ -313,7 +316,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         [self cancel:nil];
         return;
     }
-    else if (amount > 0 && outputTooSmall) {
+    else if (outputTooSmall) {
         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
           message:[NSString stringWithFormat:NSLocalizedString(@"bitcoin transaction outputs can't be less than %@",
                                                                nil), [m stringForAmount:TX_MIN_OUTPUT_AMOUNT]]
@@ -326,14 +329,13 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     
     self.request = protoReq;
     
-    if (self.amount > 0) {
-        amount = self.amount;
-        tx = [m.wallet transactionForAmounts:@[@(self.amount)]
-              toOutputScripts:@[protoReq.details.outputScripts.firstObject] withFee:NO];
+    if (self.amount == 0) {
+        tx = [m.wallet transactionForAmounts:protoReq.details.outputAmounts
+                             toOutputScripts:protoReq.details.outputScripts withFee:NO];
     }
     else {
-        tx = [m.wallet transactionForAmounts:protoReq.details.outputAmounts
-              toOutputScripts:protoReq.details.outputScripts withFee:NO];
+        tx = [m.wallet transactionForAmounts:@[@(self.amount)]
+              toOutputScripts:@[protoReq.details.outputScripts.firstObject] withFee:NO];
     }
 
     if (tx && [m.wallet blockHeightUntilFree:tx] <= [[BRPeerManager sharedInstance] lastBlockHeight] + 1 &&
