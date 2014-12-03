@@ -27,7 +27,7 @@
 #import "BRRootViewController.h"
 #import "BRScanViewController.h"
 #import "BRAmountViewController.h"
-#import "BRSettingsViewController.h"
+#import "BRTxHistoryViewController.h"
 #import "BRBubbleView.h"
 #import "BRWalletManager.h"
 #import "BRWallet.h"
@@ -331,7 +331,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     
     if (self.amount == 0) {
         tx = [m.wallet transactionForAmounts:protoReq.details.outputAmounts
-                             toOutputScripts:protoReq.details.outputScripts withFee:NO];
+              toOutputScripts:protoReq.details.outputScripts withFee:NO];
     }
     else {
         tx = [m.wallet transactionForAmounts:@[@(self.amount)]

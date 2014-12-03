@@ -1,5 +1,5 @@
 //
-//  BRSettingsViewController.m
+//  BRTxHistoryViewController.m
 //  BreadWallet
 //
 //  Created by Aaron Voisine on 6/11/13.
@@ -23,7 +23,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRSettingsViewController.h"
+#import "BRTxHistoryViewController.h"
 #import "BRRootViewController.h"
 #import "BRTxDetailViewController.h"
 #import "BRSeedViewController.h"
@@ -36,7 +36,7 @@
 
 #define TRANSACTION_CELL_HEIGHT 75
 
-@interface BRSettingsViewController ()
+@interface BRTxHistoryViewController ()
 
 @property (nonatomic, strong) IBOutlet UIView *logo;
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *lock;
@@ -54,7 +54,7 @@
 
 @end
 
-@implementation BRSettingsViewController
+@implementation BRTxHistoryViewController
 
 - (void)viewDidLoad
 {

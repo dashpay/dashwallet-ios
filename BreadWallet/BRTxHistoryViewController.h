@@ -1,5 +1,5 @@
 //
-//  BRSettingsViewController.h
+//  BRTxHistoryViewController.h
 //  BreadWallet
 //
 //  Created by Aaron Voisine on 6/11/13.
@@ -27,7 +27,7 @@
 
 #define SETTINGS_SKIP_FEE_KEY @"SETTINGS_SKIP_FEE"
 
-@interface BRSettingsViewController : UITableViewController <UIAlertViewDelegate, UINavigationControllerDelegate,
+@interface BRTxHistoryViewController : UITableViewController <UIAlertViewDelegate, UINavigationControllerDelegate,
 UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning>
 
 @end
