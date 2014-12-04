@@ -662,7 +662,7 @@
     if (sender && ! m.didAuthenticate && ! [m authenticateWithPrompt:nil andTouchId:YES]) return;
     
     self.navigationItem.titleView = nil;
-    self.navigationItem.rightBarButtonItem = nil;
+    [self.navigationItem setRightBarButtonItem:nil animated:YES];
 }
 
 - (IBAction)connect:(id)sender

@@ -57,7 +57,7 @@
         CGBitmapContextGetBytesPerRow(context)
     };
 
-    if (r % 2 == 0) r += 1; // make sure radius is odd for three box-blur method
+    if (r % 2 == 0) r++; // make sure radius is odd for three box-blur method
     vImageBoxConvolve_ARGB8888(&inbuf, &outbuf, NULL, 0, 0, r, r, 0, kvImageEdgeExtend);
     vImageBoxConvolve_ARGB8888(&outbuf, &inbuf, NULL, 0, 0, r, r, 0, kvImageEdgeExtend);
     vImageBoxConvolve_ARGB8888(&inbuf, &outbuf, NULL, 0, 0, r, r, 0, kvImageEdgeExtend);

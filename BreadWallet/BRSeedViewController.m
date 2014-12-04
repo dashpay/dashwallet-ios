@@ -27,7 +27,6 @@
 #import "BRWalletManager.h"
 #import "BRWallet.h"
 #import "BRPeerManager.h"
-#import "BRBIP32Sequence.h"
 
 #define LABEL_MARGIN       20.0
 #define WRITE_TOGGLE_DELAY 15.0

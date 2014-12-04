@@ -25,14 +25,13 @@
 
 #import "BRTxHistoryViewController.h"
 #import "BRRootViewController.h"
+#import "BRSettingsViewController.h"
 #import "BRTxDetailViewController.h"
 #import "BRSeedViewController.h"
 #import "BRWalletManager.h"
 #import "BRWallet.h"
 #import "BRPeerManager.h"
 #import "BRTransaction.h"
-#import "BRCopyLabel.h"
-#import "BRBubbleView.h"
 
 #define TRANSACTION_CELL_HEIGHT 75
 
@@ -42,15 +41,11 @@
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *lock;
 
 @property (nonatomic, strong) NSArray *transactions;
-@property (nonatomic, assign) BOOL moreTx, touchId;
+@property (nonatomic, assign) BOOL moreTx;
 @property (nonatomic, strong) NSMutableDictionary *txDates;
 @property (nonatomic, strong) id balanceObserver, txStatusObserver, backgroundObserver;
 @property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 @property (nonatomic, strong) UIImageView *wallpaper;
-@property (nonatomic, strong) UITableViewController *selectorController;
-@property (nonatomic, strong) NSArray *selectorOptions;
-@property (nonatomic, strong) NSString *selectedOption;
-@property (nonatomic, assign) NSUInteger selectorType;
 
 @end
 
@@ -69,7 +64,6 @@
     [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
     self.navigationController.delegate = self;
     self.moreTx = (m.wallet.recentTransactions.count > 5) ? YES : NO;
-    self.touchId = m.touchIdEnabled;
 
     self.backgroundObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
@@ -114,12 +108,6 @@
                 if (! m.didAuthenticate) self.navigationItem.titleView = self.logo;
                 self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                              [m localCurrencyStringForAmount:m.wallet.balance]];
-
-                if (self.selectorType == 0) {
-                    self.selectorController.title = [NSString stringWithFormat:@"%@ = %@",
-                                                     [m localCurrencyStringForAmount:SATOSHIS/m.localCurrencyPrice],
-                                                     [m stringForAmount:SATOSHIS/m.localCurrencyPrice]];
-                }
 
                 if (self.transactions.firstObject != tx) {
                     [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
@@ -210,18 +198,6 @@
     if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
 }
 
-- (UITableViewController *)selectorController
-{
-    if (_selectorController) return _selectorController;
-    _selectorController = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
-    _selectorController.transitioningDelegate = self;
-    _selectorController.tableView.dataSource = self;
-    _selectorController.tableView.delegate = self;
-    _selectorController.tableView.backgroundColor = [UIColor clearColor];
-    _selectorController.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    return _selectorController;
-}
-
 - (void)setBackgroundForCell:(UITableViewCell *)cell tableView:(UITableView *)tableView indexPath:(NSIndexPath *)path
 {
     if (! cell.backgroundView) {
@@ -294,7 +270,7 @@
     if (sender && ! m.didAuthenticate && ! [m authenticateWithPrompt:nil andTouchId:YES]) return;
     
     self.navigationItem.titleView = nil;
-    self.navigationItem.rightBarButtonItem = nil;
+    [self.navigationItem setRightBarButtonItem:nil animated:YES];
     [self.tableView reloadData];
 }
 
@@ -309,28 +285,6 @@
         [(id)[nav.viewControllers.firstObject sendViewController] scanQR:nil];
         [UIView animateWithDuration:0.1 delay:1.5 options:0 animations:^{ nav.view.alpha = 1.0; } completion:nil];
     }];
-}
-
-- (IBAction)toggle:(id)sender
-{
-    UILabel *l = (id)[[sender superview] viewWithTag:2];
-
-    [[NSUserDefaults standardUserDefaults] setBool:[sender isOn] forKey:SETTINGS_SKIP_FEE_KEY];
-
-    l.hidden = NO;
-    l.alpha = ([sender isOn]) ? 0.0 : 1.0;
-
-    [UIView animateWithDuration:0.2 animations:^{
-        l.alpha = ([sender isOn]) ? 1.0 : 0.0;
-    } completion:^(BOOL finished) {
-        l.alpha = 1.0;
-        l.hidden = ([sender isOn]) ? NO : YES;
-    }];
-}
-
-- (IBAction)about:(id)sender
-{
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://breadwallet.com"]];
 }
 
 - (IBAction)showTx:(id)sender
@@ -373,14 +327,11 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    if (tableView == self.selectorController.tableView) return 1;
-    return 5;
+    return 3;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    if (tableView == self.selectorController.tableView) return self.selectorOptions.count;
-
     switch (section) {
         case 0:
             if (self.transactions.count == 0) return 1;
@@ -390,12 +341,6 @@
             return 2;
 
         case 2:
-            return 2;
-
-        case 3:
-            return (self.touchId) ? 3 : 2;
-
-        case 4:
             return 1;
             
         default:
@@ -408,27 +353,11 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     static NSString *noTxIdent = @"NoTxCell", *transactionIdent = @"TransactionCell", *actionIdent = @"ActionCell",
-                    *toggleIdent = @"ToggleCell", *disclosureIdent = @"DisclosureCell", *restoreIdent = @"RestoreCell",
-                    *selectorIdent = @"SelectorCell", *selectorOptionCell = @"SelectorOptionCell";
+                    *disclosureIdent = @"DisclosureCell";
     UITableViewCell *cell = nil;
     UILabel *textLabel, *unconfirmedLabel, *sentLabel, *localCurrencyLabel, *balanceLabel, *localBalanceLabel,
-            *toggleLabel;
-    UISwitch *toggleSwitch;
-    BRCopyLabel *detailTextLabel;
+            *detailTextLabel;
     BRWalletManager *m = [BRWalletManager sharedInstance];
-
-    if (tableView == self.selectorController.tableView) {
-        cell = [self.tableView dequeueReusableCellWithIdentifier:selectorOptionCell];
-        [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
-        cell.textLabel.text = self.selectorOptions[indexPath.row];
-
-        if ([self.selectedOption isEqual:self.selectorOptions[indexPath.row]]) {
-            cell.accessoryType = UITableViewCellAccessoryCheckmark;
-        }
-        else cell.accessoryType = UITableViewCellAccessoryNone;
-
-        return cell;
-    }
 
     switch (indexPath.section) {
         case 0:
@@ -524,25 +453,6 @@
             break;
 
         case 1:
-            cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
-
-            switch (indexPath.row) {
-                case 0:
-                    cell.textLabel.text = NSLocalizedString(@"about", nil);
-                    break;
-
-                case 1:
-                    cell.textLabel.text = NSLocalizedString(@"backup phrase", nil);
-                    break;
-
-                default:
-                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
-                             (int)indexPath.row);
-            }
-
-            break;
-
-        case 2:
             cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
 
             switch (indexPath.row) {
@@ -565,39 +475,9 @@
             
             break;
 
-        case 3:
-            switch (indexPath.row) {
-                case 0:
-                    cell = [tableView dequeueReusableCellWithIdentifier:selectorIdent];
-                    cell.detailTextLabel.text = m.localCurrencyCode;
-                    break;
-
-                case 1:
-                    if (self.touchId) {
-                        cell = [tableView dequeueReusableCellWithIdentifier:selectorIdent];
-                        cell.textLabel.text = NSLocalizedString(@"touch id limit", nil);
-                        cell.detailTextLabel.text = [m stringForAmount:m.spendingLimit];
-                        break;
-                    }
-                    // passthrough if ! self.touchId
-                    
-                case 2:
-                    cell = [tableView dequeueReusableCellWithIdentifier:toggleIdent];
-                    toggleLabel = (id)[cell viewWithTag:2];
-                    toggleSwitch = (id)[cell viewWithTag:3];
-                    toggleSwitch.on = [[NSUserDefaults standardUserDefaults] boolForKey:SETTINGS_SKIP_FEE_KEY];
-                    toggleLabel.hidden = (toggleSwitch.on) ? NO : YES;
-                    break;
-
-                default:
-                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
-                             (int)indexPath.row);
-            }
-
-            break;
-
-        case 4:
-            cell = [tableView dequeueReusableCellWithIdentifier:restoreIdent];
+        case 2:
+            cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
+            cell.textLabel.text = NSLocalizedString(@"settings", nil);
             break;
 
         default:
@@ -611,8 +491,6 @@
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
-    if (tableView == self.selectorController.tableView) return nil;
-
     switch (section) {
         case 0:
             return nil;
@@ -621,15 +499,8 @@
             return nil;
             
         case 2:
-            return nil;
-
-        case 3:
             return NSLocalizedString(@"rescan blockchain if you think you may have missing transactions, "
                                      "or are having trouble sending (rescanning can take several minutes)", nil);
-
-        case 4:
-            return NSLocalizedString(@"bitcoin network fees are only optional for high priority transactions "
-                                     "(removal may cause delays)", nil);
 
         default:
             NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
@@ -642,14 +513,10 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (tableView == self.selectorController.tableView) return 44.0;
-
     switch (indexPath.section) {
         case 0: return (indexPath.row == 0 || indexPath.row < self.transactions.count) ? TRANSACTION_CELL_HEIGHT : 44.0;
         case 1: return 44.0;
         case 2: return 44.0;
-        case 3: return 44.0;
-        case 4: return 44.0;
         default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)indexPath.section);
     }
     
@@ -706,29 +573,9 @@
 {
     //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
     UIViewController *c = nil;
-    UILabel *l = nil;
-    NSMutableAttributedString *s = nil;
-    BRWalletManager *m = [BRWalletManager sharedInstance];
-
-    if (tableView == self.selectorController.tableView) {
-        self.selectedOption = self.selectorOptions[indexPath.row];
-
-        if (self.selectorType == 0) {
-            m.localCurrencyCode = self.selectedOption;
-        }
-        else m.spendingLimit = (indexPath.row > 0) ? pow(10, indexPath.row + 6) : 0;
-        
-        [tableView reloadData];
-        [tableView selectRowAtIndexPath:indexPath animated:NO scrollPosition:UITableViewScrollPositionNone];
-        [tableView deselectRowAtIndexPath:indexPath animated:YES];
-        [self.tableView reloadData];
-        return;
-    }
 
     switch (indexPath.section) {
         case 0: // transaction
-            [tableView deselectRowAtIndexPath:indexPath animated:YES];
-            
             if (indexPath.row > 0 && indexPath.row >= self.transactions.count) { // more...
                 [self performSelector:@selector(more:) withObject:nil afterDelay:0.0];
             }
@@ -739,41 +586,6 @@
             break;
 
         case 1:
-            switch (indexPath.row) {
-                case 0: // about
-                    c = [self.storyboard instantiateViewControllerWithIdentifier:@"AboutViewController"];
-                    l = (id)[c.view viewWithTag:411];
-                    s = [[NSMutableAttributedString alloc] initWithAttributedString:l.attributedText];
-#if BITCOIN_TESTNET
-                    [s replaceCharactersInRange:[s.string rangeOfString:@"%net%"] withString:@"%net% (testnet)"];
-#endif
-                    [s replaceCharactersInRange:[s.string rangeOfString:@"%ver%"]
-                     withString:NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"]];
-                    [s replaceCharactersInRange:[s.string rangeOfString:@"%net%"] withString:@""];
-                    l.attributedText = s;
-                    [l.superview.gestureRecognizers.firstObject addTarget:self action:@selector(about:)];
-                    
-                    [self.navigationController pushViewController:c animated:YES];
-                    break;
-                    
-                case 1: // backup phrase
-                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
-                      message:NSLocalizedString(@"\nDO NOT let anyone see your backup phrase or they can spend your "
-                                                "bitcoins.\n\nNEVER type your backup phrase into password managers or "
-                                                "elsewhere. Other devices may be infected.\n",
-                                                nil) delegate:self
-                      cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-                      otherButtonTitles:NSLocalizedString(@"show", nil), nil] show];
-                    break;
-
-                default:
-                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
-                             (int)indexPath.row);
-            }
-
-            break;
-
-        case 2:
             switch (indexPath.row) {
                 case 0: // import private key
                     [self scanQR:nil];
@@ -791,57 +603,9 @@
 
             break;
 
-        case 3:
-            switch (indexPath.row) {
-                case 0: // local currency
-                    self.selectorType = 0;
-                    self.selectorOptions = [m.currencyCodes
-                                            sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
-                    self.selectedOption = m.localCurrencyCode;
-                    self.selectorController.title = [NSString stringWithFormat:@"%@ = %@",
-                                                     [m localCurrencyStringForAmount:SATOSHIS/m.localCurrencyPrice],
-                                                     [m stringForAmount:SATOSHIS/m.localCurrencyPrice]];
-                    [self.navigationController pushViewController:self.selectorController animated:YES];
-                    
-                    NSUInteger i = [self.selectorOptions indexOfObject:self.selectedOption];
-                    
-                    if (i != NSNotFound) {
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [self.selectorController.tableView
-                             scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:i inSection:0]
-                             atScrollPosition:UITableViewScrollPositionMiddle animated:NO];
-                        });
-                    }
-                    
-                    break;
-
-                case 1: // touch id spending limit
-                    if (self.touchId) {
-                        self.selectorType = 1;
-                        self.selectorOptions =
-                            @[NSLocalizedString(@"always require passcode", nil),
-                              [NSString stringWithFormat:@"%@      (%@)", [m stringForAmount:10000000],
-                               [m localCurrencyStringForAmount:10000000]],
-                              [NSString stringWithFormat:@"%@   (%@)", [m stringForAmount:100000000],
-                               [m localCurrencyStringForAmount:100000000]],
-                              [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:1000000000],
-                               [m localCurrencyStringForAmount:1000000000]]];
-                        if (m.spendingLimit > 1000000000) m.spendingLimit = 1000000000;
-                        self.selectedOption = self.selectorOptions[(log10(m.spendingLimit) < 6) ? 0 :
-                                                                   (NSUInteger)log10(m.spendingLimit) - 6];
-                        self.selectorController.title = NSLocalizedString(@"touch id spending limit", nil);
-                        [self.navigationController pushViewController:self.selectorController animated:YES];
-                        break;
-                    }
-                    // passthrough if ! self.touchId
-                    
-                case 2: // remove standard fees
-                    break;
-            }
-
-            break;
-
-        case 4: // start/restore another wallet (handled by storyboard)
+        case 2:
+            c = [self.storyboard instantiateViewControllerWithIdentifier:@"SettingsViewController"];
+            [self.navigationController pushViewController:c animated:YES];
             break;
 
         default:
@@ -882,7 +646,7 @@
     UIView *v = transitionContext.containerView;
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-    BOOL pop = (to == self || to == self.navigationController) ? YES : NO;
+    BOOL pop = (to == self || (from != self && [to isKindOfClass:[BRSettingsViewController class]])) ? YES : NO;
 
     if (self.wallpaper.superview != v) [v insertSubview:self.wallpaper belowSubview:from.view];
     to.view.center = CGPointMake(v.frame.size.width*(pop ? -1 : 3)/2, to.view.center.y);
