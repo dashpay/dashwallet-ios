@@ -16,7 +16,7 @@
 #endif
 
 #define BITCOIN_TESTNET    1
-//#define TX_FEE_0_8_RULES   1 // about 20% of nodes are still on v0.8 as of october 2014
+//#define TX_FEE_0_8_RULES   1
 #define SATOSHIS           100000000
 #define MAX_MONEY          (21000000LL*SATOSHIS)
 #define PARALAX_RATIO      0.25

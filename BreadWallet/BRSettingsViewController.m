@@ -69,8 +69,10 @@
 
 - (void)viewWillDisappear:(BOOL)animated
 {
-    if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
-    self.balanceObserver = nil;
+    if (self.isMovingFromParentViewController || self.navigationController.isBeingDismissed) {
+        if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
+        self.balanceObserver = nil;
+    }
     
     [super viewWillDisappear:animated];
 }
@@ -149,17 +151,9 @@
     if (tableView == self.selectorController.tableView) return self.selectorOptions.count;
     
     switch (section) {
-        case 0:
-            return 2;
-            
-        case 1:
-            return (self.touchId) ? 3 : 2;
-            
-        case 2:
-            return 1;
-            
-        default:
-            NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
+        case 0: return 2;
+        case 1: return (self.touchId) ? 3 : 2;
+        case 2: return 2;
     }
     
     return 0;
@@ -168,7 +162,8 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     static NSString *toggleIdent = @"ToggleCell", *disclosureIdent = @"DisclosureCell", *restoreIdent = @"RestoreCell",
-                    *selectorIdent = @"SelectorCell", *selectorOptionCell = @"SelectorOptionCell";
+                    *actionIdent = @"ActionCell", *selectorIdent = @"SelectorCell",
+                    *selectorOptionCell = @"SelectorOptionCell";
     UITableViewCell *cell = nil;
     UILabel *toggleLabel;
     UISwitch *toggleSwitch;
@@ -199,10 +194,6 @@
                 case 1:
                     cell.textLabel.text = NSLocalizedString(@"backup phrase", nil);
                     break;
-                    
-                default:
-                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
-                             (int)indexPath.row);
             }
             
             break;
@@ -230,21 +221,21 @@
                     toggleSwitch.on = [[NSUserDefaults standardUserDefaults] boolForKey:SETTINGS_SKIP_FEE_KEY];
                     toggleLabel.hidden = (toggleSwitch.on) ? NO : YES;
                     break;
-            
-                default:
-                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
-                             (int)indexPath.row);
             }
             
             break;
             
         case 2:
-            cell = [tableView dequeueReusableCellWithIdentifier:restoreIdent];
-            break;
-            
-        default:
-            NSAssert(FALSE, @"%s:%d %s: unkown indexPath.section %d", __FILE__, __LINE__,  __func__,
-                     (int)indexPath.section);
+            switch (indexPath.row) {
+                case 0:
+                    cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
+                    cell.textLabel.text = NSLocalizedString(@"change passcode", nil);
+                    break;
+                    
+                case 1:
+                    cell = [tableView dequeueReusableCellWithIdentifier:restoreIdent];
+                    break;
+            }
     }
 
     [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
@@ -264,10 +255,7 @@
 
         case 2:
             return NSLocalizedString(@"bitcoin network fees are only optional for high priority transactions "
-                                     "(removal may cause delays)", nil);
-            
-        default:
-            NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
+                                     "(removal may cause delays)", nil);            
     }
     
     return nil;
@@ -371,10 +359,6 @@
                       cancelButtonTitle:NSLocalizedString(@"cancel", nil)
                       otherButtonTitles:NSLocalizedString(@"show", nil), nil] show];
                     break;
-                    
-                default:
-                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
-                             (int)indexPath.row);
             }
             
             break;
@@ -429,12 +413,18 @@
             
             break;
             
-        case 2: // start/restore another wallet (handled by storyboard)
-            break;
+        case 2:
+            switch (indexPath.row) {
+                case 0: // change passcode
+                    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+                    [m performSelector:@selector(setPin) withObject:nil afterDelay:0.0];
+                    break;
+
+                case 1: // start/restore another wallet (handled by storyboard)
+                    break;
+            }
             
-        default:
-            NSAssert(FALSE, @"%s:%d %s: unkown indexPath.section %d", __FILE__, __LINE__,  __func__,
-                     (int)indexPath.section);
+            break;
     }
 }
 

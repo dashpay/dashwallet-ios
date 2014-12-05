@@ -163,7 +163,7 @@
 
 - (void)viewWillDisappear:(BOOL)animated
 {
-    if (self.navigationController.isBeingDismissed) {
+    if (self.isMovingFromParentViewController || self.navigationController.isBeingDismissed) {
         if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
         self.balanceObserver = nil;
         if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
@@ -342,9 +342,6 @@
 
         case 2:
             return 1;
-            
-        default:
-            NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
     }
 
     return 0;
@@ -467,10 +464,6 @@
                     cell.imageView.image = [UIImage imageNamed:@"rescan"];
                     cell.imageView.alpha = 0.75;
                     break;
-
-                default:
-                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
-                             (int)indexPath.row);
             }
             
             break;
@@ -479,10 +472,6 @@
             cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
             cell.textLabel.text = NSLocalizedString(@"settings", nil);
             break;
-
-        default:
-            NSAssert(FALSE, @"%s:%d %s: unkown indexPath.section %d", __FILE__, __LINE__,  __func__,
-                     (int)indexPath.section);
     }
     
     [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
@@ -501,9 +490,6 @@
         case 2:
             return NSLocalizedString(@"rescan blockchain if you think you may have missing transactions, "
                                      "or are having trouble sending (rescanning can take several minutes)", nil);
-
-        default:
-            NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
     }
     
     return nil;
@@ -517,7 +503,6 @@
         case 0: return (indexPath.row == 0 || indexPath.row < self.transactions.count) ? TRANSACTION_CELL_HEIGHT : 44.0;
         case 1: return 44.0;
         case 2: return 44.0;
-        default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)indexPath.section);
     }
     
     return 44.0;
@@ -595,10 +580,6 @@
                     [[BRPeerManager sharedInstance] rescan];
                     [self done:nil];
                     break;
-
-                default:
-                    NSAssert(FALSE, @"%s:%d %s: unkown indexPath.row %d", __FILE__, __LINE__,  __func__,
-                             (int)indexPath.row);
             }
 
             break;
@@ -607,10 +588,6 @@
             c = [self.storyboard instantiateViewControllerWithIdentifier:@"SettingsViewController"];
             [self.navigationController pushViewController:c animated:YES];
             break;
-
-        default:
-            NSAssert(FALSE, @"%s:%d %s: unkown indexPath.section %d", __FILE__, __LINE__,  __func__,
-                     (int)indexPath.section);
     }
 }
 

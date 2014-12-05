@@ -160,7 +160,6 @@
         case 0: return 3;
         case 1: return (self.sent > 0) ? self.outputText.count : self.transaction.inputAddresses.count;
         case 2: return (self.sent > 0) ? self.transaction.inputAddresses.count : self.outputText.count;
-        default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
     }
 
     return 1;
@@ -300,9 +299,6 @@
 
             [self setBackgroundForCell:cell indexPath:indexPath];
             break;
-            
-        default:
-            NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)indexPath.section);
     }
     
     return cell;
@@ -314,7 +310,6 @@
         case 0: return nil;
         case 1: return (self.sent > 0) ? NSLocalizedString(@"to:", nil) : NSLocalizedString(@"from:", nil);
         case 2: return (self.sent > 0) ? NSLocalizedString(@"from:", nil) : NSLocalizedString(@"to:", nil);
-        default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
     }
     
     return nil;
@@ -328,7 +323,6 @@
         case 0: return 44.0;
         case 1: return (self.sent > 0 && [self.outputText[indexPath.row] length] == 0) ? 40 : 60.0;
         case 2: return 60.0;
-        default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)indexPath.section);
     }
     
     return 44.0;
