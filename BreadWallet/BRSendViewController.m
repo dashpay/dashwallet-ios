@@ -407,24 +407,30 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         [self.navigationController popToRootViewControllerAnimated:YES];
     }
     
+    __block BOOL waiting = YES, sent = NO;
+    
     [(id)self.parentViewController.parentViewController startActivityWithTimeout:30.0];
     
     [[BRPeerManager sharedInstance] publishTransaction:tx completion:^(NSError *error) {
-        if (protoReq.details.paymentURL.length > 0) return;
-        [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
-    
-        if (error && ! [m.wallet transactionForHash:tx.txHash]) {
-            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
-              message:error.localizedDescription delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
-              otherButtonTitles:nil] show];
-            [self cancel:nil];
+        if (error) {
+            if (! waiting && ! sent) {
+                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
+                  message:error.localizedDescription delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
+                  otherButtonTitles:nil] show];
+                [(id)self.parentViewController.parentViewController stopActivityWithSuccess:NO];
+                [self cancel:nil];
+            }
         }
-        else { //TODO: show full screen sent dialog with tx info, "you sent b10,000 to bob"
+        else if (! sent) { //TODO: show full screen sent dialog with tx info, "you sent b10,000 to bob"
+            sent = YES;
             [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
              center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
               popOutAfterDelay:2.0]];
+            [(id)self.parentViewController.parentViewController stopActivityWithSuccess:YES];
             [self reset:nil];
         }
+        
+        waiting = NO;
     }];
     
     if (protoReq.details.paymentURL.length > 0) {
@@ -450,24 +456,30 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         completion:^(BRPaymentProtocolACK *ack, NSError *error) {
             [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
     
-            if (error && ! [m.wallet transactionForHash:tx.txHash]) {
-                [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription delegate:nil
-                  cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-                [self cancel:nil];
+            if (error) {
+                if (! waiting && ! sent) {
+                    [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription delegate:nil
+                      cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+                    [(id)self.parentViewController.parentViewController stopActivityWithSuccess:NO];
+                    [self cancel:nil];
+                }
             }
-            else {
+            else if (! sent) {
+                sent = YES;
                 [m.wallet registerTransaction:tx];
                 [self.view
                  addSubview:[[[BRBubbleView
                                viewWithText:(ack.memo.length > 0 ? ack.memo : NSLocalizedString(@"sent!", nil))
                                center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
                              popOutAfterDelay:(ack.memo.length > 10 ? 3.0 : 2.0)]];
+                [(id)self.parentViewController.parentViewController stopActivityWithSuccess:YES];
                 [self reset:nil];
-    
-                if (error) NSLog(@"%@", error.localizedDescription); // transaction was sent despite pay protocol error
             }
+
+            waiting = NO;
         }];
     }
+    else waiting = NO;
 }
 
 - (void)confirmSweep:(NSString *)privKey
