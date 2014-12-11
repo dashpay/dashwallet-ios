@@ -413,14 +413,13 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         if (protoReq.details.paymentURL.length > 0) return;
         [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
     
-        if (error) {
+        if (error && ! [m.wallet transactionForHash:tx.txHash]) {
             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
               message:error.localizedDescription delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
               otherButtonTitles:nil] show];
             [self cancel:nil];
         }
-        else {
-            //TODO: show full screen sent dialog with tx info, "you sent b10,000 to bob"
+        else { //TODO: show full screen sent dialog with tx info, "you sent b10,000 to bob"
             [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
              center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
               popOutAfterDelay:2.0]];
@@ -451,12 +450,13 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         completion:^(BRPaymentProtocolACK *ack, NSError *error) {
             [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
     
-            if (error && [m.wallet transactionForHash:tx.txHash] == nil) {
+            if (error && ! [m.wallet transactionForHash:tx.txHash]) {
                 [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription delegate:nil
                   cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
                 [self cancel:nil];
             }
             else {
+                [m.wallet registerTransaction:tx];
                 [self.view
                  addSubview:[[[BRBubbleView
                                viewWithText:(ack.memo.length > 0 ? ack.memo : NSLocalizedString(@"sent!", nil))

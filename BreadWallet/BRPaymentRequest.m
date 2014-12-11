@@ -237,9 +237,10 @@ completion:(void (^)(BRPaymentProtocolACK *ack, NSError *error))completion
 {
     NSURL *u = [NSURL URLWithString:paymentURL];
 
-    if (! u || [u.scheme isEqual:@"http"]) { // must be https rather than http
-        completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                         NSLocalizedString(@"bad payment URL", nil)}]);
+    if (! u) {
+        completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
+                         userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"bad payment URL", nil)}]);
+        return;
     }
 
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:u

@@ -284,6 +284,7 @@
 #endif
 
     if (! [[UIApplication sharedApplication] isProtectedDataAvailable] || m.wallet) {
+        //TODO: do some kickass quick logo animation, fast circle spin that slows
         self.splash.hidden = YES;
         self.navigationController.navigationBar.hidden = NO;
         [[UIApplication sharedApplication] setStatusBarHidden:NO];
@@ -662,7 +663,7 @@
     if (sender && ! m.didAuthenticate && ! [m authenticateWithPrompt:nil andTouchId:YES]) return;
     
     self.navigationItem.titleView = nil;
-    [self.navigationItem setRightBarButtonItem:nil animated:YES];
+    [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
 }
 
 - (IBAction)connect:(id)sender

@@ -270,7 +270,7 @@
     if (sender && ! m.didAuthenticate && ! [m authenticateWithPrompt:nil andTouchId:YES]) return;
     
     self.navigationItem.titleView = nil;
-    [self.navigationItem setRightBarButtonItem:nil animated:YES];
+    [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
     [self.tableView reloadData];
 }
 
@@ -568,6 +568,7 @@
                 [self performSelector:@selector(showTx:) withObject:self.transactions[indexPath.row] afterDelay:0.0];
             }
 
+            [tableView deselectRowAtIndexPath:indexPath animated:YES];
             break;
 
         case 1:

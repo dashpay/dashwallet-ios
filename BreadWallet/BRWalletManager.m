@@ -281,6 +281,7 @@ static NSString *getKeychainString(NSString *key)
 
     if (getKeychainData(SEED_KEY)) { // upgrade from old keychain scheme
         NSLog(@"upgrading to authenticated keychain scheme");
+        //TODO: XXXX give users an explanation of the new security scheme
         setKeychainData([self.sequence masterPublicKeyFromSeed:self.seed], MASTER_PUBKEY_KEY, NO);
         if (setKeychainData(getKeychainData(MNEMONIC_KEY), MNEMONIC_KEY, YES)) setKeychainData(nil, SEED_KEY, NO);
     }
