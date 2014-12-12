@@ -16,10 +16,10 @@
 #endif
 
 #define BITCOIN_TESTNET    1
-//#define TX_FEE_0_8_RULES   1
 #define SATOSHIS           100000000
 #define MAX_MONEY          (21000000LL*SATOSHIS)
 #define PARALAX_RATIO      0.25
+//#define TX_FEE_0_8_RULES   1
 
 #define LDQUOTE      @"\xE2\x80\x9C" // left double quote (utf-8)
 #define RDQUOTE      @"\xE2\x80\x9D" // right double quote (utf-8)

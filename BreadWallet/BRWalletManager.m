@@ -509,11 +509,8 @@ static NSString *getKeychainString(NSString *key)
     
     if ([self authenticatePinWithTitle:[NSString stringWithFormat:NSLocalizedString(@"passcode for %@", nil),
                                         DISPLAY_NAME] message:authprompt]) {
-        if (self.alertView.visible) {
-            [self.alertView dismissWithClickedButtonIndex:self.alertView.cancelButtonIndex animated:YES];
-        }
-        
-        self.didAuthenticate = YES;
+        [self.alertView dismissWithClickedButtonIndex:self.alertView.cancelButtonIndex animated:YES];
+        [self hideKeyboard];
         return YES;
     }
     else return NO;
@@ -645,10 +642,7 @@ static NSString *getKeychainString(NSString *key)
                        [NSString stringWithFormat:NSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
 
     if (pin.length == 4) {
-        if (! [self authenticatePinWithTitle:NSLocalizedString(@"enter old passcode", nil) message:nil]) {
-            [self.alertView dismissWithClickedButtonIndex:self.alertView.cancelButtonIndex animated:YES];
-            return NO;
-        }
+        if (! [self authenticatePinWithTitle:NSLocalizedString(@"enter old passcode", nil) message:nil]) return NO;
 
         UIView *v = self.pinField.superview.superview.superview;
         CGPoint p = v.center;
@@ -704,6 +698,7 @@ static NSString *getKeychainString(NSString *key)
             self.pinField.text = nil;
             setKeychainString(pin, PIN_KEY, NO);
             [self.alertView dismissWithClickedButtonIndex:self.alertView.cancelButtonIndex animated:YES];
+            [self hideKeyboard];
             return YES;
         }
         
@@ -745,6 +740,18 @@ static NSString *getKeychainString(NSString *key)
 - (NSTimeInterval)secureTime
 {
     return [[NSUserDefaults standardUserDefaults] doubleForKey:SECURE_TIME_KEY];
+}
+
+// sometimes the keyboard can take a second or more to dismiss, this hides it temporarily
+- (void)hideKeyboard
+{
+    for (UIWindow *w in [[UIApplication sharedApplication] windows]) {
+        if (w.windowLevel == UIWindowLevelNormal || w.windowLevel == UIWindowLevelAlert ||
+            w.windowLevel == UIWindowLevelStatusBar) continue;
+        [UIView animateWithDuration:0.2 delay:0.2 options:0 animations:^{ w.alpha = 0; } completion:nil];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 2*NSEC_PER_SEC), dispatch_get_main_queue(), ^{ w.alpha = 1; });
+        break;
+    }
 }
 
 #pragma mark - exchange rate
@@ -1112,7 +1119,8 @@ replacementString:(NSString *)string
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:alertView];
     if (alertView == self.alertView) self.alertView = nil;
-
+    if (self.pinField.isFirstResponder) [self hideKeyboard];
+    
     if (buttonIndex == alertView.cancelButtonIndex) {
         if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:@"abort"]) abort();
 
