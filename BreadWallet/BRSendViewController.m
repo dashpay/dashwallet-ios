@@ -382,6 +382,17 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     NSString *prompt = [self promptForAmount:amount fee:fee address:address name:protoReq.commonName
                         memo:protoReq.details.memo isSecure:(valid && ! [protoReq.pkiType isEqual:@"none"])];
     
+    // to avoid the frozen pincode keyboard bug, we need to make sure we're scheduled normally on the main runloop
+    // rather than a dispatch_async queue
+    CFRunLoopPerformBlock([[NSRunLoop mainRunLoop] getCFRunLoop], kCFRunLoopCommonModes, ^{
+        [self confirmTransaction:tx withPrompt:prompt forAmount:amount];
+    });
+}
+
+- (void)confirmTransaction:(BRTransaction *)tx withPrompt:(NSString *)prompt forAmount:(uint64_t)amount
+{
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+
     if (! tx) {
         if (m.didAuthenticate || [m seedWithPrompt:prompt forAmount:amount]) {
             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"insufficient funds", nil) message:nil
@@ -433,7 +444,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         waiting = NO;
     }];
     
-    if (protoReq.details.paymentURL.length > 0) {
+    if (self.request.details.paymentURL.length > 0) {
         uint64_t refundAmount = 0;
         NSMutableData *refundScript = [NSMutableData data];
     
@@ -441,18 +452,18 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         // used in other transactions in the event no refund is ever issued
         [refundScript appendScriptPubKeyForAddress:m.wallet.changeAddress];
     
-        for (NSNumber *amount in protoReq.details.outputAmounts) {
-            refundAmount += [amount unsignedLongLongValue];
+        for (NSNumber *amt in self.request.details.outputAmounts) {
+            refundAmount += [amt unsignedLongLongValue];
         }
 
         // TODO: keep track of commonName/memo to associate them with outputScripts
         BRPaymentProtocolPayment *payment =
-            [[BRPaymentProtocolPayment alloc] initWithMerchantData:protoReq.details.merchantData
+            [[BRPaymentProtocolPayment alloc] initWithMerchantData:self.request.details.merchantData
              transactions:@[tx] refundToAmounts:@[@(refundAmount)] refundToScripts:@[refundScript] memo:nil];
     
-        NSLog(@"posting payment to: %@", protoReq.details.paymentURL);
+        NSLog(@"posting payment to: %@", self.request.details.paymentURL);
     
-        [BRPaymentRequest postPayment:payment to:protoReq.details.paymentURL timeout:20.0
+        [BRPaymentRequest postPayment:payment to:self.request.details.paymentURL timeout:20.0
         completion:^(BRPaymentProtocolACK *ack, NSError *error) {
             [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
     
@@ -736,17 +747,12 @@ fromConnection:(AVCaptureConnection *)connection
                         [self.navigationController dismissViewControllerAnimated:YES completion:^{
                             [self resetQRGuide];
                         }];
+                        
+                        if (error) {
+                            [self confirmRequest:request];
+                        }
+                        else [self confirmProtocolRequest:req];
                     });
-                    
-                    // using performSelectorOnMainThread instead of dispatch_async fixes the frozen pincode keyboard bug
-                    if (error) {
-                        [self performSelectorOnMainThread:@selector(confirmRequest:) withObject:request
-                         waitUntilDone:NO];
-                    }
-                    else {
-                        [self performSelectorOnMainThread:@selector(confirmProtocolRequest:) withObject:req
-                         waitUntilDone:NO];
-                    }
                 }];
             }
             else {
