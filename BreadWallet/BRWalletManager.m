@@ -483,7 +483,7 @@ static NSString *getKeychainString(NSString *key)
         __block NSInteger authcode = 0;
         
         if ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error] &&
-            getKeychainInt(PIN_FAIL_COUNT_KEY) == 0) {
+            getKeychainInt(PIN_FAIL_COUNT_KEY) == 0 && getKeychainInt(SPEND_LIMIT_KEY) > 0) {
             context.localizedFallbackTitle = NSLocalizedString(@"passcode", nil);
             
             [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
@@ -729,9 +729,10 @@ static NSString *getKeychainString(NSString *key)
 - (void)setSpendingLimit:(uint64_t)spendingLimit
 {
     // check if the new spending limit is less than the current amount left before triggering pin
-    if (self.wallet.totalSent + spendingLimit < getKeychainInt(SPEND_LIMIT_KEY)) {
+    if (spendingLimit > 0 && self.wallet.totalSent + spendingLimit < getKeychainInt(SPEND_LIMIT_KEY)) {
         if (! setKeychainInt(self.wallet.totalSent + spendingLimit, SPEND_LIMIT_KEY, NO)) return;
     }
+    else if (spendingLimit == 0 && ! setKeychainInt(0, SPEND_LIMIT_KEY, NO)) return;
     
     [[NSUserDefaults standardUserDefaults] setDouble:spendingLimit forKey:SPEND_LIMIT_AMOUNT_KEY];
 }
@@ -742,7 +743,7 @@ static NSString *getKeychainString(NSString *key)
     return [[NSUserDefaults standardUserDefaults] doubleForKey:SECURE_TIME_KEY];
 }
 
-// sometimes the keyboard can take a second or more to dismiss, this hides it temporarily
+// the keyboard can take a second or more to dismiss, this hides it quickly to improve perceived response time
 - (void)hideKeyboard
 {
     for (UIWindow *w in [[UIApplication sharedApplication] windows]) {
