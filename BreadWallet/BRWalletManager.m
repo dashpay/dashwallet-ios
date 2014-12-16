@@ -118,7 +118,7 @@ static BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
     return NO;
 }
 
-static NSData *getKeychainData(NSString *key)
+static NSData *getKeychainData(NSString *key, NSError **error)
 {
     NSDictionary *query = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
                             (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
@@ -129,7 +129,8 @@ static NSData *getKeychainData(NSString *key)
 
     if (status == errSecItemNotFound) return nil;
     if (status == noErr) return CFBridgingRelease(result);
-    NSLog(@"SecItemCopyMatching error status %d", (int)status);
+    if (error) *error = [NSError errorWithDomain:@"BreadWallet" code:status
+                         userInfo:@{NSLocalizedDescriptionKey:@"SecItemCopyMatching error"}];
     return nil;
 }
 
@@ -143,10 +144,10 @@ static BOOL setKeychainInt(int64_t i, NSString *key, BOOL authenticated)
     }
 }
 
-static int64_t getKeychainInt(NSString *key)
+static int64_t getKeychainInt(NSString *key, NSError **error)
 {
     @autoreleasepool {
-        NSData *d = getKeychainData(key);
+        NSData *d = getKeychainData(key, error);
 
         return (d.length == sizeof(int64_t)) ? *(int64_t *)d.bytes : 0;
     }
@@ -162,10 +163,10 @@ static BOOL setKeychainString(NSString *s, NSString *key, BOOL authenticated)
     }
 }
 
-static NSString *getKeychainString(NSString *key)
+static NSString *getKeychainString(NSString *key, NSError **error)
 {
     @autoreleasepool {
-        NSData *d = getKeychainData(key);
+        NSData *d = getKeychainData(key, error);
         
         return (d) ? CFBridgingRelease(CFStringCreateFromExternalRepresentation(SecureAllocator(), (CFDataRef)d,
                                                                                 kCFStringEncodingUTF8)) : nil;
@@ -279,11 +280,11 @@ static NSString *getKeychainString(NSString *key)
 {
     if (_wallet || ! [[UIApplication sharedApplication] isProtectedDataAvailable]) return _wallet;
 
-    if (getKeychainData(SEED_KEY)) { // upgrade from old keychain scheme
+    if (getKeychainData(SEED_KEY, nil)) { // upgrade from old keychain scheme
         NSLog(@"upgrading to authenticated keychain scheme");
         //TODO: XXXX give users an explanation of the new security scheme
         setKeychainData([self.sequence masterPublicKeyFromSeed:self.seed], MASTER_PUBKEY_KEY, NO);
-        if (setKeychainData(getKeychainData(MNEMONIC_KEY), MNEMONIC_KEY, YES)) setKeychainData(nil, SEED_KEY, NO);
+        if (setKeychainData(getKeychainData(MNEMONIC_KEY, nil), MNEMONIC_KEY, YES)) setKeychainData(nil, SEED_KEY, NO);
     }
     
     if (! self.masterPublicKey) return _wallet;
@@ -333,13 +334,13 @@ static NSString *getKeychainString(NSString *key)
 // master public key used to generate wallet addresses
 - (NSData *)masterPublicKey
 {
-    return getKeychainData(MASTER_PUBKEY_KEY);
+    return getKeychainData(MASTER_PUBKEY_KEY, nil);
 }
 
 - (NSData *)seed
 {
     @autoreleasepool {
-        NSString *phrase = getKeychainString(MNEMONIC_KEY);
+        NSString *phrase = getKeychainString(MNEMONIC_KEY, nil);
         
         if (phrase.length == 0) return nil;
         return [[BRBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:phrase withPassphrase:nil];
@@ -399,7 +400,7 @@ static NSString *getKeychainString(NSString *key)
 // interval since refrence date, 00:00:00 01/01/01 GMT
 - (NSTimeInterval)seedCreationTime
 {
-    NSData *d = getKeychainData(CREATION_TIME_KEY);
+    NSData *d = getKeychainData(CREATION_TIME_KEY, nil);
 
     return (d.length < sizeof(NSTimeInterval)) ? BIP39_CREATION_TIME : *(const NSTimeInterval *)d.bytes;
 }
@@ -457,7 +458,7 @@ static NSString *getKeychainString(NSString *key)
 // authenticates user and returns seed
 - (NSData *)seedWithPrompt:(NSString *)authprompt forAmount:(uint64_t)amount
 {
-    BOOL touchid = (self.wallet.totalSent + amount >= getKeychainInt(SPEND_LIMIT_KEY)) ? YES : NO;
+    BOOL touchid = (self.wallet.totalSent + amount >= getKeychainInt(SPEND_LIMIT_KEY, nil)) ? YES : NO;
 
     if (! [self authenticateWithPrompt:authprompt andTouchId:touchid]) return nil;
     
@@ -469,7 +470,7 @@ static NSString *getKeychainString(NSString *key)
 // authenticates user and returns seedPhrase
 - (NSString *)seedPhraseWithPrompt:(NSString *)authprompt
 {
-    return ([self authenticateWithPrompt:authprompt andTouchId:NO]) ? getKeychainString(MNEMONIC_KEY) : nil;
+    return ([self authenticateWithPrompt:authprompt andTouchId:NO]) ? getKeychainString(MNEMONIC_KEY, nil) : nil;
 }
 
 #pragma mark - authentication
@@ -483,7 +484,7 @@ static NSString *getKeychainString(NSString *key)
         __block NSInteger authcode = 0;
         
         if ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error] &&
-            getKeychainInt(PIN_FAIL_COUNT_KEY) == 0 && getKeychainInt(SPEND_LIMIT_KEY) > 0) {
+            getKeychainInt(PIN_FAIL_COUNT_KEY, nil) == 0 && getKeychainInt(SPEND_LIMIT_KEY, nil) > 0) {
             context.localizedFallbackTitle = NSLocalizedString(@"passcode", nil);
             
             [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
@@ -530,8 +531,8 @@ static NSString *getKeychainString(NSString *key)
 
 - (BOOL)authenticatePinWithTitle:(NSString *)title message:(NSString *)message
 {
-    NSString *pin = getKeychainString(PIN_KEY);
-    uint64_t failCount = getKeychainInt(PIN_FAIL_COUNT_KEY), failHeight = getKeychainInt(PIN_FAIL_HEIGHT_KEY);
+    NSString *pin = getKeychainString(PIN_KEY, nil);
+    uint64_t failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, nil), failHeight = getKeychainInt(PIN_FAIL_HEIGHT_KEY, nil);
 
     if (pin.length != 4) { // no pin set
         return [self setPin];
@@ -567,7 +568,7 @@ static NSString *getKeychainString(NSString *key)
                    stringByAppendingString:message];
     }
 
-    //TODO: XXXX replace all alert views with darkened initial warning screen type dialog
+    //TODO: replace all alert views with darkened initial warning screen type dialog
     self.alertView = [[UIAlertView alloc]
                       initWithTitle:[NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
                                      (title) ? title : @""] message:message delegate:self
@@ -590,7 +591,7 @@ static NSString *getKeychainString(NSString *key)
             self.didAuthenticate = YES;
             setKeychainInt(0, PIN_FAIL_COUNT_KEY, NO);
             setKeychainInt(0, PIN_FAIL_HEIGHT_KEY, NO);
-            setKeychainInt(self.wallet.totalSent + self.spendingLimit, SPEND_LIMIT_KEY, NO);
+            if (self.spendingLimit > 0) setKeychainInt(self.wallet.totalSent + self.spendingLimit, SPEND_LIMIT_KEY, NO);
             return YES;
         }
 
@@ -637,11 +638,15 @@ static NSString *getKeychainString(NSString *key)
 // prompts the user to set or change their wallet pin and returns true if the pin was successfully set
 - (BOOL)setPin
 {
-    NSString *pin = getKeychainString(PIN_KEY);
+    NSError *error = nil;
+    NSString *pin = getKeychainString(PIN_KEY, &error);
     NSString *title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
                        [NSString stringWithFormat:NSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
 
-    if (pin.length == 4) {
+    if (error) {
+        return NO; // error reading existing pin from keychain
+    }
+    else if (pin.length == 4) {
         if (! [self authenticatePinWithTitle:NSLocalizedString(@"enter old passcode", nil) message:nil]) return NO;
 
         UIView *v = self.pinField.superview.superview.superview;
@@ -729,7 +734,7 @@ static NSString *getKeychainString(NSString *key)
 - (void)setSpendingLimit:(uint64_t)spendingLimit
 {
     // check if the new spending limit is less than the current amount left before triggering pin
-    if (spendingLimit > 0 && self.wallet.totalSent + spendingLimit < getKeychainInt(SPEND_LIMIT_KEY)) {
+    if (spendingLimit > 0 && self.wallet.totalSent + spendingLimit < getKeychainInt(SPEND_LIMIT_KEY, nil)) {
         if (! setKeychainInt(self.wallet.totalSent + spendingLimit, SPEND_LIMIT_KEY, NO)) return;
     }
     else if (spendingLimit == 0 && ! setKeychainInt(0, SPEND_LIMIT_KEY, NO)) return;
@@ -749,7 +754,7 @@ static NSString *getKeychainString(NSString *key)
     for (UIWindow *w in [[UIApplication sharedApplication] windows]) {
         if (w.windowLevel == UIWindowLevelNormal || w.windowLevel == UIWindowLevelAlert ||
             w.windowLevel == UIWindowLevelStatusBar) continue;
-        [UIView animateWithDuration:0.2 delay:0.2 options:0 animations:^{ w.alpha = 0; } completion:nil];
+        [UIView animateWithDuration:0.2 animations:^{ w.alpha = 0; }];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 2*NSEC_PER_SEC), dispatch_get_main_queue(), ^{ w.alpha = 1; });
         break;
     }
@@ -1089,7 +1094,7 @@ replacementString:(NSString *)string
                 [self.alertView performSelector:@selector(setTitle:) withObject:NSLocalizedString(@"backup phrase", nil)
                  afterDelay:3.0];
             }
-            else if (! [[m normalizePhrase:textView.text] isEqual:getKeychainString(MNEMONIC_KEY)]) {
+            else if (! [[m normalizePhrase:textView.text] isEqual:getKeychainString(MNEMONIC_KEY, nil)]) {
                 self.alertView.title = NSLocalizedString(@"backup phrase doesn't match", nil);
                 [self.alertView performSelector:@selector(setTitle:) withObject:NSLocalizedString(@"backup phrase", nil)
                  afterDelay:3.0];

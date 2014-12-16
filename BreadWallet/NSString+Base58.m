@@ -60,15 +60,12 @@ static void *secureReallocate(void *ptr, CFIndex newsize, CFOptionFlags hint, vo
     void *newptr = secureAllocate(newsize, hint, info);
     CFIndex size = *((CFIndex *)ptr - 1);
 
-    if (newptr) {
-        if (size) {
-            CC_XMEMCPY(newptr, ptr, (size < newsize) ? size : newsize);
-            secureDeallocate(ptr, info);
-        }
-
-        return newptr;
+    if (newptr && size) {
+        CC_XMEMCPY(newptr, ptr, (size < newsize) ? size : newsize);
+        secureDeallocate(ptr, info);
     }
-    else return NULL;
+
+    return newptr;
 }
 
 // Since iOS does not page memory to storage, all we need to do is cleanse allocated memory prior to deallocation.
