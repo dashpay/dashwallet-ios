@@ -531,13 +531,14 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 
 - (BOOL)authenticatePinWithTitle:(NSString *)title message:(NSString *)message
 {
-    NSString *pin = getKeychainString(PIN_KEY, nil);
+    NSError *error = nil;
+    NSString *pin = getKeychainString(PIN_KEY, &error);
     uint64_t failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, nil), failHeight = getKeychainInt(PIN_FAIL_HEIGHT_KEY, nil);
 
-    if (pin.length != 4) { // no pin set
-        return [self setPin];
-    }
-    else if (failCount >= 3) {
+    if (error) return NO; // error reading pin from keychain
+    if (pin.length != 4) return [self setPin]; // no pin set
+    
+    if (failCount >= 3) {
         if (self.secureTime + NSTimeIntervalSince1970 < failHeight + pow(6, failCount - 3)*60.0) { // locked out
             NSTimeInterval wait = (failHeight + pow(6, failCount - 3)*60.0 -
                                    (self.secureTime + NSTimeIntervalSince1970))/60.0;
@@ -643,10 +644,9 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     NSString *title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
                        [NSString stringWithFormat:NSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
 
-    if (error) {
-        return NO; // error reading existing pin from keychain
-    }
-    else if (pin.length == 4) {
+    if (error) return NO; // error reading existing pin from keychain
+
+    if (pin.length == 4) {
         if (! [self authenticatePinWithTitle:NSLocalizedString(@"enter old passcode", nil) message:nil]) return NO;
 
         UIView *v = self.pinField.superview.superview.superview;
