@@ -51,7 +51,7 @@
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
-    if ([[UIApplication sharedApplication] isProtectedDataAvailable] && ! m.wallet) {
+    if (m.noWallet) {
         self.seedPhrase = [m generateRandomSeed];
         [[BRPeerManager sharedInstance] connect];
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:WALLET_NEEDS_BACKUP_KEY];
@@ -199,8 +199,6 @@
 
 - (IBAction)refresh:(id)sender
 {
-    if (! [[UIApplication sharedApplication] isProtectedDataAvailable]) return;
-
     self.seedPhrase = [[BRWalletManager sharedInstance] generateRandomSeed];
     [[BRPeerManager sharedInstance] connect];
     [[NSUserDefaults standardUserDefaults] setBool:YES forKey:WALLET_NEEDS_BACKUP_KEY];

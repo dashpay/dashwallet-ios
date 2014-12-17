@@ -34,6 +34,7 @@
 @interface BRWalletManager : NSObject<UIAlertViewDelegate, UITextFieldDelegate, UITextViewDelegate>
 
 @property (nonatomic, readonly) BRWallet *wallet;
+@property (nonatomic, readonly) BOOL noWallet; // true if keychain is available and we known that no wallet exists on it
 @property (nonatomic, readonly) id<BRKeySequence> sequence;
 @property (nonatomic, readonly) NSData *masterPublicKey; // master public key used to generate wallet addresses
 @property (nonatomic, copy) NSString *seedPhrase; // requesting seedPhrase will trigger authentication

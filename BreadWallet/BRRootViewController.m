@@ -283,7 +283,7 @@
     [self.view addSubview:label];
 #endif
 
-    if (! [[UIApplication sharedApplication] isProtectedDataAvailable] || m.wallet) {
+    if (! m.noWallet) {
         //TODO: do some kickass quick logo animation, fast circle spin that slows
         self.splash.hidden = YES;
         self.navigationController.navigationBar.hidden = NO;
@@ -299,7 +299,7 @@
 
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
-    if ([[UIApplication sharedApplication] isProtectedDataAvailable] && ! m.wallet) {
+    if (m.noWallet) {
         if (m.masterPublicKey && ! m.passcodeEnabled) {
             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"turn device passcode on", nil)
               message:NSLocalizedString(@"\nA device passcode is needed to safeguard your wallet. Go to settings and "

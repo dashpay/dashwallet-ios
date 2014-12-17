@@ -37,7 +37,6 @@
     // Override point for customization after application launch.
 
     // use background fetch to stay synced with the blockchain
-    // BUG: XXXX this doesn't seem to work, is it compatible with data protection settings?
     [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
 
     UIPageControl.appearance.pageIndicatorTintColor = [UIColor lightGrayColor];
@@ -95,6 +94,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     BRPeerManager *m = [BRPeerManager sharedInstance];
 
     if (m.syncProgress >= 1.0) {
+        NSLog(@"background fetch already synced");
         if (completion) completion(UIBackgroundFetchResultNoData);
         return;
     }
@@ -102,6 +102,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     // timeout after 25 seconds
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 25*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         if (completion) {
+            NSLog(@"background fetch timeout with progress: %f", m.syncProgress);
             completion(m.syncProgress > 0.1 ? UIBackgroundFetchResultNewData : UIBackgroundFetchResultFailed);
             completion = nil;
         }
@@ -116,12 +117,14 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     protectedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationProtectedDataDidBecomeAvailable object:nil
         queue:nil usingBlock:^(NSNotification *note) {
+            NSLog(@"background fetch protected data available");
             [m connect];
         }];
 
     syncFinishedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
+            NSLog(@"background fetch sync finished");
             if (completion) completion(UIBackgroundFetchResultNewData);
             completion = nil;
             
@@ -134,6 +137,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     syncFailedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
+            NSLog(@"background fetch sync failed");
             if (completion) completion(UIBackgroundFetchResultFailed);
             completion = nil;
 
@@ -143,6 +147,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
             protectedObserver = syncFinishedObserver = syncFailedObserver = nil;
         }];
     
+    NSLog(@"background fetch starting");
     [m connect];
 }
 

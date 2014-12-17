@@ -278,7 +278,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 
 - (BRWallet *)wallet
 {
-    if (_wallet || ! [[UIApplication sharedApplication] isProtectedDataAvailable]) return _wallet;
+    if (_wallet) return _wallet;
 
     if (getKeychainData(SEED_KEY, nil)) { // upgrade from old keychain scheme
         NSLog(@"upgrading to authenticated keychain scheme");
@@ -329,6 +329,15 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         
         return _wallet;
     }
+}
+
+- (BOOL)noWallet
+{
+    NSError *error = nil;
+    
+    if (getKeychainData(MASTER_PUBKEY_KEY, error) || error) return NO;
+    if (getKeychainData(SEED_KEY, error) || error) return NO;
+    return YES;
 }
 
 // master public key used to generate wallet addresses
@@ -726,7 +735,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 // amount that can be spent using touch id without pin entry
 - (uint64_t)spendingLimit
 {
-    // it's ok to store this in userdefaults because increasing the value only takes effect after next pin entry
+    // it's ok to store this in userdefaults because increasing the value only takes effect after successful pin entry
     if (! [[NSUserDefaults standardUserDefaults] objectForKey:SPEND_LIMIT_AMOUNT_KEY]) return SATOSHIS;
     return [[NSUserDefaults standardUserDefaults] doubleForKey:SPEND_LIMIT_AMOUNT_KEY] + DBL_EPSILON;
 }
