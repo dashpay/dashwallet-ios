@@ -163,7 +163,7 @@ static NSString *sanitizeString(NSString *s)
                 [self.view addSubview:[[[BRBubbleView
                  viewWithText:(payment.memo.length > 0 ? payment.memo : NSLocalizedString(@"received", nil))
                  center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
-                 popOutAfterDelay:(payment.memo.length > 10 ? 3.0 : 2.0)]];
+                 popOutAfterDelay:(payment.memo.length > 0 ? 3.0 : 2.0)]];
             }];
         }
 
@@ -176,7 +176,7 @@ static NSString *sanitizeString(NSString *s)
         if (ack.memo.length > 0) {
             [self.view addSubview:[[[BRBubbleView viewWithText:ack.memo
              center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
-             popOutAfterDelay:2.0]];
+             popOutAfterDelay:3.0]];
         }
 
         return;
@@ -356,13 +356,13 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         fee = tx.standardFee;
         amount += fee;
         
-        if (self.amount > 0) {
-            tx = [m.wallet transactionForAmounts:@[@(self.amount)]
-                  toOutputScripts:@[protoReq.details.outputScripts.firstObject] withFee:YES];
-        }
-        else {
+        if (self.amount == 0) {
             tx = [m.wallet transactionForAmounts:protoReq.details.outputAmounts
                   toOutputScripts:protoReq.details.outputScripts withFee:YES];
+        }
+        else {
+            tx = [m.wallet transactionForAmounts:@[@(self.amount)]
+                  toOutputScripts:@[protoReq.details.outputScripts.firstObject] withFee:YES];
         }
 
         if (tx) {
@@ -482,7 +482,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
                  addSubview:[[[BRBubbleView
                                viewWithText:(ack.memo.length > 0 ? ack.memo : NSLocalizedString(@"sent!", nil))
                                center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
-                             popOutAfterDelay:(ack.memo.length > 10 ? 3.0 : 2.0)]];
+                             popOutAfterDelay:(ack.memo.length > 0 ? 3.0 : 2.0)]];
                 [(id)self.parentViewController.parentViewController stopActivityWithSuccess:YES];
                 [self reset:nil];
             }
@@ -695,9 +695,6 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
 - (void)amountViewController:(BRAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
 {
-    //TODO: XXXX if user selected an amount equal or below wallet balance, but the fee will bring the total above the
-    // balance, offer to reduce the amount to available funds minus fee
-
     self.amount = amount;
     [self confirmProtocolRequest:self.request];
 }

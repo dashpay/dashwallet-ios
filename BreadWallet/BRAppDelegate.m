@@ -91,9 +91,8 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 {
     __block id syncFinishedObserver = nil, syncFailedObserver = nil, protectedObserver = nil;
     __block void (^completion)(UIBackgroundFetchResult) = completionHandler;
-    BRPeerManager *m = [BRPeerManager sharedInstance];
-
-    if (m.syncProgress >= 1.0) {
+    
+    if ([[BRPeerManager sharedInstance] syncProgress] >= 1.0) {
         NSLog(@"background fetch already synced");
         if (completion) completion(UIBackgroundFetchResultNoData);
         return;
@@ -102,8 +101,9 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     // timeout after 25 seconds
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 25*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         if (completion) {
-            NSLog(@"background fetch timeout with progress: %f", m.syncProgress);
-            completion(m.syncProgress > 0.1 ? UIBackgroundFetchResultNewData : UIBackgroundFetchResultFailed);
+            NSLog(@"background fetch timeout with progress: %f", [[BRPeerManager sharedInstance] syncProgress]);
+            completion(([[BRPeerManager sharedInstance] syncProgress] > 0.1) ? UIBackgroundFetchResultNewData :
+                       UIBackgroundFetchResultFailed);
             completion = nil;
         }
 
@@ -118,7 +118,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationProtectedDataDidBecomeAvailable object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             NSLog(@"background fetch protected data available");
-            [m connect];
+            [[BRPeerManager sharedInstance] connect];
         }];
 
     syncFinishedObserver =
@@ -148,7 +148,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         }];
     
     NSLog(@"background fetch starting");
-    [m connect];
+    [[BRPeerManager sharedInstance] connect];
 }
 
 @end

@@ -331,12 +331,13 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     }
 }
 
+// true if keychain is available and we know that no wallet exists on it
 - (BOOL)noWallet
 {
     NSError *error = nil;
     
-    if (getKeychainData(MASTER_PUBKEY_KEY, error) || error) return NO;
-    if (getKeychainData(SEED_KEY, error) || error) return NO;
+    if (getKeychainData(MASTER_PUBKEY_KEY, &error) || error) return NO;
+    if (getKeychainData(SEED_KEY, &error) || error) return NO; // check for old keychain scheme
     return YES;
 }
 
@@ -1079,7 +1080,7 @@ replacementString:(NSString *)string
     return YES;
 }
 
-// iOS 7 doesn't adjust the alerView position to account for the keyboard when using an accessoryView
+// iOS 7 doesn't adjust the alertView position to account for the keyboard when using an accessoryView
 - (void)textFieldDidBeginEditing:(UITextField *)textField
 {
     if ([LAContext class]) return; // fix is needed for iOS 7 only

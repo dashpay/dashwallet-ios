@@ -142,7 +142,16 @@
     self.foregroundObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillEnterForegroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.appeared && m.wallet) [[BRPeerManager sharedInstance] connect];
+            if (self.appeared && m.wallet) {
+                [[BRPeerManager sharedInstance] connect];
+
+                if (UIUserNotificationSettings.class && // if iOS 8
+                    ! ([[[UIApplication sharedApplication] currentUserNotificationSettings] types] &
+                       UIUserNotificationTypeBadge)) {
+                    [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings
+                     settingsForTypes:UIUserNotificationTypeBadge categories:nil]]; // register for badge notifications
+                }
+            }
 
             if (jailbroken && m.wallet.balance > 0) {
                 [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
@@ -178,6 +187,7 @@
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
+            [[UIApplication sharedApplication] setApplicationIconBadgeNumber:0]; // reset app badge number
             [self.blur removeFromSuperview];
             self.blur = nil;
         }];
@@ -429,11 +439,18 @@
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
     if (balance > _balance) {
-        [self.view addSubview:[[[BRBubbleView viewWithText:[NSString
-         stringWithFormat:NSLocalizedString(@"received %@ (%@)", nil), [m stringForAmount:balance - _balance],
-         [m localCurrencyStringForAmount:balance - _balance]]
-         center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
-         popOutAfterDelay:2.0]];
+        if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateBackground) {
+            [[UIApplication sharedApplication]
+             setApplicationIconBadgeNumber:[[UIApplication sharedApplication] applicationIconBadgeNumber] + 1];
+            return;
+        }
+        else {
+            [self.view addSubview:[[[BRBubbleView viewWithText:[NSString
+             stringWithFormat:NSLocalizedString(@"received %@ (%@)", nil), [m stringForAmount:balance - _balance],
+                              [m localCurrencyStringForAmount:balance - _balance]]
+             center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
+             popOutAfterDelay:3.0]];
+        }
     }
 
     _balance = balance;
