@@ -105,4 +105,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 // returns the block height after which the transaction is likely to be processed without including a fee
 - (uint32_t)blockHeightUntilFree:(BRTransaction *)transaction;
 
+// fee that will be added for a transaction of the given size in bytes
+- (uint64_t)feeForTxSize:(NSUInteger)size;
+
 @end

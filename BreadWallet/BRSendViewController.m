@@ -208,7 +208,6 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
                   [m stringForAmount:amount], [m localCurrencyStringForAmount:amount]];
     }
 
-    self.okAddress = nil;
     return prompt;
 }
 
@@ -344,7 +343,8 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
           message:[NSString stringWithFormat:NSLocalizedString(@"the standard bitcoin network fee for this transaction "
                                                                "is %@ (%@)\n\nremoving this fee may delay confirmation",
                                                                nil),
-                   [m stringForAmount:tx.standardFee], [m localCurrencyStringForAmount:tx.standardFee]]
+                   [m stringForAmount:[m.wallet feeForTxSize:tx.size]],
+                   [m localCurrencyStringForAmount:[m.wallet feeForTxSize:tx.size]]]
           delegate:self cancelButtonTitle:nil
           otherButtonTitles:NSLocalizedString(@"remove fee", nil), NSLocalizedString(@"continue", nil), nil] show];
         return;
@@ -353,7 +353,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     if (tx) amount = [m.wallet amountSentByTransaction:tx] - [m.wallet amountReceivedFromTransaction:tx];
     
     if (! self.removeFee) {
-        fee = tx.standardFee;
+        fee = [m.wallet feeForTxSize:tx.size];
         amount += fee;
         
         if (self.amount == 0) {
@@ -395,8 +395,29 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
     if (! tx) {
         if (m.didAuthenticate || [m seedWithPrompt:prompt forAmount:amount]) {
-            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"insufficient funds", nil) message:nil
-              delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+            // if user selected an amount equal or below wallet balance, but the fee will bring the total above the
+            // balance, offer to reduce the amount to available funds minus fee
+            if (self.amount > 0 && self.amount <= m.wallet.balance) {
+                int64_t amount = m.wallet.balance -
+                                 [m.wallet feeForTxSize:[m.wallet transactionForAmounts:@[@(m.wallet.balance)]
+                                  toOutputScripts:@[self.request.details.outputScripts.firstObject] withFee:NO].size +
+                                  34];
+            
+                [[[UIAlertView alloc]
+                  initWithTitle:NSLocalizedString(@"insufficient funds for bitcoin network fee", nil)
+                  message:[NSString stringWithFormat:NSLocalizedString(@"reduce payment amount by\n%@ (%@)?", nil),
+                           [m stringForAmount:self.amount - amount],
+                           [m localCurrencyStringForAmount:self.amount - amount]] delegate:self
+                  cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+                  otherButtonTitles:[NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:amount - self.amount],
+                                     [m localCurrencyStringForAmount:amount - self.amount]], nil] show];
+                self.amount = amount;
+                return;
+            }
+            else {
+                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"insufficient funds", nil) message:nil
+                  delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+            }
         }
         
         [self cancel:nil];
@@ -515,7 +536,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
             [self cancel:nil];
         }
         else if (tx) {
-            uint64_t fee = tx.standardFee, amount = fee;
+            uint64_t fee = [m.wallet feeForTxSize:tx.size], amount = fee;
 
             for (NSNumber *amt in tx.outputAmounts) {
                 amount += amt.unsignedLongLongValue;
@@ -768,7 +789,7 @@ fromConnection:(AVCaptureConnection *)connection
 {
     NSString *title = [alertView buttonTitleAtIndex:buttonIndex];
     
-    if (buttonIndex == alertView.cancelButtonIndex) {
+    if (buttonIndex == alertView.cancelButtonIndex || [title isEqual:NSLocalizedString(@"cancel", nil)]) {
         [self cancel:nil];
     }
     else if (self.sweepTx) {
@@ -791,17 +812,10 @@ fromConnection:(AVCaptureConnection *)connection
             [self reset:nil];
         }];
     }
-    else if (self.okAddress) { // handle address reuse warning response
-        if ([title isEqual:NSLocalizedString(@"ignore", nil)]) {
-            if (self.request) [self confirmProtocolRequest:self.request];
-        }
-        else [self cancel:nil];
-    }
-    else if ([title isEqual:NSLocalizedString(@"remove fee", nil)] ||
-             [title isEqual:NSLocalizedString(@"continue", nil)]) {
-        self.didAskFee = YES;
-        self.removeFee = ([title isEqual:NSLocalizedString(@"remove fee", nil)]) ? YES : NO;
-        if (self.request) [self confirmProtocolRequest:self.request];
+    else if (self.request) {
+        if ([title isEqual:NSLocalizedString(@"remove fee", nil)]) self.didAskFee = YES, self.removeFee = YES;
+        if ([title isEqual:NSLocalizedString(@"continue", nil)]) self.didAskFee = YES, self.removeFee = NO;
+        [self confirmProtocolRequest:self.request];
     }
 }
 

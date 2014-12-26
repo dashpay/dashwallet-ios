@@ -922,7 +922,7 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
 
         NSError *error = nil;
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-        uint64_t balance = 0, standardFee = 0;
+        uint64_t balance = 0, feeAmount = 0;
         BRTransaction *tx = [BRTransaction new];
 
         if (error) {
@@ -968,17 +968,16 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
         }
 
         // we will be adding a wallet output (additional 34 bytes)
-        //TODO: calculate the median of the lowest fee-per-kb that made it into the previous 144 blocks (24hrs)
-        if (fee) standardFee = ((tx.size + 34 + 999)/1000)*TX_FEE_PER_KB;
+        if (fee) feeAmount = [self.wallet feeForTxSize:tx.size + 34];
 
-        if (standardFee + TX_MIN_OUTPUT_AMOUNT > balance) {
+        if (feeAmount + TX_MIN_OUTPUT_AMOUNT > balance) {
             completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
                              NSLocalizedString(@"transaction fees would cost more than the funds available on this "
                                                "private key (due to tiny \"dust\" deposits)",nil)}]);
             return;
         }
 
-        [tx addOutputAddress:[self.wallet changeAddress] amount:balance - standardFee];
+        [tx addOutputAddress:[self.wallet changeAddress] amount:balance - feeAmount];
 
         if (! [tx signWithPrivateKeys:@[privKey]]) {
             completion(nil, [NSError errorWithDomain:@"BreadWallet" code:401 userInfo:@{NSLocalizedDescriptionKey:
@@ -1051,17 +1050,14 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
 
     NSString *ret = [self.localFormat stringFromNumber:@(self.localCurrencyPrice*amount/SATOSHIS)];
 
-    // if the amount is too small to be represented in local currency (but is != 0) then return a string like "<$0.01"
+    // if the amount is too small to be represented in local currency (but is != 0) then return a string like "$0.01"
     if (amount > 0 && self.localCurrencyPrice*amount/SATOSHIS + DBL_EPSILON <
         0.9/pow(10.0, self.localFormat.maximumFractionDigits)) {
-        ret = [@"<" stringByAppendingString:[self.localFormat
-               stringFromNumber:@(1.0/pow(10.0, self.localFormat.maximumFractionDigits))]];
+        ret = [self.localFormat stringFromNumber:@(1.0/pow(10.0, self.localFormat.maximumFractionDigits))];
     }
     else if (amount < 0 && self.localCurrencyPrice*amount/SATOSHIS - DBL_EPSILON >
              -0.9/pow(10.0, self.localFormat.maximumFractionDigits)) {
-        // technically should be '>', but '<' is more intuitive
-        ret = [@"<" stringByAppendingString:[self.localFormat
-               stringFromNumber:@(-1.0/pow(10.0, self.localFormat.maximumFractionDigits))]];
+        ret = [self.localFormat stringFromNumber:@(-1.0/pow(10.0, self.localFormat.maximumFractionDigits))];
     }
 
     return ret;
