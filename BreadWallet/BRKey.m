@@ -272,7 +272,8 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
 
     EC_POINT_mul(group, p, k, NULL, NULL, ctx); // compute r, the x-coordinate of generator*k
     EC_POINT_get_affine_coordinates_GFp(group, p, r, NULL, ctx);
-
+    EC_POINT_clear_free(p);
+    
     BN_mod_inverse(k, k, order, ctx); // compute the inverse of k
 
     ECDSA_SIG *s = ECDSA_do_sign_ex(d.bytes, (int)d.length, k, r, _key);
@@ -287,7 +288,6 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
         ECDSA_SIG_free(s);
     }
 
-    EC_POINT_clear_free(p);
     BN_CTX_end(ctx);
     BN_CTX_free(ctx);
 
