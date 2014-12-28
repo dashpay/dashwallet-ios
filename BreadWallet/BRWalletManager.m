@@ -283,7 +283,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     if (getKeychainData(SEED_KEY, nil)) { // upgrade from old keychain scheme
         NSLog(@"upgrading to authenticated keychain scheme");
         //TODO: XXXX give users an explanation of the new security scheme
-        setKeychainData([self.sequence masterPublicKeyFromSeed:self.seed], MASTER_PUBKEY_KEY, NO);
+        if (! setKeychainData([self.sequence masterPublicKeyFromSeed:self.seed], MASTER_PUBKEY_KEY, NO)) return _wallet;
         if (setKeychainData(getKeychainData(MNEMONIC_KEY, nil), MNEMONIC_KEY, YES)) setKeychainData(nil, SEED_KEY, NO);
     }
     
@@ -336,6 +336,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 {
     NSError *error = nil;
     
+    if (_wallet) return NO;
     if (getKeychainData(MASTER_PUBKEY_KEY, &error) || error) return NO;
     if (getKeychainData(SEED_KEY, &error) || error) return NO; // check for old keychain scheme
     return YES;
@@ -576,7 +577,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         
         message = [(failCount >= 7 ? NSLocalizedString(@"\n1 attempt remaining\n", nil) :
                     [NSString stringWithFormat:NSLocalizedString(@"\n%d attempts remaining\n", nil), 8 - failCount])
-                   stringByAppendingString:message];
+                   stringByAppendingString:(message) ? message : @""];
     }
 
     //TODO: replace all alert views with darkened initial warning screen type dialog

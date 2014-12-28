@@ -130,9 +130,8 @@
         self.syncStartedObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncStartedNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
-                BRPeerManager *p = [BRPeerManager sharedInstance];
-            
-                if (p.lastBlockHeight + 2016/2 < p.estimatedBlockHeight &&
+                if ([[BRPeerManager sharedInstance] lastBlockHeight] + 2016/2 <
+                    [[BRPeerManager sharedInstance] estimatedBlockHeight] &&
                     m.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
                     self.navigationItem.titleView = nil;
                     self.navigationItem.title = NSLocalizedString(@"syncing...", nil);

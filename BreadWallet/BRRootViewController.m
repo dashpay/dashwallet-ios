@@ -54,7 +54,7 @@
 
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) BRBubbleView *tipView;
-@property (nonatomic, assign) BOOL appeared, showTips, inNextTip;
+@property (nonatomic, assign) BOOL showTips, inNextTip;
 @property (nonatomic, assign) uint64_t balance;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) id urlObserver, fileObserver, foregroundObserver, backgroundObserver, balanceObserver;
@@ -84,6 +84,8 @@
     jailbroken = NO;
 #endif
 
+    _balance = UINT64_MAX;
+    
     self.receiveViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"ReceiveViewController"];
     self.sendViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"SendViewController"];
     self.pageViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"PageViewController"];
@@ -142,7 +144,7 @@
     self.foregroundObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillEnterForegroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.appeared && m.wallet) {
+            if (! m.noWallet) {
                 [[BRPeerManager sharedInstance] connect];
 
                 if (UIUserNotificationSettings.class && // if iOS 8
@@ -175,7 +177,7 @@
     self.backgroundObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.appeared && m.wallet) { // lockdown the app
+            if (! m.noWallet) { // lockdown the app
                 m.didAuthenticate = NO;
                 self.navigationItem.titleView = self.logo;
                 self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"burger"];
@@ -214,19 +216,18 @@
     self.reachabilityObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if (self.appeared && self.reachability.currentReachabilityStatus != NotReachable &&
+            if (! m.noWallet && self.reachability.currentReachabilityStatus != NotReachable &&
                 [[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground) {
                 [[BRPeerManager sharedInstance] connect];
             }
-            else if (self.appeared && self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
+            else if (! m.noWallet && self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
         }];
 
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if ([[BRPeerManager sharedInstance] syncProgress] < 1.0) return; // wait for sync before updating balance
+            if (_balance != UINT64_MAX && [[BRPeerManager sharedInstance] syncProgress] < 1.0) return; // wait for sync
             [self showBackupDialogIfNeeded];
-            if (! m.didAuthenticate) self.navigationItem.titleView = self.logo;
             [self.receiveViewController updateAddress];
             self.balance = m.wallet.balance;
         }];
@@ -234,12 +235,11 @@
     self.syncStartedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncStartedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            BRPeerManager *p = [BRPeerManager sharedInstance];
-
             if (self.reachability.currentReachabilityStatus != NotReachable) [self hideErrorBar];
             [self startActivityWithTimeout:0];
 
-            if (p.lastBlockHeight + 2016/2 < p.estimatedBlockHeight &&
+            if ([[BRPeerManager sharedInstance] lastBlockHeight] + 2016/2 <
+                [[BRPeerManager sharedInstance] estimatedBlockHeight] &&
                 m.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
                 self.percent.hidden = NO;
                 self.navigationItem.titleView = nil;
@@ -274,9 +274,6 @@
     
     self.reachability = [Reachability reachabilityForInternetConnection];
     [self.reachability startNotifier];
-
-    _balance = m.wallet.balance; // initialize balance without triggering recieve alert
-    self.balance = self.balance;
     
     self.navigationController.delegate = self;
 
@@ -299,8 +296,6 @@
         self.navigationController.navigationBar.hidden = NO;
         [[UIApplication sharedApplication] setStatusBarHidden:NO];
     }
-    
-    [self showBackupDialogIfNeeded];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -323,6 +318,8 @@
         completion:^{
             self.splash.hidden = YES;
             self.navigationController.navigationBar.hidden = NO;
+            [self.pageViewController setViewControllers:@[self.receiveViewController]
+             direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
         }];
 
         m.didAuthenticate = YES;
@@ -338,15 +335,6 @@
     if ([[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground) {
         [[BRPeerManager sharedInstance] connect];
     }
-
-    if (! self.appeared) {
-        self.appeared = YES;
-
-        if (m.wallet.balance == 0) {
-            [self.pageViewController setViewControllers:@[self.receiveViewController]
-             direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
-        }
-    }
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -356,7 +344,7 @@
         [self.navigationController.navigationBar addGestureRecognizer:self.navBarTap];
     }
 
-    if ([[BRWalletManager sharedInstance] wallet]) {
+    if (! [[BRWalletManager sharedInstance] noWallet]) {
         self.splash.hidden = YES;
         self.navigationController.navigationBar.hidden = NO;
         self.pageViewController.view.alpha = 1.0;
@@ -368,7 +356,6 @@
             
             //TODO: XXXX add swipe gesture recognizers to advance tip when scroll is disabled
             if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
-            [self showBackupDialogIfNeeded];
         }
     }
 
@@ -438,7 +425,7 @@
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
-    if (balance > _balance) {
+    if (balance > _balance && _balance != UINT64_MAX) {
         if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateBackground) {
             [[UIApplication sharedApplication]
              setApplicationIconBadgeNumber:[[UIApplication sharedApplication] applicationIconBadgeNumber] + 1];

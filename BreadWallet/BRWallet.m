@@ -105,6 +105,12 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     [self sortTransactions];
     [self updateBalance];
 
+    if (self.balance == 0) { // trigger balance changed notification if balance is 0
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletBalanceChangedNotification object:nil];
+        });
+    }
+
     return self;
 }
 

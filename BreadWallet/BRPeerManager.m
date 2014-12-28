@@ -158,10 +158,12 @@ static const char *dns_seeds[] = {
     self.publishedTx = [NSMutableDictionary dictionary];
     self.publishedCallback = [NSMutableDictionary dictionary];
 
-    for (BRTransaction *tx in [[[BRWalletManager sharedInstance] wallet] recentTransactions]) {
-        if (tx.blockHeight != TX_UNCONFIRMED) break;
-        self.publishedTx[tx.txHash] = tx; // add unconfirmed tx to mempool
-    }
+    dispatch_async(self.q, ^{
+        for (BRTransaction *tx in [[[BRWalletManager sharedInstance] wallet] recentTransactions]) {
+            if (tx.blockHeight != TX_UNCONFIRMED) break;
+            self.publishedTx[tx.txHash] = tx; // add unconfirmed tx to mempool
+        }
+    });
 
     self.backgroundObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
@@ -410,7 +412,7 @@ static const char *dns_seeds[] = {
 
 - (void)connect
 {
-    if (! [[BRWalletManager sharedInstance] wallet]) return; // check to make sure the wallet has been created
+    if ([[BRWalletManager sharedInstance] noWallet]) return; // check to make sure the wallet has been created
     if (self.connectFailures >= MAX_CONNECT_FAILURES) self.connectFailures = 0; // this attempt is a manual retry
     
     if (self.syncProgress < 1.0) {
@@ -426,6 +428,11 @@ static const char *dns_seeds[] = {
     }
 
     dispatch_async(self.q, ^{
+        for (BRTransaction *tx in [[[BRWalletManager sharedInstance] wallet] recentTransactions]) {
+            if (tx.blockHeight != TX_UNCONFIRMED) break;
+            self.publishedTx[tx.txHash] = tx; // add unconfirmed tx to mempool
+        }
+    
         [self.connectedPeers minusSet:[self.connectedPeers objectsPassingTest:^BOOL(id obj, BOOL *stop) {
             return ([obj status] == BRPeerStatusDisconnected) ? YES : NO;
         }]];
