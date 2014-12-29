@@ -428,11 +428,6 @@ static const char *dns_seeds[] = {
     }
 
     dispatch_async(self.q, ^{
-        for (BRTransaction *tx in [[[BRWalletManager sharedInstance] wallet] recentTransactions]) {
-            if (tx.blockHeight != TX_UNCONFIRMED) break;
-            self.publishedTx[tx.txHash] = tx; // add unconfirmed tx to mempool
-        }
-    
         [self.connectedPeers minusSet:[self.connectedPeers objectsPassingTest:^BOOL(id obj, BOOL *stop) {
             return ([obj status] == BRPeerStatusDisconnected) ? YES : NO;
         }]];
@@ -852,25 +847,27 @@ static const char *dns_seeds[] = {
         if (self.connectFailures > MAX_CONNECT_FAILURES) self.connectFailures = MAX_CONNECT_FAILURES;
     }
 
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (! self.connected && self.connectFailures == MAX_CONNECT_FAILURES) {
-            [self syncStopped];
-            self.syncStartHeight = 0;
+    if (! self.connected && self.connectFailures == MAX_CONNECT_FAILURES) {
+        [self syncStopped];
+        self.syncStartHeight = 0;
         
-            // clear out stored peers so we get a fresh list from DNS on next connect attempt
-            [self.connectedPeers removeAllObjects];
-            [self.misbehavinPeers removeAllObjects];
-            [BRPeerEntity deleteObjects:[BRPeerEntity allObjects]];
-            _peers = nil;
+        // clear out stored peers so we get a fresh list from DNS on next connect attempt
+        [self.connectedPeers removeAllObjects];
+        [self.misbehavinPeers removeAllObjects];
+        [BRPeerEntity deleteObjects:[BRPeerEntity allObjects]];
+        _peers = nil;
 
+        dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerSyncFailedNotification
              object:nil userInfo:error ? @{@"error":error} : nil];
-        }
-        else if (self.connectFailures < MAX_CONNECT_FAILURES && (self.taskId != UIBackgroundTaskInvalid ||
-                 [[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground)) {
-            [self connect]; // try connecting to another peer
-        }
-        
+        });
+    }
+    else if (self.connectFailures < MAX_CONNECT_FAILURES && (self.taskId != UIBackgroundTaskInvalid ||
+             [[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground)) {
+        [self connect]; // try connecting to another peer
+    }
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
     });
 }

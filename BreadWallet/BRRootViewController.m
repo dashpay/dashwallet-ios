@@ -523,6 +523,12 @@
         [self.pulse setProgress:progress animated:progress > self.pulse.progress];
     }
 
+    if (! self.percent.hidden && self.tipView.alpha > 0.5) {
+        self.tipView.text = [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
+                             [[BRPeerManager sharedInstance] lastBlockHeight],
+                             [[BRPeerManager sharedInstance] estimatedBlockHeight]];
+    }
+
     counter++;
     self.percent.text = [NSString stringWithFormat:@"%0.1f%%", (progress > 0.1 ? progress - 0.1 : 0.0)*111.0];
     if (progress < 1.0) [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
@@ -648,8 +654,12 @@
     }
 
     UINavigationBar *b = self.navigationController.navigationBar;
+    NSString *tip = (self.percent.hidden) ? BALANCE_TIP :
+                    [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
+                     [[BRPeerManager sharedInstance] lastBlockHeight],
+                     [[BRPeerManager sharedInstance] estimatedBlockHeight]];
 
-    self.tipView = [BRBubbleView viewWithText:BALANCE_TIP
+    self.tipView = [BRBubbleView viewWithText:tip
                     tipPoint:CGPointMake(b.center.x, b.frame.origin.y + b.frame.size.height - 10)
                     tipDirection:BRBubbleTipDirectionUp];
     if (self.showTips) self.tipView.text = [self.tipView.text stringByAppendingString:@" (1/6)"];
@@ -684,12 +694,10 @@
     if (! self.errorBar.hidden) {
         [self connect:sender];
     }
-    else if (! [[BRWalletManager sharedInstance] didAuthenticate]) {
+    else if (! [[BRWalletManager sharedInstance] didAuthenticate] && self.percent.hidden) {
         [self unlock:sender];
     }
-    else if (! [self.navigationItem.title isEqual:NSLocalizedString(@"syncing...", nil)]) [self tip:sender];
-    
-    //TODO: XXXX show block number if syncing
+    else [self tip:sender];
 }
 
 #pragma mark - UIPageViewControllerDataSource
