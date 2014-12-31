@@ -897,9 +897,9 @@
                             </subviews>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         </view>
-                        <barButtonItem key="rightBarButtonItem" title="pay" id="f4B-BU-eu2">
+                        <barButtonItem key="rightBarButtonItem" image="lock" id="f4B-BU-eu2">
                             <connections>
-                                <action selector="pay:" destination="4fz-p1-NND" id="85R-5b-LgN"/>
+                                <action selector="unlock:" destination="4fz-p1-NND" id="2hH-Tz-hLa"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
@@ -909,8 +909,8 @@
                         <outlet property="amountField" destination="DLS-lz-uxJ" id="XOK-Fn-8me"/>
                         <outlet property="decimalButton" destination="Ktu-9p-xOl" id="qyG-qy-iXG"/>
                         <outlet property="localCurrencyLabel" destination="ZH0-Ng-7xb" id="wMB-Kc-0v7"/>
+                        <outlet property="lock" destination="f4B-BU-eu2" id="SwM-ce-Zcs"/>
                         <outlet property="logo" destination="kcu-Y5-KKx" id="A38-Nr-VHh"/>
-                        <outlet property="payButton" destination="f4B-BU-eu2" id="mcd-0H-ogI"/>
                         <outlet property="wallpaper" destination="ihm-bL-FFP" id="NCc-Ta-T3E"/>
                     </connections>
                 </viewController>

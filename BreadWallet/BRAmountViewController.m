@@ -34,7 +34,7 @@
 
 @property (nonatomic, strong) IBOutlet UITextField *amountField;
 @property (nonatomic, strong) IBOutlet UILabel *localCurrencyLabel, *addressLabel;
-@property (nonatomic, strong) IBOutlet UIBarButtonItem *payButton;
+@property (nonatomic, strong) IBOutlet UIBarButtonItem *payButton, *lock;
 @property (nonatomic, strong) IBOutlet UIButton *delButton, *decimalButton;
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
 @property (nonatomic, strong) IBOutlet UIView *logo;
@@ -60,6 +60,8 @@
     [charset addCharactersInString:m.format.currencyDecimalSeparator];
     self.charset = charset;
 
+    self.payButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"pay", nil)
+                      style:UIBarButtonItemStyleBordered target:self action:@selector(pay:)];
     self.amountField.placeholder = [m stringForAmount:0];
     [self.decimalButton setTitle:m.format.currencyDecimalSeparator forState:UIControlStateNormal];
 
@@ -76,7 +78,7 @@
     self.swapRightLabel.hidden = YES;
 
     [self updateLocalCurrencyLabel];
-
+    
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
@@ -144,6 +146,7 @@
     if (sender && ! m.didAuthenticate && ! [m authenticateWithPrompt:nil andTouchId:YES]) return;
     
     self.navigationItem.titleView = nil;
+    [self.navigationItem setRightBarButtonItem:self.payButton animated:(sender) ? YES : NO];
 }
 
 - (IBAction)number:(id)sender
@@ -356,10 +359,17 @@ replacementString:(NSString *)string
     f.minimumFractionDigits = mindigits;
     textField.text = t;
     if (t.length > 0 && textField.placeholder.length > 0) textField.placeholder = nil;
+
     if (t.length == 0 && textField.placeholder.length == 0) {
         textField.placeholder = (self.swapped) ? [m localCurrencyStringForAmount:0] : [m stringForAmount:0];
     }
-    //self.payButton.enabled = t.length ? YES : NO;
+    
+    if (! m.didAuthenticate && t.length == 0 && self.navigationItem.rightBarButtonItem != self.lock) {
+        [self.navigationItem setRightBarButtonItem:self.lock animated:YES];
+    }
+    else if (t.length > 0 && self.navigationItem.rightBarButtonItem != self.payButton) {
+        [self.navigationItem setRightBarButtonItem:self.payButton animated:YES];
+    }
 
     self.swapRightLabel.hidden = YES;
     textField.hidden = NO;

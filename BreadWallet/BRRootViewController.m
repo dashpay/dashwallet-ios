@@ -499,6 +499,12 @@
     NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate] - self.start;
     double progress = [[BRPeerManager sharedInstance] syncProgress];
 
+    if (progress > DBL_EPSILON && ! self.percent.hidden && self.tipView.alpha > 0.5) {
+        self.tipView.text = [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
+                             [[BRPeerManager sharedInstance] lastBlockHeight],
+                             [[BRPeerManager sharedInstance] estimatedBlockHeight]];
+    }
+
     if (self.timeout > 1.0 && 0.1 + 0.9*t/self.timeout < progress) progress = 0.1 + 0.9*t/self.timeout;
     if (progress <= DBL_EPSILON) progress = self.progress.progress;
 
@@ -521,12 +527,6 @@
     else if ((counter % 13) >= 5) {
         [self.progress setProgress:progress animated:progress > self.progress.progress];
         [self.pulse setProgress:progress animated:progress > self.pulse.progress];
-    }
-
-    if (! self.percent.hidden && self.tipView.alpha > 0.5) {
-        self.tipView.text = [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
-                             [[BRPeerManager sharedInstance] lastBlockHeight],
-                             [[BRPeerManager sharedInstance] estimatedBlockHeight]];
     }
 
     counter++;
