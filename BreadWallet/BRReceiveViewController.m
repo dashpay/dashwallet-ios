@@ -66,12 +66,14 @@
 
 - (void)updateAddress
 {
-    if (! [self.paymentRequest isValid] || [self.paymentAddress isEqual:self.addressButton.currentTitle]) return;
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRPaymentRequest *req = self.paymentRequest;
 
-    NSString *s = [[NSString alloc] initWithData:self.paymentRequest.data encoding:NSUTF8StringEncoding];
+    if (! req.isValid || [self.paymentAddress isEqual:self.addressButton.currentTitle]) return;
+
     CIFilter *filter = [CIFilter filterWithName:@"CIQRCodeGenerator"];
 
-    [filter setValue:[s dataUsingEncoding:NSUTF8StringEncoding] forKey:@"inputMessage"];
+    [filter setValue:req.data forKey:@"inputMessage"];
     [filter setValue:@"L" forKey:@"inputCorrectionLevel"];
     UIGraphicsBeginImageContext(self.qrView.bounds.size);
 
@@ -89,15 +91,22 @@
 
     UIGraphicsEndImageContext();
     CGImageRelease(img);
+    
+    if (req.amount > 0) {
+        self.label.text = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:req.amount],
+                           [m localCurrencyStringForAmount:req.amount]];
+    }
 }
 
 - (BRPaymentRequest *)paymentRequest
 {
+    if (_paymentRequest) return _paymentRequest;
     return [BRPaymentRequest requestWithString:self.paymentAddress];
 }
 
 - (NSString *)paymentAddress
 {
+    if (_paymentRequest) return _paymentRequest.paymentAddress;
     return [[[BRWalletManager sharedInstance] wallet] receiveAddress];
 }
 
@@ -135,6 +144,11 @@
 
 #pragma mark - IBAction
 
+- (IBAction)done:(id)sender
+{
+    [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+}
+
 - (IBAction)tip:(id)sender
 {
     if ([self nextTip]) return;
@@ -158,18 +172,28 @@
 {
     if ([self nextTip]) return;
 
-    // TODO: XXXX add options for save qr as image and printing
-
+    BOOL req = (_paymentRequest) ? YES : NO;
     UIActionSheet *a = [UIActionSheet new];
 
     a.title = [NSString stringWithFormat:NSLocalizedString(@"Receive bitcoins at this address: %@", nil),
                self.paymentAddress];
     a.delegate = self;
-    [a addButtonWithTitle:NSLocalizedString(@"copy to clipboard", nil)];
-    if ([MFMailComposeViewController canSendMail]) [a addButtonWithTitle:NSLocalizedString(@"send as email", nil)];
+    [a addButtonWithTitle:(req) ? NSLocalizedString(@"copy request to clipbaord", nil) :
+     NSLocalizedString(@"copy address to clipboard", nil)];
+
+    if ([MFMailComposeViewController canSendMail]) {
+        [a addButtonWithTitle:(req) ? NSLocalizedString(@"send request as email", nil) :
+         NSLocalizedString(@"send address as email", nil)];
+    }
+
 #if ! TARGET_IPHONE_SIMULATOR
-    if ([MFMessageComposeViewController canSendText]) [a addButtonWithTitle:NSLocalizedString(@"send as message", nil)];
+    if ([MFMessageComposeViewController canSendText]) {
+        [a addButtonWithTitle:(req) ? NSLocalizedString(@"send request as message", nil) :
+         NSLocalizedString(@"send address as message", nil)];
+    }
 #endif
+
+    if (! req) [a addButtonWithTitle:NSLocalizedString(@"request an amount", nil)];
     [a addButtonWithTitle:NSLocalizedString(@"cancel", nil)];
     a.cancelButtonIndex = a.numberOfButtons - 1;
     
@@ -182,10 +206,10 @@
 {
     NSString *title = [actionSheet buttonTitleAtIndex:buttonIndex];
 
-    //TODO: allow user to specify a request amount
     //TODO: allow user to create a payment protocol request object, and use merge avoidance techniques:
     //      https://medium.com/@octskyward/merge-avoidance-7f95a386692f
-    if ([title isEqual:NSLocalizedString(@"copy to clipboard", nil)]) {
+    if ([title isEqual:NSLocalizedString(@"copy address to clipboard", nil)] ||
+        [title isEqual:NSLocalizedString(@"copy request to clipboard", nil)]) {
         [[UIPasteboard generalPasteboard] setString:self.paymentAddress];
 
         [self.view
@@ -193,7 +217,8 @@
                        center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0 - 130.0)]
                       popIn] popOutAfterDelay:2.0]];
     }
-    else if ([title isEqual:NSLocalizedString(@"send as email", nil)]) {
+    else if ([title isEqual:NSLocalizedString(@"send address as email", nil)] ||
+             [title isEqual:NSLocalizedString(@"send request as email", nil)]) {
         //TODO: add qr image to email
         
         //TODO: implement BIP71 payment protocol mime attachement
@@ -203,7 +228,7 @@
             MFMailComposeViewController *c = [MFMailComposeViewController new];
             
             [c setSubject:NSLocalizedString(@"Bitcoin address", nil)];
-            [c setMessageBody:[@"bitcoin:" stringByAppendingString:self.paymentAddress] isHTML:NO];
+            [c setMessageBody:self.paymentRequest.string isHTML:NO];
             c.mailComposeDelegate = self;
             [self.navigationController presentViewController:c animated:YES completion:nil];
             c.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default"]];
@@ -213,11 +238,12 @@
               cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
     }
-    else if ([title isEqual:NSLocalizedString(@"send as message", nil)]) {
+    else if ([title isEqual:NSLocalizedString(@"send address as message", nil)] ||
+             [title isEqual:NSLocalizedString(@"send request as message", nil)]) {
         if ([MFMessageComposeViewController canSendText]) {
             MFMessageComposeViewController *c = [MFMessageComposeViewController new];
             
-            c.body = [@"bitcoin:" stringByAppendingString:self.paymentAddress];
+            c.body = self.paymentRequest.string;
             c.messageComposeDelegate = self;
             [self.navigationController presentViewController:c animated:YES completion:nil];
             c.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default"]];
@@ -226,7 +252,13 @@
             [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"sms not currently available", nil)
               delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
-    }    
+    }
+    else if ([title isEqual:NSLocalizedString(@"request an amount", nil)]) {
+        UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"AmountNav"];
+        
+        [(BRAmountViewController *)c.topViewController setDelegate:self];
+        [self.navigationController presentViewController:c animated:YES completion:nil];
+    }
 }
 
 #pragma mark - MFMessageComposeViewControllerDelegate
@@ -243,6 +275,17 @@ didFinishWithResult:(MessageComposeResult)result
 error:(NSError *)error
 {
     [self.navigationController dismissViewControllerAnimated:YES completion:nil];
+}
+
+#pragma mark - BRAmountViewControllerDelegate
+
+- (void)amountViewController:(BRAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
+{
+    BRReceiveViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"RequestViewController"];
+    
+    c.paymentRequest = self.paymentRequest;
+    c.paymentRequest.amount = amount;
+    [(UINavigationController *)self.navigationController.presentedViewController setViewControllers:@[c] animated:NO];
 }
 
 @end

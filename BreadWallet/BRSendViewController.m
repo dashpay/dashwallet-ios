@@ -71,6 +71,7 @@ static NSString *sanitizeString(NSString *s)
 @property (nonatomic, strong) IBOutlet UILabel *sendLabel;
 @property (nonatomic, strong) IBOutlet UIButton *scanButton, *clipboardButton;
 @property (nonatomic, strong) IBOutlet UITextView *clipboardText;
+@property (nonatomic, strong) IBOutlet NSLayoutConstraint *clipboardXLeft;
 
 @end
 
@@ -622,10 +623,11 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         }
     }
 
-    if ([self.clipboardText.text sizeWithAttributes:@{NSFontAttributeName:self.clipboardText.font}].width < 210.0) {
-        self.clipboardText.text = [@"    " stringByAppendingString:self.clipboardText.text];
-    }
+    CGFloat w = [self.clipboardText.text sizeWithAttributes:@{NSFontAttributeName:self.clipboardText.font}].width + 12;
     
+    if (w < self.clipboardButton.bounds.size.width ) w = self.clipboardButton.bounds.size.width;
+    if (w > self.view.bounds.size.width - 16.0) w = self.view.bounds.size.width - 16.0;
+    self.clipboardXLeft.constant = (self.view.bounds.size.width - w)/2.0;
     [self.clipboardText scrollRangeToVisible:NSMakeRange(0, 0)];
 }
 

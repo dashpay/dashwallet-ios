@@ -25,12 +25,16 @@
 
 #import <UIKit/UIKit.h>
 #import <MessageUI/MessageUI.h>
+#import "BRAmountViewController.h"
+
+@class BRPaymentRequest;
 
 @interface BRReceiveViewController : UIViewController<UIActionSheetDelegate,
-MFMessageComposeViewControllerDelegate, MFMailComposeViewControllerDelegate>
+MFMessageComposeViewControllerDelegate, MFMailComposeViewControllerDelegate, BRAmountViewControllerDelegate>
+
+@property (nonatomic, strong) BRPaymentRequest *paymentRequest;
 
 - (IBAction)tip:(id)sender;
-
 - (void)updateAddress;
 
 @end

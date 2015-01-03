@@ -105,15 +105,21 @@
 {
     [super viewWillAppear:animated];
     
-    if (self.to.length > 0) {
-        self.addressLabel.text = [NSString stringWithFormat:NSLocalizedString(@"to: %@", nil), self.to];
-    }
-    
+    self.addressLabel.text = (self.to.length > 0) ?
+                             [NSString stringWithFormat:NSLocalizedString(@"to: %@", nil), self.to] : nil;
     self.wallpaper.hidden = NO;
+
+    if (self.navigationController.viewControllers.firstObject != self) {
+        self.navigationItem.leftBarButtonItem = nil;
+        if ([[BRWalletManager sharedInstance] didAuthenticate]) [self unlock:nil];
+    }
+    else {
+        self.payButton.title = NSLocalizedString(@"request", nil);
+        self.navigationItem.rightBarButtonItem = self.payButton;
+    }
 
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
     [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
-    if ([[BRWalletManager sharedInstance] didAuthenticate]) [self unlock:nil];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -177,6 +183,11 @@
     if (self.amount == 0) return;
     
     [self.delegate amountViewController:self selectedAmount:self.amount];
+}
+
+- (IBAction)done:(id)sender
+{
+    [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (IBAction)swapCurrency:(id)sender
@@ -364,11 +375,13 @@ replacementString:(NSString *)string
         textField.placeholder = (self.swapped) ? [m localCurrencyStringForAmount:0] : [m stringForAmount:0];
     }
     
-    if (! m.didAuthenticate && t.length == 0 && self.navigationItem.rightBarButtonItem != self.lock) {
-        [self.navigationItem setRightBarButtonItem:self.lock animated:YES];
-    }
-    else if (t.length > 0 && self.navigationItem.rightBarButtonItem != self.payButton) {
-        [self.navigationItem setRightBarButtonItem:self.payButton animated:YES];
+    if (self.navigationController.viewControllers.firstObject != self) {
+        if (! m.didAuthenticate && t.length == 0 && self.navigationItem.rightBarButtonItem != self.lock) {
+            [self.navigationItem setRightBarButtonItem:self.lock animated:YES];
+        }
+        else if (t.length > 0 && self.navigationItem.rightBarButtonItem != self.payButton) {
+            [self.navigationItem setRightBarButtonItem:self.payButton animated:YES];
+        }
     }
 
     self.swapRightLabel.hidden = YES;

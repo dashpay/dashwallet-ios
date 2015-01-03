@@ -36,36 +36,35 @@
     return [[self alloc] initWithString:string];
 }
 
-+ (instancetype)requestWithURL:(NSURL *)url
-{
-    return [[self alloc] initWithURL:url];
-}
-
 + (instancetype)requestWithData:(NSData *)data
 {
     return [[self alloc] initWithData:data];
 }
 
-- (instancetype)initWithString:(NSString *)string
++ (instancetype)requestWithURL:(NSURL *)url
 {
-    return [self initWithData:[string dataUsingEncoding:NSUTF8StringEncoding]];
+    return [[self alloc] initWithURL:url];
 }
 
-- (instancetype)initWithURL:(NSURL *)url
+- (instancetype)initWithString:(NSString *)string
 {
-    return [self initWithData:[url.absoluteString dataUsingEncoding:NSUTF8StringEncoding]];
+    if (! (self = [self init])) return nil;
+    
+    self.string = string;
+    return self;
 }
 
 - (instancetype)initWithData:(NSData *)data
 {
-    if (! (self = [self init])) return nil;
-
-    self.data = data;
-    
-    return self;
+    return [self initWithString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
 }
 
-- (void)setData:(NSData *)data
+- (instancetype)initWithURL:(NSURL *)url
+{
+    return [self initWithString:url.absoluteString];
+}
+
+- (void)setString:(NSString *)string
 {
     self.paymentAddress = nil;
     self.label = nil;
@@ -73,10 +72,9 @@
     self.amount = 0;
     self.r = nil;
 
-    if (! data) return;
+    if (! string.length) return;
 
-    NSString *s = [[[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]
-                    stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]
+    NSString *s = [[string stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]
                    stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
     NSURL *url = [NSURL URLWithString:s];
     
@@ -112,7 +110,7 @@
     }
 }
 
-- (NSData *)data
+- (NSString *)string
 {
     if (! self.paymentAddress) return nil;
 
@@ -146,7 +144,27 @@
         [s appendString:[q componentsJoinedByString:@"&"]];
     }
     
-    return [s dataUsingEncoding:NSUTF8StringEncoding];
+    return s;
+}
+
+- (void)setData:(NSData *)data
+{
+    self.string = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+}
+
+- (NSData *)data
+{
+    return [self.string dataUsingEncoding:NSUTF8StringEncoding];
+}
+
+- (void)setUrl:(NSURL *)url
+{
+    self.string = url.absoluteString;
+}
+
+- (NSURL *)url
+{
+    return [NSURL URLWithString:self.string];
 }
 
 - (BOOL)isValid

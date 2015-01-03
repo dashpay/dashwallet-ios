@@ -469,7 +469,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 // authenticates user and returns seed
 - (NSData *)seedWithPrompt:(NSString *)authprompt forAmount:(uint64_t)amount
 {
-    BOOL touchid = (self.wallet.totalSent + amount >= getKeychainInt(SPEND_LIMIT_KEY, nil)) ? YES : NO;
+    BOOL touchid = (self.wallet.totalSent + amount < getKeychainInt(SPEND_LIMIT_KEY, nil)) ? YES : NO;
 
     if (! [self authenticateWithPrompt:authprompt andTouchId:touchid]) return nil;
     
