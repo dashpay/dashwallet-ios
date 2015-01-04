@@ -28,6 +28,7 @@
 #import "BRPaymentRequest.h"
 #import "BRWalletManager.h"
 #import "BRWallet.h"
+#import "BRTransaction.h"
 #import "BRBubbleView.h"
 
 #define QR_TIP      NSLocalizedString(@"Let others scan this QR code to get your bitcoin address. Anyone can send "\
@@ -281,11 +282,72 @@ error:(NSError *)error
 
 - (void)amountViewController:(BRAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
 {
+    if (amount < TX_MIN_OUTPUT_AMOUNT) {
+        BRWalletManager *m = [BRWalletManager sharedInstance];
+    
+        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"amount too small", nil)
+          message:[NSString stringWithFormat:NSLocalizedString(@"bitcoin payments can't be less than %@", nil),
+                   [m stringForAmount:TX_MIN_OUTPUT_AMOUNT]] delegate:nil
+          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+        return;
+    }
+
     BRReceiveViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"RequestViewController"];
     
     c.paymentRequest = self.paymentRequest;
     c.paymentRequest.amount = amount;
-    [(UINavigationController *)self.navigationController.presentedViewController setViewControllers:@[c] animated:NO];
+    [(UINavigationController *)self.navigationController.presentedViewController setDelegate:c];
+    [(UINavigationController *)self.navigationController.presentedViewController pushViewController:c animated:YES];
+}
+
+#pragma mark - UIViewControllerAnimatedTransitioning
+
+// This is used for percent driven interactive transitions, as well as for container controllers that have companion
+// animations that might need to synchronize with the main animation.
+- (NSTimeInterval)transitionDuration:(id<UIViewControllerContextTransitioning>)transitionContext
+{
+    return 0.35;
+}
+
+// This method can only be a nop if the transition is interactive and not a percentDriven interactive transition.
+- (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext
+{
+    UIView *v = transitionContext.containerView;
+    UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
+                     *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
+
+    [v insertSubview:to.view belowSubview:from.view];
+    self.label.alpha = self.qrView.alpha = self.addressButton.alpha = 0.0;
+    
+    [UIView animateWithDuration:[self transitionDuration:transitionContext] animations:^{
+        self.label.alpha = self.qrView.alpha = self.addressButton.alpha = 1.0;
+        from.view.alpha = 0.0;
+    } completion:^(BOOL finished) {
+        [from.view removeFromSuperview];
+        [transitionContext completeTransition:YES];
+    }];
+}
+
+#pragma mark - UINavigationControllerDelegate
+
+- (id<UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController
+animationControllerForOperation:(UINavigationControllerOperation)operation fromViewController:(UIViewController *)fromVC
+toViewController:(UIViewController *)toVC
+{
+    return self;
+}
+
+#pragma mark - UIViewControllerTransitioningDelegate
+
+- (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
+presentingController:(UIViewController *)presenting sourceController:(UIViewController *)source
+{
+    return self;
+}
+
+- (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed
+{
+    return self;
 }
 
 @end

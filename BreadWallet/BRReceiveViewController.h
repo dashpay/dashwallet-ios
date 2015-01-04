@@ -29,8 +29,9 @@
 
 @class BRPaymentRequest;
 
-@interface BRReceiveViewController : UIViewController<UIActionSheetDelegate,
-MFMessageComposeViewControllerDelegate, MFMailComposeViewControllerDelegate, BRAmountViewControllerDelegate>
+@interface BRReceiveViewController : UIViewController<UIActionSheetDelegate, BRAmountViewControllerDelegate,
+MFMessageComposeViewControllerDelegate, MFMailComposeViewControllerDelegate, UINavigationControllerDelegate,
+UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning>
 
 @property (nonatomic, strong) BRPaymentRequest *paymentRequest;
 

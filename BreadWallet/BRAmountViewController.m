@@ -125,7 +125,7 @@
 - (void)viewWillDisappear:(BOOL)animated
 {
     self.amount = 0;
-    self.wallpaper.hidden = animated;
+    if (self.navigationController.viewControllers.firstObject != self) self.wallpaper.hidden = animated;
 
     [super viewWillDisappear:animated];
 }
