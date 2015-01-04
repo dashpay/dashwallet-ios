@@ -1097,7 +1097,6 @@
                                 </state>
                                 <connections>
                                     <action selector="address:" destination="XLw-gP-lYw" eventType="touchUpInside" id="eU0-6G-fFI"/>
-                                    <outletCollection property="gestureRecognizers" destination="oUQ-zV-oxL" appends="YES" id="4re-TV-YSv"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -1113,6 +1112,7 @@
                         </constraints>
                         <connections>
                             <outletCollection property="gestureRecognizers" destination="wBJ-0U-BOy" appends="YES" id="EOj-CR-ycD"/>
+                            <outletCollection property="gestureRecognizers" destination="lfc-2w-Glf" appends="YES" id="lcR-Ca-LPB"/>
                         </connections>
                     </view>
                     <extendedEdge key="edgesForExtendedLayout" bottom="YES"/>
@@ -1122,7 +1122,6 @@
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="gHQ-qn-UpO" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <swipeGestureRecognizer direction="right" id="oUQ-zV-oxL"/>
                 <tapGestureRecognizer id="4jo-t8-aAT">
                     <connections>
                         <action selector="tip:" destination="XLw-gP-lYw" id="70v-e6-T9W"/>
@@ -1138,6 +1137,11 @@
                         <action selector="tip:" destination="XLw-gP-lYw" id="mfR-zP-xd3"/>
                     </connections>
                 </tapGestureRecognizer>
+                <swipeGestureRecognizer direction="right" id="lfc-2w-Glf">
+                    <connections>
+                        <action selector="tip:" destination="XLw-gP-lYw" id="2Hw-ST-BSW"/>
+                    </connections>
+                </swipeGestureRecognizer>
             </objects>
             <point key="canvasLocation" x="1134" y="1354"/>
         </scene>
@@ -1240,6 +1244,7 @@
                         </constraints>
                         <connections>
                             <outletCollection property="gestureRecognizers" destination="8hO-zb-g85" appends="YES" id="rl9-b8-NMw"/>
+                            <outletCollection property="gestureRecognizers" destination="wh9-zs-FMO" appends="YES" id="Apq-Qt-2K4"/>
                         </connections>
                     </view>
                     <connections>
@@ -1261,6 +1266,11 @@
                         <action selector="tip:" destination="RsQ-W7-grB" id="m4U-sk-tKD"/>
                     </connections>
                 </tapGestureRecognizer>
+                <swipeGestureRecognizer direction="left" id="wh9-zs-FMO">
+                    <connections>
+                        <action selector="tip:" destination="RsQ-W7-grB" id="nrd-js-eVc"/>
+                    </connections>
+                </swipeGestureRecognizer>
             </objects>
             <point key="canvasLocation" x="719" y="1354"/>
         </scene>
