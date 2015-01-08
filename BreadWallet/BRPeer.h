@@ -75,6 +75,7 @@
 - (void)peer:(BRPeer *)peer relayedBlock:(BRMerkleBlock *)block;
 
 - (BRTransaction *)peer:(BRPeer *)peer requestedTransaction:(NSData *)txHash;
+- (void)peerSentPong:(BRPeer *)peer;
 - (NSData *)peerBloomFilter:(BRPeer *)peer;
 
 @end
@@ -104,6 +105,7 @@ typedef enum {
 @property (nonatomic, readonly) uint32_t lastblock;
 @property (nonatomic, readonly) NSTimeInterval pingTime;
 @property (nonatomic, assign) NSTimeInterval timestamp; // last seen time (interval since refrence date)
+@property (nonatomic, assign) BOOL needsFilterUpdate;
 @property (nonatomic, assign) int16_t misbehavin;
 
 + (instancetype)peerWithAddress:(uint32_t)address andPort:(uint16_t)port;
@@ -122,6 +124,6 @@ services:(uint64_t)services;
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop;
 - (void)sendInvMessageWithTxHash:(NSData *)txHash;
 - (void)sendPingMessage;
-- (void)rereqeustBlocksFrom:(NSData *)blockHash; // useful to get additional transactions after a bloom filter update
+- (void)rerequestBlocksFrom:(NSData *)blockHash; // useful to get additional transactions after a bloom filter update
 
 @end

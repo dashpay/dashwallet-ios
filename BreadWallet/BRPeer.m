@@ -71,7 +71,6 @@ typedef enum {
 @property (nonatomic, assign) NSTimeInterval startTime;
 @property (nonatomic, strong) BRMerkleBlock *currentBlock;
 @property (nonatomic, strong) NSMutableOrderedSet *currentBlockHashes, *currentTxHashes, *knownTxHashes;
-@property (nonatomic, strong) NSCountedSet *requestedBlockHashes;
 @property (nonatomic, assign) uint32_t filterBlockCount;
 @property (nonatomic, strong) NSRunLoop *runLoop;
 
@@ -159,7 +158,6 @@ services:(uint64_t)services
     self.outputBuffer = [NSMutableData data];
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
     self.currentBlockHashes = [NSMutableOrderedSet orderedSet];
-    self.requestedBlockHashes = [NSCountedSet set];
 
     NSString *label = [NSString stringWithFormat:@"peer.%@:%d", self.host, self.port];
 
@@ -309,6 +307,7 @@ services:(uint64_t)services
 
 - (void)sendFilterloadMessage:(NSData *)filter
 {
+    self.needsFilterUpdate = NO;
     self.filterBlockCount = 0;
     [self sendMessage:filter type:MSG_FILTERLOAD];
 }
@@ -419,9 +418,7 @@ services:(uint64_t)services
         [msg appendData:hash];
     }
 
-    [self.requestedBlockHashes addObjectsFromArray:blockHashes];
-
-    if (self.filterBlockCount + blockHashes.count > BLOCK_DIFFICULTY_INTERVAL) {
+    if (self.filterBlockCount + blockHashes.count > BLOCK_DIFFICULTY_INTERVAL && ! self.needsFilterUpdate) {
         NSLog(@"%@:%d rebuilding bloom filter after %d blocks", self.host, self.port, self.filterBlockCount);
         [self sendFilterloadMessage:[self.delegate peerBloomFilter:self]];
     }
@@ -445,7 +442,7 @@ services:(uint64_t)services
 }
 
 // re-request blocks starting from blockHash, useful for getting any additional transactions after a bloom filter update
-- (void)rereqeustBlocksFrom:(NSData *)blockHash
+- (void)rerequestBlocksFrom:(NSData *)blockHash
 {
     CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
         NSUInteger i = [self.currentBlockHashes indexOfObject:blockHash];
@@ -626,9 +623,18 @@ services:(uint64_t)services
 
     // to improve chain download performance, if we received 500 block hashes, we request the next 500 block hashes
     // immediately before sending the getdata request
-    if (blockHashes.count >= 500) {
+    if (blockHashes.count >= 500 && ! self.needsFilterUpdate) {
         [self sendGetblocksMessageWithLocators:@[blockHashes.lastObject, blockHashes.firstObject] andHashStop:nil];
     }
+
+    if (blockHashes.count > 0) { // remember blockHashes in case we need to re-request them with an updated bloom filter
+        [self.currentBlockHashes unionOrderedSet:blockHashes];
+        if (self.currentBlockHashes.count > MAX_GETDATA_HASHES) {
+            [self.currentBlockHashes
+             removeObjectsInRange:NSMakeRange(0, self.currentBlockHashes.count - MAX_GETDATA_HASHES/2)];
+        }
+    }
+    else if (self.needsFilterUpdate) [blockHashes removeAllObjects];
 
     if ([txHashes intersectsOrderedSet:self.knownTxHashes]) { // remove transactions we already have
         for (NSData *hash in txHashes) {
@@ -646,18 +652,6 @@ services:(uint64_t)services
     
     if (txHashes.count + blockHashes.count > 0) {
         [self sendGetdataMessageWithTxHashes:txHashes.array andBlockHashes:blockHashes.array];
-
-        // Each merkleblock the remote peer sends us is followed by a set of tx messages for that block. We send a ping
-        // to get a pong reply after the block and all its tx are sent, inicating that there are no more tx messages
-        if (blockHashes.count == 1) [self sendPingMessage];
-    }
-
-    if (blockHashes.count > 0) { // remember blockHashes in case we need to re-request them with an updated bloom filter
-        [self.currentBlockHashes unionOrderedSet:blockHashes];
-        if (self.currentBlockHashes.count > MAX_GETDATA_HASHES) {
-            [self.currentBlockHashes
-             removeObjectsInRange:NSMakeRange(0, self.currentBlockHashes.count - MAX_GETDATA_HASHES/2)];
-        }
     }
 }
 
@@ -855,7 +849,11 @@ services:(uint64_t)services
     _pingTime = self.pingTime*0.5 + pingTime*0.5;
     self.startTime = 0;
     
-    NSLog(@"%@:%u got pong in %fs", self.host, self.port, self.pingTime);    
+    NSLog(@"%@:%u got pong in %fs", self.host, self.port, self.pingTime);
+
+    dispatch_async(self.delegateQueue, ^{
+        if (_status == BRPeerStatusConnected) [self.delegate peerSentPong:self];
+    });
 }
 
 - (void)acceptMerkleblockMessage:(NSData *)message
@@ -871,12 +869,6 @@ services:(uint64_t)services
         return;
     }
     //else NSLog(@"%@:%u got merkleblock %@", self.host, self.port, block.blockHash);
-
-    [self.requestedBlockHashes removeObject:block.blockHash];
-    if ([self.requestedBlockHashes countForObject:block.blockHash] > 0) {
-        NSLog(@"dropping re-requested block %@", block.blockHash);
-        return; // block was re-requested, drop this one
-    }
 
     NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSetWithArray:block.txHashes];
 

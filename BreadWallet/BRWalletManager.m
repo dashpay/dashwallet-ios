@@ -863,7 +863,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         NSLog(@"exchange rate updated to %@/%@", [self localCurrencyStringForAmount:SATOSHIS],
               [self stringForAmount:SATOSHIS]);
 
-        if (! self.wallet) return;
+        if (self.noWallet) return;
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletBalanceChangedNotification object:nil];

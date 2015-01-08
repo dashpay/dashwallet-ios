@@ -238,6 +238,7 @@
             if (self.reachability.currentReachabilityStatus != NotReachable) [self hideErrorBar];
             [self startActivityWithTimeout:0];
 
+            //BUG: XXXX rescan didn't trigger "syncing..." title
             if ([[BRPeerManager sharedInstance] lastBlockHeight] + 2016/2 <
                 [[BRPeerManager sharedInstance] estimatedBlockHeight] &&
                 m.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
@@ -313,6 +314,7 @@
               return;
         }
         
+        // BUG: XXXX when restoring from backup, balance shows zero and tips are displayed while syncing
         [self.navigationController
         presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"] animated:NO
         completion:^{

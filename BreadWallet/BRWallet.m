@@ -192,6 +192,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 // each block, however correct transaction ordering cannot be relied upon for determining wallet balance or UTXO set
 - (void)sortTransactions
 {
+    __block NSUInteger depth = 0;
     NSComparator compareTx;
     __block __weak NSComparator weakCompareTx = compareTx =
         ^NSComparisonResult(BRTransaction *tx1, BRTransaction *tx2) {
@@ -200,15 +201,22 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             if (tx1.blockHeight < tx2.blockHeight) return NSOrderedDescending;
             if ([tx1.inputHashes containsObject:tx2.txHash]) return NSOrderedAscending;
             if ([tx2.inputHashes containsObject:tx1.txHash]) return NSOrderedDescending;
+            if (depth >= 10) return NSOrderedSame; // limit recusive depth to 10
+            depth++;
             
             for (NSData *txHash in tx1.inputHashes) { // recursively compare inputs
-                if (weakCompareTx(self.allTx[txHash], tx2) == NSOrderedAscending) return NSOrderedAscending;
+                if (weakCompareTx(self.allTx[txHash], tx2) != NSOrderedAscending) continue;
+                depth--;
+                return NSOrderedAscending;
             }
             
             for (NSData *txHash in tx2.inputHashes) {
-                if (weakCompareTx(tx1, self.allTx[txHash]) == NSOrderedDescending) return NSOrderedDescending;
+                if (weakCompareTx(tx1, self.allTx[txHash]) != NSOrderedDescending) continue;
+                depth--;
+                return NSOrderedDescending;
             }
             
+            depth--;
             return NSOrderedSame;
         };
     

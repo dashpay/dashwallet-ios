@@ -379,6 +379,13 @@ static const char *dns_seeds[] = {
 {
     if (_bloomFilter) return _bloomFilter;
 
+    // every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used for
+    // one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
+    // transaction is encountered during the blockchain download (generates twice the external gap limit for both
+    // address chains)
+    [[[BRWalletManager sharedInstance] wallet] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:NO];
+    [[[BRWalletManager sharedInstance] wallet] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:YES];
+
     self.filterUpdateHeight = self.lastBlockHeight;
     self.filterFpRate = BLOOM_DEFAULT_FALSEPOSITIVE_RATE;
 
@@ -478,7 +485,7 @@ static const char *dns_seeds[] = {
     // start the chain download from the most recent checkpoint that's at least a week older than earliestKeyTime
     for (int i = CHECKPOINT_COUNT - 1; ! _lastBlock && i >= 0; i--) {
         if (checkpoint_array[i].timestamp + 7*24*60*60 - NSTimeIntervalSince1970 >= self.earliestKeyTime) continue;
-        self.lastBlock = self.blocks[[NSString stringWithUTF8String:checkpoint_array[i].hash].hexToData.reverse];
+        _lastBlock = self.blocks[[NSString stringWithUTF8String:checkpoint_array[i].hash].hexToData.reverse];
     }
 
     if (! _lastBlock) _lastBlock = self.blocks[GENESIS_BLOCK_HASH];
@@ -631,10 +638,7 @@ static const char *dns_seeds[] = {
         if ([[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground) {
             for (BRPeer *p in self.connectedPeers) { // after syncing, load filters and get mempools from other peers
                 if (p != self.downloadPeer) [p sendFilterloadMessage:self.bloomFilter.data];
-                [p sendMempoolMessage];
-            
-                //BUG: XXXX sometimes a peer relays thousands of transactions after mempool msg, should detect and
-                // disconnect if it's more than BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10*<typical mempool size>*2
+                [p sendMempoolMessage];            
             }
         }
     }
@@ -760,13 +764,13 @@ static const char *dns_seeds[] = {
     self.connectFailures = 0;
     peer.timestamp = [NSDate timeIntervalSinceReferenceDate]; // set last seen timestamp for peer
 
-    if (peer.lastblock + 10 < self.lastBlock.height) { // drop peers that aren't synced yet, we can't help them
+    if (peer.lastblock + 10 < self.lastBlockHeight) { // drop peers that aren't synced yet, we can't help them
         [peer disconnect];
         return;
     }
 
-    if (self.connected && (self.downloadPeer.lastblock >= peer.lastblock || self.lastBlock.height >= peer.lastblock)) {
-        if (self.lastBlock.height < self.downloadPeer.lastblock) return; // don't load bloom filter yet if we're syncing
+    if (self.connected && (self.downloadPeer.lastblock >= peer.lastblock || self.lastBlockHeight >= peer.lastblock)) {
+        if (self.lastBlockHeight < self.downloadPeer.lastblock) return; // don't load bloom filter yet if we're syncing
         [peer sendFilterloadMessage:self.bloomFilter.data];
         [peer sendMempoolMessage];
         [peer sendGetaddrMessage]; // request a list of other bitcoin peers
@@ -783,21 +787,13 @@ static const char *dns_seeds[] = {
     [self.downloadPeer disconnect];
     self.downloadPeer = peer;
     _connected = YES;
-
-    // every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used for
-    // one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
-    // transaction is encountered during the blockchain download (generates twice the external gap limit for both
-    // address chains)
-    [[[BRWalletManager sharedInstance] wallet] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:NO];
-    [[[BRWalletManager sharedInstance] wallet] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:YES];
-
     _bloomFilter = nil; // make sure the bloom filter is updated with any newly generated addresses
     [peer sendFilterloadMessage:self.bloomFilter.data];
 
     [self.orphans removeAllObjects]; // clear out orphans there were received on the old filter
     self.lastOrphan = nil;
     
-    if (self.lastBlock.height < peer.lastblock) { // start blockchain sync
+    if (self.lastBlockHeight < peer.lastblock) { // start blockchain sync
         self.lastRelayTime = 0;
 
         dispatch_async(dispatch_get_main_queue(), ^{ // setup a timer to detect if the sync stalls
@@ -926,30 +922,18 @@ static const char *dns_seeds[] = {
         NSArray *external = [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO],
                 *internal = [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
 
-        for (NSString *address in [external arrayByAddingObjectsFromArray:internal]) {
-            NSData *hash = address.addressToHash160;
+        if (! peer.needsFilterUpdate) {
+            for (NSString *address in [external arrayByAddingObjectsFromArray:internal]) {
+                NSData *hash = address.addressToHash160;
 
-            if (! hash || [self.bloomFilter containsData:hash]) continue;
-
-            // generate additional addresses so we don't have to update the filter after each new transaction
-            [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:NO];
-            [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:YES];
-
-            _bloomFilter = nil; // reset the filter so a new one will be created with the new wallet addresses
-
-            if (self.lastBlockHeight >= self.downloadPeer.lastblock) { // if we're syncing, only update download peer
-                for (BRPeer *p in self.connectedPeers) {
-                    [p sendFilterloadMessage:self.bloomFilter.data];
-                }
+                if (! hash || [self.bloomFilter containsData:hash]) continue;
+                peer.needsFilterUpdate = YES;
+                [self.orphans removeAllObjects]; // clear out orphans that were received on the old filter
+                self.lastOrphan = nil;
+                _bloomFilter = nil; // reset the filter so a new one will be created with the new wallet addresses
+                [peer sendPingMessage]; // wait for pong before updating filter
+                break;
             }
-            else [self.downloadPeer sendFilterloadMessage:self.bloomFilter.data];
-
-            [self.orphans removeAllObjects]; // clear out orphans that were received on the old filter
-            self.lastOrphan = nil;
-
-            // after adding addresses to the filter, re-request upcoming blocks that were requested using the old filter
-            [self.downloadPeer rereqeustBlocksFrom:self.lastBlock.blockHash];
-            break;
         }
     }
 }
@@ -1002,18 +986,20 @@ static const char *dns_seeds[] = {
         }
     }
 
+    if (peer.needsFilterUpdate) return; // ingore potentially incomplete blocks when a filter update is pending
+
     BRMerkleBlock *prev = self.blocks[block.prevBlock];
     NSTimeInterval transitionTime = 0;
 
     if (! prev) { // block is an orphan
         NSLog(@"%@:%d relayed orphan block %@, previous %@, last block is %@, height %d", peer.host, peer.port,
-              block.blockHash, block.prevBlock, self.lastBlock.blockHash, self.lastBlock.height);
+              block.blockHash, block.prevBlock, self.lastBlock.blockHash, self.lastBlockHeight);
 
         // ignore orphans older than one week ago
         if (block.timestamp < [NSDate timeIntervalSinceReferenceDate] - 7*24*60*60) return;
 
         // call getblocks, unless we already did with the previous block, or we're still downloading the chain
-        if (self.lastBlock.height >= peer.lastblock && ! [self.lastOrphan.blockHash isEqual:block.prevBlock]) {
+        if (self.lastBlockHeight >= peer.lastblock && ! [self.lastOrphan.blockHash isEqual:block.prevBlock]) {
             NSLog(@"%@:%d calling getblocks", peer.host, peer.port);
             [peer sendGetblocksMessageWithLocators:[self blockLocatorArray] andHashStop:nil];
         }
@@ -1084,7 +1070,7 @@ static const char *dns_seeds[] = {
 
         if ([b.blockHash isEqual:block.blockHash]) { // if it's not on a fork, set block heights for its transactions
             [self setBlockHeight:block.height forTxHashes:block.txHashes];
-            if (block.height == self.lastBlock.height) self.lastBlock = block;
+            if (block.height == self.lastBlockHeight) self.lastBlock = block;
         }
     }
     else { // new block is on a fork
@@ -1095,7 +1081,7 @@ static const char *dns_seeds[] = {
         }
 
         // special case, if a new block is mined while we're rescanning the chain, mark as orphan til we're caught up
-        if (self.lastBlock.height < peer.lastblock && block.height > self.lastBlock.height + 1) {
+        if (self.lastBlockHeight < peer.lastblock && block.height > self.lastBlockHeight + 1) {
             NSLog(@"marking new block at height %d as orphan until rescan completes", block.height);
             self.orphans[block.prevBlock] = block;
             self.lastOrphan = block;
@@ -1104,7 +1090,7 @@ static const char *dns_seeds[] = {
 
         NSLog(@"chain fork to height %d", block.height);
         self.blocks[block.blockHash] = block;
-        if (block.height <= self.lastBlock.height) return; // if fork is shorter than main chain, ingore it for now
+        if (block.height <= self.lastBlockHeight) return; // if fork is shorter than main chain, ingore it for now
 
         NSMutableArray *txHashes = [NSMutableArray array];
         BRMerkleBlock *b = block, *b2 = self.lastBlock;
@@ -1188,6 +1174,25 @@ static const char *dns_seeds[] = {
     }
 
     return tx;
+}
+
+- (void)peerSentPong:(BRPeer *)peer
+{
+    if (! peer.needsFilterUpdate) return;
+    _bloomFilter = nil; // reset the filter so a new one will be created with the new wallet addresses
+    
+    if (self.lastBlockHeight < self.downloadPeer.lastblock) { // if we're syncing, only update download peer
+        [self.downloadPeer sendFilterloadMessage:self.bloomFilter.data];
+        [self.downloadPeer rerequestBlocksFrom:self.lastBlock.blockHash]; // re-request upcoming blocks with new filter
+        [self.downloadPeer sendGetblocksMessageWithLocators:[self blockLocatorArray] andHashStop:nil]; // restart sync
+    }
+    else {
+        for (BRPeer *p in self.connectedPeers) {
+            [p sendFilterloadMessage:self.bloomFilter.data];
+            [p rerequestBlocksFrom:self.lastBlock.blockHash];
+            [p sendMempoolMessage];
+        }
+    }
 }
 
 - (NSData *)peerBloomFilter:(BRPeer *)peer
