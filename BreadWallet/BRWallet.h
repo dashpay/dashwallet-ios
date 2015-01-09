@@ -96,9 +96,6 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 // returns the fee for the given transaction if all its inputs are from wallet transactions, UINT64_MAX otherwise
 - (uint64_t)feeForTransaction:(BRTransaction *)transaction;
 
-// returns the first non-change output address for sends, first input address for receives, or nil if unkown
-- (NSString *)addressForTransaction:(BRTransaction *)transaction;
-
 // historical wallet balance after the given transaction, or current balance if transaction is not registered in wallet
 - (uint64_t)balanceAfterTransaction:(BRTransaction *)transaction;
 

@@ -1181,6 +1181,7 @@ static const char *dns_seeds[] = {
     if (! peer.needsFilterUpdate) return;
     _bloomFilter = nil; // reset the filter so a new one will be created with the new wallet addresses
     
+    //BUG: XXXX this seems to be resulting in orphan blocks followed by timeout
     if (self.lastBlockHeight < self.downloadPeer.lastblock) { // if we're syncing, only update download peer
         [self.downloadPeer sendFilterloadMessage:self.bloomFilter.data];
         [self.downloadPeer rerequestBlocksFrom:self.lastBlock.blockHash]; // re-request upcoming blocks with new filter

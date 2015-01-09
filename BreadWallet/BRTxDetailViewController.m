@@ -37,7 +37,7 @@
 @interface BRTxDetailViewController ()
 
 @property (nonatomic, strong) NSArray *outputText, *outputDetail, *outputAmount;
-@property (nonatomic, assign) int64_t sent, received, moved;
+@property (nonatomic, assign) int64_t sent, received;
 @property (nonatomic, strong) id txStatusObserver;
 
 @end
@@ -88,7 +88,6 @@
     _transaction = transaction;
     self.sent = [m.wallet amountSentByTransaction:transaction];
     self.received = [m.wallet amountReceivedFromTransaction:transaction];
-    self.moved = (! [m.wallet addressForTransaction:self.transaction] && self.sent > 0) ? self.sent : 0;
 
     for (NSString *address in transaction.outputAddresses) {
         uint64_t amt = [transaction.outputAmounts[i++] unsignedLongLongValue];
@@ -101,7 +100,7 @@
             }
         }
         else if ([m.wallet containsAddress:address]) {
-            if (self.sent == 0 || self.moved > 0) {
+            if (self.sent == 0 || self.received == self.sent) {
                 [text addObject:address];
                 [detail addObject:NSLocalizedString(@"wallet address", nil)];
                 [amount addObject:@(amt)];
@@ -226,10 +225,10 @@
                     textLabel = (id)[cell viewWithTag:1];
                     localCurrencyLabel = (id)[cell viewWithTag:5];
 
-                    if (self.moved > 0) {
-                        textLabel.text = [m stringForAmount:self.moved];
+                    if (self.sent > 0 && self.sent == self.received) {
+                        textLabel.text = [m stringForAmount:self.sent];
                         localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
-                                                   [m localCurrencyStringForAmount:self.moved]];
+                                                   [m localCurrencyStringForAmount:self.sent]];
                     }
                     else {
                         textLabel.text = [m stringForAmount:self.received - self.sent];

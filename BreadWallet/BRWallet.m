@@ -43,6 +43,16 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     return d;
 }
 
+static NSUInteger txAddressIndex(BRTransaction *tx, NSArray *chain) {
+    for (NSString *addr in tx.outputAddresses) {
+        NSUInteger i = [chain indexOfObject:addr];
+        
+        if (i != NSNotFound) return i;
+    }
+    
+    return NSNotFound;
+}
+
 @interface BRWallet ()
 
 @property (nonatomic, strong) id<BRKeySequence> sequence;
@@ -192,35 +202,32 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 // each block, however correct transaction ordering cannot be relied upon for determining wallet balance or UTXO set
 - (void)sortTransactions
 {
-    __block NSUInteger depth = 0;
-    NSComparator compareTx;
-    __block __weak NSComparator weakCompareTx = compareTx =
-        ^NSComparisonResult(BRTransaction *tx1, BRTransaction *tx2) {
-            if (! tx1 || ! tx2) return NSOrderedSame;
-            if (tx1.blockHeight > tx2.blockHeight) return NSOrderedAscending;
-            if (tx1.blockHeight < tx2.blockHeight) return NSOrderedDescending;
-            if ([tx1.inputHashes containsObject:tx2.txHash]) return NSOrderedAscending;
-            if ([tx2.inputHashes containsObject:tx1.txHash]) return NSOrderedDescending;
-            if (depth >= 10) return NSOrderedSame; // limit recusive depth to 10
-            depth++;
-            
-            for (NSData *txHash in tx1.inputHashes) { // recursively compare inputs
-                if (weakCompareTx(self.allTx[txHash], tx2) != NSOrderedAscending) continue;
-                depth--;
-                return NSOrderedAscending;
-            }
-            
-            for (NSData *txHash in tx2.inputHashes) {
-                if (weakCompareTx(tx1, self.allTx[txHash]) != NSOrderedDescending) continue;
-                depth--;
-                return NSOrderedDescending;
-            }
-            
-            depth--;
-            return NSOrderedSame;
-        };
-    
-    [self.transactions sortUsingComparator:compareTx];
+    BOOL (^isAscending)(id, id);
+    __block __weak BOOL (^_isAscending)(id, id) = isAscending = ^BOOL(BRTransaction *tx1, BRTransaction *tx2) {
+        if (! tx1 || ! tx2) return NO;
+        if (tx1.blockHeight > tx2.blockHeight) return YES;
+        if (tx1.blockHeight < tx2.blockHeight) return NO;
+        if ([tx1.inputHashes containsObject:tx2.txHash]) return YES;
+        if ([tx2.inputHashes containsObject:tx1.txHash]) return NO;
+        
+        for (NSData *hash in tx1.inputHashes) {
+            if (_isAscending(self.allTx[hash], tx2)) return YES;
+        }
+                
+        return NO;
+    };
+
+    [self.transactions sortWithOptions:NSSortStable usingComparator:^NSComparisonResult(id tx1, id tx2) {
+        if (isAscending(tx1, tx2)) return NSOrderedAscending;
+        if (isAscending(tx2, tx1)) return NSOrderedDescending;
+
+        NSUInteger i = txAddressIndex(tx1, self.internalAddresses),
+                   j = txAddressIndex(tx2, (i == NSNotFound) ? self.externalAddresses : self.internalAddresses);
+
+        if (i == NSNotFound && j != NSNotFound) i = txAddressIndex(tx1, self.externalAddresses);
+        if (i == NSNotFound || j == NSNotFound || i == j) return NSOrderedSame;
+        return (i > j) ? NSOrderedAscending : NSOrderedDescending;
+    }];
 }
 
 - (void)updateBalance
@@ -613,19 +620,6 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     }
     
     return amount;
-}
-
-// returns the first non-change output address for sends, first input address for receives, or nil if unkown
-- (NSString *)addressForTransaction:(BRTransaction *)transaction
-{
-    uint64_t sent = [self amountSentByTransaction:transaction];
-    NSArray *addrs = (sent > 0) ? transaction.outputAddresses : transaction.inputAddresses;
-
-    for (NSString *address in addrs) {
-        if (address != (id)[NSNull null] && ! [self containsAddress:address]) return address;
-    }
-
-    return nil;
 }
 
 // historical wallet balance after the given transaction, or current balance if transaction is not registered in wallet

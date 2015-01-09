@@ -409,7 +409,7 @@
                     sentLabel.hidden = NO;
                 }
                 
-                if (! [m.wallet addressForTransaction:tx] && sent > 0) {
+                if (sent > 0 && received == sent) {
                     textLabel.text = [m stringForAmount:sent];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [m localCurrencyStringForAmount:sent]];
