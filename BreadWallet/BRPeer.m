@@ -137,9 +137,10 @@ services:(uint64_t)services
         if (self.reachabilityObserver) return;
         
         self.reachabilityObserver =
-            [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification
-            object:self.reachability queue:nil usingBlock:^(NSNotification *note) {
+            [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil
+            queue:nil usingBlock:^(NSNotification *note) {
                 if (self.reachabilityObserver != nil && self.reachability.currentReachabilityStatus != NotReachable) {
+                    _status = BRPeerStatusDisconnected;
                     [self connect];
                 }
             }];
