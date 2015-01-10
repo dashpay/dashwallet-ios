@@ -235,10 +235,10 @@
     self.syncStartedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncStartedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.reachability.currentReachabilityStatus != NotReachable) [self hideErrorBar];
+            if (self.reachability.currentReachabilityStatus == NotReachable) return;
+            [self hideErrorBar];
             [self startActivityWithTimeout:0];
 
-            //BUG: XXXX rescan didn't trigger "syncing..." title
             if ([[BRPeerManager sharedInstance] lastBlockHeight] + 2016/2 <
                 [[BRPeerManager sharedInstance] estimatedBlockHeight] &&
                 m.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
@@ -253,6 +253,7 @@
         queue:nil usingBlock:^(NSNotification *note) {
             if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
             [self showBackupDialogIfNeeded];
+            if (! self.percent.hidden) [self hideTips];
             self.percent.hidden = YES;
             if (! m.didAuthenticate) self.navigationItem.titleView = self.logo;
             [self.receiveViewController updateAddress];
@@ -262,13 +263,10 @@
     self.syncFailedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (self.timeout < 1.0) [self stopActivityWithSuccess:NO];
-            [self showErrorBar];
+            if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
             [self showBackupDialogIfNeeded];
-            self.percent.hidden = YES;
-            if (! m.didAuthenticate) self.navigationItem.titleView = self.logo;
             [self.receiveViewController updateAddress];
-            self.balance = m.wallet.balance;
+            [self showErrorBar];
         }];
     
     //TODO: XXXX applicationProtectedDataDidBecomeAvailable observer
@@ -546,6 +544,14 @@
         self.burger.center = CGPointMake(self.burger.center.x, 70.0);
         self.errorBar.alpha = 1.0;
     } completion:nil];
+    
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    
+    if (! self.percent.hidden) [self hideTips];
+    self.percent.hidden = YES;
+    if (! m.didAuthenticate) self.navigationItem.titleView = self.logo;
+    self.balance = m.wallet.balance;
+    self.progress.hidden = self.pulse.hidden = YES;
 }
 
 - (void)hideErrorBar

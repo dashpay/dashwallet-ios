@@ -353,7 +353,8 @@ static const char *dns_seeds[] = {
 
 - (uint32_t)estimatedBlockHeight
 {
-    return (self.downloadPeer.lastblock > self.lastBlockHeight) ? self.downloadPeer.lastblock : self.lastBlockHeight;
+    if (self.downloadPeer.lastblock > self.lastBlockHeight) return self.downloadPeer.lastblock;
+    return self.lastBlockHeight + ([NSDate timeIntervalSinceReferenceDate] - self.lastBlock.timestamp)/(10*60);
 }
 
 - (double)syncProgress
