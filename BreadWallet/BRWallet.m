@@ -86,9 +86,6 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     self.externalAddresses = [NSMutableArray array];
     self.allAddresses = [NSMutableSet set];
     self.usedAddresses = [NSMutableSet set];
-    self.invalidTx = [NSMutableSet set];
-    self.spentOutputs = [NSMutableSet set];
-    self.utxos = [NSMutableOrderedSet orderedSet];
 
     [self.moc performBlockAndWait:^{
         [BRAddressEntity setContext:self.moc];

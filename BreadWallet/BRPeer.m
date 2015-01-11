@@ -134,19 +134,19 @@ services:(uint64_t)services
     if (! self.reachability) self.reachability = [Reachability reachabilityWithHostName:self.host];
     
     if (self.reachability.currentReachabilityStatus == NotReachable) { // delay connect until network is reachable
-        if (self.reachabilityObserver) return;
-        
         dispatch_async(dispatch_get_main_queue(), ^{
-            self.reachabilityObserver =
-                [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil
-                queue:nil usingBlock:^(NSNotification *note) {
-                    if (self.reachabilityObserver && self.reachability.currentReachabilityStatus != NotReachable) {
-                        _status = BRPeerStatusDisconnected;
-                        [self connect];
-                    }
-                }];
+            if (! self.reachabilityObserver) {
+                self.reachabilityObserver =
+                    [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil
+                    queue:nil usingBlock:^(NSNotification *note) {
+                        if (self.reachabilityObserver && self.reachability.currentReachabilityStatus != NotReachable) {
+                            _status = BRPeerStatusDisconnected;
+                            [self connect];
+                        }
+                    }];
         
-            [self.reachability startNotifier];
+                [self.reachability startNotifier];
+            }
         });
         
         return;

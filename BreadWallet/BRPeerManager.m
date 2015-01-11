@@ -113,7 +113,7 @@ static const char *dns_seeds[] = {
 @interface BRPeerManager ()
 
 @property (nonatomic, strong) NSMutableOrderedSet *peers;
-@property (nonatomic, strong) NSMutableSet *connectedPeers, *misbehavinPeers;
+@property (nonatomic, strong) NSMutableSet *connectedPeers, *misbehavinPeers, *txHashes;
 @property (nonatomic, strong) BRPeer *downloadPeer;
 @property (nonatomic, assign) uint32_t tweak, syncStartHeight, filterUpdateHeight;
 @property (nonatomic, strong) BRBloomFilter *bloomFilter;
@@ -398,20 +398,28 @@ static const char *dns_seeds[] = {
                              (self.downloadPeer.lastblock - self.lastBlockHeight)/BLOCK_DIFFICULTY_INTERVAL;
     }
 
-    BRWallet *w = [[BRWalletManager sharedInstance] wallet];
-    NSUInteger elemCount = w.addresses.count + w.unspentOutputs.count;
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    NSUInteger elemCount = m.wallet.addresses.count + m.wallet.unspentOutputs.count;
     BRBloomFilter *filter = [[BRBloomFilter alloc] initWithFalsePositiveRate:self.filterFpRate
                              forElementCount:(elemCount < 200) ? elemCount*1.5 : elemCount + 100
                              tweak:self.tweak flags:BLOOM_UPDATE_ALL];
 
-    for (NSString *address in w.addresses) { // add addresses to watch for any tx receiveing money to the wallet
+    for (NSString *address in m.wallet.addresses) { // add addresses to watch for any tx receiveing money to the wallet
         NSData *hash = address.addressToHash160;
 
         if (hash && ! [filter containsData:hash]) [filter insertData:hash];
     }
 
-    for (NSData *utxo in w.unspentOutputs) { // add unspent outputs to watch for any tx sending money from the wallet
+    for (NSData *utxo in m.wallet.unspentOutputs) { // add unspent outputs to watch for tx sending money from the wallet
         if (! [filter containsData:utxo]) [filter insertData:utxo];
+    }
+
+    if (! self.txHashes) {
+        self.txHashes = [NSMutableSet set];
+        
+        for (BRTransaction *tx in m.wallet.recentTransactions) {
+            [self.txHashes addObject:tx.txHash];
+        }
     }
 
     _bloomFilter = filter;
@@ -791,7 +799,7 @@ static const char *dns_seeds[] = {
     _bloomFilter = nil; // make sure the bloom filter is updated with any newly generated addresses
     [peer sendFilterloadMessage:self.bloomFilter.data];
 
-    [self.orphans removeAllObjects]; // clear out orphans there were received on the old filter
+    [self.orphans removeAllObjects]; // clear out orphans that were received on the old filter
     self.lastOrphan = nil;
     
     if (self.lastBlockHeight < peer.lastblock) { // start blockchain sync
@@ -904,6 +912,7 @@ static const char *dns_seeds[] = {
     NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, transaction.txHash);
 
     if ([m.wallet registerTransaction:transaction]) {
+        [self.txHashes addObject:transaction.txHash];
         self.publishedTx[transaction.txHash] = transaction;
 
         // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
@@ -977,8 +986,11 @@ static const char *dns_seeds[] = {
 
     // track the observed bloom filter false positive rate using a low pass filter to smooth out variance
     if (peer == self.downloadPeer && block.totalTransactions > 0) {
+        NSMutableSet *fp = [NSMutableSet setWithArray:block.txHashes];
+    
         // 1% low pass filter, also weights each block by total transactions, using 600 tx per block as typical
-        self.filterFpRate = self.filterFpRate*(1.0 - 0.01*block.totalTransactions/600) + 0.01*block.txHashes.count/600;
+        [fp minusSet:self.txHashes];
+        self.filterFpRate = self.filterFpRate*(1.0 - 0.01*block.totalTransactions/600) + 0.01*fp.count/600;
 
         if (self.filterFpRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) { // false positive rate sanity check
             NSLog(@"%@:%d bloom filter false positive rate too high after %d blocks, disconnecting...", peer.host,
