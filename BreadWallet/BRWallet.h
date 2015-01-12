@@ -87,7 +87,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 // set the block heights for the given transactions
 - (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes;
 
-// returns the amount received to the wallet by the transaction (total outputs to change and/or receive addresses)
+// returns the amount received by the wallet from the transaction (total outputs to change and/or receive addresses)
 - (uint64_t)amountReceivedFromTransaction:(BRTransaction *)transaction;
 
 // retuns the amount sent from the wallet by the trasaction (total wallet outputs consumed, change and fee included)

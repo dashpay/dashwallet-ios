@@ -282,9 +282,12 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 
     if (getKeychainData(SEED_KEY, nil)) { // upgrade from old keychain scheme
         NSLog(@"upgrading to authenticated keychain scheme");
-        //TODO: XXXX give users an explanation of the new security scheme
         if (! setKeychainData([self.sequence masterPublicKeyFromSeed:self.seed], MASTER_PUBKEY_KEY, NO)) return _wallet;
         if (setKeychainData(getKeychainData(MNEMONIC_KEY, nil), MNEMONIC_KEY, YES)) setKeychainData(nil, SEED_KEY, NO);
+
+        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"where's my passcode?", nil)
+          message:NSLocalizedString(@"passcode or touch id is required to send or view balance", nil)
+          delegate:self cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
     }
     
     if (! self.masterPublicKey) return _wallet;
@@ -544,12 +547,15 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 {
     NSError *error = nil;
     NSString *pin = getKeychainString(PIN_KEY, &error);
-    uint64_t failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, nil), failHeight = getKeychainInt(PIN_FAIL_HEIGHT_KEY, nil);
 
     if (error) return NO; // error reading pin from keychain
     if (pin.length != 4) return [self setPin]; // no pin set
+
+    uint64_t failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, nil);
     
     if (failCount >= 3) {
+        uint64_t failHeight = getKeychainInt(PIN_FAIL_HEIGHT_KEY, nil);
+        
         if (self.secureTime + NSTimeIntervalSince1970 < failHeight + pow(6, failCount - 3)*60.0) { // locked out
             NSTimeInterval wait = (failHeight + pow(6, failCount - 3)*60.0 -
                                    (self.secureTime + NSTimeIntervalSince1970))/60.0;
@@ -608,7 +614,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         }
 
         if (! [self.failedPins containsObject:self.pinField.text]) { // only count unique failed attempts
-            if (++failCount == 8) { // wipe wallet after 8 failed pin attempts and 24+ hours of lockout
+            if (++failCount >= 8) { // wipe wallet after 8 failed pin attempts and 24+ hours of lockout
                 self.seedPhrase = nil;
                 
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC/10), dispatch_get_main_queue(), ^{
@@ -620,7 +626,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 
             setKeychainInt(failCount, PIN_FAIL_COUNT_KEY, NO);
 
-            if (self.secureTime + NSTimeIntervalSince1970 > failHeight) {
+            if (self.secureTime + NSTimeIntervalSince1970 > getKeychainInt(PIN_FAIL_HEIGHT_KEY, nil)) {
                 setKeychainInt(self.secureTime + NSTimeIntervalSince1970, PIN_FAIL_HEIGHT_KEY, NO);
             }
 

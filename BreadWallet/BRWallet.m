@@ -565,7 +565,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     }
 }
 
-// returns the amount received to the wallet by the transaction (total outputs to change and/or receive addresses)
+// returns the amount received by the wallet from the transaction (total outputs to change and/or receive addresses)
 - (uint64_t)amountReceivedFromTransaction:(BRTransaction *)transaction
 {
     uint64_t amount = 0;
