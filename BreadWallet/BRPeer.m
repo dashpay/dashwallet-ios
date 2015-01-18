@@ -161,8 +161,11 @@ services:(uint64_t)services
     self.msgHeader = [NSMutableData data];
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
+    self.gotVerack = self.sentVerack = NO;
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
     self.currentBlockHashes = [NSMutableOrderedSet orderedSet];
+    self.currentBlock = nil;
+    self.currentTxHashes = nil;
 
     NSString *label = [NSString stringWithFormat:@"peer.%@:%d", self.host, self.port];
 
@@ -225,7 +228,6 @@ services:(uint64_t)services
         
         CFRunLoopStop([self.runLoop getCFRunLoop]);
         
-        self.gotVerack = self.sentVerack = NO;
         _status = BRPeerStatusDisconnected;
         dispatch_async(self.delegateQueue, ^{
             [self.delegate peer:self disconnectedWithError:error];
@@ -468,10 +470,10 @@ services:(uint64_t)services
 {
     CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
         if (self.currentBlock && ! [MSG_TX isEqual:type]) { // if we receive a non-tx message, the merkleblock is done
+            [self error:@"incomplete merkleblock %@, expected %u more tx, got %@", self.currentBlock.blockHash,
+             (int)self.currentTxHashes.count, type];
             self.currentBlock = nil;
             self.currentTxHashes = nil;
-            [self error:@"incomplete merkleblock %@, expected %u more tx", self.currentBlock.blockHash,
-             (int)self.currentTxHashes.count];
             return;
         }
 
@@ -844,8 +846,7 @@ services:(uint64_t)services
         return;
     }
     else if (self.startTime < 1) {
-        // no need to log this, it happens when more than one ping was sent before we got back a pong
-        //NSLog(@"%@:%d got unexpected pong", self.host, self.port);
+        NSLog(@"%@:%d got unexpected pong", self.host, self.port);
         return;
     }
 

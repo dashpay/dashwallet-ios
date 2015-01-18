@@ -389,14 +389,7 @@ static const char *dns_seeds[] = {
 
     self.filterUpdateHeight = self.lastBlockHeight;
     self.filterFpRate = BLOOM_DEFAULT_FALSEPOSITIVE_RATE;
-
-    if (self.lastBlockHeight + BLOCK_DIFFICULTY_INTERVAL < self.downloadPeer.lastblock) {
-        self.filterFpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE; // lower false positive rate during chain sync
-    }
-    else if (self.lastBlockHeight < self.downloadPeer.lastblock) { // partially lower fp rate if we're nearly synced
-        self.filterFpRate -= (BLOOM_DEFAULT_FALSEPOSITIVE_RATE - BLOOM_REDUCED_FALSEPOSITIVE_RATE)*
-                             (self.downloadPeer.lastblock - self.lastBlockHeight)/BLOCK_DIFFICULTY_INTERVAL;
-    }
+    if (self.lastBlockHeight + 144 < self.estimatedBlockHeight) self.filterFpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
 
     BRWalletManager *m = [BRWalletManager sharedInstance];
     NSUInteger elemCount = m.wallet.addresses.count + m.wallet.unspentOutputs.count;
@@ -627,8 +620,8 @@ static const char *dns_seeds[] = {
         return;
     }
 
+    if (! self.downloadPeer) return;
     NSLog(@"%@:%d chain sync timed out", self.downloadPeer.host, self.downloadPeer.port);
-
     [self.peers removeObject:self.downloadPeer];
     [self.downloadPeer disconnect];
 }
@@ -770,7 +763,6 @@ static const char *dns_seeds[] = {
 - (void)peerConnected:(BRPeer *)peer
 {
     NSLog(@"%@:%d connected with lastblock %d", peer.host, peer.port, peer.lastblock);
-
     self.connectFailures = 0;
     peer.timestamp = [NSDate timeIntervalSinceReferenceDate]; // set last seen timestamp for peer
 
@@ -913,13 +905,13 @@ static const char *dns_seeds[] = {
     NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, transaction.txHash);
 
     if ([m.wallet registerTransaction:transaction]) {
+        if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
         [self.txHashes addObject:transaction.txHash];
         self.publishedTx[transaction.txHash] = transaction;
 
         // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
-        if (! self.txRelays[transaction.txHash]) self.txRelays[transaction.txHash] = [NSMutableSet set];
-
         if (! [self.txRelays[transaction.txHash] containsObject:peer]) {
+            if (! self.txRelays[transaction.txHash]) self.txRelays[transaction.txHash] = [NSMutableSet set];
             [self.txRelays[transaction.txHash] addObject:peer];
         
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -943,6 +935,7 @@ static const char *dns_seeds[] = {
                 self.lastOrphan = nil;
                 _bloomFilter = nil; // reset the filter so a new one will be created with the new wallet addresses
                 [peer sendPingMessage]; // wait for pong before updating filter
+                NSLog(@"%@:%d needs filter update, waiting for pong", peer.host, peer.port);
                 break;
             }
         }
@@ -956,10 +949,11 @@ static const char *dns_seeds[] = {
     NSLog(@"%@:%d has transaction %@", peer.host, peer.port, txHash);
     
     if (self.publishedTx[txHash] != nil || [m.wallet transactionForHash:txHash] != nil) {
-        // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
-        if (! self.txRelays[txHash]) self.txRelays[txHash] = [NSMutableSet set];
+        if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
         
+        // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
         if (! [self.txRelays[txHash] containsObject:peer]) {
+            if (! self.txRelays[txHash]) self.txRelays[txHash] = [NSMutableSet set];
             [self.txRelays[txHash] addObject:peer];
             
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -995,12 +989,15 @@ static const char *dns_seeds[] = {
 
         if (self.filterFpRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) { // false positive rate sanity check
             NSLog(@"%@:%d bloom filter false positive rate too high after %d blocks, disconnecting...", peer.host,
-                  peer.port, self.lastBlockHeight - self.filterUpdateHeight);
+                  peer.port, self.lastBlockHeight + 1 - self.filterUpdateHeight);
             [self.downloadPeer disconnect];
         }
     }
 
-    if (peer.needsFilterUpdate) return; // ingore potentially incomplete blocks when a filter update is pending
+    if (peer.needsFilterUpdate) { // ingore potentially incomplete blocks when a filter update is pending
+        if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
+        return;
+    }
 
     BRMerkleBlock *prev = self.blocks[block.prevBlock];
     NSTimeInterval transitionTime = 0;
@@ -1193,6 +1190,7 @@ static const char *dns_seeds[] = {
 - (void)peerSentPong:(BRPeer *)peer
 {
     if (! peer.needsFilterUpdate) return;
+    NSLog(@"%@:%d updating filter with newly created wallet addresses", peer.host, peer.port);
     _bloomFilter = nil; // reset the filter so a new one will be created with the new wallet addresses
     
     if (self.lastBlockHeight < self.downloadPeer.lastblock) { // if we're syncing, only update download peer
