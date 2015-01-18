@@ -95,6 +95,10 @@
         self.seedLabel.text = self.seedPhrase;
         self.seedPhrase = nil;
     }
+    
+#if DEBUG
+    self.seedLabel.userInteractionEnabled = YES; // allow clipboard copy only for debug builds
+#endif
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -228,13 +232,6 @@
     }
     
     [defs synchronize];
-}
-
-- (IBAction)copy:(id)sender
-{
-#if DEBUG
-    [[UIPasteboard generalPasteboard] setString:[[BRWalletManager sharedInstance] seedPhrase]];
-#endif
 }
 
 #pragma mark - UIAlertViewDelegate

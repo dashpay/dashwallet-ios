@@ -118,6 +118,12 @@
     }
 }
 
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [self toggleCopyMenu];
+    [super touchesEnded:touches withEvent:event];
+}
+
 - (void)dealloc
 {
     if (self.menuHideObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.menuHideObserver];

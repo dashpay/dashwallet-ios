@@ -40,7 +40,7 @@
 
 #define FIXED_PEERS          @"FixedPeers"
 #define NODE_NETWORK         1  // services value indicating a node offers full blocks, not just headers
-#define PROTOCOL_TIMEOUT     30.0
+#define PROTOCOL_TIMEOUT     15.0
 #define MAX_CONNECT_FAILURES 20 // notify user of network problems after this many connect failures in a row
 #define CHECKPOINT_COUNT     (sizeof(checkpoint_array)/sizeof(*checkpoint_array))
 
@@ -703,6 +703,7 @@ static const char *dns_seeds[] = {
 
 - (void)sortPeers
 {
+    //BUG: XXXX got a range exception
     [_peers sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
         if ([obj1 timestamp] > [obj2 timestamp]) return NSOrderedAscending;
         if ([obj1 timestamp] < [obj2 timestamp]) return NSOrderedDescending;
