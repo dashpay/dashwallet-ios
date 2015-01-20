@@ -103,6 +103,7 @@ static const struct { uint32_t height; char *hash; time_t timestamp; uint32_t ta
     { 322560, "000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1", 1411680080, 0x181FB893u }
 };
 
+//TODO: XXXX compare seeds against mike hearn's list for bitcoinXT
 static const char *dns_seeds[] = {
     "seed.bitcoin.sipa.be", "dnsseed.bluematt.me", "dnsseed.bitcoin.dashjr.org", "seed.bitcoinstats.com",
     "seed.bitnodes.io", "bitseed.xf2.org"
@@ -389,7 +390,7 @@ static const char *dns_seeds[] = {
 
     self.filterUpdateHeight = self.lastBlockHeight;
     self.filterFpRate = BLOOM_DEFAULT_FALSEPOSITIVE_RATE;
-    if (self.lastBlockHeight + 144 < self.estimatedBlockHeight) self.filterFpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
+    if (self.lastBlockHeight + 500 < self.estimatedBlockHeight) self.filterFpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
 
     BRWalletManager *m = [BRWalletManager sharedInstance];
     NSUInteger elemCount = m.wallet.addresses.count + m.wallet.unspentOutputs.count;
@@ -407,7 +408,7 @@ static const char *dns_seeds[] = {
         if (! [filter containsData:utxo]) [filter insertData:utxo];
     }
 
-    if (! self.txHashes) {
+    if (! self.txHashes) { // populate txHashes now that the wallet is loaded
         self.txHashes = [NSMutableSet set];
         
         for (BRTransaction *tx in m.wallet.recentTransactions) {
@@ -925,19 +926,44 @@ static const char *dns_seeds[] = {
         NSArray *external = [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO],
                 *internal = [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
 
-        if (! peer.needsFilterUpdate) {
-            for (NSString *address in [external arrayByAddingObjectsFromArray:internal]) {
-                NSData *hash = address.addressToHash160;
+        if (peer.needsFilterUpdate) return;
+        
+        for (NSString *address in [external arrayByAddingObjectsFromArray:internal]) {
+            NSData *hash = address.addressToHash160;
 
-                if (! hash || [self.bloomFilter containsData:hash]) continue;
-                peer.needsFilterUpdate = YES;
-                [self.orphans removeAllObjects]; // clear out orphans that were received on the old filter
-                self.lastOrphan = nil;
+            if (! hash || [self.bloomFilter containsData:hash]) continue;
+            peer.needsFilterUpdate = YES;
+            [self.orphans removeAllObjects]; // clear out orphans that were received on the old filter
+            self.lastOrphan = nil;
+            NSLog(@"%@:%d needs filter update, waiting for pong", peer.host, peer.port);
+
+            [peer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we include any already sent tx
+                if (! success) return;
                 _bloomFilter = nil; // reset the filter so a new one will be created with the new wallet addresses
-                [peer sendPingMessage]; // wait for pong before updating filter
-                NSLog(@"%@:%d needs filter update, waiting for pong", peer.host, peer.port);
-                break;
-            }
+                NSLog(@"%@:%d updating filter with newly created wallet addresses", peer.host, peer.port);
+                    
+                if (self.lastBlockHeight < self.downloadPeer.lastblock) { // if we're syncing, only update download peer
+                    [peer sendFilterloadMessage:self.bloomFilter.data];
+                    [peer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we know filter is loaded
+                        if (! success) return;
+                        [peer rerequestBlocksFrom:self.lastBlock.blockHash];
+                        [peer sendPingMessageWithPongHandler:^(BOOL success) {
+                            if (! success || peer.needsFilterUpdate) return;
+                            [peer sendGetblocksMessageWithLocators:[self blockLocatorArray] andHashStop:nil];
+                        }];
+                    }];
+                }
+                else {
+                    for (BRPeer *p in self.connectedPeers) {
+                        [p sendFilterloadMessage:self.bloomFilter.data];
+                        [p sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we know filter is loaded
+                            if (success) [p sendMempoolMessage];
+                        }];
+                    }
+                }
+            }];
+            
+            break;
         }
     }
 }
@@ -947,19 +973,17 @@ static const char *dns_seeds[] = {
     BRWalletManager *m = [BRWalletManager sharedInstance];
     
     NSLog(@"%@:%d has transaction %@", peer.host, peer.port, txHash);
-    
-    if (self.publishedTx[txHash] != nil || [m.wallet transactionForHash:txHash] != nil) {
-        if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
+    if (! self.publishedTx[txHash] && ! [m.wallet transactionForHash:txHash]) return;
+    if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
         
-        // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
-        if (! [self.txRelays[txHash] containsObject:peer]) {
-            if (! self.txRelays[txHash]) self.txRelays[txHash] = [NSMutableSet set];
-            [self.txRelays[txHash] addObject:peer];
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
-            });
-        }
+    // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
+    if (! [self.txRelays[txHash] containsObject:peer]) {
+        if (! self.txRelays[txHash]) self.txRelays[txHash] = [NSMutableSet set];
+        [self.txRelays[txHash] addObject:peer];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
+        });
     }
 }
 
@@ -988,8 +1012,8 @@ static const char *dns_seeds[] = {
         self.filterFpRate = self.filterFpRate*(1.0 - 0.01*block.totalTransactions/600) + 0.01*fp.count/600;
 
         if (self.filterFpRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) { // false positive rate sanity check
-            NSLog(@"%@:%d bloom filter false positive rate too high after %d blocks, disconnecting...", peer.host,
-                  peer.port, self.lastBlockHeight + 1 - self.filterUpdateHeight);
+            NSLog(@"%@:%d bloom filter false positive rate %f too high after %d blocks, disconnecting...", peer.host,
+                  peer.port, self.filterFpRate, self.lastBlockHeight + 1 - self.filterUpdateHeight);
             [self.downloadPeer disconnect];
         }
     }
@@ -1187,29 +1211,9 @@ static const char *dns_seeds[] = {
     return tx;
 }
 
-- (void)peerSentPong:(BRPeer *)peer
-{
-    if (! peer.needsFilterUpdate) return;
-    NSLog(@"%@:%d updating filter with newly created wallet addresses", peer.host, peer.port);
-    _bloomFilter = nil; // reset the filter so a new one will be created with the new wallet addresses
-    
-    if (self.lastBlockHeight < self.downloadPeer.lastblock) { // if we're syncing, only update download peer
-        [self.downloadPeer sendFilterloadMessage:self.bloomFilter.data];
-        [self.downloadPeer rerequestBlocksFrom:self.lastBlock.blockHash]; // re-request upcoming blocks with new filter
-        [self.downloadPeer sendGetblocksMessageWithLocators:[self blockLocatorArray] andHashStop:nil]; // restart sync
-    }
-    else {
-        for (BRPeer *p in self.connectedPeers) {
-            [p sendFilterloadMessage:self.bloomFilter.data];
-            [p rerequestBlocksFrom:self.lastBlock.blockHash];
-            [p sendMempoolMessage];
-        }
-    }
-}
-
 - (NSData *)peerBloomFilter:(BRPeer *)peer
 {
-    self.filterFpRate = self.bloomFilter.falsePositiveRate;
+    self.filterFpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
     self.filterUpdateHeight = self.lastBlockHeight;
     return self.bloomFilter.data;
 }

@@ -117,7 +117,7 @@ flags:(uint8_t)flags
 {
     if (! (self = [self init])) return nil;
 
-    NSUInteger length = (-1.0/pow(M_LN2, 2))*count*log(fpRate)/8.0;
+    NSUInteger length = (-1.0/pow(M_LN2, 2))*count*log((fpRate > DBL_EPSILON) ? fpRate : DBL_EPSILON)/8.0;
 
     if (length > BLOOM_MAX_FILTER_LENGTH) length = BLOOM_MAX_FILTER_LENGTH;
     self.filter = [NSMutableData dataWithLength:length < 1 ? 1 : length];

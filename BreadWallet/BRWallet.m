@@ -303,12 +303,14 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 // returns the first unused external address
 - (NSString *)receiveAddress
 {
+    //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
     return [self addressesWithGapLimit:1 internal:NO].lastObject;
 }
 
 // returns the first unused internal address
 - (NSString *)changeAddress
 {
+    //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
     return [self addressesWithGapLimit:1 internal:YES].lastObject;
 }
 

@@ -64,13 +64,14 @@ typedef enum {
 @property (nonatomic, strong) NSInputStream *inputStream;
 @property (nonatomic, strong) NSOutputStream *outputStream;
 @property (nonatomic, strong) NSMutableData *msgHeader, *msgPayload, *outputBuffer;
-@property (nonatomic, assign) BOOL sentVerack, gotVerack;
+@property (nonatomic, assign) BOOL sentVerack, gotVerack, sentFilter, sentGetAddr;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) id reachabilityObserver;
 @property (nonatomic, assign) uint64_t localNonce;
 @property (nonatomic, assign) NSTimeInterval startTime;
 @property (nonatomic, strong) BRMerkleBlock *currentBlock;
 @property (nonatomic, strong) NSMutableOrderedSet *currentBlockHashes, *currentTxHashes, *knownTxHashes;
+@property (nonatomic, strong) NSMutableArray *pongHandlers;
 @property (nonatomic, assign) uint32_t filterBlockCount;
 @property (nonatomic, strong) NSRunLoop *runLoop;
 
@@ -161,7 +162,7 @@ services:(uint64_t)services
     self.msgHeader = [NSMutableData data];
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
-    self.gotVerack = self.sentVerack = NO;
+    self.gotVerack = self.sentVerack = self.sentFilter = self.sentGetAddr = NO;
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
     self.currentBlockHashes = [NSMutableOrderedSet orderedSet];
     self.currentBlock = nil;
@@ -230,6 +231,11 @@ services:(uint64_t)services
         
         _status = BRPeerStatusDisconnected;
         dispatch_async(self.delegateQueue, ^{
+            while (self.pongHandlers.count) {
+                ((void (^)(BOOL))self.pongHandlers[0])(NO);
+                [self.pongHandlers removeObjectAtIndex:0];
+            }
+            
             [self.delegate peer:self disconnectedWithError:error];
         });
     });
@@ -315,9 +321,10 @@ services:(uint64_t)services
 
 - (void)sendFilterloadMessage:(NSData *)filter
 {
-    self.needsFilterUpdate = NO;
     self.filterBlockCount = 0;
+    self.sentFilter = YES;
     [self sendMessage:filter type:MSG_FILTERLOAD];
+    self.needsFilterUpdate = NO;
 }
 
 - (void)sendMempoolMessage
@@ -428,7 +435,8 @@ services:(uint64_t)services
 
     if (self.filterBlockCount + blockHashes.count > BLOCK_DIFFICULTY_INTERVAL && ! self.needsFilterUpdate) {
         NSLog(@"%@:%d rebuilding bloom filter after %d blocks", self.host, self.port, self.filterBlockCount);
-        [self sendFilterloadMessage:[self.delegate peerBloomFilter:self]];
+        self.filterBlockCount = 0;
+        [self sendMessage:[self.delegate peerBloomFilter:self] type:MSG_FILTERLOAD];
     }
 
     self.filterBlockCount += (uint32_t)blockHashes.count;
@@ -437,13 +445,16 @@ services:(uint64_t)services
 
 - (void)sendGetaddrMessage
 {
+    self.sentGetAddr = YES;
     [self sendMessage:[NSData data] type:MSG_GETADDR];
 }
 
-- (void)sendPingMessage
+- (void)sendPingMessageWithPongHandler:(void (^)(BOOL success))pongHandler;
 {
     NSMutableData *msg = [NSMutableData data];
     
+    if (! self.pongHandlers) self.pongHandlers = [NSMutableArray array];
+    [self.pongHandlers addObject:pongHandler ? [pongHandler copy] : [NSNull null]];
     [msg appendUInt64:self.localNonce];
     self.startTime = [NSDate timeIntervalSinceReferenceDate];
     [self sendMessage:msg type:MSG_PING];
@@ -452,16 +463,13 @@ services:(uint64_t)services
 // re-request blocks starting from blockHash, useful for getting any additional transactions after a bloom filter update
 - (void)rerequestBlocksFrom:(NSData *)blockHash
 {
-    CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
-        NSUInteger i = [self.currentBlockHashes indexOfObject:blockHash];
+    NSUInteger i = [self.currentBlockHashes indexOfObject:blockHash];
 
-        if (i != NSNotFound) {
-            [self.currentBlockHashes removeObjectsInRange:NSMakeRange(0, i)];
-            NSLog(@"%@:%d re-requesting %d blocks", self.host, self.port, (int)self.currentBlockHashes.count);
-            [self sendGetdataMessageWithTxHashes:@[] andBlockHashes:self.currentBlockHashes.array];
-        }
-    });
-    CFRunLoopWakeUp([self.runLoop getCFRunLoop]);
+    if (i != NSNotFound) {
+        [self.currentBlockHashes removeObjectsInRange:NSMakeRange(0, i)];
+        NSLog(@"%@:%d re-requesting %d blocks", self.host, self.port, (int)self.currentBlockHashes.count);
+        [self sendGetdataMessageWithTxHashes:@[] andBlockHashes:self.currentBlockHashes.array];
+    }
 }
 
 #pragma mark - accept
@@ -554,6 +562,7 @@ services:(uint64_t)services
         [self error:@"malformed addr message, length %u is too short", (int)message.length];
         return;
     }
+    else if (! self.sentGetAddr) return; // simple anti-tarpitting tactic, don't accept unsolicited addresses
 
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
     NSUInteger l, count = (NSUInteger)[message varIntAtOffset:0 length:&l];
@@ -601,11 +610,17 @@ services:(uint64_t)services
          (int)((l == 0) ? 1 : l) + (int)count*36, (int)count];
         return;
     }
+    else if (! self.sentFilter) {
+        [self error:@"got inv message before loading a filter"];
+        return;
+    }
     else if (count > MAX_GETDATA_HASHES) {
         NSLog(@"%@:%u dropping inv message, %u is too many items, max is %d", self.host, self.port, (int)count,
               MAX_GETDATA_HASHES);
         return;
     }
+    
+    //TODO: XXXX mark node as misbehaving if it relays fewer block hashes than expected based on advertised height
     
     for (NSUInteger off = l; off < l + 36*count; off += 36) {
         inv_t type = [message UInt32AtOffset:off];
@@ -636,13 +651,15 @@ services:(uint64_t)services
     }
 
     if (blockHashes.count > 0) { // remember blockHashes in case we need to re-request them with an updated bloom filter
-        [self.currentBlockHashes unionOrderedSet:blockHashes];
-        if (self.currentBlockHashes.count > MAX_GETDATA_HASHES) {
-            [self.currentBlockHashes
-             removeObjectsInRange:NSMakeRange(0, self.currentBlockHashes.count - MAX_GETDATA_HASHES/2)];
-        }
+        dispatch_async(self.delegateQueue, ^{
+            [self.currentBlockHashes unionOrderedSet:blockHashes];
+        
+            if (self.currentBlockHashes.count > MAX_GETDATA_HASHES) {
+                [self.currentBlockHashes
+                 removeObjectsInRange:NSMakeRange(0, self.currentBlockHashes.count - MAX_GETDATA_HASHES/2)];
+            }
+        });
     }
-    else if (self.needsFilterUpdate) [blockHashes removeAllObjects];
 
     if ([txHashes intersectsOrderedSet:self.knownTxHashes]) { // remove transactions we already have
         for (NSData *hash in txHashes) {
@@ -658,8 +675,9 @@ services:(uint64_t)services
     
     [self.knownTxHashes unionOrderedSet:txHashes];
     
-    if (txHashes.count + blockHashes.count > 0) {
-        [self sendGetdataMessageWithTxHashes:txHashes.array andBlockHashes:blockHashes.array];
+    if (txHashes.count || (! self.needsFilterUpdate && blockHashes.count)) {
+        [self sendGetdataMessageWithTxHashes:txHashes.array
+         andBlockHashes:(self.needsFilterUpdate) ? @[] : blockHashes.array];
     }
 }
 
@@ -845,21 +863,26 @@ services:(uint64_t)services
          self.localNonce];
         return;
     }
-    else if (self.startTime < 1) {
+    else if (! self.pongHandlers.count) {
         NSLog(@"%@:%d got unexpected pong", self.host, self.port);
         return;
     }
 
-    NSTimeInterval pingTime = [NSDate timeIntervalSinceReferenceDate] - self.startTime;
+    if (self.startTime > 1) {
+        NSTimeInterval pingTime = [NSDate timeIntervalSinceReferenceDate] - self.startTime;
     
-    // 50% low pass filter on current ping time
-    _pingTime = self.pingTime*0.5 + pingTime*0.5;
-    self.startTime = 0;
+        // 50% low pass filter on current ping time
+        _pingTime = self.pingTime*0.5 + pingTime*0.5;
+        self.startTime = 0;
+    }
     
     NSLog(@"%@:%u got pong in %fs", self.host, self.port, self.pingTime);
 
     dispatch_async(self.delegateQueue, ^{
-        if (_status == BRPeerStatusConnected) [self.delegate peerSentPong:self];
+        if (_status == BRPeerStatusConnected && self.pongHandlers.count) {
+            ((void (^)(BOOL))self.pongHandlers[0])(YES);
+            [self.pongHandlers removeObjectAtIndex:0];
+        }
     });
 }
 
