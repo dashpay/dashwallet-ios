@@ -161,7 +161,7 @@ services:(uint64_t)services
     self.msgHeader = [NSMutableData data];
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
-    self.gotVerack = self.sentVerack = self.sentFilter = self.sentGetAddr = NO;
+    self.gotVerack = self.sentVerack = self.sentFilter = self.sentGetAddr = self.needsFilterUpdate = NO;
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
     self.currentBlockHashes = [NSMutableOrderedSet orderedSet];
     self.currentBlock = nil;
@@ -322,7 +322,6 @@ services:(uint64_t)services
 {
     self.sentFilter = YES;
     [self sendMessage:filter type:MSG_FILTERLOAD];
-    self.needsFilterUpdate = NO;
 }
 
 - (void)sendMempoolMessage
@@ -601,10 +600,6 @@ services:(uint64_t)services
          (int)((l == 0) ? 1 : l) + (int)count*36, (int)count];
         return;
     }
-    else if (! self.sentFilter) {
-        [self error:@"got inv message before loading a filter"];
-        return;
-    }
     else if (count > MAX_GETDATA_HASHES) {
         NSLog(@"%@:%u dropping inv message, %u is too many items, max is %d", self.host, self.port, (int)count,
               MAX_GETDATA_HASHES);
@@ -629,7 +624,11 @@ services:(uint64_t)services
 
     NSLog(@"%@:%u got inv with %u items", self.host, self.port, (int)count);
 
-    if (txHashes.count > 10000) { // this was happening on testnet, some sort of DOS/spam attack?
+    if (! self.sentFilter) {
+        if (txHashes.count > 0) [self error:@"got inv message before loading a filter"];
+        return;
+    }
+    else if (txHashes.count > 10000) { // this was happening on testnet, some sort of DOS/spam attack?
         NSLog(@"%@:%u too many transactions, disconnecting", self.host, self.port);
         [self disconnect]; // disconnecting seems to be the easiest way to mitigate it
         return;

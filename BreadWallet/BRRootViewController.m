@@ -498,9 +498,10 @@
     double progress = [[BRPeerManager sharedInstance] syncProgress];
 
     if (progress > DBL_EPSILON && ! self.percent.hidden && self.tipView.alpha > 0.5) {
-        self.tipView.text = [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
+        self.tipView.text = [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d - tx #%d", nil),
                              [[BRPeerManager sharedInstance] lastBlockHeight],
-                             [[BRPeerManager sharedInstance] estimatedBlockHeight]];
+                             [[BRPeerManager sharedInstance] estimatedBlockHeight],
+                             [[[[BRWalletManager sharedInstance] wallet] recentTransactions] count]];
     }
 
     if (self.timeout > 1.0 && 0.1 + 0.9*t/self.timeout < progress) progress = 0.1 + 0.9*t/self.timeout;

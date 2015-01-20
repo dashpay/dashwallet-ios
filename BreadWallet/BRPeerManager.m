@@ -686,6 +686,44 @@ static const char *dns_seeds[] = {
     }
 }
 
+- (void)updateBloomFilter
+{
+    if (self.downloadPeer.needsFilterUpdate) return;
+    self.downloadPeer.needsFilterUpdate = YES;
+    [self.orphans removeAllObjects]; // clear out orphans that were received on the old filter
+    self.lastOrphan = nil;
+    NSLog(@"filter update needed, waiting for pong");
+    
+    [self.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we include already sent tx
+        if (! success) return;
+        _bloomFilter = nil; // reset the filter so a new one will be created with the new wallet addresses
+        NSLog(@"updating filter with newly created wallet addresses");
+        
+        if (self.lastBlockHeight < self.downloadPeer.lastblock) { // if we're syncing, only update download peer
+            [self.downloadPeer sendFilterloadMessage:self.bloomFilter.data];
+            [self.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so filter is loaded
+                if (! success) return;
+                self.downloadPeer.needsFilterUpdate = NO;
+                [self.downloadPeer rerequestBlocksFrom:self.lastBlock.blockHash];
+                [self.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) {
+                    if (! success || self.downloadPeer.needsFilterUpdate) return;
+                    [self.downloadPeer sendGetblocksMessageWithLocators:[self blockLocatorArray] andHashStop:nil];
+                }];
+            }];
+        }
+        else {
+            for (BRPeer *p in self.connectedPeers) {
+                [p sendFilterloadMessage:self.bloomFilter.data];
+                [p sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we know filter is loaded
+                    if (! success) return;
+                    p.needsFilterUpdate = NO;
+                    [p sendMempoolMessage];
+                }];
+            }
+        }
+    }];
+}
+
 - (void)peerMisbehavin:(BRPeer *)peer
 {
     peer.misbehavin++;
@@ -926,43 +964,13 @@ static const char *dns_seeds[] = {
         NSArray *external = [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO],
                 *internal = [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
 
-        if (peer.needsFilterUpdate) return;
+        if (self.downloadPeer.needsFilterUpdate) return;
         
         for (NSString *address in [external arrayByAddingObjectsFromArray:internal]) {
             NSData *hash = address.addressToHash160;
 
             if (! hash || [self.bloomFilter containsData:hash]) continue;
-            peer.needsFilterUpdate = YES;
-            [self.orphans removeAllObjects]; // clear out orphans that were received on the old filter
-            self.lastOrphan = nil;
-            NSLog(@"%@:%d needs filter update, waiting for pong", peer.host, peer.port);
-
-            [peer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we include any already sent tx
-                if (! success) return;
-                _bloomFilter = nil; // reset the filter so a new one will be created with the new wallet addresses
-                NSLog(@"%@:%d updating filter with newly created wallet addresses", peer.host, peer.port);
-                    
-                if (self.lastBlockHeight < self.downloadPeer.lastblock) { // if we're syncing, only update download peer
-                    [peer sendFilterloadMessage:self.bloomFilter.data];
-                    [peer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we know filter is loaded
-                        if (! success) return;
-                        [peer rerequestBlocksFrom:self.lastBlock.blockHash];
-                        [peer sendPingMessageWithPongHandler:^(BOOL success) {
-                            if (! success || peer.needsFilterUpdate) return;
-                            [peer sendGetblocksMessageWithLocators:[self blockLocatorArray] andHashStop:nil];
-                        }];
-                    }];
-                }
-                else {
-                    for (BRPeer *p in self.connectedPeers) {
-                        [p sendFilterloadMessage:self.bloomFilter.data];
-                        [p sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we know filter is loaded
-                            if (success) [p sendMempoolMessage];
-                        }];
-                    }
-                }
-            }];
-            
+            [self updateBloomFilter];
             break;
         }
     }
@@ -1018,7 +1026,7 @@ static const char *dns_seeds[] = {
         }
     }
 
-    if (peer.needsFilterUpdate) { // ingore potentially incomplete blocks when a filter update is pending
+    if (self.downloadPeer.needsFilterUpdate) { // ingore potentially incomplete blocks when a filter update is pending
         if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
         return;
     }
