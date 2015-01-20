@@ -75,7 +75,6 @@
 - (void)peer:(BRPeer *)peer relayedBlock:(BRMerkleBlock *)block;
 
 - (BRTransaction *)peer:(BRPeer *)peer requestedTransaction:(NSData *)txHash;
-- (NSData *)peerBloomFilter:(BRPeer *)peer;
 
 @end
 

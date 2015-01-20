@@ -1211,13 +1211,6 @@ static const char *dns_seeds[] = {
     return tx;
 }
 
-- (NSData *)peerBloomFilter:(BRPeer *)peer
-{
-    self.filterFpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
-    self.filterUpdateHeight = self.lastBlockHeight;
-    return self.bloomFilter.data;
-}
-
 #pragma mark - UIAlertViewDelegate
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex

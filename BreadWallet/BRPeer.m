@@ -72,7 +72,6 @@ typedef enum {
 @property (nonatomic, strong) BRMerkleBlock *currentBlock;
 @property (nonatomic, strong) NSMutableOrderedSet *currentBlockHashes, *currentTxHashes, *knownTxHashes;
 @property (nonatomic, strong) NSMutableArray *pongHandlers;
-@property (nonatomic, assign) uint32_t filterBlockCount;
 @property (nonatomic, strong) NSRunLoop *runLoop;
 
 @end
@@ -321,7 +320,6 @@ services:(uint64_t)services
 
 - (void)sendFilterloadMessage:(NSData *)filter
 {
-    self.filterBlockCount = 0;
     self.sentFilter = YES;
     [self sendMessage:filter type:MSG_FILTERLOAD];
     self.needsFilterUpdate = NO;
@@ -433,13 +431,6 @@ services:(uint64_t)services
         [msg appendData:hash];
     }
 
-    if (self.filterBlockCount + blockHashes.count > BLOCK_DIFFICULTY_INTERVAL && ! self.needsFilterUpdate) {
-        NSLog(@"%@:%d rebuilding bloom filter after %d blocks", self.host, self.port, self.filterBlockCount);
-        self.filterBlockCount = 0;
-        [self sendMessage:[self.delegate peerBloomFilter:self] type:MSG_FILTERLOAD];
-    }
-
-    self.filterBlockCount += (uint32_t)blockHashes.count;
     [self sendMessage:msg type:MSG_GETDATA];
 }
 
