@@ -40,7 +40,7 @@
 
 #define FIXED_PEERS          @"FixedPeers"
 #define NODE_NETWORK         1  // services value indicating a node offers full blocks, not just headers
-#define PROTOCOL_TIMEOUT     15.0
+#define PROTOCOL_TIMEOUT     20.0
 #define MAX_CONNECT_FAILURES 20 // notify user of network problems after this many connect failures in a row
 #define CHECKPOINT_COUNT     (sizeof(checkpoint_array)/sizeof(*checkpoint_array))
 
@@ -1024,7 +1024,8 @@ static const char *dns_seeds[] = {
         [fp minusSet:self.txHashes];
         self.filterFpRate = self.filterFpRate*(1.0 - 0.01*block.totalTransactions/600) + 0.01*fp.count/600;
 
-        if (self.filterFpRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) { // false positive rate sanity check
+        if (self.downloadPeer.status == BRPeerStatusConnected &&
+            self.filterFpRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) { // false positive rate sanity check
             NSLog(@"%@:%d bloom filter false positive rate %f too high after %d blocks, disconnecting...", peer.host,
                   peer.port, self.filterFpRate, self.lastBlockHeight + 1 - self.filterUpdateHeight);
             [self.downloadPeer disconnect];
