@@ -170,7 +170,7 @@ flags:(uint8_t)flags
             if ([elem intValue] > OP_PUSHDATA4 || [elem intValue] == 0 || ! [self containsData:elem]) continue;
             [d setData:tx.txHash];
             [d appendUInt32:n];
-            [self insertData:d]; // update bloom filter with matched txout
+            if (! [self containsData:d]) [self insertData:d]; // update bloom filter with matched txout
             break;
         }
 

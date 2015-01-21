@@ -356,8 +356,9 @@ services:(uint64_t)services
 // - previous two steps repeat until a header within a week of earliestKeyTime is reached (further headers are ignored)
 // - local peer sends getblocks
 // - remote peer responds with inv containing up to 500 block hashes
-// - if there are 500, local peer immediately sends getblocks again, followed by getdata with the block hashes
-// - remote peer responds with inv containing up to 500 block hashes, followed by multiple merkleblock and tx messages
+// - local peer sends getdata with the block hashes
+// - if there were 500 hashes, local peer sends getblocks again without waiting for remote peer
+// - remote peer responds with multiple merkleblock and tx messages, followed by inv containing up to 500 block hashes
 // - previous two steps repeat until an inv with fewer than 500 block hashes is received
 // - local peer sends just getdata for the final set of fewer than 500 block hashes
 // - remote peer responds with multiple merkleblock and tx messages
@@ -634,12 +635,6 @@ services:(uint64_t)services
         return;
     }
 
-    // to improve chain download performance, if we received 500 block hashes, we request the next 500 block hashes
-    // immediately before sending the getdata request
-    if (blockHashes.count >= 500 && ! self.needsFilterUpdate) {
-        [self sendGetblocksMessageWithLocators:@[blockHashes.lastObject, blockHashes.firstObject] andHashStop:nil];
-    }
-
     if (blockHashes.count > 0) { // remember blockHashes in case we need to re-request them with an updated bloom filter
         dispatch_async(self.delegateQueue, ^{
             [self.currentBlockHashes unionOrderedSet:blockHashes];
@@ -669,6 +664,11 @@ services:(uint64_t)services
         [self sendGetdataMessageWithTxHashes:txHashes.array
          andBlockHashes:(self.needsFilterUpdate) ? @[] : blockHashes.array];
     }
+    
+    // to improve chain download performance, if we received 500 block hashes, we request the next 500 block hashes
+    if (blockHashes.count >= 500 && ! self.needsFilterUpdate) {
+        [self sendGetblocksMessageWithLocators:@[blockHashes.lastObject, blockHashes.firstObject] andHashStop:nil];
+    }
 }
 
 - (void)acceptTxMessage:(NSData *)message
@@ -679,11 +679,15 @@ services:(uint64_t)services
         [self error:@"malformed tx message: %@", message];
         return;
     }
+    else if (! self.sentFilter) {
+        [self error:@"got tx message before loading a filter"];
+        return;
+    }
     
     NSLog(@"%@:%u got tx %@", self.host, self.port, tx.txHash);
 
     dispatch_async(self.delegateQueue, ^{
-        if (_status == BRPeerStatusConnected) [self.delegate peer:self relayedTransaction:tx];
+        [self.delegate peer:self relayedTransaction:tx];
     });
 
     if (self.currentBlock) { // we're collecting tx messages for a merkleblock
@@ -696,7 +700,7 @@ services:(uint64_t)services
             self.currentTxHashes = nil;
 
             dispatch_async(self.delegateQueue, ^{
-                if (_status == BRPeerStatusConnected) [self.delegate peer:self relayedBlock:block];
+                [self.delegate peer:self relayedBlock:block];
             });
         }
     }
@@ -749,7 +753,7 @@ services:(uint64_t)services
             }
 
             dispatch_async(self.delegateQueue, ^{
-                if (_status == BRPeerStatusConnected) [self.delegate peer:self relayedBlock:block];
+                [self.delegate peer:self relayedBlock:block];
             });
         }
     });
@@ -900,7 +904,7 @@ services:(uint64_t)services
     }
     else {
         dispatch_async(self.delegateQueue, ^{
-            if (_status == BRPeerStatusConnected) [self.delegate peer:self relayedBlock:block];
+            [self.delegate peer:self relayedBlock:block];
         });
     }
 }
@@ -920,7 +924,7 @@ services:(uint64_t)services
 
     if (txHash.length == CC_SHA256_DIGEST_LENGTH) { // most likely a double spend due to tx missing from wallet
         dispatch_async(self.delegateQueue, ^{
-            if (_status == BRPeerStatusConnected) [self.delegate peer:self rejectedTransaction:txHash withCode:code];
+            [self.delegate peer:self rejectedTransaction:txHash withCode:code];
         });
     }
 }

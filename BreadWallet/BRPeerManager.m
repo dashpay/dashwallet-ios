@@ -696,9 +696,10 @@ static const char *dns_seeds[] = {
     
     [self.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we include already sent tx
         if (! success) return;
-        _bloomFilter = nil; // reset the filter so a new one will be created with the new wallet addresses
-        NSLog(@"updating filter with newly created wallet addresses");
-        
+        if (! _bloomFilter) NSLog(@"updating filter with newly created wallet addresses");
+        self.filterUpdateHeight = self.lastBlockHeight;
+        self.filterFpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
+
         if (self.lastBlockHeight < self.downloadPeer.lastblock) { // if we're syncing, only update download peer
             [self.downloadPeer sendFilterloadMessage:self.bloomFilter.data];
             [self.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so filter is loaded
@@ -843,6 +844,7 @@ static const char *dns_seeds[] = {
 
             dispatch_async(self.q, ^{
                 // request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
+                // BUG: XXXX headers can timeout on slow connections
                 if (self.lastBlock.timestamp + 7*24*60*60 >= self.earliestKeyTime) {
                     [peer sendGetblocksMessageWithLocators:[self blockLocatorArray] andHashStop:nil];
                 }
@@ -958,18 +960,21 @@ static const char *dns_seeds[] = {
                  object:nil];
             });
         }
+        
+        [_bloomFilter updateWithTransaction:transaction];
 
         // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
         // unused addresses are still matched by the bloom filter
         NSArray *external = [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO],
                 *internal = [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
 
-        if (self.downloadPeer.needsFilterUpdate) return;
+        if (! _bloomFilter) return;
         
         for (NSString *address in [external arrayByAddingObjectsFromArray:internal]) {
             NSData *hash = address.addressToHash160;
 
-            if (! hash || [self.bloomFilter containsData:hash]) continue;
+            if (! hash || [_bloomFilter containsData:hash]) continue;
+            _bloomFilter = nil; // reset bloom filter so it's recreated with new wallet addresses
             [self updateBloomFilter];
             break;
         }
@@ -1026,7 +1031,7 @@ static const char *dns_seeds[] = {
         }
     }
 
-    if (self.downloadPeer.needsFilterUpdate) { // ingore potentially incomplete blocks when a filter update is pending
+    if (! _bloomFilter) { // ingore potentially incomplete blocks when a filter update is pending
         if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
         return;
     }
@@ -1174,6 +1179,11 @@ static const char *dns_seeds[] = {
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerSyncFinishedNotification
              object:nil];
         });
+    }
+    else if (block.height + 500 < peer.lastblock && ! peer.needsFilterUpdate &&
+             self.filterFpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*2) {
+        if (_bloomFilter.falsePositiveRate >= BLOOM_REDUCED_FALSEPOSITIVE_RATE*2) _bloomFilter = nil;
+        [self updateBloomFilter];
     }
 
     if (block == self.lastBlock && self.orphans[block.blockHash]) { // check if the next block was received as an orphan

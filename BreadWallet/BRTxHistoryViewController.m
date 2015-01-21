@@ -97,8 +97,6 @@
                 BRTransaction *tx = self.transactions.firstObject;
                 NSArray *a = m.wallet.recentTransactions;
 
-                if (! m.wallet) return;
-
                 if (self.moreTx) {
                     self.transactions = [a subarrayWithRange:NSMakeRange(0, a.count > 5 ? 5 : a.count)];
                     self.moreTx = (a.count > 5) ? YES : NO;
@@ -121,7 +119,6 @@
         self.txStatusObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
-                if (! m.wallet) return;
                 [self.tableView reloadData];
             }];
     }
@@ -163,6 +160,7 @@
 - (void)viewWillDisappear:(BOOL)animated
 {
     if (self.isMovingFromParentViewController || self.navigationController.isBeingDismissed) {
+        //BUG: XXXX this isn't triggered from start/restore new wallet
         if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
         self.balanceObserver = nil;
         if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
