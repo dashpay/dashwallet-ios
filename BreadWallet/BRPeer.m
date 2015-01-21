@@ -739,6 +739,10 @@ services:(uint64_t)services
         }
         else [self sendGetheadersMessageWithLocators:@[lastHash, firstHash] andHashStop:nil];
     }
+    else {
+        [self error:@"non-standard headers message, %d is too few items", count];
+        return;
+    }
 
     NSLog(@"%@:%u got %u headers", self.host, self.port, (int)count);
     
@@ -890,6 +894,10 @@ services:(uint64_t)services
     
     if (! block.valid) {
         [self error:@"invalid merkleblock: %@", block.blockHash];
+        return;
+    }
+    else if (! self.sentFilter) {
+        [self error:@"got merkleblock message before loading a filter"];
         return;
     }
     //else NSLog(@"%@:%u got merkleblock %@", self.host, self.port, block.blockHash);

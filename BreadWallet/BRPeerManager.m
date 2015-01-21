@@ -183,7 +183,6 @@ static const char *dns_seeds[] = {
         queue:nil usingBlock:^(NSNotification *note) {
             self.earliestKeyTime = [[BRWalletManager sharedInstance] seedCreationTime];
             self.syncStartHeight = 0;
-            [self.orphans removeAllObjects];
             [self.txRelays removeAllObjects];
             [self.publishedTx removeAllObjects];
             [self.publishedCallback removeAllObjects];
@@ -192,7 +191,6 @@ static const char *dns_seeds[] = {
             _blocks = nil;
             _bloomFilter = nil;
             _lastBlock = nil;
-            _lastOrphan = nil;
             [self.connectedPeers makeObjectsPerformSelector:@selector(disconnect)];
         }];
 
@@ -316,7 +314,6 @@ static const char *dns_seeds[] = {
     }
 
     [locators addObject:GENESIS_BLOCK_HASH];
-
     return locators;
 }
 
@@ -343,7 +340,6 @@ static const char *dns_seeds[] = {
     }
 
     if (! _lastBlock) _lastBlock = GENESIS_BLOCK;
-
     return _lastBlock;
 }
 
@@ -388,6 +384,8 @@ static const char *dns_seeds[] = {
     [[[BRWalletManager sharedInstance] wallet] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:NO];
     [[[BRWalletManager sharedInstance] wallet] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:YES];
 
+    [self.orphans removeAllObjects]; // clear out orphans that may have been received on an old filter
+    self.lastOrphan = nil;
     self.filterUpdateHeight = self.lastBlockHeight;
     self.filterFpRate = BLOOM_DEFAULT_FALSEPOSITIVE_RATE;
     if (self.lastBlockHeight + 500 < self.estimatedBlockHeight) self.filterFpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
@@ -690,8 +688,6 @@ static const char *dns_seeds[] = {
 {
     if (self.downloadPeer.needsFilterUpdate) return;
     self.downloadPeer.needsFilterUpdate = YES;
-    [self.orphans removeAllObjects]; // clear out orphans that were received on the old filter
-    self.lastOrphan = nil;
     NSLog(@"filter update needed, waiting for pong");
     
     [self.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we include already sent tx
@@ -831,9 +827,6 @@ static const char *dns_seeds[] = {
     _connected = YES;
     _bloomFilter = nil; // make sure the bloom filter is updated with any newly generated addresses
     [peer sendFilterloadMessage:self.bloomFilter.data];
-
-    [self.orphans removeAllObjects]; // clear out orphans that were received on the old filter
-    self.lastOrphan = nil;
     
     if (self.lastBlockHeight < peer.lastblock) { // start blockchain sync
         self.lastRelayTime = 0;
@@ -945,39 +938,39 @@ static const char *dns_seeds[] = {
 
     NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, transaction.txHash);
 
-    if ([m.wallet registerTransaction:transaction]) {
-        if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
-        [self.txHashes addObject:transaction.txHash];
-        self.publishedTx[transaction.txHash] = transaction;
-
-        // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
-        if (! [self.txRelays[transaction.txHash] containsObject:peer]) {
-            if (! self.txRelays[transaction.txHash]) self.txRelays[transaction.txHash] = [NSMutableSet set];
-            [self.txRelays[transaction.txHash] addObject:peer];
+    if (! [m.wallet registerTransaction:transaction]) return;
+    if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
+    [self.txHashes addObject:transaction.txHash];
+    self.publishedTx[transaction.txHash] = transaction;
         
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification
-                 object:nil];
-            });
-        }
+    // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
+    if (! [self.txRelays[transaction.txHash] containsObject:peer]) {
+        if (! self.txRelays[transaction.txHash]) self.txRelays[transaction.txHash] = [NSMutableSet set];
+        [self.txRelays[transaction.txHash] addObject:peer];
         
-        [_bloomFilter updateWithTransaction:transaction];
-
-        // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
-        // unused addresses are still matched by the bloom filter
-        NSArray *external = [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO],
-                *internal = [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
-
-        if (! _bloomFilter) return;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
+        });
+    }
+    
+    if (! _bloomFilter) return;
         
-        for (NSString *address in [external arrayByAddingObjectsFromArray:internal]) {
-            NSData *hash = address.addressToHash160;
+    for (NSData *utxo in m.wallet.unspentOutputs) { // add new UTXOs to bloom filter
+        if (! [_bloomFilter containsData:utxo]) [_bloomFilter insertData:utxo];
+    }
+    
+    // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
+    // unused addresses are still matched by the bloom filter
+    NSArray *external = [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO],
+            *internal = [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
+        
+    for (NSString *address in [external arrayByAddingObjectsFromArray:internal]) {
+        NSData *hash = address.addressToHash160;
 
-            if (! hash || [_bloomFilter containsData:hash]) continue;
-            _bloomFilter = nil; // reset bloom filter so it's recreated with new wallet addresses
-            [self updateBloomFilter];
-            break;
-        }
+        if (! hash || [_bloomFilter containsData:hash]) continue;
+        _bloomFilter = nil; // reset bloom filter so it's recreated with new wallet addresses
+        [self updateBloomFilter];
+        break;
     }
 }
 
@@ -1167,7 +1160,7 @@ static const char *dns_seeds[] = {
 
         self.lastBlock = block;
     }
-
+    
     if (block.height == peer.lastblock && block == self.lastBlock) { // chain download is complete
         [self saveBlocks];
         [BRMerkleBlockEntity saveContext];
@@ -1182,7 +1175,7 @@ static const char *dns_seeds[] = {
         });
     }
     else if (block.height + 500 < peer.lastblock && ! peer.needsFilterUpdate &&
-             self.filterFpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*2) {
+        self.filterFpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*2) { // rebuild bloom filter when it starts to degrade
         if (_bloomFilter.falsePositiveRate >= BLOOM_REDUCED_FALSEPOSITIVE_RATE*2) _bloomFilter = nil;
         [self updateBloomFilter];
     }
