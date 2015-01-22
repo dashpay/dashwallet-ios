@@ -692,9 +692,17 @@ static const char *dns_seeds[] = {
     
     [self.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we include already sent tx
         if (! success) return;
-        if (! _bloomFilter) NSLog(@"updating filter with newly created wallet addresses");
         self.filterUpdateHeight = self.lastBlockHeight;
         self.filterFpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
+
+        if (_bloomFilter) {
+            for (NSData *utxo in [[[BRWalletManager sharedInstance] wallet] unspentOutputs]) { //add new UTXOs to filter
+                if (! [_bloomFilter containsData:utxo]) [_bloomFilter insertData:utxo];
+            }
+
+            if (_bloomFilter.falsePositiveRate >= self.filterFpRate*2) _bloomFilter = nil;
+        }
+        else NSLog(@"updating filter with newly created wallet addresses");
 
         if (self.lastBlockHeight < self.downloadPeer.lastblock) { // if we're syncing, only update download peer
             [self.downloadPeer sendFilterloadMessage:self.bloomFilter.data];
@@ -798,10 +806,15 @@ static const char *dns_seeds[] = {
 
 - (void)peerConnected:(BRPeer *)peer
 {
+    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+    
+    if (peer.timestamp > now + 2*60*60 || peer.timestamp < now - 2*60*60) {
+        peer.timestamp = [NSDate timeIntervalSinceReferenceDate]; // timestamp sanity check
+    }
+
     NSLog(@"%@:%d connected with lastblock %d", peer.host, peer.port, peer.lastblock);
     self.connectFailures = 0;
-    peer.timestamp = [NSDate timeIntervalSinceReferenceDate]; // set last seen timestamp for peer
-
+    
     if (peer.lastblock + 10 < self.lastBlockHeight) { // drop peers that aren't synced yet, we can't help them
         [peer disconnect];
         return;
@@ -837,7 +850,7 @@ static const char *dns_seeds[] = {
 
             dispatch_async(self.q, ^{
                 // request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
-                // BUG: XXXX headers can timeout on slow connections
+                // BUG: XXXX headers can timeout on slow connections (each message is over 160k)
                 if (self.lastBlock.timestamp + 7*24*60*60 >= self.earliestKeyTime) {
                     [peer sendGetblocksMessageWithLocators:[self blockLocatorArray] andHashStop:nil];
                 }
@@ -954,11 +967,7 @@ static const char *dns_seeds[] = {
     }
     
     if (! _bloomFilter) return;
-        
-    for (NSData *utxo in m.wallet.unspentOutputs) { // add new UTXOs to bloom filter
-        if (! [_bloomFilter containsData:utxo]) [_bloomFilter insertData:utxo];
-    }
-    
+
     // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
     // unused addresses are still matched by the bloom filter
     NSArray *external = [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO],
@@ -1093,6 +1102,7 @@ static const char *dns_seeds[] = {
         self.lastBlock = block;
         [self setBlockHeight:block.height forTxHashes:block.txHashes];
         if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
+        self.downloadPeer.currentBlockHeight = block.height;
 
         // track moving average transactions per block using a 1% low pass filter
         if (block.totalTransactions > 0) _averageTxPerBlock = _averageTxPerBlock*0.99 + block.totalTransactions*0.01;
@@ -1175,8 +1185,7 @@ static const char *dns_seeds[] = {
         });
     }
     else if (block.height + 500 < peer.lastblock && ! peer.needsFilterUpdate &&
-        self.filterFpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*2) { // rebuild bloom filter when it starts to degrade
-        if (_bloomFilter.falsePositiveRate >= BLOOM_REDUCED_FALSEPOSITIVE_RATE*2) _bloomFilter = nil;
+             self.filterFpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*2) { // rebuild bloom filter when it starts to degrade
         [self updateBloomFilter];
     }
 

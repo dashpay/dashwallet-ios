@@ -106,6 +106,7 @@ typedef enum {
 @property (nonatomic, assign) int16_t misbehavin;
 
 @property (nonatomic, assign) BOOL needsFilterUpdate;
+@property (nonatomic, assign) uint32_t currentBlockHeight;
 
 + (instancetype)peerWithAddress:(uint32_t)address andPort:(uint16_t)port;
 
