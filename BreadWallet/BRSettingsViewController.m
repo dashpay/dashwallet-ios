@@ -420,7 +420,7 @@
                     [m performSelector:@selector(setPin) withObject:nil afterDelay:0.0];
                     break;
 
-                case 1: // start/restore another wallet (handled by storyboard)
+                case 1: // start/recover another wallet (handled by storyboard)
                     break;
             }
             
