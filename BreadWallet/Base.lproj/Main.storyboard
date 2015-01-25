@@ -1361,7 +1361,7 @@
                                 </constraints>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
-                                <state key="normal" title="restore from backup" backgroundImage="button-bg-white">
+                                <state key="normal" title="recover wallet" backgroundImage="button-bg-white">
                                     <color key="titleShadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                 </state>
                                 <state key="disabled" backgroundImage="button-bg-disabled"/>
@@ -1972,7 +1972,7 @@ this app is open source
                                 <rect key="frame" x="27" y="137" width="266" height="94"/>
                                 <attributedString key="attributedText">
                                     <fragment>
-                                        <string key="content">start a new wallet by generating a wallet backup phrase
+                                        <string key="content">start a new wallet by generating a wallet recovery phrase
 </string>
                                         <attributes>
                                             <color key="NSColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
@@ -1982,7 +1982,7 @@ this app is open source
                                     </fragment>
                                     <fragment>
                                         <string key="content">
-Use it to restore your wallet on another device if this one is ever lost or broken.</string>
+if you ever lose your phone, you will need this phrase to recover your wallet</string>
                                         <attributes>
                                             <color key="NSColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                             <font key="NSFont" size="15" name="HelveticaNeue"/>
@@ -2002,7 +2002,7 @@ Use it to restore your wallet on another device if this one is ever lost or brok
                                 </constraints>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
-                                <state key="normal" title="generate backup phrase" backgroundImage="button-bg-white">
+                                <state key="normal" title="generate recovery phrase" backgroundImage="button-bg-white">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                     <color key="titleShadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                 </state>
@@ -2017,7 +2017,7 @@ Use it to restore your wallet on another device if this one is ever lost or brok
                                 <attributedString key="attributedText">
                                     <fragment content="    WARNING">
                                         <attributes>
-                                            <color key="NSColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                            <color key="NSColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                             <font key="NSFont" size="48" name="HelveticaNeue-Thin"/>
                                             <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
                                         </attributes>
@@ -2027,20 +2027,22 @@ Use it to restore your wallet on another device if this one is ever lost or brok
                                         
                                         
                                 %no-eye%
-      DO NOT let anyone see your backup
+
+      DO NOT let anyone see your recovery
       phrase or they can spend your bitcoins.
 
 
 
                                 %no-key%
-      NEVER type your backup phrase into
+
+      NEVER type your recovery phrase into
       password managers or elsewhere. Other
       devices may be infected.
 
 
 </string>
                                         <attributes>
-                                            <color key="NSColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                            <color key="NSColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                             <font key="NSFont" size="15" name="HelveticaNeue"/>
                                             <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
                                         </attributes>
@@ -2166,24 +2168,24 @@ Use it to restore your wallet on another device if this one is ever lost or brok
                             <imageView userInteractionEnabled="NO" contentMode="center" fixedFrame="YES" image="wallpaper-default" translatesAutoresizingMaskIntoConstraints="NO" id="dqh-Fj-S7p">
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                             </imageView>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="280" translatesAutoresizingMaskIntoConstraints="NO" id="EQG-Km-ZKY">
-                                <rect key="frame" x="28" y="131" width="263" height="92.5"/>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="290" translatesAutoresizingMaskIntoConstraints="NO" id="EQG-Km-ZKY">
+                                <rect key="frame" x="17" y="148" width="287" height="76"/>
                                 <attributedString key="attributedText">
-                                    <fragment content="this is your wallet backup phrase">
+                                    <fragment>
+                                        <string key="content">if you ever lose your phone, you will need this phrase to recover your wallet
+
+</string>
                                         <attributes>
                                             <color key="NSColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
-                                            <font key="NSFont" size="17" name="HelveticaNeue-Medium"/>
-                                            <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            <font key="NSFont" size="16" name="HelveticaNeue-Medium"/>
+                                            <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
                                         </attributes>
                                     </fragment>
-                                    <fragment>
-                                        <string key="content">
-
-WRITE IT DOWN and keep it safe. Your phrase is the only way to recover your wallet if this device is ever lost or broken.</string>
+                                    <fragment content="please write it down">
                                         <attributes>
                                             <color key="NSColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
                                             <font key="NSFont" size="15" name="HelveticaNeue-Light"/>
-                                            <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
                                         </attributes>
                                     </fragment>
                                 </attributedString>

@@ -95,7 +95,7 @@
              showInView:[[UIApplication sharedApplication] keyWindow]];
         }
         else if (seedPhrase) {
-            [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"backup phrase doesn't match", nil)
+            [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"recovery phrase doesn't match", nil)
               delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
         else [self.textView becomeFirstResponder];
@@ -170,18 +170,18 @@
             textView.selectedRange = [[textView.text lowercaseString] rangeOfString:incorrect];
         
             [[[UIAlertView alloc] initWithTitle:nil
-              message:[NSString stringWithFormat:NSLocalizedString(@"\"%@\" is not a backup phrase word", nil),
+              message:[NSString stringWithFormat:NSLocalizedString(@"\"%@\" is not a recovery phrase word", nil),
                        incorrect] delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil]
              show];
         }
         else if (a.count != PHRASE_LENGTH) {
             [[[UIAlertView alloc] initWithTitle:nil
-              message:[NSString stringWithFormat:NSLocalizedString(@"backup phrase must have %d words", nil),
+              message:[NSString stringWithFormat:NSLocalizedString(@"recovery phrase must have %d words", nil),
                        PHRASE_LENGTH] delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
               otherButtonTitles:nil] show];
         }
         else if (! [[BRBIP39Mnemonic sharedInstance] phraseIsValid:phrase]) {
-            [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"bad backup phrase", nil) delegate:nil
+            [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"bad recovery phrase", nil) delegate:nil
               cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
         else if (m.wallet) {

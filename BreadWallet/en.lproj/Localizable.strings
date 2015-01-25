@@ -1,5 +1,5 @@
 /* No comment provided by engineer. */
-"\n%@\n\nwrite down your backup phrase and use it to restore on another device if this one is ever lost or broken" = "\n%@\n\nwrite down your backup phrase and use it to restore on another device if this one is ever lost or broken";
+"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet";
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
@@ -11,7 +11,7 @@
 "\nbitcoin network fee + %@ (%@)" = "\nbitcoin network fee + %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your backup phrase or they can spend your bitcoins.\n\nNEVER type your backup phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nDO NOT let anyone see your backup phrase or they can spend your bitcoins.\n\nNEVER type your backup phrase into password managers or elsewhere. Other devices may be infected.\n";
+"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n";
 
 /* No comment provided by engineer. */
 "\ngo to settings and turn passcode on to access restricted areas of your wallet" = "\ngo to settings and turn passcode on to access restricted areas of your wallet";
@@ -38,28 +38,13 @@
 "1 confirmation" = "1 confirmation";
 
 /* No comment provided by engineer. */
-"\"%@\" is not a backup phrase word" = "\"%@\" is not a backup phrase word";
+"\"%@\" is not a recovery phrase word" = "\"%@\" is not a recovery phrase word";
 
 /* No comment provided by engineer. */
 "about" = "about";
 
 /* No comment provided by engineer. */
-"backup" = "backup";
-
-/* No comment provided by engineer. */
-"backup phrase" = "backup phrase";
-
-/* No comment provided by engineer. */
-"backup phrase doesn't match" = "backup phrase doesn't match";
-
-/* No comment provided by engineer. */
-"backup phrase must have %d words" = "backup phrase must have %d words";
-
-/* No comment provided by engineer. */
-"BACKUP YOUR WALLET" = "BACKUP YOUR WALLET";
-
-/* No comment provided by engineer. */
-"bad backup phrase" = "bad backup phrase";
+"bad recovery phrase" = "bad recovery phrase";
 
 /* No comment provided by engineer. */
 "bad payment request" = "bad payment request";
@@ -224,7 +209,7 @@
 "new phrase" = "new phrase";
 
 /* No comment provided by engineer. */
-"next, backup your wallet" = "next, backup your wallet";
+"next, write down your recovery phrase" = "next, write down your recovery phrase";
 
 /* No comment provided by engineer. */
 "no peers found" = "no peers found";
@@ -263,6 +248,15 @@
 "recent transactions" = "recent transactions";
 
 /* No comment provided by engineer. */
+"recovery phrase" = "recovery phrase";
+
+/* No comment provided by engineer. */
+"recovery phrase doesn't match" = "recovery phrase doesn't match";
+
+/* No comment provided by engineer. */
+"recovery phrase must have %d words" = "recovery phrase must have %d words";
+
+/* No comment provided by engineer. */
 "remove fee" = "remove fee";
 
 /* No comment provided by engineer. */
@@ -284,7 +278,7 @@
 "Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address.";
 
 /* No comment provided by engineer. */
-"Screenshots are visible to other apps and devices. Generate a new backup phrase and keep it secret." = "Screenshots are visible to other apps and devices. Generate a new backup phrase and keep it secret.";
+"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet.";
@@ -300,6 +294,9 @@
 
 /* No comment provided by engineer. */
 "send as message" = "send as message";
+
+/* No comment provided by engineer. */
+"show phrase" = "show phrase";
 
 /* No comment provided by engineer. */
 "spent address" = "spent address";
@@ -414,6 +411,9 @@
 
 /* No comment provided by engineer. */
 "wipe" = "wipe";
+
+/* No comment provided by engineer. */
+"WRITE DOWN YOUR RECOVERY PHRASE" = "WRITE DOWN YOUR RECOVERY PHRASE";
 
 /* No comment provided by engineer. */
 "you received bitcoin!" = "you received bitcoin!";

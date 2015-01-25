@@ -384,11 +384,12 @@
     [segue.destinationViewController setModalPresentationStyle:UIModalPresentationCustom];
     [self hideErrorBar];
     
-    if (sender == self) { // show backup phrase
+    if (sender == self) { // show recovery phrase
         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
-          message:NSLocalizedString(@"\nDO NOT let anyone see your backup phrase or they can spend your bitcoins.\n\n"
-                                    "DO NOT take a screenshot. Screenshots are visible to other apps and devices.\n",
-                                    nil) delegate:[[(id)segue.destinationViewController viewControllers] firstObject]
+          message:NSLocalizedString(@"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\n"
+                                    "NEVER type your recovery phrase into password managers or elsewhere. Other "
+                                    "devices may be infected.\n", nil)
+          delegate:[[(id)segue.destinationViewController viewControllers] firstObject]
           cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:NSLocalizedString(@"show", nil), nil]
          show];
     }
@@ -630,12 +631,12 @@
     
     [[[UIAlertView alloc]
       initWithTitle:(first) ? NSLocalizedString(@"you received bitcoin!", nil) : NSLocalizedString(@"IMPORTANT", nil)
-      message:[NSString
-               stringWithFormat:NSLocalizedString(@"\n%@\n\nwrite down your backup phrase and use it to restore on "
-                                                  "another device if this one is ever lost or broken", nil),
-               (first) ? NSLocalizedString(@"next, backup your wallet", nil) :
-               NSLocalizedString(@"BACKUP YOUR WALLET", nil)] delegate:self
-      cancelButtonTitle:NSLocalizedString(@"do it later", nil) otherButtonTitles:NSLocalizedString(@"backup", nil), nil]
+      message:[NSString stringWithFormat:NSLocalizedString(@"\n%@\n\nif you ever lose your phone, you will need it to "
+                                                           "recover your wallet", nil),
+               (first) ? NSLocalizedString(@"next, write down your recovery phrase", nil) :
+               NSLocalizedString(@"WRITE DOWN YOUR RECOVERY PHRASE", nil)] delegate:self
+      cancelButtonTitle:NSLocalizedString(@"do it later", nil)
+      otherButtonTitles:NSLocalizedString(@"show phrase", nil), nil]
      show];
 }
 

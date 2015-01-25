@@ -118,7 +118,7 @@ static const char *dns_seeds[] = {
 @property (nonatomic, strong) BRPeer *downloadPeer;
 @property (nonatomic, assign) uint32_t tweak, syncStartHeight, filterUpdateHeight;
 @property (nonatomic, strong) BRBloomFilter *bloomFilter;
-@property (nonatomic, assign) double filterFpRate;
+@property (nonatomic, assign) double fpRate;
 @property (nonatomic, assign) NSUInteger taskId, connectFailures;
 @property (nonatomic, assign) NSTimeInterval earliestKeyTime, lastRelayTime;
 @property (nonatomic, strong) NSMutableDictionary *blocks, *orphans, *checkpoints, *txRelays;
@@ -387,12 +387,12 @@ static const char *dns_seeds[] = {
     [self.orphans removeAllObjects]; // clear out orphans that may have been received on an old filter
     self.lastOrphan = nil;
     self.filterUpdateHeight = self.lastBlockHeight;
-    self.filterFpRate = BLOOM_DEFAULT_FALSEPOSITIVE_RATE;
-    if (self.lastBlockHeight + 500 < self.estimatedBlockHeight) self.filterFpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
+    self.fpRate = BLOOM_DEFAULT_FALSEPOSITIVE_RATE;
+    if (self.lastBlockHeight + 500 < self.estimatedBlockHeight) self.fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
 
     BRWalletManager *m = [BRWalletManager sharedInstance];
     NSUInteger elemCount = m.wallet.addresses.count + m.wallet.unspentOutputs.count;
-    BRBloomFilter *filter = [[BRBloomFilter alloc] initWithFalsePositiveRate:self.filterFpRate
+    BRBloomFilter *filter = [[BRBloomFilter alloc] initWithFalsePositiveRate:self.fpRate
                              forElementCount:(elemCount < 200) ? elemCount*1.5 : elemCount + 100
                              tweak:self.tweak flags:BLOOM_UPDATE_ALL];
 
@@ -684,7 +684,7 @@ static const char *dns_seeds[] = {
     }
 }
 
-- (void)updateBloomFilter
+- (void)updateFilter
 {
     if (self.downloadPeer.needsFilterUpdate) return;
     self.downloadPeer.needsFilterUpdate = YES;
@@ -692,17 +692,8 @@ static const char *dns_seeds[] = {
     
     [self.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we include already sent tx
         if (! success) return;
-        self.filterUpdateHeight = self.lastBlockHeight;
-        self.filterFpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
-
-        if (_bloomFilter) {
-            for (NSData *utxo in [[[BRWalletManager sharedInstance] wallet] unspentOutputs]) { //add new UTXOs to filter
-                if (! [_bloomFilter containsData:utxo]) [_bloomFilter insertData:utxo];
-            }
-
-            if (_bloomFilter.falsePositiveRate >= self.filterFpRate*2) _bloomFilter = nil;
-        }
-        else NSLog(@"updating filter with newly created wallet addresses");
+        if (! _bloomFilter) NSLog(@"updating filter with newly created wallet addresses");
+        _bloomFilter = nil;
 
         if (self.lastBlockHeight < self.downloadPeer.lastblock) { // if we're syncing, only update download peer
             [self.downloadPeer sendFilterloadMessage:self.bloomFilter.data];
@@ -808,12 +799,9 @@ static const char *dns_seeds[] = {
 {
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
     
-    if (peer.timestamp > now + 2*60*60 || peer.timestamp < now - 2*60*60) {
-        peer.timestamp = [NSDate timeIntervalSinceReferenceDate]; // timestamp sanity check
-    }
-
-    NSLog(@"%@:%d connected with lastblock %d", peer.host, peer.port, peer.lastblock);
+    if (peer.timestamp > now + 2*60*60 || peer.timestamp < now - 2*60*60) peer.timestamp = now; //timestamp sanity check
     self.connectFailures = 0;
+    NSLog(@"%@:%d connected with lastblock %d", peer.host, peer.port, peer.lastblock);
     
     if (peer.lastblock + 10 < self.lastBlockHeight) { // drop peers that aren't synced yet, we can't help them
         [peer disconnect];
@@ -840,6 +828,7 @@ static const char *dns_seeds[] = {
     _connected = YES;
     _bloomFilter = nil; // make sure the bloom filter is updated with any newly generated addresses
     [peer sendFilterloadMessage:self.bloomFilter.data];
+    peer.currentBlockHeight = self.lastBlockHeight;
     
     if (self.lastBlockHeight < peer.lastblock) { // start blockchain sync
         self.lastRelayTime = 0;
@@ -966,7 +955,7 @@ static const char *dns_seeds[] = {
         });
     }
     
-    if (! _bloomFilter) return;
+    if (! _bloomFilter) return; // bloom filter is aready being updated
 
     // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
     // unused addresses are still matched by the bloom filter
@@ -978,7 +967,7 @@ static const char *dns_seeds[] = {
 
         if (! hash || [_bloomFilter containsData:hash]) continue;
         _bloomFilter = nil; // reset bloom filter so it's recreated with new wallet addresses
-        [self updateBloomFilter];
+        [self updateFilter];
         break;
     }
 }
@@ -1024,12 +1013,13 @@ static const char *dns_seeds[] = {
     
         // 1% low pass filter, also weights each block by total transactions, using 600 tx per block as typical
         [fp minusSet:self.txHashes];
-        self.filterFpRate = self.filterFpRate*(1.0 - 0.01*block.totalTransactions/600) + 0.01*fp.count/600;
+        self.fpRate = self.fpRate*(1.0 - 0.01*block.totalTransactions/600) + 0.01*fp.count/600;
 
-        if (self.downloadPeer.status == BRPeerStatusConnected &&
-            self.filterFpRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) { // false positive rate sanity check
+        // false positive rate sanity check
+        if (self.downloadPeer.status == BRPeerStatusConnected && self.fpRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) {
             NSLog(@"%@:%d bloom filter false positive rate %f too high after %d blocks, disconnecting...", peer.host,
-                  peer.port, self.filterFpRate, self.lastBlockHeight + 1 - self.filterUpdateHeight);
+                  peer.port, self.fpRate, self.lastBlockHeight + 1 - self.filterUpdateHeight);
+            self.tweak = (uint32_t)mrand48(); // new random filter tweak in case we matched satoshidice or something
             [self.downloadPeer disconnect];
         }
     }
@@ -1095,7 +1085,7 @@ static const char *dns_seeds[] = {
 
     if ([block.prevBlock isEqual:self.lastBlock.blockHash]) { // new block extends main chain
         if ((block.height % 500) == 0 || block.txHashes.count > 0 || block.height > peer.lastblock) {
-            NSLog(@"adding block at height: %d, false positive rate: %f", block.height, self.filterFpRate);
+            NSLog(@"adding block at height: %d, false positive rate: %f", block.height, self.fpRate);
         }
 
         self.blocks[block.blockHash] = block;
@@ -1171,6 +1161,8 @@ static const char *dns_seeds[] = {
         self.lastBlock = block;
     }
     
+    if (block.height + 500 < peer.lastblock && self.fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*2) [self updateFilter];
+    
     if (block.height == peer.lastblock && block == self.lastBlock) { // chain download is complete
         [self saveBlocks];
         [BRMerkleBlockEntity saveContext];
@@ -1183,10 +1175,6 @@ static const char *dns_seeds[] = {
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerSyncFinishedNotification
              object:nil];
         });
-    }
-    else if (block.height + 500 < peer.lastblock && ! peer.needsFilterUpdate &&
-             self.filterFpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*2) { // rebuild bloom filter when it starts to degrade
-        [self updateBloomFilter];
     }
 
     if (block == self.lastBlock && self.orphans[block.blockHash]) { // check if the next block was received as an orphan

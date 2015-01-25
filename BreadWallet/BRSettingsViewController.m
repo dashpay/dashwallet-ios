@@ -192,7 +192,7 @@
                     break;
                     
                 case 1:
-                    cell.textLabel.text = NSLocalizedString(@"backup phrase", nil);
+                    cell.textLabel.text = NSLocalizedString(@"recovery phrase", nil);
                     break;
             }
             
@@ -351,11 +351,11 @@
                     [self.navigationController pushViewController:c animated:YES];
                     break;
                     
-                case 1: // backup phrase
+                case 1: // recovery phrase
                     [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
-                      message:NSLocalizedString(@"\nDO NOT let anyone see your backup phrase or they can spend your "
-                                                "bitcoins.\n\nNEVER type your backup phrase into password managers or "
-                                                "elsewhere. Other devices may be infected.\n", nil) delegate:self
+                      message:NSLocalizedString(@"\nDO NOT let anyone see your recovery phrase or they can spend your "
+                                                "bitcoins.\n\nNEVER type your recovery phrase into password managers "
+                                                "or elsewhere. Other devices may be infected.\n", nil) delegate:self
                       cancelButtonTitle:NSLocalizedString(@"cancel", nil)
                       otherButtonTitles:NSLocalizedString(@"show", nil), nil] show];
                     break;

@@ -1103,14 +1103,14 @@ replacementString:(NSString *)string
             textView.text = [m normalizePhrase:textView.text];
             
             if (! [m phraseIsValid:[m normalizePhrase:textView.text]]) {
-                self.alertView.title = NSLocalizedString(@"bad backup phrase", nil);
-                [self.alertView performSelector:@selector(setTitle:) withObject:NSLocalizedString(@"backup phrase", nil)
-                 afterDelay:3.0];
+                self.alertView.title = NSLocalizedString(@"bad recovery phrase", nil);
+                [self.alertView performSelector:@selector(setTitle:)
+                 withObject:NSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];
             }
             else if (! [[m normalizePhrase:textView.text] isEqual:getKeychainString(MNEMONIC_KEY, nil)]) {
-                self.alertView.title = NSLocalizedString(@"backup phrase doesn't match", nil);
-                [self.alertView performSelector:@selector(setTitle:) withObject:NSLocalizedString(@"backup phrase", nil)
-                 afterDelay:3.0];
+                self.alertView.title = NSLocalizedString(@"recovery phrase doesn't match", nil);
+                [self.alertView performSelector:@selector(setTitle:)
+                 withObject:NSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];
             }
             else {
                 setKeychainData(nil, SPEND_LIMIT_KEY, NO);
@@ -1178,7 +1178,7 @@ replacementString:(NSString *)string
         t.returnKeyType = UIReturnKeyDone;
         t.delegate = self;
         t.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
-        self.alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"backup phrase", nil) message:nil
+        self.alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"recovery phrase", nil) message:nil
                           delegate:nil cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:nil];
         [self.alertView setValue:t forKey:@"accessoryView"];
         [self.alertView show];

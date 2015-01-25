@@ -82,7 +82,7 @@ static NSString *sanitizeString(NSString *s)
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-    // TODO: XXXX redesign page with round buttons like the iOS power down screen... apple watch also has round buttons
+    // TODO: XXX redesign page with round buttons like the iOS power down screen... apple watch also has round buttons
     self.clipboardText.textContainerInset = UIEdgeInsetsMake(8.0, 0.0, 0.0, 0.0);
     
     self.clipboardObserver =
@@ -193,7 +193,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     BRWalletManager *m = [BRWalletManager sharedInstance];
     NSString *prompt = (isSecure && name.length > 0) ? LOCK @" " : @"";
 
-    //BUG: XXXX limit the length of name and memo to avoid having the amount clipped
+    //BUG: XXX limit the length of name and memo to avoid having the amount clipped
     if (! isSecure && self.request.errorMessage.length > 0) prompt = [prompt stringByAppendingString:REDX @" "];
     if (name.length > 0) prompt = [prompt stringByAppendingString:sanitizeString(name)];
     if (! isSecure && prompt.length > 0) prompt = [prompt stringByAppendingString:@"\n"];
@@ -832,7 +832,7 @@ fromConnection:(AVCaptureConnection *)connection
 
 - (void)textViewDidBeginEditing:(UITextView *)textView
 {
-    //BUG: XXXX this needs to take keyboard size into account
+    //BUG: XXX this needs to take keyboard size into account
     self.useClipboard = NO;
     self.clipboardText.text = [[UIPasteboard generalPasteboard] string];
     [textView scrollRangeToVisible:textView.selectedRange];

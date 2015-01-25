@@ -146,7 +146,7 @@
                 if ([[[BRWalletManager sharedInstance] wallet] balance] == 0) {
                     [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
                       message:NSLocalizedString(@"Screenshots are visible to other apps and devices. "
-                                                "Generate a new backup phrase and keep it secret.", nil)
+                                                "Generate a new recovery phrase and keep it secret.", nil)
                       delegate:self cancelButtonTitle:nil otherButtonTitles:NSLocalizedString(@"new phrase", nil), nil]
                      show];
                 }
