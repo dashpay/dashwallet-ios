@@ -569,6 +569,29 @@
     }];
 }
 
+- (void)showBackupDialogIfNeeded
+{
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+    
+    if (self.navigationController.visibleViewController != self || ! [defs boolForKey:WALLET_NEEDS_BACKUP_KEY] ||
+        m.wallet.balance == 0 || [defs doubleForKey:BACKUP_DIALOG_TIME_KEY] > now - 36*60*60) return;
+    
+    BOOL first = ([defs doubleForKey:BACKUP_DIALOG_TIME_KEY] < 1.0) ? YES : NO;
+    
+    [defs setDouble:now forKey:BACKUP_DIALOG_TIME_KEY];
+    
+    [[[UIAlertView alloc]
+      initWithTitle:(first) ? NSLocalizedString(@"you received bitcoin!", nil) : NSLocalizedString(@"IMPORTANT", nil)
+      message:[NSString stringWithFormat:NSLocalizedString(@"\n%@\n\nif you ever lose your phone, you will need it to "
+                                                           "recover your wallet", nil),
+               (first) ? NSLocalizedString(@"next, write down your recovery phrase", nil) :
+               NSLocalizedString(@"WRITE DOWN YOUR RECOVERY PHRASE", nil)] delegate:self
+      cancelButtonTitle:NSLocalizedString(@"do it later", nil)
+      otherButtonTitles:NSLocalizedString(@"show phrase", nil), nil] show];
+}
+
 - (void)hideTips
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(tip:) object:nil];
@@ -616,47 +639,31 @@
     return YES;
 }
 
-- (void)showBackupDialogIfNeeded
-{
-    BRWalletManager *m = [BRWalletManager sharedInstance];
-    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
-
-    if (self.navigationController.visibleViewController != self || ! [defs boolForKey:WALLET_NEEDS_BACKUP_KEY] ||
-        m.wallet.balance == 0 || [defs doubleForKey:BACKUP_DIALOG_TIME_KEY] > now - 36*60*60) return;
-    
-    BOOL first = ([defs doubleForKey:BACKUP_DIALOG_TIME_KEY] < 1.0) ? YES : NO;
-    
-    [defs setDouble:now forKey:BACKUP_DIALOG_TIME_KEY];
-    
-    [[[UIAlertView alloc]
-      initWithTitle:(first) ? NSLocalizedString(@"you received bitcoin!", nil) : NSLocalizedString(@"IMPORTANT", nil)
-      message:[NSString stringWithFormat:NSLocalizedString(@"\n%@\n\nif you ever lose your phone, you will need it to "
-                                                           "recover your wallet", nil),
-               (first) ? NSLocalizedString(@"next, write down your recovery phrase", nil) :
-               NSLocalizedString(@"WRITE DOWN YOUR RECOVERY PHRASE", nil)] delegate:self
-      cancelButtonTitle:NSLocalizedString(@"do it later", nil)
-      otherButtonTitles:NSLocalizedString(@"show phrase", nil), nil]
-     show];
-}
-
 #pragma mark - IBAction
 
 - (IBAction)tip:(id)sender
 {
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    
     if (sender == self.receiveViewController) {
         BRSendViewController *c = self.sendViewController;
 
         [(id)self.pageViewController setViewControllers:@[c] direction:UIPageViewControllerNavigationDirectionReverse
-        animated:YES completion:^(BOOL finished) { [c tip:sender]; }];
+         animated:YES completion:^(BOOL finished) { [c tip:sender]; }];
         return;
     }
     else if (sender == self.sendViewController) {
         self.scrollView.scrollEnabled = YES;
+
         [(id)self.pageViewController setViewControllers:@[self.receiveViewController]
         direction:UIPageViewControllerNavigationDirectionForward animated:YES completion:^(BOOL finished) {
-            [[BRWalletManager sharedInstance] performSelector:@selector(setPin) withObject:nil afterDelay:0.0];
+            [m performSelector:@selector(setPin) withObject:nil afterDelay:0.0];
         }];
+
+        return;
+    }
+    else if (self.showTips && m.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
+        self.showTips = NO;
         return;
     }
 

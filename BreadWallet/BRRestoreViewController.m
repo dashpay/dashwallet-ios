@@ -193,7 +193,9 @@
             m.seedPhrase = textView.text;
             textView.text = nil;
             
-            [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+            [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:^{
+                [m performSelector:@selector(setPin) withObject:nil afterDelay:0.3];
+            }];
         }
     }
 }
