@@ -861,7 +861,7 @@ static const char *dns_seeds[] = {
 
 - (void)peer:(BRPeer *)peer disconnectedWithError:(NSError *)error
 {
-    NSLog(@"%@:%d disconnected%@%@", peer.host, peer.port, error ? @", " : @"", error ? error : @"");
+    NSLog(@"%@:%d disconnected%@%@", peer.host, peer.port, (error ? @", " : @""), (error ? error : @""));
     
     if ([error.domain isEqual:@"BreadWallet"] && error.code != BITCOIN_TIMEOUT_CODE) {
         [self peerMisbehavin:peer]; // if it's protocol error other than timeout, the peer isn't following the rules
@@ -893,7 +893,7 @@ static const char *dns_seeds[] = {
 
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerSyncFailedNotification
-             object:nil userInfo:error ? @{@"error":error} : nil];
+             object:nil userInfo:(error) ? @{@"error":error} : nil];
         });
     }
     else if (self.connectFailures < MAX_CONNECT_FAILURES && (self.taskId != UIBackgroundTaskInvalid ||

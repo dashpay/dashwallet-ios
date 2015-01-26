@@ -51,7 +51,7 @@
 
 static NSString *sanitizeString(NSString *s)
 {
-    NSMutableString *sane = [NSMutableString stringWithString:s ? s : @""];
+    NSMutableString *sane = [NSMutableString stringWithString:(s) ? s : @""];
     
     CFStringTransform((CFMutableStringRef)sane, NULL, kCFStringTransformToUnicodeName, NO);
     return sane;

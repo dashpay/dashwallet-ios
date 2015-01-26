@@ -92,7 +92,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         [BRTransactionEntity setContext:self.moc];
 
         for (BRAddressEntity *e in [BRAddressEntity allObjects]) {
-            NSMutableArray *a = e.internal ? self.internalAddresses : self.externalAddresses;
+            NSMutableArray *a = (e.internal) ? self.internalAddresses : self.externalAddresses;
 
             while (e.index >= a.count) [a addObject:[NSNull null]];
             [a replaceObjectAtIndex:e.index withObject:e.address];
@@ -138,7 +138,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 // for receive addresses.
 - (NSArray *)addressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal
 {
-    NSMutableArray *a = [NSMutableArray arrayWithArray:internal ? self.internalAddresses : self.externalAddresses];
+    NSMutableArray *a = [NSMutableArray arrayWithArray:(internal) ? self.internalAddresses : self.externalAddresses];
     NSUInteger i = a.count;
 
     // keep only the trailing contiguous block of addresses with no transactions
@@ -155,7 +155,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     }
 
     @synchronized(self) {
-        [a setArray:internal ? self.internalAddresses : self.externalAddresses];
+        [a setArray:(internal) ? self.internalAddresses : self.externalAddresses];
         i = a.count;
 
         unsigned n = (unsigned)i;
@@ -186,7 +186,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             }];
 
             [self.allAddresses addObject:addr];
-            [internal ? self.internalAddresses : self.externalAddresses addObject:addr];
+            [(internal) ? self.internalAddresses : self.externalAddresses addObject:addr];
             [a addObject:addr];
             n++;
         }
@@ -506,7 +506,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 {
     //TODO: XXX attempted double spends should cause conflicted tx to remain unverified until they're confirmed
     if (transaction.blockHeight != TX_UNCONFIRMED) return YES;
-    if (self.allTx[transaction.txHash] != nil) return [self.invalidTx containsObject:transaction.txHash] ? NO : YES;
+    if (self.allTx[transaction.txHash] != nil) return ([self.invalidTx containsObject:transaction.txHash]) ? NO : YES;
 
     uint32_t i = 0;
 

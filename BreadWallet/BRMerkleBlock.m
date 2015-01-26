@@ -127,7 +127,7 @@ static uint32_t getCompact(const BIGNUM *bn)
     off += sizeof(uint32_t);
     len = (NSUInteger)[message varIntAtOffset:off length:&l]*CC_SHA256_DIGEST_LENGTH;
     off += l;
-    _hashes = off + len > message.length ? nil : [message subdataWithRange:NSMakeRange(off, len)];
+    _hashes = (off + len > message.length) ? nil : [message subdataWithRange:NSMakeRange(off, len)];
     off += len;
     _flags = [message dataAtOffset:off length:&l];
     _height = BLOCK_UNKOWN_HEIGHT;
@@ -169,7 +169,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
             return hash;
         } :^id (id left, id right) {
             [d setData:left];
-            [d appendData:right ? right : left]; // if right branch is missing, duplicate left branch
+            [d appendData:(right) ? right : left]; // if right branch is missing, duplicate left branch
             return d.SHA256_2;
         }];
     

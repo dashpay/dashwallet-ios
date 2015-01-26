@@ -377,7 +377,7 @@ services:(uint64_t)services
         [msg appendData:hash];
     }
     
-    [msg appendData:hashStop ? hashStop : ZERO_HASH];
+    [msg appendData:(hashStop) ? hashStop : ZERO_HASH];
     NSLog(@"%@:%u calling getheaders with locators: %@", self.host, self.port,
           @[locators.firstObject, locators.lastObject]);
     [self sendMessage:msg type:MSG_GETHEADERS];
@@ -394,7 +394,7 @@ services:(uint64_t)services
         [msg appendData:hash];
     }
     
-    [msg appendData:hashStop ? hashStop : ZERO_HASH];
+    [msg appendData:(hashStop) ? hashStop : ZERO_HASH];
     [self sendMessage:msg type:MSG_GETBLOCKS];
 }
 
@@ -445,7 +445,7 @@ services:(uint64_t)services
     NSMutableData *msg = [NSMutableData data];
     
     if (! self.pongHandlers) self.pongHandlers = [NSMutableArray array];
-    [self.pongHandlers addObject:pongHandler ? [pongHandler copy] : [NSNull null]];
+    [self.pongHandlers addObject:(pongHandler) ? [pongHandler copy] : [^(BOOL success) {} copy]];
     [msg appendUInt64:self.localNonce];
     self.startTime = [NSDate timeIntervalSinceReferenceDate];
     [self sendMessage:msg type:MSG_PING];
@@ -926,7 +926,7 @@ services:(uint64_t)services
     NSData *txHash = ([MSG_TX isEqual:type]) ? [message hashAtOffset:off + l] : nil;
 
     NSLog(@"%@:%u rejected %@ code: 0x%x reason: \"%@\"%@%@", self.host, self.port, type, code, reason,
-          txHash ? @" txid: " : @"", txHash ? txHash : @"");
+          (txHash ? @" txid: " : @""), (txHash ? txHash : @""));
     reason = nil; // fixes an unused variable warning for non-debug builds
 
     if (txHash.length == CC_SHA256_DIGEST_LENGTH) { // most likely a double spend due to tx missing from wallet
@@ -970,7 +970,7 @@ services:(uint64_t)services
     switch (eventCode) {
         case NSStreamEventOpenCompleted:
             NSLog(@"%@:%u %@ stream connected in %fs", self.host, self.port,
-                  aStream == self.inputStream ? @"input" : aStream == self.outputStream ? @"output" : @"unkown",
+                  (aStream == self.inputStream) ? @"input" : (aStream == self.outputStream ? @"output" : @"unkown"),
                   [NSDate timeIntervalSinceReferenceDate] - self.startTime);
 
             if (aStream == self.outputStream) {

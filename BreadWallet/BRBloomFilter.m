@@ -120,7 +120,7 @@ flags:(uint8_t)flags
     NSUInteger length = (-1.0/pow(M_LN2, 2))*count*log((fpRate > DBL_EPSILON) ? fpRate : DBL_EPSILON)/8.0;
 
     if (length > BLOOM_MAX_FILTER_LENGTH) length = BLOOM_MAX_FILTER_LENGTH;
-    self.filter = [NSMutableData dataWithLength:length < 1 ? 1 : length];
+    self.filter = [NSMutableData dataWithLength:(length < 1) ? 1 : length];
     self.hashFuncs = ((self.filter.length*8.0)/count)*M_LN2;
     if (self.hashFuncs > BLOOM_MAX_HASH_FUNCS) self.hashFuncs = BLOOM_MAX_HASH_FUNCS;
     _tweak = tweak;

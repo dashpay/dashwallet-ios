@@ -1010,7 +1010,7 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
 
     if (amount == 0) {
         self.format.minimumFractionDigits =
-            self.format.maximumFractionDigits > 4 ? 4 : self.format.maximumFractionDigits;
+            (self.format.maximumFractionDigits > 4) ? 4 : self.format.maximumFractionDigits;
     }
 
     NSString *r = [self.format stringFromNumber:@(amount/pow(10.0, self.format.maximumFractionDigits))];

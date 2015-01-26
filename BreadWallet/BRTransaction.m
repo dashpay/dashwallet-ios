@@ -105,10 +105,10 @@
         [self.amounts addObject:@([message UInt64AtOffset:off])]; // output amount
         off += sizeof(uint64_t);
         d = [message dataAtOffset:off length:&l];
-        [self.outScripts addObject:d ? d : [NSNull null]]; // output script
+        [self.outScripts addObject:(d) ? d : [NSNull null]]; // output script
         off += l;
         address = [NSString addressWithScriptPubKey:d]; // address from output script if applicable
-        [self.addresses addObject:address ? address : [NSNull null]];
+        [self.addresses addObject:(address) ? address : [NSNull null]];
     }
     
     _lockTime = [message UInt32AtOffset:off]; // tx locktime
@@ -238,8 +238,8 @@ sequence:(uint32_t)sequence
 {
     [self.hashes addObject:hash];
     [self.indexes addObject:@(index)];
-    [self.inScripts addObject:script ? script : [NSNull null]];
-    [self.signatures addObject:signature ? signature : [NSNull null]];
+    [self.inScripts addObject:(script) ? script : [NSNull null]];
+    [self.signatures addObject:(signature) ? signature : [NSNull null]];
     [self.sequences addObject:@(sequence)];
 }
 
@@ -257,7 +257,7 @@ sequence:(uint32_t)sequence
 
     [self.amounts addObject:@(amount)];
     [self.outScripts addObject:script];
-    [self.addresses addObject:address ? address : [NSNull null]];
+    [self.addresses addObject:(address) ? address : [NSNull null]];
 }
 
 - (void)setInputAddress:(NSString *)address atIndex:(NSUInteger)index;
@@ -277,7 +277,7 @@ sequence:(uint32_t)sequence
         NSString *addr = [NSString addressWithScriptPubKey:script];
 
         if (! addr) addr = [NSString addressWithScriptSig:self.signatures[i]];
-        [addresses addObject:addr ? addr : [NSNull null]];
+        [addresses addObject:(addr) ? addr : [NSNull null]];
         i++;
     }
 
@@ -344,7 +344,7 @@ sequence:(uint32_t)sequence
     
     for (NSUInteger i = 0; i < self.hashes.count; i++) {
         NSString *addr = [NSString addressWithScriptPubKey:self.inScripts[i]];
-        NSUInteger keyIdx = addr ? [addresses indexOfObject:addr] : NSNotFound;
+        NSUInteger keyIdx = (addr) ? [addresses indexOfObject:addr] : NSNotFound;
         
         if (keyIdx == NSNotFound) continue;
         

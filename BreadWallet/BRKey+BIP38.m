@@ -173,7 +173,7 @@ static NSData *point_multiply(NSData *point, const BIGNUM *factor, BOOL compress
     NSMutableData *d = [NSMutableData secureData];
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
     EC_POINT *r = EC_POINT_new(group), *p;
-    point_conversion_form_t form = compressed ? POINT_CONVERSION_COMPRESSED : POINT_CONVERSION_UNCOMPRESSED;
+    point_conversion_form_t form = (compressed) ? POINT_CONVERSION_COMPRESSED : POINT_CONVERSION_UNCOMPRESSED;
 
     if (point) {
         p = EC_POINT_new(group);
@@ -275,9 +275,9 @@ confirmationCode:(NSString **)confcode;
     pubKey = point_multiply(passpoint, factorb, compressed, ctx); // pubKey = passpoint*factorb
 
     uint16_t prefix = CFSwapInt16HostToBig(BIP38_EC_PREFIX);
-    uint8_t flag = compressed ? BIP38_COMPRESSED_FLAG : 0;
+    uint8_t flag = (compressed) ? BIP38_COMPRESSED_FLAG : 0;
     NSData *address = [[[BRKey keyWithPublicKey:pubKey] address] dataUsingEncoding:NSUTF8StringEncoding];
-    uint32_t addresshash = address ? *(uint32_t *)address.SHA256_2.bytes : 0;
+    uint32_t addresshash = (address) ? *(uint32_t *)address.SHA256_2.bytes : 0;
     uint64_t entropy = *(const uint64_t *)((const uint8_t *)d.bytes + 8);
     NSData *derived = derive_key(passpoint, addresshash, entropy);
     const uint64_t *derived1 = (const uint64_t *)derived.bytes, *derived2 = &derived1[4];
