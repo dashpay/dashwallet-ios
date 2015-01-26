@@ -312,7 +312,6 @@
               return;
         }
         
-        // BUG: XXXX when restoring from backup, balance shows zero and tips are displayed while syncing
         [self.navigationController
         presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"] animated:NO
         completion:^{
@@ -860,10 +859,14 @@ viewControllerAfterViewController:(UIViewController *)viewController
         } completion:^(BOOL finished) {
             self.pageViewController.view.center = CGPointMake(self.pageViewController.view.center.x,
                                                               v.frame.size.height/2.0);
-            if (! m.didAuthenticate) item.rightBarButtonItem = rightButton, item.titleView = titleView;
+            
+            if (! m.didAuthenticate) {
+                item.rightBarButtonItem = rightButton;
+                if (self.percent.hidden) item.titleView = titleView;
+            }
+            
+            item.title = self.navigationItem.title;
             item.leftBarButtonItem.image = [UIImage imageNamed:@"x"];
-            item.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                          [m localCurrencyStringForAmount:m.wallet.balance]];
             [v addSubview:to.view];
             [transitionContext completeTransition:YES];
         }];

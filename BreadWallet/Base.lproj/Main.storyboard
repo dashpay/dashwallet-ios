@@ -1667,7 +1667,7 @@
             </objects>
             <point key="canvasLocation" x="1949" y="-19"/>
         </scene>
-        <!--Settings View Controller-->
+        <!--settings-->
         <scene sceneID="9gb-yr-0Gl">
             <objects>
                 <tableViewController storyboardIdentifier="SettingsViewController" id="RgM-X7-fUn" customClass="BRSettingsViewController" sceneMemberID="viewController">
@@ -1818,19 +1818,8 @@
                             <outlet property="delegate" destination="RgM-X7-fUn" id="foZ-4Z-p3F"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" id="W8m-Eh-Nf9">
-                        <nil key="title"/>
+                    <navigationItem key="navigationItem" title="settings" id="W8m-Eh-Nf9">
                         <barButtonItem key="backBarButtonItem" title=" " id="OBr-C7-abe"/>
-                        <view key="titleView" contentMode="scaleToFill" id="9Lk-nR-p0m">
-                            <rect key="frame" x="113" y="14.5" width="94" height="15"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                            <subviews>
-                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" image="breadwallet" translatesAutoresizingMaskIntoConstraints="NO" id="ZwA-Oq-dj9">
-                                    <rect key="frame" x="0.0" y="0.5" width="94" height="15"/>
-                                </imageView>
-                            </subviews>
-                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                        </view>
                     </navigationItem>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
                 </tableViewController>

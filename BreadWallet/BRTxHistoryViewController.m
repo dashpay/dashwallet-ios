@@ -43,7 +43,7 @@
 @property (nonatomic, strong) NSArray *transactions;
 @property (nonatomic, assign) BOOL moreTx;
 @property (nonatomic, strong) NSMutableDictionary *txDates;
-@property (nonatomic, strong) id balanceObserver, txStatusObserver, backgroundObserver;
+@property (nonatomic, strong) id backgroundObserver, balanceObserver, txStatusObserver;
 @property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 @property (nonatomic, strong) UIImageView *wallpaper;
 
@@ -64,18 +64,6 @@
     [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
     self.navigationController.delegate = self;
     self.moreTx = (m.wallet.recentTransactions.count > 5) ? YES : NO;
-
-    self.backgroundObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
-        queue:nil usingBlock:^(NSNotification *note) {
-            NSArray *a = m.wallet.recentTransactions;
-
-            self.transactions = [a subarrayWithRange:NSMakeRange(0, a.count > 5 ? 5 : a.count)];
-            self.moreTx = (a.count > 5) ? YES : NO;
-            [self.tableView reloadData];
-            self.navigationItem.titleView = self.logo;
-            self.navigationItem.rightBarButtonItem = self.lock;
-        }];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -90,6 +78,20 @@
     self.transactions = [a subarrayWithRange:NSMakeRange(0, (a.count > 5 && self.moreTx) ? 5 : a.count)];
     if (m.didAuthenticate) [self unlock:nil];
 
+    if (! self.backgroundObserver) {
+        self.backgroundObserver =
+            [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification
+            object:nil queue:nil usingBlock:^(NSNotification *note) {
+                NSArray *a = m.wallet.recentTransactions;
+                
+                self.transactions = [a subarrayWithRange:NSMakeRange(0, a.count > 5 ? 5 : a.count)];
+                self.moreTx = (a.count > 5) ? YES : NO;
+                [self.tableView reloadData];
+                self.navigationItem.titleView = self.logo;
+                self.navigationItem.rightBarButtonItem = self.lock;
+            }];
+    }
+
     if (! self.balanceObserver) {
         self.balanceObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil
@@ -103,9 +105,12 @@
                 }
                 else self.transactions = [NSArray arrayWithArray:a];
 
-                if (! m.didAuthenticate) self.navigationItem.titleView = self.logo;
-                self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                             [m localCurrencyStringForAmount:m.wallet.balance]];
+                if (! [self.navigationItem.title isEqual:NSLocalizedString(@"syncing...", nil)]) {
+                    if (! m.didAuthenticate) self.navigationItem.titleView = self.logo;
+                    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
+                                                 [m stringForAmount:m.wallet.balance],
+                                                 [m localCurrencyStringForAmount:m.wallet.balance]];
+                }
 
                 if (self.transactions.firstObject != tx) {
                     [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
@@ -161,6 +166,8 @@
 {
     if (self.isMovingFromParentViewController || self.navigationController.isBeingDismissed) {
         //BUG: XXXX this isn't triggered from start/recover new wallet
+        if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
+        self.backgroundObserver = nil;
         if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
         self.balanceObserver = nil;
         if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
@@ -187,9 +194,9 @@
 - (void)dealloc
 {
     if (self.navigationController.delegate == self) self.navigationController.delegate = nil;
+    if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
     if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
-    if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
     if (self.syncStartedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
     if (self.syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFinishedObserver];
     if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
@@ -582,7 +589,7 @@
 
             break;
 
-        case 2:
+        case 2: // settings
             c = [self.storyboard instantiateViewControllerWithIdentifier:@"SettingsViewController"];
             [self.navigationController pushViewController:c animated:YES];
             break;
