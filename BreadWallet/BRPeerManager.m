@@ -1022,6 +1022,9 @@ static const char *dns_seeds[] = {
             self.tweak = (uint32_t)mrand48(); // new random filter tweak in case we matched satoshidice or something
             [self.downloadPeer disconnect];
         }
+        else if (self.lastBlockHeight + 500 < peer.lastblock && self.fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*10.0) {
+            [self updateFilter]; // rebuild bloom filter when it starts to degrade
+        }
     }
 
     if (! _bloomFilter) { // ingore potentially incomplete blocks when a filter update is pending
@@ -1160,9 +1163,6 @@ static const char *dns_seeds[] = {
 
         self.lastBlock = block;
     }
-    
-    // rebuild bloom filter when it starts to degrade
-    if (block.height + 500 < peer.lastblock && self.fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*2) [self updateFilter];
     
     if (block.height == peer.lastblock && block == self.lastBlock) { // chain download is complete
         [self saveBlocks];

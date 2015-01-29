@@ -70,7 +70,8 @@ typedef enum {
 @property (nonatomic, assign) uint64_t localNonce;
 @property (nonatomic, assign) NSTimeInterval startTime;
 @property (nonatomic, strong) BRMerkleBlock *currentBlock;
-@property (nonatomic, strong) NSMutableOrderedSet *currentBlockHashes, *currentTxHashes, *knownTxHashes;
+@property (nonatomic, strong) NSMutableOrderedSet *knownBlockHashes, *knownTxHashes, *currentTxHashes;
+@property (nonatomic, strong) NSData *lastBlockHash;
 @property (nonatomic, strong) NSMutableArray *pongHandlers;
 @property (nonatomic, strong) NSRunLoop *runLoop;
 
@@ -163,7 +164,7 @@ services:(uint64_t)services
     self.outputBuffer = [NSMutableData data];
     self.gotVerack = self.sentVerack = self.sentFilter = self.sentGetAddr = self.needsFilterUpdate = NO;
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
-    self.currentBlockHashes = [NSMutableOrderedSet orderedSet];
+    self.knownBlockHashes = [NSMutableOrderedSet orderedSet];
     self.currentBlock = nil;
     self.currentTxHashes = nil;
 
@@ -454,12 +455,12 @@ services:(uint64_t)services
 // re-request blocks starting from blockHash, useful for getting any additional transactions after a bloom filter update
 - (void)rerequestBlocksFrom:(NSData *)blockHash
 {
-    NSUInteger i = [self.currentBlockHashes indexOfObject:blockHash];
+    NSUInteger i = [self.knownBlockHashes indexOfObject:blockHash];
 
     if (i != NSNotFound) {
-        [self.currentBlockHashes removeObjectsInRange:NSMakeRange(0, i)];
-        NSLog(@"%@:%u re-requesting %u blocks", self.host, self.port, (int)self.currentBlockHashes.count);
-        [self sendGetdataMessageWithTxHashes:@[] andBlockHashes:self.currentBlockHashes.array];
+        [self.knownBlockHashes removeObjectsInRange:NSMakeRange(0, i)];
+        NSLog(@"%@:%u re-requesting %u blocks", self.host, self.port, (int)self.knownBlockHashes.count);
+        [self sendGetdataMessageWithTxHashes:@[] andBlockHashes:self.knownBlockHashes.array];
     }
 }
 
@@ -633,18 +634,21 @@ services:(uint64_t)services
         return;
     }
     else if (self.currentBlockHeight > 0 && blockHashes.count > 2 && blockHashes.count < 500 &&
-             self.currentBlockHeight + self.currentBlockHashes.count + blockHashes.count < self.lastblock) {
+             self.currentBlockHeight + self.knownBlockHashes.count + blockHashes.count < self.lastblock) {
         [self error:@"non-standard inv, %u is fewer block hashes than expected", (int)blockHashes.count];
         return;
     }
 
+    if (blockHashes.count == 1 && [self.lastBlockHash isEqual:blockHashes[0]]) [blockHashes removeAllObjects];
+    if (blockHashes.count == 1) self.lastBlockHash = blockHashes[0];
+    
     if (blockHashes.count > 0) { // remember blockHashes in case we need to re-request them with an updated bloom filter
         dispatch_async(self.delegateQueue, ^{
-            [self.currentBlockHashes unionOrderedSet:blockHashes];
+            [self.knownBlockHashes unionOrderedSet:blockHashes];
         
-            if (self.currentBlockHashes.count > MAX_GETDATA_HASHES) {
-                [self.currentBlockHashes
-                 removeObjectsInRange:NSMakeRange(0, self.currentBlockHashes.count - MAX_GETDATA_HASHES/2)];
+            if (self.knownBlockHashes.count > MAX_GETDATA_HASHES) {
+                [self.knownBlockHashes
+                 removeObjectsInRange:NSMakeRange(0, self.knownBlockHashes.count - MAX_GETDATA_HASHES/2)];
             }
         });
     }
