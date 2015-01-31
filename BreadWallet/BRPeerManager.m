@@ -481,23 +481,25 @@ static const char *dns_seeds[] = {
 {
     if (! self.connected) return;
 
-    _lastBlock = nil;
+    dispatch_async(self.q, ^{
+        _lastBlock = nil;
 
-    // start the chain download from the most recent checkpoint that's at least a week older than earliestKeyTime
-    for (int i = CHECKPOINT_COUNT - 1; ! _lastBlock && i >= 0; i--) {
-        if (checkpoint_array[i].timestamp + 7*24*60*60 - NSTimeIntervalSince1970 >= self.earliestKeyTime) continue;
-        _lastBlock = self.blocks[[NSString stringWithUTF8String:checkpoint_array[i].hash].hexToData.reverse];
-    }
+        // start the chain download from the most recent checkpoint that's at least a week older than earliestKeyTime
+        for (int i = CHECKPOINT_COUNT - 1; ! _lastBlock && i >= 0; i--) {
+            if (checkpoint_array[i].timestamp + 7*24*60*60 - NSTimeIntervalSince1970 >= self.earliestKeyTime) continue;
+            _lastBlock = self.blocks[[NSString stringWithUTF8String:checkpoint_array[i].hash].hexToData.reverse];
+        }
 
-    if (! _lastBlock) _lastBlock = self.blocks[GENESIS_BLOCK_HASH];
+        if (! _lastBlock) _lastBlock = self.blocks[GENESIS_BLOCK_HASH];
 
-    if (self.downloadPeer) { // disconnect the current download peer so a new random one will be selected
-        [self.peers removeObject:self.downloadPeer];
-        [self.downloadPeer disconnect];
-    }
+        if (self.downloadPeer) { // disconnect the current download peer so a new random one will be selected
+            [self.peers removeObject:self.downloadPeer];
+            [self.downloadPeer disconnect];
+        }
 
-    self.syncStartHeight = self.lastBlockHeight;
-    [self connect];
+        self.syncStartHeight = self.lastBlockHeight;
+        [self connect];
+    });
 }
 
 - (void)publishTransaction:(BRTransaction *)transaction completion:(void (^)(NSError *error))completion
@@ -619,10 +621,12 @@ static const char *dns_seeds[] = {
         return;
     }
 
-    if (! self.downloadPeer) return;
-    NSLog(@"%@:%d chain sync timed out", self.downloadPeer.host, self.downloadPeer.port);
-    [self.peers removeObject:self.downloadPeer];
-    [self.downloadPeer disconnect];
+    dispatch_async(self.q, ^{
+        if (! self.downloadPeer) return;
+        NSLog(@"%@:%d chain sync timed out", self.downloadPeer.host, self.downloadPeer.port);
+        [self.peers removeObject:self.downloadPeer];
+        [self.downloadPeer disconnect];
+    });
 }
 
 - (void)syncStopped
@@ -731,7 +735,6 @@ static const char *dns_seeds[] = {
 
 - (void)sortPeers
 {
-    //BUG: XXXX got a range exception
     [_peers sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
         if ([obj1 timestamp] > [obj2 timestamp]) return NSOrderedAscending;
         if ([obj1 timestamp] < [obj2 timestamp]) return NSOrderedDescending;
