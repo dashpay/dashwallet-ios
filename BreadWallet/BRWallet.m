@@ -34,6 +34,7 @@
 #import "NSMutableData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 
+// serialized UTXO
 static NSData *txOutput(NSData *txHash, uint32_t n)
 {
     NSMutableData *d = [NSMutableData dataWithCapacity:CC_SHA256_DIGEST_LENGTH + sizeof(uint32_t)];
@@ -43,6 +44,7 @@ static NSData *txOutput(NSData *txHash, uint32_t n)
     return d;
 }
 
+// chain position of first tx output address that appears in chain
 static NSUInteger txAddressIndex(BRTransaction *tx, NSArray *chain) {
     for (NSString *addr in tx.outputAddresses) {
         NSUInteger i = [chain indexOfObject:addr];
@@ -451,6 +453,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     if (! [self containsTransaction:transaction]) return NO;
 
     //TODO: verify signatures when possible
+    //TODO: XXX handle tx replacement with input sequence numbers (now replacements appear invalid until confirmation)
 
     self.allTx[transaction.txHash] = transaction;
     [self.transactions insertObject:transaction atIndex:0];
@@ -523,9 +526,10 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 // returns true if transaction won't be valid by blockHeight + 1 or within the next 10 minutes
 - (BOOL)transactionIsPostdated:(BRTransaction *)transaction atBlockHeight:(uint32_t)blockHeight
 {
-    if (transaction.blockHeight <= blockHeight + 1) return NO; // confirmed transactions are not pending
+    if (transaction.blockHeight <= blockHeight + 1) return NO; // confirmed transactions are not postdated
 
-    for (NSData *txHash in transaction.inputHashes) { // check if any inputs are known to be pending
+    // TODO: XXX consider marking any unconfirmed transaction with a non-final sequence number as postdated
+    for (NSData *txHash in transaction.inputHashes) { // check if any inputs are known to be postdated
         if ([self transactionIsPostdated:self.allTx[txHash] atBlockHeight:blockHeight]) return YES;
     }
 

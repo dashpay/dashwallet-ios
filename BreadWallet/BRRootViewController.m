@@ -230,9 +230,9 @@
             [self showBackupDialogIfNeeded];
             [self.receiveViewController updateAddress];
             self.balance = m.wallet.balance;
-            
-            if (! [[BRPeerManager sharedInstance] connected] &&
-                self.reachability.currentReachabilityStatus != NotReachable) {
+
+            if (self.reachability.currentReachabilityStatus != NotReachable &&
+                [[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground) {
                 [[BRPeerManager sharedInstance] connect];
             }
         }];

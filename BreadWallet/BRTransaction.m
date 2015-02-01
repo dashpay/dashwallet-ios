@@ -76,7 +76,6 @@
     NSUInteger l = 0, off = 0, count = 0;
     NSData *d = nil;
 
-    _txHash = message.SHA256_2;
     _version = [message UInt32AtOffset:off]; // tx version
     off += sizeof(uint32_t);
     count = (NSUInteger)[message varIntAtOffset:off length:&l]; // input count
@@ -112,6 +111,7 @@
     }
     
     _lockTime = [message UInt32AtOffset:off]; // tx locktime
+    _txHash = self.data.SHA256_2;
     
     return self;
 }

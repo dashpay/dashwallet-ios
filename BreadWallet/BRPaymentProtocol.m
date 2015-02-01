@@ -394,7 +394,7 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
         NSMutableArray *certs = [NSMutableArray array];
         NSArray *policies = @[CFBridgingRelease(SecPolicyCreateBasicX509())];
         SecTrustRef trust = NULL;
-        SecTrustResultType trustResult;
+        SecTrustResultType trustResult = kSecTrustResultInvalid;
 
         for (NSData *d in self.certs) {
             SecCertificateRef cert = SecCertificateCreateWithData(NULL, (__bridge CFDataRef)d);

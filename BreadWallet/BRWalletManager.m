@@ -673,6 +673,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
             v.center = CGPointMake(p.x - v.bounds.size.width, p.y);
         } completion:^(BOOL finished) {
             self.alertView.title = title;
+            self.alertView.message = nil;
             v.center = CGPointMake(p.x + v.bounds.size.width*2, p.y);
             [UIView animateWithDuration:0.3 delay:0.0 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
              animations:^{ v.center = p; } completion:nil];
