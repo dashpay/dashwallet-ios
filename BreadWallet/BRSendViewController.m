@@ -59,7 +59,7 @@ static NSString *sanitizeString(NSString *s)
 
 @interface BRSendViewController ()
 
-@property (nonatomic, assign) BOOL clearClipboard, useClipboard, showTips, didAskFee, removeFee;
+@property (nonatomic, assign) BOOL clearClipboard, useClipboard, showTips, didAskFee, removeFee, canChangeAmount;
 @property (nonatomic, strong) BRTransaction *sweepTx;
 @property (nonatomic, strong) BRPaymentProtocolRequest *request;
 @property (nonatomic, assign) uint64_t amount;
@@ -286,7 +286,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
           otherButtonTitles:NSLocalizedString(@"ignore", nil), NSLocalizedString(@"cancel", nil), nil] show];
           return;
     }
-    else if (amount == 0) {
+    else if (amount == 0 || amount == UINT64_MAX) {
         BRAmountViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"AmountViewController"];
         
         c.delegate = self;
@@ -413,15 +413,14 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
                   otherButtonTitles:[NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:amount - self.amount],
                                      [m localCurrencyStringForAmount:amount - self.amount]], nil] show];
                 self.amount = amount;
-                return;
             }
             else {
                 [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"insufficient funds", nil) message:nil
-                  delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+                  delegate:self cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
             }
         }
-        
-        [self cancel:nil];
+        else [self cancelOrChangeAmount];
+
         return;
     }
     
@@ -432,7 +431,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     }
     
     if (! [tx isSigned]) { // user canceled authentication
-        [self cancel:nil];
+        [self cancelOrChangeAmount];
         return;
     }
     
@@ -555,6 +554,17 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         }
         else [self cancel:nil];
     }];
+}
+
+- (void)cancelOrChangeAmount
+{
+    if (self.canChangeAmount && self.request && self.amount == 0) {
+        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"change payment amount?", nil)
+          message:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+          otherButtonTitles:NSLocalizedString(@"change", nil), nil] show];
+        self.amount = UINT64_MAX;
+    }
+    else [self cancel:nil];
 }
 
 - (void)hideTips
@@ -710,6 +720,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     self.okAddress = nil;
     self.clearClipboard = self.useClipboard = NO;
     self.didAskFee = self.removeFee = NO;
+    self.canChangeAmount = NO;
     self.scanButton.enabled = self.clipboardButton.enabled = YES;
     [self updateClipboardText];
 }
@@ -776,7 +787,11 @@ fromConnection:(AVCaptureConnection *)connection
                 }];
             }
             else {
-                [self.navigationController dismissViewControllerAnimated:YES completion:^{ [self resetQRGuide]; }];
+                [self.navigationController dismissViewControllerAnimated:YES completion:^{
+                    [self resetQRGuide];
+                    if (request.amount > 0) self.canChangeAmount = YES;
+                }];
+                
                 [self confirmRequest:request];
             }
         }
@@ -792,7 +807,7 @@ fromConnection:(AVCaptureConnection *)connection
     NSString *title = [alertView buttonTitleAtIndex:buttonIndex];
     
     if (buttonIndex == alertView.cancelButtonIndex || [title isEqual:NSLocalizedString(@"cancel", nil)]) {
-        [self cancel:nil];
+        [self cancelOrChangeAmount];
     }
     else if (self.sweepTx) {
         [(id)self.parentViewController.parentViewController startActivityWithTimeout:30];

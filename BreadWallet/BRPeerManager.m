@@ -443,6 +443,8 @@ static const char *dns_seeds[] = {
             [peers removeObject:p];
         }
 
+        [self bloomFilter]; // initialize wallet and bloomFilter while connecting
+
         if (self.connectedPeers.count == 0) {
             [self syncStopped];
             self.syncStartHeight = 0;
