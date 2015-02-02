@@ -363,10 +363,9 @@ static const char *dns_seeds[] = {
 
     // every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used for
     // one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
-    // transaction is encountered during the blockchain download (generates twice the external gap limit for both
-    // address chains)
-    [[[BRWalletManager sharedInstance] wallet] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:NO];
-    [[[BRWalletManager sharedInstance] wallet] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*2 internal:YES];
+    // transaction is encountered during the blockchain download (generates 5x the external gap limit for both chains)
+    [[[BRWalletManager sharedInstance] wallet] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*5 internal:NO];
+    [[[BRWalletManager sharedInstance] wallet] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*5 internal:YES];
 
     [self.orphans removeAllObjects]; // clear out orphans that may have been received on an old filter
     self.lastOrphan = nil;
@@ -377,7 +376,7 @@ static const char *dns_seeds[] = {
     BRWalletManager *m = [BRWalletManager sharedInstance];
     NSUInteger elemCount = m.wallet.addresses.count + m.wallet.unspentOutputs.count;
     BRBloomFilter *filter = [[BRBloomFilter alloc] initWithFalsePositiveRate:self.fpRate
-                             forElementCount:(elemCount < 200) ? elemCount*1.5 : elemCount + 100
+                             forElementCount:(elemCount < 200 ? elemCount*1.5 : elemCount + 100)
                              tweak:self.tweak flags:BLOOM_UPDATE_ALL];
 
     for (NSString *address in m.wallet.addresses) { // add addresses to watch for any tx receiveing money to the wallet
@@ -532,7 +531,7 @@ static const char *dns_seeds[] = {
 // BUG: this just doesn't work very well... we need to start storing tx metadata
 - (NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight
 {
-    if (blockHeight == TX_UNCONFIRMED) return [NSDate timeIntervalSinceReferenceDate] + 5*60; // average confirm time
+    if (blockHeight == TX_UNCONFIRMED) return self.lastBlock.timestamp + 10*60; // assume next block
 
     if (blockHeight > self.lastBlockHeight) { // future block, assume 10 minutes per block after last block
         return self.lastBlock.timestamp + (blockHeight - self.lastBlockHeight)*10*60;
@@ -991,7 +990,7 @@ static const char *dns_seeds[] = {
 - (void)peer:(BRPeer *)peer relayedBlock:(BRMerkleBlock *)block
 {
     // ignore block headers that are newer than one week before earliestKeyTime (headers have 0 totalTransactions)
-    if (block.totalTransactions == 0 && block.timestamp + 7*24*60*60 > self.earliestKeyTime) return;
+    if (block.totalTransactions == 0 && block.timestamp + 7*24*60*60 > self.earliestKeyTime + 2*60*60) return;
 
     // track the observed bloom filter false positive rate using a low pass filter to smooth out variance
     if (peer == self.downloadPeer && block.totalTransactions > 0) {

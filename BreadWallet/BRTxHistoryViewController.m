@@ -225,8 +225,9 @@
 - (NSString *)dateForTx:(BRTransaction *)tx
 {
     static NSDateFormatter *f1 = nil, *f2 = nil, *f3 = nil;
-    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate], w = now - 6*24*60*60, y = now - 365*24*60*60;
     NSString *date = self.txDates[tx.txHash];
+    NSTimeInterval now = [[BRPeerManager sharedInstance] timestampForBlockHeight:TX_UNCONFIRMED], w = now - 6*24*60*60,
+                   y = now - 364*24*60*60;
 
     if (date) return date;
 
