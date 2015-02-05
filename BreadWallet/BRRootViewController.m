@@ -42,6 +42,7 @@
 #define BITS_TIP    NSLocalizedString(@"%@ is for 'bits'. %@ = 1 bitcoin.", nil)
 
 #define BACKUP_DIALOG_TIME_KEY @"BACKUP_DIALOG_TIME"
+#define RECEIVED_AMOUNT_KEY           @"RECEIVED_AMOUNT"
 
 @interface BRRootViewController ()
 
@@ -105,6 +106,7 @@
         break;
     }
 
+    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
     self.urlObserver =
@@ -189,9 +191,16 @@
     self.activeObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            [[UIApplication sharedApplication] setApplicationIconBadgeNumber:0]; // reset app badge number
             [self.blur removeFromSuperview];
             self.blur = nil;
+            [[UIApplication sharedApplication] setApplicationIconBadgeNumber:0]; // reset app badge number
+
+            if ([defs integerForKey:RECEIVED_AMOUNT_KEY] > 0) {
+                _balance = m.wallet.balance - [defs integerForKey:RECEIVED_AMOUNT_KEY];
+                self.balance = m.wallet.balance; // show received message bubble
+                [defs setInteger:0 forKey:RECEIVED_AMOUNT_KEY];
+                [defs synchronize];
+            }
         }];
 
     self.resignActiveObserver =
@@ -426,13 +435,15 @@
 
 - (void)setBalance:(uint64_t)balance
 {
+    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
     if (balance > _balance && _balance != UINT64_MAX) {
         if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateBackground) {
             [[UIApplication sharedApplication]
              setApplicationIconBadgeNumber:[[UIApplication sharedApplication] applicationIconBadgeNumber] + 1];
-            return;
+            [defs setInteger:[defs integerForKey:RECEIVED_AMOUNT_KEY] + balance - _balance forKey:RECEIVED_AMOUNT_KEY];
+            [defs synchronize];
         }
         else {
             [self.view addSubview:[[[BRBubbleView viewWithText:[NSString

@@ -664,11 +664,13 @@ static const char *dns_seeds[] = {
     }
     
     if (rescan) {
-        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"transaction rejected", nil)
-          message:NSLocalizedString(@"Your wallet may be out of sync.\n"
-                                    "This can often be fixed by rescanning the blockchain.", nil) delegate:self
-          cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-          otherButtonTitles:NSLocalizedString(@"rescan", nil), nil] show];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"transaction rejected", nil)
+              message:NSLocalizedString(@"Your wallet may be out of sync.\n"
+                                        "This can often be fixed by rescanning the blockchain.", nil) delegate:self
+              cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+              otherButtonTitles:NSLocalizedString(@"rescan", nil), nil] show];
+        });
     }
 }
 
