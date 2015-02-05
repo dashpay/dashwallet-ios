@@ -24,7 +24,6 @@
 //  THE SOFTWARE.
 
 #import "BRWalletManager.h"
-#import "BRWallet.h"
 #import "BRKey.h"
 #import "BRKey+BIP38.h"
 #import "BRBIP39Mnemonic.h"
@@ -870,7 +869,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         NSLog(@"exchange rate updated to %@/%@", [self localCurrencyStringForAmount:SATOSHIS],
               [self stringForAmount:SATOSHIS]);
 
-        if (self.noWallet) return;
+        if (! _wallet) return;
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletBalanceChangedNotification object:nil];

@@ -30,7 +30,6 @@
 #import "BRTxHistoryViewController.h"
 #import "BRBubbleView.h"
 #import "BRWalletManager.h"
-#import "BRWallet.h"
 #import "BRPeerManager.h"
 #import "BRPaymentRequest.h"
 #import "BRPaymentProtocol.h"

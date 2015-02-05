@@ -27,7 +27,6 @@
 #import "BRRootViewController.h"
 #import "BRPaymentRequest.h"
 #import "BRWalletManager.h"
-#import "BRWallet.h"
 #import "BRTransaction.h"
 #import "BRBubbleView.h"
 

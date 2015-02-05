@@ -29,7 +29,6 @@
 #import "BRTxDetailViewController.h"
 #import "BRSeedViewController.h"
 #import "BRWalletManager.h"
-#import "BRWallet.h"
 #import "BRPeerManager.h"
 #import "BRTransaction.h"
 

@@ -31,7 +31,6 @@
 #import "BRBouncyBurgerButton.h"
 #import "BRPeerManager.h"
 #import "BRWalletManager.h"
-#import "BRWallet.h"
 #import "UIImage+Blur.h"
 #import "Reachability.h"
 #import <sys/stat.h>
@@ -42,7 +41,6 @@
 #define BITS_TIP    NSLocalizedString(@"%@ is for 'bits'. %@ = 1 bitcoin.", nil)
 
 #define BACKUP_DIALOG_TIME_KEY @"BACKUP_DIALOG_TIME"
-#define RECEIVED_AMOUNT_KEY           @"RECEIVED_AMOUNT"
 
 @interface BRRootViewController ()
 
@@ -435,23 +433,14 @@
 
 - (void)setBalance:(uint64_t)balance
 {
-    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
-    if (balance > _balance && _balance != UINT64_MAX) {
-        if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateBackground) {
-            [[UIApplication sharedApplication]
-             setApplicationIconBadgeNumber:[[UIApplication sharedApplication] applicationIconBadgeNumber] + 1];
-            [defs setInteger:[defs integerForKey:RECEIVED_AMOUNT_KEY] + balance - _balance forKey:RECEIVED_AMOUNT_KEY];
-            [defs synchronize];
-        }
-        else {
-            [self.view addSubview:[[[BRBubbleView viewWithText:[NSString
-             stringWithFormat:NSLocalizedString(@"received %@ (%@)", nil), [m stringForAmount:balance - _balance],
-                              [m localCurrencyStringForAmount:balance - _balance]]
-             center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
-             popOutAfterDelay:3.0]];
-        }
+    if (balance > _balance && [[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground) {
+        [self.view addSubview:[[[BRBubbleView viewWithText:[NSString
+         stringWithFormat:NSLocalizedString(@"received %@ (%@)", nil), [m stringForAmount:balance - _balance],
+                          [m localCurrencyStringForAmount:balance - _balance]]
+         center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
+         popOutAfterDelay:3.0]];
     }
 
     _balance = balance;

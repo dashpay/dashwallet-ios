@@ -29,6 +29,7 @@
 #define BRWalletBalanceChangedNotification @"BRWalletBalanceChangedNotification"
 
 @class BRTransaction;
+@protocol BRKeySequence;
 
 @interface BRWallet : NSObject
 

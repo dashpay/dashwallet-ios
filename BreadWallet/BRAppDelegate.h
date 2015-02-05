@@ -25,8 +25,9 @@
 
 #import <UIKit/UIKit.h>
 
-#define BRURLNotification  @"BRURLNotification"
-#define BRFileNotification @"BRFileNotification"
+#define BRURLNotification   @"BRURLNotification"
+#define BRFileNotification  @"BRFileNotification"
+#define RECEIVED_AMOUNT_KEY @"RECEIVED_AMOUNT"
 
 @interface BRAppDelegate : UIResponder <UIApplicationDelegate>
 

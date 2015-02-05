@@ -25,7 +25,6 @@
 
 #import "BRSeedViewController.h"
 #import "BRWalletManager.h"
-#import "BRWallet.h"
 #import "BRPeerManager.h"
 
 #define LABEL_MARGIN       20.0

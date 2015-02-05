@@ -27,7 +27,6 @@
 #import "BRTransaction.h"
 #import "BRWalletManager.h"
 #import "BRPeerManager.h"
-#import "BRWallet.h"
 #import "BRCopyLabel.h"
 #import "NSString+Base58.h"
 #import "NSData+Hash.h"

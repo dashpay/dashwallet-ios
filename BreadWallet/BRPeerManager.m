@@ -32,7 +32,6 @@
 #import "BRMerkleBlock.h"
 #import "BRMerkleBlockEntity.h"
 #import "BRWalletManager.h"
-#import "BRWallet.h"
 #import "NSString+Base58.h"
 #import "NSData+Hash.h"
 #import "NSManagedObject+Sugar.h"

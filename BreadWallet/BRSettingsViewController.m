@@ -26,7 +26,6 @@
 #import "BRSettingsViewController.h"
 #import "BRSeedViewController.h"
 #import "BRWalletManager.h"
-#import "BRWallet.h"
 
 @interface BRSettingsViewController ()
 

@@ -24,12 +24,10 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
+#import "BRWallet.h"
 
 #define WALLET_NEEDS_BACKUP_KEY @"WALLET_NEEDS_BACKUP"
 #define BRWalletManagerSeedChangedNotification @"BRWalletManagerSeedChangedNotification"
-
-@class BRWallet, BRTransaction;
-@protocol BRKeySequence;
 
 @interface BRWalletManager : NSObject<UIAlertViewDelegate, UITextFieldDelegate, UITextViewDelegate>
 
