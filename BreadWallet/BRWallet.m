@@ -112,7 +112,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     }];
 
     [self sortTransactions];
-    _balance = UINT64_MAX; // trigger balance changed notification
+    _balance = UINT64_MAX; // trigger balance changed notification even if balance is zero
     [self updateBalance];
 
     return self;

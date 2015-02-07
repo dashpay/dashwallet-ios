@@ -131,10 +131,11 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if (m.wallet.balance <= balance) {
+            if (m.wallet.balance > balance) {
                 [[UIApplication sharedApplication]
                  setApplicationIconBadgeNumber:[[UIApplication sharedApplication] applicationIconBadgeNumber] + 1];
-                [defs setInteger:[defs integerForKey:RECEIVED_AMOUNT_KEY] + m.wallet.balance - balance
+                //BUG XXXX this only works up to 21btc
+                [defs setInteger:[defs integerForKey:RECEIVED_AMOUNT_KEY] + (NSInteger)(m.wallet.balance - balance)
                  forKey:RECEIVED_AMOUNT_KEY];
                 balance = m.wallet.balance;
                 [defs synchronize];

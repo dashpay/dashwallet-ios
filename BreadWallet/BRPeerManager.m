@@ -86,6 +86,7 @@ static const struct { uint32_t height; char *hash; time_t timestamp; uint32_t ta
     { 282240, "0000000000000000ef9ee7529607286669763763e0c46acfdefd8a2306de5ca8", 1390570126, 0x1901f52cu },
     { 302400, "0000000000000000472132c4daaf358acaf461ff1c3e96577a74e5ebf91bb170", 1400928750, 0x18692842u },
     { 322560, "000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1", 1411680080, 0x181FB893u }
+//    { 342720,
 };
 
 //TODO: XXXX compare seeds against mike hearn's list for bitcoinXT
@@ -104,7 +105,7 @@ static const char *dns_seeds[] = {
 @property (nonatomic, assign) uint32_t tweak, syncStartHeight, filterUpdateHeight;
 @property (nonatomic, strong) BRBloomFilter *bloomFilter;
 @property (nonatomic, assign) double fpRate;
-@property (nonatomic, assign) NSUInteger taskId, connectFailures;
+@property (nonatomic, assign) NSUInteger taskId, connectFailures, misbehavinCount;
 @property (nonatomic, assign) NSTimeInterval earliestKeyTime, lastRelayTime;
 @property (nonatomic, strong) NSMutableDictionary *blocks, *orphans, *checkpoints, *txRelays;
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
@@ -159,6 +160,7 @@ static const char *dns_seeds[] = {
             [BRMerkleBlockEntity saveContext];
 
             if (self.taskId == UIBackgroundTaskInvalid) {
+                self.misbehavinCount = 0;
                 [self.connectedPeers makeObjectsPerformSelector:@selector(disconnect)];
             }
         }];
@@ -714,6 +716,14 @@ static const char *dns_seeds[] = {
     peer.misbehavin++;
     [self.peers removeObject:peer];
     [self.misbehavinPeers addObject:peer];
+
+    if (++self.misbehavinCount >= 10) { // clear out stored peers so we get a fresh list from DNS for next connect
+        self.misbehavinCount = 0;
+        [self.misbehavinPeers removeAllObjects];
+        [BRPeerEntity deleteObjects:[BRPeerEntity allObjects]];
+        _peers = nil;
+    }
+    
     [peer disconnect];
     [self connect];
 }
@@ -874,7 +884,6 @@ static const char *dns_seeds[] = {
         self.syncStartHeight = 0;
         
         // clear out stored peers so we get a fresh list from DNS on next connect attempt
-        [self.connectedPeers removeAllObjects];
         [self.misbehavinPeers removeAllObjects];
         [BRPeerEntity deleteObjects:[BRPeerEntity allObjects]];
         _peers = nil;
