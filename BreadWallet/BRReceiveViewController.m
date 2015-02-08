@@ -315,13 +315,10 @@ error:(NSError *)error
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
 
-    [v insertSubview:to.view belowSubview:from.view];
-    self.label.alpha = self.qrView.alpha = self.addressButton.alpha = 0.0;
+    [v addSubview:to.view];
     
-    [UIView animateWithDuration:[self transitionDuration:transitionContext] animations:^{
-        self.label.alpha = self.qrView.alpha = self.addressButton.alpha = 1.0;
-        from.view.alpha = 0.0;
-    } completion:^(BOOL finished) {
+    [UIView transitionFromView:from.view toView:to.view duration:[self transitionDuration:transitionContext]
+    options:UIViewAnimationOptionTransitionFlipFromLeft completion:^(BOOL finished) {
         [from.view removeFromSuperview];
         [transitionContext completeTransition:YES];
     }];

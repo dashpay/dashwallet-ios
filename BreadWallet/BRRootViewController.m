@@ -193,10 +193,10 @@
             self.blur = nil;
             [[UIApplication sharedApplication] setApplicationIconBadgeNumber:0]; // reset app badge number
 
-            if ([defs integerForKey:RECEIVED_AMOUNT_KEY] > 0) {
-                _balance = m.wallet.balance - [defs integerForKey:RECEIVED_AMOUNT_KEY];
+            if ([defs doubleForKey:RECEIVED_AMOUNT_KEY] > DBL_EPSILON) {
+                _balance = m.wallet.balance - (uint64_t)([defs doubleForKey:RECEIVED_AMOUNT_KEY] + DBL_EPSILON);
                 self.balance = m.wallet.balance; // show received message bubble
-                [defs setInteger:0 forKey:RECEIVED_AMOUNT_KEY];
+                [defs setDouble:0 forKey:RECEIVED_AMOUNT_KEY];
                 [defs synchronize];
             }
         }];
