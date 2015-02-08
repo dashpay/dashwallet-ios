@@ -561,7 +561,11 @@ static NSString *getKeychainString(NSString *key, NSError **error)
             NSString *unit = NSLocalizedString(@"minutes", nil);
             
             if (wait < 2.0) wait = 1.0, unit = NSLocalizedString(@"minute", nil);
-            if (wait >= 60.0) wait /= 60.0, unit = NSLocalizedString((wait < 2.0) ? @"hour" : @"hours", nil);
+
+            if (wait >= 60.0) {
+                wait /= 60.0;
+                unit = (wait < 2.0) ? NSLocalizedString(@"hour", nil) : NSLocalizedString(@"hours", nil);
+            }
         
             if (! self.alertView.isVisible) {
                 self.alertView = [UIAlertView new];
