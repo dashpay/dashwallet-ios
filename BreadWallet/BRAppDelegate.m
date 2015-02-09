@@ -134,8 +134,8 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
             if (m.wallet.balance > balance) {
                 [[UIApplication sharedApplication]
                  setApplicationIconBadgeNumber:[[UIApplication sharedApplication] applicationIconBadgeNumber] + 1];
-                [defs setDouble:[defs doubleForKey:RECEIVED_AMOUNT_KEY] + (m.wallet.balance - balance)
-                 forKey:RECEIVED_AMOUNT_KEY]; // have to use setDouble here, setInteger isn't big enough
+                [defs setDouble:[defs doubleForKey:SETTINGS_RECEIVED_AMOUNT_KEY] + (m.wallet.balance - balance)
+                 forKey:SETTINGS_RECEIVED_AMOUNT_KEY]; // have to use setDouble here, setInteger isn't big enough
                 balance = m.wallet.balance;
                 [defs synchronize];
             }

@@ -26,6 +26,7 @@
 #import "BRRootViewController.h"
 #import "BRReceiveViewController.h"
 #import "BRSendViewController.h"
+#import "BRSettingsViewController.h"
 #import "BRAppDelegate.h"
 #import "BRBubbleView.h"
 #import "BRBouncyBurgerButton.h"
@@ -193,10 +194,10 @@
             self.blur = nil;
             [[UIApplication sharedApplication] setApplicationIconBadgeNumber:0]; // reset app badge number
 
-            if ([defs doubleForKey:RECEIVED_AMOUNT_KEY] > DBL_EPSILON) {
-                _balance = m.wallet.balance - (uint64_t)([defs doubleForKey:RECEIVED_AMOUNT_KEY] + DBL_EPSILON);
+            if ([defs doubleForKey:SETTINGS_RECEIVED_AMOUNT_KEY] > DBL_EPSILON) {
+                _balance = m.wallet.balance - (uint64_t)([defs doubleForKey:SETTINGS_RECEIVED_AMOUNT_KEY]+ DBL_EPSILON);
                 self.balance = m.wallet.balance; // show received message bubble
-                [defs setDouble:0 forKey:RECEIVED_AMOUNT_KEY];
+                [defs setDouble:0 forKey:SETTINGS_RECEIVED_AMOUNT_KEY];
                 [defs synchronize];
             }
         }];
@@ -300,6 +301,19 @@
                                self.view.frame.size.height - label.frame.size.height - 5);
     [self.view addSubview:label];
 #endif
+
+    if ([defs integerForKey:SETTINGS_MAX_DIGITS_KEY] == 5) {
+        m.format.currencyCode = @"mBTC";
+        m.format.currencySymbol = @"m" BTC NARROW_NBSP;
+        m.format.maximumFractionDigits = 5;
+        m.format.maximum = @((MAX_MONEY/SATOSHIS)*1000);
+    }
+    else if ([defs integerForKey:SETTINGS_MAX_DIGITS_KEY] == 8) {
+        m.format.currencyCode = @"BTC";
+        m.format.currencySymbol = BTC NARROW_NBSP;
+        m.format.maximumFractionDigits = 8;
+        m.format.maximum = @(MAX_MONEY/SATOSHIS);
+    }
 
     if (! m.noWallet) {
         //TODO: do some kickass quick logo animation, fast circle spin that slows
@@ -680,7 +694,6 @@
     self.tipView = [BRBubbleView viewWithText:tip
                     tipPoint:CGPointMake(b.center.x, b.frame.origin.y + b.frame.size.height - 10)
                     tipDirection:BRBubbleTipDirectionUp];
-    if (self.showTips) self.tipView.text = [self.tipView.text stringByAppendingString:@" (1/6)"];
     self.tipView.backgroundColor = [UIColor orangeColor];
     self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
     self.tipView.userInteractionEnabled = NO;

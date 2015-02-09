@@ -34,6 +34,7 @@
 @property (nonatomic, strong) NSArray *selectorOptions;
 @property (nonatomic, strong) NSString *selectedOption;
 @property (nonatomic, assign) NSUInteger selectorType;
+@property (nonatomic, strong) UISwipeGestureRecognizer *navBarSwipe;
 @property (nonatomic, strong) id balanceObserver;
 
 @end
@@ -52,6 +53,9 @@
     [super viewWillAppear:animated];
     
     BRWalletManager *m = [BRWalletManager sharedInstance];
+
+    if (self.navBarSwipe) [self.navigationController.navigationBar removeGestureRecognizer:self.navBarSwipe];
+    self.navBarSwipe = nil;
 
     if (! self.balanceObserver) {
         self.balanceObserver =
@@ -135,6 +139,33 @@
 - (IBAction)about:(id)sender
 {
     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://breadwallet.com"]];
+}
+
+- (IBAction)navBarSwipe:(id)sender
+{
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    NSUInteger digits = (((m.format.maximumFractionDigits - 2)/3 + 1) % 3)*3 + 2;
+    
+    if (digits == 5) {
+        m.format.currencyCode = @"mBTC";
+        m.format.currencySymbol = @"m" BTC NARROW_NBSP;
+    }
+    else if (digits == 8) {
+        m.format.currencyCode = @"BTC";
+        m.format.currencySymbol = BTC NARROW_NBSP;
+    }
+    else {
+        m.format.currencyCode = @"XBT";
+        m.format.currencySymbol = BITS NARROW_NBSP;
+    }
+
+    m.format.maximumFractionDigits = digits;
+    m.format.maximum = @(MAX_MONEY/(int64_t)pow(10.0, m.format.maximumFractionDigits));
+    [[NSUserDefaults standardUserDefaults] setInteger:digits forKey:SETTINGS_MAX_DIGITS_KEY];
+    m.localCurrencyCode = m.localCurrencyCode; // force balance notification
+    self.selectorController.title = [NSString stringWithFormat:@"%@ = %@",
+                                     [m localCurrencyStringForAmount:SATOSHIS/m.localCurrencyPrice],
+                                     [m stringForAmount:SATOSHIS/m.localCurrencyPrice]];
 }
 
 #pragma mark - UITableViewDataSource
@@ -381,6 +412,13 @@
                             [self.selectorController.tableView
                              scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:i inSection:0]
                              atScrollPosition:UITableViewScrollPositionMiddle animated:NO];
+
+                            if (! self.navBarSwipe) {
+                                self.navBarSwipe = [[UISwipeGestureRecognizer alloc] initWithTarget:self
+                                                    action:@selector(navBarSwipe:)];
+                                self.navBarSwipe.direction = UISwipeGestureRecognizerDirectionLeft;
+                                [self.navigationController.navigationBar addGestureRecognizer:self.navBarSwipe];
+                            }
                         });
                     }
                     

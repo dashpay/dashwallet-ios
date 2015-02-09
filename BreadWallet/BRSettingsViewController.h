@@ -25,7 +25,8 @@
 
 #import <UIKit/UIKit.h>
 
-#define SETTINGS_SKIP_FEE_KEY @"SETTINGS_SKIP_FEE"
+#define SETTINGS_SKIP_FEE_KEY   @"SETTINGS_SKIP_FEE"
+#define SETTINGS_MAX_DIGITS_KEY @"SETTINGS_MAX_DIGITS"
 
 @interface BRSettingsViewController : UITableViewController <UIAlertViewDelegate>
 

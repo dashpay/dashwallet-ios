@@ -37,11 +37,8 @@
 #import "Reachability.h"
 #import <LocalAuthentication/LocalAuthentication.h>
 
-#define BTC         @"\xC9\x83"     // capital B with stroke (utf-8)
-#define BITS        @"\xC6\x80"     // lowercase b with stroke (utf-8)
-#define NARROW_NBSP @"\xE2\x80\xAF" // narrow no-break space (utf-8)
-#define CIRCLE      @"\xE2\x97\x8C" // dotted circle (utf-8)
-#define DOT         @"\xE2\x97\x8F" // black circle (utf-8)
+#define CIRCLE @"\xE2\x97\x8C" // dotted circle (utf-8)
+#define DOT    @"\xE2\x97\x8F" // black circle (utf-8)
 
 #define BASE_URL    @"https://blockchain.info"
 #define UNSPENT_URL BASE_URL "/unspent?active="
@@ -54,7 +51,7 @@
 #define DEFAULT_SPENT_LIMIT    SATOSHIS
 
 #if TX_FEE_0_8_RULES
-#define DEFAULT_FEE_PER_KB     0                        // use standard minimum fee instead
+#define DEFAULT_FEE_PER_KB     0 // use standard minimum fee instead
 #else
 #define DEFAULT_FEE_PER_KB     (TX_FEE_PER_KB*1100/247) // slightly higher than a typical 247byte tx with a 10bit fee
 #endif
@@ -219,12 +216,8 @@ static NSString *getKeychainString(NSString *key, NSError **error)
                                   withString:@"-#"];
     self.format.currencyCode = @"XBT";
     self.format.currencySymbol = BITS NARROW_NBSP;
-    self.format.internationalCurrencySymbol = self.format.currencySymbol;
-    self.format.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
     self.format.maximumFractionDigits = 2;
-//    self.format.currencySymbol = BTC NARROW_NBSP;
-//    self.format.maximumFractionDigits = 8;
-
+    self.format.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
     self.format.maximum = @(MAX_MONEY/(int64_t)pow(10.0, self.format.maximumFractionDigits));
 
     _localFormat = [NSNumberFormatter new];
