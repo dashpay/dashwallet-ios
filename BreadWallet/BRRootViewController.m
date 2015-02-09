@@ -34,6 +34,7 @@
 #import "BRWalletManager.h"
 #import "UIImage+Blur.h"
 #import "Reachability.h"
+#import <LocalAuthentication/LocalAuthentication.h>
 #import <sys/stat.h>
 #import <mach-o/dyld.h>
 
@@ -864,6 +865,10 @@ viewControllerAfterViewController:(UIViewController *)viewController
         self.navigationItem.leftBarButtonItem.image = nil;
         [v addSubview:self.burger];
         [v layoutIfNeeded];
+
+        // iOS 7 animation bug
+        if (! [LAContext class]) [[(id)to viewControllers].firstObject tableView].contentOffset = CGPointMake(0, -64.0);
+
         self.burger.center = CGPointMake(26.0, 40.0);
         self.burger.hidden = NO;
         [self.burger setX:YES completion:nil];
@@ -886,6 +891,10 @@ viewControllerAfterViewController:(UIViewController *)viewController
             item.title = self.navigationItem.title;
             item.leftBarButtonItem.image = [UIImage imageNamed:@"x"];
             [v addSubview:to.view];
+            
+            // iOS 7 animation bug
+            if (! [LAContext class]) [[(id)to viewControllers].firstObject tableView].contentOffset = CGPointMake(0, -44.0);
+
             [transitionContext completeTransition:YES];
         }];
     }

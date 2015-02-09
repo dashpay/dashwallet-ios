@@ -60,6 +60,7 @@
     self.wallpaper = [[UIImageView alloc] initWithFrame:self.navigationController.view.bounds];
     self.wallpaper.image = [UIImage imageNamed:@"wallpaper-default"];
     self.wallpaper.contentMode = UIViewContentModeLeft;
+    self.wallpaper.clipsToBounds = YES;
     [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
     self.navigationController.delegate = self;
     self.moreTx = (m.wallet.recentTransactions.count > 5) ? YES : NO;
@@ -177,6 +178,7 @@
         self.syncFinishedObserver = nil;
         if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
         self.syncFailedObserver = nil;
+        self.wallpaper.clipsToBounds = YES;
     }
 
     [super viewWillDisappear:animated];
@@ -631,6 +633,7 @@
     BOOL pop = (to == self || (from != self && [to isKindOfClass:[BRSettingsViewController class]])) ? YES : NO;
 
     if (self.wallpaper.superview != v) [v insertSubview:self.wallpaper belowSubview:from.view];
+    self.wallpaper.clipsToBounds = NO;
     to.view.center = CGPointMake(v.frame.size.width*(pop ? -1 : 3)/2, to.view.center.y);
     [v addSubview:to.view];
 
