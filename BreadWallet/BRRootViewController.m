@@ -148,8 +148,9 @@
         queue:nil usingBlock:^(NSNotification *note) {
             if (! m.noWallet) {
                 [[BRPeerManager sharedInstance] connect];
+                [self.sendViewController updateClipboardText];
 
-                if (UIUserNotificationSettings.class && // if iOS 8
+                if ([UIUserNotificationSettings class] && // if iOS 8
                     ! ([[[UIApplication sharedApplication] currentUserNotificationSettings] types] &
                        UIUserNotificationTypeBadge)) {
                     [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings
@@ -901,6 +902,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
     else if ([from isKindOfClass:[UINavigationController class]] && to == self.navigationController) { // modal dismiss
         if ([[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground) {
             [[BRPeerManager sharedInstance] connect];
+            [self.sendViewController updateClipboardText];
         }
         
         if (m.didAuthenticate) [self unlock:nil];
