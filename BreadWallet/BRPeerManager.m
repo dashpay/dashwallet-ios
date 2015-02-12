@@ -89,10 +89,9 @@ static const struct { uint32_t height; char *hash; time_t timestamp; uint32_t ta
     { 342720, "00000000000000000f9cfece8494800d3dcbf9583232825da640c8703bcd27e7", 1423496415, 0x1818BB87u }
 };
 
-//TODO: XXXX compare seeds against mike hearn's list for bitcoinXT
 static const char *dns_seeds[] = {
     "seed.bitcoin.sipa.be", "dnsseed.bluematt.me", "dnsseed.bitcoin.dashjr.org", "seed.bitcoinstats.com",
-    "seed.bitnodes.io", "bitseed.xf2.org"
+    "seed.bitnodes.io"
 };
 
 #endif
@@ -137,6 +136,7 @@ static const char *dns_seeds[] = {
     self.earliestKeyTime = [[BRWalletManager sharedInstance] seedCreationTime];
     self.connectedPeers = [NSMutableSet set];
     self.misbehavinPeers = [NSMutableSet set];
+    self.txHashes = [NSMutableSet set];
     self.tweak = (uint32_t)mrand48();
     self.taskId = UIBackgroundTaskInvalid;
     self.q = dispatch_queue_create("peermanager", NULL);
@@ -147,8 +147,8 @@ static const char *dns_seeds[] = {
 
     dispatch_async(self.q, ^{
         for (BRTransaction *tx in [[[BRWalletManager sharedInstance] wallet] recentTransactions]) {
-            if (tx.blockHeight != TX_UNCONFIRMED) break;
-            self.publishedTx[tx.txHash] = tx; // add unconfirmed tx to mempool
+            if (tx.blockHeight == TX_UNCONFIRMED) self.publishedTx[tx.txHash] = tx; // add unconfirmed tx to mempool
+            [self.txHashes addObject:tx.txHash];
         }
     });
 
@@ -388,14 +388,6 @@ static const char *dns_seeds[] = {
 
     for (NSData *utxo in m.wallet.unspentOutputs) { // add unspent outputs to watch for tx sending money from the wallet
         if (! [filter containsData:utxo]) [filter insertData:utxo];
-    }
-
-    if (! self.txHashes) { // populate txHashes now that the wallet is loaded
-        self.txHashes = [NSMutableSet set];
-        
-        for (BRTransaction *tx in m.wallet.recentTransactions) {
-            [self.txHashes addObject:tx.txHash];
-        }
     }
 
     _bloomFilter = filter;
