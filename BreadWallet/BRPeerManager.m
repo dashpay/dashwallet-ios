@@ -136,11 +136,11 @@ static const char *dns_seeds[] = {
     self.earliestKeyTime = [[BRWalletManager sharedInstance] seedCreationTime];
     self.connectedPeers = [NSMutableSet set];
     self.misbehavinPeers = [NSMutableSet set];
-    self.txHashes = [NSMutableSet set];
     self.tweak = (uint32_t)mrand48();
     self.taskId = UIBackgroundTaskInvalid;
     self.q = dispatch_queue_create("peermanager", NULL);
     self.orphans = [NSMutableDictionary dictionary];
+    self.txHashes = [NSMutableSet set];
     self.txRelays = [NSMutableDictionary dictionary];
     self.publishedTx = [NSMutableDictionary dictionary];
     self.publishedCallback = [NSMutableDictionary dictionary];
@@ -170,6 +170,7 @@ static const char *dns_seeds[] = {
         queue:nil usingBlock:^(NSNotification *note) {
             self.earliestKeyTime = [[BRWalletManager sharedInstance] seedCreationTime];
             self.syncStartHeight = 0;
+            [self.txHashes removeAllObjects];
             [self.txRelays removeAllObjects];
             [self.publishedTx removeAllObjects];
             [self.publishedCallback removeAllObjects];
@@ -228,14 +229,12 @@ static const char *dns_seeds[] = {
             return _peers;
 #endif
             if (_peers.count < PEER_MAX_CONNECTIONS) {
-                // if DNS peer discovery fails, fall back on a hard coded list of peers
-                // hard coded list is taken from the satoshi client, values need to be byte swapped to be host native
+                // if DNS peer discovery fails, fall back on a hard coded list of peers (list taken from satoshi client)
                 for (NSNumber *address in [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
                                            pathForResource:FIXED_PEERS ofType:@"plist"]]) {
                     // give hard coded peers a timestamp between 7 and 14 days ago
-                    [_peers addObject:[[BRPeer alloc] initWithAddress:CFSwapInt32(address.intValue)
-                                       port:BITCOIN_STANDARD_PORT timestamp:now - 24*60*60*(7 + drand48()*7)
-                                       services:NODE_NETWORK]];
+                    [_peers addObject:[[BRPeer alloc] initWithAddress:address.intValue port:BITCOIN_STANDARD_PORT
+                                       timestamp:now - 24*60*60*(7 + drand48()*7) services:NODE_NETWORK]];
                 }
             }
             
