@@ -828,8 +828,8 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         }
         
         for (NSDictionary *d in json[@"data"]) {
-            if (! [d[@"code"] isKindOfClass:[NSString class]] || ! [d[@"name"] isKindOfClass:[NSString class]] ||
-                ! [d[@"rate"] isKindOfClass:[NSNumber class]]) {
+            if (! [d isKindOfClass:[NSDictionary class]] || ! [d[@"code"] isKindOfClass:[NSString class]] ||
+                ! [d[@"name"] isKindOfClass:[NSString class]] || ! [d[@"rate"] isKindOfClass:[NSNumber class]]) {
                 NSLog(@"unexpected response from %@:\n%@", req.URL.host,
                       [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
                 return;
