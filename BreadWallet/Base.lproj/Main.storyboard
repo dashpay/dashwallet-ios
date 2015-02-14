@@ -1855,7 +1855,7 @@
                                         <attributedString key="attributedText">
                                             <fragment>
                                                 <string key="content">breadwallet v%ver%%net%
-copyright © 2014 Aaron Voisine
+copyright © 2015 Aaron Voisine
 
 this app is open source
 </string>
@@ -1874,7 +1874,7 @@ this app is open source
                                                     <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
                                                 </attributes>
                                             </fragment>
-                                            <fragment content="exchange rate data provided by blockchain.info/ticker">
+                                            <fragment content="exchange rate data provided by bitpay.com/rates">
                                                 <attributes>
                                                     <font key="NSFont" size="15" name="HelveticaNeue-Light"/>
                                                     <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>

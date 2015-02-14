@@ -345,13 +345,15 @@
     UIViewController *c = nil;
     UILabel *l = nil;
     NSMutableAttributedString *s = nil;
+    NSMutableArray *options;
+    NSUInteger i = 0;
     BRWalletManager *m = [BRWalletManager sharedInstance];
     
     if (tableView == self.selectorController.tableView) {
         self.selectedOption = self.selectorOptions[indexPath.row];
         
         if (self.selectorType == 0) {
-            m.localCurrencyCode = self.selectedOption;
+            if (indexPath.row < m.currencyCodes.count) m.localCurrencyCode = m.currencyCodes[indexPath.row];
         }
         else m.spendingLimit = (indexPath.row > 0) ? pow(10, indexPath.row + 6) : 0;
         
@@ -397,15 +399,19 @@
             switch (indexPath.row) {
                 case 0: // local currency
                     self.selectorType = 0;
-                    self.selectorOptions = [m.currencyCodes
-                                            sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
-                    self.selectedOption = m.localCurrencyCode;
+                    options = [NSMutableArray array];
+                    
+                    for (NSString *code in m.currencyCodes) {
+                        [options addObject:[NSString stringWithFormat:@"%@ - %@", code, m.currencyNames[i++]]];
+                    }
+                    
+                    self.selectorOptions = options;
+                    i = [m.currencyCodes indexOfObject:m.localCurrencyCode];
+                    if (i < options.count) self.selectedOption = options[i];
                     self.selectorController.title = [NSString stringWithFormat:@"%@ = %@",
                                                      [m localCurrencyStringForAmount:SATOSHIS/m.localCurrencyPrice],
                                                      [m stringForAmount:SATOSHIS/m.localCurrencyPrice]];
                     [self.navigationController pushViewController:self.selectorController animated:YES];
-                    
-                    NSUInteger i = [self.selectorOptions indexOfObject:self.selectedOption];
                     
                     if (i != NSNotFound) {
                         dispatch_async(dispatch_get_main_queue(), ^{

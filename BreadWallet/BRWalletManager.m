@@ -40,9 +40,8 @@
 #define CIRCLE @"\xE2\x97\x8C" // dotted circle (utf-8)
 #define DOT    @"\xE2\x97\x8F" // black circle (utf-8)
 
-#define BASE_URL    @"https://blockchain.info"
-#define UNSPENT_URL BASE_URL "/unspent?active="
-#define TICKER_URL  BASE_URL "/ticker"
+#define UNSPENT_URL @"https://blockchain.info/unspent?active="
+#define TICKER_URL  @"https://bitpay.com/rates"
 
 #define SEED_ENTROPY_LENGTH    (128/8)
 #define SEC_ATTR_SERVICE       @"org.voisine.breadwallet"
@@ -56,10 +55,10 @@
 #define DEFAULT_FEE_PER_KB     (TX_FEE_PER_KB*1100/247) // slightly higher than a typical 247byte tx with a 10bit fee
 #endif
 
-#define LOCAL_CURRENCY_SYMBOL_KEY @"LOCAL_CURRENCY_SYMBOL"
 #define LOCAL_CURRENCY_CODE_KEY   @"LOCAL_CURRENCY_CODE"
-#define LOCAL_CURRENCY_PRICE_KEY  @"LOCAL_CURRENCY_PRICE"
 #define CURRENCY_CODES_KEY        @"CURRENCY_CODES"
+#define CURRENCY_NAMES_KEY        @"CURRENCY_NAMES"
+#define CURRENCY_PRICES_KEY       @"CURRENCY_PRICES"
 #define SPEND_LIMIT_AMOUNT_KEY    @"SPEND_LIMIT_AMOUNT"
 #define SECURE_TIME_KEY           @"SECURE_TIME"
 
@@ -174,6 +173,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 @property (nonatomic, strong) BRWallet *wallet;
 @property (nonatomic, strong) id<BRKeySequence> sequence;
 @property (nonatomic, strong) Reachability *reachability;
+@property (nonatomic, strong) NSArray *currencyPrices;
 @property (nonatomic, assign) BOOL sweepFee;
 @property (nonatomic, strong) NSString *sweepKey;
 @property (nonatomic, strong) void (^sweepCompletion)(BRTransaction *tx, NSError *error);
@@ -243,22 +243,12 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     if (self.protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.protectedObserver];
     self.protectedObserver = nil;
     
-    _localCurrencyCode = [defs stringForKey:LOCAL_CURRENCY_CODE_KEY],
-    _localCurrencyPrice = [defs doubleForKey:LOCAL_CURRENCY_PRICE_KEY];
-    self.localFormat.maximum = @((MAX_MONEY/SATOSHIS)*self.localCurrencyPrice);
     _currencyCodes = [defs arrayForKey:CURRENCY_CODES_KEY];
-    
-    if (self.localCurrencyCode) {
-        self.localFormat.currencySymbol = [defs stringForKey:LOCAL_CURRENCY_SYMBOL_KEY];
-        self.localFormat.currencyCode = self.localCurrencyCode;
-    }
-    else {
-        self.localFormat.currencySymbol = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencySymbol];
-        self.localFormat.currencyCode = _localCurrencyCode =
-            [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
-        //BUG: if locale changed since last time, we'll start with an incorrect price
-    }
-    
+    _currencyNames = [defs arrayForKey:CURRENCY_NAMES_KEY];
+    _currencyPrices = [defs arrayForKey:CURRENCY_PRICES_KEY];
+    self.localCurrencyCode = ([defs stringForKey:LOCAL_CURRENCY_CODE_KEY]) ?
+        [defs stringForKey:LOCAL_CURRENCY_CODE_KEY] : [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
+
     [self updateExchangeRate];
 }
 
@@ -777,21 +767,27 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 #pragma mark - exchange rate
 
 // local currency ISO code
-- (void)setLocalCurrencyCode:(NSString *)localCurrencyCode
+- (void)setLocalCurrencyCode:(NSString *)code
 {
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+    NSUInteger i = [_currencyCodes indexOfObject:code];
     
-    _localCurrencyCode = [localCurrencyCode copy];
+    if (i == NSNotFound) code = DEFAULT_CURRENCY_CODE, i = [_currencyCodes indexOfObject:DEFAULT_CURRENCY_CODE];
+    _localCurrencyCode = [code copy];
+    _localCurrencyPrice = (i < _currencyPrices.count) ? [_currencyPrices[i] doubleValue] : DEFAULT_CURRENCY_PRICE;
+    self.localFormat.currencyCode = _localCurrencyCode;
+    self.localFormat.maximum = @((MAX_MONEY/SATOSHIS)*_localCurrencyPrice);
     
     if ([self.localCurrencyCode isEqual:[[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode]]) {
         [defs removeObjectForKey:LOCAL_CURRENCY_CODE_KEY];
     }
     else [defs setObject:self.localCurrencyCode forKey:LOCAL_CURRENCY_CODE_KEY];
     
-    [defs removeObjectForKey:LOCAL_CURRENCY_SYMBOL_KEY];
-    [defs removeObjectForKey:LOCAL_CURRENCY_PRICE_KEY];
+    if (! _wallet) return;
     
-    [self updateExchangeRate];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletBalanceChangedNotification object:nil];
+    });
 }
 
 - (void)updateExchangeRate
@@ -814,6 +810,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
         NSError *error = nil;
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        NSMutableArray *codes = [NSMutableArray array], *names = [NSMutableArray array], *rates =[NSMutableArray array];
         
         if ([response isKindOfClass:[NSHTTPURLResponse class]]) { // store server timestamp
             NSString *date = [(NSHTTPURLResponse *)response allHeaderFields][@"Date"];
@@ -824,53 +821,37 @@ static NSString *getKeychainString(NSString *key, NSError **error)
             if (now > self.secureTime) [defs setDouble:now forKey:SECURE_TIME_KEY];
         }
 
-        _localCurrencyCode = [defs stringForKey:LOCAL_CURRENCY_CODE_KEY];
-        if (! self.localCurrencyCode) _localCurrencyCode = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
-
-        if (error || ! [json isKindOfClass:[NSDictionary class]] ||
-            ! [json[DEFAULT_CURRENCY_CODE] isKindOfClass:[NSDictionary class]] ||
-            ! [json[DEFAULT_CURRENCY_CODE][@"last"] isKindOfClass:[NSNumber class]] ||
-            ([json[self.localCurrencyCode] isKindOfClass:[NSDictionary class]] &&
-             (! [json[self.localCurrencyCode][@"last"] isKindOfClass:[NSNumber class]] ||
-              ! [json[self.localCurrencyCode][@"symbol"] isKindOfClass:[NSString class]]))) {
+        if (error || ! [json isKindOfClass:[NSDictionary class]] || ! [json[@"data"] isKindOfClass:[NSArray class]]) {
             NSLog(@"unexpected response from %@:\n%@", req.URL.host,
                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             return;
         }
-
-        // if local currency is missing, use default
-        if (! [json[self.localCurrencyCode] isKindOfClass:[NSDictionary class]]) {
-            self.localFormat.currencyCode = _localCurrencyCode = DEFAULT_CURRENCY_CODE;
-        }
-        else {
-            self.localFormat.currencySymbol = json[self.localCurrencyCode][@"symbol"];
-            self.localFormat.currencyCode = self.localCurrencyCode;
-        }
-
-        _localCurrencyPrice = [json[self.localCurrencyCode][@"last"] doubleValue];
-        self.localFormat.maximum = @((MAX_MONEY/SATOSHIS)*self.localCurrencyPrice);
-        _currencyCodes = [NSArray arrayWithArray:json.allKeys];
         
-        if ([self.localCurrencyCode isEqual:[[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode]]) {
-            [defs removeObjectForKey:LOCAL_CURRENCY_SYMBOL_KEY];
-            [defs removeObjectForKey:LOCAL_CURRENCY_CODE_KEY];
-        }
-        else {
-            [defs setObject:self.localFormat.currencySymbol forKey:LOCAL_CURRENCY_SYMBOL_KEY];
-            [defs setObject:self.localCurrencyCode forKey:LOCAL_CURRENCY_CODE_KEY];
+        for (NSDictionary *d in json[@"data"]) {
+            if (! [d[@"code"] isKindOfClass:[NSString class]] || ! [d[@"name"] isKindOfClass:[NSString class]] ||
+                ! [d[@"rate"] isKindOfClass:[NSNumber class]]) {
+                NSLog(@"unexpected response from %@:\n%@", req.URL.host,
+                      [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+                return;
+            }
+           
+            [codes addObject:d[@"code"]];
+            [names addObject:d[@"name"]];
+            [rates addObject:d[@"rate"]];
         }
 
-        [defs setObject:@(self.localCurrencyPrice) forKey:LOCAL_CURRENCY_PRICE_KEY];
+        _currencyCodes = codes;
+        _currencyNames = names;
+        _currencyPrices = rates;
+        self.localCurrencyCode = _localCurrencyCode;
+
         [defs setObject:self.currencyCodes forKey:CURRENCY_CODES_KEY];
+        [defs setObject:self.currencyNames forKey:CURRENCY_NAMES_KEY];
+        [defs setObject:self.currencyPrices forKey:CURRENCY_PRICES_KEY];
         [defs synchronize];
+        
         NSLog(@"exchange rate updated to %@/%@", [self localCurrencyStringForAmount:SATOSHIS],
               [self stringForAmount:SATOSHIS]);
-
-        if (! _wallet) return;
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletBalanceChangedNotification object:nil];
-        });
     }];
 }
 
