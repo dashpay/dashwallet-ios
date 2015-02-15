@@ -26,6 +26,8 @@
 #import <Foundation/Foundation.h>
 #import <CommonCrypto/CommonDigest.h>
 
+#define RMD160_DIGEST_LENGTH (160/8)
+
 @interface NSData (Hash)
 
 - (NSData *)SHA1;

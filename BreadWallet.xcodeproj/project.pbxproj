@@ -388,9 +388,6 @@
 		7579FF2B19231E7700CA56F4 /* rand_err.c in Sources */ = {isa = PBXBuildFile; fileRef = 7579FBA619231E7700CA56F4 /* rand_err.c */; };
 		7579FF2C19231E7700CA56F4 /* rand_lib.c in Sources */ = {isa = PBXBuildFile; fileRef = 7579FBA819231E7700CA56F4 /* rand_lib.c */; };
 		7579FF3219231E7700CA56F4 /* randfile.c in Sources */ = {isa = PBXBuildFile; fileRef = 7579FBAE19231E7700CA56F4 /* randfile.c */; };
-		7579FF5019231E7700CA56F4 /* rmd160.c in Sources */ = {isa = PBXBuildFile; fileRef = 7579FBE919231E7700CA56F4 /* rmd160.c */; };
-		7579FF5119231E7700CA56F4 /* rmd_dgst.c in Sources */ = {isa = PBXBuildFile; fileRef = 7579FBEA19231E7700CA56F4 /* rmd_dgst.c */; };
-		7579FF5219231E7700CA56F4 /* rmd_one.c in Sources */ = {isa = PBXBuildFile; fileRef = 7579FBEC19231E7700CA56F4 /* rmd_one.c */; };
 		7579FF5519231E7700CA56F4 /* rsa_ameth.c in Sources */ = {isa = PBXBuildFile; fileRef = 7579FBF319231E7700CA56F4 /* rsa_ameth.c */; };
 		7579FF5619231E7700CA56F4 /* rsa_asn1.c in Sources */ = {isa = PBXBuildFile; fileRef = 7579FBF419231E7700CA56F4 /* rsa_asn1.c */; };
 		7579FF5719231E7700CA56F4 /* rsa_chk.c in Sources */ = {isa = PBXBuildFile; fileRef = 7579FBF519231E7700CA56F4 /* rsa_chk.c */; };
@@ -1022,12 +1019,6 @@
 		7579FBA719231E7700CA56F4 /* rand_lcl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rand_lcl.h; sourceTree = "<group>"; };
 		7579FBA819231E7700CA56F4 /* rand_lib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = rand_lib.c; sourceTree = "<group>"; };
 		7579FBAE19231E7700CA56F4 /* randfile.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = randfile.c; sourceTree = "<group>"; };
-		7579FBE819231E7700CA56F4 /* ripemd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ripemd.h; sourceTree = "<group>"; };
-		7579FBE919231E7700CA56F4 /* rmd160.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = rmd160.c; sourceTree = "<group>"; };
-		7579FBEA19231E7700CA56F4 /* rmd_dgst.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = rmd_dgst.c; sourceTree = "<group>"; };
-		7579FBEB19231E7700CA56F4 /* rmd_locl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rmd_locl.h; sourceTree = "<group>"; };
-		7579FBEC19231E7700CA56F4 /* rmd_one.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = rmd_one.c; sourceTree = "<group>"; };
-		7579FBED19231E7700CA56F4 /* rmdconst.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rmdconst.h; sourceTree = "<group>"; };
 		7579FBF219231E7700CA56F4 /* rsa.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rsa.h; sourceTree = "<group>"; };
 		7579FBF319231E7700CA56F4 /* rsa_ameth.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = rsa_ameth.c; sourceTree = "<group>"; };
 		7579FBF419231E7700CA56F4 /* rsa_asn1.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = rsa_asn1.c; sourceTree = "<group>"; };
@@ -1225,7 +1216,6 @@
 		84C92C4C197C3E0300BD1664 /* pkcs12.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pkcs12.h; sourceTree = "<group>"; };
 		84C92C4D197C3E0300BD1664 /* pkcs7.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pkcs7.h; sourceTree = "<group>"; };
 		84C92C4F197C3E0300BD1664 /* rand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rand.h; sourceTree = "<group>"; };
-		84C92C52197C3E0300BD1664 /* ripemd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ripemd.h; sourceTree = "<group>"; };
 		84C92C53197C3E0300BD1664 /* rsa.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rsa.h; sourceTree = "<group>"; };
 		84C92C54197C3E0300BD1664 /* safestack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = safestack.h; sourceTree = "<group>"; };
 		84C92C56197C3E0300BD1664 /* sha.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sha.h; sourceTree = "<group>"; };
@@ -1433,7 +1423,6 @@
 				7579FB5419231E7600CA56F4 /* pkcs12 */,
 				7579FB6719231E7600CA56F4 /* pkcs7 */,
 				7579FBA019231E7700CA56F4 /* rand */,
-				7579FBE119231E7700CA56F4 /* ripemd */,
 				7579FBEF19231E7700CA56F4 /* rsa */,
 				7579FC1519231E7700CA56F4 /* sha */,
 				7579FC4A19231E7700CA56F4 /* stack */,
@@ -2021,19 +2010,6 @@
 			path = rand;
 			sourceTree = "<group>";
 		};
-		7579FBE119231E7700CA56F4 /* ripemd */ = {
-			isa = PBXGroup;
-			children = (
-				7579FBE819231E7700CA56F4 /* ripemd.h */,
-				7579FBE919231E7700CA56F4 /* rmd160.c */,
-				7579FBEA19231E7700CA56F4 /* rmd_dgst.c */,
-				7579FBEB19231E7700CA56F4 /* rmd_locl.h */,
-				7579FBEC19231E7700CA56F4 /* rmd_one.c */,
-				7579FBED19231E7700CA56F4 /* rmdconst.h */,
-			);
-			path = ripemd;
-			sourceTree = "<group>";
-		};
 		7579FBEF19231E7700CA56F4 /* rsa */ = {
 			isa = PBXGroup;
 			children = (
@@ -2356,7 +2332,6 @@
 				84C92C4C197C3E0300BD1664 /* pkcs12.h */,
 				84C92C4D197C3E0300BD1664 /* pkcs7.h */,
 				84C92C4F197C3E0300BD1664 /* rand.h */,
-				84C92C52197C3E0300BD1664 /* ripemd.h */,
 				84C92C53197C3E0300BD1664 /* rsa.h */,
 				84C92C54197C3E0300BD1664 /* safestack.h */,
 				84C92C56197C3E0300BD1664 /* sha.h */,
@@ -2582,7 +2557,6 @@
 				7579FE8A19231E7700CA56F4 /* m_sha.c in Sources */,
 				7579FD1B19231E7700CA56F4 /* p8_pkey.c in Sources */,
 				7579FEF019231E7700CA56F4 /* ocsp_ext.c in Sources */,
-				7579FF5219231E7700CA56F4 /* rmd_one.c in Sources */,
 				7579FE2319231E7700CA56F4 /* ec_print.c in Sources */,
 				7579FFCA19231E7700CA56F4 /* v3_akeya.c in Sources */,
 				7579FED619231E7700CA56F4 /* mem_dbg.c in Sources */,
@@ -2912,7 +2886,6 @@
 				7579FD4919231E7700CA56F4 /* bf_buff.c in Sources */,
 				7579FD6E19231E7700CA56F4 /* bn_gcd.c in Sources */,
 				7579FE4419231E7700CA56F4 /* eng_init.c in Sources */,
-				7579FF5119231E7700CA56F4 /* rmd_dgst.c in Sources */,
 				7579FD7519231E7700CA56F4 /* bn_mul.c in Sources */,
 				7579FE9D19231E7700CA56F4 /* ex_data.c in Sources */,
 				7579FD4D19231E7700CA56F4 /* bio_cb.c in Sources */,
@@ -2943,7 +2916,6 @@
 				7579FE3F19231E7700CA56F4 /* eng_cryptodev.c in Sources */,
 				7579FE5D19231E7700CA56F4 /* bio_b64.c in Sources */,
 				7579FD2B19231E7700CA56F4 /* x_attrib.c in Sources */,
-				7579FF5019231E7700CA56F4 /* rmd160.c in Sources */,
 				7579FF5619231E7700CA56F4 /* rsa_asn1.c in Sources */,
 				7579FD5819231E7700CA56F4 /* bss_null.c in Sources */,
 				7579FCFA19231E7700CA56F4 /* a_print.c in Sources */,

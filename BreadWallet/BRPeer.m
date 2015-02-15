@@ -47,7 +47,7 @@
 #define MIN_PROTO_VERSION  70002 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
 #endif
 #define LOCAL_HOST         0x7f000001
-#define ZERO_HASH          @"0000000000000000000000000000000000000000000000000000000000000000".hexToData
+#define ZERO_HASH          [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH]
 #define CONNECT_TIMEOUT    3.0
 
 typedef enum {

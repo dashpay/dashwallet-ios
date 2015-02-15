@@ -31,7 +31,7 @@
 #import <openssl/ecdsa.h>
 #import <openssl/obj_mac.h>
 
-#define BIP32_PRIME    0x80000000
+#define BIP32_HARD     0x80000000u
 #define BIP32_SEED_KEY "Bitcoin seed"
 #define BIP32_XPRV     "\x04\x88\xAD\xE4"
 #define BIP32_XPUB     "\x04\x88\xB2\x1E"
@@ -64,7 +64,7 @@ static void CKDpriv(NSMutableData *k, NSMutableData *c, uint32_t i)
     BIGNUM *order = BN_CTX_get(ctx), *ILbn = BN_CTX_get(ctx), *kbn = BN_CTX_get(ctx);
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
 
-    if (i & BIP32_PRIME) {
+    if (i & BIP32_HARD) {
         d.length = 33 - k.length;
         [d appendData:k];
     }
@@ -73,7 +73,7 @@ static void CKDpriv(NSMutableData *k, NSMutableData *c, uint32_t i)
     i = CFSwapInt32HostToBig(i);
     [d appendBytes:&i length:sizeof(i)];
 
-    CCHmac(kCCHmacAlgSHA512, c.bytes, c.length, d.bytes, d.length, I.mutableBytes); // I = HMAC-SHA512(c, (k|P(k)) || i)
+    CCHmac(kCCHmacAlgSHA512, c.bytes, c.length, d.bytes, d.length, I.mutableBytes); // I = HMAC-SHA512(c, k|P(k) || i)
 
     BN_bin2bn(I.bytes, 32, ILbn);
     BN_bin2bn(k.bytes, (int)k.length, kbn);
@@ -106,9 +106,9 @@ static void CKDpriv(NSMutableData *k, NSMutableData *c, uint32_t i)
 // - In case parse256(IL) >= n or Ki is the point at infinity, the resulting key is invalid, and one should proceed with
 //   the next value for i.
 //
-static void CKDPub(NSMutableData *K, NSMutableData *c, uint32_t i)
+static void CKDpub(NSMutableData *K, NSMutableData *c, uint32_t i)
 {
-    if (i & BIP32_PRIME) {
+    if (i & BIP32_HARD) {
         @throw [NSException exceptionWithName:@"BRBIP32SequenceCKDPubException"
                 reason:@"can't derive private child key from public parent key" userInfo:nil];
     }
@@ -187,7 +187,7 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     [chain appendBytes:(const unsigned char *)I.bytes + 32 length:32];
     [mpk appendBytes:[[[BRKey keyWithSecret:secret compressed:YES] hash160] bytes] length:4];
     
-    CKDpriv(secret, chain, 0 | BIP32_PRIME); // account 0H
+    CKDpriv(secret, chain, 0 | BIP32_HARD); // account 0H
 
     [mpk appendData:chain];
     [mpk appendData:[[BRKey keyWithSecret:secret compressed:YES] publicKey]];
@@ -205,8 +205,8 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     [chain appendBytes:(const unsigned char *)masterPublicKey.bytes + 4 length:32];
     [pubKey appendBytes:(const unsigned char *)masterPublicKey.bytes + 36 length:masterPublicKey.length - 36];
 
-    CKDPub(pubKey, chain, internal ? 1 : 0); // internal or external chain
-    CKDPub(pubKey, chain, n); // nth key in chain
+    CKDpub(pubKey, chain, internal ? 1 : 0); // internal or external chain
+    CKDpub(pubKey, chain, n); // nth key in chain
 
     return pubKey;
 }
@@ -236,7 +236,7 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     [secret appendBytes:I.bytes length:32];
     [chain appendBytes:(const unsigned char *)I.bytes + 32 length:32];
 
-    CKDpriv(secret, chain, 0 | BIP32_PRIME); // account 0H
+    CKDpriv(secret, chain, 0 | BIP32_HARD); // account 0H
     CKDpriv(secret, chain, internal ? 1 : 0); // internal or external chain
 
     for (NSNumber *i in n) {
@@ -280,7 +280,7 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     NSData *pubKey = [NSData dataWithBytesNoCopy:(unsigned char *)masterPublicKey.bytes + 36
                       length:masterPublicKey.length - 36 freeWhenDone:NO];
 
-    return serialize(1, fingerprint, 0 | BIP32_PRIME, chain, pubKey);
+    return serialize(1, fingerprint, 0 | BIP32_HARD, chain, pubKey);
 }
 
 @end
