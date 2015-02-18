@@ -208,7 +208,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 //    size_t sigSize = 181;
     
     return 8 + [NSMutableData sizeOfVarInt:self.hashes.count] + [NSMutableData sizeOfVarInt:self.addresses.count] +
-    sigSize*self.hashes.count + 34*self.addresses.count;
+           sigSize*self.hashes.count + 34*self.addresses.count;
 }
 
 - (uint64_t)standardFee
