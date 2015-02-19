@@ -33,7 +33,8 @@
 #define MAX_PROOF_OF_WORK 0x1d00ffffu   // highest value for difficulty target (higher values are less difficult)
 #define TARGET_TIMESPAN   (14*24*60*60) // the targeted timespan between difficulty target adjustments
 
-// convert difficulty target format to bignum, as per: https://github.com/bitcoin/bitcoin/blob/master/src/uint256.h#L323
+// convert difficulty target format to bignum, as per:
+// https://github.com/bitcoin/bitcoin/blob/master/src/arith_uint256.cpp#L203
 static void setCompact(BIGNUM *bn, uint32_t compact)
 {
     uint32_t size = compact >> 24, word = compact & 0x007fffff;
@@ -59,7 +60,7 @@ static uint32_t getCompact(const BIGNUM *bn)
     }
     else compact = BN_get_word(bn) << (3 - size)*8;
 
-    if (compact & 0x00800000) { // if sign is already set, divide the mantissa by 256 and increment the exponent
+    if (compact & 0x00800000) { // 0x00800000 bit denotes the sign, if set, divide mantissa by 256 and increase exponent
         compact >>= 8;
         size++;
     }

@@ -33,7 +33,7 @@
 		752E28E919234DA200DB5A3C /* NSManagedObject+Sugar.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E28E219234DA200DB5A3C /* NSManagedObject+Sugar.m */; };
 		752E28EA19234DA200DB5A3C /* NSMutableData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E28E419234DA200DB5A3C /* NSMutableData+Bitcoin.m */; };
 		752E28EB19234DA200DB5A3C /* NSString+Base58.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E28E619234DA200DB5A3C /* NSString+Base58.m */; };
-		752E28F119234E8100DB5A3C /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E28F019234E8100DB5A3C /* Reachability.m */; };
+		752E28F119234E8100DB5A3C /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E28F019234E8100DB5A3C /* Reachability.m */; settings = {COMPILER_FLAGS = "-w"; }; };
 		752E28F319235A0600DB5A3C /* rand_unix.c in Sources */ = {isa = PBXBuildFile; fileRef = 752E28F219235A0600DB5A3C /* rand_unix.c */; };
 		752E28F619235B3000DB5A3C /* BIP39EnglishWords.plist in Resources */ = {isa = PBXBuildFile; fileRef = 752E28F419235B3000DB5A3C /* BIP39EnglishWords.plist */; };
 		752E28F719235B3000DB5A3C /* FixedPeers.plist in Resources */ = {isa = PBXBuildFile; fileRef = 752E28F519235B3000DB5A3C /* FixedPeers.plist */; };
@@ -3155,8 +3155,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
 				GCC_WARN_PEDANTIC = YES;
@@ -3167,7 +3165,6 @@
 				);
 				INFOPLIST_FILE = "BreadWallet/BreadWallet-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = GCov_Build;
@@ -3345,8 +3342,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
 				GCC_WARN_PEDANTIC = YES;
@@ -3357,7 +3352,6 @@
 				);
 				INFOPLIST_FILE = "BreadWallet/BreadWallet-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -3367,8 +3361,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
 				GCC_WARN_PEDANTIC = YES;
@@ -3379,7 +3371,6 @@
 				);
 				INFOPLIST_FILE = "BreadWallet/BreadWallet-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

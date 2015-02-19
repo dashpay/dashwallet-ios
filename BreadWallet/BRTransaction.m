@@ -331,7 +331,7 @@ sequence:(uint32_t)sequence
 - (BOOL)signWithPrivateKeys:(NSArray *)privateKeys
 {
     NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:privateKeys.count],
-    *keys = [NSMutableArray arrayWithCapacity:privateKeys.count];
+                   *keys = [NSMutableArray arrayWithCapacity:privateKeys.count];
     
     for (NSString *pk in privateKeys) {
         BRKey *key = [BRKey keyWithPrivateKey:pk];

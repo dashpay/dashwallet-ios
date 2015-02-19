@@ -2158,7 +2158,7 @@ if you ever lose your phone, you will need this phrase to recover your wallet</s
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                             </imageView>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="290" translatesAutoresizingMaskIntoConstraints="NO" id="EQG-Km-ZKY">
-                                <rect key="frame" x="17" y="148" width="287" height="76"/>
+                                <rect key="frame" x="17" y="112.5" width="287" height="111.5"/>
                                 <attributedString key="attributedText">
                                     <fragment>
                                         <string key="content">if you ever lose your phone, you will need this phrase to recover your wallet
@@ -2170,7 +2170,10 @@ if you ever lose your phone, you will need this phrase to recover your wallet</s
                                             <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
                                         </attributes>
                                     </fragment>
-                                    <fragment content="please write it down">
+                                    <fragment>
+                                        <string key="content">iTunes backups only work on this phone
+please write it down
+</string>
                                         <attributes>
                                             <color key="NSColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
                                             <font key="NSFont" size="15" name="HelveticaNeue-Light"/>
