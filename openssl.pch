@@ -5,3 +5,4 @@
 //
 
 #define OPENSSL_NO_INLINE_ASM
+#define OPENSSL_NO_DEPRECATED

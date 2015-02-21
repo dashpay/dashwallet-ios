@@ -31,6 +31,8 @@
 #define BRPeerManagerSyncFailedNotification   @"BRPeerManagerSyncFailedNotification"
 #define BRPeerManagerTxStatusNotification     @"BRPeerManagerTxStatusNotification"
 
+#define PEER_MAX_CONNECTIONS 3
+
 @class BRTransaction;
 
 @interface BRPeerManager : NSObject <BRPeerDelegate, UIAlertViewDelegate>
@@ -38,6 +40,7 @@
 @property (nonatomic, readonly) BOOL connected;
 @property (nonatomic, readonly) uint32_t lastBlockHeight;
 @property (nonatomic, readonly) uint32_t estimatedBlockHeight; // last block height reported by current download peer
+@property (nonatomic, readonly) uint32_t averageTxPerBlock; // average number of transactions per block
 @property (nonatomic, readonly) double syncProgress;
 @property (nonatomic, readonly) NSUInteger peerCount; // number of connected peers
 

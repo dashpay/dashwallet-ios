@@ -25,6 +25,7 @@
 
 #import "BRAppDelegate.h"
 #import "BRPeerManager.h"
+#import "BRWalletManager.h"
 
 #if BITCOIN_TESTNET
 #warning testnet build
@@ -37,7 +38,6 @@
     // Override point for customization after application launch.
 
     // use background fetch to stay synced with the blockchain
-    // BUG: XXXX this doesn't seem to work, is it compatible with data protection settings?
     [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
 
     UIPageControl.appearance.pageIndicatorTintColor = [UIColor lightGrayColor];
@@ -56,9 +56,6 @@
         }
     }
 
-    //TODO: create a BIP and GATT specification for payment protocol over bluetooth LE
-    // https://developer.bluetooth.org/gatt/Pages/default.aspx
-
     //TODO: bitcoin protocol/payment protocol over multipeer connectivity
 
     //TODO: accessibility for the visually impaired
@@ -70,11 +67,6 @@
     //TODO: ask user if they need to sweep to a new wallet when restoring because it was compromised
 
     //TODO: figure out deterministic builds/removing app sigs: http://www.afp548.com/2012/06/05/re-signining-ios-apps/
-
-    // this will notify user if bluetooth is disabled (on 4S and newer devices that support BTLE)
-    //CBCentralManager *cbManager = [[CBCentralManager alloc] initWithDelegate:self queue:dispatch_get_main_queue()];
-
-    //[self centralManagerDidUpdateState:cbManager]; // Show initial state
 
     return YES;
 }
@@ -88,7 +80,9 @@ annotation:(id)annotation
         return NO;
     }
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:BRURLNotification object:nil userInfo:@{@"url":url}];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC/10), dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:BRURLNotification object:nil userInfo:@{@"url":url}];
+    });
     
     return YES;
 }
@@ -96,103 +90,75 @@ annotation:(id)annotation
 - (void)application:(UIApplication *)application
 performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler
 {
-    __block id syncFinishedObserver = nil, syncFailedObserver = nil;
+    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    __block uint64_t balance = m.wallet.balance;
+    __block id protectedObserver = nil, balanceObserver = nil, syncFinishedObserver = nil, syncFailedObserver = nil;
     __block void (^completion)(UIBackgroundFetchResult) = completionHandler;
-    BRPeerManager *m = [BRPeerManager sharedInstance];
-
-    if (m.syncProgress >= 1.0) {
+    void (^cleanup)() = ^() {
+        completion = nil;
+        if (protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:protectedObserver];
+        if (balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:balanceObserver];
+        if (syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFinishedObserver];
+        if (syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFailedObserver];
+        protectedObserver = balanceObserver = syncFinishedObserver = syncFailedObserver = nil;
+    };
+    
+    if ([[BRPeerManager sharedInstance] syncProgress] >= 1.0) {
+        NSLog(@"background fetch already synced");
         if (completion) completion(UIBackgroundFetchResultNoData);
         return;
     }
 
-#if DEBUG
-    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-    NSMutableArray *a = [[defs arrayForKey:@"debug_backgroundfetch"] mutableCopy];
-    NSInteger i = a.count;
-    NSMutableDictionary *d = [@{@"start_height":@(m.lastBlockHeight),
-                                @"start_stamp":@([NSDate timeIntervalSinceReferenceDate])} mutableCopy];
-
-    [a insertObject:d atIndex:i];
-    [defs setObject:a forKey:@"debug_backgroundfetch"];
-    [defs synchronize];
-#endif
-
     // timeout after 25 seconds
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 25*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        if (m.syncProgress > 0.1) {
-            if (completion) completion(UIBackgroundFetchResultNewData);
+        if (completion) {
+            NSLog(@"background fetch timeout with progress: %f", [[BRPeerManager sharedInstance] syncProgress]);
+            completion(([[BRPeerManager sharedInstance] syncProgress] > 0.1) ? UIBackgroundFetchResultNewData :
+                       UIBackgroundFetchResultFailed);
+            cleanup();
         }
-        else if (completion) completion(UIBackgroundFetchResultFailed);
-        completion = nil;
-
-        if (syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFinishedObserver];
-        if (syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFailedObserver];
-        syncFinishedObserver = syncFailedObserver = nil;
         //TODO: disconnect
-        
-#if DEBUG
-        [d setObject:@(m.syncProgress) forKey:@"timeout_progress"];
-        [d setObject:@(m.lastBlockHeight) forKey:@"timeout_height"];
-        [d setObject:@([NSDate timeIntervalSinceReferenceDate]) forKey:@"timeout_stamp"];
-        [a insertObject:d atIndex:i];
-        [defs setObject:a forKey:@"debug_backgroundfetch"];
-        [defs synchronize];
-#endif
     });
+
+    protectedObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationProtectedDataDidBecomeAvailable object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
+            NSLog(@"background fetch protected data available");
+            [[BRPeerManager sharedInstance] connect];
+        }];
+    
+    balanceObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
+        usingBlock:^(NSNotification *note) {
+            if (m.wallet.balance > balance) {
+                [[UIApplication sharedApplication]
+                 setApplicationIconBadgeNumber:[[UIApplication sharedApplication] applicationIconBadgeNumber] + 1];
+                [defs setDouble:[defs doubleForKey:SETTINGS_RECEIVED_AMOUNT_KEY] + (m.wallet.balance - balance)
+                 forKey:SETTINGS_RECEIVED_AMOUNT_KEY]; // have to use setDouble here, setInteger isn't big enough
+                balance = m.wallet.balance;
+                [defs synchronize];
+            }
+        }];
 
     syncFinishedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
+            NSLog(@"background fetch sync finished");
             if (completion) completion(UIBackgroundFetchResultNewData);
-            completion = nil;
-            
-            if (syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFinishedObserver];
-            if (syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFailedObserver];
-            syncFinishedObserver = syncFailedObserver = nil;
-
-#if DEBUG
-            [d setObject:@(m.lastBlockHeight) forKey:@"finished_height"];
-            [d setObject:@([NSDate timeIntervalSinceReferenceDate]) forKey:@"finished_stamp"];
-            [a insertObject:d atIndex:i];
-            [defs setObject:a forKey:@"debug_backgroundfetch"];
-            [defs synchronize];
-#endif
+            cleanup();
         }];
 
     syncFailedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
+            NSLog(@"background fetch sync failed");
             if (completion) completion(UIBackgroundFetchResultFailed);
-            completion = nil;
-
-            if (syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFinishedObserver];
-            if (syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFailedObserver];
-            syncFinishedObserver = syncFailedObserver = nil;
-            
-#if DEBUG
-            [d setObject:@(m.lastBlockHeight) forKey:@"failed_height"];
-            [d setObject:@([NSDate timeIntervalSinceReferenceDate]) forKey:@"failed_stamp"];
-            [a insertObject:d atIndex:i];
-            [defs setObject:a forKey:@"debug_backgroundfetch"];
-            [defs synchronize];
-#endif
+            cleanup();
         }];
     
-    [m connect];
+    NSLog(@"background fetch starting");
+    [[BRPeerManager sharedInstance] connect];
 }
-
-//#pragma mark - CBCentralManagerDelegate
-//
-//- (void)centralManagerDidUpdateState:(CBCentralManager *)cbManager
-//{
-//    switch (cbManager.state) {
-//        case CBCentralManagerStateResetting: NSLog(@"system BT connection momentarily lost."); break;
-//        case CBCentralManagerStateUnsupported: NSLog(@"BT Low Energy not suppoerted."); break;
-//        case CBCentralManagerStateUnauthorized: NSLog(@"BT Low Energy not authorized."); break;
-//        case CBCentralManagerStatePoweredOff: NSLog(@"BT off."); break;
-//        case CBCentralManagerStatePoweredOn: NSLog(@"BT on."); break;
-//        default: NSLog(@"BT State unknown."); break;
-//    }    
-//}
 
 @end

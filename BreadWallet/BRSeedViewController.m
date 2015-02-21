@@ -25,9 +25,7 @@
 
 #import "BRSeedViewController.h"
 #import "BRWalletManager.h"
-#import "BRWallet.h"
 #import "BRPeerManager.h"
-#import "BRBIP32Sequence.h"
 
 #define LABEL_MARGIN       20.0
 #define WRITE_TOGGLE_DELAY 15.0
@@ -41,6 +39,7 @@
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *remindButton, *doneButton;
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
 
+@property (nonatomic, strong) NSString *seedPhrase;
 @property (nonatomic, strong) id resignActiveObserver, screenshotObserver;
 
 @end
@@ -49,12 +48,17 @@
 
 - (instancetype)customInit
 {
-    if ([[UIApplication sharedApplication] isProtectedDataAvailable] && ! [[BRWalletManager sharedInstance] wallet]) {
-        [[BRWalletManager sharedInstance] generateRandomSeed];
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+
+    if (m.noWallet) {
+        self.seedPhrase = [m generateRandomSeed];
         [[BRPeerManager sharedInstance] connect];
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:WALLET_NEEDS_BACKUP_KEY];
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
+    else self.seedPhrase = m.seedPhrase; // this triggers authentication request
+
+    if (self.seedPhrase.length > 0) _authSuccess = YES;
 
     return self;
 }
@@ -86,45 +90,21 @@
     self.doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"done", nil)
                        style:UIBarButtonItemStylePlain target:self action:@selector(done:)];
     
-    self.resignActiveObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
-        queue:nil usingBlock:^(NSNotification *note) {
-            if (self.navigationController.viewControllers.firstObject != self) {
-                [self.navigationController popViewControllerAnimated:NO];
-            }
-        }];
-
-
-    //TODO: make it easy to create a new wallet and transfer balance
-    self.screenshotObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationUserDidTakeScreenshotNotification
-        object:nil queue:nil usingBlock:^(NSNotification *note) {
-            if ([[[BRWalletManager sharedInstance] wallet] balance] == 0) {
-                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
-                  message:NSLocalizedString(@"Screenshots are visible to other apps and devices. "
-                                            "Generate a new backup phrase and keep it secret.", nil)
-                  delegate:self cancelButtonTitle:NSLocalizedString(@"ignore", nil)
-                  otherButtonTitles:NSLocalizedString(@"new phrase", nil), nil] show];
-            }
-            else {
-                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
-                  message:NSLocalizedString(@"Screenshots are visible to other apps and devices. "
-                                            "Your funds are at risk. Transfer your balance to another wallet.", nil)
-                  delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-            }
-        }];
-}
-
-- (void)dealloc
-{
-    [NSObject cancelPreviousPerformRequestsWithTarget:self];
-    if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
-    if (self.screenshotObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.screenshotObserver];
+    @autoreleasepool {  // @autoreleasepool ensures sensitive data will be dealocated immediately
+        self.seedLabel.text = self.seedPhrase;
+        self.seedPhrase = nil;
+    }
+    
+#if DEBUG
+    self.seedLabel.userInteractionEnabled = YES; // allow clipboard copy only for debug builds
+#endif
 }
 
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+ 
+    NSTimeInterval delay = WRITE_TOGGLE_DELAY;
  
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
  
@@ -132,18 +112,51 @@
     if (self.navigationController.viewControllers.firstObject != self) {
         self.toolbar.hidden = YES;
     }
+    else delay *= 2; // extra delay before showing toggle when starting a new wallet
     
     if ([[NSUserDefaults standardUserDefaults] boolForKey:WALLET_NEEDS_BACKUP_KEY]) {
-        [self performSelector:@selector(showWriteToggle) withObject:nil afterDelay:WRITE_TOGGLE_DELAY];
-    }
-    
-    @autoreleasepool {  // @autoreleasepool ensures sensitive data will be dealocated immediately
-        self.seedLabel.text = [[BRWalletManager sharedInstance] seedPhrase];
+        [self performSelector:@selector(showWriteToggle) withObject:nil afterDelay:delay];
     }
     
     [UIView animateWithDuration:0.1 animations:^{
         self.seedLabel.alpha = 1.0;
     }];
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+
+    if (! self.resignActiveObserver) {
+        self.resignActiveObserver =
+            [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification
+            object:nil queue:nil usingBlock:^(NSNotification *note) {
+                if (self.navigationController.viewControllers.firstObject != self) {
+                    [self.navigationController popViewControllerAnimated:NO];
+                }
+            }];
+    }
+    
+    //TODO: make it easy to create a new wallet and transfer balance
+    if (! self.screenshotObserver) {
+        self.screenshotObserver =
+            [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationUserDidTakeScreenshotNotification
+            object:nil queue:nil usingBlock:^(NSNotification *note) {
+                if ([[[BRWalletManager sharedInstance] wallet] balance] == 0) {
+                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
+                      message:NSLocalizedString(@"Screenshots are visible to other apps and devices. "
+                                                "Generate a new recovery phrase and keep it secret.", nil)
+                      delegate:self cancelButtonTitle:nil otherButtonTitles:NSLocalizedString(@"new phrase", nil), nil]
+                     show];
+                }
+                else {
+                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
+                      message:NSLocalizedString(@"Screenshots are visible to other apps and devices. "
+                                                "Your funds are at risk. Transfer your balance to another wallet.", nil)
+                      delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+                }
+            }];
+    }
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -153,6 +166,17 @@
     // don't leave the seed phrase laying around in memory any longer than necessary
     self.seedLabel.text = @"";
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
+    if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
+    self.resignActiveObserver = nil;
+    if (self.screenshotObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.screenshotObserver];
+    self.screenshotObserver = nil;
+}
+
+- (void)dealloc
+{
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
+    if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
+    if (self.screenshotObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.screenshotObserver];
 }
 
 - (void)showWriteToggle
@@ -178,9 +202,7 @@
 
 - (IBAction)refresh:(id)sender
 {
-    if (! [[UIApplication sharedApplication] isProtectedDataAvailable]) return;
-
-    [[BRWalletManager sharedInstance] generateRandomSeed];
+    self.seedPhrase = [[BRWalletManager sharedInstance] generateRandomSeed];
     [[BRPeerManager sharedInstance] connect];
     [[NSUserDefaults standardUserDefaults] setBool:YES forKey:WALLET_NEEDS_BACKUP_KEY];
     [[NSUserDefaults standardUserDefaults] synchronize];
@@ -188,13 +210,8 @@
     [UIView animateWithDuration:0.1 animations:^{
         self.seedLabel.alpha = 0.0;
     } completion:^(BOOL finished) {
-        @autoreleasepool {
-            self.seedLabel.text = [[BRWalletManager sharedInstance] seedPhrase];
-        }
-
-        [UIView animateWithDuration:0.1 animations:^{
-            self.seedLabel.alpha = 1.0;
-        }];
+        self.seedLabel.text = self.seedPhrase;
+        [UIView animateWithDuration:0.1 animations:^{ self.seedLabel.alpha = 1.0; }];
     }];
 }
 
@@ -214,11 +231,6 @@
     }
     
     [defs synchronize];
-}
-
-- (IBAction)copy:(id)sender
-{
-    [[UIPasteboard generalPasteboard] setString:[[BRWalletManager sharedInstance] seedPhrase]];
 }
 
 #pragma mark - UIAlertViewDelegate

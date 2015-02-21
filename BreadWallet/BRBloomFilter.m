@@ -117,10 +117,10 @@ flags:(uint8_t)flags
 {
     if (! (self = [self init])) return nil;
 
-    NSUInteger length = (-1.0/pow(M_LN2, 2))*count*log(fpRate)/8.0;
+    NSUInteger length = (-1.0/pow(M_LN2, 2))*count*log((fpRate > DBL_EPSILON) ? fpRate : DBL_EPSILON)/8.0;
 
     if (length > BLOOM_MAX_FILTER_LENGTH) length = BLOOM_MAX_FILTER_LENGTH;
-    self.filter = [NSMutableData dataWithLength:length < 1 ? 1 : length];
+    self.filter = [NSMutableData dataWithLength:(length < 1) ? 1 : length];
     self.hashFuncs = ((self.filter.length*8.0)/count)*M_LN2;
     if (self.hashFuncs > BLOOM_MAX_HASH_FUNCS) self.hashFuncs = BLOOM_MAX_HASH_FUNCS;
     _tweak = tweak;
@@ -170,7 +170,7 @@ flags:(uint8_t)flags
             if ([elem intValue] > OP_PUSHDATA4 || [elem intValue] == 0 || ! [self containsData:elem]) continue;
             [d setData:tx.txHash];
             [d appendUInt32:n];
-            [self insertData:d]; // update bloom filter with matched txout
+            if (! [self containsData:d]) [self insertData:d]; // update bloom filter with matched txout
             break;
         }
 

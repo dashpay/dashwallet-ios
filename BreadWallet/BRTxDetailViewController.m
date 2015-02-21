@@ -27,7 +27,6 @@
 #import "BRTransaction.h"
 #import "BRWalletManager.h"
 #import "BRPeerManager.h"
-#import "BRWallet.h"
 #import "BRCopyLabel.h"
 #import "NSString+Base58.h"
 #import "NSData+Hash.h"
@@ -37,7 +36,7 @@
 @interface BRTxDetailViewController ()
 
 @property (nonatomic, strong) NSArray *outputText, *outputDetail, *outputAmount;
-@property (nonatomic, assign) int64_t sent, received, moved;
+@property (nonatomic, assign) int64_t sent, received;
 @property (nonatomic, strong) id txStatusObserver;
 
 @end
@@ -88,7 +87,6 @@
     _transaction = transaction;
     self.sent = [m.wallet amountSentByTransaction:transaction];
     self.received = [m.wallet amountReceivedFromTransaction:transaction];
-    self.moved = (! [m.wallet addressForTransaction:self.transaction] && self.sent > 0) ? self.sent : 0;
 
     for (NSString *address in transaction.outputAddresses) {
         uint64_t amt = [transaction.outputAmounts[i++] unsignedLongLongValue];
@@ -101,7 +99,7 @@
             }
         }
         else if ([m.wallet containsAddress:address]) {
-            if (self.sent == 0 || self.moved > 0) {
+            if (self.sent == 0 || self.received == self.sent) {
                 [text addObject:address];
                 [detail addObject:NSLocalizedString(@"wallet address", nil)];
                 [amount addObject:@(amt)];
@@ -141,7 +139,7 @@
         [cell.backgroundView addSubview:v];
     }
     
-    [cell viewWithTag:100].frame = CGRectMake(path.row == 0 ? 0 : 15, 0, cell.frame.size.width, 0.5);
+    [cell viewWithTag:100].frame = CGRectMake((path.row == 0 ? 0 : 15), 0, cell.frame.size.width, 0.5);
     [cell viewWithTag:101].hidden = (path.row + 1 < [self tableView:self.tableView numberOfRowsInSection:path.section]);
 }
 
@@ -160,7 +158,6 @@
         case 0: return 3;
         case 1: return (self.sent > 0) ? self.outputText.count : self.transaction.inputAddresses.count;
         case 2: return (self.sent > 0) ? self.transaction.inputAddresses.count : self.outputText.count;
-        default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
     }
 
     return 1;
@@ -217,7 +214,7 @@
                         detailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"seen by %d of %d peers", nil),
                                             relayCount, peerCount];
                     }
-                    else detailLabel.text = NSLocalizedString(@"waiting for confirmation", nil);
+                    else detailLabel.text = NSLocalizedString(@"verified, waiting for confirmation", nil);
                     
                     break;
                     
@@ -227,10 +224,10 @@
                     textLabel = (id)[cell viewWithTag:1];
                     localCurrencyLabel = (id)[cell viewWithTag:5];
 
-                    if (self.moved > 0) {
-                        textLabel.text = [m stringForAmount:self.moved];
+                    if (self.sent > 0 && self.sent == self.received) {
+                        textLabel.text = [m stringForAmount:self.sent];
                         localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
-                                                   [m localCurrencyStringForAmount:self.moved]];
+                                                   [m localCurrencyStringForAmount:self.sent]];
                     }
                     else {
                         textLabel.text = [m stringForAmount:self.received - self.sent];
@@ -300,9 +297,6 @@
 
             [self setBackgroundForCell:cell indexPath:indexPath];
             break;
-            
-        default:
-            NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)indexPath.section);
     }
     
     return cell;
@@ -314,7 +308,6 @@
         case 0: return nil;
         case 1: return (self.sent > 0) ? NSLocalizedString(@"to:", nil) : NSLocalizedString(@"from:", nil);
         case 2: return (self.sent > 0) ? NSLocalizedString(@"from:", nil) : NSLocalizedString(@"to:", nil);
-        default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)section);
     }
     
     return nil;
@@ -328,7 +321,6 @@
         case 0: return 44.0;
         case 1: return (self.sent > 0 && [self.outputText[indexPath.row] length] == 0) ? 40 : 60.0;
         case 2: return 60.0;
-        default: NSAssert(FALSE, @"%s:%d %s: unkown section %d", __FILE__, __LINE__,  __func__, (int)indexPath.section);
     }
     
     return 44.0;

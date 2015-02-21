@@ -26,7 +26,6 @@
 #import "BRAmountViewController.h"
 #import "BRPaymentRequest.h"
 #import "BRWalletManager.h"
-#import "BRWallet.h"
 #import "BRPeerManager.h"
 #import "BRTransaction.h"
 
@@ -34,15 +33,16 @@
 
 @property (nonatomic, strong) IBOutlet UITextField *amountField;
 @property (nonatomic, strong) IBOutlet UILabel *localCurrencyLabel, *addressLabel;
-@property (nonatomic, strong) IBOutlet UIBarButtonItem *payButton;
+@property (nonatomic, strong) IBOutlet UIBarButtonItem *payButton, *lock;
 @property (nonatomic, strong) IBOutlet UIButton *delButton, *decimalButton;
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
+@property (nonatomic, strong) IBOutlet UIView *logo;
 
 @property (nonatomic, assign) uint64_t amount;
 @property (nonatomic, strong) NSCharacterSet *charset;
 @property (nonatomic, strong) UILabel *swapLeftLabel, *swapRightLabel;
 @property (nonatomic, assign) BOOL swapped;
-@property (nonatomic, strong) id balanceObserver;
+@property (nonatomic, strong) id balanceObserver, backgroundObserver;
 
 @end
 
@@ -59,6 +59,8 @@
     [charset addCharactersInString:m.format.currencyDecimalSeparator];
     self.charset = charset;
 
+    self.payButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"pay", nil)
+                      style:UIBarButtonItemStyleBordered target:self action:@selector(pay:)];
     self.amountField.placeholder = [m stringForAmount:0];
     [self.decimalButton setTitle:m.format.currencyDecimalSeparator forState:UIControlStateNormal];
 
@@ -74,6 +76,8 @@
     self.swapRightLabel.textAlignment = self.amountField.textAlignment;
     self.swapRightLabel.hidden = YES;
 
+    [self updateLocalCurrencyLabel];
+    
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
@@ -82,22 +86,36 @@
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
         }];
+    
+    self.backgroundObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
+            self.navigationItem.titleView = self.logo;
+        }];
 }
 
 - (void)dealloc
 {
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
+    if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
 }
 
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
     
-    if (self.to.length > 0) {
-        self.addressLabel.text = [NSString stringWithFormat:NSLocalizedString(@"to: %@", nil), self.to];
-    }
-    
+    self.addressLabel.text = (self.to.length > 0) ?
+                             [NSString stringWithFormat:NSLocalizedString(@"to: %@", nil), self.to] : nil;
     self.wallpaper.hidden = NO;
+
+    if (self.navigationController.viewControllers.firstObject != self) {
+        self.navigationItem.leftBarButtonItem = nil;
+        if ([[BRWalletManager sharedInstance] didAuthenticate]) [self unlock:nil];
+    }
+    else {
+        self.payButton.title = NSLocalizedString(@"request", nil);
+        self.navigationItem.rightBarButtonItem = self.payButton;
+    }
 
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
     [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
@@ -106,7 +124,7 @@
 - (void)viewWillDisappear:(BOOL)animated
 {
     self.amount = 0;
-    self.wallpaper.hidden = animated;
+    if (self.navigationController.viewControllers.firstObject != self) self.wallpaper.hidden = animated;
 
     [super viewWillDisappear:animated];
 }
@@ -125,6 +143,16 @@
 }
 
 #pragma mark - IBAction
+
+- (IBAction)unlock:(id)sender
+{
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    
+    if (sender && ! m.didAuthenticate && ! [m authenticateWithPrompt:nil andTouchId:YES]) return;
+    
+    self.navigationItem.titleView = nil;
+    [self.navigationItem setRightBarButtonItem:self.payButton animated:(sender) ? YES : NO];
+}
 
 - (IBAction)number:(id)sender
 {
@@ -154,6 +182,11 @@
     if (self.amount == 0) return;
     
     [self.delegate amountViewController:self selectedAmount:self.amount];
+}
+
+- (IBAction)done:(id)sender
+{
+    [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (IBAction)swapCurrency:(id)sender
@@ -336,10 +369,19 @@ replacementString:(NSString *)string
     f.minimumFractionDigits = mindigits;
     textField.text = t;
     if (t.length > 0 && textField.placeholder.length > 0) textField.placeholder = nil;
+
     if (t.length == 0 && textField.placeholder.length == 0) {
         textField.placeholder = (self.swapped) ? [m localCurrencyStringForAmount:0] : [m stringForAmount:0];
     }
-    //self.payButton.enabled = t.length ? YES : NO;
+    
+    if (self.navigationController.viewControllers.firstObject != self) {
+        if (! m.didAuthenticate && t.length == 0 && self.navigationItem.rightBarButtonItem != self.lock) {
+            [self.navigationItem setRightBarButtonItem:self.lock animated:YES];
+        }
+        else if (t.length > 0 && self.navigationItem.rightBarButtonItem != self.payButton) {
+            [self.navigationItem setRightBarButtonItem:self.payButton animated:YES];
+        }
+    }
 
     self.swapRightLabel.hidden = YES;
     textField.hidden = NO;

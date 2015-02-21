@@ -33,7 +33,7 @@
 @interface BRWelcomeViewController ()
 
 @property (nonatomic, assign) BOOL hasAppeared, animating;
-@property (nonatomic, strong) id activeObserver, resignActiveObserver;
+@property (nonatomic, strong) id foregroundObserver, backgroundObserver;
 @property (nonatomic, strong) UINavigationController *seedNav;
 
 @property (nonatomic, strong) IBOutlet UIView *paralax, *wallpaper;
@@ -52,8 +52,8 @@
         
     self.navigationController.delegate = self;
 
-    self.activeObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil
+    self.foregroundObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillEnterForegroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             if ([[BRWalletManager sharedInstance] wallet]) { // sanity check
                 [self.navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
@@ -61,8 +61,8 @@
             else [self animateWallpaper];
         }];
     
-    self.resignActiveObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
+    self.backgroundObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2, self.wallpaper.center.y);
         }];
@@ -71,8 +71,8 @@
 - (void)dealloc
 {
     if (self.navigationController.delegate == self) self.navigationController.delegate = nil;
-    if (self.activeObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
-    if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
+    if (self.foregroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.foregroundObserver];
+    if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -135,16 +135,16 @@
     [self.showButton addTarget:self action:@selector(show:) forControlEvents:UIControlEventTouchUpInside];
     
     if (self.warningLabel) {
-        NSTextAttachment *noEye = [NSTextAttachment new], *noShot = [NSTextAttachment new];
+        NSTextAttachment *noEye = [NSTextAttachment new], *noKey = [NSTextAttachment new];
         NSMutableAttributedString *s = [[NSMutableAttributedString alloc]
                                         initWithAttributedString:self.warningLabel.attributedText];
     
         noEye.image = [UIImage imageNamed:@"no-eye"];
         [s replaceCharactersInRange:[s.string rangeOfString:@"%no-eye%"]
          withAttributedString:[NSAttributedString attributedStringWithAttachment:noEye]];
-        noShot.image = [UIImage imageNamed:@"no-shot"];
-        [s replaceCharactersInRange:[s.string rangeOfString:@"%no-shot%"]
-         withAttributedString:[NSAttributedString attributedStringWithAttachment:noShot]];
+        noKey.image = [UIImage imageNamed:@"no-key"];
+        [s replaceCharactersInRange:[s.string rangeOfString:@"%no-key%"]
+         withAttributedString:[NSAttributedString attributedStringWithAttachment:noKey]];
         self.warningLabel.attributedText = s;
     }
 }
@@ -189,7 +189,14 @@
 
 - (IBAction)generate:(id)sender
 {
-    // make the user wait a few seconds so they'll get bored enough to read the information on the screen
+    if (! [[BRWalletManager sharedInstance] isPasscodeEnabled]) {
+        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"turn device passcode on", nil)
+          message:NSLocalizedString(@"\nA device passcode is needed to safeguard your wallet. Go to settings and turn "
+                                    "passcode on to continue.", nil)
+          delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+        return;
+    }
+
     [self.navigationController.navigationBar.topItem setHidesBackButton:YES animated:YES];
     [sender setEnabled:NO];
 
@@ -240,7 +247,7 @@
         [self.paralax.superview layoutIfNeeded];
     } completion:^(BOOL finished) {
         if (to == self) [from.view removeFromSuperview];
-        [transitionContext completeTransition:finished];
+        [transitionContext completeTransition:YES];
     }];
 }
 

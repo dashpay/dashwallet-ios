@@ -24,30 +24,39 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
+#import "BRWallet.h"
 
 #define WALLET_NEEDS_BACKUP_KEY @"WALLET_NEEDS_BACKUP"
 #define BRWalletManagerSeedChangedNotification @"BRWalletManagerSeedChangedNotification"
 
-@class BRWallet, BRTransaction;
-
-@interface BRWalletManager : NSObject<UIAlertViewDelegate>
+@interface BRWalletManager : NSObject<UIAlertViewDelegate, UITextFieldDelegate, UITextViewDelegate>
 
 @property (nonatomic, readonly) BRWallet *wallet;
-@property (nonatomic, copy) NSData *seed;
-@property (nonatomic, copy) NSString *seedPhrase;
-@property (nonatomic, copy) NSString *pin;
-@property (nonatomic, assign) NSUInteger pinFailCount; // number of consecutive failed pin attempts
-@property (nonatomic, assign) uint32_t pinFailHeight; // blockchain height at most recent failed pin attempt
+@property (nonatomic, readonly) BOOL noWallet; // true if keychain is available and we know that no wallet exists on it
+@property (nonatomic, readonly) id<BRKeySequence> sequence;
+@property (nonatomic, readonly) NSData *masterPublicKey; // master public key used to generate wallet addresses
+@property (nonatomic, copy) NSString *seedPhrase; // requesting seedPhrase will trigger authentication
 @property (nonatomic, readonly) NSTimeInterval seedCreationTime; // interval since refrence date, 00:00:00 01/01/01 GMT
-@property (nonatomic, readonly) NSNumberFormatter *format;
-@property (nonatomic, readonly) NSNumberFormatter *localFormat;
-@property (nonatomic, copy) NSString *localCurrencyCode;
-@property (nonatomic, readonly) double localCurrencyPrice;
-@property (nonatomic, readonly) NSArray *currencyCodes; // list of supported local currencies
+@property (nonatomic, readonly) NSTimeInterval secureTime; // last known time from an ssl server connection
+@property (nonatomic, assign) uint64_t spendingLimit; // amount that can be spent using touch id without pin entry
+@property (nonatomic, readonly, getter=isTouchIdEnabled) BOOL touchIdEnabled; // true if touch id is enabled
+@property (nonatomic, readonly, getter=isPasscodeEnabled) BOOL passcodeEnabled; // true if device passcode is enabled
+@property (nonatomic, assign) BOOL didAuthenticate; // true if the user authenticated after this was last set to false
+@property (nonatomic, readonly) NSNumberFormatter *format; // bitcoin currency formatter
+@property (nonatomic, readonly) NSNumberFormatter *localFormat; // local currency formatter
+@property (nonatomic, copy) NSString *localCurrencyCode; // local currency ISO code
+@property (nonatomic, readonly) double localCurrencyPrice; // exchange rate in local currency units per bitcoin
+@property (nonatomic, readonly) NSArray *currencyCodes; // list of supported local currency codes
+@property (nonatomic, readonly) NSArray *currencyNames; // names for local currency codes
+@property (nonatomic, assign) size_t averageBlockSize; // set this to enable basic floating fee calculation
 
 + (instancetype)sharedInstance;
 
-- (void)generateRandomSeed;
+- (NSString *)generateRandomSeed; // generates a random seed, saves to keychain and returns the associated seedPhrase
+- (NSData *)seedWithPrompt:(NSString *)authprompt forAmount:(uint64_t)amount; // authenticates user and returns seed
+- (NSString *)seedPhraseWithPrompt:(NSString *)authprompt; // authenticates user and returns seedPhrase
+- (BOOL)authenticateWithPrompt:(NSString *)authprompt andTouchId:(BOOL)touchId; // prompts user to authenticate
+- (BOOL)setPin; // prompts the user to set or change wallet pin and returns true if the pin was successfully set
 
 // given a private key, queries blockchain for unspent outputs and calls the completion block with a signed transaction
 // that will sweep the balance into wallet (doesn't publish the tx)

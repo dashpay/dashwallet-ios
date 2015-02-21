@@ -33,7 +33,8 @@
 #define MAX_PROOF_OF_WORK 0x1d00ffffu   // highest value for difficulty target (higher values are less difficult)
 #define TARGET_TIMESPAN   (14*24*60*60) // the targeted timespan between difficulty target adjustments
 
-// convert difficulty target format to bignum, as per: https://github.com/bitcoin/bitcoin/blob/master/src/uint256.h#L323
+// convert difficulty target format to bignum, as per:
+// https://github.com/bitcoin/bitcoin/blob/master/src/arith_uint256.cpp#L203
 static void setCompact(BIGNUM *bn, uint32_t compact)
 {
     uint32_t size = compact >> 24, word = compact & 0x007fffff;
@@ -59,7 +60,7 @@ static uint32_t getCompact(const BIGNUM *bn)
     }
     else compact = BN_get_word(bn) << (3 - size)*8;
 
-    if (compact & 0x00800000) { // if sign is already set, divide the mantissa by 256 and increment the exponent
+    if (compact & 0x00800000) { // 0x00800000 bit denotes the sign, if set, divide mantissa by 256 and increase exponent
         compact >>= 8;
         size++;
     }
@@ -94,6 +95,12 @@ static uint32_t getCompact(const BIGNUM *bn)
 // flag bits (little endian): 00001011 [merkleRoot = 1, m1 = 1, tx1 = 0, tx2 = 1, m2 = 0, byte padding = 000]
 // hashes: [tx1, tx2, m2]
 
+@interface BRMerkleBlock ()
+
+@property (nonatomic, strong) NSData *blockHash;
+    
+@end
+
 @implementation BRMerkleBlock
 
 // message can be either a merkleblock or header message
@@ -110,7 +117,6 @@ static uint32_t getCompact(const BIGNUM *bn)
 
     NSUInteger off = 0, l = 0, len = 0;
 
-    _blockHash = [message subdataWithRange:NSMakeRange(0, 80)].SHA256_2;
     _version = [message UInt32AtOffset:off];
     off += sizeof(uint32_t);
     _prevBlock = [message hashAtOffset:off];
@@ -127,11 +133,11 @@ static uint32_t getCompact(const BIGNUM *bn)
     off += sizeof(uint32_t);
     len = (NSUInteger)[message varIntAtOffset:off length:&l]*CC_SHA256_DIGEST_LENGTH;
     off += l;
-    _hashes = off + len > message.length ? nil : [message subdataWithRange:NSMakeRange(off, len)];
+    _hashes = (off + len > message.length) ? nil : [message subdataWithRange:NSMakeRange(off, len)];
     off += len;
     _flags = [message dataAtOffset:off length:&l];
     _height = BLOCK_UNKOWN_HEIGHT;
-
+    
     return self;
 }
 
@@ -156,6 +162,23 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     return self;
 }
 
+- (NSData *)blockHash
+{
+    if (! _blockHash) {
+        NSMutableData *d = [NSMutableData data];
+        
+        [d appendUInt32:_version];
+        [d appendData:_prevBlock];
+        [d appendData:_merkleRoot];
+        [d appendUInt32:_timestamp + NSTimeIntervalSince1970];
+        [d appendUInt32:_target];
+        [d appendUInt32:_nonce];
+        _blockHash = d.SHA256_2;
+    }
+
+    return _blockHash;
+}
+
 // true if merkle tree and timestamp are valid, and proof-of-work matches the stated difficulty target
 // NOTE: this only checks if the block difficulty matches the difficulty target in the header, it does not check if the
 // target is correct for the block's height in the chain, use verifyDifficultyFromPreviousBlock: for that
@@ -169,7 +192,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
             return hash;
         } :^id (id left, id right) {
             [d setData:left];
-            [d appendData:right ? right : left]; // if right branch is missing, duplicate left branch
+            [d appendData:(right) ? right : left]; // if right branch is missing, duplicate left branch
             return d.SHA256_2;
         }];
     

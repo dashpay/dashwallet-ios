@@ -47,7 +47,7 @@
 #define MIN_PROTO_VERSION  70002 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
 #endif
 #define LOCAL_HOST         0x7f000001
-#define ZERO_HASH          @"0000000000000000000000000000000000000000000000000000000000000000".hexToData
+#define ZERO_HASH          [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH]
 #define CONNECT_TIMEOUT    3.0
 
 typedef enum {
@@ -64,15 +64,15 @@ typedef enum {
 @property (nonatomic, strong) NSInputStream *inputStream;
 @property (nonatomic, strong) NSOutputStream *outputStream;
 @property (nonatomic, strong) NSMutableData *msgHeader, *msgPayload, *outputBuffer;
-@property (nonatomic, assign) BOOL sentVerack, gotVerack;
+@property (nonatomic, assign) BOOL sentVerack, gotVerack, sentFilter, sentGetAddr;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) id reachabilityObserver;
 @property (nonatomic, assign) uint64_t localNonce;
 @property (nonatomic, assign) NSTimeInterval startTime;
 @property (nonatomic, strong) BRMerkleBlock *currentBlock;
-@property (nonatomic, strong) NSMutableOrderedSet *currentBlockHashes, *currentTxHashes, *knownTxHashes;
-@property (nonatomic, strong) NSCountedSet *requestedBlockHashes;
-@property (nonatomic, assign) uint32_t filterBlockCount;
+@property (nonatomic, strong) NSMutableOrderedSet *knownBlockHashes, *knownTxHashes, *currentTxHashes;
+@property (nonatomic, strong) NSData *lastBlockHash;
+@property (nonatomic, strong) NSMutableArray *pongHandlers;
 @property (nonatomic, strong) NSRunLoop *runLoop;
 
 @end
@@ -135,21 +135,26 @@ services:(uint64_t)services
     if (! self.reachability) self.reachability = [Reachability reachabilityWithHostName:self.host];
     
     if (self.reachability.currentReachabilityStatus == NotReachable) { // delay connect until network is reachable
-        if (self.reachabilityObserver) return;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (! self.reachabilityObserver) {
+                self.reachabilityObserver =
+                    [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil
+                    queue:nil usingBlock:^(NSNotification *note) {
+                        if (self.reachabilityObserver && self.reachability.currentReachabilityStatus != NotReachable) {
+                            _status = BRPeerStatusDisconnected;
+                            [self connect];
+                        }
+                    }];
         
-        self.reachabilityObserver =
-            [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification
-            object:self.reachability queue:nil usingBlock:^(NSNotification *note) {
-                if (self.reachabilityObserver != nil && self.reachability.currentReachabilityStatus != NotReachable) {
-                    [self connect];
-                }
-            }];
+                [self.reachability startNotifier];
+            }
+        });
         
-        [self.reachability startNotifier];
         return;
     }
     else if (self.reachabilityObserver) {
         [self.reachability stopNotifier];
+        self.reachability = nil;
         [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
         self.reachabilityObserver = nil;
     }
@@ -157,11 +162,13 @@ services:(uint64_t)services
     self.msgHeader = [NSMutableData data];
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
+    self.gotVerack = self.sentVerack = self.sentFilter = self.sentGetAddr = self.needsFilterUpdate = NO;
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
-    self.currentBlockHashes = [NSMutableOrderedSet orderedSet];
-    self.requestedBlockHashes = [NSCountedSet set];
+    self.knownBlockHashes = [NSMutableOrderedSet orderedSet];
+    self.currentBlock = nil;
+    self.currentTxHashes = nil;
 
-    NSString *label = [NSString stringWithFormat:@"peer.%@:%d", self.host, self.port];
+    NSString *label = [NSString stringWithFormat:@"peer.%@:%u", self.host, self.port];
 
     // use a private serial queue for processing socket io
     dispatch_async(dispatch_queue_create(label.UTF8String, NULL), ^{
@@ -205,6 +212,7 @@ services:(uint64_t)services
 
     if (self.reachabilityObserver) {
         [self.reachability stopNotifier];
+        self.reachability = nil;
         [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
         self.reachabilityObserver = nil;
     }
@@ -221,16 +229,20 @@ services:(uint64_t)services
         
         CFRunLoopStop([self.runLoop getCFRunLoop]);
         
-        self.gotVerack = self.sentVerack = NO;
         _status = BRPeerStatusDisconnected;
         dispatch_async(self.delegateQueue, ^{
+            while (self.pongHandlers.count) {
+                ((void (^)(BOOL))self.pongHandlers[0])(NO);
+                [self.pongHandlers removeObjectAtIndex:0];
+            }
+            
             [self.delegate peer:self disconnectedWithError:error];
         });
     });
     CFRunLoopWakeUp([self.runLoop getCFRunLoop]);
 }
 
-- (void)error:(NSString *)message, ...
+- (void)error:(NSString *)message, ... NS_FORMAT_FUNCTION(1,2)
 {
     va_list args;
 
@@ -244,7 +256,7 @@ services:(uint64_t)services
 {
     if (self.status != BRPeerStatusConnecting || ! self.sentVerack || ! self.gotVerack) return;
 
-    NSLog(@"%@:%d handshake completed", self.host, self.port);
+    NSLog(@"%@:%u handshake completed", self.host, self.port);
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending handshake timeout
     _status = BRPeerStatusConnected;
     dispatch_async(self.delegateQueue, ^{
@@ -257,7 +269,7 @@ services:(uint64_t)services
 - (void)sendMessage:(NSData *)message type:(NSString *)type
 {
     if (message.length > MAX_MSG_LENGTH) {
-        NSLog(@"%@:%d failed to send %@, length %d is too long", self.host, self.port, type, (int)message.length);
+        NSLog(@"%@:%u failed to send %@, length %u is too long", self.host, self.port, type, (int)message.length);
 #if DEBUG
         abort();
 #endif
@@ -267,7 +279,7 @@ services:(uint64_t)services
     if (! self.runLoop) return;
 
     CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
-        NSLog(@"%@:%d sending %@", self.host, self.port, type);
+        NSLog(@"%@:%u sending %@", self.host, self.port, type);
 
         [self.outputBuffer appendMessage:message type:type];
         
@@ -275,7 +287,7 @@ services:(uint64_t)services
             NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
 
             if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
-            //if (self.outputBuffer.length == 0) NSLog(@"%@:%d output buffer cleared", self.host, self.port);
+            //if (self.outputBuffer.length == 0) NSLog(@"%@:%u output buffer cleared", self.host, self.port);
         }
     });
     CFRunLoopWakeUp([self.runLoop getCFRunLoop]);
@@ -309,7 +321,7 @@ services:(uint64_t)services
 
 - (void)sendFilterloadMessage:(NSData *)filter
 {
-    self.filterBlockCount = 0;
+    self.sentFilter = YES;
     [self sendMessage:filter type:MSG_FILTERLOAD];
 }
 
@@ -345,8 +357,9 @@ services:(uint64_t)services
 // - previous two steps repeat until a header within a week of earliestKeyTime is reached (further headers are ignored)
 // - local peer sends getblocks
 // - remote peer responds with inv containing up to 500 block hashes
-// - if there are 500, local peer immediately sends getblocks again, followed by getdata with the block hashes
-// - remote peer responds with inv containing up to 500 block hashes, followed by multiple merkleblock and tx messages
+// - local peer sends getdata with the block hashes
+// - if there were 500 hashes, local peer sends getblocks again without waiting for remote peer
+// - remote peer responds with multiple merkleblock and tx messages, followed by inv containing up to 500 block hashes
 // - previous two steps repeat until an inv with fewer than 500 block hashes is received
 // - local peer sends just getdata for the final set of fewer than 500 block hashes
 // - remote peer responds with multiple merkleblock and tx messages
@@ -365,7 +378,7 @@ services:(uint64_t)services
         [msg appendData:hash];
     }
     
-    [msg appendData:hashStop ? hashStop : ZERO_HASH];
+    [msg appendData:(hashStop) ? hashStop : ZERO_HASH];
     NSLog(@"%@:%u calling getheaders with locators: %@", self.host, self.port,
           @[locators.firstObject, locators.lastObject]);
     [self sendMessage:msg type:MSG_GETHEADERS];
@@ -382,7 +395,7 @@ services:(uint64_t)services
         [msg appendData:hash];
     }
     
-    [msg appendData:hashStop ? hashStop : ZERO_HASH];
+    [msg appendData:(hashStop) ? hashStop : ZERO_HASH];
     [self sendMessage:msg type:MSG_GETBLOCKS];
 }
 
@@ -400,7 +413,7 @@ services:(uint64_t)services
 - (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes
 {
     if (txHashes.count + blockHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
-        NSLog(@"%@:%d couldn't send getdata, %u is too many items, max is %u", self.host, self.port,
+        NSLog(@"%@:%u couldn't send getdata, %u is too many items, max is %u", self.host, self.port,
               (int)txHashes.count + (int)blockHashes.count, MAX_GETDATA_HASHES);
         return;
     }
@@ -419,44 +432,36 @@ services:(uint64_t)services
         [msg appendData:hash];
     }
 
-    [self.requestedBlockHashes addObjectsFromArray:blockHashes];
-
-    if (self.filterBlockCount + blockHashes.count > BLOCK_DIFFICULTY_INTERVAL) {
-        NSLog(@"%@:%d rebuilding bloom filter after %d blocks", self.host, self.port, self.filterBlockCount);
-        [self sendFilterloadMessage:[self.delegate peerBloomFilter:self]];
-    }
-
-    self.filterBlockCount += (uint32_t)blockHashes.count;
     [self sendMessage:msg type:MSG_GETDATA];
 }
 
 - (void)sendGetaddrMessage
 {
+    self.sentGetAddr = YES;
     [self sendMessage:[NSData data] type:MSG_GETADDR];
 }
 
-- (void)sendPingMessage
+- (void)sendPingMessageWithPongHandler:(void (^)(BOOL success))pongHandler;
 {
     NSMutableData *msg = [NSMutableData data];
     
+    if (! self.pongHandlers) self.pongHandlers = [NSMutableArray array];
+    [self.pongHandlers addObject:(pongHandler) ? [pongHandler copy] : [^(BOOL success) {} copy]];
     [msg appendUInt64:self.localNonce];
     self.startTime = [NSDate timeIntervalSinceReferenceDate];
     [self sendMessage:msg type:MSG_PING];
 }
 
 // re-request blocks starting from blockHash, useful for getting any additional transactions after a bloom filter update
-- (void)rereqeustBlocksFrom:(NSData *)blockHash
+- (void)rerequestBlocksFrom:(NSData *)blockHash
 {
-    CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
-        NSUInteger i = [self.currentBlockHashes indexOfObject:blockHash];
+    NSUInteger i = [self.knownBlockHashes indexOfObject:blockHash];
 
-        if (i != NSNotFound) {
-            [self.currentBlockHashes removeObjectsInRange:NSMakeRange(0, i)];
-            NSLog(@"%@:%d re-requesting %d blocks", self.host, self.port, (int)self.currentBlockHashes.count);
-            [self sendGetdataMessageWithTxHashes:@[] andBlockHashes:self.currentBlockHashes.array];
-        }
-    });
-    CFRunLoopWakeUp([self.runLoop getCFRunLoop]);
+    if (i != NSNotFound) {
+        [self.knownBlockHashes removeObjectsInRange:NSMakeRange(0, i)];
+        NSLog(@"%@:%u re-requesting %u blocks", self.host, self.port, (int)self.knownBlockHashes.count);
+        [self sendGetdataMessageWithTxHashes:@[] andBlockHashes:self.knownBlockHashes.array];
+    }
 }
 
 #pragma mark - accept
@@ -465,10 +470,10 @@ services:(uint64_t)services
 {
     CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
         if (self.currentBlock && ! [MSG_TX isEqual:type]) { // if we receive a non-tx message, the merkleblock is done
+            [self error:@"incomplete merkleblock %@, expected %u more tx, got %@", self.currentBlock.blockHash,
+             (int)self.currentTxHashes.count, type];
             self.currentBlock = nil;
             self.currentTxHashes = nil;
-            [self error:@"incomplete merkleblock %@, expected %u more tx", self.currentBlock.blockHash,
-             (int)self.currentTxHashes.count];
             return;
         }
 
@@ -485,7 +490,7 @@ services:(uint64_t)services
         else if ([MSG_PONG isEqual:type]) [self acceptPongMessage:message];
         else if ([MSG_MERKLEBLOCK isEqual:type]) [self acceptMerkleblockMessage:message];
         else if ([MSG_REJECT isEqual:type]) [self acceptRejectMessage:message];
-        else NSLog(@"%@:%d dropping %@, length %u, not implemented", self.host, self.port, type, (int)message.length);
+        else NSLog(@"%@:%u dropping %@, length %u, not implemented", self.host, self.port, type, (int)message.length);
     });
     CFRunLoopWakeUp([self.runLoop getCFRunLoop]);
 }
@@ -511,13 +516,13 @@ services:(uint64_t)services
     _useragent = [message stringAtOffset:80 length:&l];
 
     if (message.length < 80 + l + sizeof(uint32_t)) {
-        [self error:@"malformed version message, length is %u, should be %lu", (int)message.length, 80 + l + 4];
+        [self error:@"malformed version message, length is %u, should be %u", (int)message.length, (int)(80 + l + 4)];
         return;
     }
     
     _lastblock = [message UInt32AtOffset:80 + l];
     
-    NSLog(@"%@:%d got version %d, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
+    NSLog(@"%@:%u got version %u, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
     
     [self sendVerackMessage];
 }
@@ -525,7 +530,7 @@ services:(uint64_t)services
 - (void)acceptVerackMessage:(NSData *)message
 {
     if (self.gotVerack) {
-        NSLog(@"%@:%d got unexpected verack", self.host, self.port);
+        NSLog(@"%@:%u got unexpected verack", self.host, self.port);
         return;
     }
     
@@ -542,20 +547,21 @@ services:(uint64_t)services
 - (void)acceptAddrMessage:(NSData *)message
 {
     if (message.length > 0 && [message UInt8AtOffset:0] == 0) {
-        NSLog(@"%@:%d got addr with 0 addresses", self.host, self.port);
+        NSLog(@"%@:%u got addr with 0 addresses", self.host, self.port);
         return;
     }
     else if (message.length < 5) {
         [self error:@"malformed addr message, length %u is too short", (int)message.length];
         return;
     }
+    else if (! self.sentGetAddr) return; // simple anti-tarpitting tactic, don't accept unsolicited addresses
 
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
     NSUInteger l, count = (NSUInteger)[message varIntAtOffset:0 length:&l];
     NSMutableArray *peers = [NSMutableArray array];
     
     if (count > 1000) {
-        NSLog(@"%@:%d dropping addr message, %u is too many addresses (max 1000)", self.host, self.port, (int)count);
+        NSLog(@"%@:%u dropping addr message, %u is too many addresses (max 1000)", self.host, self.port, (int)count);
         return;
     }
     else if (message.length < l + count*30) {
@@ -563,7 +569,7 @@ services:(uint64_t)services
          (int)(l + count*30), (int)count];
         return;
     }
-    else NSLog(@"%@:%d got addr with %u addresses", self.host, self.port, (int)count);
+    else NSLog(@"%@:%u got addr with %u addresses", self.host, self.port, (int)count);
     
     for (NSUInteger off = l; off < l + 30*count; off += 30) {
         NSTimeInterval timestamp = [message UInt32AtOffset:off] - NSTimeIntervalSince1970;
@@ -593,14 +599,16 @@ services:(uint64_t)services
     
     if (l == 0 || message.length < l + count*36) {
         [self error:@"malformed inv message, length is %u, should be %u for %u items", (int)message.length,
-         (int)((l == 0) ? 1 : l) + (int)count*36, (int)count];
+         (int)(((l == 0) ? 1 : l) + count*36), (int)count];
         return;
     }
     else if (count > MAX_GETDATA_HASHES) {
-        NSLog(@"%@:%u dropping inv message, %u is too many items, max is %d", self.host, self.port, (int)count,
+        NSLog(@"%@:%u dropping inv message, %u is too many items, max is %u", self.host, self.port, (int)count,
               MAX_GETDATA_HASHES);
         return;
     }
+    
+    NSLog(@"%@:%u got inv with %u items", self.host, self.port, (int)count);
     
     for (NSUInteger off = l; off < l + 36*count; off += 36) {
         inv_t type = [message UInt32AtOffset:off];
@@ -616,37 +624,57 @@ services:(uint64_t)services
         }
     }
 
-    NSLog(@"%@:%u got inv with %u items", self.host, self.port, (int)count);
-
-    if (txHashes.count > 10000) { // this was happening on testnet, some sort of DOS/spam attack?
+    if (! self.sentFilter) {
+        if (txHashes.count > 0) [self error:@"got inv message before loading a filter"];
+        return;
+    }
+    else if (txHashes.count > 10000) { // this was happening on testnet, some sort of DOS/spam attack?
         NSLog(@"%@:%u too many transactions, disconnecting", self.host, self.port);
         [self disconnect]; // disconnecting seems to be the easiest way to mitigate it
         return;
     }
-
-    // to improve chain download performance, if we received 500 block hashes, we request the next 500 block hashes
-    // immediately before sending the getdata request
-    if (blockHashes.count >= 500) {
-        [self sendGetblocksMessageWithLocators:@[blockHashes.lastObject, blockHashes.firstObject] andHashStop:nil];
+    else if (self.currentBlockHeight > 0 && blockHashes.count > 2 && blockHashes.count < 500 &&
+             self.currentBlockHeight + self.knownBlockHashes.count + blockHashes.count < self.lastblock) {
+        [self error:@"non-standard inv, %u is fewer block hashes than expected", (int)blockHashes.count];
+        return;
     }
 
-    [txHashes minusOrderedSet:self.knownTxHashes];
+    if (blockHashes.count == 1 && [self.lastBlockHash isEqual:blockHashes[0]]) [blockHashes removeAllObjects];
+    if (blockHashes.count == 1) self.lastBlockHash = blockHashes[0];
+    
+    if (blockHashes.count > 0) { // remember blockHashes in case we need to re-request them with an updated bloom filter
+        dispatch_async(self.delegateQueue, ^{
+            [self.knownBlockHashes unionOrderedSet:blockHashes];
+        
+            if (self.knownBlockHashes.count > MAX_GETDATA_HASHES) {
+                [self.knownBlockHashes
+                 removeObjectsInRange:NSMakeRange(0, self.knownBlockHashes.count - MAX_GETDATA_HASHES/2)];
+            }
+        });
+    }
+
+    if ([txHashes intersectsOrderedSet:self.knownTxHashes]) { // remove transactions we already have
+        for (NSData *hash in txHashes) {
+            if (! [self.knownTxHashes containsObject:hash]) continue;
+
+            dispatch_async(self.delegateQueue, ^{
+                if (_status == BRPeerStatusConnected) [self.delegate peer:self hasTransaction:hash];
+            });
+        }
+    
+        [txHashes minusOrderedSet:self.knownTxHashes];
+    }
+    
     [self.knownTxHashes unionOrderedSet:txHashes];
     
-    if (txHashes.count + blockHashes.count > 0) {
-        [self sendGetdataMessageWithTxHashes:txHashes.array andBlockHashes:blockHashes.array];
-
-        // Each merkleblock the remote peer sends us is followed by a set of tx messages for that block. We send a ping
-        // to get a pong reply after the block and all its tx are sent, inicating that there are no more tx messages
-        if (blockHashes.count == 1) [self sendPingMessage];
+    if (txHashes.count || (! self.needsFilterUpdate && blockHashes.count)) {
+        [self sendGetdataMessageWithTxHashes:txHashes.array
+         andBlockHashes:(self.needsFilterUpdate) ? @[] : blockHashes.array];
     }
-
-    if (blockHashes.count > 0) { // remember blockHashes in case we need to re-request them with an updated bloom filter
-        [self.currentBlockHashes unionOrderedSet:blockHashes];
-        if (self.currentBlockHashes.count > MAX_GETDATA_HASHES) {
-            [self.currentBlockHashes
-             removeObjectsInRange:NSMakeRange(0, self.currentBlockHashes.count - MAX_GETDATA_HASHES/2)];
-        }
+    
+    // to improve chain download performance, if we received 500 block hashes, we request the next 500 block hashes
+    if (blockHashes.count >= 500 && ! self.needsFilterUpdate) {
+        [self sendGetblocksMessageWithLocators:@[blockHashes.lastObject, blockHashes.firstObject] andHashStop:nil];
     }
 }
 
@@ -658,11 +686,15 @@ services:(uint64_t)services
         [self error:@"malformed tx message: %@", message];
         return;
     }
+    else if (! self.sentFilter) {
+        [self error:@"got tx message before loading a filter"];
+        return;
+    }
     
     NSLog(@"%@:%u got tx %@", self.host, self.port, tx.txHash);
 
     dispatch_async(self.delegateQueue, ^{
-        if (_status == BRPeerStatusConnected) [self.delegate peer:self relayedTransaction:tx];
+        [self.delegate peer:self relayedTransaction:tx];
     });
 
     if (self.currentBlock) { // we're collecting tx messages for a merkleblock
@@ -675,7 +707,7 @@ services:(uint64_t)services
             self.currentTxHashes = nil;
 
             dispatch_async(self.delegateQueue, ^{
-                if (_status == BRPeerStatusConnected) [self.delegate peer:self relayedBlock:block];
+                [self.delegate peer:self relayedBlock:block];
             });
         }
     }
@@ -687,12 +719,14 @@ services:(uint64_t)services
     
     if (message.length < l + 81*count) {
         [self error:@"malformed headers message, length is %u, should be %u for %u items", (int)message.length,
-         (int)((l == 0) ? 1 : l) + (int)count*81, (int)count];
+         (int)(((l == 0) ? 1 : l) + count*81), (int)count];
         return;
     }
 
+    NSLog(@"%@:%u got %u headers", self.host, self.port, (int)count);
+    
     // To improve chain download performance, if this message contains 2000 headers then request the next 2000 headers
-    // immediately, and switching to requesting blocks when we receive a header newer than earliestKeyTime
+    // immediately, and switch to requesting blocks when we receive a header newer than earliestKeyTime
     NSTimeInterval t = [message UInt32AtOffset:l + 81*(count - 1) + 68] - NSTimeIntervalSince1970;
 
     if (count >= 2000 || t + 7*24*60*60 >= self.earliestKeyTime - 2*60*60) {
@@ -702,7 +736,7 @@ services:(uint64_t)services
         if (t + 7*24*60*60 >= self.earliestKeyTime - 2*60*60) { // request blocks for the remainder of the chain
             t = [message UInt32AtOffset:l + 81 + 68] - NSTimeIntervalSince1970;
 
-            for (off = l; t > 0 && t + 7*24*60*60 < self.earliestKeyTime;) {
+            for (off = l; t > 0 && t + 7*24*60*60 < self.earliestKeyTime - 2*60*60;) {
                 off += 81;
                 t = [message UInt32AtOffset:off + 81 + 68] - NSTimeIntervalSince1970;
             }
@@ -714,25 +748,23 @@ services:(uint64_t)services
         }
         else [self sendGetheadersMessageWithLocators:@[lastHash, firstHash] andHashStop:nil];
     }
-
-    NSLog(@"%@:%u got %u headers", self.host, self.port, (int)count);
+    else {
+        [self error:@"non-standard headers message, %u is fewer headers than expected", (int)count];
+        return;
+    }
     
-    // schedule this on the runloop to ensure the above get message is sent first for faster chain download
-    CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
-        for (NSUInteger off = l; off < l + 81*count; off += 81) {
-            BRMerkleBlock *block = [BRMerkleBlock blockWithMessage:[message subdataWithRange:NSMakeRange(off, 81)]];
+    for (NSUInteger off = l; off < l + 81*count; off += 81) {
+        BRMerkleBlock *block = [BRMerkleBlock blockWithMessage:[message subdataWithRange:NSMakeRange(off, 81)]];
     
-            if (! block.valid) {
-                [self error:@"invalid block header %@", block.blockHash];
-                return;
-            }
-
-            dispatch_async(self.delegateQueue, ^{
-                if (_status == BRPeerStatusConnected) [self.delegate peer:self relayedBlock:block];
-            });
+        if (! block.valid) {
+            [self error:@"invalid block header %@", block.blockHash];
+            return;
         }
-    });
-    CFRunLoopWakeUp([self.runLoop getCFRunLoop]);
+
+        dispatch_async(self.delegateQueue, ^{
+            [self.delegate peer:self relayedBlock:block];
+        });
+    }
 }
 
 - (void)acceptGetaddrMessage:(NSData *)message
@@ -748,11 +780,11 @@ services:(uint64_t)services
     
     if (l == 0 || message.length < l + count*36) {
         [self error:@"malformed getdata message, length is %u, should be %u for %u items", (int)message.length,
-         (int)((l == 0) ? 1 : l) + (int)count*36, (int)count];
+         (int)(((l == 0) ? 1 : l) + count*36), (int)count];
         return;
     }
     else if (count > MAX_GETDATA_HASHES) {
-        NSLog(@"%@:%u dropping getdata message, %u is too many items, max is %d", self.host, self.port, (int)count,
+        NSLog(@"%@:%u dropping getdata message, %u is too many items, max is %u", self.host, self.port, (int)count,
               MAX_GETDATA_HASHES);
         return;
     }
@@ -802,7 +834,7 @@ services:(uint64_t)services
 
     if (l == 0 || message.length < l + count*36) {
         [self error:@"malformed notfount message, length is %u, should be %u for %u items", (int)message.length,
-         (int)((l == 0) ? 1 : l) + (int)count*36, (int)count];
+         (int)(((l == 0) ? 1 : l) + count*36), (int)count];
         return;
     }
 
@@ -832,18 +864,27 @@ services:(uint64_t)services
          self.localNonce];
         return;
     }
-    else if (self.startTime < 1) {
-        NSLog(@"%@:%d got unexpected pong", self.host, self.port);
+    else if (! self.pongHandlers.count) {
+        NSLog(@"%@:%u got unexpected pong", self.host, self.port);
         return;
     }
 
-    NSTimeInterval pingTime = [NSDate timeIntervalSinceReferenceDate] - self.startTime;
+    if (self.startTime > 1) {
+        NSTimeInterval pingTime = [NSDate timeIntervalSinceReferenceDate] - self.startTime;
     
-    // 50% low pass filter on current ping time
-    _pingTime = self.pingTime*0.5 + pingTime*0.5;
-    self.startTime = 0;
+        // 50% low pass filter on current ping time
+        _pingTime = self.pingTime*0.5 + pingTime*0.5;
+        self.startTime = 0;
+    }
     
     NSLog(@"%@:%u got pong in %fs", self.host, self.port, self.pingTime);
+
+    dispatch_async(self.delegateQueue, ^{
+        if (_status == BRPeerStatusConnected && self.pongHandlers.count) {
+            ((void (^)(BOOL))self.pongHandlers[0])(YES);
+            [self.pongHandlers removeObjectAtIndex:0];
+        }
+    });
 }
 
 - (void)acceptMerkleblockMessage:(NSData *)message
@@ -858,13 +899,11 @@ services:(uint64_t)services
         [self error:@"invalid merkleblock: %@", block.blockHash];
         return;
     }
-    //else NSLog(@"%@:%u got merkleblock %@", self.host, self.port, block.blockHash);
-
-    [self.requestedBlockHashes removeObject:block.blockHash];
-    if ([self.requestedBlockHashes countForObject:block.blockHash] > 0) {
-        NSLog(@"dropping re-requested block %@", block.blockHash);
-        return; // block was re-requested, drop this one
+    else if (! self.sentFilter) {
+        [self error:@"got merkleblock message before loading a filter"];
+        return;
     }
+    //else NSLog(@"%@:%u got merkleblock %@", self.host, self.port, block.blockHash);
 
     NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSetWithArray:block.txHashes];
 
@@ -876,7 +915,7 @@ services:(uint64_t)services
     }
     else {
         dispatch_async(self.delegateQueue, ^{
-            if (_status == BRPeerStatusConnected) [self.delegate peer:self relayedBlock:block];
+            [self.delegate peer:self relayedBlock:block];
         });
     }
 }
@@ -891,12 +930,12 @@ services:(uint64_t)services
     NSData *txHash = ([MSG_TX isEqual:type]) ? [message hashAtOffset:off + l] : nil;
 
     NSLog(@"%@:%u rejected %@ code: 0x%x reason: \"%@\"%@%@", self.host, self.port, type, code, reason,
-          txHash ? @" txid: " : @"", txHash ? txHash : @"");
+          (txHash ? @" txid: " : @""), (txHash ? txHash : @""));
     reason = nil; // fixes an unused variable warning for non-debug builds
 
     if (txHash.length == CC_SHA256_DIGEST_LENGTH) { // most likely a double spend due to tx missing from wallet
         dispatch_async(self.delegateQueue, ^{
-            if (_status == BRPeerStatusConnected) [self.delegate peer:self rejectedTransaction:txHash withCode:code];
+            [self.delegate peer:self rejectedTransaction:txHash withCode:code];
         });
     }
 }
@@ -934,8 +973,8 @@ services:(uint64_t)services
 {
     switch (eventCode) {
         case NSStreamEventOpenCompleted:
-            NSLog(@"%@:%d %@ stream connected in %fs", self.host, self.port,
-                  aStream == self.inputStream ? @"input" : aStream == self.outputStream ? @"output" : @"unkown",
+            NSLog(@"%@:%u %@ stream connected in %fs", self.host, self.port,
+                  (aStream == self.inputStream) ? @"input" : (aStream == self.outputStream ? @"output" : @"unkown"),
                   [NSDate timeIntervalSinceReferenceDate] - self.startTime);
 
             if (aStream == self.outputStream) {
@@ -955,7 +994,7 @@ services:(uint64_t)services
                 NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
                 
                 if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
-                //if(self.outputBuffer.length == 0) NSLog(@"%@:%d output buffer cleared", self.host, self.port);
+                //if(self.outputBuffer.length == 0) NSLog(@"%@:%u output buffer cleared", self.host, self.port);
             }
 
             break;

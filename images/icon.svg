@@ -4,9 +4,9 @@
      xmlns:ev="http://www.w3.org/2001/xml-events">
 <defs>
   <linearGradient id="g" x1="0%" y1="0%" x2="0%" y2="100%">
-    <stop offset="0%" style="stop-color:rgb(255,184,116);stop-opacity:1" />
-    <stop offset="70%" style="stop-color:rgb(255,127,0);stop-opacity:1" />
-    <stop offset="100%" style="stop-color:rgb(255,127,0);stop-opacity:1" />
+    <stop offset="0%" style="stop-color:rgb(255,184,116)" />
+    <stop offset="70%" style="stop-color:rgb(255,127,0)" />
+    <stop offset="100%" style="stop-color:rgb(255,127,0)" />
   </linearGradient>
 </defs>
 <g id="i">

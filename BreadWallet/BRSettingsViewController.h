@@ -2,8 +2,8 @@
 //  BRSettingsViewController.h
 //  BreadWallet
 //
-//  Created by Aaron Voisine on 6/11/13.
-//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
+//  Created by Aaron Voisine on 12/3/14.
+//  Copyright (c) 2014 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -25,9 +25,9 @@
 
 #import <UIKit/UIKit.h>
 
-#define SETTINGS_SKIP_FEE_KEY @"SETTINGS_SKIP_FEE"
+#define SETTINGS_SKIP_FEE_KEY   @"SETTINGS_SKIP_FEE"
+#define SETTINGS_MAX_DIGITS_KEY @"SETTINGS_MAX_DIGITS"
 
-@interface BRSettingsViewController : UITableViewController <UIAlertViewDelegate, UINavigationControllerDelegate,
-UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning>
+@interface BRSettingsViewController : UITableViewController <UIAlertViewDelegate>
 
 @end

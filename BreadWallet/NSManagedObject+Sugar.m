@@ -251,7 +251,7 @@ static NSUInteger _fetchBatchSize = 100;
 // sets a different context for NSManagedObject+Sugar methods to use for this type of entity
 + (void)setContext:(NSManagedObjectContext *)context
 {
-    objc_setAssociatedObject(self, @selector(context), context ? context : [NSNull null],
+    objc_setAssociatedObject(self, @selector(context), (context ? context : [NSNull null]),
                              OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 

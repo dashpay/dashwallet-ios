@@ -769,8 +769,8 @@
     NSMutableData *hash = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH], *script = [NSMutableData data];
     BRKey *k = [BRKey keyWithSecret:@"0000000000000000000000000000000000000000000000000000000000000001".hexToData
                 compressed:YES];
-    BRWallet *w = [[BRWallet alloc] initWithContext:nil sequence:[BRBIP32Sequence new]
-                   seed:^NSData *{ return [NSData data]; }];
+    BRWallet *w = [[BRWallet alloc] initWithContext:nil sequence:[BRBIP32Sequence new] masterPublicKey:nil
+                   seed:^NSData *(NSString *authprompt, uint64_t amount) { return [NSData data]; }];
 
     [script appendScriptPubKeyForAddress:k.address];
 
@@ -786,7 +786,7 @@
 
     XCTAssertNotNil(tx, @"[BRWallet transactionFor:to:withFee:]");
 
-    [w signTransaction:tx];
+    [w signTransaction:tx withPrompt:nil];
 
     XCTAssertTrue(tx.isSigned, @"[BRWallet signTransaction]");
 
@@ -795,7 +795,8 @@
     XCTAssertEqual(w.balance, SATOSHIS/2, @"[BRWallet balance]");
 
 #if ! BITCOIN_TESTNET
-    w = [[BRWallet alloc] initWithContext:nil sequence:[BRBIP32Sequence new] seed:^NSData *{ return [NSData data]; }];
+    w = [[BRWallet alloc] initWithContext:nil sequence:[BRBIP32Sequence new] masterPublicKey:nil
+         seed:^NSData *(NSString *authprompt, uint64_t amount) { return [NSData data]; }];
     
     NSMutableSet *allAddresses = (id)w.addresses;
 

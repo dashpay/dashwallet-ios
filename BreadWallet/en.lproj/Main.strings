@@ -5,38 +5,35 @@
 /* Class = "IBUILabel"; text = "ƀ 1,000,000"; ObjectID = "0ui-yr-JjJ"; */
 "0ui-yr-JjJ.text" = "ƀ 1,000,000";
 
-/* Class = "IBUILabel"; text = "start/restore another wallet"; ObjectID = "1Vn-hV-iDI"; */
-"1Vn-hV-iDI.text" = "start/restore another wallet";
+/* Class = "IBUIButton"; normalTitle = "recover wallet"; ObjectID = "4w7-k8-9wY"; */
+"4w7-k8-9wY.normalTitle" = "recover wallet";
 
-/* Class = "IBUINavigationItem"; title = "ƀ 0.00 ($0.00)"; ObjectID = "3hG-i3-g4Y"; */
-"3hG-i3-g4Y.title" = "ƀ 0.00 ($0.00)";
-
-/* Class = "IBUIButton"; normalTitle = "restore from backup"; ObjectID = "4w7-k8-9wY"; */
-"4w7-k8-9wY.normalTitle" = "restore from backup";
-
-/* Class = "IBUILabel"; text = "ask"; ObjectID = "9B6-kc-khb"; */
-"9B6-kc-khb.text" = "ask";
+/* Class = "IBUILabel"; text = "local currency"; ObjectID = "8e2-ar-Ehc"; */
+"8e2-ar-Ehc.text" = "local currency";
 
 /* Class = "IBUIBarButtonItem"; title = " "; ObjectID = "9L3-gM-TgP"; */
 "9L3-gM-TgP.title" = " ";
 
-/* Class = "IBUIButton"; normalTitle = "generate backup phrase"; ObjectID = "A4M-yq-26d"; */
-"A4M-yq-26d.normalTitle" = "generate backup phrase";
+/* Class = "IBUIButton"; normalTitle = "generate recovery phrase"; ObjectID = "A4M-yq-26d"; */
+"A4M-yq-26d.normalTitle" = "generate recovery phrase";
+
+/* Class = "IBUILabel"; text = "USD"; ObjectID = "CsQ-fq-mfQ"; */
+"CsQ-fq-mfQ.text" = "USD";
+
+/* Class = "IBUILabel"; text = "start/recover another wallet"; ObjectID = "D1b-HB-lKH"; */
+"D1b-HB-lKH.text" = "start/recover another wallet";
 
 /* Class = "IBUITextField"; placeholder = "ƀ 0.00"; ObjectID = "DLS-lz-uxJ"; */
 "DLS-lz-uxJ.placeholder" = "ƀ 0.00";
 
-/* Class = "IBUINavigationItem"; title = "ƀ 0.00 ($0.00)"; ObjectID = "Ddo-ce-xs5"; */
-"Ddo-ce-xs5.title" = "ƀ 0.00 ($0.00)";
-
 /* Class = "IBUIButton"; normalTitle = "2"; ObjectID = "E2i-Cd-bly"; */
 "E2i-Cd-bly.normalTitle" = "2";
 
-/* Class = "IBUILabel"; text = "○  ○  ○  ○"; ObjectID = "Fdh-Ze-PZW"; */
-"Fdh-Ze-PZW.text" = "○  ○  ○  ○";
-
 /* Class = "IBUILabel"; text = "sent"; ObjectID = "FjB-H2-BnK"; */
 "FjB-H2-BnK.text" = "sent";
+
+/* Class = "IBUILabel"; text = "Title"; ObjectID = "GWf-4e-jTu"; */
+"GWf-4e-jTu.text" = "Title";
 
 /* Class = "IBUILabel"; text = "Detail"; ObjectID = "HrP-wv-Y1B"; */
 "HrP-wv-Y1B.text" = "Detail";
@@ -71,6 +68,9 @@
 /* Class = "IBUILabel"; text = "($1,000.00)"; ObjectID = "O7K-cF-GAA"; */
 "O7K-cF-GAA.text" = "($1,000.00)";
 
+/* Class = "IBUIBarButtonItem"; title = " "; ObjectID = "OBr-C7-abe"; */
+"OBr-C7-abe.title" = " ";
+
 /* Class = "IBUILabel"; text = "($1,000.00)"; ObjectID = "Ofd-q3-a1P"; */
 "Ofd-q3-a1P.text" = "($1,000.00)";
 
@@ -86,14 +86,14 @@
 /* Class = "IBUILabel"; text = "not connected"; ObjectID = "UyF-OV-QVY"; */
 "UyF-OV-QVY.text" = "not connected";
 
-/* Class = "IBUILabel"; text = "Title"; ObjectID = "VM4-Ie-x8Z"; */
-"VM4-Ie-x8Z.text" = "Title";
-
-/* Class = "IBUILabel"; text = "remove standard fees"; ObjectID = "WB9-ti-D76"; */
-"WB9-ti-D76.text" = "remove standard fees";
+/* Class = "IBUINavigationItem"; title = "settings"; ObjectID = "W8m-Eh-Nf9"; */
+"W8m-Eh-Nf9.title" = "settings";
 
 /* Class = "IBUILabel"; text = "subtitle"; ObjectID = "WHQ-zW-IjD"; */
 "WHQ-zW-IjD.text" = "subtitle";
+
+/* Class = "IBUIButton"; normalTitle = "1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"; ObjectID = "WSe-0v-Fha"; */
+"WSe-0v-Fha.normalTitle" = "1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW";
 
 /* Class = "IBUILabel"; text = "Title"; ObjectID = "WsQ-ej-Wh4"; */
 "WsQ-ej-Wh4.text" = "Title";
@@ -104,11 +104,17 @@
 /* Class = "IBUIButton"; normalTitle = "1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"; ObjectID = "XV7-2s-hZs"; */
 "XV7-2s-hZs.normalTitle" = "1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW";
 
-/* Class = "IBUILabel"; text = "Enter this wallet's backup phrase to wipe it and start/restore another. Your current balance remains on this phrase."; ObjectID = "YC6-rN-4P5"; */
-"YC6-rN-4P5.text" = "Enter this wallet's backup phrase to wipe it and start/restore another. Your current balance remains on this phrase.";
+/* Class = "IBUILabel"; text = "Enter this wallet's recovery phrase to wipe it and start/recover another. Your current balance remains on this phrase."; ObjectID = "YC6-rN-4P5"; */
+"YC6-rN-4P5.text" = "Enter this wallet's recovery phrase to wipe it and start/recover another. Your current balance remains on this phrase.";
 
 /* Class = "IBUILabel"; text = "($0.00)"; ObjectID = "ZH0-Ng-7xb"; */
 "ZH0-Ng-7xb.text" = "($0.00)";
+
+/* Class = "IBUILabel"; text = "remove standard fees"; ObjectID = "ZLd-Ad-P5q"; */
+"ZLd-Ad-P5q.text" = "remove standard fees";
+
+/* Class = "IBUILabel"; text = "ask"; ObjectID = "ZT3-dE-w93"; */
+"ZT3-dE-w93.text" = "ask";
 
 /* Class = "IBUILabel"; text = "to: 1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"; ObjectID = "ZXO-dD-jiQ"; */
 "ZXO-dD-jiQ.text" = "to: 1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW";
@@ -122,11 +128,8 @@
 /* Class = "IBUIButton"; normalTitle = "pay address from clipboard"; ObjectID = "bfj-xS-5rN"; */
 "bfj-xS-5rN.normalTitle" = "pay address from clipboard";
 
-/* Class = "IBUILabel"; text = "local currency"; ObjectID = "byz-51-A0c"; */
-"byz-51-A0c.text" = "local currency";
-
-/* Class = "IBUIBarButtonItem"; title = " "; ObjectID = "cSD-3n-43a"; */
-"cSD-3n-43a.title" = " ";
+/* Class = "IBUILabel"; text = "ƀ 0.00 ($0.00)"; ObjectID = "cRT-Sr-x6R"; */
+"cRT-Sr-x6R.text" = "ƀ 0.00 ($0.00)";
 
 /* Class = "IBUIButton"; normalTitle = "scan QR code"; ObjectID = "ce6-Wi-wk4"; */
 "ce6-Wi-wk4.normalTitle" = "scan QR code";
@@ -146,26 +149,14 @@
 /* Class = "IBUIButton"; normalTitle = "show"; ObjectID = "efL-Cj-Aho"; */
 "efL-Cj-Aho.normalTitle" = "show";
 
-/* Class = "IBUIButton"; normalTitle = "        "; ObjectID = "f0J-5L-WJY"; */
-"f0J-5L-WJY.normalTitle" = "        ";
-
-/* Class = "IBUIBarButtonItem"; title = "pay"; ObjectID = "f4B-BU-eu2"; */
-"f4B-BU-eu2.title" = "pay";
-
 /* Class = "IBUINavigationItem"; title = "confirm:"; ObjectID = "fQN-xb-SYb"; */
 "fQN-xb-SYb.title" = "confirm:";
 
 /* Class = "IBUILabel"; text = "Title"; ObjectID = "fVX-tM-tZx"; */
 "fVX-tM-tZx.text" = "Title";
 
-/* Class = "IBUILabel"; text = "USD"; ObjectID = "gQu-dT-kF0"; */
-"gQu-dT-kF0.text" = "USD";
-
 /* Class = "IBUILabel"; text = "subtitle"; ObjectID = "gZx-fI-siU"; */
 "gZx-fI-siU.text" = "subtitle";
-
-/* Class = "IBUINavigationItem"; title = "ƀ 0.00 ($0.00)"; ObjectID = "h6T-AD-8zb"; */
-"h6T-AD-8zb.title" = "ƀ 0.00 ($0.00)";
 
 /* Class = "IBUILabel"; text = "ƀ 1,000,000"; ObjectID = "hJG-af-ws1"; */
 "hJG-af-ws1.text" = "ƀ 1,000,000";
@@ -179,14 +170,14 @@
 /* Class = "IBUILabel"; text = "send money:"; ObjectID = "l5l-JR-LKA"; */
 "l5l-JR-LKA.text" = "send money:";
 
-/* Class = "IBUIButton"; normalTitle = "cancel"; ObjectID = "lzQ-at-alt"; */
-"lzQ-at-alt.normalTitle" = "cancel";
+/* Class = "IBUILabel"; text = "Title"; ObjectID = "mpz-vn-jZ1"; */
+"mpz-vn-jZ1.text" = "Title";
 
 /* Class = "IBUILabel"; text = "Title"; ObjectID = "ncN-gc-vpQ"; */
 "ncN-gc-vpQ.text" = "Title";
 
-/* Class = "IBUINavigationItem"; title = "backup phrase:"; ObjectID = "ooJ-EA-DFl"; */
-"ooJ-EA-DFl.title" = "backup phrase:";
+/* Class = "IBUINavigationItem"; title = "recovery phrase:"; ObjectID = "ooJ-EA-DFl"; */
+"ooJ-EA-DFl.title" = "recovery phrase:";
 
 /* Class = "IBUIButton"; normalTitle = "7"; ObjectID = "p8P-3o-INx"; */
 "p8P-3o-INx.normalTitle" = "7";
@@ -209,17 +200,14 @@
 /* Class = "IBUILabel"; text = "subtitle"; ObjectID = "u6Z-kF-cAT"; */
 "u6Z-kF-cAT.text" = "subtitle";
 
+/* Class = "IBUILabel"; text = "Title"; ObjectID = "uaG-gX-Ias"; */
+"uaG-gX-Ias.text" = "Title";
+
 /* Class = "IBUILabel"; text = "ƀ 1,000,000"; ObjectID = "ue1-2S-fEr"; */
 "ue1-2S-fEr.text" = "ƀ 1,000,000";
-
-/* Class = "IBUINavigationItem"; title = "backup phrase:"; ObjectID = "wJz-hG-RRz"; */
-"wJz-hG-RRz.title" = "backup phrase:";
 
 /* Class = "IBUILabel"; text = "($1,000.00)"; ObjectID = "wd8-oB-KWn"; */
 "wd8-oB-KWn.text" = "($1,000.00)";
 
 /* Class = "IBUILabel"; text = "88.8%"; ObjectID = "xl3-sr-16q"; */
 "xl3-sr-16q.text" = "88.8%";
-
-/* Class = "IBUILabel"; text = "enter pin"; ObjectID = "zhS-gG-oV0"; */
-"zhS-gG-oV0.text" = "enter pin";

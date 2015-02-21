@@ -101,7 +101,7 @@
         self.highlight =
             [[UIView alloc] initWithFrame:CGRectOffset(self.copyableFrame, self.frame.origin.x, self.frame.origin.y)];
         self.highlight.backgroundColor =
-            self.selectedColor ? self.selectedColor : [UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:0.15];
+            (self.selectedColor) ? self.selectedColor : [UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:0.15];
         self.highlight.alpha = 0.0;
     }
 
@@ -116,6 +116,12 @@
             [[NSNotificationCenter defaultCenter] addObserverForName:UIMenuControllerWillHideMenuNotification object:nil
              queue:nil usingBlock:^(NSNotification *note) { [self resignFirstResponder]; }];
     }
+}
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [self toggleCopyMenu];
+    [super touchesEnded:touches withEvent:event];
 }
 
 - (void)dealloc

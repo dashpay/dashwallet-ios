@@ -1,29 +1,8 @@
-/* No comment provided by engineer. */
-"\n%@\n\nwrite down your backup phrase and use it to restore on another device if this one is ever lost or broken" = "\n%@\n\nwrite down your backup phrase and use it to restore on another device if this one is ever lost or broken";
-
-/* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\nbitcoin addresses are intented for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\n\nbitcoin addresses are intented for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
-
-/* No comment provided by engineer. */
-"\nbitcoin network fee + %@ (%@)" = "\nbitcoin network fee + %1$@ (%2$@)";
-
-/* No comment provided by engineer. */
-"\nDO NOT let anyone see your backup phrase or they can spend your bitcoins.\n\nDO NOT take a screenshot. Screenshots are visible to other apps and devices.\n" = "\nDO NOT let anyone see your backup phrase or they can spend your bitcoins.\n\nDO NOT take a screenshot. Screenshots are visible to other apps and devices.\n";
-
-/* No comment provided by engineer. */
-" - included in block #%d" = " - included in block #%d";
-
-/* No comment provided by engineer. */
-"%@ from:%@" = "%1$@ from:%2$@";
-
-/* No comment provided by engineer. */
+﻿/* No comment provided by engineer. */
 "%@ is for 'bits'. %@ = 1 bitcoin." = "%1$@ is for 'bits'. %2$@ = 1 bitcoin.";
 
 /* No comment provided by engineer. */
-"%@ to:%@" = "%1$@ to:%2$@";
-
-/* No comment provided by engineer. */
-"%@ within wallet" = "%@ within wallet";
+"%@ is not allowed to access the camera" = "%@ is not allowed to access the camera";
 
 /* No comment provided by engineer. */
 "%d confirmations" = "%d confirmations";
@@ -32,28 +11,49 @@
 "1 confirmation" = "1 confirmation";
 
 /* No comment provided by engineer. */
-"\"%@\" is not a backup phrase word" = "\"%@\" is not a backup phrase word";
+"\"%@\" is not a recovery phrase word" = "\"%@\" is not a recovery phrase word";
+
+/* No comment provided by engineer. */
+"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet";
+
+/* No comment provided by engineer. */
+"\n%d attempts remaining\n" = "\n%d attempts remaining\n";
+
+/* No comment provided by engineer. */
+"\n1 attempt remaining\n" = "\n1 attempt remaining\n";
+
+/* No comment provided by engineer. */
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
+
+/* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
+
+/* No comment provided by engineer. */
+"\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nallow camera access in\nSettings->Privacy->Camera->%@";
+
+/* No comment provided by engineer. */
+"\nbitcoin network fee +%@ (%@)" = "\nbitcoin network fee +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n";
+
+/* No comment provided by engineer. */
+"\ntotal %@ (%@)" = "\ntotal %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\ntry again in %d %@" = "\ntry again in %1$d %2$@";
 
 /* No comment provided by engineer. */
 "about" = "about";
 
 /* No comment provided by engineer. */
-"backup" = "backup";
+"always require passcode" = "always require passcode";
 
 /* No comment provided by engineer. */
-"backup phrase" = "backup phrase";
+"amount too small" = "amount too small";
 
 /* No comment provided by engineer. */
-"backup phrase doesn't match" = "backup phrase doesn't match";
-
-/* No comment provided by engineer. */
-"backup phrase must have %d words" = "backup phrase must have %d words";
-
-/* No comment provided by engineer. */
-"BACKUP YOUR WALLET" = "BACKUP YOUR WALLET";
-
-/* No comment provided by engineer. */
-"bad backup phrase" = "bad backup phrase";
+"bad password, try again" = "bad password, try again";
 
 /* No comment provided by engineer. */
 "bad payment request" = "bad payment request";
@@ -63,6 +63,9 @@
 
 /* No comment provided by engineer. */
 "bad payment URL" = "bad payment URL";
+
+/* No comment provided by engineer. */
+"bad recovery phrase" = "bad recovery phrase";
 
 /* No comment provided by engineer. */
 "bad signature" = "bad signature";
@@ -86,28 +89,34 @@
 "bitcoin transaction not signed" = "bitcoin transaction not signed";
 
 /* No comment provided by engineer. */
+"bitcoin transaction outputs can't be less than %@" = "bitcoin transaction outputs can't be less than %@";
+
+/* No comment provided by engineer. */
+"block #%d of %d" = "block #%1$d of %2$d";
+
+/* No comment provided by engineer. */
 "cancel" = "cancel";
 
 /* No comment provided by engineer. */
-"caution" = "caution";
+"change" = "change";
 
 /* No comment provided by engineer. */
-"change pin" = "change pin";
+"change passcode" = "change passcode";
+
+/* No comment provided by engineer. */
+"change payment amount?" = "change payment amount?";
 
 /* No comment provided by engineer. */
 "checking private key balance..." = "checking private key balance...";
 
 /* No comment provided by engineer. */
-"choose a pin" = "choose a pin";
+"choose passcode for %@" = "choose passcode for %@";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid bitcoin address" = "clipboard doesn't contain a valid bitcoin address";
 
 /* No comment provided by engineer. */
 "close app" = "close app";
-
-/* No comment provided by engineer. */
-"confirm payment" = "confirm payment";
 
 /* No comment provided by engineer. */
 "CONFIRM WIPE" = "CONFIRM WIPE";
@@ -125,7 +134,13 @@
 "copied" = "copied";
 
 /* No comment provided by engineer. */
-"copy to clipboard" = "copy to clipboard";
+"copy address to clipboard" = "copy address to clipboard";
+
+/* No comment provided by engineer. */
+"copy request to clipbaord" = "copy request to clipbaord";
+
+/* No comment provided by engineer. */
+"copy request to clipboard" = "copy request to clipboard";
 
 /* No comment provided by engineer. */
 "couldn't make payment" = "couldn't make payment";
@@ -135,15 +150,6 @@
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to bitcoin network" = "couldn't transmit payment to bitcoin network";
-
-/* No comment provided by engineer. */
-"day" = "day";
-
-/* No comment provided by engineer. */
-"days" = "days";
-
-/* No comment provided by engineer. */
-"delete" = "delete";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins).";
@@ -164,10 +170,7 @@
 "email not configured" = "email not configured";
 
 /* No comment provided by engineer. */
-"enter current pin" = "enter current pin";
-
-/* No comment provided by engineer. */
-"enter pin" = "enter pin";
+"enter old passcode" = "enter old passcode";
 
 /* No comment provided by engineer. */
 "error signing bitcoin transaction" = "error signing bitcoin transaction";
@@ -194,19 +197,19 @@
 "import private key" = "import private key";
 
 /* No comment provided by engineer. */
+"IMPORTANT" = "IMPORTANT";
+
+/* No comment provided by engineer. */
 "insufficient funds" = "insufficient funds";
 
 /* No comment provided by engineer. */
-"IMPORTANT" = "IMPORTANT";
+"insufficient funds for bitcoin network fee" = "insufficient funds for bitcoin network fee";
 
 /* No comment provided by engineer. */
 "INVALID" = "INVALID";
 
 /* No comment provided by engineer. */
 "Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address.";
-
-/* No comment provided by engineer. */
-"local currency" = "local currency";
 
 /* No comment provided by engineer. */
 "minute" = "minute";
@@ -227,7 +230,7 @@
 "new phrase" = "new phrase";
 
 /* No comment provided by engineer. */
-"next, backup your wallet" = "next, backup your wallet";
+"next, write down your recovery phrase" = "next, write down your recovery phrase";
 
 /* No comment provided by engineer. */
 "no peers found" = "no peers found";
@@ -248,13 +251,28 @@
 "ok" = "ok";
 
 /* No comment provided by engineer. */
+"passcode" = "passcode";
+
+/* No comment provided by engineer. */
+"passcode for %@" = "passcode for %@";
+
+/* No comment provided by engineer. */
+"passcode or touch id is required to send or view balance" = "passcode or touch id is required to send or view balance";
+
+/* No comment provided by engineer. */
+"password" = "password";
+
+/* No comment provided by engineer. */
+"password protected key" = "password protected key";
+
+/* No comment provided by engineer. */
+"pay" = "pay";
+
+/* No comment provided by engineer. */
 "payment address" = "payment address";
 
 /* No comment provided by engineer. */
 "payment output" = "payment output";
-
-/* No comment provided by engineer. */
-"pin changed" = "pin changed";
 
 /* No comment provided by engineer. */
 "post-dated" = "post-dated";
@@ -263,19 +281,31 @@
 "Receive bitcoins at this address: %@" = "Receive bitcoins at this address: %@";
 
 /* No comment provided by engineer. */
-"received  " = "received  ";
+"received" = "received";
 
 /* No comment provided by engineer. */
-"recent transactions" = "recent transactions";
+"received %@ (%@)" = "received %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"recieved" = "recieved";
+"recovery phrase" = "recovery phrase";
 
 /* No comment provided by engineer. */
-"reenter pin" = "reenter pin";
+"recovery phrase doesn't match" = "recovery phrase doesn't match";
+
+/* No comment provided by engineer. */
+"recovery phrase must have %d words" = "recovery phrase must have %d words";
+
+/* No comment provided by engineer. */
+"reduce payment amount by\n%@ (%@)?" = "reduce payment amount by\n%1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
 "remove fee" = "remove fee";
+
+/* No comment provided by engineer. */
+"request" = "request";
+
+/* No comment provided by engineer. */
+"request an amount" = "request an amount";
 
 /* No comment provided by engineer. */
 "request expired" = "request expired";
@@ -290,37 +320,37 @@
 "rescan blockchain" = "rescan blockchain";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescaning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescaning can take several minutes)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
 
 /* No comment provided by engineer. */
-"reset pin" = "reset pin";
+"reset" = "reset";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address.";
 
 /* No comment provided by engineer. */
-"Screenshots are visible to other apps and devices. Generate a new backup phrase and keep it secret." = "Screenshots are visible to other apps and devices. Generate a new backup phrase and keep it secret.";
+"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet.";
 
 /* No comment provided by engineer. */
-"seen by %d of %d peers" = "seen by %d of %d peers";
+"seen by %d of %d peers" = "seen by %1$d of %2$d peers";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The bitcoin network will receive a fee of %@ (%@)." = "Send %1$@ (%2$@) from this private key into your wallet? The bitcoin network will receive a fee of %3$@ (%4$@).";
 
 /* No comment provided by engineer. */
-"send as email" = "send as email";
+"send address as email" = "send address as email";
 
 /* No comment provided by engineer. */
-"send as message" = "send as message";
+"send address as message" = "send address as message";
 
 /* No comment provided by engineer. */
-"spent address" = "spent address";
+"send request as email" = "send request as email";
 
 /* No comment provided by engineer. */
-"spent input" = "spent input";
+"send request as message" = "send request as message";
 
 /* No comment provided by engineer. */
 "sent" = "sent";
@@ -335,7 +365,16 @@
 "show" = "show";
 
 /* No comment provided by engineer. */
+"show phrase" = "show phrase";
+
+/* No comment provided by engineer. */
 "sms not currently available" = "sms not currently available";
+
+/* No comment provided by engineer. */
+"spent address" = "spent address";
+
+/* No comment provided by engineer. */
+"spent input" = "spent input";
 
 /* No comment provided by engineer. */
 "status:" = "status:";
@@ -348,9 +387,6 @@
 
 /* No comment provided by engineer. */
 "the app will now close" = "the app will now close";
-
-/* No comment provided by engineer. */
-"the bitcoin network will receive a fee of %@ (%@)" = "the bitcoin network will receive a fee of %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "the standard bitcoin network fee for this transaction is %@ (%@)\n\nremoving this fee may delay confirmation" = "the standard bitcoin network fee for this transaction is %1$@ (%2$@)\n\nremoving this fee may delay confirmation";
@@ -377,6 +413,12 @@
 "to: %@" = "to: %@";
 
 /* No comment provided by engineer. */
+"touch id limit" = "touch id limit";
+
+/* No comment provided by engineer. */
+"touch id spending limit" = "touch id spending limit";
+
+/* No comment provided by engineer. */
 "transaction canceled, network timeout" = "transaction canceled, network timeout";
 
 /* No comment provided by engineer. */
@@ -387,6 +429,9 @@
 
 /* No comment provided by engineer. */
 "transaction rejected" = "transaction rejected";
+
+/* No comment provided by engineer. */
+"turn device passcode on" = "turn device passcode on";
 
 /* No comment provided by engineer. */
 "unexpected response from %@" = "unexpected response from %@";
@@ -413,25 +458,32 @@
 "unverified" = "unverified";
 
 /* No comment provided by engineer. */
-"waiting for confirmation" = "waiting for confirmation";
+"verified, waiting for confirmation" = "verified, waiting for confirmation";
+
+/* No comment provided by engineer. */
+"verify passcode" = "verify passcode";
 
 /* No comment provided by engineer. */
 "wallet address" = "wallet address";
 
 /* No comment provided by engineer. */
-"wallet disabled\n\ntry again after block #%u\n(about %@)" = "wallet disabled\n\ntry again after block #%1$u\n(about %2$@)";
-
-/* No comment provided by engineer. */
-"wallet disabled\n\ntry again in %@" = "wallet disabled\n\ntry again in %@";
+"wallet disabled" = "wallet disabled";
 
 /* No comment provided by engineer. */
 "WARNING" = "WARNING";
 
 /* No comment provided by engineer. */
+"where's my passcode?" = "where's my passcode?";
+
+/* No comment provided by engineer. */
 "wipe" = "wipe";
+
+/* No comment provided by engineer. */
+"WRITE DOWN YOUR RECOVERY PHRASE" = "WRITE DOWN YOUR RECOVERY PHRASE";
 
 /* No comment provided by engineer. */
 "you received bitcoin!" = "you received bitcoin!";
 
 /* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescaning the blockchain." = "Your wallet may be out of sync.\nThis can often be fixed by rescaning the blockchain.";
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain.";
+

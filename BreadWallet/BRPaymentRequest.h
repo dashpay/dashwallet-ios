@@ -35,15 +35,18 @@
 @property (nonatomic, strong) NSString *message;
 @property (nonatomic, assign) uint64_t amount;
 @property (nonatomic, strong) NSString *r; // BIP72 URI: https://github.com/bitcoin/bips/blob/master/bip-0072.mediawiki
+@property (nonatomic, strong) NSString *string;
 @property (nonatomic, strong) NSData *data;
+@property (nonatomic, strong) NSURL *url;
 @property (nonatomic, readonly) BOOL isValid;
+@property (nonatomic, readonly) BRPaymentProtocolRequest *protocolRequest; // reciever converted to BIP70 request object
 
-+ (instancetype)requestWithData:(NSData *)data;
 + (instancetype)requestWithString:(NSString *)string;
++ (instancetype)requestWithData:(NSData *)data;
 + (instancetype)requestWithURL:(NSURL *)url;
 
-- (instancetype)initWithData:(NSData *)data;
 - (instancetype)initWithString:(NSString *)string;
+- (instancetype)initWithData:(NSData *)data;
 - (instancetype)initWithURL:(NSURL *)url;
 
 // fetches a BIP70 request over HTTP and calls completion block

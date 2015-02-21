@@ -1,8 +1,8 @@
 //
-//  BRPINViewController.h
+//  UIImage+Blur.h
 //  BreadWallet
 //
-//  Created by Aaron Voisine on 7/5/14.
+//  Created by Aaron Voisine on 11/8/14.
 //  Copyright (c) 2014 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,13 +25,8 @@
 
 #import <UIKit/UIKit.h>
 
-@interface BRPINViewController : UIViewController <UINavigationControllerDelegate,
-UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning>
+@interface UIImage (Blur)
 
-@property (nonatomic, assign) BOOL appeared; // set this to true if this is not initial pin lock following app launch
-@property (nonatomic, assign) BOOL cancelable;
-@property (nonatomic, assign) BOOL changePin;
-
-@property (nonatomic, readonly) BOOL success; // true if the user entered the correct pin
+- (UIImage *)blurWithRadius:(CGFloat)radius;
 
 @end

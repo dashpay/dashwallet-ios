@@ -29,18 +29,22 @@
 #define BRWalletBalanceChangedNotification @"BRWalletBalanceChangedNotification"
 
 @class BRTransaction;
+@protocol BRKeySequence;
 
 @interface BRWallet : NSObject
 
-@property (nonatomic, readonly) uint64_t balance;
+@property (nonatomic, readonly) uint64_t balance; // current wallet balance excluding transactions known to be invalid
 @property (nonatomic, readonly) NSString *receiveAddress; // returns the first unused external address
 @property (nonatomic, readonly) NSString *changeAddress; // returns the first unused internal address
 @property (nonatomic, readonly) NSSet *addresses; // all previously generated internal and external addresses
 @property (nonatomic, readonly) NSArray *unspentOutputs; // NSData objects containing serialized UTXOs
 @property (nonatomic, readonly) NSArray *recentTransactions; // BRTransaction objects sorted by date, most recent first
+@property (nonatomic, readonly) uint64_t totalSent; // the total amount spent from the wallet (excluding change)
+@property (nonatomic, readonly) uint64_t totalReceived; // the total amount received to the wallet (excluding change)
+@property (nonatomic, assign) uint64_t feePerKb; // fee per kb of transaction size to use when including tx fee
 
 - (instancetype)initWithContext:(NSManagedObjectContext *)context sequence:(id<BRKeySequence>)sequence
-seed:(NSData *(^)())seed;
+masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt, uint64_t amount))seed;
 
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address;
@@ -61,7 +65,7 @@ seed:(NSData *(^)())seed;
 - (BRTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee;
 
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
-- (BOOL)signTransaction:(BRTransaction *)transaction;
+- (BOOL)signTransaction:(BRTransaction *)transaction withPrompt:(NSString *)authprompt;
 
 // true if the given transaction is associated with the wallet (even if it hasn't been registered), false otherwise
 - (BOOL)containsTransaction:(BRTransaction *)transaction;
@@ -72,8 +76,8 @@ seed:(NSData *(^)())seed;
 // removes a transaction from the wallet along with any transactions that depend on its outputs
 - (void)removeTransaction:(NSData *)txHash;
 
-// true if the given transaction has been added to the wallet
-- (BOOL)transactionIsRegistered:(NSData *)txHash;
+// returns the transaction with the given hash if it's been registered in the wallet
+- (BRTransaction *)transactionForHash:(NSData *)txHash;
 
 // true if no previous wallet transaction spends any of the given transaction's inputs, and no input tx is invalid
 - (BOOL)transactionIsValid:(BRTransaction *)transaction;
@@ -84,7 +88,7 @@ seed:(NSData *(^)())seed;
 // set the block heights for the given transactions
 - (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes;
 
-// returns the amount received to the wallet by the transaction (total outputs to change and/or recieve addresses)
+// returns the amount received by the wallet from the transaction (total outputs to change and/or receive addresses)
 - (uint64_t)amountReceivedFromTransaction:(BRTransaction *)transaction;
 
 // retuns the amount sent from the wallet by the trasaction (total wallet outputs consumed, change and fee included)
@@ -93,13 +97,13 @@ seed:(NSData *(^)())seed;
 // returns the fee for the given transaction if all its inputs are from wallet transactions, UINT64_MAX otherwise
 - (uint64_t)feeForTransaction:(BRTransaction *)transaction;
 
-// returns the first non-change output address for sends, first input address for receives, or nil if unkown
-- (NSString *)addressForTransaction:(BRTransaction *)transaction;
-
 // historical wallet balance after the given transaction, or current balance if transaction is not registered in wallet
 - (uint64_t)balanceAfterTransaction:(BRTransaction *)transaction;
 
 // returns the block height after which the transaction is likely to be processed without including a fee
 - (uint32_t)blockHeightUntilFree:(BRTransaction *)transaction;
+
+// fee that will be added for a transaction of the given size in bytes
+- (uint64_t)feeForTxSize:(NSUInteger)size;
 
 @end

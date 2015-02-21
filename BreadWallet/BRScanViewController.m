@@ -54,6 +54,17 @@
 {
     [super viewWillAppear:animated];
 
+    if ([AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo] == AVAuthorizationStatusDenied) {
+        [[[UIAlertView alloc]
+          initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"%@ is not allowed to access the camera", nil),
+                         DISPLAY_NAME]
+          message:[NSString stringWithFormat:NSLocalizedString(@"\nallow camera access in\n"
+                                                               "Settings->Privacy->Camera->%@", nil),
+                   NSBundle.mainBundle.infoDictionary[@"CFBundleDisplayName"]] delegate:nil
+          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+        return;
+    }
+
     NSError *error = nil;
     AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
     AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:device error:&error];
@@ -115,7 +126,7 @@
     AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
 
     if ([device lockForConfiguration:&error]) {
-        device.torchMode = device.torchActive ? AVCaptureTorchModeOff : AVCaptureTorchModeOn;
+        device.torchMode = (device.torchActive) ? AVCaptureTorchModeOff : AVCaptureTorchModeOn;
         [device unlockForConfiguration];
     }
 }

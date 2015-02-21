@@ -36,6 +36,7 @@
 #define TX_FREE_MIN_PRIORITY 57600000ULL // tx must not have a priority below this value without a fee
 #define TX_UNCONFIRMED       INT32_MAX   // block height indicating transaction is unconfirmed
 #define TX_MAX_LOCK_HEIGHT   500000000u  // a lockTime below this value is a block height, otherwise a timestamp
+#define TX_AVERAGE_SIZE      550         // average transaction size in bytes as of november 2014 (relatively stable)
 
 @interface BRTransaction : NSObject
 

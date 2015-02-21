@@ -31,7 +31,7 @@
 #import <openssl/ecdsa.h>
 #import <openssl/obj_mac.h>
 
-#define BIP32_PRIME    0x80000000
+#define BIP32_HARD     0x80000000u
 #define BIP32_SEED_KEY "Bitcoin seed"
 #define BIP32_XPRV     "\x04\x88\xAD\xE4"
 #define BIP32_XPUB     "\x04\x88\xB2\x1E"
@@ -39,71 +39,77 @@
 // BIP32 is a scheme for deriving chains of addresses from a seed value
 // https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 
-// Private child key derivation:
+// Private parent key -> private child key
 //
-// To define CKD((kpar, cpar), i) -> (ki, ci):
+// CKDpriv((kpar, cpar), i) -> (ki, ci) computes a child extended private key from the parent extended private key:
 //
-// - Check whether the highest bit (0x80000000) of i is set:
-//     - If 1, private derivation is used: let I = HMAC-SHA512(Key = cpar, Data = 0x00 || kpar || i)
-//       [Note: The 0x00 pads the private key to make it 33 bytes long.]
-//     - If 0, public derivation is used: let I = HMAC-SHA512(Key = cpar, Data = X(kpar*G) || i)
-// - Split I = Il || Ir into two 32-byte sequences, Il and Ir.
-// - ki = Il + kpar (mod n).
-// - ci = Ir.
+// - Check whether i >= 2^31 (whether the child is a hardened key).
+//     - If so (hardened child): let I = HMAC-SHA512(Key = cpar, Data = 0x00 || ser256(kpar) || ser32(i)).
+//       (Note: The 0x00 pads the private key to make it 33 bytes long.)
+//     - If not (normal child): let I = HMAC-SHA512(Key = cpar, Data = serP(point(kpar)) || ser32(i)).
+// - Split I into two 32-byte sequences, IL and IR.
+// - The returned child key ki is parse256(IL) + kpar (mod n).
+// - The returned chain code ci is IR.
+// - In case parse256(IL) >= n or ki = 0, the resulting key is invalid, and one should proceed with the next value for i
+//   (Note: this has probability lower than 1 in 2^127.)
 //
-static void CKD(NSMutableData *k, NSMutableData *c, uint32_t i)
+static void CKDpriv(NSMutableData *k, NSMutableData *c, uint32_t i)
 {
     BN_CTX *ctx = BN_CTX_new();
 
     BN_CTX_start(ctx);
 
     NSMutableData *I = [NSMutableData secureDataWithLength:CC_SHA512_DIGEST_LENGTH];
-    NSMutableData *data = [NSMutableData secureDataWithCapacity:33 + sizeof(i)];
-    BIGNUM *order = BN_CTX_get(ctx), *Ilbn = BN_CTX_get(ctx), *kbn = BN_CTX_get(ctx);
+    NSMutableData *d = [NSMutableData secureDataWithCapacity:33 + sizeof(i)];
+    BIGNUM *order = BN_CTX_get(ctx), *ILbn = BN_CTX_get(ctx), *kbn = BN_CTX_get(ctx);
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
 
-    if (i & BIP32_PRIME) {
-        data.length = 33 - k.length;
-        [data appendData:k];
+    if (i & BIP32_HARD) {
+        d.length = 33 - k.length;
+        [d appendData:k];
     }
-    else [data setData:[[BRKey keyWithSecret:k compressed:YES] publicKey]];
+    else [d setData:[[BRKey keyWithSecret:k compressed:YES] publicKey]];
 
     i = CFSwapInt32HostToBig(i);
-    [data appendBytes:&i length:sizeof(i)];
+    [d appendBytes:&i length:sizeof(i)];
 
-    CCHmac(kCCHmacAlgSHA512, c.bytes, c.length, data.bytes, data.length, I.mutableBytes);
+    CCHmac(kCCHmacAlgSHA512, c.bytes, c.length, d.bytes, d.length, I.mutableBytes); // I = HMAC-SHA512(c, k|P(k) || i)
 
-    BN_bin2bn(I.bytes, 32, Ilbn);
+    BN_bin2bn(I.bytes, 32, ILbn);
     BN_bin2bn(k.bytes, (int)k.length, kbn);
     EC_GROUP_get_order(group, order, ctx);
 
-    BN_mod_add(kbn, Ilbn, kbn, order, ctx);
+    BN_mod_add(kbn, ILbn, kbn, order, ctx); // k = IL + k (mod n)
     
     k.length = 32;
     [k resetBytesInRange:NSMakeRange(0, 32)];
     BN_bn2bin(kbn, (unsigned char *)k.mutableBytes + 32 - BN_num_bytes(kbn));
-    [c replaceBytesInRange:NSMakeRange(0, c.length) withBytes:(const unsigned char *)I.bytes + 32 length:32];
+    
+    [c replaceBytesInRange:NSMakeRange(0, c.length) withBytes:(const unsigned char *)I.bytes + 32 length:32]; // c = IR
 
     EC_GROUP_free(group);
     BN_CTX_end(ctx);
     BN_CTX_free(ctx);
 }
 
-// Public child key derivation:
+// Public parent key -> public child key
 //
-// To define CKD'((Kpar, cpar), i) -> (Ki, ci):
+// CKDpub((Kpar, cpar), i) -> (Ki, ci) computes a child extended public key from the parent extended public key.
+// It is only defined for non-hardened child keys.
 //
-// - Check whether the highest bit (0x80000000) of i is set:
-//     - If 1, return error
-//     - If 0, let I = HMAC-SHA512(Key = cpar, Data = X(Kpar) || i)
-// - Split I = Il || Ir into two 32-byte sequences, Il and Ir.
-// - Ki = (Il + kpar)*G = Il*G + Kpar
-// - ci = Ir.
+// - Check whether i >= 2^31 (whether the child is a hardened key).
+//     - If so (hardened child): return failure
+//     - If not (normal child): let I = HMAC-SHA512(Key = cpar, Data = serP(Kpar) || ser32(i)).
+// - Split I into two 32-byte sequences, IL and IR.
+// - The returned child key Ki is point(parse256(IL)) + Kpar.
+// - The returned chain code ci is IR.
+// - In case parse256(IL) >= n or Ki is the point at infinity, the resulting key is invalid, and one should proceed with
+//   the next value for i.
 //
-static void CKDPrime(NSMutableData *K, NSMutableData *c, uint32_t i)
+static void CKDpub(NSMutableData *K, NSMutableData *c, uint32_t i)
 {
-    if (i & BIP32_PRIME) {
-        @throw [NSException exceptionWithName:@"BRPrivateCKDException"
+    if (i & BIP32_HARD) {
+        @throw [NSException exceptionWithName:@"BRBIP32SequenceCKDPubException"
                 reason:@"can't derive private child key from public parent key" userInfo:nil];
     }
 
@@ -112,30 +118,30 @@ static void CKDPrime(NSMutableData *K, NSMutableData *c, uint32_t i)
     BN_CTX_start(ctx);
 
     NSMutableData *I = [NSMutableData secureDataWithLength:CC_SHA512_DIGEST_LENGTH];
-    NSMutableData *data = [NSMutableData secureDataWithData:K];
-    uint8_t form = POINT_CONVERSION_COMPRESSED;
-    BIGNUM *Ilbn = BN_CTX_get(ctx);
+    NSMutableData *d = [NSMutableData secureDataWithData:K];
+    BIGNUM *ILbn = BN_CTX_get(ctx);
     EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
-    EC_POINT *pubKeyPoint = EC_POINT_new(group), *IlPoint = EC_POINT_new(group);
+    EC_POINT *KPoint = EC_POINT_new(group), *ILPoint = EC_POINT_new(group);
 
     i = CFSwapInt32HostToBig(i);
-    [data appendBytes:&i length:sizeof(i)];
+    [d appendBytes:&i length:sizeof(i)];
 
-    CCHmac(kCCHmacAlgSHA512, c.bytes, c.length, data.bytes, data.length, I.mutableBytes);
+    CCHmac(kCCHmacAlgSHA512, c.bytes, c.length, d.bytes, d.length, I.mutableBytes); // I = HMAC-SHA512(c, P(K) || i)
 
-    BN_bin2bn(I.bytes, 32, Ilbn);
-    EC_GROUP_set_point_conversion_form(group, form);
-    EC_POINT_oct2point(group, pubKeyPoint, K.bytes, K.length, ctx);
+    BN_bin2bn(I.bytes, 32, ILbn);
+    EC_GROUP_set_point_conversion_form(group, POINT_CONVERSION_COMPRESSED);
+    EC_POINT_oct2point(group, KPoint, K.bytes, K.length, ctx);
+    EC_POINT_mul(group, ILPoint, ILbn, NULL, NULL, ctx);
     
-    EC_POINT_mul(group, IlPoint, Ilbn, NULL, NULL, ctx);
-    EC_POINT_add(group, pubKeyPoint, IlPoint, pubKeyPoint, ctx);
+    EC_POINT_add(group, KPoint, ILPoint, KPoint, ctx); // K = P(IL) + K
 
-    K.length = EC_POINT_point2oct(group, pubKeyPoint, form, NULL, 0, ctx);
-    EC_POINT_point2oct(group, pubKeyPoint, form, K.mutableBytes, K.length, ctx);
-    [c replaceBytesInRange:NSMakeRange(0, c.length) withBytes:(const unsigned char *)I.bytes + 32 length:32];
+    K.length = EC_POINT_point2oct(group, KPoint, POINT_CONVERSION_COMPRESSED, NULL, 0, ctx);
+    EC_POINT_point2oct(group, KPoint, POINT_CONVERSION_COMPRESSED, K.mutableBytes, K.length, ctx);
+    
+    [c replaceBytesInRange:NSMakeRange(0, c.length) withBytes:(const unsigned char *)I.bytes + 32 length:32]; // c = IR
 
-    EC_POINT_clear_free(IlPoint);
-    EC_POINT_clear_free(pubKeyPoint);
+    EC_POINT_clear_free(ILPoint);
+    EC_POINT_clear_free(KPoint);
     EC_GROUP_free(group);
     BN_CTX_end(ctx);
     BN_CTX_free(ctx);
@@ -165,7 +171,7 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
 #pragma mark - BRKeySequence
 
 // master public key format is: 4 byte parent fingerprint || 32 byte chain code || 33 byte compressed public key
-// the values are taken from BIP32 account m/0'
+// the values are taken from BIP32 account m/0H
 - (NSData *)masterPublicKeyFromSeed:(NSData *)seed
 {
     if (! seed) return nil;
@@ -181,7 +187,7 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     [chain appendBytes:(const unsigned char *)I.bytes + 32 length:32];
     [mpk appendBytes:[[[BRKey keyWithSecret:secret compressed:YES] hash160] bytes] length:4];
     
-    CKD(secret, chain, 0 | BIP32_PRIME); // account 0'
+    CKDpriv(secret, chain, 0 | BIP32_HARD); // account 0H
 
     [mpk appendData:chain];
     [mpk appendData:[[BRKey keyWithSecret:secret compressed:YES] publicKey]];
@@ -199,8 +205,8 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     [chain appendBytes:(const unsigned char *)masterPublicKey.bytes + 4 length:32];
     [pubKey appendBytes:(const unsigned char *)masterPublicKey.bytes + 36 length:masterPublicKey.length - 36];
 
-    CKDPrime(pubKey, chain, internal ? 1 : 0); // internal or external chain
-    CKDPrime(pubKey, chain, n); // nth key in chain
+    CKDpub(pubKey, chain, internal ? 1 : 0); // internal or external chain
+    CKDpub(pubKey, chain, n); // nth key in chain
 
     return pubKey;
 }
@@ -230,15 +236,15 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     [secret appendBytes:I.bytes length:32];
     [chain appendBytes:(const unsigned char *)I.bytes + 32 length:32];
 
-    CKD(secret, chain, 0 | BIP32_PRIME); // account 0'
-    CKD(secret, chain, internal ? 1 : 0); // internal or external chain
+    CKDpriv(secret, chain, 0 | BIP32_HARD); // account 0H
+    CKDpriv(secret, chain, internal ? 1 : 0); // internal or external chain
 
     for (NSNumber *i in n) {
         NSMutableData *prvKey = [NSMutableData secureDataWithCapacity:34];
         NSMutableData *s = [NSMutableData secureDataWithData:secret];
         NSMutableData *c = [NSMutableData secureDataWithData:chain];
         
-        CKD(s, c, i.unsignedIntValue); // nth key in chain
+        CKDpriv(s, c, i.unsignedIntValue); // nth key in chain
 
         [prvKey appendBytes:&version length:1];
         [prvKey appendData:s];
@@ -274,7 +280,7 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     NSData *pubKey = [NSData dataWithBytesNoCopy:(unsigned char *)masterPublicKey.bytes + 36
                       length:masterPublicKey.length - 36 freeWhenDone:NO];
 
-    return serialize(1, fingerprint, 0 | BIP32_PRIME, chain, pubKey);
+    return serialize(1, fingerprint, 0 | BIP32_HARD, chain, pubKey);
 }
 
 @end

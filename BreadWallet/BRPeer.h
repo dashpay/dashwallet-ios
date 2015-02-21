@@ -27,12 +27,8 @@
 
 #if BITCOIN_TESTNET
 #define BITCOIN_STANDARD_PORT          18333
-#define BITCOIN_REFERENCE_BLOCK_HEIGHT 150000
-#define BITCOIN_REFERENCE_BLOCK_TIME   (1386098130.0 - NSTimeIntervalSince1970)
 #else
 #define BITCOIN_STANDARD_PORT          8333
-#define BITCOIN_REFERENCE_BLOCK_HEIGHT 250000
-#define BITCOIN_REFERENCE_BLOCK_TIME   (1375533383.0 - NSTimeIntervalSince1970)
 #endif
 
 #define BITCOIN_TIMEOUT_CODE           1001
@@ -72,13 +68,13 @@
 - (void)peer:(BRPeer *)peer disconnectedWithError:(NSError *)error;
 - (void)peer:(BRPeer *)peer relayedPeers:(NSArray *)peers;
 - (void)peer:(BRPeer *)peer relayedTransaction:(BRTransaction *)transaction;
+- (void)peer:(BRPeer *)peer hasTransaction:(NSData *)txHash;
 - (void)peer:(BRPeer *)peer rejectedTransaction:(NSData *)txHash withCode:(uint8_t)code;
 
 // called when the peer relays either a merkleblock or a block header, headers will have 0 totalTransactions
 - (void)peer:(BRPeer *)peer relayedBlock:(BRMerkleBlock *)block;
 
 - (BRTransaction *)peer:(BRPeer *)peer requestedTransaction:(NSData *)txHash;
-- (NSData *)peerBloomFilter:(BRPeer *)peer;
 
 @end
 
@@ -109,6 +105,9 @@ typedef enum {
 @property (nonatomic, assign) NSTimeInterval timestamp; // last seen time (interval since refrence date)
 @property (nonatomic, assign) int16_t misbehavin;
 
+@property (nonatomic, assign) BOOL needsFilterUpdate;
+@property (nonatomic, assign) uint32_t currentBlockHeight;
+
 + (instancetype)peerWithAddress:(uint32_t)address andPort:(uint16_t)port;
 
 - (instancetype)initWithAddress:(uint32_t)address andPort:(uint16_t)port;
@@ -124,6 +123,7 @@ services:(uint64_t)services;
 - (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop;
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop;
 - (void)sendInvMessageWithTxHash:(NSData *)txHash;
-- (void)rereqeustBlocksFrom:(NSData *)blockHash; // useful to get additional transactions after a bloom filter update
+- (void)sendPingMessageWithPongHandler:(void (^)(BOOL success))pongHandler;
+- (void)rerequestBlocksFrom:(NSData *)blockHash; // useful to get additional transactions after a bloom filter update
 
 @end

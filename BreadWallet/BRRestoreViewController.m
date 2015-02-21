@@ -24,7 +24,6 @@
 //  THE SOFTWARE.
 
 #import "BRRestoreViewController.h"
-#import "BRPINViewController.h"
 #import "BRWalletManager.h"
 #import "BRKeySequence.h"
 #import "BRBIP39Mnemonic.h"
@@ -41,22 +40,6 @@
 @property (nonatomic, strong) id keyboardObserver;
 
 @end
-
-static NSString *normalize_phrase(NSString *phrase)
-{
-    NSMutableString *s = CFBridgingRelease(CFStringCreateMutableCopy(SecureAllocator(), 0, (CFStringRef)phrase));
-
-    [s replaceOccurrencesOfString:@"." withString:@" " options:0 range:NSMakeRange(0, s.length)];
-    [s replaceOccurrencesOfString:@"," withString:@" " options:0 range:NSMakeRange(0, s.length)];
-    CFStringTrimWhitespace((CFMutableStringRef)s);
-    CFStringLowercase((CFMutableStringRef)s, CFLocaleGetSystem());
-
-    while ([s rangeOfString:@"  "].location != NSNotFound) {
-        [s replaceOccurrencesOfString:@"  " withString:@" " options:0 range:NSMakeRange(0, s.length)];
-    }
-
-    return s;
-}
 
 @implementation BRRestoreViewController
 
@@ -99,6 +82,24 @@ static NSString *normalize_phrase(NSString *phrase)
 - (void)dealloc
 {
     if (self.keyboardObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.keyboardObserver];
+}
+
+- (void)wipeWithPhrase:(NSString *)phrase
+{
+    @autoreleasepool {
+        NSString *seedPhrase = [[BRWalletManager sharedInstance] seedPhrase];
+        
+        if (seedPhrase && ([phrase isEqual:seedPhrase] || [phrase isEqual:@"wipe"])) {
+            [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+              destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
+             showInView:[[UIApplication sharedApplication] keyWindow]];
+        }
+        else if (seedPhrase) {
+            [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"recovery phrase doesn't match", nil)
+              delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+        }
+        else [self.textView becomeFirstResponder];
+    }
 }
 
 #pragma mark - IBAction
@@ -151,7 +152,7 @@ static NSString *normalize_phrase(NSString *phrase)
     
         if (! done) return;
 
-        NSString *phrase = normalize_phrase(s), *incorrect = nil;
+        NSString *phrase = [[BRBIP39Mnemonic sharedInstance] normalizePhrase:s], *incorrect = nil;
         NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)phrase,
                                                                               CFSTR(" ")));
 
@@ -162,54 +163,39 @@ static NSString *normalize_phrase(NSString *phrase)
         }
 
         if ([s isEqual:@"wipe"]) { // shortcut word to force the wipe option to appear
-            [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-              destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
-             showInView:[[UIApplication sharedApplication] keyWindow]];
+            [self.textView resignFirstResponder];
+            [self performSelector:@selector(wipeWithPhrase:) withObject:s afterDelay:0.0];
         }
         else if (incorrect) {
             textView.selectedRange = [[textView.text lowercaseString] rangeOfString:incorrect];
         
             [[[UIAlertView alloc] initWithTitle:nil
-              message:[NSString stringWithFormat:NSLocalizedString(@"\"%@\" is not a backup phrase word", nil),
+              message:[NSString stringWithFormat:NSLocalizedString(@"\"%@\" is not a recovery phrase word", nil),
                        incorrect] delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil]
              show];
         }
         else if (a.count != PHRASE_LENGTH) {
             [[[UIAlertView alloc] initWithTitle:nil
-              message:[NSString stringWithFormat:NSLocalizedString(@"backup phrase must have %d words", nil),
+              message:[NSString stringWithFormat:NSLocalizedString(@"recovery phrase must have %d words", nil),
                        PHRASE_LENGTH] delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
               otherButtonTitles:nil] show];
         }
         else if (! [[BRBIP39Mnemonic sharedInstance] phraseIsValid:phrase]) {
-            [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"bad backup phrase", nil) delegate:nil
+            [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"bad recovery phrase", nil) delegate:nil
               cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
         else if (m.wallet) {
-            if ([phrase isEqual:normalize_phrase(m.seedPhrase)]) {
-                if (self.navigationController.viewControllers.firstObject != self) { // reset pin
-                    m.pin = nil;
-                    m.pinFailCount = 0;
-                    m.pinFailHeight = 0;
-                    [self.navigationController popToRootViewControllerAnimated:YES];
-                }
-                else {
-                    [[[UIActionSheet alloc] initWithTitle:nil delegate:self
-                      cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-                      destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
-                     showInView:[[UIApplication sharedApplication] keyWindow]];
-                }
-            }
-            else {
-                [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"backup phrase doesn't match", nil)
-                  delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-            }
+            [self.textView resignFirstResponder];
+            [self performSelector:@selector(wipeWithPhrase:) withObject:s afterDelay:0.0];
         }
         else {
             //TODO: offer the user an option to move funds to a new seed if their wallet device was lost or stolen
             m.seedPhrase = textView.text;
             textView.text = nil;
             
-            [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+            [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:^{
+                [m performSelector:@selector(setPin) withObject:nil afterDelay:0.3];
+            }];
         }
     }
 }
@@ -218,9 +204,12 @@ static NSString *normalize_phrase(NSString *phrase)
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    if (buttonIndex != actionSheet.destructiveButtonIndex) return;
+    if (buttonIndex != actionSheet.destructiveButtonIndex) {
+        [self.textView becomeFirstResponder];
+        return;
+    }
     
-    [[BRWalletManager sharedInstance] setSeed:nil];
+    [[BRWalletManager sharedInstance] setSeedPhrase:nil];
     self.textView.text = nil;
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:WALLET_NEEDS_BACKUP_KEY];
     [[NSUserDefaults standardUserDefaults] synchronize];
@@ -228,15 +217,8 @@ static NSString *normalize_phrase(NSString *phrase)
     UIViewController *p = self.navigationController.presentingViewController.presentingViewController;
     
     [p dismissViewControllerAnimated:NO completion:^{
-        UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"PINNav"];
-
-        [[(id)c viewControllers].firstObject setAppeared:YES];
-
-        [p presentViewController:c animated:NO completion:^{
-            c.transitioningDelegate = [(id)p viewControllers].firstObject;
-            [c presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"]
-             animated:NO completion:nil];
-        }];
+        [p presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"] animated:NO
+         completion:nil];
     }];
 }
 

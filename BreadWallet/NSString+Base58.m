@@ -27,13 +27,14 @@
 #import "NSData+Hash.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
+#import "ccMemory.h"
 #import <openssl/bn.h>
 
 static const char base58chars[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
 static void *secureAllocate(CFIndex allocSize, CFOptionFlags hint, void *info)
 {
-    void *ptr = CFAllocatorAllocate(kCFAllocatorDefault, sizeof(CFIndex) + allocSize, hint);
+    void *ptr = CC_XMALLOC(sizeof(CFIndex) + allocSize);
     
     if (ptr) { // we need to keep track of the size of the allocation so it can be cleansed before deallocation
         *(CFIndex *)ptr = allocSize;
@@ -47,8 +48,8 @@ static void secureDeallocate(void *ptr, void *info)
     CFIndex size = *((CFIndex *)ptr - 1);
 
     if (size) {
-        OPENSSL_cleanse(ptr, size);
-        CFAllocatorDeallocate(kCFAllocatorDefault, (CFIndex *)ptr - 1);
+        CC_XZEROMEM(ptr, size);
+        CC_XFREE((CFIndex *)ptr - 1, sizeof(CFIndex) + size);
     }
 }
 
@@ -59,15 +60,12 @@ static void *secureReallocate(void *ptr, CFIndex newsize, CFOptionFlags hint, vo
     void *newptr = secureAllocate(newsize, hint, info);
     CFIndex size = *((CFIndex *)ptr - 1);
 
-    if (newptr) {
-        if (size) {
-            memcpy(newptr, ptr, size < newsize ? size : newsize);
-            secureDeallocate(ptr, info);
-        }
-
-        return newptr;
+    if (newptr && size) {
+        CC_XMEMCPY(newptr, ptr, (size < newsize) ? size : newsize);
+        secureDeallocate(ptr, info);
     }
-    else return NULL;
+
+    return newptr;
 }
 
 // Since iOS does not page memory to storage, all we need to do is cleanse allocated memory prior to deallocation.
@@ -121,7 +119,7 @@ CFAllocatorRef SecureAllocator()
     
     NSString *ret = CFBridgingRelease(CFStringCreateWithCString(SecureAllocator(), &s[i], kCFStringEncodingUTF8));
     
-    OPENSSL_cleanse(&s[0], d.length*138/100 + 2);
+    CC_XZEROMEM(&s[0], d.length*138/100 + 2);
     return ret;
 }
 
@@ -191,7 +189,7 @@ breakout:
     d.length += BN_num_bytes(x);
     BN_bn2bin(x, (unsigned char *)d.mutableBytes + d.length - BN_num_bytes(x));
 
-    OPENSSL_cleanse(&b, sizeof(b));
+    CC_XZEROMEM(&b, sizeof(b));
     BN_CTX_end(ctx);
     BN_CTX_free(ctx);
     
