@@ -141,6 +141,29 @@
     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://breadwallet.com"]];
 }
 
+- (IBAction)touchIdLimit:(id)sender
+{
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+
+    if (! [m authenticateWithPrompt:nil andTouchId:NO]) return;
+    
+    self.selectorType = 1;
+    self.selectorOptions =
+        @[NSLocalizedString(@"always require passcode", nil),
+          [NSString stringWithFormat:@"%@      (%@)", [m stringForAmount:SATOSHIS/10],
+           [m localCurrencyStringForAmount:SATOSHIS/10]],
+          [NSString stringWithFormat:@"%@   (%@)", [m stringForAmount:SATOSHIS],
+           [m localCurrencyStringForAmount:SATOSHIS]],
+          [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:SATOSHIS*10],
+           [m localCurrencyStringForAmount:SATOSHIS*10]]];
+    if (m.spendingLimit > SATOSHIS*10) m.spendingLimit = SATOSHIS*10;
+    self.selectedOption = self.selectorOptions[(log10(m.spendingLimit) < 6) ? 0 :
+                                               (NSUInteger)log10(m.spendingLimit) - 6];
+    self.selectorController.title = NSLocalizedString(@"touch id spending limit", nil);
+    [self.navigationController pushViewController:self.selectorController animated:YES];
+    [self.selectorController.tableView reloadData];
+}
+
 - (IBAction)navBarSwipe:(id)sender
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];
@@ -350,15 +373,19 @@
     BRWalletManager *m = [BRWalletManager sharedInstance];
     
     if (tableView == self.selectorController.tableView) {
-        self.selectedOption = self.selectorOptions[indexPath.row];
+        i = [self.selectorOptions indexOfObject:self.selectedOption];
+        if (indexPath.row < self.selectorOptions.count) self.selectedOption = self.selectorOptions[indexPath.row];
         
         if (self.selectorType == 0) {
             if (indexPath.row < m.currencyCodes.count) m.localCurrencyCode = m.currencyCodes[indexPath.row];
         }
         else m.spendingLimit = (indexPath.row > 0) ? pow(10, indexPath.row + 6) : 0;
         
-        [tableView reloadData];
-        [tableView selectRowAtIndexPath:indexPath animated:NO scrollPosition:UITableViewScrollPositionNone];
+        if (i < self.selectorOptions.count && i != indexPath.row) {
+            [tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:i inSection:0], indexPath]
+             withRowAnimation:UITableViewRowAnimationAutomatic];
+        }
+
         [tableView deselectRowAtIndexPath:indexPath animated:YES];
         [self.tableView reloadData];
         return;
@@ -412,6 +439,7 @@
                                                      [m localCurrencyStringForAmount:SATOSHIS/m.localCurrencyPrice],
                                                      [m stringForAmount:SATOSHIS/m.localCurrencyPrice]];
                     [self.navigationController pushViewController:self.selectorController animated:YES];
+                    [self.selectorController.tableView reloadData];
                     
                     if (i != NSNotFound) {
                         dispatch_async(dispatch_get_main_queue(), ^{
@@ -432,20 +460,7 @@
                     
                 case 1: // touch id spending limit
                     if (self.touchId) {
-                        self.selectorType = 1;
-                        self.selectorOptions =
-                            @[NSLocalizedString(@"always require passcode", nil),
-                              [NSString stringWithFormat:@"%@      (%@)", [m stringForAmount:10000000],
-                               [m localCurrencyStringForAmount:10000000]],
-                              [NSString stringWithFormat:@"%@   (%@)", [m stringForAmount:100000000],
-                               [m localCurrencyStringForAmount:100000000]],
-                              [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:1000000000],
-                               [m localCurrencyStringForAmount:1000000000]]];
-                        if (m.spendingLimit > 1000000000) m.spendingLimit = 1000000000;
-                        self.selectedOption = self.selectorOptions[(log10(m.spendingLimit) < 6) ? 0 :
-                                                                   (NSUInteger)log10(m.spendingLimit) - 6];
-                        self.selectorController.title = NSLocalizedString(@"touch id spending limit", nil);
-                        [self.navigationController pushViewController:self.selectorController animated:YES];
+                        [self performSelector:@selector(touchIdLimit:) withObject:nil afterDelay:0.0];
                         break;
                     }
                     // passthrough if ! self.touchId

@@ -737,13 +737,9 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 
 - (void)setSpendingLimit:(uint64_t)spendingLimit
 {
-    // check if the new spending limit is less than the current amount left before triggering pin
-    if (spendingLimit > 0 && self.wallet.totalSent + spendingLimit < getKeychainInt(SPEND_LIMIT_KEY, nil)) {
-        if (! setKeychainInt(self.wallet.totalSent + spendingLimit, SPEND_LIMIT_KEY, NO)) return;
+    if (setKeychainInt((spendingLimit > 0) ? self.wallet.totalSent + spendingLimit : 0, SPEND_LIMIT_KEY, NO)) {
+        [[NSUserDefaults standardUserDefaults] setDouble:spendingLimit forKey:SPEND_LIMIT_AMOUNT_KEY];
     }
-    else if (spendingLimit == 0 && ! setKeychainInt(0, SPEND_LIMIT_KEY, NO)) return;
-    
-    [[NSUserDefaults standardUserDefaults] setDouble:spendingLimit forKey:SPEND_LIMIT_AMOUNT_KEY];
 }
 
 // last known time from an ssl server connection
