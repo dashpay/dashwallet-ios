@@ -555,13 +555,14 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Zbe-Kx-XvG">
-                                <rect key="frame" x="40" y="70" width="200" height="60"/>
+                                <rect key="frame" x="40" y="75" width="200" height="60"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="200" id="5b0-yc-wiT"/>
                                     <constraint firstAttribute="height" constant="60" id="LSZ-oc-vDf"/>
                                 </constraints>
-                                <inset key="contentEdgeInsets" minX="80" minY="0.0" maxX="-80" maxY="0.0"/>
-                                <state key="normal" title="◉">
+                                <fontDescription key="fontDescription" name="Menlo-Regular" family="Menlo" pointSize="22"/>
+                                <inset key="contentEdgeInsets" minX="81" minY="-7" maxX="-81" maxY="7"/>
+                                <state key="normal" title="↔︎">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <connections>
@@ -839,7 +840,7 @@
                             <constraint firstAttribute="trailing" secondItem="DLS-lz-uxJ" secondAttribute="trailing" constant="20" id="2v3-2d-Z9s"/>
                             <constraint firstItem="MOQ-nc-fFL" firstAttribute="leading" secondItem="p8P-3o-INx" secondAttribute="trailing" constant="8" id="3nI-7V-rXv"/>
                             <constraint firstItem="NyY-8N-uhK" firstAttribute="width" secondItem="LgR-qo-dYy" secondAttribute="width" id="5OR-8Q-Meb"/>
-                            <constraint firstItem="Zbe-Kx-XvG" firstAttribute="baseline" secondItem="ZH0-Ng-7xb" secondAttribute="baseline" id="8Od-aB-qSh"/>
+                            <constraint firstItem="Zbe-Kx-XvG" firstAttribute="centerY" secondItem="ZH0-Ng-7xb" secondAttribute="baseline" id="8Od-aB-qSh"/>
                             <constraint firstItem="MOQ-nc-fFL" firstAttribute="top" secondItem="NyY-8N-uhK" secondAttribute="bottom" constant="8" id="8S1-HS-oZ9"/>
                             <constraint firstItem="Mvz-cZ-Yby" firstAttribute="top" secondItem="MOQ-nc-fFL" secondAttribute="bottom" constant="8" id="AYI-b1-qOf"/>
                             <constraint firstItem="ZXO-dD-jiQ" firstAttribute="leading" secondItem="YoG-MG-mOk" secondAttribute="leading" constant="20" id="BDN-kQ-gEZ"/>

@@ -110,17 +110,11 @@
 /* Class = "IBUILabel"; text = "($0.00)"; ObjectID = "ZH0-Ng-7xb"; */
 "ZH0-Ng-7xb.text" = "($0.00)";
 
-/* Class = "IBUILabel"; text = "remove standard fees"; ObjectID = "ZLd-Ad-P5q"; */
-"ZLd-Ad-P5q.text" = "remove standard fees";
-
-/* Class = "IBUILabel"; text = "ask"; ObjectID = "ZT3-dE-w93"; */
-"ZT3-dE-w93.text" = "ask";
-
 /* Class = "IBUILabel"; text = "to: 1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"; ObjectID = "ZXO-dD-jiQ"; */
 "ZXO-dD-jiQ.text" = "to: 1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW";
 
 /* Class = "IBUIButton"; normalTitle = "◉"; ObjectID = "Zbe-Kx-XvG"; */
-"Zbe-Kx-XvG.normalTitle" = "◉";
+"Zbe-Kx-XvG.normalTitle" = "↔︎";
 
 /* Class = "IBUIButton"; normalTitle = "4"; ObjectID = "b8y-tJ-xAB"; */
 "b8y-tJ-xAB.normalTitle" = "4";
