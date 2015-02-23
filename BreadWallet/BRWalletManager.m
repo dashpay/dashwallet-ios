@@ -831,6 +831,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
                 return;
             }
            
+            if ([d[@"code"] isEqual:@"BTC"]) continue;
             [codes addObject:d[@"code"]];
             [names addObject:d[@"name"]];
             [rates addObject:d[@"rate"]];

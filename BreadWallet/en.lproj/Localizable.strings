@@ -23,6 +23,12 @@
 "\n1 attempt remaining\n" = "\n1 attempt remaining\n";
 
 /* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\n     amount %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\n         total %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
 
 /* No comment provided by engineer. */
@@ -32,13 +38,10 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nallow camera access in\nSettings->Privacy->Camera->%@";
 
 /* No comment provided by engineer. */
-"\nbitcoin network fee +%@ (%@)" = "\nbitcoin network fee +%1$@ (%2$@)";
-
-/* No comment provided by engineer. */
 "\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n";
 
 /* No comment provided by engineer. */
-"\ntotal %@ (%@)" = "\ntotal %1$@ (%2$@)";
+"\nnetwork fee +%@ (%@)" = "\nnetwork fee +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\ntry again in %d %@" = "\ntry again in %1$d %2$@";

@@ -119,23 +119,6 @@
 
 #pragma mark - IBAction
 
-- (IBAction)toggle:(id)sender
-{
-    UILabel *l = (id)[[sender superview] viewWithTag:2];
-    
-    [[NSUserDefaults standardUserDefaults] setBool:[sender isOn] forKey:SETTINGS_SKIP_FEE_KEY];
-    
-    l.hidden = NO;
-    l.alpha = ([sender isOn]) ? 0.0 : 1.0;
-    
-    [UIView animateWithDuration:0.2 animations:^{
-        l.alpha = ([sender isOn]) ? 1.0 : 0.0;
-    } completion:^(BOOL finished) {
-        l.alpha = 1.0;
-        l.hidden = ([sender isOn]) ? NO : YES;
-    }];
-}
-
 - (IBAction)about:(id)sender
 {
     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://breadwallet.com"]];
@@ -145,23 +128,24 @@
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
-    if (! [m authenticateWithPrompt:nil andTouchId:NO]) return;
-    
-    self.selectorType = 1;
-    self.selectorOptions =
-        @[NSLocalizedString(@"always require passcode", nil),
-          [NSString stringWithFormat:@"%@      (%@)", [m stringForAmount:SATOSHIS/10],
-           [m localCurrencyStringForAmount:SATOSHIS/10]],
-          [NSString stringWithFormat:@"%@   (%@)", [m stringForAmount:SATOSHIS],
-           [m localCurrencyStringForAmount:SATOSHIS]],
-          [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:SATOSHIS*10],
-           [m localCurrencyStringForAmount:SATOSHIS*10]]];
-    if (m.spendingLimit > SATOSHIS*10) m.spendingLimit = SATOSHIS*10;
-    self.selectedOption = self.selectorOptions[(log10(m.spendingLimit) < 6) ? 0 :
-                                               (NSUInteger)log10(m.spendingLimit) - 6];
-    self.selectorController.title = NSLocalizedString(@"touch id spending limit", nil);
-    [self.navigationController pushViewController:self.selectorController animated:YES];
-    [self.selectorController.tableView reloadData];
+    if ([m authenticateWithPrompt:nil andTouchId:NO]) {
+        self.selectorType = 1;
+        self.selectorOptions =
+            @[NSLocalizedString(@"always require passcode", nil),
+              [NSString stringWithFormat:@"%@      (%@)", [m stringForAmount:SATOSHIS/10],
+               [m localCurrencyStringForAmount:SATOSHIS/10]],
+              [NSString stringWithFormat:@"%@   (%@)", [m stringForAmount:SATOSHIS],
+               [m localCurrencyStringForAmount:SATOSHIS]],
+              [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:SATOSHIS*10],
+               [m localCurrencyStringForAmount:SATOSHIS*10]]];
+        if (m.spendingLimit > SATOSHIS*10) m.spendingLimit = SATOSHIS*10;
+        self.selectedOption = self.selectorOptions[(log10(m.spendingLimit) < 6) ? 0 :
+                                                   (NSUInteger)log10(m.spendingLimit) - 6];
+        self.selectorController.title = NSLocalizedString(@"touch id spending limit", nil);
+        [self.navigationController pushViewController:self.selectorController animated:YES];
+        [self.selectorController.tableView reloadData];
+    }
+    else [self.tableView deselectRowAtIndexPath:[self.tableView indexPathForSelectedRow] animated:YES];
 }
 
 - (IBAction)navBarSwipe:(id)sender
@@ -205,7 +189,7 @@
     
     switch (section) {
         case 0: return 2;
-        case 1: return (self.touchId) ? 3 : 2;
+        case 1: return (self.touchId) ? 2 : 1;
         case 2: return 2;
     }
     
@@ -214,12 +198,9 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *toggleIdent = @"ToggleCell", *disclosureIdent = @"DisclosureCell", *restoreIdent = @"RestoreCell",
-                    *actionIdent = @"ActionCell", *selectorIdent = @"SelectorCell",
-                    *selectorOptionCell = @"SelectorOptionCell";
+    static NSString *disclosureIdent = @"DisclosureCell", *restoreIdent = @"RestoreCell", *actionIdent = @"ActionCell",
+                    *selectorIdent = @"SelectorCell", *selectorOptionCell = @"SelectorOptionCell";
     UITableViewCell *cell = nil;
-    UILabel *toggleLabel;
-    UISwitch *toggleSwitch;
     BRWalletManager *m = [BRWalletManager sharedInstance];
     
     if (tableView == self.selectorController.tableView) {
@@ -266,14 +247,6 @@
                         break;
                     }
                     // passthrough if ! self.touchId
-                    
-                case 2:
-                    cell = [tableView dequeueReusableCellWithIdentifier:toggleIdent];
-                    toggleLabel = (id)[cell viewWithTag:2];
-                    toggleSwitch = (id)[cell viewWithTag:3];
-                    toggleSwitch.on = [[NSUserDefaults standardUserDefaults] boolForKey:SETTINGS_SKIP_FEE_KEY];
-                    toggleLabel.hidden = (toggleSwitch.on) ? NO : YES;
-                    break;
             }
             
             break;
@@ -293,25 +266,6 @@
 
     [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
     return cell;
-}
-
-- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
-{
-    if (tableView == self.selectorController.tableView) return nil;
-    
-    switch (section) {
-        case 0:
-            return nil;
-            
-        case 1:
-            return nil;
-
-        case 2:
-            return NSLocalizedString(@"bitcoin network fees are only optional for high priority transactions "
-                                     "(removal may cause delays)", nil);            
-    }
-    
-    return nil;
 }
 
 #pragma mark - UITableViewDelegate
@@ -464,9 +418,6 @@
                         break;
                     }
                     // passthrough if ! self.touchId
-                    
-                case 2: // remove standard fees
-                    break;
             }
             
             break;
