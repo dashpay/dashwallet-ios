@@ -340,7 +340,10 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         amount = [m.wallet amountSentByTransaction:tx] - [m.wallet amountReceivedFromTransaction:tx];
         fee = [m.wallet feeForTransaction:tx];
     }
-    else fee = [m.wallet feeForTxSize:[m.wallet transactionFor:m.wallet.balance to:address withFee:NO].size];
+    else {
+        fee = [m.wallet feeForTxSize:[m.wallet transactionFor:m.wallet.balance to:address withFee:NO].size];
+        amount += fee;
+    }
 
     for (NSData *script in protoReq.details.outputScripts) {
         NSString *addr = [NSString addressWithScriptPubKey:script];
@@ -368,7 +371,8 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         if (m.didAuthenticate || [m seedWithPrompt:prompt forAmount:amount]) {
             // if user selected an amount equal or below wallet balance, but the fee will bring the total above the
             // balance, offer to reduce the amount to available funds minus fee
-            if (self.amount > 0 && self.amount <= m.wallet.balance) {
+            if ((self.amount <= [m amountForLocalCurrencyString:[m localCurrencyStringForAmount:m.wallet.balance]] ||
+                 self.amount <= m.wallet.balance) && self.amount > 0) {
                 int64_t amount = m.wallet.balance -
                                  [m.wallet feeForTxSize:[m.wallet transactionForAmounts:@[@(m.wallet.balance)]
                                   toOutputScripts:@[self.request.details.outputScripts.firstObject] withFee:NO].size +
