@@ -54,8 +54,6 @@
 {
     [super viewDidLoad];
 
-    BRWalletManager *m = [BRWalletManager sharedInstance];
-
     self.txDates = [NSMutableDictionary dictionary];
     self.wallpaper = [[UIImageView alloc] initWithFrame:self.navigationController.view.bounds];
     self.wallpaper.image = [UIImage imageNamed:@"wallpaper-default"];
@@ -63,29 +61,25 @@
     self.wallpaper.clipsToBounds = YES;
     [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
     self.navigationController.delegate = self;
-    self.moreTx = (m.wallet.recentTransactions.count > 5) ? YES : NO;
+    self.moreTx = YES;
 }
 
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
     
     BRWalletManager *m = [BRWalletManager sharedInstance];
-    NSArray *a = m.wallet.recentTransactions;
     
-    self.transactions = [a subarrayWithRange:NSMakeRange(0, (a.count > 5 && self.moreTx) ? 5 : a.count)];
+    self.transactions = m.wallet.recentTransactions;
     if (m.didAuthenticate) [self unlock:nil];
 
     if (! self.backgroundObserver) {
         self.backgroundObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification
             object:nil queue:nil usingBlock:^(NSNotification *note) {
-                NSArray *a = m.wallet.recentTransactions;
-                
-                self.transactions = [a subarrayWithRange:NSMakeRange(0, (a.count > 5 ? 5 : a.count))];
-                self.moreTx = (a.count > 5) ? YES : NO;
+                self.moreTx = YES;
+                self.transactions = m.wallet.recentTransactions;
                 [self.tableView reloadData];
                 self.navigationItem.titleView = self.logo;
                 self.navigationItem.rightBarButtonItem = self.lock;
@@ -97,13 +91,8 @@
             [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
                 BRTransaction *tx = self.transactions.firstObject;
-                NSArray *a = m.wallet.recentTransactions;
 
-                if (self.moreTx) {
-                    self.transactions = [a subarrayWithRange:NSMakeRange(0, (a.count > 5 ? 5 : a.count))];
-                    self.moreTx = (a.count > 5) ? YES : NO;
-                }
-                else self.transactions = [NSArray arrayWithArray:a];
+                self.transactions = m.wallet.recentTransactions;
 
                 if (! [self.navigationItem.title isEqual:NSLocalizedString(@"syncing...", nil)]) {
                     if (! m.didAuthenticate) self.navigationItem.titleView = self.logo;
@@ -201,6 +190,22 @@
     if (self.syncStartedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
     if (self.syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFinishedObserver];
     if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
+}
+
+- (void)setTransactions:(NSArray *)transactions
+{
+    uint32_t height = [[BRPeerManager sharedInstance] lastBlockHeight];
+
+    if (transactions.count <= 5) self.moreTx = NO;
+    _transactions = [transactions subarrayWithRange:NSMakeRange(0, (self.moreTx) ? 5 : transactions.count)];
+    if ([[BRWalletManager sharedInstance] didAuthenticate]) return;
+    
+    for (BRTransaction *tx in _transactions) {
+        if (tx.blockHeight > height - 5) continue;
+        _transactions = [transactions subarrayWithRange:NSMakeRange(0, [transactions indexOfObject:tx])];
+        self.moreTx = YES;
+        break;
+    }
 }
 
 - (void)setBackgroundForCell:(UITableViewCell *)cell tableView:(UITableView *)tableView indexPath:(NSIndexPath *)path
@@ -309,20 +314,21 @@
 - (IBAction)more:(id)sender
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];
+    NSUInteger i = self.transactions.count;
     
     if (! m.didAuthenticate && ! [m authenticateWithPrompt:nil andTouchId:YES]) return;
     [self unlock:nil];
     
     [self.tableView beginUpdates];
-    self.transactions = [NSArray arrayWithArray:m.wallet.recentTransactions];
-    self.moreTx = NO;
-    [self.tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:5 inSection:0]]
+    [self.tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:i inSection:0]]
      withRowAnimation:UITableViewRowAnimationFade];
+    self.moreTx = NO;
+    self.transactions = m.wallet.recentTransactions;
     
-    NSMutableArray *a = [NSMutableArray arrayWithCapacity:self.transactions.count - 5];
+    NSMutableArray *a = [NSMutableArray arrayWithCapacity:self.transactions.count];
     
-    for (NSUInteger i = 5; i < self.transactions.count; i++) {
-        [a addObject:[NSIndexPath indexPathForRow:i inSection:0]];
+    while (i < self.transactions.count) {
+        [a addObject:[NSIndexPath indexPathForRow:i++ inSection:0]];
     }
     
     [self.tableView insertRowsAtIndexPaths:a withRowAnimation:UITableViewRowAnimationTop];
@@ -364,9 +370,10 @@
 
     switch (indexPath.section) {
         case 0:
-            if (indexPath.row > 0 && indexPath.row >= self.transactions.count) {
+            if (self.moreTx && indexPath.row >= self.transactions.count) {
                 cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
-                cell.textLabel.text = NSLocalizedString(@"more...", nil);
+                cell.textLabel.text = (indexPath.row > 0) ? NSLocalizedString(@"more...", nil) :
+                                      NSLocalizedString(@"transaction history", nil);
                 cell.imageView.image = nil;
             }
             else if (self.transactions.count > 0) {
@@ -506,7 +513,7 @@
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     switch (indexPath.section) {
-        case 0: return (indexPath.row == 0 || indexPath.row < self.transactions.count) ? TRANSACTION_CELL_HEIGHT : 44.0;
+        case 0: return (self.moreTx && indexPath.row >= self.transactions.count) ? 44.0 : TRANSACTION_CELL_HEIGHT;
         case 1: return 44.0;
         case 2: return 44.0;
     }
@@ -567,7 +574,7 @@
 
     switch (indexPath.section) {
         case 0: // transaction
-            if (indexPath.row > 0 && indexPath.row >= self.transactions.count) { // more...
+            if (self.moreTx && indexPath.row >= self.transactions.count) { // more...
                 [self performSelector:@selector(more:) withObject:nil afterDelay:0.0];
             }
             else if (self.transactions.count > 0) { // transaction details
