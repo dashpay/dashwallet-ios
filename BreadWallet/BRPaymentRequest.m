@@ -120,7 +120,7 @@
     
     if (self.amount > 0) {
         while (p > 0 && self.amount/(uint64_t)pow(10, 9 - p)*(uint64_t)pow(10, 9 - p) == self.amount) p--;
-        [q addObject:[NSString stringWithFormat:@"amount=%.*f", p, (double)self.amount/SATOSHIS]];
+        [q addObject:[NSString stringWithFormat:@"amount=%.*f", p, (double)self.amount/SATOSHIS + DBL_EPSILON]];
     }
 
     if (self.label.length > 0) {
