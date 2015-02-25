@@ -71,8 +71,8 @@
     
     BRWalletManager *m = [BRWalletManager sharedInstance];
     
-    self.transactions = m.wallet.recentTransactions;
     if (m.didAuthenticate) [self unlock:nil];
+    self.transactions = m.wallet.recentTransactions;
 
     if (! self.backgroundObserver) {
         self.backgroundObserver =
@@ -278,11 +278,17 @@
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
-    if (sender && ! m.didAuthenticate && ! [m authenticateWithPrompt:nil andTouchId:YES]) return;
+    if (! m.didAuthenticate && ! [m authenticateWithPrompt:nil andTouchId:YES]) return;
     
     self.navigationItem.titleView = nil;
     [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
-    [self.tableView reloadData];
+    if (self.transactions.count > 0) [self.tableView reloadData];
+    if (sender) self.transactions = m.wallet.recentTransactions;
+    
+    if (sender && self.transactions.count > 0) {
+        [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
+         withRowAnimation:UITableViewRowAnimationAutomatic];
+    }
 }
 
 - (IBAction)scanQR:(id)sender
@@ -316,8 +322,8 @@
     BRWalletManager *m = [BRWalletManager sharedInstance];
     NSUInteger i = self.transactions.count;
     
-    if (! m.didAuthenticate && ! [m authenticateWithPrompt:nil andTouchId:YES]) return;
     [self unlock:nil];
+    if (! m.didAuthenticate) return;
     
     [self.tableView beginUpdates];
     [self.tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:i inSection:0]]

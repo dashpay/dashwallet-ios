@@ -428,6 +428,9 @@
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)";
 
 /* No comment provided by engineer. */
+"transaction history" = "transaction history";
+
+/* No comment provided by engineer. */
 "transaction is post-dated" = "transaction is post-dated";
 
 /* No comment provided by engineer. */
