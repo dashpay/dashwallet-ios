@@ -116,9 +116,11 @@
 
     NSMutableString *s = [NSMutableString stringWithFormat:@"bitcoin:%@", self.paymentAddress];
     NSMutableArray *q = [NSMutableArray array];
+    int p = 8;
     
     if (self.amount > 0) {
-        [q addObject:[NSString stringWithFormat:@"amount=%.16g", (double)self.amount/SATOSHIS]];
+        while (p > 0 && self.amount/(uint64_t)pow(10, 9 - p)*(uint64_t)pow(10, 9 - p) == self.amount) p--;
+        [q addObject:[NSString stringWithFormat:@"amount=%.*f", p, (double)self.amount/SATOSHIS]];
     }
 
     if (self.label.length > 0) {
