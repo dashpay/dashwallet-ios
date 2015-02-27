@@ -4,6 +4,7 @@
 //
 //  Created by Aaron Voisine on 5/13/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
+//  base58 encoding/decoding based on libbase58, Copyright 2012-2014 Luke Dashjr
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -28,9 +29,18 @@
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 #import "ccMemory.h"
-#import <openssl/bn.h>
 
 static const char base58chars[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+static const int8_t base58map[] = {
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1,  0,  1,  2,  3,  4,  5,  6,  7,  8, -1, -1, -1, -1, -1, -1,
+    -1,  9, 10, 11, 12, 13, 14, 15, 16, -1, 17, 18, 19, 20, 21, -1,
+    22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, -1, -1, -1, -1, -1,
+    -1, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, -1, 44, 45, 46,
+    47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, -1, -1, -1, -1, -1
+};
 
 static void *secureAllocate(CFIndex allocSize, CFOptionFlags hint, void *info)
 {
@@ -93,33 +103,33 @@ CFAllocatorRef SecureAllocator()
 
 + (NSString *)base58WithData:(NSData *)d
 {
-    BN_CTX *ctx = BN_CTX_new();
+    char s[d.length*138/100 + 1];
+    const uint8_t *b = d.bytes;
+    ssize_t i, j, high, carry, zcount = 0;
+    
+    while (zcount < d.length && b[zcount] == 0) zcount++;
+    
+    uint8_t buf[(d.length - zcount)*138/100 + 1];
 
-    BN_CTX_start(ctx);
-
-    NSUInteger i = d.length*138/100 + 2;
-    char s[i];
-    BIGNUM *base = BN_CTX_get(ctx), *x = BN_CTX_get(ctx), *r = BN_CTX_get(ctx);
-
-    BN_set_word(base, 58);
-    BN_bin2bn(d.bytes, (int)d.length, x);
-    s[--i] = '\0';
-
-    while (! BN_is_zero(x)) {
-        BN_div(x, r, x, base, ctx);
-        s[--i] = base58chars[BN_get_word(r)];
+    CC_XZEROMEM(buf, sizeof(buf)*sizeof(*buf));
+    
+    for (i = zcount, high = sizeof(buf) - 1; i < d.length; i++, high = j) {
+        for (carry = b[i], j = sizeof(buf) - 1; (j > high) || carry; j--) {
+            carry += 256*buf[j];
+            buf[j] = carry % 58;
+            carry /= 58;
+        }
     }
     
-    for (NSUInteger j = 0; j < d.length && *((const uint8_t *)d.bytes + j) == 0; j++) {
-        s[--i] = base58chars[0];
-    }
-
-    BN_CTX_end(ctx);
-    BN_CTX_free(ctx);
+    for (j = 0; j < sizeof(buf) && buf[j] == 0; j++);
+    if (zcount) CC_XMEMSET(s, *base58chars, zcount);
+    for (i = zcount; j < sizeof(buf); i++, j++) s[i] = base58chars[buf[j]];
+    s[i] = '\0';
     
-    NSString *ret = CFBridgingRelease(CFStringCreateWithCString(SecureAllocator(), &s[i], kCFStringEncodingUTF8));
+    NSString *ret = CFBridgingRelease(CFStringCreateWithCString(SecureAllocator(), s, kCFStringEncodingUTF8));
     
-    CC_XZEROMEM(&s[0], d.length*138/100 + 2);
+    CC_XZEROMEM(s, sizeof(s)*sizeof(*s));
+    CC_XZEROMEM(buf, sizeof(buf)*sizeof(*buf));
     return ret;
 }
 
@@ -128,72 +138,7 @@ CFAllocatorRef SecureAllocator()
     NSMutableData *data = [NSMutableData secureDataWithData:d];
 
     [data appendBytes:d.SHA256_2.bytes length:4];
-    
     return [self base58WithData:data];
-}
-
-- (NSData *)base58ToData
-{
-    BN_CTX *ctx = BN_CTX_new();
-
-    BN_CTX_start(ctx);
-
-    NSMutableData *d = [NSMutableData secureDataWithCapacity:self.length + 1];
-    unsigned int b;
-    BIGNUM *base = BN_CTX_get(ctx), *x = BN_CTX_get(ctx), *y = BN_CTX_get(ctx);
-
-    BN_set_word(base, 58);
-    BN_zero(x);
-    
-    for (NSUInteger i = 0; i < self.length && [self characterAtIndex:i] == base58chars[0]; i++) {
-        [d appendBytes:"\0" length:1];
-    }
-        
-    for (NSUInteger i = 0; i < self.length; i++) {
-        b = [self characterAtIndex:i];
-
-        switch (b) {
-            case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
-                b -= '1';
-                break;
-            case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H':
-                b += 9 - 'A';
-                break;
-            case 'J': case 'K': case 'L': case 'M': case 'N':
-                b += 17 - 'J';
-                break;
-            case 'P': case 'Q': case 'R': case 'S': case 'T': case 'U': case 'V': case 'W': case 'X': case 'Y':
-            case 'Z':
-                b += 22 - 'P';
-                break;
-            case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j':
-            case 'k':
-                b += 33 - 'a';
-                break;
-            case 'm': case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u': case 'v':
-            case 'w': case 'x': case 'y': case 'z':
-                b += 44 - 'm';
-                break;
-            case ' ':
-                continue;
-            default:
-                goto breakout;
-        }
-        
-        BN_mul(x, x, base, ctx);
-        BN_set_word(y, b);
-        BN_add(x, x, y);
-    }
-    
-breakout:
-    d.length += BN_num_bytes(x);
-    BN_bn2bin(x, (unsigned char *)d.mutableBytes + d.length - BN_num_bytes(x));
-
-    CC_XZEROMEM(&b, sizeof(b));
-    BN_CTX_end(ctx);
-    BN_CTX_free(ctx);
-    
-    return d;
 }
 
 + (NSString *)hexWithData:(NSData *)d
@@ -286,6 +231,55 @@ breakout:
     return [self base58checkWithData:d];
 }
 
+- (NSData *)base58ToData
+{
+    NSData *str = CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(), (CFStringRef)self,
+                                                                         kCFStringEncodingUTF8, 0));
+    NSMutableData *d = [NSMutableData secureDataWithLength:str.length];
+    const unsigned char *s = str.bytes;
+    unsigned char *b = d.mutableBytes;
+    size_t len = (d.length + 3)/4, i, j;
+    uint32_t c, o[len], zcount = 0, zmask = (d.length % 4) ? (0xffffffff << ((d.length % 4)*8)) : 0;
+    uint64_t t;
+
+    CC_XZEROMEM(o, len*sizeof(*o));
+    for (i = 0; i < str.length && s[i] == *base58chars; i++) zcount++; // count leading zeroes
+    
+    for (; i < str.length; i++) {
+        if (s[i] & 0x80 || base58map[s[i]] == -1) return nil; // invalid base58 digit
+        c = (unsigned)base58map[s[i]];
+
+        for (j = len; j--;) {
+            t = ((uint64_t)o[j])*58 + c;
+            c = (t & 0x3f00000000) >> 32;
+            o[j] = t & 0xffffffff;
+        }
+        
+        if (c || o[0] & zmask) return nil; // output number too big
+    }
+    
+    j = 0;
+
+    switch (d.length % 4) {
+        case 3: *(b++) = (o[0] & 0xff0000) >> 16; // fall through
+        case 2: *(b++) = (o[0] & 0xff00) >> 8; // fall through
+        case 1: *(b++) = (o[0] & 0xff), j++;
+    }
+    
+    for (; j < len; j++) {
+        *(b++) = (o[j] >> 0x18) & 0xff;
+        *(b++) = (o[j] >> 0x10) & 0xff;
+        *(b++) = (o[j] >> 0x08) & 0xff;
+        *(b++) = (o[j] >> 0x00) & 0xff;
+    }
+    
+    CC_XZEROMEM(o, len*sizeof(*o));
+    for (b = d.mutableBytes, len = d.length, i = 0; i < d.length && b[i] == 0; i++) len--; // correct base58 byte count
+    len += zcount;
+    if (len < d.length) [d replaceBytesInRange:NSMakeRange(0, d.length - len) withBytes:NULL length:0];
+    return d;
+}
+
 - (NSString *)hexToBase58
 {
     return [[self class] base58WithData:self.hexToData];
@@ -306,7 +300,6 @@ breakout:
 
     // verify checksum
     if (*(uint32_t *)((const uint8_t *)d.bytes + d.length - 4) != *(uint32_t *)data.SHA256_2.bytes) return nil;
-    
     return data;
 }
 

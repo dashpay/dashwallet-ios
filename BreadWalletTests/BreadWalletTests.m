@@ -37,7 +37,7 @@
 #import "NSMutableData+Bitcoin.h"
 #import "NSString+Base58.h"
 
-//#define SKIP_BIP38 1
+#define SKIP_BIP38 1
 
 @implementation BreadWalletTests
 
@@ -67,6 +67,13 @@
     s = [NSString base58WithData:[@"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz" base58ToData]];
     XCTAssertEqualObjects(@"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz", s,
                           @"[NSString base58WithData:]");
+
+    s = [NSString base58WithData:[@"1111111111111111111111111111111111111111111111111111111111111111111" base58ToData]];
+    XCTAssertEqualObjects(@"1111111111111111111111111111111111111111111111111111111111111111111", s,
+                          @"[NSString base58WithData:]");
+    
+    s = [NSString base58WithData:[@"" base58ToData]];
+    XCTAssertEqualObjects(@"", s, @"[NSString base58WithData:]");
 }
 
 #pragma mark - testKey
