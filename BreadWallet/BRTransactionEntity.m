@@ -30,7 +30,6 @@
 #import "BRTransaction.h"
 #import "BRMerkleBlock.h"
 #import "NSManagedObject+Sugar.h"
-#import "NSString+Base58.h"
 #import "NSMutableData+Bitcoin.h"
 #import <CommonCrypto/CommonDigest.h>
 

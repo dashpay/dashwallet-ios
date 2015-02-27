@@ -25,7 +25,7 @@
 
 #import "BRPaymentProtocol.h"
 #import "BRTransaction.h"
-#import "NSData+Hash.h"
+#import "NSData+Bitcoin.h"
 
 // BIP70 payment protocol: https://github.com/bitcoin/bips/blob/master/bip-0070.mediawiki
 

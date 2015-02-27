@@ -27,7 +27,7 @@
 #import "BRWalletManager.h"
 #import "BRKeySequence.h"
 #import "BRBIP39Mnemonic.h"
-#import "NSString+Base58.h"
+#import "NSMutableData+Bitcoin.h"
 
 #define PHRASE_LENGTH 12
 #define WORDS         @"BIP39EnglishWords"

@@ -29,10 +29,9 @@
 		752E28DA19234C3600DB5A3C /* BRWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E28CB19234C3600DB5A3C /* BRWallet.m */; };
 		752E28DB19234C3600DB5A3C /* BRWalletManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E28CD19234C3600DB5A3C /* BRWalletManager.m */; };
 		752E28E719234DA200DB5A3C /* NSData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E28DE19234DA200DB5A3C /* NSData+Bitcoin.m */; };
-		752E28E819234DA200DB5A3C /* NSData+Hash.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E28E019234DA200DB5A3C /* NSData+Hash.m */; };
 		752E28E919234DA200DB5A3C /* NSManagedObject+Sugar.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E28E219234DA200DB5A3C /* NSManagedObject+Sugar.m */; };
 		752E28EA19234DA200DB5A3C /* NSMutableData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E28E419234DA200DB5A3C /* NSMutableData+Bitcoin.m */; };
-		752E28EB19234DA200DB5A3C /* NSString+Base58.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E28E619234DA200DB5A3C /* NSString+Base58.m */; };
+		752E28EB19234DA200DB5A3C /* NSString+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E28E619234DA200DB5A3C /* NSString+Bitcoin.m */; };
 		752E28F119234E8100DB5A3C /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E28F019234E8100DB5A3C /* Reachability.m */; settings = {COMPILER_FLAGS = "-w"; }; };
 		752E28F319235A0600DB5A3C /* rand_unix.c in Sources */ = {isa = PBXBuildFile; fileRef = 752E28F219235A0600DB5A3C /* rand_unix.c */; };
 		752E28F619235B3000DB5A3C /* BIP39EnglishWords.plist in Resources */ = {isa = PBXBuildFile; fileRef = 752E28F419235B3000DB5A3C /* BIP39EnglishWords.plist */; };
@@ -596,14 +595,12 @@
 		752E28DC19234D1000DB5A3C /* BRBIP32Sequence.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRBIP32Sequence.h; sourceTree = "<group>"; };
 		752E28DD19234DA200DB5A3C /* NSData+Bitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Bitcoin.h"; sourceTree = "<group>"; };
 		752E28DE19234DA200DB5A3C /* NSData+Bitcoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+Bitcoin.m"; sourceTree = "<group>"; };
-		752E28DF19234DA200DB5A3C /* NSData+Hash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Hash.h"; sourceTree = "<group>"; };
-		752E28E019234DA200DB5A3C /* NSData+Hash.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+Hash.m"; sourceTree = "<group>"; };
 		752E28E119234DA200DB5A3C /* NSManagedObject+Sugar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSManagedObject+Sugar.h"; sourceTree = "<group>"; };
 		752E28E219234DA200DB5A3C /* NSManagedObject+Sugar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSManagedObject+Sugar.m"; sourceTree = "<group>"; };
 		752E28E319234DA200DB5A3C /* NSMutableData+Bitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableData+Bitcoin.h"; sourceTree = "<group>"; };
 		752E28E419234DA200DB5A3C /* NSMutableData+Bitcoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableData+Bitcoin.m"; sourceTree = "<group>"; };
-		752E28E519234DA200DB5A3C /* NSString+Base58.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Base58.h"; sourceTree = "<group>"; };
-		752E28E619234DA200DB5A3C /* NSString+Base58.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Base58.m"; sourceTree = "<group>"; };
+		752E28E519234DA200DB5A3C /* NSString+Bitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Bitcoin.h"; sourceTree = "<group>"; };
+		752E28E619234DA200DB5A3C /* NSString+Bitcoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Bitcoin.m"; sourceTree = "<group>"; };
 		752E28EF19234E8100DB5A3C /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = SOURCE_ROOT; };
 		752E28F019234E8100DB5A3C /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = SOURCE_ROOT; };
 		752E28F219235A0600DB5A3C /* rand_unix.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = rand_unix.c; sourceTree = "<group>"; };
@@ -1342,10 +1339,8 @@
 		752E28B019234B0500DB5A3C /* Categories */ = {
 			isa = PBXGroup;
 			children = (
-				752E28E519234DA200DB5A3C /* NSString+Base58.h */,
-				752E28E619234DA200DB5A3C /* NSString+Base58.m */,
-				752E28DF19234DA200DB5A3C /* NSData+Hash.h */,
-				752E28E019234DA200DB5A3C /* NSData+Hash.m */,
+				752E28E519234DA200DB5A3C /* NSString+Bitcoin.h */,
+				752E28E619234DA200DB5A3C /* NSString+Bitcoin.m */,
 				752E28DD19234DA200DB5A3C /* NSData+Bitcoin.h */,
 				752E28DE19234DA200DB5A3C /* NSData+Bitcoin.m */,
 				752E28E319234DA200DB5A3C /* NSMutableData+Bitcoin.h */,
@@ -3009,10 +3004,9 @@
 				757BE7E6192C1FF70061CB20 /* BRWelcomeViewController.m in Sources */,
 				757BE7E9192D4E880061CB20 /* BRSeedViewController.m in Sources */,
 				752E28E719234DA200DB5A3C /* NSData+Bitcoin.m in Sources */,
-				752E28E819234DA200DB5A3C /* NSData+Hash.m in Sources */,
 				752E28E919234DA200DB5A3C /* NSManagedObject+Sugar.m in Sources */,
 				752E28EA19234DA200DB5A3C /* NSMutableData+Bitcoin.m in Sources */,
-				752E28EB19234DA200DB5A3C /* NSString+Base58.m in Sources */,
+				752E28EB19234DA200DB5A3C /* NSString+Bitcoin.m in Sources */,
 				757C89521A2FCE420076B373 /* BRSettingsViewController.m in Sources */,
 				75D5F3D2191EC270004AB296 /* BRAppDelegate.m in Sources */,
 				759FBB36193290F600AB4465 /* BRRootViewController.m in Sources */,

@@ -1,5 +1,5 @@
 //
-//  NSString+Base58.mm
+//  NSString+Bitcoin.m
 //  BreadWallet
 //
 //  Created by Aaron Voisine on 5/13/13.
@@ -24,13 +24,18 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "NSString+Base58.h"
-#import "NSData+Hash.h"
+#import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 #import "ccMemory.h"
+#include "string.h"
 
-static const char base58chars[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+static const UniChar base58chars[] = {
+    '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P',
+    'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm', 'n',
+    'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+};
+
 static const int8_t base58map[] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -42,95 +47,34 @@ static const int8_t base58map[] = {
     47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, -1, -1, -1, -1, -1
 };
 
-static void *secureAllocate(CFIndex allocSize, CFOptionFlags hint, void *info)
-{
-    void *ptr = CC_XMALLOC(sizeof(CFIndex) + allocSize);
-    
-    if (ptr) { // we need to keep track of the size of the allocation so it can be cleansed before deallocation
-        *(CFIndex *)ptr = allocSize;
-        return (CFIndex *)ptr + 1;
-    }
-    else return NULL;
-}
-
-static void secureDeallocate(void *ptr, void *info)
-{
-    CFIndex size = *((CFIndex *)ptr - 1);
-
-    if (size) {
-        CC_XZEROMEM(ptr, size);
-        CC_XFREE((CFIndex *)ptr - 1, sizeof(CFIndex) + size);
-    }
-}
-
-static void *secureReallocate(void *ptr, CFIndex newsize, CFOptionFlags hint, void *info)
-{
-    // There's no way to tell ahead of time if the original memory will be deallocted even if the new size is smaller
-    // than the old size, so just cleanse and deallocate every time.
-    void *newptr = secureAllocate(newsize, hint, info);
-    CFIndex size = *((CFIndex *)ptr - 1);
-
-    if (newptr && size) {
-        CC_XMEMCPY(newptr, ptr, (size < newsize) ? size : newsize);
-        secureDeallocate(ptr, info);
-    }
-
-    return newptr;
-}
-
-// Since iOS does not page memory to storage, all we need to do is cleanse allocated memory prior to deallocation.
-CFAllocatorRef SecureAllocator()
-{
-    static CFAllocatorRef alloc = NULL;
-    static dispatch_once_t onceToken = 0;
-    
-    dispatch_once(&onceToken, ^{
-        CFAllocatorContext context;
-        
-        context.version = 0;
-        CFAllocatorGetContext(kCFAllocatorDefault, &context);
-        context.allocate = secureAllocate;
-        context.reallocate = secureReallocate;
-        context.deallocate = secureDeallocate;
-        
-        alloc = CFAllocatorCreate(kCFAllocatorDefault, &context);
-    });
-    
-    return alloc;
-}
-
-@implementation NSString (Base58)
+@implementation NSString (Bitcoin)
 
 + (NSString *)base58WithData:(NSData *)d
 {
-    char s[d.length*138/100 + 1];
+    CFMutableStringRef s = CFStringCreateMutable(SecureAllocator(), d.length*138/100);
     const uint8_t *b = d.bytes;
     ssize_t i, j, high, carry, zcount = 0;
     
-    while (zcount < d.length && b[zcount] == 0) zcount++;
+    while (zcount < d.length && b[zcount] == 0) zcount++; // count leading zeroes
     
     uint8_t buf[(d.length - zcount)*138/100 + 1];
 
-    CC_XZEROMEM(buf, sizeof(buf)*sizeof(*buf));
+    CC_XZEROMEM(buf, sizeof(buf));
     
-    for (i = zcount, high = sizeof(buf) - 1; i < d.length; i++, high = j) {
-        for (carry = b[i], j = sizeof(buf) - 1; (j > high) || carry; j--) {
+    for (i = zcount, high = sizeof(buf)/sizeof(*buf) - 1; i < d.length; i++, high = j) {
+        for (carry = b[i], j = sizeof(buf)/sizeof(*buf) - 1; (j > high) || carry; j--) {
             carry += 256*buf[j];
             buf[j] = carry % 58;
             carry /= 58;
         }
     }
     
-    for (j = 0; j < sizeof(buf) && buf[j] == 0; j++);
-    if (zcount) CC_XMEMSET(s, *base58chars, zcount);
-    for (i = zcount; j < sizeof(buf); i++, j++) s[i] = base58chars[buf[j]];
-    s[i] = '\0';
-    
-    NSString *ret = CFBridgingRelease(CFStringCreateWithCString(SecureAllocator(), s, kCFStringEncodingUTF8));
-    
-    CC_XZEROMEM(s, sizeof(s)*sizeof(*s));
-    CC_XZEROMEM(buf, sizeof(buf)*sizeof(*buf));
-    return ret;
+    for (i = 0; i < zcount; i++) CFStringAppendCharacters(s, base58chars, 1);
+    for (j = 0; j < sizeof(buf)/sizeof(*buf) && buf[j] == 0; j++);
+    while (j < sizeof(buf)/sizeof(*buf)) CFStringAppendCharacters(s, &base58chars[buf[j++]], 1);
+
+    CC_XZEROMEM(buf, sizeof(buf));
+    return CFBridgingRelease(s);
 }
 
 + (NSString *)base58checkWithData:(NSData *)d
@@ -233,50 +177,42 @@ CFAllocatorRef SecureAllocator()
 
 - (NSData *)base58ToData
 {
-    NSData *str = CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(), (CFStringRef)self,
-                                                                         kCFStringEncodingUTF8, 0));
-    NSMutableData *d = [NSMutableData secureDataWithLength:str.length];
-    const unsigned char *s = str.bytes;
-    unsigned char *b = d.mutableBytes;
-    size_t len = (d.length + 3)/4, i, j;
-    uint32_t c, o[len], zcount = 0, zmask = (d.length % 4) ? (0xffffffff << ((d.length % 4)*8)) : 0;
+    uint32_t zcount = 0;
+
+    while (zcount < self.length && [self characterAtIndex:zcount] == *base58chars) zcount++; // count leading zeroes
+
+    NSMutableData *d = [NSMutableData secureDataWithLength:self.length];
+    unsigned char *b = (unsigned char *)d.mutableBytes + zcount;
+    uint32_t len = d.length - zcount, buf[(len + 3)/4], c, i, j;
     uint64_t t;
 
-    CC_XZEROMEM(o, len*sizeof(*o));
-    for (i = 0; i < str.length && s[i] == *base58chars; i++) zcount++; // count leading zeroes
+    CC_XZEROMEM(buf, sizeof(buf));
     
-    for (; i < str.length; i++) {
-        if (s[i] & 0x80 || base58map[s[i]] == -1) return nil; // invalid base58 digit
-        c = (unsigned)base58map[s[i]];
+    for (i = zcount; i < self.length; i++) {
+        c = [self characterAtIndex:i];
+        if (c >= sizeof(base58map)/sizeof(*base58map) || base58map[c] == -1) return nil; // not a base58 digit
+        c = (uint32_t)base58map[c];
 
-        for (j = len; j--;) {
-            t = ((uint64_t)o[j])*58 + c;
+        for (j = sizeof(buf)/sizeof(*buf); j--;) {
+            t = ((uint64_t)buf[j])*58 + c;
             c = (t & 0x3f00000000) >> 32;
-            o[j] = t & 0xffffffff;
+            buf[j] = t & 0xffffffff;
         }
-        
-        if (c || o[0] & zmask) return nil; // output number too big
     }
     
-    j = 0;
+    i = j = 0;
 
-    switch (d.length % 4) {
-        case 3: *(b++) = (o[0] & 0xff0000) >> 16; // fall through
-        case 2: *(b++) = (o[0] & 0xff00) >> 8; // fall through
-        case 1: *(b++) = (o[0] & 0xff), j++;
+    switch (len % 4) {
+        case 3: *(b++) = (buf[0] & 0xff0000) >> 16; // fall through
+        case 2: *(b++) = (buf[0] & 0xff00) >> 8; // fall through
+        case 1: *(b++) = (buf[0] & 0xff), j++;
     }
     
-    for (; j < len; j++) {
-        *(b++) = (o[j] >> 0x18) & 0xff;
-        *(b++) = (o[j] >> 0x10) & 0xff;
-        *(b++) = (o[j] >> 0x08) & 0xff;
-        *(b++) = (o[j] >> 0x00) & 0xff;
-    }
-    
-    CC_XZEROMEM(o, len*sizeof(*o));
-    for (b = d.mutableBytes, len = d.length, i = 0; i < d.length && b[i] == 0; i++) len--; // correct base58 byte count
-    len += zcount;
-    if (len < d.length) [d replaceBytesInRange:NSMakeRange(0, d.length - len) withBytes:NULL length:0];
+    while (j < sizeof(buf)/sizeof(*buf)) *(uint32_t *)b = CFSwapInt32HostToBig(buf[j++]), b += sizeof(uint32_t);
+    while (i < d.length && ((unsigned char *)d.mutableBytes)[i] == 0) i++; // count leading zeroes
+    if (i > zcount) [d replaceBytesInRange:NSMakeRange(0, i - zcount) withBytes:NULL length:0]; // fixup leading zeroes
+
+    CC_XZEROMEM(buf, sizeof(buf));
     return d;
 }
 

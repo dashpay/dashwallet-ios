@@ -31,7 +31,7 @@
 #import "BRTransaction.h"
 #import "BRTransactionEntity.h"
 #import "BRAddressEntity.h"
-#import "NSString+Base58.h"
+#import "NSString+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 #import "Reachability.h"

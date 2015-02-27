@@ -33,11 +33,11 @@
 #import "BRBloomFilter.h"
 #import "BRMerkleBlock.h"
 #import "BRPaymentProtocol.h"
-#import "NSData+Hash.h"
+#import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
-#import "NSString+Base58.h"
+#import "NSString+Bitcoin.h"
 
-#define SKIP_BIP38 1
+//#define SKIP_BIP38 1
 
 @implementation BreadWalletTests
 
@@ -60,7 +60,7 @@
 - (void)testBase58
 {
     // test bad input
-    NSString *s = [NSString base58WithData:[@"#&$@*^(*#!^" base58ToData]];
+    NSString *s = [NSString base58WithData:[BTC @"#&$@*^(*#!^" base58ToData]];
 
     XCTAssertTrue(s.length == 0, @"[NSString base58WithData:]");
 
@@ -71,6 +71,13 @@
     s = [NSString base58WithData:[@"1111111111111111111111111111111111111111111111111111111111111111111" base58ToData]];
     XCTAssertEqualObjects(@"1111111111111111111111111111111111111111111111111111111111111111111", s,
                           @"[NSString base58WithData:]");
+    
+    s = [NSString base58WithData:[@"111111111111111111111111111111111111111111111111111111111111111111z" base58ToData]];
+    XCTAssertEqualObjects(@"111111111111111111111111111111111111111111111111111111111111111111z", s,
+                          @"[NSString base58WithData:]");
+
+    s = [NSString base58WithData:[@"z" base58ToData]];
+    XCTAssertEqualObjects(@"z", s, @"[NSString base58WithData:]");
     
     s = [NSString base58WithData:[@"" base58ToData]];
     XCTAssertEqualObjects(@"", s, @"[NSString base58WithData:]");

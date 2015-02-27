@@ -25,7 +25,7 @@
 
 #import "BRPaymentRequest.h"
 #import "BRPaymentProtocol.h"
-#import "NSString+Base58.h"
+#import "NSString+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 
 // BIP21 bitcoin URI object https://github.com/bitcoin/bips/blob/master/bip-0021.mediawiki

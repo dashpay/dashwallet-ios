@@ -24,7 +24,7 @@
 //  THE SOFTWARE.
 
 #import "BRKey+BIP38.h"
-#import "NSString+Base58.h"
+#import "NSString+Bitcoin.h"
 #import "NSData+Hash.h"
 #import "NSMutableData+Bitcoin.h"
 #import "ccMemory.h"

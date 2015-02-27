@@ -31,6 +31,8 @@
 #define BITCOIN_MAGIC_NUMBER 0xd9b4bef9
 #endif
 
+CFAllocatorRef SecureAllocator();
+
 @interface NSMutableData (Bitcoin)
 
 + (NSMutableData *)secureData;

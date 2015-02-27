@@ -24,6 +24,9 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
+#import <CommonCrypto/CommonDigest.h>
+
+#define RMD160_DIGEST_LENGTH (160/8)
 
 #define VAR_INT16_HEADER 0xfd
 #define VAR_INT32_HEADER 0xfe
@@ -41,6 +44,13 @@
 
 @interface NSData (Bitcoin)
 
+- (NSData *)SHA1;
+- (NSData *)SHA256;
+- (NSData *)SHA256_2;
+- (NSData *)RMD160;
+- (NSData *)hash160;
+- (NSData *)reverse;
+
 - (uint8_t)UInt8AtOffset:(NSUInteger)offset;
 - (uint16_t)UInt16AtOffset:(NSUInteger)offset;
 - (uint32_t)UInt32AtOffset:(NSUInteger)offset;
@@ -49,6 +59,7 @@
 - (NSData *)hashAtOffset:(NSUInteger)offset;
 - (NSString *)stringAtOffset:(NSUInteger)offset length:(NSUInteger *)length;
 - (NSData *)dataAtOffset:(NSUInteger)offset length:(NSUInteger *)length;
+
 - (NSArray *)scriptElements; // an array of NSNumber and NSData objects representing each script element
 - (int)intValue; // returns the opcode used to store the receiver in a script (i.e. OP_PUSHDATA1)
 

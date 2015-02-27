@@ -26,7 +26,6 @@
 #import "BRMerkleBlock.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSData+Bitcoin.h"
-#import "NSData+Hash.h"
 #import <openssl/bn.h>
 
 #define MAX_TIME_DRIFT    (2*60*60)     // the furthest in the future a block is allowed to be timestamped

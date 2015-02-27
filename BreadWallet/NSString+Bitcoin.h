@@ -1,5 +1,5 @@
 //
-//  NSData+Hash.h
+//  NSString+Bitcoin.h
 //  BreadWallet
 //
 //  Created by Aaron Voisine on 5/13/13.
@@ -24,17 +24,42 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
-#import <CommonCrypto/CommonDigest.h>
 
-#define RMD160_DIGEST_LENGTH (160/8)
+#define BITCOIN_PUBKEY_ADDRESS      0
+#define BITCOIN_SCRIPT_ADDRESS      5
+#define BITCOIN_PUBKEY_ADDRESS_TEST 111
+#define BITCOIN_SCRIPT_ADDRESS_TEST 196
+#define BITCOIN_PRIVKEY             128
+#define BITCOIN_PRIVKEY_TEST        239
 
-@interface NSData (Hash)
+#define BIP38_NOEC_PREFIX      0x0142
+#define BIP38_EC_PREFIX        0x0143
+#define BIP38_NOEC_FLAG        (0x80 | 0x40)
+#define BIP38_COMPRESSED_FLAG  0x20
+#define BIP38_LOTSEQUENCE_FLAG 0x04
+#define BIP38_INVALID_FLAG     (0x10 | 0x08 | 0x02 | 0x01)
 
-- (NSData *)SHA1;
-- (NSData *)SHA256;
-- (NSData *)SHA256_2;
-- (NSData *)RMD160;
-- (NSData *)hash160;
-- (NSData *)reverse;
+@interface NSString (Bitcoin)
+
++ (NSString *)base58WithData:(NSData *)d;
++ (NSString *)base58checkWithData:(NSData *)d;
++ (NSString *)hexWithData:(NSData *)d;
++ (NSString *)addressWithScriptPubKey:(NSData *)script;
++ (NSString *)addressWithScriptSig:(NSData *)script;
+
+- (NSData *)base58ToData;
+- (NSString *)hexToBase58;
+- (NSString *)base58ToHex;
+
+- (NSData *)base58checkToData;
+- (NSString *)hexToBase58check;
+- (NSString *)base58checkToHex;
+
+- (NSData *)hexToData;
+- (NSData *)addressToHash160;
+
+- (BOOL)isValidBitcoinAddress;
+- (BOOL)isValidBitcoinPrivateKey;
+- (BOOL)isValidBitcoinBIP38Key; // BIP38 encrypted keys: https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki
 
 @end
