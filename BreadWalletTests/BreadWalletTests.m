@@ -37,7 +37,7 @@
 #import "NSMutableData+Bitcoin.h"
 #import "NSString+Bitcoin.h"
 
-//#define SKIP_BIP38 1
+#define SKIP_BIP38 1
 
 @implementation BreadWalletTests
 
@@ -64,6 +64,9 @@
 
     XCTAssertTrue(s.length == 0, @"[NSString base58WithData:]");
 
+    s = [NSString base58WithData:[@"" base58ToData]];
+    XCTAssertEqualObjects(@"", s, @"[NSString base58WithData:]");
+
     s = [NSString base58WithData:[@"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz" base58ToData]];
     XCTAssertEqualObjects(@"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz", s,
                           @"[NSString base58WithData:]");
@@ -79,8 +82,17 @@
     s = [NSString base58WithData:[@"z" base58ToData]];
     XCTAssertEqualObjects(@"z", s, @"[NSString base58WithData:]");
     
-    s = [NSString base58WithData:[@"" base58ToData]];
-    XCTAssertEqualObjects(@"", s, @"[NSString base58WithData:]");
+    s = [NSString base58checkWithData:@"000000000000000000000000000000000000000000".hexToData];
+    XCTAssertEqualObjects(@"000000000000000000000000000000000000000000".hexToData, [s base58checkToData],
+                          @"[NSString base58checkWithData:]");
+
+    s = [NSString base58checkWithData:@"000000000000000000000000000000000000000001".hexToData];
+    XCTAssertEqualObjects(@"000000000000000000000000000000000000000001".hexToData, [s base58checkToData],
+                          @"[NSString base58checkWithData:]");
+
+    s = [NSString base58checkWithData:@"05FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF".hexToData];
+    XCTAssertEqualObjects(@"05FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF".hexToData, [s base58checkToData],
+                          @"[NSString base58checkWithData:]");
 }
 
 #pragma mark - testKey

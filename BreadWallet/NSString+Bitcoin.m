@@ -63,14 +63,14 @@ static const int8_t base58map[] = {
     
     for (i = zcount, high = sizeof(buf)/sizeof(*buf) - 1; i < d.length; i++, high = j) {
         for (carry = b[i], j = sizeof(buf)/sizeof(*buf) - 1; (j > high) || carry; j--) {
-            carry += 256*buf[j];
+            carry += (uint32_t)buf[j] << 8;
             buf[j] = carry % 58;
             carry /= 58;
         }
     }
     
-    for (j = 0; j < sizeof(buf)/sizeof(*buf) && buf[j] == 0; j++);
-    while (j < sizeof(buf)/sizeof(*buf)) CFStringAppendCharacters(s, &base58chars[buf[j++]], 1);
+    for (i = 0; i < sizeof(buf)/sizeof(*buf) && buf[i] == 0; i++);
+    while (i < sizeof(buf)/sizeof(*buf)) CFStringAppendCharacters(s, &base58chars[buf[i++]], 1);
 
     CC_XZEROMEM(buf, sizeof(buf));
     return CFBridgingRelease(s);
@@ -176,12 +176,12 @@ static const int8_t base58map[] = {
 
 - (NSData *)base58ToData
 {
-    uint32_t zcount = 0;
+    NSMutableData *d = [NSMutableData secureDataWithCapacity:self.length];
+    size_t i, j, zcount = 0;
 
     while (zcount < self.length && [self characterAtIndex:zcount] == *base58chars) zcount++; // count leading zeroes
 
-    NSMutableData *d = [NSMutableData dataWithLength:zcount];
-    uint32_t buf[((self.length - zcount) + 3)/4], c, i, j;
+    uint32_t buf[((self.length - zcount)*100/136)/4 + 1], c;
     uint64_t t;
 
     CC_XZEROMEM(buf, sizeof(buf));
@@ -193,14 +193,15 @@ static const int8_t base58map[] = {
 
         for (j = sizeof(buf)/sizeof(*buf); j--;) {
             t = ((uint64_t)buf[j])*58 + c;
-            c = (t & 0x3f00000000) >> 32;
-            buf[j] = t & 0xffffffff;
+            c = (t & 0x3f00000000ULL) >> 32;
+            buf[j] = t & 0xffffffffu;
         }
     }
     
     for (i = 0; i < sizeof(buf)/sizeof(*buf); i++) buf[i] = CFSwapInt32HostToBig(buf[i]);
-    for (j = 0; j < sizeof(buf) && ((unsigned char *)buf)[j] == 0; j++);
-    [d appendBytes:&((unsigned char *)buf)[j] length:sizeof(buf) - j];
+    for (i = 0; i < sizeof(buf) && ((unsigned char *)buf)[i] == 0; i++);
+    d.length = zcount;
+    [d appendBytes:&((unsigned char *)buf)[i] length:sizeof(buf) - i];
 
     CC_XZEROMEM(buf, sizeof(buf));
     return d;
