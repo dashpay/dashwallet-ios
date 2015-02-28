@@ -4,7 +4,6 @@
 //
 //  Created by Aaron Voisine on 5/13/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
-//  base58 encoding/decoding based on libbase58, Copyright 2012-2014 Luke Dashjr
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +27,6 @@
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 #import "ccMemory.h"
-#include "string.h"
 
 static const UniChar base58chars[] = {
     '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P',
@@ -51,27 +49,31 @@ static const int8_t base58map[] = {
 
 + (NSString *)base58WithData:(NSData *)d
 {
-    CFMutableStringRef s = CFStringCreateMutable(SecureAllocator(), d.length*138/100);
-    const uint8_t *b = d.bytes;
-    ssize_t i, j, high, carry, zcount = 0;
+    size_t i, z = 0;
     
-    while (zcount < d.length && b[zcount] == 0) CFStringAppendCharacters(s, base58chars, 1), zcount++; // leading zeroes
+    while (z < d.length && ((const uint8_t *)d.bytes)[z] == 0) z++; // count leading zeroes
     
-    uint8_t buf[(d.length - zcount)*138/100 + 1];
+    uint8_t buf[(d.length - z)*138/100 + 1]; // log(256)/log(58), rounded up
 
     CC_XZEROMEM(buf, sizeof(buf));
-    
-    for (i = zcount, high = sizeof(buf)/sizeof(*buf) - 1; i < d.length; i++, high = j) {
-        for (carry = b[i], j = sizeof(buf)/sizeof(*buf) - 1; (j > high) || carry; j--) {
+
+    for (i = z; i < d.length; i++) {
+        uint32_t carry = ((const uint8_t *)d.bytes)[i];
+
+        for (ssize_t j = sizeof(buf) - 1; j >= 0; j--) {
             carry += (uint32_t)buf[j] << 8;
             buf[j] = carry % 58;
             carry /= 58;
         }
     }
-    
-    for (i = 0; i < sizeof(buf)/sizeof(*buf) && buf[i] == 0; i++);
-    while (i < sizeof(buf)/sizeof(*buf)) CFStringAppendCharacters(s, &base58chars[buf[i++]], 1);
 
+    i = 0;
+    while (i < sizeof(buf) && buf[i] == 0) i++; // skip leading zeroes
+
+    CFMutableStringRef s = CFStringCreateMutable(SecureAllocator(), z + sizeof(buf) - i);
+    
+    while (z-- > 0) CFStringAppendCharacters(s, base58chars, 1);
+    while (i < sizeof(buf)) CFStringAppendCharacters(s, &base58chars[buf[i++]], 1);
     CC_XZEROMEM(buf, sizeof(buf));
     return CFBridgingRelease(s);
 }
@@ -176,36 +178,39 @@ static const int8_t base58map[] = {
 
 - (NSData *)base58ToData
 {
-    NSMutableData *d = [NSMutableData secureDataWithCapacity:self.length];
-    size_t i, j, zcount = 0;
-
-    while (zcount < self.length && [self characterAtIndex:zcount] == *base58chars) zcount++; // count leading zeroes
-
-    uint32_t buf[((self.length - zcount)*100/136)/4 + 1], c;
-    uint64_t t;
-
+    size_t i, z = 0;
+    
+    while (z < self.length && [self characterAtIndex:z] == *base58chars) z++; // count leading zeroes
+    
+    uint8_t buf[(self.length - z)*733/1000 + 1]; // log(58)/log(256), rounded up
+    
     CC_XZEROMEM(buf, sizeof(buf));
     
-    for (i = zcount; i < self.length; i++) {
-        c = [self characterAtIndex:i];
-        if (c >= sizeof(base58map)/sizeof(*base58map) || base58map[c] == -1) return nil; // not a base58 digit
-        c = (uint32_t)base58map[c];
+    for (i = z; i < self.length; i++) {
+        UniChar c = [self characterAtIndex:i];
+        
+        if (c >= sizeof(base58map)/sizeof(*base58map) || base58map[c] == -1) break; // invalid base58 digit
 
-        for (j = sizeof(buf)/sizeof(*buf); j--;) {
-            t = ((uint64_t)buf[j])*58 + c;
-            c = (t & 0x3f00000000ULL) >> 32;
-            buf[j] = t & 0xffffffffu;
+        uint32_t carry = base58map[c];
+        
+        for (ssize_t j = sizeof(buf) - 1; j >= 0; j--) {
+            carry += (uint32_t)buf[j]*58;
+            buf[j] = carry & 0xff;
+            carry >>= 8;
         }
     }
     
-    for (i = 0; i < sizeof(buf)/sizeof(*buf); i++) buf[i] = CFSwapInt32HostToBig(buf[i]);
-    for (i = 0; i < sizeof(buf) && ((unsigned char *)buf)[i] == 0; i++);
-    d.length = zcount;
-    [d appendBytes:&((unsigned char *)buf)[i] length:sizeof(buf) - i];
+    i = 0;
+    while (i < sizeof(buf) && buf[i] == 0) i++; // skip leading zeroes
 
+    NSMutableData *d = [NSMutableData secureDataWithCapacity:z + sizeof(buf) - i];
+
+    d.length = z;
+    [d appendBytes:&buf[i] length:sizeof(buf) - i];
     CC_XZEROMEM(buf, sizeof(buf));
     return d;
 }
+
 
 - (NSString *)hexToBase58
 {
