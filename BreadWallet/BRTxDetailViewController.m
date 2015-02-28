@@ -29,7 +29,7 @@
 #import "BRPeerManager.h"
 #import "BRCopyLabel.h"
 #import "NSString+Bitcoin.h"
-#import "NSData+Hash.h"
+#import "NSData+Bitcoin.h"
 
 #define TRANSACTION_CELL_HEIGHT 75
 

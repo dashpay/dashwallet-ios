@@ -55,7 +55,7 @@ static const int8_t base58map[] = {
     const uint8_t *b = d.bytes;
     ssize_t i, j, high, carry, zcount = 0;
     
-    while (zcount < d.length && b[zcount] == 0) zcount++; // count leading zeroes
+    while (zcount < d.length && b[zcount] == 0) CFStringAppendCharacters(s, base58chars, 1), zcount++; // leading zeroes
     
     uint8_t buf[(d.length - zcount)*138/100 + 1];
 
@@ -69,7 +69,6 @@ static const int8_t base58map[] = {
         }
     }
     
-    for (i = 0; i < zcount; i++) CFStringAppendCharacters(s, base58chars, 1);
     for (j = 0; j < sizeof(buf)/sizeof(*buf) && buf[j] == 0; j++);
     while (j < sizeof(buf)/sizeof(*buf)) CFStringAppendCharacters(s, &base58chars[buf[j++]], 1);
 
@@ -181,9 +180,8 @@ static const int8_t base58map[] = {
 
     while (zcount < self.length && [self characterAtIndex:zcount] == *base58chars) zcount++; // count leading zeroes
 
-    NSMutableData *d = [NSMutableData secureDataWithLength:self.length];
-    unsigned char *b = (unsigned char *)d.mutableBytes + zcount;
-    uint32_t len = d.length - zcount, buf[(len + 3)/4], c, i, j;
+    NSMutableData *d = [NSMutableData dataWithLength:zcount];
+    uint32_t buf[((self.length - zcount) + 3)/4], c, i, j;
     uint64_t t;
 
     CC_XZEROMEM(buf, sizeof(buf));
@@ -200,17 +198,9 @@ static const int8_t base58map[] = {
         }
     }
     
-    i = j = 0;
-
-    switch (len % 4) {
-        case 3: *(b++) = (buf[0] & 0xff0000) >> 16; // fall through
-        case 2: *(b++) = (buf[0] & 0xff00) >> 8; // fall through
-        case 1: *(b++) = (buf[0] & 0xff), j++;
-    }
-    
-    while (j < sizeof(buf)/sizeof(*buf)) *(uint32_t *)b = CFSwapInt32HostToBig(buf[j++]), b += sizeof(uint32_t);
-    while (i < d.length && ((unsigned char *)d.mutableBytes)[i] == 0) i++; // count leading zeroes
-    if (i > zcount) [d replaceBytesInRange:NSMakeRange(0, i - zcount) withBytes:NULL length:0]; // fixup leading zeroes
+    for (i = 0; i < sizeof(buf)/sizeof(*buf); i++) buf[i] = CFSwapInt32HostToBig(buf[i]);
+    for (j = 0; j < sizeof(buf) && ((unsigned char *)buf)[j] == 0; j++);
+    [d appendBytes:&((unsigned char *)buf)[j] length:sizeof(buf) - j];
 
     CC_XZEROMEM(buf, sizeof(buf));
     return d;

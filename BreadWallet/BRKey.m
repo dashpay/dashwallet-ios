@@ -25,7 +25,7 @@
 
 #import "BRKey.h"
 #import "NSString+Bitcoin.h"
-#import "NSData+Hash.h"
+#import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 #import <CommonCrypto/CommonHMAC.h>
 #import <openssl/ecdsa.h>
