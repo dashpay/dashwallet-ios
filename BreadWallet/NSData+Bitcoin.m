@@ -72,7 +72,7 @@ static void RMDcompress(uint32_t *b, uint32_t *x)
 {
     uint32_t al = b[0], bl = b[1], cl = b[2], dl = b[3], el = b[4], ar = al, br = bl, cr = cl, dr = dl, er = el, i, t;
 
-    for (i = 0; i < 16; i++) x[i] = CFSwapInt32HostToLittle(x[i]); // make sure x is little endian
+    for (i = 0; i < 16; i++) x[i] = CFSwapInt32LittleToHost(x[i]); // make sure x is little endian
 
     // round 1
     for (i = 0; i < 16; i++) rmd(t, f(bl, cl, dl) + x[l1[i]] + 0x00000000u, sl1[i], al, el, dl, cl, bl); // left line
@@ -115,14 +115,11 @@ static void RMD160(const void *data, size_t len, uint8_t *md)
     }
     
     ((uint8_t *)x)[len - i] = 0x80; // append padding
-    if (len - i > 55) { RMDcompress(buf, x); memset(x, 0, sizeof(x)); }
-    x[14] = CFSwapInt32HostToLittle(len << 3);
-    x[15] = CFSwapInt32HostToLittle(len >> 29);
+    if (len - i > 55) RMDcompress(buf, x), memset(x, 0, sizeof(x));
+    x[14] = CFSwapInt32HostToLittle((uint32_t)len << 3);
+    x[15] = CFSwapInt32HostToLittle((uint32_t)len >> 29);
     RMDcompress(buf, x);
-
-    for (i = 0; i < RMD160_DIGEST_LENGTH/sizeof(uint32_t); i++) {
-        ((uint32_t *)md)[i] = CFSwapInt32HostToLittle(buf[i]);
-    }
+    for (i = 0; i < sizeof(buf)/sizeof(*buf); i++) ((uint32_t *)md)[i] = CFSwapInt32HostToLittle(buf[i]);
 }
 
 @implementation NSData (Bitcoin)
