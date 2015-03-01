@@ -96,26 +96,23 @@ static void RMDcompress(uint32_t *b, uint32_t *x)
     
     t = b[1] + cl + dr;
     b[1] = b[2] + dl + er, b[2] = b[3] + el + ar, b[3] = b[4] + al + br, b[4] = b[0] + bl + cr, b[0] = t; // combine
+    memset(x, 0, sizeof(*x)*16); // clear x
 }
 
 static void RMD160(const void *data, size_t len, uint8_t *md)
 {
-    uint32_t x[16], buf[] = { 0x67452301u, 0xefcdab89u, 0x98badcfeu, 0x10325476u, 0xc3d2e1f0u }, i = 0;
-
+    uint32_t buf[] = { 0x67452301u, 0xefcdab89u, 0x98badcfeu, 0x10325476u, 0xc3d2e1f0u },
+             x[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, i = 0;
+    
     while (i <= len) {
-        if (i + sizeof(x) >= len) {
-            memset(x, 0, sizeof(x));
-            memcpy(x, &((uint8_t *)data)[i], len - i);
-            break;
-        }
-
-        memcpy(x, &((uint8_t *)data)[i], sizeof(x));
+        memcpy(x, &((uint8_t *)data)[i], (i + sizeof(x) <= len) ? sizeof(x) : len - i);
+        if (i + sizeof(x) > len) break;
         RMDcompress(buf, x);
         i += sizeof(x);
     }
     
     ((uint8_t *)x)[len - i] = 0x80; // append padding
-    if (len - i > 55) RMDcompress(buf, x), memset(x, 0, sizeof(x));
+    if (len - i > 55) RMDcompress(buf, x);
     x[14] = CFSwapInt32HostToLittle((uint32_t)len << 3);
     x[15] = CFSwapInt32HostToLittle((uint32_t)len >> 29);
     RMDcompress(buf, x);
