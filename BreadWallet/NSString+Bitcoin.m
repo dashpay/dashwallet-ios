@@ -211,7 +211,6 @@ static const int8_t base58map[] = {
     return d;
 }
 
-
 - (NSString *)hexToBase58
 {
     return [[self class] base58WithData:self.hexToData];
