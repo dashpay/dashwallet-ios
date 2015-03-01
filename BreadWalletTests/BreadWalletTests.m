@@ -95,6 +95,33 @@
                           @"[NSString base58checkWithData:]");
 }
 
+#pragma mark - testRMD160
+
+- (void)testRMD160
+{
+    NSData *d = [@"Free online RIPEMD160 Calculator, type text here..." dataUsingEncoding:NSUTF8StringEncoding].RMD160;
+    
+    XCTAssertEqualObjects(@"9501a56fb829132b8748f0ccc491f0ecbc7f945b".hexToData, d, @"[NSData RMD160]");
+    
+    d = [@"this is some text to test the ripemd160 implementation with more than 64bytes of data since it's internal "
+         "digest buffer is 64bytes in size" dataUsingEncoding:NSUTF8StringEncoding].RMD160;
+    XCTAssertEqualObjects(@"4402eff42157106a5d92e4d946185856fbc50e09".hexToData, d, @"[NSData RMD160]");
+
+    d = [@"12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234"
+         dataUsingEncoding:NSUTF8StringEncoding].RMD160;
+    XCTAssertEqualObjects(@"ca345c3eeef382555e6f5d2e7cf21c1e1ee34618".hexToData, d, @"[NSData RMD160]");
+
+    d = [@"1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
+         dataUsingEncoding:NSUTF8StringEncoding].RMD160;
+    XCTAssertEqualObjects(@"9d0783b04b3cd6a327e6dcfb15fe864651bd84fa".hexToData, d, @"[NSData RMD160]");
+
+    d = [NSData data].RMD160; // empty
+    XCTAssertEqualObjects(@"9c1185a5c5e9fc54612808977ee8f548b2258d31".hexToData, d, @"[NSData RMD160]");
+    
+    d = [@"a" dataUsingEncoding:NSUTF8StringEncoding].RMD160;
+    XCTAssertEqualObjects(@"0bdc9d2d256b3ee9daae347be6f4dc835a467ffe".hexToData, d, @"[NSData RMD160]");
+}
+
 #pragma mark - testKey
 
 #if ! BITCOIN_TESTNET
