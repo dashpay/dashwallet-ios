@@ -111,10 +111,9 @@ static void RMD160(const void *data, size_t len, uint8_t *md)
     
     ((uint8_t *)x)[len - i] = 0x80; // append padding
     if (len - i > 55) RMDcompress(buf, x); // length goes to next block
-    x[14] = CFSwapInt32HostToLittle((uint32_t)len << 3); // append length in bits
-    x[15] = CFSwapInt32HostToLittle((uint32_t)len >> 29);
-    RMDcompress(buf, x);
-    for (i = 0; i < sizeof(buf)/sizeof(*buf); i++) ((uint32_t *)md)[i] = CFSwapInt32HostToLittle(buf[i]);
+    *(uint64_t *)&x[14] = CFSwapInt64HostToLittle((uint64_t)len << 3); // append length in bits
+    RMDcompress(buf, x); // finalize
+    for (i = 0; i < sizeof(buf)/sizeof(*buf); i++) ((uint32_t *)md)[i] = CFSwapInt32HostToLittle(buf[i]); // write to md
 }
 
 @implementation NSData (Bitcoin)
@@ -124,7 +123,6 @@ static void RMD160(const void *data, size_t len, uint8_t *md)
     NSMutableData *d = [NSMutableData dataWithLength:CC_SHA1_DIGEST_LENGTH];
     
     CC_SHA1(self.bytes, (CC_LONG)self.length, d.mutableBytes);
-    
     return d;
 }
 
@@ -133,7 +131,6 @@ static void RMD160(const void *data, size_t len, uint8_t *md)
     NSMutableData *d = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH];
     
     CC_SHA256(self.bytes, (CC_LONG)self.length, d.mutableBytes);
-    
     return d;
 }
 
@@ -143,7 +140,6 @@ static void RMD160(const void *data, size_t len, uint8_t *md)
     
     CC_SHA256(self.bytes, (CC_LONG)self.length, d.mutableBytes);
     CC_SHA256(d.bytes, (CC_LONG)d.length, d.mutableBytes);
-    
     return d;
 }
 
@@ -152,13 +148,17 @@ static void RMD160(const void *data, size_t len, uint8_t *md)
     NSMutableData *d = [NSMutableData dataWithLength:RMD160_DIGEST_LENGTH];
     
     RMD160(self.bytes, (uint32_t)self.length, d.mutableBytes);
-
     return d;
 }
 
 - (NSData *)hash160
 {
-    return self.SHA256.RMD160;
+    NSMutableData *d = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH];
+    
+    CC_SHA256(self.bytes, (CC_LONG)self.length, d.mutableBytes);
+    RMD160(d.bytes, (uint32_t)d.length, d.mutableBytes);
+    d.length = RMD160_DIGEST_LENGTH;
+    return d;
 }
 
 - (NSData *)reverse
