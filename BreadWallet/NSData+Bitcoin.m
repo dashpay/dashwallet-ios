@@ -37,8 +37,8 @@
 #define j(x, y, z) ((x) ^ ((y) | ~(z)))
 
 // basic ripemd operation
-#define rmd(a, b, c, d, e, f, g, h) \
-    ((a) = rotl((d) + (b), (c)) + (e), (d) = (e), (e) = (f), (f) = rotl((g), 10), (g) = (h), (h) = (a))
+#define rmd(a, b, c, d, e, f, g, h, i, j) ((a) = rotl((f) + (b) + CFSwapInt32LittleToHost(c) + (d), (e)) + (g),\
+    (f) = (g), (g) = (h), (h) = rotl((i), 10), (i) = (j), (j) = (a))
 
 // ripemd left line
 static const uint8_t rl1[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }, // round 1, id
@@ -72,27 +72,25 @@ static void RMDcompress(uint32_t *b, uint32_t *x)
 {
     uint32_t al = b[0], bl = b[1], cl = b[2], dl = b[3], el = b[4], ar = al, br = bl, cr = cl, dr = dl, er = el, i, t;
 
-    for (i = 0; i < 16; i++) x[i] = CFSwapInt32LittleToHost(x[i]); // make sure x is little endian
-
     // round 1
-    for (i = 0; i < 16; i++) rmd(t, f(bl, cl, dl) + x[rl1[i]] + 0x00000000u, sl1[i], al, el, dl, cl, bl); // left line
-    for (i = 0; i < 16; i++) rmd(t, j(br, cr, dr) + x[rr1[i]] + 0x50a28be6u, sr1[i], ar, er, dr, cr, br); // right line
+    for (i = 0; i < 16; i++) rmd(t, f(bl, cl, dl), x[rl1[i]], 0x00000000u, sl1[i], al, el, dl, cl, bl); // left line
+    for (i = 0; i < 16; i++) rmd(t, j(br, cr, dr), x[rr1[i]], 0x50a28be6u, sr1[i], ar, er, dr, cr, br); // right line
     
     // round 2
-    for (i = 0; i < 16; i++) rmd(t, g(bl, cl, dl) + x[rl2[i]] + 0x5a827999u, sl2[i], al, el, dl, cl, bl); // left line
-    for (i = 0; i < 16; i++) rmd(t, i(br, cr, dr) + x[rr2[i]] + 0x5c4dd124u, sr2[i], ar, er, dr, cr, br); // right line
+    for (i = 0; i < 16; i++) rmd(t, g(bl, cl, dl), x[rl2[i]], 0x5a827999u, sl2[i], al, el, dl, cl, bl); // left line
+    for (i = 0; i < 16; i++) rmd(t, i(br, cr, dr), x[rr2[i]], 0x5c4dd124u, sr2[i], ar, er, dr, cr, br); // right line
     
     // round 3
-    for (i = 0; i < 16; i++) rmd(t, h(bl, cl, dl) + x[rl3[i]] + 0x6ed9eba1u, sl3[i], al, el, dl, cl, bl); // left line
-    for (i = 0; i < 16; i++) rmd(t, h(br, cr, dr) + x[rr3[i]] + 0x6d703ef3u, sr3[i], ar, er, dr, cr, br); // right line
+    for (i = 0; i < 16; i++) rmd(t, h(bl, cl, dl), x[rl3[i]], 0x6ed9eba1u, sl3[i], al, el, dl, cl, bl); // left line
+    for (i = 0; i < 16; i++) rmd(t, h(br, cr, dr), x[rr3[i]], 0x6d703ef3u, sr3[i], ar, er, dr, cr, br); // right line
     
     // round 4
-    for (i = 0; i < 16; i++) rmd(t, i(bl, cl, dl) + x[rl4[i]] + 0x8f1bbcdcu, sl4[i], al, el, dl, cl, bl); // left line
-    for (i = 0; i < 16; i++) rmd(t, g(br, cr, dr) + x[rr4[i]] + 0x7a6d76e9u, sr4[i], ar, er, dr, cr, br); // right line
+    for (i = 0; i < 16; i++) rmd(t, i(bl, cl, dl), x[rl4[i]], 0x8f1bbcdcu, sl4[i], al, el, dl, cl, bl); // left line
+    for (i = 0; i < 16; i++) rmd(t, g(br, cr, dr), x[rr4[i]], 0x7a6d76e9u, sr4[i], ar, er, dr, cr, br); // right line
     
     // round 5
-    for (i = 0; i < 16; i++) rmd(t, j(bl, cl, dl) + x[rl5[i]] + 0xa953fd4eu, sl5[i], al, el, dl, cl, bl); // left line
-    for (i = 0; i < 16; i++) rmd(t, f(br, cr, dr) + x[rr5[i]] + 0x00000000u, sr5[i], ar, er, dr, cr, br); // right line
+    for (i = 0; i < 16; i++) rmd(t, j(bl, cl, dl), x[rl5[i]], 0xa953fd4eu, sl5[i], al, el, dl, cl, bl); // left line
+    for (i = 0; i < 16; i++) rmd(t, f(br, cr, dr), x[rr5[i]], 0x00000000u, sr5[i], ar, er, dr, cr, br); // right line
     
     t = b[1] + cl + dr;
     b[1] = b[2] + dl + er, b[2] = b[3] + el + ar, b[3] = b[4] + al + br, b[4] = b[0] + bl + cr, b[0] = t; // combine
