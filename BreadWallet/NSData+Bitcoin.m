@@ -92,7 +92,7 @@ static void RMDcompress(uint32_t *b, uint32_t *x)
     for (i = 0; i < 16; i++) rmd(t, j(bl, cl, dl), x[rl5[i]], 0xa953fd4eu, sl5[i], al, el, dl, cl, bl); // left line
     for (i = 0; i < 16; i++) rmd(t, f(br, cr, dr), x[rr5[i]], 0x00000000u, sr5[i], ar, er, dr, cr, br); // right line
     
-    t = b[1] + cl + dr;
+    t = b[1] + cl + dr; // final result for b[0]
     b[1] = b[2] + dl + er, b[2] = b[3] + el + ar, b[3] = b[4] + al + br, b[4] = b[0] + bl + cr, b[0] = t; // combine
     memset(x, 0, sizeof(*x)*16); // clear x
 }
@@ -100,18 +100,18 @@ static void RMDcompress(uint32_t *b, uint32_t *x)
 // ripemd-160 hash function: http://homes.esat.kuleuven.be/~bosselae/ripemd160.html
 static void RMD160(const void *data, size_t len, uint8_t *md)
 {
-    uint32_t buf[] = { 0x67452301u, 0xefcdab89u, 0x98badcfeu, 0x10325476u, 0xc3d2e1f0u },
+    uint32_t buf[] = { 0x67452301u, 0xefcdab89u, 0x98badcfeu, 0x10325476u, 0xc3d2e1f0u }, // initial buffer values
              x[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, i;
     
-    for (i = 0; i <= len; i += sizeof(x)) {
-        memcpy(x, &((const uint8_t *)data)[i], (i + sizeof(x) < len) ? sizeof(x) : len - i);
+    for (i = 0; i <= len; i += sizeof(x)) { // process data in 64 byte blocks
+        memcpy(x, (const uint8_t *)data + i, (i + sizeof(x) < len) ? sizeof(x) : len - i);
         if (i + sizeof(x) > len) break;
         RMDcompress(buf, x);
     }
     
     ((uint8_t *)x)[len - i] = 0x80; // append padding
-    if (len - i > 55) RMDcompress(buf, x);
-    x[14] = CFSwapInt32HostToLittle((uint32_t)len << 3);
+    if (len - i > 55) RMDcompress(buf, x); // length goes to next block
+    x[14] = CFSwapInt32HostToLittle((uint32_t)len << 3); // append length in bits
     x[15] = CFSwapInt32HostToLittle((uint32_t)len >> 29);
     RMDcompress(buf, x);
     for (i = 0; i < sizeof(buf)/sizeof(*buf); i++) ((uint32_t *)md)[i] = CFSwapInt32HostToLittle(buf[i]);
