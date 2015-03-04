@@ -139,9 +139,8 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 // target is correct for the block's height in the chain, use verifyDifficultyFromPreviousBlock: for that
 - (BOOL)isValid
 {
-    static uint32_t maxsize = (MAX_PROOF_OF_WORK >> 24), maxtarget = MAX_PROOF_OF_WORK & 0x007fffffu;
-    const uint32_t *b = _blockHash.bytes;
-    uint32_t size = _target >> 24, target = _target & 0x00ffffffu;
+    static const uint32_t maxsize = MAX_PROOF_OF_WORK >> 24, maxtarget = MAX_PROOF_OF_WORK & 0x00ffffffu;
+    const uint32_t *b = _blockHash.bytes, size = _target >> 24, target = _target & 0x00ffffffu;
     NSMutableData *d = [NSMutableData data];
     int hashIdx = 0, flagIdx = 0;
     NSData *merkleRoot =
@@ -230,7 +229,6 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 - (BOOL)verifyDifficultyFromPreviousBlock:(BRMerkleBlock *)previous andTransitionTime:(NSTimeInterval)time
 {
     if (! [_prevBlock isEqual:previous.blockHash] || _height != previous.height + 1) return NO;
-    if ((previous.target & 0x00800000u) != 0) return NO; // previous block has an invalid (negative) difficulty target
     if ((_height % BLOCK_DIFFICULTY_INTERVAL) == 0 && time == 0) return NO;
 
 #if BITCOIN_TESTNET
@@ -240,9 +238,9 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 
     if ((_height % BLOCK_DIFFICULTY_INTERVAL) != 0) return (_target == previous.target) ? YES : NO;
 
-    static uint32_t maxsize = (MAX_PROOF_OF_WORK >> 24), maxtarget = MAX_PROOF_OF_WORK & 0x007fffffu;
+    static const uint32_t maxsize = MAX_PROOF_OF_WORK >> 24, maxtarget = MAX_PROOF_OF_WORK & 0x00ffffffu;
     uint32_t size = previous.target >> 24;
-    double target = previous.target & 0x007fffffu;
+    double target = previous.target & 0x00ffffffu;
     int32_t timespan = (int32_t)((int64_t)previous.timestamp - (int64_t)time);
 
     // limit difficulty transition to -75% or +400%
@@ -252,9 +250,9 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     target *= timespan;
     target /= TARGET_TIMESPAN;
     
-    while (target < 0x0007ffffu) target *= 256, size--;
-    while (target > 0x007fffffu) target /= 256, size++;
-    if (size > maxsize || (size == maxsize && target > maxtarget)) target = maxtarget, size = maxsize;
+    while ((uint32_t)(target + DBL_EPSILON) < 0x00080000u) target *= 256, size--;
+    while ((uint32_t)(target + DBL_EPSILON) > 0x007fffffu) target /= 256, size++;
+    if (size > maxsize || (size == maxsize && target + DBL_EPSILON > maxtarget)) target = maxtarget, size = maxsize;
     
     return (_target == ((uint32_t)(target + DBL_EPSILON) | size << 24)) ? YES : NO;
 }
