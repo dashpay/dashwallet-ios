@@ -26,46 +26,10 @@
 #import "BRMerkleBlock.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSData+Bitcoin.h"
-#import <openssl/bn.h>
 
 #define MAX_TIME_DRIFT    (2*60*60)     // the furthest in the future a block is allowed to be timestamped
 #define MAX_PROOF_OF_WORK 0x1d00ffffu   // highest value for difficulty target (higher values are less difficult)
 #define TARGET_TIMESPAN   (14*24*60*60) // the targeted timespan between difficulty target adjustments
-
-// convert difficulty target format to bignum, as per:
-// https://github.com/bitcoin/bitcoin/blob/master/src/arith_uint256.cpp#L203
-static void setCompact(BIGNUM *bn, uint32_t compact)
-{
-    uint32_t size = compact >> 24, word = compact & 0x007fffff;
-    
-    if (size > 3) {
-        BN_set_word(bn, word);
-        BN_lshift(bn, bn, (size - 3)*8);
-    }
-    else BN_set_word(bn, word >> (3 - size)*8);
-    
-    BN_set_negative(bn, (compact & 0x00800000) != 0);
-}
-
-static uint32_t getCompact(const BIGNUM *bn)
-{
-    uint32_t size = BN_num_bytes(bn), compact = 0;
-    BIGNUM x;
-
-    if (size > 3) {
-        BN_init(&x);
-        BN_rshift(&x, bn, (size - 3)*8);
-        compact = BN_get_word(&x);
-    }
-    else compact = BN_get_word(bn) << (3 - size)*8;
-
-    if (compact & 0x00800000) { // 0x00800000 bit denotes the sign, if set, divide mantissa by 256 and increase exponent
-        compact >>= 8;
-        size++;
-    }
-
-    return (compact | size << 24) | (BN_is_negative(bn) ? 0x00800000 : 0);
-}
 
 // from https://en.bitcoin.it/wiki/Protocol_specification#Merkle_Trees
 // Merkle trees are binary trees of hashes. Merkle trees in bitcoin use a double SHA-256, the SHA-256 hash of the
@@ -115,6 +79,7 @@ static uint32_t getCompact(const BIGNUM *bn)
     if (message.length < 80) return nil;
 
     NSUInteger off = 0, l = 0, len = 0;
+    NSMutableData *d = [NSMutableData data];
 
     _version = [message UInt32AtOffset:off];
     off += sizeof(uint32_t);
@@ -137,6 +102,14 @@ static uint32_t getCompact(const BIGNUM *bn)
     _flags = [message dataAtOffset:off length:&l];
     _height = BLOCK_UNKOWN_HEIGHT;
     
+    [d appendUInt32:_version];
+    [d appendData:_prevBlock];
+    [d appendData:_merkleRoot];
+    [d appendUInt32:_timestamp + NSTimeIntervalSince1970];
+    [d appendUInt32:_target];
+    [d appendUInt32:_nonce];
+    _blockHash = d.SHA256_2;
+
     return self;
 }
 
@@ -161,30 +134,15 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     return self;
 }
 
-- (NSData *)blockHash
-{
-    if (! _blockHash) {
-        NSMutableData *d = [NSMutableData data];
-        
-        [d appendUInt32:_version];
-        [d appendData:_prevBlock];
-        [d appendData:_merkleRoot];
-        [d appendUInt32:_timestamp + NSTimeIntervalSince1970];
-        [d appendUInt32:_target];
-        [d appendUInt32:_nonce];
-        _blockHash = d.SHA256_2;
-    }
-
-    return _blockHash;
-}
-
 // true if merkle tree and timestamp are valid, and proof-of-work matches the stated difficulty target
 // NOTE: this only checks if the block difficulty matches the difficulty target in the header, it does not check if the
 // target is correct for the block's height in the chain, use verifyDifficultyFromPreviousBlock: for that
 - (BOOL)isValid
 {
+    static uint32_t maxsize = (MAX_PROOF_OF_WORK >> 24), maxtarget = MAX_PROOF_OF_WORK & 0x007fffffu;
+    const uint32_t *b = _blockHash.bytes;
+    uint32_t size = _target >> 24, target = _target & 0x00ffffffu;
     NSMutableData *d = [NSMutableData data];
-    BIGNUM target, maxTarget, hash;
     int hashIdx = 0, flagIdx = 0;
     NSData *merkleRoot =
         [self _walk:&hashIdx :&flagIdx :0 :^id (NSData *hash, BOOL flag) {
@@ -200,17 +158,18 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     //TODO: use estimated network time instead of system time (avoids timejacking attacks and misconfigured time)
     if (_timestamp > [NSDate timeIntervalSinceReferenceDate] + MAX_TIME_DRIFT) return NO; // timestamp too far in future
     
-    // check proof-of-work
-    BN_init(&target);
-    BN_init(&maxTarget);
-    setCompact(&target, _target);
-    setCompact(&maxTarget, MAX_PROOF_OF_WORK);
-    if (BN_cmp(&target, BN_value_one()) < 0 || BN_cmp(&target, &maxTarget) > 0) return NO; // target out of range
+    // proof-of-work target out of range
+    if (target == 0 || target & 0x00800000u || size > maxsize || (size == maxsize && target > maxtarget)) return NO;
 
-    BN_init(&hash);
-    BN_bin2bn(_blockHash.reverse.bytes, (int)_blockHash.length, &hash);
-    if (BN_cmp(&hash, &target) > 0) return NO; // block not as difficult as target (smaller values are more difficult)
-
+    d = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH];
+    if (size > 3) *(uint32_t *)((uint8_t *)d.mutableBytes + size - 3) = CFSwapInt32HostToLittle(target);
+    else *(uint32_t *)d.mutableBytes = CFSwapInt32HostToLittle(target >> (3 - size)*8);
+    
+    for (int i = CC_SHA256_DIGEST_LENGTH/sizeof(uint32_t) - 1; i >= 0; i--) { // check proof-of-work
+        if (CFSwapInt32LittleToHost(b[i]) < CFSwapInt32LittleToHost(((const uint32_t *)d.bytes)[i])) break;
+        if (CFSwapInt32LittleToHost(b[i]) > CFSwapInt32LittleToHost(((const uint32_t *)d.bytes)[i])) return NO;
+    }
+    
     return YES;
 }
 
@@ -271,6 +230,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 - (BOOL)verifyDifficultyFromPreviousBlock:(BRMerkleBlock *)previous andTransitionTime:(NSTimeInterval)time
 {
     if (! [_prevBlock isEqual:previous.blockHash] || _height != previous.height + 1) return NO;
+    if ((previous.target & 0x00800000u) != 0) return NO; // previous block has an invalid (negative) difficulty target
     if ((_height % BLOCK_DIFFICULTY_INTERVAL) == 0 && time == 0) return NO;
 
 #if BITCOIN_TESTNET
@@ -280,30 +240,23 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 
     if ((_height % BLOCK_DIFFICULTY_INTERVAL) != 0) return (_target == previous.target) ? YES : NO;
 
-    BN_CTX *ctx = BN_CTX_new();
-
-    BN_CTX_start(ctx);
-
+    static uint32_t maxsize = (MAX_PROOF_OF_WORK >> 24), maxtarget = MAX_PROOF_OF_WORK & 0x007fffffu;
+    uint32_t size = previous.target >> 24;
+    double target = previous.target & 0x007fffffu;
     int32_t timespan = (int32_t)((int64_t)previous.timestamp - (int64_t)time);
-    BIGNUM target, *maxTarget = BN_CTX_get(ctx), *span = BN_CTX_get(ctx), *targetSpan = BN_CTX_get(ctx),
-           *bn = BN_CTX_get(ctx);
 
     // limit difficulty transition to -75% or +400%
     if (timespan < TARGET_TIMESPAN/4) timespan = TARGET_TIMESPAN/4;
     if (timespan > TARGET_TIMESPAN*4) timespan = TARGET_TIMESPAN*4;
 
-    BN_init(&target);
-    setCompact(&target, previous.target);
-    setCompact(maxTarget, MAX_PROOF_OF_WORK);
-    BN_set_word(span, timespan);
-    BN_set_word(targetSpan, TARGET_TIMESPAN);
-    BN_mul(bn, &target, span, ctx);
-    BN_div(&target, NULL, bn, targetSpan, ctx);
-    if (BN_cmp(&target, maxTarget) > 0) BN_copy(&target, maxTarget); // limit to MAX_PROOF_OF_WORK
-    BN_CTX_end(ctx);
-    BN_CTX_free(ctx);
+    target *= timespan;
+    target /= TARGET_TIMESPAN;
     
-    return (_target == getCompact(&target)) ? YES : NO;
+    while (target < 0x0007ffffu) target *= 256, size--;
+    while (target > 0x007fffffu) target /= 256, size++;
+    if (size > maxsize || (size == maxsize && target > maxtarget)) target = maxtarget, size = maxsize;
+    
+    return (_target == ((uint32_t)(target + DBL_EPSILON) | size << 24)) ? YES : NO;
 }
 
 // recursively walks the merkle tree in depth first order, calling leaf(hash, flag) for each stored hash, and

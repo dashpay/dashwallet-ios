@@ -111,7 +111,7 @@ static void RMD160(const void *data, size_t len, uint8_t *md)
     
     ((uint8_t *)x)[len - i] = 0x80; // append padding
     if (len - i > 55) RMDcompress(buf, x); // length goes to next block
-    *(uint64_t *)&x[14] = CFSwapInt64HostToLittle((uint64_t)len << 3); // append length in bits
+    *(uint64_t *)&x[14] = CFSwapInt64HostToLittle((uint64_t)len*8); // append length in bits
     RMDcompress(buf, x); // finalize
     for (i = 0; i < sizeof(buf)/sizeof(*buf); i++) ((uint32_t *)md)[i] = CFSwapInt32HostToLittle(buf[i]); // write to md
 }
@@ -147,7 +147,7 @@ static void RMD160(const void *data, size_t len, uint8_t *md)
 {
     NSMutableData *d = [NSMutableData dataWithLength:RMD160_DIGEST_LENGTH];
     
-    RMD160(self.bytes, (uint32_t)self.length, d.mutableBytes);
+    RMD160(self.bytes, self.length, d.mutableBytes);
     return d;
 }
 
@@ -156,20 +156,20 @@ static void RMD160(const void *data, size_t len, uint8_t *md)
     NSMutableData *d = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH];
     
     CC_SHA256(self.bytes, (CC_LONG)self.length, d.mutableBytes);
-    RMD160(d.bytes, (uint32_t)d.length, d.mutableBytes);
+    RMD160(d.bytes, d.length, d.mutableBytes);
     d.length = RMD160_DIGEST_LENGTH;
     return d;
 }
 
 - (NSData *)reverse
 {
-    NSUInteger l = self.length;
-    NSMutableData *d = [NSMutableData dataWithLength:l];
+    NSUInteger len = self.length;
+    NSMutableData *d = [NSMutableData dataWithLength:len];
     uint8_t *b1 = d.mutableBytes;
     const uint8_t *b2 = self.bytes;
     
-    for (NSUInteger i = 0; i < l; i++) {
-        b1[i] = b2[l - i - 1];
+    for (NSUInteger i = 0; i < len; i++) {
+        b1[i] = b2[len - i - 1];
     }
     
     return d;
