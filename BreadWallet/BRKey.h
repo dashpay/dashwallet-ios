@@ -25,10 +25,15 @@
 
 #import <Foundation/Foundation.h>
 
+void secp256k1_mod_add(void *r, const void *a, const void *b);
+void secp256k1_mod_mul(void *r, const void *a, const void *b);
+int secp256k1_point_add(void *r, const void *a, const void *b, int compressed);
+int secp256k1_point_mul(void *r, const void *a, const void *b, int compressed);
+
 @interface BRKey : NSObject
 
-@property (nonatomic, strong) NSString *privateKey;
-@property (nonatomic, strong) NSData *publicKey;
+@property (nonatomic, readonly) NSString *privateKey;
+@property (nonatomic, readonly) NSData *publicKey;
 @property (nonatomic, readonly) NSString *address;
 @property (nonatomic, readonly) NSData *hash160;
 

@@ -26,10 +26,9 @@
 #import "BRBIP32Sequence.h"
 #import "BRKey.h"
 #import "NSString+Bitcoin.h"
+#import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 #import <CommonCrypto/CommonHMAC.h>
-#import <openssl/ecdsa.h>
-#import <openssl/obj_mac.h>
 
 #define BIP32_HARD     0x80000000u
 #define BIP32_SEED_KEY "Bitcoin seed"
@@ -55,15 +54,9 @@
 //
 static void CKDpriv(NSMutableData *k, NSMutableData *c, uint32_t i)
 {
-    BN_CTX *ctx = BN_CTX_new();
-
-    BN_CTX_start(ctx);
-
     NSMutableData *I = [NSMutableData secureDataWithLength:CC_SHA512_DIGEST_LENGTH];
     NSMutableData *d = [NSMutableData secureDataWithCapacity:33 + sizeof(i)];
-    BIGNUM *order = BN_CTX_get(ctx), *ILbn = BN_CTX_get(ctx), *kbn = BN_CTX_get(ctx);
-    EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
-
+    
     if (i & BIP32_HARD) {
         d.length = 33 - k.length;
         [d appendData:k];
@@ -74,22 +67,10 @@ static void CKDpriv(NSMutableData *k, NSMutableData *c, uint32_t i)
     [d appendBytes:&i length:sizeof(i)];
 
     CCHmac(kCCHmacAlgSHA512, c.bytes, c.length, d.bytes, d.length, I.mutableBytes); // I = HMAC-SHA512(c, k|P(k) || i)
-
-    BN_bin2bn(I.bytes, 32, ILbn);
-    BN_bin2bn(k.bytes, (int)k.length, kbn);
-    EC_GROUP_get_order(group, order, ctx);
-
-    BN_mod_add(kbn, ILbn, kbn, order, ctx); // k = IL + k (mod n)
     
-    k.length = 32;
-    [k resetBytesInRange:NSMakeRange(0, 32)];
-    BN_bn2bin(kbn, (unsigned char *)k.mutableBytes + 32 - BN_num_bytes(kbn));
+    secp256k1_mod_add(k.mutableBytes, I.bytes, k.bytes); // k = IL + k (mod n)
     
-    [c replaceBytesInRange:NSMakeRange(0, c.length) withBytes:(const unsigned char *)I.bytes + 32 length:32]; // c = IR
-
-    EC_GROUP_free(group);
-    BN_CTX_end(ctx);
-    BN_CTX_free(ctx);
+    [c replaceBytesInRange:NSMakeRange(0, c.length) withBytes:(const unsigned char *)I.bytes + 32 length:32]; // c = IR    
 }
 
 // Public parent key -> public child key
@@ -113,38 +94,20 @@ static void CKDpub(NSMutableData *K, NSMutableData *c, uint32_t i)
                 reason:@"can't derive private child key from public parent key" userInfo:nil];
     }
 
-    BN_CTX *ctx = BN_CTX_new();
-
-    BN_CTX_start(ctx);
-
-    NSMutableData *I = [NSMutableData secureDataWithLength:CC_SHA512_DIGEST_LENGTH];
-    NSMutableData *d = [NSMutableData secureDataWithData:K];
-    BIGNUM *ILbn = BN_CTX_get(ctx);
-    EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
-    EC_POINT *KPoint = EC_POINT_new(group), *ILPoint = EC_POINT_new(group);
-
+    NSMutableData *I = [NSMutableData secureDataWithLength:CC_SHA512_DIGEST_LENGTH],
+                  *d = [NSMutableData secureDataWithData:K];
+    
     i = CFSwapInt32HostToBig(i);
     [d appendBytes:&i length:sizeof(i)];
 
     CCHmac(kCCHmacAlgSHA512, c.bytes, c.length, d.bytes, d.length, I.mutableBytes); // I = HMAC-SHA512(c, P(K) || i)
-
-    BN_bin2bn(I.bytes, 32, ILbn);
-    EC_GROUP_set_point_conversion_form(group, POINT_CONVERSION_COMPRESSED);
-    EC_POINT_oct2point(group, KPoint, K.bytes, K.length, ctx);
-    EC_POINT_mul(group, ILPoint, ILbn, NULL, NULL, ctx);
     
-    EC_POINT_add(group, KPoint, ILPoint, KPoint, ctx); // K = P(IL) + K
+    [c replaceBytesInRange:NSMakeRange(0, c.length) withBytes:(const uint8_t *)I.bytes + 32 length:32]; // c = IR
+    I.length = 32;
 
-    K.length = EC_POINT_point2oct(group, KPoint, POINT_CONVERSION_COMPRESSED, NULL, 0, ctx);
-    EC_POINT_point2oct(group, KPoint, POINT_CONVERSION_COMPRESSED, K.mutableBytes, K.length, ctx);
-    
-    [c replaceBytesInRange:NSMakeRange(0, c.length) withBytes:(const unsigned char *)I.bytes + 32 length:32]; // c = IR
+    NSData *pIL = [[BRKey keyWithSecret:I compressed:YES] publicKey];
 
-    EC_POINT_clear_free(ILPoint);
-    EC_POINT_clear_free(KPoint);
-    EC_GROUP_free(group);
-    BN_CTX_end(ctx);
-    BN_CTX_free(ctx);
+    secp256k1_point_add(K.mutableBytes, pIL.bytes, K.bytes, YES); // K = P(IL) + K
 }
 
 // helper function for serializing BIP32 master public/private keys to standard export format
