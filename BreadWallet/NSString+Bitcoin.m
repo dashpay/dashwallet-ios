@@ -60,9 +60,9 @@ static const int8_t base58map[] = {
     for (i = z; i < d.length; i++) {
         uint32_t carry = ((const uint8_t *)d.bytes)[i];
 
-        for (ssize_t j = sizeof(buf) - 1; j >= 0; j--) {
-            carry += (uint32_t)buf[j] << 8;
-            buf[j] = carry % 58;
+        for (size_t j = sizeof(buf); j > 0; j--) {
+            carry += (uint32_t)buf[j - 1] << 8;
+            buf[j - 1] = carry % 58;
             carry /= 58;
         }
     }
@@ -193,9 +193,9 @@ static const int8_t base58map[] = {
 
         uint32_t carry = base58map[c];
         
-        for (ssize_t j = sizeof(buf) - 1; j >= 0; j--) {
-            carry += (uint32_t)buf[j]*58;
-            buf[j] = carry & 0xff;
+        for (size_t j = sizeof(buf); j > 0; j--) {
+            carry += (uint32_t)buf[j - 1]*58;
+            buf[j - 1] = carry & 0xff;
             carry >>= 8;
         }
     }

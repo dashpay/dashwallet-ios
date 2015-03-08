@@ -197,8 +197,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 - (BOOL)containsTxHash:(NSData *)txHash
 {
     for (NSUInteger i = 0; i < _hashes.length/CC_SHA256_DIGEST_LENGTH; i += CC_SHA256_DIGEST_LENGTH) {
-        if (! [txHash isEqual:[_hashes hashAtOffset:i]]) continue;
-        return YES;
+        if ([txHash isEqual:[_hashes hashAtOffset:i]]) return YES;
     }
     
     return NO;
@@ -270,7 +269,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     
     (*flagIdx)++;
     
-    if (! flag || depth == ceil(log2(_totalTransactions))) {
+    if (! flag || depth == (int)(ceil(log2(_totalTransactions)) + DBL_EPSILON)) {
         NSData *hash = [_hashes hashAtOffset:(*hashIdx)*CC_SHA256_DIGEST_LENGTH];
         
         (*hashIdx)++;
