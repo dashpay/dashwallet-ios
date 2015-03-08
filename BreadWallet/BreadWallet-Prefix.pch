@@ -29,6 +29,8 @@
 #define DISPLAY_NAME [NSString stringWithFormat:LDQUOTE @"%@" RDQUOTE,\
                       NSBundle.mainBundle.infoDictionary[@"CFBundleDisplayName"]]
 
+#define HAVE_CONFIG_H // for libsecp256k1
+
 #if ! DEBUG
 #define NSLog(...)
 #endif

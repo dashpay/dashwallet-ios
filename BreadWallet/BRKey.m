@@ -28,39 +28,98 @@
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 #import <CommonCrypto/CommonHMAC.h>
-#import <openssl/ecdsa.h>
-#import <openssl/obj_mac.h>
 
-// HMAC-SHA256 DRBG, using no prediction resistance or personalization string and outputing 256bits
-static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
+#import <secp256k1/include/secp256k1.h>
+#import <secp256k1/src/util.h>
+#import <secp256k1/src/scalar_impl.h>
+#import <secp256k1/src/field_impl.h>
+#import <secp256k1/src/group_impl.h>
+#import <secp256k1/src/ecmult_gen_impl.h>
+#import <secp256k1/src/ecmult_impl.h>
+#import <secp256k1/src/eckey_impl.h>
+
+void secp256k1_mod_add(void *r, const void *a, const void *b)
 {
-    NSMutableData *V = [NSMutableData
-                        secureDataWithCapacity:CC_SHA256_DIGEST_LENGTH + 1 + entropy.length + nonce.length],
-                  *K = [NSMutableData secureDataWithCapacity:CC_SHA256_DIGEST_LENGTH],
-                  *T = [NSMutableData secureDataWithLength:CC_SHA256_DIGEST_LENGTH];
+    secp256k1_scalar_t as, bs, rs;
+    
+    secp256k1_scalar_set_b32(&as, a, NULL);
+    secp256k1_scalar_set_b32(&bs, b, NULL);
+    secp256k1_scalar_add(&rs, &as, &bs);
+    secp256k1_scalar_get_b32(r, &rs);
+    secp256k1_scalar_clear(&as);
+    secp256k1_scalar_clear(&bs);
+    secp256k1_scalar_clear(&rs);
+}
 
-    V.length = CC_SHA256_DIGEST_LENGTH;
-    memset(V.mutableBytes, 0x01, V.length); // V = 0x01 0x01 0x01 ... 0x01
-    K.length = CC_SHA256_DIGEST_LENGTH;     // K = 0x00 0x00 0x00 ... 0x00
-    [V appendBytes:"\0" length:1];
-    [V appendBytes:entropy.bytes length:entropy.length];
-    [V appendBytes:nonce.bytes length:nonce.length];
-    CCHmac(kCCHmacAlgSHA256, K.bytes, K.length, V.bytes, V.length, K.mutableBytes); // K = HMAC_K(V || 0x00 || seed)
-    V.length = CC_SHA256_DIGEST_LENGTH;
-    CCHmac(kCCHmacAlgSHA256, K.bytes, K.length, V.bytes, V.length, V.mutableBytes); // V = HMAC_K(V)
-    [V appendBytes:"\x01" length:1];
-    [V appendBytes:entropy.bytes length:entropy.length];
-    [V appendBytes:nonce.bytes length:nonce.length];
-    CCHmac(kCCHmacAlgSHA256, K.bytes, K.length, V.bytes, V.length, K.mutableBytes); // K = HMAC_K(V || 0x01 || seed)
-    V.length = CC_SHA256_DIGEST_LENGTH;
-    CCHmac(kCCHmacAlgSHA256, K.bytes, K.length, V.bytes, V.length, V.mutableBytes); // V = HMAC_K(V)
-    CCHmac(kCCHmacAlgSHA256, K.bytes, K.length, V.bytes, V.length, T.mutableBytes); // T = HMAC_K(V)
-    return T;
+void secp256k1_mod_mul(void *r, const void *a, const void *b)
+{
+    secp256k1_scalar_t as, bs, rs;
+    
+    secp256k1_scalar_set_b32(&as, a, NULL);
+    secp256k1_scalar_set_b32(&bs, b, NULL);
+    secp256k1_scalar_mul(&rs, &as, &bs);
+    secp256k1_scalar_get_b32(r, &rs);
+    secp256k1_scalar_clear(&as);
+    secp256k1_scalar_clear(&bs);
+    secp256k1_scalar_clear(&rs);
+}
+
+int secp256k1_point_mul(void *r, const void *a, const void *b, int compressed)
+{
+    static dispatch_once_t onceToken = 0;
+    
+    dispatch_once(&onceToken, ^{
+        secp256k1_ecmult_start();
+        secp256k1_ecmult_gen_start();
+    });
+
+    secp256k1_scalar_t bs, zs;
+    secp256k1_gej_t rj, aj;
+    secp256k1_ge_t rp, ap;
+    int size = 0;
+
+    secp256k1_scalar_set_b32(&bs, b, NULL);
+
+    if (a) {
+        if (! secp256k1_eckey_pubkey_parse(&ap, a, 33)) return 0;
+        secp256k1_gej_set_ge(&aj, &ap);
+        secp256k1_scalar_clear(&zs);
+        secp256k1_ecmult(&rj, &aj, &bs, &zs);
+    }
+    else secp256k1_ecmult_gen(&rj, &bs);
+
+    secp256k1_ge_set_gej(&rp, &rj);
+    secp256k1_eckey_pubkey_serialize(&rp, r, &size, compressed);
+    secp256k1_ge_clear(&rp);
+    secp256k1_gej_clear(&rj);
+    secp256k1_scalar_clear(&bs);
+    return size;
+}
+
+int secp256k1_point_add(void *r, const void *a, const void *b, int compressed)
+{
+    secp256k1_ge_t ap, bp, rp;
+    secp256k1_gej_t aj, rj;
+    int size = 0;
+
+    if (! secp256k1_eckey_pubkey_parse(&ap, a, 33)) return 0;
+    if (! secp256k1_eckey_pubkey_parse(&bp, b, 33)) return 0;
+    secp256k1_gej_set_ge(&aj, &ap);
+    secp256k1_gej_add_ge(&rj, &aj, &bp);
+    secp256k1_ge_set_gej(&rp, &rj);
+    secp256k1_eckey_pubkey_serialize(&rp, r, &size, compressed);
+    secp256k1_gej_clear(&rj);
+    secp256k1_gej_clear(&aj);
+    secp256k1_ge_clear(&rp);
+    secp256k1_ge_clear(&bp);
+    secp256k1_ge_clear(&ap);
+    return size;
 }
 
 @interface BRKey ()
 
-@property (nonatomic, assign) EC_KEY *key;
+@property (nonatomic, strong) NSData *seckey, *pubkey;
+@property (nonatomic, assign) BOOL compressed;
 
 @end
 
@@ -81,111 +140,63 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
     return [[self alloc] initWithPublicKey:publicKey];
 }
 
-- (instancetype)init
-{
-    if (! (self = [super init])) return nil;
-    
-    _key = EC_KEY_new_by_curve_name(NID_secp256k1);
-    
-    return _key ? self : nil;
-}
-
-- (void)dealloc
-{
-    if (_key) EC_KEY_free(_key);
-}
-
 - (instancetype)initWithSecret:(NSData *)secret compressed:(BOOL)compressed
 {
     if (secret.length != 32) return nil;
 
     if (! (self = [self init])) return nil;
 
-    [self setSecret:secret compressed:compressed];
-    
-    return (EC_KEY_check_key(_key)) ? self : nil;
+    self.seckey = secret;
+    self.compressed = compressed;
+    return (secp256k1_ec_seckey_verify(self.seckey.bytes)) ? self : nil;
 }
 
 - (instancetype)initWithPrivateKey:(NSString *)privateKey
 {
     if (! (self = [self init])) return nil;
     
-    self.privateKey = privateKey;
+    // mini private key format
+    if ((privateKey.length == 30 || privateKey.length == 22) && [privateKey characterAtIndex:0] == 'S') {
+        if (! [privateKey isValidBitcoinPrivateKey]) return nil;
+        
+        self.seckey = [CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(),
+                       (CFStringRef)privateKey, kCFStringEncodingUTF8, 0)) SHA256];
+        self.compressed = NO;
+        return self;
+    }
     
-    return (EC_KEY_check_key(_key)) ? self : nil;
+    NSData *d = privateKey.base58checkToData;
+    uint8_t version = BITCOIN_PRIVKEY;
+    
+#if BITCOIN_TESTNET
+    version = BITCOIN_PRIVKEY_TEST;
+#endif
+    
+    if (! d || d.length == 28) d = privateKey.base58ToData;
+    if (d.length < 32 || d.length > 34) d = privateKey.hexToData;
+    
+    if ((d.length == 33 || d.length == 34) && *(const unsigned char *)d.bytes == version) {
+        self.seckey = CFBridgingRelease(CFDataCreate(SecureAllocator(), (const uint8_t *)d.bytes + 1, 32));
+        self.compressed = (d.length == 34) ? YES : NO;
+    }
+    else if (d.length == 32) self.seckey = d;
+    
+    return (secp256k1_ec_seckey_verify(self.seckey.bytes)) ? self : nil;
 }
 
 - (instancetype)initWithPublicKey:(NSData *)publicKey
 {
     if (! (self = [self init])) return nil;
     
-    self.publicKey = publicKey;
-    
-    return (EC_KEY_check_key(_key)) ? self : nil;
-}
-
-- (void)setSecret:(NSData *)secret compressed:(BOOL)compressed
-{
-    if (secret.length != 32 || ! _key) return;
-    
-    BN_CTX *ctx = BN_CTX_new();
-
-    if (! ctx) return;
-    BN_CTX_start(ctx);
-
-    BIGNUM *priv = BN_CTX_get(ctx);
-    const EC_GROUP *group = EC_KEY_get0_group(_key);
-    EC_POINT *pub = EC_POINT_new(group);
-
-    if (pub) {
-        BN_bin2bn(secret.bytes, 32, priv);
-        
-        if (EC_POINT_mul(group, pub, priv, NULL, NULL, ctx)) {
-            EC_KEY_set_private_key(_key, priv);
-            EC_KEY_set_public_key(_key, pub);
-            EC_KEY_set_conv_form(_key, compressed ? POINT_CONVERSION_COMPRESSED : POINT_CONVERSION_UNCOMPRESSED);
-        }
-
-        EC_POINT_free(pub);
-    }
-
-    BN_CTX_end(ctx);
-    BN_CTX_free(ctx);
-}
-
-- (void)setPrivateKey:(NSString *)privateKey
-{
-    // mini private key format
-    if ((privateKey.length == 30 || privateKey.length == 22) && [privateKey characterAtIndex:0] == 'S') {
-        if (! [privateKey isValidBitcoinPrivateKey]) return;
-        
-        [self setSecret:[CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(),
-                         (CFStringRef)privateKey, kCFStringEncodingUTF8, 0)) SHA256] compressed:NO];
-        return;
-    }
-
-    NSData *d = privateKey.base58checkToData;
-    uint8_t version = BITCOIN_PRIVKEY;
-
-#if BITCOIN_TESTNET
-    version = BITCOIN_PRIVKEY_TEST;
-#endif
-
-    if (! d || d.length == 28) d = privateKey.base58ToData;
-    if (d.length < 32 || d.length > 34) d = privateKey.hexToData;
-
-    if ((d.length == 33 || d.length == 34) && *(const unsigned char *)d.bytes == version) {
-        [self setSecret:[NSData dataWithBytesNoCopy:(unsigned char *)d.bytes + 1 length:32 freeWhenDone:NO]
-         compressed:(d.length == 34) ? YES : NO];
-    }
-    else if (d.length == 32) [self setSecret:d compressed:NO];
+    self.pubkey = publicKey;
+    self.compressed = (self.pubkey.length == 33) ? YES : NO;
+    return (secp256k1_ec_pubkey_verify(self.publicKey.bytes, self.publicKey.length)) ? self : nil;
 }
 
 - (NSString *)privateKey
 {
-    if (! EC_KEY_check_key(_key)) return nil;
-    
-    const BIGNUM *priv = EC_KEY_get0_private_key(_key);
+    if (self.seckey.length != 32) return nil;
+
     NSMutableData *d = [NSMutableData secureDataWithCapacity:34];
     uint8_t version = BITCOIN_PRIVKEY;
 
@@ -194,31 +205,27 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
 #endif
 
     [d appendBytes:&version length:1];
-    d.length = 33;
-    BN_bn2bin(priv, (unsigned char *)d.mutableBytes + d.length - BN_num_bytes(priv));
-    if (EC_KEY_get_conv_form(_key) == POINT_CONVERSION_COMPRESSED) [d appendBytes:"\x01" length:1];
-
+    [d appendData:self.seckey];
+    if (self.compressed) [d appendBytes:"\x01" length:1];
     return [NSString base58checkWithData:d];
-}
-
-- (void)setPublicKey:(NSData *)publicKey
-{
-    const unsigned char *bytes = publicKey.bytes;
-
-    o2i_ECPublicKey(&_key, &bytes, publicKey.length);
 }
 
 - (NSData *)publicKey
 {
-    if (! EC_KEY_check_key(_key)) return nil;
+    if (! self.pubkey.length) {
+        static dispatch_once_t onceToken = 0;
+        
+        dispatch_once(&onceToken, ^{
+            secp256k1_start(SECP256K1_START_SIGN);
+        });
 
-    size_t l = i2o_ECPublicKey(_key, NULL);
-    NSMutableData *pubKey = [NSMutableData secureDataWithLength:l];
-    unsigned char *bytes = pubKey.mutableBytes;
+        NSMutableData *d = [NSMutableData secureDataWithLength:self.compressed ? 33 : 65];
+        int size = 0;
+
+        if (secp256k1_ec_pubkey_create(d.mutableBytes, &size, self.seckey.bytes, self.compressed)) self.pubkey = d;
+    }
     
-    if (i2o_ECPublicKey(_key, &bytes) != l) return nil;
-    
-    return pubKey;
+    return self.pubkey;
 }
 
 - (NSData *)hash160
@@ -247,57 +254,46 @@ static NSData *hmac_drbg(NSData *entropy, NSData *nonce)
 
 - (NSData *)sign:(NSData *)d
 {
-    if (d.length != CC_SHA256_DIGEST_LENGTH) {
+    if (! self.seckey.length) {
+        NSLog(@"%s:%d: %s: can't sign with a public key", __FILE__, __LINE__,  __func__);
+        return nil;
+    }
+    else if (d.length != CC_SHA256_DIGEST_LENGTH) {
         NSLog(@"%s:%d: %s: Only 256 bit hashes can be signed", __FILE__, __LINE__,  __func__);
         return nil;
     }
 
-    BN_CTX *ctx = BN_CTX_new();
-
-    BN_CTX_start(ctx);
-
-    BIGNUM *order = BN_CTX_get(ctx), *halforder = BN_CTX_get(ctx), *k = BN_CTX_get(ctx), *r = BN_CTX_get(ctx);
-    const BIGNUM *priv = EC_KEY_get0_private_key(_key);
-    const EC_GROUP *group = EC_KEY_get0_group(_key);
-    EC_POINT *p = EC_POINT_new(group);
-    NSMutableData *sig = nil, *entropy = [NSMutableData secureDataWithLength:32];
-    unsigned char *b;
-
-    EC_GROUP_get_order(group, order, ctx);
-    BN_rshift1(halforder, order);
-
-    // generate k deterministicly per RFC6979: https://tools.ietf.org/html/rfc6979
-    BN_bn2bin(priv, (unsigned char *)entropy.mutableBytes + entropy.length - BN_num_bytes(priv));
-    BN_bin2bn(hmac_drbg(entropy, d).bytes, CC_SHA256_DIGEST_LENGTH, k);
-
-    EC_POINT_mul(group, p, k, NULL, NULL, ctx); // compute r, the x-coordinate of generator*k
-    EC_POINT_get_affine_coordinates_GFp(group, p, r, NULL, ctx);
-    EC_POINT_clear_free(p);
+    static dispatch_once_t onceToken = 0;
     
-    BN_mod_inverse(k, k, order, ctx); // compute the inverse of k
+    dispatch_once(&onceToken, ^{
+        secp256k1_start(SECP256K1_START_SIGN);
+    });
 
-    ECDSA_SIG *s = ECDSA_do_sign_ex(d.bytes, (int)d.length, k, r, _key);
-
-    if (s) {
-        // enforce low s values, negate the value (modulo the order) if above order/2.
-        if (BN_cmp(s->s, halforder) > 0) BN_sub(s->s, order, s->s);
-
-        sig = [NSMutableData dataWithLength:ECDSA_size(_key)];
-        b = sig.mutableBytes;
-        sig.length = i2d_ECDSA_SIG(s, &b);
-        ECDSA_SIG_free(s);
+    NSMutableData *s = [NSMutableData dataWithLength:72];
+    int l = s.length;
+    
+    if (secp256k1_ecdsa_sign(d.bytes, s.mutableBytes, &l, self.seckey.bytes, secp256k1_nonce_function_rfc6979, NULL)) {
+        s.length = l;
+        return s;
     }
-
-    BN_CTX_end(ctx);
-    BN_CTX_free(ctx);
-
-    return sig;
+    else return nil;
 }
 
 - (BOOL)verify:(NSData *)d signature:(NSData *)sig
 {
-    // -1 = error, 0 = bad sig, 1 = good
-    return (ECDSA_verify(0, d.bytes, (int)d.length, sig.bytes, (int)sig.length, _key) == 1) ? YES : NO;
+    if (d.length != CC_SHA256_DIGEST_LENGTH) {
+        NSLog(@"%s:%d: %s: Only 256 bit hashes can be verified", __FILE__, __LINE__,  __func__);
+        return NO;
+    }
+
+    static dispatch_once_t onceToken = 0;
+    
+    dispatch_once(&onceToken, ^{
+        secp256k1_start(SECP256K1_START_VERIFY);
+    });
+
+    // success is 1, all other values are fail
+    return (secp256k1_ecdsa_verify(d.bytes, sig.bytes, sig.length, self.publicKey.bytes, self.publicKey.length) == 1);
 }
 
 @end

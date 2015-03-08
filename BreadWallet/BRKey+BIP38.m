@@ -29,8 +29,6 @@
 #import "NSMutableData+Bitcoin.h"
 #import "ccMemory.h"
 #import <CommonCrypto/CommonCrypto.h>
-#import <openssl/ecdsa.h>
-#import <openssl/obj_mac.h>
 
 // BIP38 is a method for encrypting private keys with a passphrase
 // https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki
@@ -143,7 +141,7 @@ static NSData *normalize_passphrase(NSString *passphrase)
     return password;
 }
 
-static void derive_passfactor(BIGNUM *passfactor, uint8_t flag, uint64_t entropy, NSString *passphrase)
+static NSData *derive_passfactor(uint8_t flag, uint64_t entropy, NSString *passphrase)
 {
     NSData *password = normalize_passphrase(passphrase);
     NSData *salt = [NSData dataWithBytesNoCopy:&entropy length:(flag & BIP38_LOTSEQUENCE_FLAG) ? 4 : 8 freeWhenDone:NO];
@@ -153,9 +151,9 @@ static void derive_passfactor(BIGNUM *passfactor, uint8_t flag, uint64_t entropy
     if (flag & BIP38_LOTSEQUENCE_FLAG) { // passfactor = SHA256(SHA256(prefactor + entropy))
         d = [NSMutableData secureDataWithData:prefactor];
         [d appendBytes:&entropy length:sizeof(entropy)];
-        BN_bin2bn(d.SHA256_2.bytes, CC_SHA256_DIGEST_LENGTH, passfactor);
+        return d.SHA256_2;
     }
-    else BN_bin2bn(prefactor.bytes, (int)prefactor.length, passfactor); // passfactor = prefactor
+    else return prefactor; // passfactor = prefactor
 }
 
 static NSData *derive_key(NSData *passpoint, uint32_t addresshash, uint64_t entropy)
@@ -168,25 +166,11 @@ static NSData *derive_key(NSData *passpoint, uint32_t addresshash, uint64_t entr
     return scrypt(passpoint, salt, BIP38_SCRYPT_EC_N, BIP38_SCRYPT_EC_R, BIP38_SCRYPT_EC_P, 64);
 }
 
-static NSData *point_multiply(NSData *point, const BIGNUM *factor, BOOL compressed, BN_CTX *ctx)
+static NSData *point_multiply(NSData *point, NSData *factor, BOOL compressed)
 {
-    NSMutableData *d = [NSMutableData secureData];
-    EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
-    EC_POINT *r = EC_POINT_new(group), *p;
-    point_conversion_form_t form = (compressed) ? POINT_CONVERSION_COMPRESSED : POINT_CONVERSION_UNCOMPRESSED;
-
-    if (point) {
-        p = EC_POINT_new(group);
-        EC_POINT_oct2point(group, p, point.bytes, point.length, ctx);
-        EC_POINT_mul(group, r, NULL, p, factor, ctx); // r = point*factor
-        EC_POINT_clear_free(p);
-    }
-    else EC_POINT_mul(group, r, factor, NULL, NULL, ctx); // r = G*factor
-
-    d.length = EC_POINT_point2oct(group, r, form, NULL, 0, ctx);
-    EC_POINT_point2oct(group, r, form, d.mutableBytes, d.length, ctx);
-    EC_POINT_clear_free(r);
-    EC_GROUP_free(group);
+    NSMutableData *d = [NSMutableData secureDataWithLength:compressed ? 33 : 65];
+    
+    secp256k1_point_mul(d.mutableBytes, point.bytes, factor.bytes, compressed);
     return d;
 }
 
@@ -204,22 +188,11 @@ static NSData *point_multiply(NSData *point, const BIGNUM *factor, BOOL compress
     if (! passphrase) return nil;
     salt = CFSwapInt64HostToBig(salt);
 
-    BN_CTX *ctx = BN_CTX_new();
-
-    BN_CTX_start(ctx);
-
     NSMutableData *code = [NSMutableData secureData];
-    BIGNUM *passfactor = BN_CTX_get(ctx);
-
-    derive_passfactor(passfactor, 0, salt, passphrase);
 
     [code appendBytes:"\x2C\xE9\xB3\xE1\xFF\x39\xE2\x53" length:8];
     [code appendBytes:&salt length:sizeof(salt)];
-    [code appendData:point_multiply(nil, passfactor, YES, ctx)]; // passpoint = G*passfactor
-
-    BN_CTX_end(ctx);
-    BN_CTX_free(ctx);
-
+    [code appendData:point_multiply(nil, derive_passfactor(0, salt, passphrase), YES)]; // passpoint = G*passfactor
     return [NSString base58checkWithData:code];
 }
 
@@ -231,26 +204,17 @@ passphrase:(NSString *)passphrase
     if (lot >= 0x100000 || sequence >= 0x1000 || ! passphrase) return nil;
     salt = CFSwapInt32HostToBig(salt);
 
-    BN_CTX *ctx = BN_CTX_new();
-
-    BN_CTX_start(ctx);
-
     uint32_t lotsequence = CFSwapInt32HostToBig(lot*0x1000 + sequence);
     NSMutableData *entropy = [NSMutableData secureData], *code = [NSMutableData secureData];
-    BIGNUM *passfactor = BN_CTX_get(ctx);
 
     [entropy appendBytes:&salt length:sizeof(salt)];
     [entropy appendBytes:&lotsequence length:sizeof(lotsequence)];
 
-    derive_passfactor(passfactor, BIP38_LOTSEQUENCE_FLAG, *(const uint64_t *)entropy.bytes, passphrase);
+    NSData *passfactor = derive_passfactor(BIP38_LOTSEQUENCE_FLAG, *(const uint64_t *)entropy.bytes, passphrase);
 
     [code appendBytes:"\x2C\xE9\xB3\xE1\xFF\x39\xE2\x51" length:8];
     [code appendData:entropy];
-    [code appendData:point_multiply(nil, passfactor, YES, ctx)]; // passpoint = G*passfactor
-
-    BN_CTX_end(ctx);
-    BN_CTX_free(ctx);
-
+    [code appendData:point_multiply(nil, passfactor, YES)]; // passpoint = G*passfactor
     return [NSString base58checkWithData:code];
 }
 
@@ -264,16 +228,8 @@ confirmationCode:(NSString **)confcode;
 
     if (d.length != 49 || seedb.length != 24) return nil;
 
-    BN_CTX *ctx = BN_CTX_new();
-
-    BN_CTX_start(ctx);
-
-    NSData *passpoint = [NSData dataWithBytesNoCopy:(uint8_t *)d.bytes + 16 length:33 freeWhenDone:NO], *pubKey;
-    BIGNUM *factorb = BN_CTX_get(ctx);
-
-    BN_bin2bn(seedb.SHA256_2.bytes, CC_SHA256_DIGEST_LENGTH, factorb); // factorb = SHA256(SHA256(seedb))
-    pubKey = point_multiply(passpoint, factorb, compressed, ctx); // pubKey = passpoint*factorb
-
+    NSData *passpoint = [NSData dataWithBytesNoCopy:(uint8_t *)d.bytes + 16 length:33 freeWhenDone:NO];
+    NSData *pubKey = point_multiply(passpoint, seedb.SHA256_2, compressed); // pubKey = passpoint*factorb
     uint16_t prefix = CFSwapInt16HostToBig(BIP38_EC_PREFIX);
     uint8_t flag = (compressed) ? BIP38_COMPRESSED_FLAG : 0;
     NSData *address = [[[BRKey keyWithPublicKey:pubKey] address] dataUsingEncoding:NSUTF8StringEncoding];
@@ -309,7 +265,7 @@ confirmationCode:(NSString **)confcode;
     [key appendData:encrypted2];
 
     if (confcode) {
-        NSData *pointb = point_multiply(nil, factorb, YES, ctx); // pointb = G*factorb
+        NSData *pointb = point_multiply(nil, seedb.SHA256_2, YES); // pointb = G*factorb
         NSMutableData *c = [NSMutableData secureData], *pointbx1, *pointbx2;
         uint8_t pointbprefix = ((const uint8_t *)pointb.bytes)[0] ^ (((const uint8_t *)derived2)[31] & 0x01);
 
@@ -337,9 +293,6 @@ confirmationCode:(NSString **)confcode;
         *confcode = [NSString base58checkWithData:c];
     }
 
-    BN_CTX_end(ctx);
-    BN_CTX_free(ctx);
-
     return [NSString base58checkWithData:key];
 }
 
@@ -355,19 +308,12 @@ confirmationCode:(NSString **)confcode;
 
     if (*(const uint32_t *)[address dataUsingEncoding:NSUTF8StringEncoding].SHA256_2.bytes != addresshash) return NO;
 
-    BN_CTX *ctx = BN_CTX_new();
-
-    BN_CTX_start(ctx);
-
     uint64_t entropy = *(const uint64_t *)((const uint8_t *)d.bytes + 10);
     uint8_t pointprefix = ((const uint8_t *)d.bytes)[18];
     const uint8_t *pointbx1 = (const uint8_t *)d.bytes + 19, *pointbx2 = (const uint8_t *)d.bytes + 35;
-    BIGNUM *passfactor = BN_CTX_get(ctx);
-
-    derive_passfactor(passfactor, flag, entropy, passphrase);
-
-    NSData *passpoint = point_multiply(nil, passfactor, YES, ctx); // passpoint = G*passfactor
-    NSData *derived = derive_key(passpoint, addresshash, entropy), *pubKey;
+    NSData *passfactor = derive_passfactor(flag, entropy, passphrase);
+    NSData *passpoint = point_multiply(nil, passfactor, YES); // passpoint = G*passfactor
+    NSData *derived = derive_key(passpoint, addresshash, entropy);
     const uint64_t *derived1 = (const uint64_t *)derived.bytes, *derived2 = &derived1[4];
     NSMutableData *pointb = [NSMutableData secureDataWithLength:33];
     size_t l;
@@ -384,9 +330,7 @@ confirmationCode:(NSString **)confcode;
     ((uint64_t *)((uint8_t *)pointb.mutableBytes + 1))[2] ^= derived1[2];
     ((uint64_t *)((uint8_t *)pointb.mutableBytes + 1))[3] ^= derived1[3];
 
-    pubKey = point_multiply(pointb, passfactor, flag & BIP38_COMPRESSED_FLAG, ctx); // pubKey = pointb*passfactor
-    BN_CTX_end(ctx);
-    BN_CTX_free(ctx);
+    NSData *pubKey = point_multiply(pointb, passfactor, flag & BIP38_COMPRESSED_FLAG); // pubKey = pointb*passfactor
 
     return ([[[BRKey keyWithPublicKey:pubKey] address] isEqual:address]) ? YES : NO;
 }
@@ -421,24 +365,15 @@ confirmationCode:(NSString **)confcode;
         }
     }
     else if (prefix == BIP38_EC_PREFIX) { // EC multipled key
-        BN_CTX *ctx = BN_CTX_new();
-
-        BN_CTX_start(ctx);
-
         // d = prefix + flag + addresshash + entropy + encrypted1[0...7] + encrypted2
         uint64_t entropy = *(const uint64_t *)((const uint8_t *)d.bytes + 7);
         NSMutableData *encrypted1 = [NSMutableData secureData];
         const uint8_t *encrypted2 = (const uint8_t *)d.bytes + 23;
-        BIGNUM *passfactor = BN_CTX_get(ctx), *factorb = BN_CTX_get(ctx), *priv = BN_CTX_get(ctx),
-               *order = BN_CTX_get(ctx);
-
-        derive_passfactor(passfactor, flag, entropy, passphrase);
-
-        NSData *passpoint = point_multiply(nil, passfactor, YES, ctx); // passpoint = G*passfactor
+        NSData *passfactor = derive_passfactor(flag, entropy, passphrase);
+        NSData *passpoint = point_multiply(nil, passfactor, YES); // passpoint = G*passfactor
         NSData *derived = derive_key(passpoint, addresshash, entropy);
         const uint64_t *derived1 = (const uint64_t *)derived.bytes, *derived2 = &derived1[4];
         NSMutableData *seedb = [NSMutableData secureDataWithLength:24], *o = [NSMutableData secureDataWithLength:16];
-        EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
 
         [encrypted1 appendBytes:(const uint8_t *)d.bytes + 15 length:8];
         encrypted1.length = 16;
@@ -453,14 +388,7 @@ confirmationCode:(NSString **)confcode;
         ((uint64_t *)seedb.mutableBytes)[0] = ((const uint64_t *)o.bytes)[0] ^ derived1[0];
         ((uint64_t *)seedb.mutableBytes)[1] = ((const uint64_t *)o.bytes)[1] ^ derived1[1];
 
-        EC_GROUP_get_order(group, order, ctx);
-        BN_bin2bn(seedb.SHA256_2.bytes, CC_SHA256_DIGEST_LENGTH, factorb); // factorb = SHA256(SHA256(seedb))
-        BN_mod_mul(priv, passfactor, factorb, order, ctx); // secret = passfactor*factorb mod N
-        BN_bn2bin(priv, (unsigned char *)secret.mutableBytes + secret.length - BN_num_bytes(priv));
-
-        EC_GROUP_free(group);
-        BN_CTX_end(ctx);
-        BN_CTX_free(ctx);
+        secp256k1_mod_mul(secret.mutableBytes, passfactor.bytes, seedb.SHA256_2.bytes); // secret = passfactor*factorb mod N
     }
 
     if (! (self = [self initWithSecret:secret compressed:flag & BIP38_COMPRESSED_FLAG])) return nil;
