@@ -139,6 +139,8 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 // target is correct for the block's height in the chain, use verifyDifficultyFromPreviousBlock: for that
 - (BOOL)isValid
 {
+    // target is in "compact" format, where the most significant byte is the size of resulting value in bytes, the next
+    // bit is the sign, and the remaining 23bits is the value after having been right shifted by (size - 3)*8 bits
     static const uint32_t maxsize = MAX_PROOF_OF_WORK >> 24, maxtarget = MAX_PROOF_OF_WORK & 0x00ffffffu;
     const uint32_t *b = _blockHash.bytes, size = _target >> 24, target = _target & 0x00ffffffu;
     NSMutableData *d = [NSMutableData data];
@@ -157,7 +159,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     //TODO: use estimated network time instead of system time (avoids timejacking attacks and misconfigured time)
     if (_timestamp > [NSDate timeIntervalSinceReferenceDate] + MAX_TIME_DRIFT) return NO; // timestamp too far in future
     
-    // proof-of-work target out of range
+    // check if proof-of-work target is out of range
     if (target == 0 || target & 0x00800000u || size > maxsize || (size == maxsize && target > maxtarget)) return NO;
 
     d = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH];
@@ -238,6 +240,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 
     if ((_height % BLOCK_DIFFICULTY_INTERVAL) != 0) return (_target == previous.target) ? YES : NO;
 
+    // target is in "compact" format, explained in isValid:
     static const uint32_t maxsize = MAX_PROOF_OF_WORK >> 24, maxtarget = MAX_PROOF_OF_WORK & 0x00ffffffu;
     uint32_t size = previous.target >> 24;
     double target = previous.target & 0x00ffffffu;

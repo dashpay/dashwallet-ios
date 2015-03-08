@@ -212,7 +212,7 @@ int secp256k1_point_add(void *r, const void *a, const void *b, int compressed)
 
 - (NSData *)publicKey
 {
-    if (! self.pubkey.length) {
+    if (! self.pubkey.length && self.seckey.length == 32) {
         static dispatch_once_t onceToken = 0;
         
         dispatch_once(&onceToken, ^{
@@ -252,14 +252,14 @@ int secp256k1_point_add(void *r, const void *a, const void *b, int compressed)
     return [NSString base58checkWithData:d];
 }
 
-- (NSData *)sign:(NSData *)d
+- (NSData *)sign:(NSData *)md
 {
     if (! self.seckey.length) {
         NSLog(@"%s:%d: %s: can't sign with a public key", __FILE__, __LINE__,  __func__);
         return nil;
     }
-    else if (d.length != CC_SHA256_DIGEST_LENGTH) {
-        NSLog(@"%s:%d: %s: Only 256 bit hashes can be signed", __FILE__, __LINE__,  __func__);
+    else if (md.length != CC_SHA256_DIGEST_LENGTH) {
+        NSLog(@"%s:%d: %s: Only 256 bit message digests can be signed", __FILE__, __LINE__,  __func__);
         return nil;
     }
 
@@ -272,17 +272,17 @@ int secp256k1_point_add(void *r, const void *a, const void *b, int compressed)
     NSMutableData *s = [NSMutableData dataWithLength:72];
     int l = s.length;
     
-    if (secp256k1_ecdsa_sign(d.bytes, s.mutableBytes, &l, self.seckey.bytes, secp256k1_nonce_function_rfc6979, NULL)) {
+    if (secp256k1_ecdsa_sign(md.bytes, s.mutableBytes, &l, self.seckey.bytes, secp256k1_nonce_function_rfc6979, NULL)) {
         s.length = l;
         return s;
     }
     else return nil;
 }
 
-- (BOOL)verify:(NSData *)d signature:(NSData *)sig
+- (BOOL)verify:(NSData *)md signature:(NSData *)sig
 {
-    if (d.length != CC_SHA256_DIGEST_LENGTH) {
-        NSLog(@"%s:%d: %s: Only 256 bit hashes can be verified", __FILE__, __LINE__,  __func__);
+    if (md.length != CC_SHA256_DIGEST_LENGTH) {
+        NSLog(@"%s:%d: %s: Only 256 message digests can be verified", __FILE__, __LINE__,  __func__);
         return NO;
     }
 
@@ -293,7 +293,7 @@ int secp256k1_point_add(void *r, const void *a, const void *b, int compressed)
     });
 
     // success is 1, all other values are fail
-    return (secp256k1_ecdsa_verify(d.bytes, sig.bytes, sig.length, self.publicKey.bytes, self.publicKey.length) == 1);
+    return (secp256k1_ecdsa_verify(md.bytes, sig.bytes, sig.length, self.publicKey.bytes, self.publicKey.length) == 1);
 }
 
 @end

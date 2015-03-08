@@ -143,13 +143,13 @@ static NSData *normalize_passphrase(NSString *passphrase)
 
 static NSData *derive_passfactor(uint8_t flag, uint64_t entropy, NSString *passphrase)
 {
-    NSData *password = normalize_passphrase(passphrase);
-    NSData *salt = [NSData dataWithBytesNoCopy:&entropy length:(flag & BIP38_LOTSEQUENCE_FLAG) ? 4 : 8 freeWhenDone:NO];
-    NSData *prefactor = scrypt(password, salt, BIP38_SCRYPT_N, BIP38_SCRYPT_R, BIP38_SCRYPT_P, 32);
-    NSMutableData *d;
+    NSData *password = normalize_passphrase(passphrase),
+           *salt = [NSData dataWithBytesNoCopy:&entropy length:(flag & BIP38_LOTSEQUENCE_FLAG) ? 4 : 8 freeWhenDone:NO],
+           *prefactor = scrypt(password, salt, BIP38_SCRYPT_N, BIP38_SCRYPT_R, BIP38_SCRYPT_P, 32);
 
     if (flag & BIP38_LOTSEQUENCE_FLAG) { // passfactor = SHA256(SHA256(prefactor + entropy))
-        d = [NSMutableData secureDataWithData:prefactor];
+        NSMutableData *d = [NSMutableData secureDataWithData:prefactor];
+
         [d appendBytes:&entropy length:sizeof(entropy)];
         return d.SHA256_2;
     }
@@ -228,17 +228,18 @@ confirmationCode:(NSString **)confcode;
 
     if (d.length != 49 || seedb.length != 24) return nil;
 
-    NSData *passpoint = [NSData dataWithBytesNoCopy:(uint8_t *)d.bytes + 16 length:33 freeWhenDone:NO];
-    NSData *pubKey = point_multiply(passpoint, seedb.SHA256_2, compressed); // pubKey = passpoint*factorb
+    NSData *passpoint = [NSData dataWithBytesNoCopy:(uint8_t *)d.bytes + 16 length:33 freeWhenDone:NO],
+           *factorb = seedb.SHA256_2, // factorb = SHA256(SHA256(seedb))
+           *pubKey = point_multiply(passpoint, factorb, compressed), // pubKey = passpoint*factorb
+           *address = [[[BRKey keyWithPublicKey:pubKey] address] dataUsingEncoding:NSUTF8StringEncoding];
     uint16_t prefix = CFSwapInt16HostToBig(BIP38_EC_PREFIX);
     uint8_t flag = (compressed) ? BIP38_COMPRESSED_FLAG : 0;
-    NSData *address = [[[BRKey keyWithPublicKey:pubKey] address] dataUsingEncoding:NSUTF8StringEncoding];
     uint32_t addresshash = (address) ? *(uint32_t *)address.SHA256_2.bytes : 0;
     uint64_t entropy = *(const uint64_t *)((const uint8_t *)d.bytes + 8);
     NSData *derived = derive_key(passpoint, addresshash, entropy);
     const uint64_t *derived1 = (const uint64_t *)derived.bytes, *derived2 = &derived1[4];
-    NSMutableData *key = [NSMutableData secureData], *encrypted1, *encrypted2;
-    NSMutableData *x = [NSMutableData secureDataWithLength:16];
+    NSMutableData *key = [NSMutableData secureData], *encrypted1, *encrypted2,
+                  *x = [NSMutableData secureDataWithLength:16];
     size_t l;
 
     if (((const uint8_t *)d.bytes)[7] == 0x51) flag |= BIP38_LOTSEQUENCE_FLAG;
@@ -265,7 +266,7 @@ confirmationCode:(NSString **)confcode;
     [key appendData:encrypted2];
 
     if (confcode) {
-        NSData *pointb = point_multiply(nil, seedb.SHA256_2, YES); // pointb = G*factorb
+        NSData *pointb = point_multiply(nil, factorb, YES); // pointb = G*factorb
         NSMutableData *c = [NSMutableData secureData], *pointbx1, *pointbx2;
         uint8_t pointbprefix = ((const uint8_t *)pointb.bytes)[0] ^ (((const uint8_t *)derived2)[31] & 0x01);
 
@@ -311,9 +312,9 @@ confirmationCode:(NSString **)confcode;
     uint64_t entropy = *(const uint64_t *)((const uint8_t *)d.bytes + 10);
     uint8_t pointprefix = ((const uint8_t *)d.bytes)[18];
     const uint8_t *pointbx1 = (const uint8_t *)d.bytes + 19, *pointbx2 = (const uint8_t *)d.bytes + 35;
-    NSData *passfactor = derive_passfactor(flag, entropy, passphrase);
-    NSData *passpoint = point_multiply(nil, passfactor, YES); // passpoint = G*passfactor
-    NSData *derived = derive_key(passpoint, addresshash, entropy);
+    NSData *passfactor = derive_passfactor(flag, entropy, passphrase),
+           *passpoint = point_multiply(nil, passfactor, YES), // passpoint = G*passfactor
+           *derived = derive_key(passpoint, addresshash, entropy), *pubKey;
     const uint64_t *derived1 = (const uint64_t *)derived.bytes, *derived2 = &derived1[4];
     NSMutableData *pointb = [NSMutableData secureDataWithLength:33];
     size_t l;
@@ -330,8 +331,7 @@ confirmationCode:(NSString **)confcode;
     ((uint64_t *)((uint8_t *)pointb.mutableBytes + 1))[2] ^= derived1[2];
     ((uint64_t *)((uint8_t *)pointb.mutableBytes + 1))[3] ^= derived1[3];
 
-    NSData *pubKey = point_multiply(pointb, passfactor, flag & BIP38_COMPRESSED_FLAG); // pubKey = pointb*passfactor
-
+    pubKey = point_multiply(pointb, passfactor, flag & BIP38_COMPRESSED_FLAG); // pubKey = pointb*passfactor
     return ([[[BRKey keyWithPublicKey:pubKey] address] isEqual:address]) ? YES : NO;
 }
 
@@ -349,11 +349,11 @@ confirmationCode:(NSString **)confcode;
 
     if (prefix == BIP38_NOEC_PREFIX) { // non EC multiplied key
         // d = prefix + flag + addresshash + encrypted1 + encrypted2
-        NSData *password = normalize_passphrase(passphrase);
-        NSData *salt = [NSData dataWithBytesNoCopy:&addresshash length:sizeof(addresshash) freeWhenDone:NO];
-        const uint8_t *encrypted1 = (const uint8_t *)d.bytes + 7, *encrypted2 = (const uint8_t *)d.bytes + 23;
-        NSData *derived = scrypt(password, salt, BIP38_SCRYPT_N, BIP38_SCRYPT_R, BIP38_SCRYPT_P, 64);
+        NSData *password = normalize_passphrase(passphrase),
+               *salt = [NSData dataWithBytesNoCopy:&addresshash length:sizeof(addresshash) freeWhenDone:NO],
+               *derived = scrypt(password, salt, BIP38_SCRYPT_N, BIP38_SCRYPT_R, BIP38_SCRYPT_P, 64);
         const uint64_t *derived1 = (const uint64_t *)derived.bytes, *derived2 = &((const uint64_t *)derived.bytes)[4];
+        const uint8_t *encrypted1 = (const uint8_t *)d.bytes + 7, *encrypted2 = (const uint8_t *)d.bytes + 23;
 
         CCCrypt(kCCDecrypt, kCCAlgorithmAES, kCCOptionECBMode, derived2, 32, NULL, encrypted1, 16,
                 secret.mutableBytes, 16, &l);
@@ -369,9 +369,9 @@ confirmationCode:(NSString **)confcode;
         uint64_t entropy = *(const uint64_t *)((const uint8_t *)d.bytes + 7);
         NSMutableData *encrypted1 = [NSMutableData secureData];
         const uint8_t *encrypted2 = (const uint8_t *)d.bytes + 23;
-        NSData *passfactor = derive_passfactor(flag, entropy, passphrase);
-        NSData *passpoint = point_multiply(nil, passfactor, YES); // passpoint = G*passfactor
-        NSData *derived = derive_key(passpoint, addresshash, entropy);
+        NSData *passfactor = derive_passfactor(flag, entropy, passphrase),
+               *passpoint = point_multiply(nil, passfactor, YES), // passpoint = G*passfactor
+               *derived = derive_key(passpoint, addresshash, entropy), *factorb;
         const uint64_t *derived1 = (const uint64_t *)derived.bytes, *derived2 = &derived1[4];
         NSMutableData *seedb = [NSMutableData secureDataWithLength:24], *o = [NSMutableData secureDataWithLength:16];
 
@@ -388,7 +388,8 @@ confirmationCode:(NSString **)confcode;
         ((uint64_t *)seedb.mutableBytes)[0] = ((const uint64_t *)o.bytes)[0] ^ derived1[0];
         ((uint64_t *)seedb.mutableBytes)[1] = ((const uint64_t *)o.bytes)[1] ^ derived1[1];
 
-        secp256k1_mod_mul(secret.mutableBytes, passfactor.bytes, seedb.SHA256_2.bytes); // secret = passfactor*factorb mod N
+        factorb = seedb.SHA256_2; // factorb = SHA256(SHA256(seedb))
+        secp256k1_mod_mul(secret.mutableBytes, passfactor.bytes, factorb.bytes); // secret = passfactor*factorb mod N
     }
 
     if (! (self = [self initWithSecret:secret compressed:flag & BIP38_COMPRESSED_FLAG])) return nil;
@@ -412,10 +413,10 @@ confirmationCode:(NSString **)confcode;
 
     uint16_t prefix = CFSwapInt16HostToBig(BIP38_NOEC_PREFIX);
     uint8_t flag = BIP38_NOEC_FLAG;
-    NSData *password = normalize_passphrase(passphrase);
-    NSData *address = [self.address dataUsingEncoding:NSUTF8StringEncoding];
-    NSData *salt = [address.SHA256_2 subdataWithRange:NSMakeRange(0, 4)];
-    NSData *derived = scrypt(password, salt, BIP38_SCRYPT_N, BIP38_SCRYPT_R, BIP38_SCRYPT_P, 64);
+    NSData *password = normalize_passphrase(passphrase),
+           *address = [self.address dataUsingEncoding:NSUTF8StringEncoding],
+           *salt = [address.SHA256_2 subdataWithRange:NSMakeRange(0, 4)],
+           *derived = scrypt(password, salt, BIP38_SCRYPT_N, BIP38_SCRYPT_R, BIP38_SCRYPT_P, 64);
     const uint64_t *derived1 = (const uint64_t *)derived.bytes, *derived2 = &derived1[4];
     NSMutableData *secret = [NSMutableData secureDataWithLength:32], *encrypted1, *encrypted2, *key;
     size_t l;

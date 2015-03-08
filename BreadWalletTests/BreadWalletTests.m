@@ -313,7 +313,8 @@
 
     XCTAssertEqualObjects(sig, @"3044022033a69cd2065432a30f3d1ce4eb0d59b8ab58c74f27c41a7fdb5696ad4e6108c902206f80798286"
                           "6f785d3f6418d24163ddae117b7db4d5fdf0071de069fa54342262".hexToData, @"[BRKey sign:]");
-
+    XCTAssertTrue([key verify:d signature:sig], @"[BRKey verify:signature:]");
+    
     key = [BRKey keyWithSecret:@"fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140".hexToData
            compressed:YES];
     d = [@"Equations are more important to me, because politics is for the present, but an equation is something for "

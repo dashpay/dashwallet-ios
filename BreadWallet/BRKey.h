@@ -45,7 +45,7 @@ int secp256k1_point_mul(void *r, const void *a, const void *b, int compressed);
 - (instancetype)initWithSecret:(NSData *)secret compressed:(BOOL)compressed;
 - (instancetype)initWithPublicKey:(NSData *)publicKey;
 
-- (NSData *)sign:(NSData *)d;
-- (BOOL)verify:(NSData *)d signature:(NSData *)sig;
+- (NSData *)sign:(NSData *)md;
+- (BOOL)verify:(NSData *)md signature:(NSData *)sig;
 
 @end
