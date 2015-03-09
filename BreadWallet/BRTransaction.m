@@ -206,6 +206,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     size_t sigSize = 149; // electrum seeds generate uncompressed keys, bip32 uses compressed
 //    size_t sigSize = 181;
     
+    if (self.txHash) return self.data.length;
     return 8 + [NSMutableData sizeOfVarInt:self.hashes.count] + [NSMutableData sizeOfVarInt:self.addresses.count] +
            sigSize*self.hashes.count + 34*self.addresses.count;
 }
@@ -287,7 +288,7 @@ sequence:(uint32_t)sequence
 // subscriptIndex. A subscriptIndex of NSNotFound will return the entire signed transaction
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex
 {
-    NSMutableData *d = [NSMutableData dataWithCapacity:self.size];
+    NSMutableData *d = [NSMutableData dataWithCapacity:10 + 149*self.hashes.count + 34*self.addresses.count];
 
     [d appendUInt32:self.version];
     [d appendVarInt:self.hashes.count];

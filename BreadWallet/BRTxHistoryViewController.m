@@ -306,11 +306,6 @@
 
 - (IBAction)showTx:(id)sender
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
-
-    if ([m.wallet amountSentByTransaction:sender] > 0 &&
-        ! m.didAuthenticate && ! [m authenticateWithPrompt:nil andTouchId:YES]) return;
-    
     BRTxDetailViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"TxDetailViewController"];
     c.transaction = sender;
     c.txDateString = [self dateForTx:sender];
@@ -583,9 +578,7 @@
             if (self.moreTx && indexPath.row >= self.transactions.count) { // more...
                 [self performSelector:@selector(more:) withObject:nil afterDelay:0.0];
             }
-            else if (self.transactions.count > 0) { // transaction details
-                [self performSelector:@selector(showTx:) withObject:self.transactions[indexPath.row] afterDelay:0.0];
-            }
+            else if (self.transactions.count > 0) [self showTx:self.transactions[indexPath.row]]; // transaction details
 
             [tableView deselectRowAtIndexPath:indexPath animated:YES];
             break;

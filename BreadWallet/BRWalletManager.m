@@ -50,9 +50,10 @@
 #define DEFAULT_SPENT_LIMIT    SATOSHIS
 
 #if TX_FEE_0_8_RULES
-#define DEFAULT_FEE_PER_KB     0 // use standard minimum fee instead
+#define DEFAULT_FEE_PER_KB      0 // use standard minimum fee instead
 #else
-#define DEFAULT_FEE_PER_KB     (TX_FEE_PER_KB*1100/247) // slightly higher than a typical 247byte tx with a 10bit fee
+#define DEFAULT_FEE_PER_KB      (TX_FEE_PER_KB*1100/247) // slightly higher than a typical 247byte tx with a 10bit fee
+#define DEFAULT_CPFP_FEE_PER_KB (4096*1000/512) // fee required by eligius pool, which supports child-pays-for-parent
 #endif
 
 #define LOCAL_CURRENCY_CODE_KEY @"LOCAL_CURRENCY_CODE"
@@ -284,6 +285,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
             }];
 
         _wallet.feePerKb = DEFAULT_FEE_PER_KB;
+        _wallet.cpfpFeePerKb = DEFAULT_CPFP_FEE_PER_KB;
         
         // verify that keychain matches core data, with different access and backup policies it's possible to diverge
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{

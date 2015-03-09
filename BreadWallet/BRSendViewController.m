@@ -369,14 +369,21 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
     if (! tx) {
         if (m.didAuthenticate || [m seedWithPrompt:prompt forAmount:amount]) {
-            // if user selected an amount equal or below wallet balance, but the fee will bring the total above the
+            // if user selected an amount equal to or below wallet balance, but the fee will bring the total above the
             // balance, offer to reduce the amount to available funds minus fee
             if ((self.amount <= [m amountForLocalCurrencyString:[m localCurrencyStringForAmount:m.wallet.balance]] ||
                  self.amount <= m.wallet.balance) && self.amount > 0) {
-                int64_t amount = m.wallet.balance -
-                                 [m.wallet feeForTxSize:[m.wallet transactionForAmounts:@[@(m.wallet.balance)]
-                                  toOutputScripts:@[self.request.details.outputScripts.firstObject] withFee:NO].size +
-                                  34];
+                NSUInteger txSize = [m.wallet transactionForAmounts:@[@(m.wallet.balance)]
+                                     toOutputScripts:@[self.request.details.outputScripts.firstObject] withFee:NO].size,
+                           cpfpSize = 0;
+                
+                for (tx in m.wallet.recentTransactions) { // add up size of unconfirmed inputs for child-pays-for-parent
+                    if (tx.blockHeight != TX_UNCONFIRMED) break;
+                    if ([m.wallet amountSentByTransaction:tx] == 0) cpfpSize += tx.size; // only non-change inputs count
+                }
+                
+                int64_t amount = m.wallet.balance - (cpfpSize == 0 ? [m.wallet feeForTxSize:txSize + 34] :
+                                                     [m.wallet feeForCpfpTxSize:txSize + 34 + cpfpSize]);
             
                 [[[UIAlertView alloc]
                   initWithTitle:NSLocalizedString(@"insufficient funds for bitcoin network fee", nil)

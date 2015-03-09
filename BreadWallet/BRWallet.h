@@ -42,6 +42,8 @@
 @property (nonatomic, readonly) uint64_t totalSent; // the total amount spent from the wallet (excluding change)
 @property (nonatomic, readonly) uint64_t totalReceived; // the total amount received to the wallet (excluding change)
 @property (nonatomic, assign) uint64_t feePerKb; // fee per kb of transaction size to use when including tx fee
+@property (nonatomic, assign) uint64_t cpfpFeePerKb; // fee per kb used when spending unconfirmed inputs, unconfirmed
+                                                     // input tx size will be included to trigger child-pays-for-parent
 
 - (instancetype)initWithContext:(NSManagedObjectContext *)context sequence:(id<BRKeySequence>)sequence
 masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt, uint64_t amount))seed;
@@ -105,5 +107,9 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 
 // fee that will be added for a transaction of the given size in bytes
 - (uint64_t)feeForTxSize:(NSUInteger)size;
+
+// fee that will be added for a transaction with unconfirmed inputs, using the child-pays-for-parent fee rate (size
+// should be the sum of the transaction size and any unconfirmed, non-change input transcation sizes)
+- (uint64_t)feeForCpfpTxSize:(NSUInteger)size;
 
 @end

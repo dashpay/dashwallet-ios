@@ -358,7 +358,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 {
     uint64_t amount = 0, balance = 0, feeAmount = 0;
     BRTransaction *transaction = [BRTransaction new];
-    NSUInteger i = 0;
+    NSUInteger i = 0, cpfpSize = 0;
 
     for (NSData *script in scripts) {
         if (! script.length) return nil;
@@ -377,7 +377,13 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         if (! tx) continue;
         [transaction addInputHash:tx.txHash index:n script:tx.outputScripts[n]];
         balance += [tx.outputAmounts[n] unsignedLongLongValue];
-        if (fee) feeAmount = [self feeForTxSize:transaction.size + 34]; // assume we will add a change output (34 bytes)
+        if (tx.blockHeight == TX_UNCONFIRMED && [self amountSentByTransaction:tx] == 0) cpfpSize += tx.size;
+
+        if (fee && (cpfpSize == 0 || self.cpfpFeePerKb == 0)) {
+            feeAmount = [self feeForTxSize:transaction.size + 34]; // assume we will add a change output (34 bytes)
+        }
+        else if (fee) [self feeForCpfpTxSize:transaction.size + 34 + cpfpSize];
+
         if (balance == amount + feeAmount || balance >= amount + feeAmount + TX_MIN_OUTPUT_AMOUNT) break;
     }
     
@@ -647,13 +653,23 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     return [transaction blockHeightUntilFreeForAmounts:amounts withBlockHeights:heights];
 }
 
-// fee that will be added for a transaction of the given size in bytes
+// fee that will be added for a transaction of the given size in bytes, with 
 - (uint64_t)feeForTxSize:(NSUInteger)size
 {
     uint64_t standardFee = ((size + 999)/1000)*TX_FEE_PER_KB, // standard fee based on tx size rounded up to nearest kb
              fee = (((size*self.feePerKb/1000) + 99)/100)*100; // fee using feePerKb, rounded up to nearest 100 satoshi
     
     return (fee > standardFee) ? fee : standardFee;
+}
+
+// fee that will be added for a transaction with unconfirmed inputs, using the child-pays-for-parent fee rate (size
+// should be the sum of the transaction size and any unconfirmed, non-change input transcation sizes)
+- (uint64_t)feeForCpfpTxSize:(NSUInteger)size
+{
+    uint64_t fee = [self feeForTxSize:size],
+             cpfpFee = (((size*self.cpfpFeePerKb/1000) + 99)/100)*100; // fee using cpfpFeePerKb, rounded up
+    
+    return (cpfpFee > fee) ? cpfpFee : fee;
 }
 
 @end
