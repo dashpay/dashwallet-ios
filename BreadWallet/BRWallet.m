@@ -382,7 +382,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         if (fee && (cpfpSize == 0 || self.cpfpFeePerKb == 0)) {
             feeAmount = [self feeForTxSize:transaction.size + 34]; // assume we will add a change output (34 bytes)
         }
-        else if (fee) [self feeForCpfpTxSize:transaction.size + 34 + cpfpSize];
+        else if (fee) feeAmount = [self feeForCpfpTxSize:transaction.size + 34 + cpfpSize];
 
         if (balance == amount + feeAmount || balance >= amount + feeAmount + TX_MIN_OUTPUT_AMOUNT) break;
     }
@@ -653,7 +653,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     return [transaction blockHeightUntilFreeForAmounts:amounts withBlockHeights:heights];
 }
 
-// fee that will be added for a transaction of the given size in bytes, with 
+// fee that will be added for a transaction of the given size in bytes
 - (uint64_t)feeForTxSize:(NSUInteger)size
 {
     uint64_t standardFee = ((size + 999)/1000)*TX_FEE_PER_KB, // standard fee based on tx size rounded up to nearest kb
@@ -663,7 +663,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 }
 
 // fee that will be added for a transaction with unconfirmed inputs, using the child-pays-for-parent fee rate (size
-// should be the sum of the transaction size and any unconfirmed, non-change input transcation sizes)
+// should be the sum of the transaction size and any unconfirmed, non-change input transaction sizes)
 - (uint64_t)feeForCpfpTxSize:(NSUInteger)size
 {
     uint64_t fee = [self feeForTxSize:size],

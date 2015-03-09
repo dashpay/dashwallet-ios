@@ -109,7 +109,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 - (uint64_t)feeForTxSize:(NSUInteger)size;
 
 // fee that will be added for a transaction with unconfirmed inputs, using the child-pays-for-parent fee rate (size
-// should be the sum of the transaction size and any unconfirmed, non-change input transcation sizes)
+// should be the sum of the transaction size and any unconfirmed, non-change input transaction sizes)
 - (uint64_t)feeForCpfpTxSize:(NSUInteger)size;
 
 @end
