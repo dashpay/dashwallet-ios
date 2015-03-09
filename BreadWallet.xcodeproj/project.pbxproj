@@ -1153,6 +1153,7 @@
 				759F2C3C1AABE4620029A5AB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		75D5F3B9191EC270004AB296 /* Build configuration list for PBXProject "BreadWallet" */ = {
 			isa = XCConfigurationList;
