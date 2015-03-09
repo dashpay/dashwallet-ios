@@ -87,7 +87,6 @@ typedef enum {
 - (instancetype)initWithAddress:(uint32_t)address andPort:(uint16_t)port
 {
     if (! (self = [self init])) return nil;
-    
     _address = address;
     _port = (port == 0) ? BITCOIN_STANDARD_PORT : port;
     return self;
@@ -97,7 +96,6 @@ typedef enum {
 services:(uint64_t)services
 {
     if (! (self = [self initWithAddress:address andPort:port])) return nil;
-    
     _timestamp = timestamp;
     _services = services;
     return self;
@@ -129,7 +127,6 @@ services:(uint64_t)services
     if (self.status != BRPeerStatusDisconnected) return;
     _status = BRPeerStatusConnecting;
     _pingTime = DBL_MAX;
-
     if (! self.reachability) self.reachability = [Reachability reachabilityWithHostName:self.host];
     
     if (self.reachability.currentReachabilityStatus == NotReachable) { // delay connect until network is reachable
@@ -174,12 +171,10 @@ services:(uint64_t)services
         CFWriteStreamRef writeStream = NULL;
 
         NSLog(@"%@:%u connecting", self.host, self.port);
-    
         CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)self.host, self.port, &readStream, &writeStream);
         self.inputStream = CFBridgingRelease(readStream);
         self.outputStream = CFBridgingRelease(writeStream);
         self.inputStream.delegate = self.outputStream.delegate = self;
-
         self.runLoop = [NSRunLoop currentRunLoop];
         [self.inputStream scheduleInRunLoop:self.runLoop forMode:NSRunLoopCommonModes];
         [self.outputStream scheduleInRunLoop:self.runLoop forMode:NSRunLoopCommonModes];
@@ -191,7 +186,6 @@ services:(uint64_t)services
         
         [self.inputStream open];
         [self.outputStream open];
-    
         [self sendVersionMessage];
         [self.runLoop run]; // this doesn't return until the runloop is stopped
     });
@@ -305,7 +299,6 @@ services:(uint64_t)services
     [msg appendString:USERAGENT]; // user agent
     [msg appendUInt32:0]; // last block received
     [msg appendUInt8:0]; // relay transactions (no for SPV bloom filter mode)
-
     self.startTime = [NSDate timeIntervalSinceReferenceDate];
     [self sendMessage:msg type:MSG_VERSION];
 }
@@ -519,9 +512,7 @@ services:(uint64_t)services
     }
     
     _lastblock = [message UInt32AtOffset:80 + l];
-    
     NSLog(@"%@:%u got version %u, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
-    
     [self sendVerackMessage];
 }
 
@@ -534,7 +525,6 @@ services:(uint64_t)services
     
     _pingTime = [NSDate timeIntervalSinceReferenceDate] - self.startTime; // use verack time as initial ping time
     self.startTime = 0;
-    
     NSLog(@"%@:%u got verack in %fs", self.host, self.port, self.pingTime);
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending verack timeout
     self.gotVerack = YES;
@@ -740,7 +730,6 @@ services:(uint64_t)services
             }
 
             lastHash = [message subdataWithRange:NSMakeRange(off, 80)].SHA256_2;
-
             NSLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, @[lastHash, firstHash]);
             [self sendGetblocksMessageWithLocators:@[lastHash, firstHash] andHashStop:nil];
         }
@@ -768,7 +757,6 @@ services:(uint64_t)services
 - (void)acceptGetaddrMessage:(NSData *)message
 {
     NSLog(@"%@:%u got getaddr", self.host, self.port);
-    
     [self sendAddrMessage];
 }
 
@@ -847,7 +835,6 @@ services:(uint64_t)services
     }
     
     NSLog(@"%@:%u got ping", self.host, self.port);
-    
     [self sendMessage:message type:MSG_PONG];
 }
 
@@ -890,7 +877,6 @@ services:(uint64_t)services
     // Bitcoin nodes don't support querying arbitrary transactions, only transactions not yet accepted in a block. After
     // a merkleblock message, the remote node is expected to send tx messages for the tx referenced in the block. When a
     // non-tx message is received we should have all the tx in the merkleblock.
-
     BRMerkleBlock *block = [BRMerkleBlock blockWithMessage:message];
     
     if (! block.valid) {
@@ -954,7 +940,6 @@ services:(uint64_t)services
     hash = (hash ^ (self.address & 0xff))*FNV32_PRIME;
     hash = (hash ^ ((self.port >> 8) & 0xff))*FNV32_PRIME;
     hash = (hash ^ (self.port & 0xff))*FNV32_PRIME;
-    
     return hash;
 }
 
@@ -992,7 +977,6 @@ services:(uint64_t)services
                 NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
                 
                 if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
-                //if(self.outputBuffer.length == 0) NSLog(@"%@:%u output buffer cleared", self.host, self.port);
             }
 
             break;

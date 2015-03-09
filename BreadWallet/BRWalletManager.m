@@ -204,11 +204,9 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     if (! (self = [super init])) return nil;
 
     [NSManagedObject setConcurrencyType:NSPrivateQueueConcurrencyType];
-
     self.sequence = [BRBIP32Sequence new];
     self.reachability = [Reachability reachabilityForInternetConnection];
     self.failedPins = [NSMutableSet set];
-
     _format = [NSNumberFormatter new];
     self.format.lenient = YES;
     self.format.numberStyle = NSNumberFormatterCurrencyStyle;
@@ -220,7 +218,6 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     self.format.maximumFractionDigits = 2;
     self.format.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
     self.format.maximum = @(MAX_MONEY/(int64_t)pow(10.0, self.format.maximumFractionDigits));
-
     _localFormat = [NSNumberFormatter new];
     self.localFormat.lenient = YES;
     self.localFormat.numberStyle = NSNumberFormatterCurrencyStyle;
@@ -233,7 +230,6 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         }];
 
     if ([[UIApplication sharedApplication] isProtectedDataAvailable]) [self protectedInit];
-
     return self;
 }
 
@@ -243,13 +239,11 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     
     if (self.protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.protectedObserver];
     self.protectedObserver = nil;
-    
     _currencyCodes = [defs arrayForKey:CURRENCY_CODES_KEY];
     _currencyNames = [defs arrayForKey:CURRENCY_NAMES_KEY];
     _currencyPrices = [defs arrayForKey:CURRENCY_PRICES_KEY];
     self.localCurrencyCode = ([defs stringForKey:LOCAL_CURRENCY_CODE_KEY]) ?
         [defs stringForKey:LOCAL_CURRENCY_CODE_KEY] : [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
-
     [self updateExchangeRate];
 }
 
@@ -267,10 +261,6 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         NSLog(@"upgrading to authenticated keychain scheme");
         if (! setKeychainData([self.sequence masterPublicKeyFromSeed:self.seed], MASTER_PUBKEY_KEY, NO)) return _wallet;
         if (setKeychainData(getKeychainData(MNEMONIC_KEY, nil), MNEMONIC_KEY, YES)) setKeychainData(nil, SEED_KEY, NO);
-
-        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"where's my passcode?", nil)
-          message:NSLocalizedString(@"passcode or touch id is required to send or view balance", nil)
-          delegate:self cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
     }
     
     if (! self.masterPublicKey) return _wallet;
@@ -486,7 +476,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
             context.localizedFallbackTitle = NSLocalizedString(@"passcode", nil);
             
             [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
-            localizedReason:(authprompt ? authprompt : @" ") reply:^(BOOL success, NSError *error) {
+             localizedReason:(authprompt ? authprompt : @" ") reply:^(BOOL success, NSError *error) {
                 authcode = (success) ? 1 : error.code;
             }];
             
@@ -792,7 +782,6 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateExchangeRate) object:nil];
     [self performSelector:@selector(updateExchangeRate) withObject:nil afterDelay:60.0];
-
     if (self.reachability.currentReachabilityStatus == NotReachable) return;
 
     NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:TICKER_URL]
@@ -843,12 +832,10 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         _currencyNames = names;
         _currencyPrices = rates;
         self.localCurrencyCode = _localCurrencyCode;
-
         [defs setObject:self.currencyCodes forKey:CURRENCY_CODES_KEY];
         [defs setObject:self.currencyNames forKey:CURRENCY_NAMES_KEY];
         [defs setObject:self.currencyPrices forKey:CURRENCY_PRICES_KEY];
         [defs synchronize];
-        
         NSLog(@"exchange rate updated to %@/%@", [self localCurrencyStringForAmount:SATOSHIS],
               [self stringForAmount:SATOSHIS]);
     }];
@@ -872,7 +859,6 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
         [v textFieldAtIndex:0].returnKeyType = UIReturnKeyDone;
         [v textFieldAtIndex:0].placeholder = NSLocalizedString(@"password", nil);
         [v show];
-
         self.sweepKey = privKey;
         self.sweepFee = fee;
         self.sweepCompletion = completion;
@@ -993,7 +979,6 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
     NSString *r = [self.format stringFromNumber:@(amount/pow(10.0, self.format.maximumFractionDigits))];
 
     self.format.minimumFractionDigits = min;
-
     return r;
 }
 
@@ -1019,11 +1004,7 @@ completion:(void (^)(BRTransaction *tx, NSError *error))completion
 
     while (overflowbits > 0) local *= 2, min *= 2, max *= 2, amount *= 2, overflowbits--;
     if (amount >= MAX_MONEY) return (local < 0) ? -MAX_MONEY : MAX_MONEY;
-
-    while ((amount/p)*p >= min && p <= INT64_MAX/10) { // find lowest decimal precision matching local currency string
-        p *= 10;
-    }
-
+    while ((amount/p)*p >= min && p <= INT64_MAX/10) p *= 10; // lowest decimal precision matching local currency string
     p /= 10;
     return (local < 0) ? -(amount/p)*p : (amount/p)*p;
 }
@@ -1064,7 +1045,6 @@ replacementString:(NSString *)string
 - (void)textFieldDidBeginEditing:(UITextField *)textField
 {
     if ([LAContext class]) return; // fix is needed for iOS 7 only
-    
     textField.superview.superview.superview.superview.superview.center =
         CGPointMake([UIScreen mainScreen].bounds.size.width/2.0, [UIScreen mainScreen].bounds.size.height/2.0 - 108.0);
 }
@@ -1104,7 +1084,6 @@ replacementString:(NSString *)string
 - (void)textViewDidBeginEditing:(UITextView *)textView
 {
     if ([LAContext class]) return; // fix is needed for iOS 7 only
-    
     textView.superview.superview.superview.superview.superview.center =
         CGPointMake([UIScreen mainScreen].bounds.size.width/2.0, [UIScreen mainScreen].bounds.size.height/2.0 - 108.0);
 }
@@ -1119,7 +1098,6 @@ replacementString:(NSString *)string
     
     if (buttonIndex == alertView.cancelButtonIndex) {
         if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:@"abort"]) abort();
-
         if (self.sweepCompletion) self.sweepCompletion(nil, nil);
         self.sweepKey = nil;
         self.sweepCompletion = nil;

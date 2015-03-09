@@ -97,7 +97,6 @@ static NSString *sanitizeString(NSString *s)
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-
     [self cancel:nil];
 }
 
@@ -113,7 +112,6 @@ static NSString *sanitizeString(NSString *s)
 - (void)viewWillDisappear:(BOOL)animated
 {
     [self hideTips];
-
     [super viewWillDisappear:animated];
 }
 
@@ -453,10 +451,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         // use the payment transaction's change address as the refund address, which prevents the same address being
         // used in other transactions in the event no refund is ever issued
         [refundScript appendScriptPubKeyForAddress:m.wallet.changeAddress];
-    
-        for (NSNumber *amt in self.request.details.outputAmounts) {
-            refundAmount += [amt unsignedLongLongValue];
-        }
+        for (NSNumber *amt in self.request.details.outputAmounts) refundAmount += [amt unsignedLongLongValue];
 
         // TODO: keep track of commonName/memo to associate them with outputScripts
         BRPaymentProtocolPayment *payment =
@@ -519,10 +514,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         else if (tx) {
             uint64_t fee = [m.wallet feeForTxSize:tx.size], amount = fee;
 
-            for (NSNumber *amt in tx.outputAmounts) {
-                amount += amt.unsignedLongLongValue;
-            }
-
+            for (NSNumber *amt in tx.outputAmounts) amount += amt.unsignedLongLongValue;
             self.sweepTx = tx;
 
             [[[UIAlertView alloc] initWithTitle:nil message:[NSString
@@ -643,7 +635,6 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 - (IBAction)scanQR:(id)sender
 {
     if ([self nextTip]) return;
-
     [sender setEnabled:NO];
     self.scanController.delegate = self;
     self.scanController.transitioningDelegate = self;
@@ -815,7 +806,6 @@ fromConnection:(AVCaptureConnection *)connection
 - (BOOL)textViewShouldBeginEditing:(UITextView *)textView
 {
     if ([self nextTip]) return NO;
-    
     return YES;
 }
 

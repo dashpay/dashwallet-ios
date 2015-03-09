@@ -252,8 +252,11 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     target *= timespan;
     target /= TARGET_TIMESPAN;
     
+    // normalize target for "compact" format
     while ((uint32_t)(target + DBL_EPSILON) < 0x00080000u) target *= 256, size--;
     while ((uint32_t)(target + DBL_EPSILON) > 0x007fffffu) target /= 256, size++;
+    
+    // limit to MAX_PROOF_OF_WORK
     if (size > maxsize || (size == maxsize && target + DBL_EPSILON > maxtarget)) target = maxtarget, size = maxsize;
     
     return (_target == ((uint32_t)(target + DBL_EPSILON) | size << 24)) ? YES : NO;

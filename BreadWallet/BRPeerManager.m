@@ -385,10 +385,8 @@ static const char *dns_seeds[] = {
         if (hash && ! [filter containsData:hash]) [filter insertData:hash];
     }
 
-    for (NSData *utxo in m.wallet.unspentOutputs) { // add unspent outputs to watch for tx sending money from the wallet
-        if (! [filter containsData:utxo]) [filter insertData:utxo];
-    }
-
+    // add unspent outputs to watch for tx sending money from the wallet
+    for (NSData *utxo in m.wallet.unspentOutputs) if (! [filter containsData:utxo]) [filter insertData:utxo];
     _bloomFilter = filter;
     return _bloomFilter;
 }
@@ -485,6 +483,7 @@ static const char *dns_seeds[] = {
             completion([NSError errorWithDomain:@"BreadWallet" code:401 userInfo:@{NSLocalizedDescriptionKey:
                         NSLocalizedString(@"bitcoin transaction not signed", nil)}]);
         }
+        
         return;
     }
 
@@ -493,6 +492,7 @@ static const char *dns_seeds[] = {
             completion([NSError errorWithDomain:@"BreadWallet" code:-1009 userInfo:@{NSLocalizedDescriptionKey:
                         NSLocalizedString(@"not connected to the bitcoin network", nil)}]);
         }
+        
         return;
     }
 
@@ -507,10 +507,7 @@ static const char *dns_seeds[] = {
 
     dispatch_async(dispatch_get_main_queue(), ^{
         [self performSelector:@selector(txTimeout:) withObject:transaction.txHash afterDelay:PROTOCOL_TIMEOUT];
-
-        for (BRPeer *p in peers) {
-            [p sendInvMessageWithTxHash:transaction.txHash];
-        }
+        for (BRPeer *p in peers) [p sendInvMessageWithTxHash:transaction.txHash];
     });
 }
 
@@ -535,10 +532,7 @@ static const char *dns_seeds[] = {
         if (blockHeight >= self.lastBlockHeight - BLOCK_DIFFICULTY_INTERVAL*2) { // recent block we have the header for
             BRMerkleBlock *block = self.lastBlock;
 
-            while (block && block.height > blockHeight) {
-                block = self.blocks[block.prevBlock];
-            }
-
+            while (block && block.height > blockHeight) block = self.blocks[block.prevBlock];
             if (block) return block.timestamp;
         }
     }
@@ -733,9 +727,7 @@ static const char *dns_seeds[] = {
     NSMutableSet *peers = [[self.peers.set setByAddingObjectsFromSet:self.misbehavinPeers] mutableCopy];
     NSMutableSet *addrs = [NSMutableSet set];
 
-    for (BRPeer *p in peers) {
-        [addrs addObject:@((int32_t)p.address)];
-    }
+    for (BRPeer *p in peers) [addrs addObject:@((int32_t)p.address)];
 
     [[BRPeerEntity context] performBlock:^{
         [BRPeerEntity deleteObjects:[BRPeerEntity objectsMatching:@"! (address in %@)", addrs]]; // remove deleted peers
@@ -752,9 +744,7 @@ static const char *dns_seeds[] = {
             else [e deleteObject];
         }
 
-        for (BRPeer *p in peers) { // add new peers
-            [[BRPeerEntity managedObject] setAttributesFromPeer:p];
-        }
+        for (BRPeer *p in peers) [[BRPeerEntity managedObject] setAttributesFromPeer:p]; // add new peers
     }];
 }
 
@@ -1097,9 +1087,7 @@ static const char *dns_seeds[] = {
 
         BRMerkleBlock *b = self.lastBlock;
 
-        while (b && b.height > block.height) { // check if block is in main chain
-            b = self.blocks[b.prevBlock];
-        }
+        while (b && b.height > block.height) b = self.blocks[b.prevBlock]; // check if block is in main chain
 
         if ([b.blockHash isEqual:block.blockHash]) { // if it's not on a fork, set block heights for its transactions
             [self setBlockHeight:block.height forTxHashes:block.txHashes];

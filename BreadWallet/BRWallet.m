@@ -377,12 +377,14 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         if (! tx) continue;
         [transaction addInputHash:tx.txHash index:n script:tx.outputScripts[n]];
         balance += [tx.outputAmounts[n] unsignedLongLongValue];
+        
+        // add up size of unconfirmed, non-change inputs for child-pays-for-parent fee calculation
         if (tx.blockHeight == TX_UNCONFIRMED && [self amountSentByTransaction:tx] == 0) cpfpSize += tx.size;
 
         if (fee && (cpfpSize == 0 || self.cpfpFeePerKb == 0)) {
             feeAmount = [self feeForTxSize:transaction.size + 34]; // assume we will add a change output (34 bytes)
         }
-        else if (fee) feeAmount = [self feeForCpfpTxSize:transaction.size + 34 + cpfpSize];
+        else if (fee) feeAmount = [self feeForCpfpTxSize:transaction.size + 34 + cpfpSize]; // use child-pays-for-parent
 
         if (balance == amount + feeAmount || balance >= amount + feeAmount + TX_MIN_OUTPUT_AMOUNT) break;
     }
