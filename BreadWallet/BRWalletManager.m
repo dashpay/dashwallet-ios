@@ -50,11 +50,11 @@
 #define DEFAULT_SPENT_LIMIT    SATOSHIS
 
 #if TX_FEE_0_8_RULES
-#define DEFAULT_FEE_PER_KB      0 // use standard minimum fee instead
+#define DEFAULT_FEE_PER_KB 0 // use standard minimum fee instead
 #else
-#define DEFAULT_FEE_PER_KB      (TX_FEE_PER_KB*1100/247) // slightly higher than a typical 247byte tx with a 10bit fee
-#define DEFAULT_CPFP_FEE_PER_KB (4096*1000/512) // fee required by eligius pool, which supports child-pays-for-parent
+#define DEFAULT_FEE_PER_KB (4096*1000/512) // fee required by eligius pool, which supports child-pays-for-parent
 #endif
+#define MAX_FEE_PER_KB     (10001*1000/247) // just enough to beat a 100bit fee on a typical 247byte transaction
 
 #define LOCAL_CURRENCY_CODE_KEY @"LOCAL_CURRENCY_CODE"
 #define CURRENCY_CODES_KEY      @"CURRENCY_CODES"
@@ -275,7 +275,6 @@ static NSString *getKeychainString(NSString *key, NSError **error)
             }];
 
         _wallet.feePerKb = DEFAULT_FEE_PER_KB;
-        _wallet.cpfpFeePerKb = DEFAULT_CPFP_FEE_PER_KB;
         
         // verify that keychain matches core data, with different access and backup policies it's possible to diverge
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -417,11 +416,12 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 #if TX_FEE_0_8_RULES
     return;
 #endif
-
-    // if average block size increases past 650kb, start increasing tx fee up to a max of 10x when block size hits 850kb
-    // we want to increase the fee/kb to where we just beat a typical 247byte tx with a 100bit fee
-    self.wallet.feePerKb = DEFAULT_FEE_PER_KB;
-    if (size > 650*1000) self.wallet.feePerKb *= (size < 850*1000) ? 10*(size - 650*1000)/(200*1000) : 10;
+    
+    // if block size increases past 650kb, start increasing fee up to MAX_FEE_PER_KB when blocks hit 850kb
+    if (size > 650*1000 && size < 850*1000) {
+        self.wallet.feePerKb = DEFAULT_FEE_PER_KB + (MAX_FEE_PER_KB - DEFAULT_FEE_PER_KB)*(size - 650*1000)/(200*1000);
+    }
+    else self.wallet.feePerKb = (size <= 650*1000) ? DEFAULT_FEE_PER_KB : MAX_FEE_PER_KB;
 }
 
 // generates a random seed, saves to keychain and returns the associated seedPhrase

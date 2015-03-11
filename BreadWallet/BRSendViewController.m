@@ -380,8 +380,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
                     if ([m.wallet amountSentByTransaction:tx] == 0) cpfpSize += tx.size; // only non-change inputs count
                 }
                 
-                int64_t amount = m.wallet.balance - (cpfpSize == 0 ? [m.wallet feeForTxSize:txSize + 34] :
-                                                     [m.wallet feeForCpfpTxSize:txSize + 34 + cpfpSize]);
+                int64_t amount = m.wallet.balance - [m.wallet feeForTxSize:txSize + 34 + cpfpSize];
             
                 [[[UIAlertView alloc]
                   initWithTitle:NSLocalizedString(@"insufficient funds for bitcoin network fee", nil)
