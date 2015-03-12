@@ -502,7 +502,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     [(id)v.customView startAnimating];
     [self.view addSubview:[v popIn]];
 
-    [m sweepPrivateKey:privKey withFee:YES completion:^(BRTransaction *tx, NSError *error) {
+    [m sweepPrivateKey:privKey withFee:YES completion:^(BRTransaction *tx, uint64_t fee, NSError *error) {
         [v popOut];
 
         if (error) {
@@ -511,7 +511,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
             [self cancel:nil];
         }
         else if (tx) {
-            uint64_t fee = [m.wallet feeForTxSize:tx.size], amount = fee;
+            uint64_t amount = fee;
 
             for (NSNumber *amt in tx.outputAmounts) amount += amt.unsignedLongLongValue;
             self.sweepTx = tx;

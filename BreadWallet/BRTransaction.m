@@ -203,8 +203,8 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 // size in bytes if signed, or estimated size assuming compact pubkey sigs
 - (size_t)size
 {
-    size_t sigSize = 149; // signature size using a compact pubkey
-//    size_t sigSize = 181;
+    static const size_t sigSize = 149; // signature size using a compact pubkey
+//    static const size_t sigSize = 181; // signature size using a non-compact pubkey
     
     if (self.txHash) return self.data.length;
     return 8 + [NSMutableData sizeOfVarInt:self.hashes.count] + [NSMutableData sizeOfVarInt:self.addresses.count] +

@@ -61,7 +61,7 @@
 // given a private key, queries blockchain for unspent outputs and calls the completion block with a signed transaction
 // that will sweep the balance into wallet (doesn't publish the tx)
 - (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
-completion:(void (^)(BRTransaction *tx, NSError *error))completion;
+completion:(void (^)(BRTransaction *tx, uint64_t fee, NSError *error))completion;
 
 - (int64_t)amountForString:(NSString *)string;
 - (NSString *)stringForAmount:(int64_t)amount;
