@@ -200,10 +200,10 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     return self.outScripts;
 }
 
+// size in bytes if signed, or estimated size assuming compact pubkey sigs
 - (size_t)size
 {
-    //TODO: not all keys come from this wallet (private keys can be swept), might cause a lower than standard tx fee
-    size_t sigSize = 149; // electrum seeds generate uncompressed keys, bip32 uses compressed
+    size_t sigSize = 149; // signature size using a compact pubkey
 //    size_t sigSize = 181;
     
     if (self.txHash) return self.data.length;
