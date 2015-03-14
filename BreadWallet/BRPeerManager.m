@@ -122,7 +122,6 @@ static const char *dns_seeds[] = {
     static dispatch_once_t onceToken = 0;
     
     dispatch_once(&onceToken, ^{
-        srand48(time(NULL)); // seed psudo random number generator (for non-cryptographic use only!)
         singleton = [self new];
     });
     
@@ -136,7 +135,7 @@ static const char *dns_seeds[] = {
     self.earliestKeyTime = [[BRWalletManager sharedInstance] seedCreationTime];
     self.connectedPeers = [NSMutableSet set];
     self.misbehavinPeers = [NSMutableSet set];
-    self.tweak = (uint32_t)mrand48();
+    self.tweak = arc4random();
     self.taskId = UIBackgroundTaskInvalid;
     self.q = dispatch_queue_create("peermanager", NULL);
     self.orphans = [NSMutableDictionary dictionary];
@@ -220,7 +219,8 @@ static const char *dns_seeds[] = {
 
                     // give dns peers a timestamp between 3 and 7 days ago
                     [_peers addObject:[[BRPeer alloc] initWithAddress:addr port:BITCOIN_STANDARD_PORT
-                                       timestamp:now - 24*60*60*(3 + drand48()*4) services:NODE_NETWORK]];
+                                       timestamp:now - (3*24*60*60 + arc4random_uniform(4*24*60*60))
+                                       services:NODE_NETWORK]];
                 }
             }
 
@@ -234,7 +234,8 @@ static const char *dns_seeds[] = {
                                            pathForResource:FIXED_PEERS ofType:@"plist"]]) {
                     // give hard coded peers a timestamp between 7 and 14 days ago
                     [_peers addObject:[[BRPeer alloc] initWithAddress:address.intValue port:BITCOIN_STANDARD_PORT
-                                       timestamp:now - 24*60*60*(7 + drand48()*7) services:NODE_NETWORK]];
+                                       timestamp:now - (7*24*60*60 + arc4random_uniform(7*24*60*60))
+                                       services:NODE_NETWORK]];
                 }
             }
             
@@ -421,7 +422,7 @@ static const char *dns_seeds[] = {
 
         while (peers.count > 0 && self.connectedPeers.count < PEER_MAX_CONNECTIONS) {
             // pick a random peer biased towards peers with more recent timestamps
-            BRPeer *p = peers[(NSUInteger)(pow(lrand48() % peers.count, 2)/peers.count)];
+            BRPeer *p = peers[(NSUInteger)(pow(arc4random_uniform((uint32_t)peers.count), 2)/peers.count)];
 
             if (p && ! [self.connectedPeers containsObject:p]) {
                 [p setDelegate:self queue:self.q];
@@ -495,6 +496,8 @@ static const char *dns_seeds[] = {
         
         return;
     }
+
+    // TODO: XXXX include unconfirmed inputs to make sure they are getting included in other node's mempools
 
     self.publishedTx[transaction.txHash] = transaction;
     if (completion) self.publishedCallback[transaction.txHash] = completion;
@@ -997,7 +1000,7 @@ static const char *dns_seeds[] = {
         if (self.downloadPeer.status == BRPeerStatusConnected && self.fpRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) {
             NSLog(@"%@:%d bloom filter false positive rate %f too high after %d blocks, disconnecting...", peer.host,
                   peer.port, self.fpRate, self.lastBlockHeight + 1 - self.filterUpdateHeight);
-            self.tweak = (uint32_t)mrand48(); // new random filter tweak in case we matched satoshidice or something
+            self.tweak = arc4random(); // new random filter tweak in case we matched satoshidice or something
             [self.downloadPeer disconnect];
         }
         else if (self.lastBlockHeight + 500 < peer.lastblock && self.fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*10.0) {

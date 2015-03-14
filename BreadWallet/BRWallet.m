@@ -389,9 +389,9 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         return nil;
     }
     
-    //TODO: randomly swap order of outputs so the change address isn't publicy known
     if (balance - (amount + feeAmount) >= TX_MIN_OUTPUT_AMOUNT) {
         [transaction addOutputAddress:self.changeAddress amount:balance - (amount + feeAmount)];
+        [transaction shuffleOutputOrder];
     }
     
     return transaction;

@@ -135,8 +135,8 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 }
 
 // true if merkle tree and timestamp are valid, and proof-of-work matches the stated difficulty target
-// NOTE: this only checks if the block difficulty matches the difficulty target in the header, it does not check if the
-// target is correct for the block's height in the chain, use verifyDifficultyFromPreviousBlock: for that
+// NOTE: This only checks if the block difficulty matches the difficulty target in the header. It does not check if the
+// target is correct for the block's height in the chain. Use verifyDifficultyFromPreviousBlock: for that.
 - (BOOL)isValid
 {
     // target is in "compact" format, where the most significant byte is the size of resulting value in bytes, the next

@@ -915,10 +915,12 @@
 
     // larger than 1k transaction
     tx = [w transactionFor:25000000ULL to:@"16c7nyuu2D99LqJ8TQ8GSsWSyrCYDS5qBA" withFee:YES];
-    NSLog(@"fee: %llu, should be %llu", [w feeForTransaction:tx], tx.standardFee);
+    NSLog(@"fee: %llu, should be %llu", [w feeForTransaction:tx], [w feeForTxSize:tx.size + 1965]);
 
-    XCTAssertEqual([w feeForTransaction:tx], tx.standardFee, @"[BRWallet transactionFor:to:withFee:]");
+    XCTAssertEqual([w feeForTransaction:tx], [w feeForTxSize:tx.size + 1965], @"[BRWallet transactionFor:to:withFee:]");
 #endif
+
+    XCTAssertEqual([w feeForTxSize:tx.size], tx.standardFee, @"[BRWallet feeForTxSize:]");
 }
 
 #pragma mark - testBloomFilter

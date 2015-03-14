@@ -28,6 +28,7 @@
 #import "NSString+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSData+Bitcoin.h"
+#import <CommonCrypto/CommonHMAC.h>
 
 #define TX_VERSION    0x00000001u
 #define TX_LOCKTIME   0x00000000u
@@ -63,7 +64,6 @@
     self.sequences = [NSMutableArray array];
     _lockTime = TX_LOCKTIME;
     _blockHeight = TX_UNCONFIRMED;
-    
     return self;
 }
 
@@ -111,7 +111,6 @@
     
     _lockTime = [message UInt32AtOffset:off]; // tx locktime
     _txHash = self.data.SHA256_2;
-    
     return self;
 }
 
@@ -156,7 +155,6 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 
     _lockTime = TX_LOCKTIME;
     _blockHeight = TX_UNCONFIRMED;
-    
     return self;
 }
 
@@ -220,7 +218,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 - (BOOL)isSigned
 {
     return (self.signatures.count > 0 && self.signatures.count == self.hashes.count &&
-            ! [self.signatures containsObject:[NSNull null]]);
+            ! [self.signatures containsObject:[NSNull null]]) ? YES : NO;
 }
 
 - (NSData *)toData
@@ -284,6 +282,21 @@ sequence:(uint32_t)sequence
     return addresses;
 }
 
+// only unsigned transactions can be modified
+- (void)shuffleOutputOrder
+{
+    for (NSData *s in _signatures) if (s != (id)[NSNull null]) return;
+    
+    for (NSUInteger i = 0; i + 1 < self.amounts.count; i++) { // fischer-yates shuffle
+        NSUInteger j = i + arc4random_uniform((uint32_t)(self.amounts.count - i));
+        
+        if (j == i) continue;
+        [self.amounts exchangeObjectAtIndex:i withObjectAtIndex:j];
+        [self.outScripts exchangeObjectAtIndex:i withObjectAtIndex:j];
+        [self.addresses exchangeObjectAtIndex:i withObjectAtIndex:j];
+    }
+}
+
 // Returns the binary transaction data that needs to be hashed and signed with the private key for the tx input at
 // subscriptIndex. A subscriptIndex of NSNotFound will return the entire signed transaction
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex
@@ -320,11 +333,7 @@ sequence:(uint32_t)sequence
     }
     
     [d appendUInt32:self.lockTime];
-    
-    if (subscriptIndex != NSNotFound) {
-        [d appendUInt32:SIGHASH_ALL];
-    }
-    
+    if (subscriptIndex != NSNotFound) [d appendUInt32:SIGHASH_ALL];
     return d;
 }
 
@@ -337,7 +346,6 @@ sequence:(uint32_t)sequence
         BRKey *key = [BRKey keyWithPrivateKey:pk];
         
         if (! key) continue;
-        
         [keys addObject:key];
         [addresses addObject:key.address];
     }
@@ -364,9 +372,7 @@ sequence:(uint32_t)sequence
     }
     
     if (! [self isSigned]) return NO;
-    
     _txHash = self.data.SHA256_2;
-    
     return YES;
 }
 

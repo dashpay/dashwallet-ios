@@ -27,7 +27,6 @@
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
-#import <CommonCrypto/CommonHMAC.h>
 
 #import <secp256k1/include/secp256k1.h>
 #import <secp256k1/src/util.h>
@@ -38,6 +37,8 @@
 #import <secp256k1/src/ecmult_impl.h>
 #import <secp256k1/src/eckey_impl.h>
 
+#define SECKEY_LENGTH (256/8)
+
 void secp256k1_mod_add(void *r, const void *a, const void *b)
 {
     secp256k1_scalar_t as, bs, rs;
@@ -45,9 +46,9 @@ void secp256k1_mod_add(void *r, const void *a, const void *b)
     secp256k1_scalar_set_b32(&as, a, NULL);
     secp256k1_scalar_set_b32(&bs, b, NULL);
     secp256k1_scalar_add(&rs, &as, &bs);
-    secp256k1_scalar_get_b32(r, &rs);
-    secp256k1_scalar_clear(&as);
     secp256k1_scalar_clear(&bs);
+    secp256k1_scalar_clear(&as);
+    secp256k1_scalar_get_b32(r, &rs);
     secp256k1_scalar_clear(&rs);
 }
 
@@ -58,9 +59,9 @@ void secp256k1_mod_mul(void *r, const void *a, const void *b)
     secp256k1_scalar_set_b32(&as, a, NULL);
     secp256k1_scalar_set_b32(&bs, b, NULL);
     secp256k1_scalar_mul(&rs, &as, &bs);
-    secp256k1_scalar_get_b32(r, &rs);
-    secp256k1_scalar_clear(&as);
     secp256k1_scalar_clear(&bs);
+    secp256k1_scalar_clear(&as);
+    secp256k1_scalar_get_b32(r, &rs);
     secp256k1_scalar_clear(&rs);
 }
 
@@ -83,16 +84,18 @@ int secp256k1_point_mul(void *r, const void *a, const void *b, int compressed)
     if (a) {
         if (! secp256k1_eckey_pubkey_parse(&ap, a, 33)) return 0;
         secp256k1_gej_set_ge(&aj, &ap);
+        secp256k1_ge_clear(&ap);
         secp256k1_scalar_clear(&zs);
         secp256k1_ecmult(&rj, &aj, &bs, &zs);
+        secp256k1_gej_clear(&aj);
     }
     else secp256k1_ecmult_gen(&rj, &bs);
 
+    secp256k1_scalar_clear(&bs);
     secp256k1_ge_set_gej(&rp, &rj);
+    secp256k1_gej_clear(&rj);
     secp256k1_eckey_pubkey_serialize(&rp, r, &size, compressed);
     secp256k1_ge_clear(&rp);
-    secp256k1_gej_clear(&rj);
-    secp256k1_scalar_clear(&bs);
     return size;
 }
 
@@ -105,14 +108,14 @@ int secp256k1_point_add(void *r, const void *a, const void *b, int compressed)
     if (! secp256k1_eckey_pubkey_parse(&ap, a, 33)) return 0;
     if (! secp256k1_eckey_pubkey_parse(&bp, b, 33)) return 0;
     secp256k1_gej_set_ge(&aj, &ap);
-    secp256k1_gej_add_ge(&rj, &aj, &bp);
-    secp256k1_ge_set_gej(&rp, &rj);
-    secp256k1_eckey_pubkey_serialize(&rp, r, &size, compressed);
-    secp256k1_gej_clear(&rj);
-    secp256k1_gej_clear(&aj);
-    secp256k1_ge_clear(&rp);
-    secp256k1_ge_clear(&bp);
     secp256k1_ge_clear(&ap);
+    secp256k1_gej_add_ge(&rj, &aj, &bp);
+    secp256k1_gej_clear(&aj);
+    secp256k1_ge_clear(&bp);
+    secp256k1_ge_set_gej(&rp, &rj);
+    secp256k1_gej_clear(&rj);
+    secp256k1_eckey_pubkey_serialize(&rp, r, &size, compressed);
+    secp256k1_ge_clear(&rp);
     return size;
 }
 
@@ -142,7 +145,7 @@ int secp256k1_point_add(void *r, const void *a, const void *b, int compressed)
 
 - (instancetype)initWithSecret:(NSData *)secret compressed:(BOOL)compressed
 {
-    if (secret.length != 32) return nil;
+    if (secret.length != SECKEY_LENGTH) return nil;
 
     if (! (self = [self init])) return nil;
 
@@ -173,13 +176,13 @@ int secp256k1_point_add(void *r, const void *a, const void *b, int compressed)
 #endif
     
     if (! d || d.length == 28) d = privateKey.base58ToData;
-    if (d.length < 32 || d.length > 34) d = privateKey.hexToData;
+    if (d.length < SECKEY_LENGTH || d.length > SECKEY_LENGTH + 2) d = privateKey.hexToData;
     
-    if ((d.length == 33 || d.length == 34) && *(const unsigned char *)d.bytes == version) {
-        self.seckey = CFBridgingRelease(CFDataCreate(SecureAllocator(), (const uint8_t *)d.bytes + 1, 32));
-        self.compressed = (d.length == 34) ? YES : NO;
+    if ((d.length == SECKEY_LENGTH + 1 || d.length == SECKEY_LENGTH + 2) && *(const uint8_t *)d.bytes == version) {
+        self.seckey = CFBridgingRelease(CFDataCreate(SecureAllocator(), (const uint8_t *)d.bytes + 1, SECKEY_LENGTH));
+        self.compressed = (d.length == SECKEY_LENGTH + 2) ? YES : NO;
     }
-    else if (d.length == 32) self.seckey = d;
+    else if (d.length == SECKEY_LENGTH) self.seckey = d;
     
     return (secp256k1_ec_seckey_verify(self.seckey.bytes)) ? self : nil;
 }
@@ -195,9 +198,9 @@ int secp256k1_point_add(void *r, const void *a, const void *b, int compressed)
 
 - (NSString *)privateKey
 {
-    if (self.seckey.length != 32) return nil;
+    if (self.seckey.length != SECKEY_LENGTH) return nil;
 
-    NSMutableData *d = [NSMutableData secureDataWithCapacity:34];
+    NSMutableData *d = [NSMutableData secureDataWithCapacity:SECKEY_LENGTH + 2];
     uint8_t version = BITCOIN_PRIVKEY;
 
 #if BITCOIN_TESTNET
@@ -212,7 +215,7 @@ int secp256k1_point_add(void *r, const void *a, const void *b, int compressed)
 
 - (NSData *)publicKey
 {
-    if (! self.pubkey.length && self.seckey.length == 32) {
+    if (! self.pubkey.length && self.seckey.length == SECKEY_LENGTH) {
         static dispatch_once_t onceToken = 0;
         
         dispatch_once(&onceToken, ^{
@@ -230,16 +233,12 @@ int secp256k1_point_add(void *r, const void *a, const void *b, int compressed)
 
 - (NSData *)hash160
 {
-    return [[self publicKey] hash160];
+    return self.publicKey.hash160;
 }
 
 - (NSString *)address
 {
-    NSData *hash = [self hash160];
-    
-    if (! hash.length) return nil;
-
-    NSMutableData *d = [NSMutableData secureDataWithCapacity:hash.length + 1];
+    NSMutableData *d = [NSMutableData secureDataWithCapacity:160/8 + 1];
     uint8_t version = BITCOIN_PUBKEY_ADDRESS;
 
 #if BITCOIN_TESTNET
@@ -247,19 +246,18 @@ int secp256k1_point_add(void *r, const void *a, const void *b, int compressed)
 #endif
     
     [d appendBytes:&version length:1];
-    [d appendData:hash];
-
+    [d appendData:self.hash160];
     return [NSString base58checkWithData:d];
 }
 
 - (NSData *)sign:(NSData *)md
 {
-    if (! self.seckey.length) {
+    if (self.seckey.length != SECKEY_LENGTH) {
         NSLog(@"%s:%d: %s: can't sign with a public key", __FILE__, __LINE__,  __func__);
         return nil;
     }
     else if (md.length != CC_SHA256_DIGEST_LENGTH) {
-        NSLog(@"%s:%d: %s: Only 256 bit message digests can be signed", __FILE__, __LINE__,  __func__);
+        NSLog(@"%s:%d: %s: Only 256bit message digests can be signed", __FILE__, __LINE__,  __func__);
         return nil;
     }
 
@@ -282,7 +280,7 @@ int secp256k1_point_add(void *r, const void *a, const void *b, int compressed)
 - (BOOL)verify:(NSData *)md signature:(NSData *)sig
 {
     if (md.length != CC_SHA256_DIGEST_LENGTH) {
-        NSLog(@"%s:%d: %s: Only 256 message digests can be verified", __FILE__, __LINE__,  __func__);
+        NSLog(@"%s:%d: %s: Only 256bit message digests can be verified", __FILE__, __LINE__,  __func__);
         return NO;
     }
 
