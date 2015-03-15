@@ -211,16 +211,6 @@ static const int8_t base58map[] = {
     return d;
 }
 
-- (NSString *)hexToBase58
-{
-    return [[self class] base58WithData:self.hexToData];
-}
-
-- (NSString *)base58ToHex
-{
-    return [NSString hexWithData:self.base58ToData];
-}
-
 - (NSData *)base58checkToData
 {
     NSData *d = self.base58ToData;
@@ -232,16 +222,6 @@ static const int8_t base58map[] = {
     // verify checksum
     if (*(uint32_t *)((const uint8_t *)d.bytes + d.length - 4) != *(uint32_t *)data.SHA256_2.bytes) return nil;
     return data;
-}
-
-- (NSString *)hexToBase58check
-{
-    return [NSString base58checkWithData:self.hexToData];
-}
-
-- (NSString *)base58checkToHex
-{
-    return [NSString hexWithData:self.base58checkToData];
 }
 
 - (NSData *)hexToData

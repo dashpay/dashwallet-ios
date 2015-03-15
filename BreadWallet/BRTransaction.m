@@ -282,11 +282,8 @@ sequence:(uint32_t)sequence
     return addresses;
 }
 
-// only unsigned transactions can be modified
 - (void)shuffleOutputOrder
-{
-    for (NSData *s in _signatures) if (s != (id)[NSNull null]) return;
-    
+{    
     for (NSUInteger i = 0; i + 1 < self.amounts.count; i++) { // fischer-yates shuffle
         NSUInteger j = i + arc4random_uniform((uint32_t)(self.amounts.count - i));
         

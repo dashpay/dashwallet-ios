@@ -48,13 +48,7 @@
 + (NSString *)addressWithScriptSig:(NSData *)script;
 
 - (NSData *)base58ToData;
-- (NSString *)hexToBase58;
-- (NSString *)base58ToHex;
-
 - (NSData *)base58checkToData;
-- (NSString *)hexToBase58check;
-- (NSString *)base58checkToHex;
-
 - (NSData *)hexToData;
 - (NSData *)addressToHash160;
 

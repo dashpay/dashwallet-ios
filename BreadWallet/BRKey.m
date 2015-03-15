@@ -39,6 +39,7 @@
 
 #define SECKEY_LENGTH (256/8)
 
+// add 256bit big endian ints (mod secp256k1 order)
 void secp256k1_mod_add(void *r, const void *a, const void *b)
 {
     secp256k1_scalar_t as, bs, rs;
@@ -52,6 +53,7 @@ void secp256k1_mod_add(void *r, const void *a, const void *b)
     secp256k1_scalar_clear(&rs);
 }
 
+// multiply 256bit big endian ints (mod secp256k1 order)
 void secp256k1_mod_mul(void *r, const void *a, const void *b)
 {
     secp256k1_scalar_t as, bs, rs;
@@ -65,40 +67,7 @@ void secp256k1_mod_mul(void *r, const void *a, const void *b)
     secp256k1_scalar_clear(&rs);
 }
 
-int secp256k1_point_mul(void *r, const void *a, const void *b, int compressed)
-{
-    static dispatch_once_t onceToken = 0;
-    
-    dispatch_once(&onceToken, ^{
-        secp256k1_ecmult_start();
-        secp256k1_ecmult_gen_start();
-    });
-
-    secp256k1_scalar_t bs, zs;
-    secp256k1_gej_t rj, aj;
-    secp256k1_ge_t rp, ap;
-    int size = 0;
-
-    secp256k1_scalar_set_b32(&bs, b, NULL);
-
-    if (a) {
-        if (! secp256k1_eckey_pubkey_parse(&ap, a, 33)) return 0;
-        secp256k1_gej_set_ge(&aj, &ap);
-        secp256k1_ge_clear(&ap);
-        secp256k1_scalar_clear(&zs);
-        secp256k1_ecmult(&rj, &aj, &bs, &zs);
-        secp256k1_gej_clear(&aj);
-    }
-    else secp256k1_ecmult_gen(&rj, &bs);
-
-    secp256k1_scalar_clear(&bs);
-    secp256k1_ge_set_gej(&rp, &rj);
-    secp256k1_gej_clear(&rj);
-    secp256k1_eckey_pubkey_serialize(&rp, r, &size, compressed);
-    secp256k1_ge_clear(&rp);
-    return size;
-}
-
+// add secp256k1 points
 int secp256k1_point_add(void *r, const void *a, const void *b, int compressed)
 {
     secp256k1_ge_t ap, bp, rp;
@@ -112,6 +81,41 @@ int secp256k1_point_add(void *r, const void *a, const void *b, int compressed)
     secp256k1_gej_add_ge(&rj, &aj, &bp);
     secp256k1_gej_clear(&aj);
     secp256k1_ge_clear(&bp);
+    secp256k1_ge_set_gej(&rp, &rj);
+    secp256k1_gej_clear(&rj);
+    secp256k1_eckey_pubkey_serialize(&rp, r, &size, compressed);
+    secp256k1_ge_clear(&rp);
+    return size;
+}
+
+// multiply point by 256bit big endian
+int secp256k1_point_mul(void *r, const void *p, const void *i, int compressed)
+{
+    static dispatch_once_t onceToken = 0;
+    
+    dispatch_once(&onceToken, ^{
+        secp256k1_ecmult_start();
+        secp256k1_ecmult_gen_start();
+    });
+
+    secp256k1_scalar_t is, zs;
+    secp256k1_gej_t rj, pj;
+    secp256k1_ge_t rp, pp;
+    int size = 0;
+
+    secp256k1_scalar_set_b32(&is, i, NULL);
+
+    if (p) {
+        if (! secp256k1_eckey_pubkey_parse(&pp, p, 33)) return 0;
+        secp256k1_gej_set_ge(&pj, &pp);
+        secp256k1_ge_clear(&pp);
+        secp256k1_scalar_clear(&zs);
+        secp256k1_ecmult(&rj, &pj, &is, &zs);
+        secp256k1_gej_clear(&pj);
+    }
+    else secp256k1_ecmult_gen(&rj, &is);
+
+    secp256k1_scalar_clear(&is);
     secp256k1_ge_set_gej(&rp, &rj);
     secp256k1_gej_clear(&rj);
     secp256k1_eckey_pubkey_serialize(&rp, r, &size, compressed);

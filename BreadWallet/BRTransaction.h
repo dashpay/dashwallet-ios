@@ -71,7 +71,7 @@ sequence:(uint32_t)sequence;
 - (void)addOutputAddress:(NSString *)address amount:(uint64_t)amount;
 - (void)addOutputScript:(NSData *)script amount:(uint64_t)amount;
 - (void)setInputAddress:(NSString *)address atIndex:(NSUInteger)index;
-- (void)shuffleOutputOrder; // only unsigned transactions can be modified
+- (void)shuffleOutputOrder;
 - (BOOL)signWithPrivateKeys:(NSArray *)privateKeys;
 
 // priority = sum(input_amount_in_satoshis*input_age_in_blocks)/tx_size_in_bytes

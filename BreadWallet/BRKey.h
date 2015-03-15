@@ -25,10 +25,10 @@
 
 #import <Foundation/Foundation.h>
 
-void secp256k1_mod_add(void *r, const void *a, const void *b);
-void secp256k1_mod_mul(void *r, const void *a, const void *b);
-int secp256k1_point_add(void *r, const void *a, const void *b, int compressed);
-int secp256k1_point_mul(void *r, const void *a, const void *b, int compressed);
+void secp256k1_mod_add(void *r, const void *a, const void *b); // add 256bit big endian ints (mod secp256k1 order)
+void secp256k1_mod_mul(void *r, const void *a, const void *b); // multiply 256bit big endian ints (mod secp256k1 order)
+int secp256k1_point_add(void *r, const void *a, const void *b, int compressed); // add secp256k1 points
+int secp256k1_point_mul(void *r, const void *p, const void *i, int compressed); // multiply point by 256bit big endian
 
 @interface BRKey : NSObject
 
