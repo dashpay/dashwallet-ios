@@ -68,7 +68,7 @@ typedef enum {
 @property (nonatomic, assign) uint64_t localNonce;
 @property (nonatomic, assign) NSTimeInterval startTime;
 @property (nonatomic, strong) BRMerkleBlock *currentBlock;
-@property (nonatomic, strong) NSMutableOrderedSet *knownBlockHashes, *knownTxHashes, *currentTxHashes;
+@property (nonatomic, strong) NSMutableOrderedSet *knownBlockHashes, *knownTxHashes, *currentBlockTxHashes;
 @property (nonatomic, strong) NSData *lastBlockHash;
 @property (nonatomic, strong) NSMutableArray *pongHandlers;
 @property (nonatomic, strong) NSRunLoop *runLoop;
@@ -161,7 +161,7 @@ services:(uint64_t)services
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
     self.knownBlockHashes = [NSMutableOrderedSet orderedSet];
     self.currentBlock = nil;
-    self.currentTxHashes = nil;
+    self.currentBlockTxHashes = nil;
 
     NSString *label = [NSString stringWithFormat:@"peer.%@:%u", self.host, self.port];
 
@@ -294,7 +294,7 @@ services:(uint64_t)services
     [msg appendUInt64:[NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970]; // timestamp
     [msg appendNetAddress:self.address port:self.port services:self.services]; // address of remote peer
     [msg appendNetAddress:LOCAL_HOST port:BITCOIN_STANDARD_PORT services:ENABLED_SERVICES]; // address of local peer
-    self.localNonce = (((uint64_t)mrand48() << 32) | (uint32_t)mrand48()); // random nonce
+    self.localNonce = (((uint64_t)arc4random() << 32) | (uint64_t)arc4random()); // random nonce
     [msg appendUInt64:self.localNonce];
     [msg appendString:USERAGENT]; // user agent
     [msg appendUInt32:0]; // last block received
@@ -390,15 +390,22 @@ services:(uint64_t)services
     [self sendMessage:msg type:MSG_GETBLOCKS];
 }
 
-- (void)sendInvMessageWithTxHash:(NSData *)txHash
+- (void)sendInvMessageWithTxHashes:(NSArray *)txHashes
 {
+    NSMutableOrderedSet *hashes = [NSMutableOrderedSet orderedSetWithArray:txHashes];
     NSMutableData *msg = [NSMutableData data];
     
-    [msg appendVarInt:1];
-    [msg appendUInt32:tx];
-    [msg appendData:txHash];
+    [hashes minusOrderedSet:self.knownTxHashes];
+    if (hashes.count == 0) return;
+    [msg appendVarInt:hashes.count];
+
+    for (NSData *hash in hashes) {
+        [msg appendUInt32:tx];
+        [msg appendData:hash];
+    }
+
     [self sendMessage:msg type:MSG_INV];
-    [self.knownTxHashes addObject:txHash];
+    [self.knownTxHashes unionOrderedSet:hashes];
 }
 
 - (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes
@@ -408,6 +415,7 @@ services:(uint64_t)services
               (int)txHashes.count + (int)blockHashes.count, MAX_GETDATA_HASHES);
         return;
     }
+    else if (txHashes.count + blockHashes.count == 0) return;
     
     NSMutableData *msg = [NSMutableData data];
     
@@ -436,11 +444,13 @@ services:(uint64_t)services
 {
     NSMutableData *msg = [NSMutableData data];
     
-    if (! self.pongHandlers) self.pongHandlers = [NSMutableArray array];
-    [self.pongHandlers addObject:(pongHandler) ? [pongHandler copy] : [^(BOOL success) {} copy]];
-    [msg appendUInt64:self.localNonce];
-    self.startTime = [NSDate timeIntervalSinceReferenceDate];
-    [self sendMessage:msg type:MSG_PING];
+    dispatch_async(self.delegateQueue, ^{
+        if (! self.pongHandlers) self.pongHandlers = [NSMutableArray array];
+        [self.pongHandlers addObject:(pongHandler) ? [pongHandler copy] : [^(BOOL success) {} copy]];
+        [msg appendUInt64:self.localNonce];
+        self.startTime = [NSDate timeIntervalSinceReferenceDate];
+        [self sendMessage:msg type:MSG_PING];
+    });
 }
 
 // re-request blocks starting from blockHash, useful for getting any additional transactions after a bloom filter update
@@ -451,7 +461,7 @@ services:(uint64_t)services
     if (i != NSNotFound) {
         [self.knownBlockHashes removeObjectsInRange:NSMakeRange(0, i)];
         NSLog(@"%@:%u re-requesting %u blocks", self.host, self.port, (int)self.knownBlockHashes.count);
-        [self sendGetdataMessageWithTxHashes:@[] andBlockHashes:self.knownBlockHashes.array];
+        [self sendGetdataMessageWithTxHashes:nil andBlockHashes:self.knownBlockHashes.array];
     }
 }
 
@@ -462,9 +472,9 @@ services:(uint64_t)services
     CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
         if (self.currentBlock && ! [MSG_TX isEqual:type]) { // if we receive a non-tx message, the merkleblock is done
             [self error:@"incomplete merkleblock %@, expected %u more tx, got %@", self.currentBlock.blockHash,
-             (int)self.currentTxHashes.count, type];
+             (int)self.currentBlockTxHashes.count, type];
             self.currentBlock = nil;
-            self.currentTxHashes = nil;
+            self.currentBlockTxHashes = nil;
             return;
         }
 
@@ -657,7 +667,7 @@ services:(uint64_t)services
     
     if (txHashes.count || (! self.needsFilterUpdate && blockHashes.count)) {
         [self sendGetdataMessageWithTxHashes:txHashes.array
-         andBlockHashes:(self.needsFilterUpdate) ? @[] : blockHashes.array];
+         andBlockHashes:(self.needsFilterUpdate) ? nil : blockHashes.array];
     }
     
     // to improve chain download performance, if we received 500 block hashes, we request the next 500 block hashes
@@ -686,13 +696,13 @@ services:(uint64_t)services
     });
 
     if (self.currentBlock) { // we're collecting tx messages for a merkleblock
-        [self.currentTxHashes removeObject:tx.txHash];
+        [self.currentBlockTxHashes removeObject:tx.txHash];
 
-        if (self.currentTxHashes.count == 0) { // we received the entire block including all matched tx
+        if (self.currentBlockTxHashes.count == 0) { // we received the entire block including all matched tx
             BRMerkleBlock *block = self.currentBlock;
 
             self.currentBlock = nil;
-            self.currentTxHashes = nil;
+            self.currentBlockTxHashes = nil;
 
             dispatch_async(self.delegateQueue, ^{
                 [self.delegate peer:self relayedBlock:block];
@@ -895,7 +905,7 @@ services:(uint64_t)services
 
     if (txHashes.count > 0) { // wait til we get all the tx messages before processing the block
         self.currentBlock = block;
-        self.currentTxHashes = txHashes;
+        self.currentBlockTxHashes = txHashes;
     }
     else {
         dispatch_async(self.delegateQueue, ^{

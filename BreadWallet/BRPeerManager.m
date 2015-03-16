@@ -496,12 +496,11 @@ static const char *dns_seeds[] = {
         return;
     }
 
-    // TODO: XXXX include unconfirmed inputs to make sure they are getting included in other node's mempools
-
     self.publishedTx[transaction.txHash] = transaction;
     if (completion) self.publishedCallback[transaction.txHash] = completion;
 
     NSMutableSet *peers = [NSMutableSet setWithSet:self.connectedPeers];
+    NSArray *txHashes = self.publishedTx.allKeys;
 
     // instead of publishing to all peers, leave out the download peer to see if the tx propogates and gets relayed back
     // TODO: XXX connect to a random peer with an empty or fake bloom filter just for publishing
@@ -509,7 +508,13 @@ static const char *dns_seeds[] = {
 
     dispatch_async(dispatch_get_main_queue(), ^{
         [self performSelector:@selector(txTimeout:) withObject:transaction.txHash afterDelay:PROTOCOL_TIMEOUT];
-        for (BRPeer *p in peers) [p sendInvMessageWithTxHash:transaction.txHash];
+
+        for (BRPeer *p in peers) {
+            [p sendInvMessageWithTxHashes:txHashes];
+            [p sendPingMessageWithPongHandler:^(BOOL success) {
+                if (success) [p sendGetdataMessageWithTxHashes:txHashes andBlockHashes:nil];
+            }];
+        }
     });
 }
 
@@ -615,6 +620,7 @@ static const char *dns_seeds[] = {
         if ([[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground) {
             for (BRPeer *p in self.connectedPeers) { // after syncing, load filters and get mempools from other peers
                 if (p != self.downloadPeer) [p sendFilterloadMessage:self.bloomFilter.data];
+                [p sendInvMessageWithTxHashes:self.publishedTx.allKeys]; // publish unconfirmed tx
                 [p sendMempoolMessage];
                 [p sendPingMessageWithPongHandler:^(BOOL success) {
                     if (! success) return;
@@ -807,6 +813,7 @@ static const char *dns_seeds[] = {
     if (self.connected && (self.downloadPeer.lastblock >= peer.lastblock || self.lastBlockHeight >= peer.lastblock)) {
         if (self.lastBlockHeight < self.downloadPeer.lastblock) return; // don't load bloom filter yet if we're syncing
         [peer sendFilterloadMessage:self.bloomFilter.data];
+        [peer sendInvMessageWithTxHashes:self.publishedTx.allKeys]; // republish unconfirmed tx
         [peer sendMempoolMessage];
         [peer sendPingMessageWithPongHandler:^(BOOL success) {
             if (! success) return;
@@ -927,21 +934,26 @@ static const char *dns_seeds[] = {
 - (void)peer:(BRPeer *)peer relayedTransaction:(BRTransaction *)transaction
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];
+    NSData *txHash = transaction.txHash;
+    void (^callback)(NSError *error) = self.publishedCallback[txHash];
 
-    NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, transaction.txHash);
+    NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, txHash);
 
     if (! [m.wallet registerTransaction:transaction]) return;
     if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
-    [self.txHashes addObject:transaction.txHash];
-    self.publishedTx[transaction.txHash] = transaction;
+    [self.txHashes addObject:txHash];
+    self.publishedTx[txHash] = transaction;
         
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
-    if (! [self.txRelays[transaction.txHash] containsObject:peer]) {
-        if (! self.txRelays[transaction.txHash]) self.txRelays[transaction.txHash] = [NSMutableSet set];
-        [self.txRelays[transaction.txHash] addObject:peer];
-        
+    if (callback || ! [self.txRelays[txHash] containsObject:peer]) {
+        if (! self.txRelays[txHash]) self.txRelays[txHash] = [NSMutableSet set];
+        [self.txRelays[txHash] addObject:peer];
+        [self.publishedCallback removeObjectForKey:txHash];
+
         dispatch_async(dispatch_get_main_queue(), ^{
+            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:txHash];
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
+            if (callback) callback(nil);
         });
     }
     
@@ -965,18 +977,23 @@ static const char *dns_seeds[] = {
 - (void)peer:(BRPeer *)peer hasTransaction:(NSData *)txHash
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRTransaction *tx = self.publishedTx[txHash];
+    void (^callback)(NSError *error) = self.publishedCallback[txHash];
     
     NSLog(@"%@:%d has transaction %@", peer.host, peer.port, txHash);
-    if (! self.publishedTx[txHash] && ! [m.wallet transactionForHash:txHash]) return;
+    if ((! tx || ! [m.wallet registerTransaction:tx]) && ! [m.wallet transactionForHash:txHash]) return;
     if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
         
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
-    if (! [self.txRelays[txHash] containsObject:peer]) {
+    if (callback || ! [self.txRelays[txHash] containsObject:peer]) {
         if (! self.txRelays[txHash]) self.txRelays[txHash] = [NSMutableSet set];
         [self.txRelays[txHash] addObject:peer];
+        [self.publishedCallback removeObjectForKey:txHash];
         
         dispatch_async(dispatch_get_main_queue(), ^{
+            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:txHash];
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
+            if (callback) callback(nil);
         });
     }
 }
@@ -1180,31 +1197,7 @@ static const char *dns_seeds[] = {
 
 - (BRTransaction *)peer:(BRPeer *)peer requestedTransaction:(NSData *)txHash
 {
-    BRTransaction *tx = self.publishedTx[txHash];
-    void (^callback)(NSError *error) = self.publishedCallback[txHash];
-    
-    if (tx) {
-        [[[BRWalletManager sharedInstance] wallet] registerTransaction:tx];
-
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
-        });
-
-        [self.publishedCallback removeObjectForKey:txHash];
-
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:txHash];
-            if (callback) callback(nil);
-        });
-        
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC/10), self.q, ^{
-            if (self.taskId == UIBackgroundTaskInvalid && peer.status == BRPeerStatusConnected) {
-                [peer sendMempoolMessage];
-            }
-        });
-    }
-
-    return tx;
+    return self.publishedTx[txHash];
 }
 
 #pragma mark - UIAlertViewDelegate

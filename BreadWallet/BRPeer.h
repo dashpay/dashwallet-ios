@@ -120,10 +120,11 @@ services:(uint64_t)services;
 - (void)sendMessage:(NSData *)message type:(NSString *)type;
 - (void)sendFilterloadMessage:(NSData *)filter;
 - (void)sendMempoolMessage;
-- (void)sendGetaddrMessage;
 - (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop;
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop;
-- (void)sendInvMessageWithTxHash:(NSData *)txHash;
+- (void)sendInvMessageWithTxHashes:(NSArray *)txHashes;
+- (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes;
+- (void)sendGetaddrMessage;
 - (void)sendPingMessageWithPongHandler:(void (^)(BOOL success))pongHandler;
 - (void)rerequestBlocksFrom:(NSData *)blockHash; // useful to get additional transactions after a bloom filter update
 
