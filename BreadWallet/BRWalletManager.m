@@ -843,7 +843,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 
 #pragma mark - sweep private key
 
-// given a private key, queries blockchain for unspent outputs and calls the completion block with a signed transaction
+// given a private key, queries chain.com for unspent outputs and calls the completion block with a signed transaction
 // that will sweep the balance into the wallet (doesn't publish the tx)
 - (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
 completion:(void (^)(BRTransaction *tx, uint64_t fee, NSError *error))completion

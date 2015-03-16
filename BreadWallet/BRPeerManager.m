@@ -438,7 +438,6 @@ static const char *dns_seeds[] = {
 
         if (self.connectedPeers.count == 0) {
             [self syncStopped];
-            self.syncStartHeight = 0;
 
             dispatch_async(dispatch_get_main_queue(), ^{
                 NSError *error = [NSError errorWithDomain:@"BreadWallet" code:1 userInfo:@{NSLocalizedDescriptionKey:
@@ -616,11 +615,19 @@ static const char *dns_seeds[] = {
         if ([[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground) {
             for (BRPeer *p in self.connectedPeers) { // after syncing, load filters and get mempools from other peers
                 if (p != self.downloadPeer) [p sendFilterloadMessage:self.bloomFilter.data];
-                [p sendMempoolMessage];            
+                [p sendMempoolMessage];
+                [p sendPingMessageWithPongHandler:^(BOOL success) {
+                    if (! success) return;
+                    p.synced = YES;
+                    [p sendGetaddrMessage]; // request a list of other bitcoin peers
+                    [self removeUnrelayedTransactions];
+                }];
             }
         }
     }
 
+    self.syncStartHeight = 0;
+    
     dispatch_async(dispatch_get_main_queue(), ^{
         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
     });
@@ -631,6 +638,13 @@ static const char *dns_seeds[] = {
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];
     BOOL rescan = NO;
+
+    // don't remove transactions until we're connected to PEER_MAX_CONNECTION peers
+    if (self.connectedPeers.count < PEER_MAX_CONNECTIONS) return;
+    
+    for (BRPeer *p in self.connectedPeers) { // don't remove tx until all peers have finished relaying their mempools
+        if (! p.synced) return;
+    }
 
     for (BRTransaction *tx in m.wallet.recentTransactions) {
         if (tx.blockHeight != TX_UNCONFIRMED) break;
@@ -794,7 +808,13 @@ static const char *dns_seeds[] = {
         if (self.lastBlockHeight < self.downloadPeer.lastblock) return; // don't load bloom filter yet if we're syncing
         [peer sendFilterloadMessage:self.bloomFilter.data];
         [peer sendMempoolMessage];
-        [peer sendGetaddrMessage]; // request a list of other bitcoin peers
+        [peer sendPingMessageWithPongHandler:^(BOOL success) {
+            if (! success) return;
+            peer.synced = YES;
+            [peer sendGetaddrMessage]; // request a list of other bitcoin peers
+            [self removeUnrelayedTransactions];
+        }];
+
         return; // we're already connected to a download peer
     }
 
@@ -831,8 +851,6 @@ static const char *dns_seeds[] = {
     }
     else { // we're already synced
         [self syncStopped];
-        [peer sendGetaddrMessage]; // request a list of other bitcoin peers
-        self.syncStartHeight = 0;
 
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerSyncFinishedNotification
@@ -865,7 +883,6 @@ static const char *dns_seeds[] = {
 
     if (! self.connected && self.connectFailures == MAX_CONNECT_FAILURES) {
         [self syncStopped];
-        self.syncStartHeight = 0;
         
         // clear out stored peers so we get a fresh list from DNS on next connect attempt
         [self.misbehavinPeers removeAllObjects];
@@ -904,15 +921,7 @@ static const char *dns_seeds[] = {
         [self.peers removeObject:self.peers.lastObject];
     }
 
-    if (peers.count > 1 && peers.count < 1000) { // peer relaying is complete when we receive fewer than 1000
-        // this is a good time to remove unconfirmed tx that dropped off the network
-        if (self.peerCount == PEER_MAX_CONNECTIONS && self.lastBlockHeight >= self.downloadPeer.lastblock) {
-            [self removeUnrelayedTransactions];
-        }
-
-        [self savePeers];
-        [BRPeerEntity saveContext];
-    }
+    if (peers.count > 1 && peers.count < 1000) [self savePeers]; // peer relaying is complete when we receive <1000
 }
 
 - (void)peer:(BRPeer *)peer relayedTransaction:(BRTransaction *)transaction
@@ -1147,8 +1156,6 @@ static const char *dns_seeds[] = {
         [self saveBlocks];
         [BRMerkleBlockEntity saveContext];
         [self syncStopped];
-        [peer sendGetaddrMessage]; // request a list of other bitcoin peers
-        self.syncStartHeight = 0;
         [[BRWalletManager sharedInstance] setAverageBlockSize:self.averageTxPerBlock*TX_AVERAGE_SIZE];
 
         dispatch_async(dispatch_get_main_queue(), ^{

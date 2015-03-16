@@ -58,7 +58,7 @@
 - (BOOL)authenticateWithPrompt:(NSString *)authprompt andTouchId:(BOOL)touchId; // prompts user to authenticate
 - (BOOL)setPin; // prompts the user to set or change wallet pin and returns true if the pin was successfully set
 
-// given a private key, queries blockchain for unspent outputs and calls the completion block with a signed transaction
+// given a private key, queries chain.com for unspent outputs and calls the completion block with a signed transaction
 // that will sweep the balance into wallet (doesn't publish the tx)
 - (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
 completion:(void (^)(BRTransaction *tx, uint64_t fee, NSError *error))completion;
