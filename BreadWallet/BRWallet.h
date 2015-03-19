@@ -85,8 +85,8 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 // returns true if transaction won't be valid by blockHeight + 1 or within the next 10 minutes
 - (BOOL)transactionIsPostdated:(BRTransaction *)transaction atBlockHeight:(uint32_t)blockHeight;
 
-// set the block heights for the given transactions
-- (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes;
+// set the block heights and timestamps for the given transactions
+- (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes;
 
 // returns the amount received by the wallet from the transaction (total outputs to change and/or receive addresses)
 - (uint64_t)amountReceivedFromTransaction:(BRTransaction *)transaction;

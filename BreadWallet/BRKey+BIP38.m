@@ -352,7 +352,7 @@ confirmationCode:(NSString **)confcode;
         NSData *password = normalize_passphrase(passphrase),
                *salt = [NSData dataWithBytesNoCopy:&addresshash length:sizeof(addresshash) freeWhenDone:NO],
                *derived = scrypt(password, salt, BIP38_SCRYPT_N, BIP38_SCRYPT_R, BIP38_SCRYPT_P, 64);
-        const uint64_t *derived1 = (const uint64_t *)derived.bytes, *derived2 = &((const uint64_t *)derived.bytes)[4];
+        const uint64_t *derived1 = (const uint64_t *)derived.bytes, *derived2 = (const uint64_t *)derived.bytes + 4;
         const uint8_t *encrypted1 = (const uint8_t *)d.bytes + 7, *encrypted2 = (const uint8_t *)d.bytes + 23;
 
         CCCrypt(kCCDecrypt, kCCAlgorithmAES, kCCOptionECBMode, derived2, 32, NULL, encrypted1, 16,

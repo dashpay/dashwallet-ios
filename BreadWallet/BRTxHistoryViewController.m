@@ -34,6 +34,20 @@
 
 #define TRANSACTION_CELL_HEIGHT 75
 
+static NSString *dateFormat(NSString *template)
+{
+    NSString *format = [[[[[[[NSDateFormatter dateFormatFromTemplate:template options:0 locale:[NSLocale currentLocale]]
+                             stringByReplacingOccurrencesOfString:@", " withString:@" "]
+                            stringByReplacingOccurrencesOfString:@" a" withString:@"a"]
+                           stringByReplacingOccurrencesOfString:@"hh" withString:@"h"]
+                          stringByReplacingOccurrencesOfString:@" ha" withString:@"@ha"]
+                         stringByReplacingOccurrencesOfString:@"HH" withString:@"H"]
+                        stringByReplacingOccurrencesOfString:@"H " withString:@"H'h' "];
+
+    return [format stringByReplacingOccurrencesOfString:@"H" withString:@"H'h'"
+            options:NSBackwardsSearch|NSAnchoredSearch range:NSMakeRange(0, format.length)];
+}
+
 @interface BRTxHistoryViewController ()
 
 @property (nonatomic, strong) IBOutlet UIView *logo;
@@ -230,37 +244,31 @@
 
 - (NSString *)dateForTx:(BRTransaction *)tx
 {
-    static NSDateFormatter *f1 = nil, *f2 = nil, *f3 = nil;
+    static NSDateFormatter *f1 = nil, *f2 = nil, *f3 = nil, *f4 = nil;
     NSString *date = self.txDates[tx.txHash];
-    NSTimeInterval now = [[BRPeerManager sharedInstance] timestampForBlockHeight:TX_UNCONFIRMED], w = now - 6*24*60*60,
-                   y = now - 364*24*60*60;
+    NSTimeInterval now = [[BRPeerManager sharedInstance] timestampForBlockHeight:TX_UNCONFIRMED],
+                   week = now - 6*24*60*60, year = now - 364*24*60*60;
 
     if (date) return date;
 
     if (! f1) { //BUG: need to watch for NSCurrentLocaleDidChangeNotification
         f1 = [NSDateFormatter new];
+        f1.dateFormat = dateFormat(@"Mdja");
         f2 = [NSDateFormatter new];
+        f2.dateFormat = dateFormat(@"yyMdja");
         f3 = [NSDateFormatter new];
-
-        f1.dateFormat = [[[[[[[NSDateFormatter dateFormatFromTemplate:@"Mdja" options:0 locale:[NSLocale currentLocale]]
-                              stringByReplacingOccurrencesOfString:@", " withString:@" "]
-                             stringByReplacingOccurrencesOfString:@" a" withString:@"a"]
-                            stringByReplacingOccurrencesOfString:@"hh" withString:@"h"]
-                           stringByReplacingOccurrencesOfString:@" ha" withString:@"@ha"]
-                          stringByReplacingOccurrencesOfString:@"HH" withString:@"H"]
-                         stringByReplacingOccurrencesOfString:@"H " withString:@"H'h' "];
-        f1.dateFormat = [f1.dateFormat stringByReplacingOccurrencesOfString:@"H" withString:@"H'h'"
-                         options:NSBackwardsSearch|NSAnchoredSearch range:NSMakeRange(0, f1.dateFormat.length)];
-        f2.dateFormat = [[NSDateFormatter dateFormatFromTemplate:@"Md" options:0 locale:[NSLocale currentLocale]]
-                         stringByReplacingOccurrencesOfString:@", " withString:@" "];
-        f3.dateFormat = [[NSDateFormatter dateFormatFromTemplate:@"yyMd" options:0 locale:[NSLocale currentLocale]]
-                          stringByReplacingOccurrencesOfString:@", " withString:@" "];
+        f3.dateFormat = dateFormat(@"Md");
+        f4 = [NSDateFormatter new];
+        f4.dateFormat = dateFormat(@"yyMd");
     }
     
-    NSTimeInterval t = [[BRPeerManager sharedInstance] timestampForBlockHeight:tx.blockHeight];
-    NSDateFormatter *f = (t > w) ? f1 : ((t > y) ? f2 : f3);
+    NSTimeInterval t = (tx.timestamp > 1) ? tx.timestamp :
+                       [[BRPeerManager sharedInstance] timestampForBlockHeight:tx.blockHeight] - 5*60;
+    NSDateFormatter *f = (t > year) ? f1 : f2;
+    
+    if (tx.timestamp <= 1 && t <= week) f = (t > year) ? f3 : f4;
 
-    date = [[[[f stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:t - 5*60]] lowercaseString]
+    date = [[[[f stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:t]] lowercaseString]
              stringByReplacingOccurrencesOfString:@"am" withString:@"a"]
             stringByReplacingOccurrencesOfString:@"pm" withString:@"p"];
     if (tx.blockHeight != TX_UNCONFIRMED) self.txDates[tx.txHash] = date;

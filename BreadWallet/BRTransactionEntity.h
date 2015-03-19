@@ -34,6 +34,7 @@
 
 @property (nonatomic, retain) NSData *txHash;
 @property (nonatomic) int32_t blockHeight;
+@property (nonatomic) NSTimeInterval timestamp;
 @property (nonatomic, retain) NSOrderedSet *inputs;
 @property (nonatomic, retain) NSOrderedSet *outputs;
 @property (nonatomic) int32_t lockTime;
@@ -44,7 +45,7 @@
 @end
 
 // These generated accessors are all broken because NSOrderedSet is not a subclass of NSSet.
-// This known core data bug has remained unaddressed for over two years: http://openradar.appspot.com/10114310
+// This known core data bug has remained unaddressed for over three years: http://openradar.appspot.com/10114310
 // Per core data release notes, use [NSObject<NSKeyValueCoding> mutableOrderedSetValueForKey:] instead.
 @interface BRTransactionEntity (CoreDataGeneratedAccessors)
 

@@ -31,20 +31,19 @@
 #define BLOOM_MAX_HASH_FUNCS 50
 
 // murmurHash3 (x86_32): http://code.google.com/p/smhasher/source/browse/trunk/MurmurHash3.cpp
-static uint32_t murmurHash3(NSData *data, uint32_t seed)
+static uint32_t murmurHash3(const uint8_t *b, size_t len, uint32_t seed)
 {
     static const uint32_t c1 = 0xcc9e2d51, c2 = 0x1b873593;
-    uint32_t h1 = seed, k1 = 0, k2 = 0, blocks = ((uint32_t)data.length/4)*4;
-    const uint8_t *b = data.bytes;
+    uint32_t h1 = seed, k1 = 0, k2 = 0, blocks = ((uint32_t)len/4)*4;
     
-    for (NSUInteger i = 0; i < blocks; i += 4) {
+    for (uint32_t i = 0; i < blocks; i += 4) {
         k1 = ((uint32_t)b[i] | ((uint32_t)b[i + 1] << 8) | ((uint32_t)b[i + 2] << 16) | ((uint32_t)b[i + 3] << 24))*c1;
         k1 = ((k1 << 15) | (k1 >> 17))*c2;
         h1 ^= k1;
         h1 = ((h1 << 13) | (h1 >> 19))*5 + 0xe6546b64;
     }
     
-    switch (data.length & 3) {
+    switch (len & 3) {
         case 3: k2 ^= b[blocks + 2] << 16; // fall through
         case 2: k2 ^= b[blocks + 1] << 8; // fall through
         case 1:
@@ -52,7 +51,7 @@ static uint32_t murmurHash3(NSData *data, uint32_t seed)
             h1 ^= ((k2 << 15) | (k2 >> 17))*c2;
     }
     
-    h1 ^= data.length;
+    h1 ^= len;
     h1 = (h1 ^ (h1 >> 16))*0x85ebca6b;
     h1 = (h1 ^ (h1 >> 13))*0xc2b2ae35;
     h1 ^= h1 >> 16;
@@ -130,7 +129,7 @@ flags:(uint8_t)flags
 
 - (uint32_t)hash:(NSData *)data hashNum:(uint32_t)hashNum
 {
-    return murmurHash3(data, hashNum*0xfba4c795 + self.tweak) % (self.filter.length*8);
+    return murmurHash3(data.bytes, data.length, hashNum*0xfba4c795 + self.tweak) % (self.filter.length*8);
 }
 
 - (BOOL)containsData:(NSData *)data

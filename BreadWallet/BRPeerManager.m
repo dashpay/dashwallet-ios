@@ -66,7 +66,7 @@ static const char *dns_seeds[] = {
 
 #else // main net
 
-// blockchain checkpoints, these are also used as starting points for partial chain downloads, so they need to be at
+// blockchain checkpoints - these are also used as starting points for partial chain downloads, so they need to be at
 // difficulty transition boundaries in order to verify the block difficulty at the immediately following transition
 static const struct { uint32_t height; char *hash; time_t timestamp; uint32_t target; } checkpoint_array[] = {
     {      0, "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f", 1231006505, 0x1d00ffffu },
@@ -212,6 +212,8 @@ static const char *dns_seeds[] = {
 
         if (_peers.count < PEER_MAX_CONNECTIONS || [_peers[PEER_MAX_CONNECTIONS - 1] timestamp] < now - 3*24*60*60) {
             for (int i = 0; i < sizeof(dns_seeds)/sizeof(*dns_seeds); i++) { // DNS peer discovery
+                NSLog(@"DNS lookup %s", dns_seeds[i]);
+                
                 struct hostent *h = gethostbyname(dns_seeds[i]);
 
                 for (int j = 0; h != NULL && h->h_addr_list[j] != NULL; j++) {
@@ -401,6 +403,7 @@ static const char *dns_seeds[] = {
         if (self.syncStartHeight == 0) self.syncStartHeight = self.lastBlockHeight;
 
         if (self.taskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
+            // TODO: XXXX handle task expiration cleanly
             self.taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
         }
 
@@ -486,8 +489,7 @@ static const char *dns_seeds[] = {
         
         return;
     }
-
-    if (! self.connected) {
+    else if (! self.connected) {
         if (completion) {
             completion([NSError errorWithDomain:@"BreadWallet" code:-1009 userInfo:@{NSLocalizedDescriptionKey:
                         NSLocalizedString(@"not connected to the bitcoin network", nil)}]);
@@ -562,9 +564,9 @@ static const char *dns_seeds[] = {
     return checkpoint_array[0].timestamp - NSTimeIntervalSince1970;
 }
 
-- (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes
+- (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes
 {
-    [[[BRWalletManager sharedInstance] wallet] setBlockHeight:height forTxHashes:txHashes];
+    [[[BRWalletManager sharedInstance] wallet] setBlockHeight:height andTimestamp:timestamp forTxHashes:txHashes];
     
     if (height != TX_UNCONFIRMED) { // remove confirmed tx from publish list and relay counts
         [self.publishedTx removeObjectsForKeys:txHashes];
@@ -813,7 +815,7 @@ static const char *dns_seeds[] = {
     if (self.connected && (self.downloadPeer.lastblock >= peer.lastblock || self.lastBlockHeight >= peer.lastblock)) {
         if (self.lastBlockHeight < self.downloadPeer.lastblock) return; // don't load bloom filter yet if we're syncing
         [peer sendFilterloadMessage:self.bloomFilter.data];
-        [peer sendInvMessageWithTxHashes:self.publishedTx.allKeys]; // republish unconfirmed tx
+        [peer sendInvMessageWithTxHashes:self.publishedTx.allKeys]; // publish unconfirmed tx
         [peer sendMempoolMessage];
         [peer sendPingMessageWithPongHandler:^(BOOL success) {
             if (! success) return;
@@ -948,7 +950,7 @@ static const char *dns_seeds[] = {
     if (callback || ! [self.txRelays[txHash] containsObject:peer]) {
         if (! self.txRelays[txHash]) self.txRelays[txHash] = [NSMutableSet set];
         [self.txRelays[txHash] addObject:peer];
-        [self.publishedCallback removeObjectForKey:txHash];
+        if (callback) [self.publishedCallback removeObjectForKey:txHash];
 
         dispatch_async(dispatch_get_main_queue(), ^{
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:txHash];
@@ -988,7 +990,7 @@ static const char *dns_seeds[] = {
     if (callback || ! [self.txRelays[txHash] containsObject:peer]) {
         if (! self.txRelays[txHash]) self.txRelays[txHash] = [NSMutableSet set];
         [self.txRelays[txHash] addObject:peer];
-        [self.publishedCallback removeObjectForKey:txHash];
+        if (callback) [self.publishedCallback removeObjectForKey:txHash];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:txHash];
@@ -1040,7 +1042,7 @@ static const char *dns_seeds[] = {
     }
 
     BRMerkleBlock *prev = self.blocks[block.prevBlock];
-    NSTimeInterval transitionTime = 0;
+    NSTimeInterval transitionTime = 0, txTimestamp = 0;
 
     if (! prev) { // block is an orphan
         NSLog(@"%@:%d relayed orphan block %@, previous %@, last block is %@, height %d", peer.host, peer.port,
@@ -1061,6 +1063,7 @@ static const char *dns_seeds[] = {
     }
 
     block.height = prev.height + 1;
+    txTimestamp = (block.timestamp + prev.timestamp)/2;
 
     if ((block.height % BLOCK_DIFFICULTY_INTERVAL) == 0) { // hit a difficulty transition, find previous transition time
         BRMerkleBlock *b = block;
@@ -1100,7 +1103,7 @@ static const char *dns_seeds[] = {
 
         self.blocks[block.blockHash] = block;
         self.lastBlock = block;
-        [self setBlockHeight:block.height forTxHashes:block.txHashes];
+        [self setBlockHeight:block.height andTimestamp:txTimestamp forTxHashes:block.txHashes];
         if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
         self.downloadPeer.currentBlockHeight = block.height;
 
@@ -1119,7 +1122,7 @@ static const char *dns_seeds[] = {
         while (b && b.height > block.height) b = self.blocks[b.prevBlock]; // check if block is in main chain
 
         if ([b.blockHash isEqual:block.blockHash]) { // if it's not on a fork, set block heights for its transactions
-            [self setBlockHeight:block.height forTxHashes:block.txHashes];
+            [self setBlockHeight:block.height andTimestamp:txTimestamp forTxHashes:block.txHashes];
             if (block.height == self.lastBlockHeight) self.lastBlock = block;
         }
     }
@@ -1158,12 +1161,13 @@ static const char *dns_seeds[] = {
             [txHashes addObject:tx.txHash];
         }
 
-        [self setBlockHeight:TX_UNCONFIRMED forTxHashes:txHashes];
+        [self setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:txHashes];
         b = block;
 
         while (b.height > b2.height) { // set transaction heights for new main chain
-            [self setBlockHeight:b.height forTxHashes:b.txHashes];
+            [self setBlockHeight:b.height andTimestamp:txTimestamp forTxHashes:b.txHashes];
             b = self.blocks[b.prevBlock];
+            txTimestamp = (b.timestamp + [self.blocks[b.prevBlock] timestamp])/2;
         }
 
         self.lastBlock = block;

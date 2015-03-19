@@ -209,6 +209,7 @@
 		758DBD0D1980634900389E2A /* BRTxDetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTxDetailViewController.m; sourceTree = "<group>"; };
 		759816E519357D6F005060EA /* BRBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBubbleView.h; sourceTree = "<group>"; };
 		759816E619357D6F005060EA /* BRBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBubbleView.m; sourceTree = "<group>"; };
+		759AB7F71AB8F45900303AAB /* BreadWallet 2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "BreadWallet 2.xcdatamodel"; sourceTree = "<group>"; };
 		759F2C221AAAD42D0029A5AB /* libsecp256k1-config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "libsecp256k1-config.h"; sourceTree = SOURCE_ROOT; };
 		759F2C281AABE4620029A5AB /* libsecp256k1.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libsecp256k1.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		759FBB31193290F600AB4465 /* BRReceiveViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRReceiveViewController.h; sourceTree = "<group>"; };
@@ -1191,9 +1192,10 @@
 		752E2898192349CE00DB5A3C /* BreadWallet.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				759AB7F71AB8F45900303AAB /* BreadWallet 2.xcdatamodel */,
 				752E2899192349CE00DB5A3C /* BreadWallet.xcdatamodel */,
 			);
-			currentVersion = 752E2899192349CE00DB5A3C /* BreadWallet.xcdatamodel */;
+			currentVersion = 759AB7F71AB8F45900303AAB /* BreadWallet 2.xcdatamodel */;
 			path = BreadWallet.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

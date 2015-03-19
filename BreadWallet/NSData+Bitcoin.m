@@ -254,14 +254,16 @@ static void RMD160(const void *data, size_t len, uint8_t *md)
     const uint8_t *b = (const uint8_t *)self.bytes;
     NSUInteger l, length = self.length;
     
-    for (NSUInteger i = 0; i < length; i++) {
+    for (NSUInteger i = 0; i < length; i += l) {
         if (b[i] > OP_PUSHDATA4) {
+            l = 1;
             [a addObject:@(b[i])];
             continue;
         }
         
         switch (b[i]) {
             case 0:
+                l = 1;
                 [a addObject:@(0)];
                 continue;
 
@@ -294,7 +296,6 @@ static void RMD160(const void *data, size_t len, uint8_t *md)
         
         if (i + l > length) return a;
         [a addObject:[NSData dataWithBytes:&b[i] length:l]];
-        i += l - 1;
     }
     
     return a;

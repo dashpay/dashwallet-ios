@@ -453,6 +453,8 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     //TODO: verify signatures when possible
     //TODO: XXX handle tx replacement with input sequence numbers (now replacements appear invalid until confirmation)
 
+    if (transaction.blockHeight == TX_UNCONFIRMED)
+    
     self.allTx[transaction.txHash] = transaction;
     [self.transactions insertObject:transaction atIndex:0];
     [self.usedAddresses addObjectsFromArray:transaction.inputAddresses];
@@ -524,7 +526,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 // returns true if transaction won't be valid by blockHeight + 1 or within the next 10 minutes
 - (BOOL)transactionIsPostdated:(BRTransaction *)transaction atBlockHeight:(uint32_t)blockHeight
 {
-    if (transaction.blockHeight <= blockHeight + 1) return NO; // confirmed transactions are not postdated
+    if (transaction.blockHeight != TX_UNCONFIRMED) return NO; // confirmed transactions are not postdated
 
     // TODO: XXX consider marking any unconfirmed transaction with a non-final sequence number as postdated
     for (NSData *txHash in transaction.inputHashes) { // check if any inputs are known to be postdated
@@ -543,16 +545,17 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     return NO;
 }
 
-// set the block heights for the given transactions
-- (void)setBlockHeight:(int32_t)height forTxHashes:(NSArray *)txHashes
+// set the block heights and timestamps for the given transactions
+- (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes
 {
     BOOL set = NO;
 
     for (NSData *hash in txHashes) {
         BRTransaction *tx = self.allTx[hash];
 
-        if (! tx || tx.blockHeight == height) continue;
+        if (! tx || (tx.blockHeight == height && tx.timestamp == timestamp)) continue;
         tx.blockHeight = height;
+        tx.timestamp = timestamp;
         set = YES;
     }
 
@@ -563,6 +566,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         [self.moc performBlock:^{
             for (BRTransactionEntity *e in [BRTransactionEntity objectsMatching:@"txHash in %@", txHashes]) {
                 e.blockHeight = height;
+                e.timestamp = timestamp;
             }
         }];
     }

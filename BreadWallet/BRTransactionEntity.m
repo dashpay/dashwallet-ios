@@ -37,6 +37,7 @@
 
 @dynamic txHash;
 @dynamic blockHeight;
+@dynamic timestamp;
 @dynamic inputs;
 @dynamic outputs;
 @dynamic lockTime;
@@ -57,6 +58,7 @@
         
         self.txHash = tx.txHash;
         self.blockHeight = tx.blockHeight;
+        self.timestamp = tx.timestamp;
     
         while (inputs.count < tx.inputHashes.count) {
             [inputs addObject:[BRTxInputEntity managedObject]];
@@ -98,6 +100,7 @@
         tx.txHash = self.txHash;
         tx.lockTime = self.lockTime;
         tx.blockHeight = self.blockHeight;
+        tx.timestamp = self.timestamp;
     
         for (BRTxInputEntity *e in self.inputs) {
             [tx addInputHash:e.txHash index:e.n script:nil signature:e.signature sequence:e.sequence];
