@@ -473,6 +473,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
             }
             else if (! sent) {
                 sent = YES;
+                tx.timestamp = [NSDate timeIntervalSinceReferenceDate];
                 [m.wallet registerTransaction:tx];
                 [self.view
                  addSubview:[[[BRBubbleView

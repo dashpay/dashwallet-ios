@@ -941,6 +941,7 @@ static const char *dns_seeds[] = {
 
     NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, txHash);
 
+    transaction.timestamp = [NSDate timeIntervalSinceReferenceDate];
     if (! [m.wallet registerTransaction:transaction]) return;
     if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
     [self.txHashes addObject:txHash];

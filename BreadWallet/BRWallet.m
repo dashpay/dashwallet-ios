@@ -452,8 +452,6 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 
     //TODO: verify signatures when possible
     //TODO: XXX handle tx replacement with input sequence numbers (now replacements appear invalid until confirmation)
-
-    if (transaction.blockHeight == TX_UNCONFIRMED)
     
     self.allTx[transaction.txHash] = transaction;
     [self.transactions insertObject:transaction atIndex:0];

@@ -105,7 +105,7 @@
     [d appendUInt32:_version];
     [d appendData:_prevBlock];
     [d appendData:_merkleRoot];
-    [d appendUInt32:_timestamp + NSTimeIntervalSince1970];
+    [d appendUInt32:_timestamp + NSTimeIntervalSince1970 + DBL_EPSILON];
     [d appendUInt32:_target];
     [d appendUInt32:_nonce];
     _blockHash = d.SHA256_2;
@@ -181,7 +181,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     [d appendUInt32:_version];
     [d appendData:_prevBlock];
     [d appendData:_merkleRoot];
-    [d appendUInt32:_timestamp + NSTimeIntervalSince1970];
+    [d appendUInt32:_timestamp + NSTimeIntervalSince1970 + DBL_EPSILON];
     [d appendUInt32:_target];
     [d appendUInt32:_nonce];
     [d appendUInt32:_totalTransactions];
