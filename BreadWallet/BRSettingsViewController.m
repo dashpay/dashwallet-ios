@@ -333,7 +333,10 @@
         if (self.selectorType == 0) {
             if (indexPath.row < m.currencyCodes.count) m.localCurrencyCode = m.currencyCodes[indexPath.row];
         }
-        else m.spendingLimit = (indexPath.row > 0) ? (uint64_t)(pow(10, indexPath.row + 6) + DBL_EPSILON) : 0;
+        else {
+            m.spendingLimit = (indexPath.row > 0) ? (uint64_t)(pow(10, indexPath.row + 6) +
+                                                               DBL_EPSILON*pow(10, indexPath.row + 6)) : 0;
+        }
         
         if (i < self.selectorOptions.count && i != indexPath.row) {
             [tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:i inSection:0], indexPath]

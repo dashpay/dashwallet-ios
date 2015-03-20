@@ -32,6 +32,7 @@
 #import "BRKey+BIP38.h"
 #import "BRBloomFilter.h"
 #import "BRMerkleBlock.h"
+#import "BRPaymentRequest.h"
 #import "BRPaymentProtocol.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
@@ -383,6 +384,22 @@
 //TODO: test valid request with unkown arguments
 //TODO: test invalid bitcoin address
 //TODO: test invalid request with unkown required arguments
+
+- (void)testPaymentRequest
+{
+    BRPaymentRequest *r = [BRPaymentRequest requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=1"];
+    
+    XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=1", r.string);
+    
+    r = [BRPaymentRequest requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=0.00000001"];
+    XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=0.00000001", r.string);
+    
+    r = [BRPaymentRequest requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=21000000"];
+    XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=21000000", r.string);
+
+    r = [BRPaymentRequest requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=20999999.99999999"];
+    XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=20999999.99999999", r.string);
+}
 
 #pragma mark - testTransaction
 

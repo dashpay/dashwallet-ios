@@ -105,7 +105,7 @@
     [d appendUInt32:_version];
     [d appendData:_prevBlock];
     [d appendData:_merkleRoot];
-    [d appendUInt32:_timestamp + NSTimeIntervalSince1970 + DBL_EPSILON];
+    [d appendUInt32:_timestamp + NSTimeIntervalSince1970 + 0.1];
     [d appendUInt32:_target];
     [d appendUInt32:_nonce];
     _blockHash = d.SHA256_2;
@@ -181,7 +181,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     [d appendUInt32:_version];
     [d appendData:_prevBlock];
     [d appendData:_merkleRoot];
-    [d appendUInt32:_timestamp + NSTimeIntervalSince1970 + DBL_EPSILON];
+    [d appendUInt32:_timestamp + NSTimeIntervalSince1970 + 0.1];
     [d appendUInt32:_target];
     [d appendUInt32:_nonce];
     [d appendUInt32:_totalTransactions];
@@ -253,13 +253,13 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     target /= TARGET_TIMESPAN;
     
     // normalize target for "compact" format
-    while ((uint32_t)(target + DBL_EPSILON) < 0x00080000u) target *= 256, size--;
-    while ((uint32_t)(target + DBL_EPSILON) > 0x007fffffu) target /= 256, size++;
+    while ((uint32_t)(target + DBL_EPSILON*target) < 0x00080000u) target *= 256, size--;
+    while ((uint32_t)(target + DBL_EPSILON*target) > 0x007fffffu) target /= 256, size++;
     
     // limit to MAX_PROOF_OF_WORK
-    if (size > maxsize || (size == maxsize && target + DBL_EPSILON > maxtarget)) target = maxtarget, size = maxsize;
+    if (size > maxsize || (size == maxsize && target > maxtarget)) target = maxtarget, size = maxsize;
     
-    return (_target == ((uint32_t)(target + DBL_EPSILON) | size << 24)) ? YES : NO;
+    return (_target == ((uint32_t)(target + DBL_EPSILON*target) | size << 24)) ? YES : NO;
 }
 
 // recursively walks the merkle tree in depth first order, calling leaf(hash, flag) for each stored hash, and
@@ -272,7 +272,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     
     (*flagIdx)++;
     
-    if (! flag || depth == (int)(ceil(log2(_totalTransactions)) + DBL_EPSILON)) {
+    if (! flag || depth == (int)(ceil(log2(_totalTransactions)) + DBL_EPSILON*_totalTransactions)) {
         NSData *hash = [_hashes hashAtOffset:(*hashIdx)*CC_SHA256_DIGEST_LENGTH];
         
         (*hashIdx)++;
