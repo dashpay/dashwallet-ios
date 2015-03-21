@@ -992,11 +992,12 @@ completion:(void (^)(BRTransaction *tx, uint64_t fee, NSError *error))completion
 // local currency. They will need to be revisited when that is no longer a safe assumption.
 - (int64_t)amountForLocalCurrencyString:(NSString *)string
 {
-    if (_localCurrencyPrice <= DBL_EPSILON) return 0;
+    if (self.localCurrencyPrice <= DBL_EPSILON) return 0;
     if ([string hasPrefix:@"<"]) string = [string substringFromIndex:1];
 
-    double amt = [[_localFormat numberFromString:string] doubleValue]*pow(10.0, _localFormat.maximumFractionDigits),
-           price = _localCurrencyPrice*pow(10.0, _localFormat.maximumFractionDigits);
+    double price = self.localCurrencyPrice*pow(10.0, self.localFormat.maximumFractionDigits),
+           amt = [[self.localFormat numberFromString:string] doubleValue]*
+                 pow(10.0, self.localFormat.maximumFractionDigits);
     int64_t local = amt + DBL_EPSILON*amt, overflowbits = 0;
 
     if (local == 0) return 0;

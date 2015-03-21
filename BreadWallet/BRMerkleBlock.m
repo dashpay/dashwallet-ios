@@ -243,7 +243,8 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     static const uint32_t maxsize = MAX_PROOF_OF_WORK >> 24, maxtarget = MAX_PROOF_OF_WORK & 0x00ffffffu;
     uint32_t size = previous.target >> 24;
     double target = previous.target & 0x00ffffffu;
-    int32_t timespan = (int32_t)((int64_t)previous.timestamp - (int64_t)time);
+    int32_t timespan = (int32_t)((int64_t)(time + DBL_EPSILON*time) -
+                                 (int64_t)(previous.timestamp + DBL_EPSILON*previous.timestamp));
 
     // limit difficulty transition to -75% or +400%
     if (timespan < TARGET_TIMESPAN/4) timespan = TARGET_TIMESPAN/4;

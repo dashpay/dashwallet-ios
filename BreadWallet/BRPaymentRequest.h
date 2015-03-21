@@ -39,7 +39,7 @@
 @property (nonatomic, strong) NSData *data;
 @property (nonatomic, strong) NSURL *url;
 @property (nonatomic, readonly) BOOL isValid;
-@property (nonatomic, readonly) BRPaymentProtocolRequest *protocolRequest; // reciever converted to BIP70 request object
+@property (nonatomic, readonly) BRPaymentProtocolRequest *protocolRequest; // receiver converted to BIP70 request object
 
 + (instancetype)requestWithString:(NSString *)string;
 + (instancetype)requestWithData:(NSData *)data;
