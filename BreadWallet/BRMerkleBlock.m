@@ -87,7 +87,7 @@
     off += CC_SHA256_DIGEST_LENGTH;
     _merkleRoot = [message hashAtOffset:off];
     off += CC_SHA256_DIGEST_LENGTH;
-    _timestamp = [message UInt32AtOffset:off] - NSTimeIntervalSince1970;
+    _timestamp = [message UInt32AtOffset:off];
     off += sizeof(uint32_t);
     _target = [message UInt32AtOffset:off];
     off += sizeof(uint32_t);
@@ -105,7 +105,7 @@
     [d appendUInt32:_version];
     [d appendData:_prevBlock];
     [d appendData:_merkleRoot];
-    [d appendUInt32:_timestamp + NSTimeIntervalSince1970 + 0.1];
+    [d appendUInt32:_timestamp];
     [d appendUInt32:_target];
     [d appendUInt32:_nonce];
     _blockHash = d.SHA256_2;
@@ -114,7 +114,7 @@
 }
 
 - (instancetype)initWithBlockHash:(NSData *)blockHash version:(uint32_t)version prevBlock:(NSData *)prevBlock
-merkleRoot:(NSData *)merkleRoot timestamp:(NSTimeInterval)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
+merkleRoot:(NSData *)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
 totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags height:(uint32_t)height
 {
     if (! (self = [self init])) return nil;
@@ -156,8 +156,9 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     
     if (_totalTransactions > 0 && ! [merkleRoot isEqual:_merkleRoot]) return NO; // merkle root check failed
     
+    // check if timestamp is too far in future
     //TODO: use estimated network time instead of system time (avoids timejacking attacks and misconfigured time)
-    if (_timestamp > [NSDate timeIntervalSinceReferenceDate] + MAX_TIME_DRIFT) return NO; // timestamp too far in future
+    if (_timestamp > [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 + MAX_TIME_DRIFT) return NO;
     
     // check if proof-of-work target is out of range
     if (target == 0 || target & 0x00800000u || size > maxsize || (size == maxsize && target > maxtarget)) return NO;
@@ -181,7 +182,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     [d appendUInt32:_version];
     [d appendData:_prevBlock];
     [d appendData:_merkleRoot];
-    [d appendUInt32:_timestamp + NSTimeIntervalSince1970 + 0.1];
+    [d appendUInt32:_timestamp];
     [d appendUInt32:_target];
     [d appendUInt32:_nonce];
     [d appendUInt32:_totalTransactions];
@@ -227,7 +228,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 // targeted time between transitions (14*24*60*60 seconds). If the new difficulty is more than 4x or less than 1/4 of
 // the previous difficulty, the change is limited to either 4x or 1/4. There is also a minimum difficulty value
 // intuitively named MAX_PROOF_OF_WORK... since larger values are less difficult.
-- (BOOL)verifyDifficultyFromPreviousBlock:(BRMerkleBlock *)previous andTransitionTime:(NSTimeInterval)time
+- (BOOL)verifyDifficultyFromPreviousBlock:(BRMerkleBlock *)previous andTransitionTime:(uint32_t)time
 {
     if (! [_prevBlock isEqual:previous.blockHash] || _height != previous.height + 1) return NO;
     if ((_height % BLOCK_DIFFICULTY_INTERVAL) == 0 && time == 0) return NO;
@@ -243,8 +244,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     static const uint32_t maxsize = MAX_PROOF_OF_WORK >> 24, maxtarget = MAX_PROOF_OF_WORK & 0x00ffffffu;
     uint32_t size = previous.target >> 24;
     double target = previous.target & 0x00ffffffu;
-    int32_t timespan = (int32_t)((int64_t)(previous.timestamp + DBL_EPSILON*previous.timestamp) -
-                                 (int64_t)(time + DBL_EPSILON*time));
+    int32_t timespan = (int32_t)((int64_t)previous.timestamp - (int64_t)time);
 
     // limit difficulty transition to -75% or +400%
     if (timespan < TARGET_TIMESPAN/4) timespan = TARGET_TIMESPAN/4;

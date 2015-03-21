@@ -34,7 +34,7 @@
 @property (nonatomic, readonly) uint32_t version;
 @property (nonatomic, readonly) NSData *prevBlock;
 @property (nonatomic, readonly) NSData *merkleRoot;
-@property (nonatomic, readonly) NSTimeInterval timestamp; // time interval since refrence date, 00:00:00 01/01/01 GMT
+@property (nonatomic, readonly) uint32_t timestamp; // time interval since unix epoch
 @property (nonatomic, readonly) uint32_t target;
 @property (nonatomic, readonly) uint32_t nonce;
 @property (nonatomic, readonly) uint32_t totalTransactions;
@@ -56,7 +56,7 @@
 
 - (instancetype)initWithMessage:(NSData *)message;
 - (instancetype)initWithBlockHash:(NSData *)blockHash version:(uint32_t)version prevBlock:(NSData *)prevBlock
-merkleRoot:(NSData *)merkleRoot timestamp:(NSTimeInterval)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
+merkleRoot:(NSData *)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
 totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags height:(uint32_t)height;
 
 // true if the given tx hash is known to be included in the block
@@ -64,6 +64,6 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 
 // Verifies the block difficulty target is correct for the block's position in the chain. Transition time may be 0 if
 // height is not a multiple of BLOCK_DIFFICULTY_INTERVAL.
-- (BOOL)verifyDifficultyFromPreviousBlock:(BRMerkleBlock*)previous andTransitionTime:(NSTimeInterval)time;
+- (BOOL)verifyDifficultyFromPreviousBlock:(BRMerkleBlock*)previous andTransitionTime:(uint32_t)time;
 
 @end
