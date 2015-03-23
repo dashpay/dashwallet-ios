@@ -243,23 +243,24 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     // target is in "compact" format, explained in isValid:
     static const uint32_t maxsize = MAX_PROOF_OF_WORK >> 24, maxtarget = MAX_PROOF_OF_WORK & 0x00ffffffu;
     uint32_t size = previous.target >> 24;
-    double target = previous.target & 0x00ffffffu;
+    uint64_t target = previous.target & 0x00ffffffu;
     int32_t timespan = (int32_t)((int64_t)previous.timestamp - (int64_t)time);
 
     // limit difficulty transition to -75% or +400%
     if (timespan < TARGET_TIMESPAN/4) timespan = TARGET_TIMESPAN/4;
     if (timespan > TARGET_TIMESPAN*4) timespan = TARGET_TIMESPAN*4;
 
+    // TARGET_TIMESPAN happens to be a multiple of 256, and since timespan is at least TARGET_TIMESPAN/4, we don't lose
+    // precision when multiplying target by timespan and then dividing by TARGET_TIMESPAN/256
     target *= timespan;
-    target /= TARGET_TIMESPAN;
+    target /= TARGET_TIMESPAN >> 8;
+    size++; // increment size since we only divided by TARGET_TIMESPAN/256
     
-    // normalize target for "compact" format
-    while ((uint32_t)target < 0x00008000u) target *= 256, size--;
-    while ((uint32_t)target > 0x007fffffu) target /= 256, size++;
-    
+    while (target > 0x007fffffULL) target >>= 8, size++; // normalize target for "compact" format
+
     // limit to MAX_PROOF_OF_WORK
     if (size > maxsize || (size == maxsize && target > maxtarget)) target = maxtarget, size = maxsize;
-    
+
     return (_target == ((uint32_t)target | size << 24)) ? YES : NO;
 }
 
