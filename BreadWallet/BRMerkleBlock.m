@@ -251,10 +251,10 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     if (timespan > TARGET_TIMESPAN*4) timespan = TARGET_TIMESPAN*4;
 
     // TARGET_TIMESPAN happens to be a multiple of 256, and since timespan is at least TARGET_TIMESPAN/4, we don't lose
-    // precision when multiplying target by timespan and then dividing by TARGET_TIMESPAN/256
+    // precision when target is multiplied by timespan and then divided by TARGET_TIMESPAN/256
     target *= timespan;
     target /= TARGET_TIMESPAN >> 8;
-    size++; // increment size since we only divided by TARGET_TIMESPAN/256
+    size--; // decrement size since we only divided by TARGET_TIMESPAN/256
     
     while (target > 0x007fffffULL) target >>= 8, size++; // normalize target for "compact" format
 
