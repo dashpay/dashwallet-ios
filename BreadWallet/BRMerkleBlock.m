@@ -273,7 +273,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     
     (*flagIdx)++;
     
-    if (! flag || depth == (int)(ceil(log2(_totalTransactions)) + DBL_EPSILON*_totalTransactions)) {
+    if (! flag || depth == (int)(ceil(log2(_totalTransactions)))) {
         NSData *hash = [_hashes hashAtOffset:(*hashIdx)*CC_SHA256_DIGEST_LENGTH];
         
         (*hashIdx)++;

@@ -24,7 +24,7 @@
 //  THE SOFTWARE.
 
 #import "BreadWalletTests.h"
-#import "BRWallet.h"
+#import "BRWalletManager.h"
 #import "BRBIP32Sequence.h"
 #import "BRBIP39Mnemonic.h"
 #import "BRTransaction.h"
@@ -113,7 +113,7 @@
     XCTAssertEqualObjects(@"00263b999714e756fa5d02814b842a2634dd31ac".hexToData, d, @"[NSData RMD160]");
 
     d = [@"1234567890123456789012345678901234567890123456789012345678901234"
-         dataUsingEncoding:NSUTF8StringEncoding].RMD160;
+         dataUsingEncoding:NSUTF8StringEncoding].RMD160; // a message exactly 64bytes long (internal buffer size)
     XCTAssertEqualObjects(@"fa8c1a78eb763bb97d5ea14ce9303d1ce2f33454".hexToData, d, @"[NSData RMD160]");
 
     d = [NSData data].RMD160; // empty
@@ -397,8 +397,15 @@
     r = [BRPaymentRequest requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=21000000"];
     XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=21000000", r.string);
 
+    // test for floating point rounding issues, these values cannot be be exactly represented with an IEEE 754 double
     r = [BRPaymentRequest requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=20999999.99999999"];
     XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=20999999.99999999", r.string);
+
+    r = [BRPaymentRequest requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=20999999.99999995"];
+    XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=20999999.99999995", r.string);
+
+    r = [BRPaymentRequest requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=20999999.9999999"];
+    XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=20999999.9999999", r.string);
 }
 
 #pragma mark - testTransaction
@@ -938,6 +945,39 @@
 #endif
 
     XCTAssertEqual([w feeForTxSize:tx.size], tx.standardFee, @"[BRWallet feeForTxSize:]");
+}
+
+#pragma mark - testWalletManager
+
+- (void)testWalletManager
+{
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    NSString *s;
+    
+    XCTAssertEqual([m amountForString:nil], 0LL, @"[BRWalletManager amountForString:]");
+    
+    XCTAssertEqual([m amountForString:@""], 0LL, @"[BRWalletManager amountForString:]");
+
+    s = [m stringForAmount:0ULL];
+    XCTAssertEqual([m amountForString:s], 0ULL, @"[BRWalletManager amountForString:]");
+    
+    s = [m stringForAmount:100000000ULL];
+    XCTAssertEqual([m amountForString:s], 100000000ULL, @"[BRWalletManager amountForString:]");
+
+    s = [m stringForAmount:1ULL];
+    XCTAssertEqual([m amountForString:s], 1ULL, @"[BRWalletManager amountForString:]");
+    
+    s = [m stringForAmount:2100000000000000ULL];
+    XCTAssertEqual([m amountForString:s], 2100000000000000ULL, @"[BRWalletManager amountForString:]");
+    
+    s = [m stringForAmount:2099999999999999ULL];
+    XCTAssertEqual([m amountForString:s], 2099999999999999ULL, @"[BRWalletManager amountForString:]");
+    
+    s = [m stringForAmount:2099999999999995ULL];
+    XCTAssertEqual([m amountForString:s], 2099999999999995ULL, @"[BRWalletManager amountForString:]");
+    
+    s = [m stringForAmount:2099999999999990ULL];
+    XCTAssertEqual([m amountForString:s], 2099999999999990ULL, @"[BRWalletManager amountForString:]");
 }
 
 #pragma mark - testBloomFilter

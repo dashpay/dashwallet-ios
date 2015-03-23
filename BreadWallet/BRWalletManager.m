@@ -175,6 +175,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 @property (nonatomic, strong) id<BRKeySequence> sequence;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) NSArray *currencyPrices;
+@property (nonatomic, strong) NSNumber *localPrice;
 @property (nonatomic, assign) BOOL sweepFee;
 @property (nonatomic, strong) NSString *sweepKey;
 @property (nonatomic, strong) void (^sweepCompletion)(BRTransaction *tx, uint64_t fee, NSError *error);
@@ -210,6 +211,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     _format = [NSNumberFormatter new];
     self.format.lenient = YES;
     self.format.numberStyle = NSNumberFormatterCurrencyStyle;
+    self.format.generatesDecimalNumbers = YES;
     self.format.negativeFormat = [self.format.positiveFormat
                                   stringByReplacingCharactersInRange:[self.format.positiveFormat rangeOfString:@"#"]
                                   withString:@"-#"];
@@ -221,6 +223,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     _localFormat = [NSNumberFormatter new];
     self.localFormat.lenient = YES;
     self.localFormat.numberStyle = NSNumberFormatterCurrencyStyle;
+    self.localFormat.generatesDecimalNumbers = YES;
     self.localFormat.negativeFormat = self.format.negativeFormat;
 
     self.protectedObserver =
@@ -724,10 +727,8 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 {
     // it's ok to store this in userdefaults because increasing the value only takes effect after successful pin entry
     if (! [[NSUserDefaults standardUserDefaults] objectForKey:SPEND_LIMIT_AMOUNT_KEY]) return SATOSHIS;
-
-    double limit = [[NSUserDefaults standardUserDefaults] doubleForKey:SPEND_LIMIT_AMOUNT_KEY];
     
-    return limit + DBL_EPSILON*limit;
+    return [[NSUserDefaults standardUserDefaults] doubleForKey:SPEND_LIMIT_AMOUNT_KEY];
 }
 
 - (void)setSpendingLimit:(uint64_t)spendingLimit
@@ -757,6 +758,11 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 
 #pragma mark - exchange rate
 
+- (double)localCurrencyPrice
+{
+    return self.localPrice.doubleValue;
+}
+
 // local currency ISO code
 - (void)setLocalCurrencyCode:(NSString *)code
 {
@@ -765,9 +771,11 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     
     if (i == NSNotFound) code = DEFAULT_CURRENCY_CODE, i = [_currencyCodes indexOfObject:DEFAULT_CURRENCY_CODE];
     _localCurrencyCode = [code copy];
-    _localCurrencyPrice = (i < _currencyPrices.count) ? [_currencyPrices[i] doubleValue] : DEFAULT_CURRENCY_PRICE;
+    self.localPrice = (i < _currencyPrices.count) ? _currencyPrices[i] : @(DEFAULT_CURRENCY_PRICE);
     self.localFormat.currencyCode = _localCurrencyCode;
-    self.localFormat.maximum = @((MAX_MONEY/SATOSHIS)*_localCurrencyPrice);
+    self.localFormat.maximum =
+        [[NSDecimalNumber decimalNumberWithDecimal:self.localPrice.decimalValue]
+         decimalNumberByMultiplyingBy:(NSDecimalNumber *)[NSDecimalNumber numberWithLongLong:MAX_MONEY/SATOSHIS]];
     
     if ([self.localCurrencyCode isEqual:[[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode]]) {
         [defs removeObjectForKey:LOCAL_CURRENCY_CODE_KEY];
@@ -834,7 +842,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         _currencyCodes = codes;
         _currencyNames = names;
         _currencyPrices = rates;
-        self.localCurrencyCode = _localCurrencyCode;
+        self.localCurrencyCode = _localCurrencyCode; // update localCurrencyPrice and localFormat.maximum
         [defs setObject:self.currencyCodes forKey:CURRENCY_CODES_KEY];
         [defs setObject:self.currencyNames forKey:CURRENCY_NAMES_KEY];
         [defs setObject:self.currencyPrices forKey:CURRENCY_PRICES_KEY];
@@ -967,46 +975,34 @@ completion:(void (^)(BRTransaction *tx, uint64_t fee, NSError *error))completion
 
 - (int64_t)amountForString:(NSString *)string
 {
-    double amt = [[self.format numberFromString:string] doubleValue]*pow(10.0, self.format.maximumFractionDigits);
-
-    return amt + DBL_EPSILON*amt;
+    if (! string.length) return 0;
+    return [[[NSDecimalNumber decimalNumberWithDecimal:[[self.format numberFromString:string] decimalValue]]
+             decimalNumberByMultiplyingByPowerOf10:self.format.maximumFractionDigits] longLongValue];
 }
 
 - (NSString *)stringForAmount:(int64_t)amount
 {
-    NSUInteger min = self.format.minimumFractionDigits;
-
-    if (amount == 0) {
-        self.format.minimumFractionDigits =
-            (self.format.maximumFractionDigits > 4) ? 4 : self.format.maximumFractionDigits;
-    }
-
-    double amt = amount/pow(10.0, self.format.maximumFractionDigits);
-    NSString *r = [self.format stringFromNumber:@(amt + DBL_EPSILON*amt)];
-
-    self.format.minimumFractionDigits = min;
-    return r;
+    return [self.format stringFromNumber:[(NSDecimalNumber *)[NSDecimalNumber numberWithLongLong:amount]
+            decimalNumberByMultiplyingByPowerOf10:-self.format.maximumFractionDigits]];
 }
 
 // NOTE: For now these local currency methods assume that a satoshi has a smaller value than the smallest unit of any
 // local currency. They will need to be revisited when that is no longer a safe assumption.
 - (int64_t)amountForLocalCurrencyString:(NSString *)string
 {
-    if (self.localCurrencyPrice <= DBL_EPSILON) return 0;
     if ([string hasPrefix:@"<"]) string = [string substringFromIndex:1];
 
-    double price = self.localCurrencyPrice*pow(10.0, self.localFormat.maximumFractionDigits),
-           amt = [[self.localFormat numberFromString:string] doubleValue]*
-                 pow(10.0, self.localFormat.maximumFractionDigits);
-    int64_t local = amt + DBL_EPSILON*amt, overflowbits = 0;
+    int64_t price = [[[NSDecimalNumber decimalNumberWithDecimal:self.localPrice.decimalValue]
+                      decimalNumberByMultiplyingByPowerOf10:self.localFormat.maximumFractionDigits] longLongValue],
+            local = [[[NSDecimalNumber decimalNumberWithDecimal:[[self.localFormat numberFromString:string]
+                      decimalValue]] decimalNumberByMultiplyingByPowerOf10:self.localFormat.maximumFractionDigits]
+                     longLongValue], overflowbits = 0, p = 10, min, max, amount;
 
-    if (local == 0) return 0;
+    if (local == 0 || price < 1) return 0;
     while (llabs(local) + 1 > INT64_MAX/SATOSHIS) local /= 2, overflowbits++; // make sure we won't overflow an int64_t
-
-    int64_t min = llabs(local)*SATOSHIS/(int64_t)(price + DBL_EPSILON*price) + 1,
-            max = (llabs(local) + 1)*SATOSHIS/(int64_t)(price + DBL_EPSILON*price) - 1,
-            amount = (min + max)/2, p = 10;
-
+    min = llabs(local)*SATOSHIS/price + 1;
+    max = (llabs(local) + 1)*SATOSHIS/price - 1;
+    amount = (min + max)/2;
     while (overflowbits > 0) local *= 2, min *= 2, max *= 2, amount *= 2, overflowbits--;
     if (amount >= MAX_MONEY) return (local < 0) ? -MAX_MONEY : MAX_MONEY;
     while ((amount/p)*p >= min && p <= INT64_MAX/10) p *= 10; // lowest decimal precision matching local currency string
@@ -1017,19 +1013,17 @@ completion:(void (^)(BRTransaction *tx, uint64_t fee, NSError *error))completion
 - (NSString *)localCurrencyStringForAmount:(int64_t)amount
 {
     if (amount == 0) return [self.localFormat stringFromNumber:@(0)];
-
-    double local = self.localCurrencyPrice*amount/SATOSHIS;
-    NSString *ret = [self.localFormat stringFromNumber:@(local + DBL_EPSILON*local)];
-
+    
+    NSDecimalNumber *n = [[[NSDecimalNumber decimalNumberWithDecimal:self.localPrice.decimalValue]
+                           decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithLongLong:llabs(amount)]]
+                          decimalNumberByDividingBy:(id)[NSDecimalNumber numberWithLongLong:SATOSHIS]],
+                     *min = [[NSDecimalNumber one]
+                             decimalNumberByMultiplyingByPowerOf10:-self.localFormat.maximumFractionDigits];
+    
     // if the amount is too small to be represented in local currency (but is != 0) then return a string like "$0.01"
-    if (amount > 0 && local < 0.9/pow(10.0, self.localFormat.maximumFractionDigits)) {
-        ret = [self.localFormat stringFromNumber:@(1.0/pow(10.0, self.localFormat.maximumFractionDigits))];
-    }
-    else if (amount < 0 && local > -0.9/pow(10.0, self.localFormat.maximumFractionDigits)) {
-        ret = [self.localFormat stringFromNumber:@(-1.0/pow(10.0, self.localFormat.maximumFractionDigits))];
-    }
-
-    return ret;
+    if ([n compare:min] == NSOrderedAscending) n = min;
+    if (amount < 0) n = [n decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithInt:-1]];
+    return [self.localFormat stringFromNumber:n];
 }
 
 #pragma mark - UITextFieldDelegate

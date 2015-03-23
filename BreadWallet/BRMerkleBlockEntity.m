@@ -65,10 +65,8 @@
     __block BRMerkleBlock *block = nil;
     
     [self.managedObjectContext performBlockAndWait:^{
-        NSTimeInterval timestamp = self.timestamp + NSTimeIntervalSince1970;
-        
         block = [[BRMerkleBlock alloc] initWithBlockHash:self.blockHash version:self.version prevBlock:self.prevBlock
-                 merkleRoot:self.merkleRoot timestamp:(timestamp + DBL_EPSILON*timestamp) target:self.target
+                 merkleRoot:self.merkleRoot timestamp:self.timestamp + NSTimeIntervalSince1970 target:self.target
                  nonce:self.nonce totalTransactions:self.totalTransactions hashes:self.hashes flags:self.flags
                  height:self.height];
     }];

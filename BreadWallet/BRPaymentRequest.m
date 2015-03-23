@@ -93,7 +93,8 @@
         NSString *value = (pair.count > 1) ? [arg substringFromIndex:[pair[0] length] + 1] : nil;
         
         if ([pair[0] isEqual:@"amount"]) {
-            self.amount = [value doubleValue]*SATOSHIS + DBL_EPSILON*[value doubleValue]*SATOSHIS;
+            self.amount = [[[NSDecimalNumber decimalNumberWithString:value] decimalNumberByMultiplyingByPowerOf10:8]
+                           unsignedLongLongValue];
         }
         else if ([pair[0] isEqual:@"label"]) {
             self.label = [[value stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
@@ -116,12 +117,10 @@
 
     NSMutableString *s = [NSMutableString stringWithFormat:@"bitcoin:%@", self.paymentAddress];
     NSMutableArray *q = [NSMutableArray array];
-    int p = 8;
     
     if (self.amount > 0) {
-        while (p > 0 && self.amount/(uint64_t)pow(10, 9 - p)*(uint64_t)pow(10, 9 - p) == self.amount) p--;
-        [q addObject:[NSString stringWithFormat:@"amount=%.*f", p,
-                      (double)self.amount/SATOSHIS + DBL_EPSILON*self.amount/SATOSHIS]];
+        [q addObject:[@"amount=" stringByAppendingString:[[(id)[NSDecimalNumber numberWithUnsignedLongLong:self.amount]
+                                                           decimalNumberByMultiplyingByPowerOf10:-8] stringValue]]];
     }
 
     if (self.label.length > 0) {
