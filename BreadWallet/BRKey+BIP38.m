@@ -201,10 +201,10 @@ static NSData *point_multiply(NSData *point, NSData *factor, BOOL compressed)
 + (NSString *)BIP38IntermediateCodeWithLot:(uint32_t)lot sequence:(uint16_t)sequence salt:(uint32_t)salt
 passphrase:(NSString *)passphrase
 {
-    if (lot >= 0x100000 || sequence >= 0x1000 || ! passphrase) return nil;
+    if (lot >= 0x100000u || sequence >= 0x1000u || ! passphrase) return nil;
     salt = CFSwapInt32HostToBig(salt);
 
-    uint32_t lotsequence = CFSwapInt32HostToBig(lot*0x1000 + sequence);
+    uint32_t lotsequence = CFSwapInt32HostToBig(lot*0x1000u + sequence);
     NSMutableData *entropy = [NSMutableData secureData], *code = [NSMutableData secureData];
 
     [entropy appendBytes:&salt length:sizeof(salt)];

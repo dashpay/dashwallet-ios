@@ -775,7 +775,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     self.localFormat.currencyCode = _localCurrencyCode;
     self.localFormat.maximum =
         [[NSDecimalNumber decimalNumberWithDecimal:self.localPrice.decimalValue]
-         decimalNumberByMultiplyingBy:(NSDecimalNumber *)[NSDecimalNumber numberWithLongLong:MAX_MONEY/SATOSHIS]];
+         decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithLongLong:MAX_MONEY/SATOSHIS]];
     
     if ([self.localCurrencyCode isEqual:[[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode]]) {
         [defs removeObjectForKey:LOCAL_CURRENCY_CODE_KEY];
@@ -982,7 +982,7 @@ completion:(void (^)(BRTransaction *tx, uint64_t fee, NSError *error))completion
 
 - (NSString *)stringForAmount:(int64_t)amount
 {
-    return [self.format stringFromNumber:[(NSDecimalNumber *)[NSDecimalNumber numberWithLongLong:amount]
+    return [self.format stringFromNumber:[(id)[NSDecimalNumber numberWithLongLong:amount]
             decimalNumberByMultiplyingByPowerOf10:-self.format.maximumFractionDigits]];
 }
 
@@ -992,18 +992,20 @@ completion:(void (^)(BRTransaction *tx, uint64_t fee, NSError *error))completion
 {
     if ([string hasPrefix:@"<"]) string = [string substringFromIndex:1];
 
+    NSNumber *n = [self.localFormat numberFromString:string];
     int64_t price = [[[NSDecimalNumber decimalNumberWithDecimal:self.localPrice.decimalValue]
                       decimalNumberByMultiplyingByPowerOf10:self.localFormat.maximumFractionDigits] longLongValue],
-            local = [[[NSDecimalNumber decimalNumberWithDecimal:[[self.localFormat numberFromString:string]
-                      decimalValue]] decimalNumberByMultiplyingByPowerOf10:self.localFormat.maximumFractionDigits]
-                     longLongValue], overflowbits = 0, p = 10, min, max, amount;
+            local = [[[NSDecimalNumber decimalNumberWithDecimal:n.decimalValue]
+                      decimalNumberByMultiplyingByPowerOf10:self.localFormat.maximumFractionDigits] longLongValue],
+            overflowbits = 0, p = 10, min, max, amount;
 
     if (local == 0 || price < 1) return 0;
     while (llabs(local) + 1 > INT64_MAX/SATOSHIS) local /= 2, overflowbits++; // make sure we won't overflow an int64_t
-    min = llabs(local)*SATOSHIS/price + 1;
-    max = (llabs(local) + 1)*SATOSHIS/price - 1;
-    amount = (min + max)/2;
+    min = llabs(local)*SATOSHIS/price + 1; // minimum amount that safely matches local currency string
+    max = (llabs(local) + 1)*SATOSHIS/price - 1; // maximum amount that safely matches local currency string
+    amount = (min + max)/2; // average min and max
     while (overflowbits > 0) local *= 2, min *= 2, max *= 2, amount *= 2, overflowbits--;
+
     if (amount >= MAX_MONEY) return (local < 0) ? -MAX_MONEY : MAX_MONEY;
     while ((amount/p)*p >= min && p <= INT64_MAX/10) p *= 10; // lowest decimal precision matching local currency string
     p /= 10;

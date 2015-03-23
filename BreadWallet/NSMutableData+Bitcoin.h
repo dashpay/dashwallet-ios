@@ -26,9 +26,9 @@
 #import <Foundation/Foundation.h>
 
 #if BITCOIN_TESTNET
-#define BITCOIN_MAGIC_NUMBER 0x0709110b
+#define BITCOIN_MAGIC_NUMBER 0x0709110bu
 #else
-#define BITCOIN_MAGIC_NUMBER 0xd9b4bef9
+#define BITCOIN_MAGIC_NUMBER 0xd9b4bef9u
 #endif
 
 CFAllocatorRef SecureAllocator();
