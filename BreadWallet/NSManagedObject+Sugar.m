@@ -109,7 +109,7 @@ static NSUInteger _fetchBatchSize = 100;
 
     [[self context] performBlockAndWait:^{
         a = [[self context] executeFetchRequest:request error:&error];
-        if (error) NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
+        if (error) NSLog(@"%s: %@", __func__, error);
     }];
      
     return a;
@@ -148,7 +148,7 @@ static NSUInteger _fetchBatchSize = 100;
 
     [[self context] performBlockAndWait:^{
         count = [[self context] countForFetchRequest:request error:&error];
-        if (error) NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
+        if (error) NSLog(@"%s: %@", __func__, error);
     }];
     
     return count;
@@ -201,19 +201,19 @@ static NSUInteger _fetchBatchSize = 100;
         if ([coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL
              options:@{NSMigratePersistentStoresAutomaticallyOption:@(YES),
                        NSInferMappingModelAutomaticallyOption:@(YES)} error:&error] == nil) {
-            NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
+            NSLog(@"%s: %@", __func__, error);
 #if DEBUG
             abort();
 #endif
             // if this is a not a debug build, attempt to delete and create a new persisent data store before crashing
             if (! [[NSFileManager defaultManager] removeItemAtURL:storeURL error:&error]) {
-                NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
+                NSLog(@"%s: %@", __func__, error);
             }
             
             if ([coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL
                  options:@{NSMigratePersistentStoresAutomaticallyOption:@(YES),
                            NSInferMappingModelAutomaticallyOption:@(YES)} error:&error] == nil) {
-                NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
+                NSLog(@"%s: %@", __func__, error);
                 abort(); // Forsooth, I am slain!
             }
         }
@@ -264,7 +264,7 @@ static NSUInteger _fetchBatchSize = 100;
         NSError *error = nil;
 
         if ([[self context] hasChanges] && ! [[self context] save:&error]) { // save changes to writer context
-            NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
+            NSLog(@"%s: %@", __func__, error);
 #if DEBUG
             abort();
 #endif
@@ -276,7 +276,7 @@ static NSUInteger _fetchBatchSize = 100;
 
             // write changes to persistent store
             if ([[self context].parentContext hasChanges] && ! [[self context].parentContext save:&error]) {
-                NSLog(@"%s:%d %s: %@", __FILE__, __LINE__, __FUNCTION__, error);
+                NSLog(@"%s: %@", __func__, error);
 #if DEBUG
                 abort();
 #endif

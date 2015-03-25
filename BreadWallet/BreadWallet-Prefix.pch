@@ -30,6 +30,7 @@
                       NSBundle.mainBundle.infoDictionary[@"CFBundleDisplayName"]]
 
 #define HAVE_CONFIG_H 1 // for libsecp256k1
+#define DETERMINISTIC 1
 
 #if ! DEBUG
 #define NSLog(...)

@@ -867,8 +867,10 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = "-frandom-seed=$@";
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
+				ZERO_AR_DATE = 1;
 			};
 			name = GCov_Build;
 		};
@@ -1013,8 +1015,10 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = "-frandom-seed=$@";
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
+				ZERO_AR_DATE = 1;
 			};
 			name = Debug;
 		};
@@ -1045,9 +1049,11 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				OTHER_CFLAGS = "-frandom-seed=$@";
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
+				ZERO_AR_DATE = 1;
 			};
 			name = Release;
 		};

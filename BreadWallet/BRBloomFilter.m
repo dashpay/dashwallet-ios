@@ -55,7 +55,6 @@ static uint32_t murmurHash3(const uint8_t *b, size_t len, uint32_t seed)
     h1 = (h1 ^ (h1 >> 16))*0x85ebca6bu;
     h1 = (h1 ^ (h1 >> 13))*0xc2b2ae35u;
     h1 ^= h1 >> 16;
-    
     return h1;
 }
 
@@ -94,7 +93,6 @@ static uint32_t murmurHash3(const uint8_t *b, size_t len, uint32_t seed)
     _tweak = [message UInt32AtOffset:off];
     off += sizeof(uint32_t);
     _flags = [message UInt8AtOffset:off];
-
     return self;
 }
 
@@ -106,7 +104,6 @@ static uint32_t murmurHash3(const uint8_t *b, size_t len, uint32_t seed)
     self.hashFuncs = 0;
     _tweak = 0;
     _flags = BLOOM_UPDATE_NONE;
-    
     return self;
 }
 
@@ -123,7 +120,6 @@ flags:(uint8_t)flags
     if (self.hashFuncs > BLOOM_MAX_HASH_FUNCS) self.hashFuncs = BLOOM_MAX_HASH_FUNCS;
     _tweak = tweak;
     _flags = flags;
-    
     return self;
 }
 
@@ -190,7 +186,6 @@ flags:(uint8_t)flags
     [d appendUInt32:self.hashFuncs];
     [d appendUInt32:self.tweak];
     [d appendUInt8:self.flags];
-
     return d;
 }
 
