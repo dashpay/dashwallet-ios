@@ -172,7 +172,6 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 @interface BRWalletManager()
 
 @property (nonatomic, strong) BRWallet *wallet;
-@property (nonatomic, strong) id<BRKeySequence> sequence;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) NSArray *currencyPrices;
 @property (nonatomic, strong) NSNumber *localPrice;
@@ -205,7 +204,8 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     if (! (self = [super init])) return nil;
 
     [NSManagedObject setConcurrencyType:NSPrivateQueueConcurrencyType];
-    self.sequence = [BRBIP32Sequence new];
+    _sequence = [BRBIP32Sequence new];
+    _mnemonic = [BRBIP39Mnemonic new];
     self.reachability = [Reachability reachabilityForInternetConnection];
     self.failedPins = [NSMutableSet set];
     _format = [NSNumberFormatter new];
@@ -333,7 +333,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         NSString *phrase = getKeychainString(MNEMONIC_KEY, nil);
         
         if (phrase.length == 0) return nil;
-        return [[BRBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:phrase withPassphrase:nil];
+        return [self.mnemonic deriveKeyFromPhrase:phrase withPassphrase:nil];
     }
 }
 
@@ -346,9 +346,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 - (void)setSeedPhrase:(NSString *)seedPhrase
 {
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
-        BRBIP39Mnemonic *m = [BRBIP39Mnemonic sharedInstance];
-        
-        if (seedPhrase) seedPhrase = [m encodePhrase:[m decodePhrase:seedPhrase]];
+        if (seedPhrase) seedPhrase = [self.mnemonic encodePhrase:[self.mnemonic decodePhrase:seedPhrase]];
 
         [[NSManagedObject context] performBlockAndWait:^{
             [BRAddressEntity deleteObjects:[BRAddressEntity allObjects]];
@@ -375,8 +373,8 @@ static NSString *getKeychainString(NSString *key, NSError **error)
             return;
         }
         
-        NSData *masterPubKey = (seedPhrase) ? [self.sequence masterPublicKeyFromSeed:[m deriveKeyFromPhrase:seedPhrase
-                                                                                      withPassphrase:nil]] : nil;
+        NSData *masterPubKey = (seedPhrase) ? [self.sequence masterPublicKeyFromSeed:[self.mnemonic
+                                               deriveKeyFromPhrase:seedPhrase withPassphrase:nil]] : nil;
         
         setKeychainData(masterPubKey, MASTER_PUBKEY_KEY, NO);
         _wallet = nil;
@@ -436,7 +434,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         
         SecRandomCopyBytes(kSecRandomDefault, entropy.length, entropy.mutableBytes);
         
-        NSString *phrase = [[BRBIP39Mnemonic sharedInstance] encodePhrase:entropy];
+        NSString *phrase = [self.mnemonic encodePhrase:entropy];
         
         self.seedPhrase = phrase;
         
@@ -1053,18 +1051,16 @@ replacementString:(NSString *)string
 
 - (void)textViewDidChange:(UITextView *)textView
 {
-    BRBIP39Mnemonic *m = [BRBIP39Mnemonic sharedInstance];
-    
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
         if ([textView.text rangeOfString:@"\n"].location != NSNotFound) {
-            textView.text = [m normalizePhrase:textView.text];
+            textView.text = [self.mnemonic normalizePhrase:textView.text];
             
-            if (! [m phraseIsValid:[m normalizePhrase:textView.text]]) {
+            if (! [self.mnemonic phraseIsValid:[self.mnemonic normalizePhrase:textView.text]]) {
                 self.alertView.title = NSLocalizedString(@"bad recovery phrase", nil);
                 [self.alertView performSelector:@selector(setTitle:)
                  withObject:NSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];
             }
-            else if (! [[m normalizePhrase:textView.text] isEqual:getKeychainString(MNEMONIC_KEY, nil)]) {
+            else if (! [[self.mnemonic normalizePhrase:textView.text] isEqual:getKeychainString(MNEMONIC_KEY, nil)]) {
                 self.alertView.title = NSLocalizedString(@"recovery phrase doesn't match", nil);
                 [self.alertView performSelector:@selector(setTitle:)
                  withObject:NSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];

@@ -36,18 +36,6 @@
 
 @implementation BRBIP39Mnemonic
 
-+ (instancetype)sharedInstance
-{
-    static id singleton = nil;
-    static dispatch_once_t onceToken = 0;
-
-    dispatch_once(&onceToken, ^{
-        singleton = [self new];
-    });
-
-    return singleton;
-}
-
 - (NSString *)encodePhrase:(NSData *)data
 {
     if ((data.length % 4) != 0) return nil; // data length must be a multiple of 32 bits

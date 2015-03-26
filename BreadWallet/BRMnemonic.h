@@ -31,5 +31,7 @@
 - (NSString *)encodePhrase:(NSData *)data;
 - (NSData *)decodePhrase:(NSString *)phrase;
 - (BOOL)phraseIsValid:(NSString *)phrase;
+- (NSString *)normalizePhrase:(NSString *)phrase;
+- (NSData *)deriveKeyFromPhrase:(NSString *)phrase withPassphrase:(NSString *)passphrase;
 
 @end

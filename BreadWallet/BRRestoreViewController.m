@@ -26,7 +26,7 @@
 #import "BRRestoreViewController.h"
 #import "BRWalletManager.h"
 #import "BRKeySequence.h"
-#import "BRBIP39Mnemonic.h"
+#import "BRMnemonic.h"
 #import "NSMutableData+Bitcoin.h"
 
 #define PHRASE_LENGTH 12
@@ -152,7 +152,7 @@
     
         if (! done) return;
 
-        NSString *phrase = [[BRBIP39Mnemonic sharedInstance] normalizePhrase:s], *incorrect = nil;
+        NSString *phrase = [m.mnemonic normalizePhrase:s], *incorrect = nil;
         NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)phrase,
                                                                               CFSTR(" ")));
 
@@ -180,7 +180,7 @@
                        PHRASE_LENGTH] delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
               otherButtonTitles:nil] show];
         }
-        else if (! [[BRBIP39Mnemonic sharedInstance] phraseIsValid:phrase]) {
+        else if (! [m.mnemonic phraseIsValid:phrase]) {
             [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"bad recovery phrase", nil) delegate:nil
               cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }

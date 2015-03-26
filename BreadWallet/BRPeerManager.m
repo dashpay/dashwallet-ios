@@ -222,8 +222,7 @@ static const char *dns_seeds[] = {
 
                     // give dns peers a timestamp between 3 and 7 days ago
                     [_peers addObject:[[BRPeer alloc] initWithAddress:addr port:BITCOIN_STANDARD_PORT
-                                       timestamp:now - (3*24*60*60 + arc4random_uniform(4*24*60*60))
-                                       services:NODE_NETWORK]];
+                     timestamp:now - (3*24*60*60 + arc4random_uniform(4*24*60*60)) services:NODE_NETWORK]];
                 }
             }
 
@@ -236,9 +235,9 @@ static const char *dns_seeds[] = {
                 for (NSNumber *address in [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
                                            pathForResource:FIXED_PEERS ofType:@"plist"]]) {
                     // give hard coded peers a timestamp between 7 and 14 days ago
-                    [_peers addObject:[[BRPeer alloc] initWithAddress:address.intValue port:BITCOIN_STANDARD_PORT
-                                       timestamp:now - (7*24*60*60 + arc4random_uniform(7*24*60*60))
-                                       services:NODE_NETWORK]];
+                    [_peers addObject:[[BRPeer alloc] initWithAddress:address.unsignedIntValue
+                     port:BITCOIN_STANDARD_PORT timestamp:now - (7*24*60*60 + arc4random_uniform(7*24*60*60))
+                     services:NODE_NETWORK]];
                 }
             }
             
@@ -286,7 +285,7 @@ static const char *dns_seeds[] = {
 - (NSArray *)blockLocatorArray
 {
     // append 10 most recent block hashes, decending, then continue appending, doubling the step back each time,
-    // finishing with the genisis block (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0)
+    // finishing with the genesis block (top, -1, -2, -3, -4, -5, -6, -7, -8, -9, -11, -15, -23, -39, -71, -135, ..., 0)
     NSMutableArray *locators = [NSMutableArray array];
     int32_t step = 1, start = 0;
     BRMerkleBlock *b = self.lastBlock;
@@ -514,6 +513,8 @@ static const char *dns_seeds[] = {
         for (BRPeer *p in peers) {
             [p sendInvMessageWithTxHashes:txHashes];
             [p sendPingMessageWithPongHandler:^(BOOL success) {
+                //TODO: XXXX have peer:requestedTransaction: send getdata, and only send getdata here if the tx wasn't
+                // requested, then ping again, and if pong comes back before the tx, we know the tx was refused
                 if (success) [p sendGetdataMessageWithTxHashes:txHashes andBlockHashes:nil];
             }];
         }
