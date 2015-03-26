@@ -474,7 +474,7 @@
 
 - (void)testBIP39Mnemonic
 {
-    BRBIP39Mnemonic *m = [BRBIP39Mnemonic sharedInstance];
+    BRBIP39Mnemonic *m = [BRBIP39Mnemonic new];
     NSString *s = @"bless cloud wheel regular tiny venue bird web grief security dignity zoo";
     NSData *d, *k;
 

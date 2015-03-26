@@ -204,8 +204,8 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     if (! (self = [super init])) return nil;
 
     [NSManagedObject setConcurrencyType:NSPrivateQueueConcurrencyType];
-    _sequence = [BRBIP32Sequence new];
-    _mnemonic = [BRBIP39Mnemonic new];
+    self.sequence = [BRBIP32Sequence new];
+    self.mnemonic = [BRBIP39Mnemonic new];
     self.reachability = [Reachability reachabilityForInternetConnection];
     self.failedPins = [NSMutableSet set];
     _format = [NSNumberFormatter new];
