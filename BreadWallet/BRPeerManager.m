@@ -402,8 +402,12 @@ static const char *dns_seeds[] = {
         if (self.syncStartHeight == 0) self.syncStartHeight = self.lastBlockHeight;
 
         if (self.taskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
-            // TODO: XXXX handle task expiration cleanly
-            self.taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
+            self.taskId =
+                [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+                    [self saveBlocks];
+                    [BRMerkleBlockEntity saveContext];
+                    [self syncStopped];
+                }];
         }
 
         dispatch_async(dispatch_get_main_queue(), ^{
