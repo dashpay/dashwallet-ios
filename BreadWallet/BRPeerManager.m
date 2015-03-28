@@ -404,8 +404,11 @@ static const char *dns_seeds[] = {
         if (self.taskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
             self.taskId =
                 [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
-                    [self saveBlocks];
-                    [BRMerkleBlockEntity saveContext];
+                    dispatch_async(self.q, ^{
+                        [self saveBlocks];
+                        [BRMerkleBlockEntity saveContext];
+                    });
+
                     [self syncStopped];
                 }];
         }
