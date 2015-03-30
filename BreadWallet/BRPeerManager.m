@@ -363,11 +363,13 @@ static const char *dns_seeds[] = {
 {
     if (_bloomFilter) return _bloomFilter;
 
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    
     // every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used for
     // one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
-    // transaction is encountered during the blockchain download (generates 5x the external gap limit for both chains)
-    [[[BRWalletManager sharedInstance] wallet] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*5 internal:NO];
-    [[[BRWalletManager sharedInstance] wallet] addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL*5 internal:YES];
+    // transaction is encountered during the blockchain download
+    [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL + 100 internal:NO];
+    [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL + 100 internal:YES];
 
     [self.orphans removeAllObjects]; // clear out orphans that may have been received on an old filter
     self.lastOrphan = nil;
@@ -375,11 +377,9 @@ static const char *dns_seeds[] = {
     self.fpRate = BLOOM_DEFAULT_FALSEPOSITIVE_RATE;
     if (self.lastBlockHeight + 500 < self.estimatedBlockHeight) self.fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
 
-    BRWalletManager *m = [BRWalletManager sharedInstance];
     NSUInteger elemCount = m.wallet.addresses.count + m.wallet.unspentOutputs.count;
     BRBloomFilter *filter = [[BRBloomFilter alloc] initWithFalsePositiveRate:self.fpRate
-                             forElementCount:(elemCount < 200 ? elemCount*1.5 : elemCount + 100)
-                             tweak:self.tweak flags:BLOOM_UPDATE_ALL];
+                             forElementCount:elemCount + 100 tweak:self.tweak flags:BLOOM_UPDATE_ALL];
 
     for (NSString *address in m.wallet.addresses) { // add addresses to watch for any tx receiveing money to the wallet
         NSData *hash = address.addressToHash160;

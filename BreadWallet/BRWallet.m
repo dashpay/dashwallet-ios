@@ -527,6 +527,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     if (transaction.blockHeight != TX_UNCONFIRMED) return NO; // confirmed transactions are not postdated
 
     // TODO: XXX consider marking any unconfirmed transaction with a non-final sequence number as postdated
+    // TODO: XXX notify that transactions with dust outputs are unlikely to confirm
     for (NSData *txHash in transaction.inputHashes) { // check if any inputs are known to be postdated
         if ([self transactionIsPostdated:self.allTx[txHash] atBlockHeight:blockHeight]) return YES;
     }
