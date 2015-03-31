@@ -782,24 +782,25 @@ static const char *dns_seeds[] = {
 
 - (void)saveBlocks
 {
-    NSMutableSet *blockHashes = [NSMutableSet set];
+    NSMutableDictionary *blocks = [NSMutableDictionary dictionary];
     BRMerkleBlock *b = self.lastBlock;
 
     while (b) {
-        [blockHashes addObject:b.blockHash];
+        blocks[b.blockHash] = b;
         b = self.blocks[b.prevBlock];
     }
 
     [[BRMerkleBlockEntity context] performBlock:^{
-        [BRMerkleBlockEntity deleteObjects:[BRMerkleBlockEntity objectsMatching:@"! (blockHash in %@)", blockHashes]];
+        [BRMerkleBlockEntity deleteObjects:[BRMerkleBlockEntity objectsMatching:@"! (blockHash in %@)",
+                                            blocks.allKeys]];
 
-        for (BRMerkleBlockEntity *e in [BRMerkleBlockEntity objectsMatching:@"blockHash in %@", blockHashes]) {
-            [e setAttributesFromBlock:self.blocks[e.blockHash]];
-            [blockHashes removeObject:e.blockHash];
+        for (BRMerkleBlockEntity *e in [BRMerkleBlockEntity objectsMatching:@"blockHash in %@", blocks.allKeys]) {
+            [e setAttributesFromBlock:blocks[e.blockHash]];
+            [blocks removeObjectForKey:e.blockHash];
         }
 
-        for (NSData *hash in blockHashes) {
-            [[BRMerkleBlockEntity managedObject] setAttributesFromBlock:self.blocks[hash]];
+        for (BRMerkleBlock *b in blocks.allValues) {
+            [[BRMerkleBlockEntity managedObject] setAttributesFromBlock:b];
         }
     }];
 }
