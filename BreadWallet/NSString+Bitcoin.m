@@ -34,17 +34,6 @@ static const UniChar base58chars[] = {
     'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
 };
 
-static const int8_t base58map[] = {
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1,  0,  1,  2,  3,  4,  5,  6,  7,  8, -1, -1, -1, -1, -1, -1,
-    -1,  9, 10, 11, 12, 13, 14, 15, 16, -1, 17, 18, 19, 20, 21, -1,
-    22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, -1, -1, -1, -1, -1,
-    -1, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, -1, 44, 45, 46,
-    47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, -1, -1, -1, -1, -1
-};
-
 @implementation NSString (Bitcoin)
 
 + (NSString *)base58WithData:(NSData *)d
@@ -65,6 +54,8 @@ static const int8_t base58map[] = {
             buf[j - 1] = carry % 58;
             carry /= 58;
         }
+        
+        CC_XZEROMEM(&carry, sizeof(carry));
     }
 
     i = 0;
@@ -187,17 +178,49 @@ static const int8_t base58map[] = {
     CC_XZEROMEM(buf, sizeof(buf));
     
     for (i = z; i < self.length; i++) {
-        UniChar c = [self characterAtIndex:i];
-        
-        if (c >= sizeof(base58map)/sizeof(*base58map) || base58map[c] == -1) break; // invalid base58 digit
+        uint32_t carry = [self characterAtIndex:i];
 
-        uint32_t carry = base58map[c];
+        switch (carry) {
+            case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+                carry -= '1';
+                break;
+
+            case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H':
+                carry += 9 - 'A';
+                break;
+
+            case 'J': case 'K': case 'L': case 'M': case 'N':
+                carry += 17 - 'J';
+                break;
+
+            case 'P': case 'Q': case 'R': case 'S': case 'T': case 'U': case 'V': case 'W': case 'X': case 'Y':
+            case 'Z':
+                carry += 22 - 'P';
+                break;
+
+            case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j':
+            case 'k':
+                carry += 33 - 'a';
+                break;
+
+            case 'm': case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u': case 'v':
+            case 'w': case 'x': case 'y': case 'z':
+                carry += 44 - 'm';
+                break;
+
+            default:
+                carry = UINT32_MAX;
+        }
+        
+        if (carry >= 58) break; // invalid base58 digit
         
         for (size_t j = sizeof(buf); j > 0; j--) {
             carry += (uint32_t)buf[j - 1]*58;
             buf[j - 1] = carry & 0xff;
             carry >>= 8;
         }
+        
+        CC_XZEROMEM(&carry, sizeof(carry));
     }
     
     i = 0;
@@ -238,19 +261,24 @@ static const int8_t base58map[] = {
             case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
                 b += c - '0';
                 break;
+
             case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
                 b += c + 10 - 'A';
                 break;
+
             case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
                 b += c + 10 - 'a';
                 break;
+
             default:
                 return d;
         }
         
+        CC_XZEROMEM(&c, sizeof(c));
+        
         if (i % 2) {
             [d appendBytes:&b length:1];
-            b = 0;
+            CC_XZEROMEM(&b, sizeof(b));
         }
         else b *= 16;
     }
