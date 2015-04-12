@@ -28,6 +28,8 @@
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshorten-64-to-32"
 #import <secp256k1/include/secp256k1.h>
 #import <secp256k1/src/util.h>
 #import <secp256k1/src/scalar_impl.h>
@@ -37,6 +39,7 @@
 #import <secp256k1/src/ecmult_impl.h>
 #import <secp256k1/src/eckey_impl.h>
 #import <secp256k1/src/secp256k1.c>
+#pragma clang diagnostic pop
 
 #define SECKEY_LENGTH (256/8)
 
@@ -210,7 +213,7 @@ int secp256k1_point_mul(void *r, const void *p, const void *i, int compressed)
     
     self.pubkey = publicKey;
     self.compressed = (self.pubkey.length == 33) ? YES : NO;
-    return (secp256k1_ec_pubkey_verify(_ctx, self.publicKey.bytes, self.publicKey.length)) ? self : nil;
+    return (secp256k1_ec_pubkey_verify(_ctx, self.publicKey.bytes, (int)self.publicKey.length)) ? self : nil;
 }
 
 - (NSString *)privateKey
@@ -273,11 +276,11 @@ int secp256k1_point_mul(void *r, const void *p, const void *i, int compressed)
     }
 
     NSMutableData *s = [NSMutableData dataWithLength:72];
-    int l = s.length;
+    int len = (int)s.length;
     
-    if (secp256k1_ecdsa_sign(_ctx, md.bytes, s.mutableBytes, &l, self.seckey.bytes, secp256k1_nonce_function_rfc6979,
+    if (secp256k1_ecdsa_sign(_ctx, md.bytes, s.mutableBytes, &len, self.seckey.bytes, secp256k1_nonce_function_rfc6979,
                              NULL)) {
-        s.length = l;
+        s.length = len;
         return s;
     }
     else return nil;
@@ -290,9 +293,9 @@ int secp256k1_point_mul(void *r, const void *p, const void *i, int compressed)
         return NO;
     }
 
-    int r = secp256k1_ecdsa_verify(_ctx, md.bytes, sig.bytes, sig.length, self.publicKey.bytes, self.publicKey.length);
-
-    return (r == 1) ? YES : NO; // success is 1, all other values are fail
+    // success is 1, all other values are fail
+    return (secp256k1_ecdsa_verify(_ctx, md.bytes, sig.bytes, (int)sig.length, self.publicKey.bytes,
+                                   (int)self.publicKey.length) == 1) ? YES : NO;
 }
 
 @end
