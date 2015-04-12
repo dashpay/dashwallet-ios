@@ -47,8 +47,6 @@
 		75878BC6192B1AF0002505AB /* BRTxHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75878BC5192B1AF0002505AB /* BRTxHistoryViewController.m */; };
 		758DBD0E1980634900389E2A /* BRTxDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 758DBD0D1980634900389E2A /* BRTxDetailViewController.m */; };
 		759816E719357D6F005060EA /* BRBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 759816E619357D6F005060EA /* BRBubbleView.m */; };
-		759F2C431AABE4B60029A5AB /* secp256k1.c in Sources */ = {isa = PBXBuildFile; fileRef = 758B16541AA9ADC4002C65DD /* secp256k1.c */; };
-		759F2C461AABE5540029A5AB /* libsecp256k1.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 759F2C281AABE4620029A5AB /* libsecp256k1.a */; };
 		759FBB36193290F600AB4465 /* BRRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759FBB33193290F600AB4465 /* BRRootViewController.m */; };
 		759FBB37193290F600AB4465 /* BRSendViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759FBB35193290F600AB4465 /* BRSendViewController.m */; };
 		75A1E4D4193869C500D85BEE /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 75A1E4D6193869C500D85BEE /* Localizable.strings */; };
@@ -70,19 +68,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		759F2C411AABE4780029A5AB /* PBXContainerItemProxy */ = {
+		757FC2521ADA30D100A1FDF7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 75D5F3B6191EC270004AB296 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 75001D3D1A1EE89500585F55;
 			remoteInfo = submodules;
-		};
-		759F2C441AABE4C50029A5AB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 75D5F3B6191EC270004AB296 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 759F2C271AABE4620029A5AB;
-			remoteInfo = secp256k1;
 		};
 		75D5F3EA191EC270004AB296 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -92,18 +83,6 @@
 			remoteInfo = BreadWallet;
 		};
 /* End PBXContainerItemProxy section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		759F2C261AABE4620029A5AB /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "include/$(PRODUCT_NAME)";
-			dstSubfolderSpec = 16;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		7525B617192453840041C0F2 /* BRNavigationBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRNavigationBar.h; sourceTree = "<group>"; };
@@ -211,7 +190,6 @@
 		759816E619357D6F005060EA /* BRBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBubbleView.m; sourceTree = "<group>"; };
 		759AB7F71AB8F45900303AAB /* BreadWallet 2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "BreadWallet 2.xcdatamodel"; sourceTree = "<group>"; };
 		759F2C221AAAD42D0029A5AB /* libsecp256k1-config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "libsecp256k1-config.h"; sourceTree = SOURCE_ROOT; };
-		759F2C281AABE4620029A5AB /* libsecp256k1.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libsecp256k1.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		759FBB31193290F600AB4465 /* BRReceiveViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRReceiveViewController.h; sourceTree = "<group>"; };
 		759FBB32193290F600AB4465 /* BRRootViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRRootViewController.h; sourceTree = "<group>"; };
 		759FBB33193290F600AB4465 /* BRRootViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = BRRootViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
@@ -244,18 +222,10 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		759F2C251AABE4620029A5AB /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		75D5F3BB191EC270004AB296 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				759F2C461AABE5540029A5AB /* libsecp256k1.a in Frameworks */,
 				75878BC3192AED38002505AB /* MessageUI.framework in Frameworks */,
 				75D5F3C4191EC270004AB296 /* CoreGraphics.framework in Frameworks */,
 				75D5F3C6191EC270004AB296 /* UIKit.framework in Frameworks */,
@@ -467,7 +437,6 @@
 			children = (
 				75D5F3BE191EC270004AB296 /* breadwallet.app */,
 				75D5F3E5191EC270004AB296 /* BreadWalletTests.xctest */,
-				759F2C281AABE4620029A5AB /* libsecp256k1.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -555,24 +524,6 @@
 /* End PBXLegacyTarget section */
 
 /* Begin PBXNativeTarget section */
-		759F2C271AABE4620029A5AB /* secp256k1 */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 759F2C391AABE4620029A5AB /* Build configuration list for PBXNativeTarget "secp256k1" */;
-			buildPhases = (
-				759F2C241AABE4620029A5AB /* Sources */,
-				759F2C251AABE4620029A5AB /* Frameworks */,
-				759F2C261AABE4620029A5AB /* CopyFiles */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				759F2C421AABE4780029A5AB /* PBXTargetDependency */,
-			);
-			name = secp256k1;
-			productName = secp256k1;
-			productReference = 759F2C281AABE4620029A5AB /* libsecp256k1.a */;
-			productType = "com.apple.product-type.library.static";
-		};
 		75D5F3BD191EC270004AB296 /* breadwallet */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 75D5F3F6191EC270004AB296 /* Build configuration list for PBXNativeTarget "breadwallet" */;
@@ -584,7 +535,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				759F2C451AABE4C50029A5AB /* PBXTargetDependency */,
+				757FC2531ADA30D100A1FDF7 /* PBXTargetDependency */,
 			);
 			name = breadwallet;
 			productName = BreadWallet;
@@ -622,9 +573,6 @@
 					75001D3D1A1EE89500585F55 = {
 						CreatedOnToolsVersion = 6.1;
 					};
-					759F2C271AABE4620029A5AB = {
-						CreatedOnToolsVersion = 6.1.1;
-					};
 					75D5F3BD191EC270004AB296 = {
 						DevelopmentTeam = 4R7S6N88W9;
 						SystemCapabilities = {
@@ -655,7 +603,6 @@
 			projectRoot = "";
 			targets = (
 				75D5F3BD191EC270004AB296 /* breadwallet */,
-				759F2C271AABE4620029A5AB /* secp256k1 */,
 				75D5F3E4191EC270004AB296 /* BreadWalletTests */,
 				75001D3D1A1EE89500585F55 /* submodules */,
 			);
@@ -687,14 +634,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		759F2C241AABE4620029A5AB /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				759F2C431AABE4B60029A5AB /* secp256k1.c in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		75D5F3BA191EC270004AB296 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -756,15 +695,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		759F2C421AABE4780029A5AB /* PBXTargetDependency */ = {
+		757FC2531ADA30D100A1FDF7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 75001D3D1A1EE89500585F55 /* submodules */;
-			targetProxy = 759F2C411AABE4780029A5AB /* PBXContainerItemProxy */;
-		};
-		759F2C451AABE4C50029A5AB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 759F2C271AABE4620029A5AB /* secp256k1 */;
-			targetProxy = 759F2C441AABE4C50029A5AB /* PBXContainerItemProxy */;
+			targetProxy = 757FC2521ADA30D100A1FDF7 /* PBXContainerItemProxy */;
 		};
 		75D5F3EB191EC270004AB296 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -916,70 +850,6 @@
 				WRAPPER_EXTENSION = xctest;
 			};
 			name = GCov_Build;
-		};
-		759F2C3A1AABE4620029A5AB /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				GCC_WARN_INHIBIT_ALL_WARNINGS = YES;
-				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"$(SRCROOT)",
-					"$(SRCROOT)/secp256k1",
-				);
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-			};
-			name = Debug;
-		};
-		759F2C3B1AABE4620029A5AB /* GCov_Build */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
-				GCC_WARN_INHIBIT_ALL_WARNINGS = YES;
-				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"$(SRCROOT)",
-					"$(SRCROOT)/secp256k1",
-				);
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-			};
-			name = GCov_Build;
-		};
-		759F2C3C1AABE4620029A5AB /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
-				GCC_WARN_INHIBIT_ALL_WARNINGS = YES;
-				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"$(SRCROOT)",
-					"$(SRCROOT)/secp256k1",
-				);
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-			};
-			name = Release;
 		};
 		75D5F3F4191EC270004AB296 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -1148,16 +1018,6 @@
 				75001D3F1A1EE89500585F55 /* Debug */,
 				75001D401A1EE89500585F55 /* GCov_Build */,
 				75001D411A1EE89500585F55 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		759F2C391AABE4620029A5AB /* Build configuration list for PBXNativeTarget "secp256k1" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				759F2C3A1AABE4620029A5AB /* Debug */,
-				759F2C3B1AABE4620029A5AB /* GCov_Build */,
-				759F2C3C1AABE4620029A5AB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
