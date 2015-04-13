@@ -28,18 +28,10 @@
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wshorten-64-to-32"
-#import <secp256k1/include/secp256k1.h>
-#import <secp256k1/src/util.h>
-#import <secp256k1/src/scalar_impl.h>
-#import <secp256k1/src/field_impl.h>
-#import <secp256k1/src/group_impl.h>
-#import <secp256k1/src/ecmult_gen_impl.h>
-#import <secp256k1/src/ecmult_impl.h>
-#import <secp256k1/src/eckey_impl.h>
-#import <secp256k1/src/secp256k1.c>
-#pragma clang diagnostic pop
+#define HAVE_CONFIG_H 1
+#define DETERMINISTIC 1
+
+#import "secp256k1/src/secp256k1.c"
 
 #define SECKEY_LENGTH (256/8)
 

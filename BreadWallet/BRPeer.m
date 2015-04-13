@@ -28,8 +28,8 @@
 #import "BRMerkleBlock.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSData+Bitcoin.h"
-#import <arpa/inet.h>
 #import "Reachability.h"
+#import <arpa/inet.h>
 
 #define USERAGENT [NSString stringWithFormat:@"/breadwallet:%@/",\
                    NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"]]
