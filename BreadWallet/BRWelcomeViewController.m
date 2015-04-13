@@ -146,6 +146,17 @@
         noKey.image = [UIImage imageNamed:@"no-key"];
         [s replaceCharactersInRange:[s.string rangeOfString:@"%no-key%"]
          withAttributedString:[NSAttributedString attributedStringWithAttachment:noKey]];
+        
+        [s replaceCharactersInRange:[s.string rangeOfString:@"WARNING"] withString:NSLocalizedString(@"WARNING", nil)];
+        [s replaceCharactersInRange:[s.string rangeOfString:@"DO NOT let anyone see your recovery\n"
+                                     "      phrase or they can spend your bitcoins."]
+         withString:NSLocalizedString(@"DO NOT let anyone see your recovery\n"
+                                      "      phrase or they can spend your bitcoins.", nil)];
+        [s replaceCharactersInRange:[s.string rangeOfString:@"NEVER type your recovery phrase into\n"
+                                     "      password managers or elsewhere. Other\n      devices may be infected."]
+         withString:NSLocalizedString(@"NEVER type your recovery phrase into\n"
+                                      "      password managers or elsewhere. Other\n      devices may be infected.",
+                                      nil)];
         self.warningLabel.attributedText = s;
     }
 }

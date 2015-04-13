@@ -41,6 +41,7 @@
 		757BE7E6192C1FF70061CB20 /* BRWelcomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BE7E5192C1FF70061CB20 /* BRWelcomeViewController.m */; };
 		757BE7E9192D4E880061CB20 /* BRSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BE7E8192D4E880061CB20 /* BRSeedViewController.m */; };
 		757C89521A2FCE420076B373 /* BRSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 757C89511A2FCE420076B373 /* BRSettingsViewController.m */; };
+		757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
 		75878BBF192ACD46002505AB /* BRAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75878BBE192ACD46002505AB /* BRAmountViewController.m */; };
 		75878BC1192AEC3F002505AB /* BRReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75878BC0192AEC3F002505AB /* BRReceiveViewController.m */; };
 		75878BC3192AED38002505AB /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75878BC2192AED38002505AB /* MessageUI.framework */; };
@@ -49,7 +50,6 @@
 		759816E719357D6F005060EA /* BRBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 759816E619357D6F005060EA /* BRBubbleView.m */; };
 		759FBB36193290F600AB4465 /* BRRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759FBB33193290F600AB4465 /* BRRootViewController.m */; };
 		759FBB37193290F600AB4465 /* BRSendViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759FBB35193290F600AB4465 /* BRSendViewController.m */; };
-		75A1E4D4193869C500D85BEE /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 75A1E4D6193869C500D85BEE /* Localizable.strings */; };
 		75AA5F55194143D5003F23BD /* BRBouncyBurgerButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 75AA5F54194143D5003F23BD /* BRBouncyBurgerButton.m */; };
 		75D5F3C2191EC270004AB296 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D5F3C1191EC270004AB296 /* Foundation.framework */; };
 		75D5F3C4191EC270004AB296 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D5F3C3191EC270004AB296 /* CoreGraphics.framework */; };
@@ -152,7 +152,8 @@
 		757BE7E8192D4E880061CB20 /* BRSeedViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRSeedViewController.m; sourceTree = "<group>"; };
 		757C89501A2FCE420076B373 /* BRSettingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRSettingsViewController.h; sourceTree = "<group>"; };
 		757C89511A2FCE420076B373 /* BRSettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRSettingsViewController.m; sourceTree = "<group>"; };
-		7581CC381A87318400B4104B /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
+		757E09961ADB8E16006FD352 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
+		757E09981ADB8EEB006FD352 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75878BBD192ACD46002505AB /* BRAmountViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAmountViewController.h; sourceTree = "<group>"; };
 		75878BBE192ACD46002505AB /* BRAmountViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = BRAmountViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		75878BC0192AEC3F002505AB /* BRReceiveViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = BRReceiveViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
@@ -195,7 +196,6 @@
 		759FBB33193290F600AB4465 /* BRRootViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = BRRootViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		759FBB34193290F600AB4465 /* BRSendViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRSendViewController.h; sourceTree = "<group>"; };
 		759FBB35193290F600AB4465 /* BRSendViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = BRSendViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
-		75A1E4D5193869C500D85BEE /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75AA5F53194143D5003F23BD /* BRBouncyBurgerButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBouncyBurgerButton.h; sourceTree = "<group>"; };
 		75AA5F54194143D5003F23BD /* BRBouncyBurgerButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBouncyBurgerButton.m; sourceTree = "<group>"; };
 		75BCC59A1946520700EC1A64 /* BreadWalletTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BreadWalletTests.h; sourceTree = "<group>"; };
@@ -478,7 +478,7 @@
 			children = (
 				75D5F3C9191EC270004AB296 /* BreadWallet-Info.plist */,
 				75D5F3CA191EC270004AB296 /* InfoPlist.strings */,
-				75A1E4D6193869C500D85BEE /* Localizable.strings */,
+				757E09971ADB8EEB006FD352 /* Localizable.strings */,
 				75D5F3CD191EC270004AB296 /* main.m */,
 				75D5F3CF191EC270004AB296 /* BreadWallet-Prefix.pch */,
 			);
@@ -615,7 +615,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				75D5F3E0191EC270004AB296 /* Images.xcassets in Resources */,
-				75A1E4D4193869C500D85BEE /* Localizable.strings in Resources */,
+				757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */,
 				752E28F619235B3000DB5A3C /* BIP39EnglishWords.plist in Resources */,
 				75D5F3CC191EC270004AB296 /* InfoPlist.strings in Resources */,
 				752E28F719235B3000DB5A3C /* FixedPeers.plist in Resources */,
@@ -708,10 +708,10 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		75A1E4D6193869C500D85BEE /* Localizable.strings */ = {
+		757E09971ADB8EEB006FD352 /* Localizable.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				75A1E4D5193869C500D85BEE /* en */,
+				757E09981ADB8EEB006FD352 /* en */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -728,7 +728,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				75D5F3DD191EC270004AB296 /* Base */,
-				7581CC381A87318400B4104B /* en */,
+				757E09961ADB8E16006FD352 /* en */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";

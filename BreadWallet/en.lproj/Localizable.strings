@@ -14,6 +14,9 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" is not a recovery phrase word";
 
 /* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\n         total %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet";
 
 /* No comment provided by engineer. */
@@ -24,9 +27,6 @@
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n     amount %1$@ (%2$@)";
-
-/* No comment provided by engineer. */
-"\n         total %@ (%@)" = "\n         total %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
@@ -83,9 +83,6 @@
 "bitcoin network fee" = "bitcoin network fee";
 
 /* No comment provided by engineer. */
-"bitcoin network fees are only optional for high priority transactions (removal may cause delays)" = "bitcoin network fees are only optional for high priority transactions (removal may cause delays)";
-
-/* No comment provided by engineer. */
 "bitcoin payments can't be less than %@" = "bitcoin payments can't be less than %@";
 
 /* No comment provided by engineer. */
@@ -131,9 +128,6 @@
 "connect timeout" = "connect timeout";
 
 /* No comment provided by engineer. */
-"continue" = "continue";
-
-/* No comment provided by engineer. */
 "copied" = "copied";
 
 /* No comment provided by engineer. */
@@ -162,6 +156,9 @@
 
 /* No comment provided by engineer. */
 "do it later" = "do it later";
+
+/* No comment provided by engineer. */
+"DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins." = "DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins.";
 
 /* No comment provided by engineer. */
 "done" = "done";
@@ -230,6 +227,9 @@
 "moved" = "moved";
 
 /* No comment provided by engineer. */
+"NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected." = "NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected.";
+
+/* No comment provided by engineer. */
 "new phrase" = "new phrase";
 
 /* No comment provided by engineer. */
@@ -258,9 +258,6 @@
 
 /* No comment provided by engineer. */
 "passcode for %@" = "passcode for %@";
-
-/* No comment provided by engineer. */
-"passcode or touch id is required to send or view balance" = "passcode or touch id is required to send or view balance";
 
 /* No comment provided by engineer. */
 "password" = "password";
@@ -300,9 +297,6 @@
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "reduce payment amount by\n%1$@ (%2$@)?";
-
-/* No comment provided by engineer. */
-"remove fee" = "remove fee";
 
 /* No comment provided by engineer. */
 "request" = "request";
@@ -392,9 +386,6 @@
 "the app will now close" = "the app will now close";
 
 /* No comment provided by engineer. */
-"the standard bitcoin network fee for this transaction is %@ (%@)\n\nremoving this fee may delay confirmation" = "the standard bitcoin network fee for this transaction is %1$@ (%2$@)\n\nremoving this fee may delay confirmation";
-
-/* No comment provided by engineer. */
 "This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work.";
 
 /* No comment provided by engineer. */
@@ -477,9 +468,6 @@
 
 /* No comment provided by engineer. */
 "WARNING" = "WARNING";
-
-/* No comment provided by engineer. */
-"where's my passcode?" = "where's my passcode?";
 
 /* No comment provided by engineer. */
 "wipe" = "wipe";
