@@ -28,7 +28,7 @@
 #import "BRWalletManager.h"
 
 #if BITCOIN_TESTNET
-#warning testnet build
+#pragma message "testnet build"
 #endif
 
 @implementation BRAppDelegate

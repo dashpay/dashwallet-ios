@@ -799,6 +799,7 @@ fromConnection:(AVCaptureConnection *)connection
         }];
     }
     else if (self.request) [self confirmProtocolRequest:self.request];
+//    else if (self.request) [self performSelector:@selector(confirmProtocolRequest:) withObject:self.request afterDelay:0.6];
 }
 
 #pragma mark UITextViewDelegate

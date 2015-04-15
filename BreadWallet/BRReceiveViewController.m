@@ -176,7 +176,7 @@
     a.title = [NSString stringWithFormat:NSLocalizedString(@"Receive bitcoins at this address: %@", nil),
                self.paymentAddress];
     a.delegate = self;
-    [a addButtonWithTitle:(req) ? NSLocalizedString(@"copy request to clipbaord", nil) :
+    [a addButtonWithTitle:(req) ? NSLocalizedString(@"copy request to clipboard", nil) :
      NSLocalizedString(@"copy address to clipboard", nil)];
 
     if ([MFMailComposeViewController canSendMail]) {

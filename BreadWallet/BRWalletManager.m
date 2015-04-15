@@ -175,7 +175,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) NSArray *currencyPrices;
 @property (nonatomic, strong) NSNumber *localPrice;
-@property (nonatomic, assign) BOOL sweepFee;
+@property (nonatomic, assign) BOOL sweepFee, didPresent;
 @property (nonatomic, strong) NSString *sweepKey;
 @property (nonatomic, strong) void (^sweepCompletion)(BRTransaction *tx, uint64_t fee, NSError *error);
 @property (nonatomic, strong) UIAlertView *alertView;
@@ -550,7 +550,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
                 self.alertView.cancelButtonIndex = 1;
             }
             
-            [self.pinField resignFirstResponder];
+            [_pinField resignFirstResponder];
             [self.alertView setValue:nil forKey:@"accessoryView"];
             self.alertView.title = NSLocalizedString(@"wallet disabled", nil);
             self.alertView.message = [NSString stringWithFormat:NSLocalizedString(@"\ntry again in %d %@", nil),
@@ -566,6 +566,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     }
 
     //TODO: replace all alert views with darkened initial warning screen type dialog
+    self.didPresent = NO;
     self.alertView = [[UIAlertView alloc]
                       initWithTitle:[NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
                                      (title) ? title : @""] message:message delegate:self
@@ -576,7 +577,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     [self.pinField becomeFirstResponder];
     
     for (;;) {
-        while (self.alertView.visible && self.pinField.text.length < 4) {
+        while ((! self.didPresent || self.alertView.visible) && self.pinField.text.length < 4) {
             [[NSRunLoop mainRunLoop] limitDateForMode:NSDefaultRunLoopMode];
         }
         
@@ -659,6 +660,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         }];
     }
     else {
+        self.didPresent = NO;
         self.alertView = [[UIAlertView alloc] initWithTitle:title message:@" " delegate:self cancelButtonTitle:nil
                           otherButtonTitles:nil];
         self.pinField = nil; // reset pinField so a new one is created
@@ -668,7 +670,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     }
     
     for (;;) {
-        while (self.alertView.visible && self.pinField.text.length < 4) {
+        while ((! self.didPresent || self.alertView.visible) && self.pinField.text.length < 4) {
             [[NSRunLoop mainRunLoop] limitDateForMode:NSDefaultRunLoopMode];
         }
     
@@ -1086,11 +1088,19 @@ replacementString:(NSString *)string
 
 #pragma mark - UIAlertViewDelegate
 
+- (void)didPresentAlertView:(UIAlertView *)alertView
+{
+    UIView *v = [alertView valueForKey:@"accessoryView"];
+
+    self.didPresent = YES;
+    if (v.canBecomeFirstResponder && ! v.isFirstResponder) [v becomeFirstResponder]; // fix for iOS 7 missing keyboard
+}
+
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:alertView];
     if (alertView == self.alertView) self.alertView = nil;
-    if (self.pinField.isFirstResponder) [self hideKeyboard];
+    if (_pinField.isFirstResponder) [self hideKeyboard];
     
     if (buttonIndex == alertView.cancelButtonIndex) {
         if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:@"abort"]) abort();
@@ -1130,7 +1140,7 @@ replacementString:(NSString *)string
         t.delegate = self;
         t.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
         self.alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"recovery phrase", nil) message:nil
-                          delegate:nil cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:nil];
+                          delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:nil];
         [self.alertView setValue:t forKey:@"accessoryView"];
         [self.alertView show];
         [t becomeFirstResponder];
