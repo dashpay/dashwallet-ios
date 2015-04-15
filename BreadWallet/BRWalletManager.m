@@ -551,7 +551,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
             }
             
             [_pinField resignFirstResponder];
-            [self.alertView setValue:nil forKey:@"accessoryView"];
+            [self.alertView setNilValueForKey:@"accessoryView"];
             self.alertView.title = NSLocalizedString(@"wallet disabled", nil);
             self.alertView.message = [NSString stringWithFormat:NSLocalizedString(@"\ntry again in %d %@", nil),
                                       (int)wait, unit];
@@ -587,9 +587,13 @@ static NSString *getKeychainString(NSString *key, NSError **error)
             self.pinField.text = nil;
             [self.failedPins removeAllObjects];
             self.didAuthenticate = YES;
-            setKeychainInt(0, PIN_FAIL_COUNT_KEY, NO);
-            setKeychainInt(0, PIN_FAIL_HEIGHT_KEY, NO);
-            if (self.spendingLimit > 0) setKeychainInt(self.wallet.totalSent + self.spendingLimit, SPEND_LIMIT_KEY, NO);
+
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                setKeychainInt(0, PIN_FAIL_COUNT_KEY, NO);
+                setKeychainInt(0, PIN_FAIL_HEIGHT_KEY, NO);
+                if (self.spendingLimit>0) setKeychainInt(self.wallet.totalSent+self.spendingLimit, SPEND_LIMIT_KEY, NO);
+            });
+
             return YES;
         }
 
@@ -1090,10 +1094,8 @@ replacementString:(NSString *)string
 
 - (void)didPresentAlertView:(UIAlertView *)alertView
 {
-    UIView *v = [alertView valueForKey:@"accessoryView"];
-
     self.didPresent = YES;
-    if (v.canBecomeFirstResponder && ! v.isFirstResponder) [v becomeFirstResponder]; // fix for iOS 7 missing keyboard
+    if (_pinField && ! _pinField.isFirstResponder) [_pinField becomeFirstResponder]; // fix for iOS 7 missing keyboard
 }
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
@@ -1101,6 +1103,7 @@ replacementString:(NSString *)string
     [NSObject cancelPreviousPerformRequestsWithTarget:alertView];
     if (alertView == self.alertView) self.alertView = nil;
     if (_pinField.isFirstResponder) [self hideKeyboard];
+    _pinField = nil;
     
     if (buttonIndex == alertView.cancelButtonIndex) {
         if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:@"abort"]) abort();
@@ -1140,7 +1143,7 @@ replacementString:(NSString *)string
         t.delegate = self;
         t.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
         self.alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"recovery phrase", nil) message:nil
-                          delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:nil];
+                          delegate:nil cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:nil];
         [self.alertView setValue:t forKey:@"accessoryView"];
         [self.alertView show];
         [t becomeFirstResponder];
