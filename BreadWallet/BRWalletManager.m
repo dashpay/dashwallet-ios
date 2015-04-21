@@ -526,7 +526,8 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     if (error) return NO; // error reading pin from keychain
     if (pin.length != 4) return [self setPin]; // no pin set
 
-    uint64_t failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, nil);
+    uint64_t total = self.wallet.totalSent, limit = self.spendingLimit,
+             failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, nil);
     
     if (failCount >= 3) {
         uint64_t failHeight = getKeychainInt(PIN_FAIL_HEIGHT_KEY, nil);
@@ -551,7 +552,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
             }
             
             [_pinField resignFirstResponder];
-            [self.alertView setNilValueForKey:@"accessoryView"];
+            [self.alertView setValue:nil forKey:@"accessoryView"];
             self.alertView.title = NSLocalizedString(@"wallet disabled", nil);
             self.alertView.message = [NSString stringWithFormat:NSLocalizedString(@"\ntry again in %d %@", nil),
                                       (int)wait, unit];
@@ -591,7 +592,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
                 setKeychainInt(0, PIN_FAIL_COUNT_KEY, NO);
                 setKeychainInt(0, PIN_FAIL_HEIGHT_KEY, NO);
-                if (self.spendingLimit>0) setKeychainInt(self.wallet.totalSent+self.spendingLimit, SPEND_LIMIT_KEY, NO);
+                if (limit > 0) setKeychainInt(total + limit, SPEND_LIMIT_KEY, NO);
             });
 
             return YES;

@@ -1,0 +1,480 @@
+/* No comment provided by engineer. */
+"%@ is for 'bits'. %@ = 1 bitcoin." = "%1$@ është për 'bits'. %2$@ = 1 bitcoin.";
+
+/* No comment provided by engineer. */
+"%@ is not allowed to access the camera" = "%@ nuk lejohet ti çaset kamerës";
+
+/* No comment provided by engineer. */
+"%d confirmations" = "%d konfirmime";
+
+/* No comment provided by engineer. */
+"1 confirmation" = "1 konfirmim";
+
+/* No comment provided by engineer. */
+"\"%@\" is not a recovery phrase word" = "\"%@\" nuk është një fjalë e frazës rikthyese";
+
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\n         total %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nNëse ndonjëherë e humbni telefonin tuaj, ju duhet kjo për ta rikthyer kuletën";
+
+/* No comment provided by engineer. */
+"\n%d attempts remaining\n" = "\n%d tentime kanë mbetur\n";
+
+/* No comment provided by engineer. */
+"\n1 attempt remaining\n" = "\n1 tentim ka mbetur";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\n     shuma %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nNjë PIN është i nevojshëm për sigurinë e kuletës suaj. Shko në konfigurimet dhe aktivizo PIN dhe vazhdo.";
+
+/* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRESA TASHMË ËSHTË PËRDORUR\n\nbitcoin adresat mendohet të përdoren vetëm njëherë\n\nri-përdorimi i adresave vetëm e zvogëlon privaticitetin e të dyve juve dhe pranuesin e monedhave dhe mund të rezultoj në humbje nëse pranuesi nuk e kontrollon direkt adresën";
+
+/* No comment provided by engineer. */
+"\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nlejo çasjen e kamerës në\nSettings->Privacy->Camera->%@";
+
+/* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nMOS LEJONI që askush të sheh frazën rikthyese të juaj sepse mund të ju shpenzojn bitcoins-at e juaj.\n\nKURRË mos e shkruani frazën rikthyese në ndonjë menagjer të fjalëkalimeve apo diku tjetër. Pajisjet tjera mund të infektohen.";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = "\ntarifa +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\ntry again in %d %@" = "\nprovoni prapë në %1$d %2$@";
+
+/* No comment provided by engineer. */
+"about" = "rreth";
+
+/* No comment provided by engineer. */
+"always require passcode" = "gjithmonë kërko PIN";
+
+/* No comment provided by engineer. */
+"amount too small" = "shuma tepër e vogël";
+
+/* No comment provided by engineer. */
+"bad password, try again" = "fjalëkalimi gabim, provoni prapë";
+
+/* No comment provided by engineer. */
+"bad payment request" = "kërkesë për pages e gabuar";
+
+/* No comment provided by engineer. */
+"bad payment request URL" = "URL kërkes për pages e gabuar";
+
+/* No comment provided by engineer. */
+"bad payment URL" = "URL pages e gabuar";
+
+/* No comment provided by engineer. */
+"bad recovery phrase" = "frazë rikthyese e gabuar";
+
+/* No comment provided by engineer. */
+"bad signature" = "firmë e gabuar";
+
+/* No comment provided by engineer. */
+"Bitcoin address" = "Bitcoin adresa";
+
+/* No comment provided by engineer. */
+"Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1' or '3'." = "Bitcoin adresat gjithashtu mund të kopjohen në memorje. Një bitcoin adresë gjithmon fillon me '1' ose '3'.";
+
+/* No comment provided by engineer. */
+"bitcoin network fee" = "bitcoin tarifa";
+
+/* No comment provided by engineer. */
+"bitcoin payments can't be less than %@" = "bitcoin pagesa nuk mund të jetë më e pak se %@";
+
+/* No comment provided by engineer. */
+"bitcoin transaction not signed" = "bitcoin transaksioni nuk është firmosur";
+
+/* No comment provided by engineer. */
+"bitcoin transaction outputs can't be less than %@" = "bitcoin transaksion outputet nuk mund të jetë më pak se %@";
+
+/* No comment provided by engineer. */
+"block #%d of %d" = "blloku #%1$d i %2$d";
+
+/* No comment provided by engineer. */
+"cancel" = "anulo";
+
+/* No comment provided by engineer. */
+"change" = "ndrysho";
+
+/* No comment provided by engineer. */
+"change passcode" = "ndrysho PIN";
+
+/* No comment provided by engineer. */
+"change payment amount?" = "ndrysho shumën e pagesës?";
+
+/* No comment provided by engineer. */
+"checking private key balance..." = "duke kontrolluar bilancin e çelësit privat...";
+
+/* No comment provided by engineer. */
+"choose passcode for %@" = "zgjedhni PIN për %@";
+
+/* No comment provided by engineer. */
+"clipboard doesn't contain a valid bitcoin address" = "memorja nuk përmban një bitcoin adresë valide";
+
+/* No comment provided by engineer. */
+"close app" = "mbyll aplikacionin";
+
+/* No comment provided by engineer. */
+"CONFIRM WIPE" = "KONFIRMO FSHIRJEN";
+
+/* No comment provided by engineer. */
+"confirmed in block #%d" = "konfirmuar në bllokun #%d";
+
+/* No comment provided by engineer. */
+"connect timeout" = "lidhja është shkëputur";
+
+/* No comment provided by engineer. */
+"copied" = "kopjuar";
+
+/* No comment provided by engineer. */
+"copy address to clipboard" = "kopjo adresën në memorje";
+
+/* No comment provided by engineer. */
+"copy request to clipboard" = "kopjo kërkesën në memorje";
+
+/* No comment provided by engineer. */
+"couldn't make payment" = "nuk mund të kryhet pagesa";
+
+/* No comment provided by engineer. */
+"couldn't sweep balance" = "nuk mund të shpenzohet bilanci";
+
+/* No comment provided by engineer. */
+"couldn't transmit payment to bitcoin network" = "nuk mund të transmetohet pagesa në rrjetin bitcoin";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "SIGURIA E PAJISJES ËSHTË KOMPROMETUAR\n\nÇdo aplikacion 'jailbreak' mund të ketë çasje në të dhënat e aplikacioneve tjera (dhe mund të ju vjedhin bitcoin-at e juaj).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "SIGURIA E PAJISJES ËSHTË KOMPROMETUAR\n\nÇdo aplikacion 'jailbreak' mund të ketë çasje në të dhënat e aplikacioneve tjera (dhe mund të ju vjedhin bitcoin-at e juaj). Fshij këtë kuletë menjëherë dhe riktheni atë në një pajisje të sigurtë.";
+
+/* No comment provided by engineer. */
+"do it later" = "bëje më vonë";
+
+/* No comment provided by engineer. */
+"DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins." = "MOS lejoni që askush të shoh frazën \n       rikthyese ose ata mund të shpenzojnë bitcoin-at e juaj.";
+
+/* No comment provided by engineer. */
+"done" = "përfunduar";
+
+/* No comment provided by engineer. */
+"double spend" = "shpenzim i dyfisht";
+
+/* No comment provided by engineer. */
+"email not configured" = "email nuk është konfiguruar";
+
+/* No comment provided by engineer. */
+"enter old passcode" = "shëno PIN e vjetër";
+
+/* No comment provided by engineer. */
+"error signing bitcoin transaction" = "gabim duke firmosur bitcoin transaksionin";
+
+/* No comment provided by engineer. */
+"error signing transaction" = "gabim duke firmosur transaksionin";
+
+/* No comment provided by engineer. */
+"from:" = "nga:";
+
+/* No comment provided by engineer. */
+"hour" = "orë";
+
+/* No comment provided by engineer. */
+"hours" = "orë";
+
+/* No comment provided by engineer. */
+"id:" = "id:";
+
+/* No comment provided by engineer. */
+"ignore" = "injoro";
+
+/* No comment provided by engineer. */
+"import private key" = "importo çelës privat";
+
+/* No comment provided by engineer. */
+"IMPORTANT" = "E RËNDËSISHME";
+
+/* No comment provided by engineer. */
+"insufficient funds" = "fonde të pamjaftueshme";
+
+/* No comment provided by engineer. */
+"insufficient funds for bitcoin network fee" = "fonde të pamjaftueshme për tarifë";
+
+/* No comment provided by engineer. */
+"INVALID" = "JOVALID";
+
+/* No comment provided by engineer. */
+"Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Lejo të tjerët të skanojn këtë QR kod për ta marrë bitcoin adresën tuaj. Çdokush mund të ju dërgoj bitcoin-a në kuletën tuaj duke i transferuar ato në adresën tuaj.";
+
+/* No comment provided by engineer. */
+"minute" = "minutë";
+
+/* No comment provided by engineer. */
+"minutes" = "minuta";
+
+/* No comment provided by engineer. */
+"missing certificate" = "mungon çertifikata";
+
+/* No comment provided by engineer. */
+"more..." = "më shumë...";
+
+/* No comment provided by engineer. */
+"moved" = "janë zhvendosur";
+
+/* No comment provided by engineer. */
+"NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected." = "KURRË mos i shkruani frazën rikthyese në\n      menagjerët e fjalëkalimeve apo diku tjetër. Pajisjet\n      tjera mund të jenë të infektuara.";
+
+/* No comment provided by engineer. */
+"new phrase" = "frazë e re";
+
+/* No comment provided by engineer. */
+"next, write down your recovery phrase" = "tash, shkruaje frazën rikthyese të juaj";
+
+/* No comment provided by engineer. */
+"no peers found" = "nuk janë gjetur peers";
+
+/* No comment provided by engineer. */
+"not a bitcoin QR code" = "nuk është bitcoin QR kod";
+
+/* No comment provided by engineer. */
+"not a valid bitcoin address" = "nuk është bitcoin adresë valide";
+
+/* No comment provided by engineer. */
+"not a valid private key" = "jo një bitcoin çelës privat valid";
+
+/* No comment provided by engineer. */
+"not connected to the bitcoin network" = "nuk jeni konektuar në rrjetin bitcoin";
+
+/* No comment provided by engineer. */
+"ok" = "ok";
+
+/* No comment provided by engineer. */
+"passcode" = "PIN";
+
+/* No comment provided by engineer. */
+"passcode for %@" = "PIN për %@";
+
+/* No comment provided by engineer. */
+"password" = "fjalëkalimi";
+
+/* No comment provided by engineer. */
+"password protected key" = "çelës i mbrojtur me fjalëkalim";
+
+/* No comment provided by engineer. */
+"pay" = "paguaj";
+
+/* No comment provided by engineer. */
+"payment address" = "adresa e pagesës";
+
+/* No comment provided by engineer. */
+"payment output" = "outputi i pagesës";
+
+/* No comment provided by engineer. */
+"post-dated" = "e ardhshme";
+
+/* No comment provided by engineer. */
+"Receive bitcoins at this address: %@" = "Prano bitcoin në këtë adresë: %@";
+
+/* No comment provided by engineer. */
+"received" = "të pranuara";
+
+/* No comment provided by engineer. */
+"received %@ (%@)" = "pranuat %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"recovery phrase" = "fraza rikthyese";
+
+/* No comment provided by engineer. */
+"recovery phrase doesn't match" = "fraza rikthyese nuk përputhet";
+
+/* No comment provided by engineer. */
+"recovery phrase must have %d words" = "fraza rikthyese duhet të ketë %d fjalë";
+
+/* No comment provided by engineer. */
+"reduce payment amount by\n%@ (%@)?" = "zvogëloni shumën e pagesës për\n%1$@ (%2$@)?";
+
+/* No comment provided by engineer. */
+"request" = "kërkes";
+
+/* No comment provided by engineer. */
+"request an amount" = "kërko një shumë";
+
+/* No comment provided by engineer. */
+"request expired" = "kërkesa skadoj";
+
+/* No comment provided by engineer. */
+"requested network \"%@\" instead of \"%@\"" = "kërkohet rrjeti \"%1$@\" në vend të \"%2$@\"";
+
+/* No comment provided by engineer. */
+"rescan" = "riskano";
+
+/* No comment provided by engineer. */
+"rescan blockchain" = "riskano blockchain";
+
+/* No comment provided by engineer. */
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "riskano blockchain nëse mendon që po ju mungon ndonjë transaksion, ose keni probleme me dërgim të pagesës (riskanimi mund të merr kohë disa minuta)";
+
+/* No comment provided by engineer. */
+"reset" = "reseto";
+
+/* No comment provided by engineer. */
+"Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Skano QR kodin e dikujt tjetër për të marrë bitcoin adresën e tyre. Mund të dergoni pages gjithkujt me një adresë.";
+
+/* No comment provided by engineer. */
+"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Screenshot mund të shihen nga aplikacionet dhe pajisjet tjera. Gjenero një frazë tjetër rikthyese dhe mbaje sekret.";
+
+/* No comment provided by engineer. */
+"Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Screenshot shihen nga aplikacionet dhe pajisjet tjera. Fondet e juaja janë në rrezik. Transfero fondet në një kulet tjetër.";
+
+/* No comment provided by engineer. */
+"seen by %d of %d peers" = "u pa nga %1$d e %2$d peers";
+
+/* No comment provided by engineer. */
+"Send %@ (%@) from this private key into your wallet? The bitcoin network will receive a fee of %@ (%@)." = "Dërgo %1$@ (%2$@) nga ky çelës privat në kuletën tuaj? Tarifa për këtë transaksion do të jetë %3$@ (%4$@).";
+
+/* No comment provided by engineer. */
+"send address as email" = "dërgo adresën sikur email";
+
+/* No comment provided by engineer. */
+"send address as message" = "dërgo adresën sikur mesazh";
+
+/* No comment provided by engineer. */
+"send request as email" = "dërgo kërkesën si email";
+
+/* No comment provided by engineer. */
+"send request as message" = "dërgo kërkesën si mesazh";
+
+/* No comment provided by engineer. */
+"sent" = "dërguar";
+
+/* No comment provided by engineer. */
+"sent!" = "dërguar!";
+
+/* No comment provided by engineer. */
+"settings" = "konfigurimet";
+
+/* No comment provided by engineer. */
+"show" = "shfaq";
+
+/* No comment provided by engineer. */
+"show phrase" = "shfaq frazën";
+
+/* No comment provided by engineer. */
+"sms not currently available" = "sns momentalisht nuk janë në dispozicion";
+
+/* No comment provided by engineer. */
+"spent address" = "shpenzo adresën";
+
+/* No comment provided by engineer. */
+"spent input" = "shpenzo hyrjen";
+
+/* No comment provided by engineer. */
+"status:" = "statusi:";
+
+/* No comment provided by engineer. */
+"swept!" = "të shpenzuara!";
+
+/* No comment provided by engineer. */
+"syncing..." = "duke sinkronizuar...";
+
+/* No comment provided by engineer. */
+"the app will now close" = "aplikacioni tash do të mbyllet";
+
+/* No comment provided by engineer. */
+"This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Kjo është bitcoin adresa juaj. Tap për ta kopjuar ose dërguar atë përmes email ose sms. Adresa ndryshon secilën herë që ju pranoni fonde, por adresat e vjetra gjithmonë punojn.";
+
+/* No comment provided by engineer. */
+"This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market." = "Kjo është bitcoin bilanci juaj. Bitcoin është një monedhë. Kursi i këmbimit ndryshon nga tregu.";
+
+/* No comment provided by engineer. */
+"this payment address is already in your wallet" = "Kjo adresë ekziston tashmë ne kuletën tuaj";
+
+/* No comment provided by engineer. */
+"this private key is already in your wallet" = "ky çelës privat tashmë është në kuletën tuaj";
+
+/* No comment provided by engineer. */
+"this private key is empty" = "çelësi privat është i zbrazët";
+
+/* No comment provided by engineer. */
+"to:" = "te:";
+
+/* No comment provided by engineer. */
+"to: %@" = "te: %@";
+
+/* No comment provided by engineer. */
+"touch id limit" = "touch id limiti";
+
+/* No comment provided by engineer. */
+"touch id spending limit" = "touch id limiti shpenzues";
+
+/* No comment provided by engineer. */
+"transaction canceled, network timeout" = "transaksioni u anulua, problem me rrjetin";
+
+/* No comment provided by engineer. */
+"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "tarifa do të kushtoj më shumë se sa vetë fondet në dispozicion në këtë çelës privat (për shkak të depozitave tepër të vogla)";
+
+/* No comment provided by engineer. */
+"transaction history" = "historia e transaksioneve";
+
+/* No comment provided by engineer. */
+"transaction is post-dated" = "transaksioni është i ardhshëm";
+
+/* No comment provided by engineer. */
+"transaction rejected" = "transaksioni u refuzua";
+
+/* No comment provided by engineer. */
+"turn device passcode on" = "aktivizo PIN-in e pajisjes";
+
+/* No comment provided by engineer. */
+"unexpected response from %@" = "reagim i papritur nga %@";
+
+/* No comment provided by engineer. */
+"unkown address" = "adresë e panjohur";
+
+/* No comment provided by engineer. */
+"unrecognized address" = "adresë e papranuar";
+
+/* No comment provided by engineer. */
+"unsupported or corrupted document" = "dokument i korruptuar apo i pambështetur";
+
+/* No comment provided by engineer. */
+"unsupported signature type" = "tipë i firmosjes që nuk mbështetet";
+
+/* No comment provided by engineer. */
+"unsupported url" = "url e pambështetur";
+
+/* No comment provided by engineer. */
+"untrusted certificate" = "çertifikatë e pabesuar";
+
+/* No comment provided by engineer. */
+"unverified" = "i paverifikuar";
+
+/* No comment provided by engineer. */
+"verified, waiting for confirmation" = "e verifikuar, duke pritur për konfirmime";
+
+/* No comment provided by engineer. */
+"verify passcode" = "verifiko PIN";
+
+/* No comment provided by engineer. */
+"wallet address" = "verifiko adresën";
+
+/* No comment provided by engineer. */
+"wallet disabled" = "kuleta është ç'aktivizuar";
+
+/* No comment provided by engineer. */
+"WARNING" = "PARALAJMËRIM";
+
+/* No comment provided by engineer. */
+"wipe" = "fshij";
+
+/* No comment provided by engineer. */
+"WRITE DOWN YOUR RECOVERY PHRASE" = "SHKRUAJE FRAZËN RIKTHYESE DIKU SIGURTË";
+
+/* No comment provided by engineer. */
+"you received bitcoin!" = "ju pranuat bitcoin!";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Si duket kuleta juaj nuk është e sinkronizuar.\nKjo shpesh mund të rregullohet duke riskanuar blockchain.";
+

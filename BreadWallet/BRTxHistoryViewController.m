@@ -36,16 +36,30 @@
 
 static NSString *dateFormat(NSString *template)
 {
-    NSString *format = [[[[[[[NSDateFormatter dateFormatFromTemplate:template options:0 locale:[NSLocale currentLocale]]
-                             stringByReplacingOccurrencesOfString:@", " withString:@" "]
-                            stringByReplacingOccurrencesOfString:@" a" withString:@"a"]
-                           stringByReplacingOccurrencesOfString:@"hh" withString:@"h"]
-                          stringByReplacingOccurrencesOfString:@" ha" withString:@"@ha"]
-                         stringByReplacingOccurrencesOfString:@"HH" withString:@"H"]
-                        stringByReplacingOccurrencesOfString:@"H " withString:@"H'h' "];
+//    NSString *format = [[[[[[[NSDateFormatter dateFormatFromTemplate:template options:0 locale:[NSLocale currentLocale]]
+//                             stringByReplacingOccurrencesOfString:@", " withString:@" "]
+//                            stringByReplacingOccurrencesOfString:@" a" withString:@"a"]
+//                           stringByReplacingOccurrencesOfString:@"hh" withString:@"h"]
+//                          stringByReplacingOccurrencesOfString:@" ha" withString:@"@ha"]
+//                         stringByReplacingOccurrencesOfString:@"HH" withString:@"H"]
+//                        stringByReplacingOccurrencesOfString:@"H " withString:@"H'h' "];
+//
+//    return [format stringByReplacingOccurrencesOfString:@"H" withString:@"H'h'"
+//            options:NSBackwardsSearch|NSAnchoredSearch range:NSMakeRange(0, format.length)];
 
-    return [format stringByReplacingOccurrencesOfString:@"H" withString:@"H'h'"
-            options:NSBackwardsSearch|NSAnchoredSearch range:NSMakeRange(0, format.length)];
+    NSString *format = [NSDateFormatter dateFormatFromTemplate:template options:0 locale:[NSLocale currentLocale]];
+    
+    format = [format stringByReplacingOccurrencesOfString:@", " withString:@" "];
+    format = [format stringByReplacingOccurrencesOfString:@" a" withString:@"a"];
+    format = [format stringByReplacingOccurrencesOfString:@"hh" withString:@"h"];
+    format = [format stringByReplacingOccurrencesOfString:@" ha" withString:@"@ha"];
+    format = [format stringByReplacingOccurrencesOfString:@"HH" withString:@"H"];
+    format = [format stringByReplacingOccurrencesOfString:@"H 'h'" withString:@"H'h'"];
+    format = [format stringByReplacingOccurrencesOfString:@"H " withString:@"H'h' "];
+    format = [format stringByReplacingOccurrencesOfString:@"H" withString:@"H'h'"
+              options:NSBackwardsSearch|NSAnchoredSearch range:NSMakeRange(0, format.length)];
+    
+    return format;
 }
 
 @interface BRTxHistoryViewController ()

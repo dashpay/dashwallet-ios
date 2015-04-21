@@ -1,0 +1,480 @@
+/* No comment provided by engineer. */
+"%@ is for 'bits'. %@ = 1 bitcoin." = "%1$@ is voor 'bits'. %2$@ = 1 bitcoin.";
+
+/* No comment provided by engineer. */
+"%@ is not allowed to access the camera" = "%@ heeft geen toegang tot de camera";
+
+/* No comment provided by engineer. */
+"%d confirmations" = "%d bevestigingen";
+
+/* No comment provided by engineer. */
+"1 confirmation" = "1 bevestiging";
+
+/* No comment provided by engineer. */
+"\"%@\" is not a recovery phrase word" = "\"%@\" is geen woord uit de herstel zin";
+
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\ntotaal %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nje hebt het nodig om te portemonnee te herstellen wanneer je je telefoon kwijt bent geraakt";
+
+/* No comment provided by engineer. */
+"\n%d attempts remaining\n" = "\n%d pogingen over\n";
+
+/* No comment provided by engineer. */
+"\n1 attempt remaining\n" = "\n1 poging over\n";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\nbedrag %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEen toegangscode is nog om je portemonnee te beschermen. Ga naar instellingen en zet toegangscode aan om verder te gaan.";
+
+/* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRES IS REEDS GEBRUIKT\n\nbitcoin adressen zijn bedoelt om éénmalig te gebruiken\n\nhergebruik vermindert de privacy van jou en de ontvanger en kan tot verlies lijden wanneer de ontvanger het adres niet direct beheert";
+
+/* No comment provided by engineer. */
+"\nallow camera access in\nSettings->Privacy->Camera->%@" = "\ngeef toegang tot de camera in\nInstellingen->Privacy->Camera->%@";
+
+/* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nLaat je herstel zin aan NIEMAND zien, anders hebben zij de mogelijkheid om jouw bitcoins uit te geven.\n\nType je herstel zin NOOIT in bij wachtwoord beheer programma's of ergens anders. Andere apparaten kunnen geïnfecteerd zijn.\n";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = "\nnetwerkvergoeding +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\ntry again in %d %@" = "\nprobeer opnieuw in %1$d %2$@";
+
+/* No comment provided by engineer. */
+"about" = "over";
+
+/* No comment provided by engineer. */
+"always require passcode" = "toegangscode altijd vereist";
+
+/* No comment provided by engineer. */
+"amount too small" = "bedrag is te klein";
+
+/* No comment provided by engineer. */
+"bad password, try again" = "verkeerd wachtwoord, probeer nogmaals";
+
+/* No comment provided by engineer. */
+"bad payment request" = "foutief betalingsverzoek";
+
+/* No comment provided by engineer. */
+"bad payment request URL" = "foutieve betalingsverzoek URL";
+
+/* No comment provided by engineer. */
+"bad payment URL" = "foutieve betaling URL";
+
+/* No comment provided by engineer. */
+"bad recovery phrase" = "foutieve herstel zin";
+
+/* No comment provided by engineer. */
+"bad signature" = "foutieve ondertekening";
+
+/* No comment provided by engineer. */
+"Bitcoin address" = "Bitcoin adres";
+
+/* No comment provided by engineer. */
+"Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1' or '3'." = "Bitcoin adressen kunnen ook naar het klipbord gekopieerd worden. Een bitcoin adres begint altijd met een '1' of een '3'.";
+
+/* No comment provided by engineer. */
+"bitcoin network fee" = "bitcoin netwerk vergoeding";
+
+/* No comment provided by engineer. */
+"bitcoin payments can't be less than %@" = "bitcoin betalingen kunnen niet kleiner zijn dan %@";
+
+/* No comment provided by engineer. */
+"bitcoin transaction not signed" = "bitcoin transactie niet gesigneerd";
+
+/* No comment provided by engineer. */
+"bitcoin transaction outputs can't be less than %@" = "bitcoin transactie restant kan niet minder zijn dan %@";
+
+/* No comment provided by engineer. */
+"block #%d of %d" = "blok #%1$d van %2$d";
+
+/* No comment provided by engineer. */
+"cancel" = "annuleren";
+
+/* No comment provided by engineer. */
+"change" = "wijzigen";
+
+/* No comment provided by engineer. */
+"change passcode" = "wijzig toegangscode";
+
+/* No comment provided by engineer. */
+"change payment amount?" = "bedrag aanpassen?";
+
+/* No comment provided by engineer. */
+"checking private key balance..." = "balans van persoonlijke sleutel controleren...";
+
+/* No comment provided by engineer. */
+"choose passcode for %@" = "kies toegangscode voor %@";
+
+/* No comment provided by engineer. */
+"clipboard doesn't contain a valid bitcoin address" = "klipbord bevat geen valide bitcoin adres";
+
+/* No comment provided by engineer. */
+"close app" = "app sluiten";
+
+/* No comment provided by engineer. */
+"CONFIRM WIPE" = "BEVESTIG WIPE";
+
+/* No comment provided by engineer. */
+"confirmed in block #%d" = "bevestigd in blok #%d";
+
+/* No comment provided by engineer. */
+"connect timeout" = "verbinding time-out";
+
+/* No comment provided by engineer. */
+"copied" = "gekopieërd";
+
+/* No comment provided by engineer. */
+"copy address to clipboard" = "kopieer adres naar klipbord";
+
+/* No comment provided by engineer. */
+"copy request to clipboard" = "kopieer adres naar klipbord";
+
+/* No comment provided by engineer. */
+"couldn't make payment" = "betaling mislukt";
+
+/* No comment provided by engineer. */
+"couldn't sweep balance" = "veeg mislukt";
+
+/* No comment provided by engineer. */
+"couldn't transmit payment to bitcoin network" = "betaling niet naar het bitcoin netwerk verstuurd";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "BEVEILIGING VAN HET APPARAAT IN GEVAAR\nEen 'jailbreak' app heeft toegang tot de sleutelhanger van andere apps (en de mogelijkheid om je bitcoins te stelen).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "BEVEILIGING VAN HET APPARAAT IN GEVAAR\nEen 'jailbreak' app heeft toegang tot de sleutelhanger van andere apps (en de mogelijkheid om je bitcoins te stelen). Verwijder deze portemonnee direct en herstel op een veilig apparaat.";
+
+/* No comment provided by engineer. */
+"do it later" = "probeer later nogmaals";
+
+/* No comment provided by engineer. */
+"DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins." = "Toon je herstel zin aan NIEMAND, anders hebben zij de mogelijkheid om jouw bitcoins uit te geven.";
+
+/* No comment provided by engineer. */
+"done" = "gereed";
+
+/* No comment provided by engineer. */
+"double spend" = "dubbel uitgegeven";
+
+/* No comment provided by engineer. */
+"email not configured" = "email niet geconfigureerd";
+
+/* No comment provided by engineer. */
+"enter old passcode" = "geef oude toegangscode op";
+
+/* No comment provided by engineer. */
+"error signing bitcoin transaction" = "fout bij signeren van bitcoin transactie";
+
+/* No comment provided by engineer. */
+"error signing transaction" = "fout bij het signeren van de transactie";
+
+/* No comment provided by engineer. */
+"from:" = "van:";
+
+/* No comment provided by engineer. */
+"hour" = "uur";
+
+/* No comment provided by engineer. */
+"hours" = "uren";
+
+/* No comment provided by engineer. */
+"id:" = "id:";
+
+/* No comment provided by engineer. */
+"ignore" = "negeren";
+
+/* No comment provided by engineer. */
+"import private key" = "persoonlijke sleutel inlezen";
+
+/* No comment provided by engineer. */
+"IMPORTANT" = "BELANGRIJK";
+
+/* No comment provided by engineer. */
+"insufficient funds" = "saldo niet toereikend";
+
+/* No comment provided by engineer. */
+"insufficient funds for bitcoin network fee" = "saldo niet toereikend voor de bitcoin netwerk vergoeding";
+
+/* No comment provided by engineer. */
+"INVALID" = "ONGELDIG";
+
+/* No comment provided by engineer. */
+"Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Laat anderen deze QR code scannen om jouw bitcoin adres te verkrijgen. Iedereen kan bitcoins naar jouw portemonnee verzenden door deze te sturen naar jouw adres.";
+
+/* No comment provided by engineer. */
+"minute" = "minuut";
+
+/* No comment provided by engineer. */
+"minutes" = "minuten";
+
+/* No comment provided by engineer. */
+"missing certificate" = "certificaat mist";
+
+/* No comment provided by engineer. */
+"more..." = "meer...";
+
+/* No comment provided by engineer. */
+"moved" = "verplaatst";
+
+/* No comment provided by engineer. */
+"NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected." = "Type je herstel zin NOOIT in bij wachtwoord beheer programma's of ergens anders. Andere apparaten kunnen geïnfecteerd zijn.";
+
+/* No comment provided by engineer. */
+"new phrase" = "nieuwe zin";
+
+/* No comment provided by engineer. */
+"next, write down your recovery phrase" = "vervolgens, schrijf je herstel zin op";
+
+/* No comment provided by engineer. */
+"no peers found" = "geen peers gevonden";
+
+/* No comment provided by engineer. */
+"not a bitcoin QR code" = "geen bitcoin QR code";
+
+/* No comment provided by engineer. */
+"not a valid bitcoin address" = "geen valide bitcoin adres";
+
+/* No comment provided by engineer. */
+"not a valid private key" = "geen valide persoonlijke sleutel";
+
+/* No comment provided by engineer. */
+"not connected to the bitcoin network" = "niet verbonden met het bitcoin netwerk";
+
+/* No comment provided by engineer. */
+"ok" = "ok";
+
+/* No comment provided by engineer. */
+"passcode" = "toegangscode";
+
+/* No comment provided by engineer. */
+"passcode for %@" = "toegangscode voor %@";
+
+/* No comment provided by engineer. */
+"password" = "wachtwoord";
+
+/* No comment provided by engineer. */
+"password protected key" = "wachtwoord afgeschermde sleutel";
+
+/* No comment provided by engineer. */
+"pay" = "betalen";
+
+/* No comment provided by engineer. */
+"payment address" = "betalingsadres";
+
+/* No comment provided by engineer. */
+"payment output" = "betalingsuitgang";
+
+/* No comment provided by engineer. */
+"post-dated" = "post-gedateerd";
+
+/* No comment provided by engineer. */
+"Receive bitcoins at this address: %@" = "Ontvang bitcoins op dit adres: %@";
+
+/* No comment provided by engineer. */
+"received" = "ontvangen";
+
+/* No comment provided by engineer. */
+"received %@ (%@)" = "ontvangen %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"recovery phrase" = "herstel zin";
+
+/* No comment provided by engineer. */
+"recovery phrase doesn't match" = "herstel zin is niet gelijk";
+
+/* No comment provided by engineer. */
+"recovery phrase must have %d words" = "herstel zin moet %d woorden hebben";
+
+/* No comment provided by engineer. */
+"reduce payment amount by\n%@ (%@)?" = "verminder bedrag met\n%1$@ (%2$@)?";
+
+/* No comment provided by engineer. */
+"request" = "verzoek";
+
+/* No comment provided by engineer. */
+"request an amount" = "verzoek een bedrag";
+
+/* No comment provided by engineer. */
+"request expired" = "verzoek verlopen";
+
+/* No comment provided by engineer. */
+"requested network \"%@\" instead of \"%@\"" = "verzoek netwerk \"%1$@\" in plaats van \"%2$@\"";
+
+/* No comment provided by engineer. */
+"rescan" = "herscannen";
+
+/* No comment provided by engineer. */
+"rescan blockchain" = "blockchain herscannen";
+
+/* No comment provided by engineer. */
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "herscan blockchain wanneer je het vermoeden hebt dat je transacties mist, of problemen hebt met versturen (herscannen kan enkele minuten duren)";
+
+/* No comment provided by engineer. */
+"reset" = "opnieuw zetten";
+
+/* No comment provided by engineer. */
+"Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Scan de QR code van iemand anders om zijn of haar bitcoin adres te verkrijgen. Je kan een betaling versturen naar iedereen met een adres.";
+
+/* No comment provided by engineer. */
+"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Schermafdrukken zijn zichtbaar voor andere apps en apparaten. Genereer een nieuwe herstel zin en houdt deze geheim.";
+
+/* No comment provided by engineer. */
+"Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Schermafdrukken zijn zichtbaar voor andere apps en apparaten. Je tegoed loopt gevaar. Verplaats je tegoed naar een andere portemonnee.";
+
+/* No comment provided by engineer. */
+"seen by %d of %d peers" = "gezien door %1$d van %2$d peers";
+
+/* No comment provided by engineer. */
+"Send %@ (%@) from this private key into your wallet? The bitcoin network will receive a fee of %@ (%@)." = "Verstuur %1$@ (%2$@) van deze persoonlijke sleutel naar jouw portemonnee? Het bitcoin netwerk zal een vergoeding krijgen van %3$@ (%4$@).";
+
+/* No comment provided by engineer. */
+"send address as email" = "verstuur adres al email";
+
+/* No comment provided by engineer. */
+"send address as message" = "verstuur adres als bericht";
+
+/* No comment provided by engineer. */
+"send request as email" = "verstuur verzoek als email";
+
+/* No comment provided by engineer. */
+"send request as message" = "verstuur verzoek als bericht";
+
+/* No comment provided by engineer. */
+"sent" = "verstuur";
+
+/* No comment provided by engineer. */
+"sent!" = "verstuurd!";
+
+/* No comment provided by engineer. */
+"settings" = "instellingen";
+
+/* No comment provided by engineer. */
+"show" = "toon";
+
+/* No comment provided by engineer. */
+"show phrase" = "toon zin";
+
+/* No comment provided by engineer. */
+"sms not currently available" = "sms op dit moment niet beschikbaar";
+
+/* No comment provided by engineer. */
+"spent address" = "spent adres";
+
+/* No comment provided by engineer. */
+"spent input" = "spent invoer";
+
+/* No comment provided by engineer. */
+"status:" = "status:";
+
+/* No comment provided by engineer. */
+"swept!" = "geveegd!";
+
+/* No comment provided by engineer. */
+"syncing..." = "synchroniseren...";
+
+/* No comment provided by engineer. */
+"the app will now close" = "de app zal nu afsluiten";
+
+/* No comment provided by engineer. */
+"This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Dit is uw bitcoin adres. Tik aan om te kopiëren of stuur het per e-mail of sms. Het adres verandert iedere keer dat u geld heeft ontvangen, maar oude adressen blijven altijd werken.";
+
+/* No comment provided by engineer. */
+"This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market." = "Dit is jouw bitcoin balans. Bitcoin is een valuta. De wisselkoers wijzigt conform de markt.";
+
+/* No comment provided by engineer. */
+"this payment address is already in your wallet" = "dit betalingsadres staat al in uw portemonnee";
+
+/* No comment provided by engineer. */
+"this private key is already in your wallet" = "deze persoonlijke sleutel staat al in uw portemonnee";
+
+/* No comment provided by engineer. */
+"this private key is empty" = "deze persoonlijke sleutel is leeg";
+
+/* No comment provided by engineer. */
+"to:" = "naar:";
+
+/* No comment provided by engineer. */
+"to: %@" = "naar: %@";
+
+/* No comment provided by engineer. */
+"touch id limit" = "touch id limiet";
+
+/* No comment provided by engineer. */
+"touch id spending limit" = "touch id uitgave limiet";
+
+/* No comment provided by engineer. */
+"transaction canceled, network timeout" = "transactie geannuleerd, netwerk timeout";
+
+/* No comment provided by engineer. */
+"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "de transactie vergoeding zou meer zijn dan het beschikbare tegoed op deze persoonlijke sleutel (als gevolg van kleine \"stof\" stortingen)";
+
+/* No comment provided by engineer. */
+"transaction history" = "transactie geschiedenis";
+
+/* No comment provided by engineer. */
+"transaction is post-dated" = "transactie is verlopen";
+
+/* No comment provided by engineer. */
+"transaction rejected" = "transactie geweigerd";
+
+/* No comment provided by engineer. */
+"turn device passcode on" = "zet apparaat toegangscode aan";
+
+/* No comment provided by engineer. */
+"unexpected response from %@" = "onverwacht antwoord van %@";
+
+/* No comment provided by engineer. */
+"unkown address" = "onbekend adres";
+
+/* No comment provided by engineer. */
+"unrecognized address" = "adres niet herkend";
+
+/* No comment provided by engineer. */
+"unsupported or corrupted document" = "niet ondersteund of corrupt document";
+
+/* No comment provided by engineer. */
+"unsupported signature type" = "niet ondersteund handtekening type";
+
+/* No comment provided by engineer. */
+"unsupported url" = "niet ondersteunde URL";
+
+/* No comment provided by engineer. */
+"untrusted certificate" = "niet vertrouwd certificaat";
+
+/* No comment provided by engineer. */
+"unverified" = "niet geverifieerd";
+
+/* No comment provided by engineer. */
+"verified, waiting for confirmation" = "geverifieerd, wachten op bevestiging";
+
+/* No comment provided by engineer. */
+"verify passcode" = "verifieer toegangscode";
+
+/* No comment provided by engineer. */
+"wallet address" = "portemonnee adres";
+
+/* No comment provided by engineer. */
+"wallet disabled" = "portemonnee uitgeschakeld";
+
+/* No comment provided by engineer. */
+"WARNING" = "WAARSCHUWING";
+
+/* No comment provided by engineer. */
+"wipe" = "wipe";
+
+/* No comment provided by engineer. */
+"WRITE DOWN YOUR RECOVERY PHRASE" = "SCHRIJF JE HERSTEL ZIN OP";
+
+/* No comment provided by engineer. */
+"you received bitcoin!" = "je hebt bitcoins ontvangen!";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Je portemonnee is mogelijk niet gesynchroniseerd.\nDit kan vaak opgelost worden door de blockchain te herscannen.";
+

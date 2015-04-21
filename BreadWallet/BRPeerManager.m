@@ -215,6 +215,7 @@ static const char *dns_seeds[] = {
             for (int i = 0; i < sizeof(dns_seeds)/sizeof(*dns_seeds); i++) { // DNS peer discovery
                 NSLog(@"DNS lookup %s", dns_seeds[i]);
                 
+                //BUG: XXXX this sometimes takes 10-20 seconds to resolve, need to attempt connect before it completes
                 struct hostent *h = gethostbyname(dns_seeds[i]);
 
                 for (int j = 0; h != NULL && h->h_addr_list[j] != NULL; j++) {

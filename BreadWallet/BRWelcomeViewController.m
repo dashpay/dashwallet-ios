@@ -55,7 +55,7 @@
     self.foregroundObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillEnterForegroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if ([[BRWalletManager sharedInstance] wallet]) { // sanity check
+            if (! [[BRWalletManager sharedInstance] noWallet]) { // sanity check
                 [self.navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
             }
             else [self animateWallpaper];
@@ -96,7 +96,7 @@
     [super viewDidAppear:animated];
 
     dispatch_async(dispatch_get_main_queue(), ^{ // animation sometimes doesn't work if run directly in viewDidAppear
-        if ([[BRWalletManager sharedInstance] wallet]) { // sanity check
+        if (! [[BRWalletManager sharedInstance] noWallet]) { // sanity check
             [self.navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
         }
         
@@ -107,6 +107,7 @@
             self.logoXCenter.constant = self.view.frame.size.width;
             self.walletXCenter.constant = 0.0;
             self.restoreXCenter.constant = 0.0;
+            //BUG: XXXX paralax broken on 8.3
             self.paralaxXLeft.constant = self.view.frame.size.width*PARALAX_RATIO;
             self.navigationItem.titleView.hidden = NO;
             self.navigationItem.titleView.alpha = 0.0;
@@ -189,7 +190,8 @@
     }
     
     [UIView animateWithDuration:WALLPAPER_ANIMATION_DURATION delay:0.0
-    options:UIViewAnimationOptionCurveLinear|UIViewAnimationOptionRepeat|UIViewAnimationOptionAutoreverse animations:^{
+    options:UIViewAnimationOptionCurveLinear | UIViewAnimationOptionRepeat | UIViewAnimationOptionAutoreverse
+    animations:^{
         self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2.0 - WALLPAPER_ANIMATION_X,
                                             self.wallpaper.frame.size.height/2.0 - WALLPAPER_ANIMATION_Y);
     } completion:^(BOOL finished) {
@@ -208,6 +210,9 @@
           delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         return;
     }
+
+    if (self.foregroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.foregroundObserver];
+    self.foregroundObserver = nil;
 
     [self.navigationController.navigationBar.topItem setHidesBackButton:YES animated:YES];
     [sender setEnabled:NO];

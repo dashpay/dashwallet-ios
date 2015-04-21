@@ -1,0 +1,480 @@
+/* No comment provided by engineer. */
+"%@ is for 'bits'. %@ = 1 bitcoin." = "%1$@ er for  \"bits\". %2$@ = 1 bitcoin.";
+
+/* No comment provided by engineer. */
+"%@ is not allowed to access the camera" = "%@ har ikke tilladelse til at bruge kameraet";
+
+/* No comment provided by engineer. */
+"%d confirmations" = "%d bekræftelser";
+
+/* No comment provided by engineer. */
+"1 confirmation" = "1 bekræftelse";
+
+/* No comment provided by engineer. */
+"\"%@\" is not a recovery phrase word" = "\"%@\" er ikke en genskabelsessætning";
+
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\n         totalt %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nhvis du nogensinde mister din telefon, vil du få brug for den for at genskabe din tegnebog";
+
+/* No comment provided by engineer. */
+"\n%d attempts remaining\n" = "\n%d forsøg tilbage\n";
+
+/* No comment provided by engineer. */
+"\n1 attempt remaining\n" = "\n1 forsøg tilbage\n";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\n     beløb %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEn enhedsadgangskode er nødvendig for at sikre din tegnebog. Gå til indstillinger for aktivér adgangskode for at fortsætte.";
+
+/* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRESSE ER ALLEREDE BRUGT\n\nbitcoin-adresser bør kun bruges en enkelt gang\n\ngenbrug reducerer beskyttelse af privatlivet både for dig og for modtageren og kan resultere i tab, hvis modtageren ikke kontrollerer adressen direkte";
+
+/* No comment provided by engineer. */
+"\nallow camera access in\nSettings->Privacy->Camera->%@" = "\ngiv adgang for kamera i\nIndstillinger->Anonymitet->Kamera->%@";
+
+/* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nLAD IKKE nogen se din genskabelsessætning, eller de kan bruge dine bitcoin.\n\nindtast ALDRIG din genskabelsessætning ind i adgangskodehuskere eller andre steder. Andre enheder kan være inficerede.\n";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = "\nnetværksgebyr +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\ntry again in %d %@" = "\nprøv igen om %1$d %2$@";
+
+/* No comment provided by engineer. */
+"about" = "om";
+
+/* No comment provided by engineer. */
+"always require passcode" = "kræv altid adgangskode";
+
+/* No comment provided by engineer. */
+"amount too small" = "beløb for lille";
+
+/* No comment provided by engineer. */
+"bad password, try again" = "forkert adgangskode; prøv igen";
+
+/* No comment provided by engineer. */
+"bad payment request" = "ugyldig betalingsanmodning";
+
+/* No comment provided by engineer. */
+"bad payment request URL" = "ugyldig betalingsanmodnings-URL";
+
+/* No comment provided by engineer. */
+"bad payment URL" = "ugyldig betalings-URL";
+
+/* No comment provided by engineer. */
+"bad recovery phrase" = "ugyldig genskabelsessætning";
+
+/* No comment provided by engineer. */
+"bad signature" = "ugyldig signatur";
+
+/* No comment provided by engineer. */
+"Bitcoin address" = "Bitcoin-adresse";
+
+/* No comment provided by engineer. */
+"Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1' or '3'." = "Bitcoin adresser kan også blive kopieret til Udklipsholder. En bitcoin adresse starter altid med '1' eller '3'.";
+
+/* No comment provided by engineer. */
+"bitcoin network fee" = "bitcoin-netværksgebyr";
+
+/* No comment provided by engineer. */
+"bitcoin payments can't be less than %@" = "bitcoin-betalinger kan ikke være mindre end %@";
+
+/* No comment provided by engineer. */
+"bitcoin transaction not signed" = "bitcoin-transaktion ikke signeret";
+
+/* No comment provided by engineer. */
+"bitcoin transaction outputs can't be less than %@" = "outputs for bitcoin-transaktioner kan ikke være mindre end %@";
+
+/* No comment provided by engineer. */
+"block #%d of %d" = "blok #%1$d af %2$d";
+
+/* No comment provided by engineer. */
+"cancel" = "annullér";
+
+/* No comment provided by engineer. */
+"change" = "ændr";
+
+/* No comment provided by engineer. */
+"change passcode" = "skift adgangskode";
+
+/* No comment provided by engineer. */
+"change payment amount?" = "ændr betalingsbeløb?";
+
+/* No comment provided by engineer. */
+"checking private key balance..." = "tjekker saldo for privat nøgle …";
+
+/* No comment provided by engineer. */
+"choose passcode for %@" = "vælg adgangskode for %@";
+
+/* No comment provided by engineer. */
+"clipboard doesn't contain a valid bitcoin address" = "udklipsholder indeholder ikke en gyldig bitcoin-adresse";
+
+/* No comment provided by engineer. */
+"close app" = "luk app";
+
+/* No comment provided by engineer. */
+"CONFIRM WIPE" = "BEKRÆFT SLETNING";
+
+/* No comment provided by engineer. */
+"confirmed in block #%d" = "bekræftet i blok #%d";
+
+/* No comment provided by engineer. */
+"connect timeout" = "forbindelses-timeout";
+
+/* No comment provided by engineer. */
+"copied" = "kopieret";
+
+/* No comment provided by engineer. */
+"copy address to clipboard" = "kopiér adresse til udklipsholder";
+
+/* No comment provided by engineer. */
+"copy request to clipboard" = "kopiér anmodning til udklipsholder";
+
+/* No comment provided by engineer. */
+"couldn't make payment" = "kunne ikke foretage betaling";
+
+/* No comment provided by engineer. */
+"couldn't sweep balance" = "kunne ikke rydde saldo";
+
+/* No comment provided by engineer. */
+"couldn't transmit payment to bitcoin network" = "kunne ikke sende betalingen til bitcoin-netværket";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "ENHEDENS SIKKERHED KOMPROMITTERET\nEnhver 'jailbreak'et app kan tilgå enhver anden apps nøglerings-data (og stjæle dine bitcoins).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "ENHEDENS SIKKERHED KOMPROMITTERET\nEnhver 'jailbreak'et app kan tilgå enhver anden apps nøglerings-data (og stjæle dine bitcoins). Slet straks denne tegnebog og gendan den på en sikker enhed.";
+
+/* No comment provided by engineer. */
+"do it later" = "gør det senere";
+
+/* No comment provided by engineer. */
+"DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins." = "LAD IKKE nogen se din gendannelsessætning - ellers kan de bruge dine bitcoins.";
+
+/* No comment provided by engineer. */
+"done" = "færdig";
+
+/* No comment provided by engineer. */
+"double spend" = "dobbelt betaling";
+
+/* No comment provided by engineer. */
+"email not configured" = "e-mail ikke opsat";
+
+/* No comment provided by engineer. */
+"enter old passcode" = "angiv gammel adgangskode";
+
+/* No comment provided by engineer. */
+"error signing bitcoin transaction" = "fejl ved signering af bitcoin transaktion";
+
+/* No comment provided by engineer. */
+"error signing transaction" = "fejl ved signering af transaktion";
+
+/* No comment provided by engineer. */
+"from:" = "Fra:";
+
+/* No comment provided by engineer. */
+"hour" = "time";
+
+/* No comment provided by engineer. */
+"hours" = "timer";
+
+/* No comment provided by engineer. */
+"id:" = "id:";
+
+/* No comment provided by engineer. */
+"ignore" = "ignorér";
+
+/* No comment provided by engineer. */
+"import private key" = "importér privat nøgle";
+
+/* No comment provided by engineer. */
+"IMPORTANT" = "VIGTIGT";
+
+/* No comment provided by engineer. */
+"insufficient funds" = "Utilstrækkelig saldo";
+
+/* No comment provided by engineer. */
+"insufficient funds for bitcoin network fee" = "utilstrækkelige midler til bitcoin netværksgebyr";
+
+/* No comment provided by engineer. */
+"INVALID" = "UGYLDIG";
+
+/* No comment provided by engineer. */
+"Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Lad andre scanne denne QR-kode for at få din bitcoin-adresse. Enhver kan sende bitcoins til din tegnebog ved at overføre dem til din adresse.";
+
+/* No comment provided by engineer. */
+"minute" = "minut";
+
+/* No comment provided by engineer. */
+"minutes" = "minutter";
+
+/* No comment provided by engineer. */
+"missing certificate" = "manglende certifikat";
+
+/* No comment provided by engineer. */
+"more..." = "mere...";
+
+/* No comment provided by engineer. */
+"moved" = "flyttet";
+
+/* No comment provided by engineer. */
+"NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected." = "ALDRIG skriv din gendannelsessætning i kodeords-programmer eller lignende. Andre enheder kan være inficeret.";
+
+/* No comment provided by engineer. */
+"new phrase" = "ny sætning";
+
+/* No comment provided by engineer. */
+"next, write down your recovery phrase" = "skriv nu din gendannelsessætning ned";
+
+/* No comment provided by engineer. */
+"no peers found" = "ingen peers fundet";
+
+/* No comment provided by engineer. */
+"not a bitcoin QR code" = "ikke en bitcoin QR-kode";
+
+/* No comment provided by engineer. */
+"not a valid bitcoin address" = "ikke en gyldig bitcoin-adresse";
+
+/* No comment provided by engineer. */
+"not a valid private key" = "ikke en gyldig privat nøgle";
+
+/* No comment provided by engineer. */
+"not connected to the bitcoin network" = "ikke tilsluttet bitcoin-netværket";
+
+/* No comment provided by engineer. */
+"ok" = "ok";
+
+/* No comment provided by engineer. */
+"passcode" = "adgangskode";
+
+/* No comment provided by engineer. */
+"passcode for %@" = "adgangskode for %@";
+
+/* No comment provided by engineer. */
+"password" = "kodeord";
+
+/* No comment provided by engineer. */
+"password protected key" = "kodeordsbeskyttet nøgle";
+
+/* No comment provided by engineer. */
+"pay" = "betal";
+
+/* No comment provided by engineer. */
+"payment address" = "betalingsadresse";
+
+/* No comment provided by engineer. */
+"payment output" = "betalings-output";
+
+/* No comment provided by engineer. */
+"post-dated" = "postdateret";
+
+/* No comment provided by engineer. */
+"Receive bitcoins at this address: %@" = "Modtag bitcoins på denne adresse: %@";
+
+/* No comment provided by engineer. */
+"received" = "modtaget";
+
+/* No comment provided by engineer. */
+"received %@ (%@)" = "modtaget %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"recovery phrase" = "gendannelsesssætning";
+
+/* No comment provided by engineer. */
+"recovery phrase doesn't match" = "gendannelsessætninger ikke ens";
+
+/* No comment provided by engineer. */
+"recovery phrase must have %d words" = "gendannelsessætningen skal have %d ord";
+
+/* No comment provided by engineer. */
+"reduce payment amount by\n%@ (%@)?" = "reducér betalingsbeløb med\n%1$@ (%2$@)?";
+
+/* No comment provided by engineer. */
+"request" = "anmod";
+
+/* No comment provided by engineer. */
+"request an amount" = "anmod om et beløb";
+
+/* No comment provided by engineer. */
+"request expired" = "anmodning udløbet";
+
+/* No comment provided by engineer. */
+"requested network \"%@\" instead of \"%@\"" = "anmodede netværket om \"%1$@\" i stedet for \"%2$@\"";
+
+/* No comment provided by engineer. */
+"rescan" = "scan igen";
+
+/* No comment provided by engineer. */
+"rescan blockchain" = "scan blokkæden igen";
+
+/* No comment provided by engineer. */
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "scan blokkæden igen hvis du tror du måske mangler transaktioner eller har problemer med at sende (ny scanning kan tage adskillige minutter)";
+
+/* No comment provided by engineer. */
+"reset" = "nulstil";
+
+/* No comment provided by engineer. */
+"Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Scan en andens QR-kode for at få deres bitcoin-adresse. Du kan sende en betaling til enhver med en adresse.";
+
+/* No comment provided by engineer. */
+"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Skærmbilleder er synlige for andre apps og enheder. Lav en ny gendannelsessætning og hold den hemmelig.";
+
+/* No comment provided by engineer. */
+"Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Skærmbilleder er synlige for andre apps og enheder. Dine midler er i fare. Overfør din saldo til en anden tegnebog.";
+
+/* No comment provided by engineer. */
+"seen by %d of %d peers" = "set af %1$d ud af %2$d peers";
+
+/* No comment provided by engineer. */
+"Send %@ (%@) from this private key into your wallet? The bitcoin network will receive a fee of %@ (%@)." = "Send %1$@ (%2$@) fra denne private nøgle til din tegnebog? Bitcoin-netværket vil modtage et gebyr på %3$@ (%4$@).";
+
+/* No comment provided by engineer. */
+"send address as email" = "send adressen som e-mail";
+
+/* No comment provided by engineer. */
+"send address as message" = "send adressen som besked";
+
+/* No comment provided by engineer. */
+"send request as email" = "send anmodning som e-mail";
+
+/* No comment provided by engineer. */
+"send request as message" = "send anmodning som besked";
+
+/* No comment provided by engineer. */
+"sent" = "sendt";
+
+/* No comment provided by engineer. */
+"sent!" = "sendt!";
+
+/* No comment provided by engineer. */
+"settings" = "indstillinger";
+
+/* No comment provided by engineer. */
+"show" = "vis";
+
+/* No comment provided by engineer. */
+"show phrase" = "vis sætning";
+
+/* No comment provided by engineer. */
+"sms not currently available" = "sms ikke tilgængelig lige nu";
+
+/* No comment provided by engineer. */
+"spent address" = "betaler-adresse";
+
+/* No comment provided by engineer. */
+"spent input" = "betaler-input";
+
+/* No comment provided by engineer. */
+"status:" = "status:";
+
+/* No comment provided by engineer. */
+"swept!" = "ryddet!";
+
+/* No comment provided by engineer. */
+"syncing..." = "synkroniserer...";
+
+/* No comment provided by engineer. */
+"the app will now close" = "app'en vil nu lukke";
+
+/* No comment provided by engineer. */
+"This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Dette er din bitcoin-adresse. Tryk for at kopiere den eller sende den via e-mail eller sms. Adressen ændres hver gang du modtager midler, men tidligere adresser virker altid.";
+
+/* No comment provided by engineer. */
+"This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market." = "Dette er din bitcoin-saldo. Bitcoin er en valuta. Vekselkursen følger markedet.";
+
+/* No comment provided by engineer. */
+"this payment address is already in your wallet" = "denne betalingsadresse er allerede i din tegnebog";
+
+/* No comment provided by engineer. */
+"this private key is already in your wallet" = "Dette private nøgle er allerede i din tegnebog";
+
+/* No comment provided by engineer. */
+"this private key is empty" = "denne private nøgle er tom";
+
+/* No comment provided by engineer. */
+"to:" = "til:";
+
+/* No comment provided by engineer. */
+"to: %@" = "til: %@";
+
+/* No comment provided by engineer. */
+"touch id limit" = "touch id grænse";
+
+/* No comment provided by engineer. */
+"touch id spending limit" = "touch id betalingsgrænse";
+
+/* No comment provided by engineer. */
+"transaction canceled, network timeout" = "transaktion annullet, netværk-timeout";
+
+/* No comment provided by engineer. */
+"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "transaktionsgebyret koster mere end de tilgængelige midler på denne private nøgle (på grund af bittesmå \"støv\" indskud)";
+
+/* No comment provided by engineer. */
+"transaction history" = "transaktionshistorik";
+
+/* No comment provided by engineer. */
+"transaction is post-dated" = "transaktionen er postdateret";
+
+/* No comment provided by engineer. */
+"transaction rejected" = "transaktion afvist";
+
+/* No comment provided by engineer. */
+"turn device passcode on" = "slå adgangskode for enheden til";
+
+/* No comment provided by engineer. */
+"unexpected response from %@" = "uventet svar fra %@";
+
+/* No comment provided by engineer. */
+"unkown address" = "ukendt adresse";
+
+/* No comment provided by engineer. */
+"unrecognized address" = "adresse ikke genkendt";
+
+/* No comment provided by engineer. */
+"unsupported or corrupted document" = "dokument ikke understøttet eller beskadiget";
+
+/* No comment provided by engineer. */
+"unsupported signature type" = "signatur-type ikke understøttet";
+
+/* No comment provided by engineer. */
+"unsupported url" = "url ikke understøttet";
+
+/* No comment provided by engineer. */
+"untrusted certificate" = "upålideligt certifikat";
+
+/* No comment provided by engineer. */
+"unverified" = "ikke verificeret";
+
+/* No comment provided by engineer. */
+"verified, waiting for confirmation" = "verificeret, venter på bekræftelse";
+
+/* No comment provided by engineer. */
+"verify passcode" = "bekræft adgangskode";
+
+/* No comment provided by engineer. */
+"wallet address" = "tegnebogs-adresse";
+
+/* No comment provided by engineer. */
+"wallet disabled" = "tegnebog deaktiveret";
+
+/* No comment provided by engineer. */
+"WARNING" = "ADVARSEL";
+
+/* No comment provided by engineer. */
+"wipe" = "slet";
+
+/* No comment provided by engineer. */
+"WRITE DOWN YOUR RECOVERY PHRASE" = "SKRIV DIN GENDANNELSESSÆTNING NED";
+
+/* No comment provided by engineer. */
+"you received bitcoin!" = "du har modtaget bitcoin!";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Din tegnebog kan være ude af sync.\nDette kan ofte løses ved at scanne blokkæden igen.";
+

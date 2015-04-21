@@ -1,0 +1,480 @@
+/* No comment provided by engineer. */
+"%@ is for 'bits'. %@ = 1 bitcoin." = "%1$@ は「ビット」と言います。 %2$@ = 1 ビットコイン";
+
+/* No comment provided by engineer. */
+"%@ is not allowed to access the camera" = "%@ はカメラへのアクセスを拒否されています。";
+
+/* No comment provided by engineer. */
+"%d confirmations" = "%d承認済み";
+
+/* No comment provided by engineer. */
+"1 confirmation" = "1承認済み";
+
+/* No comment provided by engineer. */
+"\"%@\" is not a recovery phrase word" = "「%@」 は復元フレーズの単語ではありません。";
+
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\n         合計 %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\n携帯電話を紛失した場合、ウォレットを復元するためにはこのフレーズが必要になります。";
+
+/* No comment provided by engineer. */
+"\n%d attempts remaining\n" = "\n失敗 残り %d 回\n";
+
+/* No comment provided by engineer. */
+"\n1 attempt remaining\n" = "\n失敗 残り 1 回\n";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\n     取引額 %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\n端末のパスコードを設定しないとウォレットを守ることができません。次進めるためには、設定にてパスコードを有効にしてください。";
+
+/* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nこのアドレスは使用済みです！\n\nビットコインのアドレスは1回のみの利用が最適です。\n\n再利用してしまうと、プライバシーの低下及び宛先間違いが発生しやすく、相手がウォレットを紛失していた場合にビットコインが消滅してしまう可能性もあります。";
+
+/* No comment provided by engineer. */
+"\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nカメラへのアクセスを有効化するには\n設定⇒プライバシー⇒カメラ⇒%@";
+
+/* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\n復元フレーズを絶対に誰にも見せないで下さい！復元フレーズを知っている人はあなたのビットコインを簡単に盗むことができます。\n\nパスワード管理アプリや、他の端末に復元フレーズは絶対に打ち込んだり写真撮ったりしないで下さい。ウィルスやマルウェアによって盗まれ兼ねません。\n";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = "\nネットワーク手数料 +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\ntry again in %d %@" = "\n%1$d %2$@ でもう一度お試しください。";
+
+/* No comment provided by engineer. */
+"about" = "このアプリについて";
+
+/* No comment provided by engineer. */
+"always require passcode" = "常にパスコードを要求します。";
+
+/* No comment provided by engineer. */
+"amount too small" = "金額が小さすぎます";
+
+/* No comment provided by engineer. */
+"bad password, try again" = "不正なパスワード、もう一度やり直してください。";
+
+/* No comment provided by engineer. */
+"bad payment request" = "不正な支払い請求";
+
+/* No comment provided by engineer. */
+"bad payment request URL" = "不正な支払い請求URL";
+
+/* No comment provided by engineer. */
+"bad payment URL" = "不正な支払いURL";
+
+/* No comment provided by engineer. */
+"bad recovery phrase" = "不正な復元フレーズ";
+
+/* No comment provided by engineer. */
+"bad signature" = "署名が正しくありません。";
+
+/* No comment provided by engineer. */
+"Bitcoin address" = "ビットコインアドレス";
+
+/* No comment provided by engineer. */
+"Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1' or '3'." = "ビットコインアドレスをクリップボードにコピーすることもできます。ビットコインアドレスは常に '1' または '3' で始まります。";
+
+/* No comment provided by engineer. */
+"bitcoin network fee" = "ビットコインネットワーク手数料";
+
+/* No comment provided by engineer. */
+"bitcoin payments can't be less than %@" = "ビットコインの送金は %@ 以上でないと送れません。";
+
+/* No comment provided by engineer. */
+"bitcoin transaction not signed" = "取引が署名されていません";
+
+/* No comment provided by engineer. */
+"bitcoin transaction outputs can't be less than %@" = "ビットコインの取引出力は %@ 以上でないといけません。";
+
+/* No comment provided by engineer. */
+"block #%d of %d" = "ブロック #%1$d / %2$d";
+
+/* No comment provided by engineer. */
+"cancel" = "キャンセル";
+
+/* No comment provided by engineer. */
+"change" = "変更";
+
+/* No comment provided by engineer. */
+"change passcode" = "パスコードを変更";
+
+/* No comment provided by engineer. */
+"change payment amount?" = "送金額だけ変更しますか？";
+
+/* No comment provided by engineer. */
+"checking private key balance..." = "秘密鍵の残高を確認中…";
+
+/* No comment provided by engineer. */
+"choose passcode for %@" = "%@ のパスコードをご入力下さい";
+
+/* No comment provided by engineer. */
+"clipboard doesn't contain a valid bitcoin address" = "クリップボードには有効なビットコインアドレスが含まれていません。";
+
+/* No comment provided by engineer. */
+"close app" = "アプリを閉じる";
+
+/* No comment provided by engineer. */
+"CONFIRM WIPE" = "ウォレットを完全削除";
+
+/* No comment provided by engineer. */
+"confirmed in block #%d" = "ブロック #%d にて承認済み";
+
+/* No comment provided by engineer. */
+"connect timeout" = "接続タイムアウト";
+
+/* No comment provided by engineer. */
+"copied" = "コピー済み";
+
+/* No comment provided by engineer. */
+"copy address to clipboard" = "アドレスをクリップボードへコピー";
+
+/* No comment provided by engineer. */
+"copy request to clipboard" = "リクエストをクリップボードへコピー";
+
+/* No comment provided by engineer. */
+"couldn't make payment" = "支払いを完了できませんでした";
+
+/* No comment provided by engineer. */
+"couldn't sweep balance" = "全残高送金ができませんでした";
+
+/* No comment provided by engineer. */
+"couldn't transmit payment to bitcoin network" = "取引をビットコインネットワークへ送信できませんでした";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "端末が危険な状態です！！！\n端末を脱獄してしまうと、どの脱獄アプリでもキーチェーンへのアクセスできます。(つまり、あなたのビットコインを簡単に盗めます。)";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "端末が危険な状態です！！！\n端末を脱獄してしまうと、どの脱獄アプリでもキーチェーンへのアクセス権限が持てますので、あなたのビットコインウォレットを簡単に盗めます。直ちにこのウォレットを完全削除して、安全な端末にて復元して下さい。";
+
+/* No comment provided by engineer. */
+"do it later" = "後でやります";
+
+/* No comment provided by engineer. */
+"DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins." = "復元フレーズを絶対に誰にも見せないで下さい！\n      復元フレーズを知っている人はあなたのビットコインを簡単に盗むことができます。";
+
+/* No comment provided by engineer. */
+"done" = "完了";
+
+/* No comment provided by engineer. */
+"double spend" = "２重支払い";
+
+/* No comment provided by engineer. */
+"email not configured" = "メールアドレスが設定されていません";
+
+/* No comment provided by engineer. */
+"enter old passcode" = "古いパスコードをご入力下さい";
+
+/* No comment provided by engineer. */
+"error signing bitcoin transaction" = "ビットコイン取引署名時エラー";
+
+/* No comment provided by engineer. */
+"error signing transaction" = "取引署名時エラー";
+
+/* No comment provided by engineer. */
+"from:" = "送金元:";
+
+/* No comment provided by engineer. */
+"hour" = "時間";
+
+/* No comment provided by engineer. */
+"hours" = "時間";
+
+/* No comment provided by engineer. */
+"id:" = "id:";
+
+/* No comment provided by engineer. */
+"ignore" = "無視する";
+
+/* No comment provided by engineer. */
+"import private key" = "秘密鍵をインポート";
+
+/* No comment provided by engineer. */
+"IMPORTANT" = "重要！！！";
+
+/* No comment provided by engineer. */
+"insufficient funds" = "残高不足";
+
+/* No comment provided by engineer. */
+"insufficient funds for bitcoin network fee" = "ビットコインのネットワーク手数料を含めると残高が足りません";
+
+/* No comment provided by engineer. */
+"INVALID" = "無効";
+
+/* No comment provided by engineer. */
+"Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "このQRコードを人に見せる、またはビットコインアドレスをコピーして人に送るとすぐに送金を受け取れます。";
+
+/* No comment provided by engineer. */
+"minute" = "分";
+
+/* No comment provided by engineer. */
+"minutes" = "分";
+
+/* No comment provided by engineer. */
+"missing certificate" = "証明書が見つかりません";
+
+/* No comment provided by engineer. */
+"more..." = "さらに…";
+
+/* No comment provided by engineer. */
+"moved" = "移動されました";
+
+/* No comment provided by engineer. */
+"NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected." = "パスワード管理アプリや、他の端末に復元フレーズは\n      絶対に打ち込んだり写真撮ったりしないで下さい。ウィルスや\n      マルウェアによって盗まれ兼ねません。";
+
+/* No comment provided by engineer. */
+"new phrase" = "新規フレーズ";
+
+/* No comment provided by engineer. */
+"next, write down your recovery phrase" = "そして、復元フレーズを紙に書き留めて下さい";
+
+/* No comment provided by engineer. */
+"no peers found" = "通信相手が見つかりませんでした。";
+
+/* No comment provided by engineer. */
+"not a bitcoin QR code" = "ビットコインのQRコードではありません";
+
+/* No comment provided by engineer. */
+"not a valid bitcoin address" = "有効なビットコインアドレスではありません";
+
+/* No comment provided by engineer. */
+"not a valid private key" = "有効な秘密鍵ではありません";
+
+/* No comment provided by engineer. */
+"not connected to the bitcoin network" = "ビットコインネットワークに接続されていません。";
+
+/* No comment provided by engineer. */
+"ok" = "OK";
+
+/* No comment provided by engineer. */
+"passcode" = "パスコード";
+
+/* No comment provided by engineer. */
+"passcode for %@" = "%@のパスコード";
+
+/* No comment provided by engineer. */
+"password" = "パスワード";
+
+/* No comment provided by engineer. */
+"password protected key" = "パスワード保護された鍵";
+
+/* No comment provided by engineer. */
+"pay" = "支払う";
+
+/* No comment provided by engineer. */
+"payment address" = "支払先アドレス";
+
+/* No comment provided by engineer. */
+"payment output" = "支払い出力";
+
+/* No comment provided by engineer. */
+"post-dated" = "後日";
+
+/* No comment provided by engineer. */
+"Receive bitcoins at this address: %@" = "このアドレスでビットコインを受取る： %@";
+
+/* No comment provided by engineer. */
+"received" = "受取済み";
+
+/* No comment provided by engineer. */
+"received %@ (%@)" = "受取済み %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"recovery phrase" = "復元フレーズ";
+
+/* No comment provided by engineer. */
+"recovery phrase doesn't match" = "復元フレーズが一致しません";
+
+/* No comment provided by engineer. */
+"recovery phrase must have %d words" = "復元フレーズは半角スペースで区切られた %d 個の単語でないといけません。";
+
+/* No comment provided by engineer. */
+"reduce payment amount by\n%@ (%@)?" = "%1$@ (%2$@)\n上記の分だけ送金額減らしますか？";
+
+/* No comment provided by engineer. */
+"request" = "リクエスト";
+
+/* No comment provided by engineer. */
+"request an amount" = "指定金額をリクエスト";
+
+/* No comment provided by engineer. */
+"request expired" = "リクエストの有効期限切れました。";
+
+/* No comment provided by engineer. */
+"requested network \"%@\" instead of \"%@\"" = "ネットワーク「%2$@」の代わりに「%1$@」を要求してしまいました。";
+
+/* No comment provided by engineer. */
+"rescan" = "再スキャン";
+
+/* No comment provided by engineer. */
+"rescan blockchain" = "ブロックチェーンの再スキャン";
+
+/* No comment provided by engineer. */
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "送金トラブルや反映されていない取引があると疑われた時、ブロックチェーンの再スキャンをおすすめします。(再スキャンには数分程度かかる場合があります)";
+
+/* No comment provided by engineer. */
+"reset" = "リセット";
+
+/* No comment provided by engineer. */
+"Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "ビットコインアドレスを取得するためにQRコードを見せてもらって下さい。ビットコインアドレスを持っている人であれば誰にでも送金が可能です。";
+
+/* No comment provided by engineer. */
+"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "スクリーン ショットは、他のアプリやデバイスに閲覧することができます。新しい復元フレーズを作り、大事に守って下さい。";
+
+/* No comment provided by engineer. */
+"Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "スクリーン ショットは、他のアプリやデバイスに閲覧することができます。このウォレットが危険に晒されました！直ちに別の復元フレーズに全残高を移して下さい！";
+
+/* No comment provided by engineer. */
+"seen by %d of %d peers" = "%2$d ピアの内 %1$d ピアにて伝播確認済";
+
+/* No comment provided by engineer. */
+"Send %@ (%@) from this private key into your wallet? The bitcoin network will receive a fee of %@ (%@)." = "breadwallet宛にスキャンした秘密鍵の全残高 %1$@ (%2$@) を送金しても宜しいですか？ビットコインネットワークへの手数料が %3$@ (%4$@) になります。";
+
+/* No comment provided by engineer. */
+"send address as email" = "ビットコインアドレスをメールにて共有";
+
+/* No comment provided by engineer. */
+"send address as message" = "ビットコインアドレスをメッセージにて共有";
+
+/* No comment provided by engineer. */
+"send request as email" = "リクエストをメールにて共有";
+
+/* No comment provided by engineer. */
+"send request as message" = "リクエストをメッセージにて共有";
+
+/* No comment provided by engineer. */
+"sent" = "送金成功！";
+
+/* No comment provided by engineer. */
+"sent!" = "送金成功！";
+
+/* No comment provided by engineer. */
+"settings" = "設定";
+
+/* No comment provided by engineer. */
+"show" = "表示";
+
+/* No comment provided by engineer. */
+"show phrase" = "フレーズを表示";
+
+/* No comment provided by engineer. */
+"sms not currently available" = "SMSは現在利用できません．";
+
+/* No comment provided by engineer. */
+"spent address" = "使用済みアドレス";
+
+/* No comment provided by engineer. */
+"spent input" = "使用済み入力";
+
+/* No comment provided by engineer. */
+"status:" = "ステータス:";
+
+/* No comment provided by engineer. */
+"swept!" = "全残高送金成功！";
+
+/* No comment provided by engineer. */
+"syncing..." = "同期中…";
+
+/* No comment provided by engineer. */
+"the app will now close" = "アプリを閉じます";
+
+/* No comment provided by engineer. */
+"This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "これがあなたのビットコインアドレスの一つ。タップすればコピーしたりメールやSMSで共有したりできます。取引を行うごとにアドレスは入れ替わりますが、一度表示したアドレスに対して送られたビットコインはいつまでも自動的に受け取られます。";
+
+/* No comment provided by engineer. */
+"This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market." = "これがあなたのビットコイン残高です。ビットコインは通貨であり、為替レートが市場の動きにより変動します。";
+
+/* No comment provided by engineer. */
+"this payment address is already in your wallet" = "このペイメントアドレスは既にあなたのウォレットに含まれています";
+
+/* No comment provided by engineer. */
+"this private key is already in your wallet" = "この秘密鍵は既にあなたのウォレットに含まれています";
+
+/* No comment provided by engineer. */
+"this private key is empty" = "この秘密鍵は承認済み残高がありません";
+
+/* No comment provided by engineer. */
+"to:" = "送金先：";
+
+/* No comment provided by engineer. */
+"to: %@" = "送金先： %@";
+
+/* No comment provided by engineer. */
+"touch id limit" = "Touch IDの送金可能額";
+
+/* No comment provided by engineer. */
+"touch id spending limit" = "Touch IDの送金可能額";
+
+/* No comment provided by engineer. */
+"transaction canceled, network timeout" = "取引キャンセルされました、ネットワークタイムアウトがありました";
+
+/* No comment provided by engineer. */
+"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "この秘密鍵にある残高が通常手数料より小さいので送れません。";
+
+/* No comment provided by engineer. */
+"transaction history" = "取引履歴";
+
+/* No comment provided by engineer. */
+"transaction is post-dated" = "取引が後日行われる予定";
+
+/* No comment provided by engineer. */
+"transaction rejected" = "取引拒否されました";
+
+/* No comment provided by engineer. */
+"turn device passcode on" = "端末のパスコードを有効に";
+
+/* No comment provided by engineer. */
+"unexpected response from %@" = "%@ から予期しない応答";
+
+/* No comment provided by engineer. */
+"unkown address" = "不明なアドレス";
+
+/* No comment provided by engineer. */
+"unrecognized address" = "認識されないアドレス";
+
+/* No comment provided by engineer. */
+"unsupported or corrupted document" = "サポートされていないか破損しているドキュメント";
+
+/* No comment provided by engineer. */
+"unsupported signature type" = "サポートされていない署名の種類";
+
+/* No comment provided by engineer. */
+"unsupported url" = "サポートされていないURL";
+
+/* No comment provided by engineer. */
+"untrusted certificate" = "信頼されていない証明書";
+
+/* No comment provided by engineer. */
+"unverified" = "未確認";
+
+/* No comment provided by engineer. */
+"verified, waiting for confirmation" = "伝播確認済、承認を待機中";
+
+/* No comment provided by engineer. */
+"verify passcode" = "もう一度パスコードをご入力下さい";
+
+/* No comment provided by engineer. */
+"wallet address" = "ウォレットアドレス";
+
+/* No comment provided by engineer. */
+"wallet disabled" = "ウォレット無効";
+
+/* No comment provided by engineer. */
+"WARNING" = "警告！！！";
+
+/* No comment provided by engineer. */
+"wipe" = "完全削除";
+
+/* No comment provided by engineer. */
+"WRITE DOWN YOUR RECOVERY PHRASE" = "復元フレーズを書き留めて下さい！";
+
+/* No comment provided by engineer. */
+"you received bitcoin!" = "ビットコインを受け取りました！";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "あなたのウォレットが同期されていない可能性があります。\nブロックチェーンの再スキャンを行うと直ることが大半です。";
+

@@ -1,81 +1,81 @@
 /* Class = "UIButton"; normalTitle = "recover wallet"; ObjectID = "4w7-k8-9wY"; */
-"4w7-k8-9wY.normalTitle" = "récupérer portefeuille";
+"4w7-k8-9wY.normalTitle" = "ウォレットを復元";
 
 /* Class = "UILabel"; text = "local currency"; ObjectID = "8e2-ar-Ehc"; */
-"8e2-ar-Ehc.text" = "devise locale";
+"8e2-ar-Ehc.text" = "通貨表示";
 
 /* Class = "UIButton"; normalTitle = "generate recovery phrase"; ObjectID = "A4M-yq-26d"; */
-"A4M-yq-26d.normalTitle" = "générer une phrase de récupération";
+"A4M-yq-26d.normalTitle" = "新規復元フレーズを作る";
 
 /* Class = "UILabel"; text = "start/recover another wallet"; ObjectID = "D1b-HB-lKH"; */
-"D1b-HB-lKH.text" = "démarrer/récupérer un autre portefeuille";
+"D1b-HB-lKH.text" = "ウォレットの新規作成及び復元";
 
 /* Class = "UILabel"; text = "exchange rate data provided by\nbitpay.com/rates"; ObjectID = "D4H-hd-LsX"; */
-"D4H-hd-LsX.text" = "données de taux de change fournies par";
+"D4H-hd-LsX.text" = "為替データ提供：\nbitpay.com/rates";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
-"EQG-Km-ZKY.text" = "si jamais vous perdez votre téléphone, vous aurez besoin de cette phrase pour récupérer votre portefeuille";
+"EQG-Km-ZKY.text" = "携帯電話を紛失した場合、このフレーズでウォレットが復元できます。";
 
 /* Class = "UILabel"; text = "sent"; ObjectID = "FjB-H2-BnK"; */
-"FjB-H2-BnK.text" = "envoyé";
+"FjB-H2-BnK.text" = "送金成功！";
 
 /* Class = "UIBarButtonItem"; title = "remind me later"; ObjectID = "QQS-Me-RNh"; */
-"QQS-Me-RNh.title" = "me rappeler plus tard";
+"QQS-Me-RNh.title" = "後で通知して下さい";
 
 /* Class = "UILabel"; text = "not connected"; ObjectID = "UyF-OV-QVY"; */
-"UyF-OV-QVY.text" = "non connecté";
+"UyF-OV-QVY.text" = "接続されていません。";
 
 /* Class = "UINavigationItem"; title = "settings"; ObjectID = "W8m-Eh-Nf9"; */
-"W8m-Eh-Nf9.title" = "paramètres";
+"W8m-Eh-Nf9.title" = "設定";
 
 /* Class = "UILabel"; text = "amount:"; ObjectID = "XJu-9x-HqQ"; */
-"XJu-9x-HqQ.text" = "montant :";
+"XJu-9x-HqQ.text" = "金額：";
 
 /* Class = "UILabel"; text = "Enter this wallet's recovery phrase to wipe it and start/recover another. Your current balance remains on this phrase."; ObjectID = "YC6-rN-4P5"; */
-"YC6-rN-4P5.text" = "Entrez la phrase de récupération de ce portefeuille pour l'effacer et en démarrer/récupérer un autre. Votre solde actuel reste sur cette phrase.";
+"YC6-rN-4P5.text" = "このウォレットを初期化するには、このウォレットの復元フレーズをご入力下さい。その後、新規作成またはウォレットの復元ができます。現在のウォレットとその残高は復元フレーズに残ります。";
 
 /* Class = "UIButton"; normalTitle = "pay address from clipboard"; ObjectID = "bfj-xS-5rN"; */
-"bfj-xS-5rN.normalTitle" = "adresse de paiement depuis le presse-papier";
+"bfj-xS-5rN.normalTitle" = "コピーしたアドレスへ送金";
 
 /* Class = "UIButton"; normalTitle = "scan QR code"; ObjectID = "ce6-Wi-wk4"; */
-"ce6-Wi-wk4.normalTitle" = "numériser code QR";
+"ce6-Wi-wk4.normalTitle" = "QR コードをスキャン";
 
 /* Class = "UILabel"; text = "I wrote it down:"; ObjectID = "cyp-mV-Bhd"; */
-"cyp-mV-Bhd.text" = "Je l'ai écrit sur papier :";
+"cyp-mV-Bhd.text" = "紙に書き留めました：";
 
 /* Class = "UIButton"; normalTitle = "new wallet"; ObjectID = "dOa-zm-TDG"; */
-"dOa-zm-TDG.normalTitle" = "nouveau portefeuille";
+"dOa-zm-TDG.normalTitle" = "新規ウォレット";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "dX6-jg-5IA"; */
-"dX6-jg-5IA.text" = "si jamais vous perdez votre téléphone, vous aurez besoin de cette phrase pour récupérer votre portefeuille";
+"dX6-jg-5IA.text" = "携帯電話を失くされた場合、このフレーズでウォレットが復元できます。";
 
 /* Class = "UILabel"; text = "unconfirmed"; ObjectID = "eJ2-5h-DO2"; */
-"eJ2-5h-DO2.text" = "non confirmé";
+"eJ2-5h-DO2.text" = "未承認";
 
 /* Class = "UIButton"; normalTitle = "show"; ObjectID = "efL-Cj-Aho"; */
-"efL-Cj-Aho.normalTitle" = "montrer";
+"efL-Cj-Aho.normalTitle" = "表示";
 
 /* Class = "UINavigationItem"; title = "confirm:"; ObjectID = "fQN-xb-SYb"; */
-"fQN-xb-SYb.title" = "confirmer :";
+"fQN-xb-SYb.title" = "確認：";
 
 /* Class = "UILabel"; text = "send money:"; ObjectID = "l5l-JR-LKA"; */
-"l5l-JR-LKA.text" = "envoyer de l'argent :";
+"l5l-JR-LKA.text" = "送金する:";
 
 /* Class = "UINavigationItem"; title = "recovery phrase:"; ObjectID = "ooJ-EA-DFl"; */
-"ooJ-EA-DFl.title" = "phrase de récupération :";
+"ooJ-EA-DFl.title" = "復元フレーズ:";
 
 /* Class = "UILabel"; text = "receive money:"; ObjectID = "qel-3J-2VC"; */
-"qel-3J-2VC.text" = "recevoir de l'argent :";
+"qel-3J-2VC.text" = "受け取る:";
 
 /* Class = "UITableViewController"; title = "transaction details"; ObjectID = "s4T-yd-VfX"; */
-"s4T-yd-VfX.title" = "détails de la transaction";
+"s4T-yd-VfX.title" = "取引詳細";
 
 /* Class = "UILabel"; text = "no transactions"; ObjectID = "t1j-JZ-FW0"; */
-"t1j-JZ-FW0.text" = "aucune transaction";
+"t1j-JZ-FW0.text" = "取引がありません";
 
 /* Class = "UILabel"; text = "breadwallet v%ver%%net%\ncopyright © 2015 Aaron Voisine\n\nthis app is open source"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "breadwallet v%ver%%net%\ncopyright © 2015 Aaron Voisine\n\nthis app is open source";
+"uvz-hk-Nr4.text" = "breadwallet v%ver%%net%\ncopyright © 2015 Aaron Voisine\n\nこのアプリはオープンソースです。";
 
 /* Class = "UILabel"; text = "start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
-"wDZ-DN-szv.text" = "démarrer un nouveau portefeuille en générant une nouvelle phrase de récupération de portefeuille";
+"wDZ-DN-szv.text" = "新しい復元フレーズを生成し、新規ウォレットを作ります。";
 

@@ -184,7 +184,7 @@
             [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"bad recovery phrase", nil) delegate:nil
               cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
-        else if (m.wallet) {
+        else if (! m.noWallet) {
             [self.textView resignFirstResponder];
             [self performSelector:@selector(wipeWithPhrase:) withObject:s afterDelay:0.0];
         }

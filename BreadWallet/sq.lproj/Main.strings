@@ -1,81 +1,81 @@
 /* Class = "UIButton"; normalTitle = "recover wallet"; ObjectID = "4w7-k8-9wY"; */
-"4w7-k8-9wY.normalTitle" = "récupérer portefeuille";
+"4w7-k8-9wY.normalTitle" = "rikthe kuletën";
 
 /* Class = "UILabel"; text = "local currency"; ObjectID = "8e2-ar-Ehc"; */
-"8e2-ar-Ehc.text" = "devise locale";
+"8e2-ar-Ehc.text" = "monedha lokale";
 
 /* Class = "UIButton"; normalTitle = "generate recovery phrase"; ObjectID = "A4M-yq-26d"; */
-"A4M-yq-26d.normalTitle" = "générer une phrase de récupération";
+"A4M-yq-26d.normalTitle" = "gjenero frazën rikthyese";
 
 /* Class = "UILabel"; text = "start/recover another wallet"; ObjectID = "D1b-HB-lKH"; */
-"D1b-HB-lKH.text" = "démarrer/récupérer un autre portefeuille";
+"D1b-HB-lKH.text" = "starto/rikthe një tjetër kulet";
 
 /* Class = "UILabel"; text = "exchange rate data provided by\nbitpay.com/rates"; ObjectID = "D4H-hd-LsX"; */
-"D4H-hd-LsX.text" = "données de taux de change fournies par";
+"D4H-hd-LsX.text" = "të dhënat e çmimit të tregut ofrohen nga\nbitpay.com/rates";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
-"EQG-Km-ZKY.text" = "si jamais vous perdez votre téléphone, vous aurez besoin de cette phrase pour récupérer votre portefeuille";
+"EQG-Km-ZKY.text" = "Nëse e humbni telefonin tuaj ndonjëherë, do të ju duhet kjo frazë për ta rikthyer kuletën tuaj";
 
 /* Class = "UILabel"; text = "sent"; ObjectID = "FjB-H2-BnK"; */
-"FjB-H2-BnK.text" = "envoyé";
+"FjB-H2-BnK.text" = "dërgo";
 
 /* Class = "UIBarButtonItem"; title = "remind me later"; ObjectID = "QQS-Me-RNh"; */
-"QQS-Me-RNh.title" = "me rappeler plus tard";
+"QQS-Me-RNh.title" = "ma kujto më vonë";
 
 /* Class = "UILabel"; text = "not connected"; ObjectID = "UyF-OV-QVY"; */
-"UyF-OV-QVY.text" = "non connecté";
+"UyF-OV-QVY.text" = "nuk është konektuar";
 
 /* Class = "UINavigationItem"; title = "settings"; ObjectID = "W8m-Eh-Nf9"; */
-"W8m-Eh-Nf9.title" = "paramètres";
+"W8m-Eh-Nf9.title" = "konfigurimi";
 
 /* Class = "UILabel"; text = "amount:"; ObjectID = "XJu-9x-HqQ"; */
-"XJu-9x-HqQ.text" = "montant :";
+"XJu-9x-HqQ.text" = "shuma:";
 
 /* Class = "UILabel"; text = "Enter this wallet's recovery phrase to wipe it and start/recover another. Your current balance remains on this phrase."; ObjectID = "YC6-rN-4P5"; */
-"YC6-rN-4P5.text" = "Entrez la phrase de récupération de ce portefeuille pour l'effacer et en démarrer/récupérer un autre. Votre solde actuel reste sur cette phrase.";
+"YC6-rN-4P5.text" = "Shëno këtë frazë rikthyese të kuletës për ta fshir atë dhe startoni/riktheni një tjetër. Bilanci i juaj aktual do të mbetet në këtë frazë.";
 
 /* Class = "UIButton"; normalTitle = "pay address from clipboard"; ObjectID = "bfj-xS-5rN"; */
-"bfj-xS-5rN.normalTitle" = "adresse de paiement depuis le presse-papier";
+"bfj-xS-5rN.normalTitle" = "paguaj adresën nga memorja";
 
 /* Class = "UIButton"; normalTitle = "scan QR code"; ObjectID = "ce6-Wi-wk4"; */
-"ce6-Wi-wk4.normalTitle" = "numériser code QR";
+"ce6-Wi-wk4.normalTitle" = "skano QR kodin";
 
 /* Class = "UILabel"; text = "I wrote it down:"; ObjectID = "cyp-mV-Bhd"; */
-"cyp-mV-Bhd.text" = "Je l'ai écrit sur papier :";
+"cyp-mV-Bhd.text" = "E shkruajta:";
 
 /* Class = "UIButton"; normalTitle = "new wallet"; ObjectID = "dOa-zm-TDG"; */
-"dOa-zm-TDG.normalTitle" = "nouveau portefeuille";
+"dOa-zm-TDG.normalTitle" = "kuletë e re";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "dX6-jg-5IA"; */
-"dX6-jg-5IA.text" = "si jamais vous perdez votre téléphone, vous aurez besoin de cette phrase pour récupérer votre portefeuille";
+"dX6-jg-5IA.text" = "Nëse e humbni ndonjëherë telefonin, do të ju duhet kjo frazë për ta rikthyer kuletën tuaj";
 
 /* Class = "UILabel"; text = "unconfirmed"; ObjectID = "eJ2-5h-DO2"; */
-"eJ2-5h-DO2.text" = "non confirmé";
+"eJ2-5h-DO2.text" = "pa konfirmuar";
 
 /* Class = "UIButton"; normalTitle = "show"; ObjectID = "efL-Cj-Aho"; */
-"efL-Cj-Aho.normalTitle" = "montrer";
+"efL-Cj-Aho.normalTitle" = "shfaq";
 
 /* Class = "UINavigationItem"; title = "confirm:"; ObjectID = "fQN-xb-SYb"; */
-"fQN-xb-SYb.title" = "confirmer :";
+"fQN-xb-SYb.title" = "konfirmo:";
 
 /* Class = "UILabel"; text = "send money:"; ObjectID = "l5l-JR-LKA"; */
-"l5l-JR-LKA.text" = "envoyer de l'argent :";
+"l5l-JR-LKA.text" = "dërgo para:";
 
 /* Class = "UINavigationItem"; title = "recovery phrase:"; ObjectID = "ooJ-EA-DFl"; */
-"ooJ-EA-DFl.title" = "phrase de récupération :";
+"ooJ-EA-DFl.title" = "fraza rikthyese:";
 
 /* Class = "UILabel"; text = "receive money:"; ObjectID = "qel-3J-2VC"; */
-"qel-3J-2VC.text" = "recevoir de l'argent :";
+"qel-3J-2VC.text" = "prano para:";
 
 /* Class = "UITableViewController"; title = "transaction details"; ObjectID = "s4T-yd-VfX"; */
-"s4T-yd-VfX.title" = "détails de la transaction";
+"s4T-yd-VfX.title" = "detajet e transaksionit";
 
 /* Class = "UILabel"; text = "no transactions"; ObjectID = "t1j-JZ-FW0"; */
-"t1j-JZ-FW0.text" = "aucune transaction";
+"t1j-JZ-FW0.text" = "nuk ka transaksione";
 
 /* Class = "UILabel"; text = "breadwallet v%ver%%net%\ncopyright © 2015 Aaron Voisine\n\nthis app is open source"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "breadwallet v%ver%%net%\ncopyright © 2015 Aaron Voisine\n\nthis app is open source";
+"uvz-hk-Nr4.text" = "breadwallet v%ver%%net%\ncopyright © 2015 Aaron Voisine\n\nky aplikacion është me kod të hapur";
 
 /* Class = "UILabel"; text = "start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
-"wDZ-DN-szv.text" = "démarrer un nouveau portefeuille en générant une nouvelle phrase de récupération de portefeuille";
+"wDZ-DN-szv.text" = "starto një kuletë të re duke gjeneruar një frazë rikthyese";
 
