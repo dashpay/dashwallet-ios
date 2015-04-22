@@ -36,17 +36,6 @@
 
 static NSString *dateFormat(NSString *template)
 {
-//    NSString *format = [[[[[[[NSDateFormatter dateFormatFromTemplate:template options:0 locale:[NSLocale currentLocale]]
-//                             stringByReplacingOccurrencesOfString:@", " withString:@" "]
-//                            stringByReplacingOccurrencesOfString:@" a" withString:@"a"]
-//                           stringByReplacingOccurrencesOfString:@"hh" withString:@"h"]
-//                          stringByReplacingOccurrencesOfString:@" ha" withString:@"@ha"]
-//                         stringByReplacingOccurrencesOfString:@"HH" withString:@"H"]
-//                        stringByReplacingOccurrencesOfString:@"H " withString:@"H'h' "];
-//
-//    return [format stringByReplacingOccurrencesOfString:@"H" withString:@"H'h'"
-//            options:NSBackwardsSearch|NSAnchoredSearch range:NSMakeRange(0, format.length)];
-
     NSString *format = [NSDateFormatter dateFormatFromTemplate:template options:0 locale:[NSLocale currentLocale]];
     
     format = [format stringByReplacingOccurrencesOfString:@", " withString:@" "];
@@ -58,7 +47,6 @@ static NSString *dateFormat(NSString *template)
     format = [format stringByReplacingOccurrencesOfString:@"H " withString:@"H'h' "];
     format = [format stringByReplacingOccurrencesOfString:@"H" withString:@"H'h'"
               options:NSBackwardsSearch|NSAnchoredSearch range:NSMakeRange(0, format.length)];
-    
     return format;
 }
 
@@ -182,7 +170,7 @@ static NSString *dateFormat(NSString *template)
 - (void)viewWillDisappear:(BOOL)animated
 {
     if (self.isMovingFromParentViewController || self.navigationController.isBeingDismissed) {
-        //BUG: XXXX this isn't triggered from start/recover new wallet
+        //BUG: XXX this isn't triggered from start/recover new wallet
         if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
         self.backgroundObserver = nil;
         if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
@@ -433,6 +421,7 @@ static NSString *dateFormat(NSString *template)
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                 }
                 else if (confirms == 0 && relayCount < PEER_MAX_CONNECTIONS) {
+                    //TODO: XXXX remember previous verified status during reconnect
                     unconfirmedLabel.text = NSLocalizedString(@"unverified", nil);
                 }
                 else if (confirms < 6) {

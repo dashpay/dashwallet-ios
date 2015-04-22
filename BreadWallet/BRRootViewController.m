@@ -286,7 +286,7 @@
             [self showErrorBar];
         }];
     
-    //TODO: XXXX applicationProtectedDataDidBecomeAvailable observer
+    //TODO: XXX applicationProtectedDataDidBecomeAvailable observer
     
     self.reachability = [Reachability reachabilityForInternetConnection];
     [self.reachability startNotifier];

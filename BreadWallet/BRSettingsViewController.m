@@ -349,6 +349,7 @@
         case 0:
             switch (indexPath.row) {
                 case 0: // about
+                    //TODO: XXXX add a link to support
                     c = [self.storyboard instantiateViewControllerWithIdentifier:@"AboutViewController"];
                     l = (id)[c.view viewWithTag:411];
                     s = [[NSMutableAttributedString alloc] initWithAttributedString:l.attributedText];

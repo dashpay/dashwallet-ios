@@ -859,7 +859,7 @@ static const char *dns_seeds[] = {
 
             dispatch_async(self.q, ^{
                 // request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
-                // BUG: XXXX headers can timeout on slow connections (each message is over 160k)
+                // BUG: XXX headers can timeout on slow connections (each message is over 160k)
                 if (self.lastBlock.timestamp + 7*24*60*60 >= self.earliestKeyTime + NSTimeIntervalSince1970) {
                     [peer sendGetblocksMessageWithLocators:[self blockLocatorArray] andHashStop:nil];
                 }
