@@ -38,7 +38,6 @@
 #import <netdb.h>
 
 #define FIXED_PEERS          @"FixedPeers"
-#define NODE_NETWORK         1  // services value indicating a node offers full blocks, not just headers
 #define PROTOCOL_TIMEOUT     20.0
 #define MAX_CONNECT_FAILURES 20 // notify user of network problems after this many connect failures in a row
 #define CHECKPOINT_COUNT     (sizeof(checkpoint_array)/sizeof(*checkpoint_array))
@@ -223,7 +222,7 @@ static const char *dns_seeds[] = {
 
                     // give dns peers a timestamp between 3 and 7 days ago
                     [_peers addObject:[[BRPeer alloc] initWithAddress:addr port:BITCOIN_STANDARD_PORT
-                     timestamp:now - (3*24*60*60 + arc4random_uniform(4*24*60*60)) services:NODE_NETWORK]];
+                     timestamp:now - (3*24*60*60 + arc4random_uniform(4*24*60*60)) services:SERVICES_NODE_NETWORK]];
                 }
             }
 
@@ -238,7 +237,7 @@ static const char *dns_seeds[] = {
                     // give hard coded peers a timestamp between 7 and 14 days ago
                     [_peers addObject:[[BRPeer alloc] initWithAddress:address.unsignedIntValue
                      port:BITCOIN_STANDARD_PORT timestamp:now - (7*24*60*60 + arc4random_uniform(7*24*60*60))
-                     services:NODE_NETWORK]];
+                     services:SERVICES_NODE_NETWORK]];
                 }
             }
             
@@ -816,7 +815,8 @@ static const char *dns_seeds[] = {
     self.connectFailures = 0;
     NSLog(@"%@:%d connected with lastblock %d", peer.host, peer.port, peer.lastblock);
     
-    if (peer.lastblock + 10 < self.lastBlockHeight) { // drop peers that aren't synced yet, we can't help them
+    // drop peers that don't carry full blocks, or aren't synced yet
+    if (! (peer.services & SERVICES_NODE_NETWORK) || peer.lastblock + 10 < self.lastBlockHeight) {
         [peer disconnect];
         return;
     }

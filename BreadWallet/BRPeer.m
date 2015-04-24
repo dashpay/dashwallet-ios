@@ -577,6 +577,8 @@ services:(uint64_t)services
         uint16_t port = CFSwapInt16BigToHost(*(const uint16_t *)((const uint8_t *)message.bytes + off +
                                                                  sizeof(uint32_t)*2 + 20));
         
+        if (! (services & SERVICES_NODE_NETWORK)) continue; // skip peers that don't carry full blocks
+        
         // if address time is more than 10 min in the future or older than reference date, set to 5 days old
         if (timestamp > now + 10*60 || timestamp < 0) timestamp = now - 5*24*60*60;
 
