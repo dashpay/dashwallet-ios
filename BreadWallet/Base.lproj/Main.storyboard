@@ -1320,7 +1320,7 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1xc-b5-vde" userLabel="paralax">
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                                 <subviews>
-                                    <imageView userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="wallpaper-welcome" translatesAutoresizingMaskIntoConstraints="NO" id="pb2-E7-2ep">
+                                    <imageView userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="wallpaper-welcome" translatesAutoresizingMaskIntoConstraints="NO" id="pb2-E7-2ep">
                                         <rect key="frame" x="0.0" y="0.0" width="757" height="568"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                     </imageView>
@@ -1328,6 +1328,8 @@
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="568" id="290-N4-Kpx"/>
+                                    <constraint firstAttribute="centerY" secondItem="pb2-E7-2ep" secondAttribute="centerY" id="CiJ-S2-sEy"/>
+                                    <constraint firstItem="pb2-E7-2ep" firstAttribute="leading" secondItem="1xc-b5-vde" secondAttribute="leading" id="RQ1-IE-ZcV"/>
                                     <constraint firstAttribute="width" constant="320" id="sXY-hv-AdA"/>
                                 </constraints>
                             </view>
@@ -1408,6 +1410,7 @@
                         <outlet property="restoreXCenter" destination="cgR-0k-6zT" id="tsk-mk-Z87"/>
                         <outlet property="walletXCenter" destination="ksL-p8-tmf" id="QAd-Ce-GxS"/>
                         <outlet property="wallpaper" destination="pb2-E7-2ep" id="UeF-CY-KaD"/>
+                        <outlet property="wallpaperXLeft" destination="RQ1-IE-ZcV" id="CFC-ax-cSw"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="hTO-3U-AsH" userLabel="First Responder" sceneMemberID="firstResponder"/>

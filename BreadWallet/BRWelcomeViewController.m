@@ -26,10 +26,6 @@
 #import "BRWelcomeViewController.h"
 #import "BRWalletManager.h"
 
-#define WALLPAPER_ANIMATION_DURATION 30.0
-#define WALLPAPER_ANIMATION_X 240.0
-#define WALLPAPER_ANIMATION_Y 0.0
-
 @interface BRWelcomeViewController ()
 
 @property (nonatomic, assign) BOOL hasAppeared, animating;
@@ -39,7 +35,8 @@
 @property (nonatomic, strong) IBOutlet UIView *paralax, *wallpaper;
 @property (nonatomic, strong) IBOutlet UILabel *startLabel, *recoverLabel, *warningLabel;
 @property (nonatomic, strong) IBOutlet UIButton *generateButton, *showButton;
-@property (nonatomic, strong) IBOutlet NSLayoutConstraint *logoXCenter, *walletXCenter, *restoreXCenter, *paralaxXLeft;
+@property (nonatomic, strong) IBOutlet NSLayoutConstraint *logoXCenter, *walletXCenter, *restoreXCenter,
+                                                          *paralaxXLeft, *wallpaperXLeft;
 
 @end
 
@@ -163,8 +160,8 @@
 
 - (void)animateWallpaper
 {
-//    if (self.animating) return;
-//    self.animating = YES;
+    if (self.animating) return;
+    self.animating = YES;
     
     if (self.paralax.superview != self.view.superview) {
         NSLayoutConstraint *c = self.paralaxXLeft;
@@ -176,26 +173,19 @@
                              multiplier:c.multiplier constant:c.constant];
         [v insertSubview:self.paralax belowSubview:self.view];
         [v addConstraint:self.paralaxXLeft];
-
-//        NSArray *a = self.wallpaper.superview.constraints;
-//        
-//        [self.wallpaper.superview
-//        removeConstraints:[a objectsAtIndexes:[a indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-//            return ([obj firstItem] == self.wallpaper || [obj secondItem] == self.wallpaper) ? YES : NO;
-//        }]]];
-        
         [v layoutIfNeeded];
         self.paralax.center = CGPointMake(self.paralax.center.x, v.bounds.size.height/2.0);
     }
 
-//    [UIView animateWithDuration:WALLPAPER_ANIMATION_DURATION delay:0.0
-//    options:UIViewAnimationOptionCurveLinear | UIViewAnimationOptionRepeat | UIViewAnimationOptionAutoreverse
-//    animations:^{
-//        self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2.0 - WALLPAPER_ANIMATION_X,
-//                                            self.wallpaper.frame.size.height/2.0 - WALLPAPER_ANIMATION_Y);
-//    } completion:^(BOOL finished) {
-//        self.animating = NO;
-//    }];
+    self.wallpaperXLeft.constant = -240.0;
+
+    [UIView animateWithDuration:30.0 delay:0.0
+    options:UIViewAnimationOptionCurveLinear | UIViewAnimationOptionRepeat | UIViewAnimationOptionAutoreverse
+    animations:^{
+        [self.wallpaper.superview layoutIfNeeded];
+    } completion:^(BOOL finished) {
+        self.animating = NO;
+    }];
 }
 
 #pragma mark IBAction
