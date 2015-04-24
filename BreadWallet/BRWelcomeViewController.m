@@ -107,7 +107,6 @@
             self.logoXCenter.constant = self.view.frame.size.width;
             self.walletXCenter.constant = 0.0;
             self.restoreXCenter.constant = 0.0;
-            //BUG: XXXX paralax broken on 8.3
             self.paralaxXLeft.constant = self.view.frame.size.width*PARALAX_RATIO;
             self.navigationItem.titleView.hidden = NO;
             self.navigationItem.titleView.alpha = 0.0;
@@ -164,8 +163,8 @@
 
 - (void)animateWallpaper
 {
-    if (self.animating) return;
-    self.animating = YES;
+//    if (self.animating) return;
+//    self.animating = YES;
     
     if (self.paralax.superview != self.view.superview) {
         NSLayoutConstraint *c = self.paralaxXLeft;
@@ -178,25 +177,25 @@
         [v insertSubview:self.paralax belowSubview:self.view];
         [v addConstraint:self.paralaxXLeft];
 
-        NSArray *a = self.wallpaper.superview.constraints;
-        
-        [self.wallpaper.superview
-        removeConstraints:[a objectsAtIndexes:[a indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-            return ([obj firstItem] == self.wallpaper || [obj secondItem] == self.wallpaper) ? YES : NO;
-        }]]];
+//        NSArray *a = self.wallpaper.superview.constraints;
+//        
+//        [self.wallpaper.superview
+//        removeConstraints:[a objectsAtIndexes:[a indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+//            return ([obj firstItem] == self.wallpaper || [obj secondItem] == self.wallpaper) ? YES : NO;
+//        }]]];
         
         [v layoutIfNeeded];
         self.paralax.center = CGPointMake(self.paralax.center.x, v.bounds.size.height/2.0);
     }
-    
-    [UIView animateWithDuration:WALLPAPER_ANIMATION_DURATION delay:0.0
-    options:UIViewAnimationOptionCurveLinear | UIViewAnimationOptionRepeat | UIViewAnimationOptionAutoreverse
-    animations:^{
-        self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2.0 - WALLPAPER_ANIMATION_X,
-                                            self.wallpaper.frame.size.height/2.0 - WALLPAPER_ANIMATION_Y);
-    } completion:^(BOOL finished) {
-        self.animating = NO;
-    }];
+
+//    [UIView animateWithDuration:WALLPAPER_ANIMATION_DURATION delay:0.0
+//    options:UIViewAnimationOptionCurveLinear | UIViewAnimationOptionRepeat | UIViewAnimationOptionAutoreverse
+//    animations:^{
+//        self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2.0 - WALLPAPER_ANIMATION_X,
+//                                            self.wallpaper.frame.size.height/2.0 - WALLPAPER_ANIMATION_Y);
+//    } completion:^(BOOL finished) {
+//        self.animating = NO;
+//    }];
 }
 
 #pragma mark IBAction
