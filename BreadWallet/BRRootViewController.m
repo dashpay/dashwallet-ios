@@ -331,35 +331,9 @@
 {
     [super viewWillAppear:animated];
 
-    BRWalletManager *m = [BRWalletManager sharedInstance];
-
-    if (m.noWallet) {
-        if (m.masterPublicKey && ! m.passcodeEnabled) {
-            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"turn device passcode on", nil)
-              message:NSLocalizedString(@"\nA device passcode is needed to safeguard your wallet. Go to settings and "
-                                        "turn passcode on to continue.", nil)
-              delegate:self cancelButtonTitle:nil otherButtonTitles:NSLocalizedString(@"close app", nil), nil] show];
-              return;
-        }
-        
-        [self.navigationController
-        presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"] animated:NO
-        completion:^{
-            self.splash.hidden = YES;
-            self.navigationController.navigationBar.hidden = NO;
-            [self.pageViewController setViewControllers:@[self.receiveViewController]
-             direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
-        }];
-
-        m.didAuthenticate = YES;
-        self.showTips = YES;
-        [self unlock:nil];
-        return;
-    }
-
     self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"burger"];
     self.pageViewController.view.alpha = 1.0;
-    if (m.didAuthenticate) [self unlock:nil];
+    if ([[BRWalletManager sharedInstance] didAuthenticate]) [self unlock:nil];
 
     if ([[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground) {
         [[BRPeerManager sharedInstance] connect];
@@ -368,17 +342,41 @@
 
 - (void)viewDidAppear:(BOOL)animated
 {
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    
     if (! self.navBarTap) {
         self.navBarTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(navBarTap:)];
         [self.navigationController.navigationBar addGestureRecognizer:self.navBarTap];
     }
 
-    if (! [[BRWalletManager sharedInstance] noWallet]) {
+    if (m.noWallet) {
+        if (m.masterPublicKey && ! m.passcodeEnabled) {
+            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"turn device passcode on", nil)
+              message:NSLocalizedString(@"\nA device passcode is needed to safeguard your wallet. Go to settings and "
+                                        "turn passcode on to continue.", nil)
+              delegate:self cancelButtonTitle:nil otherButtonTitles:NSLocalizedString(@"close app", nil), nil] show];
+        }
+        else {
+            [self.navigationController
+             presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"] animated:NO
+             completion:^{
+                 self.splash.hidden = YES;
+                 self.navigationController.navigationBar.hidden = NO;
+                 [self.pageViewController setViewControllers:@[self.receiveViewController]
+                  direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
+             }];
+
+            m.didAuthenticate = YES;
+            self.showTips = YES;
+            [self unlock:nil];
+        }
+    }
+    else {
         self.splash.hidden = YES;
         self.navigationController.navigationBar.hidden = NO;
         self.pageViewController.view.alpha = 1.0;
         if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
-
+    
         if (self.navigationController.visibleViewController == self) {
             [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
             [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
