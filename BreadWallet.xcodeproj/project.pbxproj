@@ -85,6 +85,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		750BF6C71AEB2417004D9893 /* hu */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hu; path = hu.lproj/Main.strings; sourceTree = "<group>"; };
+		750BF6C81AEB2417004D9893 /* hu */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hu; path = hu.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		750BF6C91AEB2417004D9893 /* hu */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hu; path = hu.lproj/Localizable.strings; sourceTree = "<group>"; };
+		750BF6CA1AEB2417004D9893 /* hu */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hu; path = hu.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		7511E8C91AE5FF240025F1B3 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Main.strings; sourceTree = "<group>"; };
 		7511E8CA1AE5FF240025F1B3 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		7511E8CB1AE5FF240025F1B3 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -636,6 +640,7 @@
 				nl,
 				da,
 				de,
+				hu,
 			);
 			mainGroup = 75D5F3B5191EC270004AB296;
 			productRefGroup = 75D5F3BF191EC270004AB296 /* Products */;
@@ -760,6 +765,7 @@
 				7511E8E31AE5FFCC0025F1B3 /* nl */,
 				7511E8E71AE5FFD70025F1B3 /* da */,
 				7511E8EB1AE600220025F1B3 /* de */,
+				750BF6C91AEB2417004D9893 /* hu */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -776,6 +782,7 @@
 				7511E8E21AE5FFCC0025F1B3 /* nl */,
 				7511E8E61AE5FFD70025F1B3 /* da */,
 				7511E8EA1AE600220025F1B3 /* de */,
+				750BF6C81AEB2417004D9893 /* hu */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -793,6 +800,7 @@
 				7511E8E11AE5FFCC0025F1B3 /* nl */,
 				7511E8E51AE5FFD70025F1B3 /* da */,
 				7511E8E91AE600220025F1B3 /* de */,
+				750BF6C71AEB2417004D9893 /* hu */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";
@@ -809,6 +817,7 @@
 				7511E8E41AE5FFCC0025F1B3 /* nl */,
 				7511E8E81AE5FFD70025F1B3 /* da */,
 				7511E8EC1AE600220025F1B3 /* de */,
+				750BF6CA1AEB2417004D9893 /* hu */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";

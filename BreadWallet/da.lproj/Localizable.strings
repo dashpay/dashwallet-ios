@@ -77,7 +77,7 @@
 "Bitcoin address" = "Bitcoin-adresse";
 
 /* No comment provided by engineer. */
-"Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1' or '3'." = "Bitcoin adresser kan også blive kopieret til Udklipsholder. En bitcoin adresse starter altid med '1' eller '3'.";
+"Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1' or '3'." = "Bitcoin-adresser kan også kopieres til udklipsholderen. En bitcoin-adresse starter altid med \"1\" eller \"3\".";
 
 /* No comment provided by engineer. */
 "bitcoin network fee" = "bitcoin-netværksgebyr";
@@ -92,7 +92,7 @@
 "bitcoin transaction outputs can't be less than %@" = "outputs for bitcoin-transaktioner kan ikke være mindre end %@";
 
 /* No comment provided by engineer. */
-"block #%d of %d" = "blok #%1$d af %2$d";
+"block #%d of %d" = "bloknr. %1$d af %2$d";
 
 /* No comment provided by engineer. */
 "cancel" = "annullér";
@@ -122,7 +122,7 @@
 "CONFIRM WIPE" = "BEKRÆFT SLETNING";
 
 /* No comment provided by engineer. */
-"confirmed in block #%d" = "bekræftet i blok #%d";
+"confirmed in block #%d" = "bekræftet i bloknr. %d";
 
 /* No comment provided by engineer. */
 "connect timeout" = "forbindelses-timeout";
@@ -161,22 +161,22 @@
 "done" = "færdig";
 
 /* No comment provided by engineer. */
-"double spend" = "dobbelt betaling";
+"double spend" = "dobbelbetaling";
 
 /* No comment provided by engineer. */
-"email not configured" = "e-mail ikke opsat";
+"email not configured" = "e-mail ikke konfigureret";
 
 /* No comment provided by engineer. */
 "enter old passcode" = "angiv gammel adgangskode";
 
 /* No comment provided by engineer. */
-"error signing bitcoin transaction" = "fejl ved signering af bitcoin transaktion";
+"error signing bitcoin transaction" = "fejl ved signering af bitcoin-transaktion";
 
 /* No comment provided by engineer. */
 "error signing transaction" = "fejl ved signering af transaktion";
 
 /* No comment provided by engineer. */
-"from:" = "Fra:";
+"from:" = "fra:";
 
 /* No comment provided by engineer. */
 "hour" = "time";
@@ -197,7 +197,7 @@
 "IMPORTANT" = "VIGTIGT";
 
 /* No comment provided by engineer. */
-"insufficient funds" = "Utilstrækkelig saldo";
+"insufficient funds" = "utilstrækkelige midler";
 
 /* No comment provided by engineer. */
 "insufficient funds for bitcoin network fee" = "utilstrækkelige midler til bitcoin netværksgebyr";
@@ -224,7 +224,7 @@
 "moved" = "flyttet";
 
 /* No comment provided by engineer. */
-"NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected." = "ALDRIG skriv din gendannelsessætning i kodeords-programmer eller lignende. Andre enheder kan være inficeret.";
+"NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected." = "Skriv ALDRIG din gendannelsessætning i\n      kodeords-programmer eller lignende. Andre\n      enheder kan være inficeret.";
 
 /* No comment provided by engineer. */
 "new phrase" = "ny sætning";
@@ -413,7 +413,7 @@
 "transaction canceled, network timeout" = "transaktion annullet, netværk-timeout";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "transaktionsgebyret koster mere end de tilgængelige midler på denne private nøgle (på grund af bittesmå \"støv\" indskud)";
+"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "transaktionsgebyret koster mere end de tilgængelige midler på denne private nøgle (på grund af bittesmå \"støv\"-indskud)";
 
 /* No comment provided by engineer. */
 "transaction history" = "transaktionshistorik";
@@ -440,7 +440,7 @@
 "unsupported or corrupted document" = "dokument ikke understøttet eller beskadiget";
 
 /* No comment provided by engineer. */
-"unsupported signature type" = "signatur-type ikke understøttet";
+"unsupported signature type" = "signaturtype ikke understøttet";
 
 /* No comment provided by engineer. */
 "unsupported url" = "url ikke understøttet";
