@@ -11,13 +11,13 @@
 "1 confirmation" = "1 megerősítés";
 
 /* No comment provided by engineer. */
-"\"%@\" is not a recovery phrase word" = "\"%@\" nem lehet a helyreállítási jelszóban";
+"\"%@\" is not a recovery phrase word" = "\"%@\" nem lehet a helyreállítási kódmondatban";
 
 /* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\n         összesen %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nha valaha elveszítenéd a telefonodat, erre a 12 szavas jelszóra lesz szükséged tárcád helyreállításához";
+"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nha valaha elveszítenéd a telefonodat, erre a kódmondatra lesz szükséged tárcád helyreállításához";
 
 /* No comment provided by engineer. */
 "\n%d attempts remaining\n" = "\nmég %d alkalommal próbálkozhatsz\n";
@@ -29,7 +29,7 @@
 "\n\n     amount %@ (%@)" = "\n\n     összeg %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nA tárcád biztonságban tartásához egy készülék jelkód is szükséges. A folytatáshoz ezt kapcsold be a telefonod beállításainál.";
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nA tárcád biztonságban tartásához egy készülék-jelkód is szükséges. A folytatáshoz ezt kapcsold be a telefonod beállításainál.";
 
 /* No comment provided by engineer. */
 "\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nMÁR HASZNÁLTAD EZT A CÍMET\n\na bitcoin címek egyszeri használatra szólnak\n\naz ismételt használat mindkét fél tranzakcióinak titkosságát csökkenti, továbbá az oda küldött pénz elvesztését is okozhatja, ha a másik fél nem közvetlenül kontrollálja a címet";
@@ -38,7 +38,7 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nengedélyezd a kamera használatát a\nBeállítások->Adatvédelem->Kamera->%@ menüpontban";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nNE engedd, hogy más lássa a helyreállítási jelszavad, különben elköltheti a bitcoinjaidat.\n\nSOHA ne gépeld be a jelszavad jelszókezelő alkalmazásokba vagy máshová, hiszen fertőzöttek lehetnek.\n";
+"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nNE engedd, hogy más lássa a helyreállítási kódmondatodat, különben elköltheti a bitcoinjaidat.\n\nSOHA ne gépeld be a helyreállítási kódmondatodat jelszókezelő alkalmazásokba vagy máshová, hiszen fertőzöttek lehetnek.\n";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nhálózati díj +%1$@ (%2$@)";
@@ -68,7 +68,7 @@
 "bad payment URL" = "hibás fizetési URL";
 
 /* No comment provided by engineer. */
-"bad recovery phrase" = "hibás helyreállítási jelszó";
+"bad recovery phrase" = "hibás helyreállítási kódmondat";
 
 /* No comment provided by engineer. */
 "bad signature" = "hibás aláírás";
@@ -86,13 +86,13 @@
 "bitcoin payments can't be less than %@" = "a bitcoin fizetés összege nem lehet kevesebb, mint %@";
 
 /* No comment provided by engineer. */
-"bitcoin transaction not signed" = "bitcoin tranzakció nincs aláírva";
+"bitcoin transaction not signed" = "a bitcoin tranzakció nincs aláírva";
 
 /* No comment provided by engineer. */
-"bitcoin transaction outputs can't be less than %@" = "bitcoin tranzakció kimeneteinek összege nem lehet kisebb, mint %@";
+"bitcoin transaction outputs can't be less than %@" = "a bitcoin tranzakció kimeneteinek összege nem lehet kisebb, mint %@";
 
 /* No comment provided by engineer. */
-"block #%d of %d" = "#%1$d blokk a %2$d-ból/-ből";
+"block #%d of %d" = "%1$d. blokk a %2$d-ból/-ből";
 
 /* No comment provided by engineer. */
 "cancel" = "mégse";
@@ -122,7 +122,7 @@
 "CONFIRM WIPE" = "TÖRLÉS MEGERŐSÍTÉSE";
 
 /* No comment provided by engineer. */
-"confirmed in block #%d" = "#%d blokkban megerősítve";
+"confirmed in block #%d" = "%d. blokkban megerősítve";
 
 /* No comment provided by engineer. */
 "connect timeout" = "a kapcsolat időtúllépés miatt megszakadt";
@@ -134,7 +134,7 @@
 "copy address to clipboard" = "cím másolása a vágólapra";
 
 /* No comment provided by engineer. */
-"copy request to clipboard" = "kérelem másolása vágólapra";
+"copy request to clipboard" = "kérelem másolása a vágólapra";
 
 /* No comment provided by engineer. */
 "couldn't make payment" = "nem sikerült a fizetés";
@@ -143,7 +143,7 @@
 "couldn't sweep balance" = "az egyenleg átvitele nem sikerült";
 
 /* No comment provided by engineer. */
-"couldn't transmit payment to bitcoin network" = "nem sikerült a kifizetést a bitcoin hálózatra továbbítani";
+"couldn't transmit payment to bitcoin network" = "nem sikerült a tranzakciót a bitcoin hálózatra továbbítani";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "KÉSZÜLÉK BIZTONSÁGA KOMPROMITTÁLVA\nBármilyen 'jailbreak' alkalmazás hozzáférhet a többi alkalmazás kulcskarikájához (és ellophatja a bitcoinjaidat).";
@@ -155,7 +155,7 @@
 "do it later" = "később leírom";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins." = "NE engedd, hogy más lássa a helyreállítási jelszavad,\nkülönben elköltheti a bitcoinjaidat.";
+"DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins." = "NE engedd, hogy más lássa a helyreállítási kódmondatodat,\nkülönben elköltheti a bitcoinjaidat.";
 
 /* No comment provided by engineer. */
 "done" = "kész";
@@ -224,13 +224,13 @@
 "moved" = "átvezetve";
 
 /* No comment provided by engineer. */
-"NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected." = "SOHA ne gépeld be a jelszavad\njelszókezelő alkalmazásokba vagy \nmáshová, hiszen fertőzöttek lehetnek.";
+"NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected." = "SOHA ne gépeld be a kódmondatodat\njelszókezelő alkalmazásokba vagy \nmáshová, hiszen fertőzöttek lehetnek.";
 
 /* No comment provided by engineer. */
-"new phrase" = "új jelszó";
+"new phrase" = "új kódmondat";
 
 /* No comment provided by engineer. */
-"next, write down your recovery phrase" = "következő lépésként írd le a helyreállítási jelszavad";
+"next, write down your recovery phrase" = "következő lépésként írd le a helyreállítási kódmondatodat";
 
 /* No comment provided by engineer. */
 "no peers found" = "nincs elérhető hálózati csomópont";
@@ -284,16 +284,16 @@
 "received %@ (%@)" = "fogadva %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "helyreállítási jelszó";
+"recovery phrase" = "helyreállítási kódmondat";
 
 /* No comment provided by engineer. */
-"recovery phrase doesn't match" = "helyreállítási jelszó nem egyezik";
+"recovery phrase doesn't match" = "helyreállítási kódmondat nem egyezik";
 
 /* No comment provided by engineer. */
 "recovery phrase must have %d words" = "a helyreállítási jelszónak %d szavasnak kell lennie";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "csökkentsem a kifizetés ennyivel: %1$@ (%2$@)?";
+"reduce payment amount by\n%@ (%@)?" = "csökkentsem a kifizetés összegét ennyivel: %1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
 "request" = "igénylés";
@@ -314,25 +314,25 @@
 "rescan blockchain" = "blockchain újraszkennelése";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "szkenneld újra a blockchaint, ha úgy érzed hiányoznak tranzakciók a tárcádból, vagy nem sikerült pénzt küldened (az újraszkennelés több percet is igénybe vehet)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "szkenneld újra a blockchaint, ha úgy érzed, hogy hiányoznak tranzakciók a tárcádból, vagy ha gondjaid vannak a pénzküldéssel (az újraszkennelés több percet is igénybe vehet)";
 
 /* No comment provided by engineer. */
 "reset" = "visszaállít";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Olvasd be valaki másnak a QR kódját hogy hozzájuss a bitcoin címéhez. Bárkinek küldhetsz pénzt akinek van ilyen címe.";
+"Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Olvasd be valaki másnak a QR kódját, hogy hozzájuss a bitcoin címéhez. Bárkinek küldhetsz pénzt, akinek van ilyen címe.";
 
 /* No comment provided by engineer. */
-"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "A képernyőmentések láthatóak más alkalmazások és eszközök számára. Generálj egy új helyreállítási jelszót és tartsd titokban.";
+"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "A képernyőmentések láthatóak más alkalmazások és eszközök számára. Generálj egy új helyreállítási kódmondatot és tartsd titokban.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "A képernyőmentések láthatóak más alkalmazások és eszközök számára. A pénzed így nincs biztonságban. Vidd át az egyenleged egy másik tárcába.";
 
 /* No comment provided by engineer. */
-"seen by %d of %d peers" = "látta %1$d csomópont a %2$d-ból/-ből";
+"seen by %d of %d peers" = "látta: %1$d csomópont a(z) %2$d-ból/-ből";
 
 /* No comment provided by engineer. */
-"Send %@ (%@) from this private key into your wallet? The bitcoin network will receive a fee of %@ (%@)." = "Átvezessem a következő egyenleget a privát kulcsról a tárcádba: %1$@ (%2$@)? A bitcoin hálózati díj ennyi lesz: %3$@ (%4$@).";
+"Send %@ (%@) from this private key into your wallet? The bitcoin network will receive a fee of %@ (%@)." = "Átvezessem a következő egyenleget a privát kulcsról a tárcádba: %1$@ (%2$@)? A bitcoin hálózati díj %3$@ (%4$@) lesz.";
 
 /* No comment provided by engineer. */
 "send address as email" = "cím küldése emailben";
@@ -359,13 +359,13 @@
 "show" = "mutat";
 
 /* No comment provided by engineer. */
-"show phrase" = "jelszót mutat";
+"show phrase" = "mutasd";
 
 /* No comment provided by engineer. */
 "sms not currently available" = "sms jelenleg nem elérhető";
 
 /* No comment provided by engineer. */
-"spent address" = "forrás cím";
+"spent address" = "küldő cím";
 
 /* No comment provided by engineer. */
 "spent input" = "elköltött bemenet";
@@ -383,16 +383,16 @@
 "the app will now close" = "az alkalmazás most bezárul";
 
 /* No comment provided by engineer. */
-"This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Ez a bitcoin címed. Bökj rá a másoláshoz vagy továbbküldéshez üzenetként vagy emailként. Ez a cím változni fog minden alkalommal amikor kapsz pénzt, de a régi címek is továbbra is műkődni fognak.";
+"This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Ez a bitcoin címed. Bökj rá a másoláshoz vagy továbbküldéshez üzenetként vagy emailként. Ez a cím változni fog minden alkalommal amikor pénzt kapsz, de a régi címeid továbbra is működni fognak.";
 
 /* No comment provided by engineer. */
 "This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market." = "Ez a bitcoin egyenleged. A Bitcoin egy valuta. Az átváltási árfolyam a piaci körülményeknek megfelelően változik.";
 
 /* No comment provided by engineer. */
-"this payment address is already in your wallet" = "ez a cím a saját tárcádhoz tartozik";
+"this payment address is already in your wallet" = "ez a cím eleve a saját tárcádhoz tartozik";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "ez a privát kulcs már a tárcádban van";
+"this private key is already in your wallet" = "ez a privát kulcs már a tárcádhoz tartozik";
 
 /* No comment provided by engineer. */
 "this private key is empty" = "ez a privátkulcs üres";
@@ -425,7 +425,7 @@
 "transaction rejected" = "tranzakció visszautasítva";
 
 /* No comment provided by engineer. */
-"turn device passcode on" = "kapcsold be a készülék jelkódot";
+"turn device passcode on" = "kapcsold be a készülék-jelkódot";
 
 /* No comment provided by engineer. */
 "unexpected response from %@" = "váratlan hiba: %@";
@@ -464,13 +464,13 @@
 "wallet disabled" = "tárca letiltva";
 
 /* No comment provided by engineer. */
-"WARNING" = "FIGYELMEZTETÉS";
+"WARNING" = "FIGYELEM!";
 
 /* No comment provided by engineer. */
-"wipe" = "törlés";
+"wipe" = "törlés a telefonról";
 
 /* No comment provided by engineer. */
-"WRITE DOWN YOUR RECOVERY PHRASE" = "ÍRD LE A HELYREÁLLÍTÁSI JELSZAVAD";
+"WRITE DOWN YOUR RECOVERY PHRASE" = "ÍRD LE A HELYREÁLLÍTÁSI KÓDMONDATODAT";
 
 /* No comment provided by engineer. */
 "you received bitcoin!" = "bitcoint kaptál!";
