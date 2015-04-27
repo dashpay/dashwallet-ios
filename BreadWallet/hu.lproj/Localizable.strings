@@ -1,5 +1,5 @@
 /* No comment provided by engineer. */
-"%@ is for 'bits'. %@ = 1 bitcoin." = "A %1$@ 'bit'-et jelent. %2$@ = 1 bitcoin.";
+"%@ is for 'bits'. %@ = 1 bitcoin." = "A %1$@ 'bit'-et jelent.\n%2$@ = 1 bitcoin.";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ nem tud hozzáférni a kamerához";
@@ -110,7 +110,7 @@
 "checking private key balance..." = "privát kulcs egyenlegének ellenőrzése...";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "válassz jelkódot ehhez: %@";
+"choose passcode for %@" = "válassz jelkódot a következőhöz: %@";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid bitcoin address" = "a vágólap nem tartalmaz érvényes bitcoin címet";
@@ -155,7 +155,7 @@
 "do it later" = "később leírom";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins." = "NE engedd, hogy más lássa a helyreállítási kódmondatodat,\nkülönben elköltheti a bitcoinjaidat.";
+"DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins." = "NE engedd, hogy más lássa a helyreállítási\n      kódmondatodat, különben elköltheti\n      a bitcoinjaidat.";
 
 /* No comment provided by engineer. */
 "done" = "kész";
@@ -206,7 +206,7 @@
 "INVALID" = "ÉRVÉNYTELEN";
 
 /* No comment provided by engineer. */
-"Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Engedd hogy ezt a QR kódot beolvassa aki bitcoint akar neked küldeni. A címedet használva bárki tud bitcoint küldeni a tárcádba.";
+"Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Engedd hogy ezt a QR kódot beolvassa aki bitcoint akar neked küldeni.\nA címedet használva bárki tud bitcoint küldeni a tárcádba.";
 
 /* No comment provided by engineer. */
 "minute" = "perc";
@@ -224,7 +224,7 @@
 "moved" = "átvezetve";
 
 /* No comment provided by engineer. */
-"NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected." = "SOHA ne gépeld be a kódmondatodat\njelszókezelő alkalmazásokba vagy \nmáshová, hiszen fertőzöttek lehetnek.";
+"NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected." = "SOHA ne gépeld be a kódmondatodat\n      jelszókezelő alkalmazásokba vagy\n      máshová, hiszen fertőzöttek lehetnek.";
 
 /* No comment provided by engineer. */
 "new phrase" = "új kódmondat";
@@ -254,7 +254,7 @@
 "passcode" = "jelkód";
 
 /* No comment provided by engineer. */
-"passcode for %@" = "jelkód ehhez: %@";
+"passcode for %@" = "jelkód a következőhöz: %@";
 
 /* No comment provided by engineer. */
 "password" = "jelszó";
@@ -281,7 +281,7 @@
 "received" = "fogadva";
 
 /* No comment provided by engineer. */
-"received %@ (%@)" = "fogadva %1$@ (%2$@)";
+"received %@ (%@)" = "fogadva: %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "recovery phrase" = "helyreállítási kódmondat";
@@ -290,7 +290,7 @@
 "recovery phrase doesn't match" = "helyreállítási kódmondat nem egyezik";
 
 /* No comment provided by engineer. */
-"recovery phrase must have %d words" = "a helyreállítási jelszónak %d szavasnak kell lennie";
+"recovery phrase must have %d words" = "a helyreállítási kódmondatnak %d szavasnak kell lennie";
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "csökkentsem a kifizetés összegét ennyivel: %1$@ (%2$@)?";

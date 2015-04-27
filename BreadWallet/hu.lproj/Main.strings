@@ -5,7 +5,7 @@
 "8e2-ar-Ehc.text" = "helyi valuta";
 
 /* Class = "UIButton"; normalTitle = "generate recovery phrase"; ObjectID = "A4M-yq-26d"; */
-"A4M-yq-26d.normalTitle" = "helyreállítási kódmondat létrehozása";
+"A4M-yq-26d.normalTitle" = "kódmondat létrehozása";
 
 /* Class = "UILabel"; text = "start/recover another wallet"; ObjectID = "D1b-HB-lKH"; */
 "D1b-HB-lKH.text" = "másik tárca létrehozása/helyreállítása";
@@ -77,5 +77,5 @@
 "uvz-hk-Nr4.text" = "breadwallet v%ver%%net%\ncopyright © 2015 Aaron Voisine\n\nez az alkalmazás nyílt forráskódú";
 
 /* Class = "UILabel"; text = "start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
-"wDZ-DN-szv.text" = "készíts egy új tárcát egy tárca-helyreállítási kifejezés generálásával";
+"wDZ-DN-szv.text" = "készíts új tárcát egy tárca-helyreállítási kódmondat generálásával";
 
