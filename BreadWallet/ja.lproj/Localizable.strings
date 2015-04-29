@@ -32,13 +32,13 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\n端末のパスコードを設定しないとウォレットを守ることができません。次進めるためには、設定にてパスコードを有効にしてください。";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nこのアドレスは使用済みです！\n\nビットコインのアドレスは1回のみの利用が最適です。\n\n再利用してしまうと、プライバシーの低下及び宛先間違いが発生しやすく、相手がウォレットを紛失していた場合にビットコインが消滅してしまう可能性もあります。";
+"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nこのアドレスは使用済みです！\n\nビットコインのアドレスは1回のみの\n利用が最適です。\n\n再利用してしまうと、プライバシーの\n低下及び宛先間違いが発生しやすく、\n相手がウォレットを紛失していた場合に\nビットコインが消滅してしまう\n可能性もあります。";
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nカメラへのアクセスを有効化するには\n設定⇒プライバシー⇒カメラ⇒%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\n復元フレーズは絶対に\n誰にも見せないで下さい！\n復元フレーズを知っている人はあなたの\nビットコインを簡単に盗むことができます。\n\nパスワード管理アプリや、信用できない\n端末に復元フレーズは絶対に\n打ち込んだり写真撮ったりしないで\n下さい。ウィルスやマルウェアによって\n盗まれ兼ねません。\n";
+"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\n復元フレーズは絶対に\n誰にも見せないで下さい！\n復元フレーズを知っている人はあなたの\nビットコインを簡単に\n盗むことができます。\n\nパスワード管理アプリや、信用できない\n端末に復元フレーズは絶対に\n打ち込んだり写真撮ったりしないで\n下さい。ウィルスやマルウェアによって\n盗まれ兼ねません。\n";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nネットワーク手数料 +%1$@ (%2$@)";
@@ -113,7 +113,7 @@
 "choose passcode for %@" = "%@ のパスコードを\nご入力下さい";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid bitcoin address" = "クリップボードには有効なビットコインアドレスが含まれていません。";
+"clipboard doesn't contain a valid bitcoin address" = "クリップボードには有効な\nビットコインアドレスが\n含まれていません。";
 
 /* No comment provided by engineer. */
 "close app" = "アプリを閉じる";
@@ -155,7 +155,7 @@
 "do it later" = "後でやります";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins." = "復元フレーズは絶対に誰にも見せないで下さい！\n      復元フレーズを知っている人はあなたのビットコインを簡単に盗むことができます。";
+"DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins." = "復元フレーズは絶対に誰にも見せないで\n下さい！\n      復元フレーズを知っている人はあなたの\nビットコインを簡単に盗むことができます。";
 
 /* No comment provided by engineer. */
 "done" = "完了";
@@ -200,7 +200,7 @@
 "insufficient funds" = "残高不足";
 
 /* No comment provided by engineer. */
-"insufficient funds for bitcoin network fee" = "ビットコインのネットワーク手数料を含めると残高が足りません";
+"insufficient funds for bitcoin network fee" = "ビットコインの\nネットワーク手数料を含めると\n残高が足りません";
 
 /* No comment provided by engineer. */
 "INVALID" = "無効";
@@ -224,7 +224,7 @@
 "moved" = "移動されました";
 
 /* No comment provided by engineer. */
-"NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected." = "パスワード管理アプリや、信用できない端末に復元フレーズは\n      絶対に打ち込んだり写真撮ったりしないで下さい。ウィルスや\n      マルウェアによって盗まれ兼ねません。";
+"NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected." = "パスワード管理アプリや、信用できない\n端末に復元フレーズは絶対に打ち込んだり\n      写真撮ったりしないで下さい。ウィルスや\nマルウェアによって盗まれ兼ねません。";
 
 /* No comment provided by engineer. */
 "new phrase" = "新規フレーズ";
@@ -296,10 +296,10 @@
 "reduce payment amount by\n%@ (%@)?" = "%1$@ (%2$@)\n上記の分だけ送金額減らしますか？";
 
 /* No comment provided by engineer. */
-"request" = "リクエスト";
+"request" = "請求";
 
 /* No comment provided by engineer. */
-"request an amount" = "指定金額をリクエスト";
+"request an amount" = "指定金額を請求";
 
 /* No comment provided by engineer. */
 "request expired" = "リクエストの有効期限切れました。";

@@ -123,7 +123,18 @@ static NSString *sanitizeString(NSString *s)
 - (void)handleURL:(NSURL *)url
 {
     //TODO: XXX custom url splash image per: "Providing Launch Images for Custom URL Schemes."
-    if ([url.scheme isEqual:@"bitcoin"]) {
+    
+    // x-callback-url handling: http://x-callback-url.com/specifications/
+    if ([url.scheme isEqual:@"bread"] && [url.host isEqual:@"x-callback-url"]) {
+        
+        //targetapp://x-callback-url/translate?
+        //    x-success=sourceapp://x-callback-url/acceptTranslation&
+        //    x-source=SourceApp&
+        //    x-error=sourceapp://x-callback-url/translationError&
+        //    word=Hello&
+        //    language=Spanish
+    }
+    else if ([url.scheme isEqual:@"bitcoin"]) {
         [self confirmRequest:[BRPaymentRequest requestWithURL:url]];
     }
     else {
@@ -295,6 +306,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
                 c.to = [LOCK @" " stringByAppendingString:sanitizeString(protoReq.commonName)];
             }
             else if (protoReq.errorMessage.length > 0) {
+                //TODO: XXXX alert the user with protoReq.errorMessage
                 c.to = [REDX @" " stringByAppendingString:sanitizeString(protoReq.commonName)];
             }
             else c.to = sanitizeString(protoReq.commonName);
@@ -780,6 +792,8 @@ fromConnection:(AVCaptureConnection *)connection
     }
     else if (self.sweepTx) {
         [(id)self.parentViewController.parentViewController startActivityWithTimeout:30];
+
+        NSLog(@"%@", [NSString hexWithData:self.sweepTx.data]);
 
         [[BRPeerManager sharedInstance] publishTransaction:self.sweepTx completion:^(NSError *error) {
             [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];

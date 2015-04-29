@@ -32,6 +32,7 @@
 #import "BRTransactionEntity.h"
 #import "BRAddressEntity.h"
 #import "NSString+Bitcoin.h"
+#import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 #import "Reachability.h"
@@ -943,8 +944,8 @@ completion:(void (^)(BRTransaction *tx, uint64_t fee, NSError *error))completion
             }
 
             if (! [utxo[@"script_type"] isEqual:@"pubkeyhash"] && ! [utxo[@"script_type"] isEqual:@"pubkey"]) continue;
-            [tx addInputHash:[utxo[@"transaction_hash"] hexToData] index:[utxo[@"output_index"] unsignedIntegerValue]
-             script:[utxo[@"script_hex"] hexToData]];
+            [tx addInputHash:[[utxo[@"transaction_hash"] hexToData] reverse]
+             index:[utxo[@"output_index"] unsignedIntegerValue] script:[utxo[@"script_hex"] hexToData]];
             balance += [utxo[@"value"] unsignedLongLongValue];
         }
 
@@ -1099,7 +1100,7 @@ replacementString:(NSString *)string
     if (_pinField && ! _pinField.isFirstResponder) [_pinField becomeFirstResponder]; // fix for iOS 7 missing keyboard
 }
 
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:alertView];
     if (alertView == self.alertView) self.alertView = nil;
