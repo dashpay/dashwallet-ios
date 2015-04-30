@@ -130,7 +130,7 @@ static NSString *sanitizeString(NSString *s)
         NSString *xsource, *xsuccess, *xerror;
 
         for (NSString *arg in [url.query componentsSeparatedByString:@"&"]) {
-            NSArray *pair = [arg componentsSeparatedByString:@"="][0]; // if more than one '=', then pair[1] != value
+            NSArray *pair = [arg componentsSeparatedByString:@"="]; // if more than one '=', then pair[1] != value
             NSString *value = (pair.count > 1) ? [arg substringFromIndex:[pair[0] length] + 1] : nil;
 
             value = [[value stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
