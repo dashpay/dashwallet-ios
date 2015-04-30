@@ -112,35 +112,41 @@
     self.urlObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRURLNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if (self.navigationController.topViewController != self) {
-                [self.navigationController popToRootViewControllerAnimated:YES];
-            }
+            if (! m.noWallet) {
+                if (self.navigationController.topViewController != self) {
+                    [self.navigationController popToRootViewControllerAnimated:YES];
+                }
             
-            if (self.navigationController.presentedViewController) {
-                [self.navigationController dismissViewControllerAnimated:YES completion:nil];
+                if (self.navigationController.presentedViewController) {
+                    [self.navigationController dismissViewControllerAnimated:YES completion:nil];
+                }
+        
+                BRSendViewController *c = self.sendViewController;
+                
+                [self.pageViewController setViewControllers:@[c]
+                 direction:UIPageViewControllerNavigationDirectionForward animated:NO
+                 completion:^(BOOL finished) { [c handleURL:note.userInfo[@"url"]]; }];
             }
-        
-            BRSendViewController *c = self.sendViewController;
-        
-            [self.pageViewController setViewControllers:@[c] direction:UIPageViewControllerNavigationDirectionForward
-             animated:NO completion:^(BOOL finished) { [c handleURL:note.userInfo[@"url"]]; }];
         }];
 
     self.fileObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRFileNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if (self.navigationController.topViewController != self) {
-                [self.navigationController popToRootViewControllerAnimated:YES];
-            }
+            if (! m.noWallet) {
+                if (self.navigationController.topViewController != self) {
+                    [self.navigationController popToRootViewControllerAnimated:YES];
+                }
             
-            if (self.navigationController.presentedViewController) {
-                [self.navigationController dismissViewControllerAnimated:YES completion:nil];
-            }
-        
-            BRSendViewController *c = self.sendViewController;
+                if (self.navigationController.presentedViewController) {
+                    [self.navigationController dismissViewControllerAnimated:YES completion:nil];
+                }
+                
+                BRSendViewController *c = self.sendViewController;
 
-            [self.pageViewController setViewControllers:@[c] direction:UIPageViewControllerNavigationDirectionForward
-             animated:NO completion:^(BOOL finished) { [c handleFile:note.userInfo[@"file"]]; }];
+                [self.pageViewController setViewControllers:@[c]
+                 direction:UIPageViewControllerNavigationDirectionForward animated:NO
+                 completion:^(BOOL finished) { [c handleFile:note.userInfo[@"file"]]; }];
+            }
         }];
 
     self.foregroundObserver =

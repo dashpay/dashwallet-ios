@@ -89,7 +89,7 @@
     
     //TODO: correctly handle unkown but required url arguments (by reporting the request invalid)
     for (NSString *arg in [url.query componentsSeparatedByString:@"&"]) {
-        NSArray *pair = [arg componentsSeparatedByString:@"="];
+        NSArray *pair = [arg componentsSeparatedByString:@"="]; // if more than one '=', then pair[1] != value
         NSString *value = (pair.count > 1) ? [arg substringFromIndex:[pair[0] length] + 1] : nil;
         
         if ([pair[0] isEqual:@"amount"]) {

@@ -59,6 +59,7 @@ static NSString *sanitizeString(NSString *s)
 @interface BRSendViewController ()
 
 @property (nonatomic, assign) BOOL clearClipboard, useClipboard, showTips, canChangeAmount;
+@property (nonatomic, strong) NSURL *url;
 @property (nonatomic, strong) BRTransaction *sweepTx;
 @property (nonatomic, strong) BRPaymentProtocolRequest *request;
 @property (nonatomic, assign) uint64_t amount;
@@ -123,16 +124,51 @@ static NSString *sanitizeString(NSString *s)
 - (void)handleURL:(NSURL *)url
 {
     //TODO: XXX custom url splash image per: "Providing Launch Images for Custom URL Schemes."
+    BRWalletManager *m = [BRWalletManager sharedInstance];
     
-    // x-callback-url handling: http://x-callback-url.com/specifications/
-    if ([url.scheme isEqual:@"bread"] && [url.host isEqual:@"x-callback-url"]) {
+    if ([url.scheme isEqual:@"bread"]) { // x-callback-url handling: http://x-callback-url.com/specifications/
+        NSString *xsource, *xsuccess, *xerror;
+
+        for (NSString *arg in [url.query componentsSeparatedByString:@"&"]) {
+            NSArray *pair = [arg componentsSeparatedByString:@"="][0]; // if more than one '=', then pair[1] != value
+            NSString *value = (pair.count > 1) ? [arg substringFromIndex:[pair[0] length] + 1] : nil;
+
+            value = [[value stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
+                     stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+
+            if ([pair[0] isEqual:@"x-source"]) xsource = value;
+            else if ([pair[0] isEqual:@"x-success"]) xsuccess = value;
+            else if ([pair[0] isEqual:@"x-error"]) xerror = value;
+        }
+    
+        if ([url.host isEqual:@"scanqr"] || [url.path isEqual:@"/scanqr"]) {
+            [self scanQR:nil];
+        }
+        else if ([url.host isEqual:@"addresslist"] || [url.path isEqual:@"/addresslist"]) { // copy addresses
+            if (! self.url) {
+                self.url = url;
+                xsuccess = nil;
+                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"copy wallet addresses to clipboard?", nil)
+                  message:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+                  otherButtonTitles:NSLocalizedString(@"copy", nil), nil] show];
+            }
+            else {
+                self.url = nil;
+                [[UIPasteboard generalPasteboard]
+                setString:[[[m.wallet.addresses objectsPassingTest:^BOOL(id obj, BOOL *stop) {
+                    return [m.wallet addressIsUsed:obj];
+                }] allObjects] componentsJoinedByString:@"\n"]];
+            }
+        }
+        else if ([url.path isEqual:@"/address"]) {
+            xsuccess = [xsuccess stringByAppendingFormat:@"?address=%@", m.wallet.receiveAddress];
+        }
         
-        //targetapp://x-callback-url/translate?
-        //    x-success=sourceapp://x-callback-url/acceptTranslation&
-        //    x-source=SourceApp&
-        //    x-error=sourceapp://x-callback-url/translationError&
-        //    word=Hello&
-        //    language=Spanish
+        url = (xsuccess) ? [NSURL URLWithString:xsuccess] : nil;
+        
+        if (url && [[UIApplication sharedApplication] canOpenURL:url]) {
+            [[UIApplication sharedApplication] openURL:url];
+        }
     }
     else if ([url.scheme isEqual:@"bitcoin"]) {
         [self confirmRequest:[BRPaymentRequest requestWithURL:url]];
@@ -697,6 +733,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
 - (IBAction)cancel:(id)sender
 {
+    self.url = nil;
     self.sweepTx = nil;
     self.amount = 0;
     self.okAddress = nil;
@@ -793,8 +830,6 @@ fromConnection:(AVCaptureConnection *)connection
     else if (self.sweepTx) {
         [(id)self.parentViewController.parentViewController startActivityWithTimeout:30];
 
-        NSLog(@"%@", [NSString hexWithData:self.sweepTx.data]);
-
         [[BRPeerManager sharedInstance] publishTransaction:self.sweepTx completion:^(NSError *error) {
             [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
 
@@ -812,7 +847,10 @@ fromConnection:(AVCaptureConnection *)connection
             [self reset:nil];
         }];
     }
-    else if (self.request) [self confirmProtocolRequest:self.request];
+    else if (self.request) {
+        [self confirmProtocolRequest:self.request];
+    }
+    else if (self.url) [self handleURL:self.url];
 }
 
 #pragma mark UITextViewDelegate
