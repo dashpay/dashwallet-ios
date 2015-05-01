@@ -244,7 +244,11 @@
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if (_balance != UINT64_MAX && [[BRPeerManager sharedInstance] syncProgress] < 1.0) return; // wait for sync
+            if (_balance != UINT64_MAX && [[BRPeerManager sharedInstance] syncProgress] < 1.0) { // wait for sync
+                self.balance = _balance; // this updates the local currency value with the latest exchange rate
+                return;
+            }
+            
             [self showBackupDialogIfNeeded];
             [self.receiveViewController updateAddress];
             self.balance = m.wallet.balance;
