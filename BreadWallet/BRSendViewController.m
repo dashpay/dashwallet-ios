@@ -63,7 +63,7 @@ static NSString *sanitizeString(NSString *s)
 @property (nonatomic, strong) BRTransaction *sweepTx;
 @property (nonatomic, strong) BRPaymentProtocolRequest *request;
 @property (nonatomic, assign) uint64_t amount;
-@property (nonatomic, strong) NSString *okAddress;
+@property (nonatomic, strong) NSString *okAddress, *okIdentity;
 @property (nonatomic, strong) BRBubbleView *tipView;
 @property (nonatomic, strong) BRScanViewController *scanController;
 @property (nonatomic, strong) id clipboardObserver;
@@ -331,6 +331,15 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
           otherButtonTitles:NSLocalizedString(@"ignore", nil), NSLocalizedString(@"cancel", nil), nil] show];
           return;
     }
+    else if (protoReq.errorMessage.length > 0 && protoReq.commonName.length > 0 &&
+             ! [self.okIdentity isEqual:protoReq.commonName]) {
+        self.request = protoReq;
+        self.okIdentity = protoReq.commonName;
+        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"payee identity isn't certified", nil)
+          message:protoReq.errorMessage delegate:self cancelButtonTitle:nil
+          otherButtonTitles:NSLocalizedString(@"ignore", nil), NSLocalizedString(@"cancel", nil), nil] show];
+        return;
+    }
     else if (amount == 0 || amount == UINT64_MAX) {
         BRAmountViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"AmountViewController"];
         
@@ -347,7 +356,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
             }
             else c.to = sanitizeString(protoReq.commonName);
         }
-        else c.to = [NSString addressWithScriptPubKey:protoReq.details.outputScripts.firstObject];
+        else c.to = address;
         
         c.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                   [m localCurrencyStringForAmount:m.wallet.balance]];
@@ -736,7 +745,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     self.url = nil;
     self.sweepTx = nil;
     self.amount = 0;
-    self.okAddress = nil;
+    self.okAddress = self.okIdentity = nil;
     self.clearClipboard = self.useClipboard = NO;
     self.canChangeAmount = NO;
     self.scanButton.enabled = self.clipboardButton.enabled = YES;

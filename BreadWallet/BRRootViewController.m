@@ -882,6 +882,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
 
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
         initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+            //BUG: XXXX iOS8.3 now shows the navbar being too high relative to the status bar, then it snaps back
             to.view.center = CGPointMake(to.view.center.x, v.frame.size.height/2);
             self.pageViewController.view.alpha = 0.0;
             self.pageViewController.view.center = CGPointMake(self.pageViewController.view.center.x,

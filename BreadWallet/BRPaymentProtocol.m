@@ -140,6 +140,9 @@
 
 @end
 
+extern CFStringRef kSecPropertyKeyType;
+extern CFStringRef kSecPropertyKeyValue;
+
 typedef enum {
     output_amount = 1,
     output_script = 2
@@ -413,6 +416,14 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
         if (trustResult != kSecTrustResultUnspecified && trustResult != kSecTrustResultProceed) {
             _errorMessage = (certs.count > 0) ? NSLocalizedString(@"untrusted certificate", nil) :
                             NSLocalizedString(@"missing certificate", nil);
+
+            for (NSDictionary *property in CFBridgingRelease(SecTrustCopyProperties(trust))) {
+                if (property[(__bridge id)kSecPropertyKeyType] != kSecPropertyTypeError) continue;
+                _errorMessage = [_errorMessage stringByAppendingFormat:@" - %@",
+                                 property[(__bridge id)kSecPropertyKeyValue]];
+                break;
+            }
+            
             return NO;
         }
 
