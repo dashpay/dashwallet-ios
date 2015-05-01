@@ -1,0 +1,81 @@
+/* Class = "UIButton"; normalTitle = "recover wallet"; ObjectID = "4w7-k8-9wY"; */
+"4w7-k8-9wY.normalTitle" = "recuperar cartera";
+
+/* Class = "UILabel"; text = "local currency"; ObjectID = "8e2-ar-Ehc"; */
+"8e2-ar-Ehc.text" = "moneda local";
+
+/* Class = "UIButton"; normalTitle = "generate recovery phrase"; ObjectID = "A4M-yq-26d"; */
+"A4M-yq-26d.normalTitle" = "generar frase de recuperación";
+
+/* Class = "UILabel"; text = "start/recover another wallet"; ObjectID = "D1b-HB-lKH"; */
+"D1b-HB-lKH.text" = "comenzar/recuperar otra cartera";
+
+/* Class = "UILabel"; text = "exchange rate data provided by\nbitpay.com/rates"; ObjectID = "D4H-hd-LsX"; */
+"D4H-hd-LsX.text" = "datos de tasa de cambio proporcionados por\nbitpay.com/rates";
+
+/* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
+"EQG-Km-ZKY.text" = "si alguna vez pierdes tu teléfono, necesitarás esta frase para recuperar tu cartera";
+
+/* Class = "UILabel"; text = "sent"; ObjectID = "FjB-H2-BnK"; */
+"FjB-H2-BnK.text" = "enviado";
+
+/* Class = "UIBarButtonItem"; title = "remind me later"; ObjectID = "QQS-Me-RNh"; */
+"QQS-Me-RNh.title" = "recordármelo más tarde";
+
+/* Class = "UILabel"; text = "not connected"; ObjectID = "UyF-OV-QVY"; */
+"UyF-OV-QVY.text" = "sin conexión";
+
+/* Class = "UINavigationItem"; title = "settings"; ObjectID = "W8m-Eh-Nf9"; */
+"W8m-Eh-Nf9.title" = "configuración";
+
+/* Class = "UILabel"; text = "amount:"; ObjectID = "XJu-9x-HqQ"; */
+"XJu-9x-HqQ.text" = "cantidad:";
+
+/* Class = "UILabel"; text = "Enter this wallet's recovery phrase to wipe it and start/recover another. Your current balance remains on this phrase."; ObjectID = "YC6-rN-4P5"; */
+"YC6-rN-4P5.text" = "Introduzca esta frase de recuperación de cartera para borrarla y crear/recuperar otra. Su saldo actual se conserva en esta frase.";
+
+/* Class = "UIButton"; normalTitle = "pay address from clipboard"; ObjectID = "bfj-xS-5rN"; */
+"bfj-xS-5rN.normalTitle" = "pagar a la dirección del portapapeles";
+
+/* Class = "UIButton"; normalTitle = "scan QR code"; ObjectID = "ce6-Wi-wk4"; */
+"ce6-Wi-wk4.normalTitle" = "escanear código QR";
+
+/* Class = "UILabel"; text = "I wrote it down:"; ObjectID = "cyp-mV-Bhd"; */
+"cyp-mV-Bhd.text" = "Yo lo escribí:";
+
+/* Class = "UIButton"; normalTitle = "new wallet"; ObjectID = "dOa-zm-TDG"; */
+"dOa-zm-TDG.normalTitle" = "nueva cartera";
+
+/* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "dX6-jg-5IA"; */
+"dX6-jg-5IA.text" = "Si alguna vez pierdes tu teléfono, necesitarás esta frase para recuperar tu cartera";
+
+/* Class = "UILabel"; text = "unconfirmed"; ObjectID = "eJ2-5h-DO2"; */
+"eJ2-5h-DO2.text" = "sin confirmar";
+
+/* Class = "UIButton"; normalTitle = "show"; ObjectID = "efL-Cj-Aho"; */
+"efL-Cj-Aho.normalTitle" = "mostrar";
+
+/* Class = "UINavigationItem"; title = "confirm:"; ObjectID = "fQN-xb-SYb"; */
+"fQN-xb-SYb.title" = "confirmar:";
+
+/* Class = "UILabel"; text = "send money:"; ObjectID = "l5l-JR-LKA"; */
+"l5l-JR-LKA.text" = "enviar dinero:";
+
+/* Class = "UINavigationItem"; title = "recovery phrase:"; ObjectID = "ooJ-EA-DFl"; */
+"ooJ-EA-DFl.title" = "frase de recuperación:";
+
+/* Class = "UILabel"; text = "receive money:"; ObjectID = "qel-3J-2VC"; */
+"qel-3J-2VC.text" = "recibir dinero:";
+
+/* Class = "UITableViewController"; title = "transaction details"; ObjectID = "s4T-yd-VfX"; */
+"s4T-yd-VfX.title" = "detalles de la transacción";
+
+/* Class = "UILabel"; text = "no transactions"; ObjectID = "t1j-JZ-FW0"; */
+"t1j-JZ-FW0.text" = "ninguna transacción";
+
+/* Class = "UILabel"; text = "breadwallet v%ver%%net%\ncopyright © 2015 Aaron Voisine\n\nthis app is open source"; ObjectID = "uvz-hk-Nr4"; */
+"uvz-hk-Nr4.text" = "breadwallet v%ver%%net%\ncopyright © 2015 Aaron Voisine\n\nesta aplicación es de código abierto";
+
+/* Class = "UILabel"; text = "start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
+"wDZ-DN-szv.text" = "crear una cartera nueva mediante la generación de una frase de recuperación";
+

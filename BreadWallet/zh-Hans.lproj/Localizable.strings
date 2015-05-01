@@ -224,7 +224,7 @@
 "moved" = "已移动";
 
 /* No comment provided by engineer. */
-"\n      NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected.\n" = "\n      永远不要将恢复密语输入到\n密码管理器或其他地方\n其它设备都可能被病毒感染。\n";
+"\n      NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected.\n" = "\n      永远不要将恢复密语输入到\n      密码管理器或其他地方\n      其它设备都可能被病毒感染。\n";
 
 /* No comment provided by engineer. */
 "new phrase" = "新密语";

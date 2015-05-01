@@ -224,7 +224,7 @@
 "moved" = "flyttet";
 
 /* No comment provided by engineer. */
-"\n      NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected.\n" = "\n      ALDRI skriv din gjenopprettingsfrase inn i en passordbehandler. andre enheter kan være infisert.\n";
+"\n      NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected.\n" = "\n      ALDRI skriv din gjenopprettingsfrase inn\n      i en passordbehandler. andre enheter\n      kan være infisert.\n";
 
 /* No comment provided by engineer. */
 "new phrase" = "ny frase";
