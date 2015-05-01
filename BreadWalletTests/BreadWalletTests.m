@@ -38,7 +38,7 @@
 #import "NSMutableData+Bitcoin.h"
 #import "NSString+Bitcoin.h"
 
-#define SKIP_BIP38 1
+//#define SKIP_BIP38 1
 
 @implementation BreadWalletTests
 

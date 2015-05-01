@@ -59,7 +59,7 @@
 "bad password, try again" = "feil passord, prøv igjen";
 
 /* No comment provided by engineer. */
-"bad payment request" = "feil ved betalingsforespørsel";
+"bad payment request" = "feil med betalingsforespørsel";
 
 /* No comment provided by engineer. */
 "bad payment request URL" = "feil med URL for betalingsforespørsel";
@@ -275,7 +275,7 @@
 "post-dated" = "fremdatert";
 
 /* No comment provided by engineer. */
-"Receive bitcoins at this address: %@" = "Motta bitcoins på denne adressen: %@";
+"Receive bitcoins at this address: %@" = "Motta bitcoin på denne adressen: %@";
 
 /* No comment provided by engineer. */
 "received" = "mottatt";
@@ -383,7 +383,7 @@
 "the app will now close" = "appen vil nå avsluttes";
 
 /* No comment provided by engineer. */
-"This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Dette er din Bitcoin-adresse. Trykk for å kopiere den eller sende den via epost eller SMS. Denne adressen vil endres hver gang du mottar midler, men eldre adresser fungere alltid.";
+"This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Dette er din Bitcoin-adresse. Trykk for å kopiere den eller sende den via epost eller SMS. Denne adressen vil endres hver gang du mottar midler, men eldre adresser fungerer alltid.";
 
 /* No comment provided by engineer. */
 "This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market." = "Dette er mengden bitcoin du har. Bitcoin er en valuta. Vekslingskursen flyter med markedet.";
@@ -434,7 +434,7 @@
 "unkown address" = "Ukjent adresse";
 
 /* No comment provided by engineer. */
-"unrecognized address" = "ikke gjenkjent adresse";
+"unrecognized address" = "ugjenkjennbar adresse";
 
 /* No comment provided by engineer. */
 "unsupported or corrupted document" = "ustøttet eller korrupt dokument";

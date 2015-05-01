@@ -1,0 +1,480 @@
+/* No comment provided by engineer. */
+"%@ is for 'bits'. %@ = 1 bitcoin." = "%1$@是位。%2$@等于1个比特币。";
+
+/* No comment provided by engineer. */
+"%@ is not allowed to access the camera" = "%@不被允许访问相机";
+
+/* No comment provided by engineer. */
+"%d confirmations" = "%d个确认";
+
+/* No comment provided by engineer. */
+"1 confirmation" = "1个确认";
+
+/* No comment provided by engineer. */
+"\"%@\" is not a recovery phrase word" = "\"%@\"不是一个恢复密语中的单词";
+
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "总额%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\n如果你丢失了手机，你需要用它来找回你的钱包。";
+
+/* No comment provided by engineer. */
+"\n%d attempts remaining\n" = "\n还剩%d次尝试机会\n";
+
+/* No comment provided by engineer. */
+"\n1 attempt remaining\n" = "\n还剩1次尝试机会\n";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\n  金额%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "你的钱包需要一个设备密码的保护。请转到设置并打开密码再继续。";
+
+/* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "地址已被使用\n\n 比特币地址仅供一次性使用\n\n如果收件人不直接控制地址，再利用会降低您和收件人的隐私，并可能导致损失，";
+
+/* No comment provided by engineer. */
+"\nallow camera access in\nSettings->Privacy->Camera->%@" = "\n允许摄像机访问\n设置->隐私->摄像机->%@";
+
+/* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\n不要让任何人看到你的恢复密语，否则他们就可以使用您的比特币。\n\n切勿将您的恢复密语输入到密码管理器或其他地方。因为其它装置有被病毒感染的可能性。\n";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = "\n网络费用+%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\ntry again in %d %@" = "\n在 %1$d %2$@ 后重试";
+
+/* No comment provided by engineer. */
+"about" = "关于";
+
+/* No comment provided by engineer. */
+"always require passcode" = "总是要求密码";
+
+/* No comment provided by engineer. */
+"amount too small" = "金额过小";
+
+/* No comment provided by engineer. */
+"bad password, try again" = "密码错误，请重试";
+
+/* No comment provided by engineer. */
+"bad payment request" = "不良支付请求";
+
+/* No comment provided by engineer. */
+"bad payment request URL" = "不良支付请求链接";
+
+/* No comment provided by engineer. */
+"bad payment URL" = "不良的付款链接";
+
+/* No comment provided by engineer. */
+"bad recovery phrase" = "不良恢复密语";
+
+/* No comment provided by engineer. */
+"bad signature" = "不良签名";
+
+/* No comment provided by engineer. */
+"Bitcoin address" = "比特币地址";
+
+/* No comment provided by engineer. */
+"Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1' or '3'." = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n比特币地址也可以复制到剪贴板。一个比特币地址总是开始于'1'或'3'";
+
+/* No comment provided by engineer. */
+"bitcoin network fee" = "比特币网络费";
+
+/* No comment provided by engineer. */
+"bitcoin payments can't be less than %@" = "比特币付款不能低于%@";
+
+/* No comment provided by engineer. */
+"bitcoin transaction not signed" = "比特币交易尚未签署";
+
+/* No comment provided by engineer. */
+"bitcoin transaction outputs can't be less than %@" = "比特币交易的输出不能少于%@";
+
+/* No comment provided by engineer. */
+"block #%d of %d" = "%2$d中#%1$d的模块";
+
+/* No comment provided by engineer. */
+"cancel" = "取消";
+
+/* No comment provided by engineer. */
+"change" = "改变";
+
+/* No comment provided by engineer. */
+"change passcode" = "修改密码";
+
+/* No comment provided by engineer. */
+"change payment amount?" = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n改变付款金额";
+
+/* No comment provided by engineer. */
+"checking private key balance..." = "检查私钥余额...";
+
+/* No comment provided by engineer. */
+"choose passcode for %@" = "选择%@的密码";
+
+/* No comment provided by engineer. */
+"clipboard doesn't contain a valid bitcoin address" = "剪贴板不包含有效的比特币地址";
+
+/* No comment provided by engineer. */
+"close app" = "关闭App";
+
+/* No comment provided by engineer. */
+"CONFIRM WIPE" = "确认清除";
+
+/* No comment provided by engineer. */
+"confirmed in block #%d" = "在模块#%d中确认";
+
+/* No comment provided by engineer. */
+"connect timeout" = "连接超时";
+
+/* No comment provided by engineer. */
+"copied" = "已复制";
+
+/* No comment provided by engineer. */
+"copy address to clipboard" = "复制地址到剪贴板";
+
+/* No comment provided by engineer. */
+"copy request to clipboard" = "复制请求到剪贴板";
+
+/* No comment provided by engineer. */
+"couldn't make payment" = "不能付款";
+
+/* No comment provided by engineer. */
+"couldn't sweep balance" = "不能清除余额";
+
+/* No comment provided by engineer. */
+"couldn't transmit payment to bitcoin network" = "不能将付款传送到比特币网络";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "设备的安全性威胁\n任何'越狱'的应用程序都可以访问任何其他应用程序的钥匙链数据（并窃取你的比特币）。";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "设备的安全性受到威胁\n任何'越狱'的应用程序都可以访问任何其他应用程序的钥匙链数据（并窃取你的比特币）。请立即清除该钱包并将其恢复于安全设备上。";
+
+/* No comment provided by engineer. */
+"do it later" = "以后再做";
+
+/* No comment provided by engineer. */
+"DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins." = "不要让任何人看到你的恢复\n      密语，否则他们可以使用您的比特币。";
+
+/* No comment provided by engineer. */
+"done" = "完成";
+
+/* No comment provided by engineer. */
+"double spend" = "双倍支出";
+
+/* No comment provided by engineer. */
+"email not configured" = "电子邮件尚未配置";
+
+/* No comment provided by engineer. */
+"enter old passcode" = "输入旧密码";
+
+/* No comment provided by engineer. */
+"error signing bitcoin transaction" = "比特币交易签名错误";
+
+/* No comment provided by engineer. */
+"error signing transaction" = "交易签名错误";
+
+/* No comment provided by engineer. */
+"from:" = "来自：";
+
+/* No comment provided by engineer. */
+"hour" = "小时";
+
+/* No comment provided by engineer. */
+"hours" = "小时";
+
+/* No comment provided by engineer. */
+"id:" = "ID：";
+
+/* No comment provided by engineer. */
+"ignore" = "忽视";
+
+/* No comment provided by engineer. */
+"import private key" = "导入私钥";
+
+/* No comment provided by engineer. */
+"IMPORTANT" = "重要";
+
+/* No comment provided by engineer. */
+"insufficient funds" = "资金不足";
+
+/* No comment provided by engineer. */
+"insufficient funds for bitcoin network fee" = "资金不足以支付比特币的网络费用";
+
+/* No comment provided by engineer. */
+"INVALID" = "无效";
+
+/* No comment provided by engineer. */
+"Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "让别人扫描此二维码，以获得您的比特币地址。任何人都可以通过这个地址将比特币转移到您的钱包";
+
+/* No comment provided by engineer. */
+"minute" = "分钟";
+
+/* No comment provided by engineer. */
+"minutes" = "分钟";
+
+/* No comment provided by engineer. */
+"missing certificate" = "缺少认证";
+
+/* No comment provided by engineer. */
+"more..." = "更多...";
+
+/* No comment provided by engineer. */
+"moved" = "已移动";
+
+/* No comment provided by engineer. */
+"NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected." = "永远不要将恢复密语输入到\n密码管理器或其他地方\n其它设备都可能被病毒感染。";
+
+/* No comment provided by engineer. */
+"new phrase" = "新密语";
+
+/* No comment provided by engineer. */
+"next, write down your recovery phrase" = "下面，请写下你的恢复密语";
+
+/* No comment provided by engineer. */
+"no peers found" = "未找到节点。";
+
+/* No comment provided by engineer. */
+"not a bitcoin QR code" = "非比特币二维码";
+
+/* No comment provided by engineer. */
+"not a valid bitcoin address" = "不是一个有效的比特币的地址";
+
+/* No comment provided by engineer. */
+"not a valid private key" = "不是一个有效的私钥";
+
+/* No comment provided by engineer. */
+"not connected to the bitcoin network" = "未连接到比特币网络";
+
+/* No comment provided by engineer. */
+"ok" = "确定。";
+
+/* No comment provided by engineer. */
+"passcode" = "密码";
+
+/* No comment provided by engineer. */
+"passcode for %@" = "%@的密码";
+
+/* No comment provided by engineer. */
+"password" = "密码";
+
+/* No comment provided by engineer. */
+"password protected key" = "密码保护的密钥";
+
+/* No comment provided by engineer. */
+"pay" = "支付";
+
+/* No comment provided by engineer. */
+"payment address" = "支付地址";
+
+/* No comment provided by engineer. */
+"payment output" = "支付输出";
+
+/* No comment provided by engineer. */
+"post-dated" = "延期交易";
+
+/* No comment provided by engineer. */
+"Receive bitcoins at this address: %@" = "在此地址接收比特币： %@";
+
+/* No comment provided by engineer. */
+"received" = "收到";
+
+/* No comment provided by engineer. */
+"received %@ (%@)" = "收到 %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"recovery phrase" = "恢复密语";
+
+/* No comment provided by engineer. */
+"recovery phrase doesn't match" = "恢复密语不匹配";
+
+/* No comment provided by engineer. */
+"recovery phrase must have %d words" = "恢复密语必须包括 %d 个字";
+
+/* No comment provided by engineer. */
+"reduce payment amount by\n%@ (%@)?" = "减少%1$@ (%2$@)付款金额吗？";
+
+/* No comment provided by engineer. */
+"request" = "请求";
+
+/* No comment provided by engineer. */
+"request an amount" = "请求金额";
+
+/* No comment provided by engineer. */
+"request expired" = "请求已过期";
+
+/* No comment provided by engineer. */
+"requested network \"%@\" instead of \"%@\"" = "请求网络 \"%1$@\" 而非 \"%2$@\"";
+
+/* No comment provided by engineer. */
+"rescan" = "重新扫描";
+
+/* No comment provided by engineer. */
+"rescan blockchain" = "重新扫描 blockchain";
+
+/* No comment provided by engineer. */
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "重新扫描 blockchain 来更新你的交易信息，或有问题发送交易（重新扫描可能需要几分钟）";
+
+/* No comment provided by engineer. */
+"reset" = "重设";
+
+/* No comment provided by engineer. */
+"Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "扫描别人的二维码来获得他们的比特币地址。您可以向任何一个地址发送付款。";
+
+/* No comment provided by engineer. */
+"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "屏幕截图可以被其他程序或者设备获得。请生成一个新的恢复密语并妥善保管。";
+
+/* No comment provided by engineer. */
+"Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "屏幕截图可被其它程序或设备获得。您的资金处于危险之中。请将你的资金转移到另一个钱包";
+
+/* No comment provided by engineer. */
+"seen by %d of %d peers" = "被%2$d中%1$d节点看到";
+
+/* No comment provided by engineer. */
+"Send %@ (%@) from this private key into your wallet? The bitcoin network will receive a fee of %@ (%@)." = "从这个私钥发送%1$@ (%2$@) 到你的钱包吗 ？比特币网络将收到的 %3$@ (%4$@) 的费用。";
+
+/* No comment provided by engineer. */
+"send address as email" = "作为电子邮件发送地址";
+
+/* No comment provided by engineer. */
+"send address as message" = "以短信形式发送地址";
+
+/* No comment provided by engineer. */
+"send request as email" = "作为电子邮件发送请求";
+
+/* No comment provided by engineer. */
+"send request as message" = "以短信形式发送请求";
+
+/* No comment provided by engineer. */
+"sent" = "已发送";
+
+/* No comment provided by engineer. */
+"sent!" = "已发送！";
+
+/* No comment provided by engineer. */
+"settings" = "设置";
+
+/* No comment provided by engineer. */
+"show" = "显示";
+
+/* No comment provided by engineer. */
+"show phrase" = "显示密语";
+
+/* No comment provided by engineer. */
+"sms not currently available" = "目前尚不具备的短信";
+
+/* No comment provided by engineer. */
+"spent address" = "支付地址";
+
+/* No comment provided by engineer. */
+"spent input" = "支付输入";
+
+/* No comment provided by engineer. */
+"status:" = "状态：";
+
+/* No comment provided by engineer. */
+"swept!" = "已划过";
+
+/* No comment provided by engineer. */
+"syncing..." = "同步中...";
+
+/* No comment provided by engineer. */
+"the app will now close" = "该应用将立即关闭";
+
+/* No comment provided by engineer. */
+"This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "这是您的比特币地址。点击可将其复制，或将其用电子邮件或短信发送。每次你获得资金这个地址都会改变，但旧地址依然可用。";
+
+/* No comment provided by engineer. */
+"This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market." = "这是您的比特币余额。比特币是一种货币。汇率随着市场变化。";
+
+/* No comment provided by engineer. */
+"this payment address is already in your wallet" = "此付款地址已在你的钱包";
+
+/* No comment provided by engineer. */
+"this private key is already in your wallet" = "这个私钥已在你的钱包";
+
+/* No comment provided by engineer. */
+"this private key is empty" = "这个私钥为空";
+
+/* No comment provided by engineer. */
+"to:" = "到：";
+
+/* No comment provided by engineer. */
+"to: %@" = "到：%@";
+
+/* No comment provided by engineer. */
+"touch id limit" = "指纹解锁限制";
+
+/* No comment provided by engineer. */
+"touch id spending limit" = "指纹解锁支出限额的";
+
+/* No comment provided by engineer. */
+"transaction canceled, network timeout" = "交易被取消，网络超时";
+
+/* No comment provided by engineer. */
+"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "交易费用将比次私钥上可用资金多（由于极小额存款） ";
+
+/* No comment provided by engineer. */
+"transaction history" = "交易历史记录";
+
+/* No comment provided by engineer. */
+"transaction is post-dated" = "交易被延期";
+
+/* No comment provided by engineer. */
+"transaction rejected" = "交易被拒绝";
+
+/* No comment provided by engineer. */
+"turn device passcode on" = "打开设备密码";
+
+/* No comment provided by engineer. */
+"unexpected response from %@" = "从 %@ 来的意外响应";
+
+/* No comment provided by engineer. */
+"unkown address" = "未知地址";
+
+/* No comment provided by engineer. */
+"unrecognized address" = "无法识别的地址";
+
+/* No comment provided by engineer. */
+"unsupported or corrupted document" = "不受支持或损坏的文件";
+
+/* No comment provided by engineer. */
+"unsupported signature type" = "不支持的签名类型";
+
+/* No comment provided by engineer. */
+"unsupported url" = "不受支持的链接";
+
+/* No comment provided by engineer. */
+"untrusted certificate" = "不受信任的证书";
+
+/* No comment provided by engineer. */
+"unverified" = "未验证";
+
+/* No comment provided by engineer. */
+"verified, waiting for confirmation" = "验证，等待确认";
+
+/* No comment provided by engineer. */
+"verify passcode" = "验证密码";
+
+/* No comment provided by engineer. */
+"wallet address" = "钱包地址";
+
+/* No comment provided by engineer. */
+"wallet disabled" = "钱包被禁用";
+
+/* No comment provided by engineer. */
+"WARNING" = "警告";
+
+/* No comment provided by engineer. */
+"wipe" = "清空";
+
+/* No comment provided by engineer. */
+"WRITE DOWN YOUR RECOVERY PHRASE" = "写下你的恢复密语";
+
+/* No comment provided by engineer. */
+"you received bitcoin!" = "你收到了比特币 ！";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "你的钱包可能不同步。\n这通常可以通过重新扫描 blockchain修复。";
+

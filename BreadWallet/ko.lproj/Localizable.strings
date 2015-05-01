@@ -1,5 +1,5 @@
 /* No comment provided by engineer. */
-"%@ is for 'bits'. %@ = 1 bitcoin." = "%1$@는 'bits'라고 합니다. %2$@ = 1비트코인";
+"%@ is for 'bits'. %@ = 1 bitcoin." = "%1$@는 'bits'라고 합니다. %2$@ = 1빗코인";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@에게 카메라 접근 권한이 없습니다";
@@ -32,13 +32,13 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\n지갑을 보호하기 위해 패스코드가 필요합니다. 설정에 가서 패스코드를 활성화해주세요.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\n이미 사용된 주소\n\n비트코인 주소는 한 번만 사용하길 권장합니다.\n\n주소의 재사용은 당신과 받는 사람의 개인정보가 노출될 가능성이 높아지고, 만약 받는 사람이 직접 주소를 관리하고 있지 않다면 비트코인을 잃어버리는 결과를 가져올 수도 있습니다.";
+"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\n이미 한번 사용된 주소 입니다.\n\n빗코인 주소는 한 번만 사용하기를 권장합니다.\n\n주소의 재사용은 당신과 받는 사람의 개인정보가 노출될 가능성이 높아지고, 만약 받는 사람이 직접 주소를 관리하고 있지 않다면 빗코인을 잃어버리는 결과를 가져올 수도 있습니다.";
 
 /* No comment provided by engineer. */
-"\nallow camera access in\nSettings->Privacy->Camera->%@" = "\n설정->개인 정보 보호->카메라->%@\n에서 카메라에 대한 접근을 허용해 주십시오";
+"\nallow camera access in\nSettings->Privacy->Camera->%@" = "\n설정->개인 정보 보호->카메라->%@\n에서 이 애플리케이션의 카메라 접근을 허용해 주십시요.";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\n절대로 다른 사람에게 복원 문구를 보여주면 안됩니다. 그 사람이 당신의 비트코인을 써버릴 수 있습니다.\n\n절대로 패스워드 매니저 등의 다른 곳에 복원 문구를 저장하지 마십시오. 다른 기기는 바이러스나 멀웨어에 감여돼 있을 우려가 있습니다.\n";
+"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\n절대로 다른 사람에게 복원 문구를 보여주면 안됩니다. 그 사람이 당신의 빗코인을 사용 할 수 있습니다.\n\n절대로 패스워드 매니저 등의 다른 곳에 복원 문구를 저장하지 마십시오. 다른 기기는 바이러스나 멀웨어에 감염되어 있을 가능성이 있습니다.\n";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\n네트워크 수수료 +%1$@ (%2$@)";
@@ -53,19 +53,19 @@
 "always require passcode" = "항상 패스코드 필요";
 
 /* No comment provided by engineer. */
-"amount too small" = "너무 적습니다";
+"amount too small" = "보낼 금액이 너무 적습니다";
 
 /* No comment provided by engineer. */
-"bad password, try again" = "잘못된 패스워드입니다, 다시 시도해주세요";
+"bad password, try again" = "잘못된 암호입니다, 다시 시도해주세요";
 
 /* No comment provided by engineer. */
-"bad payment request" = "잘못된 지급 요청";
+"bad payment request" = "형식이 잘못된 청구서";
 
 /* No comment provided by engineer. */
-"bad payment request URL" = "잘못된 지급 요청 URL";
+"bad payment request URL" = "형식이 잘못된 청구서 URL";
 
 /* No comment provided by engineer. */
-"bad payment URL" = "잘못된 지급 URL";
+"bad payment URL" = "형식이 잘못된 청구서 URL";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "잘못된 복원 문구";
@@ -74,22 +74,22 @@
 "bad signature" = "잘못된 서명";
 
 /* No comment provided by engineer. */
-"Bitcoin address" = "비트코인 주소";
+"Bitcoin address" = "빗코인 주소";
 
 /* No comment provided by engineer. */
-"Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1' or '3'." = "비트코인 주소를 클립보드로 복사할 수도 있습니다. 비트코인 주소는 항상 '1'이나 '3'으로 시작합니다.";
+"Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1' or '3'." = "빗코인 주소를 클립보드로 복사할 수도 있습니다. 빗코인 주소는 항상 '1'이나 '3'으로 시작합니다.";
 
 /* No comment provided by engineer. */
-"bitcoin network fee" = "비트코인 네트워크 수수료";
+"bitcoin network fee" = "빗코인 네트워크 수수료";
 
 /* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "비트코인 송금은 %@보다 작을 수 없습니다";
+"bitcoin payments can't be less than %@" = "빗코인 송금은 %@보다 작을 수 없습니다";
 
 /* No comment provided by engineer. */
-"bitcoin transaction not signed" = "비트코인 거래가 서명되지 않음";
+"bitcoin transaction not signed" = "빗코인 거래가 아직 서명되지 않음";
 
 /* No comment provided by engineer. */
-"bitcoin transaction outputs can't be less than %@" = "비트코인 거래 금액은 %@보다 낮을 수 없습니다";
+"bitcoin transaction outputs can't be less than %@" = "빗코인 거래 금액은 %@보다 낮을 수 없습니다";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "%2$d개중 %1$d번째 블록";
@@ -101,25 +101,25 @@
 "change" = "변경";
 
 /* No comment provided by engineer. */
-"change passcode" = "패스코드 변경";
+"change passcode" = "암호 변경";
 
 /* No comment provided by engineer. */
-"change payment amount?" = "지불 금액을 변경 하시겠습니까?";
+"change payment amount?" = "보낼 금액을 변경하시겠습니까?";
 
 /* No comment provided by engineer. */
 "checking private key balance..." = "비밀 키에 남아 있는 잔액 확인중...";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "%@를 위한 패스코드 결정";
+"choose passcode for %@" = "%@를 위한 암호 설정";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid bitcoin address" = "클립보드에 제대로 된 비트코인 주소가 없습니다";
+"clipboard doesn't contain a valid bitcoin address" = "클립보드에 유효한 빗코인 주소가 없습니다";
 
 /* No comment provided by engineer. */
 "close app" = "앱 닫기";
 
 /* No comment provided by engineer. */
-"CONFIRM WIPE" = "지우기 확인";
+"CONFIRM WIPE" = "삭제 확인";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "#%d 블록에서 승인";
@@ -128,13 +128,13 @@
 "connect timeout" = "접속 시간 초과";
 
 /* No comment provided by engineer. */
-"copied" = "복사 완료";
+"copied" = "복사됨";
 
 /* No comment provided by engineer. */
 "copy address to clipboard" = "클립보드로 주소 복사하기";
 
 /* No comment provided by engineer. */
-"copy request to clipboard" = "클립보드로 요청 복사하기";
+"copy request to clipboard" = "클립보드로 빗코인 청구서 복사하기";
 
 /* No comment provided by engineer. */
 "couldn't make payment" = "지불에 실패하였습니다";
@@ -143,34 +143,34 @@
 "couldn't sweep balance" = "잔액을 지갑으로 옮기지 못했습니다";
 
 /* No comment provided by engineer. */
-"couldn't transmit payment to bitcoin network" = "지불 내용을 비트코인 네트워크에 전송할 수 없었습니다";
+"couldn't transmit payment to bitcoin network" = "지불 내역을 빗코인 네트워크에 전송할 수 없었습니다";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "장치 보안이 손상된 상태입니다\n\n단말기가 탈옥 돼 있으면 어떤 '탈옥'앱이든 다른앱의 키체인 데이터에 접근할 수 있습니다(그리고 당신의 비트코인을 훔칠 수 있습니다).";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "장치 보안이 변형된 상태입니다\n\n단말기가 탈옥 돼 있으면 어떤 '탈옥'앱이든 다른앱의 키체인 데이터에 접근할 수 있습니다(그리고 당신의 빗코인을 훔칠 수 있습니다).";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "장치 보안이 손상된 상태입니다\n단말기가 탈옥 돼 있으면 어떤 '탈옥'앱이든 다른앱의 키체인 데이터에 접근할 수 있습니다(그리고 당신의 비트코인을 훔칠 수 있습니다).\n즉시 지갑을 지우고 안전한 장치에서 복원해주세요.";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "장치 보안이 변형된 상태입니다\n단말기가 탈옥 돼 있으면 어떤 '탈옥'앱이든 다른앱의 키체인 데이터에 접근할 수 있습니다(그리고 당신의 비트코인을 훔칠 수 있습니다).\n즉시 지갑을 지우고 안전한 장치에서 지갑을 복구해주세요.";
 
 /* No comment provided by engineer. */
 "do it later" = "나중에 하기";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins." = "절대로 다른 사람에게 복원 문구를 보여주면 안됩니다. \n      그 사람이 당신의 비트코인을 써버릴 수 있습니다.";
+"DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins." = "절대로 다른 사람에게 복원 문구를 보여주면 안됩니다. \n      그 사람이 당신의 빗코인을 써버릴 수 있습니다.";
 
 /* No comment provided by engineer. */
 "done" = "완료";
 
 /* No comment provided by engineer. */
-"double spend" = "이중 사용";
+"double spend" = "이중지불";
 
 /* No comment provided by engineer. */
 "email not configured" = "이메일이 설정되지 않았습니다";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "이전 패스코드 입력";
+"enter old passcode" = "이전 암호 입력";
 
 /* No comment provided by engineer. */
-"error signing bitcoin transaction" = "비트코인 거래 서명 중 오류 발생";
+"error signing bitcoin transaction" = "빗코인 거래 서명 중 오류 발생";
 
 /* No comment provided by engineer. */
 "error signing transaction" = "거래 서명 중 오류 발생";
@@ -206,7 +206,7 @@
 "INVALID" = "유효하지 않음";
 
 /* No comment provided by engineer. */
-"Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "다른 사람이 QR코드를 스캔해서 당신의 비트코인 주소를 알수 있습니다. 당신의 비트코인 주소를 알려주면 누구든지 당신의 지갑으로 비트코인을 보낼 수 있습니다.";
+"Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "다른 사람이당신의 빗코인 주소를  QR코드로 스캔하여 주소를 알려 줄 수 있습니다. 누구든지 당신의 빗코인 주소를 알고있다면 그 주소로 빗코인을 보낼 수 있습니다.";
 
 /* No comment provided by engineer. */
 "minute" = "분";
@@ -239,22 +239,22 @@
 "not a bitcoin QR code" = "비트코인 QR 코드가 아닙니다";
 
 /* No comment provided by engineer. */
-"not a valid bitcoin address" = "유효한 비트코인 주소가 아님";
+"not a valid bitcoin address" = "유효한 빗코인 주소가 아님";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "유효한 비밀 키가 아님";
 
 /* No comment provided by engineer. */
-"not connected to the bitcoin network" = "비트코인 네트워크에 연결돼 있지 않습니다";
+"not connected to the bitcoin network" = "빗코인 네트워크에 연결돼 있지 않습니다";
 
 /* No comment provided by engineer. */
 "ok" = "ok";
 
 /* No comment provided by engineer. */
-"passcode" = "패스코드";
+"passcode" = "암호";
 
 /* No comment provided by engineer. */
-"passcode for %@" = "%@의 패스코드";
+"passcode for %@" = "%@에 대한 암호";
 
 /* No comment provided by engineer. */
 "password" = "패스워드";
@@ -266,7 +266,7 @@
 "pay" = "지불";
 
 /* No comment provided by engineer. */
-"payment address" = "거래 주소";
+"payment address" = "결제 주소";
 
 /* No comment provided by engineer. */
 "payment output" = "거래 출력";
