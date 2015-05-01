@@ -1172,13 +1172,14 @@
                                 </connections>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ce6-Wi-wk4">
-                                <rect key="frame" x="45" y="250" width="230" height="44"/>
+                                <rect key="frame" x="52" y="250" width="216" height="44"/>
                                 <gestureRecognizers/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="230" id="0My-rH-7KZ"/>
+                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="180" id="0My-rH-7KZ"/>
                                     <constraint firstAttribute="height" constant="44" id="WmA-Sw-dye"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
+                                <inset key="contentEdgeInsets" minX="8" minY="0.0" maxX="8" maxY="0.0"/>
                                 <inset key="imageEdgeInsets" minX="-10" minY="0.0" maxX="10" maxY="0.0"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
                                 <state key="normal" title="scan QR code" image="cameraguide-blue-small" backgroundImage="button-bg-blue">
@@ -1198,13 +1199,13 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bfj-xS-5rN">
-                                <rect key="frame" x="45" y="334" width="230" height="44"/>
+                                <rect key="frame" x="52" y="334" width="216" height="44"/>
                                 <gestureRecognizers/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="230" id="QCT-Cx-Vgd"/>
                                     <constraint firstAttribute="height" constant="44" id="nsj-xF-Ebz"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
+                                <inset key="contentEdgeInsets" minX="8" minY="0.0" maxX="8" maxY="0.0"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
                                 <state key="normal" title="pay address from clipboard" backgroundImage="button-bg-blue">
                                     <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
@@ -1232,6 +1233,7 @@
                         </subviews>
                         <gestureRecognizers/>
                         <constraints>
+                            <constraint firstItem="ce6-Wi-wk4" firstAttribute="width" secondItem="bfj-xS-5rN" secondAttribute="width" id="3zv-yM-vp5"/>
                             <constraint firstAttribute="centerX" secondItem="l5l-JR-LKA" secondAttribute="centerX" id="BsW-Di-um1"/>
                             <constraint firstItem="bfj-xS-5rN" firstAttribute="centerX" secondItem="SgP-DR-cyl" secondAttribute="centerX" id="FIk-PE-925"/>
                             <constraint firstItem="bfj-xS-5rN" firstAttribute="centerY" secondItem="Nmx-0C-BXz" secondAttribute="centerY" constant="72" id="KuY-Hv-Ke7"/>
@@ -1339,10 +1341,11 @@
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dOa-zm-TDG">
                                 <rect key="frame" x="70" y="210" width="180" height="44"/>
                                 <constraints>
+                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="180" id="NhW-v2-HUO"/>
                                     <constraint firstAttribute="height" constant="44" id="TyG-sW-nGi"/>
-                                    <constraint firstAttribute="width" constant="180" id="pdz-u8-b49"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
+                                <inset key="contentEdgeInsets" minX="8" minY="0.0" maxX="8" maxY="0.0"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
                                 <state key="normal" title="new wallet" backgroundImage="button-bg-white">
                                     <color key="titleShadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
@@ -1360,9 +1363,9 @@
                                 <rect key="frame" x="70" y="314" width="180" height="44"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="44" id="SS8-xT-kei"/>
-                                    <constraint firstAttribute="width" constant="180" id="Vtf-KB-uml"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
+                                <inset key="contentEdgeInsets" minX="8" minY="0.0" maxX="8" maxY="0.0"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
                                 <state key="normal" title="recover wallet" backgroundImage="button-bg-white">
                                     <color key="titleShadowColor" white="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="calibratedWhite"/>
@@ -1382,6 +1385,7 @@
                             <constraint firstAttribute="centerX" secondItem="Q5d-52-Dwn" secondAttribute="centerX" id="C2B-IW-4b6"/>
                             <constraint firstAttribute="centerY" secondItem="dOa-zm-TDG" secondAttribute="centerY" constant="52" id="DZj-AR-xVU"/>
                             <constraint firstAttribute="centerX" secondItem="4w7-k8-9wY" secondAttribute="centerX" id="cgR-0k-6zT"/>
+                            <constraint firstItem="4w7-k8-9wY" firstAttribute="width" secondItem="dOa-zm-TDG" secondAttribute="width" id="f9r-kG-LoP"/>
                             <constraint firstAttribute="centerY" secondItem="1xc-b5-vde" secondAttribute="centerY" id="fLN-8q-7aM"/>
                             <constraint firstItem="4w7-k8-9wY" firstAttribute="centerY" secondItem="TKd-gT-9T7" secondAttribute="centerY" constant="52" id="hF3-1s-SMx"/>
                             <constraint firstAttribute="centerX" secondItem="dOa-zm-TDG" secondAttribute="centerX" id="ksL-p8-tmf"/>
@@ -1946,9 +1950,10 @@ bitpay.com/rates</string>
                                 <rect key="frame" x="55" y="362" width="210" height="44"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="44" id="8HY-tn-QvG"/>
-                                    <constraint firstAttribute="width" constant="210" id="opI-fF-cVd"/>
+                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="180" id="zSs-Mz-iZo"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
+                                <inset key="contentEdgeInsets" minX="8" minY="0.0" maxX="8" maxY="0.0"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
                                 <state key="normal" title="generate recovery phrase" backgroundImage="button-bg-white">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>

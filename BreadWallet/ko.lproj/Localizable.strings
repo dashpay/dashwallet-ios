@@ -155,7 +155,7 @@
 "do it later" = "나중에 하기";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins." = "절대로 다른 사람에게 복원 문구를 보여주면 안됩니다. \n      그 사람이 당신의 빗코인을 써버릴 수 있습니다.";
+"\n      DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins.\n" = "\n      절대로 다른 사람에게 복원 문구를 보여주면 안됩니다. \n      그 사람이 당신의 빗코인을 써버릴 수 있습니다.\n";
 
 /* No comment provided by engineer. */
 "done" = "완료";
@@ -224,7 +224,7 @@
 "moved" = "이동 완료";
 
 /* No comment provided by engineer. */
-"NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected." = "절대로 복원 문구를 \n      패스워드 매니저 등의 다른 곳에 저장하지 마십시오. \n      다른 기기는 감여돼 있을 우려가 있습니다.";
+"\n      NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected.\n" = "\n      절대로 복원 문구를 \n      패스워드 매니저 등의 다른 곳에 저장하지 마십시오. \n      다른 기기는 감여돼 있을 우려가 있습니다.\n";
 
 /* No comment provided by engineer. */
 "new phrase" = "새로운 문구";

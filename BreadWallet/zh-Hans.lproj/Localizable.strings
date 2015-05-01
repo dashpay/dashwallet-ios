@@ -155,7 +155,7 @@
 "do it later" = "以后再做";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins." = "不要让任何人看到你的恢复\n      密语，否则他们可以使用您的比特币。";
+"\n      DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins.\n" = "\n      不要让任何人看到你的恢复\n      密语，否则他们可以使用您的比特币。\n";
 
 /* No comment provided by engineer. */
 "done" = "完成";
@@ -224,7 +224,7 @@
 "moved" = "已移动";
 
 /* No comment provided by engineer. */
-"NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected." = "永远不要将恢复密语输入到\n密码管理器或其他地方\n其它设备都可能被病毒感染。";
+"\n      NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected.\n" = "\n      永远不要将恢复密语输入到\n密码管理器或其他地方\n其它设备都可能被病毒感染。\n";
 
 /* No comment provided by engineer. */
 "new phrase" = "新密语";

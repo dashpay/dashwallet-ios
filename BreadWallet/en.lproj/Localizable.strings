@@ -155,7 +155,7 @@
 "do it later" = "do it later";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins." = "DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins.";
+"\n      DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins.\n" = "\n      DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins.\n";
 
 /* No comment provided by engineer. */
 "done" = "done";
@@ -224,7 +224,7 @@
 "moved" = "moved";
 
 /* No comment provided by engineer. */
-"NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected." = "NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected.";
+"\n      NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected.\n" = "\n      NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected.\n";
 
 /* No comment provided by engineer. */
 "new phrase" = "new phrase";

@@ -155,7 +155,7 @@
 "do it later" = "gør det senere";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins." = "LAD IKKE nogen se din gendannelsessætning - ellers kan de bruge dine bitcoins.";
+"\n      DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins.\n" = "\n      LAD IKKE nogen se din gendannelsessætning - ellers kan de bruge dine bitcoins.\n";
 
 /* No comment provided by engineer. */
 "done" = "færdig";
@@ -224,7 +224,7 @@
 "moved" = "flyttet";
 
 /* No comment provided by engineer. */
-"NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected." = "Skriv ALDRIG din gendannelsessætning i\n      kodeords-programmer eller lignende. Andre\n      enheder kan være inficeret.";
+"\n      NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected.\n" = "\n      Skriv ALDRIG din gendannelsessætning i\n      kodeords-programmer eller lignende. Andre\n      enheder kan være inficeret.\n";
 
 /* No comment provided by engineer. */
 "new phrase" = "ny sætning";

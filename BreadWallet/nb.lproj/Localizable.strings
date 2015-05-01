@@ -155,7 +155,7 @@
 "do it later" = "gjør det senere";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins." = "IKKE la noen se din gjenopprettings\n      frase; de kan sende dine bitcoin.";
+"\n      DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins.\n" = "\n      IKKE la noen se din gjenopprettings\n      frase; de kan sende dine bitcoin.\n";
 
 /* No comment provided by engineer. */
 "done" = "utført";
@@ -224,7 +224,7 @@
 "moved" = "flyttet";
 
 /* No comment provided by engineer. */
-"NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected." = "ALDRI skriv din gjenopprettingsfrase inn i en passordbehandler. andre enheter kan være infisert.";
+"\n      NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected.\n" = "\n      ALDRI skriv din gjenopprettingsfrase inn i en passordbehandler. andre enheter kan være infisert.\n";
 
 /* No comment provided by engineer. */
 "new phrase" = "ny frase";

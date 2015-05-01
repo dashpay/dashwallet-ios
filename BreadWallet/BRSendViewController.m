@@ -351,7 +351,6 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
                 c.to = [LOCK @" " stringByAppendingString:sanitizeString(protoReq.commonName)];
             }
             else if (protoReq.errorMessage.length > 0) {
-                //TODO: XXXX alert the user with protoReq.errorMessage
                 c.to = [REDX @" " stringByAppendingString:sanitizeString(protoReq.commonName)];
             }
             else c.to = sanitizeString(protoReq.commonName);

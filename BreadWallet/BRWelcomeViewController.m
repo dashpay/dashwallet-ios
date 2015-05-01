@@ -145,14 +145,14 @@
          withAttributedString:[NSAttributedString attributedStringWithAttachment:noKey]];
         
         [s replaceCharactersInRange:[s.string rangeOfString:@"WARNING"] withString:NSLocalizedString(@"WARNING", nil)];
-        [s replaceCharactersInRange:[s.string rangeOfString:@"DO NOT let anyone see your recovery\n"
-                                     "      phrase or they can spend your bitcoins."]
-         withString:NSLocalizedString(@"DO NOT let anyone see your recovery\n"
-                                      "      phrase or they can spend your bitcoins.", nil)];
-        [s replaceCharactersInRange:[s.string rangeOfString:@"NEVER type your recovery phrase into\n"
-                                     "      password managers or elsewhere. Other\n      devices may be infected."]
-         withString:NSLocalizedString(@"NEVER type your recovery phrase into\n"
-                                      "      password managers or elsewhere. Other\n      devices may be infected.",
+        [s replaceCharactersInRange:[s.string rangeOfString:@"\n      DO NOT let anyone see your recovery\n"
+                                     "      phrase or they can spend your bitcoins.\n"]
+         withString:NSLocalizedString(@"\n      DO NOT let anyone see your recovery\n"
+                                      "      phrase or they can spend your bitcoins.\n", nil)];
+        [s replaceCharactersInRange:[s.string rangeOfString:@"\n      NEVER type your recovery phrase into\n"
+                                     "      password managers or elsewhere. Other\n      devices may be infected.\n"]
+         withString:NSLocalizedString(@"\n      NEVER type your recovery phrase into\n"
+                                      "      password managers or elsewhere. Other\n      devices may be infected.\n",
                                       nil)];
         self.warningLabel.attributedText = s;
     }

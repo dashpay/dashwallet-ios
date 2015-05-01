@@ -683,6 +683,7 @@
 
         [(id)self.pageViewController setViewControllers:@[self.receiveViewController]
         direction:UIPageViewControllerNavigationDirectionForward animated:YES completion:^(BOOL finished) {
+            //BUG: XXXX this doesn't get called after wiping a wallet and starting a new one without killing the app
             [m performSelector:@selector(setPin) withObject:nil afterDelay:0.0];
         }];
 

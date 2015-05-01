@@ -155,7 +155,7 @@
 "do it later" = "le faire plus tard";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins." = "NE LAISSEZ PERSONNE voir votre phrase\n      de récupération où n'importe qui pourra dépenser vos bitcoins.";
+"\n      DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins.\n" = "\n      NE LAISSEZ PERSONNE voir votre phrase\n      de récupération où n'importe qui pourra dépenser vos bitcoins.\n";
 
 /* No comment provided by engineer. */
 "done" = "terminé";
@@ -224,7 +224,7 @@
 "moved" = "déplacé";
 
 /* No comment provided by engineer. */
-"NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected." = "Ne tapez JAMAIS votre phrase de récupération\n      dans un gestionnaire de mots de passe où ailleurs. D'autres\n      appareils peuvent être infectés.";
+"\n      NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected.\n" = "\n      Ne tapez JAMAIS votre phrase de récupération\n      dans un gestionnaire de mots de passe où ailleurs. D'autres\n      appareils peuvent être infectés.\n";
 
 /* No comment provided by engineer. */
 "new phrase" = "nouvelle phrase";
