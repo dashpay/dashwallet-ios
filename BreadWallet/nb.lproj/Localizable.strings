@@ -467,6 +467,9 @@
 "WARNING" = "ADVARSEL";
 
 /* No comment provided by engineer. */
+"    WARNING" = "   ADVARSEL";
+
+/* No comment provided by engineer. */
 "wipe" = "fjern";
 
 /* No comment provided by engineer. */

@@ -464,7 +464,10 @@
 "wallet disabled" = "tárca letiltva";
 
 /* No comment provided by engineer. */
-"WARNING" = "FIGYELEM!";
+"WARNING" = "FIGYELEM";
+
+/* No comment provided by engineer. */
+"    WARNING" = "   FIGYELEM";
 
 /* No comment provided by engineer. */
 "wipe" = "törlés a telefonról";

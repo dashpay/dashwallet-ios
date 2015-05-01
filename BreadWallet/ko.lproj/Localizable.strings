@@ -467,6 +467,9 @@
 "WARNING" = "경고";
 
 /* No comment provided by engineer. */
+"    WARNING" = "        경고";
+
+/* No comment provided by engineer. */
 "wipe" = "지우기";
 
 /* No comment provided by engineer. */

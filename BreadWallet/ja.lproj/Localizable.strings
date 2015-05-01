@@ -464,7 +464,10 @@
 "wallet disabled" = "ウォレット無効";
 
 /* No comment provided by engineer. */
-"WARNING" = "    警告";
+"WARNING" = "警告";
+
+/* No comment provided by engineer. */
+"    WARNING" = "        警告";
 
 /* No comment provided by engineer. */
 "wipe" = "完全削除";

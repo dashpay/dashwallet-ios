@@ -144,7 +144,8 @@
         [s replaceCharactersInRange:[s.string rangeOfString:@"%no-key%"]
          withAttributedString:[NSAttributedString attributedStringWithAttachment:noKey]];
         
-        [s replaceCharactersInRange:[s.string rangeOfString:@"WARNING"] withString:NSLocalizedString(@"WARNING", nil)];
+        [s replaceCharactersInRange:[s.string rangeOfString:@"    WARNING"]
+         withString:NSLocalizedString(@"    WARNING", nil)];
         [s replaceCharactersInRange:[s.string rangeOfString:@"\n      DO NOT let anyone see your recovery\n"
                                      "      phrase or they can spend your bitcoins.\n"]
          withString:NSLocalizedString(@"\n      DO NOT let anyone see your recovery\n"

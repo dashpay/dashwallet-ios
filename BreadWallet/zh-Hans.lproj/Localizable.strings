@@ -467,6 +467,9 @@
 "WARNING" = "警告";
 
 /* No comment provided by engineer. */
+"    WARNING" = "        警告";
+
+/* No comment provided by engineer. */
 "wipe" = "清空";
 
 /* No comment provided by engineer. */
