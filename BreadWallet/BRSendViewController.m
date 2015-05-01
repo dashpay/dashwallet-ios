@@ -83,6 +83,15 @@ static NSString *sanitizeString(NSString *s)
     // Do any additional setup after loading the view, typically from a nib.
     
     // TODO: XXX redesign page with round buttons like the iOS power down screen... apple watch also has round buttons
+    self.scanButton.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.clipboardButton.titleLabel.adjustsFontSizeToFitWidth = YES;
+    
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    self.scanButton.titleLabel.adjustsLetterSpacingToFitWidth = YES;
+    self.clipboardButton.titleLabel.adjustsLetterSpacingToFitWidth = YES;
+#pragma clang diagnostic pop
+    
     self.clipboardText.textContainerInset = UIEdgeInsetsMake(8.0, 0.0, 0.0, 0.0);
     
     self.clipboardObserver =
