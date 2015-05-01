@@ -155,7 +155,7 @@
 "do it later" = "később leírom";
 
 /* No comment provided by engineer. */
-"\n      DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins.\n" = "\n      NE engedd, hogy más lássa a\n      helyreállítási kódmondatodat, különben\n      elköltheti a bitcoinjaidat.";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nNE engedd, hogy más lássa a helyreállítási\nkódmondatodat, különben elköltheti a\nbitcoinjaidat.";
 
 /* No comment provided by engineer. */
 "done" = "kész";
@@ -224,7 +224,7 @@
 "moved" = "átvezetve";
 
 /* No comment provided by engineer. */
-"\n      NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected.\n" = "\n      SOHA ne gépeld be a kódmondatodat\n      jelszókezelő alkalmazásokba vagy\n      máshová, hiszen fertőzöttek lehetnek.\n";
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nSOHA ne gépeld be a helyreállítási\nkódmondatodat jelszókezelő\nalkalmazásokba vagy máshová,\nhiszen fertőzöttek lehetnek.";
 
 /* No comment provided by engineer. */
 "new phrase" = "új kódmondat";
@@ -464,10 +464,7 @@
 "wallet disabled" = "tárca letiltva";
 
 /* No comment provided by engineer. */
-"WARNING" = "FIGYELEM";
-
-/* No comment provided by engineer. */
-"    WARNING" = "   FIGYELEM";
+"WARNING" = "FIGYELEM!";
 
 /* No comment provided by engineer. */
 "wipe" = "törlés a telefonról";

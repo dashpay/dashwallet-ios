@@ -155,7 +155,7 @@
 "do it later" = "後でやります";
 
 /* No comment provided by engineer. */
-"\n      DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins.\n" = "             復元フレーズは絶対に\n             誰にも見せないで下さい！\n             復元フレーズを知っている人は\n             あなたのビットコインを\n             簡単に盗むことができます。";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "復元フレーズは絶対に\n誰にも見せないで下さい！\n復元フレーズを知っている人は\nあなたのビットコインを\n簡単に盗むことができます。";
 
 /* No comment provided by engineer. */
 "done" = "完了";
@@ -224,7 +224,7 @@
 "moved" = "移動されました";
 
 /* No comment provided by engineer. */
-"\n      NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected.\n" = "             パスワード管理アプリや、\n             信用できない端末に復元フレーズは\n             絶対に打ち込んだり\n             写真を撮ったりしないで下さい。\n             ウィルスやマルウェアによって\n             盗まれる可能性があります。";
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "パスワード管理アプリや、\n信用できない端末に復元フレーズは\n絶対に打ち込んだり\n写真を撮ったりしないで下さい。\nウィルスやマルウェアによって\n盗まれる可能性があります。";
 
 /* No comment provided by engineer. */
 "new phrase" = "新規フレーズ";
@@ -464,10 +464,7 @@
 "wallet disabled" = "ウォレット無効";
 
 /* No comment provided by engineer. */
-"WARNING" = "警告";
-
-/* No comment provided by engineer. */
-"    WARNING" = "        警告";
+"WARNING" = "    警告";
 
 /* No comment provided by engineer. */
 "wipe" = "完全削除";

@@ -425,6 +425,7 @@ static NSString *dateFormat(NSString *template)
                     unconfirmedLabel.text = NSLocalizedString(@"unverified", nil);
                 }
                 else if (confirms < 6) {
+                    //BUG: XXXX in some languages 0 is singluar instead of plural
                     unconfirmedLabel.text = (confirms == 1) ? NSLocalizedString(@"1 confirmation", nil) :
                                             [NSString stringWithFormat:NSLocalizedString(@"%d confirmations", nil),
                                              (int)confirms];

@@ -155,7 +155,7 @@
 "do it later" = "bëje më vonë";
 
 /* No comment provided by engineer. */
-"\n      DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins.\n" = "\n      MOS lejoni që askush të shoh frazën\n      rikthyese ose ata mund të shpenzojnë\n      bitcoin-at e juaj.";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "MOS lejoni që askush të shoh frazën\nrikthyese ose ata mund të shpenzojnë\nbitcoin-at e juaj.";
 
 /* No comment provided by engineer. */
 "done" = "përfunduar";
@@ -224,7 +224,7 @@
 "moved" = "janë zhvendosur";
 
 /* No comment provided by engineer. */
-"\n      NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected.\n" = "\n      KURRË mos i shkruani frazën rikthyese në\n      menagjerët e fjalëkalimeve apo diku tjetër.\n      Pajisjet tjera mund të jenë të infektuara.\n";
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nKURRË mos e shkruani frazën rikthyese\nnë ndonjë menagjer të fjalëkalimeve apo\ndiku tjetër. Pajisjet tjera mund të infektohen.\n";
 
 /* No comment provided by engineer. */
 "new phrase" = "frazë e re";
@@ -465,9 +465,6 @@
 
 /* No comment provided by engineer. */
 "WARNING" = "PARALAJMËRIM";
-
-/* No comment provided by engineer. */
-"    WARNING" = "PARALAJMËRIM";
 
 /* No comment provided by engineer. */
 "wipe" = "fshij";

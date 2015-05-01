@@ -8,7 +8,7 @@
 "A4M-yq-26d.normalTitle" = "genereer herstel zin";
 
 /* Class = "UILabel"; text = "start/recover another wallet"; ObjectID = "D1b-HB-lKH"; */
-"D1b-HB-lKH.text" = "Start/recover een andere portemonnee";
+"D1b-HB-lKH.text" = "start/recover een andere portemonnee";
 
 /* Class = "UILabel"; text = "exchange rate data provided by\nbitpay.com/rates"; ObjectID = "D4H-hd-LsX"; */
 "D4H-hd-LsX.text" = "wisselkoers gegevens verstrekt door\nbitpay.com/rates";

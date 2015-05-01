@@ -155,7 +155,7 @@
 "do it later" = "probeer later nogmaals";
 
 /* No comment provided by engineer. */
-"\n      DO NOT let anyone see your recovery\n      phrase or they can spend your bitcoins.\n" = "\n      Toon je herstel zin aan NIEMAND,\n      anders hebben zij de mogelijkheid\n      om jouw bitcoins uit te geven.";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nLaat je herstel zin aan NIEMAND zien,\nanders hebben zij de mogelijkheid om\njouw bitcoins uit te geven.";
 
 /* No comment provided by engineer. */
 "done" = "gereed";
@@ -224,7 +224,7 @@
 "moved" = "verplaatst";
 
 /* No comment provided by engineer. */
-"\n      NEVER type your recovery phrase into\n      password managers or elsewhere. Other\n      devices may be infected.\n" = "\n      Type je herstel zin NOOIT in bij\n      wachtwoord beheer programma's of\n      ergens anders. Andere apparaten \n      kunnen geïnfecteerd zijn.";
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nType je herstel zin NOOIT in bij wachtwoord\nbeheer programma's of ergens anders.\nAndere apparaten kunnen geïnfecteerd zijn.\n";
 
 /* No comment provided by engineer. */
 "new phrase" = "nieuwe zin";
@@ -465,9 +465,6 @@
 
 /* No comment provided by engineer. */
 "WARNING" = "WAARSCHUWING";
-
-/* No comment provided by engineer. */
-"    WARNING" = "WAARSCHUWING";
 
 /* No comment provided by engineer. */
 "wipe" = "wipe";

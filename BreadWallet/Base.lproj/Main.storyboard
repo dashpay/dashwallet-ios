@@ -1176,7 +1176,7 @@
                                 <gestureRecognizers/>
                                 <constraints>
                                     <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="180" id="0My-rH-7KZ"/>
-                                    <constraint firstAttribute="width" relation="lessThanOrEqual" constant="300" id="KnJ-HV-aoB"/>
+                                    <constraint firstAttribute="width" relation="lessThanOrEqual" constant="290" id="KnJ-HV-aoB"/>
                                     <constraint firstAttribute="height" constant="44" id="WmA-Sw-dye"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
@@ -1344,6 +1344,7 @@
                                 <constraints>
                                     <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="180" id="NhW-v2-HUO"/>
                                     <constraint firstAttribute="height" constant="44" id="TyG-sW-nGi"/>
+                                    <constraint firstAttribute="width" relation="lessThanOrEqual" constant="290" id="oTJ-De-Lxf"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                                 <inset key="contentEdgeInsets" minX="8" minY="0.0" maxX="8" maxY="0.0"/>
@@ -1410,8 +1411,10 @@
                     </navigationItem>
                     <connections>
                         <outlet property="logoXCenter" destination="C2B-IW-4b6" id="B75-cw-VfP"/>
+                        <outlet property="newwalletButton" destination="dOa-zm-TDG" id="kFt-K9-owu"/>
                         <outlet property="paralax" destination="1xc-b5-vde" id="FHg-2c-agG"/>
                         <outlet property="paralaxXLeft" destination="ydv-pT-OnM" id="z4J-pb-pgt"/>
+                        <outlet property="recoverButton" destination="4w7-k8-9wY" id="BC6-ID-6ta"/>
                         <outlet property="restoreXCenter" destination="cgR-0k-6zT" id="tsk-mk-Z87"/>
                         <outlet property="walletXCenter" destination="ksL-p8-tmf" id="QAd-Ce-GxS"/>
                         <outlet property="wallpaper" destination="pb2-E7-2ep" id="UeF-CY-KaD"/>
@@ -1951,6 +1954,7 @@ bitpay.com/rates</string>
                                 <rect key="frame" x="55" y="362" width="210" height="44"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="44" id="8HY-tn-QvG"/>
+                                    <constraint firstAttribute="width" relation="lessThanOrEqual" constant="290" id="oGG-eH-dqf"/>
                                     <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="180" id="zSs-Mz-iZo"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
@@ -1969,31 +1973,40 @@ bitpay.com/rates</string>
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.5" colorSpace="calibratedWhite"/>
                                 <attributedString key="attributedText">
-                                    <fragment content="    WARNING">
+                                    <fragment content="WARNING">
                                         <attributes>
                                             <color key="NSColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
-                                            <font key="NSFont" size="48" name="HelveticaNeue-Thin"/>
-                                            <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                            <font key="NSFont" size="40" name="HelveticaNeue-Thin"/>
+                                            <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
                                         </attributes>
                                     </fragment>
                                     <fragment>
                                         <string key="content">
-                                        
-                                        
-                                %no-eye%
-
-      DO NOT let anyone see your recovery
-      phrase or they can spend your bitcoins.
 
 
+%no-eye%
 
-                                %no-key%
-
-      NEVER type your recovery phrase into
-      password managers or elsewhere. Other
-      devices may be infected.
+DO NOT let anyone see your recovery
+phrase or they can spend your bitcoins.
 
 
+
+%no-key%
+
+NEVER type your recovery phrase into
+password managers or elsewhere.
+Other devices may be infected.
+
+</string>
+                                        <attributes>
+                                            <color key="NSColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                            <font key="NSFont" size="15" name="HelveticaNeue"/>
+                                            <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
+                                        </attributes>
+                                    </fragment>
+                                    <fragment>
+                                        <string key="content" base64-UTF8="YES">
+Cg
 </string>
                                         <attributes>
                                             <color key="NSColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
