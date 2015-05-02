@@ -16,11 +16,11 @@
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
 "EQG-Km-ZKY.text" = "Als je ooit je telefoon kwijtraakt, moet je deze zin hebben om je portemonnee te herstellen";
 
-/* Class = "UILabel"; text = "sent"; ObjectID = "FjB-H2-BnK"; */
-"FjB-H2-BnK.text" = "verstuur";
-
 /* Class = "UIBarButtonItem"; title = "remind me later"; ObjectID = "QQS-Me-RNh"; */
 "QQS-Me-RNh.title" = "herinner mij later";
+
+/* Class = "UILabel"; text = "please write it down"; ObjectID = "Td7-xP-kmB"; */
+"Td7-xP-kmB.text" = "please write it down";
 
 /* Class = "UILabel"; text = "not connected"; ObjectID = "UyF-OV-QVY"; */
 "UyF-OV-QVY.text" = "niet verbonden";
@@ -48,9 +48,6 @@
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "dX6-jg-5IA"; */
 "dX6-jg-5IA.text" = "Als je ooit je telefoon kwijtraakt, moet je deze zin hebben om je portemonnee te herstellen";
-
-/* Class = "UILabel"; text = "unconfirmed"; ObjectID = "eJ2-5h-DO2"; */
-"eJ2-5h-DO2.text" = "onbevestigd";
 
 /* Class = "UIButton"; normalTitle = "show"; ObjectID = "efL-Cj-Aho"; */
 "efL-Cj-Aho.normalTitle" = "tonen";

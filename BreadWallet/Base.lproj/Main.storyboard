@@ -2137,6 +2137,14 @@ Other devices may be infected.
                                 <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <size key="shadowOffset" width="0.0" height="1"/>
                             </label>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="please write it down" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="300" translatesAutoresizingMaskIntoConstraints="NO" id="Td7-xP-kmB">
+                                <rect key="frame" x="91" y="200" width="138" height="20"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
+                                <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
+                                <nil key="highlightedColor"/>
+                                <color key="shadowColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <size key="shadowOffset" width="0.0" height="1"/>
+                            </label>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ZPH-1d-tW9">
                                 <rect key="frame" x="0.0" y="264" width="320" height="105"/>
                                 <subviews>
@@ -2211,7 +2219,9 @@ Other devices may be infected.
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <constraints>
+                            <constraint firstItem="Td7-xP-kmB" firstAttribute="top" secondItem="EQG-Km-ZKY" secondAttribute="bottom" constant="12" id="1no-Pe-bnJ"/>
                             <constraint firstItem="PJj-7p-7Bt" firstAttribute="leading" secondItem="cyp-mV-Bhd" secondAttribute="trailing" constant="-15" id="Be0-6P-U91"/>
+                            <constraint firstAttribute="centerX" secondItem="Td7-xP-kmB" secondAttribute="centerX" id="Cyd-Qh-cJo"/>
                             <constraint firstItem="8KJ-Le-F0y" firstAttribute="leading" secondItem="7xM-f1-iRp" secondAttribute="leading" id="Duy-qc-fl9"/>
                             <constraint firstItem="ZPH-1d-tW9" firstAttribute="centerY" secondItem="7xM-f1-iRp" secondAttribute="centerY" constant="32" id="FT9-CA-Rxu"/>
                             <constraint firstItem="cyp-mV-Bhd" firstAttribute="centerY" secondItem="PJj-7p-7Bt" secondAttribute="centerY" constant="-1" id="ICm-10-8ef"/>

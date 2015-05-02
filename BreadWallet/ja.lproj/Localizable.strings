@@ -167,7 +167,7 @@
 "email not configured" = "メールアドレスが設定されていません";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "古いパスコードを\nご入力下さい";
+"enter old passcode" = "現在のパスコードを\nご入力下さい";
 
 /* No comment provided by engineer. */
 "error signing bitcoin transaction" = "ビットコイン取引署名時エラー";

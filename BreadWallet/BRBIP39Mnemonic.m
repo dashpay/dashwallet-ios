@@ -106,7 +106,8 @@
 - (NSString *)normalizePhrase:(NSString *)phrase
 {
     NSMutableString *s = CFBridgingRelease(CFStringCreateMutableCopy(SecureAllocator(), 0, (CFStringRef)phrase));
-        
+    
+    CFStringNormalize((CFMutableStringRef)s, kCFStringNormalizationFormKD);
     [s replaceOccurrencesOfString:@"." withString:@" " options:0 range:NSMakeRange(0, s.length)];
     [s replaceOccurrencesOfString:@"," withString:@" " options:0 range:NSMakeRange(0, s.length)];
     [s replaceOccurrencesOfString:@"\n" withString:@" " options:0 range:NSMakeRange(0, s.length)];

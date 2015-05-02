@@ -878,17 +878,12 @@ viewControllerAfterViewController:(UIViewController *)viewController
         self.navigationItem.leftBarButtonItem.image = nil;
         [v addSubview:self.burger];
         [v layoutIfNeeded];
-
-        // iOS 7 animation bug
-        if (! [LAContext class]) [[(id)to viewControllers].firstObject tableView].contentOffset = CGPointMake(0, -64.0);
-
         self.burger.center = CGPointMake(26.0, 40.0);
         self.burger.hidden = NO;
         [self.burger setX:YES completion:nil];
 
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
         initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            //BUG: XXXX iOS8.3 now shows the navbar being too high relative to the status bar, then it snaps back
             to.view.center = CGPointMake(to.view.center.x, v.frame.size.height/2);
             self.pageViewController.view.alpha = 0.0;
             self.pageViewController.view.center = CGPointMake(self.pageViewController.view.center.x,
@@ -905,10 +900,6 @@ viewControllerAfterViewController:(UIViewController *)viewController
             item.title = self.navigationItem.title;
             item.leftBarButtonItem.image = [UIImage imageNamed:@"x"];
             [v addSubview:to.view];
-            
-            // iOS 7 animation bug
-            if (! [LAContext class]) [[(id)to viewControllers].firstObject tableView].contentOffset = CGPointMake(0, -44.0);
-
             [transitionContext completeTransition:YES];
         }];
     }

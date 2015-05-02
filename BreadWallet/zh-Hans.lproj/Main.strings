@@ -16,11 +16,11 @@
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
 "EQG-Km-ZKY.text" = "如果你丢失了你的手机，你会需要这个密语来找回你的钱包";
 
-/* Class = "UILabel"; text = "sent"; ObjectID = "FjB-H2-BnK"; */
-"FjB-H2-BnK.text" = "已发送";
-
 /* Class = "UIBarButtonItem"; title = "remind me later"; ObjectID = "QQS-Me-RNh"; */
 "QQS-Me-RNh.title" = "以后提醒我";
+
+/* Class = "UILabel"; text = "please write it down"; ObjectID = "Td7-xP-kmB"; */
+"Td7-xP-kmB.text" = "please write it down";
 
 /* Class = "UILabel"; text = "not connected"; ObjectID = "UyF-OV-QVY"; */
 "UyF-OV-QVY.text" = "未连接";
@@ -48,9 +48,6 @@
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "dX6-jg-5IA"; */
 "dX6-jg-5IA.text" = "如果你丢失了你的手机，你会需要这个密语来找回你的钱包";
-
-/* Class = "UILabel"; text = "unconfirmed"; ObjectID = "eJ2-5h-DO2"; */
-"eJ2-5h-DO2.text" = "未确认的";
 
 /* Class = "UIButton"; normalTitle = "show"; ObjectID = "efL-Cj-Aho"; */
 "efL-Cj-Aho.normalTitle" = "显示";
