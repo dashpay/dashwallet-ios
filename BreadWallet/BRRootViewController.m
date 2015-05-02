@@ -864,6 +864,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
         // to.view must be added to superview prior to positioning it off screen for its navbar to underlap statusbar
         [self.navigationController.navigationBar.superview insertSubview:to.view
          belowSubview:self.navigationController.navigationBar];
+        [v layoutIfNeeded];
         to.view.center = CGPointMake(to.view.center.x, v.frame.size.height*3/2);
 
         UINavigationItem *item = [[(id)to viewControllers].firstObject navigationItem];

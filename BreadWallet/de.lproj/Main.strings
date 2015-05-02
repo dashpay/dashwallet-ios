@@ -35,7 +35,7 @@
 "YC6-rN-4P5.text" = "Geben Sie die Wortfolge dieser Brieftasche ein, um diese zurückzusetzen und eine neue zu starten oder wiederherzustellen. Ihr momentanes Guthaben verbleibt auf dieser Wortfolge.";
 
 /* Class = "UIButton"; normalTitle = "pay address from clipboard"; ObjectID = "bfj-xS-5rN"; */
-"bfj-xS-5rN.normalTitle" = "pay address from clipboard";
+"bfj-xS-5rN.normalTitle" = "Zahlung an Adresse aus Zwischenspeicher";
 
 /* Class = "UIButton"; normalTitle = "scan QR code"; ObjectID = "ce6-Wi-wk4"; */
 "ce6-Wi-wk4.normalTitle" = "QR-Code scannen";
