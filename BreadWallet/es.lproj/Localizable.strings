@@ -224,7 +224,7 @@
 "moved" = "movido";
 
 /* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNUNCA introduzcas tu frase de recuperación\nen gestores de contraseñas u otros servicios.\nLos otros dispositivos pueden estar infectados.\n";
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNUNCA introduzcas tu frase de\nrecuperación en gestores de contraseñas\nu otros servicios. Los otros dispositivos\npueden estar infectados.";
 
 /* No comment provided by engineer. */
 "new phrase" = "nueva frase";

@@ -77,7 +77,7 @@
 "Bitcoin address" = "比特币地址";
 
 /* No comment provided by engineer. */
-"Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1' or '3'." = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n比特币地址也可以复制到剪贴板。一个比特币地址总是开始于'1'或'3'";
+"Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1' or '3'." = "比特币地址也可以复制到剪贴板。一个比特币地址总是开始于'1'或'3'";
 
 /* No comment provided by engineer. */
 "bitcoin network fee" = "比特币网络费";
@@ -104,7 +104,7 @@
 "change passcode" = "修改密码";
 
 /* No comment provided by engineer. */
-"change payment amount?" = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n改变付款金额";
+"change payment amount?" = "改变付款金额";
 
 /* No comment provided by engineer. */
 "checking private key balance..." = "检查私钥余额...";
