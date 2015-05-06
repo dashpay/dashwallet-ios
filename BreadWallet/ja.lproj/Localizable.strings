@@ -431,7 +431,7 @@
 "unexpected response from %@" = "%@ から予期しない応答";
 
 /* No comment provided by engineer. */
-"unkown address" = "不明なアドレス";
+"unknown address" = "不明なアドレス";
 
 /* No comment provided by engineer. */
 "unrecognized address" = "認識されないアドレス";

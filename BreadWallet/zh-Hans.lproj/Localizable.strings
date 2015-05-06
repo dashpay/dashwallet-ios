@@ -431,7 +431,7 @@
 "unexpected response from %@" = "从 %@ 来的意外响应";
 
 /* No comment provided by engineer. */
-"unkown address" = "未知地址";
+"unknown address" = "未知地址";
 
 /* No comment provided by engineer. */
 "unrecognized address" = "无法识别的地址";

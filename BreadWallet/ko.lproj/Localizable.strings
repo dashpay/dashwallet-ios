@@ -431,7 +431,7 @@
 "unexpected response from %@" = "%@에서 예상치 못한 응답";
 
 /* No comment provided by engineer. */
-"unkown address" = "모르는 주소";
+"unknown address" = "모르는 주소";
 
 /* No comment provided by engineer. */
 "unrecognized address" = "인식할 수 없는 주소";

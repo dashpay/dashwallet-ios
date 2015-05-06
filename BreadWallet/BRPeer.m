@@ -969,7 +969,7 @@ services:(uint64_t)services
     switch (eventCode) {
         case NSStreamEventOpenCompleted:
             NSLog(@"%@:%u %@ stream connected in %fs", self.host, self.port,
-                  (aStream == self.inputStream) ? @"input" : (aStream == self.outputStream ? @"output" : @"unkown"),
+                  (aStream == self.inputStream) ? @"input" : (aStream == self.outputStream ? @"output" : @"unknown"),
                   [NSDate timeIntervalSinceReferenceDate] - self.startTime);
 
             if (aStream == self.outputStream) {

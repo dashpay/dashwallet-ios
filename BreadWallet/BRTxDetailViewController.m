@@ -93,7 +93,7 @@
     
         if (address == (id)[NSNull null]) {
             if (self.sent > 0) {
-                [text addObject:NSLocalizedString(@"unkown address", nil)];
+                [text addObject:NSLocalizedString(@"unknown address", nil)];
                 [detail addObject:NSLocalizedString(@"payment output", nil)];
                 [amount addObject:@(-amt)];
             }
@@ -289,7 +289,7 @@
                 subtitleLabel = (id)[cell viewWithTag:3];
                 amountLabel = (id)[cell viewWithTag:1];
                 localCurrencyLabel = (id)[cell viewWithTag:5];
-                detailLabel.text = NSLocalizedString(@"unkown address", nil);
+                detailLabel.text = NSLocalizedString(@"unknown address", nil);
                 subtitleLabel.text = NSLocalizedString(@"spent input", nil);
                 amountLabel.text = nil;
                 localCurrencyLabel.text = nil;

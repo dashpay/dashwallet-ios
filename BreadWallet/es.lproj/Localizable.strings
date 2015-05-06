@@ -431,7 +431,7 @@
 "unexpected response from %@" = "respuesta inesperada de %@";
 
 /* No comment provided by engineer. */
-"unkown address" = "dirección desconocida";
+"unknown address" = "dirección desconocida";
 
 /* No comment provided by engineer. */
 "unrecognized address" = "dirección no reconocida";

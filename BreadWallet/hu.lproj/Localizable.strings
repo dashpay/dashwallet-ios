@@ -431,7 +431,7 @@
 "unexpected response from %@" = "váratlan hiba: %@";
 
 /* No comment provided by engineer. */
-"unkown address" = "ismeretlen cím";
+"unknown address" = "ismeretlen cím";
 
 /* No comment provided by engineer. */
 "unrecognized address" = "felismerhetetlen cím";

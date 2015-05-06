@@ -431,7 +431,7 @@
 "unexpected response from %@" = "onverwacht antwoord van %@";
 
 /* No comment provided by engineer. */
-"unkown address" = "onbekend adres";
+"unknown address" = "onbekend adres";
 
 /* No comment provided by engineer. */
 "unrecognized address" = "adres niet herkend";

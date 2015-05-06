@@ -379,9 +379,9 @@
 
 #pragma mark - testPaymentRequest
 
-//TODO: test valid request with unkown arguments
+//TODO: test valid request with unknown arguments
 //TODO: test invalid bitcoin address
-//TODO: test invalid request with unkown required arguments
+//TODO: test invalid request with unknown required arguments
 
 - (void)testPaymentRequest
 {
