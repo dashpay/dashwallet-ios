@@ -333,6 +333,7 @@ static const char *dns_seeds[] = {
     return self.lastBlock.height;
 }
 
+// last block height reported by current download peer
 - (uint32_t)estimatedBlockHeight
 {
     if (self.downloadPeer.lastblock > self.lastBlockHeight) return self.downloadPeer.lastblock;
@@ -387,8 +388,10 @@ static const char *dns_seeds[] = {
         if (hash && ! [filter containsData:hash]) [filter insertData:hash];
     }
 
-    // add unspent outputs to watch for tx sending money from the wallet
-    for (NSData *utxo in m.wallet.unspentOutputs) if (! [filter containsData:utxo]) [filter insertData:utxo];
+    for (NSData *utxo in m.wallet.unspentOutputs) { // add unspent outputs to watch for tx sending money from the wallet
+        if (! [filter containsData:utxo]) [filter insertData:utxo];
+    }
+
     _bloomFilter = filter;
     return _bloomFilter;
 }
@@ -449,8 +452,8 @@ static const char *dns_seeds[] = {
             [self syncStopped];
 
             dispatch_async(dispatch_get_main_queue(), ^{
-                NSError *error = [NSError errorWithDomain:@"BreadWallet" code:1 userInfo:@{NSLocalizedDescriptionKey:
-                                  NSLocalizedString(@"no peers found", nil)}];
+                NSError *error = [NSError errorWithDomain:@"BreadWallet" code:1
+                                  userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"no peers found", nil)}];
 
                 [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerSyncFailedNotification
                  object:nil userInfo:@{@"error":error}];

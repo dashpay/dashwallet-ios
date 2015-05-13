@@ -55,7 +55,7 @@
 #else
 #define DEFAULT_FEE_PER_KB (4096*1000/512) // fee required by eligius pool, which supports child-pays-for-parent
 #endif
-#define MAX_FEE_PER_KB     (10001*1000/247) // slightly higher than a 100bit fee on a typical 247byte transaction
+#define MAX_FEE_PER_KB     (10100*1000/247) // slightly higher than a 100bit fee on a typical 247byte transaction
 
 #define LOCAL_CURRENCY_CODE_KEY @"LOCAL_CURRENCY_CODE"
 #define CURRENCY_CODES_KEY      @"CURRENCY_CODES"
