@@ -1108,7 +1108,7 @@ replacementString:(NSString *)string
     _pinField = nil;
     
     if (buttonIndex == alertView.cancelButtonIndex) {
-        if (buttonIndex > 0 && [[alertView buttonTitleAtIndex:buttonIndex] isEqual:@"abort"]) abort();
+        if (buttonIndex >= 0 && [[alertView buttonTitleAtIndex:buttonIndex] isEqual:@"abort"]) abort();
         if (self.sweepCompletion) self.sweepCompletion(nil, 0, nil);
         self.sweepKey = nil;
         self.sweepCompletion = nil;
@@ -1137,7 +1137,7 @@ replacementString:(NSString *)string
             }
         });
     }
-    else if (buttonIndex > 0 && [[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"reset", nil)]) {
+    else if (buttonIndex >= 0 && [[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"reset",nil)]) {
         UITextView *t = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, 260, 180)];
             
         t.keyboardType = UIKeyboardTypeASCIICapable;

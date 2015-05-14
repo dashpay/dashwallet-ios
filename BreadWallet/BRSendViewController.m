@@ -783,7 +783,8 @@ fromConnection:(AVCaptureConnection *)connection
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(resetQRGuide) object:nil];
             self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide-red"];
 
-            if ([s hasPrefix:@"bitcoin:"] || [request.paymentAddress hasPrefix:@"1"]) {
+            if ([s hasPrefix:@"bitcoin:"] || [request.paymentAddress hasPrefix:@"1"] ||
+                [request.paymentAddress hasPrefix:@"3"]) {
                 self.scanController.message.text = [NSString stringWithFormat:@"%@\n%@",
                                                     NSLocalizedString(@"not a valid bitcoin address", nil),
                                                     request.paymentAddress];
@@ -806,7 +807,6 @@ fromConnection:(AVCaptureConnection *)connection
                           message:error.localizedDescription delegate:nil
                           cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
                         [self cancel:nil];
-                        return;
                     }
 
                     dispatch_async(dispatch_get_main_queue(), ^{

@@ -206,17 +206,16 @@ completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion
     if (! completion) return;
 
     NSURL *u = [NSURL URLWithString:url];
-
-    if (! u) {
-        completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                         NSLocalizedString(@"bad payment request URL", nil)}]);
-        return;
-    }
-
-    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:u
-                                cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:timeout];
+    NSMutableURLRequest *req = (u) ? [NSMutableURLRequest requestWithURL:u
+                                      cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:timeout] : nil;
 
     [req addValue:@"application/bitcoin-paymentrequest" forHTTPHeaderField:@"Accept"];
+
+    if (! req || ! [NSURLConnection canHandleRequest:req]) {
+        completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
+                         userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"bad payment request URL", nil)}]);
+        return;
+    }
 
     [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue currentQueue]
     completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
