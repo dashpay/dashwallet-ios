@@ -187,6 +187,7 @@
     NSMutableData *script = [NSMutableData data];
     
     [script appendScriptPubKeyForAddress:self.paymentAddress];
+    if (! script.length) return nil;
     
     BRPaymentProtocolDetails *details =
         [[BRPaymentProtocolDetails alloc] initWithNetwork:network outputAmounts:@[@(self.amount)]
@@ -210,6 +211,7 @@ completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion
                                       cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:timeout] : nil;
 
     [req addValue:@"application/bitcoin-paymentrequest" forHTTPHeaderField:@"Accept"];
+    [req addValue:@"text/uri-list" forHTTPHeaderField:@"Accept"];
 
     if (! req || ! [NSURLConnection canHandleRequest:req]) {
         completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
@@ -219,19 +221,19 @@ completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion
 
     [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue currentQueue]
     completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-        if (! [response.MIMEType.lowercaseString isEqual:@"application/bitcoin-paymentrequest"] || data.length > 50000){
-            completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                             [NSString stringWithFormat:NSLocalizedString(@"unexpected response from %@", nil), u.host]
-                            }]);
-            return;
-        }
-
-        BRPaymentProtocolRequest *req = [BRPaymentProtocolRequest requestWithData:data];
+        BRPaymentProtocolRequest *req = nil;
         NSString *network = @"main";
-
+        
 #ifdef BITCOIN_TESTNET
         network = @"test";
 #endif
+        
+        if ([response.MIMEType.lowercaseString isEqual:@"application/bitcoin-paymentrequest"] && data.length <= 50000) {
+            req = [BRPaymentProtocolRequest requestWithData:data];
+        }
+        else if ([response.MIMEType.lowercaseString isEqual:@"text/uri-list"] && data.length <= 50000) {
+            req = [[BRPaymentRequest requestWithData:data] protocolRequest];
+        }
 
         if (! req) {
             completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
