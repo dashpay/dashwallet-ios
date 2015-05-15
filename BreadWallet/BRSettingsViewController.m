@@ -153,19 +153,8 @@
     BRWalletManager *m = [BRWalletManager sharedInstance];
     NSUInteger digits = (((m.format.maximumFractionDigits - 2)/3 + 1) % 3)*3 + 2;
     
-    if (digits == 5) {
-        m.format.currencyCode = @"mBTC";
-        m.format.currencySymbol = @"m" BTC NARROW_NBSP;
-    }
-    else if (digits == 8) {
-        m.format.currencyCode = @"BTC";
-        m.format.currencySymbol = BTC NARROW_NBSP;
-    }
-    else {
-        m.format.currencyCode = @"XBT";
-        m.format.currencySymbol = BITS NARROW_NBSP;
-    }
-
+    m.format.currencySymbol = [NSString stringWithFormat:@"%@%@" NARROW_NBSP, (digits == 5) ? @"m" : @"",
+                               (digits == 2) ? BITS : BTC];
     m.format.maximumFractionDigits = digits;
     m.format.maximum = @(MAX_MONEY/(int64_t)pow(10.0, m.format.maximumFractionDigits));
     [[NSUserDefaults standardUserDefaults] setInteger:digits forKey:SETTINGS_MAX_DIGITS_KEY];
@@ -173,6 +162,7 @@
     self.selectorController.title = [NSString stringWithFormat:@"%@ = %@",
                                      [m localCurrencyStringForAmount:SATOSHIS/m.localCurrencyPrice],
                                      [m stringForAmount:SATOSHIS/m.localCurrencyPrice]];
+    [self.tableView reloadData];
 }
 
 #pragma mark - UITableViewDataSource
@@ -369,8 +359,9 @@
                     [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
                       message:NSLocalizedString(@"\nDO NOT let anyone see your recovery phrase or they can spend your "
                                                 "bitcoins.\n\nNEVER type your recovery phrase into password managers "
-                                                "or elsewhere. Other devices may be infected.\n", nil) delegate:self
-                      cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+                                                "or elsewhere. Other devices may be infected.\n\nDO NOT take a "
+                                                "screenshot. Screenshots are visible to other apps and devices.\n", nil)
+                      delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
                       otherButtonTitles:NSLocalizedString(@"show", nil), nil] show];
                     break;
             }

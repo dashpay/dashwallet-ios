@@ -317,13 +317,11 @@
 #endif
 
     if ([defs integerForKey:SETTINGS_MAX_DIGITS_KEY] == 5) {
-        m.format.currencyCode = @"mBTC";
         m.format.currencySymbol = @"m" BTC NARROW_NBSP;
         m.format.maximumFractionDigits = 5;
         m.format.maximum = @((MAX_MONEY/SATOSHIS)*1000);
     }
     else if ([defs integerForKey:SETTINGS_MAX_DIGITS_KEY] == 8) {
-        m.format.currencyCode = @"BTC";
         m.format.currencySymbol = BTC NARROW_NBSP;
         m.format.maximumFractionDigits = 8;
         m.format.maximum = @(MAX_MONEY/SATOSHIS);

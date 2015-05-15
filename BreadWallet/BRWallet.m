@@ -421,10 +421,8 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         [privkeys addObjectsFromArray:[self.sequence privateKeys:[externalIndexes array] internal:NO fromSeed:seed]];
         [privkeys addObjectsFromArray:[self.sequence privateKeys:[internalIndexes array] internal:YES fromSeed:seed]];
         
-        [transaction signWithPrivateKeys:privkeys];
+        return [transaction signWithPrivateKeys:privkeys];
     }
-
-    return [transaction isSigned];
 }
 
 // true if the given transaction is associated with the wallet (even if it hasn't been registered), false otherwise

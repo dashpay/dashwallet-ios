@@ -38,7 +38,7 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nallow camera access in\nSettings->Privacy->Camera->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n";
+"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n\nDO NOT take a screenshot. Screenshots are visible to other apps and devices.\n" = "\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n\nDO NOT take a screenshot. Screenshots are visible to other apps and devices.\n";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nnetwork fee +%1$@ (%2$@)";
