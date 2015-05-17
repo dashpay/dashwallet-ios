@@ -498,14 +498,6 @@ static const char *dns_seeds[] = {
         
         return;
     }
-    else if (! self.connected) {
-        if (completion) {
-            completion([NSError errorWithDomain:@"BreadWallet" code:-1009 userInfo:@{NSLocalizedDescriptionKey:
-                        NSLocalizedString(@"not connected to the bitcoin network", nil)}]);
-        }
-        
-        return;
-    }
 
     self.publishedTx[transaction.txHash] = transaction;
     if (completion) self.publishedCallback[transaction.txHash] = completion;
@@ -630,15 +622,24 @@ static const char *dns_seeds[] = {
         self.taskId = UIBackgroundTaskInvalid;
         
         if ([[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground) {
+            NSArray *txHashes = self.publishedTx.allKeys;
+
             for (BRPeer *p in self.connectedPeers) { // after syncing, load filters and get mempools from other peers
                 if (p != self.downloadPeer) [p sendFilterloadMessage:self.bloomFilter.data];
-                [p sendInvMessageWithTxHashes:self.publishedTx.allKeys]; // publish unconfirmed tx
+                [p sendInvMessageWithTxHashes:txHashes]; // publish unconfirmed tx
                 [p sendMempoolMessage];
                 [p sendPingMessageWithPongHandler:^(BOOL success) {
                     if (! success) return;
                     p.synced = YES;
                     [p sendGetaddrMessage]; // request a list of other bitcoin peers
-                    [self removeUnrelayedTransactions];
+
+                    if (txHashes.count > 0) {
+                        [p sendGetdataMessageWithTxHashes:txHashes andBlockHashes:nil];
+                        [p sendPingMessageWithPongHandler:^(BOOL success) {
+                            if (success) [self removeUnrelayedTransactions];
+                        }];
+                    }
+                    else [self removeUnrelayedTransactions];
                 }];
             }
         }
@@ -852,6 +853,15 @@ static const char *dns_seeds[] = {
     _bloomFilter = nil; // make sure the bloom filter is updated with any newly generated addresses
     [peer sendFilterloadMessage:self.bloomFilter.data];
     peer.currentBlockHeight = self.lastBlockHeight;
+    
+    NSArray *txHashes = self.publishedCallback.allKeys;
+    
+    if (txHashes.count > 0) { // publish pending transactions
+        [peer sendInvMessageWithTxHashes:txHashes];
+        [peer sendPingMessageWithPongHandler:^(BOOL success) {
+            if (success) [peer sendGetdataMessageWithTxHashes:txHashes andBlockHashes:nil];
+        }];
+    }
     
     if (self.lastBlockHeight < peer.lastblock) { // start blockchain sync
         self.lastRelayTime = 0;
