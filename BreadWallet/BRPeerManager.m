@@ -60,7 +60,7 @@ static const struct { uint32_t height; char *hash; uint32_t timestamp; uint32_t 
 };
 
 static const char *dns_seeds[] = {
-    "testnet-seed.bitcoin.petertodd.org", "testnet-seed.bluematt.me", "testnet-seed.alexykot.me"
+    "testnet-seed.bitcoin.petertodd.org.", "testnet-seed.bluematt.me.", "testnet-seed.alexykot.me."
 };
 
 #else // main net
@@ -89,8 +89,8 @@ static const struct { uint32_t height; char *hash; uint32_t timestamp; uint32_t 
 };
 
 static const char *dns_seeds[] = {
-    "seed.bitcoin.sipa.be", "dnsseed.bluematt.me", "dnsseed.bitcoin.dashjr.org", "seed.bitcoinstats.com",
-    "seed.bitnodes.io"
+    "seed.bitcoin.sipa.be.", "dnsseed.bluematt.me.", "dnsseed.bitcoin.dashjr.org.", "seed.bitcoinstats.com.",
+    "seed.bitnodes.io."
 };
 
 #endif
@@ -211,19 +211,26 @@ static const char *dns_seeds[] = {
 
         if (_peers.count < PEER_MAX_CONNECTIONS ||
             [(BRPeer *)_peers[PEER_MAX_CONNECTIONS - 1] timestamp] < now - 3*24*60*60) {
+            
+            struct addrinfo hints = { 0, AF_UNSPEC, SOCK_STREAM, 0, 0, 0, NULL, NULL }, *servinfo, *p;
+            NSString *servname = [@(BITCOIN_STANDARD_PORT) stringValue];
+            
             for (int i = 0; i < sizeof(dns_seeds)/sizeof(*dns_seeds); i++) { // DNS peer discovery
                 NSLog(@"DNS lookup %s", dns_seeds[i]);
+                if (getaddrinfo(dns_seeds[i], [servname UTF8String], &hints, &servinfo) != 0) continue;
                 
-                //BUG: XXXX this sometimes takes 10-20 seconds to resolve, need to attempt connect before it completes
-                struct hostent *h = gethostbyname(dns_seeds[i]);
-
-                for (int j = 0; h != NULL && h->h_addr_list[j] != NULL; j++) {
-                    uint32_t addr = CFSwapInt32BigToHost(((struct in_addr *)h->h_addr_list[j])->s_addr);
-
+                for (p = servinfo; p != NULL; p = p->ai_next) {
+                    if (p->ai_addr->sa_family != AF_INET) continue;
+                
+                    uint32_t addr = CFSwapInt32BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_addr.s_addr);
+                    uint16_t port = CFSwapInt16BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_port);
+                    
                     // give dns peers a timestamp between 3 and 7 days ago
-                    [_peers addObject:[[BRPeer alloc] initWithAddress:addr port:BITCOIN_STANDARD_PORT
+                    [_peers addObject:[[BRPeer alloc] initWithAddress:addr port:port
                      timestamp:now - (3*24*60*60 + arc4random_uniform(4*24*60*60)) services:SERVICES_NODE_NETWORK]];
                 }
+
+                freeaddrinfo(servinfo);
             }
 
 #if BITCOIN_TESTNET
@@ -494,6 +501,14 @@ static const char *dns_seeds[] = {
         if (completion) {
             completion([NSError errorWithDomain:@"BreadWallet" code:401 userInfo:@{NSLocalizedDescriptionKey:
                         NSLocalizedString(@"bitcoin transaction not signed", nil)}]);
+        }
+        
+        return;
+    }
+    else if (! self.connected && self.connectFailures >= MAX_CONNECT_FAILURES) {
+        if (completion) {
+            completion([NSError errorWithDomain:@"BreadWallet" code:-1009 userInfo:@{NSLocalizedDescriptionKey:
+                        NSLocalizedString(@"not connected to the bitcoin network", nil)}]);
         }
         
         return;
