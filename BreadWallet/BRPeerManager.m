@@ -698,6 +698,9 @@ static const char *dns_seeds[] = {
             
             [m.wallet removeTransaction:tx.txHash];
         }
+        else if ([self.txRelays[tx.txHash] count] < PEER_MAX_CONNECTIONS) { // set timestamp 0 to mark as unverified
+            [m.wallet setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:@[tx.txHash]];
+        }
     }
     
     if (rescan) {
@@ -990,6 +993,12 @@ static const char *dns_seeds[] = {
         [self.txRelays[txHash] addObject:peer];
         if (callback) [self.publishedCallback removeObjectForKey:txHash];
 
+        if ([self.txRelays[txHash] count] >= PEER_MAX_CONNECTIONS &&
+            [[m.wallet transactionForHash:txHash] blockHeight] == TX_UNCONFIRMED) { // set timestamp when tx is verified
+            [m.wallet setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSinceReferenceDate]
+             forTxHashes:@[txHash]];
+        }
+
         dispatch_async(dispatch_get_main_queue(), ^{
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:txHash];
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
@@ -1029,6 +1038,12 @@ static const char *dns_seeds[] = {
         if (! self.txRelays[txHash]) self.txRelays[txHash] = [NSMutableSet set];
         [self.txRelays[txHash] addObject:peer];
         if (callback) [self.publishedCallback removeObjectForKey:txHash];
+
+        if ([self.txRelays[txHash] count] >= PEER_MAX_CONNECTIONS &&
+            [[m.wallet transactionForHash:txHash] blockHeight] == TX_UNCONFIRMED) { // set timestamp when tx is verified
+            [m.wallet setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSinceReferenceDate]
+             forTxHashes:@[txHash]];
+        }
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:txHash];
@@ -1040,8 +1055,14 @@ static const char *dns_seeds[] = {
 
 - (void)peer:(BRPeer *)peer rejectedTransaction:(NSData *)txHash withCode:(uint8_t)code
 {
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    
     if ([self.txRelays[txHash] containsObject:peer]) {
         [self.txRelays[txHash] removeObject:peer];
+
+        if ([[m.wallet transactionForHash:txHash] blockHeight] == TX_UNCONFIRMED) { // set timestamp to 0 for unverified
+            [m.wallet setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:@[txHash]];
+        }
 
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
