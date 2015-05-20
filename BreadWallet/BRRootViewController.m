@@ -468,8 +468,11 @@
     }
 
     _balance = balance;
-    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:balance],
-                                 [m localCurrencyStringForAmount:balance]];
+
+    if (self.percent.hidden) {
+        self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:balance],
+                                     [m localCurrencyStringForAmount:balance]];
+    }
 }
 
 - (void)startActivityWithTimeout:(NSTimeInterval)timeout
