@@ -137,8 +137,9 @@ static NSString *dateFormat(NSString *template)
         self.syncStartedObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncStartedNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
-                if ([[BRPeerManager sharedInstance] lastBlockHeight] + 2016/2 <
-                    [[BRPeerManager sharedInstance] estimatedBlockHeight] &&
+                if ([[BRPeerManager sharedInstance]
+                     timestampForBlockHeight:[[BRPeerManager sharedInstance] lastBlockHeight]] + 60*60*24*7 <
+                    [NSDate timeIntervalSinceReferenceDate] &&
                     m.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
                     self.navigationItem.titleView = nil;
                     self.navigationItem.title = NSLocalizedString(@"syncing...", nil);
@@ -210,7 +211,7 @@ static NSString *dateFormat(NSString *template)
 
 - (void)setTransactions:(NSArray *)transactions
 {
-    uint32_t height = [[BRPeerManager sharedInstance] lastBlockHeight];
+    uint32_t height = [[BRPeerManager sharedInstance] estimatedBlockHeight];
 
     if (transactions.count <= 5) self.moreTx = NO;
     _transactions = [transactions subarrayWithRange:NSMakeRange(0, (self.moreTx) ? 5 : transactions.count)];
@@ -401,7 +402,7 @@ static NSString *dateFormat(NSString *template)
                 uint64_t received = [m.wallet amountReceivedFromTransaction:tx],
                          sent = [m.wallet amountSentByTransaction:tx],
                          balance = [m.wallet balanceAfterTransaction:tx];
-                uint32_t height = [[BRPeerManager sharedInstance] lastBlockHeight],
+                uint32_t height = [[BRPeerManager sharedInstance] estimatedBlockHeight],
                          confirms = (tx.blockHeight == TX_UNCONFIRMED) ? 0 : (height - tx.blockHeight) + 1;
 
                 sentLabel.hidden = YES;

@@ -343,9 +343,7 @@ static const char *dns_seeds[] = {
 // last block height reported by current download peer
 - (uint32_t)estimatedBlockHeight
 {
-    if (self.downloadPeer.lastblock > self.lastBlockHeight) return self.downloadPeer.lastblock;
-    return self.lastBlockHeight + ([NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 -
-                                   self.lastBlock.timestamp)/(10*60);
+    return (self.downloadPeer.lastblock > self.lastBlockHeight) ? self.downloadPeer.lastblock : self.lastBlockHeight;
 }
 
 - (double)syncProgress
@@ -546,12 +544,11 @@ static const char *dns_seeds[] = {
 
 // seconds since reference date, 00:00:00 01/01/01 GMT
 // NOTE: this is only accurate for the last two weeks worth of blocks, other timestamps are estimated from checkpoints
-// BUG: this just doesn't work very well... we need to start storing tx metadata
 - (NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight
 {
     if (blockHeight == TX_UNCONFIRMED) return (self.lastBlock.timestamp - NSTimeIntervalSince1970) + 10*60; //next block
 
-    if (blockHeight > self.lastBlockHeight) { // future block, assume 10 minutes per block after last block
+    if (blockHeight >= self.lastBlockHeight) { // future block, assume 10 minutes per block after last block
         return (self.lastBlock.timestamp - NSTimeIntervalSince1970) + (blockHeight - self.lastBlockHeight)*10*60;
     }
 

@@ -266,8 +266,9 @@
             [self hideErrorBar];
             [self startActivityWithTimeout:0];
 
-            if ([[BRPeerManager sharedInstance] lastBlockHeight] + 2016/2 <
-                [[BRPeerManager sharedInstance] estimatedBlockHeight] &&
+            if ([[BRPeerManager sharedInstance]
+                 timestampForBlockHeight:[[BRPeerManager sharedInstance] lastBlockHeight]] + 60*60*24*7 <
+                [NSDate timeIntervalSinceReferenceDate] &&
                 m.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
                 self.percent.hidden = NO;
                 self.navigationItem.titleView = nil;
