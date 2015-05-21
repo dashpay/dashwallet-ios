@@ -28,6 +28,9 @@
 #import "NSString+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 
+#define USER_AGENT [NSString stringWithFormat:@"breadwallet/%@",\
+                    NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"]]
+
 // BIP21 bitcoin URI object https://github.com/bitcoin/bips/blob/master/bip-0021.mediawiki
 @implementation BRPaymentRequest
 
@@ -210,6 +213,7 @@ completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion
     NSMutableURLRequest *req = (u) ? [NSMutableURLRequest requestWithURL:u
                                       cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:timeout] : nil;
 
+    [req addValue:USER_AGENT forHTTPHeaderField:@"User-Agent"];
     [req addValue:@"application/bitcoin-paymentrequest" forHTTPHeaderField:@"Accept"];
     [req addValue:@"text/uri-list" forHTTPHeaderField:@"Accept"];
 
@@ -267,6 +271,7 @@ completion:(void (^)(BRPaymentProtocolACK *ack, NSError *error))completion
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:u
                                 cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:timeout];
 
+    [req addValue:USER_AGENT forHTTPHeaderField:@"User-Agent"];
     [req addValue:@"application/bitcoin-payment" forHTTPHeaderField:@"Content-Type"];
     [req addValue:@"application/bitcoin-paymentack" forHTTPHeaderField:@"Accept"];
     [req setHTTPMethod:@"POST"];

@@ -31,8 +31,8 @@
 #import "Reachability.h"
 #import <arpa/inet.h>
 
-#define USERAGENT [NSString stringWithFormat:@"/breadwallet:%@/",\
-                   NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"]]
+#define USER_AGENT [NSString stringWithFormat:@"/breadwallet:%@/",\
+                    NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"]]
 
 #define HEADER_LENGTH      24
 #define MAX_MSG_LENGTH     0x02000000u
@@ -296,7 +296,7 @@ services:(uint64_t)services
     [msg appendNetAddress:LOCAL_HOST port:BITCOIN_STANDARD_PORT services:ENABLED_SERVICES]; // address of local peer
     self.localNonce = (((uint64_t)arc4random() << 32) | (uint64_t)arc4random()); // random nonce
     [msg appendUInt64:self.localNonce];
-    [msg appendString:USERAGENT]; // user agent
+    [msg appendString:USER_AGENT]; // user agent
     [msg appendUInt32:0]; // last block received
     [msg appendUInt8:0]; // relay transactions (no for SPV bloom filter mode)
     self.startTime = [NSDate timeIntervalSinceReferenceDate];
