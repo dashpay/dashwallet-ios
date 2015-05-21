@@ -55,8 +55,10 @@
 
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) BRBubbleView *tipView;
-@property (nonatomic, assign) BOOL showTips, inNextTip;
+@property (nonatomic, assign) BOOL showTips, inNextTip, didAppear;
 @property (nonatomic, assign) uint64_t balance;
+@property (nonatomic, strong) NSURL *url;
+@property (nonatomic, strong) NSData *file;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) id urlObserver, fileObserver, foregroundObserver, backgroundObserver, balanceObserver;
 @property (nonatomic, strong) id reachabilityObserver, syncStartedObserver, syncFinishedObserver, syncFailedObserver;
@@ -124,8 +126,14 @@
                 BRSendViewController *c = self.sendViewController;
                 
                 [self.pageViewController setViewControllers:@[c]
-                 direction:UIPageViewControllerNavigationDirectionForward animated:NO
-                 completion:^(BOOL finished) { [c handleURL:note.userInfo[@"url"]]; }];
+                direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:^(BOOL finished) {
+                    _url = note.userInfo[@"url"];
+                    
+                    if (self.didAppear && [[UIApplication sharedApplication] isProtectedDataAvailable]) {
+                        _url = nil;
+                        [c handleURL:note.userInfo[@"url"]];
+                    }
+                }];
             }
         }];
 
@@ -144,8 +152,14 @@
                 BRSendViewController *c = self.sendViewController;
 
                 [self.pageViewController setViewControllers:@[c]
-                 direction:UIPageViewControllerNavigationDirectionForward animated:NO
-                 completion:^(BOOL finished) { [c handleFile:note.userInfo[@"file"]]; }];
+                direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:^(BOOL finished) {
+                    _file = note.userInfo[@"file"];
+                    
+                    if (self.didAppear && [[UIApplication sharedApplication] isProtectedDataAvailable]) {
+                        _file = nil;
+                        [c handleFile:note.userInfo[@"file"]];
+                    }
+                }];
             }
         }];
 
@@ -349,6 +363,8 @@
 
 - (void)viewDidAppear:(BOOL)animated
 {
+    self.didAppear = YES;
+    
     if (! self.navBarTap) {
         self.navBarTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(navBarTap:)];
         [self.navigationController.navigationBar addGestureRecognizer:self.navBarTap];
@@ -408,6 +424,9 @@
             [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
             if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
         }
+        
+        if (self.url) [self.sendViewController handleURL:self.url], self.url = nil;
+        if (self.file) [self.sendViewController handleFile:self.file], self.file = nil;
     }
 }
 

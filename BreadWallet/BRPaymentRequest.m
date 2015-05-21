@@ -213,8 +213,8 @@ completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion
     NSMutableURLRequest *req = (u) ? [NSMutableURLRequest requestWithURL:u
                                       cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:timeout] : nil;
 
-    [req addValue:USER_AGENT forHTTPHeaderField:@"User-Agent"];
-    [req addValue:@"application/bitcoin-paymentrequest" forHTTPHeaderField:@"Accept"];
+    [req setValue:USER_AGENT forHTTPHeaderField:@"User-Agent"];
+    [req setValue:@"application/bitcoin-paymentrequest" forHTTPHeaderField:@"Accept"];
     [req addValue:@"text/uri-list" forHTTPHeaderField:@"Accept"];
 
     if (! req || ! [NSURLConnection canHandleRequest:req]) {
@@ -271,8 +271,8 @@ completion:(void (^)(BRPaymentProtocolACK *ack, NSError *error))completion
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:u
                                 cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:timeout];
 
-    [req addValue:USER_AGENT forHTTPHeaderField:@"User-Agent"];
-    [req addValue:@"application/bitcoin-payment" forHTTPHeaderField:@"Content-Type"];
+    [req setValue:USER_AGENT forHTTPHeaderField:@"User-Agent"];
+    [req setValue:@"application/bitcoin-payment" forHTTPHeaderField:@"Content-Type"];
     [req addValue:@"application/bitcoin-paymentack" forHTTPHeaderField:@"Accept"];
     [req setHTTPMethod:@"POST"];
     [req setHTTPBody:payment.data];
