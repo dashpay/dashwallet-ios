@@ -63,7 +63,7 @@ static const UniChar base58chars[] = {
 
     CFMutableStringRef s = CFStringCreateMutable(SecureAllocator(), z + sizeof(buf) - i);
     
-    while (z-- > 0) CFStringAppendCharacters(s, base58chars, 1);
+    while (z-- > 0) CFStringAppendCharacters(s, &base58chars[0], 1);
     while (i < sizeof(buf)) CFStringAppendCharacters(s, &base58chars[buf[i++]], 1);
     CC_XZEROMEM(buf, sizeof(buf));
     return CFBridgingRelease(s);
@@ -171,7 +171,7 @@ static const UniChar base58chars[] = {
 {
     size_t i, z = 0;
     
-    while (z < self.length && [self characterAtIndex:z] == *base58chars) z++; // count leading zeroes
+    while (z < self.length && [self characterAtIndex:z] == base58chars[0]) z++; // count leading zeroes
     
     uint8_t buf[(self.length - z)*733/1000 + 1]; // log(58)/log(256), rounded up
     

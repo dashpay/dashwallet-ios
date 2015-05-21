@@ -60,7 +60,7 @@
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) id urlObserver, fileObserver, foregroundObserver, backgroundObserver, balanceObserver;
 @property (nonatomic, strong) id reachabilityObserver, syncStartedObserver, syncFinishedObserver, syncFailedObserver;
-@property (nonatomic, strong) id activeObserver, resignActiveObserver;
+@property (nonatomic, strong) id activeObserver, resignActiveObserver, protectedObserver;
 @property (nonatomic, assign) NSTimeInterval timeout, start;
 
 @end
@@ -297,8 +297,6 @@
             [self showErrorBar];
         }];
     
-    //TODO: XXX applicationProtectedDataDidBecomeAvailable observer
-    
     self.reachability = [Reachability reachabilityForInternetConnection];
     [self.reachability startNotifier];
     
@@ -351,15 +349,33 @@
 
 - (void)viewDidAppear:(BOOL)animated
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
-    
     if (! self.navBarTap) {
         self.navBarTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(navBarTap:)];
         [self.navigationController.navigationBar addGestureRecognizer:self.navBarTap];
     }
 
+    if (! self.protectedObserver) {
+        self.protectedObserver =
+            [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationProtectedDataDidBecomeAvailable
+            object:nil queue:nil usingBlock:^(NSNotification *note) {
+                [self protectedViewDidAppear:animated];
+            }];
+    }
+
+    if ([[UIApplication sharedApplication] isProtectedDataAvailable]) [self protectedViewDidAppear:animated];
+
+    [super viewDidAppear:animated];
+}
+
+- (void)protectedViewDidAppear:(BOOL)animated
+{
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+
+    if (self.protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.protectedObserver];
+    self.protectedObserver = nil;
+
     if (m.noWallet) {
-        if (m.masterPublicKey && ! m.passcodeEnabled) {
+        if (! m.passcodeEnabled) {
             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"turn device passcode on", nil)
               message:NSLocalizedString(@"\nA device passcode is needed to safeguard your wallet. Go to settings and "
                                         "turn passcode on to continue.", nil)
@@ -384,6 +400,7 @@
         self.splash.hidden = YES;
         self.navigationController.navigationBar.hidden = NO;
         self.pageViewController.view.alpha = 1.0;
+        [self.receiveViewController updateAddress];
         if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
     
         if (self.navigationController.visibleViewController == self) {
@@ -392,8 +409,6 @@
             if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
         }
     }
-
-    [super viewDidAppear:animated];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -445,6 +460,7 @@
     if (self.navigationController.delegate == self) self.navigationController.delegate = nil;
     if (self.urlObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.urlObserver];
     if (self.fileObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.fileObserver];
+    if (self.protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.protectedObserver];
     if (self.foregroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.foregroundObserver];
     if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
     if (self.activeObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];
