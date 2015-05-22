@@ -29,7 +29,7 @@
 "W8m-Eh-Nf9.title" = "設定";
 
 /* Class = "UILabel"; text = "amount:"; ObjectID = "XJu-9x-HqQ"; */
-"XJu-9x-HqQ.text" = "金額：";
+"XJu-9x-HqQ.text" = "金額:";
 
 /* Class = "UILabel"; text = "Enter this wallet's recovery phrase to wipe it and start/recover another. Your current balance remains on this phrase."; ObjectID = "YC6-rN-4P5"; */
 "YC6-rN-4P5.text" = "このウォレットを完全削除するには、このウォレットの復元フレーズを\nご入力下さい。\nその後、新規作成またはウォレットの\n復元ができます。\n現在のウォレットとその残高は\n復元フレーズに残ります。";

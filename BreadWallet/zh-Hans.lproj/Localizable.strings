@@ -311,10 +311,10 @@
 "rescan" = "重新扫描";
 
 /* No comment provided by engineer. */
-"rescan blockchain" = "重新扫描 blockchain";
+"rescan blockchain" = "重新扫描区块链";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "重新扫描 blockchain 来更新你的交易信息，或有问题发送交易（重新扫描可能需要几分钟）";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "重新扫描区块链来更新你的交易信息，或有问题发送交易（重新扫描可能需要几分钟）";
 
 /* No comment provided by engineer. */
 "reset" = "重设";
@@ -452,7 +452,7 @@
 "unverified" = "未验证";
 
 /* No comment provided by engineer. */
-"verified, waiting for confirmation" = "验证，等待确认";
+"verified, waiting for confirmation" = "已验证，等待确认";
 
 /* No comment provided by engineer. */
 "verify passcode" = "验证密码";
@@ -476,5 +476,5 @@
 "you received bitcoin!" = "你收到了比特币 ！";
 
 /* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "你的钱包可能不同步。\n这通常可以通过重新扫描 blockchain修复。";
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "你的钱包可能不同步。\n这通常可以通过重新扫描区块链来修复。";
 

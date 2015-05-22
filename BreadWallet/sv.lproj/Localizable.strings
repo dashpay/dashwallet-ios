@@ -1,0 +1,480 @@
+/* No comment provided by engineer. */
+"%@ is for 'bits'. %@ = 1 bitcoin." = "%1$@ står för \"bits\". %2$@ = 1 bitcoin.";
+
+/* No comment provided by engineer. */
+"%@ is not allowed to access the camera" = "%@ har ej tillåtelse att använda kameran";
+
+/* No comment provided by engineer. */
+"%d confirmations" = "%d bekräftelser";
+
+/* No comment provided by engineer. */
+"1 confirmation" = "1 bekräftelse";
+
+/* No comment provided by engineer. */
+"\"%@\" is not a recovery phrase word" = "\"%@\" ingår inte i återställningsfrasen";
+
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\n         totalt %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nifall du förlorar din mobil behöver du frasen för att återställa plånboken";
+
+/* No comment provided by engineer. */
+"\n%d attempts remaining\n" = "\n%d försök återstår\n";
+
+/* No comment provided by engineer. */
+"\n1 attempt remaining\n" = "\n1 försök återstår\n";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\nbelopp %1$@(%2$@)";
+
+/* No comment provided by engineer. */
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEtt lösenord krävs för att skydda din plånbok. Gå till Inställningar och aktivera lösenord för att fortsätta.";
+
+/* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRESSEN ANVÄNDS REDAN\n\nbitcoinadresser bör endast användas en gång\n\nåteranvändning minskar transparensen för såväl dig som mottagaren";
+
+/* No comment provided by engineer. */
+"\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nbevilja kameraåtkomst i Inställningar->Personligt->Kamera->%@";
+
+/* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nVISA ALDRIG din återställningsfras för någon – denne kan i så fall spendera dina bitcoin.\n\nSKRIV ALDRIG ned din återställningsfras i lösenordshanterare eller annorstädes. Andra enheter kan vara föremål för skadlig programkod.\n";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = "\nnätverksavgift +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\ntry again in %d %@" = "\nförsök igen om %1$d %2$@";
+
+/* No comment provided by engineer. */
+"about" = "om";
+
+/* No comment provided by engineer. */
+"always require passcode" = "kräv alltid lösenord";
+
+/* No comment provided by engineer. */
+"amount too small" = "beloppet är för litet";
+
+/* No comment provided by engineer. */
+"bad password, try again" = "fel lösenord, försök igen";
+
+/* No comment provided by engineer. */
+"bad payment request" = "felaktig betalningsanmodan";
+
+/* No comment provided by engineer. */
+"bad payment request URL" = "felaktig URL i betalningsanmodan";
+
+/* No comment provided by engineer. */
+"bad payment URL" = "felaktig betalnings-URL";
+
+/* No comment provided by engineer. */
+"bad recovery phrase" = "fel återställningsfras";
+
+/* No comment provided by engineer. */
+"bad signature" = "fel signatur";
+
+/* No comment provided by engineer. */
+"Bitcoin address" = "Bitcoin-adress";
+
+/* No comment provided by engineer. */
+"Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1' or '3'." = "Bitcoin-adresser kan också kopieras till klippboken. En Bitcoin-adress startar alltid med '1' eller '3'.";
+
+/* No comment provided by engineer. */
+"bitcoin network fee" = "Transaktions kostnad";
+
+/* No comment provided by engineer. */
+"bitcoin payments can't be less than %@" = "Betalningar kan inte vara mindre än %@";
+
+/* No comment provided by engineer. */
+"bitcoin transaction not signed" = "Transaktionen ej undertecknad";
+
+/* No comment provided by engineer. */
+"bitcoin transaction outputs can't be less than %@" = "transaktionens utflöden får ej understiga %@";
+
+/* No comment provided by engineer. */
+"block #%d of %d" = "block #%1$d av %2$d";
+
+/* No comment provided by engineer. */
+"cancel" = "avbryt";
+
+/* No comment provided by engineer. */
+"change" = "ändra";
+
+/* No comment provided by engineer. */
+"change passcode" = "Ändra lösenord";
+
+/* No comment provided by engineer. */
+"change payment amount?" = "ändra belopp?";
+
+/* No comment provided by engineer. */
+"checking private key balance..." = "uppdaterar saldo för den privata nyckeln...";
+
+/* No comment provided by engineer. */
+"choose passcode for %@" = "välj pinkod for %@";
+
+/* No comment provided by engineer. */
+"clipboard doesn't contain a valid bitcoin address" = "urklippet innehåller inte en giltig bitcoinadress";
+
+/* No comment provided by engineer. */
+"close app" = "Stäng app";
+
+/* No comment provided by engineer. */
+"CONFIRM WIPE" = "BEKRÄFTA RADERING";
+
+/* No comment provided by engineer. */
+"confirmed in block #%d" = "bekräftad i block #%d";
+
+/* No comment provided by engineer. */
+"connect timeout" = "anslutningen överskred tidsgränsen";
+
+/* No comment provided by engineer. */
+"copied" = "kopierade";
+
+/* No comment provided by engineer. */
+"copy address to clipboard" = "kopiera adress till urklipp";
+
+/* No comment provided by engineer. */
+"copy request to clipboard" = "kopiera anmodan till klippboken";
+
+/* No comment provided by engineer. */
+"couldn't make payment" = "kunde inte genomföra betalning";
+
+/* No comment provided by engineer. */
+"couldn't sweep balance" = "kunde inte importera saldo";
+
+/* No comment provided by engineer. */
+"couldn't transmit payment to bitcoin network" = "kunde inte skicka betalningen till bitcoin-nätverket";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "ENHETENS SÄKERHET ÄR KOMPRIMISSAD\n\"Jailbreakade\" appar kan läsa inuti andra appar (och stjäla dina bitcoin).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "ENHETENS SÄKERHET ÄR KOMPRIMISSAD\n\"Jailbreakade\" appar kan läsa inuti andra appar (och stjäla dina bitcoin). Radera omedelbart denna plånbok och återskapa den på en annan (säker) enhet.";
+
+/* No comment provided by engineer. */
+"do it later" = "gör det senare";
+
+/* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nLÅT INTE NÅGON se din återställningsfras – annars kan hen spendera dina bitcoin.\n";
+
+/* No comment provided by engineer. */
+"done" = "klar";
+
+/* No comment provided by engineer. */
+"double spend" = "dubbelbetalning";
+
+/* No comment provided by engineer. */
+"email not configured" = "e-post inte konfigurerad";
+
+/* No comment provided by engineer. */
+"enter old passcode" = "ange den gamla pinkoden";
+
+/* No comment provided by engineer. */
+"error signing bitcoin transaction" = "fel vid signering av bitcointransaktionen";
+
+/* No comment provided by engineer. */
+"error signing transaction" = "fel vid signering av transaktionen";
+
+/* No comment provided by engineer. */
+"from:" = "från:";
+
+/* No comment provided by engineer. */
+"hour" = "timme";
+
+/* No comment provided by engineer. */
+"hours" = "timmar";
+
+/* No comment provided by engineer. */
+"id:" = "id:";
+
+/* No comment provided by engineer. */
+"ignore" = "ignorera";
+
+/* No comment provided by engineer. */
+"import private key" = "importera privat nyckel";
+
+/* No comment provided by engineer. */
+"IMPORTANT" = "VIKTIGT";
+
+/* No comment provided by engineer. */
+"insufficient funds" = "täckning saknas";
+
+/* No comment provided by engineer. */
+"insufficient funds for bitcoin network fee" = "täckning saknas för transaktionsavgiften";
+
+/* No comment provided by engineer. */
+"INVALID" = "OGILTIG";
+
+/* No comment provided by engineer. */
+"Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Via denna QR-kod kan andra läsa av din bitcoinadress. Vem som helst kan skicka bitcoin till din plånbok genom att överföra dem till din adress.";
+
+/* No comment provided by engineer. */
+"minute" = "minut";
+
+/* No comment provided by engineer. */
+"minutes" = "minuter";
+
+/* No comment provided by engineer. */
+"missing certificate" = "saknar certifikat";
+
+/* No comment provided by engineer. */
+"more..." = "mer...";
+
+/* No comment provided by engineer. */
+"moved" = "överförd";
+
+/* No comment provided by engineer. */
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nSKRIV ALDRIG in din återställningsfras i lösenordshanterare eller någon annanstans. \nAndra enheter kan vara infekterade.\n";
+
+/* No comment provided by engineer. */
+"new phrase" = "ny återställningsfras";
+
+/* No comment provided by engineer. */
+"next, write down your recovery phrase" = "Nästa, skriv ner din återhämtning fras";
+
+/* No comment provided by engineer. */
+"no peers found" = "hittade inga likar (Peer)";
+
+/* No comment provided by engineer. */
+"not a bitcoin QR code" = "inte en bitcoin QR-kod";
+
+/* No comment provided by engineer. */
+"not a valid bitcoin address" = "inte en giltig bitcoin adress";
+
+/* No comment provided by engineer. */
+"not a valid private key" = "ogiltig privat nyckel";
+
+/* No comment provided by engineer. */
+"not connected to the bitcoin network" = "ingen anslutning till bitcoinnätverket";
+
+/* No comment provided by engineer. */
+"ok" = "OK";
+
+/* No comment provided by engineer. */
+"passcode" = "pinkod";
+
+/* No comment provided by engineer. */
+"passcode for %@" = "pinkod for %@";
+
+/* No comment provided by engineer. */
+"password" = "lösenord";
+
+/* No comment provided by engineer. */
+"password protected key" = "lösenordskyddad nyckel";
+
+/* No comment provided by engineer. */
+"pay" = "betala";
+
+/* No comment provided by engineer. */
+"payment address" = "betaladress";
+
+/* No comment provided by engineer. */
+"payment output" = "betalutgång";
+
+/* No comment provided by engineer. */
+"post-dated" = "framdaterad";
+
+/* No comment provided by engineer. */
+"Receive bitcoins at this address: %@" = "Ta emot bitcoin på denna adress: %@";
+
+/* No comment provided by engineer. */
+"received" = "mottagna";
+
+/* No comment provided by engineer. */
+"received %@ (%@)" = "tog emot %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"recovery phrase" = "återställningsfras";
+
+/* No comment provided by engineer. */
+"recovery phrase doesn't match" = "återställningsfrasen stämmer inte";
+
+/* No comment provided by engineer. */
+"recovery phrase must have %d words" = "återställningsfrasen måste ha %d ord";
+
+/* No comment provided by engineer. */
+"reduce payment amount by\n%@ (%@)?" = "minska beloppet med\n%1$@ (%2$@)?";
+
+/* No comment provided by engineer. */
+"request" = "begäran";
+
+/* No comment provided by engineer. */
+"request an amount" = "begär ett belopp";
+
+/* No comment provided by engineer. */
+"request expired" = "begäran har gått ut";
+
+/* No comment provided by engineer. */
+"requested network \"%@\" instead of \"%@\"" = "begärde nätverk \"%1$@\" istället för \"%2$@\"";
+
+/* No comment provided by engineer. */
+"rescan" = "återläs";
+
+/* No comment provided by engineer. */
+"rescan blockchain" = "återläs blockkedjan";
+
+/* No comment provided by engineer. */
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "återläs blockkedjan om du misstänker att det saknas transaktioner, eller om du har problem att skicka bitcoin (återläsning kan ta flera minuter)";
+
+/* No comment provided by engineer. */
+"reset" = "återställ";
+
+/* No comment provided by engineer. */
+"Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Läs in någon annans bitcoinadress via QR-kod. Du kan göra  överföringar till alla som har en adress.";
+
+/* No comment provided by engineer. */
+"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Skärmbilder är synliga för andra appar och enheter. Skapa en ny återställningsfras och håll den hemlig.";
+
+/* No comment provided by engineer. */
+"Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Skärmbilder är synliga för andra appar och enheter. Dina tillgångar är riskerade. Flytta dem till en annan plånbok.";
+
+/* No comment provided by engineer. */
+"seen by %d of %d peers" = "sett av %1$d av %2$d likar";
+
+/* No comment provided by engineer. */
+"Send %@ (%@) from this private key into your wallet? The bitcoin network will receive a fee of %@ (%@)." = "Skicka %1$@ (%2$@) från denna privata nyckel till din plånbok? Bitcoin-nätverket erhåller en avgift på %3$@ (%4$@).";
+
+/* No comment provided by engineer. */
+"send address as email" = "Skicka adressen som e-post";
+
+/* No comment provided by engineer. */
+"send address as message" = "Skicka adress som meddelande";
+
+/* No comment provided by engineer. */
+"send request as email" = "skicka begäran som e-post";
+
+/* No comment provided by engineer. */
+"send request as message" = "skicka begäran som meddelande";
+
+/* No comment provided by engineer. */
+"sent" = "skickat";
+
+/* No comment provided by engineer. */
+"sent!" = "skickat!";
+
+/* No comment provided by engineer. */
+"settings" = "Inställningar";
+
+/* No comment provided by engineer. */
+"show" = "visa";
+
+/* No comment provided by engineer. */
+"show phrase" = "visa fras";
+
+/* No comment provided by engineer. */
+"sms not currently available" = "sms är inte tillgängligt för tillfället";
+
+/* No comment provided by engineer. */
+"spent address" = "förbrukad adress";
+
+/* No comment provided by engineer. */
+"spent input" = "förbrukat inflöde";
+
+/* No comment provided by engineer. */
+"status:" = "status:";
+
+/* No comment provided by engineer. */
+"swept!" = "inläst!";
+
+/* No comment provided by engineer. */
+"syncing..." = "synkroniserar...";
+
+/* No comment provided by engineer. */
+"the app will now close" = "appen kommer nu avslutas";
+
+/* No comment provided by engineer. */
+"This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Detta är din bitcoinadress. Nudda för att kopiera eller skicka till andra via e-post eller sms. Adressen ändras varje gång du tar emot en betalning, men gamla adresser fungerar även i framtiden.";
+
+/* No comment provided by engineer. */
+"This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market." = "Detta är ditt bitcoinsaldo. Bitcoin är en valuta. Växelkursen ändras av marknaden.";
+
+/* No comment provided by engineer. */
+"this payment address is already in your wallet" = "denna betaladress är redan i plånboken";
+
+/* No comment provided by engineer. */
+"this private key is already in your wallet" = "denna privata nyckel är redan i plånboken";
+
+/* No comment provided by engineer. */
+"this private key is empty" = "denna privata nyckel är tom";
+
+/* No comment provided by engineer. */
+"to:" = "till:";
+
+/* No comment provided by engineer. */
+"to: %@" = "till: %@";
+
+/* No comment provided by engineer. */
+"touch id limit" = "gräns för Touch ID";
+
+/* No comment provided by engineer. */
+"touch id spending limit" = "Touch ID beloppsgräns";
+
+/* No comment provided by engineer. */
+"transaction canceled, network timeout" = "transaktionen avbruten – nätverksavbrott";
+
+/* No comment provided by engineer. */
+"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "transaktionsavgiften skulle överstiga de medel som nyckeln har tillgängligt (på grund av \"damminsättningar\")";
+
+/* No comment provided by engineer. */
+"transaction history" = "transaktionshistorik";
+
+/* No comment provided by engineer. */
+"transaction is post-dated" = "transaktionen är framåtdaterad";
+
+/* No comment provided by engineer. */
+"transaction rejected" = "transaktion avvisad";
+
+/* No comment provided by engineer. */
+"turn device passcode on" = "aktivera pinkod för enheten";
+
+/* No comment provided by engineer. */
+"unexpected response from %@" = "oväntat svar från %@";
+
+/* No comment provided by engineer. */
+"unknown address" = "okänd adress";
+
+/* No comment provided by engineer. */
+"unrecognized address" = "oigenkännbar adress";
+
+/* No comment provided by engineer. */
+"unsupported or corrupted document" = "okänd dokumenttyp eller skadat dokument";
+
+/* No comment provided by engineer. */
+"unsupported signature type" = "stöd saknas för signaturtypen";
+
+/* No comment provided by engineer. */
+"unsupported url" = "stöd saknas för URL:en";
+
+/* No comment provided by engineer. */
+"untrusted certificate" = "opålitligt certifikat";
+
+/* No comment provided by engineer. */
+"unverified" = "overifierad";
+
+/* No comment provided by engineer. */
+"verified, waiting for confirmation" = "Verifierad, inväntar bekräftelse";
+
+/* No comment provided by engineer. */
+"verify passcode" = "upprepa pinkoden";
+
+/* No comment provided by engineer. */
+"wallet address" = "plånbok adress";
+
+/* No comment provided by engineer. */
+"wallet disabled" = "plånbok inaktiverad";
+
+/* No comment provided by engineer. */
+"WARNING" = "VARNING";
+
+/* No comment provided by engineer. */
+"wipe" = "rensa";
+
+/* No comment provided by engineer. */
+"WRITE DOWN YOUR RECOVERY PHRASE" = "skriv ner din återställnings fras";
+
+/* No comment provided by engineer. */
+"you received bitcoin!" = "du har fått bitcoin!";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Din plånbok kan vara osynkroniserad.\nDetta åtgärdas oftast genom en omläsning av blockkedjan.";
+

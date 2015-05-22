@@ -20,7 +20,7 @@
 "QQS-Me-RNh.title" = "recordármelo más tarde";
 
 /* Class = "UILabel"; text = "please write it down"; ObjectID = "Td7-xP-kmB"; */
-"Td7-xP-kmB.text" = "please write it down";
+"Td7-xP-kmB.text" = "anótela, por favor";
 
 /* Class = "UILabel"; text = "not connected"; ObjectID = "UyF-OV-QVY"; */
 "UyF-OV-QVY.text" = "sin conexión";
@@ -41,7 +41,7 @@
 "ce6-Wi-wk4.normalTitle" = "escanear código QR";
 
 /* Class = "UILabel"; text = "I wrote it down:"; ObjectID = "cyp-mV-Bhd"; */
-"cyp-mV-Bhd.text" = "Yo lo escribí:";
+"cyp-mV-Bhd.text" = "Ya la escribí:";
 
 /* Class = "UIButton"; normalTitle = "new wallet"; ObjectID = "dOa-zm-TDG"; */
 "dOa-zm-TDG.normalTitle" = "nueva cartera";

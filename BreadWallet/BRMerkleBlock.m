@@ -100,7 +100,7 @@
     _hashes = (off + len > message.length) ? nil : [message subdataWithRange:NSMakeRange(off, len)];
     off += len;
     _flags = [message dataAtOffset:off length:&l];
-    _height = BLOCK_UNKOWN_HEIGHT;
+    _height = BLOCK_UNKNOWN_HEIGHT;
     
     [d appendUInt32:_version];
     [d appendData:_prevBlock];

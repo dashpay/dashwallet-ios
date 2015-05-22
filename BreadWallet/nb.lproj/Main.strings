@@ -20,7 +20,7 @@
 "QQS-Me-RNh.title" = "påminn meg senere";
 
 /* Class = "UILabel"; text = "please write it down"; ObjectID = "Td7-xP-kmB"; */
-"Td7-xP-kmB.text" = "please write it down";
+"Td7-xP-kmB.text" = "vennligst skriv den ned";
 
 /* Class = "UILabel"; text = "not connected"; ObjectID = "UyF-OV-QVY"; */
 "UyF-OV-QVY.text" = "ikke tilkoblet";
@@ -32,13 +32,13 @@
 "XJu-9x-HqQ.text" = "beløp:";
 
 /* Class = "UILabel"; text = "Enter this wallet's recovery phrase to wipe it and start/recover another. Your current balance remains on this phrase."; ObjectID = "YC6-rN-4P5"; */
-"YC6-rN-4P5.text" = "skriv inn gjenopprettingsfrase for å fjerne gjeldende lommebok og start/gjenopprett en annen. Din balanse vil ikke fjernes fra lommeboken.";
+"YC6-rN-4P5.text" = "Skriv inn denne lommebokens gjennopprettingsfrase for å slette den og opprette/gjennoprette en annen. Din nåværende balanse vil forbli på denne frasen.";
 
 /* Class = "UIButton"; normalTitle = "pay address from clipboard"; ObjectID = "bfj-xS-5rN"; */
 "bfj-xS-5rN.normalTitle" = "betal adresse i utklippstavle";
 
 /* Class = "UIButton"; normalTitle = "scan QR code"; ObjectID = "ce6-Wi-wk4"; */
-"ce6-Wi-wk4.normalTitle" = "skann QR-koden";
+"ce6-Wi-wk4.normalTitle" = "skann QR-kode";
 
 /* Class = "UILabel"; text = "I wrote it down:"; ObjectID = "cyp-mV-Bhd"; */
 "cyp-mV-Bhd.text" = "Jeg har skrevet ned frasen:";
@@ -71,8 +71,8 @@
 "t1j-JZ-FW0.text" = "ingen transaksjoner";
 
 /* Class = "UILabel"; text = "breadwallet v%ver%%net%\ncopyright © 2015 Aaron Voisine\n\nthis app is open source"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "breadwallet v %ver%%net%\nopphasvrett © 2015 Aaron Voisine\n\ndenne appen er åpen kildekode";
+"uvz-hk-Nr4.text" = "breadwallet v%ver%%net%\nopphasvrett © 2015 Aaron Voisine\n\ndenne appen er åpen kildekode";
 
 /* Class = "UILabel"; text = "start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
-"wDZ-DN-szv.text" = "start en ny lommebok ved å generere en frase for gjenoppretting";
+"wDZ-DN-szv.text" = "start en ny lommebok ved å generere en gjenopprettingsfrase";
 

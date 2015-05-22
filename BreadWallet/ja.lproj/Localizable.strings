@@ -29,10 +29,10 @@
 "\n\n     amount %@ (%@)" = "\n\n     送金額 %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\n端末のパスコードを設定しないとウォレットを守ることができません。次進めるためには、設定にてパスコードを有効にしてください。";
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\n端末のパスコードを設定しないとウォレットを守ることができません。端末設定にてパスコードを有効にしてから進んでください。";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nこのアドレスは使用済みです！\n\nビットコインのアドレスは1回のみの\n利用が最適です。\n\n再利用してしまうと、プライバシーの\n低下及び宛先間違いが発生しやすく、\n相手がウォレットを紛失していた場合に\nビットコインが消滅してしまう\n可能性もあります。";
+"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nこのアドレスは使用済みです！\n\nビットコインのアドレスは1回のみの\n利用が最適です。\n\n再利用してしまうと、プライバシーの\n低下及び宛先間違いが発生しやすく\nなります。例えば、相手が紛失した\nウォレットに送るとビットコインが\n消滅してしまう可能性もあります。";
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nカメラへのアクセスを有効化するには\n設定⇒プライバシー⇒カメラ⇒%@";
@@ -56,7 +56,7 @@
 "amount too small" = "金額が小さすぎます";
 
 /* No comment provided by engineer. */
-"bad password, try again" = "不正なパスワード、もう一度やり直してください。";
+"bad password, try again" = "不正なパスワード、もう一度ご入力ください。";
 
 /* No comment provided by engineer. */
 "bad payment request" = "不正な支払い請求";
@@ -110,7 +110,7 @@
 "checking private key balance..." = "秘密鍵の残高を確認中…";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "%@ のパスコードを\nご入力下さい";
+"choose passcode for %@" = "%@ のパスコードを\nご指定下さい";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid bitcoin address" = "クリップボードには有効な\nビットコインアドレスが\n含まれていません。";
@@ -290,7 +290,7 @@
 "recovery phrase doesn't match" = "復元フレーズが一致しません";
 
 /* No comment provided by engineer. */
-"recovery phrase must have %d words" = "復元フレーズは半角スペースで区切られた %d 個の単語でないといけません。";
+"recovery phrase must have %d words" = "復元フレーズはスペースで区切られた %d 個の単語でないといけません。";
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "%1$@ (%2$@)\n上記の分だけ送金額減らしますか？";
@@ -398,10 +398,10 @@
 "this private key is empty" = "この秘密鍵は承認済み残高がありません";
 
 /* No comment provided by engineer. */
-"to:" = "送金先：";
+"to:" = "送金先:";
 
 /* No comment provided by engineer. */
-"to: %@" = "送金先： %@";
+"to: %@" = "送金先: %@";
 
 /* No comment provided by engineer. */
 "touch id limit" = "Touch IDの送金可能額";
@@ -422,7 +422,7 @@
 "transaction is post-dated" = "取引が後日行われる予定";
 
 /* No comment provided by engineer. */
-"transaction rejected" = "取引拒否されました";
+"transaction rejected" = "取引が拒否されました";
 
 /* No comment provided by engineer. */
 "turn device passcode on" = "端末のパスコードを有効に";

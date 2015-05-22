@@ -146,16 +146,16 @@
 "couldn't transmit payment to bitcoin network" = "kunne ikke sende betalingen til bitcoin-netværket";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "ENHEDENS SIKKERHED KOMPROMITTERET\nEnhver 'jailbreak'et app kan tilgå enhver anden apps nøglerings-data (og stjæle dine bitcoins).";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "ENHEDENS SIKKERHED KOMPROMITTERET\nEnhver \"jailbreak'et\" app kan tilgå enhver anden apps nøglerings-data (og stjæle dine bitcoin).";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "ENHEDENS SIKKERHED KOMPROMITTERET\nEnhver 'jailbreak'et app kan tilgå enhver anden apps nøglerings-data (og stjæle dine bitcoins). Slet straks denne tegnebog og gendan den på en sikker enhed.";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "ENHEDENS SIKKERHED KOMPROMITTERET\nEnhver \"jailbreak'et\" app kan tilgå enhver anden apps nøglerings-data (og stjæle dine bitcoin). Slet straks denne tegnebog og gendan den på en sikker enhed.";
 
 /* No comment provided by engineer. */
 "do it later" = "gør det senere";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nLAD IKKE nogen se din\ngenskabelsessætning, eller\nde kan bruge dine bitcoin.";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nLAD IKKE nogen se din\ngendannelsessætning, eller\nde kan bruge dine bitcoin.";
 
 /* No comment provided by engineer. */
 "done" = "færdig";
@@ -257,10 +257,10 @@
 "passcode for %@" = "adgangskode for %@";
 
 /* No comment provided by engineer. */
-"password" = "kodeord";
+"password" = "adgangskode";
 
 /* No comment provided by engineer. */
-"password protected key" = "kodeordsbeskyttet nøgle";
+"password protected key" = "nøgle beskyttet med adgangskode";
 
 /* No comment provided by engineer. */
 "pay" = "betal";
@@ -281,7 +281,7 @@
 "received" = "modtaget";
 
 /* No comment provided by engineer. */
-"received %@ (%@)" = "modtaget %1$@ (%2$@)";
+"received %@ (%@)" = "modtog %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "recovery phrase" = "gendannelsesssætning";
@@ -314,7 +314,7 @@
 "rescan blockchain" = "scan blokkæden igen";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "scan blokkæden igen hvis du tror du måske mangler transaktioner eller har problemer med at sende (ny scanning kan tage adskillige minutter)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "scan blokkæden igen hvis du tror, du mangler transaktioner, eller har problemer med at sende (ny scanning kan tage adskillige minutter)";
 
 /* No comment provided by engineer. */
 "reset" = "nulstil";
@@ -377,7 +377,7 @@
 "swept!" = "ryddet!";
 
 /* No comment provided by engineer. */
-"syncing..." = "synkroniserer...";
+"syncing..." = "synkroniserer …";
 
 /* No comment provided by engineer. */
 "the app will now close" = "app'en vil nu lukke";
@@ -404,10 +404,10 @@
 "to: %@" = "til: %@";
 
 /* No comment provided by engineer. */
-"touch id limit" = "touch id grænse";
+"touch id limit" = "grænse for touch id";
 
 /* No comment provided by engineer. */
-"touch id spending limit" = "touch id betalingsgrænse";
+"touch id spending limit" = "betalingsgrænse for touch id";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "transaktion annullet, netværk-timeout";

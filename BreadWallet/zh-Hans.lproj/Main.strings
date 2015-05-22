@@ -8,7 +8,7 @@
 "A4M-yq-26d.normalTitle" = "生成恢复密语";
 
 /* Class = "UILabel"; text = "start/recover another wallet"; ObjectID = "D1b-HB-lKH"; */
-"D1b-HB-lKH.text" = "开始/找回另一个钱包";
+"D1b-HB-lKH.text" = "生成/找回另一个钱包";
 
 /* Class = "UILabel"; text = "exchange rate data provided by\nbitpay.com/rates"; ObjectID = "D4H-hd-LsX"; */
 "D4H-hd-LsX.text" = "由 bitpay.com/rates 提供的汇率数据";
@@ -20,7 +20,7 @@
 "QQS-Me-RNh.title" = "以后提醒我";
 
 /* Class = "UILabel"; text = "please write it down"; ObjectID = "Td7-xP-kmB"; */
-"Td7-xP-kmB.text" = "please write it down";
+"Td7-xP-kmB.text" = "请将其写下来";
 
 /* Class = "UILabel"; text = "not connected"; ObjectID = "UyF-OV-QVY"; */
 "UyF-OV-QVY.text" = "未连接";
@@ -71,7 +71,7 @@
 "t1j-JZ-FW0.text" = "没有交易";
 
 /* Class = "UILabel"; text = "breadwallet v%ver%%net%\ncopyright © 2015 Aaron Voisine\n\nthis app is open source"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "breadwallet v%ver%%net%\n版权 © 2015 Aaron Voisine\n\n此应用开源";
+"uvz-hk-Nr4.text" = "breadwallet v%ver%%net%\n版权 © 2015 Aaron Voisine\n\n这是一个开源软件";
 
 /* Class = "UILabel"; text = "start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
 "wDZ-DN-szv.text" = "通过生成一个钱包恢复密语来开始一个新的钱包";

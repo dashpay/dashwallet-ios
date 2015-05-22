@@ -2,7 +2,7 @@
 "%@ is for 'bits'. %@ = 1 bitcoin." = "%1$@ es para 'bits'. %2$@ = 1 bitcoin.";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access the camera" = "%@ no está permitido el acceso a la cámara";
+"%@ is not allowed to access the camera" = "%@ no está permitido accesar a la cámara";
 
 /* No comment provided by engineer. */
 "%d confirmations" = "%d confirmaciones";
@@ -11,7 +11,7 @@
 "1 confirmation" = "1 confirmación";
 
 /* No comment provided by engineer. */
-"\"%@\" is not a recovery phrase word" = "\"%@\" no es una frase de recuperación";
+"\"%@\" is not a recovery phrase word" = "\"%@\" no es una palabra de la frase de recuperación";
 
 /* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\ntotal %1$@ (%2$@)";
@@ -20,16 +20,16 @@
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@ \n\nsi perdieras tu telefono, necesitarás esto para recuperar tu cartera";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d intentos restantes\n";
+"\n%d attempts remaining\n" = "%d intentos restantes ";
 
 /* No comment provided by engineer. */
 "\n1 attempt remaining\n" = "\n queda un intento\n";
 
 /* No comment provided by engineer. */
-"\n\n     amount %@ (%@)" = "\n\n     cantidad %1$@ (%2$@)";
+"\n\n     amount %@ (%@)" = "       cantidad %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nNecesitas un Código de acceso para proteger tu cartera. Ve a configuración y activa el Código de accesoel para continuar.";
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nNecesitas un Código de acceso para proteger tu cartera. Ve a configuración y activa el Código de acceso para continuar.";
 
 /* No comment provided by engineer. */
 "\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nDIRECCIÓN EN USO\n\nlas direcciones bitcoin sirven para un solo uso\n\nla reutilización de direcciones reduce tu privacidad y la del destinatario, y puede ocasionar pérdidas si este no controla directamente la dirección";
@@ -50,7 +50,7 @@
 "about" = "acerca de";
 
 /* No comment provided by engineer. */
-"always require passcode" = "siempre requiere contraseña";
+"always require passcode" = "siempre requiere el numero de seguridad";
 
 /* No comment provided by engineer. */
 "amount too small" = "cantidad demasiado pequeña";
@@ -146,10 +146,10 @@
 "couldn't transmit payment to bitcoin network" = "no se pudo transmitir el pago a la red bitcoin";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "DISPOSITIVO DE SEGURIDAD DUDOSA\nCualquier aplicación en un dispositivo con 'jailbreak' puede acceder a la cadena de datos de otras aplicaciones (y robar tus bitcoin).";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "DISPOSITIVO DE SEGURIDAD DUDOSA\nCualquier aplicación de 'jailbreak' puede acceder a la cadena de datos de otras aplicaciones (y robar tus bitcoin).";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "DISPOSITIVO DE SEGURIDAD DUDOSA\nCualquier aplicación en un dispositivo con 'jailbreak' puede acceder a la cadena de datos de otras aplicaciones (y robar tus bitcoin). Borra inmediatamente esta cartera para restablecerla en un dispositivo seguro.";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "DISPOSITIVO DE SEGURIDAD DUDOSA\nCualquier aplicación de 'jailbreak' puede acceder a la cadena de datos de otras aplicaciones (y robar tus bitcoin). Borra inmediatamente esta cartera para restablecerla en un dispositivo seguro.";
 
 /* No comment provided by engineer. */
 "do it later" = "hazlo más tarde";
