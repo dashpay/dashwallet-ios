@@ -80,13 +80,13 @@
 "Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1' or '3'." = "Gli indirizzi Bitcoin possono anche essere copiati negli Appunti. Un indirizzo bitcoin inizia sempre con '1' o '3'.";
 
 /* No comment provided by engineer. */
-"bitcoin network fee" = "tassa di rete Bitcoin";
+"bitcoin network fee" = "tassa di rete bitcoin";
 
 /* No comment provided by engineer. */
 "bitcoin payments can't be less than %@" = "i pagamneti in Bitcoin non possono essere inferiore a %@";
 
 /* No comment provided by engineer. */
-"bitcoin transaction not signed" = "transazione Bitcoin non firmata";
+"bitcoin transaction not signed" = "transazione bitcoin non firmata";
 
 /* No comment provided by engineer. */
 "bitcoin transaction outputs can't be less than %@" = "transazioni bitcoin in uscita non possono essere inferiori a %@";

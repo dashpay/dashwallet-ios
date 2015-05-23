@@ -50,7 +50,7 @@
 "dX6-jg-5IA.text" = "se perdi il tuo telefono, sarà necessario questa frase per recuperare il tuo portafoglio";
 
 /* Class = "UIButton"; normalTitle = "show"; ObjectID = "efL-Cj-Aho"; */
-"efL-Cj-Aho.normalTitle" = "Visualizza";
+"efL-Cj-Aho.normalTitle" = "visualizza";
 
 /* Class = "UINavigationItem"; title = "confirm:"; ObjectID = "fQN-xb-SYb"; */
 "fQN-xb-SYb.title" = "conferma:";

@@ -17,7 +17,7 @@
 "\n         total %@ (%@)" = "\n         toplam %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nEğer telefonunuzu kaybederseniz cüzdanınızı kurtarmak için buna ihtiyacınız olacaktır";
+"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\neğer telefonunuzu kaybederseniz cüzdanınızı kurtarmak için buna ihtiyacınız olacaktır";
 
 /* No comment provided by engineer. */
 "\n%d attempts remaining\n" = "\n%d deneme hakkı kaldı\n";
@@ -113,7 +113,7 @@
 "choose passcode for %@" = "%@ için şifre seçin";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid bitcoin address" = "Pano geçerli bir bitcoin adresi içermiyor";
+"clipboard doesn't contain a valid bitcoin address" = "pano geçerli bir bitcoin adresi içermiyor";
 
 /* No comment provided by engineer. */
 "close app" = "uygulamayı kapat";

@@ -17,7 +17,7 @@
 "\n         total %@ (%@)" = "\n         total %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nNëse ndonjëherë e humbni telefonin tuaj, ju duhet kjo për ta rikthyer kuletën";
+"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nnëse ndonjëherë e humbni telefonin tuaj, ju duhet kjo për ta rikthyer kuletën";
 
 /* No comment provided by engineer. */
 "\n%d attempts remaining\n" = "\n%d tentime kanë mbetur\n";
@@ -389,7 +389,7 @@
 "This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market." = "Kjo është bitcoin bilanci juaj. Bitcoin është një monedhë. Kursi i këmbimit ndryshon nga tregu.";
 
 /* No comment provided by engineer. */
-"this payment address is already in your wallet" = "Kjo adresë ekziston tashmë ne kuletën tuaj";
+"this payment address is already in your wallet" = "kjo adresë ekziston tashmë ne kuletën tuaj";
 
 /* No comment provided by engineer. */
 "this private key is already in your wallet" = "ky çelës privat tashmë është në kuletën tuaj";

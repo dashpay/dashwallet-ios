@@ -2,34 +2,34 @@
 "4w7-k8-9wY.normalTitle" = "восстановить бумажник";
 
 /* Class = "UILabel"; text = "local currency"; ObjectID = "8e2-ar-Ehc"; */
-"8e2-ar-Ehc.text" = "Местная валюта";
+"8e2-ar-Ehc.text" = "местная валюта";
 
 /* Class = "UIButton"; normalTitle = "generate recovery phrase"; ObjectID = "A4M-yq-26d"; */
 "A4M-yq-26d.normalTitle" = "генерировать фразу восстановления";
 
 /* Class = "UILabel"; text = "start/recover another wallet"; ObjectID = "D1b-HB-lKH"; */
-"D1b-HB-lKH.text" = "Начать/восстановить другой кошелек";
+"D1b-HB-lKH.text" = "начать/восстановить другой кошелек";
 
 /* Class = "UILabel"; text = "exchange rate data provided by\nbitpay.com/rates"; ObjectID = "D4H-hd-LsX"; */
 "D4H-hd-LsX.text" = "данные валютного курса bitpay.com/rates предоставил";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
-"EQG-Km-ZKY.text" = "Если вы когда либо потеряете свой телефон, вам понадобится эта фраза что бы восстановить ваш кошелек";
+"EQG-Km-ZKY.text" = "если вы когда либо потеряете свой телефон, вам понадобится эта фраза что бы восстановить ваш кошелек";
 
 /* Class = "UIBarButtonItem"; title = "remind me later"; ObjectID = "QQS-Me-RNh"; */
 "QQS-Me-RNh.title" = "напомни мне позже";
 
 /* Class = "UILabel"; text = "please write it down"; ObjectID = "Td7-xP-kmB"; */
-"Td7-xP-kmB.text" = "Пожалуйста запишите ее";
+"Td7-xP-kmB.text" = "пожалуйста запишите ее";
 
 /* Class = "UILabel"; text = "not connected"; ObjectID = "UyF-OV-QVY"; */
-"UyF-OV-QVY.text" = "Не подключено";
+"UyF-OV-QVY.text" = "не подключено";
 
 /* Class = "UINavigationItem"; title = "settings"; ObjectID = "W8m-Eh-Nf9"; */
-"W8m-Eh-Nf9.title" = "Настройки";
+"W8m-Eh-Nf9.title" = "настройки";
 
 /* Class = "UILabel"; text = "amount:"; ObjectID = "XJu-9x-HqQ"; */
-"XJu-9x-HqQ.text" = "Сумма:";
+"XJu-9x-HqQ.text" = "сумма:";
 
 /* Class = "UILabel"; text = "Enter this wallet's recovery phrase to wipe it and start/recover another. Your current balance remains on this phrase."; ObjectID = "YC6-rN-4P5"; */
 "YC6-rN-4P5.text" = "Введите фразу восстановления этого кошелька чтобы уничтожить его и запустить/восстановить другой. Ваш текущий баланс остается на этой фразы.";
@@ -38,7 +38,7 @@
 "bfj-xS-5rN.normalTitle" = "оплатить адрес из буфера обмена";
 
 /* Class = "UIButton"; normalTitle = "scan QR code"; ObjectID = "ce6-Wi-wk4"; */
-"ce6-Wi-wk4.normalTitle" = "Сканировать QR код";
+"ce6-Wi-wk4.normalTitle" = "сканировать QR код";
 
 /* Class = "UILabel"; text = "I wrote it down:"; ObjectID = "cyp-mV-Bhd"; */
 "cyp-mV-Bhd.text" = "Я написал его:";
@@ -47,16 +47,16 @@
 "dOa-zm-TDG.normalTitle" = "новый кошелек";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "dX6-jg-5IA"; */
-"dX6-jg-5IA.text" = "Если вы потеряете свой телефон, вам понадобится эта фраза что бы восстановить ваш кошелек";
+"dX6-jg-5IA.text" = "если вы потеряете свой телефон, вам понадобится эта фраза что бы восстановить ваш кошелек";
 
 /* Class = "UIButton"; normalTitle = "show"; ObjectID = "efL-Cj-Aho"; */
-"efL-Cj-Aho.normalTitle" = "Показать";
+"efL-Cj-Aho.normalTitle" = "показать";
 
 /* Class = "UINavigationItem"; title = "confirm:"; ObjectID = "fQN-xb-SYb"; */
 "fQN-xb-SYb.title" = "подтвердить:";
 
 /* Class = "UILabel"; text = "send money:"; ObjectID = "l5l-JR-LKA"; */
-"l5l-JR-LKA.text" = "Отправьте деньги:";
+"l5l-JR-LKA.text" = "отправьте деньги:";
 
 /* Class = "UINavigationItem"; title = "recovery phrase:"; ObjectID = "ooJ-EA-DFl"; */
 "ooJ-EA-DFl.title" = "фраза восстановления:";
@@ -65,14 +65,14 @@
 "qel-3J-2VC.text" = "получить деньги:";
 
 /* Class = "UITableViewController"; title = "transaction details"; ObjectID = "s4T-yd-VfX"; */
-"s4T-yd-VfX.title" = "Детали транзакции";
+"s4T-yd-VfX.title" = "детали транзакции";
 
 /* Class = "UILabel"; text = "no transactions"; ObjectID = "t1j-JZ-FW0"; */
-"t1j-JZ-FW0.text" = "Нет транзакций";
+"t1j-JZ-FW0.text" = "нет транзакций";
 
 /* Class = "UILabel"; text = "breadwallet v%ver%%net%\ncopyright © 2015 Aaron Voisine\n\nthis app is open source"; ObjectID = "uvz-hk-Nr4"; */
 "uvz-hk-Nr4.text" = "breadwallet v%ver%%net%\ncopyright © 2015 Aaron Voisine \nэто приложение с открытым исходным кодом";
 
 /* Class = "UILabel"; text = "start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
-"wDZ-DN-szv.text" = "Начать новый кошелек с создания фразы восстановления для кошелька";
+"wDZ-DN-szv.text" = "начать новый кошелек с создания фразы восстановления для кошелька";
 

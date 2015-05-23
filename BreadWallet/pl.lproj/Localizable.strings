@@ -23,7 +23,7 @@
 "\n%d attempts remaining\n" = "\npozostało %d prób\n";
 
 /* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\nPozostała jedna próba\n";
+"\n1 attempt remaining\n" = "\npozostała jedna próba\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n     kwota %1$@ (%2$@)";

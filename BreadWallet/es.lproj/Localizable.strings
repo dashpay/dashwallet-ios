@@ -20,13 +20,13 @@
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@ \n\nsi perdieras tu telefono, necesitarás esto para recuperar tu cartera";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "%d intentos restantes ";
+"\n%d attempts remaining\n" = "\n%d intentos restantes\n";
 
 /* No comment provided by engineer. */
 "\n1 attempt remaining\n" = "\n queda un intento\n";
 
 /* No comment provided by engineer. */
-"\n\n     amount %@ (%@)" = "       cantidad %1$@ (%2$@)";
+"\n\n     amount %@ (%@)" = "\n\n     cantidad %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nNecesitas un Código de acceso para proteger tu cartera. Ve a configuración y activa el Código de acceso para continuar.";
@@ -251,10 +251,10 @@
 "ok" = "de acuerdo";
 
 /* No comment provided by engineer. */
-"passcode" = "Código de acceso";
+"passcode" = "código de acceso";
 
 /* No comment provided by engineer. */
-"passcode for %@" = "Código de acceso para %@";
+"passcode for %@" = "código de acceso para %@";
 
 /* No comment provided by engineer. */
 "password" = "contraseña";
@@ -350,7 +350,7 @@
 "sent" = "enviado";
 
 /* No comment provided by engineer. */
-"sent!" = "¡Enviado!";
+"sent!" = "¡enviado!";
 
 /* No comment provided by engineer. */
 "settings" = "configuración";

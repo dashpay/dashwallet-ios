@@ -47,7 +47,7 @@
 "dOa-zm-TDG.normalTitle" = "nieuwe portemonnee";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "dX6-jg-5IA"; */
-"dX6-jg-5IA.text" = "Als je ooit je telefoon kwijtraakt, moet je deze zin hebben om je portemonnee te herstellen";
+"dX6-jg-5IA.text" = "als je ooit je telefoon kwijtraakt, moet je deze zin hebben om je portemonnee te herstellen";
 
 /* Class = "UIButton"; normalTitle = "show"; ObjectID = "efL-Cj-Aho"; */
 "efL-Cj-Aho.normalTitle" = "tonen";

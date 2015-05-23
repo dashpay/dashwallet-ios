@@ -392,7 +392,7 @@
 "this payment address is already in your wallet" = "denne betalingsadresse er allerede i din tegnebog";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "Dette private nøgle er allerede i din tegnebog";
+"this private key is already in your wallet" = "dette private nøgle er allerede i din tegnebog";
 
 /* No comment provided by engineer. */
 "this private key is empty" = "denne private nøgle er tom";

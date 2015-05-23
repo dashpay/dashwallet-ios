@@ -80,13 +80,13 @@
 "Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1' or '3'." = "Bitcoin-adresser kan också kopieras till klippboken. En Bitcoin-adress startar alltid med '1' eller '3'.";
 
 /* No comment provided by engineer. */
-"bitcoin network fee" = "Transaktions kostnad";
+"bitcoin network fee" = "transaktions kostnad";
 
 /* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "Betalningar kan inte vara mindre än %@";
+"bitcoin payments can't be less than %@" = "betalningar kan inte vara mindre än %@";
 
 /* No comment provided by engineer. */
-"bitcoin transaction not signed" = "Transaktionen ej undertecknad";
+"bitcoin transaction not signed" = "transaktionen ej undertecknad";
 
 /* No comment provided by engineer. */
 "bitcoin transaction outputs can't be less than %@" = "transaktionens utflöden får ej understiga %@";
@@ -101,7 +101,7 @@
 "change" = "ändra";
 
 /* No comment provided by engineer. */
-"change passcode" = "Ändra lösenord";
+"change passcode" = "ändra lösenord";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "ändra belopp?";
@@ -116,7 +116,7 @@
 "clipboard doesn't contain a valid bitcoin address" = "urklippet innehåller inte en giltig bitcoinadress";
 
 /* No comment provided by engineer. */
-"close app" = "Stäng app";
+"close app" = "stäng app";
 
 /* No comment provided by engineer. */
 "CONFIRM WIPE" = "BEKRÄFTA RADERING";
@@ -230,10 +230,10 @@
 "new phrase" = "ny återställningsfras";
 
 /* No comment provided by engineer. */
-"next, write down your recovery phrase" = "Nästa, skriv ner din återhämtning fras";
+"next, write down your recovery phrase" = "nästa, skriv ner din återhämtning fras";
 
 /* No comment provided by engineer. */
-"no peers found" = "hittade inga likar (Peer)";
+"no peers found" = "hittade inga likar (peer)";
 
 /* No comment provided by engineer. */
 "not a bitcoin QR code" = "inte en bitcoin QR-kod";
@@ -335,10 +335,10 @@
 "Send %@ (%@) from this private key into your wallet? The bitcoin network will receive a fee of %@ (%@)." = "Skicka %1$@ (%2$@) från denna privata nyckel till din plånbok? Bitcoin-nätverket erhåller en avgift på %3$@ (%4$@).";
 
 /* No comment provided by engineer. */
-"send address as email" = "Skicka adressen som e-post";
+"send address as email" = "skicka adressen som e-post";
 
 /* No comment provided by engineer. */
-"send address as message" = "Skicka adress som meddelande";
+"send address as message" = "skicka adress som meddelande";
 
 /* No comment provided by engineer. */
 "send request as email" = "skicka begäran som e-post";
@@ -353,7 +353,7 @@
 "sent!" = "skickat!";
 
 /* No comment provided by engineer. */
-"settings" = "Inställningar";
+"settings" = "inställningar";
 
 /* No comment provided by engineer. */
 "show" = "visa";
@@ -404,10 +404,10 @@
 "to: %@" = "till: %@";
 
 /* No comment provided by engineer. */
-"touch id limit" = "gräns för Touch ID";
+"touch id limit" = "gräns för touch id";
 
 /* No comment provided by engineer. */
-"touch id spending limit" = "Touch ID beloppsgräns";
+"touch id spending limit" = "touch id beloppsgräns";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "transaktionen avbruten – nätverksavbrott";
@@ -452,7 +452,7 @@
 "unverified" = "overifierad";
 
 /* No comment provided by engineer. */
-"verified, waiting for confirmation" = "Verifierad, inväntar bekräftelse";
+"verified, waiting for confirmation" = "verifierad, inväntar bekräftelse";
 
 /* No comment provided by engineer. */
 "verify passcode" = "upprepa pinkoden";
