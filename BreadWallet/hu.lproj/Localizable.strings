@@ -383,7 +383,7 @@
 "the app will now close" = "az alkalmazás most bezárul";
 
 /* No comment provided by engineer. */
-"This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Ez a bitcoin címed. Bökj rá a másoláshoz vagy továbbküldéshez üzenetként vagy emailként. Ez a cím változni fog minden alkalommal amikor pénzt kapsz, de a régi címeid továbbra is működni fognak.";
+"This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Ez a bitcoin címed. Koppints rá a másoláshoz vagy továbbküldéshez üzenetként vagy emailként. Ez a cím változni fog minden alkalommal amikor pénzt kapsz, de a régi címeid továbbra is működni fognak.";
 
 /* No comment provided by engineer. */
 "This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market." = "Ez a bitcoin egyenleged. A Bitcoin egy valuta. Az átváltási árfolyam a piaci körülményeknek megfelelően változik.";
