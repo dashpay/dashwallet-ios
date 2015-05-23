@@ -46,8 +46,23 @@ phrase.
 - import [password protected](https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki) paper wallets
 - ["payment protocol"](https://github.com/bitcoin/bips/blob/master/bip-0070.mediawiki) payee identity certification
 
-breadwallet is open source and available under the terms of the MIT license.
-Source code is available at https://github.com/voisine/breadwallet
+**URL scheme:**
+
+breadwallet supports the [x-callback-url](http://x-callback-url.com)
+specification with the following URLs:
+
+request a receive address:
+
+`bread://x-callback-url/address?x-success=myscheme://myaction`
+
+this will callback with the current wallet receive address:
+
+`myscheme://myaction?address=1XXXX`
+
+the following will ask the user to authorize copying a list of their wallet
+addresses to the clipbaord before calling back:
+
+`bread://x-callback-url/addresslist?x-success=myscheme://myaction`
 
 **WARNING:** installation on jailbroken devices is strongly discouraged
 
@@ -55,3 +70,6 @@ Any jailbreak app can grant itself access to every other app's keychain data
 and rob you by self-signing as described [here](http://www.saurik.com/id/8)
 and including `<key>application-identifier</key><string>*</string>` in its
 .entitlements file.
+
+breadwallet is open source and available under the terms of the MIT license.
+Source code is available at https://github.com/voisine/breadwallet
