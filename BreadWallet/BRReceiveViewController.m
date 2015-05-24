@@ -73,11 +73,10 @@
     if (! req.isValid || [self.paymentAddress isEqual:self.addressButton.currentTitle]) return;
 
     CIFilter *filter = [CIFilter filterWithName:@"CIQRCodeGenerator"];
-    CGSize size = self.qrView.bounds.size;
 
     [filter setValue:req.data forKey:@"inputMessage"];
     [filter setValue:@"L" forKey:@"inputCorrectionLevel"];
-    UIGraphicsBeginImageContext(size);
+    UIGraphicsBeginImageContext(self.qrView.bounds.size);
 
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGImageRef img = [[CIContext contextWithOptions:nil] createCGImage:filter.outputImage
