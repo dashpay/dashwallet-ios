@@ -29,6 +29,7 @@
 #import "BRWalletManager.h"
 #import "BRTransaction.h"
 #import "BRBubbleView.h"
+#import <MobileCoreServices/UTCoreTypes.h>
 
 #define QR_TIP      NSLocalizedString(@"Let others scan this QR code to get your bitcoin address. Anyone can send "\
                     "bitcoins to your wallet by transferring them to your address.", nil)
@@ -72,10 +73,11 @@
     if (! req.isValid || [self.paymentAddress isEqual:self.addressButton.currentTitle]) return;
 
     CIFilter *filter = [CIFilter filterWithName:@"CIQRCodeGenerator"];
+    CGSize size = self.qrView.bounds.size;
 
     [filter setValue:req.data forKey:@"inputMessage"];
     [filter setValue:@"L" forKey:@"inputCorrectionLevel"];
-    UIGraphicsBeginImageContext(self.qrView.bounds.size);
+    UIGraphicsBeginImageContext(size);
 
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGImageRef img = [[CIContext contextWithOptions:nil] createCGImage:filter.outputImage
@@ -83,9 +85,10 @@
 
     if (context) {
         CGContextSetInterpolationQuality(context, kCGInterpolationNone);
+        CGContextRotateCTM(context, M_PI); // flip
+        CGContextScaleCTM(context, -1.0, 1.0); // mirror
         CGContextDrawImage(context, CGContextGetClipBoundingBox(context), img);
-        self.qrView.image = [UIImage imageWithCGImage:UIGraphicsGetImageFromCurrentImageContext().CGImage scale:1.0
-                             orientation:UIImageOrientationDownMirrored];
+        self.qrView.image = UIGraphicsGetImageFromCurrentImageContext();
         [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
     }
 
@@ -226,8 +229,9 @@
         if ([MFMailComposeViewController canSendMail]) {
             MFMailComposeViewController *c = [MFMailComposeViewController new];
             
-            [c setSubject:NSLocalizedString(@"Bitcoin address", nil)];
+            c.subject = NSLocalizedString(@"Bitcoin address", nil);
             [c setMessageBody:self.paymentRequest.string isHTML:NO];
+            [c addAttachmentData:UIImagePNGRepresentation(self.qrView.image) mimeType:@"image/png" fileName:@"qr.png"];
             c.mailComposeDelegate = self;
             [self.navigationController presentViewController:c animated:YES completion:nil];
             c.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default"]];
@@ -241,8 +245,15 @@
              [title isEqual:NSLocalizedString(@"send request as message", nil)]) {
         if ([MFMessageComposeViewController canSendText]) {
             MFMessageComposeViewController *c = [MFMessageComposeViewController new];
-            
+
+            if ([MFMessageComposeViewController canSendSubject]) c.subject = NSLocalizedString(@"Bitcoin address", nil);
             c.body = self.paymentRequest.string;
+            
+            if ([MFMessageComposeViewController canSendAttachments]) {
+                [c addAttachmentData:UIImagePNGRepresentation(self.qrView.image) typeIdentifier:(NSString *)kUTTypePNG
+                 filename:@"qr.png"];
+            }
+            
             c.messageComposeDelegate = self;
             [self.navigationController presentViewController:c animated:YES completion:nil];
             c.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default"]];
