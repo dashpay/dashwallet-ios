@@ -261,22 +261,22 @@ merchantData:(NSData *)data
 
 - (NSData *)toData
 {
-    NSMutableData *d = [NSMutableData data], *output;
+    NSMutableData *d = [NSMutableData data];
     NSUInteger i = 0;
-    uint64_t amount;
 
     if (_network) [d appendProtoBufString:_network withKey:details_network];
 
     for (NSData *script in _outputScripts) {
-        output = [NSMutableData data];
-        amount = [_outputAmounts[i++] unsignedLongLongValue];
+        NSMutableData *output = [NSMutableData data];
+        uint64_t amount = [_outputAmounts[i++] unsignedLongLongValue];
+
         if (amount != UINT64_MAX) [output appendProtoBufInt:amount withKey:output_amount];
         [output appendProtoBufData:script withKey:output_script];
         [d appendProtoBufData:output withKey:details_outputs];
     }
 
-    if (_time) [d appendProtoBufInt:_time + NSTimeIntervalSince1970 withKey:details_time];
-    if (_expires) [d appendProtoBufInt:_expires + NSTimeIntervalSince1970 withKey:details_expires];
+    if (_time >= 1) [d appendProtoBufInt:_time + NSTimeIntervalSince1970 withKey:details_time];
+    if (_expires >= 1) [d appendProtoBufInt:_expires + NSTimeIntervalSince1970 withKey:details_expires];
     if (_memo) [d appendProtoBufString:_memo withKey:details_memo];
     if (_paymentURL) [d appendProtoBufString:_paymentURL withKey:details_payment_url];
     if (_merchantData) [d appendProtoBufData:_merchantData withKey:details_merchant_data];
@@ -522,9 +522,8 @@ refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSSt
 
 - (NSData *)toData
 {
-    NSMutableData *d = [NSMutableData data], *output;
+    NSMutableData *d = [NSMutableData data];
     NSUInteger i = 0;
-    uint64_t amount;
 
     if (_merchantData) [d appendProtoBufData:_merchantData withKey:payment_merchant_data];
 
@@ -533,8 +532,9 @@ refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSSt
     }
 
     for (NSData *script in _refundToScripts) {
-        output = [NSMutableData data];
-        amount = [_refundToAmounts[i++] unsignedLongLongValue];
+        NSMutableData *output = [NSMutableData data];
+        uint64_t amount = [_refundToAmounts[i++] unsignedLongLongValue];
+        
         if (amount != UINT64_MAX) [output appendProtoBufInt:amount withKey:output_amount];
         [output appendProtoBufData:script withKey:output_script];
         [d appendProtoBufData:output withKey:payment_refund_to];

@@ -713,6 +713,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     BRWalletManager *m = [BRWalletManager sharedInstance];
     NSString *p = [[[UIPasteboard generalPasteboard] string]
                    stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    UIImage *img = [[UIPasteboard generalPasteboard] image];
     NSMutableArray *a = [NSMutableArray array];
     NSCharacterSet *c = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
 
@@ -723,6 +724,19 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         if ([NSURL URLWithString:p]) { //maybe BIP73 url: https://github.com/bitcoin/bips/blob/master/bip-0073.mediawiki
             [a addObject:[NSString stringWithFormat:@"bitcoin:?r=%@",
                           [p stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+        }
+    }
+    
+    if (img && [CIQRCodeFeature class]) {
+        CIDetector *d = [CIDetector detectorOfType:CIDetectorTypeQRCode context:nil options:nil];
+        
+        for (CIQRCodeFeature *f in [d featuresInImage:[[CIImage alloc] initWithCGImage:img.CGImage options:nil]]) {
+            [a addObject:f.messageString];
+            
+            if ([NSURL URLWithString:f.messageString]) {
+                [a addObject:[NSString stringWithFormat:@"bitcoin:?r=%@",
+                              [f.messageString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+            }
         }
     }
     

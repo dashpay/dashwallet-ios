@@ -194,8 +194,7 @@
     
     BRPaymentProtocolDetails *details =
         [[BRPaymentProtocolDetails alloc] initWithNetwork:network outputAmounts:@[@(self.amount)]
-         outputScripts:@[script] time:[[NSDate date] timeIntervalSinceReferenceDate]
-         expires:UINT32_MAX - NSTimeIntervalSince1970 memo:self.message paymentURL:nil merchantData:nil];
+         outputScripts:@[script] time:0 expires:0 memo:self.message paymentURL:nil merchantData:nil];
     BRPaymentProtocolRequest *request =
         [[BRPaymentProtocolRequest alloc] initWithVersion:1 pkiType:@"none" certs:(name ? @[name] : nil) details:details
          signature:nil];
