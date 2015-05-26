@@ -64,7 +64,7 @@
     NSString *s = [NSString base58WithData:[BTC @"#&$@*^(*#!^" base58ToData]];
 
     XCTAssertTrue(s.length == 0, @"[NSString base58WithData:]");
-
+    
     s = [NSString base58WithData:[@"" base58ToData]];
     XCTAssertEqualObjects(@"", s, @"[NSString base58WithData:]");
 
@@ -83,6 +83,12 @@
     s = [NSString base58WithData:[@"z" base58ToData]];
     XCTAssertEqualObjects(@"z", s, @"[NSString base58WithData:]");
     
+    s = [NSString base58checkWithData:nil];
+    XCTAssertTrue(s == nil, @"[NSString base58checkWithData:]");
+
+    s = [NSString base58checkWithData:@"".hexToData];
+    XCTAssertEqualObjects([NSData data], [s base58checkToData], @"[NSString base58checkWithData:]");
+
     s = [NSString base58checkWithData:@"000000000000000000000000000000000000000000".hexToData];
     XCTAssertEqualObjects(@"000000000000000000000000000000000000000000".hexToData, [s base58checkToData],
                           @"[NSString base58checkWithData:]");

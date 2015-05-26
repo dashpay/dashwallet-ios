@@ -869,19 +869,18 @@ completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError
     u = [NSURL URLWithString:[NSString stringWithFormat:UNSPENT_URL, @"testnet3", address]];
 #endif
     NSURLRequest *req = [NSURLRequest requestWithURL:u cachePolicy:NSURLRequestReloadIgnoringCacheData
-                                     timeoutInterval:20.0];
+                         timeoutInterval:20.0];
     
     [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue currentQueue]
-    completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-        if (connectionError) {
-            completion(nil, nil, nil, connectionError);
+    completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
+        if (error) {
+            completion(nil, nil, nil, error);
             return;
         }
         
-        NSError *error = nil;
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
         NSMutableArray *utxos = [NSMutableArray array], *amounts = [NSMutableArray array],
-        *scripts = [NSMutableArray array];
+                       *scripts = [NSMutableArray array];
         NSMutableData *o = nil;
                                
         if (error) {
@@ -899,7 +898,7 @@ completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError
         for (NSDictionary *utxo in json) {
             if (! [utxo isKindOfClass:[NSDictionary class]] ||
                 ! [utxo[@"transaction_hash"] isKindOfClass:[NSString class]] ||
-                ! [utxo[@"transaction_hash"] hexToData] ||
+                [[utxo[@"transaction_hash"] hexToData] length] != CC_SHA256_DIGEST_LENGTH ||
                 ! [utxo[@"output_index"] isKindOfClass:[NSNumber class]] ||
                 ! [utxo[@"script_hex"] isKindOfClass:[NSString class]] ||
                 ! [utxo[@"script_hex"] hexToData] ||

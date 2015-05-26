@@ -38,6 +38,8 @@ static const UniChar base58chars[] = {
 
 + (NSString *)base58WithData:(NSData *)d
 {
+    if (! d) return nil;
+    
     size_t i, z = 0;
     
     while (z < d.length && ((const uint8_t *)d.bytes)[z] == 0) z++; // count leading zeroes
@@ -71,6 +73,8 @@ static const UniChar base58chars[] = {
 
 + (NSString *)base58checkWithData:(NSData *)d
 {
+    if (! d) return nil;
+    
     NSMutableData *data = [NSMutableData secureDataWithData:d];
 
     [data appendBytes:d.SHA256_2.bytes length:4];
@@ -79,6 +83,8 @@ static const UniChar base58chars[] = {
 
 + (NSString *)hexWithData:(NSData *)d
 {
+    if (! d) return nil;
+    
     const uint8_t *bytes = d.bytes;
     NSMutableString *hex = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), d.length*2));
     

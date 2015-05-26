@@ -618,7 +618,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         else {
             uint64_t balance = 0;
             
-            for (NSNumber *n in amounts) balance += [n unsignedLongLongValue];
+            for (NSNumber *amt in amounts) balance += [amt unsignedLongLongValue];
             
             [[[UIAlertView alloc] initWithTitle:@""
               message:[NSString stringWithFormat:NSLocalizedString(@"%@\n\nbalance: %@ (%@)", nil), address,

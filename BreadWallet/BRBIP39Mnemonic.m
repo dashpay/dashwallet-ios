@@ -38,7 +38,7 @@
 
 - (NSString *)encodePhrase:(NSData *)data
 {
-    if ((data.length % 4) != 0) return nil; // data length must be a multiple of 32 bits
+    if (! data || (data.length % 4) != 0) return nil; // data length must be a multiple of 32 bits
 
     NSArray *words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:WORDS ofType:@"plist"]];
     uint32_t n = (uint32_t)words.count, x;
