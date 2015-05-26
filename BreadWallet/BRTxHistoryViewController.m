@@ -209,7 +209,7 @@ static NSString *dateFormat(NSString *template)
     if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
 }
 
-- (uint32_t)height
+- (uint32_t)blockHeight
 {
     static uint32_t height = 0;
     uint32_t h = [[BRPeerManager sharedInstance] lastBlockHeight];
@@ -220,7 +220,7 @@ static NSString *dateFormat(NSString *template)
 
 - (void)setTransactions:(NSArray *)transactions
 {
-    uint32_t height = self.height;
+    uint32_t height = self.blockHeight;
 
     if (transactions.count <= 5) self.moreTx = NO;
     _transactions = [transactions subarrayWithRange:NSMakeRange(0, (self.moreTx) ? 5 : transactions.count)];
@@ -411,7 +411,7 @@ static NSString *dateFormat(NSString *template)
                 uint64_t received = [m.wallet amountReceivedFromTransaction:tx],
                          sent = [m.wallet amountSentByTransaction:tx],
                          balance = [m.wallet balanceAfterTransaction:tx];
-                uint32_t height = self.height, confirms = (tx.blockHeight > height) ? 0 : (height - tx.blockHeight) + 1;
+                uint32_t h = self.blockHeight, confirms = (tx.blockHeight > h) ? 0 : (h - tx.blockHeight) + 1;
 
                 sentLabel.hidden = YES;
                 unconfirmedLabel.hidden = NO;
@@ -424,7 +424,7 @@ static NSString *dateFormat(NSString *template)
                     unconfirmedLabel.text = NSLocalizedString(@"INVALID", nil);
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                 }
-                else if (confirms == 0 && [m.wallet transactionIsPostdated:tx atBlockHeight:height]) {
+                else if (confirms == 0 && [m.wallet transactionIsPostdated:tx atBlockHeight:h]) {
                     unconfirmedLabel.text = NSLocalizedString(@"post-dated", nil);
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                 }

@@ -762,7 +762,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         }
     }
     
-    if (img && [CIQRCodeFeature class]) {
+    if (img && CIDetectorTypeQRCode) {
         for (CIQRCodeFeature *qr in [[CIDetector detectorOfType:CIDetectorTypeQRCode context:nil options:nil]
                                      featuresInImage:[CIImage imageWithCGImage:img.CGImage]]) {
             [a addObject:qr.messageString];
