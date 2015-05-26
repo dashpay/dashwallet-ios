@@ -90,12 +90,12 @@
         NSString *seedPhrase = [[BRWalletManager sharedInstance] seedPhrase];
         
         if (seedPhrase && ([phrase isEqual:seedPhrase] || [phrase isEqual:@"wipe"])) {
-            [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+            [[[UIActionSheet alloc] initWithTitle:@"" delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
               destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
              showInView:[[UIApplication sharedApplication] keyWindow]];
         }
         else if (seedPhrase) {
-            [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"recovery phrase doesn't match", nil)
+            [[[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"recovery phrase doesn't match", nil)
               delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
         else [self.textView becomeFirstResponder];
@@ -169,19 +169,19 @@
         else if (incorrect) {
             textView.selectedRange = [[textView.text lowercaseString] rangeOfString:incorrect];
         
-            [[[UIAlertView alloc] initWithTitle:nil
+            [[[UIAlertView alloc] initWithTitle:@""
               message:[NSString stringWithFormat:NSLocalizedString(@"\"%@\" is not a recovery phrase word", nil),
                        incorrect] delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil]
              show];
         }
         else if (a.count != PHRASE_LENGTH) {
-            [[[UIAlertView alloc] initWithTitle:nil
+            [[[UIAlertView alloc] initWithTitle:@""
               message:[NSString stringWithFormat:NSLocalizedString(@"recovery phrase must have %d words", nil),
                        PHRASE_LENGTH] delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
               otherButtonTitles:nil] show];
         }
         else if (! [m.mnemonic phraseIsValid:phrase]) {
-            [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"bad recovery phrase", nil) delegate:nil
+            [[[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"bad recovery phrase", nil) delegate:nil
               cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
         else if (! m.noWallet) {

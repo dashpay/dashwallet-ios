@@ -58,7 +58,7 @@ static NSString *sanitizeString(NSString *s)
 
 @interface BRSendViewController ()
 
-@property (nonatomic, assign) BOOL clearClipboard, useClipboard, showTips, canChangeAmount;
+@property (nonatomic, assign) BOOL clearClipboard, useClipboard, showTips, showBalance, canChangeAmount;
 @property (nonatomic, strong) NSURL *url;
 @property (nonatomic, strong) BRTransaction *sweepTx;
 @property (nonatomic, strong) BRPaymentProtocolRequest *request;
@@ -322,7 +322,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     else amount = self.amount;
 
     if ([m.wallet containsAddress:address]) {
-        [[[UIAlertView alloc] initWithTitle:nil
+        [[[UIAlertView alloc] initWithTitle:@""
           message:NSLocalizedString(@"this payment address is already in your wallet", nil)
           delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         [self cancel:nil];
@@ -530,7 +530,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     
             if (error) {
                 if (! waiting && ! sent) {
-                    [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription delegate:nil
+                    [[[UIAlertView alloc] initWithTitle:@"" message:error.localizedDescription delegate:nil
                       cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
                     [(id)self.parentViewController.parentViewController stopActivityWithSuccess:NO];
                     [self cancel:nil];
@@ -572,7 +572,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         [v popOut];
 
         if (error) {
-            [[[UIAlertView alloc] initWithTitle:nil message:error.localizedDescription delegate:self
+            [[[UIAlertView alloc] initWithTitle:@"" message:error.localizedDescription delegate:self
               cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
             [self cancel:nil];
         }
@@ -582,7 +582,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
             for (NSNumber *amt in tx.outputAmounts) amount += amt.unsignedLongLongValue;
             self.sweepTx = tx;
 
-            [[[UIAlertView alloc] initWithTitle:nil message:[NSString
+            [[[UIAlertView alloc] initWithTitle:@"" message:[NSString
               stringWithFormat:NSLocalizedString(@"Send %@ (%@) from this private key into your wallet? "
                                                  "The bitcoin network will receive a fee of %@ (%@).", nil),
               [m stringForAmount:amount], [m localCurrencyStringForAmount:amount], [m stringForAmount:fee],
@@ -591,6 +591,40 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
                                  [m localCurrencyStringForAmount:amount]], nil] show];
         }
         else [self cancel:nil];
+    }];
+}
+
+- (void)showBalance:(NSString *)address
+{
+    if (! [address isValidBitcoinAddress]) return;
+
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRBubbleView *v = [BRBubbleView viewWithText:NSLocalizedString(@"checking address balance...", nil)
+                       center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
+    
+    v.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+    v.customView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+    [(id)v.customView startAnimating];
+    [self.view addSubview:[v popIn]];
+
+    [m utxosForAddress:address completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error) {
+        [v popOut];
+        
+        if (error) {
+            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't check address balance", nil)
+              message:error.localizedDescription delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
+              otherButtonTitles:nil] show];
+        }
+        else {
+            uint64_t balance = 0;
+            
+            for (NSNumber *n in amounts) balance += [n unsignedLongLongValue];
+            
+            [[[UIAlertView alloc] initWithTitle:@""
+              message:[NSString stringWithFormat:NSLocalizedString(@"%@\n\nbalance: %@ (%@)", nil), address,
+                       [m stringForAmount:balance], [m localCurrencyStringForAmount:balance]] delegate:nil
+              cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+        }
     }];
 }
 
@@ -700,6 +734,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 - (IBAction)scanQR:(id)sender
 {
     if ([self nextTip]) return;
+    if (! [sender isEqual:self.scanButton]) self.showBalance = YES;
     [sender setEnabled:NO];
     self.scanController.delegate = self;
     self.scanController.transitioningDelegate = self;
@@ -728,14 +763,13 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     }
     
     if (img && [CIQRCodeFeature class]) {
-        CIDetector *d = [CIDetector detectorOfType:CIDetectorTypeQRCode context:nil options:nil];
-        
-        for (CIQRCodeFeature *f in [d featuresInImage:[[CIImage alloc] initWithCGImage:img.CGImage options:nil]]) {
-            [a addObject:f.messageString];
+        for (CIQRCodeFeature *qr in [[CIDetector detectorOfType:CIDetectorTypeQRCode context:nil options:nil]
+                                     featuresInImage:[CIImage imageWithCGImage:img.CGImage]]) {
+            [a addObject:qr.messageString];
             
-            if ([NSURL URLWithString:f.messageString]) {
+            if ([NSURL URLWithString:qr.messageString]) {
                 [a addObject:[NSString stringWithFormat:@"bitcoin:?r=%@",
-                              [f.messageString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+                              [qr.messageString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
             }
         }
     }
@@ -779,7 +813,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     self.amount = 0;
     self.okAddress = self.okIdentity = nil;
     self.clearClipboard = self.useClipboard = NO;
-    self.canChangeAmount = NO;
+    self.canChangeAmount = self.showBalance = NO;
     self.scanButton.enabled = self.clipboardButton.enabled = YES;
     [self updateClipboardText];
 }
@@ -867,7 +901,11 @@ fromConnection:(AVCaptureConnection *)connection
                     if (request.amount > 0) self.canChangeAmount = YES;
                 }];
                 
-                [self confirmRequest:request];
+                if (self.showBalance) {
+                    [self showBalance:request.paymentAddress];
+                    [self cancel:nil];
+                }
+                else [self confirmRequest:request];
             }
         }
 

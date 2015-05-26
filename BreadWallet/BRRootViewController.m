@@ -846,7 +846,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
 
     [self.navigationController presentViewController:c animated:NO completion:nil];
 
-    [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"the app will now close", nil) delegate:self
+    [[[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"the app will now close", nil) delegate:self
       cancelButtonTitle:nil otherButtonTitles:NSLocalizedString(@"close app", nil), nil] show];
 }
 

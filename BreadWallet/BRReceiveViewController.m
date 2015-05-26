@@ -236,7 +236,7 @@
             c.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default"]];
         }
         else {
-            [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"email not configured", nil) delegate:nil
+            [[[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"email not configured", nil) delegate:nil
               cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
     }
@@ -258,7 +258,7 @@
             c.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default"]];
         }
         else {
-            [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"sms not currently available", nil)
+            [[[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"sms not currently available", nil)
               delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
     }

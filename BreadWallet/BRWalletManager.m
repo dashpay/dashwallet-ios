@@ -858,7 +858,70 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     }];
 }
 
-#pragma mark - sweep private key
+#pragma mark - query unspent outputs
+
+// queries chain.com and calls the completion block with unspent outputs for the given address
+- (void)utxosForAddress:(NSString *)address
+completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error))completion
+{
+    NSURL *u = [NSURL URLWithString:[NSString stringWithFormat:UNSPENT_URL, @"bitcoin", address]];
+#ifdef BITCOIN_TESTNET
+    u = [NSURL URLWithString:[NSString stringWithFormat:UNSPENT_URL, @"testnet3", address]];
+#endif
+    NSURLRequest *req = [NSURLRequest requestWithURL:u cachePolicy:NSURLRequestReloadIgnoringCacheData
+                                     timeoutInterval:20.0];
+    
+    [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue currentQueue]
+    completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+        if (connectionError) {
+            completion(nil, nil, nil, connectionError);
+            return;
+        }
+        
+        NSError *error = nil;
+        NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        NSMutableArray *utxos = [NSMutableArray array], *amounts = [NSMutableArray array],
+        *scripts = [NSMutableArray array];
+        NSMutableData *o = nil;
+                               
+        if (error) {
+            completion(nil, nil, nil, error);
+            return;
+        }
+        
+        if (! [json isKindOfClass:[NSArray class]]) {
+            completion(nil, nil, nil,
+                       [NSError errorWithDomain:@"BreadWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
+                        [NSString stringWithFormat:NSLocalizedString(@"unexpected response from %@", nil), u.host]}]);
+            return;
+        }
+        
+        for (NSDictionary *utxo in json) {
+            if (! [utxo isKindOfClass:[NSDictionary class]] ||
+                ! [utxo[@"transaction_hash"] isKindOfClass:[NSString class]] ||
+                ! [utxo[@"transaction_hash"] hexToData] ||
+                ! [utxo[@"output_index"] isKindOfClass:[NSNumber class]] ||
+                ! [utxo[@"script_hex"] isKindOfClass:[NSString class]] ||
+                ! [utxo[@"script_hex"] hexToData] ||
+                ! [utxo[@"script_type"] isKindOfClass:[NSString class]] ||
+                ! [utxo[@"value"] isKindOfClass:[NSNumber class]]) {
+                completion(nil, nil, nil,
+                           [NSError errorWithDomain:@"BreadWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
+                            [NSString stringWithFormat:NSLocalizedString(@"unexpected response from %@",nil),u.host]}]);
+                return;
+            }
+            
+            if (! [utxo[@"script_type"] isEqual:@"pubkeyhash"] && ! [utxo[@"script_type"] isEqual:@"pubkey"]) continue;
+            o = [NSMutableData dataWithData:[[utxo[@"transaction_hash"] hexToData] reverse]];
+            [o appendUInt32:[utxo[@"output_index"] unsignedIntegerValue]];
+            [utxos addObject:o];
+            [amounts addObject:utxo[@"value"]];
+            [scripts addObject:[utxo[@"script_hex"] hexToData]];
+        }
+        
+        completion(utxos, amounts, scripts, nil);
+    }];
+}
 
 // given a private key, queries chain.com for unspent outputs and calls the completion block with a signed transaction
 // that will sweep the balance into the wallet (doesn't publish the tx)
@@ -895,84 +958,47 @@ completion:(void (^)(BRTransaction *tx, uint64_t fee, NSError *error))completion
                             NSLocalizedString(@"this private key is already in your wallet", nil)}]);
         return;
     }
-
-    NSURL *u = [NSURL URLWithString:[NSString stringWithFormat:UNSPENT_URL, @"bitcoin", key.address]];
-#ifdef BITCOIN_TESTNET
-    u = [NSURL URLWithString:[NSString stringWithFormat:UNSPENT_URL, @"testnet3", key.address]];
-#endif
-    NSURLRequest *req = [NSURLRequest requestWithURL:u cachePolicy:NSURLRequestReloadIgnoringCacheData
-                         timeoutInterval:20.0];
-
-    [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue currentQueue]
-    completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-        if (connectionError) {
-            completion(nil, 0, connectionError);
-            return;
-        }
-
-        NSError *error = nil;
-        NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-        uint64_t balance = 0, feeAmount = 0;
+    
+    [self utxosForAddress:key.address completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error) {
         BRTransaction *tx = [BRTransaction new];
+        uint64_t balance = 0, feeAmount = 0;
+        NSUInteger i = 0;
 
         if (error) {
             completion(nil, 0, error);
             return;
         }
 
-        if (! [json isKindOfClass:[NSArray class]]) {
-            completion(nil, 0, [NSError errorWithDomain:@"BreadWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                                [NSString stringWithFormat:NSLocalizedString(@"unexpected response from %@", nil),
-                                 u.host]}]);
-            return;
-        }
-
         //TODO: make sure not to create a transaction larger than TX_MAX_SIZE
-        for (NSDictionary *utxo in json) {
-            if (! [utxo isKindOfClass:[NSDictionary class]] ||
-                ! [utxo[@"transaction_hash"] isKindOfClass:[NSString class]] ||
-                ! [utxo[@"transaction_hash"] hexToData] ||
-                ! [utxo[@"output_index"] isKindOfClass:[NSNumber class]] ||
-                ! [utxo[@"script_hex"] isKindOfClass:[NSString class]] ||
-                ! [utxo[@"script_hex"] hexToData] ||
-                ! [utxo[@"script_type"] isKindOfClass:[NSString class]] ||
-                ! [utxo[@"value"] isKindOfClass:[NSNumber class]]) {
-                completion(nil,0, [NSError errorWithDomain:@"BreadWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                                   [NSString stringWithFormat:NSLocalizedString(@"unexpected response from %@", nil),
-                                    u.host]}]);
-                return;
-            }
-
-            if (! [utxo[@"script_type"] isEqual:@"pubkeyhash"] && ! [utxo[@"script_type"] isEqual:@"pubkey"]) continue;
-            [tx addInputHash:[[utxo[@"transaction_hash"] hexToData] reverse]
-             index:[utxo[@"output_index"] unsignedIntegerValue] script:[utxo[@"script_hex"] hexToData]];
-            balance += [utxo[@"value"] unsignedLongLongValue];
+        for (NSData *o in utxos) {
+            [tx addInputHash:[o hashAtOffset:0] index:[o UInt32AtOffset:CC_SHA256_DIGEST_LENGTH] script:scripts[i]];
+            balance += [amounts[i++] unsignedLongLongValue];
         }
-
+     
         if (balance == 0) {
             completion(nil, 0, [NSError errorWithDomain:@"BreadWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
                                 NSLocalizedString(@"this private key is empty", nil)}]);
             return;
         }
-
+     
         // we will be adding a wallet output (34 bytes), also non-compact pubkey sigs are larger by 32bytes each
         if (fee) feeAmount = [self.wallet feeForTxSize:tx.size + 34 + (key.publicKey.length - 33)*tx.inputHashes.count];
-
+     
         if (feeAmount + TX_MIN_OUTPUT_AMOUNT > balance) {
             completion(nil, 0, [NSError errorWithDomain:@"BreadWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
                                 NSLocalizedString(@"transaction fees would cost more than the funds available on this "
                                                   "private key (due to tiny \"dust\" deposits)",nil)}]);
             return;
         }
-
+     
         [tx addOutputAddress:[self.wallet changeAddress] amount:balance - feeAmount];
-
+     
         if (! [tx signWithPrivateKeys:@[privKey]]) {
             completion(nil, 0, [NSError errorWithDomain:@"BreadWallet" code:401 userInfo:@{NSLocalizedDescriptionKey:
                                 NSLocalizedString(@"error signing transaction", nil)}]);
             return;
         }
-
+     
         completion(tx, feeAmount, nil);
     }];
 }
