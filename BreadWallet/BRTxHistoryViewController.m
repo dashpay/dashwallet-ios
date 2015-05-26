@@ -209,16 +209,25 @@ static NSString *dateFormat(NSString *template)
     if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
 }
 
+- (uint32_t)height
+{
+    static uint32_t height = 0;
+    uint32_t h = [[BRPeerManager sharedInstance] lastBlockHeight];
+    
+    if (h > height) height = h;
+    return height;
+}
+
 - (void)setTransactions:(NSArray *)transactions
 {
-    uint32_t height = [[BRPeerManager sharedInstance] estimatedBlockHeight];
+    uint32_t height = self.height;
 
     if (transactions.count <= 5) self.moreTx = NO;
     _transactions = [transactions subarrayWithRange:NSMakeRange(0, (self.moreTx) ? 5 : transactions.count)];
     if ([[BRWalletManager sharedInstance] didAuthenticate]) return;
     
     for (BRTransaction *tx in _transactions) {
-        if (tx.blockHeight > height - 5) continue;
+        if (tx.blockHeight == TX_UNCONFIRMED || (tx.blockHeight > height - 5 && tx.blockHeight <= height)) continue;
         _transactions = [transactions subarrayWithRange:NSMakeRange(0, [transactions indexOfObject:tx])];
         self.moreTx = YES;
         break;
@@ -402,8 +411,7 @@ static NSString *dateFormat(NSString *template)
                 uint64_t received = [m.wallet amountReceivedFromTransaction:tx],
                          sent = [m.wallet amountSentByTransaction:tx],
                          balance = [m.wallet balanceAfterTransaction:tx];
-                uint32_t height = [[BRPeerManager sharedInstance] estimatedBlockHeight],
-                         confirms = (tx.blockHeight == TX_UNCONFIRMED) ? 0 : (height - tx.blockHeight) + 1;
+                uint32_t height = self.height, confirms = (tx.blockHeight > height) ? 0 : (height - tx.blockHeight) + 1;
 
                 sentLabel.hidden = YES;
                 unconfirmedLabel.hidden = NO;
