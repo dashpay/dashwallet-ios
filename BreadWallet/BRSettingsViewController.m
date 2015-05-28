@@ -357,10 +357,18 @@
                     
                 case 1: // recovery phrase
                     [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
-                      message:NSLocalizedString(@"\nDO NOT let anyone see your recovery phrase or they can spend your "
-                                                "bitcoins.\n\nNEVER type your recovery phrase into password managers "
-                                                "or elsewhere. Other devices may be infected.\n\nDO NOT take a "
-                                                "screenshot. Screenshots are visible to other apps and devices.\n", nil)
+                      message:[NSString stringWithFormat:@"\n%@\n\n%@\n\n%@\n",
+                               [NSLocalizedString(@"\nDO NOT let anyone see your recovery\n"
+                                                  "phrase or they can spend your bitcoins.\n", nil)
+                                stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]],
+                               [NSLocalizedString(@"\nNEVER type your recovery phrase into\n"
+                                                  "password managers or elsewhere.\n"
+                                                  "Other devices may be infected.\n", nil)
+                                stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]],
+                               [NSLocalizedString(@"\nDO NOT take a screenshot.\n"
+                                                  "Screenshots are visible to other apps\n"
+                                                  "and devices.\n", nil)
+                                stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]]]
                       delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
                       otherButtonTitles:NSLocalizedString(@"show", nil), nil] show];
                     break;

@@ -153,7 +153,7 @@ static NSString *sanitizeString(NSString *s)
             else if ([pair[0] isEqual:@"x-error"]) xerror = value;
         }
     
-        if ([url.host isEqual:@"scanqr"] || [url.path isEqual:@"/scanqr"]) {
+        if ([url.host isEqual:@"scanqr"] || [url.path isEqual:@"/scanqr"]) { // scan qr
             [self scanQR:nil];
         }
         else if ([url.host isEqual:@"addresslist"] || [url.path isEqual:@"/addresslist"]) { // copy wallet addresses
@@ -180,7 +180,7 @@ static NSString *sanitizeString(NSString *s)
                 [self cancel:nil];
             }
         }
-        else if ([url.path isEqual:@"/address"] && xsuccess) {
+        else if ([url.path isEqual:@"/address"] && xsuccess) { // get receive address
             callback = [NSURL URLWithString:[xsuccess stringByAppendingFormat:@"%@address=%@",
                                              ([[[NSURL URLWithString:xsuccess] query] length] > 0) ? @"&" : @"?",
                                              m.wallet.receiveAddress]];
