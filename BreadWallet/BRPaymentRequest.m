@@ -93,24 +93,24 @@
     //TODO: correctly handle unknown but required url arguments (by reporting the request invalid)
     for (NSString *arg in [url.query componentsSeparatedByString:@"&"]) {
         NSArray *pair = [arg componentsSeparatedByString:@"="]; // if more than one '=', then pair[1] != value
-        NSString *value = (pair.count > 1) ? [arg substringFromIndex:[pair[0] length] + 1] : nil;
+
+        if (pair.count < 2) continue;
         
+        NSString *value = [[[arg substringFromIndex:[pair[0] length] + 1]
+                            stringByReplacingOccurrencesOfString:@"+" withString:@" "]
+                           stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+
         if ([pair[0] isEqual:@"amount"]) {
             self.amount = [[[NSDecimalNumber decimalNumberWithString:value] decimalNumberByMultiplyingByPowerOf10:8]
                            unsignedLongLongValue];
         }
         else if ([pair[0] isEqual:@"label"]) {
-            self.label = [[value stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
-                          stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+            self.label = value;
         }
         else if ([pair[0] isEqual:@"message"]) {
-            self.message = [[value stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
-                            stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+            self.message = value;
         }
-        else if ([pair[0] isEqual:@"r"]) {
-            self.r = [[value stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
-                      stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-        }
+        else if ([pair[0] isEqual:@"r"]) self.r = value;
     }
 }
 

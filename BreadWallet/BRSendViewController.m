@@ -59,7 +59,6 @@ static NSString *sanitizeString(NSString *s)
 @interface BRSendViewController ()
 
 @property (nonatomic, assign) BOOL clearClipboard, useClipboard, showTips, showBalance, canChangeAmount;
-@property (nonatomic, strong) NSURL *url;
 @property (nonatomic, strong) BRTransaction *sweepTx;
 @property (nonatomic, strong) BRPaymentProtocolRequest *request;
 @property (nonatomic, assign) uint64_t amount;
@@ -136,14 +135,17 @@ static NSString *sanitizeString(NSString *s)
     BRWalletManager *m = [BRWalletManager sharedInstance];
     
     if ([url.scheme isEqual:@"bread"]) { // x-callback-url handling: http://x-callback-url.com/specifications/
-        NSString *xsource, *xsuccess, *xerror;
+        NSString *xsource = nil, *xsuccess = nil, *xerror = nil;
+        NSURL *callback = nil;
 
         for (NSString *arg in [url.query componentsSeparatedByString:@"&"]) {
             NSArray *pair = [arg componentsSeparatedByString:@"="]; // if more than one '=', then pair[1] != value
-            NSString *value = (pair.count > 1) ? [arg substringFromIndex:[pair[0] length] + 1] : nil;
 
-            value = [[value stringByReplacingOccurrencesOfString:@"+" withString:@"%20"]
-                     stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+            if (pair.count < 2) continue;
+
+            NSString *value = [[[arg substringFromIndex:[pair[0] length] + 1]
+                                stringByReplacingOccurrencesOfString:@"+" withString:@" "]
+                               stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
 
             if ([pair[0] isEqual:@"x-source"]) xsource = value;
             else if ([pair[0] isEqual:@"x-success"]) xsuccess = value;
@@ -154,29 +156,25 @@ static NSString *sanitizeString(NSString *s)
             [self scanQR:nil];
         }
         else if ([url.host isEqual:@"addresslist"] || [url.path isEqual:@"/addresslist"]) { // copy addresses
-            if (! self.url) {
-                self.url = url;
-                xsuccess = nil;
-                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"copy wallet addresses to clipboard?", nil)
-                  message:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-                  otherButtonTitles:NSLocalizedString(@"copy", nil), nil] show];
-            }
-            else {
-                self.url = nil;
+            if ([m authenticateWithPrompt:NSLocalizedString(@"copy wallet addresses to clipboard?", nil)
+                 andTouchId:NO]) {
                 [[UIPasteboard generalPasteboard]
                 setString:[[[m.wallet.addresses objectsPassingTest:^BOOL(id obj, BOOL *stop) {
                     return [m.wallet addressIsUsed:obj];
                 }] allObjects] componentsJoinedByString:@"\n"]];
+
+                if (xsuccess) callback = [NSURL URLWithString:xsuccess];
             }
+            else if (xerror || xsuccess) callback = [NSURL URLWithString:(xerror) ? xerror : xsuccess];
         }
-        else if ([url.path isEqual:@"/address"]) {
-            xsuccess = [xsuccess stringByAppendingFormat:@"?address=%@", m.wallet.receiveAddress];
+        else if ([url.path isEqual:@"/address"] && xsuccess) {
+            callback = [NSURL URLWithString:[xsuccess stringByAppendingFormat:@"%@address=%@",
+                                             ([[[NSURL URLWithString:xsuccess] query] length] > 0) ? @"&" : @"?",
+                                             m.wallet.receiveAddress]];
         }
         
-        url = (xsuccess) ? [NSURL URLWithString:xsuccess] : nil;
-        
-        if (url && [[UIApplication sharedApplication] canOpenURL:url]) {
-            [[UIApplication sharedApplication] openURL:url];
+        if (callback && [[UIApplication sharedApplication] canOpenURL:callback]) {
+            [[UIApplication sharedApplication] openURL:callback];
         }
     }
     else if ([url.scheme isEqual:@"bitcoin"]) {
@@ -790,8 +788,9 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         }
     }
     
-    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"clipboard doesn't contain a valid bitcoin address", nil)
-      message:nil delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+    [[[UIAlertView alloc] initWithTitle:@""
+      message:NSLocalizedString(@"clipboard doesn't contain a valid bitcoin address", nil) delegate:nil
+      cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
     [self performSelector:@selector(cancel:) withObject:self afterDelay:0.1];
 }
 
@@ -808,7 +807,6 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
 - (IBAction)cancel:(id)sender
 {
-    self.url = nil;
     self.sweepTx = nil;
     self.amount = 0;
     self.okAddress = self.okIdentity = nil;
@@ -942,10 +940,7 @@ fromConnection:(AVCaptureConnection *)connection
             [self reset:nil];
         }];
     }
-    else if (self.request) {
-        [self confirmProtocolRequest:self.request];
-    }
-    else if (self.url) [self handleURL:self.url];
+    else if (self.request) [self confirmProtocolRequest:self.request];
 }
 
 #pragma mark UITextViewDelegate

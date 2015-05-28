@@ -64,7 +64,6 @@
 		75D5F3E9191EC270004AB296 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D5F3C5191EC270004AB296 /* UIKit.framework */; };
 		75D5F3F1191EC270004AB296 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 75D5F3EF191EC270004AB296 /* InfoPlist.strings */; };
 		75D5F3F3191EC270004AB296 /* BreadWalletTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D5F3F2191EC270004AB296 /* BreadWalletTests.m */; };
-		75E0D5511B144C4100E7ADD9 /* CoreImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E0D5501B144C4100E7ADD9 /* CoreImage.framework */; };
 		84F68C8A1975E9E2002FC300 /* BRScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 84F68C891975E9E2002FC300 /* BRScanViewController.m */; };
 /* End PBXBuildFile section */
 
@@ -281,7 +280,6 @@
 		75DE02501B0EB8030027FF08 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		75DE02511B0EB8030027FF08 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75DE02521B0EB8030027FF08 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		75E0D5501B144C4100E7ADD9 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
 		75F27B0619DE2AB20047FC62 /* ccMemory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ccMemory.h; sourceTree = SOURCE_ROOT; };
 		84F68C881975E9E2002FC300 /* BRScanViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRScanViewController.h; sourceTree = "<group>"; };
 		84F68C891975E9E2002FC300 /* BRScanViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRScanViewController.m; sourceTree = "<group>"; };
@@ -292,7 +290,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				75E0D5511B144C4100E7ADD9 /* CoreImage.framework in Frameworks */,
 				75878BC3192AED38002505AB /* MessageUI.framework in Frameworks */,
 				75D5F3C4191EC270004AB296 /* CoreGraphics.framework in Frameworks */,
 				75D5F3C6191EC270004AB296 /* UIKit.framework in Frameworks */,
@@ -511,7 +508,6 @@
 		75D5F3C0191EC270004AB296 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				75E0D5501B144C4100E7ADD9 /* CoreImage.framework */,
 				75878BC2192AED38002505AB /* MessageUI.framework */,
 				75D5F3C1191EC270004AB296 /* Foundation.framework */,
 				75D5F3C3191EC270004AB296 /* CoreGraphics.framework */,
