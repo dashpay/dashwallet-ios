@@ -131,7 +131,7 @@
                     
                     if (self.didAppear && [[UIApplication sharedApplication] isProtectedDataAvailable]) {
                         _url = nil;
-                        [c handleURL:note.userInfo[@"url"]];
+                        [c performSelector:@selector(handleURL:) withObject:note.userInfo[@"url"] afterDelay:0.0];
                     }
                 }];
             }

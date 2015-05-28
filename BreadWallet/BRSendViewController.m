@@ -61,6 +61,7 @@ static NSString *sanitizeString(NSString *s)
 @property (nonatomic, assign) BOOL clearClipboard, useClipboard, showTips, showBalance, canChangeAmount;
 @property (nonatomic, strong) BRTransaction *sweepTx;
 @property (nonatomic, strong) BRPaymentProtocolRequest *request;
+@property (nonatomic, strong) NSURL *url;
 @property (nonatomic, assign) uint64_t amount;
 @property (nonatomic, strong) NSString *okAddress, *okIdentity;
 @property (nonatomic, strong) BRBubbleView *tipView;
@@ -155,17 +156,29 @@ static NSString *sanitizeString(NSString *s)
         if ([url.host isEqual:@"scanqr"] || [url.path isEqual:@"/scanqr"]) {
             [self scanQR:nil];
         }
-        else if ([url.host isEqual:@"addresslist"] || [url.path isEqual:@"/addresslist"]) { // copy addresses
-            if ([m authenticateWithPrompt:NSLocalizedString(@"copy wallet addresses to clipboard?", nil)
-                 andTouchId:NO]) {
-                [[UIPasteboard generalPasteboard]
-                setString:[[[m.wallet.addresses objectsPassingTest:^BOOL(id obj, BOOL *stop) {
-                    return [m.wallet addressIsUsed:obj];
-                }] allObjects] componentsJoinedByString:@"\n"]];
+        else if ([url.host isEqual:@"addresslist"] || [url.path isEqual:@"/addresslist"]) { // copy wallet addresses
+            if ((m.didAuthenticate || [m authenticateWithPrompt:nil andTouchId:YES]) && ! self.clearClipboard) {
+                if (! [self.url isEqual:url]) {
+                    self.url = url;
+                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"copy wallet addresses to clipboard?", nil)
+                      message:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+                      otherButtonTitles:NSLocalizedString(@"copy", nil), nil] show];
+                }
+                else {
+                    [[UIPasteboard generalPasteboard]
+                     setString:[[[m.wallet.addresses objectsPassingTest:^BOOL(id obj, BOOL *stop) {
+                        return [m.wallet addressIsUsed:obj];
+                    }] allObjects] componentsJoinedByString:@"\n"]];
 
-                if (xsuccess) callback = [NSURL URLWithString:xsuccess];
+                    if (xsuccess) callback = [NSURL URLWithString:xsuccess];
+                    self.url = nil;
+                }
             }
-            else if (xerror || xsuccess) callback = [NSURL URLWithString:(xerror) ? xerror : xsuccess];
+            else if (xerror || xsuccess) {
+                callback = [NSURL URLWithString:(xerror) ? xerror : xsuccess];
+                [[UIPasteboard generalPasteboard] setString:@""];
+                [self cancel:nil];
+            }
         }
         else if ([url.path isEqual:@"/address"] && xsuccess) {
             callback = [NSURL URLWithString:[xsuccess stringByAppendingFormat:@"%@address=%@",
@@ -807,6 +820,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
 - (IBAction)cancel:(id)sender
 {
+    self.url = nil;
     self.sweepTx = nil;
     self.amount = 0;
     self.okAddress = self.okIdentity = nil;
@@ -918,7 +932,11 @@ fromConnection:(AVCaptureConnection *)connection
     NSString *title = [alertView buttonTitleAtIndex:buttonIndex];
     
     if (buttonIndex == alertView.cancelButtonIndex || [title isEqual:NSLocalizedString(@"cancel", nil)]) {
-        [self cancelOrChangeAmount];
+        if (self.url) {
+            self.clearClipboard = YES;
+            [self handleURL:self.url];
+        }
+        else [self cancelOrChangeAmount];
     }
     else if (self.sweepTx) {
         [(id)self.parentViewController.parentViewController startActivityWithTimeout:30];
@@ -940,7 +958,10 @@ fromConnection:(AVCaptureConnection *)connection
             [self reset:nil];
         }];
     }
-    else if (self.request) [self confirmProtocolRequest:self.request];
+    else if (self.request) {
+        [self confirmProtocolRequest:self.request];
+    }
+    else if (self.url) [self handleURL:self.url];
 }
 
 #pragma mark UITextViewDelegate
