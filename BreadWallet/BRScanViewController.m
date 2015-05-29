@@ -25,6 +25,11 @@
 
 #import "BRScanViewController.h"
 
+#define LDQUOTE      @"\xE2\x80\x9C" // left double quote (utf-8)
+#define RDQUOTE      @"\xE2\x80\x9D" // right double quote (utf-8)
+#define DISPLAY_NAME [NSString stringWithFormat:LDQUOTE @"%@" RDQUOTE,\
+                      NSBundle.mainBundle.infoDictionary[@"CFBundleDisplayName"]]
+
 @interface BRScanViewController ()
 
 @property (nonatomic, strong) IBOutlet UIView *cameraView;

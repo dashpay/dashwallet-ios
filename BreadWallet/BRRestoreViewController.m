@@ -90,7 +90,7 @@
         NSString *seedPhrase = [[BRWalletManager sharedInstance] seedPhrase];
         
         if (seedPhrase && ([phrase isEqual:seedPhrase] || [phrase isEqual:@"wipe"])) {
-            [[[UIActionSheet alloc] initWithTitle:@"" delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+            [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
               destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
              showInView:[[UIApplication sharedApplication] keyWindow]];
         }

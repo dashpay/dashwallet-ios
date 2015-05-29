@@ -25,6 +25,8 @@
 
 #import <UIKit/UIKit.h>
 
+#define PARALAX_RATIO    0.25
+
 @class BRReceiveViewController, BRSendViewController;
 
 @interface BRRootViewController : UIViewController <UIAlertViewDelegate, UIActionSheetDelegate,

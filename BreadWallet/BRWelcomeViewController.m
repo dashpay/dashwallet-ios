@@ -24,6 +24,7 @@
 //  THE SOFTWARE.
 
 #import "BRWelcomeViewController.h"
+#import "BRRootViewController.h"
 #import "BRWalletManager.h"
 
 @interface BRWelcomeViewController ()
