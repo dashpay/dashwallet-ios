@@ -214,7 +214,7 @@ completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion
 
     [req setValue:USER_AGENT forHTTPHeaderField:@"User-Agent"];
     [req setValue:@"application/bitcoin-paymentrequest" forHTTPHeaderField:@"Accept"];
-    [req addValue:@"text/uri-list" forHTTPHeaderField:@"Accept"];
+//  [req addValue:@"text/uri-list" forHTTPHeaderField:@"Accept"]; // breaks some BIP72 implementations, notably bitpay's
 
     if (! req || ! [NSURLConnection canHandleRequest:req]) {
         completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
@@ -240,7 +240,12 @@ completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion
             req = [BRPaymentProtocolRequest requestWithData:data];
         }
         else if ([response.MIMEType.lowercaseString isEqual:@"text/uri-list"] && data.length <= 50000) {
-            req = [[BRPaymentRequest requestWithData:data] protocolRequest];
+            for (NSString *url in [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]
+                                   componentsSeparatedByString:@"\n"]) {
+                if ([url hasPrefix:@"#"]) continue; // skip comments
+                req = [[BRPaymentRequest requestWithString:url] protocolRequest]; // use first url and ignore the rest
+                break;
+            }
         }
         
         if (! req) {

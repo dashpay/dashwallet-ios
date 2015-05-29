@@ -25,11 +25,6 @@
 
 #import "BRScanViewController.h"
 
-#define LDQUOTE      @"\xE2\x80\x9C" // left double quote (utf-8)
-#define RDQUOTE      @"\xE2\x80\x9D" // right double quote (utf-8)
-#define DISPLAY_NAME [NSString stringWithFormat:LDQUOTE @"%@" RDQUOTE,\
-                      NSBundle.mainBundle.infoDictionary[@"CFBundleDisplayName"]]
-
 @interface BRScanViewController ()
 
 @property (nonatomic, strong) IBOutlet UIView *cameraView;
@@ -66,7 +61,7 @@
     if ([AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo] == AVAuthorizationStatusDenied) {
         [[[UIAlertView alloc]
           initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"%@ is not allowed to access the camera", nil),
-                         DISPLAY_NAME]
+                         NSBundle.mainBundle.infoDictionary[@"CFBundleDisplayName"]]
           message:[NSString stringWithFormat:NSLocalizedString(@"\nallow camera access in\n"
                                                                "Settings->Privacy->Camera->%@", nil),
                    NSBundle.mainBundle.infoDictionary[@"CFBundleDisplayName"]] delegate:nil
