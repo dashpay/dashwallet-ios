@@ -16,7 +16,6 @@
 #endif
 
 #define BITCOIN_TESTNET  1
-//#define TX_FEE_0_8_RULES 1
 
 #if ! DEBUG
 #define NSLog(...)

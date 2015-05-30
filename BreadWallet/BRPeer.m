@@ -36,11 +36,7 @@
 #define MAX_GETDATA_HASHES 50000
 #define ENABLED_SERVICES   0     // we don't provide full blocks to remote nodes
 #define PROTOCOL_VERSION   70002
-#if TX_FEE_0_8_RULES
-#define MIN_PROTO_VERSION  70001 // peers earlier than this protocol version not supported (SPV mode required)
-#else
 #define MIN_PROTO_VERSION  70002 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
-#endif
 #define LOCAL_HOST         0x7f000001u
 #define ZERO_HASH          [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH]
 #define CONNECT_TIMEOUT    3.0
