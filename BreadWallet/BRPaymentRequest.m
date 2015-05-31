@@ -88,30 +88,33 @@
         url = [NSURL URLWithString:[NSString stringWithFormat:@"%@://%@", url.scheme, url.resourceSpecifier]];
     }
     
-    self.paymentAddress = url.host;
+    if ([url.scheme isEqual:@"bitcoin"]) {
+        self.paymentAddress = url.host;
     
-    //TODO: correctly handle unknown but required url arguments (by reporting the request invalid)
-    for (NSString *arg in [url.query componentsSeparatedByString:@"&"]) {
-        NSArray *pair = [arg componentsSeparatedByString:@"="]; // if more than one '=', then pair[1] != value
+        //TODO: correctly handle unknown but required url arguments (by reporting the request invalid)
+        for (NSString *arg in [url.query componentsSeparatedByString:@"&"]) {
+            NSArray *pair = [arg componentsSeparatedByString:@"="]; // if more than one '=', then pair[1] != value
 
-        if (pair.count < 2) continue;
+            if (pair.count < 2) continue;
         
-        NSString *value = [[[arg substringFromIndex:[pair[0] length] + 1]
-                            stringByReplacingOccurrencesOfString:@"+" withString:@" "]
-                           stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+            NSString *value = [[[arg substringFromIndex:[pair[0] length] + 1]
+                                stringByReplacingOccurrencesOfString:@"+" withString:@" "]
+                               stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
 
-        if ([pair[0] isEqual:@"amount"]) {
-            self.amount = [[[NSDecimalNumber decimalNumberWithString:value] decimalNumberByMultiplyingByPowerOf10:8]
-                           unsignedLongLongValue];
+            if ([pair[0] isEqual:@"amount"]) {
+                self.amount = [[[NSDecimalNumber decimalNumberWithString:value] decimalNumberByMultiplyingByPowerOf10:8]
+                               unsignedLongLongValue];
+            }
+            else if ([pair[0] isEqual:@"label"]) {
+                self.label = value;
+            }
+            else if ([pair[0] isEqual:@"message"]) {
+                self.message = value;
+            }
+            else if ([pair[0] isEqual:@"r"]) self.r = value;
         }
-        else if ([pair[0] isEqual:@"label"]) {
-            self.label = value;
-        }
-        else if ([pair[0] isEqual:@"message"]) {
-            self.message = value;
-        }
-        else if ([pair[0] isEqual:@"r"]) self.r = value;
     }
+    else if (url) self.r = s; // BIP73 url: https://github.com/bitcoin/bips/blob/master/bip-0073.mediawiki
 }
 
 - (NSString *)string
@@ -174,9 +177,7 @@
 
 - (BOOL)isValid
 {
-    if (! [self.paymentAddress isValidBitcoinAddress] && (! self.r || ! [NSURL URLWithString:self.r])) return NO;
-
-    return YES;
+    return ([self.paymentAddress isValidBitcoinAddress] || (self.r && [NSURL URLWithString:self.r])) ? YES : NO;
 }
 
 // receiver converted to BIP70 request object
@@ -212,7 +213,7 @@ completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion
     NSMutableURLRequest *req = (u) ? [NSMutableURLRequest requestWithURL:u
                                       cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:timeout] : nil;
 
-    [req setValue:USER_AGENT forHTTPHeaderField:@"User-Agent"];
+    [req setValue:USER_AGENT forHTTPHeaderField:@"User-Agent"]; // BIP74 user-agent (bitpay, unpublished)
     [req setValue:@"application/bitcoin-paymentrequest" forHTTPHeaderField:@"Accept"];
 //  [req addValue:@"text/uri-list" forHTTPHeaderField:@"Accept"]; // breaks some BIP72 implementations, notably bitpay's
 

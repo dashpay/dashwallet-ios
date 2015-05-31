@@ -287,7 +287,7 @@ services:(uint64_t)services
     [msg appendUInt64:[NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970]; // timestamp
     [msg appendNetAddress:self.address port:self.port services:self.services]; // address of remote peer
     [msg appendNetAddress:LOCAL_HOST port:BITCOIN_STANDARD_PORT services:ENABLED_SERVICES]; // address of local peer
-    self.localNonce = (((uint64_t)arc4random() << 32) | (uint64_t)arc4random()); // random nonce
+    self.localNonce = ((uint64_t)arc4random() << 32) | (uint64_t)arc4random(); // random nonce
     [msg appendUInt64:self.localNonce];
     [msg appendString:USER_AGENT]; // user agent
     [msg appendUInt32:0]; // last block received

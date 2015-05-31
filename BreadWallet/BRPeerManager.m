@@ -210,30 +210,31 @@ static const char *dns_seeds[] = {
         [self sortPeers];
 
         if (_peers.count < PEER_MAX_CONNECTIONS ||
-            [(BRPeer *)_peers[PEER_MAX_CONNECTIONS - 1] timestamp] < now - 3*24*60*60) { // DNS peer discovery
+            [(BRPeer *)_peers[PEER_MAX_CONNECTIONS - 1] timestamp] + 3*24*60*60 < now) { // DNS peer discovery
             NSMutableArray *peers = [NSMutableArray array];
             
-            for (int i = 0; i < sizeof(dns_seeds)/sizeof(*dns_seeds); i++) [peers addObject:[NSMutableArray array]];
+            for (size_t i = 0; i < sizeof(dns_seeds)/sizeof(*dns_seeds); i++) [peers addObject:[NSMutableArray array]];
             
             dispatch_apply(peers.count, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(size_t i) {
                 NSString *servname = [@(BITCOIN_STANDARD_PORT) stringValue];
                 struct addrinfo hints = { 0, AF_UNSPEC, SOCK_STREAM, 0, 0, 0, NULL, NULL }, *servinfo, *p;
 
                 NSLog(@"DNS lookup %s", dns_seeds[i]);
-                if (getaddrinfo(dns_seeds[i], [servname UTF8String], &hints, &servinfo) != 0) return;
-
-                for (p = servinfo; p != NULL; p = p->ai_next) {
-                    if (p->ai_addr->sa_family != AF_INET) continue;
                 
-                    uint32_t addr = CFSwapInt32BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_addr.s_addr);
-                    uint16_t port = CFSwapInt16BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_port);
+                if (getaddrinfo(dns_seeds[i], [servname UTF8String], &hints, &servinfo) == 0) {
+                    for (p = servinfo; p != NULL; p = p->ai_next) {
+                        if (p->ai_addr->sa_family != AF_INET) continue;
+                
+                        uint32_t addr = CFSwapInt32BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_addr.s_addr);
+                        uint16_t port = CFSwapInt16BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_port);
                     
-                    // give dns peers a timestamp between 3 and 7 days ago
-                    [peers[i] addObject:[[BRPeer alloc] initWithAddress:addr port:port
-                     timestamp:now - (3*24*60*60 + arc4random_uniform(4*24*60*60)) services:SERVICES_NODE_NETWORK]];
-                }
+                        // give dns peers a timestamp between 3 and 7 days ago
+                        [peers[i] addObject:[[BRPeer alloc] initWithAddress:addr port:port
+                         timestamp:now - (3*24*60*60 + arc4random_uniform(4*24*60*60)) services:SERVICES_NODE_NETWORK]];
+                    }
 
-                freeaddrinfo(servinfo);
+                    freeaddrinfo(servinfo);
+                }
             });
             
             for (NSArray *a in peers) [_peers addObjectsFromArray:a];
@@ -242,8 +243,8 @@ static const char *dns_seeds[] = {
             [self sortPeers];
             return _peers;
 #endif
+            // if DNS peer discovery fails, fall back on a hard coded list of peers (list taken from satoshi client)
             if (_peers.count < PEER_MAX_CONNECTIONS) {
-                // if DNS peer discovery fails, fall back on a hard coded list of peers (list taken from satoshi client)
                 for (NSNumber *address in [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
                                            pathForResource:FIXED_PEERS ofType:@"plist"]]) {
                     // give hard coded peers a timestamp between 7 and 14 days ago

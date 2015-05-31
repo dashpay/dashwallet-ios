@@ -295,13 +295,13 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         [BRPaymentRequest fetch:request.r timeout:20.0 completion:^(BRPaymentProtocolRequest *req, NSError *error) {
             [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
 
-            if (error) {
+            if (error && ! [request.paymentAddress isValidBitcoinAddress]) {
                 [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
                   message:error.localizedDescription delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
                   otherButtonTitles:nil] show];
                 [self cancel:nil];
             }
-            else [self confirmProtocolRequest:req];
+            else [self confirmProtocolRequest:(error) ? request.protocolRequest : req];
         }];
     }
     else [self confirmProtocolRequest:request.protocolRequest];
@@ -690,26 +690,35 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
 - (void)updateClipboardText
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
     NSString *p = [[[UIPasteboard generalPasteboard] string]
                    stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    UIImage *img = [[UIPasteboard generalPasteboard] image];
+    NSMutableArray *a = [NSMutableArray array];
     NSCharacterSet *c = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
+    
+    if (p) {
+        [a addObject:p];
+        [a addObjectsFromArray:[p componentsSeparatedByCharactersInSet:c]];
+    }
+    
+    if (img && CIDetectorTypeQRCode) {
+        for (CIQRCodeFeature *qr in [[CIDetector detectorOfType:CIDetectorTypeQRCode context:nil options:nil]
+                                     featuresInImage:[CIImage imageWithCGImage:img.CGImage]]) {
+            [a addObject:[qr.messageString
+                          stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+        }
+    }
 
-    if (! p) p = @"";
     self.clipboardText.text = @"";
     
-    for (NSString *s in [@[p] arrayByAddingObjectsFromArray:[p componentsSeparatedByCharactersInSet:c]]) {
+    for (NSString *s in a) {
         BRPaymentRequest *req = [BRPaymentRequest requestWithString:s];
-        NSData *d = s.hexToData.reverse;
-        
-        // if the clipboard contains a known txHash, we know it's not a hex encoded private key
-        if (d.length == 32 && [[m.wallet.recentTransactions valueForKey:@"txHash"] containsObject:d]) continue;
         
         if ([req.paymentAddress isValidBitcoinAddress]) {
             self.clipboardText.text = (req.label.length > 0) ? sanitizeString(req.label) : req.paymentAddress;
             break;
         }
-        else if ([req isValid] || [s isValidBitcoinPrivateKey] || [s isValidBitcoinBIP38Key]) {
+        else if ([s hasPrefix:@"bitcoin:"]) {
             self.clipboardText.text = sanitizeString(s);
             break;
         }
@@ -766,22 +775,13 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     if (p) {
         [a addObject:p];
         [a addObjectsFromArray:[p componentsSeparatedByCharactersInSet:c]];
-
-        if ([NSURL URLWithString:p]) { //maybe BIP73 url: https://github.com/bitcoin/bips/blob/master/bip-0073.mediawiki
-            [a addObject:[NSString stringWithFormat:@"bitcoin:?r=%@",
-                          [p stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
-        }
     }
     
     if (img && CIDetectorTypeQRCode) {
         for (CIQRCodeFeature *qr in [[CIDetector detectorOfType:CIDetectorTypeQRCode context:nil options:nil]
                                      featuresInImage:[CIImage imageWithCGImage:img.CGImage]]) {
-            [a addObject:qr.messageString];
-            
-            if ([NSURL URLWithString:qr.messageString]) {
-                [a addObject:[NSString stringWithFormat:@"bitcoin:?r=%@",
-                              [qr.messageString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
-            }
+            [a addObject:[qr.messageString
+             stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
         }
     }
     
@@ -795,8 +795,22 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         // if the clipboard contains a known txHash, we know it's not a hex encoded private key
         if (d.length == 32 && [[m.wallet.recentTransactions valueForKey:@"txHash"] containsObject:d]) continue;
         
-        if ([req isValid] || [s isValidBitcoinPrivateKey] || [s isValidBitcoinBIP38Key]) {
+        if ([req.paymentAddress isValidBitcoinAddress] || [s isValidBitcoinPrivateKey] || [s isValidBitcoinBIP38Key] ||
+            (req.r.length > 0 && [s hasPrefix:@"bitcoin:"])) {
             [self performSelector:@selector(confirmRequest:) withObject:req afterDelay:0.1];// delayed to show highlight
+            return;
+        }
+        else if (req.r.length > 0) {
+            [BRPaymentRequest fetch:req.r timeout:5.0 completion:^(BRPaymentProtocolRequest *req, NSError *error) {
+                if (error) {
+                    [[[UIAlertView alloc] initWithTitle:@""
+                      message:NSLocalizedString(@"clipboard doesn't contain a valid bitcoin address", nil) delegate:nil
+                      cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+                    [self performSelector:@selector(cancel:) withObject:self afterDelay:0.1];
+                }
+                else [self confirmProtocolRequest:req];
+            }];
+            
             return;
         }
     }
@@ -846,17 +860,20 @@ fromConnection:(AVCaptureConnection *)connection
     for (AVMetadataMachineReadableCodeObject *o in metadataObjects) {
         if (! [o.type isEqual:AVMetadataObjectTypeQRCode]) continue;
 
-        NSString *s = o.stringValue;
+        NSString *s = [o.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
         BRPaymentRequest *request = [BRPaymentRequest requestWithString:s];
 
-        if (! [request isValid] && ! [s isValidBitcoinPrivateKey] && ! [s isValidBitcoinBIP38Key]) {
-            // check for BIP73 url: https://github.com/bitcoin/bips/blob/master/bip-0073.mediawiki
-            [BRPaymentRequest fetch:s timeout:5.0
+        if ((! [request isValid] && ! [s isValidBitcoinPrivateKey] && ! [s isValidBitcoinBIP38Key]) ||
+            (request.r.length > 0 && ! [s hasPrefix:@"bitcoin:"])) {
+            [BRPaymentRequest fetch:request.r timeout:5.0
             completion:^(BRPaymentProtocolRequest *req, NSError *error) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(resetQRGuide) object:nil];
                     
                     if (req) {
+                        self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide-green"];
+                        [self.scanController stop];
+
                         [self.navigationController dismissViewControllerAnimated:YES completion:^{
                             [self resetQRGuide];
                         }];
@@ -866,8 +883,8 @@ fromConnection:(AVCaptureConnection *)connection
                     else {
                         self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide-red"];
 
-                        if ([s hasPrefix:@"bitcoin:"] || [request.paymentAddress hasPrefix:@"1"] ||
-                            [request.paymentAddress hasPrefix:@"3"]) {
+                        if (([s hasPrefix:@"bitcoin:"] && request.paymentAddress.length > 1) ||
+                            [request.paymentAddress hasPrefix:@"1"] || [request.paymentAddress hasPrefix:@"3"]) {
                             self.scanController.message.text = [NSString stringWithFormat:@"%@\n%@",
                                                                 NSLocalizedString(@"not a valid bitcoin address", nil),
                                                                 request.paymentAddress];
