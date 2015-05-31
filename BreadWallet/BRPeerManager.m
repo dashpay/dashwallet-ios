@@ -98,7 +98,7 @@ static const char *dns_seeds[] = {
 @interface BRPeerManager ()
 
 @property (nonatomic, strong) NSMutableOrderedSet *peers;
-@property (nonatomic, strong) NSMutableSet *connectedPeers, *misbehavinPeers, *txHashes;
+@property (nonatomic, strong) NSMutableSet *connectedPeers, *misbehavinPeers;
 @property (nonatomic, strong) BRPeer *downloadPeer;
 @property (nonatomic, assign) uint32_t tweak, syncStartHeight, filterUpdateHeight;
 @property (nonatomic, strong) BRBloomFilter *bloomFilter;
@@ -138,15 +138,14 @@ static const char *dns_seeds[] = {
     self.taskId = UIBackgroundTaskInvalid;
     self.q = dispatch_queue_create("peermanager", NULL);
     self.orphans = [NSMutableDictionary dictionary];
-    self.txHashes = [NSMutableSet set];
     self.txRelays = [NSMutableDictionary dictionary];
     self.publishedTx = [NSMutableDictionary dictionary];
     self.publishedCallback = [NSMutableDictionary dictionary];
 
     dispatch_async(self.q, ^{
         for (BRTransaction *tx in [[[BRWalletManager sharedInstance] wallet] recentTransactions]) {
-            if (tx.blockHeight == TX_UNCONFIRMED) self.publishedTx[tx.txHash] = tx; // add unconfirmed tx to mempool
-            [self.txHashes addObject:tx.txHash];
+            if (tx.blockHeight != TX_UNCONFIRMED) break;
+            self.publishedTx[tx.txHash] = tx; // add unconfirmed tx to mempool
         }
     });
 
@@ -168,7 +167,6 @@ static const char *dns_seeds[] = {
         queue:nil usingBlock:^(NSNotification *note) {
             self.earliestKeyTime = [[BRWalletManager sharedInstance] seedCreationTime];
             self.syncStartHeight = 0;
-            [self.txHashes removeAllObjects];
             [self.txRelays removeAllObjects];
             [self.publishedTx removeAllObjects];
             [self.publishedCallback removeAllObjects];
@@ -987,7 +985,6 @@ static const char *dns_seeds[] = {
     transaction.timestamp = [NSDate timeIntervalSinceReferenceDate];
     if (! [m.wallet registerTransaction:transaction]) return;
     if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
-    [self.txHashes addObject:txHash];
     self.publishedTx[txHash] = transaction;
         
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
@@ -1033,7 +1030,7 @@ static const char *dns_seeds[] = {
     void (^callback)(NSError *error) = self.publishedCallback[txHash];
     
     NSLog(@"%@:%d has transaction %@", peer.host, peer.port, txHash);
-    if ((! tx || ! [m.wallet registerTransaction:tx]) && ! [m.wallet transactionForHash:txHash]) return;
+    if ((! tx || ! [m.wallet registerTransaction:tx]) && ! [m.wallet.txHashes containsObject:txHash]) return;
     if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
         
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
@@ -1084,7 +1081,7 @@ static const char *dns_seeds[] = {
         NSMutableSet *fp = [NSMutableSet setWithArray:block.txHashes];
     
         // 1% low pass filter, also weights each block by total transactions, using 600 tx per block as typical
-        [fp minusSet:self.txHashes];
+        [fp minusSet:[[[BRWalletManager sharedInstance] wallet] txHashes]];
         self.fpRate = self.fpRate*(1.0 - 0.01*block.totalTransactions/600) + 0.01*fp.count/600;
 
         // false positive rate sanity check

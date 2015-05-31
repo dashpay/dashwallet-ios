@@ -59,7 +59,7 @@ static NSUInteger txAddressIndex(BRTransaction *tx, NSArray *chain) {
 @property (nonatomic, strong) id<BRKeySequence> sequence;
 @property (nonatomic, strong) NSData *masterPublicKey;
 @property (nonatomic, strong) NSMutableArray *internalAddresses, *externalAddresses;
-@property (nonatomic, strong) NSMutableSet *allAddresses, *usedAddresses;
+@property (nonatomic, strong) NSMutableSet *allAddresses, *usedAddresses, *allTxHashes;
 @property (nonatomic, strong) NSSet *spentOutputs, *invalidTx;
 @property (nonatomic, strong) NSMutableOrderedSet *transactions;
 @property (nonatomic, strong) NSOrderedSet *utxos;
@@ -83,6 +83,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     self.seed = seed;
     self.allTx = [NSMutableDictionary dictionary];
     self.transactions = [NSMutableOrderedSet orderedSet];
+    self.allTxHashes = [NSMutableSet set];
     self.internalAddresses = [NSMutableArray array];
     self.externalAddresses = [NSMutableArray array];
     self.allAddresses = [NSMutableSet set];
@@ -104,6 +105,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             BRTransaction *tx = e.transaction;
 
             self.allTx[tx.txHash] = tx;
+            [self.allTxHashes addObject:tx.txHash];
             [self.transactions addObject:tx];
             [self.usedAddresses addObjectsFromArray:tx.inputAddresses];
             [self.usedAddresses addObjectsFromArray:tx.outputAddresses];
@@ -329,6 +331,12 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     return [self.transactions array];
 }
 
+// hashes of all wallet transactions
+- (NSSet *)txHashes
+{
+    return self.allTxHashes;
+}
+
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address
 {
@@ -450,9 +458,10 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     if (! [self containsTransaction:transaction]) return NO;
 
     //TODO: verify signatures when possible
-    //TODO: XXX handle tx replacement with input sequence numbers (now replacements appear invalid until confirmation)
+    //TODO: handle tx replacement with input sequence numbers (now replacements appear invalid until confirmation)
     
     self.allTx[transaction.txHash] = transaction;
+    [self.allTxHashes addObject:transaction.txHash];
     [self.transactions insertObject:transaction atIndex:0];
     [self.usedAddresses addObjectsFromArray:transaction.inputAddresses];
     [self.usedAddresses addObjectsFromArray:transaction.outputAddresses];
@@ -487,6 +496,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     }
 
     [self.allTx removeObjectForKey:txHash];
+    [self.allTxHashes removeObject:txHash];
     if (transaction) [self.transactions removeObject:transaction];
     [self updateBalance];
 
