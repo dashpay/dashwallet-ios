@@ -492,6 +492,8 @@
     NSData *d, *k;
 
     XCTAssertFalse([m phraseIsValid:s], @"[BRMnemonic phraseIsValid:]"); // test correct handling of bad checksum
+    XCTAssertNil([m normalizePhrase:nil]);
+    XCTAssertNil([m deriveKeyFromPhrase:nil withPassphrase:nil]);
 
     d = @"00000000000000000000000000000000".hexToData;
     s = [m encodePhrase:d];

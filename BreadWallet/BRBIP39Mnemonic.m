@@ -105,6 +105,8 @@
 
 - (NSString *)normalizePhrase:(NSString *)phrase
 {
+    if (! phrase) return nil;
+    
     NSMutableString *s = CFBridgingRelease(CFStringCreateMutableCopy(SecureAllocator(), 0, (CFStringRef)phrase));
     
     CFStringNormalize((CFMutableStringRef)s, kCFStringNormalizationFormKD);
@@ -123,10 +125,12 @@
 
 - (NSData *)deriveKeyFromPhrase:(NSString *)phrase withPassphrase:(NSString *)passphrase
 {
+    if (! phrase) return nil;
+    
     NSMutableData *key = [NSMutableData secureDataWithLength:CC_SHA512_DIGEST_LENGTH];
     NSData *password, *salt;
-    CFMutableStringRef pw = CFStringCreateMutableCopy(SecureAllocator(), phrase.length, (CFStringRef)phrase);
-    CFMutableStringRef s = CFStringCreateMutableCopy(SecureAllocator(), 8 + passphrase.length, CFSTR("mnemonic"));
+    CFMutableStringRef pw = CFStringCreateMutableCopy(SecureAllocator(), 0, (CFStringRef)phrase);
+    CFMutableStringRef s = CFStringCreateMutableCopy(SecureAllocator(), 0, CFSTR("mnemonic"));
 
     if (passphrase) CFStringAppend(s, (CFStringRef)passphrase);
     CFStringNormalize(pw, kCFStringNormalizationFormKD);

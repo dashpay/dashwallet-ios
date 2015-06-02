@@ -96,7 +96,7 @@
     @autoreleasepool {
         BRWalletManager *m = [BRWalletManager sharedInstance];
         
-        if ([phrase isEqual:@"wipe"]) phrase = [m seedPhraseWithPrompt:nil];
+        if ([phrase isEqual:@"wipe"]) phrase = m.seedPhrase; // this triggers authentication request
         
         if ([[m.sequence masterPublicKeyFromSeed:[m.mnemonic deriveKeyFromPhrase:phrase withPassphrase:nil]]
              isEqual:m.masterPublicKey]) {

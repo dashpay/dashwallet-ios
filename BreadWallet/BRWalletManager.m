@@ -267,14 +267,16 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         }
     }
     
-    if (! self.masterPublicKey) return _wallet;
+    NSData *mpk = self.masterPublicKey;
+    
+    if (! mpk) return _wallet;
     
     @synchronized(self) {
         if (_wallet) return _wallet;
             
         _wallet =
             [[BRWallet alloc] initWithContext:[NSManagedObject context] sequence:self.sequence
-            masterPublicKey:self.masterPublicKey seed:^NSData *(NSString *authprompt, uint64_t amount) {
+            masterPublicKey:mpk seed:^NSData *(NSString *authprompt, uint64_t amount) {
                 return [self seedWithPrompt:authprompt forAmount:amount];
             }];
 
@@ -282,8 +284,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         
         // verify that keychain matches core data, with different access and backup policies it's possible to diverge
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            BRKey *k = [BRKey keyWithPublicKey:[self.sequence publicKey:0 internal:NO
-                                                masterPublicKey:self.masterPublicKey]];
+            BRKey *k = [BRKey keyWithPublicKey:[self.sequence publicKey:0 internal:NO masterPublicKey:mpk]];
                     
             if (_wallet.addresses.count > 0 && ! [_wallet containsAddress:k.address]) {
                 NSLog(@"wallet doesn't contain address: %@", k.address);
@@ -441,16 +442,9 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     BOOL touchid = (self.wallet.totalSent + amount < getKeychainInt(SPEND_LIMIT_KEY, nil)) ? YES : NO;
 
     if (! [self authenticateWithPrompt:authprompt andTouchId:touchid]) return nil;
-    
     // BUG: if user manually chooses to enter pin, spending limit is reset without including the tx being authorized
     if (! touchid) setKeychainInt(self.wallet.totalSent + amount + self.spendingLimit, SPEND_LIMIT_KEY, NO);
-
-    @autoreleasepool {
-        NSString *seedPhrase = getKeychainString(MNEMONIC_KEY, nil);
-        
-        if (seedPhrase.length == 0) return nil;
-        return [self.mnemonic deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
-    }
+    return [self.mnemonic deriveKeyFromPhrase:getKeychainString(MNEMONIC_KEY, nil) withPassphrase:nil];
 }
 
 // authenticates user and returns seedPhrase
@@ -1082,9 +1076,9 @@ replacementString:(NSString *)string
 {
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
         if ([textView.text rangeOfString:@"\n"].location != NSNotFound) {
-            textView.text = [self.mnemonic normalizePhrase:textView.text];
+            NSString *phrase = [self.mnemonic normalizePhrase:textView.text];
             
-            if (! [[self.sequence masterPublicKeyFromSeed:[self.mnemonic deriveKeyFromPhrase:textView.text
+            if (! [[self.sequence masterPublicKeyFromSeed:[self.mnemonic deriveKeyFromPhrase:phrase
                                                            withPassphrase:nil]] isEqual:self.masterPublicKey]) {
                 self.alertView.title = NSLocalizedString(@"recovery phrase doesn't match", nil);
                 [self.alertView performSelector:@selector(setTitle:)
