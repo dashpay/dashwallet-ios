@@ -33,7 +33,6 @@
 		752E28EA19234DA200DB5A3C /* NSMutableData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E28E419234DA200DB5A3C /* NSMutableData+Bitcoin.m */; };
 		752E28EB19234DA200DB5A3C /* NSString+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E28E619234DA200DB5A3C /* NSString+Bitcoin.m */; };
 		752E28F119234E8100DB5A3C /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E28F019234E8100DB5A3C /* Reachability.m */; settings = {COMPILER_FLAGS = "-w"; }; };
-		752E28F619235B3000DB5A3C /* BIP39EnglishWords.plist in Resources */ = {isa = PBXBuildFile; fileRef = 752E28F419235B3000DB5A3C /* BIP39EnglishWords.plist */; };
 		752E28F719235B3000DB5A3C /* FixedPeers.plist in Resources */ = {isa = PBXBuildFile; fileRef = 752E28F519235B3000DB5A3C /* FixedPeers.plist */; };
 		7548CF3719556FD700EF827F /* BRCopyLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 7548CF3619556FD700EF827F /* BRCopyLabel.m */; };
 		75767C421A0EC6F9003E7DE9 /* UIImage+Blur.m in Sources */ = {isa = PBXBuildFile; fileRef = 75767C411A0EC6F9003E7DE9 /* UIImage+Blur.m */; };
@@ -51,6 +50,7 @@
 		759FBB36193290F600AB4465 /* BRRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759FBB33193290F600AB4465 /* BRRootViewController.m */; };
 		759FBB37193290F600AB4465 /* BRSendViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759FBB35193290F600AB4465 /* BRSendViewController.m */; };
 		75AA5F55194143D5003F23BD /* BRBouncyBurgerButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 75AA5F54194143D5003F23BD /* BRBouncyBurgerButton.m */; };
+		75C0E3BF1B1BA294007BC531 /* BIP39Words.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75C0E3C11B1BA294007BC531 /* BIP39Words.plist */; };
 		75D5F3C2191EC270004AB296 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D5F3C1191EC270004AB296 /* Foundation.framework */; };
 		75D5F3C4191EC270004AB296 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D5F3C3191EC270004AB296 /* CoreGraphics.framework */; };
 		75D5F3C6191EC270004AB296 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D5F3C5191EC270004AB296 /* UIKit.framework */; };
@@ -182,7 +182,6 @@
 		752E28E619234DA200DB5A3C /* NSString+Bitcoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Bitcoin.m"; sourceTree = "<group>"; };
 		752E28EF19234E8100DB5A3C /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = SOURCE_ROOT; };
 		752E28F019234E8100DB5A3C /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = SOURCE_ROOT; };
-		752E28F419235B3000DB5A3C /* BIP39EnglishWords.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = BIP39EnglishWords.plist; sourceTree = "<group>"; };
 		752E28F519235B3000DB5A3C /* FixedPeers.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = FixedPeers.plist; sourceTree = "<group>"; };
 		7548CF3519556FD700EF827F /* BRCopyLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCopyLabel.h; sourceTree = "<group>"; };
 		7548CF3619556FD700EF827F /* BRCopyLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCopyLabel.m; sourceTree = "<group>"; };
@@ -243,6 +242,11 @@
 		75AA5F53194143D5003F23BD /* BRBouncyBurgerButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBouncyBurgerButton.h; sourceTree = "<group>"; };
 		75AA5F54194143D5003F23BD /* BRBouncyBurgerButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBouncyBurgerButton.m; sourceTree = "<group>"; };
 		75BCC59A1946520700EC1A64 /* BreadWalletTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BreadWalletTests.h; sourceTree = "<group>"; };
+		75C0E3C71B1D333F007BC531 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = en; path = en.lproj/BIP39Words.plist; sourceTree = "<group>"; };
+		75C0E3C21B1BA29D007BC531 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = fr; path = fr.lproj/BIP39Words.plist; sourceTree = "<group>"; };
+		75C0E3C31B1BA29F007BC531 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = ja; path = ja.lproj/BIP39Words.plist; sourceTree = "<group>"; };
+		75C0E3C41B1BA2A5007BC531 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = es; path = es.lproj/BIP39Words.plist; sourceTree = "<group>"; };
+		75C0E3C51B1BA2AE007BC531 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "zh-Hans"; path = "zh-Hans.lproj/BIP39Words.plist"; sourceTree = "<group>"; };
 		75D5F3BE191EC270004AB296 /* breadwallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = breadwallet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		75D5F3C1191EC270004AB296 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		75D5F3C3191EC270004AB296 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -529,7 +533,7 @@
 				75D5F3DF191EC270004AB296 /* Images.xcassets */,
 				75D5F3DC191EC270004AB296 /* Main.storyboard */,
 				752E2898192349CE00DB5A3C /* BreadWallet.xcdatamodeld */,
-				752E28F419235B3000DB5A3C /* BIP39EnglishWords.plist */,
+				75C0E3C11B1BA294007BC531 /* BIP39Words.plist */,
 				752E28F519235B3000DB5A3C /* FixedPeers.plist */,
 				7579F7FE19231D4600CA56F4 /* ThirdParty */,
 				75D5F3C8191EC270004AB296 /* Supporting Files */,
@@ -696,7 +700,7 @@
 			files = (
 				75D5F3E0191EC270004AB296 /* Images.xcassets in Resources */,
 				757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */,
-				752E28F619235B3000DB5A3C /* BIP39EnglishWords.plist in Resources */,
+				75C0E3BF1B1BA294007BC531 /* BIP39Words.plist in Resources */,
 				75D5F3CC191EC270004AB296 /* InfoPlist.strings in Resources */,
 				752E28F719235B3000DB5A3C /* FixedPeers.plist in Resources */,
 				75D5F3DE191EC270004AB296 /* Main.storyboard in Resources */,
@@ -810,6 +814,18 @@
 				75DE02511B0EB8030027FF08 /* ru */,
 			);
 			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		75C0E3C11B1BA294007BC531 /* BIP39Words.plist */ = {
+			isa = PBXVariantGroup;
+			children = (
+				75C0E3C71B1D333F007BC531 /* en */,
+				75C0E3C21B1BA29D007BC531 /* fr */,
+				75C0E3C31B1BA29F007BC531 /* ja */,
+				75C0E3C41B1BA2A5007BC531 /* es */,
+				75C0E3C51B1BA2AE007BC531 /* zh-Hans */,
+			);
+			name = BIP39Words.plist;
 			sourceTree = "<group>";
 		};
 		75D5F3CA191EC270004AB296 /* InfoPlist.strings */ = {

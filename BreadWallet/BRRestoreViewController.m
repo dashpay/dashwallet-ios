@@ -30,13 +30,14 @@
 #import "NSMutableData+Bitcoin.h"
 
 #define PHRASE_LENGTH 12
-#define WORDS         @"BIP39EnglishWords"
+#define WORDS         @"BIP39Words"
 
 @interface BRRestoreViewController ()
 
 @property (nonatomic, strong) IBOutlet UITextView *textView;
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *textViewYBottom;
 @property (nonatomic, strong) NSArray *words;
+@property (nonatomic, strong) NSMutableSet *allWords;
 @property (nonatomic, strong) id keyboardObserver;
 
 @end
@@ -48,8 +49,14 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
 
-     self.words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:WORDS ofType:@"plist"]];
-     
+    self.words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:WORDS ofType:@"plist"]];
+    self.allWords = [NSMutableSet set];
+    
+    for (NSString *lang in [[NSBundle mainBundle] localizations]) {
+        [self.allWords addObjectsFromArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
+         pathForResource:WORDS ofType:@"plist" inDirectory:nil forLocalization:lang]]];
+    }
+    
     // TODO: create secure versions of keyboard and UILabel and use in place of UITextView
     // TODO: autocomplete based on 4 letter prefixes of mnemonic words
     
@@ -87,14 +94,17 @@
 - (void)wipeWithPhrase:(NSString *)phrase
 {
     @autoreleasepool {
-        NSString *seedPhrase = [[BRWalletManager sharedInstance] seedPhrase];
+        BRWalletManager *m = [BRWalletManager sharedInstance];
         
-        if (seedPhrase && ([phrase isEqual:seedPhrase] || [phrase isEqual:@"wipe"])) {
+        if ([phrase isEqual:@"wipe"]) phrase = [m seedPhraseWithPrompt:nil];
+        
+        if ([[m.sequence masterPublicKeyFromSeed:[m.mnemonic deriveKeyFromPhrase:phrase withPassphrase:nil]]
+             isEqual:m.masterPublicKey]) {
             [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
               destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
              showInView:[[UIApplication sharedApplication] keyWindow]];
         }
-        else if (seedPhrase) {
+        else if (phrase) {
             [[[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"recovery phrase doesn't match", nil)
               delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
@@ -152,19 +162,21 @@
     
         if (! done) return;
 
+        BOOL isLocal = YES;
         NSString *phrase = [m.mnemonic normalizePhrase:s], *incorrect = nil;
         NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)phrase,
                                                                               CFSTR(" ")));
 
         for (NSString *word in a) {
-            if ([self.words containsObject:word]) continue;
+            if (! [self.words containsObject:word]) isLocal = NO;
+            if ([self.allWords containsObject:word]) continue;
             incorrect = word;
             break;
         }
 
-        if ([s isEqual:@"wipe"]) { // shortcut word to force the wipe option to appear
+        if ([phrase isEqual:@"wipe"]) { // shortcut word to force the wipe option to appear
             [self.textView resignFirstResponder];
-            [self performSelector:@selector(wipeWithPhrase:) withObject:s afterDelay:0.0];
+            [self performSelector:@selector(wipeWithPhrase:) withObject:phrase afterDelay:0.0];
         }
         else if (incorrect) {
             textView.selectedRange = [[textView.text lowercaseString] rangeOfString:incorrect];
@@ -180,7 +192,7 @@
                        PHRASE_LENGTH] delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
               otherButtonTitles:nil] show];
         }
-        else if (! [m.mnemonic phraseIsValid:phrase]) {
+        else if (isLocal && ! [m.mnemonic phraseIsValid:phrase]) {
             [[[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"bad recovery phrase", nil) delegate:nil
               cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }

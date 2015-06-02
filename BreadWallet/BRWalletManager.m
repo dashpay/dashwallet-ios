@@ -257,9 +257,14 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     if (_wallet) return _wallet;
 
     if (getKeychainData(SEED_KEY, nil)) { // upgrade from old keychain scheme
-        NSLog(@"upgrading to authenticated keychain scheme");
-        if (! setKeychainData([self.sequence masterPublicKeyFromSeed:self.seed], MASTER_PUBKEY_KEY, NO)) return _wallet;
-        if (setKeychainData(getKeychainData(MNEMONIC_KEY, nil), MNEMONIC_KEY, YES)) setKeychainData(nil, SEED_KEY, NO);
+        @autoreleasepool {
+            NSString *seedPhrase = getKeychainString(MNEMONIC_KEY, nil);
+
+            NSLog(@"upgrading to authenticated keychain scheme");
+            if (! setKeychainData([self.sequence masterPublicKeyFromSeed:[self.mnemonic deriveKeyFromPhrase:seedPhrase
+                                   withPassphrase:nil]], MASTER_PUBKEY_KEY, NO)) return _wallet;
+            if (setKeychainString(seedPhrase, MNEMONIC_KEY, YES)) setKeychainData(nil, SEED_KEY, NO);
+        }
     }
     
     if (! self.masterPublicKey) return _wallet;
@@ -323,16 +328,6 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     return getKeychainData(MASTER_PUBKEY_KEY, nil);
 }
 
-- (NSData *)seed
-{
-    @autoreleasepool {
-        NSString *phrase = getKeychainString(MNEMONIC_KEY, nil);
-        
-        if (phrase.length == 0) return nil;
-        return [self.mnemonic deriveKeyFromPhrase:phrase withPassphrase:nil];
-    }
-}
-
 // requesting seedPhrase will trigger authentication
 - (NSString *)seedPhrase
 {
@@ -342,7 +337,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 - (void)setSeedPhrase:(NSString *)seedPhrase
 {
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
-        if (seedPhrase) seedPhrase = [self.mnemonic encodePhrase:[self.mnemonic decodePhrase:seedPhrase]];
+        if (seedPhrase) seedPhrase = [self.mnemonic normalizePhrase:seedPhrase];
 
         [[NSManagedObject context] performBlockAndWait:^{
             [BRAddressEntity deleteObjects:[BRAddressEntity allObjects]];
@@ -449,7 +444,13 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     
     // BUG: if user manually chooses to enter pin, spending limit is reset without including the tx being authorized
     if (! touchid) setKeychainInt(self.wallet.totalSent + amount + self.spendingLimit, SPEND_LIMIT_KEY, NO);
-    return self.seed;
+
+    @autoreleasepool {
+        NSString *seedPhrase = getKeychainString(MNEMONIC_KEY, nil);
+        
+        if (seedPhrase.length == 0) return nil;
+        return [self.mnemonic deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
+    }
 }
 
 // authenticates user and returns seedPhrase
@@ -1083,12 +1084,8 @@ replacementString:(NSString *)string
         if ([textView.text rangeOfString:@"\n"].location != NSNotFound) {
             textView.text = [self.mnemonic normalizePhrase:textView.text];
             
-            if (! [self.mnemonic phraseIsValid:[self.mnemonic normalizePhrase:textView.text]]) {
-                self.alertView.title = NSLocalizedString(@"bad recovery phrase", nil);
-                [self.alertView performSelector:@selector(setTitle:)
-                 withObject:NSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];
-            }
-            else if (! [[self.mnemonic normalizePhrase:textView.text] isEqual:getKeychainString(MNEMONIC_KEY, nil)]) {
+            if (! [[self.sequence masterPublicKeyFromSeed:[self.mnemonic deriveKeyFromPhrase:textView.text
+                                                           withPassphrase:nil]] isEqual:self.masterPublicKey]) {
                 self.alertView.title = NSLocalizedString(@"recovery phrase doesn't match", nil);
                 [self.alertView performSelector:@selector(setTitle:)
                  withObject:NSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];

@@ -29,7 +29,7 @@
 #import "ccMemory.h"
 #import <CommonCrypto/CommonKeyDerivation.h>
 
-#define WORDS @"BIP39EnglishWords"
+#define WORDS @"BIP39Words"
 
 // BIP39 is method for generating a deterministic wallet seed from a mnemonic phrase
 // https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
