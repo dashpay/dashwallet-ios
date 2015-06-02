@@ -904,7 +904,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
         [v layoutIfNeeded];
         to.view.center = CGPointMake(to.view.center.x, v.frame.size.height*3/2);
 
-        UINavigationItem *item = [[(id)to viewControllers].firstObject navigationItem];
+        UINavigationItem *item = [[(id)to topViewController] navigationItem];
         UIView *titleView = item.titleView;
         UIBarButtonItem *rightButton = item.rightBarButtonItem;
 
@@ -949,7 +949,14 @@ viewControllerAfterViewController:(UIViewController *)viewController
         if (m.didAuthenticate) [self unlock:nil];
         [self.navigationController.navigationBar.superview insertSubview:from.view
          belowSubview:self.navigationController.navigationBar];
-        [(id)from topViewController].navigationItem.title = nil;
+        
+        UINavigationItem *item = [(id)from topViewController].navigationItem;
+        
+        item.title = nil;
+        item.leftBarButtonItem.image = nil;
+        item.titleView = nil;
+        item.rightBarButtonItem = nil;
+        self.navigationItem.leftBarButtonItem.image = nil;
         self.burger.hidden = NO;
         [v layoutIfNeeded];
         self.burger.center = CGPointMake(26.0, 40.0);
