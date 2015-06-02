@@ -468,7 +468,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
             context.localizedFallbackTitle = NSLocalizedString(@"passcode", nil);
             
             [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
-             localizedReason:(authprompt ? authprompt : @" ") reply:^(BOOL success, NSError *error) {
+             localizedReason:(authprompt.length > 0 ? authprompt : @" ") reply:^(BOOL success, NSError *error) {
                 authcode = (success) ? 1 : error.code;
             }];
             
@@ -573,7 +573,16 @@ static NSString *getKeychainString(NSString *key, NSError **error)
             [[NSRunLoop mainRunLoop] limitDateForMode:NSDefaultRunLoopMode];
         }
         
-        if (! self.alertView.visible) break;
+        if (! self.alertView.visible) break; // user canceled
+        
+        if (! [self.failedPins containsObject:self.pinField.text]) { // count unique attempts before checking success
+            setKeychainInt(++failCount, PIN_FAIL_COUNT_KEY, NO);
+            [self.failedPins addObject:self.pinField.text];
+            
+            if (self.secureTime + NSTimeIntervalSince1970 > getKeychainInt(PIN_FAIL_HEIGHT_KEY, nil)) {
+                setKeychainInt(self.secureTime + NSTimeIntervalSince1970, PIN_FAIL_HEIGHT_KEY, NO);
+            }
+        }
         
         if ([self.pinField.text isEqual:pin]) { // successful pin attempt
             self.pinField.text = nil;
@@ -589,26 +598,17 @@ static NSString *getKeychainString(NSString *key, NSError **error)
             return YES;
         }
 
-        if (! [self.failedPins containsObject:self.pinField.text]) { // only count unique failed attempts
-            if (++failCount >= 8) { // wipe wallet after 8 failed pin attempts and 24+ hours of lockout
-                self.seedPhrase = nil;
-                
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC/10), dispatch_get_main_queue(), ^{
-                    abort();
-                });
-                
-                return NO;
-            }
-
-            setKeychainInt(failCount, PIN_FAIL_COUNT_KEY, NO);
-
-            if (self.secureTime + NSTimeIntervalSince1970 > getKeychainInt(PIN_FAIL_HEIGHT_KEY, nil)) {
-                setKeychainInt(self.secureTime + NSTimeIntervalSince1970, PIN_FAIL_HEIGHT_KEY, NO);
-            }
-
-            [self.failedPins addObject:self.pinField.text];
-            if (failCount >= 3) return [self authenticatePinWithTitle:title message:message]; // wallet disabled
+        if (failCount >= 8) { // wipe wallet after 8 failed pin attempts and 24+ hours of lockout
+            self.seedPhrase = nil;
+            
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC/10), dispatch_get_main_queue(), ^{
+                abort();
+            });
+            
+            return NO;
         }
+        
+        if (failCount >= 3) return [self authenticatePinWithTitle:title message:message]; // wallet disabled
         
         self.pinField.text = nil;
         
