@@ -951,7 +951,9 @@ viewControllerAfterViewController:(UIViewController *)viewController
          belowSubview:self.navigationController.navigationBar];
         
         UINavigationItem *item = [(id)from topViewController].navigationItem;
-        
+        UIView *titleView = item.titleView;
+        UIBarButtonItem *rightButton = item.rightBarButtonItem;
+
         item.title = nil;
         item.leftBarButtonItem.image = nil;
         item.titleView = nil;
@@ -972,6 +974,10 @@ viewControllerAfterViewController:(UIViewController *)viewController
             self.pageViewController.view.center = CGPointMake(self.pageViewController.view.center.x,
                                                               v.frame.size.height/2);
         } completion:^(BOOL finished) {
+            item.rightBarButtonItem = rightButton;
+            item.titleView = titleView;
+            item.title = self.navigationItem.title;
+            item.leftBarButtonItem.image = [UIImage imageNamed:@"x"];
             [from.view removeFromSuperview];
             self.burger.hidden = YES;
             self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"burger"];
