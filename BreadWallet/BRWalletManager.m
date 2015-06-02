@@ -575,15 +575,9 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         
         if (! self.alertView.visible) break; // user canceled
         
-        if (! [self.failedPins containsObject:self.pinField.text]) { // count unique attempts before checking success
-            setKeychainInt(++failCount, PIN_FAIL_COUNT_KEY, NO);
-            [self.failedPins addObject:self.pinField.text];
-            
-            if (self.secureTime + NSTimeIntervalSince1970 > getKeychainInt(PIN_FAIL_HEIGHT_KEY, nil)) {
-                setKeychainInt(self.secureTime + NSTimeIntervalSince1970, PIN_FAIL_HEIGHT_KEY, NO);
-            }
-        }
-        
+        // count unique attempts before checking success
+        if (! [self.failedPins containsObject:self.pinField.text]) setKeychainInt(++failCount, PIN_FAIL_COUNT_KEY, NO);
+
         if ([self.pinField.text isEqual:pin]) { // successful pin attempt
             self.pinField.text = nil;
             [self.failedPins removeAllObjects];
@@ -598,17 +592,25 @@ static NSString *getKeychainString(NSString *key, NSError **error)
             return YES;
         }
 
-        if (failCount >= 8) { // wipe wallet after 8 failed pin attempts and 24+ hours of lockout
-            self.seedPhrase = nil;
-            
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC/10), dispatch_get_main_queue(), ^{
-                abort();
-            });
-            
-            return NO;
-        }
+        if (! [self.failedPins containsObject:self.pinField.text]) {
+            [self.failedPins addObject:self.pinField.text];
         
-        if (failCount >= 3) return [self authenticatePinWithTitle:title message:message]; // wallet disabled
+            if (failCount >= 8) { // wipe wallet after 8 failed pin attempts and 24+ hours of lockout
+                self.seedPhrase = nil;
+                
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC/10), dispatch_get_main_queue(), ^{
+                    abort();
+                });
+            
+                return NO;
+            }
+        
+            if (self.secureTime + NSTimeIntervalSince1970 > getKeychainInt(PIN_FAIL_HEIGHT_KEY, nil)) {
+                setKeychainInt(self.secureTime + NSTimeIntervalSince1970, PIN_FAIL_HEIGHT_KEY, NO);
+            }
+
+            if (failCount >= 3) return [self authenticatePinWithTitle:title message:message]; // wallet disabled
+        }
         
         self.pinField.text = nil;
         
