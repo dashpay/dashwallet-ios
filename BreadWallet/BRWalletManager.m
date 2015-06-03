@@ -41,8 +41,9 @@
 #define CIRCLE @"\xE2\x97\x8C" // dotted circle (utf-8)
 #define DOT    @"\xE2\x97\x8F" // black circle (utf-8)
 
-#define UNSPENT_URL @"https://api.chain.com/v2/%@/addresses/%@/unspents?api-key-id=eed0d7697a880144bb854676f88d123f"
-#define TICKER_URL  @"https://bitpay.com/rates"
+#define UNSPENT_URL    @"https://api.chain.com/v2/%@/addresses/%@/unspents?api-key-id=eed0d7697a880144bb854676f88d123f"
+#define TICKER_URL     @"https://bitpay.com/rates"
+#define FEE_PER_KB_URL @"https://api.breadwallet.com/v1/fee-per-kb"
 
 #define SEED_ENTROPY_LENGTH    (128/8)
 #define SEC_ATTR_SERVICE       @"org.voisine.breadwallet"
@@ -58,6 +59,7 @@
 #define CURRENCY_PRICES_KEY     @"CURRENCY_PRICES"
 #define SPEND_LIMIT_AMOUNT_KEY  @"SPEND_LIMIT_AMOUNT"
 #define SECURE_TIME_KEY         @"SECURE_TIME"
+#define FEE_PER_KB_KEY          @"FEE_PER_KB"
 
 #define MNEMONIC_KEY        @"mnemonic"
 #define CREATION_TIME_KEY   @"creationtime"
@@ -267,6 +269,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         }
     }
     
+    uint64_t feePerKb = 0;
     NSData *mpk = self.masterPublicKey;
     
     if (! mpk) return _wallet;
@@ -281,6 +284,8 @@ static NSString *getKeychainString(NSString *key, NSError **error)
             }];
 
         _wallet.feePerKb = DEFAULT_FEE_PER_KB;
+        feePerKb = [[NSUserDefaults standardUserDefaults] doubleForKey:FEE_PER_KB_KEY];
+        if (feePerKb >= DEFAULT_FEE_PER_KB && feePerKb <= MAX_FEE_PER_KB) _wallet.feePerKb = feePerKb;
         
         // verify that keychain matches core data, with different access and backup policies it's possible to diverge
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -847,6 +852,43 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         [defs synchronize];
         NSLog(@"exchange rate updated to %@/%@", [self localCurrencyStringForAmount:SATOSHIS],
               [self stringForAmount:SATOSHIS]);
+        
+        [self updateFeePerKb];
+    }];
+}
+
+#pragma mark - floating fees
+
+- (void)updateFeePerKb
+{
+    if (self.reachability.currentReachabilityStatus == NotReachable) return;
+    
+    NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:FEE_PER_KB_URL]
+                         cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:10.0];
+    
+    [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue currentQueue]
+    completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+        if (connectionError) {
+            NSLog(@"%@", connectionError);
+            return;
+        }
+        
+        NSError *error = nil;
+        NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        
+        if (error || ! [json isKindOfClass:[NSDictionary class]] ||
+            ! [json[@"fee-per-kb"] isKindOfClass:[NSNumber class]]) {
+            NSLog(@"unexpected response from %@:\n%@", req.URL.host,
+                  [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            return;
+        }
+        
+        uint64_t feePerKb = [json[@"fee-per-kb"] unsignedLongLongValue];
+
+        if (feePerKb >= DEFAULT_FEE_PER_KB && feePerKb <= MAX_FEE_PER_KB) {
+            _wallet.feePerKb = feePerKb;
+            [[NSUserDefaults standardUserDefaults] setDouble:feePerKb forKey:FEE_PER_KB_KEY];
+        }
     }];
 }
 
