@@ -51,7 +51,7 @@
 #define DEFAULT_CURRENCY_CODE  @"USD"
 #define DEFAULT_SPENT_LIMIT    SATOSHIS
 #define DEFAULT_FEE_PER_KB     (4096*1000/225) // fee required by eligius pool, which supports child-pays-for-parent
-#define MAX_FEE_PER_KB         (10100*1000/225) // slightly higher than a 100bit fee on a typical 225byte transaction
+#define MAX_FEE_PER_KB         (100100*1000/225) // slightly higher than a 1000bit fee on a typical 225byte transaction
 
 #define LOCAL_CURRENCY_CODE_KEY @"LOCAL_CURRENCY_CODE"
 #define CURRENCY_CODES_KEY      @"CURRENCY_CODES"
@@ -405,21 +405,6 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     if (! [LAContext class]) return YES; // we can only check for passcode on iOS 8 and above
     if ([[LAContext new] canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error]) return YES;
     return (error && error.code == LAErrorPasscodeNotSet) ? NO : YES;
-}
-
-// set this to enable basic floating fee calculation
-- (void)setAverageBlockSize:(size_t)size
-{
-    _averageBlockSize = size;
-#if TX_FEE_0_8_RULES
-    return;
-#endif
-    
-    // if block size increases past 650kb, start increasing fee up to MAX_FEE_PER_KB when blocks hit 850kb
-    if (size > 650*1000 && size < 850*1000) {
-        self.wallet.feePerKb = DEFAULT_FEE_PER_KB + (MAX_FEE_PER_KB - DEFAULT_FEE_PER_KB)*(size - 650*1000)/(200*1000);
-    }
-    else self.wallet.feePerKb = (size <= 650*1000) ? DEFAULT_FEE_PER_KB : MAX_FEE_PER_KB;
 }
 
 // generates a random seed, saves to keychain and returns the associated seedPhrase
@@ -906,12 +891,13 @@ completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError
                          timeoutInterval:20.0];
     
     [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue currentQueue]
-    completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
-        if (error) {
-            completion(nil, nil, nil, error);
+    completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+        if (connectionError) {
+            completion(nil, nil, nil, connectionError);
             return;
         }
         
+        NSError *error = nil;
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
         NSMutableArray *utxos = [NSMutableArray array], *amounts = [NSMutableArray array],
                        *scripts = [NSMutableArray array];

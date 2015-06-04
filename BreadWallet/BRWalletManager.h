@@ -61,7 +61,6 @@
 @property (nonatomic, readonly) double localCurrencyPrice; // exchange rate in local currency units per bitcoin
 @property (nonatomic, readonly) NSArray *currencyCodes; // list of supported local currency codes
 @property (nonatomic, readonly) NSArray *currencyNames; // names for local currency codes
-@property (nonatomic, assign) size_t averageBlockSize; // set this to enable basic floating fee calculation
 
 + (instancetype)sharedInstance;
 

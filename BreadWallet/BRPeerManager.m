@@ -281,12 +281,7 @@ static const char *dns_seeds[] = {
             BRMerkleBlock *b = e.merkleBlock;
 
             _blocks[e.blockHash] = b;
-            
-            // track moving average transactions per block using a 1% low pass filter
-            if (b.totalTransactions > 0) _averageTxPerBlock = _averageTxPerBlock*0.99 + b.totalTransactions*0.01;
         };
-        
-        [[BRWalletManager sharedInstance] setAverageBlockSize:self.averageTxPerBlock*TX_AVERAGE_SIZE];
     }];
 
     return _blocks;
@@ -1166,9 +1161,6 @@ static const char *dns_seeds[] = {
         [self setBlockHeight:block.height andTimestamp:txTime - NSTimeIntervalSince1970 forTxHashes:block.txHashes];
         if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
         self.downloadPeer.currentBlockHeight = block.height;
-
-        // track moving average transactions per block using a 1% low pass filter
-        if (block.totalTransactions > 0) _averageTxPerBlock = _averageTxPerBlock*0.99 + block.totalTransactions*0.01;
     }
     else if (self.blocks[block.blockHash] != nil) { // we already have the block (or at least the header)
         if ((block.height % 500) == 0 || block.txHashes.count > 0 || block.height > peer.lastblock) {
@@ -1237,7 +1229,6 @@ static const char *dns_seeds[] = {
         [self saveBlocks];
         [BRMerkleBlockEntity saveContext];
         [self syncStopped];
-        [[BRWalletManager sharedInstance] setAverageBlockSize:self.averageTxPerBlock*TX_AVERAGE_SIZE];
 
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerSyncFinishedNotification
