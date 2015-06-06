@@ -29,6 +29,7 @@
 #import "BRBloomFilter.h"
 #import "BRKeySequence.h"
 #import "BRTransaction.h"
+#import "BRTransactionEntity.h"
 #import "BRMerkleBlock.h"
 #import "BRMerkleBlockEntity.h"
 #import "BRWalletManager.h"
@@ -1252,7 +1253,27 @@ static const char *dns_seeds[] = {
 
 - (BRTransaction *)peer:(BRPeer *)peer requestedTransaction:(NSData *)txHash
 {
-    return self.publishedTx[txHash];
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRTransaction *tx = self.publishedTx[txHash];
+    void (^callback)(NSError *error) = self.publishedCallback[txHash];
+    
+    if (callback && ! [m.wallet transactionIsValid:tx]) {
+        [self.publishedCallback removeObjectForKey:txHash];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:txHash];
+            if (callback) callback([NSError errorWithDomain:@"BreadWallet" code:401
+                                    userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"double spend", nil)}]);
+        });
+        
+        return nil;
+    }
+
+    if (tx && ! [m.wallet.txHashes containsObject:txHash] && [m.wallet registerTransaction:tx]) {
+        [BRTransactionEntity saveContext]; // persist transactions to core data
+    }
+    
+    return tx;
 }
 
 #pragma mark - UIAlertViewDelegate

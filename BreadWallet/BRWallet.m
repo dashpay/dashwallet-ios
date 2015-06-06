@@ -505,7 +505,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     }];
 }
 
-// true if the given transaction has been added to the wallet
+// returns the transaction with the given hash if it's been registered in the wallet
 - (BRTransaction *)transactionForHash:(NSData *)txHash
 {
     return self.allTx[txHash];
