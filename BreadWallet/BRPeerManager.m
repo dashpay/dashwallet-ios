@@ -1258,6 +1258,7 @@ static const char *dns_seeds[] = {
     void (^callback)(NSError *error) = self.publishedCallback[txHash];
     
     if (callback && ! [m.wallet transactionIsValid:tx]) {
+        [self.publishedTx removeObjectForKey:txHash];
         [self.publishedCallback removeObjectForKey:txHash];
         
         dispatch_async(dispatch_get_main_queue(), ^{
