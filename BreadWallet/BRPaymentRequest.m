@@ -217,16 +217,16 @@ completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion
     [req setValue:@"application/bitcoin-paymentrequest" forHTTPHeaderField:@"Accept"];
 //  [req addValue:@"text/uri-list" forHTTPHeaderField:@"Accept"]; // breaks some BIP72 implementations, notably bitpay's
 
-    if (! req || ! [NSURLConnection canHandleRequest:req]) {
+    if (! req) {
         completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
                          userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"bad payment request URL", nil)}]);
         return;
     }
 
-    [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue currentQueue]
-    completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-        if (connectionError) {
-            completion(nil, connectionError);
+    [[[NSURLSession sharedSession] dataTaskWithRequest:req
+    completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        if (error) {
+            completion(nil, error);
             return;
         }
     
@@ -262,7 +262,7 @@ completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion
                                                                           nil), req.details.network, network]}]);
         }
         else completion(req, nil);
-    }];
+    }] resume];
 }
 
 + (void)postPayment:(BRPaymentProtocolPayment *)payment to:(NSString *)paymentURL timeout:(NSTimeInterval)timeout
@@ -285,10 +285,10 @@ completion:(void (^)(BRPaymentProtocolACK *ack, NSError *error))completion
     [req setHTTPMethod:@"POST"];
     [req setHTTPBody:payment.data];
 
-    [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue currentQueue]
-    completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-        if (connectionError) {
-            completion(nil, connectionError);
+    [[[NSURLSession sharedSession] dataTaskWithRequest:req
+    completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        if (error) {
+            completion(nil, error);
             return;
         }
         
@@ -306,7 +306,7 @@ completion:(void (^)(BRPaymentProtocolACK *ack, NSError *error))completion
                             }]);
         }
         else completion(ack, nil);
-     }];
+     }] resume];
 }
 
 @end

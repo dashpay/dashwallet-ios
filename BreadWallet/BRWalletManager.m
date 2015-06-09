@@ -786,15 +786,14 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:TICKER_URL]
                          cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:10.0];
 
-    [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue currentQueue]
-    completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-        if (connectionError) {
-            NSLog(@"%@", connectionError);
+    [[[NSURLSession sharedSession] dataTaskWithRequest:req
+    completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        if (error) {
+            NSLog(@"%@", error);
             return;
         }
 
         NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-        NSError *error = nil;
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
         NSMutableArray *codes = [NSMutableArray array], *names = [NSMutableArray array], *rates =[NSMutableArray array];
         
@@ -839,7 +838,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
               [self stringForAmount:SATOSHIS]);
         
         [self updateFeePerKb];
-    }];
+    }] resume];
 }
 
 #pragma mark - floating fees
@@ -851,14 +850,13 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:FEE_PER_KB_URL]
                          cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:10.0];
     
-    [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue currentQueue]
-    completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-        if (connectionError) {
-            NSLog(@"%@", connectionError);
+    [[[NSURLSession sharedSession] dataTaskWithRequest:req
+    completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        if (error) {
+            NSLog(@"%@", error);
             return;
         }
         
-        NSError *error = nil;
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
         
         if (error || ! [json isKindOfClass:[NSDictionary class]] ||
@@ -874,7 +872,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
             _wallet.feePerKb = feePerKb;
             [[NSUserDefaults standardUserDefaults] setDouble:feePerKb forKey:FEE_PER_KB_KEY];
         }
-    }];
+    }] resume];
 }
 
 #pragma mark - query unspent outputs
@@ -890,14 +888,13 @@ completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError
     NSURLRequest *req = [NSURLRequest requestWithURL:u cachePolicy:NSURLRequestReloadIgnoringCacheData
                          timeoutInterval:20.0];
     
-    [NSURLConnection sendAsynchronousRequest:req queue:[NSOperationQueue currentQueue]
-    completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-        if (connectionError) {
-            completion(nil, nil, nil, connectionError);
+    [[[NSURLSession sharedSession] dataTaskWithRequest:req
+    completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        if (error) {
+            completion(nil, nil, nil, error);
             return;
         }
         
-        NSError *error = nil;
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
         NSMutableArray *utxos = [NSMutableArray array], *amounts = [NSMutableArray array],
                        *scripts = [NSMutableArray array];
@@ -939,7 +936,7 @@ completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError
         }
         
         completion(utxos, amounts, scripts, nil);
-    }];
+    }] resume];
 }
 
 // given a private key, queries chain.com for unspent outputs and calls the completion block with a signed transaction

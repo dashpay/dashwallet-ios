@@ -521,6 +521,7 @@
     }
 
     [UIApplication sharedApplication].idleTimerDisabled = YES;
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
     self.progress.hidden = self.pulse.hidden = NO;
     [UIView animateWithDuration:0.2 animations:^{ self.progress.alpha = 1.0; }];
     [self updateProgress];
@@ -533,6 +534,7 @@
     self.start = self.timeout = 0.0;
     if (progress > DBL_EPSILON && progress < 1.0) return; // not done syncing
     [UIApplication sharedApplication].idleTimerDisabled = NO;
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
     if (self.progress.alpha < 0.5) return;
 
     if (success) {
