@@ -125,7 +125,7 @@
         
                 BRSendViewController *c = self.sendViewController;
                 
-                [self.pageViewController setViewControllers:@[c]
+                [self.pageViewController setViewControllers:(c ? @[c] : @[])
                 direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:^(BOOL finished) {
                     _url = note.userInfo[@"url"];
                     
@@ -151,7 +151,7 @@
                 
                 BRSendViewController *c = self.sendViewController;
 
-                [self.pageViewController setViewControllers:@[c]
+                [self.pageViewController setViewControllers:(c ? @[c] : @[])
                 direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:^(BOOL finished) {
                     _file = note.userInfo[@"file"];
                     

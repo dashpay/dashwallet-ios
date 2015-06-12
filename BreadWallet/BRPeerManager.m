@@ -281,7 +281,7 @@ static const char *dns_seeds[] = {
         for (BRMerkleBlockEntity *e in [BRMerkleBlockEntity allObjects]) {
             BRMerkleBlock *b = e.merkleBlock;
 
-            _blocks[e.blockHash] = b;
+            if (b) _blocks[e.blockHash] = b;
         };
     }];
 
