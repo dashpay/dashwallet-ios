@@ -929,7 +929,7 @@ completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError
             
             if (! [utxo[@"script_type"] isEqual:@"pubkeyhash"] && ! [utxo[@"script_type"] isEqual:@"pubkey"]) continue;
             o = [NSMutableData dataWithData:[[utxo[@"transaction_hash"] hexToData] reverse]];
-            [o appendUInt32:[utxo[@"output_index"] unsignedIntegerValue]];
+            [o appendUInt32:[utxo[@"output_index"] unsignedIntValue]];
             [utxos addObject:o];
             [amounts addObject:utxo[@"value"]];
             [scripts addObject:[utxo[@"script_hex"] hexToData]];

@@ -24,6 +24,7 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
+#import <CoreData/CoreData.h>
 #import "BRKeySequence.h"
 
 #define BRWalletBalanceChangedNotification @"BRWalletBalanceChangedNotification"

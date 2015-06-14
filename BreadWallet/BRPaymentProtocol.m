@@ -407,7 +407,7 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
                             NSLocalizedString(@"missing certificate", nil);
 
             for (NSDictionary *property in CFBridgingRelease(SecTrustCopyProperties(trust))) {
-                if ([property[@"type"] isEqual:(__bridge NSString *)kSecPropertyTypeError]) continue;
+                if (! [property[@"type"] isEqual:(__bridge id)kSecPropertyTypeError]) continue;
                 _errorMessage = [_errorMessage stringByAppendingFormat:@" - %@", property[@"value"]];
                 break;
             }

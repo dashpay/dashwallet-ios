@@ -31,7 +31,11 @@
 #define HAVE_CONFIG_H 1
 #define DETERMINISTIC 1
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wconversion"
+#pragma clang diagnostic ignored "-Wunused-function"
 #import "secp256k1/src/secp256k1.c"
+#pragma clang diagnostic pop
 
 #define SECKEY_LENGTH (256/8)
 
