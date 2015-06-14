@@ -511,7 +511,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
             sent = YES;
             [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
              center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
-              popOutAfterDelay:2.0]];
+             popOutAfterDelay:2.0]];
             [(id)self.parentViewController.parentViewController stopActivityWithSuccess:YES];
             [self reset:nil];
         }
@@ -551,11 +551,10 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
                 sent = YES;
                 tx.timestamp = [NSDate timeIntervalSinceReferenceDate];
                 [m.wallet registerTransaction:tx];
-                [self.view
-                 addSubview:[[[BRBubbleView
-                               viewWithText:(ack.memo.length > 0 ? ack.memo : NSLocalizedString(@"sent!", nil))
-                               center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
-                             popOutAfterDelay:(ack.memo.length > 0 ? 3.0 : 2.0)]];
+                [self.view addSubview:[[[BRBubbleView
+                 viewWithText:(ack.memo.length > 0 ? ack.memo : NSLocalizedString(@"sent!", nil))
+                 center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
+                 popOutAfterDelay:(ack.memo.length > 0 ? 3.0 : 2.0)]];
                 [(id)self.parentViewController.parentViewController stopActivityWithSuccess:YES];
                 [self reset:nil];
             }
