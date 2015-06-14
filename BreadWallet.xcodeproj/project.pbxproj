@@ -57,6 +57,15 @@
 		75D5F3E0191EC270004AB296 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 75D5F3DF191EC270004AB296 /* Images.xcassets */; };
 		75D5F3F3191EC270004AB296 /* BreadWalletTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D5F3F2191EC270004AB296 /* BreadWalletTests.m */; };
 		84F68C8A1975E9E2002FC300 /* BRScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 84F68C891975E9E2002FC300 /* BRScanViewController.m */; };
+		BAE12BE71B2DEE7F00895CC5 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */; };
+		BAE12BEF1B2DEE7F00895CC5 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BAE12BEE1B2DEE7F00895CC5 /* MainInterface.storyboard */; };
+		BAE12BF21B2DEE7F00895CC5 /* TodayExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = BAE12BE51B2DEE7F00895CC5 /* TodayExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		BAE12BFB1B2DEEC900895CC5 /* BRAppGroupManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BAE12BFA1B2DEEC900895CC5 /* BRAppGroupManager.m */; };
+		BAE12C001B2DEEDA00895CC5 /* NSUserDefaults+AppGroup.m in Sources */ = {isa = PBXBuildFile; fileRef = BAE12BFD1B2DEEDA00895CC5 /* NSUserDefaults+AppGroup.m */; };
+		BAE12C011B2DEEDA00895CC5 /* NSUserDefaults+AppGroup.m in Sources */ = {isa = PBXBuildFile; fileRef = BAE12BFD1B2DEEDA00895CC5 /* NSUserDefaults+AppGroup.m */; };
+		BAE12C021B2DEEDA00895CC5 /* UIImage+QRCode.m in Sources */ = {isa = PBXBuildFile; fileRef = BAE12BFF1B2DEEDA00895CC5 /* UIImage+QRCode.m */; };
+		BAE12C031B2DEEDA00895CC5 /* UIImage+QRCode.m in Sources */ = {isa = PBXBuildFile; fileRef = BAE12BFF1B2DEEDA00895CC5 /* UIImage+QRCode.m */; };
+		BAE12C061B2DEEF700895CC5 /* BRTodayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = BAE12C051B2DEEF700895CC5 /* BRTodayViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -74,7 +83,28 @@
 			remoteGlobalIDString = 75D5F3BD191EC270004AB296;
 			remoteInfo = BreadWallet;
 		};
+		BAE12BF01B2DEE7F00895CC5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 75D5F3B6191EC270004AB296 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BAE12BE41B2DEE7F00895CC5;
+			remoteInfo = TodayExtension;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		BAE12BF71B2DEE7F00895CC5 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				BAE12BF21B2DEE7F00895CC5 /* TodayExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		7509C10C1AF3076000D03FD5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
@@ -261,6 +291,19 @@
 		75F27B0619DE2AB20047FC62 /* ccMemory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ccMemory.h; sourceTree = SOURCE_ROOT; };
 		84F68C881975E9E2002FC300 /* BRScanViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRScanViewController.h; sourceTree = "<group>"; };
 		84F68C891975E9E2002FC300 /* BRScanViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRScanViewController.m; sourceTree = "<group>"; };
+		BAE12BE51B2DEE7F00895CC5 /* TodayExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TodayExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NotificationCenter.framework; path = System/Library/Frameworks/NotificationCenter.framework; sourceTree = SDKROOT; };
+		BAE12BEA1B2DEE7F00895CC5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BAE12BEE1B2DEE7F00895CC5 /* MainInterface.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = MainInterface.storyboard; sourceTree = "<group>"; };
+		BAE12BF81B2DEEBE00895CC5 /* BRAppGroupConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAppGroupConstants.h; sourceTree = "<group>"; };
+		BAE12BF91B2DEEC900895CC5 /* BRAppGroupManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAppGroupManager.h; sourceTree = "<group>"; };
+		BAE12BFA1B2DEEC900895CC5 /* BRAppGroupManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRAppGroupManager.m; sourceTree = "<group>"; };
+		BAE12BFC1B2DEEDA00895CC5 /* NSUserDefaults+AppGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSUserDefaults+AppGroup.h"; sourceTree = "<group>"; };
+		BAE12BFD1B2DEEDA00895CC5 /* NSUserDefaults+AppGroup.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSUserDefaults+AppGroup.m"; sourceTree = "<group>"; };
+		BAE12BFE1B2DEEDA00895CC5 /* UIImage+QRCode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+QRCode.h"; sourceTree = "<group>"; };
+		BAE12BFF1B2DEEDA00895CC5 /* UIImage+QRCode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+QRCode.m"; sourceTree = "<group>"; };
+		BAE12C041B2DEEF700895CC5 /* BRTodayViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRTodayViewController.h; sourceTree = "<group>"; };
+		BAE12C051B2DEEF700895CC5 /* BRTodayViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTodayViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -275,6 +318,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BAE12BE21B2DEE7F00895CC5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BAE12BE71B2DEE7F00895CC5 /* NotificationCenter.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -328,6 +379,9 @@
 				752E28BF19234C3600DB5A3C /* BRPaymentProtocol.m */,
 				752E28C019234C3600DB5A3C /* BRPaymentRequest.h */,
 				752E28C119234C3600DB5A3C /* BRPaymentRequest.m */,
+				BAE12BF81B2DEEBE00895CC5 /* BRAppGroupConstants.h */,
+				BAE12BF91B2DEEC900895CC5 /* BRAppGroupManager.h */,
+				BAE12BFA1B2DEEC900895CC5 /* BRAppGroupManager.m */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -364,6 +418,10 @@
 				752E28E219234DA200DB5A3C /* NSManagedObject+Sugar.m */,
 				75767C401A0EC6F9003E7DE9 /* UIImage+Blur.h */,
 				75767C411A0EC6F9003E7DE9 /* UIImage+Blur.m */,
+				BAE12BFC1B2DEEDA00895CC5 /* NSUserDefaults+AppGroup.h */,
+				BAE12BFD1B2DEEDA00895CC5 /* NSUserDefaults+AppGroup.m */,
+				BAE12BFE1B2DEEDA00895CC5 /* UIImage+QRCode.h */,
+				BAE12BFF1B2DEEDA00895CC5 /* UIImage+QRCode.m */,
 			);
 			name = Categories;
 			sourceTree = "<group>";
@@ -462,6 +520,7 @@
 			children = (
 				75D5F3C7191EC270004AB296 /* BreadWallet */,
 				75D5F3EC191EC270004AB296 /* BreadWalletTests */,
+				BAE12BE81B2DEE7F00895CC5 /* TodayExtension */,
 				75D5F3C0191EC270004AB296 /* Frameworks */,
 				75D5F3BF191EC270004AB296 /* Products */,
 			);
@@ -472,6 +531,7 @@
 			children = (
 				75D5F3BE191EC270004AB296 /* breadwallet.app */,
 				75D5F3E5191EC270004AB296 /* BreadWalletTests.xctest */,
+				BAE12BE51B2DEE7F00895CC5 /* TodayExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -484,6 +544,7 @@
 				75D5F3C3191EC270004AB296 /* CoreGraphics.framework */,
 				75D5F3C5191EC270004AB296 /* UIKit.framework */,
 				75D5F3E6191EC270004AB296 /* XCTest.framework */,
+				BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -529,6 +590,25 @@
 			path = BreadWalletTests;
 			sourceTree = "<group>";
 		};
+		BAE12BE81B2DEE7F00895CC5 /* TodayExtension */ = {
+			isa = PBXGroup;
+			children = (
+				BAE12C041B2DEEF700895CC5 /* BRTodayViewController.h */,
+				BAE12C051B2DEEF700895CC5 /* BRTodayViewController.m */,
+				BAE12BEE1B2DEE7F00895CC5 /* MainInterface.storyboard */,
+				BAE12BE91B2DEE7F00895CC5 /* Supporting Files */,
+			);
+			path = TodayExtension;
+			sourceTree = "<group>";
+		};
+		BAE12BE91B2DEE7F00895CC5 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				BAE12BEA1B2DEE7F00895CC5 /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXLegacyTarget section */
@@ -556,11 +636,13 @@
 				75D5F3BA191EC270004AB296 /* Sources */,
 				75D5F3BB191EC270004AB296 /* Frameworks */,
 				75D5F3BC191EC270004AB296 /* Resources */,
+				BAE12BF71B2DEE7F00895CC5 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				757FC2531ADA30D100A1FDF7 /* PBXTargetDependency */,
+				BAE12BF11B2DEE7F00895CC5 /* PBXTargetDependency */,
 			);
 			name = breadwallet;
 			productName = BreadWallet;
@@ -584,6 +666,23 @@
 			productName = BreadWalletTests;
 			productReference = 75D5F3E5191EC270004AB296 /* BreadWalletTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		BAE12BE41B2DEE7F00895CC5 /* TodayExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BAE12BF61B2DEE7F00895CC5 /* Build configuration list for PBXNativeTarget "TodayExtension" */;
+			buildPhases = (
+				BAE12BE11B2DEE7F00895CC5 /* Sources */,
+				BAE12BE21B2DEE7F00895CC5 /* Frameworks */,
+				BAE12BE31B2DEE7F00895CC5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TodayExtension;
+			productName = TodayExtension;
+			productReference = BAE12BE51B2DEE7F00895CC5 /* TodayExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -611,6 +710,10 @@
 					};
 					75D5F3E4191EC270004AB296 = {
 						TestTargetID = 75D5F3BD191EC270004AB296;
+					};
+					BAE12BE41B2DEE7F00895CC5 = {
+						CreatedOnToolsVersion = 6.3.2;
+						DevelopmentTeam = 4R7S6N88W9;
 					};
 				};
 			};
@@ -646,6 +749,7 @@
 				75D5F3BD191EC270004AB296 /* breadwallet */,
 				75D5F3E4191EC270004AB296 /* BreadWalletTests */,
 				75001D3D1A1EE89500585F55 /* submodules */,
+				BAE12BE41B2DEE7F00895CC5 /* TodayExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -668,6 +772,14 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BAE12BE31B2DEE7F00895CC5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BAE12BEF1B2DEE7F00895CC5 /* MainInterface.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -698,6 +810,7 @@
 				752E28DB19234C3600DB5A3C /* BRWalletManager.m in Sources */,
 				752E28D319234C3600DB5A3C /* BRMerkleBlock.m in Sources */,
 				752E28D019234C3600DB5A3C /* BRBloomFilter.m in Sources */,
+				BAE12C001B2DEEDA00895CC5 /* NSUserDefaults+AppGroup.m in Sources */,
 				752E28D619234C3600DB5A3C /* BRPeer.m in Sources */,
 				752E28D819234C3600DB5A3C /* BRPeerManager.m in Sources */,
 				752E28D419234C3600DB5A3C /* BRPaymentProtocol.m in Sources */,
@@ -713,6 +826,7 @@
 				752E28E719234DA200DB5A3C /* NSData+Bitcoin.m in Sources */,
 				752E28E919234DA200DB5A3C /* NSManagedObject+Sugar.m in Sources */,
 				752E28EA19234DA200DB5A3C /* NSMutableData+Bitcoin.m in Sources */,
+				BAE12BFB1B2DEEC900895CC5 /* BRAppGroupManager.m in Sources */,
 				752E28EB19234DA200DB5A3C /* NSString+Bitcoin.m in Sources */,
 				757C89521A2FCE420076B373 /* BRSettingsViewController.m in Sources */,
 				75D5F3D2191EC270004AB296 /* BRAppDelegate.m in Sources */,
@@ -721,6 +835,7 @@
 				759FBB37193290F600AB4465 /* BRSendViewController.m in Sources */,
 				752E28F119234E8100DB5A3C /* Reachability.m in Sources */,
 				75D5F3CE191EC270004AB296 /* main.m in Sources */,
+				BAE12C021B2DEEDA00895CC5 /* UIImage+QRCode.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -729,6 +844,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				75D5F3F3191EC270004AB296 /* BreadWalletTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BAE12BE11B2DEE7F00895CC5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BAE12C031B2DEEDA00895CC5 /* UIImage+QRCode.m in Sources */,
+				BAE12C061B2DEEF700895CC5 /* BRTodayViewController.m in Sources */,
+				BAE12C011B2DEEDA00895CC5 /* NSUserDefaults+AppGroup.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -744,6 +869,11 @@
 			isa = PBXTargetDependency;
 			target = 75D5F3BD191EC270004AB296 /* breadwallet */;
 			targetProxy = 75D5F3EA191EC270004AB296 /* PBXContainerItemProxy */;
+		};
+		BAE12BF11B2DEE7F00895CC5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BAE12BE41B2DEE7F00895CC5 /* TodayExtension */;
+			targetProxy = BAE12BF01B2DEE7F00895CC5 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1004,6 +1134,69 @@
 			};
 			name = Release;
 		};
+		BAE12BF31B2DEE7F00895CC5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				INFOPLIST_FILE = TodayExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		BAE12BF41B2DEE7F00895CC5 /* GCov_Build */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				INFOPLIST_FILE = TodayExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = GCov_Build;
+		};
+		BAE12BF51B2DEE7F00895CC5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				INFOPLIST_FILE = TodayExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1042,6 +1235,15 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
+		};
+		BAE12BF61B2DEE7F00895CC5 /* Build configuration list for PBXNativeTarget "TodayExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BAE12BF31B2DEE7F00895CC5 /* Debug */,
+				BAE12BF41B2DEE7F00895CC5 /* GCov_Build */,
+				BAE12BF51B2DEE7F00895CC5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
 		};
 /* End XCConfigurationList section */
 

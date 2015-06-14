@@ -26,10 +26,15 @@
 #import "BRAppDelegate.h"
 #import "BRPeerManager.h"
 #import "BRWalletManager.h"
+#import "BRAppGroupManager.h"
 
 #if BITCOIN_TESTNET
 #pragma message "testnet build"
 #endif
+
+@interface BRAppDelegate()
+@property (nonatomic, strong) BRAppGroupManager *sharedContainerManager;
+@end
 
 @implementation BRAppDelegate
 
@@ -55,6 +60,8 @@
              userInfo:@{@"file":file}];
         }
     }
+    
+    [self initSharedContainerManager];
 
     //TODO: bitcoin protocol/payment protocol over multipeer connectivity
 
@@ -69,6 +76,10 @@
     //TODO: figure out deterministic builds/removing app sigs: http://www.afp548.com/2012/06/05/re-signining-ios-apps/
 
     return YES;
+}
+
+- (void)initSharedContainerManager {
+    self.sharedContainerManager = [[BRAppGroupManager alloc] init];
 }
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication
