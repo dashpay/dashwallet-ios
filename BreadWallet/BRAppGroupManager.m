@@ -59,10 +59,16 @@
 
 - (void)copyDataToNSUserDefaultInSharedContainer {
 	BRPaymentRequest *paymentRequest = [self paymentRequestFromWallet];
+    NSString *receiveAddress = [[[BRWalletManager sharedInstance] wallet] receiveAddress];
 	if (paymentRequest) {
 		[[NSUserDefaults appGroupUserDefault] setObject:paymentRequest.data forKey:kBRSharedContainerDataWalletRequestDataKey];
     } else {
         [[NSUserDefaults appGroupUserDefault] removeObjectForKey:kBRSharedContainerDataWalletRequestDataKey];
+    }
+    if (receiveAddress) {
+        [[NSUserDefaults appGroupUserDefault] setObject:receiveAddress forKey:kBRSharedContainerDataWalletReceiveAddressKey];
+    } else {
+        [[NSUserDefaults appGroupUserDefault] removeObjectForKey:kBRSharedContainerDataWalletReceiveAddressKey];
     }
     [[NSUserDefaults appGroupUserDefault] synchronize];
 }

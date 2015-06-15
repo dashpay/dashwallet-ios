@@ -2,8 +2,8 @@
 //  TodayViewController.m
 //  TodayWidget
 //
-//  Created by Henry Tsai on 6/13/15.
-//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
+//  Created by Henry on 6/14/15.
+//  Copyright (c) 2015 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -25,35 +25,32 @@
 
 #import "BRTodayViewController.h"
 #import <NotificationCenter/NotificationCenter.h>
-#import "NSUserDefaults+AppGroup.h"
 #import "UIImage+QRCode.h"
+#import "UIImage+NegativeImage.h"
 #import "BRAppGroupConstants.h"
+#import "NSUserDefaults+AppGroup.h"
 
 static NSString *const kBRScanQRCodeURLScheme = @"bread://x-callback-url/scanqr";
-static CGFloat const kBRTodayWidgetButtonCornerRadius = 4;
 
 @interface BRTodayViewController () <NCWidgetProviding>
-@property (nonatomic, weak) IBOutlet UIButton *sendMoneyButton;
-@property (nonatomic, weak) IBOutlet UIButton *receiveMoneyButton;
-@property (nonatomic, weak) IBOutlet NSLayoutConstraint *qrCodeImageViewWidthContraint;
-@property (nonatomic, weak) IBOutlet NSLayoutConstraint *qrCodeImageViewHeightContraint;
-@property (nonatomic, weak) IBOutlet UIImageView *qrCodeImageView;
+@property (nonatomic, weak) IBOutlet UIView *imageViewContainer;
+@property (nonatomic, weak) IBOutlet UILabel *hashLabel;
+@property (nonatomic, weak) IBOutlet UIView *scanQRButtonContainerView;
+@property (weak, nonatomic) IBOutlet UIButton *scanButton;
 @property (nonatomic, strong) NSData *qrCodeData;
+@property (nonatomic, strong) UIImageView *qrCodeImageView;
+@property (nonatomic, strong) UIVisualEffectView *qrCodeVisualEffectView;
+@property (nonatomic, strong) UIVisualEffectView *scanQrCodeButtonVisualEffectView;
 @end
 
 @implementation BRTodayViewController
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
-	// Do any additional setup after loading the view from its nib.
-	self.qrCodeData = [[NSUserDefaults appGroupUserDefault] objectForKey:kBRSharedContainerDataWalletRequestDataKey];
-	self.qrCodeImageView.image = [UIImage imageWithQRCodeData:self.qrCodeData size:CGSizeMake([self maxQRCodeImageWidth], [self maxQRCodeImageWidth])];
-	self.sendMoneyButton.layer.cornerRadius = kBRTodayWidgetButtonCornerRadius;
-	self.receiveMoneyButton.layer.cornerRadius = kBRTodayWidgetButtonCornerRadius;
-	[self updateQrCodeImageViewHiddenStatus];
+	[self.imageViewContainer addSubview:self.qrCodeVisualEffectView];
+	[self.scanQRButtonContainerView insertSubview:self.scanQrCodeButtonVisualEffectView belowSubview:self.scanButton];
+	[self updateReceiveMoneyUI];
 }
-
-#pragma mark - NCWidgetProviding
 
 - (void)widgetPerformUpdateWithCompletionHandler:(void (^)(NCUpdateResult))completionHandler {
 	// Perform any setup necessary in order to update the view.
@@ -71,48 +68,57 @@ static CGFloat const kBRTodayWidgetButtonCornerRadius = 4;
 	}
 }
 
+- (void)viewDidLayoutSubviews {
+	[super viewDidLayoutSubviews];
+	[self updateReceiveMoneyUI];
+}
+
+- (void)updateReceiveMoneyUI {
+	self.qrCodeData = [[NSUserDefaults appGroupUserDefault] objectForKey:kBRSharedContainerDataWalletRequestDataKey];
+	NSString *receiveAddress = [[NSUserDefaults appGroupUserDefault] objectForKey:kBRSharedContainerDataWalletReceiveAddressKey];
+	if (!CGSizeEqualToSize(self.imageViewContainer.frame.size,CGSizeZero) && self.qrCodeData) {
+		[self.qrCodeImageView removeFromSuperview];
+		UIImage *image = [UIImage imageWithQRCodeData:self.qrCodeData size:CGSizeMake(self.imageViewContainer.frame.size.width, self.imageViewContainer.frame.size.height)];
+		image = [image negativeImage];
+		self.qrCodeImageView = [[UIImageView alloc] initWithImage:image];
+		[self.qrCodeVisualEffectView.contentView addSubview:self.qrCodeImageView];
+	}
+	self.hashLabel.text = receiveAddress;
+}
+
+- (UIVisualEffectView*) qrCodeVisualEffectView {
+	if (!_qrCodeVisualEffectView) {
+		_qrCodeVisualEffectView = [[UIVisualEffectView alloc] initWithEffect:[UIVibrancyEffect notificationCenterVibrancyEffect]];
+		_qrCodeVisualEffectView.frame = self.imageViewContainer.bounds;
+		_qrCodeVisualEffectView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+	}
+	return _qrCodeVisualEffectView;
+}
+
+- (UIVisualEffectView*) scanQrCodeButtonVisualEffectView {
+	if (!_scanQrCodeButtonVisualEffectView) {
+		_scanQrCodeButtonVisualEffectView = [[UIVisualEffectView alloc] initWithEffect:[UIVibrancyEffect notificationCenterVibrancyEffect]];
+		_scanQrCodeButtonVisualEffectView.frame = self.scanQRButtonContainerView.bounds;
+		_scanQrCodeButtonVisualEffectView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+		UIImageView *scanQRCodeButtonImageView =  [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"scanbutton"]];
+		scanQRCodeButtonImageView.frame = self.scanQRButtonContainerView.bounds;
+		scanQRCodeButtonImageView.contentMode = UIViewContentModeScaleAspectFit;
+		scanQRCodeButtonImageView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+		[_scanQrCodeButtonVisualEffectView.contentView addSubview:scanQRCodeButtonImageView];
+	}
+	return _scanQrCodeButtonVisualEffectView;
+}
+
+#pragma mark - NCWidgetProviding
+
 - (UIEdgeInsets)widgetMarginInsetsForProposedMarginInsets:(UIEdgeInsets)defaultMarginInsets {
 	return UIEdgeInsetsZero;
 }
 
+#pragma mark - UI Events
 
-#pragma mark - UI event
-
-- (IBAction)sendMoneyButtonTapped:(UIButton *)sender {
+- (IBAction)scanButtonTapped:(UIButton *)sender {
 	[self.extensionContext openURL:[NSURL URLWithString:kBRScanQRCodeURLScheme] completionHandler:nil];
-}
-
-- (IBAction)receiveMoneyButtonTapped:(id)sender {
-	if ([self isQRCodeImageShown]) {
-		self.qrCodeImageViewWidthContraint.constant = 0;
-		self.qrCodeImageViewHeightContraint.constant = 0;
-	} else {
-		self.qrCodeImageViewWidthContraint.constant = [self maxQRCodeImageWidth];
-		self.qrCodeImageViewHeightContraint.constant = [self maxQRCodeImageWidth];
-	}
-	if ([self isQRCodeImageShown]) {
-		self.qrCodeImageView.hidden = ![self isQRCodeImageShown];
-	}
-	[self.view setNeedsUpdateConstraints];
-	[UIView animateWithDuration:0.35 delay:0 options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionBeginFromCurrentState animations:^{
-	         [self.view layoutIfNeeded];
-	 } completion:^(BOOL finished) {
-	         self.qrCodeImageView.hidden = ![self isQRCodeImageShown];
-	 }];
-}
-
-#pragma mark - helper methods
-
-- (CGFloat)maxQRCodeImageWidth {
-	return self.view.frame.size.width * 0.9;
-}
-
-- (BOOL)isQRCodeImageShown {
-	return (self.qrCodeImageViewWidthContraint.constant > 1);
-}
-
-- (void)updateQrCodeImageViewHiddenStatus {
-	self.qrCodeImageView.hidden = ![self isQRCodeImageShown];
 }
 
 

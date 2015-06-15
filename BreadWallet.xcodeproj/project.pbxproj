@@ -57,6 +57,9 @@
 		75D5F3E0191EC270004AB296 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 75D5F3DF191EC270004AB296 /* Images.xcassets */; };
 		75D5F3F3191EC270004AB296 /* BreadWalletTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D5F3F2191EC270004AB296 /* BreadWalletTests.m */; };
 		84F68C8A1975E9E2002FC300 /* BRScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 84F68C891975E9E2002FC300 /* BRScanViewController.m */; };
+		BA54D3CB1B2EA72700C9CB28 /* UIImage+NegativeImage.m in Sources */ = {isa = PBXBuildFile; fileRef = BA54D3CA1B2EA72700C9CB28 /* UIImage+NegativeImage.m */; };
+		BA54D3CC1B2EA72700C9CB28 /* UIImage+NegativeImage.m in Sources */ = {isa = PBXBuildFile; fileRef = BA54D3CA1B2EA72700C9CB28 /* UIImage+NegativeImage.m */; };
+		BA54D3CE1B2EA74000C9CB28 /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BA54D3CD1B2EA74000C9CB28 /* Media.xcassets */; };
 		BAE12BE71B2DEE7F00895CC5 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */; };
 		BAE12BEF1B2DEE7F00895CC5 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BAE12BEE1B2DEE7F00895CC5 /* MainInterface.storyboard */; };
 		BAE12BF21B2DEE7F00895CC5 /* TodayExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = BAE12BE51B2DEE7F00895CC5 /* TodayExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -291,6 +294,9 @@
 		75F27B0619DE2AB20047FC62 /* ccMemory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ccMemory.h; sourceTree = SOURCE_ROOT; };
 		84F68C881975E9E2002FC300 /* BRScanViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRScanViewController.h; sourceTree = "<group>"; };
 		84F68C891975E9E2002FC300 /* BRScanViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRScanViewController.m; sourceTree = "<group>"; };
+		BA54D3C91B2EA72700C9CB28 /* UIImage+NegativeImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+NegativeImage.h"; sourceTree = "<group>"; };
+		BA54D3CA1B2EA72700C9CB28 /* UIImage+NegativeImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+NegativeImage.m"; sourceTree = "<group>"; };
+		BA54D3CD1B2EA74000C9CB28 /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Media.xcassets; sourceTree = "<group>"; };
 		BAE12BE51B2DEE7F00895CC5 /* TodayExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TodayExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NotificationCenter.framework; path = System/Library/Frameworks/NotificationCenter.framework; sourceTree = SDKROOT; };
 		BAE12BEA1B2DEE7F00895CC5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -422,6 +428,8 @@
 				BAE12BFD1B2DEEDA00895CC5 /* NSUserDefaults+AppGroup.m */,
 				BAE12BFE1B2DEEDA00895CC5 /* UIImage+QRCode.h */,
 				BAE12BFF1B2DEEDA00895CC5 /* UIImage+QRCode.m */,
+				BA54D3C91B2EA72700C9CB28 /* UIImage+NegativeImage.h */,
+				BA54D3CA1B2EA72700C9CB28 /* UIImage+NegativeImage.m */,
 			);
 			name = Categories;
 			sourceTree = "<group>";
@@ -596,6 +604,7 @@
 				BAE12C041B2DEEF700895CC5 /* BRTodayViewController.h */,
 				BAE12C051B2DEEF700895CC5 /* BRTodayViewController.m */,
 				BAE12BEE1B2DEE7F00895CC5 /* MainInterface.storyboard */,
+				BA54D3CD1B2EA74000C9CB28 /* Media.xcassets */,
 				BAE12BE91B2DEE7F00895CC5 /* Supporting Files */,
 			);
 			path = TodayExtension;
@@ -779,6 +788,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BA54D3CE1B2EA74000C9CB28 /* Media.xcassets in Resources */,
 				BAE12BEF1B2DEE7F00895CC5 /* MainInterface.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -812,6 +822,7 @@
 				752E28D019234C3600DB5A3C /* BRBloomFilter.m in Sources */,
 				BAE12C001B2DEEDA00895CC5 /* NSUserDefaults+AppGroup.m in Sources */,
 				752E28D619234C3600DB5A3C /* BRPeer.m in Sources */,
+				BA54D3CB1B2EA72700C9CB28 /* UIImage+NegativeImage.m in Sources */,
 				752E28D819234C3600DB5A3C /* BRPeerManager.m in Sources */,
 				752E28D419234C3600DB5A3C /* BRPaymentProtocol.m in Sources */,
 				752E28D519234C3600DB5A3C /* BRPaymentRequest.m in Sources */,
@@ -851,6 +862,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BA54D3CC1B2EA72700C9CB28 /* UIImage+NegativeImage.m in Sources */,
 				BAE12C031B2DEEDA00895CC5 /* UIImage+QRCode.m in Sources */,
 				BAE12C061B2DEEF700895CC5 /* BRTodayViewController.m in Sources */,
 				BAE12C011B2DEEDA00895CC5 /* NSUserDefaults+AppGroup.m in Sources */,
@@ -1244,6 +1256,7 @@
 				BAE12BF51B2DEE7F00895CC5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 

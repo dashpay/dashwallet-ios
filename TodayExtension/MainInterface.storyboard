@@ -2,6 +2,7 @@
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="7706" systemVersion="14D136" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="M4Y-Lb-cyx">
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7703"/>
+        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
     </dependencies>
     <scenes>
         <!--Today View Controller-->
@@ -9,82 +10,121 @@
             <objects>
                 <viewController id="M4Y-Lb-cyx" customClass="BRTodayViewController" sceneMemberID="viewController">
                     <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="Uua-aG-WNc"/>
-                        <viewControllerLayoutGuide type="bottom" id="iwF-t8-DgH"/>
+                        <viewControllerLayoutGuide type="top" id="Ft6-oW-KC0"/>
+                        <viewControllerLayoutGuide type="bottom" id="FKl-LY-JtV"/>
                     </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" horizontalHuggingPriority="80" verticalHuggingPriority="80" horizontalCompressionResistancePriority="80" verticalCompressionResistancePriority="80" simulatedAppContext="notificationCenter" id="S3S-Oj-5AN">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="80"/>
+                    <view key="view" contentMode="scaleToFill" simulatedAppContext="notificationCenter" id="S3S-Oj-5AN">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="240"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="MFw-p0-ZBE">
-                                <rect key="frame" x="160" y="14" width="1" height="1"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="1" id="RO3-tK-zwb"/>
-                                    <constraint firstAttribute="height" constant="1" id="uAf-aR-AJg"/>
-                                </constraints>
-                            </imageView>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="IQq-0a-VaQ" userLabel="Buttons Container View">
-                                <rect key="frame" x="0.0" y="16" width="320" height="50"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ZgQ-IE-5k2" userLabel="Top Container">
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="240"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eYC-Sv-lMg">
-                                        <rect key="frame" x="169" y="10" width="143" height="30"/>
-                                        <color key="backgroundColor" red="0.86109138257575757" green="0.86109138257575757" blue="0.86109138257575757" alpha="1" colorSpace="calibratedRGB"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="30" id="dnu-Xz-cK2"/>
-                                        </constraints>
-                                        <state key="normal" title="Receive Money">
-                                            <color key="titleColor" red="0.22015072601010099" green="0.22015072601010099" blue="0.22015072601010099" alpha="1" colorSpace="calibratedRGB"/>
-                                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="receiveMoneyButtonTapped:" destination="M4Y-Lb-cyx" eventType="touchUpInside" id="h8x-k8-lfQ"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="QF6-G0-far">
-                                        <rect key="frame" x="8" y="10" width="144" height="30"/>
-                                        <color key="backgroundColor" red="0.85584359218888884" green="0.85584359218888884" blue="0.85584359218888884" alpha="1" colorSpace="calibratedRGB"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="30" id="AJK-rY-4FQ"/>
-                                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="30" id="tLM-KN-Dhf"/>
-                                        </constraints>
-                                        <color key="tintColor" red="0.14137468434343436" green="0.14137468434343436" blue="0.14137468434343436" alpha="1" colorSpace="calibratedRGB"/>
-                                        <state key="normal" title="Send money">
-                                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="sendMoneyButtonTapped:" destination="M4Y-Lb-cyx" eventType="touchUpInside" id="MMF-L7-7u0"/>
-                                        </connections>
-                                    </button>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lWU-I6-Non" userLabel="Button Seperator">
-                                        <rect key="frame" x="160" y="0.0" width="1" height="50"/>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hqe-ao-zmT" userLabel="Left Container View">
+                                        <rect key="frame" x="0.0" y="0.0" width="124" height="240"/>
+                                        <subviews>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="B6Z-lN-rFc" userLabel="Scan QR Button Container View">
+                                                <rect key="frame" x="24" y="72" width="76" height="76"/>
+                                                <subviews>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="A3s-aK-YRq" userLabel="scanButton">
+                                                        <rect key="frame" x="0.0" y="0.0" width="76" height="76"/>
+                                                        <state key="normal">
+                                                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                                        </state>
+                                                        <connections>
+                                                            <action selector="scanButtonTapped:" destination="M4Y-Lb-cyx" eventType="touchUpInside" id="syB-Ag-XRp"/>
+                                                        </connections>
+                                                    </button>
+                                                </subviews>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="centerY" secondItem="A3s-aK-YRq" secondAttribute="centerY" id="Tbq-tA-tvj"/>
+                                                    <constraint firstItem="A3s-aK-YRq" firstAttribute="width" secondItem="B6Z-lN-rFc" secondAttribute="width" id="XvJ-2f-sbo"/>
+                                                    <constraint firstAttribute="centerX" secondItem="A3s-aK-YRq" secondAttribute="centerX" id="f6s-yN-YxD"/>
+                                                    <constraint firstAttribute="width" constant="76" id="jsC-Eg-CDl"/>
+                                                    <constraint firstItem="A3s-aK-YRq" firstAttribute="height" secondItem="B6Z-lN-rFc" secondAttribute="height" id="pzO-QD-FMw"/>
+                                                    <constraint firstAttribute="height" constant="76" id="t4Q-4z-L1a"/>
+                                                </constraints>
+                                            </view>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="scan QR code" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JgG-Ah-UZk">
+                                                <rect key="frame" x="8" y="156" width="108" height="21"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="21" id="YNk-0i-d1P"/>
+                                                </constraints>
+                                                <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                                <color key="textColor" red="1" green="1" blue="1" alpha="0.70000000000000007" colorSpace="calibratedRGB"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <view alpha="0.5" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="RCb-0D-Tux" userLabel="Seperator">
+                                                <rect key="frame" x="124" y="9" width="1" height="218"/>
+                                                <color key="backgroundColor" white="1" alpha="0.5" colorSpace="calibratedWhite"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="1" id="LFI-bc-fyP"/>
+                                                </constraints>
+                                            </view>
+                                        </subviews>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" constant="1" id="tf1-FX-2E0"/>
+                                            <constraint firstItem="JgG-Ah-UZk" firstAttribute="top" secondItem="B6Z-lN-rFc" secondAttribute="bottom" constant="8" id="5eJ-9D-yac"/>
+                                            <constraint firstAttribute="centerY" secondItem="B6Z-lN-rFc" secondAttribute="centerY" constant="10" id="6ac-Ca-gVU"/>
+                                            <constraint firstAttribute="centerX" secondItem="JgG-Ah-UZk" secondAttribute="centerX" id="Bd0-90-JPE"/>
+                                            <constraint firstAttribute="bottom" secondItem="RCb-0D-Tux" secondAttribute="bottom" constant="13" id="DGg-9f-0w4"/>
+                                            <constraint firstItem="JgG-Ah-UZk" firstAttribute="leading" secondItem="hqe-ao-zmT" secondAttribute="leading" constant="8" id="DtH-fC-8Ie"/>
+                                            <constraint firstAttribute="centerX" secondItem="B6Z-lN-rFc" secondAttribute="centerX" id="Len-Lh-ye4"/>
+                                            <constraint firstAttribute="trailing" secondItem="RCb-0D-Tux" secondAttribute="trailing" constant="-1" id="WsJ-Xt-ebW"/>
+                                            <constraint firstAttribute="trailing" secondItem="JgG-Ah-UZk" secondAttribute="trailing" constant="8" id="kvX-gj-W0y"/>
+                                            <constraint firstAttribute="centerY" secondItem="RCb-0D-Tux" secondAttribute="centerY" constant="2" id="omC-jM-PQI"/>
+                                            <constraint firstItem="RCb-0D-Tux" firstAttribute="top" secondItem="hqe-ao-zmT" secondAttribute="top" constant="9" id="peT-oc-LHf"/>
+                                        </constraints>
+                                    </view>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="aus-tt-hb6" userLabel="Right Container View">
+                                        <rect key="frame" x="124" y="0.0" width="196" height="240"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="gQm-B2-ZXE" userLabel="Hash Label">
+                                                <rect key="frame" x="8" y="192" width="176" height="21"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="21" id="1gz-lN-wkW"/>
+                                                </constraints>
+                                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                                <color key="textColor" red="1" green="1" blue="1" alpha="0.70000000000000007" colorSpace="calibratedRGB"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Hbl-1w-eMy" userLabel="Image View Cntainer">
+                                                <rect key="frame" x="16" y="22" width="160" height="160"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                            </view>
+                                        </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                        <constraints>
+                                            <constraint firstAttribute="trailing" secondItem="gQm-B2-ZXE" secondAttribute="trailing" constant="12" id="0EF-Qg-sFc"/>
+                                            <constraint firstAttribute="centerX" secondItem="Hbl-1w-eMy" secondAttribute="centerX" constant="2" id="3LK-H7-uxK"/>
+                                            <constraint firstItem="Hbl-1w-eMy" firstAttribute="leading" secondItem="aus-tt-hb6" secondAttribute="leading" constant="16" id="DJ0-Lp-lpm"/>
+                                            <constraint firstItem="gQm-B2-ZXE" firstAttribute="leading" secondItem="aus-tt-hb6" secondAttribute="leading" constant="8" id="Snx-4P-cVE"/>
+                                            <constraint firstAttribute="width" secondItem="Hbl-1w-eMy" secondAttribute="height" multiplier="6:5" constant="4" id="tEn-9e-ZnF"/>
+                                            <constraint firstAttribute="centerY" secondItem="Hbl-1w-eMy" secondAttribute="centerY" constant="18" id="tvS-Bx-5Bu"/>
+                                            <constraint firstItem="gQm-B2-ZXE" firstAttribute="top" secondItem="Hbl-1w-eMy" secondAttribute="bottom" constant="10" id="zb8-J9-IiO"/>
                                         </constraints>
                                     </view>
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 <constraints>
-                                    <constraint firstAttribute="centerX" secondItem="lWU-I6-Non" secondAttribute="centerX" id="2sA-rF-aED"/>
-                                    <constraint firstItem="lWU-I6-Non" firstAttribute="leading" secondItem="QF6-G0-far" secondAttribute="trailing" constant="8" id="3QA-54-lZI"/>
-                                    <constraint firstItem="eYC-Sv-lMg" firstAttribute="leading" secondItem="lWU-I6-Non" secondAttribute="trailing" constant="8" id="3bw-gV-dqC"/>
-                                    <constraint firstAttribute="bottom" secondItem="lWU-I6-Non" secondAttribute="bottom" id="65y-Bv-Zka"/>
-                                    <constraint firstItem="QF6-G0-far" firstAttribute="leading" secondItem="IQq-0a-VaQ" secondAttribute="leading" constant="8" id="6KK-7u-xQ6"/>
-                                    <constraint firstAttribute="height" constant="50" id="C8l-Nx-q3V"/>
-                                    <constraint firstItem="lWU-I6-Non" firstAttribute="top" secondItem="IQq-0a-VaQ" secondAttribute="top" id="QZb-wL-xNY"/>
-                                    <constraint firstAttribute="centerY" secondItem="eYC-Sv-lMg" secondAttribute="centerY" id="iQr-sN-z5o"/>
-                                    <constraint firstAttribute="trailing" secondItem="eYC-Sv-lMg" secondAttribute="trailing" constant="8" id="ogf-43-12E"/>
-                                    <constraint firstAttribute="centerY" secondItem="QF6-G0-far" secondAttribute="centerY" id="pEo-Iq-2bk"/>
+                                    <constraint firstItem="hqe-ao-zmT" firstAttribute="height" secondItem="ZgQ-IE-5k2" secondAttribute="height" id="4S3-Tq-eDl"/>
+                                    <constraint firstAttribute="trailing" secondItem="aus-tt-hb6" secondAttribute="trailing" id="F55-my-VyD"/>
+                                    <constraint firstItem="aus-tt-hb6" firstAttribute="top" secondItem="ZgQ-IE-5k2" secondAttribute="top" id="WgS-2h-cqL"/>
+                                    <constraint firstItem="aus-tt-hb6" firstAttribute="height" secondItem="ZgQ-IE-5k2" secondAttribute="height" id="c56-fB-dY9"/>
+                                    <constraint firstItem="aus-tt-hb6" firstAttribute="width" secondItem="ZgQ-IE-5k2" secondAttribute="height" multiplier="4:5" constant="4" id="dPX-m6-vFK"/>
+                                    <constraint firstItem="hqe-ao-zmT" firstAttribute="top" secondItem="ZgQ-IE-5k2" secondAttribute="top" id="gB9-KX-mVX"/>
+                                    <constraint firstItem="hqe-ao-zmT" firstAttribute="leading" secondItem="ZgQ-IE-5k2" secondAttribute="leading" id="lhl-3I-hDh"/>
+                                    <constraint firstItem="aus-tt-hb6" firstAttribute="leading" secondItem="hqe-ao-zmT" secondAttribute="trailing" id="wc0-7W-Noi"/>
                                 </constraints>
                             </view>
                         </subviews>
                         <constraints>
-                            <constraint firstItem="IQq-0a-VaQ" firstAttribute="width" secondItem="S3S-Oj-5AN" secondAttribute="width" id="6PH-6P-y3r"/>
-                            <constraint firstAttribute="centerX" secondItem="IQq-0a-VaQ" secondAttribute="centerX" id="CQe-PZ-RC5"/>
-                            <constraint firstItem="MFw-p0-ZBE" firstAttribute="top" secondItem="Uua-aG-WNc" secondAttribute="bottom" constant="14" id="JmH-Yv-VoV"/>
-                            <constraint firstItem="iwF-t8-DgH" firstAttribute="top" secondItem="IQq-0a-VaQ" secondAttribute="bottom" constant="14" id="Nb6-D7-hzQ"/>
-                            <constraint firstAttribute="centerX" secondItem="MFw-p0-ZBE" secondAttribute="centerX" id="Rgj-t0-mcJ"/>
-                            <constraint firstItem="IQq-0a-VaQ" firstAttribute="top" secondItem="MFw-p0-ZBE" secondAttribute="bottom" constant="1" id="ibW-eG-GVv"/>
+                            <constraint firstAttribute="centerY" secondItem="ZgQ-IE-5k2" secondAttribute="centerY" id="2GS-R4-bkH"/>
+                            <constraint firstItem="ZgQ-IE-5k2" firstAttribute="width" secondItem="S3S-Oj-5AN" secondAttribute="height" multiplier="4:3" id="M0t-Db-wfv"/>
+                            <constraint firstItem="ZgQ-IE-5k2" firstAttribute="width" secondItem="S3S-Oj-5AN" secondAttribute="width" id="ODR-J4-6BN"/>
+                            <constraint firstItem="ZgQ-IE-5k2" firstAttribute="top" secondItem="Ft6-oW-KC0" secondAttribute="bottom" id="iwt-V0-ib5"/>
+                            <constraint firstAttribute="centerX" secondItem="ZgQ-IE-5k2" secondAttribute="centerX" id="sm9-0p-3y8"/>
                         </constraints>
                     </view>
                     <extendedEdge key="edgesForExtendedLayout"/>
@@ -92,18 +132,17 @@
                     <nil key="simulatedTopBarMetrics"/>
                     <nil key="simulatedBottomBarMetrics"/>
                     <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
-                    <size key="freeformSize" width="320" height="80"/>
+                    <size key="freeformSize" width="320" height="240"/>
                     <connections>
-                        <outlet property="qrCodeImageView" destination="MFw-p0-ZBE" id="mmE-Yr-4o4"/>
-                        <outlet property="qrCodeImageViewHeightContraint" destination="uAf-aR-AJg" id="3oQ-kv-snb"/>
-                        <outlet property="qrCodeImageViewWidthContraint" destination="RO3-tK-zwb" id="SPl-1Y-tw6"/>
-                        <outlet property="receiveMoneyButton" destination="eYC-Sv-lMg" id="3Xu-0p-eWj"/>
-                        <outlet property="sendMoneyButton" destination="QF6-G0-far" id="YDe-35-Uqi"/>
+                        <outlet property="hashLabel" destination="gQm-B2-ZXE" id="mcZ-F0-E9r"/>
+                        <outlet property="imageViewContainer" destination="Hbl-1w-eMy" id="NgU-Ip-v47"/>
+                        <outlet property="scanButton" destination="A3s-aK-YRq" id="7OY-Bu-L15"/>
+                        <outlet property="scanQRButtonContainerView" destination="B6Z-lN-rFc" id="75j-a4-A7P"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="vXp-U4-Rya" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="296" y="171"/>
+            <point key="canvasLocation" x="516" y="285"/>
         </scene>
     </scenes>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">

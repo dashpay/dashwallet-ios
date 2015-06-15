@@ -28,5 +28,6 @@
 
 static NSString *const kBRSharedContainerDataWalletRequestDataKey = @"kBRSharedContainerDataWalletRequestDataKey";
 static NSString *const kBRAppGroupIdentifier = @"group.org.voisine.breadwallet";
+static NSString *const kBRSharedContainerDataWalletReceiveAddressKey = @"kBRSharedContainerDataWalletReceiveAddressKey";
 
 #endif
