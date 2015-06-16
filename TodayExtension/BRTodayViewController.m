@@ -81,7 +81,12 @@ static NSString *const kBRScanQRCodeURLScheme = @"bread://x-callback-url/scanqr"
 		UIImage *image = [UIImage imageWithQRCodeData:self.qrCodeData size:CGSizeMake(self.imageViewContainer.frame.size.width, self.imageViewContainer.frame.size.height)];
 		image = [image negativeImage];
 		self.qrCodeImageView = [[UIImageView alloc] initWithImage:image];
-		[self.qrCodeVisualEffectView.contentView addSubview:self.qrCodeImageView];
+        // if accessbility reduced Transparency is on, we use original image so it's easier to scan
+        if (UIAccessibilityIsReduceTransparencyEnabled()) {
+            [self.qrCodeVisualEffectView addSubview:self.qrCodeImageView];
+        } else {
+            [self.qrCodeVisualEffectView.contentView addSubview:self.qrCodeImageView];
+        }
 	}
 	self.hashLabel.text = receiveAddress;
 }
@@ -104,7 +109,11 @@ static NSString *const kBRScanQRCodeURLScheme = @"bread://x-callback-url/scanqr"
 		scanQRCodeButtonImageView.frame = self.scanQRButtonContainerView.bounds;
 		scanQRCodeButtonImageView.contentMode = UIViewContentModeScaleAspectFit;
 		scanQRCodeButtonImageView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-		[_scanQrCodeButtonVisualEffectView.contentView addSubview:scanQRCodeButtonImageView];
+        if (UIAccessibilityIsReduceTransparencyEnabled()) {
+            [_scanQrCodeButtonVisualEffectView addSubview:scanQRCodeButtonImageView];
+        } else {
+            [_scanQrCodeButtonVisualEffectView.contentView addSubview:scanQRCodeButtonImageView];
+        }
 	}
 	return _scanQrCodeButtonVisualEffectView;
 }
