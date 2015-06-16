@@ -61,7 +61,9 @@
             linePointer[0] = r * linePointer[3] / 255;
             linePointer[1] = g * linePointer[3] / 255;
             linePointer[2] = b * linePointer[3] / 255;
-            
+            if (r == g && g == b && b == 0){
+                linePointer[3] = 0.0;
+            }
             linePointer += 4;
         }
     }
