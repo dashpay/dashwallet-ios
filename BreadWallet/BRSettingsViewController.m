@@ -400,8 +400,8 @@
                     self.noOptionsText = NSLocalizedString(@"no exchange rate data", nil);
                     self.selectorController.title =
                         [NSString stringWithFormat:@"%@ = %@",
-                         [m localCurrencyStringForAmount:(localPrice > 0) ? SATOSHIS/localPrice : 0],
-                         [m stringForAmount:(localPrice > 0) ? SATOSHIS/localPrice : 0]];
+                         [m localCurrencyStringForAmount:(localPrice > DBL_EPSILON) ? SATOSHIS/localPrice : 0],
+                         [m stringForAmount:(localPrice > DBL_EPSILON) ? SATOSHIS/localPrice : 0]];
                     [self.navigationController pushViewController:self.selectorController animated:YES];
                     [self.selectorController.tableView reloadData];
                     

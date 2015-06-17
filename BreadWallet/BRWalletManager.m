@@ -758,7 +758,12 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     
     if (i == NSNotFound) code = DEFAULT_CURRENCY_CODE, i = [_currencyCodes indexOfObject:DEFAULT_CURRENCY_CODE];
     _localCurrencyCode = [code copy];
-    self.localPrice = (i < _currencyPrices.count) ? _currencyPrices[i] : @(0);
+
+    if (i < _currencyPrices.count && self.secureTime + 3*24*60*60 > [NSDate timeIntervalSinceReferenceDate]) {
+        self.localPrice = _currencyPrices[i]; // don't use exchange rate data more than 72hrs out of date
+    }
+    else self.localPrice = @(0);
+
     self.localFormat.currencyCode = _localCurrencyCode;
     self.localFormat.maximum =
         [[NSDecimalNumber decimalNumberWithDecimal:self.localPrice.decimalValue]
