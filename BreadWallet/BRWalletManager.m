@@ -47,7 +47,6 @@
 
 #define SEED_ENTROPY_LENGTH    (128/8)
 #define SEC_ATTR_SERVICE       @"org.voisine.breadwallet"
-#define DEFAULT_CURRENCY_PRICE 500.0
 #define DEFAULT_CURRENCY_CODE  @"USD"
 #define DEFAULT_SPENT_LIMIT    SATOSHIS
 #define DEFAULT_FEE_PER_KB     (4096*1000/225) // fee required by eligius pool, which supports child-pays-for-parent
@@ -759,7 +758,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     
     if (i == NSNotFound) code = DEFAULT_CURRENCY_CODE, i = [_currencyCodes indexOfObject:DEFAULT_CURRENCY_CODE];
     _localCurrencyCode = [code copy];
-    self.localPrice = (i < _currencyPrices.count) ? _currencyPrices[i] : @(DEFAULT_CURRENCY_PRICE);
+    self.localPrice = (i < _currencyPrices.count) ? _currencyPrices[i] : @(0);
     self.localFormat.currencyCode = _localCurrencyCode;
     self.localFormat.maximum =
         [[NSDecimalNumber decimalNumberWithDecimal:self.localPrice.decimalValue]
@@ -1063,6 +1062,7 @@ completion:(void (^)(BRTransaction *tx, uint64_t fee, NSError *error))completion
 - (NSString *)localCurrencyStringForAmount:(int64_t)amount
 {
     if (amount == 0) return [self.localFormat stringFromNumber:@(0)];
+    if (self.localPrice.doubleValue <= DBL_EPSILON) return @""; // no exchange rate data
     
     NSDecimalNumber *n = [[[NSDecimalNumber decimalNumberWithDecimal:self.localPrice.decimalValue]
                            decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithLongLong:llabs(amount)]]

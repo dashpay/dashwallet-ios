@@ -32,7 +32,7 @@
 @property (nonatomic, assign) BOOL touchId;
 @property (nonatomic, strong) UITableViewController *selectorController;
 @property (nonatomic, strong) NSArray *selectorOptions;
-@property (nonatomic, strong) NSString *selectedOption;
+@property (nonatomic, strong) NSString *selectedOption, *noOptionsText;
 @property (nonatomic, assign) NSUInteger selectorType;
 @property (nonatomic, strong) UISwipeGestureRecognizer *navBarSwipe;
 @property (nonatomic, strong) id balanceObserver;
@@ -141,6 +141,7 @@
         if (m.spendingLimit > SATOSHIS*10) m.spendingLimit = SATOSHIS*10;
         self.selectedOption = self.selectorOptions[(log10(m.spendingLimit) < 6) ? 0 :
                                                    (NSUInteger)log10(m.spendingLimit) - 6];
+        self.noOptionsText = nil;
         self.selectorController.title = NSLocalizedString(@"touch id spending limit", nil);
         [self.navigationController pushViewController:self.selectorController animated:YES];
         [self.selectorController.tableView reloadData];
@@ -258,6 +259,12 @@
     return cell;
 }
 
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
+{
+    if (tableView == self.selectorController.tableView && self.selectorOptions.count == 0) return self.noOptionsText;
+    return nil;
+}
+
 #pragma mark - UITableViewDelegate
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
@@ -309,12 +316,13 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
+    BRWalletManager *m = [BRWalletManager sharedInstance];
     UIViewController *c = nil;
     UILabel *l = nil;
     NSMutableAttributedString *s = nil;
     NSMutableArray *options;
     NSUInteger i = 0;
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    double localPrice = m.localCurrencyPrice;
     
     if (tableView == self.selectorController.tableView) {
         i = [self.selectorOptions indexOfObject:self.selectedOption];
@@ -389,13 +397,15 @@
                     self.selectorOptions = options;
                     i = [m.currencyCodes indexOfObject:m.localCurrencyCode];
                     if (i < options.count) self.selectedOption = options[i];
-                    self.selectorController.title = [NSString stringWithFormat:@"%@ = %@",
-                                                     [m localCurrencyStringForAmount:SATOSHIS/m.localCurrencyPrice],
-                                                     [m stringForAmount:SATOSHIS/m.localCurrencyPrice]];
+                    self.noOptionsText = NSLocalizedString(@"no exchange rate data", nil);
+                    self.selectorController.title =
+                        [NSString stringWithFormat:@"%@ = %@",
+                         [m localCurrencyStringForAmount:(localPrice > 0) ? SATOSHIS/localPrice : 0],
+                         [m stringForAmount:(localPrice > 0) ? SATOSHIS/localPrice : 0]];
                     [self.navigationController pushViewController:self.selectorController animated:YES];
                     [self.selectorController.tableView reloadData];
                     
-                    if (i != NSNotFound) {
+                    if (i < options.count) {
                         dispatch_async(dispatch_get_main_queue(), ^{
                             [self.selectorController.tableView
                              scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:i inSection:0]
