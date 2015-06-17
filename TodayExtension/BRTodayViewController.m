@@ -31,16 +31,24 @@
 #import "NSUserDefaults+AppGroup.h"
 
 static NSString *const kBRScanQRCodeURLScheme = @"bread://x-callback-url/scanqr";
+static NSString *const kBROpenBreadwalletScheme = @"bread://";
+
 
 @interface BRTodayViewController () <NCWidgetProviding>
 @property (nonatomic, weak) IBOutlet UIView *imageViewContainer;
 @property (nonatomic, weak) IBOutlet UILabel *hashLabel;
 @property (nonatomic, weak) IBOutlet UIView *scanQRButtonContainerView;
-@property (weak, nonatomic) IBOutlet UIButton *scanButton;
+@property (nonatomic, weak) IBOutlet UIButton *scanButton;
 @property (nonatomic, strong) NSData *qrCodeData;
 @property (nonatomic, strong) UIImageView *qrCodeImageView;
 @property (nonatomic, strong) UIVisualEffectView *qrCodeVisualEffectView;
 @property (nonatomic, strong) UIVisualEffectView *scanQrCodeButtonVisualEffectView;
+@property (nonatomic, strong) UIVisualEffectView *openAppVisualEffectView;
+
+@property (weak, nonatomic) IBOutlet UIView *noDataViewContainer;
+@property (weak, nonatomic) IBOutlet UIView *topViewContainer;
+@property (weak, nonatomic) IBOutlet UIView *openAppButtonContainer;
+@property (weak, nonatomic) IBOutlet UIButton *openAppButton;
 @end
 
 @implementation BRTodayViewController
@@ -49,6 +57,7 @@ static NSString *const kBRScanQRCodeURLScheme = @"bread://x-callback-url/scanqr"
 	[super viewDidLoad];
 	[self.imageViewContainer addSubview:self.qrCodeVisualEffectView];
 	[self.scanQRButtonContainerView insertSubview:self.scanQrCodeButtonVisualEffectView belowSubview:self.scanButton];
+    [self.openAppButtonContainer insertSubview:self.openAppVisualEffectView belowSubview:self.openAppButton];
 	[self updateReceiveMoneyUI];
 }
 
@@ -59,11 +68,18 @@ static NSString *const kBRScanQRCodeURLScheme = @"bread://x-callback-url/scanqr"
 	// If there's no update required, use NCUpdateResultNoData
 	// If there's an update, use NCUpdateResultNewData
 	if ([self.qrCodeData isEqualToData:data]) {
+        self.noDataViewContainer.hidden = YES;
+        self.topViewContainer.hidden = NO;
 		completionHandler(NCUpdateResultNoData);
 	} else if (self.qrCodeData) {
 		self.qrCodeData = data;
+        self.noDataViewContainer.hidden = YES;
+        self.topViewContainer.hidden = NO;
+        [self updateReceiveMoneyUI];
 		completionHandler(NCUpdateResultNewData);
 	} else {
+        self.noDataViewContainer.hidden = NO;
+        self.topViewContainer.hidden = YES;
 		completionHandler(NCUpdateResultFailed);
 	}
 }
@@ -100,6 +116,19 @@ static NSString *const kBRScanQRCodeURLScheme = @"bread://x-callback-url/scanqr"
 	return _qrCodeVisualEffectView;
 }
 
+- (UIVisualEffectView*) openAppVisualEffectView {
+    if (!_openAppVisualEffectView) {
+        _openAppVisualEffectView = [[UIVisualEffectView alloc] initWithEffect:[UIVibrancyEffect notificationCenterVibrancyEffect]];
+        UIView *view = [[UIView alloc] initWithFrame:self.openAppButtonContainer.bounds];
+        view.backgroundColor = [UIColor whiteColor];
+        view.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+        _openAppVisualEffectView.frame = self.openAppButtonContainer.bounds;
+        _openAppVisualEffectView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+        [_openAppVisualEffectView.contentView addSubview:view];
+    }
+    return _openAppVisualEffectView;
+}
+
 - (UIVisualEffectView*) scanQrCodeButtonVisualEffectView {
 	if (!_scanQrCodeButtonVisualEffectView) {
 		_scanQrCodeButtonVisualEffectView = [[UIVisualEffectView alloc] initWithEffect:[UIVibrancyEffect notificationCenterVibrancyEffect]];
@@ -128,6 +157,10 @@ static NSString *const kBRScanQRCodeURLScheme = @"bread://x-callback-url/scanqr"
 
 - (IBAction)scanButtonTapped:(UIButton *)sender {
 	[self.extensionContext openURL:[NSURL URLWithString:kBRScanQRCodeURLScheme] completionHandler:nil];
+}
+
+- (IBAction)openAppButtonTapped:(id)sender {
+    [self.extensionContext openURL:[NSURL URLWithString:kBROpenBreadwalletScheme] completionHandler:nil];
 }
 
 
