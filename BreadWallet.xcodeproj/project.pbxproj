@@ -57,6 +57,7 @@
 		75D5F3E0191EC270004AB296 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 75D5F3DF191EC270004AB296 /* Images.xcassets */; };
 		75D5F3F3191EC270004AB296 /* BreadWalletTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D5F3F2191EC270004AB296 /* BreadWalletTests.m */; };
 		84F68C8A1975E9E2002FC300 /* BRScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 84F68C891975E9E2002FC300 /* BRScanViewController.m */; };
+		BA091FED1B328FAC00F7BFEB /* BRVisualEffectButton.m in Sources */ = {isa = PBXBuildFile; fileRef = BA091FEC1B328FAC00F7BFEB /* BRVisualEffectButton.m */; };
 		BA54D3CB1B2EA72700C9CB28 /* UIImage+NegativeImage.m in Sources */ = {isa = PBXBuildFile; fileRef = BA54D3CA1B2EA72700C9CB28 /* UIImage+NegativeImage.m */; };
 		BA54D3CC1B2EA72700C9CB28 /* UIImage+NegativeImage.m in Sources */ = {isa = PBXBuildFile; fileRef = BA54D3CA1B2EA72700C9CB28 /* UIImage+NegativeImage.m */; };
 		BA54D3CE1B2EA74000C9CB28 /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BA54D3CD1B2EA74000C9CB28 /* Media.xcassets */; };
@@ -294,6 +295,8 @@
 		75F27B0619DE2AB20047FC62 /* ccMemory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ccMemory.h; sourceTree = SOURCE_ROOT; };
 		84F68C881975E9E2002FC300 /* BRScanViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRScanViewController.h; sourceTree = "<group>"; };
 		84F68C891975E9E2002FC300 /* BRScanViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRScanViewController.m; sourceTree = "<group>"; };
+		BA091FEB1B328FAC00F7BFEB /* BRVisualEffectButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRVisualEffectButton.h; sourceTree = "<group>"; };
+		BA091FEC1B328FAC00F7BFEB /* BRVisualEffectButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRVisualEffectButton.m; sourceTree = "<group>"; };
 		BA54D3C91B2EA72700C9CB28 /* UIImage+NegativeImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+NegativeImage.h"; sourceTree = "<group>"; };
 		BA54D3CA1B2EA72700C9CB28 /* UIImage+NegativeImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+NegativeImage.m"; sourceTree = "<group>"; };
 		BA54D3CD1B2EA74000C9CB28 /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Media.xcassets; sourceTree = "<group>"; };
@@ -603,6 +606,8 @@
 			children = (
 				BAE12C041B2DEEF700895CC5 /* BRTodayViewController.h */,
 				BAE12C051B2DEEF700895CC5 /* BRTodayViewController.m */,
+				BA091FEB1B328FAC00F7BFEB /* BRVisualEffectButton.h */,
+				BA091FEC1B328FAC00F7BFEB /* BRVisualEffectButton.m */,
 				BAE12BEE1B2DEE7F00895CC5 /* MainInterface.storyboard */,
 				BA54D3CD1B2EA74000C9CB28 /* Media.xcassets */,
 				BAE12BE91B2DEE7F00895CC5 /* Supporting Files */,
@@ -866,6 +871,7 @@
 				BAE12C031B2DEEDA00895CC5 /* UIImage+QRCode.m in Sources */,
 				BAE12C061B2DEEF700895CC5 /* BRTodayViewController.m in Sources */,
 				BAE12C011B2DEEDA00895CC5 /* NSUserDefaults+AppGroup.m in Sources */,
+				BA091FED1B328FAC00F7BFEB /* BRVisualEffectButton.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
