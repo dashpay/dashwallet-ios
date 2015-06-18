@@ -29,6 +29,8 @@
 #import "UIImage+NegativeImage.h"
 #import "BRAppGroupConstants.h"
 #import "NSUserDefaults+AppGroup.h"
+#import "BRTodayWidgetButton.h"
+#import "BRVisualEffectButton.h"
 
 static NSString *const kBRScanQRCodeURLScheme = @"bread://x-callback-url/scanqr";
 static NSString *const kBROpenBreadwalletScheme = @"bread://";
@@ -39,16 +41,15 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
 @property (nonatomic, weak) IBOutlet UILabel *hashLabel;
 @property (nonatomic, weak) IBOutlet UIView *scanQRButtonContainerView;
 @property (nonatomic, weak) IBOutlet UIButton *scanButton;
+@property (nonatomic, weak) IBOutlet UIView *noDataViewContainer;
+@property (nonatomic, weak) IBOutlet UIView *topViewContainer;
+@property (nonatomic, weak) IBOutlet UIView *openAppButtonContainer;
 @property (nonatomic, strong) NSData *qrCodeData;
 @property (nonatomic, strong) UIImageView *qrCodeImageView;
 @property (nonatomic, strong) UIVisualEffectView *qrCodeVisualEffectView;
 @property (nonatomic, strong) UIVisualEffectView *scanQrCodeButtonVisualEffectView;
 @property (nonatomic, strong) UIVisualEffectView *openAppVisualEffectView;
-
-@property (weak, nonatomic) IBOutlet UIView *noDataViewContainer;
-@property (weak, nonatomic) IBOutlet UIView *topViewContainer;
-@property (weak, nonatomic) IBOutlet UIView *openAppButtonContainer;
-@property (weak, nonatomic) IBOutlet UIButton *openAppButton;
+@property (nonatomic, strong) UIButton *openAppButton;
 @end
 
 @implementation BRTodayViewController
@@ -57,7 +58,7 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
 	[super viewDidLoad];
 	[self.imageViewContainer addSubview:self.qrCodeVisualEffectView];
 	[self.scanQRButtonContainerView insertSubview:self.scanQrCodeButtonVisualEffectView belowSubview:self.scanButton];
-    [self.openAppButtonContainer insertSubview:self.openAppVisualEffectView belowSubview:self.openAppButton];
+    [self.openAppButtonContainer addSubview:self.openAppButton];
 	[self updateReceiveMoneyUI];
 }
 
@@ -119,12 +120,9 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
 - (UIVisualEffectView*) openAppVisualEffectView {
     if (!_openAppVisualEffectView) {
         _openAppVisualEffectView = [[UIVisualEffectView alloc] initWithEffect:[UIVibrancyEffect notificationCenterVibrancyEffect]];
-        UIView *view = [[UIView alloc] initWithFrame:self.openAppButtonContainer.bounds];
-        view.backgroundColor = [UIColor whiteColor];
-        view.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
         _openAppVisualEffectView.frame = self.openAppButtonContainer.bounds;
         _openAppVisualEffectView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-        [_openAppVisualEffectView.contentView addSubview:view];
+        [_openAppVisualEffectView.contentView addSubview:self.openAppButton];
     }
     return _openAppVisualEffectView;
 }
@@ -145,6 +143,18 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
         }
 	}
 	return _scanQrCodeButtonVisualEffectView;
+}
+
+- (UIButton*)openAppButton {
+    if (!_openAppButton) {
+        _openAppButton = [[BRVisualEffectButton alloc] initWithFrame:self.openAppButtonContainer.bounds];
+        _openAppButton.userInteractionEnabled = YES;
+        _openAppButton.titleLabel.font = [UIFont systemFontOfSize:12];
+        [_openAppButton setTitle:@"Open App" forState:UIControlStateNormal];
+        [_openAppButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+        [_openAppButton addTarget:self action:@selector(openAppButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+    }
+    return _openAppButton;
 }
 
 #pragma mark - NCWidgetProviding
