@@ -29,7 +29,6 @@
 #import "UIImage+NegativeImage.h"
 #import "BRAppGroupConstants.h"
 #import "NSUserDefaults+AppGroup.h"
-#import "BRTodayWidgetButton.h"
 #import "BRVisualEffectButton.h"
 
 static NSString *const kBRScanQRCodeURLScheme = @"bread://x-callback-url/scanqr";
@@ -45,18 +44,16 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
 @property (nonatomic, weak) IBOutlet UIView *openAppButtonContainer;
 @property (nonatomic, strong) NSData *qrCodeData;
 @property (nonatomic, strong) UIImageView *qrCodeImageView;
-@property (nonatomic, strong) UIVisualEffectView *qrCodeVisualEffectView;
-@property (nonatomic, strong) UIVisualEffectView *scanQrCodeButtonVisualEffectView;
-@property (nonatomic, strong) UIVisualEffectView *openAppVisualEffectView;
 @property (nonatomic, strong) UIButton *openAppButton;
 @property (nonatomic, strong) UIButton *scanButton;
+@property (nonatomic, strong) UIButton *qrCodeView;
 @end
 
 @implementation BRTodayViewController
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
-	[self.imageViewContainer addSubview:self.qrCodeVisualEffectView];
+	[self.imageViewContainer addSubview:self.qrCodeView];
 	[self.scanQRButtonContainerView addSubview:self.scanButton];
     [self.openAppButtonContainer addSubview:self.openAppButton];
 	[self updateReceiveMoneyUI];
@@ -97,34 +94,9 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
 		[self.qrCodeImageView removeFromSuperview];
 		UIImage *image = [UIImage imageWithQRCodeData:self.qrCodeData size:CGSizeMake(self.imageViewContainer.frame.size.width, self.imageViewContainer.frame.size.height)];
 		image = [image negativeImage];
-		self.qrCodeImageView = [[UIImageView alloc] initWithImage:image];
-        // if accessbility reduced Transparency is on, we use original image so it's easier to scan
-        if (UIAccessibilityIsReduceTransparencyEnabled()) {
-            [self.qrCodeVisualEffectView addSubview:self.qrCodeImageView];
-        } else {
-            [self.qrCodeVisualEffectView.contentView addSubview:self.qrCodeImageView];
-        }
+        [self.qrCodeView setImage:image forState:UIControlStateNormal];
 	}
 	self.hashLabel.text = receiveAddress;
-}
-
-- (UIVisualEffectView*) qrCodeVisualEffectView {
-	if (!_qrCodeVisualEffectView) {
-		_qrCodeVisualEffectView = [[UIVisualEffectView alloc] initWithEffect:[UIVibrancyEffect notificationCenterVibrancyEffect]];
-		_qrCodeVisualEffectView.frame = self.imageViewContainer.bounds;
-		_qrCodeVisualEffectView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-	}
-	return _qrCodeVisualEffectView;
-}
-
-- (UIVisualEffectView*) openAppVisualEffectView {
-    if (!_openAppVisualEffectView) {
-        _openAppVisualEffectView = [[UIVisualEffectView alloc] initWithEffect:[UIVibrancyEffect notificationCenterVibrancyEffect]];
-        _openAppVisualEffectView.frame = self.openAppButtonContainer.bounds;
-        _openAppVisualEffectView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-        [_openAppVisualEffectView.contentView addSubview:self.openAppButton];
-    }
-    return _openAppVisualEffectView;
 }
 
 - (UIButton*)openAppButton {
@@ -147,6 +119,16 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
         [_scanButton addTarget:self action:@selector(scanButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     }
     return _scanButton;
+}
+
+- (UIButton*)qrCodeView {
+    if (!_qrCodeView) {
+        _qrCodeView = [[BRVisualEffectButton alloc] initWithFrame:self.imageViewContainer.bounds];
+        _qrCodeView.userInteractionEnabled = NO;
+        _qrCodeView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+
+    }
+    return _qrCodeView;
 }
 
 #pragma mark - NCWidgetProviding

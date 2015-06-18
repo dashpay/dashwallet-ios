@@ -60,9 +60,9 @@
 
 - (void)setHighlighted:(BOOL)highlighted {
     if(highlighted) {
-        self.backgroundView.alpha = 0.6;
+        self.viewOnTopOfVisualEffectView.hidden = YES;
     } else {
-        self.backgroundView.alpha = 1.0;
+        self.viewOnTopOfVisualEffectView.hidden = NO;
     }
     [super setHighlighted:highlighted];
 }
