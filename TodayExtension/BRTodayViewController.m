@@ -40,7 +40,6 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
 @property (nonatomic, weak) IBOutlet UIView *imageViewContainer;
 @property (nonatomic, weak) IBOutlet UILabel *hashLabel;
 @property (nonatomic, weak) IBOutlet UIView *scanQRButtonContainerView;
-@property (nonatomic, weak) IBOutlet UIButton *scanButton;
 @property (nonatomic, weak) IBOutlet UIView *noDataViewContainer;
 @property (nonatomic, weak) IBOutlet UIView *topViewContainer;
 @property (nonatomic, weak) IBOutlet UIView *openAppButtonContainer;
@@ -50,6 +49,7 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
 @property (nonatomic, strong) UIVisualEffectView *scanQrCodeButtonVisualEffectView;
 @property (nonatomic, strong) UIVisualEffectView *openAppVisualEffectView;
 @property (nonatomic, strong) UIButton *openAppButton;
+@property (nonatomic, strong) UIButton *scanButton;
 @end
 
 @implementation BRTodayViewController
@@ -57,7 +57,7 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
 - (void)viewDidLoad {
 	[super viewDidLoad];
 	[self.imageViewContainer addSubview:self.qrCodeVisualEffectView];
-	[self.scanQRButtonContainerView insertSubview:self.scanQrCodeButtonVisualEffectView belowSubview:self.scanButton];
+	[self.scanQRButtonContainerView addSubview:self.scanButton];
     [self.openAppButtonContainer addSubview:self.openAppButton];
 	[self updateReceiveMoneyUI];
 }
@@ -127,24 +127,6 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
     return _openAppVisualEffectView;
 }
 
-- (UIVisualEffectView*) scanQrCodeButtonVisualEffectView {
-	if (!_scanQrCodeButtonVisualEffectView) {
-		_scanQrCodeButtonVisualEffectView = [[UIVisualEffectView alloc] initWithEffect:[UIVibrancyEffect notificationCenterVibrancyEffect]];
-		_scanQrCodeButtonVisualEffectView.frame = self.scanQRButtonContainerView.bounds;
-		_scanQrCodeButtonVisualEffectView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-		UIImageView *scanQRCodeButtonImageView =  [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"scanbutton"]];
-		scanQRCodeButtonImageView.frame = self.scanQRButtonContainerView.bounds;
-		scanQRCodeButtonImageView.contentMode = UIViewContentModeScaleAspectFit;
-		scanQRCodeButtonImageView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-        if (UIAccessibilityIsReduceTransparencyEnabled()) {
-            [_scanQrCodeButtonVisualEffectView addSubview:scanQRCodeButtonImageView];
-        } else {
-            [_scanQrCodeButtonVisualEffectView.contentView addSubview:scanQRCodeButtonImageView];
-        }
-	}
-	return _scanQrCodeButtonVisualEffectView;
-}
-
 - (UIButton*)openAppButton {
     if (!_openAppButton) {
         _openAppButton = [[BRVisualEffectButton alloc] initWithFrame:self.openAppButtonContainer.bounds];
@@ -155,6 +137,16 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
         [_openAppButton addTarget:self action:@selector(openAppButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     }
     return _openAppButton;
+}
+
+- (UIButton*)scanButton {
+    if (!_scanButton) {
+        _scanButton = [[BRVisualEffectButton alloc] initWithFrame:self.scanQRButtonContainerView.bounds];
+        _scanButton.userInteractionEnabled = YES;
+        [_scanButton setImage:[UIImage imageNamed:@"scanbutton"] forState:UIControlStateNormal];
+        [_scanButton addTarget:self action:@selector(scanButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+    }
+    return _scanButton;
 }
 
 #pragma mark - NCWidgetProviding
