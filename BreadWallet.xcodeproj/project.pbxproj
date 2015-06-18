@@ -61,6 +61,7 @@
 		BA54D3CB1B2EA72700C9CB28 /* UIImage+NegativeImage.m in Sources */ = {isa = PBXBuildFile; fileRef = BA54D3CA1B2EA72700C9CB28 /* UIImage+NegativeImage.m */; };
 		BA54D3CC1B2EA72700C9CB28 /* UIImage+NegativeImage.m in Sources */ = {isa = PBXBuildFile; fileRef = BA54D3CA1B2EA72700C9CB28 /* UIImage+NegativeImage.m */; };
 		BA54D3CE1B2EA74000C9CB28 /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BA54D3CD1B2EA74000C9CB28 /* Media.xcassets */; };
+		BA65A6C11B32904F001597AE /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 75D5F3DF191EC270004AB296 /* Images.xcassets */; };
 		BAE12BE71B2DEE7F00895CC5 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */; };
 		BAE12BEF1B2DEE7F00895CC5 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BAE12BEE1B2DEE7F00895CC5 /* MainInterface.storyboard */; };
 		BAE12BF21B2DEE7F00895CC5 /* TodayExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = BAE12BE51B2DEE7F00895CC5 /* TodayExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -793,6 +794,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BA65A6C11B32904F001597AE /* Images.xcassets in Resources */,
 				BA54D3CE1B2EA74000C9CB28 /* Media.xcassets in Resources */,
 				BAE12BEF1B2DEE7F00895CC5 /* MainInterface.storyboard in Resources */,
 			);
