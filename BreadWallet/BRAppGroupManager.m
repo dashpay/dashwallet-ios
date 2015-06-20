@@ -57,8 +57,8 @@
 #pragma mark - move data methods
 
 - (void)copyDataToNSUserDefaultInSharedContainer {
+    NSString *receiveAddress = [self paymentCeceiveAddress];
     BRPaymentRequest *paymentRequest = [self paymentRequestFromWallet];
-    NSString *receiveAddress = [[[BRWalletManager sharedInstance] wallet] receiveAddress];
     if (paymentRequest) {
         [[NSUserDefaults appGroupUserDefault] setObject:paymentRequest.data forKey:kBRSharedContainerDataWalletRequestDataKey];
     } else {
