@@ -88,6 +88,13 @@ typedef enum {
     BRPeerStatusConnected
 } BRPeerStatus;
 
+typedef union {
+    uint8_t u6_8[16];
+    uint16_t u6_16[8];
+    uint32_t u6_32[4];
+    uint64_t u6_64[2];
+} BRPeerAddress; // IPv6 address in network byte order
+
 @interface BRPeer : NSObject<NSStreamDelegate>
 
 @property (nonatomic, readonly) id<BRPeerDelegate> delegate;
@@ -98,7 +105,7 @@ typedef enum {
 
 @property (nonatomic, readonly) BRPeerStatus status;
 @property (nonatomic, readonly) NSString *host;
-@property (nonatomic, readonly) uint32_t address;
+@property (nonatomic, readonly) BRPeerAddress address;
 @property (nonatomic, readonly) uint16_t port;
 @property (nonatomic, readonly) uint64_t services;
 @property (nonatomic, readonly) uint32_t version;
@@ -113,10 +120,10 @@ typedef enum {
 @property (nonatomic, assign) uint32_t currentBlockHeight; // set this to local block height (helps detect tarpit nodes)
 @property (nonatomic, assign) BOOL synced; // use this to keep track of peer state
 
-+ (instancetype)peerWithAddress:(uint32_t)address andPort:(uint16_t)port;
++ (instancetype)peerWithAddress:(BRPeerAddress)address andPort:(uint16_t)port;
 
-- (instancetype)initWithAddress:(uint32_t)address andPort:(uint16_t)port;
-- (instancetype)initWithAddress:(uint32_t)address port:(uint16_t)port timestamp:(NSTimeInterval)timestamp
+- (instancetype)initWithAddress:(BRPeerAddress)address andPort:(uint16_t)port;
+- (instancetype)initWithAddress:(BRPeerAddress)address port:(uint16_t)port timestamp:(NSTimeInterval)timestamp
 services:(uint64_t)services;
 - (void)setDelegate:(id<BRPeerDelegate>)delegate queue:(dispatch_queue_t)delegateQueue;
 - (void)connect;

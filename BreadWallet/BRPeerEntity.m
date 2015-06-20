@@ -38,8 +38,11 @@
 
 - (instancetype)setAttributesFromPeer:(BRPeer *)peer
 {
+    //TODO: store IPv6 addresses
+    if (peer.address.u6_64[0] != 0 || peer.address.u6_32[2] != CFSwapInt32HostToBig(0xffff)) return nil;
+
     [[self managedObjectContext] performBlockAndWait:^{
-        self.address = peer.address;
+        self.address = CFSwapInt32BigToHost(peer.address.u6_32[3]);
         self.port = peer.port;
         self.timestamp = peer.timestamp;
         self.services = peer.services;
@@ -52,10 +55,11 @@
 - (BRPeer *)peer
 {
     __block BRPeer *peer = nil;
-
+        
     [[self managedObjectContext] performBlockAndWait:^{
-        peer = [[BRPeer alloc] initWithAddress:self.address port:self.port timestamp:self.timestamp
-                services:self.services];
+        BRPeerAddress address = { 0, 0, CFSwapInt32HostToBig(0xffff), CFSwapInt32HostToBig(self.address) };
+
+        peer = [[BRPeer alloc] initWithAddress:address port:self.port timestamp:self.timestamp services:self.services];
         peer.misbehavin = self.misbehavin;
     }];
 

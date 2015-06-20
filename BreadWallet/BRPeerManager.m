@@ -217,14 +217,21 @@ static const char *dns_seeds[] = {
             dispatch_apply(peers.count, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(size_t i) {
                 NSString *servname = [@(BITCOIN_STANDARD_PORT) stringValue];
                 struct addrinfo hints = { 0, AF_UNSPEC, SOCK_STREAM, 0, 0, 0, NULL, NULL }, *servinfo, *p;
+                BRPeerAddress addr = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 };
 
                 NSLog(@"DNS lookup %s", dns_seeds[i]);
                 
                 if (getaddrinfo(dns_seeds[i], [servname UTF8String], &hints, &servinfo) == 0) {
                     for (p = servinfo; p != NULL; p = p->ai_next) {
-                        if (p->ai_addr->sa_family != AF_INET) continue;
-                
-                        uint32_t addr = CFSwapInt32BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_addr.s_addr);
+                        if (p->ai_family == AF_INET) {
+                            addr.u6_64[0] = 0;
+                            addr.u6_32[2] = CFSwapInt32HostToBig(0xffff);
+                            addr.u6_32[3] = ((struct sockaddr_in *)p->ai_addr)->sin_addr.s_addr;
+                        }
+                        else if (p->ai_family == AF_INET6) {
+                            addr = *(BRPeerAddress *)&((struct sockaddr_in6 *)p->ai_addr)->sin6_addr;
+                        }
+                        
                         uint16_t port = CFSwapInt16BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_port);
                     
                         // give dns peers a timestamp between 3 and 7 days ago
@@ -244,12 +251,14 @@ static const char *dns_seeds[] = {
 #endif
             // if DNS peer discovery fails, fall back on a hard coded list of peers (list taken from satoshi client)
             if (_peers.count < PEER_MAX_CONNECTIONS) {
+                BRPeerAddress addr = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 };
+            
                 for (NSNumber *address in [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
                                            pathForResource:FIXED_PEERS ofType:@"plist"]]) {
                     // give hard coded peers a timestamp between 7 and 14 days ago
-                    [_peers addObject:[[BRPeer alloc] initWithAddress:address.unsignedIntValue
-                     port:BITCOIN_STANDARD_PORT timestamp:now - (7*24*60*60 + arc4random_uniform(7*24*60*60))
-                     services:SERVICES_NODE_NETWORK]];
+                    addr.u6_32[3] = CFSwapInt32HostToBig(address.unsignedIntValue);
+                    [_peers addObject:[[BRPeer alloc] initWithAddress:addr port:BITCOIN_STANDARD_PORT
+                     timestamp:now - (7*24*60*60 + arc4random_uniform(7*24*60*60)) services:SERVICES_NODE_NETWORK]];
                 }
             }
             
@@ -778,7 +787,10 @@ static const char *dns_seeds[] = {
     NSMutableSet *peers = [[self.peers.set setByAddingObjectsFromSet:self.misbehavinPeers] mutableCopy];
     NSMutableSet *addrs = [NSMutableSet set];
 
-    for (BRPeer *p in peers) [addrs addObject:@((int32_t)p.address)];
+    for (BRPeer *p in peers) {
+        if (p.address.u6_64[0] != 0 || p.address.u6_32[2] != CFSwapInt32HostToBig(0xffff)) continue; //skip IPv6 for now
+        [addrs addObject:@(CFSwapInt32BigToHost(p.address.u6_32[3]))];
+    }
 
     [[BRPeerEntity context] performBlock:^{
         [BRPeerEntity deleteObjects:[BRPeerEntity objectsMatching:@"! (address in %@)", addrs]]; // remove deleted peers
