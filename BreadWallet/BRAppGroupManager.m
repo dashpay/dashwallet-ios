@@ -73,12 +73,16 @@
 }
 
 - (BRPaymentRequest *)paymentRequestFromWallet {
-    NSString *receiveAddress = [[[BRWalletManager sharedInstance] wallet] receiveAddress];
-    BRPaymentRequest *paymentRequest = [BRPaymentRequest requestWithString:receiveAddress];
+    BRPaymentRequest *paymentRequest = [BRPaymentRequest requestWithString:[self paymentCeceiveAddress]];
     if (!paymentRequest.isValid) {
         paymentRequest = nil;
     }
     return paymentRequest;
+}
+
+- (NSString*)paymentCeceiveAddress {
+    return [[[BRWalletManager sharedInstance] wallet] receiveAddress];
+
 }
 
 @end

@@ -39,7 +39,7 @@ static NSString *const kBRTestReceiveAddress = @"---------test address----------
 @end
 
 @implementation BRAppGroupManagerHelper
-- (NSString*)receiveAddress {
+- (NSString*)paymentCeceiveAddress {
     return kBRTestReceiveAddress;
 }
 @end
