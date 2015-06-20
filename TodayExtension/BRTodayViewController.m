@@ -60,26 +60,28 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
 }
 
 - (void)widgetPerformUpdateWithCompletionHandler:(void (^)(NCUpdateResult))completionHandler {
-	// Perform any setup necessary in order to update the view.
-	NSData *data = [[NSUserDefaults appGroupUserDefault] objectForKey:kBRSharedContainerDataWalletRequestDataKey];
-	// If an error is encountered, use NCUpdateResultFailed
-	// If there's no update required, use NCUpdateResultNoData
-	// If there's an update, use NCUpdateResultNewData
-	if ([self.qrCodeData isEqualToData:data]) {
-        self.noDataViewContainer.hidden = YES;
-        self.topViewContainer.hidden = NO;
-		completionHandler(NCUpdateResultNoData);
-	} else if (self.qrCodeData) {
-		self.qrCodeData = data;
-        self.noDataViewContainer.hidden = YES;
-        self.topViewContainer.hidden = NO;
-        [self updateReceiveMoneyUI];
-		completionHandler(NCUpdateResultNewData);
-	} else {
-        self.noDataViewContainer.hidden = NO;
-        self.topViewContainer.hidden = YES;
-		completionHandler(NCUpdateResultFailed);
-	}
+    if (completionHandler) {
+        // Perform any setup necessary in order to update the view.
+        NSData *data = [[NSUserDefaults appGroupUserDefault] objectForKey:kBRSharedContainerDataWalletRequestDataKey];
+        // If an error is encountered, use NCUpdateResultFailed
+        // If there's no update required, use NCUpdateResultNoData
+        // If there's an update, use NCUpdateResultNewData
+        if ([self.qrCodeData isEqualToData:data]) {
+            self.noDataViewContainer.hidden = YES;
+            self.topViewContainer.hidden = NO;
+            completionHandler(NCUpdateResultNoData);
+        } else if (self.qrCodeData) {
+            self.qrCodeData = data;
+            self.noDataViewContainer.hidden = YES;
+            self.topViewContainer.hidden = NO;
+            [self updateReceiveMoneyUI];
+            completionHandler(NCUpdateResultNewData);
+        } else {
+            self.noDataViewContainer.hidden = NO;
+            self.topViewContainer.hidden = YES;
+            completionHandler(NCUpdateResultFailed);
+        }
+    }
 }
 
 - (void)viewDidLayoutSubviews {
