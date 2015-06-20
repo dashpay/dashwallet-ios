@@ -26,8 +26,8 @@
 #ifndef BreadWallet_BRAppGroupConstants_h
 #define BreadWallet_BRAppGroupConstants_h
 
-static NSString *const kBRSharedContainerDataWalletRequestDataKey = @"kBRSharedContainerDataWalletRequestDataKey";
 static NSString *const kBRAppGroupIdentifier = @"group.org.voisine.breadwallet";
+static NSString *const kBRSharedContainerDataWalletRequestDataKey = @"kBRSharedContainerDataWalletRequestDataKey";
 static NSString *const kBRSharedContainerDataWalletReceiveAddressKey = @"kBRSharedContainerDataWalletReceiveAddressKey";
 
 #endif

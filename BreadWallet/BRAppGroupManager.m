@@ -24,7 +24,6 @@
 //  THE SOFTWARE.
 
 #import "BRAppGroupManager.h"
-#import "NSUserDefaults+AppGroup.h"
 #import "BRWallet.h"
 #import "BRPaymentRequest.h"
 #import "BRWalletManager.h"
@@ -58,10 +57,10 @@
 #pragma mark - move data methods
 
 - (void)copyDataToNSUserDefaultInSharedContainer {
-	BRPaymentRequest *paymentRequest = [self paymentRequestFromWallet];
+    BRPaymentRequest *paymentRequest = [self paymentRequestFromWallet];
     NSString *receiveAddress = [[[BRWalletManager sharedInstance] wallet] receiveAddress];
-	if (paymentRequest) {
-		[[NSUserDefaults appGroupUserDefault] setObject:paymentRequest.data forKey:kBRSharedContainerDataWalletRequestDataKey];
+    if (paymentRequest) {
+        [[NSUserDefaults appGroupUserDefault] setObject:paymentRequest.data forKey:kBRSharedContainerDataWalletRequestDataKey];
     } else {
         [[NSUserDefaults appGroupUserDefault] removeObjectForKey:kBRSharedContainerDataWalletRequestDataKey];
     }

@@ -52,11 +52,11 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
 @implementation BRTodayViewController
 
 - (void)viewDidLoad {
-	[super viewDidLoad];
-	[self.imageViewContainer addSubview:self.qrCodeView];
-	[self.scanQRButtonContainerView addSubview:self.scanButton];
+    [super viewDidLoad];
+    [self.imageViewContainer addSubview:self.qrCodeView];
+    [self.scanQRButtonContainerView addSubview:self.scanButton];
     [self.openAppButtonContainer addSubview:self.openAppButton];
-	[self updateReceiveMoneyUI];
+    [self updateReceiveMoneyUI];
 }
 
 - (void)widgetPerformUpdateWithCompletionHandler:(void (^)(NCUpdateResult))completionHandler {
@@ -88,15 +88,15 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
 }
 
 - (void)updateReceiveMoneyUI {
-	self.qrCodeData = [[NSUserDefaults appGroupUserDefault] objectForKey:kBRSharedContainerDataWalletRequestDataKey];
-	NSString *receiveAddress = [[NSUserDefaults appGroupUserDefault] objectForKey:kBRSharedContainerDataWalletReceiveAddressKey];
-	if (!CGSizeEqualToSize(self.imageViewContainer.frame.size,CGSizeZero) && self.qrCodeData) {
-		[self.qrCodeImageView removeFromSuperview];
-		UIImage *image = [UIImage imageWithQRCodeData:self.qrCodeData size:CGSizeMake(self.imageViewContainer.frame.size.width, self.imageViewContainer.frame.size.height)];
-		image = [image negativeImage];
+    self.qrCodeData = [[NSUserDefaults appGroupUserDefault] objectForKey:kBRSharedContainerDataWalletRequestDataKey];
+    NSString *receiveAddress = [[NSUserDefaults appGroupUserDefault] objectForKey:kBRSharedContainerDataWalletReceiveAddressKey];
+    if (!CGSizeEqualToSize(self.imageViewContainer.frame.size,CGSizeZero) && self.qrCodeData) {
+        [self.qrCodeImageView removeFromSuperview];
+        UIImage *image = [UIImage imageWithQRCodeData:self.qrCodeData size:CGSizeMake(self.imageViewContainer.frame.size.width, self.imageViewContainer.frame.size.height)];
+        image = [image negativeImage];
         [self.qrCodeView setImage:image forState:UIControlStateNormal];
-	}
-	self.hashLabel.text = receiveAddress;
+    }
+    self.hashLabel.text = receiveAddress;
 }
 
 - (UIButton*)openAppButton {
