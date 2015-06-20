@@ -947,8 +947,8 @@ services:(uint64_t)services
 {
     uint32_t hash = FNV32_OFFSET;
     
-    for (int i = 0; i < sizeof(_address); i++) {
-        hash = (hash ^ (((const uint8_t *)&_address)[i]))*FNV32_PRIME;
+    for (int i = 0; i < sizeof(_address.u6_8); i++) {
+        hash = (hash ^ _address.u6_8[i])*FNV32_PRIME;
     }
     
     hash = (hash ^ ((_port >> 8) & 0xff))*FNV32_PRIME;
