@@ -49,9 +49,9 @@
 }
 
 - (void)setupObserver {
-	[[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {
-	         [self copyDataToNSUserDefaultInSharedContainer];
-	 }];
+    [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {
+             [self copyDataToNSUserDefaultInSharedContainer];
+     }];
 }
 
 
@@ -74,12 +74,12 @@
 }
 
 - (BRPaymentRequest *)paymentRequestFromWallet {
-	NSString *receiveAddress = [[[BRWalletManager sharedInstance] wallet] receiveAddress];
-	BRPaymentRequest *paymentRequest = [BRPaymentRequest requestWithString:receiveAddress];
-	if (!paymentRequest.isValid) {
-		paymentRequest = nil;
-	}
-	return paymentRequest;
+    NSString *receiveAddress = [[[BRWalletManager sharedInstance] wallet] receiveAddress];
+    BRPaymentRequest *paymentRequest = [BRPaymentRequest requestWithString:receiveAddress];
+    if (!paymentRequest.isValid) {
+        paymentRequest = nil;
+    }
+    return paymentRequest;
 }
 
 @end
