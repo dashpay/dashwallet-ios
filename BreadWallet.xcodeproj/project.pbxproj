@@ -58,6 +58,11 @@
 		75D5F3F3191EC270004AB296 /* BreadWalletTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D5F3F2191EC270004AB296 /* BreadWalletTests.m */; };
 		84F68C8A1975E9E2002FC300 /* BRScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 84F68C891975E9E2002FC300 /* BRScanViewController.m */; };
 		BA091FED1B328FAC00F7BFEB /* BRVisualEffectButton.m in Sources */ = {isa = PBXBuildFile; fileRef = BA091FEC1B328FAC00F7BFEB /* BRVisualEffectButton.m */; };
+		BA4EECE31B351B1F00D443A3 /* test qr code image inverted.png in Resources */ = {isa = PBXBuildFile; fileRef = BA4EECE11B351B1F00D443A3 /* test qr code image inverted.png */; };
+		BA4EECE41B351B1F00D443A3 /* test qr code image.png in Resources */ = {isa = PBXBuildFile; fileRef = BA4EECE21B351B1F00D443A3 /* test qr code image.png */; };
+		BA4EECE81B351B3800D443A3 /* BRAppGroupManagerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = BA4EECE51B351B3800D443A3 /* BRAppGroupManagerTest.m */; };
+		BA4EECE91B351B3800D443A3 /* UIImage+NegativeImageTest.m in Sources */ = {isa = PBXBuildFile; fileRef = BA4EECE61B351B3800D443A3 /* UIImage+NegativeImageTest.m */; };
+		BA4EECEA1B351B3800D443A3 /* UIImage+QRCodeTest.m in Sources */ = {isa = PBXBuildFile; fileRef = BA4EECE71B351B3800D443A3 /* UIImage+QRCodeTest.m */; };
 		BA54D3CB1B2EA72700C9CB28 /* UIImage+NegativeImage.m in Sources */ = {isa = PBXBuildFile; fileRef = BA54D3CA1B2EA72700C9CB28 /* UIImage+NegativeImage.m */; };
 		BA54D3CC1B2EA72700C9CB28 /* UIImage+NegativeImage.m in Sources */ = {isa = PBXBuildFile; fileRef = BA54D3CA1B2EA72700C9CB28 /* UIImage+NegativeImage.m */; };
 		BA54D3CE1B2EA74000C9CB28 /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BA54D3CD1B2EA74000C9CB28 /* Media.xcassets */; };
@@ -298,6 +303,12 @@
 		84F68C891975E9E2002FC300 /* BRScanViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRScanViewController.m; sourceTree = "<group>"; };
 		BA091FEB1B328FAC00F7BFEB /* BRVisualEffectButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRVisualEffectButton.h; sourceTree = "<group>"; };
 		BA091FEC1B328FAC00F7BFEB /* BRVisualEffectButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRVisualEffectButton.m; sourceTree = "<group>"; };
+		BA4EECDF1B351AE200D443A3 /* BRAppGroupConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAppGroupConstants.h; sourceTree = "<group>"; };
+		BA4EECE11B351B1F00D443A3 /* test qr code image inverted.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "test qr code image inverted.png"; sourceTree = "<group>"; };
+		BA4EECE21B351B1F00D443A3 /* test qr code image.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "test qr code image.png"; sourceTree = "<group>"; };
+		BA4EECE51B351B3800D443A3 /* BRAppGroupManagerTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRAppGroupManagerTest.m; sourceTree = "<group>"; };
+		BA4EECE61B351B3800D443A3 /* UIImage+NegativeImageTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+NegativeImageTest.m"; sourceTree = "<group>"; };
+		BA4EECE71B351B3800D443A3 /* UIImage+QRCodeTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+QRCodeTest.m"; sourceTree = "<group>"; };
 		BA54D3C91B2EA72700C9CB28 /* UIImage+NegativeImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+NegativeImage.h"; sourceTree = "<group>"; };
 		BA54D3CA1B2EA72700C9CB28 /* UIImage+NegativeImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+NegativeImage.m"; sourceTree = "<group>"; };
 		BA54D3CD1B2EA74000C9CB28 /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Media.xcassets; sourceTree = "<group>"; };
@@ -305,7 +316,6 @@
 		BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NotificationCenter.framework; path = System/Library/Frameworks/NotificationCenter.framework; sourceTree = SDKROOT; };
 		BAE12BEA1B2DEE7F00895CC5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BAE12BEE1B2DEE7F00895CC5 /* MainInterface.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = MainInterface.storyboard; sourceTree = "<group>"; };
-		BAE12BF81B2DEEBE00895CC5 /* BRAppGroupConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAppGroupConstants.h; sourceTree = "<group>"; };
 		BAE12BF91B2DEEC900895CC5 /* BRAppGroupManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAppGroupManager.h; sourceTree = "<group>"; };
 		BAE12BFA1B2DEEC900895CC5 /* BRAppGroupManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRAppGroupManager.m; sourceTree = "<group>"; };
 		BAE12BFC1B2DEEDA00895CC5 /* NSUserDefaults+AppGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSUserDefaults+AppGroup.h"; sourceTree = "<group>"; };
@@ -389,7 +399,7 @@
 				752E28BF19234C3600DB5A3C /* BRPaymentProtocol.m */,
 				752E28C019234C3600DB5A3C /* BRPaymentRequest.h */,
 				752E28C119234C3600DB5A3C /* BRPaymentRequest.m */,
-				BAE12BF81B2DEEBE00895CC5 /* BRAppGroupConstants.h */,
+				BA4EECDF1B351AE200D443A3 /* BRAppGroupConstants.h */,
 				BAE12BF91B2DEEC900895CC5 /* BRAppGroupManager.h */,
 				BAE12BFA1B2DEEC900895CC5 /* BRAppGroupManager.m */,
 			);
@@ -597,9 +607,32 @@
 			isa = PBXGroup;
 			children = (
 				75D5F3F2191EC270004AB296 /* BreadWalletTests.m */,
+				BA4EECE01B351AF100D443A3 /* Data */,
+				75BCC59A1946520700EC1A64 /* BreadWalletTests.h */,
+				75D5F3F2191EC270004AB296 /* BreadWalletTests.m */,
+				BA4EECE51B351B3800D443A3 /* BRAppGroupManagerTest.m */,
+				BA4EECE61B351B3800D443A3 /* UIImage+NegativeImageTest.m */,
+				BA4EECE71B351B3800D443A3 /* UIImage+QRCodeTest.m */,
+				75D5F3ED191EC270004AB296 /* Supporting Files */,
+			);
+			path = BreadWalletTests;
+			sourceTree = "<group>";
+		};
+		75D5F3ED191EC270004AB296 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
 				75D5F3EE191EC270004AB296 /* BreadWalletTests-Info.plist */,
 			);
 			path = BreadWalletTests;
+			sourceTree = "<group>";
+		};
+		BA4EECE01B351AF100D443A3 /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				BA4EECE11B351B1F00D443A3 /* test qr code image inverted.png */,
+				BA4EECE21B351B1F00D443A3 /* test qr code image.png */,
+			);
+			path = Data;
 			sourceTree = "<group>";
 		};
 		BAE12BE81B2DEE7F00895CC5 /* TodayExtension */ = {
@@ -787,6 +820,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BA4EECE31B351B1F00D443A3 /* test qr code image inverted.png in Resources */,
+				75D5F3F1191EC270004AB296 /* InfoPlist.strings in Resources */,
+				BA4EECE41B351B1F00D443A3 /* test qr code image.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -862,6 +898,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				75D5F3F3191EC270004AB296 /* BreadWalletTests.m in Sources */,
+				BA4EECEA1B351B3800D443A3 /* UIImage+QRCodeTest.m in Sources */,
+				BA4EECE91B351B3800D443A3 /* UIImage+NegativeImageTest.m in Sources */,
+				BA4EECE81B351B3800D443A3 /* BRAppGroupManagerTest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
