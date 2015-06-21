@@ -47,7 +47,6 @@
 
 #define SEED_ENTROPY_LENGTH    (128/8)
 #define SEC_ATTR_SERVICE       @"org.voisine.breadwallet"
-#define DEFAULT_CURRENCY_PRICE 500.0
 #define DEFAULT_CURRENCY_CODE  @"USD"
 #define DEFAULT_SPENT_LIMIT    SATOSHIS
 #define DEFAULT_FEE_PER_KB     (4096*1000/225) // fee required by eligius pool, which supports child-pays-for-parent
@@ -759,7 +758,12 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     
     if (i == NSNotFound) code = DEFAULT_CURRENCY_CODE, i = [_currencyCodes indexOfObject:DEFAULT_CURRENCY_CODE];
     _localCurrencyCode = [code copy];
-    self.localPrice = (i < _currencyPrices.count) ? _currencyPrices[i] : @(DEFAULT_CURRENCY_PRICE);
+
+    if (i < _currencyPrices.count && self.secureTime + 3*24*60*60 > [NSDate timeIntervalSinceReferenceDate]) {
+        self.localPrice = _currencyPrices[i]; // don't use exchange rate data more than 72hrs out of date
+    }
+    else self.localPrice = @(0);
+
     self.localFormat.currencyCode = _localCurrencyCode;
     self.localFormat.maximum =
         [[NSDecimalNumber decimalNumberWithDecimal:self.localPrice.decimalValue]
@@ -929,7 +933,7 @@ completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError
             
             if (! [utxo[@"script_type"] isEqual:@"pubkeyhash"] && ! [utxo[@"script_type"] isEqual:@"pubkey"]) continue;
             o = [NSMutableData dataWithData:[[utxo[@"transaction_hash"] hexToData] reverse]];
-            [o appendUInt32:[utxo[@"output_index"] unsignedIntegerValue]];
+            [o appendUInt32:[utxo[@"output_index"] unsignedIntValue]];
             [utxos addObject:o];
             [amounts addObject:utxo[@"value"]];
             [scripts addObject:[utxo[@"script_hex"] hexToData]];
@@ -1063,6 +1067,7 @@ completion:(void (^)(BRTransaction *tx, uint64_t fee, NSError *error))completion
 - (NSString *)localCurrencyStringForAmount:(int64_t)amount
 {
     if (amount == 0) return [self.localFormat stringFromNumber:@(0)];
+    if (self.localPrice.doubleValue <= DBL_EPSILON) return @""; // no exchange rate data
     
     NSDecimalNumber *n = [[[NSDecimalNumber decimalNumberWithDecimal:self.localPrice.decimalValue]
                            decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithLongLong:llabs(amount)]]

@@ -72,23 +72,25 @@ typedef enum {
 
 @dynamic host;
 
-+ (instancetype)peerWithAddress:(uint32_t)address andPort:(uint16_t)port
++ (instancetype)peerWithAddress:(BRPeerAddress)address andPort:(uint16_t)port
 {
     return [[self alloc] initWithAddress:address andPort:port];
 }
 
-- (instancetype)initWithAddress:(uint32_t)address andPort:(uint16_t)port
+- (instancetype)initWithAddress:(BRPeerAddress)address andPort:(uint16_t)port
 {
     if (! (self = [self init])) return nil;
+
     _address = address;
     _port = (port == 0) ? BITCOIN_STANDARD_PORT : port;
     return self;
 }
 
-- (instancetype)initWithAddress:(uint32_t)address port:(uint16_t)port timestamp:(NSTimeInterval)timestamp
+- (instancetype)initWithAddress:(BRPeerAddress)address port:(uint16_t)port timestamp:(NSTimeInterval)timestamp
 services:(uint64_t)services
 {
     if (! (self = [self initWithAddress:address andPort:port])) return nil;
+
     _timestamp = timestamp;
     _services = services;
     return self;
@@ -109,10 +111,12 @@ services:(uint64_t)services
 
 - (NSString *)host
 {
-    struct in_addr addr = { CFSwapInt32HostToBig(self.address) };
-    char s[INET_ADDRSTRLEN];
-
-    return [NSString stringWithUTF8String:inet_ntop(AF_INET, &addr, &s[0], INET_ADDRSTRLEN)];
+    char s[INET6_ADDRSTRLEN];
+    
+    if (_address.u6_64[0] == 0 && _address.u6_32[2] == CFSwapInt32HostToBig(0xffff)) {
+        return [NSString stringWithUTF8String:inet_ntop(AF_INET, &_address.u6_32[3], s, sizeof(s))];
+    }
+    else return [NSString stringWithUTF8String:inet_ntop(AF_INET6, &_address, s, sizeof(s))];
 }
 
 - (void)connect
@@ -281,12 +285,15 @@ services:(uint64_t)services
 - (void)sendVersionMessage
 {
     NSMutableData *msg = [NSMutableData data];
+    uint16_t port = CFSwapInt16HostToBig(self.port);
     
     [msg appendUInt32:PROTOCOL_VERSION]; // version
     [msg appendUInt64:ENABLED_SERVICES]; // services
     [msg appendUInt64:[NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970]; // timestamp
-    [msg appendNetAddress:self.address port:self.port services:self.services]; // address of remote peer
-    [msg appendNetAddress:LOCAL_HOST port:BITCOIN_STANDARD_PORT services:ENABLED_SERVICES]; // address of local peer
+    [msg appendUInt64:self.services]; // services of remote peer
+    [msg appendBytes:&_address length:sizeof(_address)]; // IPv6 address of remote peer
+    [msg appendBytes:&port length:sizeof(port)]; // port of remote peer
+    [msg appendNetAddress:LOCAL_HOST port:BITCOIN_STANDARD_PORT services:ENABLED_SERVICES]; // net address of local peer
     self.localNonce = ((uint64_t)arc4random() << 32) | (uint64_t)arc4random(); // random nonce
     [msg appendUInt64:self.localNonce];
     [msg appendString:USER_AGENT]; // user agent
@@ -565,10 +572,11 @@ services:(uint64_t)services
     for (NSUInteger off = l; off < l + 30*count; off += 30) {
         NSTimeInterval timestamp = [message UInt32AtOffset:off] - NSTimeIntervalSince1970;
         uint64_t services = [message UInt64AtOffset:off + sizeof(uint32_t)];
-        uint32_t address = CFSwapInt32BigToHost(*(const uint32_t *)((const uint8_t *)message.bytes + off +
-                                                                    sizeof(uint32_t) + 20));
+        BRPeerAddress address = *(BRPeerAddress *)((const uint8_t *)message.bytes + off + sizeof(uint32_t) +
+                                                   sizeof(uint64_t));
         uint16_t port = CFSwapInt16BigToHost(*(const uint16_t *)((const uint8_t *)message.bytes + off +
-                                                                 sizeof(uint32_t)*2 + 20));
+                                                                 sizeof(uint32_t) + sizeof(uint64_t) +
+                                                                 sizeof(BRPeerAddress)));
         
         if (! (services & SERVICES_NODE_NETWORK)) continue; // skip peers that don't carry full blocks
         
@@ -939,20 +947,24 @@ services:(uint64_t)services
 {
     uint32_t hash = FNV32_OFFSET;
     
-    hash = (hash ^ ((self.address >> 24) & 0xff))*FNV32_PRIME;
-    hash = (hash ^ ((self.address >> 16) & 0xff))*FNV32_PRIME;
-    hash = (hash ^ ((self.address >> 8) & 0xff))*FNV32_PRIME;
-    hash = (hash ^ (self.address & 0xff))*FNV32_PRIME;
-    hash = (hash ^ ((self.port >> 8) & 0xff))*FNV32_PRIME;
-    hash = (hash ^ (self.port & 0xff))*FNV32_PRIME;
+    for (int i = 0; i < sizeof(_address.u6_8); i++) {
+        hash = (hash ^ _address.u6_8[i])*FNV32_PRIME;
+    }
+    
+    hash = (hash ^ ((_port >> 8) & 0xff))*FNV32_PRIME;
+    hash = (hash ^ (_port & 0xff))*FNV32_PRIME;
     return hash;
 }
 
 // two peer objects are equal if they share an ip address and port number
 - (BOOL)isEqual:(id)object
 {
-    return self == object || ([object isKindOfClass:[BRPeer class]] && self.address == [(BRPeer *)object address] &&
-                              self.port == [(BRPeer *)object port]);
+    if (self == object) return YES;
+    if (! [object isKindOfClass:[BRPeer class]] || _port != [(BRPeer *)object port]) return NO;
+    
+    BRPeerAddress address = [(BRPeer *)object address];
+    
+    return (_address.u6_64[0] == address.u6_64[0] && _address.u6_64[1] == address.u6_64[1]) ? YES : NO;
 }
 
 #pragma mark - NSStreamDelegate
