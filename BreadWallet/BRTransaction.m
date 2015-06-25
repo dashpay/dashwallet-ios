@@ -82,10 +82,8 @@
     off += l;
 
     for (NSUInteger i = 0; i < count; i++) { // inputs
-        d = [message hashAtOffset:off]; // input tx hash
-        if (! d) return nil; // required
-        [self.hashes addObject:d];
-        off += CC_SHA256_DIGEST_LENGTH;
+        [self.hashes addObject:uint256_obj([message hashAtOffset:off])];
+        off += sizeof(UInt256);
         [self.indexes addObject:@([message UInt32AtOffset:off])]; // input index
         off += sizeof(uint32_t);
         [self.inScripts addObject:[NSNull null]]; // placeholder for input script (comes from previous transaction)
@@ -204,7 +202,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     static const size_t sigSize = 149; // signature size using a compact pubkey
 //    static const size_t sigSize = 181; // signature size using a non-compact pubkey
     
-    if (self.txHash) return self.data.length;
+    if (! uint256_is_zero(_txHash)) return self.data.length;
     return 8 + [NSMutableData sizeOfVarInt:self.hashes.count] + [NSMutableData sizeOfVarInt:self.addresses.count] +
            sigSize*self.hashes.count + 34*self.addresses.count;
 }
@@ -226,15 +224,15 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     return [self toDataWithSubscriptIndex:NSNotFound];
 }
 
-- (void)addInputHash:(NSData *)hash index:(NSUInteger)index script:(NSData *)script
+- (void)addInputHash:(UInt256)hash index:(NSUInteger)index script:(NSData *)script
 {
     [self addInputHash:hash index:index script:script signature:nil sequence:TXIN_SEQUENCE];
 }
 
-- (void)addInputHash:(NSData *)hash index:(NSUInteger)index script:(NSData *)script signature:(NSData *)signature
+- (void)addInputHash:(UInt256)hash index:(NSUInteger)index script:(NSData *)script signature:(NSData *)signature
 sequence:(uint32_t)sequence
 {
-    [self.hashes addObject:hash];
+    [self.hashes addObject:uint256_obj(hash)];
     [self.indexes addObject:@(index)];
     [self.inScripts addObject:(script) ? script : [NSNull null]];
     [self.signatures addObject:(signature) ? signature : [NSNull null]];
@@ -299,12 +297,14 @@ sequence:(uint32_t)sequence
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex
 {
     NSMutableData *d = [NSMutableData dataWithCapacity:10 + 149*self.hashes.count + 34*self.addresses.count];
+    UInt256 hash;
 
     [d appendUInt32:self.version];
     [d appendVarInt:self.hashes.count];
 
     for (NSUInteger i = 0; i < self.hashes.count; i++) {
-        [d appendData:self.hashes[i]];
+        [self.hashes[i] getValue:&hash];
+        [d appendBytes:&hash length:sizeof(hash)];
         [d appendUInt32:[self.indexes[i] unsignedIntValue]];
 
         if (subscriptIndex == NSNotFound && self.signatures[i] != [NSNull null]) {
@@ -354,8 +354,9 @@ sequence:(uint32_t)sequence
         if (keyIdx == NSNotFound) continue;
         
         NSMutableData *sig = [NSMutableData data];
-        NSData *hash = [self toDataWithSubscriptIndex:i].SHA256_2;
-        NSMutableData *s = [NSMutableData dataWithData:[keys[keyIdx] sign:hash]];
+        UInt256 hash = [self toDataWithSubscriptIndex:i].SHA256_2;
+        NSMutableData *s = [NSMutableData dataWithData:[keys[keyIdx]
+                                                        sign:[NSData dataWithBytes:&hash length:sizeof(hash)]]];
         NSArray *elem = [self.inScripts[i] scriptElements];
         
         [s appendUInt8:SIGHASH_ALL];
@@ -416,13 +417,13 @@ sequence:(uint32_t)sequence
 
 - (NSUInteger)hash
 {
-    if (self.txHash.length < sizeof(NSUInteger)) return [super hash];
-    return *(const NSUInteger *)self.txHash.bytes;
+    if (uint256_is_zero(_txHash)) return [super hash];
+    return *(const NSUInteger *)&_txHash;
 }
 
 - (BOOL)isEqual:(id)object
 {
-    return self == object || ([object isKindOfClass:[BRTransaction class]] && [[object txHash] isEqual:self.txHash]);
+    return self == object || ([object isKindOfClass:[BRTransaction class]] && uint256_eq(_txHash, [object txHash]));
 }
 
 @end

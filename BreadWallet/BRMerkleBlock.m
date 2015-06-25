@@ -60,7 +60,7 @@
 
 @interface BRMerkleBlock ()
 
-@property (nonatomic, strong) NSData *blockHash;
+@property (nonatomic, assign) UInt256 blockHash;
     
 @end
 
@@ -103,8 +103,8 @@
     _height = BLOCK_UNKNOWN_HEIGHT;
     
     [d appendUInt32:_version];
-    [d appendData:_prevBlock];
-    [d appendData:_merkleRoot];
+    [d appendBytes:&_prevBlock length:sizeof(_prevBlock)];
+    [d appendBytes:&_merkleRoot length:sizeof(_merkleRoot)];
     [d appendUInt32:_timestamp];
     [d appendUInt32:_target];
     [d appendUInt32:_nonce];
@@ -113,8 +113,8 @@
     return self;
 }
 
-- (instancetype)initWithBlockHash:(NSData *)blockHash version:(uint32_t)version prevBlock:(NSData *)prevBlock
-merkleRoot:(NSData *)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
+- (instancetype)initWithBlockHash:(UInt256)blockHash version:(uint32_t)version prevBlock:(UInt256)prevBlock
+merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
 totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags height:(uint32_t)height
 {
     if (! (self = [self init])) return nil;
@@ -142,19 +142,27 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     // target is in "compact" format, where the most significant byte is the size of resulting value in bytes, the next
     // bit is the sign, and the remaining 23bits is the value after having been right shifted by (size - 3)*8 bits
     static const uint32_t maxsize = MAX_PROOF_OF_WORK >> 24, maxtarget = MAX_PROOF_OF_WORK & 0x00ffffffu;
-    const uint32_t *b = _blockHash.bytes, size = _target >> 24, target = _target & 0x00ffffffu;
+    const uint32_t size = _target >> 24, target = _target & 0x00ffffffu;
     NSMutableData *d = [NSMutableData data];
+    UInt256 merkleRoot, t = UINT256_ZERO;
     int hashIdx = 0, flagIdx = 0;
-    NSData *merkleRoot =
-        [self _walk:&hashIdx :&flagIdx :0 :^id (NSData *hash, BOOL flag) {
+    NSValue *root =
+        [self _walk:&hashIdx :&flagIdx :0 :^id (id hash, BOOL flag) {
             return hash;
         } :^id (id left, id right) {
-            [d setData:left];
-            [d appendData:(right) ? right : left]; // if right branch is missing, duplicate left branch
-            return d.SHA256_2;
+            UInt256 l, r;
+
+            if (! right) right = left; // if right branch is missing, duplicate left branch
+            [left getValue:&l];
+            [right getValue:&r];
+            d.length = 0;
+            [d appendBytes:&l length:sizeof(l)];
+            [d appendBytes:&r length:sizeof(r)];
+            return uint256_obj(d.SHA256_2);
         }];
     
-    if (_totalTransactions > 0 && ! [merkleRoot isEqual:_merkleRoot]) return NO; // merkle root check failed
+    [root getValue:&merkleRoot];
+    if (_totalTransactions > 0 && ! uint256_eq(merkleRoot, _merkleRoot)) return NO; // merkle root check failed
     
     // check if timestamp is too far in future
     //TODO: use estimated network time instead of system time (avoids timejacking attacks and misconfigured time)
@@ -163,13 +171,12 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     // check if proof-of-work target is out of range
     if (target == 0 || target & 0x00800000u || size > maxsize || (size == maxsize && target > maxtarget)) return NO;
 
-    d = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH];
-    if (size > 3) *(uint32_t *)((uint8_t *)d.mutableBytes + size - 3) = CFSwapInt32HostToLittle(target);
-    else *(uint32_t *)d.mutableBytes = CFSwapInt32HostToLittle(target >> (3 - size)*8);
+    if (size > 3) *(uint32_t *)&t.u8[size - 3] = CFSwapInt32HostToLittle(target);
+    else t.u32[0] = CFSwapInt32HostToLittle(target >> (3 - size)*8);
     
-    for (int i = CC_SHA256_DIGEST_LENGTH/sizeof(uint32_t) - 1; i >= 0; i--) { // check proof-of-work
-        if (CFSwapInt32LittleToHost(b[i]) < CFSwapInt32LittleToHost(((const uint32_t *)d.bytes)[i])) break;
-        if (CFSwapInt32LittleToHost(b[i]) > CFSwapInt32LittleToHost(((const uint32_t *)d.bytes)[i])) return NO;
+    for (int i = sizeof(t)/sizeof(uint32_t) - 1; i >= 0; i--) { // check proof-of-work
+        if (CFSwapInt32LittleToHost(_blockHash.u32[i]) < CFSwapInt32LittleToHost(t.u32[i])) break;
+        if (CFSwapInt32LittleToHost(_blockHash.u32[i]) > CFSwapInt32LittleToHost(t.u32[i])) return NO;
     }
     
     return YES;
@@ -180,8 +187,8 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     NSMutableData *d = [NSMutableData data];
     
     [d appendUInt32:_version];
-    [d appendData:_prevBlock];
-    [d appendData:_merkleRoot];
+    [d appendBytes:&_prevBlock length:sizeof(_prevBlock)];
+    [d appendBytes:&_merkleRoot length:sizeof(_merkleRoot)];
     [d appendUInt32:_timestamp];
     [d appendUInt32:_target];
     [d appendUInt32:_nonce];
@@ -195,10 +202,10 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 }
 
 // true if the given tx hash is included in the block
-- (BOOL)containsTxHash:(NSData *)txHash
+- (BOOL)containsTxHash:(UInt256)txHash
 {
-    for (NSUInteger i = 0; i < _hashes.length/CC_SHA256_DIGEST_LENGTH; i += CC_SHA256_DIGEST_LENGTH) {
-        if ([txHash isEqual:[_hashes hashAtOffset:i]]) return YES;
+    for (NSUInteger i = 0; i < _hashes.length/sizeof(UInt256); i += sizeof(UInt256)) {
+        if (uint256_eq(txHash, [_hashes hashAtOffset:i])) return YES;
     }
     
     return NO;
@@ -209,7 +216,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 {
     int hashIdx = 0, flagIdx = 0;
     NSArray *txHashes =
-        [self _walk:&hashIdx :&flagIdx :0 :^id (NSData *hash, BOOL flag) {
+        [self _walk:&hashIdx :&flagIdx :0 :^id (id hash, BOOL flag) {
             return (flag && hash) ? @[hash] : @[];
         } :^id (id left, id right) {
             return [left arrayByAddingObjectsFromArray:right];
@@ -230,7 +237,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 // intuitively named MAX_PROOF_OF_WORK... since larger values are less difficult.
 - (BOOL)verifyDifficultyFromPreviousBlock:(BRMerkleBlock *)previous andTransitionTime:(uint32_t)time
 {
-    if (! [_prevBlock isEqual:previous.blockHash] || _height != previous.height + 1) return NO;
+    if (! uint256_eq(_prevBlock, previous.blockHash) || _height != previous.height + 1) return NO;
     if ((_height % BLOCK_DIFFICULTY_INTERVAL) == 0 && time == 0) return NO;
 
 #if BITCOIN_TESTNET
@@ -265,19 +272,19 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 
 // recursively walks the merkle tree in depth first order, calling leaf(hash, flag) for each stored hash, and
 // branch(left, right) with the result from each branch
-- (id)_walk:(int *)hashIdx :(int *)flagIdx :(int)depth :(id (^)(NSData *, BOOL))leaf :(id (^)(id, id))branch
+- (id)_walk:(int *)hashIdx :(int *)flagIdx :(int)depth :(id (^)(id, BOOL))leaf :(id (^)(id, id))branch
 {
-    if ((*flagIdx)/8 >= _flags.length || (*hashIdx + 1)*CC_SHA256_DIGEST_LENGTH > _hashes.length) return leaf(nil, NO);
+    if ((*flagIdx)/8 >= _flags.length || (*hashIdx + 1)*sizeof(UInt256) > _hashes.length) return leaf(nil, NO);
     
     BOOL flag = (((const uint8_t *)_flags.bytes)[*flagIdx/8] & (1 << (*flagIdx % 8)));
     
     (*flagIdx)++;
     
     if (! flag || depth == (int)(ceil(log2(_totalTransactions)))) {
-        NSData *hash = [_hashes hashAtOffset:(*hashIdx)*CC_SHA256_DIGEST_LENGTH];
+        UInt256 hash = [_hashes hashAtOffset:(*hashIdx)*sizeof(UInt256)];
         
         (*hashIdx)++;
-        return leaf(hash, flag);
+        return leaf(uint256_obj(hash), flag);
     }
     
     id left = [self _walk:hashIdx :flagIdx :depth + 1 :leaf :branch];
@@ -288,13 +295,13 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 
 - (NSUInteger)hash
 {
-    if (_blockHash.length < sizeof(NSUInteger)) return [super hash];
-    return *(const NSUInteger *)_blockHash.bytes;
+    if (uint256_is_zero(_blockHash)) return [super hash];
+    return *(const NSUInteger *)&_blockHash;
 }
 
-- (BOOL)isEqual:(id)object
+- (BOOL)isEqual:(id)obj
 {
-    return self == object || ([object isKindOfClass:[BRMerkleBlock class]] && [[object blockHash] isEqual:_blockHash]);
+    return self == obj || ([obj isKindOfClass:[BRMerkleBlock class]] && uint256_eq([obj blockHash], _blockHash));
 }
 
 @end

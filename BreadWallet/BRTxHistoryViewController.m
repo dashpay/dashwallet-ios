@@ -271,7 +271,7 @@ static NSString *dateFormat(NSString *template)
 - (NSString *)dateForTx:(BRTransaction *)tx
 {
     static NSDateFormatter *f1 = nil, *f2 = nil, *f3 = nil, *f4 = nil;
-    NSString *date = self.txDates[tx.txHash];
+    NSString *date = self.txDates[uint256_obj(tx.txHash)];
     NSTimeInterval now = [[BRPeerManager sharedInstance] timestampForBlockHeight:TX_UNCONFIRMED],
                    week = now - 6*24*60*60, year = now - 364*24*60*60;
 
@@ -297,7 +297,7 @@ static NSString *dateFormat(NSString *template)
     date = [[[[f stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:t]] lowercaseString]
              stringByReplacingOccurrencesOfString:@"am" withString:@"a"]
             stringByReplacingOccurrencesOfString:@"pm" withString:@"p"];
-    if (tx.blockHeight != TX_UNCONFIRMED) self.txDates[tx.txHash] = date;
+    if (tx.blockHeight != TX_UNCONFIRMED) self.txDates[uint256_obj(tx.txHash)] = date;
     return date;
 }
 

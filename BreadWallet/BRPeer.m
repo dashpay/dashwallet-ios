@@ -38,7 +38,6 @@
 #define PROTOCOL_VERSION   70002
 #define MIN_PROTO_VERSION  70002 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
 #define LOCAL_HOST         0x7f000001u
-#define ZERO_HASH          [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH]
 #define CONNECT_TIMEOUT    3.0
 
 typedef enum : uint32_t {
@@ -46,7 +45,7 @@ typedef enum : uint32_t {
     tx,
     block,
     merkleblock
-} inv_t;
+} inv;
 
 @interface BRPeer ()
 
@@ -72,12 +71,12 @@ typedef enum : uint32_t {
 
 @dynamic host;
 
-+ (instancetype)peerWithAddress:(BRPeerAddress)address andPort:(uint16_t)port
++ (instancetype)peerWithAddress:(UInt128)address andPort:(uint16_t)port
 {
     return [[self alloc] initWithAddress:address andPort:port];
 }
 
-- (instancetype)initWithAddress:(BRPeerAddress)address andPort:(uint16_t)port
+- (instancetype)initWithAddress:(UInt128)address andPort:(uint16_t)port
 {
     if (! (self = [super init])) return nil;
 
@@ -86,7 +85,7 @@ typedef enum : uint32_t {
     return self;
 }
 
-- (instancetype)initWithAddress:(BRPeerAddress)address port:(uint16_t)port timestamp:(NSTimeInterval)timestamp
+- (instancetype)initWithAddress:(UInt128)address port:(uint16_t)port timestamp:(NSTimeInterval)timestamp
 services:(uint64_t)services
 {
     if (! (self = [self initWithAddress:address andPort:port])) return nil;
@@ -113,8 +112,8 @@ services:(uint64_t)services
 {
     char s[INET6_ADDRSTRLEN];
     
-    if (_address.u6_64[0] == 0 && _address.u6_32[2] == CFSwapInt32HostToBig(0xffff)) {
-        return @(inet_ntop(AF_INET, &_address.u6_32[3], s, sizeof(s)));
+    if (_address.u64[0] == 0 && _address.u32[2] == CFSwapInt32HostToBig(0xffff)) {
+        return @(inet_ntop(AF_INET, &_address.u32[3], s, sizeof(s)));
     }
     else return @(inet_ntop(AF_INET6, &_address, s, sizeof(s)));
 }
@@ -360,35 +359,39 @@ services:(uint64_t)services
 //   are generated and local peer sends filterload with an updated bloom filter
 // - after filterload is sent, getdata is sent to re-request recent blocks that may contain new tx matching the filter
 
-- (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop
+- (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(UInt256)hashStop
 {
     NSMutableData *msg = [NSMutableData data];
+    UInt256 h;
     
     [msg appendUInt32:PROTOCOL_VERSION];
     [msg appendVarInt:locators.count];
     
-    for (NSData *hash in locators) {
-        [msg appendData:hash];
+    for (NSValue *hash in locators) {
+        [hash getValue:&h];
+        [msg appendBytes:&h length:sizeof(h)];
     }
     
-    [msg appendData:(hashStop) ? hashStop : ZERO_HASH];
+    [msg appendBytes:&hashStop length:sizeof(hashStop)];
     NSLog(@"%@:%u calling getheaders with locators: %@", self.host, self.port,
           @[locators.firstObject, locators.lastObject]);
     [self sendMessage:msg type:MSG_GETHEADERS];
 }
 
-- (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(NSData *)hashStop
+- (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(UInt256)hashStop
 {
     NSMutableData *msg = [NSMutableData data];
+    UInt256 h;
     
     [msg appendUInt32:PROTOCOL_VERSION];
     [msg appendVarInt:locators.count];
 
-    for (NSData *hash in locators) {
-        [msg appendData:hash];
+    for (NSValue *hash in locators) {
+        [hash getValue:&h];
+        [msg appendBytes:&h length:sizeof(h)];
     }
     
-    [msg appendData:(hashStop) ? hashStop : ZERO_HASH];
+    [msg appendBytes:&hashStop length:sizeof(hashStop)];
     [self sendMessage:msg type:MSG_GETBLOCKS];
 }
 
@@ -396,14 +399,16 @@ services:(uint64_t)services
 {
     NSMutableOrderedSet *hashes = [NSMutableOrderedSet orderedSetWithArray:txHashes];
     NSMutableData *msg = [NSMutableData data];
+    UInt256 h;
     
     [hashes minusOrderedSet:self.knownTxHashes];
     if (hashes.count == 0) return;
     [msg appendVarInt:hashes.count];
 
-    for (NSData *hash in hashes) {
+    for (NSValue *hash in hashes) {
         [msg appendUInt32:tx];
-        [msg appendData:hash];
+        [hash getValue:&h];
+        [msg appendBytes:&h length:sizeof(h)];
     }
 
     [self sendMessage:msg type:MSG_INV];
@@ -420,17 +425,20 @@ services:(uint64_t)services
     else if (txHashes.count + blockHashes.count == 0) return;
     
     NSMutableData *msg = [NSMutableData data];
+    UInt256 h;
     
     [msg appendVarInt:txHashes.count + blockHashes.count];
     
-    for (NSData *hash in txHashes) {
+    for (NSValue *hash in txHashes) {
         [msg appendUInt32:tx];
-        [msg appendData:hash];
+        [hash getValue:&h];
+        [msg appendBytes:&h length:sizeof(h)];
     }
     
-    for (NSData *hash in blockHashes) {
+    for (NSValue *hash in blockHashes) {
         [msg appendUInt32:merkleblock];
-        [msg appendData:hash];
+        [hash getValue:&h];
+        [msg appendBytes:&h length:sizeof(h)];
     }
 
     [self sendMessage:msg type:MSG_GETDATA];
@@ -456,9 +464,9 @@ services:(uint64_t)services
 }
 
 // re-request blocks starting from blockHash, useful for getting any additional transactions after a bloom filter update
-- (void)rerequestBlocksFrom:(NSData *)blockHash
+- (void)rerequestBlocksFrom:(UInt256)blockHash
 {
-    NSUInteger i = [self.knownBlockHashes indexOfObject:blockHash];
+    NSUInteger i = [self.knownBlockHashes indexOfObject:uint256_obj(blockHash)];
 
     if (i != NSNotFound) {
         [self.knownBlockHashes removeObjectsInRange:NSMakeRange(0, i)];
@@ -473,8 +481,8 @@ services:(uint64_t)services
 {
     CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
         if (self.currentBlock && ! [MSG_TX isEqual:type]) { // if we receive a non-tx message, the merkleblock is done
-            [self error:@"incomplete merkleblock %@, expected %u more tx, got %@", self.currentBlock.blockHash,
-             (int)self.currentBlockTxHashes.count, type];
+            [self error:@"incomplete merkleblock %@, expected %u more tx, got %@",
+             uint256_obj(self.currentBlock.blockHash), (int)self.currentBlockTxHashes.count, type];
             self.currentBlock = nil;
             self.currentBlockTxHashes = nil;
             return;
@@ -574,14 +582,13 @@ services:(uint64_t)services
     for (NSUInteger off = l; off < l + 30*count; off += 30) {
         NSTimeInterval timestamp = [message UInt32AtOffset:off] - NSTimeIntervalSince1970;
         uint64_t services = [message UInt64AtOffset:off + sizeof(uint32_t)];
-        BRPeerAddress address = *(BRPeerAddress *)((const uint8_t *)message.bytes + off + sizeof(uint32_t) +
-                                                   sizeof(uint64_t));
+        UInt128 address = *(UInt128 *)((const uint8_t *)message.bytes + off + sizeof(uint32_t) + sizeof(uint64_t));
         uint16_t port = CFSwapInt16BigToHost(*(const uint16_t *)((const uint8_t *)message.bytes + off +
                                                                  sizeof(uint32_t) + sizeof(uint64_t) +
-                                                                 sizeof(BRPeerAddress)));
+                                                                 sizeof(UInt128)));
         
         if (! (services & SERVICES_NODE_NETWORK)) continue; // skip peers that don't carry full blocks
-        if (address.u6_64[0] != 0 || address.u6_32[2] != CFSwapInt32HostToBig(0xffff)) continue; // ignore IPv6 for now
+        if (address.u64[0] != 0 || address.u32[2] != CFSwapInt32HostToBig(0xffff)) continue; // ignore IPv6 for now
         
         // if address time is more than 10 min in the future or older than reference date, set to 5 days old
         if (timestamp > now + 10*60 || timestamp < 0) timestamp = now - 5*24*60*60;
@@ -615,15 +622,15 @@ services:(uint64_t)services
     NSLog(@"%@:%u got inv with %u items", self.host, self.port, (int)count);
     
     for (NSUInteger off = l; off < l + 36*count; off += 36) {
-        inv_t type = [message UInt32AtOffset:off];
-        NSData *hash = [message hashAtOffset:off + sizeof(uint32_t)];
+        inv type = [message UInt32AtOffset:off];
+        UInt256 hash = [message hashAtOffset:off + sizeof(uint32_t)];
         
-        if (! hash) continue;
+        if (uint256_is_zero(hash)) continue;
         
         switch (type) {
-            case tx: [txHashes addObject:hash]; break;
-            case block: [blockHashes addObject:hash]; break;
-            case merkleblock: [blockHashes addObject:hash]; break;
+            case tx: [txHashes addObject:uint256_obj(hash)]; break;
+            case block: [blockHashes addObject:uint256_obj(hash)]; break;
+            case merkleblock: [blockHashes addObject:uint256_obj(hash)]; break;
             default: break;
         }
     }
@@ -658,11 +665,14 @@ services:(uint64_t)services
     }
 
     if ([txHashes intersectsOrderedSet:self.knownTxHashes]) { // remove transactions we already have
-        for (NSData *hash in txHashes) {
+        for (NSValue *hash in txHashes) {
+            UInt256 h;
+            
             if (! [self.knownTxHashes containsObject:hash]) continue;
+            [hash getValue:&h];
 
             dispatch_async(self.delegateQueue, ^{
-                if (_status == BRPeerStatusConnected) [self.delegate peer:self hasTransaction:hash];
+                if (_status == BRPeerStatusConnected) [self.delegate peer:self hasTransaction:h];
             });
         }
     
@@ -678,7 +688,8 @@ services:(uint64_t)services
     
     // to improve chain download performance, if we received 500 block hashes, we request the next 500 block hashes
     if (blockHashes.count >= 500 && ! self.needsFilterUpdate) {
-        [self sendGetblocksMessageWithLocators:@[blockHashes.lastObject, blockHashes.firstObject] andHashStop:nil];
+        [self sendGetblocksMessageWithLocators:@[blockHashes.lastObject, blockHashes.firstObject]
+         andHashStop:UINT256_ZERO];
     }
 }
 
@@ -695,14 +706,14 @@ services:(uint64_t)services
         return;
     }
     
-    NSLog(@"%@:%u got tx %@", self.host, self.port, tx.txHash);
+    NSLog(@"%@:%u got tx %@", self.host, self.port, uint256_obj(tx.txHash));
 
     dispatch_async(self.delegateQueue, ^{
         [self.delegate peer:self relayedTransaction:tx];
     });
 
     if (self.currentBlock) { // we're collecting tx messages for a merkleblock
-        [self.currentBlockTxHashes removeObject:tx.txHash];
+        [self.currentBlockTxHashes removeObject:uint256_obj(tx.txHash)];
 
         if (self.currentBlockTxHashes.count == 0) { // we received the entire block including all matched tx
             BRMerkleBlock *block = self.currentBlock;
@@ -734,8 +745,8 @@ services:(uint64_t)services
     NSTimeInterval t = [message UInt32AtOffset:l + 81*(count - 1) + 68] - NSTimeIntervalSince1970;
 
     if (count >= 2000 || t + 7*24*60*60 >= self.earliestKeyTime - 2*60*60) {
-        NSData *firstHash = [message subdataWithRange:NSMakeRange(l, 80)].SHA256_2,
-               *lastHash = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].SHA256_2;
+        NSValue *firstHash = uint256_obj([message subdataWithRange:NSMakeRange(l, 80)].SHA256_2),
+                *lastHash = uint256_obj([message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].SHA256_2);
 
         if (t + 7*24*60*60 >= self.earliestKeyTime - 2*60*60) { // request blocks for the remainder of the chain
             t = [message UInt32AtOffset:l + 81 + 68] - NSTimeIntervalSince1970;
@@ -745,11 +756,11 @@ services:(uint64_t)services
                 t = [message UInt32AtOffset:off + 81 + 68] - NSTimeIntervalSince1970;
             }
 
-            lastHash = [message subdataWithRange:NSMakeRange(off, 80)].SHA256_2;
+            lastHash = uint256_obj([message subdataWithRange:NSMakeRange(off, 80)].SHA256_2);
             NSLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, @[lastHash, firstHash]);
-            [self sendGetblocksMessageWithLocators:@[lastHash, firstHash] andHashStop:nil];
+            [self sendGetblocksMessageWithLocators:@[lastHash, firstHash] andHashStop:UINT256_ZERO];
         }
-        else [self sendGetheadersMessageWithLocators:@[lastHash, firstHash] andHashStop:nil];
+        else [self sendGetheadersMessageWithLocators:@[lastHash, firstHash] andHashStop:UINT256_ZERO];
     }
     else {
         [self error:@"non-standard headers message, %u is fewer headers than expected", (int)count];
@@ -760,7 +771,7 @@ services:(uint64_t)services
         BRMerkleBlock *block = [BRMerkleBlock blockWithMessage:[message subdataWithRange:NSMakeRange(off, 81)]];
     
         if (! block.valid) {
-            [self error:@"invalid block header %@", block.blockHash];
+            [self error:@"invalid block header %@", uint256_obj(block.blockHash)];
             return;
         }
 
@@ -797,11 +808,11 @@ services:(uint64_t)services
         NSMutableData *notfound = [NSMutableData data];
     
         for (NSUInteger off = l; off < l + count*36; off += 36) {
-            inv_t type = [message UInt32AtOffset:off];
-            NSData *hash = [message hashAtOffset:off + sizeof(uint32_t)];
+            inv type = [message UInt32AtOffset:off];
+            UInt256 hash = [message hashAtOffset:off + sizeof(uint32_t)];
             BRTransaction *transaction = nil;
         
-            if (! hash) continue;
+            if (uint256_is_zero(hash)) continue;
         
             switch (type) {
                 case tx:
@@ -815,7 +826,7 @@ services:(uint64_t)services
                     // fall through
                 default:
                     [notfound appendUInt32:type];
-                    [notfound appendData:hash];
+                    [notfound appendBytes:&hash length:sizeof(hash)];
                     break;
             }
         }
@@ -896,7 +907,7 @@ services:(uint64_t)services
     BRMerkleBlock *block = [BRMerkleBlock blockWithMessage:message];
     
     if (! block.valid) {
-        [self error:@"invalid merkleblock: %@", block.blockHash];
+        [self error:@"invalid merkleblock: %@", uint256_obj(block.blockHash)];
         return;
     }
     else if (! self.sentFilter) {
@@ -927,13 +938,13 @@ services:(uint64_t)services
     NSString *type = [message stringAtOffset:0 length:&off];
     uint8_t code = [message UInt8AtOffset:off++];
     NSString *reason = [message stringAtOffset:off length:&l];
-    NSData *txHash = ([MSG_TX isEqual:type]) ? [message hashAtOffset:off + l] : nil;
+    UInt256 txHash = ([MSG_TX isEqual:type]) ? [message hashAtOffset:off + l] : UINT256_ZERO;
 
     NSLog(@"%@:%u rejected %@ code: 0x%x reason: \"%@\"%@%@", self.host, self.port, type, code, reason,
-          (txHash ? @" txid: " : @""), (txHash ? txHash : @""));
+          (uint256_is_zero(txHash) ? @"" : @" txid: "), (uint256_is_zero(txHash) ? @"" : uint256_obj(txHash)));
     reason = nil; // fixes an unused variable warning for non-debug builds
 
-    if (txHash.length == CC_SHA256_DIGEST_LENGTH) { // most likely a double spend due to tx missing from wallet
+    if (! uint256_is_zero(txHash)) { // most likely a double spend due to tx missing from wallet
         dispatch_async(self.delegateQueue, ^{
             [self.delegate peer:self rejectedTransaction:txHash withCode:code];
         });
@@ -950,8 +961,8 @@ services:(uint64_t)services
 {
     uint32_t hash = FNV32_OFFSET;
     
-    for (int i = 0; i < sizeof(_address.u6_8); i++) {
-        hash = (hash ^ _address.u6_8[i])*FNV32_PRIME;
+    for (int i = 0; i < sizeof(_address); i++) {
+        hash = (hash ^ _address.u8[i])*FNV32_PRIME;
     }
     
     hash = (hash ^ ((_port >> 8) & 0xff))*FNV32_PRIME;
@@ -962,12 +973,8 @@ services:(uint64_t)services
 // two peer objects are equal if they share an ip address and port number
 - (BOOL)isEqual:(id)object
 {
-    if (self == object) return YES;
-    if (! [object isKindOfClass:[BRPeer class]] || _port != [(BRPeer *)object port]) return NO;
-    
-    BRPeerAddress address = [(BRPeer *)object address];
-    
-    return (_address.u6_64[0] == address.u6_64[0] && _address.u6_64[1] == address.u6_64[1]) ? YES : NO;
+    return (self == object || ([object isKindOfClass:[BRPeer class]] && _port == [(BRPeer *)object port] &&
+                               uint128_eq(_address, [(BRPeer *)object address]))) ? YES : NO;
 }
 
 #pragma mark - NSStreamDelegate
@@ -1062,10 +1069,10 @@ services:(uint64_t)services
                     if (self.msgPayload.length < length) continue; // wait for more stream input
                 }
                 
-                if (*(const uint32_t *)self.msgPayload.SHA256_2.bytes != checksum) { // verify checksum
+                if (self.msgPayload.SHA256_2.u32[0] != checksum) { // verify checksum
                     [self error:@"error reading %@, invalid checksum %x, expected %x, payload length:%u, expected "
-                     "length:%u, SHA256_2:%@", type, *(const uint32_t *)self.msgPayload.SHA256_2.bytes, checksum,
-                     (int)self.msgPayload.length, length, self.msgPayload.SHA256_2];
+                     "length:%u, SHA256_2:%@", type, self.msgPayload.SHA256_2.u32[0], checksum,
+                     (int)self.msgPayload.length, length, uint256_obj(self.msgPayload.SHA256_2)];
                      goto reset;
                 }
 

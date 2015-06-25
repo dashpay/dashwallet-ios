@@ -118,47 +118,47 @@ static void RMD160(const void *data, size_t len, uint8_t *md)
 
 @implementation NSData (Bitcoin)
 
-- (NSData *)SHA1
+- (UInt128)SHA1
 {
-    NSMutableData *d = [NSMutableData dataWithLength:CC_SHA1_DIGEST_LENGTH];
+    UInt128 sha1;
     
-    CC_SHA1(self.bytes, (CC_LONG)self.length, d.mutableBytes);
-    return d;
+    CC_SHA1(self.bytes, (CC_LONG)self.length, (unsigned char *)&sha1);
+    return sha1;
 }
 
-- (NSData *)SHA256
+- (UInt256)SHA256
 {
-    NSMutableData *d = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH];
+    UInt256 sha256;
     
-    CC_SHA256(self.bytes, (CC_LONG)self.length, d.mutableBytes);
-    return d;
+    CC_SHA256(self.bytes, (CC_LONG)self.length, (unsigned char *)&sha256);
+    return sha256;
 }
 
-- (NSData *)SHA256_2
+- (UInt256)SHA256_2
 {
-    NSMutableData *d = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH];
+    UInt256 sha256;
     
-    CC_SHA256(self.bytes, (CC_LONG)self.length, d.mutableBytes);
-    CC_SHA256(d.bytes, (CC_LONG)d.length, d.mutableBytes);
-    return d;
+    CC_SHA256(self.bytes, (CC_LONG)self.length, (unsigned char *)&sha256);
+    CC_SHA256((const void *)&sha256, (CC_LONG)sizeof(sha256), (unsigned char *)&sha256);
+    return sha256;
 }
 
-- (NSData *)RMD160
+- (UInt160)RMD160
 {
-    NSMutableData *d = [NSMutableData dataWithLength:RMD160_DIGEST_LENGTH];
+    UInt160 rmd160;
     
-    RMD160(self.bytes, self.length, d.mutableBytes);
-    return d;
+    RMD160(self.bytes, (size_t)self.length, (uint8_t *)&rmd160);
+    return rmd160;
 }
 
-- (NSData *)hash160
+- (UInt160)hash160
 {
-    NSMutableData *d = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH];
+    UInt256 sha256;
+    UInt160 rmd160;
     
-    CC_SHA256(self.bytes, (CC_LONG)self.length, d.mutableBytes);
-    RMD160(d.bytes, d.length, d.mutableBytes);
-    d.length = RMD160_DIGEST_LENGTH;
-    return d;
+    CC_SHA256(self.bytes, (CC_LONG)self.length, (unsigned char *)&sha256);
+    RMD160(&sha256, sizeof(sha256), (uint8_t *)&rmd160);
+    return rmd160;
 }
 
 - (NSData *)reverse
@@ -222,10 +222,10 @@ static void RMD160(const void *data, size_t len, uint8_t *md)
     }
 }
 
-- (NSData *)hashAtOffset:(NSUInteger)offset
+- (UInt256)hashAtOffset:(NSUInteger)offset
 {
-    if (self.length < offset + CC_SHA256_DIGEST_LENGTH) return nil;
-    return [self subdataWithRange:NSMakeRange(offset, CC_SHA256_DIGEST_LENGTH)];
+    if (self.length < offset + sizeof(UInt256)) return UINT256_ZERO;
+    return *(const UInt256 *)((const char *)self.bytes + offset);
 }
 
 - (NSString *)stringAtOffset:(NSUInteger)offset length:(NSUInteger *)length

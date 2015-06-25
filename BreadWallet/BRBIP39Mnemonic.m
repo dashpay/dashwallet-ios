@@ -45,8 +45,9 @@
     NSMutableArray *a =
         CFBridgingRelease(CFArrayCreateMutable(SecureAllocator(), data.length*3/4, &kCFTypeArrayCallBacks));
     NSMutableData *d = [NSMutableData secureDataWithData:data];
+    UInt256 sha256 = data.SHA256;
 
-    [d appendData:data.SHA256]; // append SHA256 checksum
+    [d appendBytes:&sha256 length:sizeof(sha256)]; // append SHA256 checksum
 
     for (int i = 0; i < data.length*3/4; i++) {
         x = CFSwapInt32BigToHost(*(const uint32_t *)((const uint8_t *)d.bytes + i*11/8));
@@ -87,7 +88,7 @@
     b = *((const uint8_t *)d.bytes + a.count*4/3) >> (8 - a.count/3);
     d.length = a.count*4/3;
 
-    if (b != (*(const uint8_t *)d.SHA256.bytes >> (8 - a.count/3))) {
+    if (b != (d.SHA256.u8[0] >> (8 - a.count/3))) {
         NSLog(@"incorrect phrase, bad checksum");
         return nil;
     }

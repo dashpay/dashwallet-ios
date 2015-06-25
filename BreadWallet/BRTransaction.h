@@ -33,6 +33,8 @@
 #define TX_UNCONFIRMED       INT32_MAX   // block height indicating transaction is unconfirmed
 #define TX_MAX_LOCK_HEIGHT   500000000u  // a lockTime below this value is a block height, otherwise a timestamp
 
+typedef union _UInt256 UInt256;
+
 @interface BRTransaction : NSObject
 
 @property (nonatomic, readonly) NSArray *inputAddresses;
@@ -45,7 +47,7 @@
 @property (nonatomic, readonly) NSArray *outputAddresses;
 @property (nonatomic, readonly) NSArray *outputScripts;
 
-@property (nonatomic, strong) NSData *txHash;
+@property (nonatomic, assign) UInt256 txHash;
 @property (nonatomic, assign) uint32_t version;
 @property (nonatomic, assign) uint32_t lockTime;
 @property (nonatomic, assign) uint32_t blockHeight;
@@ -61,8 +63,8 @@
 - (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts
 outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts;
 
-- (void)addInputHash:(NSData *)hash index:(NSUInteger)index script:(NSData *)script;
-- (void)addInputHash:(NSData *)hash index:(NSUInteger)index script:(NSData *)script signature:(NSData *)signature
+- (void)addInputHash:(UInt256)hash index:(NSUInteger)index script:(NSData *)script;
+- (void)addInputHash:(UInt256)hash index:(NSUInteger)index script:(NSData *)script signature:(NSData *)signature
 sequence:(uint32_t)sequence;
 - (void)addOutputAddress:(NSString *)address amount:(uint64_t)amount;
 - (void)addOutputScript:(NSData *)script amount:(uint64_t)amount;

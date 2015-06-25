@@ -26,6 +26,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 #import "BRKeySequence.h"
+#import "NSData+Bitcoin.h"
 
 #define BRWalletBalanceChangedNotification @"BRWalletBalanceChangedNotification"
 
@@ -38,7 +39,7 @@
 @property (nonatomic, readonly) NSString *receiveAddress; // returns the first unused external address
 @property (nonatomic, readonly) NSString *changeAddress; // returns the first unused internal address
 @property (nonatomic, readonly) NSSet *addresses; // all previously generated internal and external addresses
-@property (nonatomic, readonly) NSArray *unspentOutputs; // NSData objects containing serialized UTXOs
+@property (nonatomic, readonly) NSArray *unspentOutputs; // NSValue objects containing UTXO structs
 @property (nonatomic, readonly) NSArray *recentTransactions; // BRTransaction objects sorted by date, most recent first
 @property (nonatomic, readonly) NSSet *txHashes; // hashes of all wallet transactions
 @property (nonatomic, readonly) uint64_t totalSent; // the total amount spent from the wallet (excluding change)
@@ -76,10 +77,10 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 - (BOOL)registerTransaction:(BRTransaction *)transaction;
 
 // removes a transaction from the wallet along with any transactions that depend on its outputs
-- (void)removeTransaction:(NSData *)txHash;
+- (void)removeTransaction:(UInt256)txHash;
 
 // returns the transaction with the given hash if it's been registered in the wallet
-- (BRTransaction *)transactionForHash:(NSData *)txHash;
+- (BRTransaction *)transactionForHash:(UInt256)txHash;
 
 // true if no previous wallet transaction spends any of the given transaction's inputs, and no input tx is invalid
 - (BOOL)transactionIsValid:(BRTransaction *)transaction;

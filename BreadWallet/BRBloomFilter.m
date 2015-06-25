@@ -162,7 +162,8 @@ flags:(uint8_t)flags
     for (NSData *script in tx.outputScripts) {
         for (NSData *elem in [script scriptElements]) {
             if ([elem intValue] > OP_PUSHDATA4 || [elem intValue] == 0 || ! [self containsData:elem]) continue;
-            [d setData:tx.txHash];
+            d.length = 0;
+            [d appendBytes:tx.txHash.u8 length:sizeof(UInt256)];
             [d appendUInt32:n];
             if (! [self containsData:d]) [self insertData:d]; // update bloom filter with matched txout
             break;
