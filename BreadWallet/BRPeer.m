@@ -124,9 +124,11 @@ services:(uint64_t)services
     if (self.status != BRPeerStatusDisconnected) return;
     _status = BRPeerStatusConnecting;
     _pingTime = DBL_MAX;
-    if (! self.reachability) self.reachability = [Reachability reachabilityWithHostName:self.host];
+    if (! self.reachability) self.reachability = [Reachability reachabilityForInternetConnection];
     
     if (self.reachability.currentReachabilityStatus == NotReachable) { // delay connect until network is reachable
+        NSLog(@"%@:%u not reachable, waiting...", self.host, self.port);
+        
         dispatch_async(dispatch_get_main_queue(), ^{
             if (! self.reachabilityObserver) {
                 self.reachabilityObserver =
