@@ -28,5 +28,7 @@
 @interface UIImage (Blur)
 
 - (UIImage *)blurWithRadius:(CGFloat)radius;
+- (UIImage *)negativeImage;
++ (instancetype)imageWithQRCodeData:(NSData*)data size:(CGSize)size;
 
 @end
