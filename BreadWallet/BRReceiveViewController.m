@@ -29,6 +29,7 @@
 #import "BRWalletManager.h"
 #import "BRTransaction.h"
 #import "BRBubbleView.h"
+#import "BRAppGroupConstants.h"
 #import "UIImage+Utility.h"
 #import <MobileCoreServices/UTCoreTypes.h>
 
@@ -68,6 +69,7 @@
 
 - (void)updateAddress
 {
+    static NSUserDefaults *groupDefs = nil;
     BRWalletManager *m = [BRWalletManager sharedInstance];
     BRPaymentRequest *req = self.paymentRequest;
 
@@ -79,6 +81,12 @@
     if (req.amount > 0) {
         self.label.text = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:req.amount],
                            [m localCurrencyStringForAmount:req.amount]];
+    }
+    else {
+        if (! groupDefs) groupDefs = [[NSUserDefaults alloc] initWithSuiteName:kBRAppGroupIdentifier];
+        [groupDefs setObject:req.data forKey:kBRSharedContainerDataWalletRequestDataKey];
+        [groupDefs setObject:self.paymentAddress forKey:kBRSharedContainerDataWalletReceiveAddressKey];
+        [groupDefs synchronize];
     }
 }
 

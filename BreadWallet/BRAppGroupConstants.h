@@ -1,9 +1,9 @@
 //
-//  UIImage+Utility.h
+//  BRAppGroupConstants.h
 //  BreadWallet
 //
-//  Created by Aaron Voisine on 11/8/14.
-//  Copyright (c) 2014 Aaron Voisine <voisine@gmail.com>
+//  Created by Henry Tsai on 6/13/15.
+//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,11 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <UIKit/UIKit.h>
+#ifndef BreadWallet_BRAppGroupConstants_h
+#define BreadWallet_BRAppGroupConstants_h
 
-@interface UIImage (Utility)
+static NSString *const kBRAppGroupIdentifier = @"group.org.voisine.breadwallet";
+static NSString *const kBRSharedContainerDataWalletRequestDataKey = @"kBRSharedContainerDataWalletRequestDataKey";
+static NSString *const kBRSharedContainerDataWalletReceiveAddressKey = @"kBRSharedContainerDataWalletReceiveAddressKey";
 
-+ (instancetype)imageWithQRCodeData:(NSData *)data size:(CGSize)size color:(CIColor *)color;
-
-- (UIImage *)blurWithRadius:(CGFloat)radius;
-
-@end
+#endif

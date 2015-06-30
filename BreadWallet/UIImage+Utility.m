@@ -1,5 +1,5 @@
 //
-//  UIImage+Blur.m
+//  UIImage+Utility.m
 //  BreadWallet
 //
 //  Created by Aaron Voisine on 11/8/14.
