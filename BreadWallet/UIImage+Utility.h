@@ -25,10 +25,10 @@
 
 #import <UIKit/UIKit.h>
 
-@interface UIImage (Blur)
+@interface UIImage (Utility)
+
++ (instancetype)imageWithQRCodeData:(NSData *)data size:(CGSize)size color:(CIColor *)color;
 
 - (UIImage *)blurWithRadius:(CGFloat)radius;
-- (UIImage *)negativeImage;
-+ (instancetype)imageWithQRCodeData:(NSData*)data size:(CGSize)size;
 
 @end
