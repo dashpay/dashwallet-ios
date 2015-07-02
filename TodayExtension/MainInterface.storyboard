@@ -118,20 +118,14 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jeJ-XT-nMj" userLabel="No data view container">
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="240"/>
                                 <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Please open ƀreadwallet to setup your wallet" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5G0-Qo-N1G">
-                                        <rect key="frame" x="33" y="120" width="250" height="60"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <color key="textColor" red="0.78247316919191923" green="0.78247316919191923" blue="0.78247316919191923" alpha="1" colorSpace="calibratedRGB"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="breadwallet-white" translatesAutoresizingMaskIntoConstraints="NO" id="0me-bY-8oC">
-                                        <rect key="frame" x="90" y="31" width="140" height="55"/>
+                                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="breadwallet-wide" translatesAutoresizingMaskIntoConstraints="NO" id="0me-bY-8oC">
+                                        <rect key="frame" x="90" y="47" width="140" height="55"/>
                                     </imageView>
                                     <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Scv-ru-Jyi" userLabel="Open app button container">
-                                        <rect key="frame" x="109" y="188" width="100" height="30"/>
+                                        <rect key="frame" x="80" y="154" width="160" height="30"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" constant="100" id="1Wv-dS-bwr"/>
+                                            <constraint firstAttribute="width" constant="160" id="1Wv-dS-bwr"/>
                                             <constraint firstAttribute="height" constant="30" id="5nD-8O-RRm"/>
                                         </constraints>
                                         <userDefinedRuntimeAttributes>
@@ -145,14 +139,10 @@
                                 <constraints>
                                     <constraint firstAttribute="centerX" secondItem="0me-bY-8oC" secondAttribute="centerX" id="0bM-K5-ubh"/>
                                     <constraint firstAttribute="height" secondItem="0me-bY-8oC" secondAttribute="height" constant="185" id="4Pd-Go-iwN"/>
-                                    <constraint firstAttribute="bottom" secondItem="5G0-Qo-N1G" secondAttribute="bottom" constant="60" id="FTd-B3-gnH"/>
-                                    <constraint firstItem="0me-bY-8oC" firstAttribute="top" secondItem="jeJ-XT-nMj" secondAttribute="top" constant="31" id="NbW-Bk-Fze"/>
-                                    <constraint firstAttribute="trailing" secondItem="5G0-Qo-N1G" secondAttribute="trailing" constant="37" id="OpH-G4-nrN"/>
-                                    <constraint firstAttribute="bottom" secondItem="Scv-ru-Jyi" secondAttribute="bottom" constant="22" id="W0i-Sd-tMS"/>
-                                    <constraint firstAttribute="centerY" secondItem="5G0-Qo-N1G" secondAttribute="centerY" constant="-30" id="Wlg-rT-3F7"/>
-                                    <constraint firstItem="5G0-Qo-N1G" firstAttribute="leading" secondItem="jeJ-XT-nMj" secondAttribute="leading" constant="33" id="eBF-Yt-c7t"/>
-                                    <constraint firstAttribute="centerX" secondItem="Scv-ru-Jyi" secondAttribute="centerX" constant="1" id="n0H-GC-Veh"/>
-                                    <constraint firstItem="Scv-ru-Jyi" firstAttribute="top" secondItem="0me-bY-8oC" secondAttribute="bottom" constant="102" id="vZG-gM-WQw"/>
+                                    <constraint firstItem="0me-bY-8oC" firstAttribute="top" secondItem="jeJ-XT-nMj" secondAttribute="top" constant="47" id="NbW-Bk-Fze"/>
+                                    <constraint firstAttribute="bottom" secondItem="Scv-ru-Jyi" secondAttribute="bottom" constant="56" id="W0i-Sd-tMS"/>
+                                    <constraint firstAttribute="centerX" secondItem="Scv-ru-Jyi" secondAttribute="centerX" id="n0H-GC-Veh"/>
+                                    <constraint firstItem="Scv-ru-Jyi" firstAttribute="top" secondItem="0me-bY-8oC" secondAttribute="bottom" constant="52" id="vZG-gM-WQw"/>
                                     <constraint firstAttribute="width" secondItem="0me-bY-8oC" secondAttribute="width" constant="180" id="y1C-y8-r4E"/>
                                 </constraints>
                             </view>
@@ -190,7 +180,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="breadwallet-white" width="97" height="18"/>
+        <image name="breadwallet-wide" width="140" height="20"/>
     </resources>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>
