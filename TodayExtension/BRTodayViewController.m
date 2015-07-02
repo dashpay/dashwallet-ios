@@ -27,7 +27,6 @@
 #import <NotificationCenter/NotificationCenter.h>
 #import "UIImage+Utility.h"
 #import "BRAppGroupConstants.h"
-#import "NSUserDefaults+AppGroup.h"
 #import "BRVisualEffectButton.h"
 
 static NSString *const kBRScanQRCodeURLScheme = @"bread://x-callback-url/scanqr";
@@ -46,6 +45,7 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
 @property (nonatomic, strong) UIButton *openAppButton;
 @property (nonatomic, strong) UIButton *scanButton;
 @property (nonatomic, strong) UIButton *qrCodeView;
+@property (nonatomic, strong) NSUserDefaults *appGroupUserDefault;
 @end
 
 @implementation BRTodayViewController
@@ -61,7 +61,7 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
 - (void)widgetPerformUpdateWithCompletionHandler:(void (^)(NCUpdateResult))completionHandler {
     if (completionHandler) {
         // Perform any setup necessary in order to update the view.
-        NSData *data = [[NSUserDefaults appGroupUserDefault] objectForKey:kBRSharedContainerDataWalletRequestDataKey];
+        NSData *data = [self.appGroupUserDefault objectForKey:kBRSharedContainerDataWalletRequestDataKey];
         // If an error is encountered, use NCUpdateResultFailed
         // If there's no update required, use NCUpdateResultNoData
         // If there's an update, use NCUpdateResultNewData
@@ -83,14 +83,22 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
     }
 }
 
+- (NSUserDefaults*)appGroupUserDefault {
+    if (!_appGroupUserDefault){
+        _appGroupUserDefault = [[NSUserDefaults alloc] initWithSuiteName:kBRAppGroupIdentifier];
+    }
+    return _appGroupUserDefault;
+}
+
+
 - (void)viewDidLayoutSubviews {
 	[super viewDidLayoutSubviews];
 	[self updateReceiveMoneyUI];
 }
 
 - (void)updateReceiveMoneyUI {
-    self.qrCodeData = [[NSUserDefaults appGroupUserDefault] objectForKey:kBRSharedContainerDataWalletRequestDataKey];
-    NSString *receiveAddress = [[NSUserDefaults appGroupUserDefault] objectForKey:kBRSharedContainerDataWalletReceiveAddressKey];
+    self.qrCodeData = [self.appGroupUserDefault objectForKey:kBRSharedContainerDataWalletRequestDataKey];
+    NSString *receiveAddress = [self.appGroupUserDefault objectForKey:kBRSharedContainerDataWalletReceiveAddressKey];
     if (!CGSizeEqualToSize(self.imageViewContainer.frame.size,CGSizeZero) && self.qrCodeData) {
         [self.qrCodeImageView removeFromSuperview];
         UIImage *image = [UIImage imageWithQRCodeData:self.qrCodeData size:CGSizeMake(self.imageViewContainer.frame.size.width, self.imageViewContainer.frame.size.height) color:[CIColor colorWithRed:1.0 green:1.0 blue:1.0]];
