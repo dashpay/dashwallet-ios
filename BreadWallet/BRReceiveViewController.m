@@ -203,10 +203,9 @@
         [[UIPasteboard generalPasteboard]
          setString:(self.paymentRequest.amount > 0) ? self.paymentRequest.string : self.paymentAddress];
 
-        [self.view
-         addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"copied", nil)
-                       center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0 - 130.0)]
-                      popIn] popOutAfterDelay:2.0]];
+        [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"copied", nil)
+         center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0 - 130.0)] popIn]
+         popOutAfterDelay:2.0]];
     }
     else if ([title isEqual:NSLocalizedString(@"send address as email", nil)] ||
              [title isEqual:NSLocalizedString(@"send request as email", nil)]) {

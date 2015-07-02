@@ -26,6 +26,8 @@
 #import "BRSettingsViewController.h"
 #import "BRSeedViewController.h"
 #import "BRWalletManager.h"
+#import "BRBubbleView.h"
+#include <asl.h>
 
 @interface BRSettingsViewController ()
 
@@ -123,6 +125,32 @@
 {
     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://breadwallet.com"]];
 }
+
+#if DEBUG
+- (IBAction)copyLogs:(id)sender
+{
+    aslmsg q = asl_new(ASL_TYPE_QUERY), m;
+    aslresponse r = asl_search(NULL, q);
+    const char *k, *v;
+    NSMutableString *s = [NSMutableString string];
+
+    while ((m = asl_next(r))) {
+        for (int i = 0; (k = asl_key(m, i)); i++) {
+            [s appendFormat:@"%s: ", k];
+            v = asl_get(m, k);
+            [s appendFormat:@"%s\n", (v) ? v : "(NULL)"];
+        }
+    }
+
+    asl_free(r);
+    [[UIPasteboard generalPasteboard] setString:(s.length < 8000000) ? s : [s substringFromIndex:s.length - 8000000]];
+    
+    [self.navigationController.topViewController.view
+     addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"copied", nil)
+     center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0)] popIn]
+     popOutAfterDelay:2.0]];
+}
+#endif
 
 - (IBAction)touchIdLimit:(id)sender
 {
@@ -319,6 +347,7 @@
     BRWalletManager *m = [BRWalletManager sharedInstance];
     UIViewController *c = nil;
     UILabel *l = nil;
+    UIButton *b = nil;
     NSMutableAttributedString *s = nil;
     NSMutableArray *options;
     NSUInteger i = 0;
@@ -359,7 +388,11 @@
                     [s replaceCharactersInRange:[s.string rangeOfString:@"%net%"] withString:@""];
                     l.attributedText = s;
                     [l.superview.gestureRecognizers.firstObject addTarget:self action:@selector(about:)];
-                    
+#if DEBUG
+                    b = (id)[c.view viewWithTag:413];
+                    [b addTarget:self action:@selector(copyLogs:) forControlEvents:UIControlEventTouchUpInside];
+                    b.hidden = NO;
+#endif
                     [self.navigationController pushViewController:c animated:YES];
                     break;
                     
