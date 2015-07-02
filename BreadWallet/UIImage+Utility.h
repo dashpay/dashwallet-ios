@@ -1,5 +1,5 @@
 //
-//  UIImage+Blur.h
+//  UIImage+Utility.h
 //  BreadWallet
 //
 //  Created by Aaron Voisine on 11/8/14.
@@ -25,7 +25,9 @@
 
 #import <UIKit/UIKit.h>
 
-@interface UIImage (Blur)
+@interface UIImage (Utility)
+
++ (instancetype)imageWithQRCodeData:(NSData *)data size:(CGSize)size color:(CIColor *)color;
 
 - (UIImage *)blurWithRadius:(CGFloat)radius;
 

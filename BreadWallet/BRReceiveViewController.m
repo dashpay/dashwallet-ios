@@ -29,7 +29,8 @@
 #import "BRWalletManager.h"
 #import "BRTransaction.h"
 #import "BRBubbleView.h"
-#import "UIImage+QRCode.h"
+#import "BRAppGroupConstants.h"
+#import "UIImage+Utility.h"
 #import <MobileCoreServices/UTCoreTypes.h>
 
 #define QR_TIP      NSLocalizedString(@"Let others scan this QR code to get your bitcoin address. Anyone can send "\
@@ -68,17 +69,24 @@
 
 - (void)updateAddress
 {
+    static NSUserDefaults *groupDefs = nil;
     BRWalletManager *m = [BRWalletManager sharedInstance];
     BRPaymentRequest *req = self.paymentRequest;
 
     if (! req.isValid || [self.paymentAddress isEqual:self.addressButton.currentTitle]) return;
 
-    self.qrView.image = [UIImage imageWithQRCodeData:req.data size:self.qrView.bounds.size];
+    self.qrView.image = [UIImage imageWithQRCodeData:req.data size:self.qrView.bounds.size color:nil];
     [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
     
     if (req.amount > 0) {
         self.label.text = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:req.amount],
                            [m localCurrencyStringForAmount:req.amount]];
+    }
+    else {
+        if (! groupDefs) groupDefs = [[NSUserDefaults alloc] initWithSuiteName:kBRAppGroupIdentifier];
+        [groupDefs setObject:req.data forKey:kBRSharedContainerDataWalletRequestDataKey];
+        [groupDefs setObject:self.paymentAddress forKey:kBRSharedContainerDataWalletReceiveAddressKey];
+        [groupDefs synchronize];
     }
 }
 
