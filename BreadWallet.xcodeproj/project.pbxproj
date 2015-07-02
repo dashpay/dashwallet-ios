@@ -59,7 +59,6 @@
 		BA091FED1B328FAC00F7BFEB /* BRVisualEffectButton.m in Sources */ = {isa = PBXBuildFile; fileRef = BA091FEC1B328FAC00F7BFEB /* BRVisualEffectButton.m */; };
 		BA4EECE31B351B1F00D443A3 /* test qr code image inverted.png in Resources */ = {isa = PBXBuildFile; fileRef = BA4EECE11B351B1F00D443A3 /* test qr code image inverted.png */; };
 		BA4EECE41B351B1F00D443A3 /* test qr code image.png in Resources */ = {isa = PBXBuildFile; fileRef = BA4EECE21B351B1F00D443A3 /* test qr code image.png */; };
-		BA4EECE81B351B3800D443A3 /* BRAppGroupManagerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = BA4EECE51B351B3800D443A3 /* BRAppGroupManagerTest.m */; };
 		BA54D3CE1B2EA74000C9CB28 /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BA54D3CD1B2EA74000C9CB28 /* Media.xcassets */; };
 		BA65A6C11B32904F001597AE /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 75D5F3DF191EC270004AB296 /* Images.xcassets */; };
 		BAA4843C1B3EFFAF0075C749 /* UIImage+Utility.m in Sources */ = {isa = PBXBuildFile; fileRef = BAA4843B1B3EFFAF0075C749 /* UIImage+Utility.m */; };
@@ -67,7 +66,6 @@
 		BAE12BE71B2DEE7F00895CC5 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */; };
 		BAE12BEF1B2DEE7F00895CC5 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BAE12BEE1B2DEE7F00895CC5 /* MainInterface.storyboard */; };
 		BAE12BF21B2DEE7F00895CC5 /* TodayExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = BAE12BE51B2DEE7F00895CC5 /* TodayExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		BAE12BFB1B2DEEC900895CC5 /* BRAppGroupManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BAE12BFA1B2DEEC900895CC5 /* BRAppGroupManager.m */; };
 		BAE12C001B2DEEDA00895CC5 /* NSUserDefaults+AppGroup.m in Sources */ = {isa = PBXBuildFile; fileRef = BAE12BFD1B2DEEDA00895CC5 /* NSUserDefaults+AppGroup.m */; };
 		BAE12C011B2DEEDA00895CC5 /* NSUserDefaults+AppGroup.m in Sources */ = {isa = PBXBuildFile; fileRef = BAE12BFD1B2DEEDA00895CC5 /* NSUserDefaults+AppGroup.m */; };
 		BAE12C061B2DEEF700895CC5 /* BRTodayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = BAE12C051B2DEEF700895CC5 /* BRTodayViewController.m */; };
@@ -145,7 +143,6 @@
 		7511E8E91AE600220025F1B3 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Main.strings; sourceTree = "<group>"; };
 		7511E8EA1AE600220025F1B3 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		7511E8EB1AE600220025F1B3 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
-		7516DDF11B4261F10004F6D8 /* BRAppGroupConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRAppGroupConstants.h; sourceTree = "<group>"; };
 		7525B617192453840041C0F2 /* BRNavigationBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRNavigationBar.h; sourceTree = "<group>"; };
 		7525B618192453840041C0F2 /* BRNavigationBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRNavigationBar.m; sourceTree = "<group>"; };
 		752E2899192349CE00DB5A3C /* BreadWallet.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = BreadWallet.xcdatamodel; sourceTree = "<group>"; };
@@ -295,7 +292,6 @@
 		BA4EECDF1B351AE200D443A3 /* BRAppGroupConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAppGroupConstants.h; sourceTree = "<group>"; };
 		BA4EECE11B351B1F00D443A3 /* test qr code image inverted.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "test qr code image inverted.png"; sourceTree = "<group>"; };
 		BA4EECE21B351B1F00D443A3 /* test qr code image.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "test qr code image.png"; sourceTree = "<group>"; };
-		BA4EECE51B351B3800D443A3 /* BRAppGroupManagerTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRAppGroupManagerTest.m; sourceTree = "<group>"; };
 		BA54D3CD1B2EA74000C9CB28 /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Media.xcassets; sourceTree = "<group>"; };
 		BAA4843A1B3EFFAF0075C749 /* UIImage+Utility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+Utility.h"; sourceTree = "<group>"; };
 		BAA4843B1B3EFFAF0075C749 /* UIImage+Utility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+Utility.m"; sourceTree = "<group>"; };
@@ -303,8 +299,6 @@
 		BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NotificationCenter.framework; path = System/Library/Frameworks/NotificationCenter.framework; sourceTree = SDKROOT; };
 		BAE12BEA1B2DEE7F00895CC5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BAE12BEE1B2DEE7F00895CC5 /* MainInterface.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = MainInterface.storyboard; sourceTree = "<group>"; };
-		BAE12BF91B2DEEC900895CC5 /* BRAppGroupManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAppGroupManager.h; sourceTree = "<group>"; };
-		BAE12BFA1B2DEEC900895CC5 /* BRAppGroupManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRAppGroupManager.m; sourceTree = "<group>"; };
 		BAE12BFC1B2DEEDA00895CC5 /* NSUserDefaults+AppGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSUserDefaults+AppGroup.h"; sourceTree = "<group>"; };
 		BAE12BFD1B2DEEDA00895CC5 /* NSUserDefaults+AppGroup.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSUserDefaults+AppGroup.m"; sourceTree = "<group>"; };
 		BAE12C041B2DEEF700895CC5 /* BRTodayViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRTodayViewController.h; sourceTree = "<group>"; };
@@ -385,9 +379,6 @@
 				752E28C019234C3600DB5A3C /* BRPaymentRequest.h */,
 				752E28C119234C3600DB5A3C /* BRPaymentRequest.m */,
 				BA4EECDF1B351AE200D443A3 /* BRAppGroupConstants.h */,
-				BAE12BF91B2DEEC900895CC5 /* BRAppGroupManager.h */,
-				BAE12BFA1B2DEEC900895CC5 /* BRAppGroupManager.m */,
-				7516DDF11B4261F10004F6D8 /* BRAppGroupConstants.h */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -585,7 +576,6 @@
 			children = (
 				BA4EECE01B351AF100D443A3 /* Data */,
 				75D5F3F2191EC270004AB296 /* BreadWalletTests.m */,
-				BA4EECE51B351B3800D443A3 /* BRAppGroupManagerTest.m */,
 				75D5F3ED191EC270004AB296 /* BreadWalletTests */,
 			);
 			path = BreadWalletTests;
@@ -851,7 +841,6 @@
 				752E28E719234DA200DB5A3C /* NSData+Bitcoin.m in Sources */,
 				752E28E919234DA200DB5A3C /* NSManagedObject+Sugar.m in Sources */,
 				752E28EA19234DA200DB5A3C /* NSMutableData+Bitcoin.m in Sources */,
-				BAE12BFB1B2DEEC900895CC5 /* BRAppGroupManager.m in Sources */,
 				752E28EB19234DA200DB5A3C /* NSString+Bitcoin.m in Sources */,
 				757C89521A2FCE420076B373 /* BRSettingsViewController.m in Sources */,
 				75D5F3D2191EC270004AB296 /* BRAppDelegate.m in Sources */,
@@ -868,7 +857,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				75D5F3F3191EC270004AB296 /* BreadWalletTests.m in Sources */,
-				BA4EECE81B351B3800D443A3 /* BRAppGroupManagerTest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
