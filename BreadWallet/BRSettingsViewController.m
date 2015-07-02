@@ -131,15 +131,15 @@
 {
     aslmsg q = asl_new(ASL_TYPE_QUERY), m;
     aslresponse r = asl_search(NULL, q);
-    const char *k, *v;
     NSMutableString *s = [NSMutableString string];
+    time_t t;
+    struct tm tm;
 
     while ((m = asl_next(r))) {
-        for (int i = 0; (k = asl_key(m, i)); i++) {
-            [s appendFormat:@"%s: ", k];
-            v = asl_get(m, k);
-            [s appendFormat:@"%s\n", (v) ? v : "(NULL)"];
-        }
+        t = strtol(asl_get(m, ASL_KEY_TIME), NULL, 10);
+        localtime_r(&t, &tm);
+        [s appendFormat:@"%d-%02d-%02d %02d:%02d:%02d %s: %s\n", tm.tm_year + 1900, tm.tm_mon, tm.tm_mday, tm.tm_hour,
+         tm.tm_min, tm.tm_sec, asl_get(m, ASL_KEY_SENDER), asl_get(m, ASL_KEY_MSG)];
     }
 
     asl_free(r);
