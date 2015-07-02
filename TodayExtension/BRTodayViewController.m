@@ -25,8 +25,7 @@
 
 #import "BRTodayViewController.h"
 #import <NotificationCenter/NotificationCenter.h>
-#import "UIImage+QRCode.h"
-#import "UIImage+NegativeImage.h"
+#import "UIImage+Utility.h"
 #import "BRAppGroupConstants.h"
 #import "NSUserDefaults+AppGroup.h"
 #import "BRVisualEffectButton.h"
@@ -94,8 +93,7 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
     NSString *receiveAddress = [[NSUserDefaults appGroupUserDefault] objectForKey:kBRSharedContainerDataWalletReceiveAddressKey];
     if (!CGSizeEqualToSize(self.imageViewContainer.frame.size,CGSizeZero) && self.qrCodeData) {
         [self.qrCodeImageView removeFromSuperview];
-        UIImage *image = [UIImage imageWithQRCodeData:self.qrCodeData size:CGSizeMake(self.imageViewContainer.frame.size.width, self.imageViewContainer.frame.size.height)];
-        image = [image negativeImage];
+        UIImage *image = [UIImage imageWithQRCodeData:self.qrCodeData size:CGSizeMake(self.imageViewContainer.frame.size.width, self.imageViewContainer.frame.size.height) color:nil];
         [self.qrCodeView setImage:image forState:UIControlStateNormal];
     }
     self.hashLabel.text = receiveAddress;
