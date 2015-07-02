@@ -93,7 +93,7 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
     NSString *receiveAddress = [[NSUserDefaults appGroupUserDefault] objectForKey:kBRSharedContainerDataWalletReceiveAddressKey];
     if (!CGSizeEqualToSize(self.imageViewContainer.frame.size,CGSizeZero) && self.qrCodeData) {
         [self.qrCodeImageView removeFromSuperview];
-        UIImage *image = [UIImage imageWithQRCodeData:self.qrCodeData size:CGSizeMake(self.imageViewContainer.frame.size.width, self.imageViewContainer.frame.size.height) color:nil];
+        UIImage *image = [UIImage imageWithQRCodeData:self.qrCodeData size:CGSizeMake(self.imageViewContainer.frame.size.width, self.imageViewContainer.frame.size.height) color:[CIColor colorWithRed:1.0 green:1.0 blue:1.0]];
         [self.qrCodeView setImage:image forState:UIControlStateNormal];
     }
     self.hashLabel.text = receiveAddress;
