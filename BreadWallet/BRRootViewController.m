@@ -32,7 +32,7 @@
 #import "BRBouncyBurgerButton.h"
 #import "BRPeerManager.h"
 #import "BRWalletManager.h"
-#import "UIImage+Blur.h"
+#import "UIImage+Utility.h"
 #import "Reachability.h"
 #import <LocalAuthentication/LocalAuthentication.h>
 #import <sys/stat.h>
