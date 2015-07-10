@@ -129,7 +129,7 @@
     dispatch_once(&onceToken, ^{
         NSMutableCharacterSet *set = [NSMutableCharacterSet letterCharacterSet];
 
-        [set addCharactersInString:@"., "];
+        [set formUnionWithCharacterSet:[NSCharacterSet whitespaceCharacterSet]];
         charset = [set invertedSet];
     });
 

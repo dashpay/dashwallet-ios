@@ -26,9 +26,13 @@
 #import "BRSeedViewController.h"
 #import "BRWalletManager.h"
 #import "BRPeerManager.h"
+#import "NSMutableData+Bitcoin.h"
 
 #define LABEL_MARGIN       20.0
 #define WRITE_TOGGLE_DELAY 15.0
+
+#define IDEO_SP   @"\xE3\x80\x80" // ideographic space (utf-8)
+#define WORD_JOIN @"\xE2\x81\xA0" // word joiner (utf-8)
 
 @interface BRSeedViewController ()
 
@@ -91,7 +95,22 @@
                        style:UIBarButtonItemStylePlain target:self action:@selector(done:)];
     
     @autoreleasepool {  // @autoreleasepool ensures sensitive data will be dealocated immediately
-        self.seedLabel.text = self.seedPhrase;
+        if (self.seedPhrase.length > 0 && [self.seedPhrase characterAtIndex:0] > 0x3000) { // ideographic language
+            NSMutableString *s = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), 0));
+            
+            for (NSString *w in CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(),
+                                                  (CFStringRef)self.seedPhrase, CFSTR(" ")))) {
+                if (s.length > 0) [s appendString:IDEO_SP];
+                for (NSUInteger i = 0; i < w.length; i++) {
+                    if (i > 0) [s appendString:WORD_JOIN];
+                    [s appendFormat:@"%C", [w characterAtIndex:i]];
+                }
+            }
+            
+            self.seedLabel.text = s;
+        }
+        else self.seedLabel.text = self.seedPhrase;
+
         self.seedPhrase = nil;
     }
     
