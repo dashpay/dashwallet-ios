@@ -61,7 +61,7 @@ static NSString *sanitizeString(NSString *s)
 @property (nonatomic, assign) BOOL clearClipboard, useClipboard, showTips, showBalance, canChangeAmount;
 @property (nonatomic, strong) BRTransaction *sweepTx;
 @property (nonatomic, strong) BRPaymentProtocolRequest *request;
-@property (nonatomic, strong) NSURL *url;
+@property (nonatomic, strong) NSURL *url, *callback;
 @property (nonatomic, assign) uint64_t amount;
 @property (nonatomic, strong) NSString *okAddress, *okIdentity;
 @property (nonatomic, strong) BRBubbleView *tipView;
@@ -136,7 +136,7 @@ static NSString *sanitizeString(NSString *s)
     BRWalletManager *m = [BRWalletManager sharedInstance];
     
     if ([url.scheme isEqual:@"bread"]) { // x-callback-url handling: http://x-callback-url.com/specifications/
-        NSString *xsource = nil, *xsuccess = nil, *xerror = nil;
+        NSString *xsource = nil, *xsuccess = nil, *xerror = nil, *uri = nil;
         NSURL *callback = nil;
 
         for (NSString *arg in [url.query componentsSeparatedByString:@"&"]) {
@@ -151,6 +151,7 @@ static NSString *sanitizeString(NSString *s)
             if ([pair[0] isEqual:@"x-source"]) xsource = value;
             else if ([pair[0] isEqual:@"x-success"]) xsuccess = value;
             else if ([pair[0] isEqual:@"x-error"]) xerror = value;
+            else if ([pair[0] isEqual:@"uri"]) uri = value;
         }
     
         if ([url.host isEqual:@"scanqr"] || [url.path isEqual:@"/scanqr"]) { // scan qr
@@ -184,6 +185,11 @@ static NSString *sanitizeString(NSString *s)
             callback = [NSURL URLWithString:[xsuccess stringByAppendingFormat:@"%@address=%@",
                                              ([[[NSURL URLWithString:xsuccess] query] length] > 0) ? @"&" : @"?",
                                              m.wallet.receiveAddress]];
+        }
+        else if (([url.host isEqual:@"bitcoin-uri"] || [url.path isEqual:@"/bitcoin-uri"]) && uri &&
+                 [[[NSURL URLWithString:uri] scheme] isEqual:@"bitcoin"]) {
+            self.callback = [NSURL URLWithString:xsuccess];
+            [self handleURL:[NSURL URLWithString:uri]];
         }
         
         if (callback && [[UIApplication sharedApplication] canOpenURL:callback]) {
@@ -444,7 +450,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     if (! tx) {
         if (m.didAuthenticate || [m seedWithPrompt:prompt forAmount:amount]) {
             // if user selected an amount equal to or below wallet balance, but the fee will bring the total above the
-            // balance, offer to reduce the amount to available funds minus fee
+            // balance, so offer to reduce the amount to available funds minus fee
             if ((self.amount <= [m amountForLocalCurrencyString:[m localCurrencyStringForAmount:m.wallet.balance]] ||
                  self.amount <= m.wallet.balance) && self.amount > 0) {
                 NSUInteger txSize = [m.wallet transactionForAmounts:@[@(m.wallet.balance)]
@@ -513,6 +519,13 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
              center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
              popOutAfterDelay:2.0]];
             [(id)self.parentViewController.parentViewController stopActivityWithSuccess:YES];
+
+            if (self.callback && [[UIApplication sharedApplication] canOpenURL:self.callback]) {
+                self.callback = [NSURL URLWithString:[self.callback.absoluteString stringByAppendingFormat:@"%@txid=%@",
+                                 (self.callback.query.length > 0) ? @"&" : @"?", [NSString hexWithData:tx.txHash]]];
+                [[UIApplication sharedApplication] openURL:self.callback];
+            }
+            
             [self reset:nil];
         }
         
@@ -556,6 +569,14 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
                  center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
                  popOutAfterDelay:(ack.memo.length > 0 ? 3.0 : 2.0)]];
                 [(id)self.parentViewController.parentViewController stopActivityWithSuccess:YES];
+
+                if (self.callback && [[UIApplication sharedApplication] canOpenURL:self.callback]) {
+                    self.callback = [NSURL URLWithString:[self.callback.absoluteString
+                                     stringByAppendingFormat:@"%@txid=%@",
+                                     (self.callback.query.length > 0) ? @"&" : @"?", [NSString hexWithData:tx.txHash]]];
+                    [[UIApplication sharedApplication] openURL:self.callback];
+                }
+
                 [self reset:nil];
             }
 
@@ -833,7 +854,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
 - (IBAction)cancel:(id)sender
 {
-    self.url = nil;
+    self.url = self.callback = nil;
     self.sweepTx = nil;
     self.amount = 0;
     self.okAddress = self.okIdentity = nil;

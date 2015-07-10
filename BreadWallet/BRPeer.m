@@ -581,6 +581,7 @@ services:(uint64_t)services
                                                                  sizeof(BRPeerAddress)));
         
         if (! (services & SERVICES_NODE_NETWORK)) continue; // skip peers that don't carry full blocks
+        if (address.u6_64[0] != 0 || address.u6_32[2] != CFSwapInt32HostToBig(0xffff)) continue; // ignore IPv6 for now
         
         // if address time is more than 10 min in the future or older than reference date, set to 5 days old
         if (timestamp > now + 10*60 || timestamp < 0) timestamp = now - 5*24*60*60;

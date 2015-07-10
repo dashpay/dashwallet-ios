@@ -228,9 +228,10 @@ static const char *dns_seeds[] = {
                             addr.u6_32[2] = CFSwapInt32HostToBig(0xffff);
                             addr.u6_32[3] = ((struct sockaddr_in *)p->ai_addr)->sin_addr.s_addr;
                         }
-                        else if (p->ai_family == AF_INET6) {
-                            addr = *(BRPeerAddress *)&((struct sockaddr_in6 *)p->ai_addr)->sin6_addr;
-                        }
+//                        else if (p->ai_family == AF_INET6) {
+//                            addr = *(BRPeerAddress *)&((struct sockaddr_in6 *)p->ai_addr)->sin6_addr;
+//                        }
+                        else continue;
                         
                         uint16_t port = CFSwapInt16BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_port);
                     

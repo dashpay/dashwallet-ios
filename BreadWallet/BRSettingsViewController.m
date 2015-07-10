@@ -347,7 +347,6 @@
     BRWalletManager *m = [BRWalletManager sharedInstance];
     UIViewController *c = nil;
     UILabel *l = nil;
-    UIButton *b = nil;
     NSMutableAttributedString *s = nil;
     NSMutableArray *options;
     NSUInteger i = 0;
@@ -389,9 +388,13 @@
                     l.attributedText = s;
                     [l.superview.gestureRecognizers.firstObject addTarget:self action:@selector(about:)];
 #if DEBUG
+                {
+                    UIButton *b = nil;
+                    
                     b = (id)[c.view viewWithTag:413];
                     [b addTarget:self action:@selector(copyLogs:) forControlEvents:UIControlEventTouchUpInside];
                     b.hidden = NO;
+                }
 #endif
                     [self.navigationController pushViewController:c animated:YES];
                     break;
