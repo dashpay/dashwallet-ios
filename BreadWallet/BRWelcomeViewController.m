@@ -62,10 +62,7 @@
     self.foregroundObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillEnterForegroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (! [[BRWalletManager sharedInstance] noWallet]) { // sanity check
-                [self.navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
-            }
-            else [self animateWallpaper];
+            [self animateWallpaper];
         }];
     
     self.backgroundObserver =
@@ -217,14 +214,9 @@
         return;
     }
 
-    if (self.foregroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.foregroundObserver];
-    self.foregroundObserver = nil;
-
     [self.navigationController.navigationBar.topItem setHidesBackButton:YES animated:YES];
     [sender setEnabled:NO];
-
     self.seedNav = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedNav"];
-    
     self.warningLabel.hidden = self.showButton.hidden = NO;
     self.warningLabel.alpha = self.showButton.alpha = 0.0;
         
@@ -238,7 +230,14 @@
 
 - (IBAction)show:(id)sender
 {
-    [self.navigationController presentViewController:self.seedNav animated:YES completion:nil];
+    [self.navigationController presentViewController:self.seedNav animated:YES completion:^{
+        self.warningLabel.hidden = self.showButton.hidden = YES;
+        self.navigationController.navigationBar.topItem.titleView.alpha = 1.0;
+        self.startLabel.alpha = self.recoverLabel.alpha = 1.0;
+        self.generateButton.alpha = 1.0;
+        self.generateButton.enabled = YES;
+        self.navigationController.navigationBar.topItem.hidesBackButton = NO;
+    }];
 }
 
 #pragma mark UIViewControllerAnimatedTransitioning

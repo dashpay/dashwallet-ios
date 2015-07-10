@@ -149,10 +149,15 @@
                       delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
                 }
                 else {
+                    [[BRWalletManager sharedInstance] setSeedPhrase:nil];
+                    [self.navigationController.presentingViewController dismissViewControllerAnimated:NO
+                     completion:nil];
+                    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:YES];
+                    
                     [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
                       message:NSLocalizedString(@"Screenshots are visible to other apps and devices. "
                                                 "Generate a new recovery phrase and keep it secret.", nil)
-                      delegate:self cancelButtonTitle:nil otherButtonTitles:NSLocalizedString(@"new phrase", nil), nil]
+                      delegate:nil cancelButtonTitle:nil otherButtonTitles:NSLocalizedString(@"ok", nil), nil]
                      show];
                 }
             }];
@@ -200,21 +205,6 @@
      completion:nil];
 }
 
-- (IBAction)refresh:(id)sender
-{
-    self.seedPhrase = [[BRWalletManager sharedInstance] generateRandomSeed];
-    [[BRPeerManager sharedInstance] connect];
-    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:WALLET_NEEDS_BACKUP_KEY];
-    [[NSUserDefaults standardUserDefaults] synchronize];
-    
-    [UIView animateWithDuration:0.1 animations:^{
-        self.seedLabel.alpha = 0.0;
-    } completion:^(BOOL finished) {
-        self.seedLabel.text = self.seedPhrase;
-        [UIView animateWithDuration:0.1 animations:^{ self.seedLabel.alpha = 1.0; }];
-    }];
-}
-
 - (IBAction)toggleWrite:(id)sender
 {
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
@@ -231,18 +221,6 @@
     }
     
     [defs synchronize];
-}
-
-#pragma mark - UIAlertViewDelegate
-
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-    if (buttonIndex == alertView.cancelButtonIndex) return;
-
-    if ([[[BRWalletManager sharedInstance] wallet] balance] == 0 &&
-        [[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"new phrase", nil)]) {
-        [self refresh:nil];
-    }
 }
 
 @end

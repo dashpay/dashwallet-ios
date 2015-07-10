@@ -25,7 +25,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface BRSeedViewController : UIViewController <UIAlertViewDelegate>
+@interface BRSeedViewController : UIViewController
 
 @property (nonatomic, readonly) BOOL authSuccess;
 
