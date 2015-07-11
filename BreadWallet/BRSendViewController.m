@@ -446,6 +446,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 - (void)confirmTransaction:(BRTransaction *)tx withPrompt:(NSString *)prompt forAmount:(uint64_t)amount
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];
+    BOOL auth = m.didAuthenticate;
 
     if (! tx) {
         if (m.didAuthenticate || [m seedWithPrompt:prompt forAmount:amount]) {
@@ -481,6 +482,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         }
         else [self cancelOrChangeAmount];
 
+        if (! auth) m.didAuthenticate = NO;
         return;
     }
     
@@ -490,6 +492,8 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
           cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
     }
     
+    if (! auth) m.didAuthenticate = NO;
+
     if (! [tx isSigned]) { // user canceled authentication
         [self cancelOrChangeAmount];
         return;
