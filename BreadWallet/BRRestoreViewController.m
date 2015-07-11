@@ -137,14 +137,14 @@
 
 - (void)textViewDidChange:(UITextView *)textView
 {
-    static NSCharacterSet *charset = nil;
+    static NSCharacterSet *invalid = nil;
     static dispatch_once_t onceToken = 0;
     
     dispatch_once(&onceToken, ^{
         NSMutableCharacterSet *set = [NSMutableCharacterSet letterCharacterSet];
 
-        [set formUnionWithCharacterSet:[NSCharacterSet whitespaceCharacterSet]];
-        charset = [set invertedSet];
+        [set formUnionWithCharacterSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        invalid = [set invertedSet];
     });
 
     @autoreleasepool {  // @autoreleasepool ensures sensitive data will be dealocated immediately
@@ -152,29 +152,19 @@
         NSRange selected = textView.selectedRange;
         NSMutableString *s = CFBridgingRelease(CFStringCreateMutableCopy(SecureAllocator(), 0,
                                                                          (CFStringRef)textView.text));
-        BOOL done = ([s rangeOfString:@"\n"].location != NSNotFound);
     
-        while ([s rangeOfCharacterFromSet:charset].location != NSNotFound) {
-            [s deleteCharactersInRange:[s rangeOfCharacterFromSet:charset]];
+        while ([s rangeOfCharacterFromSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].location == 0) {
+            [s deleteCharactersInRange:NSMakeRange(0, 1)]; // trim leading whitespace
         }
-
-        while ([s rangeOfString:@"  "].location != NSNotFound) {
-            NSRange r = [s rangeOfString:@".  "];
-    
-            if (r.location != NSNotFound) {
-                if (r.location + 2 == selected.location) selected.location++;
-                [s deleteCharactersInRange:NSMakeRange(r.location + 1, 1)];
-            }
-            else [s replaceOccurrencesOfString:@"  " withString:@". " options:0 range:NSMakeRange(0, s.length)];
+        
+        while ([s rangeOfCharacterFromSet:invalid].location != NSNotFound) {
+            [s deleteCharactersInRange:[s rangeOfCharacterFromSet:invalid]]; // remove invalid chars
         }
-    
-        if ([s hasPrefix:@" "]) [s deleteCharactersInRange:NSMakeRange(0, 1)];
-
+        
         selected.location -= textView.text.length - s.length;
         textView.text = s;
         textView.selectedRange = selected;
-    
-        if (! done) return;
+        if (([s rangeOfString:@"\n"].location == NSNotFound)) return; // not done entering phrase
 
         BOOL isLocal = YES;
         NSString *phrase = [m.mnemonic normalizePhrase:s], *incorrect = nil;
@@ -212,11 +202,11 @@
         }
         else if (! m.noWallet) {
             [self.textView resignFirstResponder];
-            [self performSelector:@selector(wipeWithPhrase:) withObject:s afterDelay:0.0];
+            [self performSelector:@selector(wipeWithPhrase:) withObject:phrase afterDelay:0.0];
         }
         else {
             //TODO: offer the user an option to move funds to a new seed if their wallet device was lost or stolen
-            m.seedPhrase = textView.text;
+            m.seedPhrase = phrase;
             textView.text = nil;
             
             [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:^{

@@ -106,7 +106,7 @@
                 r = [l boundingRectWithSize:CGRectInfinite.size options:NSStringDrawingUsesLineFragmentOrigin
                      attributes:@{NSFontAttributeName:self.seedLabel.font} context:nil];
                 
-                if (r.size.width + 24.0 >= self.view.bounds.size.width) {
+                if (r.size.width + LABEL_MARGIN*2.0 >= self.view.bounds.size.width) {
                     [s appendString:@"\n"];
                     l.string = w;
                 }

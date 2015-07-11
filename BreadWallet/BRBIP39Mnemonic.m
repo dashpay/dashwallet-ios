@@ -106,13 +106,19 @@
 - (NSString *)normalizePhrase:(NSString *)phrase
 {
     if (! phrase) return nil;
-    
+
+    NSMutableCharacterSet *ws = [NSMutableCharacterSet whitespaceAndNewlineCharacterSet];
     NSMutableString *s = CFBridgingRelease(CFStringCreateMutableCopy(SecureAllocator(), 0, (CFStringRef)phrase));
-    
+    CFRange r;
+
+    [ws removeCharactersInString:@" "];
     CFStringNormalize((CFMutableStringRef)s, kCFStringNormalizationFormKD);
-    [s replaceOccurrencesOfString:@"\n" withString:@" " options:0 range:NSMakeRange(0, s.length)];
-    CFStringTrimWhitespace((CFMutableStringRef)s);
     CFStringLowercase((CFMutableStringRef)s, CFLocaleGetSystem());
+    CFStringTrimWhitespace((CFMutableStringRef)s);
+
+    while (CFStringFindCharacterFromSet((CFStringRef)s, (CFCharacterSetRef)ws, CFRangeMake(0, s.length), 0, &r)) {
+        [s replaceCharactersInRange:NSMakeRange(r.location, r.length) withString:@" "];
+    }
     
     while ([s rangeOfString:@"  "].location != NSNotFound) {
         [s replaceOccurrencesOfString:@"  " withString:@" " options:0 range:NSMakeRange(0, s.length)];
