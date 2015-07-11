@@ -38,7 +38,7 @@
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *textViewYBottom;
 @property (nonatomic, strong) NSArray *words;
 @property (nonatomic, strong) NSMutableSet *allWords;
-@property (nonatomic, strong) id keyboardObserver;
+@property (nonatomic, strong) id keyboardObserver, resignActiveObserver;
 
 @end
 
@@ -73,6 +73,12 @@
              } completion:nil];
         }];
     
+    self.resignActiveObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
+            self.textView.text = nil;
+        }];
+
     if (self.navigationController.viewControllers.firstObject != self) return;
     
     self.textView.layer.borderColor = [[UIColor colorWithWhite:0.0 alpha:0.25] CGColor];
@@ -86,9 +92,17 @@
     [self.textView becomeFirstResponder];
 }
 
+- (void)viewWillDisappear:(BOOL)animated
+{
+    self.textView.text = nil;
+    
+    [super viewWillDisappear:animated];
+}
+
 - (void)dealloc
 {
     if (self.keyboardObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.keyboardObserver];
+    if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
 }
 
 - (void)wipeWithPhrase:(NSString *)phrase
