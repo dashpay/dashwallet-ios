@@ -23,11 +23,6 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#ifndef BreadWallet_BRAppGroupConstants_h
-#define BreadWallet_BRAppGroupConstants_h
-
-static NSString *const kBRAppGroupIdentifier = @"group.org.voisine.breadwallet";
-static NSString *const kBRSharedContainerDataWalletRequestDataKey = @"kBRSharedContainerDataWalletRequestDataKey";
-static NSString *const kBRSharedContainerDataWalletReceiveAddressKey = @"kBRSharedContainerDataWalletReceiveAddressKey";
-
-#endif
+#define kBRAppGroupIdentifier                         @"group.org.voisine.breadwallet"
+#define kBRSharedContainerDataWalletRequestDataKey    @"kBRSharedContainerDataWalletRequestDataKey"
+#define kBRSharedContainerDataWalletReceiveAddressKey @"kBRSharedContainerDataWalletReceiveAddressKey"
