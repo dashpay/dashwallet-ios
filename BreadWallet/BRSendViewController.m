@@ -188,7 +188,7 @@ static NSString *sanitizeString(NSString *s)
         }
         else if (([url.host isEqual:@"bitcoin-uri"] || [url.path isEqual:@"/bitcoin-uri"]) && uri &&
                  [[[NSURL URLWithString:uri] scheme] isEqual:@"bitcoin"]) {
-            self.callback = [NSURL URLWithString:xsuccess];
+            if (xsuccess) self.callback = [NSURL URLWithString:xsuccess];
             [self handleURL:[NSURL URLWithString:uri]];
         }
         

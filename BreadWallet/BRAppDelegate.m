@@ -31,9 +31,6 @@
 #pragma message "testnet build"
 #endif
 
-@interface BRAppDelegate()
-@end
-
 @implementation BRAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions

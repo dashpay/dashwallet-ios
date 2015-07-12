@@ -73,8 +73,18 @@
     BRWalletManager *m = [BRWalletManager sharedInstance];
     BRPaymentRequest *req = self.paymentRequest;
 
-    if (! req.isValid || [self.paymentAddress isEqual:self.addressButton.currentTitle]) return;
-
+    if (! groupDefs) groupDefs = [[NSUserDefaults alloc] initWithSuiteName:kBRAppGroupIdentifier];
+    
+    if (! req.isValid) {
+        self.qrView.image = nil;
+        [self.addressButton setTitle:nil forState:UIControlStateNormal];
+        [groupDefs removeObjectForKey:kBRSharedContainerDataWalletRequestDataKey];
+        [groupDefs removeObjectForKey:kBRSharedContainerDataWalletReceiveAddressKey];
+        [groupDefs synchronize];
+        return;
+    }
+    
+    if ([self.paymentAddress isEqual:self.addressButton.currentTitle]) return;
     self.qrView.image = [UIImage imageWithQRCodeData:req.data size:self.qrView.bounds.size color:nil];
     [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
     
@@ -83,7 +93,6 @@
                            [m localCurrencyStringForAmount:req.amount]];
     }
     else {
-        if (! groupDefs) groupDefs = [[NSUserDefaults alloc] initWithSuiteName:kBRAppGroupIdentifier];
         [groupDefs setObject:req.data forKey:kBRSharedContainerDataWalletRequestDataKey];
         [groupDefs setObject:self.paymentAddress forKey:kBRSharedContainerDataWalletReceiveAddressKey];
         [groupDefs synchronize];
