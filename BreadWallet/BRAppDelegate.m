@@ -31,6 +31,9 @@
 #pragma message "testnet build"
 #endif
 
+@interface BRAppDelegate()
+@end
+
 @implementation BRAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
@@ -55,7 +58,7 @@
              userInfo:@{@"file":file}];
         }
     }
-
+    
     //TODO: bitcoin protocol/payment protocol over multipeer connectivity
 
     //TODO: accessibility for the visually impaired
