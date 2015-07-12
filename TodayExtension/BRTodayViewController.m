@@ -111,7 +111,7 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
     if (!_openAppButton) {
         _openAppButton = [[BRVisualEffectButton alloc] initWithFrame:self.openAppButtonContainer.bounds];
         _openAppButton.userInteractionEnabled = YES;
-        _openAppButton.titleLabel.font = [UIFont systemFontOfSize:12];
+        _openAppButton.titleLabel.font = [UIFont systemFontOfSize:14];
         [_openAppButton setTitle:@"setup wallet" forState:UIControlStateNormal];
         [_openAppButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
         [_openAppButton addTarget:self action:@selector(openAppButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
