@@ -52,10 +52,15 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.topViewContainer.alpha = self.noDataViewContainer.alpha = 0.0;
     [self.imageViewContainer addSubview:self.qrCodeView];
     [self.scanQRButtonContainerView addSubview:self.scanButton];
     [self.openAppButtonContainer addSubview:self.openAppButton];
     [self updateReceiveMoneyUI];
+
+    [UIView animateWithDuration:0.2 animations:^{
+        self.topViewContainer.alpha = self.noDataViewContainer.alpha = 1.0;
+    }];
 }
 
 - (void)widgetPerformUpdateWithCompletionHandler:(void (^)(NCUpdateResult))completionHandler {
@@ -101,7 +106,7 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
     NSString *receiveAddress = [self.appGroupUserDefault objectForKey:kBRSharedContainerDataWalletReceiveAddressKey];
     if (!CGSizeEqualToSize(self.imageViewContainer.frame.size,CGSizeZero) && self.qrCodeData) {
         [self.qrCodeImageView removeFromSuperview];
-        UIImage *image = [UIImage imageWithQRCodeData:self.qrCodeData size:CGSizeMake(self.imageViewContainer.frame.size.width, self.imageViewContainer.frame.size.height) color:[CIColor colorWithRed:1.0 green:1.0 blue:1.0]];
+        UIImage *image = [UIImage imageWithQRCodeData:self.qrCodeData size:self.imageViewContainer.bounds.size color:[CIColor colorWithRed:1.0 green:1.0 blue:1.0]];
         [self.qrCodeView setImage:image forState:UIControlStateNormal];
     }
     self.hashLabel.text = receiveAddress;

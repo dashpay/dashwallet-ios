@@ -849,6 +849,7 @@ static const char *dns_seeds[] = {
     NSLog(@"%@:%d connected with lastblock %d", peer.host, peer.port, peer.lastblock);
     
     // drop peers that don't carry full blocks, or aren't synced yet
+    // TODO: XXXX does this work with 0.11 pruned nodes?
     if (! (peer.services & SERVICES_NODE_NETWORK) || peer.lastblock + 10 < self.lastBlockHeight) {
         [peer disconnect];
         return;
