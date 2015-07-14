@@ -25,7 +25,7 @@
 
 #import <UIKit/UIKit.h>
 
-typedef enum {
+typedef enum : NSInteger {
     BRBubbleTipDirectionDown = 0,
     BRBubbleTipDirectionUp
 } BRBubbleTipDirection;

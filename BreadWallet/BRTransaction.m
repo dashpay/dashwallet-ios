@@ -263,7 +263,7 @@ sequence:(uint32_t)sequence
     NSMutableData *d = [NSMutableData data];
 
     [d appendScriptPubKeyForAddress:address];
-    [self.inScripts replaceObjectAtIndex:index withObject:d];
+    self.inScripts[index] = d;
 }
 
 - (NSArray *)inputAddresses
@@ -365,7 +365,7 @@ sequence:(uint32_t)sequence
             [sig appendScriptPushData:[keys[keyIdx] publicKey]];
         }
         
-        [self.signatures replaceObjectAtIndex:i withObject:sig];
+        self.signatures[i] = sig;
     }
     
     if (! [self isSigned]) return NO;

@@ -97,7 +97,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             NSMutableArray *a = (e.internal) ? self.internalAddresses : self.externalAddresses;
 
             while (e.index >= a.count) [a addObject:[NSNull null]];
-            [a replaceObjectAtIndex:e.index withObject:e.address];
+            a[e.index] = e.address;
             [self.allAddresses addObject:e.address];
         }
 

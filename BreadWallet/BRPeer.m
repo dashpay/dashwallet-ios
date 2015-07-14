@@ -41,7 +41,7 @@
 #define ZERO_HASH          [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH]
 #define CONNECT_TIMEOUT    3.0
 
-typedef enum {
+typedef enum : uint32_t {
     error = 0,
     tx,
     block,
@@ -79,7 +79,7 @@ typedef enum {
 
 - (instancetype)initWithAddress:(BRPeerAddress)address andPort:(uint16_t)port
 {
-    if (! (self = [self init])) return nil;
+    if (! (self = [super init])) return nil;
 
     _address = address;
     _port = (port == 0) ? BITCOIN_STANDARD_PORT : port;
@@ -114,9 +114,9 @@ services:(uint64_t)services
     char s[INET6_ADDRSTRLEN];
     
     if (_address.u6_64[0] == 0 && _address.u6_32[2] == CFSwapInt32HostToBig(0xffff)) {
-        return [NSString stringWithUTF8String:inet_ntop(AF_INET, &_address.u6_32[3], s, sizeof(s))];
+        return @(inet_ntop(AF_INET, &_address.u6_32[3], s, sizeof(s)));
     }
-    else return [NSString stringWithUTF8String:inet_ntop(AF_INET6, &_address, s, sizeof(s))];
+    else return @(inet_ntop(AF_INET6, &_address, s, sizeof(s)));
 }
 
 - (void)connect
@@ -1039,7 +1039,7 @@ services:(uint64_t)services
                     goto reset;
                 }
                 
-                type = [NSString stringWithUTF8String:(const char *)self.msgHeader.bytes + 4];
+                type = @((const char *)self.msgHeader.bytes + 4);
                 length = [self.msgHeader UInt32AtOffset:16];
                 checksum = [self.msgHeader UInt32AtOffset:20];
                         

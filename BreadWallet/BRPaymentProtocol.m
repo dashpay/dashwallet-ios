@@ -139,12 +139,12 @@
 
 @end
 
-typedef enum {
+typedef enum : NSUInteger {
     output_amount = 1,
     output_script = 2
 } output_key_t;
 
-typedef enum {
+typedef enum : NSUInteger {
     details_network = 1,
     details_outputs = 2,
     details_time = 3,
@@ -154,7 +154,7 @@ typedef enum {
     details_merchant_data = 7
 } details_key_t;
 
-typedef enum {
+typedef enum : NSUInteger {
     request_version = 1,
     request_pki_type = 2,
     request_pki_data = 3,
@@ -162,18 +162,18 @@ typedef enum {
     request_signature = 5
 } request_key_t;
 
-typedef enum {
+typedef enum : NSUInteger {
     certificates_cert = 1
 } certificates_key_t;
 
-typedef enum {
+typedef enum : NSUInteger {
     payment_merchant_data = 1,
     payment_transactions = 2,
     payment_refund_to = 3,
     payment_memo = 4
 } payment_key_t;
 
-typedef enum {
+typedef enum : NSUInteger {
     ack_payment = 1,
     ack_memo = 2
 } ack_key_t;
@@ -253,7 +253,7 @@ merchantData:(NSData *)data
     NSMutableArray *amounts = [NSMutableArray arrayWithArray:_outputAmounts];
     
     while ([amounts containsObject:@(UINT64_MAX)]) {
-        [amounts replaceObjectAtIndex:[amounts indexOfObject:@(UINT64_MAX)] withObject:@(0)];
+        amounts[[amounts indexOfObject:@(UINT64_MAX)]] = @(0);
     }
     
     return amounts;
@@ -514,7 +514,7 @@ refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSSt
     NSMutableArray *amounts = [NSMutableArray arrayWithArray:_refundToAmounts];
     
     while ([amounts containsObject:@(UINT64_MAX)]) {
-        [amounts replaceObjectAtIndex:[amounts indexOfObject:@(UINT64_MAX)] withObject:@(0)];
+        amounts[[amounts indexOfObject:@(UINT64_MAX)]] = @(0);
     }
     
     return amounts;

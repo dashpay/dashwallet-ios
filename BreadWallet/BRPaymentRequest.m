@@ -51,7 +51,7 @@
 
 - (instancetype)initWithString:(NSString *)string
 {
-    if (! (self = [self init])) return nil;
+    if (! (self = [super init])) return nil;
     
     self.string = string;
     return self;

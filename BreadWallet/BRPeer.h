@@ -82,7 +82,7 @@
 
 @end
 
-typedef enum {
+typedef enum : NSInteger {
     BRPeerStatusDisconnected = 0,
     BRPeerStatusConnecting,
     BRPeerStatusConnected
@@ -122,7 +122,7 @@ typedef union {
 
 + (instancetype)peerWithAddress:(BRPeerAddress)address andPort:(uint16_t)port;
 
-- (instancetype)initWithAddress:(BRPeerAddress)address andPort:(uint16_t)port;
+- (instancetype)initWithAddress:(BRPeerAddress)address andPort:(uint16_t)port NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithAddress:(BRPeerAddress)address port:(uint16_t)port timestamp:(NSTimeInterval)timestamp
 services:(uint64_t)services;
 - (void)setDelegate:(id<BRPeerDelegate>)delegate queue:(dispatch_queue_t)delegateQueue;

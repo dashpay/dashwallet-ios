@@ -255,7 +255,7 @@
 		75C0E3C71B1D333F007BC531 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = en; path = en.lproj/BIP39Words.plist; sourceTree = "<group>"; };
 		75CE50B51B5216F100DBC18C /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = BreadWalletTests/Info.plist; sourceTree = SOURCE_ROOT; };
 		75CE50BC1B525CFD00DBC18C /* TodayExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = TodayExtension.entitlements; sourceTree = "<group>"; };
-		75CE50BD1B525D1B00DBC18C /* breadwallet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = breadwallet.entitlements; path = breadwallet/breadwallet.entitlements; sourceTree = "<group>"; };
+		75CE50BD1B525D1B00DBC18C /* breadwallet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = breadwallet.entitlements; path = ../breadwallet/breadwallet.entitlements; sourceTree = "<group>"; };
 		75D5F3BE191EC270004AB296 /* breadwallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = breadwallet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		75D5F3C9191EC270004AB296 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		75D5F3CB191EC270004AB296 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -504,7 +504,6 @@
 		75D5F3B5191EC270004AB296 = {
 			isa = PBXGroup;
 			children = (
-				75CE50BD1B525D1B00DBC18C /* breadwallet.entitlements */,
 				75D5F3C7191EC270004AB296 /* BreadWallet */,
 				75D5F3EC191EC270004AB296 /* BreadWalletTests */,
 				BAE12BE81B2DEE7F00895CC5 /* TodayExtension */,
@@ -546,6 +545,7 @@
 				752E2898192349CE00DB5A3C /* BreadWallet.xcdatamodeld */,
 				75C0E3C11B1BA294007BC531 /* BIP39Words.plist */,
 				752E28F519235B3000DB5A3C /* FixedPeers.plist */,
+				75CE50BD1B525D1B00DBC18C /* breadwallet.entitlements */,
 				7579F7FE19231D4600CA56F4 /* ThirdParty */,
 				75D5F3C8191EC270004AB296 /* Supporting Files */,
 			);
@@ -584,13 +584,13 @@
 		BAE12BE81B2DEE7F00895CC5 /* TodayExtension */ = {
 			isa = PBXGroup;
 			children = (
-				75CE50BC1B525CFD00DBC18C /* TodayExtension.entitlements */,
 				BAE12C041B2DEEF700895CC5 /* BRTodayViewController.h */,
 				BAE12C051B2DEEF700895CC5 /* BRTodayViewController.m */,
 				BA091FEB1B328FAC00F7BFEB /* BRVisualEffectButton.h */,
 				BA091FEC1B328FAC00F7BFEB /* BRVisualEffectButton.m */,
 				BAE12BEE1B2DEE7F00895CC5 /* MainInterface.storyboard */,
 				BA54D3CD1B2EA74000C9CB28 /* Media.xcassets */,
+				75CE50BC1B525CFD00DBC18C /* TodayExtension.entitlements */,
 				BAE12BE91B2DEE7F00895CC5 /* Supporting Files */,
 			);
 			path = TodayExtension;

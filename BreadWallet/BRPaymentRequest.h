@@ -45,7 +45,7 @@
 + (instancetype)requestWithData:(NSData *)data;
 + (instancetype)requestWithURL:(NSURL *)url;
 
-- (instancetype)initWithString:(NSString *)string;
+- (instancetype)initWithString:(NSString *)string NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithData:(NSData *)data;
 - (instancetype)initWithURL:(NSURL *)url;
 
