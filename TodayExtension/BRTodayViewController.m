@@ -27,24 +27,17 @@
 #import <NotificationCenter/NotificationCenter.h>
 #import "UIImage+Utility.h"
 #import "BRAppGroupConstants.h"
-#import "BRVisualEffectButton.h"
 
 static NSString *const kBRScanQRCodeURLScheme = @"bread://x-callback-url/scanqr";
 static NSString *const kBROpenBreadwalletScheme = @"bread://";
 
 
 @interface BRTodayViewController () <NCWidgetProviding>
-@property (nonatomic, weak) IBOutlet UIView *imageViewContainer;
+@property (nonatomic, weak) IBOutlet UIImageView *qrImage, *qrOverlay;
 @property (nonatomic, weak) IBOutlet UILabel *hashLabel;
-@property (nonatomic, weak) IBOutlet UIView *scanQRButtonContainerView;
 @property (nonatomic, weak) IBOutlet UIView *noDataViewContainer;
 @property (nonatomic, weak) IBOutlet UIView *topViewContainer;
-@property (nonatomic, weak) IBOutlet UIView *openAppButtonContainer;
 @property (nonatomic, strong) NSData *qrCodeData;
-@property (nonatomic, strong) UIImageView *qrCodeImageView;
-@property (nonatomic, strong) UIButton *openAppButton;
-@property (nonatomic, strong) UIButton *scanButton;
-@property (nonatomic, strong) UIButton *qrCodeView;
 @property (nonatomic, strong) NSUserDefaults *appGroupUserDefault;
 @end
 
@@ -52,21 +45,15 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.topViewContainer.alpha = self.noDataViewContainer.alpha = 0.0;
-    [self.imageViewContainer addSubview:self.qrCodeView];
-    [self.scanQRButtonContainerView addSubview:self.scanButton];
-    [self.openAppButtonContainer addSubview:self.openAppButton];
-    [self updateReceiveMoneyUI];
 
-    [UIView animateWithDuration:0.2 animations:^{
-        self.topViewContainer.alpha = self.noDataViewContainer.alpha = 1.0;
-    }];
+    [self updateReceiveMoneyUI];
 }
 
 - (void)widgetPerformUpdateWithCompletionHandler:(void (^)(NCUpdateResult))completionHandler {
     if (completionHandler) {
         // Perform any setup necessary in order to update the view.
-        NSData *data = [self.appGroupUserDefault objectForKey:kBRSharedContainerDataWalletRequestDataKey];
+        NSData *data = [self.appGroupUserDefault objectForKey:APP_GROUP_REQUEST_DATA_KEY];
+
         // If an error is encountered, use NCUpdateResultFailed
         // If there's no update required, use NCUpdateResultNoData
         // If there's an update, use NCUpdateResultNewData
@@ -90,70 +77,33 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
 
 - (NSUserDefaults*)appGroupUserDefault {
     if (!_appGroupUserDefault){
-        _appGroupUserDefault = [[NSUserDefaults alloc] initWithSuiteName:kBRAppGroupIdentifier];
+        _appGroupUserDefault = [[NSUserDefaults alloc] initWithSuiteName:APP_GROUP_ID];
     }
     return _appGroupUserDefault;
 }
 
-
-- (void)viewDidLayoutSubviews {
-	[super viewDidLayoutSubviews];
-	[self updateReceiveMoneyUI];
-}
-
 - (void)updateReceiveMoneyUI {
-    self.qrCodeData = [self.appGroupUserDefault objectForKey:kBRSharedContainerDataWalletRequestDataKey];
-    NSString *receiveAddress = [self.appGroupUserDefault objectForKey:kBRSharedContainerDataWalletReceiveAddressKey];
-    if (!CGSizeEqualToSize(self.imageViewContainer.frame.size,CGSizeZero) && self.qrCodeData) {
-        [self.qrCodeImageView removeFromSuperview];
-        UIImage *image = [UIImage imageWithQRCodeData:self.qrCodeData size:self.imageViewContainer.bounds.size color:[CIColor colorWithRed:1.0 green:1.0 blue:1.0]];
-        [self.qrCodeView setImage:image forState:UIControlStateNormal];
+    self.qrCodeData = [self.appGroupUserDefault objectForKey:APP_GROUP_REQUEST_DATA_KEY];
+    
+    if (self.qrCodeData && self.qrImage.bounds.size.width > 0) {
+        self.qrImage.image = self.qrOverlay.image =
+            [UIImage imageWithQRCodeData:self.qrCodeData size:self.qrImage.bounds.size
+             color:[CIColor colorWithRed:1.0 green:1.0 blue:1.0]];
     }
-    self.hashLabel.text = receiveAddress;
-}
 
-- (UIButton*)openAppButton {
-    if (!_openAppButton) {
-        _openAppButton = [[BRVisualEffectButton alloc] initWithFrame:self.openAppButtonContainer.bounds];
-        _openAppButton.userInteractionEnabled = YES;
-        _openAppButton.titleLabel.font = [UIFont systemFontOfSize:14];
-        [_openAppButton setTitle:@"setup wallet" forState:UIControlStateNormal];
-        [_openAppButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-        [_openAppButton addTarget:self action:@selector(openAppButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
-    }
-    return _openAppButton;
-}
-
-- (UIButton*)scanButton {
-    if (!_scanButton) {
-        _scanButton = [[BRVisualEffectButton alloc] initWithFrame:self.scanQRButtonContainerView.bounds];
-        _scanButton.userInteractionEnabled = YES;
-        [_scanButton setImage:[UIImage imageNamed:@"scanbutton"] forState:UIControlStateNormal];
-        [_scanButton addTarget:self action:@selector(scanButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
-    }
-    return _scanButton;
-}
-
-- (UIButton*)qrCodeView {
-    if (!_qrCodeView) {
-        _qrCodeView = [[BRVisualEffectButton alloc] initWithFrame:self.imageViewContainer.bounds];
-        _qrCodeView.userInteractionEnabled = NO;
-        _qrCodeView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-
-    }
-    return _qrCodeView;
+    self.hashLabel.text = [self.appGroupUserDefault objectForKey:APP_GROUP_RECEIVE_ADDRESS_KEY];
 }
 
 #pragma mark - NCWidgetProviding
 
 - (UIEdgeInsets)widgetMarginInsetsForProposedMarginInsets:(UIEdgeInsets)defaultMarginInsets {
-	return UIEdgeInsetsZero;
+    return UIEdgeInsetsZero;
 }
 
 #pragma mark - UI Events
 
 - (IBAction)scanButtonTapped:(UIButton *)sender {
-	[self.extensionContext openURL:[NSURL URLWithString:kBRScanQRCodeURLScheme] completionHandler:nil];
+    [self.extensionContext openURL:[NSURL URLWithString:kBRScanQRCodeURLScheme] completionHandler:nil];
 }
 
 - (IBAction)openAppButtonTapped:(id)sender {

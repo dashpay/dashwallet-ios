@@ -57,7 +57,6 @@
 		75D5F3E0191EC270004AB296 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 75D5F3DF191EC270004AB296 /* Images.xcassets */; };
 		75D5F3F3191EC270004AB296 /* BreadWalletTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D5F3F2191EC270004AB296 /* BreadWalletTests.m */; };
 		84F68C8A1975E9E2002FC300 /* BRScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 84F68C891975E9E2002FC300 /* BRScanViewController.m */; };
-		BA091FED1B328FAC00F7BFEB /* BRVisualEffectButton.m in Sources */ = {isa = PBXBuildFile; fileRef = BA091FEC1B328FAC00F7BFEB /* BRVisualEffectButton.m */; };
 		BA54D3CE1B2EA74000C9CB28 /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BA54D3CD1B2EA74000C9CB28 /* Media.xcassets */; };
 		BA65A6C11B32904F001597AE /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 75D5F3DF191EC270004AB296 /* Images.xcassets */; };
 		BAA4843C1B3EFFAF0075C749 /* UIImage+Utility.m in Sources */ = {isa = PBXBuildFile; fileRef = BAA4843B1B3EFFAF0075C749 /* UIImage+Utility.m */; };
@@ -285,8 +284,6 @@
 		75F27B0619DE2AB20047FC62 /* ccMemory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ccMemory.h; sourceTree = SOURCE_ROOT; };
 		84F68C881975E9E2002FC300 /* BRScanViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRScanViewController.h; sourceTree = "<group>"; };
 		84F68C891975E9E2002FC300 /* BRScanViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRScanViewController.m; sourceTree = "<group>"; };
-		BA091FEB1B328FAC00F7BFEB /* BRVisualEffectButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRVisualEffectButton.h; sourceTree = "<group>"; };
-		BA091FEC1B328FAC00F7BFEB /* BRVisualEffectButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRVisualEffectButton.m; sourceTree = "<group>"; };
 		BA4EECDF1B351AE200D443A3 /* BRAppGroupConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAppGroupConstants.h; sourceTree = "<group>"; };
 		BA54D3CD1B2EA74000C9CB28 /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Media.xcassets; sourceTree = "<group>"; };
 		BAA4843A1B3EFFAF0075C749 /* UIImage+Utility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+Utility.h"; sourceTree = "<group>"; };
@@ -586,8 +583,6 @@
 			children = (
 				BAE12C041B2DEEF700895CC5 /* BRTodayViewController.h */,
 				BAE12C051B2DEEF700895CC5 /* BRTodayViewController.m */,
-				BA091FEB1B328FAC00F7BFEB /* BRVisualEffectButton.h */,
-				BA091FEC1B328FAC00F7BFEB /* BRVisualEffectButton.m */,
 				BAE12BEE1B2DEE7F00895CC5 /* MainInterface.storyboard */,
 				BA54D3CD1B2EA74000C9CB28 /* Media.xcassets */,
 				75CE50BC1B525CFD00DBC18C /* TodayExtension.entitlements */,
@@ -854,7 +849,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				BAE12C061B2DEEF700895CC5 /* BRTodayViewController.m in Sources */,
-				BA091FED1B328FAC00F7BFEB /* BRVisualEffectButton.m in Sources */,
 				BAA4843D1B3EFFAF0075C749 /* UIImage+Utility.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
