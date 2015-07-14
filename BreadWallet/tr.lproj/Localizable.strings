@@ -41,7 +41,13 @@
 "\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nKimsenin kurtarma cümlenizi görmesine veya bitcoinlerinizi harcamasına İZİN VERMEYİN.\n\nASLA kurtarma cümlenizi şifre yöneticilerine veya başka yerlere yazmayın. Başka cihazlar güvenli olmayabilir.\n";
 
 /* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nkimsenin kurtarma cümlenizi görmesine İZİN VERMEYİN\n      çünkü bitcoinlerinizi harcayabilirler.\n";
+
+/* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nağ ücreti +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nASLA kurtarma metninizi herhangi bir şifre yöneticisine veya başka bir yere yazmayın.\nDiğer cihazlarda güvenlik sorunu olabilir.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %d %@" = "\n%1$d %2$@ içinde tekrar deneyin";
@@ -155,9 +161,6 @@
 "do it later" = "daha sonra yap";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nkimsenin kurtarma cümlenizi görmesine İZİN VERMEYİN\n      çünkü bitcoinlerinizi harcayabilirler.\n";
-
-/* No comment provided by engineer. */
 "done" = "bitti";
 
 /* No comment provided by engineer. */
@@ -222,12 +225,6 @@
 
 /* No comment provided by engineer. */
 "moved" = "taşınmış";
-
-/* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nASLA kurtarma metninizi herhangi bir şifre yöneticisine veya başka bir yere yazmayın.\nDiğer cihazlarda güvenlik sorunu olabilir.\n";
-
-/* No comment provided by engineer. */
-"new phrase" = "yeni cümle";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "sonra, kurtarma cümlenizi yazın";
@@ -477,4 +474,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Cüzdanınız eşitlenmemiş olabilir.\nBlok zincirini yeniden taratmak bunu sık sık düzeltebilir.";
-

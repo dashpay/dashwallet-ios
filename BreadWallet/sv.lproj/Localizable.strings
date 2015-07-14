@@ -26,7 +26,7 @@
 "\n1 attempt remaining\n" = "\n1 försök återstår\n";
 
 /* No comment provided by engineer. */
-"\n\n     amount %@ (%@)" = "\n\nbelopp %1$@(%2$@)";
+"\n\n     amount %@ (%@)" = "\n\n     belopp %1$@(%2$@)";
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEtt lösenord krävs för att skydda din plånbok. Gå till Inställningar och aktivera lösenord för att fortsätta.";
@@ -41,7 +41,13 @@
 "\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nVISA ALDRIG din återställningsfras för någon – denne kan i så fall spendera dina bitcoin.\n\nSKRIV ALDRIG ned din återställningsfras i lösenordshanterare eller annorstädes. Andra enheter kan vara föremål för skadlig programkod.\n";
 
 /* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nLÅT INTE NÅGON se din återställningsfras – annars kan hen spendera dina bitcoin.\n";
+
+/* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nnätverksavgift +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nSKRIV ALDRIG in din återställningsfras i lösenordshanterare eller någon annanstans. \nAndra enheter kan vara infekterade.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %d %@" = "\nförsök igen om %1$d %2$@";
@@ -155,9 +161,6 @@
 "do it later" = "gör det senare";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nLÅT INTE NÅGON se din återställningsfras – annars kan hen spendera dina bitcoin.\n";
-
-/* No comment provided by engineer. */
 "done" = "klar";
 
 /* No comment provided by engineer. */
@@ -222,12 +225,6 @@
 
 /* No comment provided by engineer. */
 "moved" = "överförd";
-
-/* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nSKRIV ALDRIG in din återställningsfras i lösenordshanterare eller någon annanstans. \nAndra enheter kan vara infekterade.\n";
-
-/* No comment provided by engineer. */
-"new phrase" = "ny återställningsfras";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "nästa, skriv ner din återhämtning fras";
@@ -477,4 +474,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Din plånbok kan vara osynkroniserad.\nDetta åtgärdas oftast genom en omläsning av blockkedjan.";
-

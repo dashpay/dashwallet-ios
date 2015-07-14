@@ -41,7 +41,7 @@
 "ce6-Wi-wk4.normalTitle" = "numériser un code QR";
 
 /* Class = "UILabel"; text = "I wrote it down:"; ObjectID = "cyp-mV-Bhd"; */
-"cyp-mV-Bhd.text" = "Je l'ai écrit sur papier :";
+"cyp-mV-Bhd.text" = "Je l'ai écrite sur papier :";
 
 /* Class = "UIButton"; normalTitle = "new wallet"; ObjectID = "dOa-zm-TDG"; */
 "dOa-zm-TDG.normalTitle" = "nouveau portefeuille";
@@ -75,4 +75,3 @@
 
 /* Class = "UILabel"; text = "start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
 "wDZ-DN-szv.text" = "créez un nouveau portefeuille en générant une phrase de récupération";
-

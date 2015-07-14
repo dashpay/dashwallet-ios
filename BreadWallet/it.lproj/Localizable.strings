@@ -41,7 +41,13 @@
 "\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nNON lasciare che qualcuno veda la tua frase di sicurezza, o potrà spendere i tuoi bitcoin.\n\nMAI scrivere la tua frase di sicurezza in programmi diversi. Altri dispositivi potrebbero essere infetti.\n";
 
 /* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nNON lasciare che qualcuno veda la tua\nfrase di recupero o potrà usare i tuoi bitcoin.\n";
+
+/* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\ntassa di rete +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nMAI scrivere la tua frase di recupero\nin qualunque altro programma.\nAltri dispositivi possono essere infetti.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %d %@" = "\nriprova in %1$d %2$@";
@@ -155,9 +161,6 @@
 "do it later" = "fallo più tardi";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nNON lasciare che qualcuno veda la tua\nfrase di recupero o potrà usare i tuoi bitcoin.\n";
-
-/* No comment provided by engineer. */
 "done" = "fatto";
 
 /* No comment provided by engineer. */
@@ -222,12 +225,6 @@
 
 /* No comment provided by engineer. */
 "moved" = "spostato";
-
-/* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nMAI scrivere la tua frase di recupero\nin qualunque altro programma.\nAltri dispositivi possono essere infetti.\n";
-
-/* No comment provided by engineer. */
-"new phrase" = "nuova frase";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "ora, scrivi la tua frase di recupero";
@@ -477,4 +474,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Il tuo portafoglio potrebbe essere non sincronizzato.\nDi solito si rimedia riscansionando la catena di blocchi.";
-

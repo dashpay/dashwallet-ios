@@ -20,10 +20,10 @@
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@ \n\nom du mister telefonen din vil du trenge den for å gjenopprette din lommebok";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d forsøk igjen";
+"\n%d attempts remaining\n" = "\n%d forsøk igjen\n";
 
 /* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 forsøk igjen\n \n";
+"\n1 attempt remaining\n" = "\n1 forsøk igjen\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n     beløp %1$@ (%2$@)";
@@ -41,7 +41,13 @@
 "\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nIKKE la noen se din gjennopprettingsfrase; de kan sende dine bitcoin\n\nSKRIV ALDRI opp din gjenopprettingsfrase i en passordbehandler eller andre steder. Andre enheter kan være kompromittert.\n";
 
 /* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nIKKE la noen se din gjennopprettingsfrase;\nde kan sende dine bitcoin.\n";
+
+/* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nnettverksavgift +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nSKRIV ALDRI opp din gjenopprettingsfrase\ni en passordbehandler eller andre steder.\nAndre enheter kan være kompromittert.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %d %@" = "\nprøv igjen om %1$d %2$@";
@@ -155,9 +161,6 @@
 "do it later" = "gjør det senere";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nIKKE la noen se din gjennopprettingsfrase;\nde kan sende dine bitcoin.\n";
-
-/* No comment provided by engineer. */
 "done" = "utført";
 
 /* No comment provided by engineer. */
@@ -222,12 +225,6 @@
 
 /* No comment provided by engineer. */
 "moved" = "flyttet";
-
-/* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nSKRIV ALDRI opp din gjenopprettingsfrase\ni en passordbehandler eller andre steder.\nAndre enheter kan være kompromittert.\n";
-
-/* No comment provided by engineer. */
-"new phrase" = "ny frase";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "deretter, skriv ned din gjenopprettingsfrase";
@@ -477,4 +474,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Din lommebok er usynkronisert.\nDette kan ofte fikses ved å skanne blokkjeden om igjen.";
-

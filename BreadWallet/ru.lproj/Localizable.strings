@@ -17,31 +17,37 @@
 "\n         total %@ (%@)" = "\nвсего %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "%@ \n\nесли вы когда либо потеряете свой телефон, вам это понадобится что бы восстановить ваш кошелек";
+"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@ \n\nесли вы когда либо потеряете свой телефон, вам это понадобится что бы восстановить ваш кошелек";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d попыток осталось";
+"\n%d attempts remaining\n" = "\n%d попыток осталось\n";
 
 /* No comment provided by engineer. */
-"\n1 attempt remaining\n" = " осталась 1 попытка ";
+"\n1 attempt remaining\n" = "\nосталась 1 попытка\n";
 
 /* No comment provided by engineer. */
-"\n\n     amount %@ (%@)" = "       сумма %1$@ (%2$@)";
+"\n\n     amount %@ (%@)" = "\n\n       сумма %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Пароль устройство необходим для защиты вашего бумажника. Перейдите в настройки и включите код доступа что бы продолжить.";
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nПароль устройство необходим для защиты вашего бумажника. Перейдите в настройки и включите код доступа что бы продолжить.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = " АДРЕС уже используется \n\nbitcoin адреса предназначены для одного использования только \n\nповторное использование уменьшает приватность для вас и получателя и может привести к потере, если получатель не контролирует адрес напрямую";
+"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nАДРЕС уже используется \n\nbitcoin адреса предназначены для одного использования только \n\nповторное использование уменьшает приватность для вас и получателя и может привести к потере, если получатель не контролирует адрес напрямую";
 
 /* No comment provided by engineer. */
-"\nallow camera access in\nSettings->Privacy->Camera->%@" = " разрешить доступ к камере в \nнастройки-> конфиденциальность-> камера->%@";
+"\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nразрешить доступ к камере в \nнастройки-> конфиденциальность-> камера->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = " НЕ позволяйте никому видеть вашу фразу восстановления или они могут потратить ваши bitcoins.  \n\nНикогда не вводите фразу восстановления в менеджеры паролей или других местах. Другие устройства могут быть инфицированы. ";
+"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nНЕ позволяйте никому видеть вашу фразу восстановления или они могут потратить ваши bitcoins.  \n\nНикогда не вводите фразу восстановления в менеджеры паролей или других местах. Другие устройства могут быть инфицированы.\n";
+
+/* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nНЕ позволяйте никому видеть ваши фразы\nвосстановления или они могут потратить\nваши bitcoins.\n";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nсетевой платеж +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nНикогда не вводите вашу фразу\nвосстановления в менеджеры паролей\nили других местах. Другие устройства\nмогут быть инфицированы.";
 
 /* No comment provided by engineer. */
 "\ntry again in %d %@" = "\nпопробуйте еще раз через %1$d %2$@";
@@ -155,9 +161,6 @@
 "do it later" = "отложить на потом";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = " НЕ позволяйте никому видеть ваши фразы восстановления или они могут потратить ваши bitcoins. ";
-
-/* No comment provided by engineer. */
 "done" = "сделанно";
 
 /* No comment provided by engineer. */
@@ -222,12 +225,6 @@
 
 /* No comment provided by engineer. */
 "moved" = "перемещено";
-
-/* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = " Никогда не вводите вашу фразу восстановления в менеджеры паролей или других местах. Другие устройства могут быть инфицированы. ";
-
-/* No comment provided by engineer. */
-"new phrase" = "новая фраза";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "далее запишите вашу фразу восстановления";
@@ -476,5 +473,4 @@
 "you received bitcoin!" = "вы получили bitcoin!";
 
 /* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Ваш кошелек может быть несинхронизированным. Это часто может быть исправлено путем повторного сканирования blockchain.";
-
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Ваш кошелек может быть несинхронизированным.\nЭто часто может быть исправлено путем повторного сканирования blockchain.";

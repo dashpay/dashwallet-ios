@@ -14,7 +14,7 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\"는 복원 문구에 쓰이는 단어가 아닙니다";
 
 /* No comment provided by engineer. */
-"\n         total %@ (%@)" = "\n         합계%1$@ (%2$@)";
+"\n         total %@ (%@)" = "\n         합계 %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\n휴대전화를 잃어버렸을 때, 복원을 위해 복원 문구가 필요합니다";
@@ -26,7 +26,7 @@
 "\n1 attempt remaining\n" = "\n1회의 시도 남음\n";
 
 /* No comment provided by engineer. */
-"\n\n     amount %@ (%@)" = "\n\n금액 %1$@ (%2$@)";
+"\n\n     amount %@ (%@)" = "\n\n     금액 %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\n지갑을 보호하기 위해 패스코드가 필요합니다. 설정에 가서 패스코드를 활성화해주세요.";
@@ -41,7 +41,13 @@
 "\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\n절대로 다른 사람에게 복원 문구를 보여주면 안됩니다. 그 사람이 당신의 비트코인을 써버릴 수 있습니다.\n\n절대로 패스워드 매니저 등의 다른 곳에 복원 문구를 저장하지 마십시오. 다른 기기는 바이러스나 멀웨어에 감여돼 있을 우려가 있습니다.\n";
 
 /* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\n절대로 다른 사람에게 복원 문구를 보여주면 안됩니다. \n그 사람이 당신의 빗코인을 써버릴 수 있습니다.\n";
+
+/* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\n네트워크 수수료 +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\n절대로 복원 문구를 \n패스워드 매니저 등의 다른 곳에 저장하지 마십시오. \n다른 기기는 감여돼 있을 우려가 있습니다.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %d %@" = "\n%1$d %2$@뒤에 다시 시도해주세요";
@@ -155,9 +161,6 @@
 "do it later" = "나중에 하기";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\n절대로 다른 사람에게 복원 문구를 보여주면 안됩니다. \n그 사람이 당신의 빗코인을 써버릴 수 있습니다.\n";
-
-/* No comment provided by engineer. */
 "done" = "완료";
 
 /* No comment provided by engineer. */
@@ -222,12 +225,6 @@
 
 /* No comment provided by engineer. */
 "moved" = "이동 완료";
-
-/* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\n절대로 복원 문구를 \n패스워드 매니저 등의 다른 곳에 저장하지 마십시오. \n다른 기기는 감여돼 있을 우려가 있습니다.\n";
-
-/* No comment provided by engineer. */
-"new phrase" = "새로운 문구";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "그리고, 당신의 복원 문구를 옮겨 적으세요";
@@ -477,4 +474,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "지갑이 동기화 돼있지 않은 것 같습니다.\n보통 블록체인을 재스캔하면 고쳐집니다.";
-

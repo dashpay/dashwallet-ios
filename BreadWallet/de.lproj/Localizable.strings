@@ -26,7 +26,7 @@
 "\n1 attempt remaining\n" = "\n1 Versuch übrig\n";
 
 /* No comment provided by engineer. */
-"\n\n     amount %@ (%@)" = "\n\nBetrag %1$@ (%2$@)";
+"\n\n     amount %@ (%@)" = "\n\n     Betrag %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEin Gerätecode wird benötigt um ihre Brieftasche zu schützen. Stellen Sie in ihren Einstellungen ihren Code ein um fortzufahren.";
@@ -41,7 +41,13 @@
 "\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nLassen Sie NIEMANDEN ihre Wiederherstellungs-Wortfolge sehen, wer diese kennt kann ihre bitcoins ausgeben.\n\nGeben Sie NIEMALS ihre Wiederherstellungs-Wortfolge in einen Passwort-Manager oder ähnliches ein. Andere Geräte könnten infiziert sein.\n";
 
 /* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nLassen Sie NIEMANDEN ihre\nWiederherstellungs-Wortfolge sehen, wer\ndiese kennt kann ihre bitcoins ausgeben.\n";
+
+/* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nNetzwerkgebühr +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nGeben Sie NIEMALS ihre\nWiederherstellungs-Wortfolge in einen\nPasswort-Manager oder ähnliches ein.\nAndere Geräte könnten infiziert sein.";
 
 /* No comment provided by engineer. */
 "\ntry again in %d %@" = "\nVersuchen Sie es erneut in %1$d %2$@";
@@ -155,9 +161,6 @@
 "do it later" = "später";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nLassen Sie NIEMANDEN ihre\nWiederherstellungs-Wortfolge sehen, wer\ndiese kennt kann ihre bitcoins ausgeben.\n";
-
-/* No comment provided by engineer. */
 "done" = "fertig";
 
 /* No comment provided by engineer. */
@@ -222,12 +225,6 @@
 
 /* No comment provided by engineer. */
 "moved" = "verschoben";
-
-/* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nGeben Sie NIEMALS ihre\nWiederherstellungs-Wortfolge in einen\nPasswort-Manager oder ähnliches ein.\nAndere Geräte könnten infiziert sein.";
-
-/* No comment provided by engineer. */
-"new phrase" = "neue Wortfolge";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "Als nächstes schreiben Sie bitte Ihre Wiederherstellungs-Wortfolge auf";
@@ -477,4 +474,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Brieftasche möglicherweise nicht synchron.\nDies kann oft durch erneutes Scannen der Blockchain behoben werden.";
-

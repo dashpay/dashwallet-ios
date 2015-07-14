@@ -41,7 +41,13 @@
 "\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nNO permitas que nadie vea tu frase de recuperación, podrían usar tus bitcoin.\n\nNUNCA introduzcas tu frase de recuperación en gestores de contraseñas u otros servicios. Los otros dispositivos pueden estar infectados.\n";
 
 /* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nNO permitas que nadie vea tu frase de\nrecuperación, podrían usar tus bitcoin.\n";
+
+/* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\ncuota de red +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNUNCA introduzcas tu frase de\nrecuperación en gestores de contraseñas\nu otros servicios. Los otros dispositivos\npueden estar infectados.";
 
 /* No comment provided by engineer. */
 "\ntry again in %d %@" = "\ninténtalo de nuevo %1$d %2$@";
@@ -155,9 +161,6 @@
 "do it later" = "hazlo más tarde";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nNO permitas que nadie vea tu frase de\nrecuperación, podrían usar tus bitcoin.\n";
-
-/* No comment provided by engineer. */
 "done" = "hecho";
 
 /* No comment provided by engineer. */
@@ -224,12 +227,6 @@
 "moved" = "movido";
 
 /* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNUNCA introduzcas tu frase de\nrecuperación en gestores de contraseñas\nu otros servicios. Los otros dispositivos\npueden estar infectados.";
-
-/* No comment provided by engineer. */
-"new phrase" = "nueva frase";
-
-/* No comment provided by engineer. */
 "next, write down your recovery phrase" = "a continuación, introduce tu frase de recuperación";
 
 /* No comment provided by engineer. */
@@ -293,7 +290,7 @@
 "recovery phrase must have %d words" = "la frase de recuperación debe contener %d palabras";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "¿reducir la suma a pagar por %1$@ (%2$@)?";
+"reduce payment amount by\n%@ (%@)?" = "¿reducir la suma a pagar por\n%1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
 "request" = "solicitar";
@@ -477,4 +474,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Su cartera puede estar desincronizada.\nCon frecuencia se puede solucionar escaneando de nuevo la cadena de bloques.";
-

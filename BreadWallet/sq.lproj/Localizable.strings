@@ -14,7 +14,7 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" nuk është një fjalë e frazës rikthyese";
 
 /* No comment provided by engineer. */
-"\n         total %@ (%@)" = "\n         total %1$@ (%2$@)";
+"\n         total %@ (%@)" = "\n total %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nnëse ndonjëherë e humbni telefonin tuaj, ju duhet kjo për ta rikthyer kuletën";
@@ -23,13 +23,13 @@
 "\n%d attempts remaining\n" = "\n%d tentime kanë mbetur\n";
 
 /* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 tentim ka mbetur";
+"\n1 attempt remaining\n" = "\n1 tentim ka mbetur\n";
 
 /* No comment provided by engineer. */
-"\n\n     amount %@ (%@)" = "\n\n     shuma %1$@ (%2$@)";
+"\n\n     amount %@ (%@)" = "\n\n shuma %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nNjë PIN është i nevojshëm për sigurinë e kuletës suaj. Shko në konfigurimet dhe aktivizo PIN dhe vazhdo.";
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nNjë kodkalim është i nevojshëm për sigurinë e kuletës suaj. Shko në konfigurimet dhe aktivizo kodkalimin dhe vazhdo.";
 
 /* No comment provided by engineer. */
 "\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRESA TASHMË ËSHTË PËRDORUR\n\nbitcoin adresat mendohet të përdoren vetëm njëherë\n\nri-përdorimi i adresave vetëm e zvogëlon privaticitetin e të dyve juve dhe pranuesin e monedhave dhe mund të rezultoj në humbje nëse pranuesi nuk e kontrollon direkt adresën";
@@ -41,7 +41,13 @@
 "\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nMOS LEJONI që askush të sheh frazën rikthyese të juaj sepse mund të ju shpenzojn bitcoins-at e juaj.\n\nKURRË mos e shkruani frazën rikthyese në ndonjë menagjer të fjalëkalimeve apo diku tjetër. Pajisjet tjera mund të infektohen.";
 
 /* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nMOS lejoni që askush të shoh frazën\nrikthyese ose ata mund të shpenzojnë\nbitcoin-at e juaj.";
+
+/* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\ntarifa +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nKURRË mos e shkruani frazën rikthyese\nnë ndonjë menagjer të fjalëkalimeve apo\ndiku tjetër. Pajisjet tjera mund të infektohen.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %d %@" = "\nprovoni prapë në %1$d %2$@";
@@ -50,7 +56,7 @@
 "about" = "rreth";
 
 /* No comment provided by engineer. */
-"always require passcode" = "gjithmonë kërko PIN";
+"always require passcode" = "gjithmonë kërko kodkalimin";
 
 /* No comment provided by engineer. */
 "amount too small" = "shuma tepër e vogël";
@@ -101,7 +107,7 @@
 "change" = "ndrysho";
 
 /* No comment provided by engineer. */
-"change passcode" = "ndrysho PIN";
+"change passcode" = "ndrysho kodkalimin";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "ndrysho shumën e pagesës?";
@@ -110,7 +116,7 @@
 "checking private key balance..." = "duke kontrolluar bilancin e çelësit privat...";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "zgjedhni PIN për %@";
+"choose passcode for %@" = "zgjedhni kodkalimin për %@";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid bitcoin address" = "memorja nuk përmban një bitcoin adresë valide";
@@ -155,9 +161,6 @@
 "do it later" = "bëje më vonë";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "MOS lejoni që askush të shoh frazën\nrikthyese ose ata mund të shpenzojnë\nbitcoin-at e juaj.";
-
-/* No comment provided by engineer. */
 "done" = "përfunduar";
 
 /* No comment provided by engineer. */
@@ -167,7 +170,7 @@
 "email not configured" = "email nuk është konfiguruar";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "shëno PIN e vjetër";
+"enter old passcode" = "shëno kodkalimin e vjetër";
 
 /* No comment provided by engineer. */
 "error signing bitcoin transaction" = "gabim duke firmosur bitcoin transaksionin";
@@ -224,12 +227,6 @@
 "moved" = "janë zhvendosur";
 
 /* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nKURRË mos e shkruani frazën rikthyese\nnë ndonjë menagjer të fjalëkalimeve apo\ndiku tjetër. Pajisjet tjera mund të infektohen.\n";
-
-/* No comment provided by engineer. */
-"new phrase" = "frazë e re";
-
-/* No comment provided by engineer. */
 "next, write down your recovery phrase" = "tash, shkruaje frazën rikthyese të juaj";
 
 /* No comment provided by engineer. */
@@ -251,10 +248,10 @@
 "ok" = "ok";
 
 /* No comment provided by engineer. */
-"passcode" = "PIN";
+"passcode" = "kodkalimi";
 
 /* No comment provided by engineer. */
-"passcode for %@" = "PIN për %@";
+"passcode for %@" = "kodkalimi për %@";
 
 /* No comment provided by engineer. */
 "password" = "fjalëkalimi";
@@ -425,7 +422,7 @@
 "transaction rejected" = "transaksioni u refuzua";
 
 /* No comment provided by engineer. */
-"turn device passcode on" = "aktivizo PIN-in e pajisjes";
+"turn device passcode on" = "aktivizo kodkalimin e pajisjes";
 
 /* No comment provided by engineer. */
 "unexpected response from %@" = "reagim i papritur nga %@";
@@ -455,7 +452,7 @@
 "verified, waiting for confirmation" = "e verifikuar, duke pritur për konfirmime";
 
 /* No comment provided by engineer. */
-"verify passcode" = "verifiko PIN";
+"verify passcode" = "verifiko kodkalimin";
 
 /* No comment provided by engineer. */
 "wallet address" = "verifiko adresën";
@@ -477,4 +474,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Si duket kuleta juaj nuk është e sinkronizuar.\nKjo shpesh mund të rregullohet duke riskanuar blockchain.";
-

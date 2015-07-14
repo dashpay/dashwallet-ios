@@ -41,7 +41,13 @@
 "\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nNE engedd, hogy más lássa a helyreállítási kódmondatodat, különben elköltheti a bitcoinjaidat.\n\nSOHA ne gépeld be a helyreállítási kódmondatodat jelszókezelő alkalmazásokba vagy máshová, hiszen fertőzöttek lehetnek.\n";
 
 /* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nNE engedd, hogy más lássa a helyreállítási\nkódmondatodat, különben elköltheti a\nbitcoinjaidat.";
+
+/* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nhálózati díj +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nSOHA ne gépeld be a helyreállítási\nkódmondatodat jelszókezelő\nalkalmazásokba vagy máshová,\nhiszen fertőzöttek lehetnek.";
 
 /* No comment provided by engineer. */
 "\ntry again in %d %@" = "\npróbáld újra %1$d %2$@ múlva";
@@ -155,9 +161,6 @@
 "do it later" = "később leírom";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nNE engedd, hogy más lássa a helyreállítási\nkódmondatodat, különben elköltheti a\nbitcoinjaidat.";
-
-/* No comment provided by engineer. */
 "done" = "kész";
 
 /* No comment provided by engineer. */
@@ -222,12 +225,6 @@
 
 /* No comment provided by engineer. */
 "moved" = "átvezetve";
-
-/* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nSOHA ne gépeld be a helyreállítási\nkódmondatodat jelszókezelő\nalkalmazásokba vagy máshová,\nhiszen fertőzöttek lehetnek.";
-
-/* No comment provided by engineer. */
-"new phrase" = "új kódmondat";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "következő lépésként írd le a helyreállítási kódmondatodat";
@@ -477,4 +474,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "A tárcád nincs szinkronban.\nÁltalában segít az, ha újraszkenneled a blockchaint.";
-

@@ -14,7 +14,7 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\"不是一个恢复密语中的单词";
 
 /* No comment provided by engineer. */
-"\n         total %@ (%@)" = "总额%1$@ (%2$@)";
+"\n         total %@ (%@)" = "\n      总额%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\n如果你丢失了手机，你需要用它来找回你的钱包。";
@@ -26,7 +26,7 @@
 "\n1 attempt remaining\n" = "\n还剩1次尝试机会\n";
 
 /* No comment provided by engineer. */
-"\n\n     amount %@ (%@)" = "\n\n  金额%1$@ (%2$@)";
+"\n\n     amount %@ (%@)" = "\n\n      金额%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "你的钱包需要一个设备密码的保护。请转到设置并打开密码再继续。";
@@ -41,7 +41,13 @@
 "\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\n不要让任何人看到你的恢复密语，否则他们就可以使用您的比特币。\n\n切勿将您的恢复密语输入到密码管理器或其他地方。因为其它装置有被病毒感染的可能性。\n";
 
 /* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\n不要让任何人看到你的恢复密语，\n否则他们就可以使用您的比特币。\n";
+
+/* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\n网络费用+%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\n永远不要将恢复密语输入到\n密码管理器或其他地方\n其它设备都可能被病毒感染。\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %d %@" = "\n在 %1$d %2$@ 后重试";
@@ -155,9 +161,6 @@
 "do it later" = "以后再做";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\n不要让任何人看到你的恢复密语，\n否则他们就可以使用您的比特币。\n";
-
-/* No comment provided by engineer. */
 "done" = "完成";
 
 /* No comment provided by engineer. */
@@ -222,12 +225,6 @@
 
 /* No comment provided by engineer. */
 "moved" = "已移动";
-
-/* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\n永远不要将恢复密语输入到\n密码管理器或其他地方\n其它设备都可能被病毒感染。\n";
-
-/* No comment provided by engineer. */
-"new phrase" = "新密语";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "下面，请写下你的恢复密语";
@@ -477,4 +474,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "你的钱包可能不同步。\n这通常可以通过重新扫描区块链来修复。";
-

@@ -1,4 +1,4 @@
-
+﻿
 /* Class = "UILabel"; text = "Detail"; ObjectID = "00M-e1-IWY"; */
 "00M-e1-IWY.text" = "Detail";
 
@@ -49,6 +49,9 @@
 
 /* Class = "UIBarButtonItem"; title = " "; ObjectID = "Huq-Vk-LaF"; */
 "Huq-Vk-LaF.title" = " ";
+
+/* Class = "UIButton"; normalTitle = "copy logs"; ObjectID = "Irz-6P-zvD"; */
+"Irz-6P-zvD.normalTitle" = "copy logs";
 
 /* Class = "UILabel"; text = "($1,000.00)"; ObjectID = "JNR-nK-iyP"; */
 "JNR-nK-iyP.text" = "($1,000.00)";

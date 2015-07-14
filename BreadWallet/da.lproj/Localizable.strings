@@ -41,7 +41,13 @@
 "\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nLAD IKKE nogen se din genskabelsessætning, eller de kan bruge dine bitcoin.\n\nindtast ALDRIG din genskabelsessætning ind i adgangskodehuskere eller andre steder. Andre enheder kan være inficerede.\n";
 
 /* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nLAD IKKE nogen se din\ngendannelsessætning, eller\nde kan bruge dine bitcoin.";
+
+/* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nnetværksgebyr +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nSkriv ALDRIG din gendannelsessætning\ni kodeords-programmer eller lignende.\nAndre enheder kan være inficeret.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %d %@" = "\nprøv igen om %1$d %2$@";
@@ -155,9 +161,6 @@
 "do it later" = "gør det senere";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nLAD IKKE nogen se din\ngendannelsessætning, eller\nde kan bruge dine bitcoin.";
-
-/* No comment provided by engineer. */
 "done" = "færdig";
 
 /* No comment provided by engineer. */
@@ -222,12 +225,6 @@
 
 /* No comment provided by engineer. */
 "moved" = "flyttet";
-
-/* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nSkriv ALDRIG din gendannelsessætning\ni kodeords-programmer eller lignende.\nAndre enheder kan være inficeret.\n";
-
-/* No comment provided by engineer. */
-"new phrase" = "ny sætning";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "skriv nu din gendannelsessætning ned";
@@ -477,4 +474,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Din tegnebog kan være ude af sync.\nDette kan ofte løses ved at scanne blokkæden igen.";
-

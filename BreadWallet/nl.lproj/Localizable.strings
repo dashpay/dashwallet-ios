@@ -14,7 +14,7 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" is geen woord uit de herstel zin";
 
 /* No comment provided by engineer. */
-"\n         total %@ (%@)" = "\ntotaal %1$@ (%2$@)";
+"\n         total %@ (%@)" = "\n         totaal %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nje hebt het nodig om te portemonnee te herstellen wanneer je je telefoon kwijt bent geraakt";
@@ -26,7 +26,7 @@
 "\n1 attempt remaining\n" = "\n1 poging over\n";
 
 /* No comment provided by engineer. */
-"\n\n     amount %@ (%@)" = "\n\nbedrag %1$@ (%2$@)";
+"\n\n     amount %@ (%@)" = "\n\n     bedrag %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEen toegangscode is nog om je portemonnee te beschermen. Ga naar instellingen en zet toegangscode aan om verder te gaan.";
@@ -41,7 +41,13 @@
 "\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nLaat je herstel zin aan NIEMAND zien, anders hebben zij de mogelijkheid om jouw bitcoins uit te geven.\n\nType je herstel zin NOOIT in bij wachtwoord beheer programma's of ergens anders. Andere apparaten kunnen geïnfecteerd zijn.\n";
 
 /* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nLaat je herstel zin aan NIEMAND zien,\nanders hebben zij de mogelijkheid om\njouw bitcoins uit te geven.";
+
+/* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nnetwerkvergoeding +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nType je herstel zin NOOIT in bij wachtwoord\nbeheer programma's of ergens anders.\nAndere apparaten kunnen geïnfecteerd zijn.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %d %@" = "\nprobeer opnieuw in %1$d %2$@";
@@ -155,9 +161,6 @@
 "do it later" = "probeer later nogmaals";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nLaat je herstel zin aan NIEMAND zien,\nanders hebben zij de mogelijkheid om\njouw bitcoins uit te geven.";
-
-/* No comment provided by engineer. */
 "done" = "gereed";
 
 /* No comment provided by engineer. */
@@ -222,12 +225,6 @@
 
 /* No comment provided by engineer. */
 "moved" = "verplaatst";
-
-/* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nType je herstel zin NOOIT in bij wachtwoord\nbeheer programma's of ergens anders.\nAndere apparaten kunnen geïnfecteerd zijn.\n";
-
-/* No comment provided by engineer. */
-"new phrase" = "nieuwe zin";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "vervolgens, schrijf je herstel zin op";
@@ -477,4 +474,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Je portemonnee is mogelijk niet gesynchroniseerd.\nDit kan vaak opgelost worden door de blockchain te herscannen.";
-

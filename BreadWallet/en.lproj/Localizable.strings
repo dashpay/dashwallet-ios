@@ -5,7 +5,13 @@
 "%@ is not allowed to access the camera" = "%@ is not allowed to access the camera";
 
 /* No comment provided by engineer. */
+"%@\n\nbalance: %@ (%@)" = "%1$@\n\nbalance: %2$@ (%3$@)";
+
+/* No comment provided by engineer. */
 "%d confirmations" = "%d confirmations";
+
+/* No comment provided by engineer. */
+"0 confirmations" = "0 confirmations";
 
 /* No comment provided by engineer. */
 "1 confirmation" = "1 confirmation";
@@ -38,7 +44,19 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nallow camera access in\nSettings->Privacy->Camera->%@";
 
 /* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n";
+
+/* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n";
+
+/* No comment provided by engineer. */
+"\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n";
+
+/* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nnetwork fee +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %d %@" = "\ntry again in %1$d %2$@";
@@ -104,6 +122,9 @@
 "change payment amount?" = "change payment amount?";
 
 /* No comment provided by engineer. */
+"checking address balance..." = "checking address balance...";
+
+/* No comment provided by engineer. */
 "checking private key balance..." = "checking private key balance...";
 
 /* No comment provided by engineer. */
@@ -128,10 +149,19 @@
 "copied" = "copied";
 
 /* No comment provided by engineer. */
+"copy" = "copy";
+
+/* No comment provided by engineer. */
 "copy address to clipboard" = "copy address to clipboard";
 
 /* No comment provided by engineer. */
 "copy request to clipboard" = "copy request to clipboard";
+
+/* No comment provided by engineer. */
+"copy wallet addresses to clipboard?" = "copy wallet addresses to clipboard?";
+
+/* No comment provided by engineer. */
+"couldn't check address balance" = "couldn't check address balance";
 
 /* No comment provided by engineer. */
 "couldn't make payment" = "couldn't make payment";
@@ -150,9 +180,6 @@
 
 /* No comment provided by engineer. */
 "do it later" = "do it later";
-
-/* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n";
 
 /* No comment provided by engineer. */
 "done" = "done";
@@ -221,13 +248,10 @@
 "moved" = "moved";
 
 /* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n";
-
-/* No comment provided by engineer. */
-"new phrase" = "new phrase";
-
-/* No comment provided by engineer. */
 "next, write down your recovery phrase" = "next, write down your recovery phrase";
+
+/* No comment provided by engineer. */
+"no exchange rate data" = "no exchange rate data";
 
 /* No comment provided by engineer. */
 "no peers found" = "no peers found";
@@ -261,6 +285,9 @@
 
 /* No comment provided by engineer. */
 "pay" = "pay";
+
+/* No comment provided by engineer. */
+"payee identity isn't certified" = "payee identity isn't certified";
 
 /* No comment provided by engineer. */
 "payment address" = "payment address";
