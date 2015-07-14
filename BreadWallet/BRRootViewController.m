@@ -62,7 +62,7 @@
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) id urlObserver, fileObserver, foregroundObserver, backgroundObserver, balanceObserver;
 @property (nonatomic, strong) id reachabilityObserver, syncStartedObserver, syncFinishedObserver, syncFailedObserver;
-@property (nonatomic, strong) id activeObserver, resignActiveObserver, protectedObserver;
+@property (nonatomic, strong) id activeObserver, resignActiveObserver, protectedObserver, seedObserver;
 @property (nonatomic, assign) NSTimeInterval timeout, start;
 
 @end
@@ -258,7 +258,8 @@
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if (_balance != UINT64_MAX && [[BRPeerManager sharedInstance] syncProgress] < 1.0) { // wait for sync
+            if (_balance != UINT64_MAX && [[BRPeerManager sharedInstance] syncProgress] < 1.0 &&
+                [[BRPeerManager sharedInstance] syncProgress] > DBL_EPSILON) { // wait for sync
                 self.balance = _balance; // this updates the local currency value with the latest exchange rate
                 return;
             }
@@ -271,6 +272,13 @@
                 [[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground) {
                 [[BRPeerManager sharedInstance] connect];
             }
+        }];
+
+    self.seedObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletManagerSeedChangedNotification object:nil
+        queue:nil usingBlock:^(NSNotification *note) {
+            [self.receiveViewController updateAddress];
+            self.balance = m.wallet.balance;
         }];
 
     self.syncStartedObserver =
@@ -486,6 +494,7 @@
     if (self.resignActiveObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.resignActiveObserver];
     if (self.reachabilityObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
+    if (self.seedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.seedObserver];
     if (self.syncStartedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
     if (self.syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFinishedObserver];
     if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
