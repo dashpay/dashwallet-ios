@@ -762,9 +762,9 @@
 			projectRoot = "";
 			targets = (
 				75D5F3BD191EC270004AB296 /* breadwallet */,
+				BAE12BE41B2DEE7F00895CC5 /* TodayExtension */,
 				75D5F3E4191EC270004AB296 /* BreadWalletTests */,
 				75001D3D1A1EE89500585F55 /* submodules */,
-				BAE12BE41B2DEE7F00895CC5 /* TodayExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -1206,29 +1206,6 @@
 			};
 			name = Debug;
 		};
-		BAE12BF41B2DEE7F00895CC5 /* GCov_Build */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CODE_SIGN_ENTITLEMENTS = TodayExtension/TodayExtension.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				INFOPLIST_FILE = TodayExtension/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MTL_ENABLE_DEBUG_INFO = NO;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "";
-				SKIP_INSTALL = YES;
-			};
-			name = GCov_Build;
-		};
 		BAE12BF51B2DEE7F00895CC5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1295,7 +1272,6 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BAE12BF31B2DEE7F00895CC5 /* Debug */,
-				BAE12BF41B2DEE7F00895CC5 /* GCov_Build */,
 				BAE12BF51B2DEE7F00895CC5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;

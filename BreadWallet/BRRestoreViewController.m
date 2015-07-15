@@ -149,9 +149,9 @@
 
     @autoreleasepool {  // @autoreleasepool ensures sensitive data will be dealocated immediately
         BRWalletManager *m = [BRWalletManager sharedInstance];
-        NSRange selected = textView.selectedRange;
         NSMutableString *s = CFBridgingRelease(CFStringCreateMutableCopy(SecureAllocator(), 0,
                                                                          (CFStringRef)textView.text));
+        BOOL done = ([s rangeOfString:@"\n"].location != NSNotFound) ? YES : NO;
     
         while ([s rangeOfCharacterFromSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].location == 0) {
             [s deleteCharactersInRange:NSMakeRange(0, 1)]; // trim leading whitespace
@@ -161,10 +161,10 @@
             [s deleteCharactersInRange:[s rangeOfCharacterFromSet:invalid]]; // remove invalid chars
         }
         
-        selected.location -= textView.text.length - s.length;
-        textView.text = s;
-        textView.selectedRange = selected;
-        if (([s rangeOfString:@"\n"].location == NSNotFound)) return; // not done entering phrase
+        [s replaceOccurrencesOfString:@"\n" withString:@" " options:0 range:NSMakeRange(0, s.length)];
+
+        if (! [s isEqual:textView.text]) textView.text = s;
+        if (! done) return; // not done entering phrase
 
         BOOL isLocal = YES;
         NSString *phrase = [m.mnemonic normalizePhrase:s], *incorrect = nil;

@@ -205,7 +205,7 @@
                                     <button opaque="NO" alpha="0.39999999999999997" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fgE-Q8-uG8">
                                         <rect key="frame" x="80" y="154" width="160" height="30"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" constant="160" id="GBB-5J-xXd"/>
+                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="160" id="GBB-5J-xXd"/>
                                             <constraint firstAttribute="height" constant="30" id="TfA-sf-cbr"/>
                                         </constraints>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
