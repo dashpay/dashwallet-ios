@@ -155,7 +155,7 @@ static NSString *sanitizeString(NSString *s)
         }
     
         if ([url.host isEqual:@"scanqr"] || [url.path isEqual:@"/scanqr"]) { // scan qr
-            [self scanQR:nil];
+            [self scanQR:self.scanButton];
         }
         else if ([url.host isEqual:@"addresslist"] || [url.path isEqual:@"/addresslist"]) { // copy wallet addresses
             if ((m.didAuthenticate || [m authenticateWithPrompt:nil andTouchId:YES]) && ! self.clearClipboard) {
@@ -756,6 +756,48 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     [self.clipboardText scrollRangeToVisible:NSMakeRange(0, 0)];
 }
 
+- (void)payFirstFromArray:(NSArray *)a
+{
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    NSUInteger i = 0;
+
+    for (NSString *s in a) {
+        BRPaymentRequest *req = [BRPaymentRequest requestWithString:s];
+        NSData *d = s.hexToData.reverse;
+        
+        i++;
+        
+        // if the clipboard contains a known txHash, we know it's not a hex encoded private key
+        if (d.length == 32 && [[m.wallet.recentTransactions valueForKey:@"txHash"] containsObject:d]) continue;
+        
+        if ([req.paymentAddress isValidBitcoinAddress] || [s isValidBitcoinPrivateKey] || [s isValidBitcoinBIP38Key] ||
+            (req.r.length > 0 && [s hasPrefix:@"bitcoin:"])) {
+            [self performSelector:@selector(confirmRequest:) withObject:req afterDelay:0.1];// delayed to show highlight
+            return;
+        }
+        else if (req.r.length > 0) {
+            [BRPaymentRequest fetch:req.r timeout:5.0 completion:^(BRPaymentProtocolRequest *req, NSError *error) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (error) { // don't try any more BIP73 urls
+                        [self payFirstFromArray:[a objectsAtIndexes:[a
+                        indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+                            return (idx >= i && ([obj hasPrefix:@"bitcoin:"] || ! [NSURL URLWithString:obj]));
+                        }]]];
+                    }
+                    else [self confirmProtocolRequest:req];
+                });
+            }];
+            
+            return;
+        }
+    }
+    
+    [[[UIAlertView alloc] initWithTitle:@""
+      message:NSLocalizedString(@"clipboard doesn't contain a valid bitcoin address", nil) delegate:nil
+      cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+    [self performSelector:@selector(cancel:) withObject:self afterDelay:0.1];
+}
+
 #pragma mark - IBAction
 
 - (IBAction)tip:(id)sender
@@ -789,60 +831,28 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 {
     if ([self nextTip]) return;
 
-    BRWalletManager *m = [BRWalletManager sharedInstance];
     NSString *p = [[[UIPasteboard generalPasteboard] string]
                    stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     UIImage *img = [[UIPasteboard generalPasteboard] image];
-    NSMutableArray *a = [NSMutableArray array];
+    NSMutableOrderedSet *s = [NSMutableOrderedSet orderedSet];
     NSCharacterSet *c = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
 
     if (p) {
-        [a addObject:p];
-        [a addObjectsFromArray:[p componentsSeparatedByCharactersInSet:c]];
+        [s addObject:p];
+        [s addObjectsFromArray:[p componentsSeparatedByCharactersInSet:c]];
     }
     
     if (img && CIDetectorTypeQRCode) {
         for (CIQRCodeFeature *qr in [[CIDetector detectorOfType:CIDetectorTypeQRCode context:nil options:nil]
                                      featuresInImage:[CIImage imageWithCGImage:img.CGImage]]) {
-            [a addObject:[qr.messageString
+            [s addObject:[qr.messageString
              stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
         }
     }
     
     [sender setEnabled:NO];
     self.clearClipboard = YES;
-
-    for (NSString *s in a) {
-        BRPaymentRequest *req = [BRPaymentRequest requestWithString:s];
-        NSData *d = s.hexToData.reverse;
-
-        // if the clipboard contains a known txHash, we know it's not a hex encoded private key
-        if (d.length == 32 && [[m.wallet.recentTransactions valueForKey:@"txHash"] containsObject:d]) continue;
-        
-        if ([req.paymentAddress isValidBitcoinAddress] || [s isValidBitcoinPrivateKey] || [s isValidBitcoinBIP38Key] ||
-            (req.r.length > 0 && [s hasPrefix:@"bitcoin:"])) {
-            [self performSelector:@selector(confirmRequest:) withObject:req afterDelay:0.1];// delayed to show highlight
-            return;
-        }
-        else if (req.r.length > 0) {
-            [BRPaymentRequest fetch:req.r timeout:5.0 completion:^(BRPaymentProtocolRequest *req, NSError *error) {
-                if (error) {
-                    [[[UIAlertView alloc] initWithTitle:@""
-                      message:NSLocalizedString(@"clipboard doesn't contain a valid bitcoin address", nil) delegate:nil
-                      cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-                    [self performSelector:@selector(cancel:) withObject:self afterDelay:0.1];
-                }
-                else [self confirmProtocolRequest:req];
-            }];
-            
-            return;
-        }
-    }
-    
-    [[[UIAlertView alloc] initWithTitle:@""
-      message:NSLocalizedString(@"clipboard doesn't contain a valid bitcoin address", nil) delegate:nil
-      cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-    [self performSelector:@selector(cancel:) withObject:self afterDelay:0.1];
+    [self payFirstFromArray:s.array];
 }
 
 - (IBAction)reset:(id)sender
