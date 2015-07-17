@@ -299,15 +299,17 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         [(id)self.parentViewController.parentViewController startActivityWithTimeout:20.0];
 
         [BRPaymentRequest fetch:request.r timeout:20.0 completion:^(BRPaymentProtocolRequest *req, NSError *error) {
-            [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
 
-            if (error && ! [request.paymentAddress isValidBitcoinAddress]) {
-                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
-                  message:error.localizedDescription delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
-                  otherButtonTitles:nil] show];
-                [self cancel:nil];
-            }
-            else [self confirmProtocolRequest:(error) ? request.protocolRequest : req];
+                if (error && ! [request.paymentAddress isValidBitcoinAddress]) {
+                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
+                      message:error.localizedDescription delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
+                      otherButtonTitles:nil] show];
+                    [self cancel:nil];
+                }
+                else [self confirmProtocolRequest:(error) ? request.protocolRequest : req];
+            });
         }];
     }
     else [self confirmProtocolRequest:request.protocolRequest];
@@ -604,28 +606,31 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     [self.view addSubview:[v popIn]];
 
     [m sweepPrivateKey:privKey withFee:YES completion:^(BRTransaction *tx, uint64_t fee, NSError *error) {
-        [v popOut];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [v popOut];
 
-        if (error) {
-            [[[UIAlertView alloc] initWithTitle:@"" message:error.localizedDescription delegate:self
-              cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-            [self cancel:nil];
-        }
-        else if (tx) {
-            uint64_t amount = fee;
+            if (error) {
+                [[[UIAlertView alloc] initWithTitle:@"" message:error.localizedDescription delegate:self
+                  cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+                [self cancel:nil];
+            }
+            else if (tx) {
+                uint64_t amount = fee;
 
-            for (NSNumber *amt in tx.outputAmounts) amount += amt.unsignedLongLongValue;
-            self.sweepTx = tx;
+                for (NSNumber *amt in tx.outputAmounts) amount += amt.unsignedLongLongValue;
+                self.sweepTx = tx;
 
-            [[[UIAlertView alloc] initWithTitle:@"" message:[NSString
-              stringWithFormat:NSLocalizedString(@"Send %@ (%@) from this private key into your wallet? "
-                                                 "The bitcoin network will receive a fee of %@ (%@).", nil),
-              [m stringForAmount:amount], [m localCurrencyStringForAmount:amount], [m stringForAmount:fee],
-              [m localCurrencyStringForAmount:fee]] delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-              otherButtonTitles:[NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:amount],
-                                 [m localCurrencyStringForAmount:amount]], nil] show];
-        }
-        else [self cancel:nil];
+                [[[UIAlertView alloc] initWithTitle:@"" message:[NSString
+                  stringWithFormat:NSLocalizedString(@"Send %@ (%@) from this private key into your wallet? "
+                                                     "The bitcoin network will receive a fee of %@ (%@).", nil),
+                  [m stringForAmount:amount], [m localCurrencyStringForAmount:amount], [m stringForAmount:fee],
+                  [m localCurrencyStringForAmount:fee]] delegate:self
+                  cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+                  otherButtonTitles:[NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:amount],
+                                     [m localCurrencyStringForAmount:amount]], nil] show];
+            }
+            else [self cancel:nil];
+        });
     }];
 }
 
@@ -643,23 +648,25 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     [self.view addSubview:[v popIn]];
 
     [m utxosForAddress:address completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error) {
-        [v popOut];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [v popOut];
         
-        if (error) {
-            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't check address balance", nil)
-              message:error.localizedDescription delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
-              otherButtonTitles:nil] show];
-        }
-        else {
-            uint64_t balance = 0;
+            if (error) {
+                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't check address balance", nil)
+                  message:error.localizedDescription delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
+                  otherButtonTitles:nil] show];
+            }
+            else {
+                uint64_t balance = 0;
             
-            for (NSNumber *amt in amounts) balance += [amt unsignedLongLongValue];
+                for (NSNumber *amt in amounts) balance += [amt unsignedLongLongValue];
             
-            [[[UIAlertView alloc] initWithTitle:@""
-              message:[NSString stringWithFormat:NSLocalizedString(@"%@\n\nbalance: %@ (%@)", nil), address,
-                       [m stringForAmount:balance], [m localCurrencyStringForAmount:balance]] delegate:nil
-              cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-        }
+                [[[UIAlertView alloc] initWithTitle:@""
+                  message:[NSString stringWithFormat:NSLocalizedString(@"%@\n\nbalance: %@ (%@)", nil), address,
+                           [m stringForAmount:balance], [m localCurrencyStringForAmount:balance]] delegate:nil
+                  cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+            }
+        });
     }];
 }
 
@@ -937,16 +944,16 @@ fromConnection:(AVCaptureConnection *)connection
             if (request.r.length > 0) { // start fetching payment protocol request right away
                 [BRPaymentRequest fetch:request.r timeout:5.0
                 completion:^(BRPaymentProtocolRequest *req, NSError *error) {
-                    if (error) request.r = nil;
-                    
-                    if (error && ! [request isValid]) {
-                        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
-                          message:error.localizedDescription delegate:nil
-                          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-                        [self cancel:nil];
-                    }
-
                     dispatch_async(dispatch_get_main_queue(), ^{
+                        if (error) request.r = nil;
+                    
+                        if (error && ! [request isValid]) {
+                            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
+                              message:error.localizedDescription delegate:nil
+                              cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+                            [self cancel:nil];
+                        }
+
                         [self.navigationController dismissViewControllerAnimated:YES completion:^{
                             [self resetQRGuide];
                         }];
