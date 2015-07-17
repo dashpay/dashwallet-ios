@@ -218,7 +218,7 @@ static const char *dns_seeds[] = {
             dispatch_apply(peers.count, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(size_t i) {
                 NSString *servname = [@(BITCOIN_STANDARD_PORT) stringValue];
                 struct addrinfo hints = { 0, AF_UNSPEC, SOCK_STREAM, 0, 0, 0, NULL, NULL }, *servinfo, *p;
-                BRPeerAddress addr = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 };
+                BRPeerAddress addr = { .u6_32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
 
                 NSLog(@"DNS lookup %s", dns_seeds[i]);
                 
@@ -253,7 +253,7 @@ static const char *dns_seeds[] = {
 #endif
             // if DNS peer discovery fails, fall back on a hard coded list of peers (list taken from satoshi client)
             if (_peers.count < PEER_MAX_CONNECTIONS) {
-                BRPeerAddress addr = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 };
+                BRPeerAddress addr = { .u6_32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
             
                 for (NSNumber *address in [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
                                            pathForResource:FIXED_PEERS ofType:@"plist"]]) {

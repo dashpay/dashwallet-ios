@@ -57,7 +57,7 @@
     __block BRPeer *peer = nil;
         
     [[self managedObjectContext] performBlockAndWait:^{
-        BRPeerAddress address = { 0, 0, CFSwapInt32HostToBig(0xffff), CFSwapInt32HostToBig(self.address) };
+        BRPeerAddress address = { .u6_32 = { 0, 0, CFSwapInt32HostToBig(0xffff), CFSwapInt32HostToBig(self.address) } };
 
         peer = [[BRPeer alloc] initWithAddress:address port:self.port timestamp:self.timestamp services:self.services];
         peer.misbehavin = self.misbehavin;
