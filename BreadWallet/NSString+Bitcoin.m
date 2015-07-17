@@ -319,7 +319,7 @@ static const UniChar base58chars[] = {
     NSData *d = self.base58checkToData;
     
     if (d.length == 33 || d.length == 34) { // wallet import format: https://en.bitcoin.it/wiki/Wallet_import_format
-#if BITCOIN_TESNET
+#if BITCOIN_TESTNET
         return (*(const uint8_t *)d.bytes == BITCOIN_PRIVKEY_TEST) ? YES : NO;
 #else
         return (*(const uint8_t *)d.bytes == BITCOIN_PRIVKEY) ? YES : NO;
