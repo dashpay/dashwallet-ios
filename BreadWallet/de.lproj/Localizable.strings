@@ -5,7 +5,13 @@
 "%@ is not allowed to access the camera" = "%@ darf nicht auf die Kamera zugreifen";
 
 /* No comment provided by engineer. */
+"%@\n\nbalance: %@ (%@)" = "%1$@ Guthaben: %2$@ (%3$@)";
+
+/* No comment provided by engineer. */
 "%d confirmations" = "%d Bestätigungen";
+
+/* No comment provided by engineer. */
+"0 confirmations" = "0 Bestätigungen";
 
 /* No comment provided by engineer. */
 "1 confirmation" = "1 Bestätigung";
@@ -42,6 +48,9 @@
 
 /* No comment provided by engineer. */
 "\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nLassen Sie NIEMANDEN ihre\nWiederherstellungs-Wortfolge sehen, wer\ndiese kennt kann ihre bitcoins ausgeben.\n";
+
+/* No comment provided by engineer. */
+"\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nKEINEN Screenshots erstellen.\nScreenshots sind sichtbar für andere Apps und Geräte.\n";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nNetzwerkgebühr +%1$@ (%2$@)";
@@ -113,6 +122,9 @@
 "change payment amount?" = "Zahlungsbetrag ändern?";
 
 /* No comment provided by engineer. */
+"checking address balance..." = "Guthaben der Adresse wird geprüft...";
+
+/* No comment provided by engineer. */
 "checking private key balance..." = "Guthaben des privaten Schlüssels wird geprüft...";
 
 /* No comment provided by engineer. */
@@ -137,10 +149,19 @@
 "copied" = "kopiert";
 
 /* No comment provided by engineer. */
+"copy" = "Kopieren";
+
+/* No comment provided by engineer. */
 "copy address to clipboard" = "Adresse in Zwischenablage kopieren";
 
 /* No comment provided by engineer. */
 "copy request to clipboard" = "Anfrage in Zwischenablage kopieren";
+
+/* No comment provided by engineer. */
+"copy wallet addresses to clipboard?" = "Brieftaschen-Adressen in Zwischenablage kopieren?";
+
+/* No comment provided by engineer. */
+"couldn't check address balance" = "Guthaben der Adresse konnte nicht geprüft werden";
 
 /* No comment provided by engineer. */
 "couldn't make payment" = "Zahlung konnte nicht durchgeführt werden";
@@ -230,6 +251,9 @@
 "next, write down your recovery phrase" = "Als nächstes schreiben Sie bitte Ihre Wiederherstellungs-Wortfolge auf";
 
 /* No comment provided by engineer. */
+"no exchange rate data" = "Keine Wechselkursdaten";
+
+/* No comment provided by engineer. */
 "no peers found" = "keine Peers gefunden";
 
 /* No comment provided by engineer. */
@@ -261,6 +285,9 @@
 
 /* No comment provided by engineer. */
 "pay" = "zahlen";
+
+/* No comment provided by engineer. */
+"payee identity isn't certified" = "Identität des Zahlenden ist nicht beglaubigt";
 
 /* No comment provided by engineer. */
 "payment address" = "Zahlungsadresse";

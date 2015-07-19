@@ -5,7 +5,13 @@
 "%@ is not allowed to access the camera" = "%@ kameraya erişmesi için izin verilmedi";
 
 /* No comment provided by engineer. */
-"%d confirmations" = "%d onayları";
+"%@\n\nbalance: %@ (%@)" = "%1$@\n\nbakiye: %2$@ (%3$@)";
+
+/* No comment provided by engineer. */
+"%d confirmations" = "%d onaylama";
+
+/* No comment provided by engineer. */
+"0 confirmations" = "0 onaylama";
 
 /* No comment provided by engineer. */
 "1 confirmation" = "1 onaylama";
@@ -44,6 +50,9 @@
 "\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nkimsenin kurtarma cümlenizi görmesine İZİN VERMEYİN\n      çünkü bitcoinlerinizi harcayabilirler.\n";
 
 /* No comment provided by engineer. */
+"\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nEkran görüntüsü ALMAYIN.\nEkran görüntüleri diğer uygulamalar ve \ncihazlar tarafından görülebilir.\n";
+
+/* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nağ ücreti +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
@@ -56,7 +65,7 @@
 "about" = "hakkında";
 
 /* No comment provided by engineer. */
-"always require passcode" = "her zaman parola gerekir";
+"always require passcode" = "her zaman parola gerektir";
 
 /* No comment provided by engineer. */
 "amount too small" = "miktarı çok küçük";
@@ -113,6 +122,9 @@
 "change payment amount?" = "ödeme tutarı değişsin mi?";
 
 /* No comment provided by engineer. */
+"checking address balance..." = "adres bakiyesi denetleniyor...";
+
+/* No comment provided by engineer. */
 "checking private key balance..." = "özel şifre ayarı kontrol ediliyor...";
 
 /* No comment provided by engineer. */
@@ -137,10 +149,19 @@
 "copied" = "koyalandı";
 
 /* No comment provided by engineer. */
+"copy" = "kopyala";
+
+/* No comment provided by engineer. */
 "copy address to clipboard" = "adresi panoya kopyala";
 
 /* No comment provided by engineer. */
 "copy request to clipboard" = "isteği panoya kopyala";
+
+/* No comment provided by engineer. */
+"copy wallet addresses to clipboard?" = "cüzdan adresleri panoya kopyalansın mı?";
+
+/* No comment provided by engineer. */
+"couldn't check address balance" = "adres bakiyesi denetlenemedi";
 
 /* No comment provided by engineer. */
 "couldn't make payment" = "ödeme yapılamadı";
@@ -230,6 +251,9 @@
 "next, write down your recovery phrase" = "sonra, kurtarma cümlenizi yazın";
 
 /* No comment provided by engineer. */
+"no exchange rate data" = "döviz kuru verisi yok";
+
+/* No comment provided by engineer. */
 "no peers found" = "eşleşme bulunamadı";
 
 /* No comment provided by engineer. */
@@ -261,6 +285,9 @@
 
 /* No comment provided by engineer. */
 "pay" = "ödeme";
+
+/* No comment provided by engineer. */
+"payee identity isn't certified" = "alacaklı kimliği onaylı değil";
 
 /* No comment provided by engineer. */
 "payment address" = "ödeme adresi";

@@ -5,7 +5,13 @@
 "%@ is not allowed to access the camera" = "%@ har ikke tilladelse til at bruge kameraet";
 
 /* No comment provided by engineer. */
+"%@\n\nbalance: %@ (%@)" = "%1$@\n\nindestående: %2$@ (%3$@)";
+
+/* No comment provided by engineer. */
 "%d confirmations" = "%d bekræftelser";
+
+/* No comment provided by engineer. */
+"0 confirmations" = "0 bekræftelser";
 
 /* No comment provided by engineer. */
 "1 confirmation" = "1 bekræftelse";
@@ -42,6 +48,9 @@
 
 /* No comment provided by engineer. */
 "\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nLAD IKKE nogen se din\ngendannelsessætning, eller\nde kan bruge dine bitcoin.";
+
+/* No comment provided by engineer. */
+"\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nTAG IKKE et screenshot.\nScreenshots er synlige for andre apps\nog enheder.\n";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nnetværksgebyr +%1$@ (%2$@)";
@@ -113,6 +122,9 @@
 "change payment amount?" = "ændr betalingsbeløb?";
 
 /* No comment provided by engineer. */
+"checking address balance..." = "tjekker adressens indestående...";
+
+/* No comment provided by engineer. */
 "checking private key balance..." = "tjekker saldo for privat nøgle …";
 
 /* No comment provided by engineer. */
@@ -137,10 +149,19 @@
 "copied" = "kopieret";
 
 /* No comment provided by engineer. */
+"copy" = "kopiér";
+
+/* No comment provided by engineer. */
 "copy address to clipboard" = "kopiér adresse til udklipsholder";
 
 /* No comment provided by engineer. */
 "copy request to clipboard" = "kopiér anmodning til udklipsholder";
+
+/* No comment provided by engineer. */
+"copy wallet addresses to clipboard?" = "kopiér tegnebogs-adresser til udklipsholder?";
+
+/* No comment provided by engineer. */
+"couldn't check address balance" = "kunne ikke tjekke adressens indestående";
 
 /* No comment provided by engineer. */
 "couldn't make payment" = "kunne ikke foretage betaling";
@@ -230,6 +251,9 @@
 "next, write down your recovery phrase" = "skriv nu din gendannelsessætning ned";
 
 /* No comment provided by engineer. */
+"no exchange rate data" = "ingen valutakursdata";
+
+/* No comment provided by engineer. */
 "no peers found" = "ingen peers fundet";
 
 /* No comment provided by engineer. */
@@ -261,6 +285,9 @@
 
 /* No comment provided by engineer. */
 "pay" = "betal";
+
+/* No comment provided by engineer. */
+"payee identity isn't certified" = "betalingsmodtagerens identitet er ikke certificeret";
 
 /* No comment provided by engineer. */
 "payment address" = "betalingsadresse";

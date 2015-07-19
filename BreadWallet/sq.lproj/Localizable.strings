@@ -5,7 +5,13 @@
 "%@ is not allowed to access the camera" = "%@ nuk lejohet ti çaset kamerës";
 
 /* No comment provided by engineer. */
+"%@\n\nbalance: %@ (%@)" = "%1$@\n\nbilanci: %2$@ (%3$@)";
+
+/* No comment provided by engineer. */
 "%d confirmations" = "%d konfirmime";
+
+/* No comment provided by engineer. */
+"0 confirmations" = "0 konfirmime";
 
 /* No comment provided by engineer. */
 "1 confirmation" = "1 konfirmim";
