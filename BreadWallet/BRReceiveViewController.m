@@ -85,7 +85,8 @@
     }
     
     if ([self.paymentAddress isEqual:self.addressButton.currentTitle]) return;
-    self.qrView.image = [UIImage imageWithQRCodeData:req.data size:self.qrView.bounds.size color:nil];
+    self.qrView.image = [UIImage imageWithQRCodeData:req.data size:self.qrView.bounds.size
+                         color:[CIColor colorWithRed:0.0 green:0.0 blue:0.0]];
     [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
     
     if (req.amount > 0) {

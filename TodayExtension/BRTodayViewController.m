@@ -88,7 +88,7 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
     if (self.qrCodeData && self.qrImage.bounds.size.width > 0) {
         self.qrImage.image = self.qrOverlay.image =
             [UIImage imageWithQRCodeData:self.qrCodeData size:self.qrImage.bounds.size
-             color:[CIColor colorWithRed:1.0 green:1.0 blue:1.0]];
+             color:[CIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:0.0]];
     }
 
     self.hashLabel.text = [self.appGroupUserDefault objectForKey:APP_GROUP_RECEIVE_ADDRESS_KEY];

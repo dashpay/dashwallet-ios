@@ -33,22 +33,26 @@
     CIFilter *qrFilter = [CIFilter filterWithName:@"CIQRCodeGenerator"],
              *maskFilter = [CIFilter filterWithName:@"CIMaskToAlpha"],
              *invertFilter = [CIFilter filterWithName:@"CIColorInvert"],
-             *colorFilter = [CIFilter filterWithName:@"CIFalseColor"];
+             *colorFilter = [CIFilter filterWithName:@"CIFalseColor"], *filter = colorFilter;
     
     [qrFilter setValue:data forKey:@"inputMessage"];
     [qrFilter setValue:@"L" forKey:@"inputCorrectionLevel"];
-    [invertFilter setValue:qrFilter.outputImage forKey:@"inputImage"];
-    [maskFilter setValue:invertFilter.outputImage forKey:@"inputImage"];
-    [invertFilter setValue:maskFilter.outputImage forKey:@"inputImage"];
-    [colorFilter setValue:invertFilter.outputImage forKey:@"inputImage"];
-    [colorFilter setValue:(color) ? color : [CIColor colorWithRed:0.0 green:0.0 blue:0.0] forKey:@"inputColor0"];
+
+    if (color.alpha > DBL_EPSILON) {
+        [invertFilter setValue:qrFilter.outputImage forKey:@"inputImage"];
+        [maskFilter setValue:invertFilter.outputImage forKey:@"inputImage"];
+        [invertFilter setValue:maskFilter.outputImage forKey:@"inputImage"];
+        [colorFilter setValue:invertFilter.outputImage forKey:@"inputImage"];
+        [colorFilter setValue:color forKey:@"inputColor0"];
+    }
+    else [maskFilter setValue:qrFilter.outputImage forKey:@"inputImage"], filter = maskFilter;
     
     UIGraphicsBeginImageContext(size);
     
     UIImage *image = nil;
     CGContextRef context = UIGraphicsGetCurrentContext();
-    CGImageRef img = [[CIContext contextWithOptions:nil] createCGImage:colorFilter.outputImage
-                      fromRect:colorFilter.outputImage.extent];
+    CGImageRef img = [[CIContext contextWithOptions:nil] createCGImage:filter.outputImage
+                      fromRect:filter.outputImage.extent];
     
     if (context) {
         CGContextSetInterpolationQuality(context, kCGInterpolationNone);
