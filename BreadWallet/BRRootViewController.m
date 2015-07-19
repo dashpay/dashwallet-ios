@@ -515,8 +515,9 @@
     _balance = balance;
 
     if (self.percent.hidden) {
-        self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:balance],
-                                     [m localCurrencyStringForAmount:balance]];
+//        self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:balance],
+//                                     [m localCurrencyStringForAmount:balance]];
+        self.navigationItem.title = @"b 1,000,000,000.00 ($300,000.00)";
     }
 }
 
@@ -920,10 +921,10 @@ viewControllerAfterViewController:(UIViewController *)viewController
         UIBarButtonItem *rightButton = item.rightBarButtonItem;
 
         item.title = nil;
-        item.leftBarButtonItem.image = nil;
+        item.leftBarButtonItem.image = [UIImage imageNamed:@"none"];
         item.titleView = nil;
         item.rightBarButtonItem = nil;
-        self.navigationItem.leftBarButtonItem.image = nil;
+        self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"none"];
         [v addSubview:self.burger];
         [v layoutIfNeeded];
         self.burger.center = CGPointMake(26.0, 40.0);
@@ -966,10 +967,10 @@ viewControllerAfterViewController:(UIViewController *)viewController
         UIBarButtonItem *rightButton = item.rightBarButtonItem;
 
         item.title = nil;
-        item.leftBarButtonItem.image = nil;
+        item.leftBarButtonItem.image = [UIImage imageNamed:@"none"];
         item.titleView = nil;
         item.rightBarButtonItem = nil;
-        self.navigationItem.leftBarButtonItem.image = nil;
+        self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"none"];
         self.burger.hidden = NO;
         [v layoutIfNeeded];
         self.burger.center = CGPointMake(26.0, 40.0);
