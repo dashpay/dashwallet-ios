@@ -515,9 +515,8 @@
     _balance = balance;
 
     if (self.percent.hidden) {
-//        self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:balance],
-//                                     [m localCurrencyStringForAmount:balance]];
-        self.navigationItem.title = @"b 1,000,000,000.00 ($300,000.00)";
+        self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:balance],
+                                     [m localCurrencyStringForAmount:balance]];
     }
 }
 
