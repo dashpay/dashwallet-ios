@@ -31,6 +31,7 @@
 
 #define PHRASE_LENGTH 12
 #define WORDS         @"BIP39Words"
+#define IDEO_SP       @"\xE3\x80\x80" // ideographic space (utf-8)
 
 @interface BRRestoreViewController ()
 
@@ -38,6 +39,7 @@
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *textViewYBottom;
 @property (nonatomic, strong) NSArray *words;
 @property (nonatomic, strong) NSMutableSet *allWords;
+@property (nonatomic, assign) NSUInteger length;
 @property (nonatomic, strong) id keyboardObserver, resignActiveObserver;
 
 @end
@@ -163,7 +165,18 @@
         
         [s replaceOccurrencesOfString:@"\n" withString:@" " options:0 range:NSMakeRange(0, s.length)];
 
+        if (textView.text.length > self.length) {
+            NSUInteger l = [s rangeOfCharacterFromSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]
+                            options:NSBackwardsSearch].location;
+            NSString *w = [s substringFromIndex:(l < s.length) ? l : 0];
+        
+            if (w.length > 0 && [w characterAtIndex:0] >= 0x3000 && [self.words containsObject:w]) {
+                [s appendString:IDEO_SP];
+            }
+        }
+        
         if (! [s isEqual:textView.text]) textView.text = s;
+        self.length = textView.text.length;
         if (! done) return; // not done entering phrase
 
         BOOL isLocal = YES;

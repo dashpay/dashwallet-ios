@@ -107,15 +107,15 @@
 {
     if (! phrase) return nil;
 
-    NSMutableCharacterSet *ws = [NSMutableCharacterSet whitespaceAndNewlineCharacterSet];
     NSMutableString *s = CFBridgingRelease(CFStringCreateMutableCopy(SecureAllocator(), 0, (CFStringRef)phrase));
+    NSMutableCharacterSet *ws = [NSMutableCharacterSet whitespaceAndNewlineCharacterSet];
     CFRange r;
 
-    [ws removeCharactersInString:@" "];
     CFStringNormalize((CFMutableStringRef)s, kCFStringNormalizationFormKD);
     CFStringLowercase((CFMutableStringRef)s, CFLocaleGetSystem());
     CFStringTrimWhitespace((CFMutableStringRef)s);
-
+    [ws removeCharactersInString:@" "];
+    
     while (CFStringFindCharacterFromSet((CFStringRef)s, (CFCharacterSetRef)ws, CFRangeMake(0, s.length), 0, &r)) {
         [s replaceCharactersInRange:NSMakeRange(r.location, r.length) withString:@" "];
     }
