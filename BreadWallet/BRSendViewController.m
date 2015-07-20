@@ -556,37 +556,40 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     
         [BRPaymentRequest postPayment:payment to:self.request.details.paymentURL timeout:20.0
         completion:^(BRPaymentProtocolACK *ack, NSError *error) {
-            [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
     
-            if (error) {
-                if (! waiting && ! sent) {
-                    [[[UIAlertView alloc] initWithTitle:@"" message:error.localizedDescription delegate:nil
-                      cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-                    [(id)self.parentViewController.parentViewController stopActivityWithSuccess:NO];
-                    [self cancel:nil];
+                if (error) {
+                    if (! waiting && ! sent) {
+                        [[[UIAlertView alloc] initWithTitle:@"" message:error.localizedDescription delegate:nil
+                          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+                        [(id)self.parentViewController.parentViewController stopActivityWithSuccess:NO];
+                        [self cancel:nil];
+                    }
                 }
-            }
-            else if (! sent) {
-                sent = YES;
-                tx.timestamp = [NSDate timeIntervalSinceReferenceDate];
-                [m.wallet registerTransaction:tx];
-                [self.view addSubview:[[[BRBubbleView
-                 viewWithText:(ack.memo.length > 0 ? ack.memo : NSLocalizedString(@"sent!", nil))
-                 center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
-                 popOutAfterDelay:(ack.memo.length > 0 ? 3.0 : 2.0)]];
-                [(id)self.parentViewController.parentViewController stopActivityWithSuccess:YES];
+                else if (! sent) {
+                    sent = YES;
+                    tx.timestamp = [NSDate timeIntervalSinceReferenceDate];
+                    [m.wallet registerTransaction:tx];
+                    [self.view addSubview:[[[BRBubbleView
+                     viewWithText:(ack.memo.length > 0 ? ack.memo : NSLocalizedString(@"sent!", nil))
+                     center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
+                     popOutAfterDelay:(ack.memo.length > 0 ? 3.0 : 2.0)]];
+                    [(id)self.parentViewController.parentViewController stopActivityWithSuccess:YES];
 
-                if (self.callback && [[UIApplication sharedApplication] canOpenURL:self.callback]) {
-                    self.callback = [NSURL URLWithString:[self.callback.absoluteString
-                                     stringByAppendingFormat:@"%@txid=%@",
-                                     (self.callback.query.length > 0) ? @"&" : @"?", [NSString hexWithData:tx.txHash]]];
-                    [[UIApplication sharedApplication] openURL:self.callback];
+                    if (self.callback && [[UIApplication sharedApplication] canOpenURL:self.callback]) {
+                        self.callback = [NSURL URLWithString:[self.callback.absoluteString
+                                         stringByAppendingFormat:@"%@txid=%@",
+                                         (self.callback.query.length > 0) ? @"&" : @"?",
+                                         [NSString hexWithData:tx.txHash]]];
+                        [[UIApplication sharedApplication] openURL:self.callback];
+                    }
+                    
+                    [self reset:nil];
                 }
 
-                [self reset:nil];
-            }
-
-            waiting = NO;
+                waiting = NO;
+            });
         }];
     }
     else waiting = NO;
