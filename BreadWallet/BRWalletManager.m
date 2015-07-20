@@ -865,13 +865,13 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
         
         if (error || ! [json isKindOfClass:[NSDictionary class]] ||
-            ! [json[@"fee-per-kb"] isKindOfClass:[NSNumber class]]) {
+            ! [json[@"fee_per_kb"] isKindOfClass:[NSNumber class]]) {
             NSLog(@"unexpected response from %@:\n%@", req.URL.host,
                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             return;
         }
         
-        uint64_t feePerKb = [json[@"fee-per-kb"] unsignedLongLongValue];
+        uint64_t feePerKb = [json[@"fee_per_kb"] unsignedLongLongValue];
 
         if (feePerKb >= DEFAULT_FEE_PER_KB && feePerKb <= MAX_FEE_PER_KB) {
             _wallet.feePerKb = feePerKb;
