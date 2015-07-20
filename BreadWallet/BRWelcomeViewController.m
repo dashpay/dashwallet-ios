@@ -68,7 +68,8 @@
     self.backgroundObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2, self.wallpaper.center.y);
+            self.wallpaperXLeft.constant = 0;
+            [self.wallpaper.superview layoutIfNeeded];
         }];
 }
 
@@ -104,10 +105,18 @@
             [self.navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
         }
         
-        [self animateWallpaper];
-        
         if (! self.hasAppeared) {
             self.hasAppeared = YES;
+            self.paralaxXLeft = [NSLayoutConstraint constraintWithItem:self.view.superview
+                                 attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:self.paralax
+                                 attribute:NSLayoutAttributeLeading multiplier:1.0 constant:0.0];
+            [self.view.superview insertSubview:self.paralax belowSubview:self.view];
+            [self.view.superview addConstraint:self.paralaxXLeft];
+            [self.view.superview addConstraint:[NSLayoutConstraint constraintWithItem:self.view.superview
+             attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:self.paralax
+             attribute:NSLayoutAttributeCenterY multiplier:1.0 constant:0.0]];
+            [self.view.superview insertSubview:self.paralax belowSubview:self.view];
+            [self.view.superview layoutIfNeeded];
             self.logoXCenter.constant = self.view.frame.size.width;
             self.walletXCenter.constant = 0.0;
             self.restoreXCenter.constant = 0.0;
@@ -122,6 +131,8 @@
                 [self.view.superview layoutIfNeeded];
             } completion:nil];
         }
+        
+        [self animateWallpaper];
     });
 }
 
@@ -176,21 +187,6 @@
 {
     if (self.animating) return;
     self.animating = YES;
-    
-    if (self.paralax.superview != self.view.superview) {
-        NSLayoutConstraint *c = self.paralaxXLeft;
-        UIView *v = self.view.superview;
-    
-        self.paralaxXLeft = [NSLayoutConstraint constraintWithItem:(c.firstItem == self.paralax ? c.firstItem : v)
-                             attribute:c.firstAttribute relatedBy:c.relation
-                             toItem:(c.secondItem == self.paralax ? c.secondItem : v) attribute:c.secondAttribute
-                             multiplier:c.multiplier constant:c.constant];
-        [v insertSubview:self.paralax belowSubview:self.view];
-        [v addConstraint:self.paralaxXLeft];
-        [v layoutIfNeeded];
-        self.paralax.center = CGPointMake(self.paralax.center.x, v.bounds.size.height/2.0);
-    }
-
     self.wallpaperXLeft.constant = -240.0;
 
     [UIView animateWithDuration:30.0 delay:0.0

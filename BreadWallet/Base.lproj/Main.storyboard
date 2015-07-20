@@ -1331,17 +1331,16 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1xc-b5-vde" userLabel="paralax">
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                                 <subviews>
-                                    <imageView userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="wallpaper-welcome" translatesAutoresizingMaskIntoConstraints="NO" id="pb2-E7-2ep">
+                                    <imageView userInteractionEnabled="NO" contentMode="bottomLeft" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="wallpaper-welcome" translatesAutoresizingMaskIntoConstraints="NO" id="pb2-E7-2ep">
                                         <rect key="frame" x="0.0" y="0.0" width="757" height="568"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                     </imageView>
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="568" id="290-N4-Kpx"/>
                                     <constraint firstAttribute="centerY" secondItem="pb2-E7-2ep" secondAttribute="centerY" id="CiJ-S2-sEy"/>
+                                    <constraint firstAttribute="height" secondItem="pb2-E7-2ep" secondAttribute="height" id="ODQ-cn-ENg"/>
                                     <constraint firstItem="pb2-E7-2ep" firstAttribute="leading" secondItem="1xc-b5-vde" secondAttribute="leading" id="RQ1-IE-ZcV"/>
-                                    <constraint firstAttribute="width" constant="320" id="sXY-hv-AdA"/>
                                 </constraints>
                             </view>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="breadwallet-big" translatesAutoresizingMaskIntoConstraints="NO" id="Q5d-52-Dwn">
@@ -1394,6 +1393,7 @@
                         <constraints>
                             <constraint firstAttribute="centerX" secondItem="Q5d-52-Dwn" secondAttribute="centerX" id="C2B-IW-4b6"/>
                             <constraint firstAttribute="centerY" secondItem="dOa-zm-TDG" secondAttribute="centerY" constant="52" id="DZj-AR-xVU"/>
+                            <constraint firstAttribute="width" secondItem="1xc-b5-vde" secondAttribute="width" id="KlQ-YA-AGy"/>
                             <constraint firstAttribute="centerX" secondItem="4w7-k8-9wY" secondAttribute="centerX" id="cgR-0k-6zT"/>
                             <constraint firstItem="4w7-k8-9wY" firstAttribute="width" secondItem="dOa-zm-TDG" secondAttribute="width" id="f9r-kG-LoP"/>
                             <constraint firstAttribute="centerY" secondItem="1xc-b5-vde" secondAttribute="centerY" id="fLN-8q-7aM"/>
