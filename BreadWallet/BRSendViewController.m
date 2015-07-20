@@ -974,7 +974,7 @@ fromConnection:(AVCaptureConnection *)connection
                     if (request.amount > 0) self.canChangeAmount = YES;
                 }];
                 
-                if (self.showBalance) {
+                if ([request isValid] && self.showBalance) {
                     [self showBalance:request.paymentAddress];
                     [self cancel:nil];
                 }
