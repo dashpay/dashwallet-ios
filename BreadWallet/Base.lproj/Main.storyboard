@@ -1831,7 +1831,7 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ePg-dk-slQ">
-                                <rect key="frame" x="0.0" y="184" width="320" height="200"/>
+                                <rect key="frame" x="0.0" y="186" width="320" height="196"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Wyo-tk-JbR">
                                         <rect key="frame" x="0.0" y="0.0" width="320" height="1"/>
@@ -1841,7 +1841,7 @@
                                         </constraints>
                                     </view>
                                     <label opaque="NO" clipsSubviews="YES" tag="411" contentMode="left" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="300" translatesAutoresizingMaskIntoConstraints="NO" id="uvz-hk-Nr4">
-                                        <rect key="frame" x="44" y="24" width="233" height="80.5"/>
+                                        <rect key="frame" x="44" y="20" width="233" height="80.5"/>
                                         <gestureRecognizers/>
                                         <string key="text">breadwallet v%ver%%net%
 copyright © 2015 Aaron Voisine
@@ -1851,7 +1851,7 @@ this app is open source</string>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="300" translatesAutoresizingMaskIntoConstraints="NO" id="5OA-tB-Exg">
-                                        <rect key="frame" x="100" y="104" width="121" height="40.5"/>
+                                        <rect key="frame" x="100" y="100" width="121" height="40.5"/>
                                         <string key="text">breadwallet.com
 </string>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
@@ -1859,7 +1859,7 @@ this app is open source</string>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="300" translatesAutoresizingMaskIntoConstraints="NO" id="D4H-hd-LsX">
-                                        <rect key="frame" x="58" y="145" width="205" height="35.5"/>
+                                        <rect key="frame" x="58" y="141" width="205" height="35.5"/>
                                         <string key="text">exchange rate data provided by
 bitpay.com/rates</string>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="15"/>
@@ -1867,7 +1867,7 @@ bitpay.com/rates</string>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="G4X-xw-xAl">
-                                        <rect key="frame" x="0.0" y="199" width="320" height="1"/>
+                                        <rect key="frame" x="0.0" y="195" width="320" height="1"/>
                                         <color key="backgroundColor" white="0.67000000000000004" alpha="1" colorSpace="calibratedWhite"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="0.5" id="UhR-to-ytR"/>
@@ -1881,22 +1881,28 @@ bitpay.com/rates</string>
                                     <constraint firstItem="Wyo-tk-JbR" firstAttribute="top" secondItem="ePg-dk-slQ" secondAttribute="top" id="8Rt-J8-gsZ"/>
                                     <constraint firstAttribute="centerX" secondItem="uvz-hk-Nr4" secondAttribute="centerX" id="DEL-Uu-EPu"/>
                                     <constraint firstAttribute="centerX" secondItem="D4H-hd-LsX" secondAttribute="centerX" id="DRv-HD-k7o"/>
+                                    <constraint firstAttribute="bottom" secondItem="D4H-hd-LsX" secondAttribute="bottom" constant="20" id="FzW-qc-uRu"/>
                                     <constraint firstAttribute="trailing" secondItem="Wyo-tk-JbR" secondAttribute="trailing" id="Meb-9n-MCt"/>
                                     <constraint firstAttribute="height" constant="200" id="PRH-47-fkS"/>
                                     <constraint firstAttribute="centerX" secondItem="5OA-tB-Exg" secondAttribute="centerX" id="WD5-hb-vC4"/>
                                     <constraint firstItem="Wyo-tk-JbR" firstAttribute="leading" secondItem="ePg-dk-slQ" secondAttribute="leading" id="XyP-sw-WKb"/>
                                     <constraint firstItem="5OA-tB-Exg" firstAttribute="top" secondItem="uvz-hk-Nr4" secondAttribute="bottom" id="bQx-Zo-4F7"/>
-                                    <constraint firstItem="uvz-hk-Nr4" firstAttribute="top" secondItem="ePg-dk-slQ" secondAttribute="top" constant="24" id="g7s-20-qcl"/>
+                                    <constraint firstItem="uvz-hk-Nr4" firstAttribute="top" secondItem="ePg-dk-slQ" secondAttribute="top" constant="20" id="g7s-20-qcl"/>
                                     <constraint firstItem="D4H-hd-LsX" firstAttribute="top" secondItem="5OA-tB-Exg" secondAttribute="bottom" id="h7P-NE-60e"/>
                                     <constraint firstAttribute="bottom" secondItem="G4X-xw-xAl" secondAttribute="bottom" id="jM5-Ee-UoQ"/>
                                     <constraint firstItem="G4X-xw-xAl" firstAttribute="leading" secondItem="ePg-dk-slQ" secondAttribute="leading" id="lQV-GX-C2M"/>
                                 </constraints>
+                                <variation key="default">
+                                    <mask key="constraints">
+                                        <exclude reference="PRH-47-fkS"/>
+                                    </mask>
+                                </variation>
                                 <connections>
                                     <outletCollection property="gestureRecognizers" destination="68Y-ha-WTV" appends="YES" id="ofC-qZ-bdB"/>
                                 </connections>
                             </view>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="412" contentMode="scaleToFill" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eMm-bX-oUk">
-                                <rect key="frame" x="0.0" y="384" width="320" height="184"/>
+                                <rect key="frame" x="0.0" y="382" width="320" height="186"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="13"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textView>
