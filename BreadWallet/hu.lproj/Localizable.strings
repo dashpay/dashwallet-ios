@@ -5,7 +5,13 @@
 "%@ is not allowed to access the camera" = "%@ nem tud hozzáférni a kamerához";
 
 /* No comment provided by engineer. */
+"%@\n\nbalance: %@ (%@)" = "%1$@\n\negyenleg: %2$@ (%3$@)";
+
+/* No comment provided by engineer. */
 "%d confirmations" = "%d megerősítés";
+
+/* No comment provided by engineer. */
+"0 confirmations" = "0 megerősítés";
 
 /* No comment provided by engineer. */
 "1 confirmation" = "1 megerősítés";
@@ -42,6 +48,9 @@
 
 /* No comment provided by engineer. */
 "\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nNE engedd, hogy más lássa a helyreállítási\nkódmondatodat, különben elköltheti a\nbitcoinjaidat.";
+
+/* No comment provided by engineer. */
+"\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nNE csinálj képernyőmentést!\nA képernyőmentések elérhetőek más\nalkalmazások és eszközök számára!\n";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nhálózati díj +%1$@ (%2$@)";
@@ -137,10 +146,16 @@
 "copied" = "másolva";
 
 /* No comment provided by engineer. */
+"copy" = "másol";
+
+/* No comment provided by engineer. */
 "copy address to clipboard" = "cím másolása a vágólapra";
 
 /* No comment provided by engineer. */
 "copy request to clipboard" = "kérelem másolása a vágólapra";
+
+/* No comment provided by engineer. */
+"copy wallet addresses to clipboard?" = "másoljam a tárca címeit a vágólapra?";
 
 /* No comment provided by engineer. */
 "couldn't make payment" = "nem sikerült a fizetés";

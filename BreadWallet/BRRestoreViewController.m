@@ -199,6 +199,7 @@
             if (! [self.words containsObject:word]) isLocal = NO;
             if ([self.allWords containsObject:word]) continue;
             incorrect = word;
+            break;
         }
 
         if ([phrase isEqual:@"wipe"]) { // shortcut word to force the wipe option to appear
