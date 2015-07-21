@@ -25,7 +25,6 @@
 
 #import "BRRestoreViewController.h"
 #import "BRWalletManager.h"
-#import "BRKeySequence.h"
 #import "BRMnemonic.h"
 #import "NSMutableData+Bitcoin.h"
 
@@ -39,7 +38,6 @@
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *textViewYBottom;
 @property (nonatomic, strong) NSArray *words;
 @property (nonatomic, strong) NSMutableSet *allWords;
-@property (nonatomic, assign) NSUInteger length;
 @property (nonatomic, strong) id keyboardObserver, resignActiveObserver;
 
 @end
@@ -164,19 +162,8 @@
         }
         
         [s replaceOccurrencesOfString:@"\n" withString:@" " options:0 range:NSMakeRange(0, s.length)];
-
-        if (textView.text.length > self.length) {
-            NSUInteger l = [s rangeOfCharacterFromSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]
-                            options:NSBackwardsSearch].location;
-            NSString *w = [s substringFromIndex:(l < s.length) ? l : 0];
-        
-            if (w.length > 0 && [w characterAtIndex:0] >= 0x3000 && [self.words containsObject:w]) {
-                [s appendString:IDEO_SP];
-            }
-        }
         
         if (! [s isEqual:textView.text]) textView.text = s;
-        self.length = textView.text.length;
         if (! done) return; // not done entering phrase
 
         BOOL isLocal = YES;
@@ -185,10 +172,33 @@
                                                                               CFSTR(" ")));
 
         for (NSString *word in a) {
+            if (word.length < 1 || [word characterAtIndex:0] < 0x3000 || [self.allWords containsObject:word]) continue;
+            
+            for (NSUInteger i = 0; i < word.length; i++) {
+                for (NSUInteger j = (word.length - i > 8) ? 8 : word.length - i; j; j--) {
+                    NSString *w  = [word substringWithRange:NSMakeRange(i, j)];
+
+                    if (! [self.allWords containsObject:w]) continue;
+                    [s replaceOccurrencesOfString:w withString:[NSString stringWithFormat:IDEO_SP @"%@" IDEO_SP, w]
+                     options:0 range:NSMakeRange(0, s.length)];
+                    [s replaceOccurrencesOfString:IDEO_SP IDEO_SP withString:IDEO_SP options:0
+                     range:NSMakeRange(0, s.length)];
+                    CFStringTrimWhitespace((CFMutableStringRef)s);
+                    i += j - 1;
+                    break;
+                }
+            }
+        }
+
+        if (! [s isEqual:textView.text]) textView.text = s;
+        phrase = [m.mnemonic normalizePhrase:s];
+        a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)phrase,
+                                                                     CFSTR(" ")));
+        
+        for (NSString *word in a) {
             if (! [self.words containsObject:word]) isLocal = NO;
             if ([self.allWords containsObject:word]) continue;
             incorrect = word;
-            break;
         }
 
         if ([phrase isEqual:@"wipe"]) { // shortcut word to force the wipe option to appear
