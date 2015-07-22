@@ -64,6 +64,7 @@
 @property (nonatomic, strong) id reachabilityObserver, syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 @property (nonatomic, strong) id activeObserver, resignActiveObserver, protectedObserver, seedObserver;
 @property (nonatomic, assign) NSTimeInterval timeout, start;
+@property (nonatomic, assign) SystemSoundID pingsound;
 
 @end
 
@@ -337,6 +338,9 @@
     [self.view addSubview:label];
 #endif
 
+    AudioServicesCreateSystemSoundID((__bridge CFURLRef)[[NSBundle mainBundle] URLForResource:@"coinflip"
+                                                         withExtension:@"aiff"], &_pingsound);
+    
     if ([defs integerForKey:SETTINGS_MAX_DIGITS_KEY] == 5) {
         m.format.currencySymbol = @"m" BTC NARROW_NBSP;
         m.format.maximumFractionDigits = 5;
@@ -407,13 +411,13 @@
         }
         else {
             [self.navigationController
-             presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"] animated:NO
-             completion:^{
-                 self.splash.hidden = YES;
-                 self.navigationController.navigationBar.hidden = NO;
-                 [self.pageViewController setViewControllers:@[self.receiveViewController]
-                  direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
-             }];
+            presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"] animated:NO
+            completion:^{
+                self.splash.hidden = YES;
+                self.navigationController.navigationBar.hidden = NO;
+                [self.pageViewController setViewControllers:@[self.receiveViewController]
+                 direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
+            }];
 
             m.didAuthenticate = YES;
             self.showTips = YES;
@@ -483,7 +487,7 @@
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
     [self.reachability stopNotifier];
-
+    AudioServicesDisposeSystemSoundID(self.pingsound);
     if (self.navigationController.delegate == self) self.navigationController.delegate = nil;
     if (self.urlObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.urlObserver];
     if (self.fileObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.fileObserver];
@@ -510,6 +514,7 @@
                           [m localCurrencyStringForAmount:balance - _balance]]
          center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
          popOutAfterDelay:3.0]];
+        [self ping];
     }
 
     _balance = balance;
@@ -609,6 +614,11 @@
     counter++;
     self.percent.text = [NSString stringWithFormat:@"%0.1f%%", (progress > 0.1 ? progress - 0.1 : 0.0)*111.0];
     if (progress < 1.0) [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
+}
+
+- (void)ping
+{
+     AudioServicesPlaySystemSound(self.pingsound);
 }
 
 - (void)showErrorBar

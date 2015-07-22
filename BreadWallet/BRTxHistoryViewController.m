@@ -225,12 +225,18 @@ static NSString *dateFormat(NSString *template)
     if (transactions.count <= 5) self.moreTx = NO;
     _transactions = [transactions subarrayWithRange:NSMakeRange(0, (self.moreTx) ? 5 : transactions.count)];
     if ([[BRWalletManager sharedInstance] didAuthenticate]) return;
-    
-    for (BRTransaction *tx in _transactions) {
-        if (tx.blockHeight == TX_UNCONFIRMED || (tx.blockHeight > height - 5 && tx.blockHeight <= height)) continue;
-        _transactions = [transactions subarrayWithRange:NSMakeRange(0, [transactions indexOfObject:tx])];
-        self.moreTx = YES;
-        break;
+
+    if ([self.navigationItem.title isEqual:NSLocalizedString(@"syncing...", nil)]) {
+        _transactions = @[];
+        if (transactions.count > 0) self.moreTx = YES;
+    }
+    else {
+        for (BRTransaction *tx in _transactions) {
+            if (tx.blockHeight == TX_UNCONFIRMED || (tx.blockHeight > height - 5 && tx.blockHeight <= height)) continue;
+            _transactions = [transactions subarrayWithRange:NSMakeRange(0, [transactions indexOfObject:tx])];
+            self.moreTx = YES;
+            break;
+        }
     }
 }
 

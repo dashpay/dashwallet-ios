@@ -525,6 +525,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
              center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
              popOutAfterDelay:2.0]];
             [(id)self.parentViewController.parentViewController stopActivityWithSuccess:YES];
+            [(id)self.parentViewController.parentViewController ping];
 
             if (self.callback && [[UIApplication sharedApplication] canOpenURL:self.callback]) {
                 self.callback = [NSURL URLWithString:[self.callback.absoluteString stringByAppendingFormat:@"%@txid=%@",
@@ -576,6 +577,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
                      center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
                      popOutAfterDelay:(ack.memo.length > 0 ? 3.0 : 2.0)]];
                     [(id)self.parentViewController.parentViewController stopActivityWithSuccess:YES];
+                    [(id)self.parentViewController.parentViewController ping];
 
                     if (self.callback && [[UIApplication sharedApplication] canOpenURL:self.callback]) {
                         self.callback = [NSURL URLWithString:[self.callback.absoluteString

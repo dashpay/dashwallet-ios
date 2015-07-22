@@ -171,7 +171,7 @@
         NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)phrase,
                                                                               CFSTR(" ")));
 
-        for (NSString *word in a) {
+        for (NSString *word in a) { // add spaces between words for ideographic langauges
             if (word.length < 1 || [word characterAtIndex:0] < 0x3000 || [self.allWords containsObject:word]) continue;
             
             for (NSUInteger i = 0; i < word.length; i++) {
@@ -181,8 +181,8 @@
                     if (! [self.allWords containsObject:w]) continue;
                     [s replaceOccurrencesOfString:w withString:[NSString stringWithFormat:IDEO_SP @"%@" IDEO_SP, w]
                      options:0 range:NSMakeRange(0, s.length)];
-                    [s replaceOccurrencesOfString:IDEO_SP IDEO_SP withString:IDEO_SP options:0
-                     range:NSMakeRange(0, s.length)];
+                    while ([s replaceOccurrencesOfString:IDEO_SP IDEO_SP withString:IDEO_SP options:0
+                            range:NSMakeRange(0, s.length)] > 0);
                     CFStringTrimWhitespace((CFMutableStringRef)s);
                     i += j - 1;
                     break;

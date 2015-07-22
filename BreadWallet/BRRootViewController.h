@@ -41,5 +41,6 @@ UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning>
 
 - (void)startActivityWithTimeout:(NSTimeInterval)timeout;
 - (void)stopActivityWithSuccess:(BOOL)success;
+- (void)ping;
 
 @end

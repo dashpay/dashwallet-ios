@@ -1,5 +1,5 @@
 /* Class = "UILabel"; text = "scan QR code"; ObjectID = "JgG-Ah-UZk"; */
-"JgG-Ah-UZk.text" = "QR コードを\nスキャン";
+"JgG-Ah-UZk.text" = "QRコードをスキャン";
 
 /* Class = "UILabel"; text = "receive"; ObjectID = "KJN-zr-IQB"; */
 "KJN-zr-IQB.text" = "受け取る";
