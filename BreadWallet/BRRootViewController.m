@@ -32,6 +32,7 @@
 #import "BRBouncyBurgerButton.h"
 #import "BRPeerManager.h"
 #import "BRWalletManager.h"
+#import "BRPaymentRequest.h"
 #import "UIImage+Utility.h"
 #import "Reachability.h"
 #import <LocalAuthentication/LocalAuthentication.h>
@@ -338,6 +339,15 @@
     [self.view addSubview:label];
 #endif
 
+#if SCREENSHOT
+    [self.navigationController
+     presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"] animated:NO
+     completion:^{
+         [self.navigationController.presentedViewController.view
+          addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(nextScreen:)]];
+     }];
+#endif
+
     AudioServicesCreateSystemSoundID((__bridge CFURLRef)[[NSBundle mainBundle] URLForResource:@"coinflip"
                                                          withExtension:@"aiff"], &_pingsound);
     
@@ -487,7 +497,6 @@
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
     [self.reachability stopNotifier];
-    AudioServicesDisposeSystemSoundID(self.pingsound);
     if (self.navigationController.delegate == self) self.navigationController.delegate = nil;
     if (self.urlObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.urlObserver];
     if (self.fileObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.fileObserver];
@@ -502,6 +511,7 @@
     if (self.syncStartedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
     if (self.syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFinishedObserver];
     if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
+    AudioServicesDisposeSystemSoundID(self.pingsound);
 }
 
 - (void)setBalance:(uint64_t)balance
@@ -801,6 +811,42 @@
     }
     else [self tip:sender];
 }
+
+#if SCREENSHOT
+- (IBAction)nextScreen:(id)sender
+{
+    BRWalletManager *m = [BRWalletManager sharedInstance];
+    
+    if (self.navigationController.presentedViewController) {
+        if (m.noWallet) [m generateRandomSeed];
+        self.showTips = NO;
+        [self.navigationController dismissViewControllerAnimated:NO completion:^{
+            m.didAuthenticate = NO;
+            self.navigationItem.titleView = self.logo;
+            self.navigationItem.rightBarButtonItem = self.lock;
+            self.pageViewController.view.alpha = 1.0;
+            self.navigationController.navigationBar.hidden = YES;
+            [[UIApplication sharedApplication] setStatusBarHidden:YES];
+            self.splash.hidden = NO;
+            [self.splash
+             addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(nextScreen:)]];
+        }];
+    }
+    else if (! self.splash.hidden) {
+        self.navigationController.navigationBar.hidden = NO;
+        [[UIApplication sharedApplication] setStatusBarHidden:NO];
+        self.splash.hidden = YES;
+        [self stopActivityWithSuccess:YES];
+        [self.pageViewController setViewControllers:@[self.receiveViewController]
+         direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
+        self.receiveViewController.paymentRequest =
+            [BRPaymentRequest requestWithString:@"n2eMqTT929pb1RDNuqEnxdaLau1rxy3efi"];
+        [self.receiveViewController updateAddress];
+        [self.progress removeFromSuperview];
+        [self.pulse removeFromSuperview];
+    }
+}
+#endif
 
 #pragma mark - UIPageViewControllerDataSource
 

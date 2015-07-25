@@ -31,6 +31,8 @@
 #import "BRWalletManager.h"
 #import "BRPeerManager.h"
 #import "BRTransaction.h"
+#import "NSString+Bitcoin.h"
+#import "NSData+Bitcoin.h"
 
 #define TRANSACTION_CELL_HEIGHT 75
 
@@ -89,6 +91,24 @@ static NSString *dateFormat(NSString *template)
     
     if (m.didAuthenticate) [self unlock:nil];
     self.transactions = m.wallet.recentTransactions;
+
+#if SCREENSHOT
+    BRTransaction *tx = [[BRTransaction alloc] initWithInputHashes:@[@"".hexToData] inputIndexes:@[@(0)]
+                         inputScripts:@[@"".hexToData] outputAddresses:@[@""] outputAmounts:@[@(0)]];
+    
+    self.moreTx = YES;
+    m.didAuthenticate = YES;
+    [self unlock:nil];
+    [(id)tx setTxHash:@"".hexToData];
+    self.transactions = @[tx, tx, tx, tx, tx, tx];
+
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+        self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:42980000],
+                                     [m localCurrencyStringForAmount:42980000]];
+    });
+
+    return;
+#endif
 
     if (! self.backgroundObserver) {
         self.backgroundObserver =
@@ -418,6 +438,16 @@ static NSString *dateFormat(NSString *template)
                          sent = [m.wallet amountSentByTransaction:tx],
                          balance = [m.wallet balanceAfterTransaction:tx];
                 uint32_t h = self.blockHeight, confirms = (tx.blockHeight > h) ? 0 : (h - tx.blockHeight) + 1;
+
+#if SCREENSHOT
+                received = [@[@(0), @(0), @(54000000), @(0), @(0), @(93000000)][indexPath.row] longLongValue];
+                sent = [@[@(1010000), @(10010000), @(0), @(82990000), @(10010000), @(0)][indexPath.row] longLongValue];
+                balance = [@[@(42980000), @(43990000), @(54000000), @(0), @(82990000), @(93000000)][indexPath.row]
+                           longLongValue];
+                [self.txDates removeAllObjects];
+                tx.timestamp = [NSDate timeIntervalSinceReferenceDate] - indexPath.row*100000;
+                confirms = 6;
+#endif
 
                 sentLabel.hidden = YES;
                 unconfirmedLabel.hidden = NO;

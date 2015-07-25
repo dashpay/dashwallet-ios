@@ -11,6 +11,7 @@
 #endif
 
 #define BITCOIN_TESTNET 1
+//#define SCREENSHOT 1
 
 #if ! DEBUG
 #define NSLog(...)

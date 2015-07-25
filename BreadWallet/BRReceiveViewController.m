@@ -73,29 +73,24 @@
     BRWalletManager *m = [BRWalletManager sharedInstance];
     BRPaymentRequest *req = self.paymentRequest;
 
-    if (! groupDefs) groupDefs = [[NSUserDefaults alloc] initWithSuiteName:APP_GROUP_ID];
-    
-    if (! req.isValid) {
-        self.qrView.image = nil;
-        [self.addressButton setTitle:nil forState:UIControlStateNormal];
-        [groupDefs removeObjectForKey:APP_GROUP_REQUEST_DATA_KEY];
-        [groupDefs removeObjectForKey:APP_GROUP_RECEIVE_ADDRESS_KEY];
-        [groupDefs synchronize];
-        return;
-    }
-    
     if ([self.paymentAddress isEqual:self.addressButton.currentTitle]) return;
     self.qrView.image = [UIImage imageWithQRCodeData:req.data size:self.qrView.bounds.size
                          color:[CIColor colorWithRed:0.0 green:0.0 blue:0.0]];
     [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
+    if (! groupDefs) groupDefs = [[NSUserDefaults alloc] initWithSuiteName:APP_GROUP_ID];
     
     if (req.amount > 0) {
         self.label.text = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:req.amount],
                            [m localCurrencyStringForAmount:req.amount]];
     }
-    else {
+    else if (req.isValid) {
         [groupDefs setObject:req.data forKey:APP_GROUP_REQUEST_DATA_KEY];
         [groupDefs setObject:self.paymentAddress forKey:APP_GROUP_RECEIVE_ADDRESS_KEY];
+        [groupDefs synchronize];
+    }
+    else {
+        [groupDefs removeObjectForKey:APP_GROUP_REQUEST_DATA_KEY];
+        [groupDefs removeObjectForKey:APP_GROUP_RECEIVE_ADDRESS_KEY];
         [groupDefs synchronize];
     }
 }
