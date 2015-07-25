@@ -31,8 +31,8 @@
 #pragma message "testnet build"
 #endif
 
-#if SCREENSHOT
-#pragma message "screenshot build"
+#if SNAPSHOT
+#pragma message "snapshot build"
 #endif
 
 @implementation BRAppDelegate

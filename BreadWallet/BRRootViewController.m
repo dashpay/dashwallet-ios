@@ -339,7 +339,7 @@
     [self.view addSubview:label];
 #endif
 
-#if SCREENSHOT
+#if SNAPSHOT
     [self.navigationController
      presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"] animated:NO
      completion:^{
@@ -812,7 +812,7 @@
     else [self tip:sender];
 }
 
-#if SCREENSHOT
+#if SNAPSHOT
 - (IBAction)nextScreen:(id)sender
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];

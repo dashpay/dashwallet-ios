@@ -101,7 +101,7 @@
     [super viewDidAppear:animated];
 
     dispatch_async(dispatch_get_main_queue(), ^{ // animation sometimes doesn't work if run directly in viewDidAppear
-#if SCREENSHOT
+#if SNAPSHOT
         [[UIApplication sharedApplication] setStatusBarHidden:NO];
         self.navigationItem.titleView.hidden = NO;
         self.navigationItem.titleView.alpha = 1.0;

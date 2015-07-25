@@ -91,11 +91,13 @@ static NSString *dateFormat(NSString *template)
     
     if (m.didAuthenticate) [self unlock:nil];
     self.transactions = m.wallet.recentTransactions;
-
-#if SCREENSHOT
+    
+#if SNAPSHOT
     BRTransaction *tx = [[BRTransaction alloc] initWithInputHashes:@[@"".hexToData] inputIndexes:@[@(0)]
                          inputScripts:@[@"".hexToData] outputAddresses:@[@""] outputAmounts:@[@(0)]];
     
+    m.localCurrencyCode = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
+    self.tableView.showsVerticalScrollIndicator = NO;
     self.moreTx = YES;
     m.didAuthenticate = YES;
     [self unlock:nil];
@@ -262,6 +264,7 @@ static NSString *dateFormat(NSString *template)
 
 - (void)setBackgroundForCell:(UITableViewCell *)cell tableView:(UITableView *)tableView indexPath:(NSIndexPath *)path
 {
+    // TODO: XXXX derp, use separatorInset
     if (! cell.backgroundView) {
         UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0, 0, cell.frame.size.width, 0.5)];
         
@@ -439,7 +442,7 @@ static NSString *dateFormat(NSString *template)
                          balance = [m.wallet balanceAfterTransaction:tx];
                 uint32_t h = self.blockHeight, confirms = (tx.blockHeight > h) ? 0 : (h - tx.blockHeight) + 1;
 
-#if SCREENSHOT
+#if SNAPSHOT
                 received = [@[@(0), @(0), @(54000000), @(0), @(0), @(93000000)][indexPath.row] longLongValue];
                 sent = [@[@(1010000), @(10010000), @(0), @(82990000), @(10010000), @(0)][indexPath.row] longLongValue];
                 balance = [@[@(42980000), @(43990000), @(54000000), @(0), @(82990000), @(93000000)][indexPath.row]
