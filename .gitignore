@@ -17,4 +17,6 @@ profile
 *.moved-aside
 DerivedData
 .idea/
-fastlane/screenshots/
+fastlane/screenshots/*/*.png
+fastlane/screenshots/screenshots.html
+fastlane/screenshots/fonts/*
