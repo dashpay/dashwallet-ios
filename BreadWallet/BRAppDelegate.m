@@ -31,6 +31,10 @@
 #pragma message "testnet build"
 #endif
 
+#if SNAPSHOT
+#pragma message "snapshot build"
+#endif
+
 @implementation BRAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
@@ -59,8 +63,6 @@
     //TODO: bitcoin protocol/payment protocol over multipeer connectivity
 
     //TODO: accessibility for the visually impaired
-
-    //TODO: internationalization
 
     //TODO: fast wallet restore using webservice and/or utxo p2p message
 

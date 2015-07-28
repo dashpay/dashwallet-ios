@@ -101,6 +101,16 @@
     [super viewDidAppear:animated];
 
     dispatch_async(dispatch_get_main_queue(), ^{ // animation sometimes doesn't work if run directly in viewDidAppear
+#if SNAPSHOT
+        [[UIApplication sharedApplication] setStatusBarHidden:NO];
+        self.navigationItem.titleView.hidden = NO;
+        self.navigationItem.titleView.alpha = 1.0;
+        self.logoXCenter.constant = self.view.frame.size.width;
+        self.walletXCenter.constant = self.restoreXCenter.constant = 0.0;
+        self.paralaxXLeft.constant = self.view.frame.size.width*PARALAX_RATIO;
+        return;
+#endif
+
         if (! [[BRWalletManager sharedInstance] noWallet]) { // sanity check
             [self.navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
         }
