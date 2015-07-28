@@ -5,20 +5,20 @@ var app = target.frontMostApp();
 var window = app.mainWindow();
 
 target.delay(0.5);
-captureLocalizedScreenshot('0-new');
+captureLocalizedScreenshot('1');
 
 target.tap({x:100, y:50});
 target.delay(0.5);
-captureLocalizedScreenshot('0-splash');
+captureLocalizedScreenshot('0');
 
 target.tap({x:100, y:50});
 target.delay(0.5);
-captureLocalizedScreenshot('0-receive');
+captureLocalizedScreenshot('2');
 
 window.pageIndicators()[0].tap();
 target.delay(0.5);
-captureLocalizedScreenshot('0-send');
+captureLocalizedScreenshot('3');
 
 app.navigationBar().buttons()[0].tap();
 target.delay(0.5);
-captureLocalizedScreenshot('0-history');
+captureLocalizedScreenshot('4');
