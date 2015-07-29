@@ -46,8 +46,7 @@
 @property (nonatomic, assign) uint64_t feePerKb; // fee per kb of transaction size to use when including tx fee
 
 - (instancetype)initWithContext:(NSManagedObjectContext *)context sequence:(id<BRKeySequence>)sequence
-masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt, uint64_t amount))seed
-NS_DESIGNATED_INITIALIZER;
+masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt, uint64_t amount))seed;
 
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address;
