@@ -124,22 +124,8 @@
 }
 
 - (void)setBackgroundForCell:(UITableViewCell *)cell indexPath:(NSIndexPath *)path
-{
-    if (! cell.backgroundView) {
-        UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0, 0, cell.frame.size.width, 0.5)];
-        
-        v.tag = 100;
-        cell.backgroundView = [[UIView alloc] initWithFrame:cell.frame];
-        cell.backgroundView.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.67];
-        v.backgroundColor = self.tableView.separatorColor;
-        [cell.backgroundView addSubview:v];
-        v = [[UIView alloc] initWithFrame:CGRectMake(0, cell.frame.size.height - 0.5, cell.frame.size.width, 0.5)];
-        v.tag = 101;
-        v.backgroundColor = self.tableView.separatorColor;
-        [cell.backgroundView addSubview:v];
-    }
-    
-    [cell viewWithTag:100].frame = CGRectMake((path.row == 0 ? 0 : 15), 0, cell.frame.size.width, 0.5);
+{    
+    [cell viewWithTag:100].hidden = (path.row > 0);
     [cell viewWithTag:101].hidden = (path.row + 1 < [self tableView:self.tableView numberOfRowsInSection:path.section]);
 }
 

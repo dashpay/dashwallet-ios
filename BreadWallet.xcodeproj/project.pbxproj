@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		751B2B5C1B68911700EA87FB /* BRTxHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 751B2B5B1B68911700EA87FB /* BRTxHistoryViewController.m */; };
 		7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7525B618192453840041C0F2 /* BRNavigationBar.m */; };
 		752E289A192349CE00DB5A3C /* BreadWallet.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 752E2898192349CE00DB5A3C /* BreadWallet.xcdatamodeld */; };
 		752E28AA19234AE300DB5A3C /* BRAddressEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E289F19234AE300DB5A3C /* BRAddressEntity.m */; };
@@ -43,7 +44,6 @@
 		757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
 		75878BBF192ACD46002505AB /* BRAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75878BBE192ACD46002505AB /* BRAmountViewController.m */; };
 		75878BC1192AEC3F002505AB /* BRReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75878BC0192AEC3F002505AB /* BRReceiveViewController.m */; };
-		75878BC6192B1AF0002505AB /* BRTxHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75878BC5192B1AF0002505AB /* BRTxHistoryViewController.m */; };
 		758DBD0E1980634900389E2A /* BRTxDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 758DBD0D1980634900389E2A /* BRTxDetailViewController.m */; };
 		759816E719357D6F005060EA /* BRBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 759816E619357D6F005060EA /* BRBubbleView.m */; };
 		759FBB36193290F600AB4465 /* BRRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759FBB33193290F600AB4465 /* BRRootViewController.m */; };
@@ -130,6 +130,7 @@
 		7511E8E71AE5FFD70025F1B3 /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/Localizable.strings; sourceTree = "<group>"; };
 		7511E8E91AE600220025F1B3 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Main.strings; sourceTree = "<group>"; };
 		7511E8EB1AE600220025F1B3 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		751B2B5B1B68911700EA87FB /* BRTxHistoryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTxHistoryViewController.m; sourceTree = "<group>"; };
 		7525B617192453840041C0F2 /* BRNavigationBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRNavigationBar.h; sourceTree = "<group>"; };
 		7525B618192453840041C0F2 /* BRNavigationBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRNavigationBar.m; sourceTree = "<group>"; };
 		752E2899192349CE00DB5A3C /* BreadWallet.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = BreadWallet.xcdatamodel; sourceTree = "<group>"; };
@@ -200,7 +201,6 @@
 		75878BBE192ACD46002505AB /* BRAmountViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = BRAmountViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		75878BC0192AEC3F002505AB /* BRReceiveViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = BRReceiveViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		75878BC4192B1AF0002505AB /* BRTxHistoryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRTxHistoryViewController.h; sourceTree = "<group>"; };
-		75878BC5192B1AF0002505AB /* BRTxHistoryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = BRTxHistoryViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		758B16241AA9ADC4002C65DD /* secp256k1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = secp256k1.h; sourceTree = "<group>"; };
 		758B16301AA9ADC4002C65DD /* ecdsa.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ecdsa.h; sourceTree = "<group>"; };
 		758B16311AA9ADC4002C65DD /* ecdsa_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ecdsa_impl.h; sourceTree = "<group>"; };
@@ -487,7 +487,7 @@
 				75878BBD192ACD46002505AB /* BRAmountViewController.h */,
 				75878BBE192ACD46002505AB /* BRAmountViewController.m */,
 				75878BC4192B1AF0002505AB /* BRTxHistoryViewController.h */,
-				75878BC5192B1AF0002505AB /* BRTxHistoryViewController.m */,
+				751B2B5B1B68911700EA87FB /* BRTxHistoryViewController.m */,
 				757C89501A2FCE420076B373 /* BRSettingsViewController.h */,
 				757C89511A2FCE420076B373 /* BRSettingsViewController.m */,
 				758DBD0C1980634900389E2A /* BRTxDetailViewController.h */,
@@ -823,12 +823,12 @@
 				75878BC1192AEC3F002505AB /* BRReceiveViewController.m in Sources */,
 				75878BBF192ACD46002505AB /* BRAmountViewController.m in Sources */,
 				759816E719357D6F005060EA /* BRBubbleView.m in Sources */,
-				75878BC6192B1AF0002505AB /* BRTxHistoryViewController.m in Sources */,
 				757BE7E3192C0E9D0061CB20 /* BRRestoreViewController.m in Sources */,
 				757BE7E6192C1FF70061CB20 /* BRWelcomeViewController.m in Sources */,
 				757BE7E9192D4E880061CB20 /* BRSeedViewController.m in Sources */,
 				752E28E719234DA200DB5A3C /* NSData+Bitcoin.m in Sources */,
 				752E28E919234DA200DB5A3C /* NSManagedObject+Sugar.m in Sources */,
+				751B2B5C1B68911700EA87FB /* BRTxHistoryViewController.m in Sources */,
 				752E28EA19234DA200DB5A3C /* NSMutableData+Bitcoin.m in Sources */,
 				752E28EB19234DA200DB5A3C /* NSString+Bitcoin.m in Sources */,
 				757C89521A2FCE420076B373 /* BRSettingsViewController.m in Sources */,
