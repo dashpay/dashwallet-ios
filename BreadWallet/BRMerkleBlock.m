@@ -295,7 +295,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 
 - (NSUInteger)hash
 {
-    if (uint256_is_zero(_blockHash)) return [super hash];
+    if (uint256_is_zero(_blockHash)) return super.hash;
     return *(const NSUInteger *)&_blockHash;
 }
 

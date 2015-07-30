@@ -191,7 +191,7 @@ static NSUInteger _fetchBatchSize = 100;
         NSURL *docURL =
             [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
         NSURL *modelURL = [NSBundle.mainBundle URLsForResourcesWithExtension:@"momd" subdirectory:nil].lastObject;
-        NSString *projName = [[modelURL lastPathComponent] stringByDeletingPathExtension];
+        NSString *projName = modelURL.lastPathComponent.stringByDeletingPathExtension;
         NSURL *storeURL = [[docURL URLByAppendingPathComponent:projName] URLByAppendingPathExtension:@"sqlite"];
         NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
         NSPersistentStoreCoordinator *coordinator =
@@ -258,12 +258,12 @@ static NSUInteger _fetchBatchSize = 100;
 // persists changes (this is called automatically for the main context when the app terminates)
 + (void)saveContext
 {
-    if (! [[self context] hasChanges]) return;
+    if (! [self context].hasChanges) return;
 
     [[self context] performBlock:^{
         NSError *error = nil;
 
-        if ([[self context] hasChanges] && ! [[self context] save:&error]) { // save changes to writer context
+        if ([self context].hasChanges && ! [[self context] save:&error]) { // save changes to writer context
             NSLog(@"%s: %@", __func__, error);
 #if DEBUG
             abort();
@@ -275,7 +275,7 @@ static NSUInteger _fetchBatchSize = 100;
             NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
 
             // write changes to persistent store
-            if ([[self context].parentContext hasChanges] && ! [[self context].parentContext save:&error]) {
+            if (([self context].parentContext).hasChanges && ! [[self context].parentContext save:&error]) {
                 NSLog(@"%s: %@", __func__, error);
 #if DEBUG
                 abort();
@@ -314,7 +314,7 @@ static NSUInteger _fetchBatchSize = 100;
 {
     __block id obj = nil;
 
-    [[self managedObjectContext] performBlockAndWait:^{
+    [self.managedObjectContext performBlockAndWait:^{
         obj = [self valueForKey:(NSString *)key];
     }];
 
@@ -324,15 +324,15 @@ static NSUInteger _fetchBatchSize = 100;
 // entity[@"key"] = value; thread safe setValue:forKey:
 - (void)setObject:(id)obj forKeyedSubscript:(id<NSCopying>)key
 {
-    [[self managedObjectContext] performBlockAndWait:^{
+    [self.managedObjectContext performBlockAndWait:^{
         [self setValue:obj forKey:(NSString *)key];
     }];
 }
 
 - (void)deleteObject
 {
-    [[self managedObjectContext] performBlockAndWait:^{
-        [[self managedObjectContext] deleteObject:self];
+    [self.managedObjectContext performBlockAndWait:^{
+        [self.managedObjectContext deleteObject:self];
     }];
 }
 

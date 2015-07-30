@@ -160,7 +160,7 @@ static NSString *dateFormat(NSString *template)
             [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncStartedNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
                 if ([[BRPeerManager sharedInstance]
-                     timestampForBlockHeight:[[BRPeerManager sharedInstance] lastBlockHeight]] + 60*60*24*7 <
+                     timestampForBlockHeight:[BRPeerManager sharedInstance].lastBlockHeight] + 60*60*24*7 <
                     [NSDate timeIntervalSinceReferenceDate] &&
                     m.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
                     self.navigationItem.titleView = nil;
@@ -234,7 +234,7 @@ static NSString *dateFormat(NSString *template)
 - (uint32_t)blockHeight
 {
     static uint32_t height = 0;
-    uint32_t h = [[BRPeerManager sharedInstance] lastBlockHeight];
+    uint32_t h = [BRPeerManager sharedInstance].lastBlockHeight;
     
     if (h > height) height = h;
     return height;
@@ -246,7 +246,7 @@ static NSString *dateFormat(NSString *template)
 
     if (transactions.count <= 5) self.moreTx = NO;
     _transactions = [transactions subarrayWithRange:NSMakeRange(0, (self.moreTx) ? 5 : transactions.count)];
-    if ([[BRWalletManager sharedInstance] didAuthenticate]) return;
+    if ([BRWalletManager sharedInstance].didAuthenticate) return;
 
     if ([self.navigationItem.title isEqual:NSLocalizedString(@"syncing...", nil)]) {
         _transactions = @[];
@@ -294,7 +294,7 @@ static NSString *dateFormat(NSString *template)
     
     if (tx.timestamp <= 1 && t <= week) f = (t > year) ? f3 : f4;
 
-    date = [[[[f stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:t]] lowercaseString]
+    date = [[[f stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:t]].lowercaseString
              stringByReplacingOccurrencesOfString:@"am" withString:@"a"]
             stringByReplacingOccurrencesOfString:@"pm" withString:@"p"];
     if (tx.blockHeight != TX_UNCONFIRMED) self.txDates[uint256_obj(tx.txHash)] = date;
@@ -333,7 +333,7 @@ static NSString *dateFormat(NSString *template)
     nav.view.alpha = 0.0;
 
     [nav dismissViewControllerAnimated:NO completion:^{
-        [(id)[nav.viewControllers.firstObject sendViewController] scanQR:nil];
+        [(id)(nav.viewControllers.firstObject).sendViewController scanQR:nil];
         [UIView animateWithDuration:0.1 delay:1.5 options:0 animations:^{ nav.view.alpha = 1.0; } completion:nil];
     }];
 }
@@ -652,7 +652,7 @@ static NSString *dateFormat(NSString *template)
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
     if (buttonIndex == alertView.cancelButtonIndex) {
-        [self.tableView deselectRowAtIndexPath:[self.tableView indexPathForSelectedRow] animated:YES];
+        [self.tableView deselectRowAtIndexPath:(self.tableView).indexPathForSelectedRow animated:YES];
         return;
     }
 
@@ -661,7 +661,7 @@ static NSString *dateFormat(NSString *template)
     if (c.authSuccess) {
         [self.navigationController pushViewController:c animated:YES];
     }
-    else [self.tableView deselectRowAtIndexPath:[self.tableView indexPathForSelectedRow] animated:YES];
+    else [self.tableView deselectRowAtIndexPath:(self.tableView).indexPathForSelectedRow animated:YES];
 }
 
 #pragma mark - UIViewControllerAnimatedTransitioning

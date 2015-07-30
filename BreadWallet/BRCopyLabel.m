@@ -133,7 +133,7 @@
 
 - (void)copy:(id)sender
 {
-    [[UIPasteboard generalPasteboard] setString:self.copyableText];
+    [UIPasteboard generalPasteboard].string = self.copyableText;
     [self resignFirstResponder];
 }
 

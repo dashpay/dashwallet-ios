@@ -139,8 +139,8 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
 
     if (gapLimit > 1) { // get receiveAddress and changeAddress first to avoid blocking
-        [self receiveAddress];
-        [self changeAddress];
+        self.receiveAddress;
+        self.changeAddress;
     }
 
     @synchronized(self) {
@@ -159,7 +159,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 
         while (a.count < gapLimit) { // generate new addresses up to gapLimit
             NSData *pubKey = [self.sequence publicKey:n internal:internal masterPublicKey:self.masterPublicKey];
-            NSString *addr = [[BRKey keyWithPublicKey:pubKey] address];
+            NSString *addr = [BRKey keyWithPublicKey:pubKey].address;
         
             if (! addr) {
                 NSLog(@"error generating keys");
@@ -259,7 +259,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         }
 
         // transaction ordering is not guaranteed, so check the entire UTXO set against the entire spent output set
-        [spent setSet:[utxos set]];
+        [spent setSet:utxos.set];
         [spent intersectSet:spentOutputs];
         
         for (NSValue *output in spent) { // remove any spent outputs from UTXO set
@@ -316,14 +316,14 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 // NSData objects containing serialized UTXOs
 - (NSArray *)unspentOutputs
 {
-    return [self.utxos array];
+    return (self.utxos).array;
 }
 
 // BRTransaction objects sorted by date, most recent first
 - (NSArray *)recentTransactions
 {
     //TODO: don't include receive transactions that don't have at least one wallet output >= TX_MIN_OUTPUT_AMOUNT
-    return [self.transactions array];
+    return (self.transactions).array;
 }
 
 // hashes of all wallet transactions
@@ -421,8 +421,8 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         NSData *seed = self.seed(authprompt, (amount > 0) ? amount : 0);
 
         if (! seed) return YES; // user canceled authentication
-        [privkeys addObjectsFromArray:[self.sequence privateKeys:[externalIndexes array] internal:NO fromSeed:seed]];
-        [privkeys addObjectsFromArray:[self.sequence privateKeys:[internalIndexes array] internal:YES fromSeed:seed]];
+        [privkeys addObjectsFromArray:[self.sequence privateKeys:externalIndexes.array internal:NO fromSeed:seed]];
+        [privkeys addObjectsFromArray:[self.sequence privateKeys:internalIndexes.array internal:YES fromSeed:seed]];
         
         return [transaction signWithPrivateKeys:privkeys];
     }

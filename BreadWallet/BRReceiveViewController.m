@@ -104,7 +104,7 @@
 - (NSString *)paymentAddress
 {
     if (_paymentRequest) return _paymentRequest.paymentAddress;
-    return [[[BRWalletManager sharedInstance] wallet] receiveAddress];
+    return [BRWalletManager sharedInstance].wallet.receiveAddress;
 }
 
 - (BOOL)nextTip
@@ -192,7 +192,7 @@
     [a addButtonWithTitle:NSLocalizedString(@"cancel", nil)];
     a.cancelButtonIndex = a.numberOfButtons - 1;
     
-    [a showInView:[[UIApplication sharedApplication] keyWindow]];
+    [a showInView:[UIApplication sharedApplication].keyWindow];
 }
 
 #pragma mark - UIActionSheetDelegate
@@ -205,8 +205,7 @@
     //      https://medium.com/@octskyward/merge-avoidance-7f95a386692f
     if ([title isEqual:NSLocalizedString(@"copy address to clipboard", nil)] ||
         [title isEqual:NSLocalizedString(@"copy request to clipboard", nil)]) {
-        [[UIPasteboard generalPasteboard]
-         setString:(self.paymentRequest.amount > 0) ? self.paymentRequest.string : self.paymentAddress];
+        [UIPasteboard generalPasteboard].string = (self.paymentRequest.amount > 0) ? self.paymentRequest.string : self.paymentAddress;
 
         [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"copied", nil)
          center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0 - 130.0)] popIn]
@@ -259,7 +258,7 @@
     else if ([title isEqual:NSLocalizedString(@"request an amount", nil)]) {
         UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"AmountNav"];
         
-        [(BRAmountViewController *)c.topViewController setDelegate:self];
+        ((BRAmountViewController *)c.topViewController).delegate = self;
         [self.navigationController presentViewController:c animated:YES completion:nil];
     }
 }
@@ -298,7 +297,7 @@ error:(NSError *)error
     
     c.paymentRequest = self.paymentRequest;
     c.paymentRequest.amount = amount;
-    [(UINavigationController *)self.navigationController.presentedViewController setDelegate:c];
+    ((UINavigationController *)self.navigationController.presentedViewController).delegate = c;
     [(UINavigationController *)self.navigationController.presentedViewController pushViewController:c animated:YES];
 }
 

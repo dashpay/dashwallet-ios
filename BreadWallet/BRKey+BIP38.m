@@ -231,7 +231,7 @@ confirmationCode:(NSString **)confcode;
     NSData *passpoint = [NSData dataWithBytesNoCopy:(uint8_t *)d.bytes + 16 length:33 freeWhenDone:NO];
     UInt256 factorb = seedb.SHA256_2; // factorb = SHA256(SHA256(seedb))
     NSData *pubKey = point_multiply(passpoint, factorb, compressed), // pubKey = passpoint*factorb
-           *address = [[[BRKey keyWithPublicKey:pubKey] address] dataUsingEncoding:NSUTF8StringEncoding];
+           *address = [[BRKey keyWithPublicKey:pubKey].address dataUsingEncoding:NSUTF8StringEncoding];
     uint16_t prefix = CFSwapInt16HostToBig(BIP38_EC_PREFIX);
     uint8_t flag = (compressed) ? BIP38_COMPRESSED_FLAG : 0;
     uint32_t addresshash = (address) ? address.SHA256_2.u32[0] : 0;
@@ -332,7 +332,7 @@ confirmationCode:(NSString **)confcode;
     ((uint64_t *)((uint8_t *)pointb.mutableBytes + 1))[3] ^= derived1[3];
 
     pubKey = point_multiply(pointb, passfactor, flag & BIP38_COMPRESSED_FLAG); // pubKey = pointb*passfactor
-    return ([[[BRKey keyWithPublicKey:pubKey] address] isEqual:address]) ? YES : NO;
+    return ([[BRKey keyWithPublicKey:pubKey].address isEqual:address]) ? YES : NO;
 }
 
 - (instancetype)initWithBIP38Key:(NSString *)key andPassphrase:(NSString *)passphrase

@@ -52,7 +52,7 @@
     self.words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:WORDS ofType:@"plist"]];
     self.allWords = [NSMutableSet set];
     
-    for (NSString *lang in [[NSBundle mainBundle] localizations]) {
+    for (NSString *lang in [NSBundle mainBundle].localizations) {
         [self.allWords addObjectsFromArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
          pathForResource:WORDS ofType:@"plist" inDirectory:nil forLocalization:lang]]];
     }
@@ -81,7 +81,7 @@
 
     if (self.navigationController.viewControllers.firstObject != self) return;
     
-    self.textView.layer.borderColor = [[UIColor colorWithWhite:0.0 alpha:0.25] CGColor];
+    self.textView.layer.borderColor = [UIColor colorWithWhite:0.0 alpha:0.25].CGColor;
     self.textView.layer.borderWidth = 0.5;
 }
 
@@ -116,7 +116,7 @@
              isEqual:m.masterPublicKey]) {
             [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
               destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
-             showInView:[[UIApplication sharedApplication] keyWindow]];
+             showInView:[UIApplication sharedApplication].keyWindow];
         }
         else if (phrase) {
             [[[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"recovery phrase doesn't match", nil)
@@ -144,7 +144,7 @@
         NSMutableCharacterSet *set = [NSMutableCharacterSet letterCharacterSet];
 
         [set formUnionWithCharacterSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-        invalid = [set invertedSet];
+        invalid = set.invertedSet;
     });
 
     @autoreleasepool {  // @autoreleasepool ensures sensitive data will be dealocated immediately
@@ -207,7 +207,7 @@
             [self performSelector:@selector(wipeWithPhrase:) withObject:phrase afterDelay:0.0];
         }
         else if (incorrect) {
-            textView.selectedRange = [[textView.text lowercaseString] rangeOfString:incorrect];
+            textView.selectedRange = [(textView.text).lowercaseString rangeOfString:incorrect];
         
             [[[UIAlertView alloc] initWithTitle:@""
               message:[NSString stringWithFormat:NSLocalizedString(@"\"%@\" is not a recovery phrase word", nil),

@@ -131,7 +131,7 @@
                 direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:^(BOOL finished) {
                     _url = note.userInfo[@"url"];
                     
-                    if (self.didAppear && [[UIApplication sharedApplication] isProtectedDataAvailable]) {
+                    if (self.didAppear && [UIApplication sharedApplication].protectedDataAvailable) {
                         _url = nil;
                         [c performSelector:@selector(handleURL:) withObject:note.userInfo[@"url"] afterDelay:0.0];
                     }
@@ -157,7 +157,7 @@
                 direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:^(BOOL finished) {
                     _file = note.userInfo[@"file"];
                     
-                    if (self.didAppear && [[UIApplication sharedApplication] isProtectedDataAvailable]) {
+                    if (self.didAppear && [UIApplication sharedApplication].protectedDataAvailable) {
                         _file = nil;
                         [c handleFile:note.userInfo[@"file"]];
                     }
@@ -173,7 +173,7 @@
                 [self.sendViewController updateClipboardText];
 
                 if ([UIUserNotificationSettings class] && // if iOS 8
-                    ! ([[[UIApplication sharedApplication] currentUserNotificationSettings] types] &
+                    ! ([[UIApplication sharedApplication] currentUserNotificationSettings].types &
                        UIUserNotificationTypeBadge)) {
                     [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings
                      settingsForTypes:UIUserNotificationTypeBadge categories:nil]]; // register for badge notifications
@@ -216,7 +216,7 @@
         queue:nil usingBlock:^(NSNotification *note) {
             [self.blur removeFromSuperview];
             self.blur = nil;
-            [[UIApplication sharedApplication] setApplicationIconBadgeNumber:0]; // reset app badge number
+            [UIApplication sharedApplication].applicationIconBadgeNumber = 0; // reset app badge number
 
             uint64_t amount = [defs doubleForKey:SETTINGS_RECEIVED_AMOUNT_KEY];
             
@@ -251,7 +251,7 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             if (! m.noWallet && self.reachability.currentReachabilityStatus != NotReachable &&
-                [[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground) {
+                [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
                 [[BRPeerManager sharedInstance] connect];
             }
             else if (! m.noWallet && self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
@@ -260,8 +260,8 @@
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if (_balance != UINT64_MAX && [[BRPeerManager sharedInstance] syncProgress] < 1.0 &&
-                [[BRPeerManager sharedInstance] syncProgress] > DBL_EPSILON) { // wait for sync
+            if (_balance != UINT64_MAX && [BRPeerManager sharedInstance].syncProgress < 1.0 &&
+                [BRPeerManager sharedInstance].syncProgress > DBL_EPSILON) { // wait for sync
                 self.balance = _balance; // this updates the local currency value with the latest exchange rate
                 return;
             }
@@ -271,7 +271,7 @@
             self.balance = m.wallet.balance;
 
             if (self.reachability.currentReachabilityStatus != NotReachable &&
-                [[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground) {
+                [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
                 [[BRPeerManager sharedInstance] connect];
             }
         }];
@@ -291,7 +291,7 @@
             [self startActivityWithTimeout:0];
 
             if ([[BRPeerManager sharedInstance]
-                 timestampForBlockHeight:[[BRPeerManager sharedInstance] lastBlockHeight]] + 60*60*24*7 <
+                 timestampForBlockHeight:[BRPeerManager sharedInstance].lastBlockHeight] + 60*60*24*7 <
                 [NSDate timeIntervalSinceReferenceDate] &&
                 m.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
                 self.percent.hidden = NO;
@@ -376,9 +376,9 @@
 
     self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"burger"];
     self.pageViewController.view.alpha = 1.0;
-    if ([[BRWalletManager sharedInstance] didAuthenticate]) [self unlock:nil];
+    if ([BRWalletManager sharedInstance].didAuthenticate) [self unlock:nil];
 
-    if ([[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground) {
+    if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
         [[BRPeerManager sharedInstance] connect];
     }
 }
@@ -400,7 +400,7 @@
             }];
     }
 
-    if ([[UIApplication sharedApplication] isProtectedDataAvailable]) [self protectedViewDidAppear:animated];
+    if ([UIApplication sharedApplication].protectedDataAvailable) [self protectedViewDidAppear:animated];
 
     [super viewDidAppear:animated];
 }
@@ -472,8 +472,8 @@
 {
     [super prepareForSegue:segue sender:sender];
 
-    [segue.destinationViewController setTransitioningDelegate:self];
-    [segue.destinationViewController setModalPresentationStyle:UIModalPresentationCustom];
+    (segue.destinationViewController).transitioningDelegate = self;
+    (segue.destinationViewController).modalPresentationStyle = UIModalPresentationCustom;
     [self hideErrorBar];
     
     if (sender == self) { // show recovery phrase
@@ -481,7 +481,7 @@
           message:NSLocalizedString(@"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\n"
                                     "NEVER type your recovery phrase into password managers or elsewhere. Other "
                                     "devices may be infected.\n", nil)
-          delegate:[[(id)segue.destinationViewController viewControllers] firstObject]
+          delegate:[(id)segue.destinationViewController viewControllers].firstObject
           cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:NSLocalizedString(@"show", nil), nil]
          show];
     }
@@ -518,7 +518,7 @@
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];
 
-    if (balance > _balance && [[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground) {
+    if (balance > _balance && [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
         [self.view addSubview:[[[BRBubbleView viewWithText:[NSString
          stringWithFormat:NSLocalizedString(@"received %@ (%@)", nil), [m stringForAmount:balance - _balance],
                           [m localCurrencyStringForAmount:balance - _balance]]
@@ -553,7 +553,7 @@
 
 - (void)stopActivityWithSuccess:(BOOL)success
 {
-    double progress = [[BRPeerManager sharedInstance] syncProgress];
+    double progress = [BRPeerManager sharedInstance].syncProgress;
 
     self.start = self.timeout = 0.0;
     if (progress > DBL_EPSILON && progress < 1.0) return; // not done syncing
@@ -580,7 +580,7 @@
 
 - (void)setProgressTo:(NSNumber *)n
 {
-    self.progress.progress = [n floatValue];
+    self.progress.progress = n.floatValue;
 }
 
 - (void)updateProgress
@@ -589,12 +589,12 @@
 
     static int counter = 0;
     NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate] - self.start;
-    double progress = [[BRPeerManager sharedInstance] syncProgress];
+    double progress = [BRPeerManager sharedInstance].syncProgress;
 
     if (progress > DBL_EPSILON && ! self.percent.hidden && self.tipView.alpha > 0.5) {
         self.tipView.text = [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
-                             [[BRPeerManager sharedInstance] lastBlockHeight],
-                             [[BRPeerManager sharedInstance] estimatedBlockHeight]];
+                             [BRPeerManager sharedInstance].lastBlockHeight,
+                             [BRPeerManager sharedInstance].estimatedBlockHeight];
     }
 
     if (self.timeout > 1.0 && 0.1 + 0.9*t/self.timeout < progress) progress = 0.1 + 0.9*t/self.timeout;
@@ -769,8 +769,8 @@
     UINavigationBar *b = self.navigationController.navigationBar;
     NSString *tip = (self.percent.hidden) ? BALANCE_TIP :
                     [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
-                     [[BRPeerManager sharedInstance] lastBlockHeight],
-                     [[BRPeerManager sharedInstance] estimatedBlockHeight]];
+                     [BRPeerManager sharedInstance].lastBlockHeight,
+                     [BRPeerManager sharedInstance].estimatedBlockHeight];
 
     self.tipView = [BRBubbleView viewWithText:tip
                     tipPoint:CGPointMake(b.center.x, b.frame.origin.y + b.frame.size.height - 10)
@@ -806,7 +806,7 @@
     if (! self.errorBar.hidden) {
         [self connect:sender];
     }
-    else if (! [[BRWalletManager sharedInstance] didAuthenticate] && self.percent.hidden) {
+    else if (! [BRWalletManager sharedInstance].didAuthenticate && self.percent.hidden) {
         [self unlock:sender];
     }
     else [self tip:sender];
@@ -892,7 +892,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
     if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"wipe", nil)]) {
         [[[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"CONFIRM WIPE", nil) delegate:self
           cancelButtonTitle:NSLocalizedString(@"cancel", nil) destructiveButtonTitle:NSLocalizedString(@"wipe", nil)
-          otherButtonTitles:nil] showInView:[[UIApplication sharedApplication] keyWindow]];
+          otherButtonTitles:nil] showInView:[UIApplication sharedApplication].keyWindow];
         return;
     }
     
@@ -971,7 +971,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
         [v layoutIfNeeded];
         to.view.center = CGPointMake(to.view.center.x, v.frame.size.height*3/2);
 
-        UINavigationItem *item = [[(id)to topViewController] navigationItem];
+        UINavigationItem *item = [(id)to topViewController].navigationItem;
         UIView *titleView = item.titleView;
         UIBarButtonItem *rightButton = item.rightBarButtonItem;
 
@@ -1008,7 +1008,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
         }];
     }
     else if ([from isKindOfClass:[UINavigationController class]] && to == self.navigationController) { // modal dismiss
-        if ([[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground) {
+        if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
             [[BRPeerManager sharedInstance] connect];
             [self.sendViewController updateClipboardText];
         }

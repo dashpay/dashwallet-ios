@@ -31,7 +31,11 @@
 #define BITCOIN_MAGIC_NUMBER 0xd9b4bef9u
 #endif
 
+CF_IMPLICIT_BRIDGING_ENABLED
+
 CFAllocatorRef SecureAllocator();
+
+CF_IMPLICIT_BRIDGING_DISABLED
 
 @interface NSMutableData (Bitcoin)
 

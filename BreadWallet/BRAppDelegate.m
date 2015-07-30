@@ -106,7 +106,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         protectedObserver = balanceObserver = syncFinishedObserver = syncFailedObserver = nil;
     };
     
-    if ([[BRPeerManager sharedInstance] syncProgress] >= 1.0) {
+    if ([BRPeerManager sharedInstance].syncProgress >= 1.0) {
         NSLog(@"background fetch already synced");
         if (completion) completion(UIBackgroundFetchResultNoData);
         return;
@@ -115,8 +115,8 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     // timeout after 25 seconds
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 25*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         if (completion) {
-            NSLog(@"background fetch timeout with progress: %f", [[BRPeerManager sharedInstance] syncProgress]);
-            completion(([[BRPeerManager sharedInstance] syncProgress] > 0.1) ? UIBackgroundFetchResultNewData :
+            NSLog(@"background fetch timeout with progress: %f", [BRPeerManager sharedInstance].syncProgress);
+            completion(([BRPeerManager sharedInstance].syncProgress > 0.1) ? UIBackgroundFetchResultNewData :
                        UIBackgroundFetchResultFailed);
             cleanup();
         }
@@ -134,8 +134,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
             if (m.wallet.balance > balance) {
-                [[UIApplication sharedApplication]
-                 setApplicationIconBadgeNumber:[[UIApplication sharedApplication] applicationIconBadgeNumber] + 1];
+                [UIApplication sharedApplication].applicationIconBadgeNumber = [UIApplication sharedApplication].applicationIconBadgeNumber + 1;
                 [defs setDouble:[defs doubleForKey:SETTINGS_RECEIVED_AMOUNT_KEY] + (m.wallet.balance - balance)
                  forKey:SETTINGS_RECEIVED_AMOUNT_KEY]; // have to use setDouble here, setInteger isn't big enough
                 balance = m.wallet.balance;

@@ -369,7 +369,7 @@ sequence:(uint32_t)sequence
         self.signatures[i] = sig;
     }
     
-    if (! [self isSigned]) return NO;
+    if (! self.isSigned) return NO;
     _txHash = self.data.SHA256_2;
     return YES;
 }
@@ -417,7 +417,7 @@ sequence:(uint32_t)sequence
 
 - (NSUInteger)hash
 {
-    if (uint256_is_zero(_txHash)) return [super hash];
+    if (uint256_is_zero(_txHash)) return super.hash;
     return *(const NSUInteger *)&_txHash;
 }
 

@@ -81,7 +81,7 @@
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if ([[BRPeerManager sharedInstance] syncProgress] < 1.0) return; // wait for sync before updating balance
+            if ([BRPeerManager sharedInstance].syncProgress < 1.0) return; // wait for sync before updating balance
 
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
                                          [m localCurrencyStringForAmount:m.wallet.balance]];
@@ -110,14 +110,14 @@
 
     if (self.navigationController.viewControllers.firstObject != self) {
         self.navigationItem.leftBarButtonItem = nil;
-        if ([[BRWalletManager sharedInstance] didAuthenticate]) [self unlock:nil];
+        if ([BRWalletManager sharedInstance].didAuthenticate) [self unlock:nil];
     }
     else {
         self.payButton.title = NSLocalizedString(@"request", nil);
         self.navigationItem.rightBarButtonItem = self.payButton;
     }
 
-    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
+    [UIApplication sharedApplication].statusBarStyle = UIStatusBarStyleDefault;
     [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
 }
 
@@ -160,7 +160,7 @@
 
     l = (l < self.amountField.text.length) ? l + 1 : self.amountField.text.length;
     [self textField:self.amountField shouldChangeCharactersInRange:NSMakeRange(l, 0)
-     replacementString:[(UIButton *)sender titleLabel].text];
+     replacementString:((UIButton *)sender).titleLabel.text];
 }
 
 - (IBAction)del:(id)sender

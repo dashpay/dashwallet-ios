@@ -111,7 +111,7 @@
         return;
 #endif
 
-        if (! [[BRWalletManager sharedInstance] noWallet]) { // sanity check
+        if (! [BRWalletManager sharedInstance].noWallet) { // sanity check
             [self.navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
         }
         
@@ -152,10 +152,10 @@
 //    [segue.destinationViewController setTransitioningDelegate:self];
 //    [segue.destinationViewController setModalPresentationStyle:UIModalPresentationCustom];
     
-    self.startLabel = (id)[[segue.destinationViewController view] viewWithTag:4];
-    self.recoverLabel = (id)[[segue.destinationViewController view] viewWithTag:5];
-    self.warningLabel = (id)[[segue.destinationViewController view] viewWithTag:2];
-    self.generateButton = (id)[[segue.destinationViewController view] viewWithTag:1];
+    self.startLabel = (id)[(segue.destinationViewController).view viewWithTag:4];
+    self.recoverLabel = (id)[(segue.destinationViewController).view viewWithTag:5];
+    self.warningLabel = (id)[(segue.destinationViewController).view viewWithTag:2];
+    self.generateButton = (id)[(segue.destinationViewController).view viewWithTag:1];
     [self.generateButton addTarget:self action:@selector(generate:) forControlEvents:UIControlEventTouchUpInside];
     self.generateButton.titleLabel.adjustsFontSizeToFitWidth = YES;
     
@@ -164,7 +164,7 @@
     self.generateButton.titleLabel.adjustsLetterSpacingToFitWidth = YES;
 #pragma clang diagnostic pop
 
-    self.showButton = (id)[[segue.destinationViewController view] viewWithTag:3];
+    self.showButton = (id)[(segue.destinationViewController).view viewWithTag:3];
     [self.showButton addTarget:self action:@selector(show:) forControlEvents:UIControlEventTouchUpInside];
     
     if (self.warningLabel) {
@@ -212,7 +212,7 @@
 
 - (IBAction)generate:(id)sender
 {
-    if (! [[BRWalletManager sharedInstance] isPasscodeEnabled]) {
+    if (! [BRWalletManager sharedInstance].passcodeEnabled) {
         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"turn device passcode on", nil)
           message:NSLocalizedString(@"\nA device passcode is needed to safeguard your wallet. Go to settings and turn "
                                     "passcode on to continue.", nil)

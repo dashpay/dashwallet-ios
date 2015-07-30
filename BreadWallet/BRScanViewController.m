@@ -55,7 +55,7 @@
 {
     [super viewWillAppear:animated];
 
-    self.barStyle = [[UIApplication sharedApplication] statusBarStyle];
+    self.barStyle = [UIApplication sharedApplication].statusBarStyle;
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:animated];
 
     if ([AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo] == AVAuthorizationStatusDenied) {
@@ -74,7 +74,7 @@
     AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:device error:&error];
     AVCaptureMetadataOutput *output = [AVCaptureMetadataOutput new];
 
-    if (error) NSLog(@"%@", [error localizedDescription]);
+    if (error) NSLog(@"%@", error.localizedDescription);
     
     if ([device lockForConfiguration:&error]) {
         if (device.isAutoFocusRangeRestrictionSupported) {

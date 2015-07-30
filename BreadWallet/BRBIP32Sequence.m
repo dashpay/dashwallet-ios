@@ -61,7 +61,7 @@ static void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i)
         d.length = 33 - sizeof(*k);
         [d appendBytes:k length:sizeof(*k)];
     }
-    else [d setData:[[BRKey keyWithSecret:*k compressed:YES] publicKey]];
+    else [d setData:[BRKey keyWithSecret:*k compressed:YES].publicKey];
 
     i = CFSwapInt32HostToBig(i);
     [d appendBytes:&i length:sizeof(i)];
@@ -104,7 +104,7 @@ static void CKDpub(PubKey *K, UInt256 *c, uint32_t i)
     *c = *(const UInt256 *)((const uint8_t *)I.bytes + 32); // c = IR
     I.length = 32;
 
-    NSData *pIL = [[BRKey keyWithSecret:*(const UInt256 *)I.bytes compressed:YES] publicKey];
+    NSData *pIL = [BRKey keyWithSecret:*(const UInt256 *)I.bytes compressed:YES].publicKey;
 
     secp256k1_point_add(K, pIL.bytes, K, YES); // K = P(IL) + K
 }
@@ -147,12 +147,12 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     secret = *(const UInt256 *)I.bytes;
     chain = *(const UInt256 *)((const uint8_t *)I.bytes + 32);
 
-    [mpk appendBytes:[[BRKey keyWithSecret:secret compressed:YES] hash160].u32 length:4];
+    [mpk appendBytes:[BRKey keyWithSecret:secret compressed:YES].hash160.u32 length:4];
     
     CKDpriv(&secret, &chain, 0 | BIP32_HARD); // account 0H
 
     [mpk appendBytes:&chain length:sizeof(chain)];
-    [mpk appendData:[[BRKey keyWithSecret:secret compressed:YES] publicKey]];
+    [mpk appendData:[BRKey keyWithSecret:secret compressed:YES].publicKey];
 
     return mpk;
 }
@@ -172,7 +172,7 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
 
 - (NSString *)privateKey:(unsigned)n internal:(BOOL)internal fromSeed:(NSData *)seed
 {
-    return seed ? [[self privateKeys:@[@(n)] internal:internal fromSeed:seed] lastObject] : nil;
+    return seed ? [self privateKeys:@[@(n)] internal:internal fromSeed:seed].lastObject : nil;
 }
 
 - (NSArray *)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed

@@ -229,7 +229,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
             [self protectedInit];
         }];
 
-    if ([[UIApplication sharedApplication] isProtectedDataAvailable]) [self protectedInit];
+    if ([UIApplication sharedApplication].protectedDataAvailable) [self protectedInit];
     return self;
 }
 
@@ -735,7 +735,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 // the keyboard can take a second or more to dismiss, this hides it quickly to improve perceived response time
 - (void)hideKeyboard
 {
-    for (UIWindow *w in [[UIApplication sharedApplication] windows]) {
+    for (UIWindow *w in [UIApplication sharedApplication].windows) {
         if (w.windowLevel == UIWindowLevelNormal || w.windowLevel == UIWindowLevelAlert ||
             w.windowLevel == UIWindowLevelStatusBar) continue;
         [UIView animateWithDuration:0.2 animations:^{ w.alpha = 0; }];
@@ -803,10 +803,9 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         NSMutableArray *codes = [NSMutableArray array], *names = [NSMutableArray array], *rates =[NSMutableArray array];
         
         if ([response isKindOfClass:[NSHTTPURLResponse class]]) { // store server timestamp
-            NSString *date = [(NSHTTPURLResponse *)response allHeaderFields][@"Date"];
-            NSTimeInterval now = [[[NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeDate error:nil]
-                                   matchesInString:date options:0 range:NSMakeRange(0, date.length)].lastObject
-                                  date].timeIntervalSinceReferenceDate;
+            NSString *date = ((NSHTTPURLResponse *)response).allHeaderFields[@"Date"];
+            NSTimeInterval now = ([[NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeDate error:nil]
+                                   matchesInString:date options:0 range:NSMakeRange(0, date.length)].lastObject).date.timeIntervalSinceReferenceDate;
             
             if (now > self.secureTime) [defs setDouble:now forKey:SECURE_TIME_KEY];
         }
@@ -920,7 +919,7 @@ completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError
         for (NSDictionary *utxo in json) {
             if (! [utxo isKindOfClass:[NSDictionary class]] ||
                 ! [utxo[@"transaction_hash"] isKindOfClass:[NSString class]] ||
-                [[utxo[@"transaction_hash"] hexToData] length] != CC_SHA256_DIGEST_LENGTH ||
+                [utxo[@"transaction_hash"] hexToData].length != CC_SHA256_DIGEST_LENGTH ||
                 ! [utxo[@"output_index"] isKindOfClass:[NSNumber class]] ||
                 ! [utxo[@"script_hex"] isKindOfClass:[NSString class]] ||
                 ! [utxo[@"script_hex"] hexToData] ||
@@ -933,7 +932,7 @@ completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError
             }
             
             if (! [utxo[@"script_type"] isEqual:@"pubkeyhash"] && ! [utxo[@"script_type"] isEqual:@"pubkey"]) continue;
-            o.hash = *(const UInt256 *)[[[utxo[@"transaction_hash"] hexToData] reverse] bytes];
+            o.hash = *(const UInt256 *)[[utxo[@"transaction_hash"] hexToData] reverse].bytes;
             o.n = [utxo[@"output_index"] unsignedIntValue];
             [utxos addObject:utxo_obj(o)];
             [amounts addObject:utxo[@"value"]];
@@ -1015,7 +1014,7 @@ completion:(void (^)(BRTransaction *tx, uint64_t fee, NSError *error))completion
             return;
         }
      
-        [tx addOutputAddress:[self.wallet changeAddress] amount:balance - feeAmount];
+        [tx addOutputAddress:(self.wallet).changeAddress amount:balance - feeAmount];
      
         if (! [tx signWithPrivateKeys:@[privKey]]) {
             completion(nil, 0, [NSError errorWithDomain:@"BreadWallet" code:401 userInfo:@{NSLocalizedDescriptionKey:
@@ -1032,8 +1031,8 @@ completion:(void (^)(BRTransaction *tx, uint64_t fee, NSError *error))completion
 - (int64_t)amountForString:(NSString *)string
 {
     if (! string.length) return 0;
-    return [[[NSDecimalNumber decimalNumberWithDecimal:[[self.format numberFromString:string] decimalValue]]
-             decimalNumberByMultiplyingByPowerOf10:self.format.maximumFractionDigits] longLongValue];
+    return [[NSDecimalNumber decimalNumberWithDecimal:[self.format numberFromString:string].decimalValue]
+             decimalNumberByMultiplyingByPowerOf10:self.format.maximumFractionDigits].longLongValue;
 }
 
 - (NSString *)stringForAmount:(int64_t)amount
@@ -1049,10 +1048,10 @@ completion:(void (^)(BRTransaction *tx, uint64_t fee, NSError *error))completion
     if ([string hasPrefix:@"<"]) string = [string substringFromIndex:1];
 
     NSNumber *n = [self.localFormat numberFromString:string];
-    int64_t price = [[[NSDecimalNumber decimalNumberWithDecimal:self.localPrice.decimalValue]
-                      decimalNumberByMultiplyingByPowerOf10:self.localFormat.maximumFractionDigits] longLongValue],
-            local = [[[NSDecimalNumber decimalNumberWithDecimal:n.decimalValue]
-                      decimalNumberByMultiplyingByPowerOf10:self.localFormat.maximumFractionDigits] longLongValue],
+    int64_t price = [[NSDecimalNumber decimalNumberWithDecimal:self.localPrice.decimalValue]
+                      decimalNumberByMultiplyingByPowerOf10:self.localFormat.maximumFractionDigits].longLongValue,
+            local = [[NSDecimalNumber decimalNumberWithDecimal:n.decimalValue]
+                      decimalNumberByMultiplyingByPowerOf10:self.localFormat.maximumFractionDigits].longLongValue,
             overflowbits = 0, p = 10, min, max, amount;
 
     if (local == 0 || price < 1) return 0;
@@ -1161,7 +1160,7 @@ replacementString:(NSString *)string
         self.sweepCompletion = nil;
     }
     else if (self.sweepKey && self.sweepCompletion) {
-        NSString *passphrase = [[alertView textFieldAtIndex:0] text];
+        NSString *passphrase = [alertView textFieldAtIndex:0].text;
 
         dispatch_async(dispatch_get_main_queue(), ^{
             BRKey *key = [BRKey keyWithBIP38Key:self.sweepKey andPassphrase:passphrase];

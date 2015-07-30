@@ -42,7 +42,7 @@
     //TODO: store IPv6 addresses
     if (peer.address.u64[0] != 0 || peer.address.u32[2] != CFSwapInt32HostToBig(0xffff)) return nil;
 
-    [[self managedObjectContext] performBlockAndWait:^{
+    [self.managedObjectContext performBlockAndWait:^{
         self.address = CFSwapInt32BigToHost(peer.address.u32[3]);
         self.port = peer.port;
         self.timestamp = peer.timestamp;
@@ -57,7 +57,7 @@
 {
     __block BRPeer *peer = nil;
         
-    [[self managedObjectContext] performBlockAndWait:^{
+    [self.managedObjectContext performBlockAndWait:^{
         UInt128 address = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), CFSwapInt32HostToBig(self.address) } };
 
         peer = [[BRPeer alloc] initWithAddress:address port:self.port timestamp:self.timestamp services:self.services];

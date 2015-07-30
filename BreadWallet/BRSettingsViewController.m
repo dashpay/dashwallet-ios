@@ -128,7 +128,7 @@
     }
 
     asl_free(r);
-    [[UIPasteboard generalPasteboard] setString:(s.length < 8000000) ? s : [s substringFromIndex:s.length - 8000000]];
+    [UIPasteboard generalPasteboard].string = (s.length < 8000000) ? s : [s substringFromIndex:s.length - 8000000];
     
     [self.navigationController.topViewController.view
      addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"copied", nil)
@@ -159,7 +159,7 @@
         [self.navigationController pushViewController:self.selectorController animated:YES];
         [self.selectorController.tableView reloadData];
     }
-    else [self.tableView deselectRowAtIndexPath:[self.tableView indexPathForSelectedRow] animated:YES];
+    else [self.tableView deselectRowAtIndexPath:(self.tableView).indexPathForSelectedRow animated:YES];
 }
 
 - (IBAction)navBarSwipe:(id)sender
@@ -473,7 +473,7 @@
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
     if (buttonIndex == alertView.cancelButtonIndex) {
-        [self.tableView deselectRowAtIndexPath:[self.tableView indexPathForSelectedRow] animated:YES];
+        [self.tableView deselectRowAtIndexPath:(self.tableView).indexPathForSelectedRow animated:YES];
         return;
     }
     
@@ -482,7 +482,7 @@
     if (c.authSuccess) {
         [self.navigationController pushViewController:c animated:YES];
     }
-    else [self.tableView deselectRowAtIndexPath:[self.tableView indexPathForSelectedRow] animated:YES];
+    else [self.tableView deselectRowAtIndexPath:(self.tableView).indexPathForSelectedRow animated:YES];
 }
 
 @end

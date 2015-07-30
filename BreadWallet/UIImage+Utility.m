@@ -73,7 +73,7 @@
     
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGRect rect = { CGPointZero, self.size };
-    uint32_t r = floor(radius*[[UIScreen mainScreen] scale]*3.0*sqrt(2.0*M_PI)/4.0 + 0.5);
+    uint32_t r = floor(radius*[UIScreen mainScreen].scale*3.0*sqrt(2.0*M_PI)/4.0 + 0.5);
     
     CGContextScaleCTM(context, 1.0, -1.0);
     CGContextTranslateCTM(context, 0.0, -self.size.height);

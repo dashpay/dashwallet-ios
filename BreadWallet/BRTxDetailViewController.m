@@ -155,7 +155,7 @@
     BRCopyLabel *detailLabel;
     UILabel *textLabel, *subtitleLabel, *amountLabel, *localCurrencyLabel;
     BRWalletManager *m = [BRWalletManager sharedInstance];
-    NSUInteger peerCount = [[BRPeerManager sharedInstance] peerCount],
+    NSUInteger peerCount = [BRPeerManager sharedInstance].peerCount,
                relayCount = [[BRPeerManager sharedInstance] relayCountForTransaction:self.transaction.txHash];
     
     // Configure the cell...
@@ -194,7 +194,7 @@
                         detailLabel.text = NSLocalizedString(@"double spend", nil);
                     }
                     else if ([m.wallet transactionIsPostdated:self.transaction
-                              atBlockHeight:[[BRPeerManager sharedInstance] lastBlockHeight]]) {
+                              atBlockHeight:[BRPeerManager sharedInstance].lastBlockHeight]) {
                         detailLabel.text = NSLocalizedString(@"transaction is post-dated", nil);
                     }
                     else if (peerCount == 0 || relayCount < peerCount) {
@@ -348,7 +348,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSUInteger i = [[self.tableView indexPathsForVisibleRows] indexOfObject:indexPath];
+    NSUInteger i = [(self.tableView).indexPathsForVisibleRows indexOfObject:indexPath];
     UITableViewCell *cell = (i < self.tableView.visibleCells.count) ? self.tableView.visibleCells[i] : nil;
     BRCopyLabel *l = (id)[cell viewWithTag:2];
     

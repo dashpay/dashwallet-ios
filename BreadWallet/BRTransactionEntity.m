@@ -52,7 +52,7 @@
 
 - (instancetype)setAttributesFromTx:(BRTransaction *)tx
 {
-    [[self managedObjectContext] performBlockAndWait:^{
+    [self.managedObjectContext performBlockAndWait:^{
         NSMutableOrderedSet *inputs = [self mutableOrderedSetValueForKey:@"inputs"];
         NSMutableOrderedSet *outputs = [self mutableOrderedSetValueForKey:@"outputs"];
         UInt256 txHash = tx.txHash;
@@ -98,7 +98,7 @@
 {
     BRTransaction *tx = [BRTransaction new];
     
-    [[self managedObjectContext] performBlockAndWait:^{
+    [self.managedObjectContext performBlockAndWait:^{
         if (self.txHash.length == sizeof(UInt256)) tx.txHash = *(const UInt256 *)self.txHash.bytes;
         tx.lockTime = self.lockTime;
         tx.blockHeight = self.blockHeight;

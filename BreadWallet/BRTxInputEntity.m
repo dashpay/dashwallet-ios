@@ -40,7 +40,7 @@
 
 - (instancetype)setAttributesFromTx:(BRTransaction *)tx inputIndex:(NSUInteger)index
 {
-    [[self managedObjectContext] performBlockAndWait:^{
+    [self.managedObjectContext performBlockAndWait:^{
         UInt256 hash = UINT256_ZERO;
         
         [tx.inputHashes[index] getValue:&hash];

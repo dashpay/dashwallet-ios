@@ -214,8 +214,8 @@
         }
 
         self.arrow.path = path;
-        self.arrow.strokeColor = [[UIColor clearColor] CGColor];
-        self.arrow.fillColor = [self.backgroundColor CGColor];
+        self.arrow.strokeColor = [UIColor clearColor].CGColor;
+        self.arrow.fillColor = (self.backgroundColor).CGColor;
         self.arrow.bounds = CGRectMake(0.0, 0.0, 15.0, 7.5);
         [self.layer addSublayer:self.arrow];
         CGPathRelease(path);

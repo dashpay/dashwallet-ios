@@ -102,8 +102,7 @@
                                stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
 
             if ([pair[0] isEqual:@"amount"]) {
-                self.amount = [[[NSDecimalNumber decimalNumberWithString:value] decimalNumberByMultiplyingByPowerOf10:8]
-                               unsignedLongLongValue];
+                self.amount = [[NSDecimalNumber decimalNumberWithString:value] decimalNumberByMultiplyingByPowerOf10:8].unsignedLongLongValue;
             }
             else if ([pair[0] isEqual:@"label"]) {
                 self.label = value;
@@ -125,8 +124,8 @@
     NSMutableArray *q = [NSMutableArray array];
     
     if (self.amount > 0) {
-        [q addObject:[@"amount=" stringByAppendingString:[[(id)[NSDecimalNumber numberWithUnsignedLongLong:self.amount]
-                                                           decimalNumberByMultiplyingByPowerOf10:-8] stringValue]]];
+        [q addObject:[@"amount=" stringByAppendingString:[(id)[NSDecimalNumber numberWithUnsignedLongLong:self.amount]
+                                                           decimalNumberByMultiplyingByPowerOf10:-8].stringValue]];
     }
 
     if (self.label.length > 0) {
@@ -244,7 +243,7 @@ completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion
             for (NSString *url in [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]
                                    componentsSeparatedByString:@"\n"]) {
                 if ([url hasPrefix:@"#"]) continue; // skip comments
-                req = [[BRPaymentRequest requestWithString:url] protocolRequest]; // use first url and ignore the rest
+                req = [BRPaymentRequest requestWithString:url].protocolRequest; // use first url and ignore the rest
                 break;
             }
         }
@@ -285,8 +284,8 @@ completion:(void (^)(BRPaymentProtocolACK *ack, NSError *error))completion
     [req setValue:USER_AGENT forHTTPHeaderField:@"User-Agent"];
     [req setValue:@"application/bitcoin-payment" forHTTPHeaderField:@"Content-Type"];
     [req addValue:@"application/bitcoin-paymentack" forHTTPHeaderField:@"Accept"];
-    [req setHTTPMethod:@"POST"];
-    [req setHTTPBody:payment.data];
+    req.HTTPMethod = @"POST";
+    req.HTTPBody = payment.data;
 
     [[[NSURLSession sharedSession] dataTaskWithRequest:req
     completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {

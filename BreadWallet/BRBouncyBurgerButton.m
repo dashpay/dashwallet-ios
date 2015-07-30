@@ -96,19 +96,19 @@
 
 - (void)setHighlighted:(BOOL)highlighted
 {
-    [super setHighlighted:highlighted];
+    super.highlighted = highlighted;
     self.bar1.backgroundColor = self.bar2.backgroundColor = self.bar3.backgroundColor = self.currentTitleColor;
 }
 
 - (void)setEnabled:(BOOL)enabled
 {
-    [super setEnabled:enabled];
+    super.enabled = enabled;
     self.bar1.backgroundColor = self.bar2.backgroundColor = self.bar3.backgroundColor = self.currentTitleColor;
 }
 
 - (void)setSelected:(BOOL)selected
 {
-    [super setSelected:selected];
+    super.selected = selected;
     self.bar1.backgroundColor = self.bar2.backgroundColor = self.bar3.backgroundColor = self.currentTitleColor;
 }
 
