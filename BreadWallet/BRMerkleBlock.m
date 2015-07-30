@@ -84,9 +84,9 @@
     _version = [message UInt32AtOffset:off];
     off += sizeof(uint32_t);
     _prevBlock = [message hashAtOffset:off];
-    off += CC_SHA256_DIGEST_LENGTH;
+    off += sizeof(UInt256);
     _merkleRoot = [message hashAtOffset:off];
-    off += CC_SHA256_DIGEST_LENGTH;
+    off += sizeof(UInt256);
     _timestamp = [message UInt32AtOffset:off];
     off += sizeof(uint32_t);
     _target = [message UInt32AtOffset:off];
@@ -95,7 +95,7 @@
     off += sizeof(uint32_t);
     _totalTransactions = [message UInt32AtOffset:off];
     off += sizeof(uint32_t);
-    len = (NSUInteger)[message varIntAtOffset:off length:&l]*CC_SHA256_DIGEST_LENGTH;
+    len = (NSUInteger)[message varIntAtOffset:off length:&l]*sizeof(UInt256);
     off += l;
     _hashes = (off + len > message.length) ? nil : [message subdataWithRange:NSMakeRange(off, len)];
     off += len;
@@ -193,7 +193,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     [d appendUInt32:_target];
     [d appendUInt32:_nonce];
     [d appendUInt32:_totalTransactions];
-    [d appendVarInt:_hashes.length/CC_SHA256_DIGEST_LENGTH];
+    [d appendVarInt:_hashes.length/sizeof(UInt256)];
     [d appendData:_hashes];
     [d appendVarInt:_flags.length];
     [d appendData:_flags];

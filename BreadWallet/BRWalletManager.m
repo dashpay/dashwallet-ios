@@ -920,7 +920,7 @@ completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError
         for (NSDictionary *utxo in json) {
             if (! [utxo isKindOfClass:[NSDictionary class]] ||
                 ! [utxo[@"transaction_hash"] isKindOfClass:[NSString class]] ||
-                [utxo[@"transaction_hash"] hexToData].length != CC_SHA256_DIGEST_LENGTH ||
+                [utxo[@"transaction_hash"] hexToData].length != sizeof(UInt256) ||
                 ! [utxo[@"output_index"] isKindOfClass:[NSNumber class]] ||
                 ! [utxo[@"script_hex"] isKindOfClass:[NSString class]] ||
                 ! [utxo[@"script_hex"] hexToData] ||

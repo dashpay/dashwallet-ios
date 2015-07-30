@@ -451,9 +451,11 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     BOOL auth = m.didAuthenticate;
 
     if (! tx) {
-        if (m.didAuthenticate || [m seedWithPrompt:prompt forAmount:amount]) {
+        if (! m.didAuthenticate) [m seedWithPrompt:prompt forAmount:amount];
+        
+        if (m.didAuthenticate) {
             // if user selected an amount equal to or below wallet balance, but the fee will bring the total above the
-            // balance, so offer to reduce the amount to available funds minus fee
+            // balance, offer to reduce the amount to available funds minus fee
             if ((self.amount <= [m amountForLocalCurrencyString:[m localCurrencyStringForAmount:m.wallet.balance]] ||
                  self.amount <= m.wallet.balance) && self.amount > 0) {
                 NSUInteger txSize = [m.wallet transactionForAmounts:@[@(m.wallet.balance)]
