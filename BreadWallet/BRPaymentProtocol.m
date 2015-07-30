@@ -422,12 +422,12 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
         _signature = [NSData data]; // set signature to 0 bytes, a signature can't sign itself
 
         if ([self.pkiType isEqual:@"x509+sha256"]) {
-            status = SecKeyRawVerify(pubKey, kSecPaddingPKCS1SHA256, self.data.SHA256.u8, CC_SHA256_DIGEST_LENGTH,
-                                     _signature.bytes, _signature.length);
+            status = SecKeyRawVerify(pubKey, kSecPaddingPKCS1SHA256, self.data.SHA256.u8, sizeof(UInt256), sig.bytes,
+                                     sig.length);
         }
         else if ([self.pkiType isEqual:@"x509+sha1"]) {
-            status = SecKeyRawVerify(pubKey, kSecPaddingPKCS1SHA1, self.data.SHA1.u8, CC_SHA1_DIGEST_LENGTH,
-                                     _signature.bytes, _signature.length);
+            status = SecKeyRawVerify(pubKey, kSecPaddingPKCS1SHA1, self.data.SHA1.u8, sizeof(UInt128), sig.bytes,
+                                     sig.length);
         }
         
         _signature = sig;
