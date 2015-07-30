@@ -139,8 +139,8 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
 
     if (gapLimit > 1) { // get receiveAddress and changeAddress first to avoid blocking
-        self.receiveAddress;
-        self.changeAddress;
+        [self receiveAddress];
+        [self changeAddress];
     }
 
     @synchronized(self) {
@@ -316,14 +316,14 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 // NSData objects containing serialized UTXOs
 - (NSArray *)unspentOutputs
 {
-    return (self.utxos).array;
+    return self.utxos.array;
 }
 
 // BRTransaction objects sorted by date, most recent first
 - (NSArray *)recentTransactions
 {
     //TODO: don't include receive transactions that don't have at least one wallet output >= TX_MIN_OUTPUT_AMOUNT
-    return (self.transactions).array;
+    return self.transactions.array;
 }
 
 // hashes of all wallet transactions

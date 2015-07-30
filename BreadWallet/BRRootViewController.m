@@ -472,8 +472,8 @@
 {
     [super prepareForSegue:segue sender:sender];
 
-    (segue.destinationViewController).transitioningDelegate = self;
-    (segue.destinationViewController).modalPresentationStyle = UIModalPresentationCustom;
+    segue.destinationViewController.transitioningDelegate = self;
+    segue.destinationViewController.modalPresentationStyle = UIModalPresentationCustom;
     [self hideErrorBar];
     
     if (sender == self) { // show recovery phrase

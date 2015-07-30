@@ -37,9 +37,9 @@ static NSUInteger _fetchBatchSize = 100;
     __block NSEntityDescription *entity = nil;
     __block NSManagedObject *obj = nil;
     
-    [[self context] performBlockAndWait:^{
-        entity = [NSEntityDescription entityForName:[self entityName] inManagedObjectContext:[self context]];
-        obj = [[self alloc] initWithEntity:entity insertIntoManagedObjectContext:[self context]];
+    [self.context performBlockAndWait:^{
+        entity = [NSEntityDescription entityForName:self.entityName inManagedObjectContext:self.context];
+        obj = [[self alloc] initWithEntity:entity insertIntoManagedObjectContext:self.context];
     }];
     
     return obj;
@@ -50,11 +50,11 @@ static NSUInteger _fetchBatchSize = 100;
     __block NSEntityDescription *entity = nil;
     NSMutableArray *a = [NSMutableArray arrayWithCapacity:length];
     
-    [[self context] performBlockAndWait:^{
-        entity = [NSEntityDescription entityForName:[self entityName] inManagedObjectContext:[self context]];
+    [self.context performBlockAndWait:^{
+        entity = [NSEntityDescription entityForName:self.entityName inManagedObjectContext:self.context];
         
         for (NSUInteger i = 0; i < length; i++) {
-            [a addObject:[[self alloc] initWithEntity:entity insertIntoManagedObjectContext:[self context]]];
+            [a addObject:[[self alloc] initWithEntity:entity insertIntoManagedObjectContext:self.context]];
         }
     }];
     
@@ -65,7 +65,7 @@ static NSUInteger _fetchBatchSize = 100;
 
 + (NSArray *)allObjects
 {
-    return [self fetchObjects:[self fetchRequest]];
+    return [self fetchObjects:self.fetchRequest];
 }
 
 + (NSArray *)objectsMatching:(NSString *)predicateFormat, ...
@@ -81,7 +81,7 @@ static NSUInteger _fetchBatchSize = 100;
 
 + (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args
 {
-    NSFetchRequest *request = [self fetchRequest];
+    NSFetchRequest *request = self.fetchRequest;
     
     request.predicate = [NSPredicate predicateWithFormat:predicateFormat arguments:args];
     return [self fetchObjects:request];
@@ -94,7 +94,7 @@ static NSUInteger _fetchBatchSize = 100;
 
 + (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending offset:(NSUInteger)offset limit:(NSUInteger)limit
 {
-    NSFetchRequest *request = [self fetchRequest];
+    NSFetchRequest *request = self.fetchRequest;
     
     request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:key ascending:ascending]];
     request.fetchOffset = offset;
@@ -107,8 +107,8 @@ static NSUInteger _fetchBatchSize = 100;
     __block NSArray *a = nil;
     __block NSError *error = nil;
 
-    [[self context] performBlockAndWait:^{
-        a = [[self context] executeFetchRequest:request error:&error];
+    [self.context performBlockAndWait:^{
+        a = [self.context executeFetchRequest:request error:&error];
         if (error) NSLog(@"%s: %@", __func__, error);
     }];
      
@@ -119,7 +119,7 @@ static NSUInteger _fetchBatchSize = 100;
 
 + (NSUInteger)countAllObjects
 {
-    return [self countObjects:[self fetchRequest]];
+    return [self countObjects:self.fetchRequest];
 }
 
 + (NSUInteger)countObjectsMatching:(NSString *)predicateFormat, ...
@@ -135,7 +135,7 @@ static NSUInteger _fetchBatchSize = 100;
 
 + (NSUInteger)countObjectsMatching:(NSString *)predicateFormat arguments:(va_list)args
 {
-    NSFetchRequest *request = [self fetchRequest];
+    NSFetchRequest *request = self.fetchRequest;
     
     request.predicate = [NSPredicate predicateWithFormat:predicateFormat arguments:args];
     return [self countObjects:request];
@@ -146,8 +146,8 @@ static NSUInteger _fetchBatchSize = 100;
     __block NSUInteger count = 0;
     __block NSError *error = nil;
 
-    [[self context] performBlockAndWait:^{
-        count = [[self context] countForFetchRequest:request error:&error];
+    [self.context performBlockAndWait:^{
+        count = [self.context countForFetchRequest:request error:&error];
         if (error) NSLog(@"%s: %@", __func__, error);
     }];
     
@@ -158,9 +158,9 @@ static NSUInteger _fetchBatchSize = 100;
 
 + (NSUInteger)deleteObjects:(NSArray *)objects
 {
-    [[self context] performBlockAndWait:^{
+    [self.context performBlockAndWait:^{
         for (NSManagedObject *obj in objects) {
-            [[self context] deleteObject:obj];
+            [self.context deleteObject:obj];
         }
     }];
     
@@ -258,24 +258,24 @@ static NSUInteger _fetchBatchSize = 100;
 // persists changes (this is called automatically for the main context when the app terminates)
 + (void)saveContext
 {
-    if (! [self context].hasChanges) return;
+    if (! self.context.hasChanges) return;
 
-    [[self context] performBlock:^{
+    [self.context performBlock:^{
         NSError *error = nil;
 
-        if ([self context].hasChanges && ! [[self context] save:&error]) { // save changes to writer context
+        if (self.context.hasChanges && ! [self.context save:&error]) { // save changes to writer context
             NSLog(@"%s: %@", __func__, error);
 #if DEBUG
             abort();
 #endif
         }
 
-        [[self context].parentContext performBlock:^{
+        [self.context.parentContext performBlock:^{
             NSError *error = nil;
             NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
 
             // write changes to persistent store
-            if (([self context].parentContext).hasChanges && ! [[self context].parentContext save:&error]) {
+            if (self.context.parentContext.hasChanges && ! [self.context.parentContext save:&error]) {
                 NSLog(@"%s: %@", __func__, error);
 #if DEBUG
                 abort();
@@ -297,7 +297,7 @@ static NSUInteger _fetchBatchSize = 100;
 
 + (NSFetchRequest *)fetchRequest
 {
-    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:[self entityName]];
+    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:self.entityName];
 
     request.fetchBatchSize = _fetchBatchSize;
     return request;
@@ -305,7 +305,7 @@ static NSUInteger _fetchBatchSize = 100;
 
 + (NSFetchedResultsController *)fetchedResultsController:(NSFetchRequest *)request
 {
-    return [[NSFetchedResultsController alloc] initWithFetchRequest:request managedObjectContext:[self context]
+    return [[NSFetchedResultsController alloc] initWithFetchRequest:request managedObjectContext:self.context
             sectionNameKeyPath:nil cacheName:nil];
 }
 

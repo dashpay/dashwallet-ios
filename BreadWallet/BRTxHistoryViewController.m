@@ -333,7 +333,7 @@ static NSString *dateFormat(NSString *template)
     nav.view.alpha = 0.0;
 
     [nav dismissViewControllerAnimated:NO completion:^{
-        [(id)(nav.viewControllers.firstObject).sendViewController scanQR:nil];
+        [(id)((BRRootViewController *)nav.viewControllers.firstObject).sendViewController scanQR:nil];
         [UIView animateWithDuration:0.1 delay:1.5 options:0 animations:^{ nav.view.alpha = 1.0; } completion:nil];
     }];
 }
@@ -652,7 +652,7 @@ static NSString *dateFormat(NSString *template)
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
     if (buttonIndex == alertView.cancelButtonIndex) {
-        [self.tableView deselectRowAtIndexPath:(self.tableView).indexPathForSelectedRow animated:YES];
+        [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
         return;
     }
 
@@ -661,7 +661,7 @@ static NSString *dateFormat(NSString *template)
     if (c.authSuccess) {
         [self.navigationController pushViewController:c animated:YES];
     }
-    else [self.tableView deselectRowAtIndexPath:(self.tableView).indexPathForSelectedRow animated:YES];
+    else [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
 }
 
 #pragma mark - UIViewControllerAnimatedTransitioning

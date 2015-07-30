@@ -159,7 +159,7 @@
         [self.navigationController pushViewController:self.selectorController animated:YES];
         [self.selectorController.tableView reloadData];
     }
-    else [self.tableView deselectRowAtIndexPath:(self.tableView).indexPathForSelectedRow animated:YES];
+    else [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
 }
 
 - (IBAction)navBarSwipe:(id)sender
@@ -473,7 +473,7 @@
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
     if (buttonIndex == alertView.cancelButtonIndex) {
-        [self.tableView deselectRowAtIndexPath:(self.tableView).indexPathForSelectedRow animated:YES];
+        [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
         return;
     }
     
@@ -482,7 +482,7 @@
     if (c.authSuccess) {
         [self.navigationController pushViewController:c animated:YES];
     }
-    else [self.tableView deselectRowAtIndexPath:(self.tableView).indexPathForSelectedRow animated:YES];
+    else [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
 }
 
 @end

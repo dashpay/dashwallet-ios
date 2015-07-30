@@ -207,7 +207,7 @@
             [self performSelector:@selector(wipeWithPhrase:) withObject:phrase afterDelay:0.0];
         }
         else if (incorrect) {
-            textView.selectedRange = [(textView.text).lowercaseString rangeOfString:incorrect];
+            textView.selectedRange = [textView.text.lowercaseString rangeOfString:incorrect];
         
             [[[UIAlertView alloc] initWithTitle:@""
               message:[NSString stringWithFormat:NSLocalizedString(@"\"%@\" is not a recovery phrase word", nil),

@@ -273,7 +273,7 @@ services:(uint64_t)services
 
         [self.outputBuffer appendMessage:message type:type];
         
-        while (self.outputBuffer.length > 0 && (self.outputStream).hasSpaceAvailable) {
+        while (self.outputBuffer.length > 0 && self.outputStream.hasSpaceAvailable) {
             NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
 
             if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
@@ -1000,7 +1000,7 @@ services:(uint64_t)services
         case NSStreamEventHasSpaceAvailable:
             if (aStream != self.outputStream) return;
         
-            while (self.outputBuffer.length > 0 && (self.outputStream).hasSpaceAvailable) {
+            while (self.outputBuffer.length > 0 && self.outputStream.hasSpaceAvailable) {
                 NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
                 
                 if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
@@ -1011,7 +1011,7 @@ services:(uint64_t)services
         case NSStreamEventHasBytesAvailable:
             if (aStream != self.inputStream) return;
 
-            while ((self.inputStream).hasBytesAvailable) {
+            while (self.inputStream.hasBytesAvailable) {
                 NSData *message = nil;
                 NSString *type = nil;
                 NSInteger headerLen = self.msgHeader.length, payloadLen = self.msgPayload.length, l = 0;

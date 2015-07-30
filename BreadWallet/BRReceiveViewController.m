@@ -205,7 +205,8 @@
     //      https://medium.com/@octskyward/merge-avoidance-7f95a386692f
     if ([title isEqual:NSLocalizedString(@"copy address to clipboard", nil)] ||
         [title isEqual:NSLocalizedString(@"copy request to clipboard", nil)]) {
-        [UIPasteboard generalPasteboard].string = (self.paymentRequest.amount > 0) ? self.paymentRequest.string : self.paymentAddress;
+        [UIPasteboard generalPasteboard].string =
+            (self.paymentRequest.amount > 0) ? self.paymentRequest.string : self.paymentAddress;
 
         [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"copied", nil)
          center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0 - 130.0)] popIn]

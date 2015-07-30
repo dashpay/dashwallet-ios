@@ -166,9 +166,10 @@ static NSString *sanitizeString(NSString *s)
                       otherButtonTitles:NSLocalizedString(@"copy", nil), nil] show];
                 }
                 else {
-                    [UIPasteboard generalPasteboard].string = [[m.wallet.addresses objectsPassingTest:^BOOL(id obj, BOOL *stop) {
-                        return [m.wallet addressIsUsed:obj];
-                    }].allObjects componentsJoinedByString:@"\n"];
+                    [UIPasteboard generalPasteboard].string =
+                        [[m.wallet.addresses objectsPassingTest:^BOOL(id obj, BOOL *stop) {
+                            return [m.wallet addressIsUsed:obj];
+                        }].allObjects componentsJoinedByString:@"\n"];
 
                     if (xsuccess) callback = [NSURL URLWithString:xsuccess];
                     self.url = nil;

@@ -102,7 +102,8 @@
                                stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
 
             if ([pair[0] isEqual:@"amount"]) {
-                self.amount = [[NSDecimalNumber decimalNumberWithString:value] decimalNumberByMultiplyingByPowerOf10:8].unsignedLongLongValue;
+                self.amount = [[NSDecimalNumber decimalNumberWithString:value]
+                               decimalNumberByMultiplyingByPowerOf10:8].unsignedLongLongValue;
             }
             else if ([pair[0] isEqual:@"label"]) {
                 self.label = value;

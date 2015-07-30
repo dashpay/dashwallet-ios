@@ -804,8 +804,9 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         
         if ([response isKindOfClass:[NSHTTPURLResponse class]]) { // store server timestamp
             NSString *date = ((NSHTTPURLResponse *)response).allHeaderFields[@"Date"];
-            NSTimeInterval now = ([[NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeDate error:nil]
-                                   matchesInString:date options:0 range:NSMakeRange(0, date.length)].lastObject).date.timeIntervalSinceReferenceDate;
+            NSTimeInterval now = [[NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeDate error:nil]
+                                   matchesInString:date options:0
+                                   range:NSMakeRange(0, date.length)].lastObject.date.timeIntervalSinceReferenceDate;
             
             if (now > self.secureTime) [defs setDouble:now forKey:SECURE_TIME_KEY];
         }
@@ -1014,7 +1015,7 @@ completion:(void (^)(BRTransaction *tx, uint64_t fee, NSError *error))completion
             return;
         }
      
-        [tx addOutputAddress:(self.wallet).changeAddress amount:balance - feeAmount];
+        [tx addOutputAddress:self.wallet.changeAddress amount:balance - feeAmount];
      
         if (! [tx signWithPrivateKeys:@[privKey]]) {
             completion(nil, 0, [NSError errorWithDomain:@"BreadWallet" code:401 userInfo:@{NSLocalizedDescriptionKey:

@@ -216,7 +216,7 @@ static const char *dns_seeds[] = {
             for (size_t i = 0; i < sizeof(dns_seeds)/sizeof(*dns_seeds); i++) [peers addObject:[NSMutableArray array]];
             
             dispatch_apply(peers.count, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(size_t i) {
-                NSString *servname = (@(BITCOIN_STANDARD_PORT)).stringValue;
+                NSString *servname = @(BITCOIN_STANDARD_PORT).stringValue;
                 struct addrinfo hints = { 0, AF_UNSPEC, SOCK_STREAM, 0, 0, 0, NULL, NULL }, *servinfo, *p;
                 UInt128 addr = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
 
@@ -468,7 +468,7 @@ static const char *dns_seeds[] = {
             [peers removeObject:p];
         }
 
-        self.bloomFilter; // initialize wallet and bloomFilter while connecting
+        [self bloomFilter]; // initialize wallet and bloomFilter while connecting
 
         if (self.connectedPeers.count == 0) {
             [self syncStopped];
@@ -578,7 +578,7 @@ static const char *dns_seeds[] = {
             if (block) return block.timestamp - NSTimeIntervalSince1970;
         }
     }
-    else [[BRMerkleBlockEntity context] performBlock:^{ self.blocks; }];
+    else [[BRMerkleBlockEntity context] performBlock:^{ [self blocks]; }];
 
     uint32_t h = self.lastBlockHeight, t = self.lastBlock.timestamp;
 
