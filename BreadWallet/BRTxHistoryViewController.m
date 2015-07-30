@@ -93,15 +93,15 @@ static NSString *dateFormat(NSString *template)
     self.transactions = m.wallet.recentTransactions;
     
 #if SNAPSHOT
-    BRTransaction *tx = [[BRTransaction alloc] initWithInputHashes:@[@"".hexToData] inputIndexes:@[@(0)]
-                         inputScripts:@[@"".hexToData] outputAddresses:@[@""] outputAmounts:@[@(0)]];
+    BRTransaction *tx = [[BRTransaction alloc] initWithInputHashes:@[uint256_obj(UINT256_ZERO)] inputIndexes:@[@(0)]
+                         inputScripts:@[uint256_obj(UINT256_ZERO)] outputAddresses:@[@""] outputAmounts:@[@(0)]];
     
     m.localCurrencyCode = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
     self.tableView.showsVerticalScrollIndicator = NO;
     self.moreTx = YES;
     m.didAuthenticate = YES;
     [self unlock:nil];
-    [(id)tx setTxHash:@"".hexToData];
+    tx.txHash = UINT256_ZERO;
     self.transactions = @[tx, tx, tx, tx, tx, tx];
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{

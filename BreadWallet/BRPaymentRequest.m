@@ -233,7 +233,7 @@ completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion
         BRPaymentProtocolRequest *req = nil;
         NSString *network = @"main";
         
-#ifdef BITCOIN_TESTNET
+#if BITCOIN_TESTNET
         network = @"test";
 #endif
         
