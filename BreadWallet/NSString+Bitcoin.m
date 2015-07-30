@@ -77,7 +77,7 @@ static const UniChar base58chars[] = {
     
     NSMutableData *data = [NSMutableData secureDataWithData:d];
 
-    [data appendBytes:d.SHA256_2.bytes length:4];
+    [data appendBytes:d.SHA256_2.u32 length:4];
     return [self base58WithData:data];
 }
 
@@ -130,7 +130,7 @@ static const UniChar base58chars[] = {
     else if (l == 2 && ([elem[0] intValue] == 65 || [elem[0] intValue] == 33) && [elem[1] intValue] == OP_CHECKSIG) {
         // pay-to-pubkey scriptPubKey
         [d appendBytes:&v length:1];
-        [d appendData:[elem[0] hash160]];
+        [d appendBytes:[elem[0] hash160].u8 length:sizeof(UInt160)];
     }
     else return nil; // unknown script type
 
@@ -153,7 +153,7 @@ static const UniChar base58chars[] = {
     if (l >= 2 && [elem[l - 2] intValue] <= OP_PUSHDATA4 && [elem[l - 2] intValue] > 0 &&
         ([elem[l - 1] intValue] == 65 || [elem[l - 1] intValue] == 33)) { // pay-to-pubkey-hash scriptSig
         [d appendBytes:&v length:1];
-        [d appendData:[elem[l - 1] hash160]];
+        [d appendBytes:[elem[l - 1] hash160].u8 length:sizeof(UInt160)];
     }
     else if (l >= 2 && [elem[l - 2] intValue] <= OP_PUSHDATA4 && [elem[l - 2] intValue] > 0 &&
              [elem[l - 1] intValue] <= OP_PUSHDATA4 && [elem[l - 1] intValue] > 0) { // pay-to-script-hash scriptSig
@@ -162,7 +162,7 @@ static const UniChar base58chars[] = {
         v = BITCOIN_SCRIPT_ADDRESS_TEST;
 #endif
         [d appendBytes:&v length:1];
-        [d appendData:[elem[l - 1] hash160]];
+        [d appendBytes:[elem[l - 1] hash160].u8 length:sizeof(UInt160)];
     }
     else if (l >= 1 && [elem[l - 1] intValue] <= OP_PUSHDATA4 && [elem[l - 1] intValue] > 0) {// pay-to-pubkey scriptSig
         //TODO: implement Peter Wullie's pubKey recovery from signature
@@ -249,7 +249,7 @@ static const UniChar base58chars[] = {
     NSData *data = CFBridgingRelease(CFDataCreate(SecureAllocator(), d.bytes, d.length - 4));
 
     // verify checksum
-    if (*(uint32_t *)((const uint8_t *)d.bytes + d.length - 4) != *(uint32_t *)data.SHA256_2.bytes) return nil;
+    if (*(uint32_t *)((const uint8_t *)d.bytes + d.length - 4) != data.SHA256_2.u32[0]) return nil;
     return data;
 }
 
@@ -332,7 +332,7 @@ static const UniChar base58chars[] = {
         [self getBytes:d.mutableBytes maxLength:d.length usedLength:NULL encoding:NSUTF8StringEncoding options:0
          range:NSMakeRange(0, self.length) remainingRange:NULL];
         [d appendBytes:"?" length:1];
-        return (*(const uint8_t *)d.SHA256.bytes == 0) ? YES : NO;
+        return (d.SHA256.u8[0] == 0) ? YES : NO;
     }
     else return (self.hexToData.length == 32) ? YES : NO; // hex encoded key
 }

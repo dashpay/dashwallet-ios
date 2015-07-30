@@ -241,7 +241,7 @@ CFAllocatorRef SecureAllocator()
     [self appendUInt32:BITCOIN_MAGIC_NUMBER];
     [self appendNullPaddedString:type length:12];
     [self appendUInt32:(uint32_t)message.length];
-    [self appendBytes:message.SHA256_2.bytes length:4];
+    [self appendBytes:message.SHA256_2.u32 length:4];
     [self appendBytes:message.bytes length:message.length];
 }
 

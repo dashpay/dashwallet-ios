@@ -529,7 +529,8 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
             if (self.callback && [[UIApplication sharedApplication] canOpenURL:self.callback]) {
                 self.callback = [NSURL URLWithString:[self.callback.absoluteString stringByAppendingFormat:@"%@txid=%@",
-                                 (self.callback.query.length > 0) ? @"&" : @"?", [NSString hexWithData:tx.txHash]]];
+                                 (self.callback.query.length > 0) ? @"&" : @"?",
+                                 [NSString hexWithData:[NSData dataWithBytes:tx.txHash.u8 length:sizeof(UInt256)]]]];
                 [[UIApplication sharedApplication] openURL:self.callback];
             }
             
@@ -580,10 +581,10 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
                     [(id)self.parentViewController.parentViewController ping];
 
                     if (self.callback && [[UIApplication sharedApplication] canOpenURL:self.callback]) {
-                        self.callback = [NSURL URLWithString:[self.callback.absoluteString
-                                         stringByAppendingFormat:@"%@txid=%@",
-                                         (self.callback.query.length > 0) ? @"&" : @"?",
-                                         [NSString hexWithData:tx.txHash]]];
+                        self.callback =
+                            [NSURL URLWithString:[self.callback.absoluteString stringByAppendingFormat:@"%@txid=%@",
+                             (self.callback.query.length > 0) ? @"&" : @"?",
+                             [NSString hexWithData:[NSData dataWithBytes:tx.txHash.u8 length:sizeof(UInt256)]]]];
                         [[UIApplication sharedApplication] openURL:self.callback];
                     }
                     

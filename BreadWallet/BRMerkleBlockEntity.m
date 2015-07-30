@@ -25,6 +25,7 @@
 
 #import "BRMerkleBlockEntity.h"
 #import "BRMerkleBlock.h"
+#import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 
 @implementation BRMerkleBlockEntity
@@ -44,10 +45,10 @@
 - (instancetype)setAttributesFromBlock:(BRMerkleBlock *)block;
 {
     [self.managedObjectContext performBlockAndWait:^{
-        self.blockHash = block.blockHash;
+        self.blockHash = [NSData dataWithBytes:block.blockHash.u8 length:sizeof(UInt256)];
         self.version = block.version;
-        self.prevBlock = block.prevBlock;
-        self.merkleRoot = block.merkleRoot;
+        self.prevBlock = [NSData dataWithBytes:block.prevBlock.u8 length:sizeof(UInt256)];
+        self.merkleRoot = [NSData dataWithBytes:block.merkleRoot.u8 length:sizeof(UInt256)];
         self.timestamp = block.timestamp - NSTimeIntervalSince1970;
         self.target = block.target;
         self.nonce = block.nonce;
@@ -65,10 +66,10 @@
     __block BRMerkleBlock *block = nil;
     
     [self.managedObjectContext performBlockAndWait:^{
-        block = [[BRMerkleBlock alloc] initWithBlockHash:self.blockHash version:self.version prevBlock:self.prevBlock
-                 merkleRoot:self.merkleRoot timestamp:self.timestamp + NSTimeIntervalSince1970 target:self.target
-                 nonce:self.nonce totalTransactions:self.totalTransactions hashes:self.hashes flags:self.flags
-                 height:self.height];
+        block = [[BRMerkleBlock alloc] initWithBlockHash:*(const UInt256 *)self.blockHash.bytes version:self.version
+                 prevBlock:*(const UInt256 *)self.prevBlock.bytes merkleRoot:*(const UInt256 *)self.merkleRoot.bytes
+                 timestamp:self.timestamp + NSTimeIntervalSince1970 target:self.target nonce:self.nonce
+                 totalTransactions:self.totalTransactions hashes:self.hashes flags:self.flags height:self.height];
     }];
     
     return block;

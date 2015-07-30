@@ -28,12 +28,14 @@
 #define BLOCK_DIFFICULTY_INTERVAL 2016      // number of blocks between difficulty target adjustments
 #define BLOCK_UNKNOWN_HEIGHT      INT32_MAX
 
+typedef union _UInt256 UInt256;
+
 @interface BRMerkleBlock : NSObject
 
-@property (nonatomic, readonly) NSData *blockHash;
+@property (nonatomic, readonly) UInt256 blockHash;
 @property (nonatomic, readonly) uint32_t version;
-@property (nonatomic, readonly) NSData *prevBlock;
-@property (nonatomic, readonly) NSData *merkleRoot;
+@property (nonatomic, readonly) UInt256 prevBlock;
+@property (nonatomic, readonly) UInt256 merkleRoot;
 @property (nonatomic, readonly) uint32_t timestamp; // time interval since unix epoch
 @property (nonatomic, readonly) uint32_t target;
 @property (nonatomic, readonly) uint32_t nonce;
@@ -55,12 +57,12 @@
 + (instancetype)blockWithMessage:(NSData *)message;
 
 - (instancetype)initWithMessage:(NSData *)message;
-- (instancetype)initWithBlockHash:(NSData *)blockHash version:(uint32_t)version prevBlock:(NSData *)prevBlock
-merkleRoot:(NSData *)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
+- (instancetype)initWithBlockHash:(UInt256)blockHash version:(uint32_t)version prevBlock:(UInt256)prevBlock
+merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
 totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags height:(uint32_t)height;
 
 // true if the given tx hash is known to be included in the block
-- (BOOL)containsTxHash:(NSData *)txHash;
+- (BOOL)containsTxHash:(UInt256)txHash;
 
 // Verifies the block difficulty target is correct for the block's position in the chain. Transition time may be 0 if
 // height is not a multiple of BLOCK_DIFFICULTY_INTERVAL.

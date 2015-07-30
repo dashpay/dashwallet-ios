@@ -49,7 +49,7 @@
 - (void)connect;
 - (void)rescan;
 - (void)publishTransaction:(BRTransaction *)transaction completion:(void (^)(NSError *error))completion;
-- (NSUInteger)relayCountForTransaction:(NSData *)txHash; // number of connected peers that have relayed the transaction
+- (NSUInteger)relayCountForTransaction:(UInt256)txHash; // number of connected peers that have relayed the transaction
 - (NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight; // seconds since reference date, 00:00:00 01/01/01 GMT
 
 @end

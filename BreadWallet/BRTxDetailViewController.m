@@ -170,7 +170,8 @@
                     subtitleLabel = (id)[cell viewWithTag:3];
                     [self setBackgroundForCell:cell indexPath:indexPath];
                     textLabel.text = NSLocalizedString(@"id:", nil);
-                    detailLabel.text = [NSString hexWithData:self.transaction.txHash.reverse];
+                    detailLabel.text = [NSString hexWithData:[NSData dataWithBytes:self.transaction.txHash.u8
+                                                              length:sizeof(UInt256)].reverse];
                     subtitleLabel.text = nil;
                     break;
                     
