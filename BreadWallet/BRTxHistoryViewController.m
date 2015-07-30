@@ -94,7 +94,7 @@ static NSString *dateFormat(NSString *template)
     
 #if SNAPSHOT
     BRTransaction *tx = [[BRTransaction alloc] initWithInputHashes:@[uint256_obj(UINT256_ZERO)] inputIndexes:@[@(0)]
-                         inputScripts:@[uint256_obj(UINT256_ZERO)] outputAddresses:@[@""] outputAmounts:@[@(0)]];
+                         inputScripts:@[[NSData data]] outputAddresses:@[@""] outputAmounts:@[@(0)]];
     
     m.localCurrencyCode = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
     self.tableView.showsVerticalScrollIndicator = NO;

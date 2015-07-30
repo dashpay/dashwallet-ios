@@ -25,6 +25,12 @@
 
 #import <Foundation/Foundation.h>
 
+typedef struct {
+    uint8_t u8[33];
+} PubKey;
+
+#define pubkey_obj(o) [NSValue value:&(o).form withObjCType:@encode(PubKey)]
+
 typedef union _UInt256 UInt256;
 typedef union _UInt160 UInt160;
 
@@ -48,7 +54,7 @@ int secp256k1_point_mul(void *r, const void *p, UInt256 i, int compressed);// mu
 - (instancetype)initWithSecret:(UInt256)secret compressed:(BOOL)compressed;
 - (instancetype)initWithPublicKey:(NSData *)publicKey;
 
-- (NSData *)sign:(NSData *)md;
-- (BOOL)verify:(NSData *)md signature:(NSData *)sig;
+- (NSData *)sign:(UInt256)md;
+- (BOOL)verify:(UInt256)md signature:(NSData *)sig;
 
 @end

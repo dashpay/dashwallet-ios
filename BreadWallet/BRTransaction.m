@@ -355,8 +355,7 @@ sequence:(uint32_t)sequence
         
         NSMutableData *sig = [NSMutableData data];
         UInt256 hash = [self toDataWithSubscriptIndex:i].SHA256_2;
-        NSMutableData *s = [NSMutableData dataWithData:[keys[keyIdx]
-                                                        sign:[NSData dataWithBytes:&hash length:sizeof(hash)]]];
+        NSMutableData *s = [NSMutableData dataWithData:[keys[keyIdx] sign:hash]];
         NSArray *elem = [self.inScripts[i] scriptElements];
         
         [s appendUInt8:SIGHASH_ALL];

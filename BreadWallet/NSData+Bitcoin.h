@@ -82,19 +82,6 @@ typedef union _UInt128 {
 #define UINT160_ZERO ((UInt160) { .u32 = { 0, 0, 0, 0, 0 } })
 #define UINT128_ZERO ((UInt128) { .u64 = { 0, 0 } })
 
-typedef struct _UTXO {
-    UInt256 hash;
-    unsigned long n; // unsigned long instead of uint32_t to avoid trailing struct padding
-} UTXO;
-
-#define utxo_obj(o) [NSValue value:(o).hash.u8 withObjCType:@encode(UTXO)]
-
-typedef struct _PubKey {
-    uint8_t u8[33];
-} PubKey;
-
-#define pubkey_obj(o) [NSValue value:&(o).form withObjCType:@encode(PubKey)]
-
 #define RMD160_DIGEST_LENGTH (160/8)
 
 #define VAR_INT16_HEADER 0xfd

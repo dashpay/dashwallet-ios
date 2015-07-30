@@ -30,6 +30,13 @@
 
 #define BRWalletBalanceChangedNotification @"BRWalletBalanceChangedNotification"
 
+typedef struct {
+    UInt256 hash;
+    unsigned long n; // unsigned long instead of uint32_t to avoid trailing struct padding
+} UTXO;
+
+#define utxo_obj(o) [NSValue value:(o).hash.u8 withObjCType:@encode(UTXO)]
+
 @class BRTransaction;
 @protocol BRKeySequence;
 

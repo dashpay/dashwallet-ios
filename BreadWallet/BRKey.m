@@ -264,21 +264,17 @@ int secp256k1_point_mul(void *r, const void *p, UInt256 i, int compressed)
     return [NSString base58checkWithData:d];
 }
 
-- (NSData *)sign:(NSData *)md
+- (NSData *)sign:(UInt256)md
 {
     if (uint256_is_zero(_seckey)) {
         NSLog(@"%s: can't sign with a public key", __func__);
-        return nil;
-    }
-    else if (md.length != CC_SHA256_DIGEST_LENGTH) {
-        NSLog(@"%s: Only 256bit message digests can be signed", __func__);
         return nil;
     }
 
     NSMutableData *s = [NSMutableData dataWithLength:72];
     int len = (int)s.length;
     
-    if (secp256k1_ecdsa_sign(_ctx, md.bytes, s.mutableBytes, &len, (const unsigned char *)&_seckey,
+    if (secp256k1_ecdsa_sign(_ctx, md.u8, s.mutableBytes, &len, (const unsigned char *)&_seckey,
                              secp256k1_nonce_function_rfc6979, NULL)) {
         s.length = len;
         return s;
@@ -286,15 +282,10 @@ int secp256k1_point_mul(void *r, const void *p, UInt256 i, int compressed)
     else return nil;
 }
 
-- (BOOL)verify:(NSData *)md signature:(NSData *)sig
+- (BOOL)verify:(UInt256)md signature:(NSData *)sig
 {
-    if (md.length != CC_SHA256_DIGEST_LENGTH) {
-        NSLog(@"%s: Only 256bit message digests can be verified", __func__);
-        return NO;
-    }
-
     // success is 1, all other values are fail
-    return (secp256k1_ecdsa_verify(_ctx, md.bytes, sig.bytes, (int)sig.length, self.publicKey.bytes,
+    return (secp256k1_ecdsa_verify(_ctx, md.u8, sig.bytes, (int)sig.length, self.publicKey.bytes,
                                    (int)self.publicKey.length) == 1) ? YES : NO;
 }
 
