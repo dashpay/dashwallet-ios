@@ -228,12 +228,12 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         uint32_t i = 0, n = 0;
         BRTransaction *transaction;
         UInt256 h;
-        UTXO o;
+        BRUTXO o;
 
         for (NSValue *hash in tx.inputHashes) {
             n = [tx.inputIndexes[i++] unsignedIntValue];
             [hash getValue:&h];
-            [spent addObject:utxo_obj(((UTXO) { h, n }))];
+            [spent addObject:brutxo_obj(((BRUTXO) { h, n }))];
         }
 
         // check if any inputs are invalid or already spent
@@ -251,7 +251,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         //NOTE: balance/UTXOs will then need to be recalculated when last block changes
         for (NSString *address in tx.outputAddresses) { // add outputs to UTXO set
             if ([self containsAddress:address]) {
-                [utxos addObject:utxo_obj(((UTXO) { tx.txHash, n }))];
+                [utxos addObject:brutxo_obj(((BRUTXO) { tx.txHash, n }))];
                 balance += [tx.outputAmounts[n] unsignedLongLongValue];
             }
             
@@ -362,7 +362,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     uint64_t amount = 0, balance = 0, feeAmount = 0;
     BRTransaction *transaction = [BRTransaction new], *tx;
     NSUInteger i = 0, cpfpSize = 0;
-    UTXO o;
+    BRUTXO o;
 
     for (NSData *script in scripts) {
         if (! script.length) return nil;
@@ -537,7 +537,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 
         [hash getValue:&h];
         if ((tx && ! [self transactionIsValid:tx]) ||
-            [self.spentOutputs containsObject:utxo_obj(((UTXO) { h, n }))]) return NO;
+            [self.spentOutputs containsObject:brutxo_obj(((BRUTXO) { h, n }))]) return NO;
     }
 
     return YES;

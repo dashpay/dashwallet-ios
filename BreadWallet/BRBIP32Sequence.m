@@ -86,7 +86,7 @@ static void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i)
 // - In case parse256(IL) >= n or Ki is the point at infinity, the resulting key is invalid, and one should proceed with
 //   the next value for i.
 //
-static void CKDpub(PubKey *K, UInt256 *c, uint32_t i)
+static void CKDpub(BRPubKey *K, UInt256 *c, uint32_t i)
 {
     if (i & BIP32_HARD) {
         @throw [NSException exceptionWithName:@"BRBIP32SequenceCKDPubException"
@@ -159,10 +159,10 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
 
 - (NSData *)publicKey:(unsigned)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
 {
-    if (masterPublicKey.length < 4 + sizeof(UInt256) + sizeof(PubKey)) return nil;
+    if (masterPublicKey.length < 4 + sizeof(UInt256) + sizeof(BRPubKey)) return nil;
 
     UInt256 chain = *(const UInt256 *)((const uint8_t *)masterPublicKey.bytes + 4);
-    PubKey pubKey = *(const PubKey *)((const uint8_t *)masterPublicKey.bytes + 36);
+    BRPubKey pubKey = *(const BRPubKey *)((const uint8_t *)masterPublicKey.bytes + 36);
 
     CKDpub(&pubKey, &chain, internal ? 1 : 0); // internal or external chain
     CKDpub(&pubKey, &chain, n); // nth key in chain
@@ -233,7 +233,7 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     
     uint32_t fingerprint = CFSwapInt32BigToHost(*(const uint32_t *)masterPublicKey.bytes);
     UInt256 chain = *(UInt256 *)((const uint8_t *)masterPublicKey.bytes + 4);
-    PubKey pubKey = *(PubKey *)((const uint8_t *)masterPublicKey.bytes + 36);
+    BRPubKey pubKey = *(BRPubKey *)((const uint8_t *)masterPublicKey.bytes + 36);
 
     return serialize(1, fingerprint, 0 | BIP32_HARD, chain, [NSData dataWithBytes:&pubKey length:sizeof(pubKey)]);
 }

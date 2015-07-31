@@ -903,7 +903,7 @@ completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
         NSMutableArray *utxos = [NSMutableArray array], *amounts = [NSMutableArray array],
                        *scripts = [NSMutableArray array];
-        UTXO o;
+        BRUTXO o;
         
         if (error) {
             completion(nil, nil, nil, error);
@@ -935,7 +935,7 @@ completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError
             if (! [utxo[@"script_type"] isEqual:@"pubkeyhash"] && ! [utxo[@"script_type"] isEqual:@"pubkey"]) continue;
             o.hash = *(const UInt256 *)[[utxo[@"transaction_hash"] hexToData] reverse].bytes;
             o.n = [utxo[@"output_index"] unsignedIntValue];
-            [utxos addObject:utxo_obj(o)];
+            [utxos addObject:brutxo_obj(o)];
             [amounts addObject:utxo[@"value"]];
             [scripts addObject:[utxo[@"script_hex"] hexToData]];
         }
@@ -992,7 +992,7 @@ completion:(void (^)(BRTransaction *tx, uint64_t fee, NSError *error))completion
 
         //TODO: make sure not to create a transaction larger than TX_MAX_SIZE
         for (NSValue *output in utxos) {
-            UTXO o;
+            BRUTXO o;
             
             [output getValue:&o];
             [tx addInputHash:o.hash index:o.n script:scripts[i]];

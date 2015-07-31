@@ -406,7 +406,7 @@ static const char *dns_seeds[] = {
     }
 
     for (NSValue *utxo in m.wallet.unspentOutputs) {// add unspent outputs to watch for tx sending money from the wallet
-        UTXO o;
+        BRUTXO o;
         NSData *d;
         
         [utxo getValue:&o];

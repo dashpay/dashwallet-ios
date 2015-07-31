@@ -25,11 +25,11 @@
 
 #import <Foundation/Foundation.h>
 
-typedef struct {
+typedef struct _BRPubKey {
     uint8_t u8[33];
-} PubKey;
+} BRPubKey;
 
-#define pubkey_obj(o) [NSValue value:&(o).form withObjCType:@encode(PubKey)]
+#define brpubkey_obj(o) [NSValue value:&(o).form withObjCType:@encode(BRPubKey)]
 
 typedef union _UInt256 UInt256;
 typedef union _UInt160 UInt160;
