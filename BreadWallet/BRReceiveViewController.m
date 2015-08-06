@@ -202,7 +202,7 @@
     NSString *title = [actionSheet buttonTitleAtIndex:buttonIndex];
 
     //TODO: allow user to create a payment protocol request object, and use merge avoidance techniques:
-    //      https://medium.com/@octskyward/merge-avoidance-7f95a386692f
+    // https://medium.com/@octskyward/merge-avoidance-7f95a386692f
     if ([title isEqual:NSLocalizedString(@"copy address to clipboard", nil)] ||
         [title isEqual:NSLocalizedString(@"copy request to clipboard", nil)]) {
         [UIPasteboard generalPasteboard].string =
@@ -214,8 +214,6 @@
     }
     else if ([title isEqual:NSLocalizedString(@"send address as email", nil)] ||
              [title isEqual:NSLocalizedString(@"send request as email", nil)]) {
-        //TODO: add qr image to email
-        
         //TODO: implement BIP71 payment protocol mime attachement
         // https://github.com/bitcoin/bips/blob/master/bip-0071.mediawiki
         
