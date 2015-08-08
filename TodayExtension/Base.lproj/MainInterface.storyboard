@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="7706" systemVersion="14E46" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="M4Y-Lb-cyx">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="8164.2" systemVersion="14E46" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="M4Y-Lb-cyx">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7703"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="8135.1"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
     </dependencies>
     <scenes>
@@ -58,7 +59,7 @@
                                                 </connections>
                                             </button>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="scan QR code" textAlignment="center" lineBreakMode="clip" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JgG-Ah-UZk">
-                                                <rect key="frame" x="16" y="158" width="92" height="17"/>
+                                                <rect key="frame" x="17" y="158" width="90" height="17"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <color key="textColor" red="1" green="1" blue="1" alpha="0.70000000000000007" colorSpace="calibratedRGB"/>
                                                 <nil key="highlightedColor"/>
@@ -88,7 +89,7 @@
                                         <rect key="frame" x="124" y="0.0" width="196" height="240"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="receive" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KJN-zr-IQB">
-                                                <rect key="frame" x="73" y="6" width="49" height="18"/>
+                                                <rect key="frame" x="73" y="6" width="49.5" height="18"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                                 <color key="textColor" red="1" green="1" blue="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="calibratedRGB"/>
                                                 <nil key="highlightedColor"/>
@@ -130,6 +131,7 @@
                                             </label>
                                         </subviews>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                        <gestureRecognizers/>
                                         <constraints>
                                             <constraint firstItem="IcB-mX-B8K" firstAttribute="top" secondItem="KJN-zr-IQB" secondAttribute="bottom" constant="8" id="19W-4t-zL6"/>
                                             <constraint firstItem="IcB-mX-B8K" firstAttribute="leading" secondItem="aus-tt-hb6" secondAttribute="leading" constant="16" id="2px-sL-Crf"/>
@@ -144,9 +146,13 @@
                                             <constraint firstItem="IcB-mX-B8K" firstAttribute="centerY" secondItem="HLv-lr-Rge" secondAttribute="centerY" id="qs8-ZM-jVt"/>
                                             <constraint firstItem="IcB-mX-B8K" firstAttribute="centerX" secondItem="HLv-lr-Rge" secondAttribute="centerX" id="uHY-Tz-gNJ"/>
                                         </constraints>
+                                        <connections>
+                                            <outletCollection property="gestureRecognizers" destination="Qtk-rs-lkS" appends="YES" id="Sro-Jt-39J"/>
+                                        </connections>
                                     </view>
                                 </subviews>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                <color key="backgroundColor" white="1" alpha="0.01" colorSpace="calibratedWhite"/>
+                                <gestureRecognizers/>
                                 <constraints>
                                     <constraint firstItem="hqe-ao-zmT" firstAttribute="height" secondItem="ZgQ-IE-5k2" secondAttribute="height" id="4S3-Tq-eDl"/>
                                     <constraint firstItem="A3s-aK-YRq" firstAttribute="centerY" secondItem="IcB-mX-B8K" secondAttribute="centerY" id="6AQ-EN-7eu"/>
@@ -162,6 +168,9 @@
                                     <constraint firstItem="hqe-ao-zmT" firstAttribute="leading" secondItem="ZgQ-IE-5k2" secondAttribute="leading" id="lhl-3I-hDh"/>
                                     <constraint firstItem="aus-tt-hb6" firstAttribute="leading" secondItem="hqe-ao-zmT" secondAttribute="trailing" id="wc0-7W-Noi"/>
                                 </constraints>
+                                <connections>
+                                    <outletCollection property="gestureRecognizers" destination="hAM-OP-Qvr" appends="YES" id="Qg6-Rh-f8p"/>
+                                </connections>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jeJ-XT-nMj" userLabel="No data view container">
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="240"/>
@@ -224,6 +233,7 @@
                                 </constraints>
                             </view>
                         </subviews>
+                        <gestureRecognizers/>
                         <constraints>
                             <constraint firstAttribute="centerY" secondItem="jeJ-XT-nMj" secondAttribute="centerY" id="0Qu-j9-JbB"/>
                             <constraint firstAttribute="centerY" secondItem="ZgQ-IE-5k2" secondAttribute="centerY" id="2GS-R4-bkH"/>
@@ -243,7 +253,7 @@
                     <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                     <size key="freeformSize" width="320" height="240"/>
                     <connections>
-                        <outlet property="hashLabel" destination="gQm-B2-ZXE" id="mcZ-F0-E9r"/>
+                        <outlet property="addressLabel" destination="gQm-B2-ZXE" id="Fhj-oL-Wak"/>
                         <outlet property="noDataViewContainer" destination="jeJ-XT-nMj" id="LwK-TU-PnW"/>
                         <outlet property="qrImage" destination="IcB-mX-B8K" id="GX2-4h-4db"/>
                         <outlet property="qrOverlay" destination="Nrm-Gx-zIF" id="o6b-Gw-blu"/>
@@ -251,8 +261,18 @@
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="vXp-U4-Rya" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <tapGestureRecognizer id="hAM-OP-Qvr">
+                    <connections>
+                        <action selector="widgetTapped:" destination="M4Y-Lb-cyx" id="pLN-AH-gIb"/>
+                    </connections>
+                </tapGestureRecognizer>
+                <tapGestureRecognizer id="Qtk-rs-lkS">
+                    <connections>
+                        <action selector="qrImageTapped:" destination="M4Y-Lb-cyx" id="AUv-be-e3w"/>
+                    </connections>
+                </tapGestureRecognizer>
             </objects>
-            <point key="canvasLocation" x="967.5" y="301.05633802816897"/>
+            <point key="canvasLocation" x="967" y="301"/>
         </scene>
     </scenes>
     <resources>

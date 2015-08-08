@@ -25,8 +25,9 @@
 
 #import "BRBubbleView.h"
 
-#define RADIUS    10.0
-#define MARGIN    10.0
+#define RADIUS    8.0
+#define MARGIN_X  16.0
+#define MARGIN_Y  9.0
 #define MAX_WIDTH 300.0
 
 @interface BRBubbleView ()
@@ -38,9 +39,24 @@
 
 @implementation BRBubbleView
 
+- (BOOL)canBecomeFirstResponder
+{
+    return YES;
+}
+
+- (BOOL)resignFirstResponder
+{
+    if ([super resignFirstResponder]) {
+        [self popOut];
+        return YES;
+    }
+    else return NO;
+}
+
 + (instancetype)viewWithText:(NSString *)text center:(CGPoint)center
 {
-    BRBubbleView *v = [[self alloc] initWithFrame:CGRectMake(center.x - MARGIN, center.y - MARGIN, MARGIN*2, MARGIN*2)];
+    BRBubbleView *v = [[self alloc] initWithFrame:CGRectMake(center.x - MARGIN_X, center.y - MARGIN_Y, MARGIN_X*2,
+                                                             MARGIN_Y*2)];
 
     v.text = text;
     return v;
@@ -48,7 +64,7 @@
 
 + (instancetype)viewWithText:(NSString *)text tipPoint:(CGPoint)point tipDirection:(BRBubbleTipDirection)direction
 {
-    BRBubbleView *v = [[self alloc] initWithFrame:CGRectMake(0, 0, MARGIN*2, MARGIN*2)];
+    BRBubbleView *v = [[self alloc] initWithFrame:CGRectMake(0, 0, MARGIN_X*2, MARGIN_Y*2)];
 
     v.text = text;
     v.tipDirection = direction;
@@ -62,8 +78,8 @@
 
     self.layer.cornerRadius = RADIUS;
     self.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.8];
-    self.label = [[UILabel alloc] initWithFrame:CGRectMake(MARGIN, MARGIN, frame.size.width - MARGIN*2,
-                                                           frame.size.height - MARGIN*2)];
+    self.label = [[UILabel alloc] initWithFrame:CGRectMake(MARGIN_X, MARGIN_Y, frame.size.width - MARGIN_X*2,
+                                                           frame.size.height - MARGIN_Y*2)];
     self.label.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     self.label.textAlignment = NSTextAlignmentCenter;
     self.label.textColor = [UIColor whiteColor];
@@ -160,40 +176,44 @@
 - (void)layoutSubviews
 {
     CGPoint center = self.center;
-    CGRect rect = [self.label textRectForBounds:CGRectMake(0.0, 0.0, MAX_WIDTH - MARGIN*2, CGFLOAT_MAX)
+    CGRect rect = [self.label textRectForBounds:CGRectMake(0.0, 0.0, MAX_WIDTH - MARGIN_X*2, CGFLOAT_MAX)
                    limitedToNumberOfLines:0];
 
     if (self.customView) {
         if (rect.size.width < self.customView.frame.size.width) rect.size.width = self.customView.frame.size.width;
-        rect.size.height += self.customView.frame.size.height + (self.text.length > 0 ? MARGIN : 0);
+        rect.size.height += self.customView.frame.size.height + (self.text.length > 0 ? MARGIN_Y : 0);
     }
 
     if (self.tipPoint.x > 1) { // position bubble to point to tipPoint
         center.x = self.tipPoint.x;
         if (center.x + rect.size.width/2 > MAX_WIDTH) center.x = MAX_WIDTH - rect.size.width/2;
-        else if (center.x - rect.size.width/2 < MARGIN*2) center.x = MARGIN*2 + rect.size.width/2;
+        else if (center.x - rect.size.width/2 < MARGIN_X*2) center.x = MARGIN_X*2 + rect.size.width/2;
 
         center.y = self.tipPoint.y;
-        center.y += (self.tipDirection == BRBubbleTipDirectionUp ? 1 : -1)*((rect.size.height + MARGIN*2)/2 + RADIUS);
+        center.y += (self.tipDirection == BRBubbleTipDirectionUp ? 1 : -1)*((rect.size.height + MARGIN_Y*2)/2 + RADIUS);
     }
 
-    self.frame = CGRectMake(center.x - (rect.size.width + MARGIN*2)/2, center.y - (rect.size.height + MARGIN*2)/2,
-                            rect.size.width + MARGIN*2, rect.size.height + MARGIN*2);
+    self.frame = CGRectMake(center.x - (rect.size.width + MARGIN_X*2)/2, center.y - (rect.size.height + MARGIN_Y*2)/2,
+                            rect.size.width + MARGIN_X*2, rect.size.height + MARGIN_Y*2);
 
     if (self.customView) { // layout customView and label
-        self.customView.center = CGPointMake((rect.size.width + MARGIN*2)/2,
-                                             self.customView.frame.size.height/2 + MARGIN);
-        self.label.frame = CGRectMake(MARGIN, self.customView.frame.size.height + MARGIN*2, self.label.frame.size.width,
-                                      self.frame.size.height - (self.customView.frame.size.height + MARGIN*3));
+        self.customView.center = CGPointMake((rect.size.width + MARGIN_X*2)/2,
+                                             self.customView.frame.size.height/2 + MARGIN_Y);
+        self.label.frame = CGRectMake(MARGIN_X, self.customView.frame.size.height + MARGIN_Y*2,
+                                      self.label.frame.size.width,
+                                      self.frame.size.height - (self.customView.frame.size.height + MARGIN_Y*3));
     }
-    else self.label.frame = CGRectMake(MARGIN, MARGIN, self.label.frame.size.width, self.frame.size.height - MARGIN*2);
+    else {
+        self.label.frame = CGRectMake(MARGIN_X, MARGIN_Y, self.label.frame.size.width,
+                                      self.frame.size.height - MARGIN_Y*2);
+    }
 
     if (self.tipPoint.x > 1) { // draw tip arrow
         CGMutablePathRef path = CGPathCreateMutable();
-        CGFloat x = self.tipPoint.x - (center.x - (rect.size.width + MARGIN*2)/2);
+        CGFloat x = self.tipPoint.x - (center.x - (rect.size.width + MARGIN_X*2)/2);
 
         if (! self.arrow) self.arrow = [[CAShapeLayer alloc] init];
-        if (x > rect.size.width + MARGIN*2 - (RADIUS + 7.5)) x = rect.size.width + MARGIN*2 - (RADIUS + 7.5);
+        if (x > rect.size.width + MARGIN_X*2 - (RADIUS + 7.5)) x = rect.size.width + MARGIN_X*2 - (RADIUS + 7.5);
         if (x < self.layer.cornerRadius + 7.5) x = self.layer.cornerRadius + 7.5;
 
         if (self.tipDirection == BRBubbleTipDirectionUp) {
@@ -209,7 +229,7 @@
             CGPathAddLineToPoint(path, NULL, 7.5, 7.5);
             CGPathAddLineToPoint(path, NULL, 15.0, 0.0);
             CGPathAddLineToPoint(path, NULL, 0.0, 0.0);
-            self.arrow.position = CGPointMake(x, rect.size.height + MARGIN*2 - 0.5);
+            self.arrow.position = CGPointMake(x, rect.size.height + MARGIN_Y*2 - 0.5);
             self.arrow.anchorPoint = CGPointMake(0.5, 0.0);
         }
 

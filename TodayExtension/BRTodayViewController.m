@@ -24,65 +24,74 @@
 //  THE SOFTWARE.
 
 #import "BRTodayViewController.h"
-#import <NotificationCenter/NotificationCenter.h>
-#import "UIImage+Utility.h"
 #import "BRAppGroupConstants.h"
+#import "BRBubbleView.h"
+#import "UIImage+Utility.h"
+#import <NotificationCenter/NotificationCenter.h>
 
-static NSString *const kBRScanQRCodeURLScheme = @"bread://x-callback-url/scanqr";
-static NSString *const kBROpenBreadwalletScheme = @"bread://";
-
+#define SCAN_URL @"bread://x-callback-url/scanqr"
+#define OPEN_URL @"bread://"
 
 @interface BRTodayViewController () <NCWidgetProviding>
+
 @property (nonatomic, weak) IBOutlet UIImageView *qrImage, *qrOverlay;
-@property (nonatomic, weak) IBOutlet UILabel *hashLabel;
+@property (nonatomic, weak) IBOutlet UILabel *addressLabel;
 @property (nonatomic, weak) IBOutlet UIView *noDataViewContainer;
 @property (nonatomic, weak) IBOutlet UIView *topViewContainer;
 @property (nonatomic, strong) NSData *qrCodeData;
 @property (nonatomic, strong) NSUserDefaults *appGroupUserDefault;
+@property (nonatomic, strong) BRBubbleView *bubbleView;
+
 @end
 
 @implementation BRTodayViewController
 
-- (void)viewDidLoad {
+- (void)viewDidLoad
+{
     [super viewDidLoad];
 
     [self updateReceiveMoneyUI];
 }
 
-- (void)widgetPerformUpdateWithCompletionHandler:(void (^)(NCUpdateResult))completionHandler {
-    if (completionHandler) {
-        // Perform any setup necessary in order to update the view.
-        NSData *data = [self.appGroupUserDefault objectForKey:APP_GROUP_REQUEST_DATA_KEY];
+- (void)widgetPerformUpdateWithCompletionHandler:(void (^)(NCUpdateResult))completionHandler
+{
+    [self.bubbleView popOut];
+    self.bubbleView = nil;
+    if (! completionHandler) return;
+    
+    // Perform any setup necessary in order to update the view.
+    NSData *data = [self.appGroupUserDefault objectForKey:APP_GROUP_REQUEST_DATA_KEY];
 
-        // If an error is encountered, use NCUpdateResultFailed
-        // If there's no update required, use NCUpdateResultNoData
-        // If there's an update, use NCUpdateResultNewData
-        if ([self.qrCodeData isEqualToData:data]) {
-            self.noDataViewContainer.hidden = YES;
-            self.topViewContainer.hidden = NO;
-            completionHandler(NCUpdateResultNoData);
-        } else if (self.qrCodeData) {
-            self.qrCodeData = data;
-            self.noDataViewContainer.hidden = YES;
-            self.topViewContainer.hidden = NO;
-            [self updateReceiveMoneyUI];
-            completionHandler(NCUpdateResultNewData);
-        } else {
-            self.noDataViewContainer.hidden = NO;
-            self.topViewContainer.hidden = YES;
-            completionHandler(NCUpdateResultFailed);
-        }
+    // If an error is encountered, use NCUpdateResultFailed
+    // If there's no update required, use NCUpdateResultNoData
+    // If there's an update, use NCUpdateResultNewData
+    if ([self.qrCodeData isEqualToData:data]) {
+        self.noDataViewContainer.hidden = YES;
+        self.topViewContainer.hidden = NO;
+        completionHandler(NCUpdateResultNoData);
+    }
+    else if (self.qrCodeData) {
+        self.qrCodeData = data;
+        self.noDataViewContainer.hidden = YES;
+        self.topViewContainer.hidden = NO;
+        [self updateReceiveMoneyUI];
+        completionHandler(NCUpdateResultNewData);
+    }
+    else {
+        self.noDataViewContainer.hidden = NO;
+        self.topViewContainer.hidden = YES;
+        completionHandler(NCUpdateResultFailed);
     }
 }
 
-- (NSUserDefaults*)appGroupUserDefault {
-    if (!_appGroupUserDefault){
-        _appGroupUserDefault = [[NSUserDefaults alloc] initWithSuiteName:APP_GROUP_ID];
-    }
+- (NSUserDefaults *)appGroupUserDefault
+{
+    if (! _appGroupUserDefault) _appGroupUserDefault = [[NSUserDefaults alloc] initWithSuiteName:APP_GROUP_ID];
     return _appGroupUserDefault;
 }
 
-- (void)updateReceiveMoneyUI {
+- (void)updateReceiveMoneyUI
+{
     self.qrCodeData = [self.appGroupUserDefault objectForKey:APP_GROUP_REQUEST_DATA_KEY];
     
     if (self.qrCodeData && self.qrImage.bounds.size.width > 0) {
@@ -91,24 +100,56 @@ static NSString *const kBROpenBreadwalletScheme = @"bread://";
              color:[CIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:0.0]];
     }
 
-    self.hashLabel.text = [self.appGroupUserDefault objectForKey:APP_GROUP_RECEIVE_ADDRESS_KEY];
+    self.addressLabel.text = [self.appGroupUserDefault objectForKey:APP_GROUP_RECEIVE_ADDRESS_KEY];
 }
 
 #pragma mark - NCWidgetProviding
 
-- (UIEdgeInsets)widgetMarginInsetsForProposedMarginInsets:(UIEdgeInsets)defaultMarginInsets {
+- (UIEdgeInsets)widgetMarginInsetsForProposedMarginInsets:(UIEdgeInsets)defaultMarginInsets
+{
     return UIEdgeInsetsZero;
 }
 
 #pragma mark - UI Events
 
-- (IBAction)scanButtonTapped:(UIButton *)sender {
-    [self.extensionContext openURL:[NSURL URLWithString:kBRScanQRCodeURLScheme] completionHandler:nil];
+- (IBAction)scanButtonTapped:(UIButton *)sender
+{
+    [self.extensionContext openURL:[NSURL URLWithString:SCAN_URL] completionHandler:nil];
 }
 
-- (IBAction)openAppButtonTapped:(id)sender {
-    [self.extensionContext openURL:[NSURL URLWithString:kBROpenBreadwalletScheme] completionHandler:nil];
+- (IBAction)openAppButtonTapped:(id)sender
+{
+    [self.extensionContext openURL:[NSURL URLWithString:OPEN_URL] completionHandler:nil];
 }
 
+- (IBAction)qrImageTapped:(id)sender
+{
+    if (self.bubbleView) {
+        if (CGRectContainsPoint(self.bubbleView.frame,
+                                [(UITapGestureRecognizer *)sender locationInView:self.bubbleView.superview])) {
+            [UIPasteboard generalPasteboard].string = self.addressLabel.text;
+        }
+    
+        [self.bubbleView popOut];
+        self.bubbleView = nil;
+    }
+    else {
+        self.bubbleView = [BRBubbleView viewWithText:NSLocalizedString(@"Copy", nil)
+                           tipPoint:CGPointMake(self.addressLabel.center.x, self.addressLabel.frame.origin.y - 5.0)
+                           tipDirection:BRBubbleTipDirectionDown];
+        self.bubbleView.alpha = 0;
+        self.bubbleView.font = [UIFont systemFontOfSize:14.0];
+        self.bubbleView.backgroundColor = [UIColor colorWithWhite:0.15 alpha:1.0];
+        [self.addressLabel.superview addSubview:self.bubbleView];
+        [self.bubbleView becomeFirstResponder];
+        [UIView animateWithDuration:0.2 animations:^{ self.bubbleView.alpha = 1.0; }];
+    }
+}
+
+- (IBAction)widgetTapped:(id)sender
+{
+    [self.bubbleView popOut];
+    self.bubbleView = nil;
+}
 
 @end
