@@ -124,6 +124,7 @@
 
 - (IBAction)qrImageTapped:(id)sender
 {
+    // UIMenuControl doesn't seem to work in an NCWidget, so use a BRBubbleView that looks nearly the same
     if (self.bubbleView) {
         if (CGRectContainsPoint(self.bubbleView.frame,
                                 [(UITapGestureRecognizer *)sender locationInView:self.bubbleView.superview])) {
@@ -141,7 +142,7 @@
         self.bubbleView.font = [UIFont systemFontOfSize:14.0];
         self.bubbleView.backgroundColor = [UIColor colorWithWhite:0.15 alpha:1.0];
         [self.addressLabel.superview addSubview:self.bubbleView];
-        [self.bubbleView becomeFirstResponder];
+        [self.bubbleView becomeFirstResponder]; //this will cause bubbleview to hide when it loses firstresponder status
         [UIView animateWithDuration:0.2 animations:^{ self.bubbleView.alpha = 1.0; }];
     }
 }
