@@ -28,9 +28,6 @@
 // bitwise left rotation
 #define rotl(a, b) (((a) << (b)) | ((a) >> (32 - (b))))
 
-// bitwise right rotation
-#define rotr(a, b) (((a) >> (b)) | ((a) << (32 - (b))))
-
 // basic sha1 functions
 #define f1(x, y, z) (((x) & (y)) | (~(x) & (z)))
 #define f2(x, y, z) ((x) ^ (y) ^ (z))
@@ -70,6 +67,9 @@ static void SHA1(const void *data, size_t len, unsigned char *md)
     for (i = 0; i < sizeof(buf)/sizeof(*buf); i++) ((unsigned *)md)[i] = CFSwapInt32HostToBig(buf[i]); // write to md
 }
 
+// bitwise right rotation
+#define rotr(a, b) (((a) >> (b)) | ((a) << (32 - (b))))
+
 // basic sha256 functions
 #define ch(x, y, z) (((x) & (y)) ^ (~(x) & (z)))
 #define maj(x, y, z) (((x) & (y)) ^ ((x) & (z)) ^ ((y) & (z)))
@@ -108,16 +108,17 @@ static void SHA256Compress(unsigned *r, unsigned *x)
 static void SHA256(const void *data, size_t len, unsigned char *md)
 {
     unsigned buf[] = { 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19 },
-             x[16], i, j;
+             x[16], i;
     
-    for (i = 0, j = 0; i < len; i++) {
-        ((unsigned char *)x)[j++] = ((unsigned char *)data)[i];
-        if (j == 64) SHA256Compress(buf, x), j = 0;
+    for (i = 0; i < len; i += 64) { // process data in 64 byte blocks
+        memcpy(x, (const char *)data + i, (i + 64 > len) ? len - i : 64);
+        if (i + 64 > len) break;
+        SHA256Compress(buf, x);
     }
-    
-    memset((unsigned char *)x + j, 0, 64 - j);
-    ((unsigned char *)x)[j] = 0x80; // append padding
-    if (j > 55) SHA256Compress(buf, x), memset(x, 0, 64); // length goes to next block
+
+    memset((unsigned char *)x + (len - i), 0, 64 - (len - i)); // clear remainder of x
+    ((unsigned char *)x)[len - i] = 0x80; // append padding
+    if (len - i > 55) SHA256Compress(buf, x), memset(x, 0, 64); // length goes to next block
     *(unsigned long long *)&x[14] = CFSwapInt64HostToBig((unsigned long long)len*8); // append length in bits
     SHA256Compress(buf, x); // finalize
     for (i = 0; i < 8; i++) ((unsigned *)md)[i] = CFSwapInt32HostToBig(buf[i]); // write to md
@@ -179,23 +180,23 @@ static void RMDcompress(unsigned *r, unsigned *x)
     
     t = r[1] + cl + dr; // final result for r[0]
     r[1] = r[2] + dl + er, r[2] = r[3] + el + ar, r[3] = r[4] + al + br, r[4] = r[0] + bl + cr, r[0] = t; // combine
-    memset(x, 0, 64); // clear x
 }
 
 // ripemd-160 hash function: http://homes.esat.kuleuven.be/~bosselae/ripemd160.html
 static void RMD160(const void *data, size_t len, unsigned char *md)
 {
     unsigned buf[] = { 0x67452301u, 0xefcdab89u, 0x98badcfeu, 0x10325476u, 0xc3d2e1f0u }, // initial buffer values
-             x[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, i;
+             x[16], i;
     
     for (i = 0; i <= len; i += 64) { // process data in 64 byte blocks
-        memcpy(x, (const unsigned char *)data + i, (i + 64 < len) ? 64 : len - i);
+        memcpy(x, (const char *)data + i, (i + 64 < len) ? 64 : len - i);
         if (i + 64 > len) break;
         RMDcompress(buf, x);
     }
     
+    memset((unsigned char *)x + (len - i), 0, 64 - (len - i)); // clear remainder of x
     ((unsigned char *)x)[len - i] = 0x80; // append padding
-    if (len - i > 55) RMDcompress(buf, x); // length goes to next block
+    if (len - i > 55) RMDcompress(buf, x), memset(x, 0, 64); // length goes to next block
     *(unsigned long long *)&x[14] = CFSwapInt64HostToLittle((unsigned long long)len*8); // append length in bits
     RMDcompress(buf, x); // finalize
     for (i = 0; i < 5; i++) ((unsigned *)md)[i] = CFSwapInt32HostToLittle(buf[i]); // write to md
