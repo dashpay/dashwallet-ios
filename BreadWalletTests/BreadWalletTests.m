@@ -106,6 +106,39 @@
                           @"[NSString base58checkWithData:]");
 }
 
+#pragma mark - textSHA1
+
+- (void)testSHA1
+{
+    UInt128 md = [@"Free online SHA1 Calculator, type text here..." dataUsingEncoding:NSUTF8StringEncoding].SHA1;
+    
+    XCTAssertTrue(uint128_eq(*(UInt128 *)@"6fc2e25172cb15193cb1c6d48f607d42c1d2a215".hexToData.bytes, md),
+                  @"[NSData SHA1]");
+    
+    md = [@"this is some text to test the sha1 implementation with more than 64bytes of data since it's internal "
+          "digest buffer is 64bytes in size" dataUsingEncoding:NSUTF8StringEncoding].SHA1;
+    XCTAssertTrue(uint128_eq(*(UInt128 *)@"085194658a9235b2951a83d1b826b987e9385aa3".hexToData.bytes, md),
+                  @"[NSData SHA1]");
+    
+    md = [@"123456789012345678901234567890123456789012345678901234567890"
+          dataUsingEncoding:NSUTF8StringEncoding].SHA1;
+    XCTAssertTrue(uint128_eq(*(UInt128 *)@"245be30091fd392fe191f4bfcec22dcb30a03ae6".hexToData.bytes, md),
+                  @"[NSData SHA1]");
+    
+    md = [@"1234567890123456789012345678901234567890123456789012345678901234"
+          dataUsingEncoding:NSUTF8StringEncoding].SHA1; // a message exactly 64bytes long (internal buffer size)
+    XCTAssertTrue(uint128_eq(*(UInt128 *)@"c71490fc24aa3d19e11282da77032dd9cdb33103".hexToData.bytes, md),
+                  @"[NSData SHA1]");
+    
+    md = [NSData data].SHA1; // empty
+    XCTAssertTrue(uint128_eq(*(UInt128 *)@"da39a3ee5e6b4b0d3255bfef95601890afd80709".hexToData.bytes, md),
+                  @"[NSData SHA1]");
+    
+    md = [@"a" dataUsingEncoding:NSUTF8StringEncoding].SHA1;
+    XCTAssertTrue(uint128_eq(*(UInt128 *)@"86f7e437faa5a7fce15d1ddcb9eaeaea377667b8".hexToData.bytes, md),
+                  @"[NSData SHA1]");
+}
+
 #pragma mark - testRMD160
 
 - (void)testRMD160

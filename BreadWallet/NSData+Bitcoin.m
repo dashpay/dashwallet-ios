@@ -29,48 +29,83 @@
 // bitwise left rotation
 #define rotl(a, b) (((a) << (b)) | ((a) >> (32 - (b))))
 
-// basic ripemd functions
+// basic hash functions
 #define f(x, y, z) ((x) ^ (y) ^ (z))
 #define g(x, y, z) (((x) & (y)) | (~(x) & (z)))
 #define h(x, y, z) (((x) | ~(y)) ^ (z))
 #define i(x, y, z) (((x) & (z)) | ((y) & ~(z)))
 #define j(x, y, z) ((x) ^ ((y) | ~(z)))
+#define k(x, y, z) (((x) & (y)) | ((x) & (z)) | ((y) & (z)))
+
+// basic sha1 operation
+#define sha1(x, y, z) (t = rotl(a, 5) + (x) + e + (y) + (z), e = d, d = c, c = rotl(b, 30), b = a, a = t)
+
+static void SHA1Compress(unsigned *r, unsigned *x)
+{
+    unsigned a = r[0], b = r[1], c = r[2], d = r[3], e = r[4], i = 0, t;
+    
+    while (i < 16) sha1(g(b, c, d), 0x5a827999u, x[i]), i++;
+    while (i < 20) sha1(g(b, c, d), 0x5a827999u, (x[i] = rotl(x[i - 3] ^ x[i - 8] ^ x[i - 14] ^ x[i - 16], 1))), i++;
+    while (i < 40) sha1(f(b, c, d), 0x6ed9eba1u, (x[i] = rotl(x[i - 3] ^ x[i - 8] ^ x[i - 14] ^ x[i - 16], 1))), i++;
+    while (i < 60) sha1(k(b, c, d), 0x8f1bbcdcu, (x[i] = rotl(x[i - 3] ^ x[i - 8] ^ x[i - 14] ^ x[i - 16], 1))), i++;
+    while (i < 80) sha1(f(b, c, d), 0xca62c1d6u, (x[i] = rotl(x[i - 3] ^ x[i - 8] ^ x[i - 14] ^ x[i - 16], 1))), i++;
+
+    r[0] += a, r[1] += b, r[2] += c, r[3] += d, r[4] += e;
+}
+
+static void SHA1(const void *data, size_t len, unsigned char *md)
+{
+    unsigned i, j, x[80], buf[5] = { 0x67452301u, 0xefcdab89u, 0x98badcfeu, 0x10325476u, 0xc3d2e1f0u }; //initialize buf
+    
+    for (i = 0; i + 64 <= len; i += 64) { // process data in 64 byte blocks
+        for (j = 0; j < 16; j++) x[j] = CFSwapInt32HostToBig(((const unsigned *)data)[i/sizeof(unsigned) + j]);
+        SHA1Compress(buf, x);
+    }
+    
+    memset(x, 0, sizeof(*x)*16); // clear x
+    for (j = 0; j < len - i; j++) x[j/sizeof(*x)] |= ((const char *)data)[j + i] << ((3 - (j & 3))*8); // last block
+    x[j/sizeof(*x)] |= 0x80 << ((3 - (j & 3))*8); // append padding
+    if (len - i > 55) SHA1Compress(buf, x), memset(x, 0, sizeof(*x)*16); // length goes to next block
+    x[15] = len*8; // append length in bits
+    SHA1Compress(buf, x); // finalize
+    for (i = 0; i < sizeof(buf)/sizeof(*buf); i++) ((unsigned *)md)[i] = CFSwapInt32HostToBig(buf[i]); // write to md
+}
 
 // basic ripemd operation
 #define rmd(a, b, c, d, e, f, g, h, i, j) ((a) = rotl((f) + (b) + CFSwapInt32LittleToHost(c) + (d), (e)) + (g),\
-    (f) = (g), (g) = (h), (h) = rotl((i), 10), (i) = (j), (j) = (a))
+                                           (f) = (g), (g) = (h), (h) = rotl((i), 10), (i) = (j), (j) = (a))
 
 // ripemd left line
-static const uint8_t rl1[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }, // round 1, id
-                     rl2[] = { 7, 4, 13, 1, 10, 6, 15, 3, 12, 0, 9, 5, 2, 14, 11, 8 }, // round 2, rho
-                     rl3[] = { 3, 10, 14, 4, 9, 15, 8, 1, 2, 7, 0, 6, 13, 11, 5, 12 }, // round 3, rho^2
-                     rl4[] = { 1, 9, 11, 10, 0, 8, 12, 4, 13, 3, 7, 15, 14, 5, 6, 2 }, // round 4, rho^3
-                     rl5[] = { 4, 0, 5, 9, 7, 12, 2, 10, 14, 1, 3, 8, 11, 6, 15, 13 }; // round 5, rho^4
+static const unsigned rl1[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }, // round 1, id
+                      rl2[] = { 7, 4, 13, 1, 10, 6, 15, 3, 12, 0, 9, 5, 2, 14, 11, 8 }, // round 2, rho
+                      rl3[] = { 3, 10, 14, 4, 9, 15, 8, 1, 2, 7, 0, 6, 13, 11, 5, 12 }, // round 3, rho^2
+                      rl4[] = { 1, 9, 11, 10, 0, 8, 12, 4, 13, 3, 7, 15, 14, 5, 6, 2 }, // round 4, rho^3
+                      rl5[] = { 4, 0, 5, 9, 7, 12, 2, 10, 14, 1, 3, 8, 11, 6, 15, 13 }; // round 5, rho^4
 
 // ripemd right line
-static const uint8_t rr1[] = { 5, 14, 7, 0, 9, 2, 11, 4, 13, 6, 15, 8, 1, 10, 3, 12 }, // round 1, pi
-                     rr2[] = { 6, 11, 3, 7, 0, 13, 5, 10, 14, 15, 8, 12, 4, 9, 1, 2 }, // round 2, rho pi
-                     rr3[] = { 15, 5, 1, 3, 7, 14, 6, 9, 11, 8, 12, 2, 10, 0, 4, 13 }, // round 3, rho^2 pi
-                     rr4[] = { 8, 6, 4, 1, 3, 11, 15, 0, 5, 12, 2, 13, 9, 7, 10, 14 }, // round 4, rho^3 pi
-                     rr5[] = { 12, 15, 10, 4, 1, 5, 8, 7, 6, 2, 13, 14, 0, 3, 9, 11 }; // round 5, rho^4 pi
+static const unsigned rr1[] = { 5, 14, 7, 0, 9, 2, 11, 4, 13, 6, 15, 8, 1, 10, 3, 12 }, // round 1, pi
+                      rr2[] = { 6, 11, 3, 7, 0, 13, 5, 10, 14, 15, 8, 12, 4, 9, 1, 2 }, // round 2, rho pi
+                      rr3[] = { 15, 5, 1, 3, 7, 14, 6, 9, 11, 8, 12, 2, 10, 0, 4, 13 }, // round 3, rho^2 pi
+                      rr4[] = { 8, 6, 4, 1, 3, 11, 15, 0, 5, 12, 2, 13, 9, 7, 10, 14 }, // round 4, rho^3 pi
+                      rr5[] = { 12, 15, 10, 4, 1, 5, 8, 7, 6, 2, 13, 14, 0, 3, 9, 11 }; // round 5, rho^4 pi
 
 // ripemd left line shifts
-static const uint8_t sl1[] = { 11, 14, 15, 12, 5, 8, 7, 9, 11, 13, 14, 15, 6, 7, 9, 8 }, // round 1
-                     sl2[] = { 7, 6, 8, 13, 11, 9, 7, 15, 7, 12, 15, 9, 11, 7, 13, 12 }, // round 2
-                     sl3[] = { 11, 13, 6, 7, 14, 9, 13, 15, 14, 8, 13, 6, 5, 12, 7, 5 }, // round 3
-                     sl4[] = { 11, 12, 14, 15, 14, 15, 9, 8, 9, 14, 5, 6, 8, 6, 5, 12 }, // round 4
-                     sl5[] = { 9, 15, 5, 11, 6, 8, 13, 12, 5, 12, 13, 14, 11, 8, 5, 6 }; // round 5
+static const unsigned sl1[] = { 11, 14, 15, 12, 5, 8, 7, 9, 11, 13, 14, 15, 6, 7, 9, 8 }, // round 1
+                      sl2[] = { 7, 6, 8, 13, 11, 9, 7, 15, 7, 12, 15, 9, 11, 7, 13, 12 }, // round 2
+                      sl3[] = { 11, 13, 6, 7, 14, 9, 13, 15, 14, 8, 13, 6, 5, 12, 7, 5 }, // round 3
+                      sl4[] = { 11, 12, 14, 15, 14, 15, 9, 8, 9, 14, 5, 6, 8, 6, 5, 12 }, // round 4
+                      sl5[] = { 9, 15, 5, 11, 6, 8, 13, 12, 5, 12, 13, 14, 11, 8, 5, 6 }; // round 5
 
 // ripemd right line shifts
-static const uint8_t sr1[] = { 8, 9, 9, 11, 13, 15, 15, 5, 7, 7, 8, 11, 14, 14, 12, 6 }, // round 1
-                     sr2[] = { 9, 13, 15, 7, 12, 8, 9, 11, 7, 7, 12, 7, 6, 15, 13, 11 }, // round 2
-                     sr3[] = { 9, 7, 15, 11, 8, 6, 6, 14, 12, 13, 5, 14, 13, 13, 7, 5 }, // round 3
-                     sr4[] = { 15, 5, 8, 11, 14, 14, 6, 14, 6, 9, 12, 9, 12, 5, 15, 8 }, // round 4
-                     sr5[] = { 8, 5, 12, 9, 12, 5, 14, 6, 8, 13, 6, 5, 15, 13, 11, 11 }; // round 5
+static const unsigned sr1[] = { 8, 9, 9, 11, 13, 15, 15, 5, 7, 7, 8, 11, 14, 14, 12, 6 }, // round 1
+                      sr2[] = { 9, 13, 15, 7, 12, 8, 9, 11, 7, 7, 12, 7, 6, 15, 13, 11 }, // round 2
+                      sr3[] = { 9, 7, 15, 11, 8, 6, 6, 14, 12, 13, 5, 14, 13, 13, 7, 5 }, // round 3
+                      sr4[] = { 15, 5, 8, 11, 14, 14, 6, 14, 6, 9, 12, 9, 12, 5, 15, 8 }, // round 4
+                      sr5[] = { 8, 5, 12, 9, 12, 5, 14, 6, 8, 13, 6, 5, 15, 13, 11, 11 }; // round 5
 
-static void RMDcompress(uint32_t *b, uint32_t *x)
+static void RMDcompress(unsigned *b, unsigned *x)
 {
-    uint32_t al = b[0], bl = b[1], cl = b[2], dl = b[3], el = b[4], ar = al, br = bl, cr = cl, dr = dl, er = el, i, t;
+    unsigned al = b[0], bl = b[1], cl = b[2], dl = b[3], el = b[4], ar = al, br = bl, cr = cl, dr = dl, er = el, i, t;
 
     // round 1
     for (i = 0; i < 16; i++) rmd(t, f(bl, cl, dl), x[rl1[i]], 0x00000000u, sl1[i], al, el, dl, cl, bl); // left line
@@ -98,22 +133,22 @@ static void RMDcompress(uint32_t *b, uint32_t *x)
 }
 
 // ripemd-160 hash function: http://homes.esat.kuleuven.be/~bosselae/ripemd160.html
-static void RMD160(const void *data, size_t len, uint8_t *md)
+static void RMD160(const void *data, size_t len, unsigned char *md)
 {
-    uint32_t buf[] = { 0x67452301u, 0xefcdab89u, 0x98badcfeu, 0x10325476u, 0xc3d2e1f0u }, // initial buffer values
+    unsigned buf[] = { 0x67452301u, 0xefcdab89u, 0x98badcfeu, 0x10325476u, 0xc3d2e1f0u }, // initial buffer values
              x[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, i;
     
     for (i = 0; i <= len; i += sizeof(x)) { // process data in 64 byte blocks
-        memcpy(x, (const uint8_t *)data + i, (i + sizeof(x) < len) ? sizeof(x) : len - i);
+        memcpy(x, (const unsigned char *)data + i, (i + sizeof(x) < len) ? sizeof(x) : len - i);
         if (i + sizeof(x) > len) break;
         RMDcompress(buf, x);
     }
     
-    ((uint8_t *)x)[len - i] = 0x80; // append padding
+    ((unsigned char *)x)[len - i] = 0x80; // append padding
     if (len - i > 55) RMDcompress(buf, x); // length goes to next block
-    *(uint64_t *)&x[14] = CFSwapInt64HostToLittle((uint64_t)len*8); // append length in bits
+    *(unsigned long long *)&x[14] = CFSwapInt64HostToLittle((unsigned long long)len*8); // append length in bits
     RMDcompress(buf, x); // finalize
-    for (i = 0; i < sizeof(buf)/sizeof(*buf); i++) ((uint32_t *)md)[i] = CFSwapInt32HostToLittle(buf[i]); // write to md
+    for (i = 0; i < sizeof(buf)/sizeof(*buf); i++) ((unsigned *)md)[i] = CFSwapInt32HostToLittle(buf[i]); // write to md
 }
 
 @implementation NSData (Bitcoin)
@@ -121,8 +156,8 @@ static void RMD160(const void *data, size_t len, uint8_t *md)
 - (UInt128)SHA1
 {
     UInt128 sha1;
-    
-    CC_SHA1(self.bytes, (CC_LONG)self.length, (unsigned char *)&sha1);
+
+    SHA1(self.bytes, self.length, (unsigned char *)&sha1);
     return sha1;
 }
 

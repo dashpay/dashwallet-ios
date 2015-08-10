@@ -24,7 +24,6 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
-#import <CommonCrypto/CommonDigest.h>
 
 typedef union _UInt512 {
     uint8_t u8[512/8];
