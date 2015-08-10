@@ -426,7 +426,7 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
                                      sig.length);
         }
         else if ([self.pkiType isEqual:@"x509+sha1"]) {
-            status = SecKeyRawVerify(pubKey, kSecPaddingPKCS1SHA1, self.data.SHA1.u8, sizeof(UInt128), sig.bytes,
+            status = SecKeyRawVerify(pubKey, kSecPaddingPKCS1SHA1, self.data.SHA1.u8, sizeof(UInt160), sig.bytes,
                                      sig.length);
         }
         

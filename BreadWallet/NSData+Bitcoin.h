@@ -96,7 +96,7 @@ typedef union _UInt128 {
 
 @interface NSData (Bitcoin)
 
-- (UInt128)SHA1;
+- (UInt160)SHA1;
 - (UInt256)SHA256;
 - (UInt256)SHA256_2;
 - (UInt160)RMD160;

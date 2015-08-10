@@ -24,18 +24,17 @@
 //  THE SOFTWARE.
 
 #import "NSData+Bitcoin.h"
-#import <CommonCrypto/CommonCrypto.h>
 
 // bitwise left rotation
 #define rotl(a, b) (((a) << (b)) | ((a) >> (32 - (b))))
 
-// basic hash functions
-#define f(x, y, z) ((x) ^ (y) ^ (z))
-#define g(x, y, z) (((x) & (y)) | (~(x) & (z)))
-#define h(x, y, z) (((x) | ~(y)) ^ (z))
-#define i(x, y, z) (((x) & (z)) | ((y) & ~(z)))
-#define j(x, y, z) ((x) ^ ((y) | ~(z)))
-#define k(x, y, z) (((x) & (y)) | ((x) & (z)) | ((y) & (z)))
+// bitwise right rotation
+#define rotr(a, b) (((a) >> (b)) | ((a) << (32 - (b))))
+
+// basic sha1 functions
+#define f1(x, y, z) (((x) & (y)) | (~(x) & (z)))
+#define f2(x, y, z) ((x) ^ (y) ^ (z))
+#define f3(x, y, z) (((x) & (y)) | ((x) & (z)) | ((y) & (z)))
 
 // basic sha1 operation
 #define sha1(x, y, z) (t = rotl(a, 5) + (x) + e + (y) + (z), e = d, d = c, c = rotl(b, 30), b = a, a = t)
@@ -44,11 +43,11 @@ static void SHA1Compress(unsigned *r, unsigned *x)
 {
     unsigned a = r[0], b = r[1], c = r[2], d = r[3], e = r[4], i = 0, t;
     
-    while (i < 16) sha1(g(b, c, d), 0x5a827999u, x[i]), i++;
-    while (i < 20) sha1(g(b, c, d), 0x5a827999u, (x[i] = rotl(x[i - 3] ^ x[i - 8] ^ x[i - 14] ^ x[i - 16], 1))), i++;
-    while (i < 40) sha1(f(b, c, d), 0x6ed9eba1u, (x[i] = rotl(x[i - 3] ^ x[i - 8] ^ x[i - 14] ^ x[i - 16], 1))), i++;
-    while (i < 60) sha1(k(b, c, d), 0x8f1bbcdcu, (x[i] = rotl(x[i - 3] ^ x[i - 8] ^ x[i - 14] ^ x[i - 16], 1))), i++;
-    while (i < 80) sha1(f(b, c, d), 0xca62c1d6u, (x[i] = rotl(x[i - 3] ^ x[i - 8] ^ x[i - 14] ^ x[i - 16], 1))), i++;
+    for (; i < 16; i++) sha1(f1(b, c, d), 0x5a827999u, x[i]);
+    for (; i < 20; i++) sha1(f1(b, c, d), 0x5a827999u, (x[i] = rotl(x[i - 3] ^ x[i - 8] ^ x[i - 14] ^ x[i - 16], 1)));
+    for (; i < 40; i++) sha1(f2(b, c, d), 0x6ed9eba1u, (x[i] = rotl(x[i - 3] ^ x[i - 8] ^ x[i - 14] ^ x[i - 16], 1)));
+    for (; i < 60; i++) sha1(f3(b, c, d), 0x8f1bbcdcu, (x[i] = rotl(x[i - 3] ^ x[i - 8] ^ x[i - 14] ^ x[i - 16], 1)));
+    for (; i < 80; i++) sha1(f2(b, c, d), 0xca62c1d6u, (x[i] = rotl(x[i - 3] ^ x[i - 8] ^ x[i - 14] ^ x[i - 16], 1)));
 
     r[0] += a, r[1] += b, r[2] += c, r[3] += d, r[4] += e;
 }
@@ -70,6 +69,66 @@ static void SHA1(const void *data, size_t len, unsigned char *md)
     SHA1Compress(buf, x); // finalize
     for (i = 0; i < sizeof(buf)/sizeof(*buf); i++) ((unsigned *)md)[i] = CFSwapInt32HostToBig(buf[i]); // write to md
 }
+
+// basic sha256 functions
+#define ch(x, y, z) (((x) & (y)) ^ (~(x) & (z)))
+#define maj(x, y, z) (((x) & (y)) ^ ((x) & (z)) ^ ((y) & (z)))
+#define ep0(x) (rotr((x), 2) ^ rotr((x), 13) ^ rotr((x), 22))
+#define ep1(x) (rotr((x), 6) ^ rotr((x), 11) ^ rotr((x), 25))
+#define sig0(x) (rotr((x), 7) ^ rotr((x), 18) ^ ((x) >> 3))
+#define sig1(x) (rotr((x), 17) ^ rotr((x), 19) ^ ((x) >> 10))
+
+static const unsigned k[64] = {
+    0x428a2f98u, 0x71374491u, 0xb5c0fbcfu, 0xe9b5dba5u, 0x3956c25bu, 0x59f111f1u, 0x923f82a4u, 0xab1c5ed5u,
+    0xd807aa98u, 0x12835b01u, 0x243185beu, 0x550c7dc3u, 0x72be5d74u, 0x80deb1feu, 0x9bdc06a7u, 0xc19bf174u,
+    0xe49b69c1u, 0xefbe4786u, 0x0fc19dc6u, 0x240ca1ccu, 0x2de92c6fu, 0x4a7484aau, 0x5cb0a9dcu, 0x76f988dau,
+    0x983e5152u, 0xa831c66du, 0xb00327c8u, 0xbf597fc7u, 0xc6e00bf3u, 0xd5a79147u, 0x06ca6351u, 0x14292967u,
+    0x27b70a85u, 0x2e1b2138u, 0x4d2c6dfcu, 0x53380d13u, 0x650a7354u, 0x766a0abbu, 0x81c2c92eu, 0x92722c85u,
+    0xa2bfe8a1u, 0xa81a664bu, 0xc24b8b70u, 0xc76c51a3u, 0xd192e819u, 0xd6990624u, 0xf40e3585u, 0x106aa070u,
+    0x19a4c116u, 0x1e376c08u, 0x2748774cu, 0x34b0bcb5u, 0x391c0cb3u, 0x4ed8aa4au, 0x5b9cca4fu, 0x682e6ff3u,
+    0x748f82eeu, 0x78a5636fu, 0x84c87814u, 0x8cc70208u, 0x90befffau, 0xa4506cebu, 0xbef9a3f7u, 0xc67178f2u
+};
+
+static void SHA256Compress(unsigned *r, unsigned *x)
+{
+    unsigned a = r[0], b = r[1], c = r[2], d = r[3], e = r[4], f = r[5], g = r[6], h = r[7], i, t1, t2, m[64];
+    
+    for (i = 0; i < 16; i++) m[i] = CFSwapInt32BigToHost(x[i]);
+    for (; i < 64; i++) m[i] = sig1(m[i - 2]) + m[i - 7] + sig0(m[i - 15]) + m[i - 16];
+    
+    for (i = 0; i < 64; i++) {
+        t1 = h + ep1(e) + ch(e, f, g) + k[i] + m[i];
+        t2 = ep0(a) + maj(a, b, c);
+        h = g, g = f, f = e, e = d + t1, d = c, c = b, b = a, a = t1 + t2;
+    }
+    
+    r[0] += a, r[1] += b, r[2] += c, r[3] += d, r[4] += e, r[5] += f, r[6] += g, r[7] += h;
+}
+
+static void SHA256(const void *data, size_t len, unsigned char *md)
+{
+    unsigned buf[] = { 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19 },
+             x[16], i, j;
+    
+    for (i = 0, j = 0; i < len; i++) {
+        ((unsigned char *)x)[j++] = ((unsigned char *)data)[i];
+        if (j == 64) SHA256Compress(buf, x), j = 0;
+    }
+    
+    memset((unsigned char *)x + j, 0, 64 - j);
+    ((unsigned char *)x)[j] = 0x80; // append padding
+    if (j > 55) SHA256Compress(buf, x), memset(x, 0, 64); // length goes to next block
+    *(unsigned long long *)&x[14] = CFSwapInt64HostToBig((unsigned long long)len*8); // append length in bits
+    SHA256Compress(buf, x); // finalize
+    for (i = 0; i < 8; i++) ((unsigned *)md)[i] = CFSwapInt32HostToBig(buf[i]); // write to md
+}
+
+// basic ripemd functions
+#define f(x, y, z) ((x) ^ (y) ^ (z))
+#define g(x, y, z) (((x) & (y)) | (~(x) & (z)))
+#define h(x, y, z) (((x) | ~(y)) ^ (z))
+#define i(x, y, z) (((x) & (z)) | ((y) & ~(z)))
+#define j(x, y, z) ((x) ^ ((y) | ~(z)))
 
 // basic ripemd operation
 #define rmd(a, b, c, d, e, f, g, h, i, j) ((a) = rotl((f) + (b) + CFSwapInt32LittleToHost(c) + (d), (e)) + (g),\
@@ -103,33 +162,24 @@ static const unsigned sr1[] = { 8, 9, 9, 11, 13, 15, 15, 5, 7, 7, 8, 11, 14, 14,
                       sr4[] = { 15, 5, 8, 11, 14, 14, 6, 14, 6, 9, 12, 9, 12, 5, 15, 8 }, // round 4
                       sr5[] = { 8, 5, 12, 9, 12, 5, 14, 6, 8, 13, 6, 5, 15, 13, 11, 11 }; // round 5
 
-static void RMDcompress(unsigned *b, unsigned *x)
+static void RMDcompress(unsigned *r, unsigned *x)
 {
-    unsigned al = b[0], bl = b[1], cl = b[2], dl = b[3], el = b[4], ar = al, br = bl, cr = cl, dr = dl, er = el, i, t;
+    unsigned al = r[0], bl = r[1], cl = r[2], dl = r[3], el = r[4], ar = al, br = bl, cr = cl, dr = dl, er = el, i, t;
 
-    // round 1
-    for (i = 0; i < 16; i++) rmd(t, f(bl, cl, dl), x[rl1[i]], 0x00000000u, sl1[i], al, el, dl, cl, bl); // left line
-    for (i = 0; i < 16; i++) rmd(t, j(br, cr, dr), x[rr1[i]], 0x50a28be6u, sr1[i], ar, er, dr, cr, br); // right line
+    for (i = 0; i < 16; i++) rmd(t, f(bl, cl, dl), x[rl1[i]], 0x00000000u, sl1[i], al, el, dl, cl, bl); // round 1 left
+    for (i = 0; i < 16; i++) rmd(t, j(br, cr, dr), x[rr1[i]], 0x50a28be6u, sr1[i], ar, er, dr, cr, br); // round 1 right
+    for (i = 0; i < 16; i++) rmd(t, g(bl, cl, dl), x[rl2[i]], 0x5a827999u, sl2[i], al, el, dl, cl, bl); // round 2 left
+    for (i = 0; i < 16; i++) rmd(t, i(br, cr, dr), x[rr2[i]], 0x5c4dd124u, sr2[i], ar, er, dr, cr, br); // round 2 right
+    for (i = 0; i < 16; i++) rmd(t, h(bl, cl, dl), x[rl3[i]], 0x6ed9eba1u, sl3[i], al, el, dl, cl, bl); // round 3 left
+    for (i = 0; i < 16; i++) rmd(t, h(br, cr, dr), x[rr3[i]], 0x6d703ef3u, sr3[i], ar, er, dr, cr, br); // round 3 right
+    for (i = 0; i < 16; i++) rmd(t, i(bl, cl, dl), x[rl4[i]], 0x8f1bbcdcu, sl4[i], al, el, dl, cl, bl); // round 4 left
+    for (i = 0; i < 16; i++) rmd(t, g(br, cr, dr), x[rr4[i]], 0x7a6d76e9u, sr4[i], ar, er, dr, cr, br); // round 4 right
+    for (i = 0; i < 16; i++) rmd(t, j(bl, cl, dl), x[rl5[i]], 0xa953fd4eu, sl5[i], al, el, dl, cl, bl); // round 5 left
+    for (i = 0; i < 16; i++) rmd(t, f(br, cr, dr), x[rr5[i]], 0x00000000u, sr5[i], ar, er, dr, cr, br); // round 5 right
     
-    // round 2
-    for (i = 0; i < 16; i++) rmd(t, g(bl, cl, dl), x[rl2[i]], 0x5a827999u, sl2[i], al, el, dl, cl, bl); // left line
-    for (i = 0; i < 16; i++) rmd(t, i(br, cr, dr), x[rr2[i]], 0x5c4dd124u, sr2[i], ar, er, dr, cr, br); // right line
-    
-    // round 3
-    for (i = 0; i < 16; i++) rmd(t, h(bl, cl, dl), x[rl3[i]], 0x6ed9eba1u, sl3[i], al, el, dl, cl, bl); // left line
-    for (i = 0; i < 16; i++) rmd(t, h(br, cr, dr), x[rr3[i]], 0x6d703ef3u, sr3[i], ar, er, dr, cr, br); // right line
-    
-    // round 4
-    for (i = 0; i < 16; i++) rmd(t, i(bl, cl, dl), x[rl4[i]], 0x8f1bbcdcu, sl4[i], al, el, dl, cl, bl); // left line
-    for (i = 0; i < 16; i++) rmd(t, g(br, cr, dr), x[rr4[i]], 0x7a6d76e9u, sr4[i], ar, er, dr, cr, br); // right line
-    
-    // round 5
-    for (i = 0; i < 16; i++) rmd(t, j(bl, cl, dl), x[rl5[i]], 0xa953fd4eu, sl5[i], al, el, dl, cl, bl); // left line
-    for (i = 0; i < 16; i++) rmd(t, f(br, cr, dr), x[rr5[i]], 0x00000000u, sr5[i], ar, er, dr, cr, br); // right line
-    
-    t = b[1] + cl + dr; // final result for b[0]
-    b[1] = b[2] + dl + er, b[2] = b[3] + el + ar, b[3] = b[4] + al + br, b[4] = b[0] + bl + cr, b[0] = t; // combine
-    memset(x, 0, sizeof(*x)*16); // clear x
+    t = r[1] + cl + dr; // final result for r[0]
+    r[1] = r[2] + dl + er, r[2] = r[3] + el + ar, r[3] = r[4] + al + br, r[4] = r[0] + bl + cr, r[0] = t; // combine
+    memset(x, 0, 64); // clear x
 }
 
 // ripemd-160 hash function: http://homes.esat.kuleuven.be/~bosselae/ripemd160.html
@@ -138,9 +188,9 @@ static void RMD160(const void *data, size_t len, unsigned char *md)
     unsigned buf[] = { 0x67452301u, 0xefcdab89u, 0x98badcfeu, 0x10325476u, 0xc3d2e1f0u }, // initial buffer values
              x[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, i;
     
-    for (i = 0; i <= len; i += sizeof(x)) { // process data in 64 byte blocks
-        memcpy(x, (const unsigned char *)data + i, (i + sizeof(x) < len) ? sizeof(x) : len - i);
-        if (i + sizeof(x) > len) break;
+    for (i = 0; i <= len; i += 64) { // process data in 64 byte blocks
+        memcpy(x, (const unsigned char *)data + i, (i + 64 < len) ? 64 : len - i);
+        if (i + 64 > len) break;
         RMDcompress(buf, x);
     }
     
@@ -148,14 +198,14 @@ static void RMD160(const void *data, size_t len, unsigned char *md)
     if (len - i > 55) RMDcompress(buf, x); // length goes to next block
     *(unsigned long long *)&x[14] = CFSwapInt64HostToLittle((unsigned long long)len*8); // append length in bits
     RMDcompress(buf, x); // finalize
-    for (i = 0; i < sizeof(buf)/sizeof(*buf); i++) ((unsigned *)md)[i] = CFSwapInt32HostToLittle(buf[i]); // write to md
+    for (i = 0; i < 5; i++) ((unsigned *)md)[i] = CFSwapInt32HostToLittle(buf[i]); // write to md
 }
 
 @implementation NSData (Bitcoin)
 
-- (UInt128)SHA1
+- (UInt160)SHA1
 {
-    UInt128 sha1;
+    UInt160 sha1;
 
     SHA1(self.bytes, self.length, (unsigned char *)&sha1);
     return sha1;
@@ -165,7 +215,7 @@ static void RMD160(const void *data, size_t len, unsigned char *md)
 {
     UInt256 sha256;
     
-    CC_SHA256(self.bytes, (CC_LONG)self.length, (unsigned char *)&sha256);
+    SHA256(self.bytes, self.length, (unsigned char *)&sha256);
     return sha256;
 }
 
@@ -173,8 +223,8 @@ static void RMD160(const void *data, size_t len, unsigned char *md)
 {
     UInt256 sha256;
     
-    CC_SHA256(self.bytes, (CC_LONG)self.length, (unsigned char *)&sha256);
-    CC_SHA256((const void *)&sha256, (CC_LONG)sizeof(sha256), (unsigned char *)&sha256);
+    SHA256(self.bytes, self.length, (unsigned char *)&sha256);
+    SHA256((const void *)&sha256, sizeof(sha256), (unsigned char *)&sha256);
     return sha256;
 }
 
@@ -191,7 +241,7 @@ static void RMD160(const void *data, size_t len, unsigned char *md)
     UInt256 sha256;
     UInt160 rmd160;
     
-    CC_SHA256(self.bytes, (CC_LONG)self.length, (unsigned char *)&sha256);
+    SHA256(self.bytes, self.length, (unsigned char *)&sha256);
     RMD160(&sha256, sizeof(sha256), (uint8_t *)&rmd160);
     return rmd160;
 }
