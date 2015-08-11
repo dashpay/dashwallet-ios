@@ -40,31 +40,31 @@ static void SHA1Compress(unsigned *r, unsigned *x)
 {
     unsigned a = r[0], b = r[1], c = r[2], d = r[3], e = r[4], i = 0, t;
     
-    for (; i < 16; i++) sha1(f1(b, c, d), 0x5a827999u, x[i]);
-    for (; i < 20; i++) sha1(f1(b, c, d), 0x5a827999u, (x[i] = rotl(x[i - 3] ^ x[i - 8] ^ x[i - 14] ^ x[i - 16], 1)));
-    for (; i < 40; i++) sha1(f2(b, c, d), 0x6ed9eba1u, (x[i] = rotl(x[i - 3] ^ x[i - 8] ^ x[i - 14] ^ x[i - 16], 1)));
-    for (; i < 60; i++) sha1(f3(b, c, d), 0x8f1bbcdcu, (x[i] = rotl(x[i - 3] ^ x[i - 8] ^ x[i - 14] ^ x[i - 16], 1)));
-    for (; i < 80; i++) sha1(f2(b, c, d), 0xca62c1d6u, (x[i] = rotl(x[i - 3] ^ x[i - 8] ^ x[i - 14] ^ x[i - 16], 1)));
+    for (; i < 16; i++) sha1(f1(b, c, d), 0x5a827999, (x[i] = CFSwapInt32HostToBig(x[i])));
+    for (; i < 20; i++) sha1(f1(b, c, d), 0x5a827999, (x[i] = rotl(x[i - 3] ^ x[i - 8] ^ x[i - 14] ^ x[i - 16], 1)));
+    for (; i < 40; i++) sha1(f2(b, c, d), 0x6ed9eba1, (x[i] = rotl(x[i - 3] ^ x[i - 8] ^ x[i - 14] ^ x[i - 16], 1)));
+    for (; i < 60; i++) sha1(f3(b, c, d), 0x8f1bbcdc, (x[i] = rotl(x[i - 3] ^ x[i - 8] ^ x[i - 14] ^ x[i - 16], 1)));
+    for (; i < 80; i++) sha1(f2(b, c, d), 0xca62c1d6, (x[i] = rotl(x[i - 3] ^ x[i - 8] ^ x[i - 14] ^ x[i - 16], 1)));
 
     r[0] += a, r[1] += b, r[2] += c, r[3] += d, r[4] += e;
 }
 
 static void SHA1(const void *data, size_t len, unsigned char *md)
 {
-    unsigned i, j, x[80], buf[5] = { 0x67452301u, 0xefcdab89u, 0x98badcfeu, 0x10325476u, 0xc3d2e1f0u }; //initialize buf
+    unsigned i, x[80], buf[] = { 0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0 }; // initial buffer values
     
-    for (i = 0; i + 64 <= len; i += 64) { // process data in 64 byte blocks
-        for (j = 0; j < 16; j++) x[j] = CFSwapInt32HostToBig(((const unsigned *)data)[i/sizeof(unsigned) + j]);
+    for (i = 0; i < len; i += 64) { // process data in 64 byte blocks
+        memcpy(x, (const char *)data + i, (i + 64 > len) ? len - i : 64);
+        if (i + 64 > len) break;
         SHA1Compress(buf, x);
     }
     
-    memset(x, 0, sizeof(*x)*16); // clear x
-    for (j = 0; j < len - i; j++) x[j/sizeof(*x)] |= ((const char *)data)[j + i] << ((3 - (j & 3))*8); // last block
-    x[j/sizeof(*x)] |= 0x80 << ((3 - (j & 3))*8); // append padding
+    memset((unsigned char *)x + (len - i), 0, 64 - (len - i)); // clear remainder of x
+    ((unsigned char *)x)[len - i] = 0x80; // append padding
     if (len - i > 55) SHA1Compress(buf, x), memset(x, 0, sizeof(*x)*16); // length goes to next block
-    x[15] = len*8; // append length in bits
+    *(unsigned long long *)&x[14] = CFSwapInt64HostToBig((unsigned long long)len*8); // append length in bits
     SHA1Compress(buf, x); // finalize
-    for (i = 0; i < sizeof(buf)/sizeof(*buf); i++) ((unsigned *)md)[i] = CFSwapInt32HostToBig(buf[i]); // write to md
+    for (i = 0; i < 5; i++) ((unsigned *)md)[i] = CFSwapInt32HostToBig(buf[i]); // write to md
 }
 
 // bitwise right rotation
@@ -79,14 +79,14 @@ static void SHA1(const void *data, size_t len, unsigned char *md)
 #define sig1(x) (rotr((x), 17) ^ rotr((x), 19) ^ ((x) >> 10))
 
 static const unsigned k[64] = {
-    0x428a2f98u, 0x71374491u, 0xb5c0fbcfu, 0xe9b5dba5u, 0x3956c25bu, 0x59f111f1u, 0x923f82a4u, 0xab1c5ed5u,
-    0xd807aa98u, 0x12835b01u, 0x243185beu, 0x550c7dc3u, 0x72be5d74u, 0x80deb1feu, 0x9bdc06a7u, 0xc19bf174u,
-    0xe49b69c1u, 0xefbe4786u, 0x0fc19dc6u, 0x240ca1ccu, 0x2de92c6fu, 0x4a7484aau, 0x5cb0a9dcu, 0x76f988dau,
-    0x983e5152u, 0xa831c66du, 0xb00327c8u, 0xbf597fc7u, 0xc6e00bf3u, 0xd5a79147u, 0x06ca6351u, 0x14292967u,
-    0x27b70a85u, 0x2e1b2138u, 0x4d2c6dfcu, 0x53380d13u, 0x650a7354u, 0x766a0abbu, 0x81c2c92eu, 0x92722c85u,
-    0xa2bfe8a1u, 0xa81a664bu, 0xc24b8b70u, 0xc76c51a3u, 0xd192e819u, 0xd6990624u, 0xf40e3585u, 0x106aa070u,
-    0x19a4c116u, 0x1e376c08u, 0x2748774cu, 0x34b0bcb5u, 0x391c0cb3u, 0x4ed8aa4au, 0x5b9cca4fu, 0x682e6ff3u,
-    0x748f82eeu, 0x78a5636fu, 0x84c87814u, 0x8cc70208u, 0x90befffau, 0xa4506cebu, 0xbef9a3f7u, 0xc67178f2u
+    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 };
 
 static void SHA256Compress(unsigned *r, unsigned *x)
@@ -107,8 +107,8 @@ static void SHA256Compress(unsigned *r, unsigned *x)
 
 static void SHA256(const void *data, size_t len, unsigned char *md)
 {
-    unsigned buf[] = { 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19 },
-             x[16], i;
+    unsigned i, x[16], buf[] = { 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab,
+                                 0x5be0cd19 }; // initial buffer values
     
     for (i = 0; i < len; i += 64) { // process data in 64 byte blocks
         memcpy(x, (const char *)data + i, (i + 64 > len) ? len - i : 64);
@@ -167,16 +167,16 @@ static void RMDcompress(unsigned *r, unsigned *x)
 {
     unsigned al = r[0], bl = r[1], cl = r[2], dl = r[3], el = r[4], ar = al, br = bl, cr = cl, dr = dl, er = el, i, t;
 
-    for (i = 0; i < 16; i++) rmd(t, f(bl, cl, dl), x[rl1[i]], 0x00000000u, sl1[i], al, el, dl, cl, bl); // round 1 left
-    for (i = 0; i < 16; i++) rmd(t, j(br, cr, dr), x[rr1[i]], 0x50a28be6u, sr1[i], ar, er, dr, cr, br); // round 1 right
-    for (i = 0; i < 16; i++) rmd(t, g(bl, cl, dl), x[rl2[i]], 0x5a827999u, sl2[i], al, el, dl, cl, bl); // round 2 left
-    for (i = 0; i < 16; i++) rmd(t, i(br, cr, dr), x[rr2[i]], 0x5c4dd124u, sr2[i], ar, er, dr, cr, br); // round 2 right
-    for (i = 0; i < 16; i++) rmd(t, h(bl, cl, dl), x[rl3[i]], 0x6ed9eba1u, sl3[i], al, el, dl, cl, bl); // round 3 left
-    for (i = 0; i < 16; i++) rmd(t, h(br, cr, dr), x[rr3[i]], 0x6d703ef3u, sr3[i], ar, er, dr, cr, br); // round 3 right
-    for (i = 0; i < 16; i++) rmd(t, i(bl, cl, dl), x[rl4[i]], 0x8f1bbcdcu, sl4[i], al, el, dl, cl, bl); // round 4 left
-    for (i = 0; i < 16; i++) rmd(t, g(br, cr, dr), x[rr4[i]], 0x7a6d76e9u, sr4[i], ar, er, dr, cr, br); // round 4 right
-    for (i = 0; i < 16; i++) rmd(t, j(bl, cl, dl), x[rl5[i]], 0xa953fd4eu, sl5[i], al, el, dl, cl, bl); // round 5 left
-    for (i = 0; i < 16; i++) rmd(t, f(br, cr, dr), x[rr5[i]], 0x00000000u, sr5[i], ar, er, dr, cr, br); // round 5 right
+    for (i = 0; i < 16; i++) rmd(t, f(bl, cl, dl), x[rl1[i]], 0x00000000, sl1[i], al, el, dl, cl, bl); // round 1 left
+    for (i = 0; i < 16; i++) rmd(t, j(br, cr, dr), x[rr1[i]], 0x50a28be6, sr1[i], ar, er, dr, cr, br); // round 1 right
+    for (i = 0; i < 16; i++) rmd(t, g(bl, cl, dl), x[rl2[i]], 0x5a827999, sl2[i], al, el, dl, cl, bl); // round 2 left
+    for (i = 0; i < 16; i++) rmd(t, i(br, cr, dr), x[rr2[i]], 0x5c4dd124, sr2[i], ar, er, dr, cr, br); // round 2 right
+    for (i = 0; i < 16; i++) rmd(t, h(bl, cl, dl), x[rl3[i]], 0x6ed9eba1, sl3[i], al, el, dl, cl, bl); // round 3 left
+    for (i = 0; i < 16; i++) rmd(t, h(br, cr, dr), x[rr3[i]], 0x6d703ef3, sr3[i], ar, er, dr, cr, br); // round 3 right
+    for (i = 0; i < 16; i++) rmd(t, i(bl, cl, dl), x[rl4[i]], 0x8f1bbcdc, sl4[i], al, el, dl, cl, bl); // round 4 left
+    for (i = 0; i < 16; i++) rmd(t, g(br, cr, dr), x[rr4[i]], 0x7a6d76e9, sr4[i], ar, er, dr, cr, br); // round 4 right
+    for (i = 0; i < 16; i++) rmd(t, j(bl, cl, dl), x[rl5[i]], 0xa953fd4e, sl5[i], al, el, dl, cl, bl); // round 5 left
+    for (i = 0; i < 16; i++) rmd(t, f(br, cr, dr), x[rr5[i]], 0x00000000, sr5[i], ar, er, dr, cr, br); // round 5 right
     
     t = r[1] + cl + dr; // final result for r[0]
     r[1] = r[2] + dl + er, r[2] = r[3] + el + ar, r[3] = r[4] + al + br, r[4] = r[0] + bl + cr, r[0] = t; // combine
@@ -185,8 +185,7 @@ static void RMDcompress(unsigned *r, unsigned *x)
 // ripemd-160 hash function: http://homes.esat.kuleuven.be/~bosselae/ripemd160.html
 static void RMD160(const void *data, size_t len, unsigned char *md)
 {
-    unsigned buf[] = { 0x67452301u, 0xefcdab89u, 0x98badcfeu, 0x10325476u, 0xc3d2e1f0u }, // initial buffer values
-             x[16], i;
+    unsigned i, x[16], buf[] = { 0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0 }; // initial buffer values
     
     for (i = 0; i <= len; i += 64) { // process data in 64 byte blocks
         memcpy(x, (const char *)data + i, (i + 64 < len) ? 64 : len - i);
