@@ -99,6 +99,7 @@ typedef union _UInt128 {
 - (UInt160)SHA1;
 - (UInt256)SHA256;
 - (UInt256)SHA256_2;
+- (UInt512)SHA512;
 - (UInt160)RMD160;
 - (UInt160)hash160;
 - (NSData *)reverse;
