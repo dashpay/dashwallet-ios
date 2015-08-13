@@ -99,14 +99,17 @@
     BRTransaction *tx = [BRTransaction new];
     
     [self.managedObjectContext performBlockAndWait:^{
-        if (self.txHash.length == sizeof(UInt256)) tx.txHash = *(const UInt256 *)self.txHash.bytes;
+        NSData *txHash = self.txHash;
+        
+        if (txHash.length == sizeof(UInt256)) tx.txHash = *(const UInt256 *)txHash.bytes;
         tx.lockTime = self.lockTime;
         tx.blockHeight = self.blockHeight;
         tx.timestamp = self.timestamp;
     
         for (BRTxInputEntity *e in self.inputs) {
-            if (e.txHash.length != sizeof(UInt256)) continue;
-            [tx addInputHash:*(const UInt256 *)e.txHash.bytes index:e.n script:nil signature:e.signature
+            txHash = e.txHash;
+            if (txHash.length != sizeof(UInt256)) continue;
+            [tx addInputHash:*(const UInt256 *)txHash.bytes index:e.n script:nil signature:e.signature
              sequence:e.sequence];
         }
         

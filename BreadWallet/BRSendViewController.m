@@ -740,7 +740,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         [a addObjectsFromArray:[p componentsSeparatedByCharactersInSet:c]];
     }
     
-    if (img && CIDetectorTypeQRCode) {
+    if (img && &CIDetectorTypeQRCode) {
         for (CIQRCodeFeature *qr in [[CIDetector detectorOfType:CIDetectorTypeQRCode context:nil options:nil]
                                      featuresInImage:[CIImage imageWithCGImage:img.CGImage]]) {
             [a addObject:[qr.messageString
@@ -860,7 +860,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         [s addObjectsFromArray:[p componentsSeparatedByCharactersInSet:c]];
     }
     
-    if (img && CIDetectorTypeQRCode) {
+    if (img && &CIDetectorTypeQRCode) {
         for (CIQRCodeFeature *qr in [[CIDetector detectorOfType:CIDetectorTypeQRCode context:nil options:nil]
                                      featuresInImage:[CIImage imageWithCGImage:img.CGImage]]) {
             [s addObject:[qr.messageString

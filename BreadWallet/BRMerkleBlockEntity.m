@@ -66,8 +66,12 @@
     __block BRMerkleBlock *block = nil;
     
     [self.managedObjectContext performBlockAndWait:^{
-        block = [[BRMerkleBlock alloc] initWithBlockHash:*(const UInt256 *)self.blockHash.bytes version:self.version
-                 prevBlock:*(const UInt256 *)self.prevBlock.bytes merkleRoot:*(const UInt256 *)self.merkleRoot.bytes
+        NSData *blockHash = self.blockHash, *prevBlock = self.prevBlock, *merkleRoot = self.merkleRoot;
+        UInt256 hash = (blockHash.length == sizeof(UInt256)) ? *(const UInt256 *)blockHash.bytes : UINT256_ZERO,
+                prev = (prevBlock.length == sizeof(UInt256)) ? *(const UInt256 *)prevBlock.bytes : UINT256_ZERO,
+                root = (merkleRoot.length == sizeof(UInt256)) ? *(const UInt256 *)merkleRoot.bytes : UINT256_ZERO;
+
+        block = [[BRMerkleBlock alloc] initWithBlockHash:hash version:self.version prevBlock:prev merkleRoot:root
                  timestamp:self.timestamp + NSTimeIntervalSince1970 target:self.target nonce:self.nonce
                  totalTransactions:self.totalTransactions hashes:self.hashes flags:self.flags height:self.height];
     }];

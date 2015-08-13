@@ -93,8 +93,9 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 
         for (BRTransactionEntity *e in [BRTransactionEntity allObjects]) {
             BRTransaction *tx = e.transaction;
-            NSValue *hash = uint256_obj(tx.txHash);
+            NSValue *hash = (tx) ? uint256_obj(tx.txHash) : nil;
 
+            if (! tx) continue;
             self.allTx[hash] = tx;
             [self.allTxHashes addObject:hash];
             [self.transactions addObject:tx];
