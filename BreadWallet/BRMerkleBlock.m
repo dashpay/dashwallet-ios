@@ -192,11 +192,14 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     [d appendUInt32:_timestamp];
     [d appendUInt32:_target];
     [d appendUInt32:_nonce];
-    [d appendUInt32:_totalTransactions];
-    [d appendVarInt:_hashes.length/sizeof(UInt256)];
-    [d appendData:_hashes];
-    [d appendVarInt:_flags.length];
-    [d appendData:_flags];
+    
+    if (_totalTransactions > 0) {
+        [d appendUInt32:_totalTransactions];
+        [d appendVarInt:_hashes.length/sizeof(UInt256)];
+        [d appendData:_hashes];
+        [d appendVarInt:_flags.length];
+        [d appendData:_flags];
+    }
     
     return d;
 }

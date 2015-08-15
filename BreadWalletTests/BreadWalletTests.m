@@ -1215,6 +1215,8 @@
     XCTAssertEqualObjects(b.txHashes[3], uint256_obj(hash), @"[BRMerkleBlock txHashes]");
     
     //TODO: test a block with an odd number of tree rows both at the tx level and merkle node level
+    
+    //TODO:XXXX test verifyDifficultyFromPreviousBlock
 }
 
 #pragma mark - testPaymentProtocol
