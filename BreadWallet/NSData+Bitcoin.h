@@ -97,14 +97,14 @@ typedef union _UInt128 {
 @interface NSData (Bitcoin)
 
 - (UInt160)SHA1;
-- (UInt160)SHA1_HMAC:(NSData *)key;
 - (UInt256)SHA256;
 - (UInt256)SHA256_2;
-- (UInt256)SHA256_HMAC:(NSData *)key;
 - (UInt512)SHA512;
-- (UInt512)SHA512_HMAC:(NSData *)key;
 - (UInt160)RMD160;
 - (UInt160)hash160;
+- (UInt160)HMAC_SHA1:(NSData *)key;
+- (UInt256)HMAC_SHA256:(NSData *)key;
+- (UInt512)HMAC_SHA512:(NSData *)key;
 - (NSData *)reverse;
 
 - (uint8_t)UInt8AtOffset:(NSUInteger)offset;

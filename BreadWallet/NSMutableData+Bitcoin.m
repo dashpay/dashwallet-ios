@@ -26,11 +26,10 @@
 #import "NSMutableData+Bitcoin.h"
 #import "NSData+Bitcoin.h"
 #import "NSString+Bitcoin.h"
-#import "ccMemory.h"
 
 static void *secureAllocate(CFIndex allocSize, CFOptionFlags hint, void *info)
 {
-    void *ptr = CC_XMALLOC(sizeof(CFIndex) + allocSize);
+    void *ptr = malloc(sizeof(CFIndex) + allocSize);
     
     if (ptr) { // we need to keep track of the size of the allocation so it can be cleansed before deallocation
         *(CFIndex *)ptr = allocSize;
@@ -44,8 +43,8 @@ static void secureDeallocate(void *ptr, void *info)
     CFIndex size = *((CFIndex *)ptr - 1);
     
     if (size) {
-        CC_XZEROMEM(ptr, size);
-        CC_XFREE((CFIndex *)ptr - 1, sizeof(CFIndex) + size);
+        memset(ptr, 0, size);
+        free((CFIndex *)ptr - 1);
     }
 }
 
@@ -57,7 +56,7 @@ static void *secureReallocate(void *ptr, CFIndex newsize, CFOptionFlags hint, vo
     CFIndex size = *((CFIndex *)ptr - 1);
     
     if (newptr && size) {
-        CC_XMEMCPY(newptr, ptr, (size < newsize) ? size : newsize);
+        memcpy(newptr, ptr, (size < newsize) ? size : newsize);
         secureDeallocate(ptr, info);
     }
     

@@ -301,14 +301,6 @@ static void HMAC(void (*hash)(const void *, size_t, unsigned char *), size_t mdl
     return sha1;
 }
 
-- (UInt160)SHA1_HMAC:(NSData *)key
-{
-    UInt160 sha1;
-    
-    HMAC(SHA1, sizeof(UInt160), key.bytes, key.length, self.bytes, self.length, (unsigned char *)&sha1);
-    return sha1;
-}
-
 - (UInt256)SHA256
 {
     UInt256 sha256;
@@ -326,27 +318,11 @@ static void HMAC(void (*hash)(const void *, size_t, unsigned char *), size_t mdl
     return sha256;
 }
 
-- (UInt256)SHA256_HMAC:(NSData *)key
-{
-    UInt256 sha256;
-    
-    HMAC(SHA256, sizeof(UInt256), key.bytes, key.length, self.bytes, self.length, (unsigned char *)&sha256);
-    return sha256;
-}
-
 - (UInt512)SHA512
 {
     UInt512 sha512;
     
     SHA512(self.bytes, self.length, (unsigned char *)&sha512);
-    return sha512;
-}
-
-- (UInt512)SHA512_HMAC:(NSData *)key
-{
-    UInt512 sha512;
-    
-    HMAC(SHA512, sizeof(UInt512), key.bytes, key.length, self.bytes, self.length, (unsigned char *)&sha512);
     return sha512;
 }
 
@@ -366,6 +342,30 @@ static void HMAC(void (*hash)(const void *, size_t, unsigned char *), size_t mdl
     SHA256(self.bytes, self.length, (unsigned char *)&sha256);
     RMD160(&sha256, sizeof(sha256), (uint8_t *)&rmd160);
     return rmd160;
+}
+
+- (UInt160)HMAC_SHA1:(NSData *)key
+{
+    UInt160 sha1;
+    
+    HMAC(SHA1, sizeof(UInt160), key.bytes, key.length, self.bytes, self.length, (unsigned char *)&sha1);
+    return sha1;
+}
+
+- (UInt256)HMAC_SHA256:(NSData *)key
+{
+    UInt256 sha256;
+    
+    HMAC(SHA256, sizeof(UInt256), key.bytes, key.length, self.bytes, self.length, (unsigned char *)&sha256);
+    return sha256;
+}
+
+- (UInt512)HMAC_SHA512:(NSData *)key
+{
+    UInt512 sha512;
+    
+    HMAC(SHA512, sizeof(UInt512), key.bytes, key.length, self.bytes, self.length, (unsigned char *)&sha512);
+    return sha512;
 }
 
 - (NSData *)reverse

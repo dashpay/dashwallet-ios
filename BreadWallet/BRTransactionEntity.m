@@ -32,7 +32,6 @@
 #import "NSManagedObject+Sugar.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
-#import <CommonCrypto/CommonDigest.h>
 
 @implementation BRTransactionEntity
 

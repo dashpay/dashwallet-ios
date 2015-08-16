@@ -26,7 +26,6 @@
 #import "BRBIP39Mnemonic.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
-#import "ccMemory.h"
 #import <CommonCrypto/CommonKeyDerivation.h>
 
 #define WORDS @"BIP39Words"
@@ -54,7 +53,7 @@
         [a addObject:words[(x >> (sizeof(x)*8 - (11 + ((i*11) % 8)))) % n]];
     }
 
-    CC_XZEROMEM(&x, sizeof(x));
+    memset(&x, 0, sizeof(x));
     return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (CFArrayRef)a, CFSTR(" ")));
 }
 
@@ -93,9 +92,9 @@
         return nil;
     }
 
-    CC_XZEROMEM(&x, sizeof(x));
-    CC_XZEROMEM(&y, sizeof(y));
-    CC_XZEROMEM(&b, sizeof(b));
+    memset(&x, 0, sizeof(x));
+    memset(&y, 0, sizeof(y));
+    memset(&b, 0, sizeof(b));
     return d;
 }
 
@@ -132,7 +131,7 @@
 {
     if (! phrase) return nil;
     
-    NSMutableData *key = [NSMutableData secureDataWithLength:CC_SHA512_DIGEST_LENGTH];
+    NSMutableData *key = [NSMutableData secureDataWithLength:sizeof(UInt512)];
     NSData *password, *salt;
     CFMutableStringRef pw = CFStringCreateMutableCopy(SecureAllocator(), 0, (CFStringRef)phrase);
     CFMutableStringRef s = CFStringCreateMutableCopy(SecureAllocator(), 0, CFSTR("mnemonic"));

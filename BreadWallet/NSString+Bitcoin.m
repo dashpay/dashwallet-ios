@@ -26,7 +26,6 @@
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
-#import "ccMemory.h"
 
 static const UniChar base58chars[] = {
     '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P',
@@ -46,7 +45,7 @@ static const UniChar base58chars[] = {
     
     uint8_t buf[(d.length - z)*138/100 + 1]; // log(256)/log(58), rounded up
 
-    CC_XZEROMEM(buf, sizeof(buf));
+    memset(buf, 0, sizeof(buf));
 
     for (i = z; i < d.length; i++) {
         uint32_t carry = ((const uint8_t *)d.bytes)[i];
@@ -57,7 +56,7 @@ static const UniChar base58chars[] = {
             carry /= 58;
         }
         
-        CC_XZEROMEM(&carry, sizeof(carry));
+        memset(&carry, 0, sizeof(carry));
     }
 
     i = 0;
@@ -67,7 +66,7 @@ static const UniChar base58chars[] = {
     
     while (z-- > 0) CFStringAppendCharacters(s, &base58chars[0], 1);
     while (i < sizeof(buf)) CFStringAppendCharacters(s, &base58chars[buf[i++]], 1);
-    CC_XZEROMEM(buf, sizeof(buf));
+    memset(buf, 0, sizeof(buf));
     return CFBridgingRelease(s);
 }
 
@@ -181,7 +180,7 @@ static const UniChar base58chars[] = {
     
     uint8_t buf[(self.length - z)*733/1000 + 1]; // log(58)/log(256), rounded up
     
-    CC_XZEROMEM(buf, sizeof(buf));
+    memset(buf, 0, sizeof(buf));
     
     for (i = z; i < self.length; i++) {
         uint32_t carry = [self characterAtIndex:i];
@@ -226,7 +225,7 @@ static const UniChar base58chars[] = {
             carry >>= 8;
         }
         
-        CC_XZEROMEM(&carry, sizeof(carry));
+        memset(&carry, 0, sizeof(carry));
     }
     
     i = 0;
@@ -236,7 +235,7 @@ static const UniChar base58chars[] = {
 
     d.length = z;
     [d appendBytes:&buf[i] length:sizeof(buf) - i];
-    CC_XZEROMEM(buf, sizeof(buf));
+    memset(buf, 0, sizeof(buf));
     return d;
 }
 
@@ -280,11 +279,11 @@ static const UniChar base58chars[] = {
                 return d;
         }
         
-        CC_XZEROMEM(&c, sizeof(c));
+        memset(&c, 0, sizeof(c));
         
         if (i % 2) {
             [d appendBytes:&b length:1];
-            CC_XZEROMEM(&b, sizeof(b));
+            memset(&b, 0, sizeof(b));
         }
         else b *= 16;
     }
