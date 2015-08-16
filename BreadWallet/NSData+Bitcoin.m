@@ -270,6 +270,27 @@ static void RMD160(const void *data, size_t len, unsigned char *md)
     for (i = 0; i < 5; i++) ((unsigned *)md)[i] = CFSwapInt32HostToLittle(buf[i]); // write to md
 }
 
+static void HMAC(void (*hash)(const void *, size_t, unsigned char *), size_t mdlen, const void *key, size_t klen,
+                 const void *data, size_t dlen, unsigned char *md)
+{
+    int blen = (mdlen > 32) ? 128 : 64;
+    unsigned char k[mdlen], kipad[blen + dlen], kopad[blen + mdlen];
+    
+    if (klen > blen) hash(key, klen, k), key = k, klen = sizeof(k);
+    memset(kipad, 0, blen);
+    memcpy(kipad, key, klen);
+    for (int i = 0; i < blen/sizeof(unsigned long long); i++) ((unsigned long long *)kipad)[i] ^= 0x3636363636363636;
+    memset(kopad, 0, blen);
+    memcpy(kopad, key, klen);
+    for (int i = 0; i < blen/sizeof(unsigned long long); i++) ((unsigned long long *)kopad)[i] ^= 0x5c5c5c5c5c5c5c5c;
+    memcpy(kipad + blen, data, dlen);
+    hash(kipad, sizeof(kipad), kopad + blen);
+    hash(kopad, sizeof(kopad), md);
+    memset(k, 0, sizeof(k));
+    memset(kipad, 0, blen);
+    memset(kopad, 0, blen);
+}
+
 @implementation NSData (Bitcoin)
 
 - (UInt160)SHA1
@@ -277,6 +298,14 @@ static void RMD160(const void *data, size_t len, unsigned char *md)
     UInt160 sha1;
 
     SHA1(self.bytes, self.length, (unsigned char *)&sha1);
+    return sha1;
+}
+
+- (UInt160)SHA1_HMAC:(NSData *)key
+{
+    UInt160 sha1;
+    
+    HMAC(SHA1, sizeof(UInt160), key.bytes, key.length, self.bytes, self.length, (unsigned char *)&sha1);
     return sha1;
 }
 
@@ -297,11 +326,27 @@ static void RMD160(const void *data, size_t len, unsigned char *md)
     return sha256;
 }
 
+- (UInt256)SHA256_HMAC:(NSData *)key
+{
+    UInt256 sha256;
+    
+    HMAC(SHA256, sizeof(UInt256), key.bytes, key.length, self.bytes, self.length, (unsigned char *)&sha256);
+    return sha256;
+}
+
 - (UInt512)SHA512
 {
     UInt512 sha512;
     
     SHA512(self.bytes, self.length, (unsigned char *)&sha512);
+    return sha512;
+}
+
+- (UInt512)SHA512_HMAC:(NSData *)key
+{
+    UInt512 sha512;
+    
+    HMAC(SHA512, sizeof(UInt512), key.bytes, key.length, self.bytes, self.length, (unsigned char *)&sha512);
     return sha512;
 }
 

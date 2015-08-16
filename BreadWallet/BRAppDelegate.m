@@ -79,7 +79,7 @@
 - (BOOL)application:(UIApplication *)application
 shouldAllowExtensionPointIdentifier:(NSString *)extensionPointIdentifier
 {
-    return NO; // disable extenstion such as custom keyboards for security purposes
+    return NO; // disable extensions such as custom keyboards for security purposes
 }
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication
