@@ -49,7 +49,7 @@ static void SHA1Compress(unsigned *r, unsigned *x)
     r[0] += a, r[1] += b, r[2] += c, r[3] += d, r[4] += e;
 }
 
-static void SHA1(const void *data, size_t len, unsigned char *md)
+static void SHA1(const void *data, size_t len, void *md)
 {
     unsigned i, x[80], buf[] = { 0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0 }; // initial buffer values
     
@@ -107,7 +107,7 @@ static void SHA256Compress(unsigned *r, unsigned *x)
     r[0] += a, r[1] += b, r[2] += c, r[3] += d, r[4] += e, r[5] += f, r[6] += g, r[7] += h;
 }
 
-static void SHA256(const void *data, size_t len, unsigned char *md)
+static void SHA256(const void *data, size_t len, void *md)
 {
     size_t i;
     unsigned x[16], buf[] = { 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
@@ -172,7 +172,7 @@ static void SHA512Compress(unsigned long long *r, unsigned long long *x)
     r[0] += a, r[1] += b, r[2] += c, r[3] += d, r[4] += e, r[5] += f, r[6] += g, r[7] += h;
 }
 
-static void SHA512(const void *data, size_t len, unsigned char *md)
+static void SHA512(const void *data, size_t len, void *md)
 {
     size_t i;
     unsigned long long x[16], buf[] = { 0x6a09e667f3bcc908, 0xbb67ae8584caa73b, 0x3c6ef372fe94f82b, 0xa54ff53a5f1d36f1,
@@ -251,7 +251,7 @@ static void RMDcompress(unsigned *r, unsigned *x)
 }
 
 // ripemd-160 hash function: http://homes.esat.kuleuven.be/~bosselae/ripemd160.html
-static void RMD160(const void *data, size_t len, unsigned char *md)
+static void RMD160(const void *data, size_t len, void *md)
 {
     size_t i;
     unsigned x[16], buf[] = { 0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0 }; // initial buffer values
@@ -270,19 +270,22 @@ static void RMD160(const void *data, size_t len, unsigned char *md)
     for (i = 0; i < 5; i++) ((unsigned *)md)[i] = CFSwapInt32HostToLittle(buf[i]); // write to md
 }
 
-static void HMAC(void (*hash)(const void *, size_t, unsigned char *), size_t mdlen, const void *key, size_t klen,
-                 const void *data, size_t dlen, unsigned char *md)
+// HMAC(key, data) = hash((key xor opad) || hash((key xor ipad) || data))
+// opad = 0x5c5c5c...5c5c
+// ipad = 0x363636...3636
+static void HMAC(void (*hash)(const void *, size_t, void *), int hlen, const void *key, size_t klen,
+                 const void *data, size_t dlen, void *md)
 {
-    int blen = (mdlen > 32) ? 128 : 64;
-    unsigned char k[mdlen], kipad[blen + dlen], kopad[blen + mdlen];
+    int blen = (hlen > 32) ? 128 : 64;
+    unsigned char k[hlen], kipad[blen + dlen], kopad[blen + hlen];
     
     if (klen > blen) hash(key, klen, k), key = k, klen = sizeof(k);
     memset(kipad, 0, blen);
     memcpy(kipad, key, klen);
-    for (int i = 0; i < blen/sizeof(unsigned long long); i++) ((unsigned long long *)kipad)[i] ^= 0x3636363636363636;
+    for (int i = 0; i < blen/8; i++) ((unsigned long long *)kipad)[i] ^= 0x3636363636363636;
     memset(kopad, 0, blen);
     memcpy(kopad, key, klen);
-    for (int i = 0; i < blen/sizeof(unsigned long long); i++) ((unsigned long long *)kopad)[i] ^= 0x5c5c5c5c5c5c5c5c;
+    for (int i = 0; i < blen/8; i++) ((unsigned long long *)kopad)[i] ^= 0x5c5c5c5c5c5c5c5c;
     memcpy(kipad + blen, data, dlen);
     hash(kipad, sizeof(kipad), kopad + blen);
     hash(kopad, sizeof(kopad), md);
@@ -291,13 +294,49 @@ static void HMAC(void (*hash)(const void *, size_t, unsigned char *), size_t mdl
     memset(kopad, 0, blen);
 }
 
+// PBDKF2(pw, salt, rounds) = T1 || T2 || ... || Tdklen/hlen
+// Ti = F(pw, salt, rounds, i)
+// F(pw, salt, rounds, i) = U1 ^ U2 ^ ... ^ Urounds
+// U1 = hmac_hash(pw, salt || INT32_BE(i))
+// U2 = hmac_hash(pw, U1)
+// ...
+// Urounds = hmac_hash(pw, Urounds-1)
+static void PBKDF2(void (*hash)(const void *, size_t, void *), int hlen, const void *pw, size_t pwlen,
+                   const void *salt, size_t slen, unsigned rounds, void *dk, size_t dklen)
+{
+    unsigned char md[hlen], s[slen + sizeof(unsigned)], U[hlen], *T = dk;
+    unsigned r, j;
+    
+    memcpy(s, salt, slen);
+    
+    for (int i = 0; i < (dklen + hlen - 1)/hlen; i++) {
+        *(unsigned *)(s + slen) = CFSwapInt32HostToBig(i);
+        HMAC(hash, hlen, pw, pwlen, s, sizeof(s), (unsigned char *)U); // U1 = hmac_hash(pw, salt || INT32_BE(i))
+        memcpy(md, U, sizeof(U));
+
+        for (r = 1; r < rounds; r++) {
+            HMAC(hash, hlen, pw, pwlen, U, sizeof(U), (unsigned char *)U); // Ur = hmac_hash(pw, Ur-1)
+            for (j = 0; j < hlen/4; j++) ((unsigned *)md)[j] ^= ((unsigned *)U)[j]; // U1 ^ U2 ^ ... Ur
+        }
+
+        memcpy(&T[i*hlen], md, (i*hlen + hlen <= dklen) ? hlen : dklen % hlen); // Ti = F(pw, salt, rounds, i)
+    }
+}
+
+// scrypt key derivation: http://www.tarsnap.com/scrypt.html
+static void scrypt(const void *pw, size_t pwlen, const void *salt, size_t slen, long n, int r, int p,
+                   void *dk, size_t dklen)
+{
+    
+}
+
 @implementation NSData (Bitcoin)
 
 - (UInt160)SHA1
 {
     UInt160 sha1;
 
-    SHA1(self.bytes, self.length, (unsigned char *)&sha1);
+    SHA1(self.bytes, self.length, &sha1);
     return sha1;
 }
 
@@ -305,7 +344,7 @@ static void HMAC(void (*hash)(const void *, size_t, unsigned char *), size_t mdl
 {
     UInt256 sha256;
     
-    SHA256(self.bytes, self.length, (unsigned char *)&sha256);
+    SHA256(self.bytes, self.length, &sha256);
     return sha256;
 }
 
@@ -313,8 +352,8 @@ static void HMAC(void (*hash)(const void *, size_t, unsigned char *), size_t mdl
 {
     UInt256 sha256;
     
-    SHA256(self.bytes, self.length, (unsigned char *)&sha256);
-    SHA256((const void *)&sha256, sizeof(sha256), (unsigned char *)&sha256);
+    SHA256(self.bytes, self.length, &sha256);
+    SHA256(&sha256, sizeof(sha256), &sha256);
     return sha256;
 }
 
@@ -322,7 +361,7 @@ static void HMAC(void (*hash)(const void *, size_t, unsigned char *), size_t mdl
 {
     UInt512 sha512;
     
-    SHA512(self.bytes, self.length, (unsigned char *)&sha512);
+    SHA512(self.bytes, self.length, &sha512);
     return sha512;
 }
 
@@ -330,7 +369,7 @@ static void HMAC(void (*hash)(const void *, size_t, unsigned char *), size_t mdl
 {
     UInt160 rmd160;
     
-    RMD160(self.bytes, (size_t)self.length, (uint8_t *)&rmd160);
+    RMD160(self.bytes, (size_t)self.length, &rmd160);
     return rmd160;
 }
 
@@ -339,33 +378,48 @@ static void HMAC(void (*hash)(const void *, size_t, unsigned char *), size_t mdl
     UInt256 sha256;
     UInt160 rmd160;
     
-    SHA256(self.bytes, self.length, (unsigned char *)&sha256);
-    RMD160(&sha256, sizeof(sha256), (uint8_t *)&rmd160);
+    SHA256(self.bytes, self.length, &sha256);
+    RMD160(&sha256, sizeof(sha256), &rmd160);
     return rmd160;
 }
 
-- (UInt160)HMAC_SHA1:(NSData *)key
+- (UInt160)HmacSHA1:(NSData *)key
 {
     UInt160 sha1;
     
-    HMAC(SHA1, sizeof(UInt160), key.bytes, key.length, self.bytes, self.length, (unsigned char *)&sha1);
+    HMAC(SHA1, sizeof(UInt160), key.bytes, key.length, self.bytes, self.length, &sha1);
     return sha1;
 }
 
-- (UInt256)HMAC_SHA256:(NSData *)key
+- (UInt256)HmacSHA256:(NSData *)key
 {
     UInt256 sha256;
     
-    HMAC(SHA256, sizeof(UInt256), key.bytes, key.length, self.bytes, self.length, (unsigned char *)&sha256);
+    HMAC(SHA256, sizeof(UInt256), key.bytes, key.length, self.bytes, self.length, &sha256);
     return sha256;
 }
 
-- (UInt512)HMAC_SHA512:(NSData *)key
+- (UInt512)HmacSHA512:(NSData *)key
 {
     UInt512 sha512;
     
-    HMAC(SHA512, sizeof(UInt512), key.bytes, key.length, self.bytes, self.length, (unsigned char *)&sha512);
+    HMAC(SHA512, sizeof(UInt512), key.bytes, key.length, self.bytes, self.length, &sha512);
     return sha512;
+}
+
+- (void)PBDKF2HmacSHA256WithSalt:(NSData *)salt rounds:(uint32_t)rounds derivedKey:(NSMutableData *)dk
+{
+    PBKDF2(SHA256, 32, self.bytes, self.length, salt.bytes, salt.length, rounds, dk.mutableBytes, dk.length);
+}
+
+- (void)PBDKF2HmacSHA512WithSalt:(NSData *)salt rounds:(uint32_t)rounds derivedKey:(NSMutableData *)dk
+{
+    PBKDF2(SHA512, 64, self.bytes, self.length, salt.bytes, salt.length, rounds, dk.mutableBytes, dk.length);
+}
+
+- (void)scryptWithSalt:(NSData *)salt n:(NSUInteger)n r:(uint32_t)r p:(uint32_t)p derivedKey:(NSMutableData *)dk
+{
+    scrypt(self.bytes, self.length, salt.bytes, salt.length, n, r, p, dk.mutableBytes, dk.length);
 }
 
 - (NSData *)reverse

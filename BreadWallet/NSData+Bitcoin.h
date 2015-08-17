@@ -102,9 +102,12 @@ typedef union _UInt128 {
 - (UInt512)SHA512;
 - (UInt160)RMD160;
 - (UInt160)hash160;
-- (UInt160)HMAC_SHA1:(NSData *)key;
-- (UInt256)HMAC_SHA256:(NSData *)key;
-- (UInt512)HMAC_SHA512:(NSData *)key;
+- (UInt160)HmacSHA1:(NSData *)key;
+- (UInt256)HmacSHA256:(NSData *)key;
+- (UInt512)HmacSHA512:(NSData *)key;
+- (void)PBDKF2HmacSHA256WithSalt:(NSData *)salt rounds:(uint32_t)rounds derivedKey:(NSMutableData *)dk;
+- (void)PBDKF2HmacSHA512WithSalt:(NSData *)salt rounds:(uint32_t)rounds derivedKey:(NSMutableData *)dk;
+- (void)scryptWithSalt:(NSData *)salt n:(NSUInteger)n r:(uint32_t)r p:(uint32_t)p derivedKey:(NSMutableData *)dk;
 - (NSData *)reverse;
 
 - (uint8_t)UInt8AtOffset:(NSUInteger)offset;

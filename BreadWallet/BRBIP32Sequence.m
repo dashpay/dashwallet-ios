@@ -66,7 +66,7 @@ static void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i)
     i = CFSwapInt32HostToBig(i);
     [d appendBytes:&i length:sizeof(i)];
 
-    I = [d HMAC_SHA512:cd]; // I = HMAC-SHA512(c, k|P(k) || i)
+    I = [d HmacSHA512:cd]; // I = HMAC-SHA512(c, k|P(k) || i)
     
     *k = secp256k1_mod_add(*(UInt256 *)I.u8, *k); // k = IL + k (mod n)
     *c = *(UInt256 *)(I.u8 + sizeof(UInt256)); // c = IR
@@ -101,7 +101,7 @@ static void CKDpub(BRPubKey *K, UInt256 *c, uint32_t i)
     i = CFSwapInt32HostToBig(i);
     [d appendBytes:&i length:sizeof(i)];
 
-    I = [d HMAC_SHA512:cd]; // I = HMAC-SHA512(c, P(K) || i)
+    I = [d HmacSHA512:cd]; // I = HMAC-SHA512(c, P(K) || i)
     
     *c = *(UInt256 *)(I.u8 + sizeof(UInt256)); // c = IR
 
@@ -141,7 +141,7 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
 
     NSMutableData *mpk = [NSMutableData secureData];
     NSData *sk = [NSData dataWithBytesNoCopy:BIP32_SEED_KEY length:strlen(BIP32_SEED_KEY) freeWhenDone:NO];
-    UInt512 I = [seed HMAC_SHA512:sk];
+    UInt512 I = [seed HmacSHA512:sk];
     UInt256 secret = *(UInt256 *)I.u8, chain = *(UInt256 *)(I.u8 + sizeof(UInt256));
 
     [mpk appendBytes:[BRKey keyWithSecret:secret compressed:YES].hash160.u32 length:4];
@@ -179,7 +179,7 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
 
     NSMutableArray *a = [NSMutableArray arrayWithCapacity:n.count];
     NSData *sk = [NSData dataWithBytesNoCopy:BIP32_SEED_KEY length:strlen(BIP32_SEED_KEY) freeWhenDone:NO];
-    UInt512 I = [seed HMAC_SHA512:sk];
+    UInt512 I = [seed HmacSHA512:sk];
     UInt256 secret = *(UInt256 *)I.u8, chain = *(UInt256 *)(I.u8 + sizeof(UInt256));
     uint8_t version = BITCOIN_PRIVKEY;
     
@@ -212,7 +212,7 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     if (! seed) return nil;
 
     NSData *sk = [NSData dataWithBytesNoCopy:BIP32_SEED_KEY length:strlen(BIP32_SEED_KEY) freeWhenDone:NO];
-    UInt512 I = [seed HMAC_SHA512:sk];
+    UInt512 I = [seed HmacSHA512:sk];
     UInt256 secret = *(UInt256 *)I.u8, chain = *(UInt256 *)(I.u8 + sizeof(UInt256));
 
     return serialize(0, 0, 0, chain, [NSData dataWithBytes:&secret length:sizeof(secret)]);
