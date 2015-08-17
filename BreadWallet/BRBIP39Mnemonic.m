@@ -26,7 +26,6 @@
 #import "BRBIP39Mnemonic.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
-#import <CommonCrypto/CommonKeyDerivation.h>
 
 #define WORDS @"BIP39Words"
 
@@ -144,8 +143,7 @@
     CFRelease(pw);
     CFRelease(s);
 
-    CCKeyDerivationPBKDF(kCCPBKDF2, password.bytes, password.length, salt.bytes, salt.length, kCCPRFHmacAlgSHA512, 2048,
-                         key.mutableBytes, key.length);
+    [password PBDKF2HmacSHA512WithSalt:salt rounds:2048 derivedKey:key];
     return key;
 }
 

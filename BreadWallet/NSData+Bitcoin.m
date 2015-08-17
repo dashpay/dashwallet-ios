@@ -289,14 +289,14 @@ static void HMAC(void (*hash)(const void *, size_t, void *), int hlen, const voi
     memcpy(kipad + blen, data, dlen);
     hash(kipad, sizeof(kipad), kopad + blen);
     hash(kopad, sizeof(kopad), md);
+    
     memset(k, 0, sizeof(k));
     memset(kipad, 0, blen);
     memset(kopad, 0, blen);
 }
 
-// PBDKF2(pw, salt, rounds) = T1 || T2 || ... || Tdklen/hlen
-// Ti = F(pw, salt, rounds, i)
-// F(pw, salt, rounds, i) = U1 ^ U2 ^ ... ^ Urounds
+// dk = T1 || T2 || ... || Tdklen/hlen
+// Ti = U1 ^ U2 ^ ... ^ Urounds
 // U1 = hmac_hash(pw, salt || INT32_BE(i))
 // U2 = hmac_hash(pw, U1)
 // ...
@@ -304,30 +304,28 @@ static void HMAC(void (*hash)(const void *, size_t, void *), int hlen, const voi
 static void PBKDF2(void (*hash)(const void *, size_t, void *), int hlen, const void *pw, size_t pwlen,
                    const void *salt, size_t slen, unsigned rounds, void *dk, size_t dklen)
 {
-    unsigned char md[hlen], s[slen + sizeof(unsigned)], U[hlen], *T = dk;
-    unsigned r, j;
+    unsigned char s[slen + sizeof(unsigned)], U[hlen], T[hlen];
+    unsigned i, r, j;
     
     memcpy(s, salt, slen);
     
-    for (int i = 0; i < (dklen + hlen - 1)/hlen; i++) {
-        *(unsigned *)(s + slen) = CFSwapInt32HostToBig(i);
-        HMAC(hash, hlen, pw, pwlen, s, sizeof(s), (unsigned char *)U); // U1 = hmac_hash(pw, salt || INT32_BE(i))
-        memcpy(md, U, sizeof(U));
+    for (i = 0; i < (dklen + hlen - 1)/hlen; i++) {
+        *(unsigned *)(s + slen) = CFSwapInt32HostToBig(i + 1);
+        HMAC(hash, hlen, pw, pwlen, s, sizeof(s), U); // U1 = hmac_hash(pw, salt || INT32_BE(i))
+        memcpy(T, U, sizeof(U));
 
         for (r = 1; r < rounds; r++) {
-            HMAC(hash, hlen, pw, pwlen, U, sizeof(U), (unsigned char *)U); // Ur = hmac_hash(pw, Ur-1)
-            for (j = 0; j < hlen/4; j++) ((unsigned *)md)[j] ^= ((unsigned *)U)[j]; // U1 ^ U2 ^ ... Ur
+            HMAC(hash, hlen, pw, pwlen, U, sizeof(U), U); // Urounds = hmac_hash(pw, Urounds-1)
+            for (j = 0; j < hlen/4; j++) ((unsigned *)T)[j] ^= ((unsigned *)U)[j]; // Ti = U1 ^ U2 ^ ... Urounds
         }
 
-        memcpy(&T[i*hlen], md, (i*hlen + hlen <= dklen) ? hlen : dklen % hlen); // Ti = F(pw, salt, rounds, i)
+        // dk = T1 || T2 || ... || Tdklen/hlen
+        memcpy((char *)dk + i*hlen, T, (i*hlen + hlen <= dklen) ? hlen : dklen % hlen);
     }
-}
-
-// scrypt key derivation: http://www.tarsnap.com/scrypt.html
-static void scrypt(const void *pw, size_t pwlen, const void *salt, size_t slen, long n, int r, int p,
-                   void *dk, size_t dklen)
-{
     
+    memset(s, 0, sizeof(s));
+    memset(U, 0, sizeof(U));
+    memset(T, 0, sizeof(T));
 }
 
 @implementation NSData (Bitcoin)
@@ -415,11 +413,6 @@ static void scrypt(const void *pw, size_t pwlen, const void *salt, size_t slen, 
 - (void)PBDKF2HmacSHA512WithSalt:(NSData *)salt rounds:(uint32_t)rounds derivedKey:(NSMutableData *)dk
 {
     PBKDF2(SHA512, 64, self.bytes, self.length, salt.bytes, salt.length, rounds, dk.mutableBytes, dk.length);
-}
-
-- (void)scryptWithSalt:(NSData *)salt n:(NSUInteger)n r:(uint32_t)r p:(uint32_t)p derivedKey:(NSMutableData *)dk
-{
-    scrypt(self.bytes, self.length, salt.bytes, salt.length, n, r, p, dk.mutableBytes, dk.length);
 }
 
 - (NSData *)reverse

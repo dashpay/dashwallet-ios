@@ -66,17 +66,17 @@ static void salsa20_8(unsigned b[16])
     b[8] += x08, b[9] += x09, b[10] += x10, b[11] += x11, b[12] += x12, b[13] += x13, b[14] += x14, b[15] += x15;
 }
 
-static void blockmix_salsa8(unsigned char *dest, const void *src, unsigned *b, int r)
+static void blockmix_salsa8(unsigned long long *dest, const unsigned long long *src, unsigned *b, int r)
 {
-    memcpy(b, (char *)src + (2*r - 1)*64, 64);
+    memcpy(b, &src[(2*r - 1)*8], 64);
 
     for (int i = 0; i < 2*r; i += 2) {
-        for (int j = 0; j < 8; j++) ((unsigned long long *)b)[j] ^= ((unsigned long long *)src)[i*8 + j];
+        for (int j = 0; j < 8; j++) ((unsigned long long *)b)[j] ^= src[i*8 + j];
         salsa20_8(b);
-        memcpy(&dest[i*32], b, 64);
-        for (int j = 0; j < 8; j++) ((unsigned long long *)b)[j] ^= ((unsigned long long *)src)[i*8 + 8 + j];
+        memcpy(&dest[i*4], b, 64);
+        for (int j = 0; j < 8; j++) ((unsigned long long *)b)[j] ^= src[i*8 + 8 + j];
         salsa20_8(b);
-        memcpy(&dest[i*32 + r*64], b, 64);
+        memcpy(&dest[i*4 + r*8], b, 64);
     }
 }
 
@@ -84,39 +84,38 @@ static void blockmix_salsa8(unsigned char *dest, const void *src, unsigned *b, i
 static void scrypt(const void *pw, size_t pwlen, const void *salt, size_t slen, long n, int r, int p,
                    void *dk, size_t dklen)
 {
-    unsigned char b[128*r*p], x[128*r], y[128*r], *v = malloc(128*r*n);
-    unsigned z[16];
-    unsigned long long m;
+    unsigned long long x[16*r], y[16*r], *v = malloc(128*r*n), m;
+    unsigned b[32*r*p], z[16];
 
-    CCKeyDerivationPBKDF(kCCPBKDF2, pw, pwlen, salt, slen, kCCPRFHmacAlgSHA256, 1, b, sizeof(b));
+    CCKeyDerivationPBKDF(kCCPBKDF2, pw, pwlen, salt, slen, kCCPRFHmacAlgSHA256, 1, (uint8_t *)b, sizeof(b));
 
     for (int i = 0; i < p; i++) {
         for (int j = 0; j < 32*r; j++) {
-            ((unsigned *)x)[j] = CFSwapInt32LittleToHost(*(unsigned *)&b[i*128*r + j*4]);
+            ((unsigned *)x)[j] = CFSwapInt32LittleToHost(b[i*32*r + j]);
         }
 
         for (long j = 0; j < n; j += 2) {
-            memcpy(&v[j*(128*r)], x, 128*r);
+            memcpy(&v[j*(16*r)], x, 128*r);
             blockmix_salsa8(y, x, z, r);
-            memcpy(&v[(j + 1)*(128*r)], y, 128*r);
+            memcpy(&v[(j + 1)*(16*r)], y, 128*r);
             blockmix_salsa8(x, y, z, r);
         }
 
         for (long j = 0; j < n; j += 2) {
-            m = CFSwapInt64LittleToHost(((unsigned long long *)x)[(2*r - 1)*8]) & (n - 1);
-            for (int k = 0; k < 16*r; k++) ((unsigned long long *)x)[k] ^= ((unsigned long long *)v)[m*(16*r) + k];
+            m = CFSwapInt64LittleToHost(x[(2*r - 1)*8]) & (n - 1);
+            for (int k = 0; k < 16*r; k++) x[k] ^= v[m*(16*r) + k];
             blockmix_salsa8(y, x, z, r);
-            m = CFSwapInt64LittleToHost(((unsigned long long *)y)[(2*r - 1)*8]) & (n - 1);
-            for (int k = 0; k < 16*r; k++) ((unsigned long long *)y)[k] ^= ((unsigned long long *)v)[m*(16*r) + k];
+            m = CFSwapInt64LittleToHost(y[(2*r - 1)*8]) & (n - 1);
+            for (int k = 0; k < 16*r; k++) y[k] ^= v[m*(16*r) + k];
             blockmix_salsa8(x, y, z, r);
         }
 
         for (int j = 0; j < 32*r; j++) {
-            *(unsigned *)&b[i*128*r + j*4] = CFSwapInt32HostToLittle(((unsigned *)x)[j]);
+            b[i*32*r + j] = CFSwapInt32HostToLittle(((unsigned *)x)[j]);
         }
     }
 
-    CCKeyDerivationPBKDF(kCCPBKDF2, pw, pwlen, b, sizeof(b), kCCPRFHmacAlgSHA256, 1, dk, dklen);
+    CCKeyDerivationPBKDF(kCCPBKDF2, pw, pwlen, (uint8_t *)b, sizeof(b), kCCPRFHmacAlgSHA256, 1, dk, dklen);
 
     memset(b, 0, sizeof(b));
     memset(x, 0, sizeof(x));
