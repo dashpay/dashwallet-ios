@@ -143,7 +143,7 @@
     CFRelease(pw);
     CFRelease(s);
 
-    [password PBDKF2HmacSHA512WithSalt:salt rounds:2048 derivedKey:key];
+    PBKDF2(SHA512, 64, password.bytes, password.length, salt.bytes, salt.length, 2048, key.mutableBytes, key.length);
     return key;
 }
 

@@ -49,7 +49,7 @@ static void SHA1Compress(unsigned *r, unsigned *x)
     r[0] += a, r[1] += b, r[2] += c, r[3] += d, r[4] += e;
 }
 
-static void SHA1(const void *data, size_t len, void *md)
+void SHA1(const void *data, size_t len, void *md)
 {
     unsigned i, x[80], buf[] = { 0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0 }; // initial buffer values
     
@@ -107,7 +107,7 @@ static void SHA256Compress(unsigned *r, unsigned *x)
     r[0] += a, r[1] += b, r[2] += c, r[3] += d, r[4] += e, r[5] += f, r[6] += g, r[7] += h;
 }
 
-static void SHA256(const void *data, size_t len, void *md)
+void SHA256(const void *data, size_t len, void *md)
 {
     size_t i;
     unsigned x[16], buf[] = { 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
@@ -172,7 +172,7 @@ static void SHA512Compress(unsigned long long *r, unsigned long long *x)
     r[0] += a, r[1] += b, r[2] += c, r[3] += d, r[4] += e, r[5] += f, r[6] += g, r[7] += h;
 }
 
-static void SHA512(const void *data, size_t len, void *md)
+void SHA512(const void *data, size_t len, void *md)
 {
     size_t i;
     unsigned long long x[16], buf[] = { 0x6a09e667f3bcc908, 0xbb67ae8584caa73b, 0x3c6ef372fe94f82b, 0xa54ff53a5f1d36f1,
@@ -203,36 +203,33 @@ static void SHA512(const void *data, size_t len, void *md)
 #define rmd(a, b, c, d, e, f, g, h, i, j) ((a) = rol32((f) + (b) + CFSwapInt32LittleToHost(c) + (d), (e)) + (g),\
                                            (f) = (g), (g) = (h), (h) = rol32((i), 10), (i) = (j), (j) = (a))
 
-// ripemd left line
-static const unsigned rl1[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }, // round 1, id
-                      rl2[] = { 7, 4, 13, 1, 10, 6, 15, 3, 12, 0, 9, 5, 2, 14, 11, 8 }, // round 2, rho
-                      rl3[] = { 3, 10, 14, 4, 9, 15, 8, 1, 2, 7, 0, 6, 13, 11, 5, 12 }, // round 3, rho^2
-                      rl4[] = { 1, 9, 11, 10, 0, 8, 12, 4, 13, 3, 7, 15, 14, 5, 6, 2 }, // round 4, rho^3
-                      rl5[] = { 4, 0, 5, 9, 7, 12, 2, 10, 14, 1, 3, 8, 11, 6, 15, 13 }; // round 5, rho^4
-
-// ripemd right line
-static const unsigned rr1[] = { 5, 14, 7, 0, 9, 2, 11, 4, 13, 6, 15, 8, 1, 10, 3, 12 }, // round 1, pi
-                      rr2[] = { 6, 11, 3, 7, 0, 13, 5, 10, 14, 15, 8, 12, 4, 9, 1, 2 }, // round 2, rho pi
-                      rr3[] = { 15, 5, 1, 3, 7, 14, 6, 9, 11, 8, 12, 2, 10, 0, 4, 13 }, // round 3, rho^2 pi
-                      rr4[] = { 8, 6, 4, 1, 3, 11, 15, 0, 5, 12, 2, 13, 9, 7, 10, 14 }, // round 4, rho^3 pi
-                      rr5[] = { 12, 15, 10, 4, 1, 5, 8, 7, 6, 2, 13, 14, 0, 3, 9, 11 }; // round 5, rho^4 pi
-
-// ripemd left line shifts
-static const unsigned sl1[] = { 11, 14, 15, 12, 5, 8, 7, 9, 11, 13, 14, 15, 6, 7, 9, 8 }, // round 1
-                      sl2[] = { 7, 6, 8, 13, 11, 9, 7, 15, 7, 12, 15, 9, 11, 7, 13, 12 }, // round 2
-                      sl3[] = { 11, 13, 6, 7, 14, 9, 13, 15, 14, 8, 13, 6, 5, 12, 7, 5 }, // round 3
-                      sl4[] = { 11, 12, 14, 15, 14, 15, 9, 8, 9, 14, 5, 6, 8, 6, 5, 12 }, // round 4
-                      sl5[] = { 9, 15, 5, 11, 6, 8, 13, 12, 5, 12, 13, 14, 11, 8, 5, 6 }; // round 5
-
-// ripemd right line shifts
-static const unsigned sr1[] = { 8, 9, 9, 11, 13, 15, 15, 5, 7, 7, 8, 11, 14, 14, 12, 6 }, // round 1
-                      sr2[] = { 9, 13, 15, 7, 12, 8, 9, 11, 7, 7, 12, 7, 6, 15, 13, 11 }, // round 2
-                      sr3[] = { 9, 7, 15, 11, 8, 6, 6, 14, 12, 13, 5, 14, 13, 13, 7, 5 }, // round 3
-                      sr4[] = { 15, 5, 8, 11, 14, 14, 6, 14, 6, 9, 12, 9, 12, 5, 15, 8 }, // round 4
-                      sr5[] = { 8, 5, 12, 9, 12, 5, 14, 6, 8, 13, 6, 5, 15, 13, 11, 11 }; // round 5
-
 static void RMDcompress(unsigned *r, unsigned *x)
 {
+    // left line
+    static const unsigned rl1[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }, // round 1, id
+                          rl2[] = { 7, 4, 13, 1, 10, 6, 15, 3, 12, 0, 9, 5, 2, 14, 11, 8 }, // round 2, rho
+                          rl3[] = { 3, 10, 14, 4, 9, 15, 8, 1, 2, 7, 0, 6, 13, 11, 5, 12 }, // round 3, rho^2
+                          rl4[] = { 1, 9, 11, 10, 0, 8, 12, 4, 13, 3, 7, 15, 14, 5, 6, 2 }, // round 4, rho^3
+                          rl5[] = { 4, 0, 5, 9, 7, 12, 2, 10, 14, 1, 3, 8, 11, 6, 15, 13 }; // round 5, rho^4
+    // right line
+    static const unsigned rr1[] = { 5, 14, 7, 0, 9, 2, 11, 4, 13, 6, 15, 8, 1, 10, 3, 12 }, // round 1, pi
+                          rr2[] = { 6, 11, 3, 7, 0, 13, 5, 10, 14, 15, 8, 12, 4, 9, 1, 2 }, // round 2, rho pi
+                          rr3[] = { 15, 5, 1, 3, 7, 14, 6, 9, 11, 8, 12, 2, 10, 0, 4, 13 }, // round 3, rho^2 pi
+                          rr4[] = { 8, 6, 4, 1, 3, 11, 15, 0, 5, 12, 2, 13, 9, 7, 10, 14 }, // round 4, rho^3 pi
+                          rr5[] = { 12, 15, 10, 4, 1, 5, 8, 7, 6, 2, 13, 14, 0, 3, 9, 11 }; // round 5, rho^4 pi
+    // left line shifts
+    static const unsigned sl1[] = { 11, 14, 15, 12, 5, 8, 7, 9, 11, 13, 14, 15, 6, 7, 9, 8 }, // round 1
+                          sl2[] = { 7, 6, 8, 13, 11, 9, 7, 15, 7, 12, 15, 9, 11, 7, 13, 12 }, // round 2
+                          sl3[] = { 11, 13, 6, 7, 14, 9, 13, 15, 14, 8, 13, 6, 5, 12, 7, 5 }, // round 3
+                          sl4[] = { 11, 12, 14, 15, 14, 15, 9, 8, 9, 14, 5, 6, 8, 6, 5, 12 }, // round 4
+                          sl5[] = { 9, 15, 5, 11, 6, 8, 13, 12, 5, 12, 13, 14, 11, 8, 5, 6 }; // round 5
+    // right line shifts
+    static const unsigned sr1[] = { 8, 9, 9, 11, 13, 15, 15, 5, 7, 7, 8, 11, 14, 14, 12, 6 }, // round 1
+                          sr2[] = { 9, 13, 15, 7, 12, 8, 9, 11, 7, 7, 12, 7, 6, 15, 13, 11 }, // round 2
+                          sr3[] = { 9, 7, 15, 11, 8, 6, 6, 14, 12, 13, 5, 14, 13, 13, 7, 5 }, // round 3
+                          sr4[] = { 15, 5, 8, 11, 14, 14, 6, 14, 6, 9, 12, 9, 12, 5, 15, 8 }, // round 4
+                          sr5[] = { 8, 5, 12, 9, 12, 5, 14, 6, 8, 13, 6, 5, 15, 13, 11, 11 }; // round 5
+
     unsigned al = r[0], bl = r[1], cl = r[2], dl = r[3], el = r[4], ar = al, br = bl, cr = cl, dr = dl, er = el, i, t;
 
     for (i = 0; i < 16; i++) rmd(t, f(bl, cl, dl), x[rl1[i]], 0x00000000, sl1[i], al, el, dl, cl, bl); // round 1 left
@@ -251,7 +248,7 @@ static void RMDcompress(unsigned *r, unsigned *x)
 }
 
 // ripemd-160 hash function: http://homes.esat.kuleuven.be/~bosselae/ripemd160.html
-static void RMD160(const void *data, size_t len, void *md)
+void RMD160(const void *data, size_t len, void *md)
 {
     size_t i;
     unsigned x[16], buf[] = { 0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0 }; // initial buffer values
@@ -273,8 +270,8 @@ static void RMD160(const void *data, size_t len, void *md)
 // HMAC(key, data) = hash((key xor opad) || hash((key xor ipad) || data))
 // opad = 0x5c5c5c...5c5c
 // ipad = 0x363636...3636
-static void HMAC(void (*hash)(const void *, size_t, void *), int hlen, const void *key, size_t klen,
-                 const void *data, size_t dlen, void *md)
+void HMAC(void (*hash)(const void *, size_t, void *), int hlen, const void *key, size_t klen,
+          const void *data, size_t dlen, void *md)
 {
     int blen = (hlen > 32) ? 128 : 64;
     unsigned char k[hlen], kipad[blen + dlen], kopad[blen + hlen];
@@ -301,8 +298,8 @@ static void HMAC(void (*hash)(const void *, size_t, void *), int hlen, const voi
 // U2 = hmac_hash(pw, U1)
 // ...
 // Urounds = hmac_hash(pw, Urounds-1)
-static void PBKDF2(void (*hash)(const void *, size_t, void *), int hlen, const void *pw, size_t pwlen,
-                   const void *salt, size_t slen, unsigned rounds, void *dk, size_t dklen)
+void PBKDF2(void (*hash)(const void *, size_t, void *), int hlen, const void *pw, size_t pwlen,
+            const void *salt, size_t slen, unsigned rounds, void *dk, size_t dklen)
 {
     unsigned char s[slen + sizeof(unsigned)], U[hlen], T[hlen];
     unsigned i, r, j;
@@ -379,40 +376,6 @@ static void PBKDF2(void (*hash)(const void *, size_t, void *), int hlen, const v
     SHA256(self.bytes, self.length, &sha256);
     RMD160(&sha256, sizeof(sha256), &rmd160);
     return rmd160;
-}
-
-- (UInt160)HmacSHA1:(NSData *)key
-{
-    UInt160 sha1;
-    
-    HMAC(SHA1, sizeof(UInt160), key.bytes, key.length, self.bytes, self.length, &sha1);
-    return sha1;
-}
-
-- (UInt256)HmacSHA256:(NSData *)key
-{
-    UInt256 sha256;
-    
-    HMAC(SHA256, sizeof(UInt256), key.bytes, key.length, self.bytes, self.length, &sha256);
-    return sha256;
-}
-
-- (UInt512)HmacSHA512:(NSData *)key
-{
-    UInt512 sha512;
-    
-    HMAC(SHA512, sizeof(UInt512), key.bytes, key.length, self.bytes, self.length, &sha512);
-    return sha512;
-}
-
-- (void)PBDKF2HmacSHA256WithSalt:(NSData *)salt rounds:(uint32_t)rounds derivedKey:(NSMutableData *)dk
-{
-    PBKDF2(SHA256, 32, self.bytes, self.length, salt.bytes, salt.length, rounds, dk.mutableBytes, dk.length);
-}
-
-- (void)PBDKF2HmacSHA512WithSalt:(NSData *)salt rounds:(uint32_t)rounds derivedKey:(NSMutableData *)dk
-{
-    PBKDF2(SHA512, 64, self.bytes, self.length, salt.bytes, salt.length, rounds, dk.mutableBytes, dk.length);
 }
 
 - (NSData *)reverse

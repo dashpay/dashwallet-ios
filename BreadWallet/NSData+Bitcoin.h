@@ -94,6 +94,15 @@ typedef union _UInt128 {
 #define OP_HASH160     0xa9
 #define OP_CHECKSIG    0xac
 
+void SHA1(const void *data, size_t len, void *md);
+void SHA256(const void *data, size_t len, void *md);
+void SHA512(const void *data, size_t len, void *md);
+void RMD160(const void *data, size_t len, void *md);
+void HMAC(void (*hash)(const void *, size_t, void *), int hlen, const void *key, size_t klen,
+          const void *data, size_t dlen, void *md);
+void PBKDF2(void (*hash)(const void *, size_t, void *), int hlen, const void *pw, size_t pwlen,
+            const void *salt, size_t slen, unsigned rounds, void *dk, size_t dklen);
+
 @interface NSData (Bitcoin)
 
 - (UInt160)SHA1;
@@ -102,11 +111,6 @@ typedef union _UInt128 {
 - (UInt512)SHA512;
 - (UInt160)RMD160;
 - (UInt160)hash160;
-- (UInt160)HmacSHA1:(NSData *)key;
-- (UInt256)HmacSHA256:(NSData *)key;
-- (UInt512)HmacSHA512:(NSData *)key;
-- (void)PBDKF2HmacSHA256WithSalt:(NSData *)salt rounds:(uint32_t)rounds derivedKey:(NSMutableData *)dk;
-- (void)PBDKF2HmacSHA512WithSalt:(NSData *)salt rounds:(uint32_t)rounds derivedKey:(NSMutableData *)dk;
 - (NSData *)reverse;
 
 - (uint8_t)UInt8AtOffset:(NSUInteger)offset;
