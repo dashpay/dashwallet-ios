@@ -51,25 +51,26 @@
 // - In case parse256(IL) >= n or ki = 0, the resulting key is invalid, and one should proceed with the next value for i
 //   (Note: this has probability lower than 1 in 2^127.)
 //
-static void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i)
+static void CKDpriv(UInt256 *k, UInt256 *c, unsigned i)
 {
-    NSMutableData *d = [NSMutableData secureDataWithCapacity:33 + sizeof(i)];
-    //NSData *cd = [NSData dataWithBytesNoCopy:c length:sizeof(*c) freeWhenDone:NO];
+    unsigned char buf[sizeof(BRPubKey) + sizeof(i)];
     UInt512 I;
     
     if (i & BIP32_HARD) {
-        d.length = 33 - sizeof(*k);
-        [d appendBytes:k length:sizeof(*k)];
+        buf[0] = 0;
+        *(UInt256 *)&buf[1] = *k;
     }
-    else [d setData:[BRKey keyWithSecret:*k compressed:YES].publicKey];
+    else secp256k1_point_mul(buf, NULL, *k, 1);
 
-    i = CFSwapInt32HostToBig(i);
-    [d appendBytes:&i length:sizeof(i)];
+    *(unsigned *)&buf[sizeof(BRPubKey)] = CFSwapInt32HostToBig(i);
 
-    HMAC(SHA512, 64, c, sizeof(*c), d.bytes, d.length, &I); // I = HMAC-SHA512(c, k|P(k) || i)
+    HMAC(SHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf), &I); // I = HMAC-SHA512(c, k|P(k) || i)
     
     *k = secp256k1_mod_add(*(UInt256 *)&I, *k); // k = IL + k (mod n)
     *c = *(UInt256 *)&I.u8[sizeof(UInt256)]; // c = IR
+    
+    memset(buf, 0, sizeof(buf));
+    memset(&I, 0, sizeof(I));
 }
 
 // Public parent key -> public child key
@@ -88,25 +89,25 @@ static void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i)
 //
 static void CKDpub(BRPubKey *K, UInt256 *c, uint32_t i)
 {
-    if (i & BIP32_HARD) {
-        @throw [NSException exceptionWithName:@"BRBIP32SequenceCKDPubException"
-                reason:@"can't derive private child key from public parent key" userInfo:nil];
-    }
+    if (i & BIP32_HARD) return; // can't derive private child key from public parent key
 
-    NSMutableData *d = [NSMutableData secureData];
+    unsigned char buf[sizeof(*K) + sizeof(i)];
     UInt512 I;
+    BRPubKey pIL;
     
-    [d appendBytes:K length:sizeof(*K)];
-    i = CFSwapInt32HostToBig(i);
-    [d appendBytes:&i length:sizeof(i)];
+    *(BRPubKey *)buf = *K;
+    *(unsigned *)&buf[sizeof(*K)] = CFSwapInt32HostToBig(i);
 
-    HMAC(SHA512, 64, c, sizeof(*c), d.bytes, d.length, &I); // I = HMAC-SHA512(c, P(K) || i)
+    HMAC(SHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf), &I); // I = HMAC-SHA512(c, P(K) || i)
     
     *c = *(UInt256 *)&I.u8[sizeof(UInt256)]; // c = IR
 
-    NSData *pIL = [BRKey keyWithSecret:*(UInt256 *)&I compressed:YES].publicKey;
-
-    secp256k1_point_add(K, pIL.bytes, K, YES); // K = P(IL) + K
+    secp256k1_point_mul(&pIL, NULL, *(UInt256 *)&I, 1);
+    secp256k1_point_add(K, &pIL, K, YES); // K = P(IL) + K
+    
+    memset(buf, 0, sizeof(buf));
+    memset(&I, 0, sizeof(I));
+    memset(&pIL, 0, sizeof(pIL));
 }
 
 // helper function for serializing BIP32 master public/private keys to standard export format

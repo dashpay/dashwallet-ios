@@ -75,9 +75,11 @@ static void AES256ECBEncrypt(const void *key, void *buf)
     memcpy(k, key, sizeof(k));
 
     for (i = 0; i < 14; i++) {
-        ((long long *)x)[0] ^= ((long long *)k)[(i & 1)*2], ((long long *)x)[1] ^= ((long long *)k)[(i & 1)*2 + 1];
-    
-        for (j = 0; j < 16; j++) x[j] = sbox[x[j]]; // shift rows
+        for (j = 0; j < 4; j++) ((unsigned *)x)[j] ^= ((unsigned *)k)[j + (i & 1)*4]; // add round key
+
+        for (j = 0; j < 16; j++) x[j] = sbox[x[j]]; // sub bytes
+        
+        // shift rows
         a = x[1], x[1] = x[5], x[5] = x[9], x[9] = x[13], x[13] = a, a = x[10], x[10] = x[2], x[2] = a;
         a = x[3], x[3] = x[15], x[15] = x[11], x[11] = x[7], x[7] = a, a = x[14], x[14] = x[6], x[6] = a;
         
@@ -94,7 +96,7 @@ static void AES256ECBEncrypt(const void *key, void *buf)
         }
     }
     
-    ((long long *)x)[0] ^= ((long long *)k)[0], ((long long *)x)[1] ^= ((long long *)k)[1]; // final result
+    for (i = 0; i < 4; i++) ((unsigned *)x)[i] ^= ((unsigned *)k)[i]; // final add round key
 }
 
 static void AES256ECBDecrypt(const void *key, void *buf)
@@ -111,7 +113,7 @@ static void AES256ECBDecrypt(const void *key, void *buf)
     }
     
     for (i = 0; i < 14; i++) {
-        ((long long *)x)[0] ^= ((long long *)k)[(i & 1)*2], ((long long *)x)[1] ^= ((long long *)k)[(i & 1)*2 + 1];
+        for (j = 0; j < 4; j++) ((unsigned *)x)[j] ^= ((unsigned *)k)[j + (i & 1)*4]; // add round key
 
         for (j = 0; i > 0 && j < 16; j += 4) { // unmix columns
             a = x[j], b = x[j+1], c = x[j+2], d = x[j+3], e = a ^ b ^ c ^ d;
@@ -119,9 +121,11 @@ static void AES256ECBDecrypt(const void *key, void *buf)
             x[j] ^= f ^ xt(a ^ b), x[j+1] ^= g ^ xt(b ^ c), x[j+2] ^= f ^ xt(c ^ d), x[j+3] ^= g ^ xt(d ^ a);
         }
 
+        // unshift rows
         a = x[1], x[1] = x[13], x[13] = x[9], x[9] = x[5], x[5] = a, a = x[2], x[2] = x[10], x[10] = a;
         a = x[3], x[3] = x[7], x[7] = x[11], x[11] = x[15], x[15] = a, a = x[6], x[6] = x[14], x[14] = a;
-        for (j = 0; j < 16; j++) x[j] = sboxi[x[j]]; // unshift rows
+        
+        for (j = 0; j < 16; j++) x[j] = sboxi[x[j]]; // unsub bytes
         
         if ((i % 2) == 0) { // unexpand key
             for (j = 28; j > 16; j -= 4) k[j] ^= k[j-4], k[j+1] ^= k[j-3], k[j+2] ^= k[j-2], k[j+3] ^= k[j-1];
@@ -132,7 +136,7 @@ static void AES256ECBDecrypt(const void *key, void *buf)
         }
     }
     
-    ((long long *)x)[0] ^= ((long long *)k)[0], ((long long *)x)[1] ^= ((long long *)k)[1]; // final result
+    for (i = 0; i < 4; i++) ((unsigned *)x)[i] ^= ((unsigned *)k)[i]; // final add round key
 }
 
 // BIP38 is a method for encrypting private keys with a passphrase
@@ -146,7 +150,7 @@ static void AES256ECBDecrypt(const void *key, void *buf)
 #define BIP38_SCRYPT_EC_P 1
 
 // bitwise left rotation, this will typically be compiled into a single instruction
-#define rol32(a, b) (((a) << (b)) | ((a) >> (32 - (b))))
+#define rotl(a, b) (((a) << (b)) | ((a) >> (32 - (b))))
 
 // salsa20/8 stream cypher: http://cr.yp.to/snuffle.html
 static void salsa20_8(unsigned b[16])
@@ -156,16 +160,16 @@ static void salsa20_8(unsigned b[16])
 
     for (int i = 0; i < 8; i += 2) {
         // operate on columns
-        x04 ^= rol32(x00 + x12, 7), x08 ^= rol32(x04 + x00, 9), x12 ^= rol32(x08 + x04, 13), x00 ^= rol32(x12 + x08,18);
-        x09 ^= rol32(x05 + x01, 7), x13 ^= rol32(x09 + x05, 9), x01 ^= rol32(x13 + x09, 13), x05 ^= rol32(x01 + x13,18);
-        x14 ^= rol32(x10 + x06, 7), x02 ^= rol32(x14 + x10, 9), x06 ^= rol32(x02 + x14, 13), x10 ^= rol32(x06 + x02,18);
-        x03 ^= rol32(x15 + x11, 7), x07 ^= rol32(x03 + x15, 9), x11 ^= rol32(x07 + x03, 13), x15 ^= rol32(x11 + x07,18);
+        x04 ^= rotl(x00 + x12, 7), x08 ^= rotl(x04 + x00, 9), x12 ^= rotl(x08 + x04, 13), x00 ^= rotl(x12 + x08, 18);
+        x09 ^= rotl(x05 + x01, 7), x13 ^= rotl(x09 + x05, 9), x01 ^= rotl(x13 + x09, 13), x05 ^= rotl(x01 + x13, 18);
+        x14 ^= rotl(x10 + x06, 7), x02 ^= rotl(x14 + x10, 9), x06 ^= rotl(x02 + x14, 13), x10 ^= rotl(x06 + x02, 18);
+        x03 ^= rotl(x15 + x11, 7), x07 ^= rotl(x03 + x15, 9), x11 ^= rotl(x07 + x03, 13), x15 ^= rotl(x11 + x07, 18);
 
         // operate on rows
-        x01 ^= rol32(x00 + x03, 7), x02 ^= rol32(x01 + x00, 9), x03 ^= rol32(x02 + x01, 13), x00 ^= rol32(x03 + x02,18);
-        x06 ^= rol32(x05 + x04, 7), x07 ^= rol32(x06 + x05, 9), x04 ^= rol32(x07 + x06, 13), x05 ^= rol32(x04 + x07,18);
-        x11 ^= rol32(x10 + x09, 7), x08 ^= rol32(x11 + x10, 9), x09 ^= rol32(x08 + x11, 13), x10 ^= rol32(x09 + x08,18);
-        x12 ^= rol32(x15 + x14, 7), x13 ^= rol32(x12 + x15, 9), x14 ^= rol32(x13 + x12, 13), x15 ^= rol32(x14 + x13,18);
+        x01 ^= rotl(x00 + x03, 7), x02 ^= rotl(x01 + x00, 9), x03 ^= rotl(x02 + x01, 13), x00 ^= rotl(x03 + x02, 18);
+        x06 ^= rotl(x05 + x04, 7), x07 ^= rotl(x06 + x05, 9), x04 ^= rotl(x07 + x06, 13), x05 ^= rotl(x04 + x07, 18);
+        x11 ^= rotl(x10 + x09, 7), x08 ^= rotl(x11 + x10, 9), x09 ^= rotl(x08 + x11, 13), x10 ^= rotl(x09 + x08, 18);
+        x12 ^= rotl(x15 + x14, 7), x13 ^= rotl(x12 + x15, 9), x14 ^= rotl(x13 + x12, 13), x15 ^= rotl(x14 + x13, 18);
     }
 
     b[0] += x00, b[1] += x01, b[2] += x02, b[3] += x03, b[4] += x04, b[5] += x05, b[6] += x06, b[7] += x07;
@@ -420,11 +424,11 @@ confirmationCode:(NSString **)confcode;
 
     ((uint8_t *)pointb.mutableBytes)[0] = pointprefix ^ (derived2.u8[31] & 0x01);
 
-    AES256ECBDecrypt(&derived2, &pointbx1);
+    AES256ECBDecrypt(&derived2, &pointbx1); // pointb[1...16] xor derived1[0...15]
     ((uint64_t *)((uint8_t *)pointb.mutableBytes + 1))[0] = pointbx1.u64[0] ^ derived1.u64[0];
     ((uint64_t *)((uint8_t *)pointb.mutableBytes + 1))[1] = pointbx1.u64[1] ^ derived1.u64[1];
     
-    AES256ECBDecrypt(&derived2, &pointbx2);
+    AES256ECBDecrypt(&derived2, &pointbx2); // pointb[1...16] xor derived1[0...15]
     ((uint64_t *)((uint8_t *)pointb.mutableBytes + 1))[2] = pointbx2.u64[0] ^ derived1.u64[2];
     ((uint64_t *)((uint8_t *)pointb.mutableBytes + 1))[3] = pointbx2.u64[1] ^ derived1.u64[3];
 
