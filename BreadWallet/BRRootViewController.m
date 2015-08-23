@@ -111,12 +111,12 @@
     }
 
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
 
     self.urlObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRURLNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if (! m.noWallet) {
+            if (! manager.noWallet) {
                 if (self.navigationController.topViewController != self) {
                     [self.navigationController popToRootViewControllerAnimated:YES];
                 }
@@ -142,7 +142,7 @@
     self.fileObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRFileNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if (! m.noWallet) {
+            if (! manager.noWallet) {
                 if (self.navigationController.topViewController != self) {
                     [self.navigationController popToRootViewControllerAnimated:YES];
                 }
@@ -151,15 +151,15 @@
                     [self.navigationController dismissViewControllerAnimated:YES completion:nil];
                 }
                 
-                BRSendViewController *c = self.sendViewController;
+                BRSendViewController *sendController = self.sendViewController;
 
-                [self.pageViewController setViewControllers:(c ? @[c] : @[])
+                [self.pageViewController setViewControllers:(sendController ? @[sendController] : @[])
                 direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:^(BOOL finished) {
                     _file = note.userInfo[@"file"];
                     
                     if (self.didAppear && [UIApplication sharedApplication].protectedDataAvailable) {
                         _file = nil;
-                        [c handleFile:note.userInfo[@"file"]];
+                        [sendController handleFile:note.userInfo[@"file"]];
                     }
                 }];
             }
@@ -168,7 +168,7 @@
     self.foregroundObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillEnterForegroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (! m.noWallet) {
+            if (! manager.noWallet) {
                 [[BRPeerManager sharedInstance] connect];
                 [self.sendViewController updateClipboardText];
 
@@ -180,7 +180,7 @@
                 }
             }
 
-            if (jailbroken && m.wallet.balance > 0) {
+            if (jailbroken && manager.wallet.balance > 0) {
                 [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
                   message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
                                             "Any 'jailbreak' app can access any other app's keychain data "
@@ -202,8 +202,8 @@
     self.backgroundObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            if (! m.noWallet) { // lockdown the app
-                m.didAuthenticate = NO;
+            if (! manager.noWallet) { // lockdown the app
+                manager.didAuthenticate = NO;
                 self.navigationItem.titleView = self.logo;
                 self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"burger"];
                 self.navigationItem.rightBarButtonItem = self.lock;
@@ -221,8 +221,8 @@
             uint64_t amount = [defs doubleForKey:SETTINGS_RECEIVED_AMOUNT_KEY];
             
             if (amount > 0) {
-                _balance = m.wallet.balance - amount;
-                self.balance = m.wallet.balance; // show received message bubble
+                _balance = manager.wallet.balance - amount;
+                self.balance = manager.wallet.balance; // show received message bubble
                 [defs setDouble:0.0 forKey:SETTINGS_RECEIVED_AMOUNT_KEY];
                 [defs synchronize];
             }
@@ -231,12 +231,12 @@
     self.resignActiveObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
-            UIView *v = [UIApplication sharedApplication].keyWindow;
+            UIView *keyWindow = [UIApplication sharedApplication].keyWindow;
             UIImage *img;
             
-            if (! [v viewWithTag:-411]) { // only take a screenshot if no views are marked highly sensitive
+            if (! [keyWindow viewWithTag:-411]) { // only take a screenshot if no views are marked highly sensitive
                 UIGraphicsBeginImageContext([UIScreen mainScreen].bounds.size);
-                [v drawViewHierarchyInRect:[UIScreen mainScreen].bounds afterScreenUpdates:NO];
+                [keyWindow drawViewHierarchyInRect:[UIScreen mainScreen].bounds afterScreenUpdates:NO];
                 img = UIGraphicsGetImageFromCurrentImageContext();
                 UIGraphicsEndImageContext();
             }
@@ -244,17 +244,17 @@
 
             [self.blur removeFromSuperview];
             self.blur = [[UIImageView alloc] initWithImage:[img blurWithRadius:3]];
-            [v.subviews.lastObject addSubview:self.blur];
+            [keyWindow.subviews.lastObject addSubview:self.blur];
         }];
 
     self.reachabilityObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if (! m.noWallet && self.reachability.currentReachabilityStatus != NotReachable &&
+            if (! manager.noWallet && self.reachability.currentReachabilityStatus != NotReachable &&
                 [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
                 [[BRPeerManager sharedInstance] connect];
             }
-            else if (! m.noWallet && self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
+            else if (! manager.noWallet && self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
         }];
 
     self.balanceObserver =
@@ -268,7 +268,7 @@
             
             [self showBackupDialogIfNeeded];
             [self.receiveViewController updateAddress];
-            self.balance = m.wallet.balance;
+            self.balance = manager.wallet.balance;
 
             if (self.reachability.currentReachabilityStatus != NotReachable &&
                 [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
@@ -280,7 +280,7 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletManagerSeedChangedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             [self.receiveViewController updateAddress];
-            self.balance = m.wallet.balance;
+            self.balance = manager.wallet.balance;
         }];
 
     self.syncStartedObserver =
@@ -293,7 +293,7 @@
             if ([[BRPeerManager sharedInstance]
                  timestampForBlockHeight:[BRPeerManager sharedInstance].lastBlockHeight] + 60*60*24*7 <
                 [NSDate timeIntervalSinceReferenceDate] &&
-                m.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
+                manager.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
                 self.percent.hidden = NO;
                 self.navigationItem.titleView = nil;
                 self.navigationItem.title = NSLocalizedString(@"syncing...", nil);
@@ -307,9 +307,9 @@
             [self showBackupDialogIfNeeded];
             if (! self.percent.hidden) [self hideTips];
             self.percent.hidden = YES;
-            if (! m.didAuthenticate) self.navigationItem.titleView = self.logo;
+            if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
             [self.receiveViewController updateAddress];
-            self.balance = m.wallet.balance;
+            self.balance = manager.wallet.balance;
         }];
     
     self.syncFailedObserver =
@@ -352,17 +352,17 @@
                                                          withExtension:@"aiff"], &_pingsound);
     
     if ([defs integerForKey:SETTINGS_MAX_DIGITS_KEY] == 5) {
-        m.format.currencySymbol = @"m" BTC NARROW_NBSP;
-        m.format.maximumFractionDigits = 5;
-        m.format.maximum = @((MAX_MONEY/SATOSHIS)*1000);
+        manager.format.currencySymbol = @"m" BTC NARROW_NBSP;
+        manager.format.maximumFractionDigits = 5;
+        manager.format.maximum = @((MAX_MONEY/SATOSHIS)*1000);
     }
     else if ([defs integerForKey:SETTINGS_MAX_DIGITS_KEY] == 8) {
-        m.format.currencySymbol = BTC NARROW_NBSP;
-        m.format.maximumFractionDigits = 8;
-        m.format.maximum = @(MAX_MONEY/SATOSHIS);
+        manager.format.currencySymbol = BTC NARROW_NBSP;
+        manager.format.maximumFractionDigits = 8;
+        manager.format.maximum = @(MAX_MONEY/SATOSHIS);
     }
 
-    if (! m.noWallet) {
+    if (! manager.noWallet) {
         //TODO: do some kickass quick logo animation, fast circle spin that slows
         self.splash.hidden = YES;
         self.navigationController.navigationBar.hidden = NO;
@@ -407,13 +407,13 @@
 
 - (void)protectedViewDidAppear:(BOOL)animated
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
 
     if (self.protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.protectedObserver];
     self.protectedObserver = nil;
 
-    if (m.noWallet) {
-        if (! m.passcodeEnabled) {
+    if (manager.noWallet) {
+        if (! manager.passcodeEnabled) {
             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"turn device passcode on", nil)
               message:NSLocalizedString(@"\nA device passcode is needed to safeguard your wallet. Go to settings and "
                                         "turn passcode on to continue.", nil)
@@ -429,7 +429,7 @@
                  direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
             }];
 
-            m.didAuthenticate = YES;
+            manager.didAuthenticate = YES;
             self.showTips = YES;
             [self unlock:nil];
         }
@@ -516,12 +516,12 @@
 
 - (void)setBalance:(uint64_t)balance
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
 
     if (balance > _balance && [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
         [self.view addSubview:[[[BRBubbleView viewWithText:[NSString
-         stringWithFormat:NSLocalizedString(@"received %@ (%@)", nil), [m stringForAmount:balance - _balance],
-                          [m localCurrencyStringForAmount:balance - _balance]]
+         stringWithFormat:NSLocalizedString(@"received %@ (%@)", nil), [manager stringForAmount:balance - _balance],
+                          [manager localCurrencyStringForAmount:balance - _balance]]
          center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
          popOutAfterDelay:3.0]];
         [self ping];
@@ -530,8 +530,8 @@
     _balance = balance;
 
     if (self.percent.hidden) {
-        self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:balance],
-                                     [m localCurrencyStringForAmount:balance]];
+        self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [manager stringForAmount:balance],
+                                     [manager localCurrencyStringForAmount:balance]];
     }
 }
 
@@ -588,7 +588,7 @@
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateProgress) object:nil];
 
     static int counter = 0;
-    NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate] - self.start;
+    NSTimeInterval elapsed = [NSDate timeIntervalSinceReferenceDate] - self.start;
     double progress = [BRPeerManager sharedInstance].syncProgress;
 
     if (progress > DBL_EPSILON && ! self.percent.hidden && self.tipView.alpha > 0.5) {
@@ -597,7 +597,7 @@
                              [BRPeerManager sharedInstance].estimatedBlockHeight];
     }
 
-    if (self.timeout > 1.0 && 0.1 + 0.9*t/self.timeout < progress) progress = 0.1 + 0.9*t/self.timeout;
+    if (self.timeout > 1.0 && 0.1 + 0.9*elapsed/self.timeout < progress) progress = 0.1 + 0.9*elapsed/self.timeout;
     if (progress <= DBL_EPSILON) progress = self.progress.progress;
 
     if ((counter % 13) == 0) {
@@ -644,12 +644,12 @@
         self.errorBar.alpha = 1.0;
     } completion:nil];
     
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
     
     if (! self.percent.hidden) [self hideTips];
     self.percent.hidden = YES;
-    if (! m.didAuthenticate) self.navigationItem.titleView = self.logo;
-    self.balance = m.wallet.balance;
+    if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
+    self.balance = manager.wallet.balance;
     self.progress.hidden = self.pulse.hidden = YES;
 }
 
@@ -669,12 +669,12 @@
 
 - (void)showBackupDialogIfNeeded
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
     
     if (self.navigationController.visibleViewController != self || ! [defs boolForKey:WALLET_NEEDS_BACKUP_KEY] ||
-        m.wallet.balance == 0 || [defs doubleForKey:BACKUP_DIALOG_TIME_KEY] > now - 36*60*60) return;
+        manager.wallet.balance == 0 || [defs doubleForKey:BACKUP_DIALOG_TIME_KEY] > now - 36*60*60) return;
     
     BOOL first = ([defs doubleForKey:BACKUP_DIALOG_TIME_KEY] < 1.0) ? YES : NO;
     
@@ -698,34 +698,34 @@
 
 - (BOOL)nextTip
 {
-    if (self.tipView.alpha < 0.5) {
-        BOOL r;
+    if (self.tipView.alpha < 0.5) { // XXX(sam): what is the intention of this code?
+        BOOL ret;
 
         if (self.inNextTip) return NO; // break out of recursive loop
         self.inNextTip = YES;
-        r = [self.pageViewController.viewControllers.lastObject nextTip];
+        ret = [self.pageViewController.viewControllers.lastObject nextTip];
         self.inNextTip = NO;
-        return r;
+        return ret;
     }
 
-    BRBubbleView *v = self.tipView;
+    BRBubbleView *tipView = self.tipView;
 
     self.tipView = nil;
-    [v popOut];
+    [tipView popOut];
 
-    if ([v.text hasPrefix:BALANCE_TIP]) {
-        BRWalletManager *m = [BRWalletManager sharedInstance];
-        UINavigationBar *b = self.navigationController.navigationBar;
-        NSString *text = [NSString stringWithFormat:BITS_TIP, m.format.currencySymbol, [m stringForAmount:SATOSHIS]];
-        CGRect r = [self.navigationItem.title boundingRectWithSize:b.bounds.size options:0
-                    attributes:b.titleTextAttributes context:nil];
+    if ([tipView.text hasPrefix:BALANCE_TIP]) {
+        BRWalletManager *manager = [BRWalletManager sharedInstance];
+        UINavigationBar *navBar = self.navigationController.navigationBar;
+        NSString *text = [NSString stringWithFormat:BITS_TIP, manager.format.currencySymbol, [manager stringForAmount:SATOSHIS]];
+        CGRect r = [self.navigationItem.title boundingRectWithSize:navBar.bounds.size options:0
+                    attributes:navBar.titleTextAttributes context:nil];
 
         self.tipView = [BRBubbleView viewWithText:text
-                        tipPoint:CGPointMake(b.center.x + 5.0 - r.size.width/2.0,
-                                             b.frame.origin.y + b.frame.size.height - 10)
+                        tipPoint:CGPointMake(navBar.center.x + 5.0 - r.size.width/2.0,
+                                             navBar.frame.origin.y + navBar.frame.size.height - 10)
                         tipDirection:BRBubbleTipDirectionUp];
-        self.tipView.backgroundColor = v.backgroundColor;
-        self.tipView.font = v.font;
+        self.tipView.backgroundColor = tipView.backgroundColor;
+        self.tipView.font = tipView.font;
         self.tipView.userInteractionEnabled = NO;
         [self.view addSubview:[self.tipView popIn]];
     }
@@ -741,7 +741,7 @@
 
 - (IBAction)tip:(id)sender
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
     
     if (sender == self.receiveViewController) {
         BRSendViewController *c = self.sendViewController;
@@ -756,24 +756,24 @@
         [(id)self.pageViewController setViewControllers:@[self.receiveViewController]
         direction:UIPageViewControllerNavigationDirectionForward animated:YES completion:^(BOOL finished) {
             //BUG: XXXX this doesn't get called after wiping a wallet and starting a new one without killing the app
-            [m performSelector:@selector(setPin) withObject:nil afterDelay:0.0];
+            [manager performSelector:@selector(setPin) withObject:nil afterDelay:0.0];
         }];
 
         return;
     }
-    else if (self.showTips && m.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
+    else if (self.showTips && manager.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
         self.showTips = NO;
         return;
     }
 
-    UINavigationBar *b = self.navigationController.navigationBar;
+    UINavigationBar *bar = self.navigationController.navigationBar;
     NSString *tip = (self.percent.hidden) ? BALANCE_TIP :
                     [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
                      [BRPeerManager sharedInstance].lastBlockHeight,
                      [BRPeerManager sharedInstance].estimatedBlockHeight];
 
     self.tipView = [BRBubbleView viewWithText:tip
-                    tipPoint:CGPointMake(b.center.x, b.frame.origin.y + b.frame.size.height - 10)
+                    tipPoint:CGPointMake(bar.center.x, bar.frame.origin.y + bar.frame.size.height - 10)
                     tipDirection:BRBubbleTipDirectionUp];
     self.tipView.backgroundColor = [UIColor orangeColor];
     self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
@@ -909,9 +909,9 @@ viewControllerAfterViewController:(UIViewController *)viewController
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:WALLET_NEEDS_BACKUP_KEY];
     [[NSUserDefaults standardUserDefaults] synchronize];
 
-    UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"];
+    UINavigationController *newWalletNavController = [self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"];
 
-    [self.navigationController presentViewController:c animated:NO completion:nil];
+    [self.navigationController presentViewController:newWalletNavController animated:NO completion:nil];
 
     [[[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"the app will now close", nil) delegate:self
       cancelButtonTitle:nil otherButtonTitles:NSLocalizedString(@"close app", nil), nil] show];
@@ -929,28 +929,28 @@ viewControllerAfterViewController:(UIViewController *)viewController
 // This method can only be a nop if the transition is interactive and not a percentDriven interactive transition.
 - (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
-    UIView *v = transitionContext.containerView;
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    UIView *containerView = transitionContext.containerView;
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
 
     if (to == self || from == self) { // nav stack push/pop
-        if (self.wallpaper.superview != v) {
-            v.backgroundColor = self.view.backgroundColor;
+        if (self.wallpaper.superview != containerView) {
+            containerView.backgroundColor = self.view.backgroundColor;
             self.view.backgroundColor = [UIColor clearColor];
-            [v insertSubview:self.wallpaper belowSubview:from.view];
+            [containerView insertSubview:self.wallpaper belowSubview:from.view];
         }
 
         self.progress.hidden = self.pulse.hidden = YES;
-        [v addSubview:to.view];
-        to.view.center = CGPointMake(v.frame.size.width*(to == self ? -1 : 3)/2, to.view.center.y);
+        [containerView addSubview:to.view];
+        to.view.center = CGPointMake(containerView.frame.size.width*(to == self ? -1 : 3)/2, to.view.center.y);
 
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
         initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
             to.view.center = from.view.center;
-            from.view.center = CGPointMake(v.frame.size.width*(to == self ? 3 : -1)/2, from.view.center.y);
+            from.view.center = CGPointMake(containerView.frame.size.width*(to == self ? 3 : -1)/2, from.view.center.y);
             self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 -
-                                                v.frame.size.width*(to == self ? 0 : 1)*PARALAX_RATIO,
+                                                containerView.frame.size.width*(to == self ? 0 : 1)*PARALAX_RATIO,
                                                 self.wallpaper.center.y);
         } completion:^(BOOL finished) {
             if (to == self) {
@@ -968,8 +968,8 @@ viewControllerAfterViewController:(UIViewController *)viewController
         // to.view must be added to superview prior to positioning it off screen for its navbar to underlap statusbar
         [self.navigationController.navigationBar.superview insertSubview:to.view
          belowSubview:self.navigationController.navigationBar];
-        [v layoutIfNeeded];
-        to.view.center = CGPointMake(to.view.center.x, v.frame.size.height*3/2);
+        [containerView layoutIfNeeded];
+        to.view.center = CGPointMake(to.view.center.x, containerView.frame.size.height*3/2);
 
         UINavigationItem *item = [(id)to topViewController].navigationItem;
         UIView *titleView = item.titleView;
@@ -980,30 +980,30 @@ viewControllerAfterViewController:(UIViewController *)viewController
         item.titleView = nil;
         item.rightBarButtonItem = nil;
         self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"none"];
-        [v addSubview:self.burger];
-        [v layoutIfNeeded];
+        [containerView addSubview:self.burger];
+        [containerView layoutIfNeeded];
         self.burger.center = CGPointMake(26.0, 40.0);
         self.burger.hidden = NO;
         [self.burger setX:YES completion:nil];
 
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
         initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            to.view.center = CGPointMake(to.view.center.x, v.frame.size.height/2);
+            to.view.center = CGPointMake(to.view.center.x, containerView.frame.size.height/2);
             self.pageViewController.view.alpha = 0.0;
             self.pageViewController.view.center = CGPointMake(self.pageViewController.view.center.x,
-                                                              v.frame.size.height/4.0);
+                                                              containerView.frame.size.height/4.0);
         } completion:^(BOOL finished) {
             self.pageViewController.view.center = CGPointMake(self.pageViewController.view.center.x,
-                                                              v.frame.size.height/2.0);
+                                                              containerView.frame.size.height/2.0);
             
-            if (! m.didAuthenticate) {
+            if (! manager.didAuthenticate) {
                 item.rightBarButtonItem = rightButton;
                 if (self.percent.hidden) item.titleView = titleView;
             }
             
             item.title = self.navigationItem.title;
             item.leftBarButtonItem.image = [UIImage imageNamed:@"x"];
-            [v addSubview:to.view];
+            [containerView addSubview:to.view];
             [transitionContext completeTransition:YES];
         }];
     }
@@ -1013,7 +1013,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
             [self.sendViewController updateClipboardText];
         }
         
-        if (m.didAuthenticate) [self unlock:nil];
+        if (manager.didAuthenticate) [self unlock:nil];
         [self.navigationController.navigationBar.superview insertSubview:from.view
          belowSubview:self.navigationController.navigationBar];
         
@@ -1027,19 +1027,19 @@ viewControllerAfterViewController:(UIViewController *)viewController
         item.rightBarButtonItem = nil;
         self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"none"];
         self.burger.hidden = NO;
-        [v layoutIfNeeded];
+        [containerView layoutIfNeeded];
         self.burger.center = CGPointMake(26.0, 40.0);
         [self.burger setX:NO completion:nil];
         self.pageViewController.view.alpha = 0.0;
         self.pageViewController.view.center = CGPointMake(self.pageViewController.view.center.x,
-                                                          v.frame.size.height/4.0);
+                                                          containerView.frame.size.height/4.0);
 
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
         initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            from.view.center = CGPointMake(from.view.center.x, v.frame.size.height*3/2);
+            from.view.center = CGPointMake(from.view.center.x, containerView.frame.size.height*3/2);
             self.pageViewController.view.alpha = 1.0;
             self.pageViewController.view.center = CGPointMake(self.pageViewController.view.center.x,
-                                                              v.frame.size.height/2);
+                                                              containerView.frame.size.height/2);
         } completion:^(BOOL finished) {
             item.rightBarButtonItem = rightButton;
             item.titleView = titleView;
