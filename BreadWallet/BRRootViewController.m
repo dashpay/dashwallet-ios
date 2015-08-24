@@ -744,10 +744,10 @@
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     
     if (sender == self.receiveViewController) {
-        BRSendViewController *c = self.sendViewController;
+        BRSendViewController *sendController = self.sendViewController;
 
-        [(id)self.pageViewController setViewControllers:@[c] direction:UIPageViewControllerNavigationDirectionReverse
-         animated:YES completion:^(BOOL finished) { [c tip:sender]; }];
+        [(id)self.pageViewController setViewControllers:@[sendController] direction:UIPageViewControllerNavigationDirectionReverse
+         animated:YES completion:^(BOOL finished) { [sendController tip:sender]; }];
         return;
     }
     else if (sender == self.sendViewController) {
