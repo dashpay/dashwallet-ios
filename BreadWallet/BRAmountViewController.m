@@ -146,9 +146,9 @@
 
 - (IBAction)unlock:(id)sender
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
     
-    if (sender && ! m.didAuthenticate && ! [m authenticateWithPrompt:nil andTouchId:YES]) return;
+    if (sender && ! manager.didAuthenticate && ! [manager authenticateWithPrompt:nil andTouchId:YES]) return;
     
     self.navigationItem.titleView = nil;
     [self.navigationItem setRightBarButtonItem:self.payButton animated:(sender) ? YES : NO];
@@ -174,10 +174,10 @@
 
 - (IBAction)pay:(id)sender
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
 
-    self.amount = (self.swapped) ? [m amountForLocalCurrencyString:self.amountField.text] :
-                  [m amountForString:self.amountField.text];
+    self.amount = (self.swapped) ? [manager amountForLocalCurrencyString:self.amountField.text] :
+                  [manager amountForString:self.amountField.text];
 
     if (self.amount == 0) return;
     
@@ -319,41 +319,42 @@
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range
 replacementString:(NSString *)string
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
-    NSNumberFormatter *f = (self.swapped) ? m.localFormat : m.format;
-    NSUInteger mindigits = f.minimumFractionDigits;
-    NSUInteger point = [textField.text rangeOfString:f.currencyDecimalSeparator].location, l;
-    NSString *t = textField.text ? [textField.text stringByReplacingCharactersInRange:range withString:string] : string;
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    NSNumberFormatter *numberFormatter = (self.swapped) ? manager.localFormat : manager.format;
+    NSUInteger mindigits = numberFormatter.minimumFractionDigits;
+    NSUInteger point = [textField.text rangeOfString:numberFormatter.currencyDecimalSeparator].location;
+    NSUInteger loc;
+    NSString *textVal = textField.text ? [textField.text stringByReplacingCharactersInRange:range withString:string] : string;
 
-    f.minimumFractionDigits = 0;
-    t = [f stringFromNumber:[f numberFromString:t]];
-    l = [textField.text rangeOfCharacterFromSet:self.charset options:NSBackwardsSearch].location;
-    l = (l < textField.text.length) ? l + 1 : textField.text.length;
+    numberFormatter.minimumFractionDigits = 0;
+    textVal = [numberFormatter stringFromNumber:[numberFormatter numberFromString:textVal]];
+    loc = [textField.text rangeOfCharacterFromSet:self.charset options:NSBackwardsSearch].location;
+    loc = (loc < textField.text.length) ? loc + 1 : textField.text.length;
 
     if (! string.length && point != NSNotFound) { // delete trailing char
-        t = [textField.text stringByReplacingCharactersInRange:range withString:string];
-        if ([t isEqual:[f stringFromNumber:@0]]) t = @"";
+        textVal = [textField.text stringByReplacingCharactersInRange:range withString:string];
+        if ([textVal isEqual:[numberFormatter stringFromNumber:@0]]) textVal = @"";
     }
-    else if ((string.length > 0 && textField.text.length > 0 && t == nil) ||
-             (point != NSNotFound && l - point > f.maximumFractionDigits)) {
-        f.minimumFractionDigits = mindigits;
+    else if ((string.length > 0 && textField.text.length > 0 && textVal == nil) ||
+             (point != NSNotFound && loc - point > numberFormatter.maximumFractionDigits)) {
+        numberFormatter.minimumFractionDigits = mindigits;
         return NO; // too many digits
     }
-    else if ([string isEqual:f.currencyDecimalSeparator] && (! textField.text.length || point == NSNotFound)) {
-        if (! textField.text.length) t = [f stringFromNumber:@0]; // if first char is '.', prepend a zero
-        l = [t rangeOfCharacterFromSet:self.charset options:NSBackwardsSearch].location;
-        l = (l < t.length) ? l + 1 : t.length;
-        t = [t stringByReplacingCharactersInRange:NSMakeRange(l, 0) withString:f.currencyDecimalSeparator];
+    else if ([string isEqual:numberFormatter.currencyDecimalSeparator] && (! textField.text.length || point == NSNotFound)) {
+        if (! textField.text.length) textVal = [numberFormatter stringFromNumber:@0]; // if first char is '.', prepend a zero
+        loc = [textVal rangeOfCharacterFromSet:self.charset options:NSBackwardsSearch].location;
+        loc = (loc < textVal.length) ? loc + 1 : textVal.length;
+        textVal = [textVal stringByReplacingCharactersInRange:NSMakeRange(loc, 0) withString:numberFormatter.currencyDecimalSeparator];
     }
     else if ([string isEqual:@"0"]) {
         if (! textField.text.length) { // if first digit is zero, append a '.'
-            t = [f stringFromNumber:@0];
-            l = [t rangeOfCharacterFromSet:self.charset options:NSBackwardsSearch].location;
-            l = (l < t.length) ? l + 1 : t.length;
-            t = [t stringByReplacingCharactersInRange:NSMakeRange(l, 0) withString:f.currencyDecimalSeparator];
+            textVal = [numberFormatter stringFromNumber:@0];
+            loc = [textVal rangeOfCharacterFromSet:self.charset options:NSBackwardsSearch].location;
+            loc = (loc < textVal.length) ? loc + 1 : textVal.length;
+            textVal = [textVal stringByReplacingCharactersInRange:NSMakeRange(loc, 0) withString:numberFormatter.currencyDecimalSeparator];
         }
         else if (point != NSNotFound) { // handle multiple zeros after '.'
-            t = [textField.text stringByReplacingCharactersInRange:NSMakeRange(l, 0) withString:@"0"];
+            textVal = [textField.text stringByReplacingCharactersInRange:NSMakeRange(loc, 0) withString:@"0"];
         }
     }
 
@@ -366,19 +367,19 @@ replacementString:(NSString *)string
 //        TX_MIN_OUTPUT_AMOUNT) {
 //        return NO;
 //    }
-    f.minimumFractionDigits = mindigits;
-    textField.text = t;
-    if (t.length > 0 && textField.placeholder.length > 0) textField.placeholder = nil;
+    numberFormatter.minimumFractionDigits = mindigits;
+    textField.text = textVal;
+    if (textVal.length > 0 && textField.placeholder.length > 0) textField.placeholder = nil;
 
-    if (t.length == 0 && textField.placeholder.length == 0) {
-        textField.placeholder = (self.swapped) ? [m localCurrencyStringForAmount:0] : [m stringForAmount:0];
+    if (textVal.length == 0 && textField.placeholder.length == 0) {
+        textField.placeholder = (self.swapped) ? [manager localCurrencyStringForAmount:0] : [manager stringForAmount:0];
     }
     
     if (self.navigationController.viewControllers.firstObject != self) {
-        if (! m.didAuthenticate && t.length == 0 && self.navigationItem.rightBarButtonItem != self.lock) {
+        if (! manager.didAuthenticate && textVal.length == 0 && self.navigationItem.rightBarButtonItem != self.lock) {
             [self.navigationItem setRightBarButtonItem:self.lock animated:YES];
         }
-        else if (t.length > 0 && self.navigationItem.rightBarButtonItem != self.payButton) {
+        else if (textVal.length > 0 && self.navigationItem.rightBarButtonItem != self.payButton) {
             [self.navigationItem setRightBarButtonItem:self.payButton animated:YES];
         }
     }
