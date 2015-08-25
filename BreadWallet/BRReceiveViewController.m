@@ -70,7 +70,7 @@
 - (void)updateAddress
 {
     static NSUserDefaults *groupDefs = nil;
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
     BRPaymentRequest *req = self.paymentRequest;
 
     if ([self.paymentAddress isEqual:self.addressButton.currentTitle]) return;
@@ -80,8 +80,8 @@
     if (! groupDefs) groupDefs = [[NSUserDefaults alloc] initWithSuiteName:APP_GROUP_ID];
     
     if (req.amount > 0) {
-        self.label.text = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:req.amount],
-                           [m localCurrencyStringForAmount:req.amount]];
+        self.label.text = [NSString stringWithFormat:@"%@ (%@)", [manager stringForAmount:req.amount],
+                           [manager localCurrencyStringForAmount:req.amount]];
     }
     else if (req.isValid) {
         [groupDefs setObject:req.data forKey:APP_GROUP_REQUEST_DATA_KEY];
@@ -111,21 +111,21 @@
 {
     if (self.tipView.alpha < 0.5) return [(id)self.parentViewController.parentViewController nextTip];
 
-    BRBubbleView *v = self.tipView;
+    BRBubbleView *tipView = self.tipView;
 
     self.tipView = nil;
-    [v popOut];
+    [tipView popOut];
 
-    if ([v.text hasPrefix:QR_TIP]) {
+    if ([tipView.text hasPrefix:QR_TIP]) {
         self.tipView = [BRBubbleView viewWithText:ADDRESS_TIP tipPoint:[self.addressButton.superview
                         convertPoint:CGPointMake(self.addressButton.center.x, self.addressButton.center.y - 10.0)
                         toView:self.view] tipDirection:BRBubbleTipDirectionDown];
-        self.tipView.backgroundColor = v.backgroundColor;
-        self.tipView.font = v.font;
+        self.tipView.backgroundColor = tipView.backgroundColor;
+        self.tipView.font = tipView.font;
         self.tipView.userInteractionEnabled = NO;
         [self.view addSubview:[self.tipView popIn]];
     }
-    else if (self.showTips && [v.text hasPrefix:ADDRESS_TIP]) {
+    else if (self.showTips && [tipView.text hasPrefix:ADDRESS_TIP]) {
         self.showTips = NO;
         [(id)self.parentViewController.parentViewController tip:self];
     }
@@ -168,31 +168,31 @@
     if ([self nextTip]) return;
 
     BOOL req = (_paymentRequest) ? YES : NO;
-    UIActionSheet *a = [UIActionSheet new];
+    UIActionSheet *actionSheet = [UIActionSheet new];
 
-    a.title = [NSString stringWithFormat:NSLocalizedString(@"Receive bitcoins at this address: %@", nil),
+    actionSheet.title = [NSString stringWithFormat:NSLocalizedString(@"Receive bitcoins at this address: %@", nil),
                self.paymentAddress];
-    a.delegate = self;
-    [a addButtonWithTitle:(req) ? NSLocalizedString(@"copy request to clipboard", nil) :
+    actionSheet.delegate = self;
+    [actionSheet addButtonWithTitle:(req) ? NSLocalizedString(@"copy request to clipboard", nil) :
      NSLocalizedString(@"copy address to clipboard", nil)];
 
     if ([MFMailComposeViewController canSendMail]) {
-        [a addButtonWithTitle:(req) ? NSLocalizedString(@"send request as email", nil) :
+        [actionSheet addButtonWithTitle:(req) ? NSLocalizedString(@"send request as email", nil) :
          NSLocalizedString(@"send address as email", nil)];
     }
 
 #if ! TARGET_IPHONE_SIMULATOR
     if ([MFMessageComposeViewController canSendText]) {
-        [a addButtonWithTitle:(req) ? NSLocalizedString(@"send request as message", nil) :
+        [actionSheet addButtonWithTitle:(req) ? NSLocalizedString(@"send request as message", nil) :
          NSLocalizedString(@"send address as message", nil)];
     }
 #endif
 
-    if (! req) [a addButtonWithTitle:NSLocalizedString(@"request an amount", nil)];
-    [a addButtonWithTitle:NSLocalizedString(@"cancel", nil)];
-    a.cancelButtonIndex = a.numberOfButtons - 1;
+    if (! req) [actionSheet addButtonWithTitle:NSLocalizedString(@"request an amount", nil)];
+    [actionSheet addButtonWithTitle:NSLocalizedString(@"cancel", nil)];
+    actionSheet.cancelButtonIndex = actionSheet.numberOfButtons - 1;
     
-    [a showInView:[UIApplication sharedApplication].keyWindow];
+    [actionSheet showInView:[UIApplication sharedApplication].keyWindow];
 }
 
 #pragma mark - UIActionSheetDelegate
@@ -218,14 +218,14 @@
         // https://github.com/bitcoin/bips/blob/master/bip-0071.mediawiki
         
         if ([MFMailComposeViewController canSendMail]) {
-            MFMailComposeViewController *c = [MFMailComposeViewController new];
+            MFMailComposeViewController *composeController = [MFMailComposeViewController new];
             
-            c.subject = NSLocalizedString(@"Bitcoin address", nil);
-            [c setMessageBody:self.paymentRequest.string isHTML:NO];
-            [c addAttachmentData:UIImagePNGRepresentation(self.qrView.image) mimeType:@"image/png" fileName:@"qr.png"];
-            c.mailComposeDelegate = self;
-            [self.navigationController presentViewController:c animated:YES completion:nil];
-            c.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default"]];
+            composeController.subject = NSLocalizedString(@"Bitcoin address", nil);
+            [composeController setMessageBody:self.paymentRequest.string isHTML:NO];
+            [composeController addAttachmentData:UIImagePNGRepresentation(self.qrView.image) mimeType:@"image/png" fileName:@"qr.png"];
+            composeController.mailComposeDelegate = self;
+            [self.navigationController presentViewController:composeController animated:YES completion:nil];
+            composeController.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default"]];
         }
         else {
             [[[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"email not configured", nil) delegate:nil
@@ -235,19 +235,19 @@
     else if ([title isEqual:NSLocalizedString(@"send address as message", nil)] ||
              [title isEqual:NSLocalizedString(@"send request as message", nil)]) {
         if ([MFMessageComposeViewController canSendText]) {
-            MFMessageComposeViewController *c = [MFMessageComposeViewController new];
+            MFMessageComposeViewController *composeController = [MFMessageComposeViewController new];
 
-            if ([MFMessageComposeViewController canSendSubject]) c.subject = NSLocalizedString(@"Bitcoin address", nil);
-            c.body = self.paymentRequest.string;
+            if ([MFMessageComposeViewController canSendSubject]) composeController.subject = NSLocalizedString(@"Bitcoin address", nil);
+            composeController.body = self.paymentRequest.string;
             
             if ([MFMessageComposeViewController canSendAttachments]) {
-                [c addAttachmentData:UIImagePNGRepresentation(self.qrView.image) typeIdentifier:(NSString *)kUTTypePNG
+                [composeController addAttachmentData:UIImagePNGRepresentation(self.qrView.image) typeIdentifier:(NSString *)kUTTypePNG
                  filename:@"qr.png"];
             }
             
-            c.messageComposeDelegate = self;
-            [self.navigationController presentViewController:c animated:YES completion:nil];
-            c.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default"]];
+            composeController.messageComposeDelegate = self;
+            [self.navigationController presentViewController:composeController animated:YES completion:nil];
+            composeController.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default"]];
         }
         else {
             [[[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"sms not currently available", nil)
@@ -255,10 +255,10 @@
         }
     }
     else if ([title isEqual:NSLocalizedString(@"request an amount", nil)]) {
-        UINavigationController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"AmountNav"];
+        UINavigationController *amountNavController = [self.storyboard instantiateViewControllerWithIdentifier:@"AmountNav"];
         
-        ((BRAmountViewController *)c.topViewController).delegate = self;
-        [self.navigationController presentViewController:c animated:YES completion:nil];
+        ((BRAmountViewController *)amountNavController.topViewController).delegate = self;
+        [self.navigationController presentViewController:amountNavController animated:YES completion:nil];
     }
 }
 
@@ -283,21 +283,21 @@ error:(NSError *)error
 - (void)amountViewController:(BRAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
 {
     if (amount < TX_MIN_OUTPUT_AMOUNT) {
-        BRWalletManager *m = [BRWalletManager sharedInstance];
+        BRWalletManager *manager = [BRWalletManager sharedInstance];
     
         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"amount too small", nil)
           message:[NSString stringWithFormat:NSLocalizedString(@"bitcoin payments can't be less than %@", nil),
-                   [m stringForAmount:TX_MIN_OUTPUT_AMOUNT]] delegate:nil
+                   [manager stringForAmount:TX_MIN_OUTPUT_AMOUNT]] delegate:nil
           cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         return;
     }
 
-    BRReceiveViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"RequestViewController"];
+    BRReceiveViewController *receiveController = [self.storyboard instantiateViewControllerWithIdentifier:@"RequestViewController"];
     
-    c.paymentRequest = self.paymentRequest;
-    c.paymentRequest.amount = amount;
-    ((UINavigationController *)self.navigationController.presentedViewController).delegate = c;
-    [(UINavigationController *)self.navigationController.presentedViewController pushViewController:c animated:YES];
+    receiveController.paymentRequest = self.paymentRequest;
+    receiveController.paymentRequest.amount = amount;
+    ((UINavigationController *)self.navigationController.presentedViewController).delegate = receiveController;
+    [(UINavigationController *)self.navigationController.presentedViewController pushViewController:receiveController animated:YES];
 }
 
 #pragma mark - UIViewControllerAnimatedTransitioning
@@ -312,11 +312,11 @@ error:(NSError *)error
 // This method can only be a nop if the transition is interactive and not a percentDriven interactive transition.
 - (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext
 {
-    UIView *v = transitionContext.containerView;
+    UIView *containerView = transitionContext.containerView;
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
 
-    [v addSubview:to.view];
+    [containerView addSubview:to.view];
     
     [UIView transitionFromView:from.view toView:to.view duration:[self transitionDuration:transitionContext]
     options:UIViewAnimationOptionTransitionFlipFromLeft completion:^(BOOL finished) {
