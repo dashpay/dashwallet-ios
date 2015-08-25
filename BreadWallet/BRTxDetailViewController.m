@@ -79,17 +79,17 @@
 
 - (void)setTransaction:(BRTransaction *)transaction
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSMutableArray *text = [NSMutableArray array], *detail = [NSMutableArray array], *amount = [NSMutableArray array];
-    uint64_t fee = [m.wallet feeForTransaction:transaction];
-    NSUInteger i = 0;
+    uint64_t fee = [manager.wallet feeForTransaction:transaction];
+    NSUInteger outputAmountIndex = 0;
     
     _transaction = transaction;
-    self.sent = [m.wallet amountSentByTransaction:transaction];
-    self.received = [m.wallet amountReceivedFromTransaction:transaction];
+    self.sent = [manager.wallet amountSentByTransaction:transaction];
+    self.received = [manager.wallet amountReceivedFromTransaction:transaction];
 
     for (NSString *address in transaction.outputAddresses) {
-        uint64_t amt = [transaction.outputAmounts[i++] unsignedLongLongValue];
+        uint64_t amt = [transaction.outputAmounts[outputAmountIndex++] unsignedLongLongValue];
     
         if (address == (id)[NSNull null]) {
             if (self.sent > 0) {
@@ -98,7 +98,7 @@
                 [amount addObject:@(-amt)];
             }
         }
-        else if ([m.wallet containsAddress:address]) {
+        else if ([manager.wallet containsAddress:address]) {
             if (self.sent == 0 || self.received == self.sent) {
                 [text addObject:address];
                 [detail addObject:NSLocalizedString(@"wallet address", nil)];
@@ -154,9 +154,9 @@
     UITableViewCell *cell;
     BRCopyLabel *detailLabel;
     UILabel *textLabel, *subtitleLabel, *amountLabel, *localCurrencyLabel;
-    BRWalletManager *m = [BRWalletManager sharedInstance];
-    NSUInteger peerCount = [BRPeerManager sharedInstance].peerCount,
-               relayCount = [[BRPeerManager sharedInstance] relayCountForTransaction:self.transaction.txHash];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    NSUInteger peerCount = [BRPeerManager sharedInstance].peerCount;
+    NSUInteger relayCount = [[BRPeerManager sharedInstance] relayCountForTransaction:self.transaction.txHash];
     
     // Configure the cell...
     switch (indexPath.section) {
@@ -190,10 +190,10 @@
                                             self.transaction.blockHeight, self.txDateString];
                         subtitleLabel.text = self.txDateString;
                     }
-                    else if (! [m.wallet transactionIsValid:self.transaction]) {
+                    else if (! [manager.wallet transactionIsValid:self.transaction]) {
                         detailLabel.text = NSLocalizedString(@"double spend", nil);
                     }
-                    else if ([m.wallet transactionIsPostdated:self.transaction
+                    else if ([manager.wallet transactionIsPostdated:self.transaction
                               atBlockHeight:[BRPeerManager sharedInstance].lastBlockHeight]) {
                         detailLabel.text = NSLocalizedString(@"transaction is post-dated", nil);
                     }
@@ -212,14 +212,14 @@
                     localCurrencyLabel = (id)[cell viewWithTag:5];
 
                     if (self.sent > 0 && self.sent == self.received) {
-                        textLabel.text = [m stringForAmount:self.sent];
+                        textLabel.text = [manager stringForAmount:self.sent];
                         localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
-                                                   [m localCurrencyStringForAmount:self.sent]];
+                                                   [manager localCurrencyStringForAmount:self.sent]];
                     }
                     else {
-                        textLabel.text = [m stringForAmount:self.received - self.sent];
+                        textLabel.text = [manager stringForAmount:self.received - self.sent];
                         localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
-                                                   [m localCurrencyStringForAmount:self.received - self.sent]];
+                                                   [manager localCurrencyStringForAmount:self.received - self.sent]];
                     }
                     
                     break;
@@ -245,12 +245,12 @@
                 localCurrencyLabel = (id)[cell viewWithTag:5];
                 detailLabel.text = self.outputText[indexPath.row];
                 subtitleLabel.text = self.outputDetail[indexPath.row];
-                amountLabel.text = [m stringForAmount:[self.outputAmount[indexPath.row] longLongValue]];
+                amountLabel.text = [manager stringForAmount:[self.outputAmount[indexPath.row] longLongValue]];
                 amountLabel.textColor = (self.sent > 0) ? [UIColor colorWithRed:1.0 green:0.33 blue:0.33 alpha:1.0] :
                                         [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
                 localCurrencyLabel.textColor = amountLabel.textColor;
                 localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
-                                           [m localCurrencyStringForAmount:[self.outputAmount[indexPath.row]
+                                           [manager localCurrencyStringForAmount:[self.outputAmount[indexPath.row]
                                                                             longLongValue]]];
             }
             else if (self.transaction.inputAddresses[indexPath.row] != (id)[NSNull null]) {
@@ -264,7 +264,7 @@
                 amountLabel.text = nil;
                 localCurrencyLabel.text = nil;
                 
-                if ([m.wallet containsAddress:self.transaction.inputAddresses[indexPath.row]]) {
+                if ([manager.wallet containsAddress:self.transaction.inputAddresses[indexPath.row]]) {
                     subtitleLabel.text = NSLocalizedString(@"wallet address", nil);
                 }
                 else subtitleLabel.text = NSLocalizedString(@"spent address", nil);
@@ -315,45 +315,45 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
 {
-    NSString *s = [self tableView:tableView titleForHeaderInSection:section];
+    NSString *sectionTitle = [self tableView:tableView titleForHeaderInSection:section];
     
-    if (s.length == 0) return 22.0;
+    if (sectionTitle.length == 0) return 22.0;
     
-    CGRect r = [s boundingRectWithSize:CGSizeMake(self.view.frame.size.width - 30.0, CGFLOAT_MAX)
+    CGRect textRect = [sectionTitle boundingRectWithSize:CGSizeMake(self.view.frame.size.width - 30.0, CGFLOAT_MAX)
                 options:NSStringDrawingUsesLineFragmentOrigin
                 attributes:@{NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue-Light" size:17]} context:nil];
     
-    return r.size.height + 12.0;
+    return textRect.size.height + 12.0;
 }
 
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
 {
-    UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, self.view.frame.size.width,
+    UIView *headerview = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, self.view.frame.size.width,
                                                          [self tableView:tableView heightForHeaderInSection:section])];
-    UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(15.0, 10.0, v.frame.size.width - 30.0,
-                                                           v.frame.size.height - 12.0)];
+    UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(15.0, 10.0, headerview.frame.size.width - 30.0,
+                                                           headerview.frame.size.height - 12.0)];
     
-    l.text = [self tableView:tableView titleForHeaderInSection:section];
-    l.backgroundColor = [UIColor clearColor];
-    l.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:17];
-    l.textColor = [UIColor blackColor];
-    l.shadowColor = [UIColor whiteColor];
-    l.shadowOffset = CGSizeMake(0.0, 1.0);
-    l.numberOfLines = 0;
-    v.backgroundColor = [UIColor clearColor];
-    [v addSubview:l];
+    titleLabel.text = [self tableView:tableView titleForHeaderInSection:section];
+    titleLabel.backgroundColor = [UIColor clearColor];
+    titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:17];
+    titleLabel.textColor = [UIColor blackColor];
+    titleLabel.shadowColor = [UIColor whiteColor];
+    titleLabel.shadowOffset = CGSizeMake(0.0, 1.0);
+    titleLabel.numberOfLines = 0;
+    headerview.backgroundColor = [UIColor clearColor];
+    [headerview addSubview:titleLabel];
     
-    return v;
+    return headerview;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     NSUInteger i = [self.tableView.indexPathsForVisibleRows indexOfObject:indexPath];
     UITableViewCell *cell = (i < self.tableView.visibleCells.count) ? self.tableView.visibleCells[i] : nil;
-    BRCopyLabel *l = (id)[cell viewWithTag:2];
+    BRCopyLabel *copyLabel = (id)[cell viewWithTag:2];
     
-    l.selectedColor = [UIColor clearColor];
-    if (cell.selectionStyle != UITableViewCellSelectionStyleNone) [l toggleCopyMenu];
+    copyLabel.selectedColor = [UIColor clearColor];
+    if (cell.selectionStyle != UITableViewCellSelectionStyleNone) [copyLabel toggleCopyMenu];
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
