@@ -1396,6 +1396,13 @@
     XCTAssertEqualObjects(req.commonName, @"coinbase.com",  @"[BRPaymentProtocolRequest commonName]");
 }
 
+#pragma mark - UIImage+Utils
+
+- (void)testUIImageUtils
+{
+    
+}
+
 #pragma mark - performance
 
 - (void)testPerformanceExample {

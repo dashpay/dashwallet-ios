@@ -26,7 +26,7 @@
 #import "BRTodayViewController.h"
 #import "BRAppGroupConstants.h"
 #import "BRBubbleView.h"
-#import "UIImage+Utility.h"
+#import "UIImage+Utils.h"
 #import <NotificationCenter/NotificationCenter.h>
 
 #define SCAN_URL @"bread://x-callback-url/scanqr"

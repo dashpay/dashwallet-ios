@@ -30,7 +30,7 @@
 #import "BRTransaction.h"
 #import "BRBubbleView.h"
 #import "BRAppGroupConstants.h"
-#import "UIImage+Utility.h"
+#import "UIImage+Utils.h"
 #import <MobileCoreServices/UTCoreTypes.h>
 
 #define QR_TIP      NSLocalizedString(@"Let others scan this QR code to get your bitcoin address. Anyone can send "\

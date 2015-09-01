@@ -1,5 +1,5 @@
 //
-//  UIImage+Utility.m
+//  UIImage+Utils.m
 //  BreadWallet
 //
 //  Created by Aaron Voisine on 11/8/14.
@@ -23,10 +23,10 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "UIImage+Utility.h"
+#import "UIImage+Utils.h"
 #import <Accelerate/Accelerate.h>
 
-@implementation UIImage (Utility)
+@implementation UIImage (Utils)
 
 + (instancetype)imageWithQRCodeData:(NSData *)data size:(CGSize)size color:(CIColor *)color
 {

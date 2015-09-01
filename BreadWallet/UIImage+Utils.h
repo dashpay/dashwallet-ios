@@ -1,5 +1,5 @@
 //
-//  UIImage+Utility.h
+//  UIImage+Utils.h
 //  BreadWallet
 //
 //  Created by Aaron Voisine on 11/8/14.
@@ -25,7 +25,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface UIImage (Utility)
+@interface UIImage (Utils)
 
 + (instancetype)imageWithQRCodeData:(NSData *)data size:(CGSize)size color:(CIColor *)color;
 

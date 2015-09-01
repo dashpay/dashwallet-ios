@@ -33,7 +33,7 @@
 #import "BRPeerManager.h"
 #import "BRWalletManager.h"
 #import "BRPaymentRequest.h"
-#import "UIImage+Utility.h"
+#import "UIImage+Utils.h"
 #import "Reachability.h"
 #import <LocalAuthentication/LocalAuthentication.h>
 #import <sys/stat.h>
