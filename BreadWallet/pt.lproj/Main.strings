@@ -77,7 +77,7 @@
 "t1j-JZ-FW0.text" = "nenhuma transação";
 
 /* Class = "UILabel"; text = "breadwallet v%ver%%net%\ncopyright © 2015 Aaron Voisine\n\nthis app is open source"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "breadwallet v % ver%%net % copyright © 2015 Aaron Voisine este app é open source";
+"uvz-hk-Nr4.text" = "breadwallet v%ver%%net%\ncopyright © 2015 Aaron Voisine\n\neste app é open source";
 
 /* Class = "UILabel"; text = "start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
 "wDZ-DN-szv.text" = "inicie uma nova carteira gerando uma frase de recuperação de carteira";

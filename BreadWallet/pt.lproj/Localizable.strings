@@ -5,7 +5,7 @@
 "%@ is not allowed to access the camera" = "%@ não tem permissão para acessar a câmera";
 
 /* No comment provided by engineer. */
-"%@\n\nbalance: %@ (%@)" = "saldo: %1$@: %2$@ (%3$@)";
+"%@\n\nbalance: %@ (%@)" = "%1$@\n\nsaldo: %2$@ (%3$@)";
 
 /* No comment provided by engineer. */
 "%d confirmations" = "%d confirmações";
@@ -20,46 +20,46 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" não é uma palavra da frase de recuperação";
 
 /* No comment provided by engineer. */
-"\n         total %@ (%@)" = "          total %1$@ (%2$@)";
+"\n         total %@ (%@)" = "\n         total %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "%@ se você perder seu telefone, você vai precisar dela para recuperar sua carteira";
+"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nse você perder seu telefone, você vai precisar dela para recuperar sua carteira";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "%d tentativas restantes ";
+"\n%d attempts remaining\n" = "\n%d tentativas restantes\n";
 
 /* No comment provided by engineer. */
-"\n1 attempt remaining\n" = " 1 tentativa restante ";
+"\n1 attempt remaining\n" = "\n1 tentativa restante\n";
 
 /* No comment provided by engineer. */
-"\n\n     amount %@ (%@)" = "       quantidade %1$@ (%2$@)";
+"\n\n     amount %@ (%@)" = "\n\n     quantidade %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = " Uma senha de dispositivo é necessária para proteger a sua carteira. Vá para Ajustes e ative o Código para continuar.";
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nUma senha de dispositivo é necessária para proteger a sua carteira. Vá para Ajustes e ative o Código para continuar.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "ENDEREÇO JÁ UTILIZADO\n\nÉ recomendada somente uma utilização para cada endereço bitcoin\n\nA reutilização reduz a privacidade do recipiente e de você mesmo e pode levar a perda dos bitcoins caso o destinatário não tenha o controle do endereço";
+"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nENDEREÇO JÁ UTILIZADO\n\nÉ recomendada somente uma utilização para cada endereço bitcoin\n\nA reutilização reduz a privacidade do recipiente e de você mesmo e pode levar a perda dos bitcoins caso o destinatário não tenha o controle do endereço";
 
 /* No comment provided by engineer. */
-"\nallow camera access in\nSettings->Privacy->Camera->%@" = " permitir o acesso de câmera em Ajustes->Privacidade->Câmera->%@";
+"\nallow camera access in\nSettings->Privacy->Camera->%@" = "\npermitir o acesso de câmera em\nAjustes->Privacidade->Câmera->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = " Não deixe que ninguém veja sua frase de recuperação ou eles podem gastar seu bitcoins.  \nNUNCA digite sua frase de recuperação em gerenciadores de senha ou em outro lugar. Outros dispositivos podem ser infectados. ";
+"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nNão deixe que ninguém veja sua frase de recuperação ou eles podem gastar seu bitcoins.\n\nNUNCA digite sua frase de recuperação em gerenciadores de senha ou em outro lugar. Outros dispositivos podem ser infectados.\n";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = " Não deixe que ninguém veja sua frase de recuperação ou eles podem gastar seu bitcoins. ";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nNão deixe que ninguém veja sua frase de recuperação ou eles podem gastar seu bitcoins.\n";
 
 /* No comment provided by engineer. */
-"\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = " Não tire uma Captura de Tela. Capturas de tela são visíveis para outros dispositivos e aplicativos. ";
+"\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nNão tire uma Captura de Tela.\nCapturas de tela são visíveis para outros dispositivos e aplicativos.\n";
 
 /* No comment provided by engineer. */
-"\nnetwork fee +%@ (%@)" = " taxa da rede +%1$@ (%2$@)";
+"\nnetwork fee +%@ (%@)" = "\ntaxa da rede +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = " NUNCA digite sua frase de recuperação em gerenciadores de senha ou em outro lugar. Outros dispositivos podem ser infectados. ";
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNUNCA digite sua frase de recuperação em gerenciadores de senha ou em outro lugar.\nOutros dispositivos podem ser infectados.\n";
 
 /* No comment provided by engineer. */
-"\ntry again in %d %@" = " Tente novamente em %1$d %2$@";
+"\ntry again in %d %@" = "\ntente novamente em %1$d %2$@";
 
 /* No comment provided by engineer. */
 "about" = "sobre";
@@ -317,7 +317,7 @@
 "recovery phrase must have %d words" = "frase de recuperação deve ter %d palavras";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "reduzir o montante do pagamento por%1$@ (%2$@)?";
+"reduce payment amount by\n%@ (%@)?" = "reduzir o montante do pagamento por\n%1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
 "request" = "pedir";
@@ -500,4 +500,4 @@
 "you received bitcoin!" = "você recebeu bitcoin!";
 
 /* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Sua carteira pode estar fora de sincronia. Muitas vezes isso pode ser corrigido reescaneando a blockchain.";
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Sua carteira pode estar fora de sincronia.\nMuitas vezes isso pode ser corrigido reescaneando a blockchain.";
