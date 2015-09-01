@@ -5,7 +5,13 @@
 "%@ is not allowed to access the camera" = "%@에게 카메라 접근 권한이 없습니다";
 
 /* No comment provided by engineer. */
+"%@\n\nbalance: %@ (%@)" = "%1$@\n\n잔액 : %2$@ (%3$@)";
+
+/* No comment provided by engineer. */
 "%d confirmations" = "%d 승인";
+
+/* No comment provided by engineer. */
+"0 confirmations" = "0 컨펌";
 
 /* No comment provided by engineer. */
 "1 confirmation" = "1 승인";
@@ -44,10 +50,13 @@
 "\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\n절대로 다른 사람에게 복원 문구를 보여주면 안됩니다. \n그 사람이 당신의 빗코인을 써버릴 수 있습니다.\n";
 
 /* No comment provided by engineer. */
-"\nnetwork fee +%@ (%@)" = "\n네트워크 수수료 +%1$@ (%2$@)";
+"\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "스크린샷을 찍지 마세요.\n \n다른 기기나 앱들이 이 스크린샷을 읽을 수도 있습니다.";
 
 /* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\n절대로 복원 문구를 \n패스워드 매니저 등의 다른 곳에 저장하지 마십시오. \n다른 기기는 감여돼 있을 우려가 있습니다.\n";
+"\nnetwork fee +%@ (%@)" = "\n넷웍 수수료 +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\n절대로 복원 문구를 패스워드 매니저나 기타 다른 곳에 저장하지 마십시오. \n이러한 기기는 감염되어 있을 우려가 있습니다.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %d %@" = "\n%1$d %2$@뒤에 다시 시도해주세요";
@@ -113,6 +122,9 @@
 "change payment amount?" = "보낼 금액을 변경하시겠습니까?";
 
 /* No comment provided by engineer. */
+"checking address balance..." = "주소 잔액을 확인하는중...";
+
+/* No comment provided by engineer. */
 "checking private key balance..." = "비밀 키에 남아 있는 잔액 확인중...";
 
 /* No comment provided by engineer. */
@@ -137,10 +149,19 @@
 "copied" = "복사됨";
 
 /* No comment provided by engineer. */
+"copy" = "복사";
+
+/* No comment provided by engineer. */
 "copy address to clipboard" = "클립보드로 주소 복사하기";
 
 /* No comment provided by engineer. */
 "copy request to clipboard" = "클립보드로 요청 복사하기";
+
+/* No comment provided by engineer. */
+"copy wallet addresses to clipboard?" = "빗코인 지갑 주소를 클립보드에 복사하시겠습니까?";
+
+/* No comment provided by engineer. */
+"couldn't check address balance" = "이 주소의 잔액을 확인하지 못하였습니다.";
 
 /* No comment provided by engineer. */
 "couldn't make payment" = "지불에 실패하였습니다";
@@ -230,6 +251,9 @@
 "next, write down your recovery phrase" = "그리고, 당신의 복원 문구를 옮겨 적으세요";
 
 /* No comment provided by engineer. */
+"no exchange rate data" = "환율 정보가 없습니다.";
+
+/* No comment provided by engineer. */
 "no peers found" = "피어를 찾을 수 없습니다";
 
 /* No comment provided by engineer. */
@@ -261,6 +285,9 @@
 
 /* No comment provided by engineer. */
 "pay" = "지불";
+
+/* No comment provided by engineer. */
+"payee identity isn't certified" = "수취인의 신원이 인증 되지 않았씁니다";
 
 /* No comment provided by engineer. */
 "payment address" = "결제 주소";

@@ -263,6 +263,9 @@
 		75C0E3C41B1BA2A5007BC531 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = es; path = es.lproj/BIP39Words.plist; sourceTree = "<group>"; };
 		75C0E3C51B1BA2AE007BC531 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "zh-Hans"; path = "zh-Hans.lproj/BIP39Words.plist"; sourceTree = "<group>"; };
 		75C0E3C71B1D333F007BC531 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = en; path = en.lproj/BIP39Words.plist; sourceTree = "<group>"; };
+		75CE194C1B9642EB000778E4 /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/Main.strings; sourceTree = "<group>"; };
+		75CE194D1B9642EB000778E4 /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/MainInterface.strings; sourceTree = "<group>"; };
+		75CE194E1B9642EB000778E4 /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75CE50B51B5216F100DBC18C /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = BreadWalletTests/Info.plist; sourceTree = SOURCE_ROOT; };
 		75CE50BC1B525CFD00DBC18C /* TodayExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = TodayExtension.entitlements; sourceTree = "<group>"; };
 		75CE50BD1B525D1B00DBC18C /* breadwallet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = breadwallet.entitlements; path = ../breadwallet/breadwallet.entitlements; sourceTree = "<group>"; };
@@ -742,6 +745,7 @@
 				pl,
 				ru,
 				el,
+				pt,
 			);
 			mainGroup = 75D5F3B5191EC270004AB296;
 			productRefGroup = 75D5F3BF191EC270004AB296 /* Products */;
@@ -900,6 +904,7 @@
 				75DE024D1B0EB7FC0027FF08 /* pl */,
 				75DE02511B0EB8030027FF08 /* ru */,
 				750C6CC01B5C8EB60038AAE9 /* el */,
+				75CE194E1B9642EB000778E4 /* pt */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -926,6 +931,7 @@
 				75ABFB881B55BB4D00B0B5CC /* pl */,
 				75ABFB8A1B55BB4E00B0B5CC /* ru */,
 				750C6CC21B5C8EB60038AAE9 /* el */,
+				75CE194D1B9642EB000778E4 /* pt */,
 			);
 			name = MainInterface.storyboard;
 			sourceTree = "<group>";
@@ -964,6 +970,7 @@
 				75DE024B1B0EB7FC0027FF08 /* pl */,
 				75DE024F1B0EB8030027FF08 /* ru */,
 				750C6CC11B5C8EB60038AAE9 /* el */,
+				75CE194C1B9642EB000778E4 /* pt */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";

@@ -122,6 +122,9 @@
 "change payment amount?" = "módosítod a kifizetési összeget?";
 
 /* No comment provided by engineer. */
+"checking address balance..." = "cím egyenlegének ellenőrzése...";
+
+/* No comment provided by engineer. */
 "checking private key balance..." = "privát kulcs egyenlegének ellenőrzése...";
 
 /* No comment provided by engineer. */
@@ -156,6 +159,9 @@
 
 /* No comment provided by engineer. */
 "copy wallet addresses to clipboard?" = "másoljam a tárca címeit a vágólapra?";
+
+/* No comment provided by engineer. */
+"couldn't check address balance" = "nem sikerült az egyenleg ellenőrzése";
 
 /* No comment provided by engineer. */
 "couldn't make payment" = "nem sikerült a fizetés";
@@ -245,6 +251,9 @@
 "next, write down your recovery phrase" = "következő lépésként írd le a helyreállítási kódmondatodat";
 
 /* No comment provided by engineer. */
+"no exchange rate data" = "ehhez a devizához nincs elérhető árfolyam";
+
+/* No comment provided by engineer. */
 "no peers found" = "nincs elérhető hálózati csomópont";
 
 /* No comment provided by engineer. */
@@ -276,6 +285,9 @@
 
 /* No comment provided by engineer. */
 "pay" = "fizetés";
+
+/* No comment provided by engineer. */
+"payee identity isn't certified" = "a kedvezményezett (személy)azonossága nem ellenőrizhető";
 
 /* No comment provided by engineer. */
 "payment address" = "kifizetési cím";

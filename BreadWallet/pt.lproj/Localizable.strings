@@ -1,0 +1,503 @@
+/* No comment provided by engineer. */
+"%@ is for 'bits'. %@ = 1 bitcoin." = "%1$@ é para 'bits'. %2$@ = 1 bitcoin.";
+
+/* No comment provided by engineer. */
+"%@ is not allowed to access the camera" = "%@ não tem permissão para acessar a câmera";
+
+/* No comment provided by engineer. */
+"%@\n\nbalance: %@ (%@)" = "saldo: %1$@: %2$@ (%3$@)";
+
+/* No comment provided by engineer. */
+"%d confirmations" = "%d confirmações";
+
+/* No comment provided by engineer. */
+"0 confirmations" = "0 confirmações";
+
+/* No comment provided by engineer. */
+"1 confirmation" = "1 confirmação";
+
+/* No comment provided by engineer. */
+"\"%@\" is not a recovery phrase word" = "\"%@\" não é uma palavra da frase de recuperação";
+
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "          total %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "%@ se você perder seu telefone, você vai precisar dela para recuperar sua carteira";
+
+/* No comment provided by engineer. */
+"\n%d attempts remaining\n" = "%d tentativas restantes ";
+
+/* No comment provided by engineer. */
+"\n1 attempt remaining\n" = " 1 tentativa restante ";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "       quantidade %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = " Uma senha de dispositivo é necessária para proteger a sua carteira. Vá para Ajustes e ative o Código para continuar.";
+
+/* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "ENDEREÇO JÁ UTILIZADO\n\nÉ recomendada somente uma utilização para cada endereço bitcoin\n\nA reutilização reduz a privacidade do recipiente e de você mesmo e pode levar a perda dos bitcoins caso o destinatário não tenha o controle do endereço";
+
+/* No comment provided by engineer. */
+"\nallow camera access in\nSettings->Privacy->Camera->%@" = " permitir o acesso de câmera em Ajustes->Privacidade->Câmera->%@";
+
+/* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = " Não deixe que ninguém veja sua frase de recuperação ou eles podem gastar seu bitcoins.  \nNUNCA digite sua frase de recuperação em gerenciadores de senha ou em outro lugar. Outros dispositivos podem ser infectados. ";
+
+/* No comment provided by engineer. */
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = " Não deixe que ninguém veja sua frase de recuperação ou eles podem gastar seu bitcoins. ";
+
+/* No comment provided by engineer. */
+"\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = " Não tire uma Captura de Tela. Capturas de tela são visíveis para outros dispositivos e aplicativos. ";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = " taxa da rede +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = " NUNCA digite sua frase de recuperação em gerenciadores de senha ou em outro lugar. Outros dispositivos podem ser infectados. ";
+
+/* No comment provided by engineer. */
+"\ntry again in %d %@" = " Tente novamente em %1$d %2$@";
+
+/* No comment provided by engineer. */
+"about" = "sobre";
+
+/* No comment provided by engineer. */
+"always require passcode" = "sempre exiga a senha";
+
+/* No comment provided by engineer. */
+"amount too small" = "quantidade muito pequena";
+
+/* No comment provided by engineer. */
+"bad password, try again" = "senha incorreta, tente novamente";
+
+/* No comment provided by engineer. */
+"bad payment request" = "pedido de pagamento ruim";
+
+/* No comment provided by engineer. */
+"bad payment request URL" = "URL de solicitação de pagamento ruim";
+
+/* No comment provided by engineer. */
+"bad payment URL" = "URL de pagamento ruim";
+
+/* No comment provided by engineer. */
+"bad recovery phrase" = "frase de recuperação ruim";
+
+/* No comment provided by engineer. */
+"bad signature" = "assinatura ruim";
+
+/* No comment provided by engineer. */
+"Bitcoin address" = "Endereço Bitcoin";
+
+/* No comment provided by engineer. */
+"Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1' or '3'." = "Endereços Bitcoin também podem ser copiados para a área de transferência. Um endereço bitcoin sempre começa com '1' ou '3'.";
+
+/* No comment provided by engineer. */
+"bitcoin network fee" = "taxa da rede Bitcoin";
+
+/* No comment provided by engineer. */
+"bitcoin payments can't be less than %@" = "pagamentos bitcoin não podem ser menores que %@";
+
+/* No comment provided by engineer. */
+"bitcoin transaction not signed" = "transação de Bitcoin não assinada";
+
+/* No comment provided by engineer. */
+"bitcoin transaction outputs can't be less than %@" = "saídas de transação bitcoin não podem ser inferiores a %@";
+
+/* No comment provided by engineer. */
+"block #%d of %d" = "bloco #%1$d de %2$d";
+
+/* No comment provided by engineer. */
+"cancel" = "cancelar";
+
+/* No comment provided by engineer. */
+"change" = "alterar";
+
+/* No comment provided by engineer. */
+"change passcode" = "alterar senha";
+
+/* No comment provided by engineer. */
+"change payment amount?" = "alterar o valor do pagamento?";
+
+/* No comment provided by engineer. */
+"checking address balance..." = "verificando o saldo do endereço...";
+
+/* No comment provided by engineer. */
+"checking private key balance..." = "verificando o saldo da chave privada...";
+
+/* No comment provided by engineer. */
+"choose passcode for %@" = "escolha a senha para %@";
+
+/* No comment provided by engineer. */
+"clipboard doesn't contain a valid bitcoin address" = "área de transferência não contém um endereço bitcoin válido";
+
+/* No comment provided by engineer. */
+"close app" = "fechar o aplicativo";
+
+/* No comment provided by engineer. */
+"CONFIRM WIPE" = "CONFIRMAR O APAGAMENTO";
+
+/* No comment provided by engineer. */
+"confirmed in block #%d" = "confirmada no bloco #%d";
+
+/* No comment provided by engineer. */
+"connect timeout" = "tempo limite de conexão alcançado";
+
+/* No comment provided by engineer. */
+"copied" = "copiado";
+
+/* No comment provided by engineer. */
+"copy" = "copiar";
+
+/* No comment provided by engineer. */
+"copy address to clipboard" = "copiar endereço para área de transferência";
+
+/* No comment provided by engineer. */
+"copy request to clipboard" = "copiar pedido para área de transferência";
+
+/* No comment provided by engineer. */
+"copy wallet addresses to clipboard?" = "copiar endereços da carteira para área de transferência?";
+
+/* No comment provided by engineer. */
+"couldn't check address balance" = "não consegui verificar o saldo do endereço";
+
+/* No comment provided by engineer. */
+"couldn't make payment" = "não foi possível fazer o pagamento";
+
+/* No comment provided by engineer. */
+"couldn't sweep balance" = "não foi possível limpar o saldo";
+
+/* No comment provided by engineer. */
+"couldn't transmit payment to bitcoin network" = "não foi possível transmitir o pagamento à rede bitcoin";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "SEGURANÇA DO DISPOSITIVO COMPROMETIDA\nQualquer aplicativo \"jailbreak\" consegue acessar os dados de outros aplicativos (e roubar seus bitcoins).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "SEGURANÇA DO DISPOSITIVO COMPROMETIDA\nQualquer aplicativo \"jailbreak\" consegue acessar os dados de outros aplicativos (e roubar seus bitcoins). Limpe essa carteira imediatamente e restaure em um dispositivo seguro.";
+
+/* No comment provided by engineer. */
+"do it later" = "fazer mais tarde";
+
+/* No comment provided by engineer. */
+"done" = "feito";
+
+/* No comment provided by engineer. */
+"double spend" = "gasto duplo";
+
+/* No comment provided by engineer. */
+"email not configured" = "e-mail não configurado";
+
+/* No comment provided by engineer. */
+"enter old passcode" = "digite a senha antiga";
+
+/* No comment provided by engineer. */
+"error signing bitcoin transaction" = "erro na assinatura da transação bitcoin";
+
+/* No comment provided by engineer. */
+"error signing transaction" = "erro na assinatura da transação";
+
+/* No comment provided by engineer. */
+"from:" = "de:";
+
+/* No comment provided by engineer. */
+"hour" = "hora";
+
+/* No comment provided by engineer. */
+"hours" = "horas";
+
+/* No comment provided by engineer. */
+"id:" = "id:";
+
+/* No comment provided by engineer. */
+"ignore" = "ignorar";
+
+/* No comment provided by engineer. */
+"import private key" = "importar a chave privada";
+
+/* No comment provided by engineer. */
+"IMPORTANT" = "IMPORTANTE";
+
+/* No comment provided by engineer. */
+"insufficient funds" = "fundos insuficientes";
+
+/* No comment provided by engineer. */
+"insufficient funds for bitcoin network fee" = "fundos insuficientes para taxa da rede bitcoin";
+
+/* No comment provided by engineer. */
+"INVALID" = "INVÁLIDO";
+
+/* No comment provided by engineer. */
+"Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Compartilhe este código QR para outros obterem seu endereço bitcoin. Qualquer um pode enviar bitcoins para sua carteira ao transferí-los para seu endereço.";
+
+/* No comment provided by engineer. */
+"minute" = "minuto";
+
+/* No comment provided by engineer. */
+"minutes" = "minutos";
+
+/* No comment provided by engineer. */
+"missing certificate" = "falta de certificado";
+
+/* No comment provided by engineer. */
+"more..." = "mais...";
+
+/* No comment provided by engineer. */
+"moved" = "movido";
+
+/* No comment provided by engineer. */
+"next, write down your recovery phrase" = "em seguida, anote sua frase de recuperação";
+
+/* No comment provided by engineer. */
+"no exchange rate data" = "não há dados da taxa de câmbio";
+
+/* No comment provided by engineer. */
+"no peers found" = "não foram encontrados peers";
+
+/* No comment provided by engineer. */
+"not a bitcoin QR code" = "não é um código QR de bitcoin";
+
+/* No comment provided by engineer. */
+"not a valid bitcoin address" = "não um endereço bitcoin válido";
+
+/* No comment provided by engineer. */
+"not a valid private key" = "a chave privada não é válida";
+
+/* No comment provided by engineer. */
+"not connected to the bitcoin network" = "não conectado à rede bitcoin";
+
+/* No comment provided by engineer. */
+"ok" = "ok";
+
+/* No comment provided by engineer. */
+"passcode" = "senha";
+
+/* No comment provided by engineer. */
+"passcode for %@" = "senha para %@";
+
+/* No comment provided by engineer. */
+"password" = "senha";
+
+/* No comment provided by engineer. */
+"password protected key" = "chave protegida por senha";
+
+/* No comment provided by engineer. */
+"pay" = "pagar";
+
+/* No comment provided by engineer. */
+"payee identity isn't certified" = "identidade do destinatário não é certificada";
+
+/* No comment provided by engineer. */
+"payment address" = "endereço de pagamento";
+
+/* No comment provided by engineer. */
+"payment output" = "saída de pagamento criada";
+
+/* No comment provided by engineer. */
+"post-dated" = "pós-datada";
+
+/* No comment provided by engineer. */
+"Receive bitcoins at this address: %@" = "Receber bitcoins neste endereço: %@";
+
+/* No comment provided by engineer. */
+"received" = "recebido";
+
+/* No comment provided by engineer. */
+"received %@ (%@)" = "recebeu %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"recovery phrase" = "frase de recuperação";
+
+/* No comment provided by engineer. */
+"recovery phrase doesn't match" = "frase de recuperação não corresponde";
+
+/* No comment provided by engineer. */
+"recovery phrase must have %d words" = "frase de recuperação deve ter %d palavras";
+
+/* No comment provided by engineer. */
+"reduce payment amount by\n%@ (%@)?" = "reduzir o montante do pagamento por%1$@ (%2$@)?";
+
+/* No comment provided by engineer. */
+"request" = "pedir";
+
+/* No comment provided by engineer. */
+"request an amount" = "solicitar uma quantidade";
+
+/* No comment provided by engineer. */
+"request expired" = "solicitação expirou";
+
+/* No comment provided by engineer. */
+"requested network \"%@\" instead of \"%@\"" = "rede solicitada: \"%1$@\" em vez de \"%2$@\"";
+
+/* No comment provided by engineer. */
+"rescan" = "reescanear";
+
+/* No comment provided by engineer. */
+"rescan blockchain" = "reescanear a rede blockchain";
+
+/* No comment provided by engineer. */
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "reescaneie a rede blockchain se você acha que estão faltando transações ou se está tendo problemas no envio (o reescaneamento pode demorar vários minutos)";
+
+/* No comment provided by engineer. */
+"reset" = "redefinir";
+
+/* No comment provided by engineer. */
+"Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Digitalizar o código QR de outra pessoa para obter seu endereço bitcoin. Você pode enviar um pagamento para qualquer pessoa com um endereço.";
+
+/* No comment provided by engineer. */
+"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Capturas de Tela são visíveis para outros dispositivos e aplicativos. Gere uma nova frase de recuperação e a mantenha secreta.";
+
+/* No comment provided by engineer. */
+"Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Capturas de Tela são visíveis para outros dispositivos e aplicativos. Seus fundos estão em risco. Transfira seu saldo para outra carteira.";
+
+/* No comment provided by engineer. */
+"seen by %d of %d peers" = "visto por %1$d de %2$d peers";
+
+/* No comment provided by engineer. */
+"Send %@ (%@) from this private key into your wallet? The bitcoin network will receive a fee of %@ (%@)." = "Enviar %1$@ (%2$@) desta chave privada para sua carteira? A rede bitcoin receberá uma taxa de %3$@ (%4$@).";
+
+/* No comment provided by engineer. */
+"send address as email" = "enviar endereço por e-mail";
+
+/* No comment provided by engineer. */
+"send address as message" = "enviar endereço por mensagem";
+
+/* No comment provided by engineer. */
+"send request as email" = "enviar pedido por e-mail";
+
+/* No comment provided by engineer. */
+"send request as message" = "enviar pedido por mensagem";
+
+/* No comment provided by engineer. */
+"sent" = "enviado";
+
+/* No comment provided by engineer. */
+"sent!" = "enviado!";
+
+/* No comment provided by engineer. */
+"settings" = "ajustes";
+
+/* No comment provided by engineer. */
+"show" = "mostrar";
+
+/* No comment provided by engineer. */
+"show phrase" = "mostrar a frase";
+
+/* No comment provided by engineer. */
+"sms not currently available" = "sms não está atualmente disponível";
+
+/* No comment provided by engineer. */
+"spent address" = "endereço gasto";
+
+/* No comment provided by engineer. */
+"spent input" = "entrada gasta";
+
+/* No comment provided by engineer. */
+"status:" = "status:";
+
+/* No comment provided by engineer. */
+"swept!" = "fundos transferidos!";
+
+/* No comment provided by engineer. */
+"syncing..." = "sincronizando...";
+
+/* No comment provided by engineer. */
+"the app will now close" = "o aplicativo vai fechar agora";
+
+/* No comment provided by engineer. */
+"This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Este é seu endereço bitcoin. Toque para copiá-lo ou enviá-lo por e-mail ou sms. O endereço vai mudar cada vez que você receber fundos, mas endereços antigos sempre funcionam.";
+
+/* No comment provided by engineer. */
+"This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market." = "Este é o seu saldo de bitcoin. Bitcoin é uma moeda. A taxa de câmbio muda com o mercado.";
+
+/* No comment provided by engineer. */
+"this payment address is already in your wallet" = "este endereço de pagamento já está em sua carteira";
+
+/* No comment provided by engineer. */
+"this private key is already in your wallet" = "esta chave privada já está em sua carteira";
+
+/* No comment provided by engineer. */
+"this private key is empty" = "esta chave privada está vazia";
+
+/* No comment provided by engineer. */
+"to:" = "para:";
+
+/* No comment provided by engineer. */
+"to: %@" = "para: %@";
+
+/* No comment provided by engineer. */
+"touch id limit" = "limite de uso do touch id";
+
+/* No comment provided by engineer. */
+"touch id spending limit" = "limite de gastos por touch id";
+
+/* No comment provided by engineer. */
+"transaction canceled, network timeout" = "transação cancelada, tempo limite de rede alcançado";
+
+/* No comment provided by engineer. */
+"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "taxas de transação custariam mais do que os fundos disponíveis nesta chave privada (devido a pequenos depósitos de \"poeira\")";
+
+/* No comment provided by engineer. */
+"transaction history" = "histórico de transações";
+
+/* No comment provided by engineer. */
+"transaction is post-dated" = "transação pós-datada";
+
+/* No comment provided by engineer. */
+"transaction rejected" = "transação rejeitada";
+
+/* No comment provided by engineer. */
+"turn device passcode on" = "ativar senha de dispositivo";
+
+/* No comment provided by engineer. */
+"unexpected response from %@" = "resposta inesperada de %@";
+
+/* No comment provided by engineer. */
+"unknown address" = "endereço desconhecido";
+
+/* No comment provided by engineer. */
+"unrecognized address" = "endereço não reconhecido";
+
+/* No comment provided by engineer. */
+"unsupported or corrupted document" = "documento não suportado ou corrompido";
+
+/* No comment provided by engineer. */
+"unsupported signature type" = "tipo de assinatura não suportado";
+
+/* No comment provided by engineer. */
+"unsupported url" = "url não suportada";
+
+/* No comment provided by engineer. */
+"untrusted certificate" = "certificado não confiável";
+
+/* No comment provided by engineer. */
+"unverified" = "não verificada";
+
+/* No comment provided by engineer. */
+"verified, waiting for confirmation" = "verificada, à espera de confirmação";
+
+/* No comment provided by engineer. */
+"verify passcode" = "verificar senha";
+
+/* No comment provided by engineer. */
+"wallet address" = "endereço da carteira";
+
+/* No comment provided by engineer. */
+"wallet disabled" = "carteira desabilitada";
+
+/* No comment provided by engineer. */
+"WARNING" = "AVISO";
+
+/* No comment provided by engineer. */
+"wipe" = "limpar";
+
+/* No comment provided by engineer. */
+"WRITE DOWN YOUR RECOVERY PHRASE" = "ANOTE SUA FRASE DE RECUPERAÇÃO";
+
+/* No comment provided by engineer. */
+"you received bitcoin!" = "você recebeu bitcoin!";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Sua carteira pode estar fora de sincronia. Muitas vezes isso pode ser corrigido reescaneando a blockchain.";

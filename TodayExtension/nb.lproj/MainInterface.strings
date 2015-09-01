@@ -1,0 +1,11 @@
+/* Class = "UILabel"; text = "scan QR code"; ObjectID = "JgG-Ah-UZk"; */
+"JgG-Ah-UZk.text" = "skann QR-kode";
+
+/* Class = "UILabel"; text = "receive"; ObjectID = "KJN-zr-IQB"; */
+"KJN-zr-IQB.text" = "motta";
+
+/* Class = "UILabel"; text = "send"; ObjectID = "QMM-JV-cTG"; */
+"QMM-JV-cTG.text" = "send";
+
+/* Class = "UIButton"; normalTitle = "setup wallet"; ObjectID = "fgE-Q8-uG8"; */
+"fgE-Q8-uG8.normalTitle" = "sett opp lommebok";

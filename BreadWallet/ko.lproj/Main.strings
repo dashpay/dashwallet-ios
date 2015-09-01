@@ -8,13 +8,16 @@
 "A4M-yq-26d.normalTitle" = "복원 문구 생성";
 
 /* Class = "UILabel"; text = "start/recover another wallet"; ObjectID = "D1b-HB-lKH"; */
-"D1b-HB-lKH.text" = "다른 지갑을 시작/복원하기";
+"D1b-HB-lKH.text" = "지갑을 복원하거나 새로 만들기";
 
 /* Class = "UILabel"; text = "exchange rate data provided by\nbitpay.com/rates"; ObjectID = "D4H-hd-LsX"; */
 "D4H-hd-LsX.text" = "환율 정보 제공\nbitpay.com/rates";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
 "EQG-Km-ZKY.text" = "휴대전화를 잃어버렸을때, 지갑을 복원하는데 이 문구가 필요합니다";
+
+/* Class = "UILabel"; text = "sent"; ObjectID = "FjB-H2-BnK"; */
+"FjB-H2-BnK.text" = "보냄";
 
 /* Class = "UIBarButtonItem"; title = "remind me later"; ObjectID = "QQS-Me-RNh"; */
 "QQS-Me-RNh.title" = "나중에";
@@ -44,10 +47,13 @@
 "cyp-mV-Bhd.text" = "옮겨 적었습니다:";
 
 /* Class = "UIButton"; normalTitle = "new wallet"; ObjectID = "dOa-zm-TDG"; */
-"dOa-zm-TDG.normalTitle" = "새 지갑";
+"dOa-zm-TDG.normalTitle" = "새로운 지갑";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "dX6-jg-5IA"; */
 "dX6-jg-5IA.text" = "휴대전화를 잃어버렸을때, 지갑을 복원하는데 이 문구가 필요합니다";
+
+/* Class = "UILabel"; text = "unconfirmed"; ObjectID = "eJ2-5h-DO2"; */
+"eJ2-5h-DO2.text" = "미확인";
 
 /* Class = "UIButton"; normalTitle = "show"; ObjectID = "efL-Cj-Aho"; */
 "efL-Cj-Aho.normalTitle" = "보기";
