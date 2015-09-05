@@ -174,7 +174,8 @@ static NSString *dateFormat(NSString *template)
             [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
                 if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
-                self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [manager stringForAmount:manager.wallet.balance],
+                self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
+                                             [manager stringForAmount:manager.wallet.balance],
                                              [manager localCurrencyStringForAmount:manager.wallet.balance]];
             }];
     }
@@ -184,7 +185,8 @@ static NSString *dateFormat(NSString *template)
             [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
                 if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
-                self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [manager stringForAmount:manager.wallet.balance],
+                self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
+                                             [manager stringForAmount:manager.wallet.balance],
                                              [manager localCurrencyStringForAmount:manager.wallet.balance]];
             }];
     }
@@ -349,7 +351,8 @@ static NSString *dateFormat(NSString *template)
 
 - (IBAction)showTx:(id)sender
 {
-    BRTxDetailViewController *detailController = [self.storyboard instantiateViewControllerWithIdentifier:@"TxDetailViewController"];
+    BRTxDetailViewController *detailController
+        = [self.storyboard instantiateViewControllerWithIdentifier:@"TxDetailViewController"];
     detailController.transaction = sender;
     detailController.txDateString = [self dateForTx:sender];
     [self.navigationController pushViewController:detailController animated:YES];
@@ -701,7 +704,8 @@ static NSString *dateFormat(NSString *template)
         to.view.center = from.view.center;
         from.view.center = CGPointMake(containerView.frame.size.width*(pop ? 3 : -1)/2, from.view.center.y);
         self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 -
-                                            containerView.frame.size.width*(pop ? 0 : 1)*PARALAX_RATIO, self.wallpaper.center.y);
+                                            containerView.frame.size.width*(pop ? 0 : 1)*PARALAX_RATIO,
+                                            self.wallpaper.center.y);
     } completion:^(BOOL finished) {
         if (pop) [from.view removeFromSuperview];
         [transitionContext completeTransition:YES];

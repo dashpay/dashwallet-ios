@@ -254,7 +254,9 @@
                 [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
                 [[BRPeerManager sharedInstance] connect];
             }
-            else if (! manager.noWallet && self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
+            else if (! manager.noWallet && self.reachability.currentReachabilityStatus == NotReachable) {
+                [self showErrorBar];
+            }
         }];
 
     self.balanceObserver =
@@ -716,7 +718,8 @@
     if ([tipView.text hasPrefix:BALANCE_TIP]) {
         BRWalletManager *manager = [BRWalletManager sharedInstance];
         UINavigationBar *navBar = self.navigationController.navigationBar;
-        NSString *text = [NSString stringWithFormat:BITS_TIP, manager.format.currencySymbol, [manager stringForAmount:SATOSHIS]];
+        NSString *text = [NSString stringWithFormat:BITS_TIP,
+                          manager.format.currencySymbol, [manager stringForAmount:SATOSHIS]];
         CGRect r = [self.navigationItem.title boundingRectWithSize:navBar.bounds.size options:0
                     attributes:navBar.titleTextAttributes context:nil];
 
@@ -746,8 +749,10 @@
     if (sender == self.receiveViewController) {
         BRSendViewController *sendController = self.sendViewController;
 
-        [(id)self.pageViewController setViewControllers:@[sendController] direction:UIPageViewControllerNavigationDirectionReverse
-         animated:YES completion:^(BOOL finished) { [sendController tip:sender]; }];
+        [(id)self.pageViewController setViewControllers:@[sendController]
+                                              direction:UIPageViewControllerNavigationDirectionReverse
+                                               animated:YES
+                                             completion:^(BOOL finished) { [sendController tip:sender]; }];
         return;
     }
     else if (sender == self.sendViewController) {
@@ -909,7 +914,8 @@ viewControllerAfterViewController:(UIViewController *)viewController
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:WALLET_NEEDS_BACKUP_KEY];
     [[NSUserDefaults standardUserDefaults] synchronize];
 
-    UINavigationController *newWalletNavController = [self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"];
+    UINavigationController *newWalletNavController
+        = [self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"];
 
     [self.navigationController presentViewController:newWalletNavController animated:NO completion:nil];
 

@@ -324,7 +324,9 @@ replacementString:(NSString *)string
     NSUInteger mindigits = numberFormatter.minimumFractionDigits;
     NSUInteger point = [textField.text rangeOfString:numberFormatter.currencyDecimalSeparator].location;
     NSUInteger loc;
-    NSString *textVal = textField.text ? [textField.text stringByReplacingCharactersInRange:range withString:string] : string;
+    NSString *textVal = textField.text
+        ? [textField.text stringByReplacingCharactersInRange:range withString:string]
+        : string;
 
     numberFormatter.minimumFractionDigits = 0;
     textVal = [numberFormatter stringFromNumber:[numberFormatter numberFromString:textVal]];
@@ -340,8 +342,11 @@ replacementString:(NSString *)string
         numberFormatter.minimumFractionDigits = mindigits;
         return NO; // too many digits
     }
-    else if ([string isEqual:numberFormatter.currencyDecimalSeparator] && (! textField.text.length || point == NSNotFound)) {
-        if (! textField.text.length) textVal = [numberFormatter stringFromNumber:@0]; // if first char is '.', prepend a zero
+    else if ([string isEqual:numberFormatter.currencyDecimalSeparator]
+             && (! textField.text.length || point == NSNotFound)) {
+        if (! textField.text.length) {
+            textVal = [numberFormatter stringFromNumber:@0]; // if first char is '.', prepend a zero
+        }
         loc = [textVal rangeOfCharacterFromSet:self.charset options:NSBackwardsSearch].location;
         loc = (loc < textVal.length) ? loc + 1 : textVal.length;
         textVal = [textVal stringByReplacingCharactersInRange:NSMakeRange(loc, 0) withString:numberFormatter.currencyDecimalSeparator];

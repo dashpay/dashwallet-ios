@@ -225,7 +225,8 @@
             [composeController addAttachmentData:UIImagePNGRepresentation(self.qrView.image) mimeType:@"image/png" fileName:@"qr.png"];
             composeController.mailComposeDelegate = self;
             [self.navigationController presentViewController:composeController animated:YES completion:nil];
-            composeController.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default"]];
+            composeController.view.backgroundColor
+                = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default"]];
         }
         else {
             [[[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"email not configured", nil) delegate:nil
@@ -237,17 +238,21 @@
         if ([MFMessageComposeViewController canSendText]) {
             MFMessageComposeViewController *composeController = [MFMessageComposeViewController new];
 
-            if ([MFMessageComposeViewController canSendSubject]) composeController.subject = NSLocalizedString(@"Bitcoin address", nil);
+            if ([MFMessageComposeViewController canSendSubject]) {
+                composeController.subject = NSLocalizedString(@"Bitcoin address", nil);
+            }
             composeController.body = self.paymentRequest.string;
             
             if ([MFMessageComposeViewController canSendAttachments]) {
-                [composeController addAttachmentData:UIImagePNGRepresentation(self.qrView.image) typeIdentifier:(NSString *)kUTTypePNG
+                [composeController addAttachmentData:UIImagePNGRepresentation(self.qrView.image)
+                                      typeIdentifier:(NSString *)kUTTypePNG
                  filename:@"qr.png"];
             }
             
             composeController.messageComposeDelegate = self;
             [self.navigationController presentViewController:composeController animated:YES completion:nil];
-            composeController.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default"]];
+            composeController.view.backgroundColor = [UIColor colorWithPatternImage:
+                                                      [UIImage imageNamed:@"wallpaper-default"]];
         }
         else {
             [[[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"sms not currently available", nil)
@@ -255,7 +260,8 @@
         }
     }
     else if ([title isEqual:NSLocalizedString(@"request an amount", nil)]) {
-        UINavigationController *amountNavController = [self.storyboard instantiateViewControllerWithIdentifier:@"AmountNav"];
+        UINavigationController *amountNavController
+            = [self.storyboard instantiateViewControllerWithIdentifier:@"AmountNav"];
         
         ((BRAmountViewController *)amountNavController.topViewController).delegate = self;
         [self.navigationController presentViewController:amountNavController animated:YES completion:nil];
@@ -292,12 +298,14 @@ error:(NSError *)error
         return;
     }
 
-    BRReceiveViewController *receiveController = [self.storyboard instantiateViewControllerWithIdentifier:@"RequestViewController"];
+    BRReceiveViewController *receiveController
+        = [self.storyboard instantiateViewControllerWithIdentifier:@"RequestViewController"];
     
     receiveController.paymentRequest = self.paymentRequest;
     receiveController.paymentRequest.amount = amount;
     ((UINavigationController *)self.navigationController.presentedViewController).delegate = receiveController;
-    [(UINavigationController *)self.navigationController.presentedViewController pushViewController:receiveController animated:YES];
+    [(UINavigationController *)self.navigationController.presentedViewController pushViewController:receiveController
+                                                                                           animated:YES];
 }
 
 #pragma mark - UIViewControllerAnimatedTransitioning

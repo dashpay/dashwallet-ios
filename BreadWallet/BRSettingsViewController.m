@@ -66,7 +66,8 @@
             queue:nil usingBlock:^(NSNotification *note) {
                 if (self.selectorType == 0) {
                     self.selectorController.title = [NSString stringWithFormat:@"%@ = %@",
-                                                     [manager localCurrencyStringForAmount:SATOSHIS/manager.localCurrencyPrice],
+                                                     [manager localCurrencyStringForAmount:
+                                                      SATOSHIS/manager.localCurrencyPrice],
                                                      [manager stringForAmount:SATOSHIS/manager.localCurrencyPrice]];
                 }
             }];
@@ -496,7 +497,8 @@
         return;
     }
     
-    BRSeedViewController *seedController = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
+    BRSeedViewController *seedController
+        = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
     
     if (seedController.authSuccess) {
         [self.navigationController pushViewController:seedController animated:YES];
