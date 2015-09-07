@@ -29,6 +29,8 @@
 
 #define WORDS @"BIP39Words"
 
+#define IDEO_SP @"\xE3\x80\x80" // ideographic space (utf-8)
+
 // BIP39 is method for generating a deterministic wallet seed from a mnemonic phrase
 // https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 
@@ -87,6 +89,7 @@
     return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (CFArrayRef)a, CFSTR(" ")));
 }
 
+// phrase must be normalized
 - (NSData *)decodePhrase:(NSString *)phrase
 {
     NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(),
@@ -139,11 +142,65 @@
     return [self.words containsObject:word];
 }
 
+// true if all words and checksum are valid, phrase must be normalized
 - (BOOL)phraseIsValid:(NSString *)phrase
 {
     return ([self decodePhrase:phrase] == nil) ? NO : YES;
 }
 
+// minimally cleans up user input phrase, suitable for display/editing
+- (NSString *)cleanupPhrase:(NSString *)phrase
+{
+    static NSCharacterSet *invalid = nil, *ws = nil;
+    static dispatch_once_t onceToken = 0;
+    NSMutableString *s = CFBridgingRelease(CFStringCreateMutableCopy(SecureAllocator(), 0,
+                                                                     (CFStringRef)phrase));
+    
+    dispatch_once(&onceToken, ^{
+        NSMutableCharacterSet *set = [NSMutableCharacterSet letterCharacterSet];
+        
+        ws = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+        [set formUnionWithCharacterSet:ws];
+        invalid = set.invertedSet;
+    });
+    
+    while ([s rangeOfCharacterFromSet:invalid].location != NSNotFound) {
+        [s deleteCharactersInRange:[s rangeOfCharacterFromSet:invalid]]; // remove invalid chars
+    }
+    
+    [s replaceOccurrencesOfString:@"\n" withString:@" " options:0 range:NSMakeRange(0, s.length)];
+    while ([s replaceOccurrencesOfString:@"  " withString:@" " options:0 range:NSMakeRange(0, s.length)] > 0);
+    while ([s rangeOfCharacterFromSet:ws].location == 0) [s deleteCharactersInRange:NSMakeRange(0, 1)]; // trim lead ws
+    phrase = [self normalizePhrase:s];
+    
+    if (! [self phraseIsValid:phrase]) {
+        NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(),
+                                                                              (CFStringRef)phrase, CFSTR(" ")));
+        
+        for (NSString *word in a) { // add spaces between words for ideographic langauges
+            if (word.length < 1 || [word characterAtIndex:0] < 0x3000 || [self wordIsValid:word]) continue;
+            
+            for (NSUInteger i = 0; i < word.length; i++) {
+                for (NSUInteger j = (word.length - i > 8) ? 8 : word.length - i; j; j--) {
+                    NSString *w  = [word substringWithRange:NSMakeRange(i, j)];
+                    
+                    if (! [self wordIsValid:w]) continue;
+                    [s replaceOccurrencesOfString:w withString:[NSString stringWithFormat:IDEO_SP @"%@" IDEO_SP, w]
+                                          options:0 range:NSMakeRange(0, s.length)];
+                    while ([s replaceOccurrencesOfString:IDEO_SP IDEO_SP withString:IDEO_SP options:0
+                                                   range:NSMakeRange(0, s.length)] > 0);
+                    CFStringTrimWhitespace((CFMutableStringRef)s);
+                    i += j - 1;
+                    break;
+                }
+            }
+        }
+    }
+    
+    return s;
+}
+
+// normalizes phrase, suitable for decode/derivation
 - (NSString *)normalizePhrase:(NSString *)phrase
 {
     if (! phrase) return nil;
@@ -168,6 +225,7 @@
     return s;
 }
 
+// phrase must be normalized
 - (NSData *)deriveKeyFromPhrase:(NSString *)phrase withPassphrase:(NSString *)passphrase
 {
     if (! phrase) return nil;

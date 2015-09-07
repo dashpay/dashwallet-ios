@@ -40,7 +40,6 @@
 
 #define CIRCLE  @"\xE2\x97\x8C" // dotted circle (utf-8)
 #define DOT     @"\xE2\x97\x8F" // black circle (utf-8)
-#define IDEO_SP @"\xE3\x80\x80" // ideographic space (utf-8)
 
 #define UNSPENT_URL    @"https://api.chain.com/v2/%@/addresses/%@/unspents?api-key-id=eed0d7697a880144bb854676f88d123f"
 #define TICKER_URL     @"https://bitpay.com/rates"
@@ -1030,58 +1029,6 @@ completion:(void (^)(BRTransaction *tx, uint64_t fee, NSError *error))completion
 
 #pragma mark - string helpers
 
-// cleans up seed phrase input from a user, suitable for display/editing
-- (NSString *)cleanupPhrase:(NSString *)phrase
-{
-    static NSCharacterSet *invalid = nil, *ws = nil;
-    static dispatch_once_t onceToken = 0;
-    NSMutableString *s = CFBridgingRelease(CFStringCreateMutableCopy(SecureAllocator(), 0,
-                                                                     (CFStringRef)phrase));
-    
-    dispatch_once(&onceToken, ^{
-        NSMutableCharacterSet *set = [NSMutableCharacterSet letterCharacterSet];
-        
-        ws = [NSCharacterSet whitespaceAndNewlineCharacterSet];
-        [set formUnionWithCharacterSet:ws];
-        invalid = set.invertedSet;
-    });
-    
-    while ([s rangeOfCharacterFromSet:invalid].location != NSNotFound) {
-        [s deleteCharactersInRange:[s rangeOfCharacterFromSet:invalid]]; // remove invalid chars
-    }
-
-    [s replaceOccurrencesOfString:@"\n" withString:@" " options:0 range:NSMakeRange(0, s.length)];
-    while ([s replaceOccurrencesOfString:@"  " withString:@" " options:0 range:NSMakeRange(0, s.length)] > 0);
-    while ([s rangeOfCharacterFromSet:ws].location == 0) [s deleteCharactersInRange:NSMakeRange(0, 1)]; // trim lead ws
-    phrase = [self.mnemonic normalizePhrase:s];
-    
-    if (! [self.mnemonic phraseIsValid:phrase]) {
-        NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(),
-                                                                              (CFStringRef)phrase, CFSTR(" ")));
-        
-        for (NSString *word in a) { // add spaces between words for ideographic langauges
-            if (word.length < 1 || [word characterAtIndex:0] < 0x3000 || [self.mnemonic wordIsValid:word]) continue;
-            
-            for (NSUInteger i = 0; i < word.length; i++) {
-                for (NSUInteger j = (word.length - i > 8) ? 8 : word.length - i; j; j--) {
-                    NSString *w  = [word substringWithRange:NSMakeRange(i, j)];
-                    
-                    if (! [self.mnemonic wordIsValid:w]) continue;
-                    [s replaceOccurrencesOfString:w withString:[NSString stringWithFormat:IDEO_SP @"%@" IDEO_SP, w]
-                     options:0 range:NSMakeRange(0, s.length)];
-                    while ([s replaceOccurrencesOfString:IDEO_SP IDEO_SP withString:IDEO_SP options:0
-                           range:NSMakeRange(0, s.length)] > 0);
-                    CFStringTrimWhitespace((CFMutableStringRef)s);
-                    i += j - 1;
-                    break;
-                }
-            }
-        }
-    }
-    
-    return s;
-}
-
 - (int64_t)amountForString:(NSString *)string
 {
     if (! string.length) return 0;
@@ -1165,7 +1112,7 @@ replacementString:(NSString *)string
 {
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
         if ([textView.text rangeOfString:@"\n"].location != NSNotFound) {
-            NSString *phrase = [self cleanupPhrase:textView.text];
+            NSString *phrase = [self.mnemonic cleanupPhrase:textView.text];
             
             if (! [phrase isEqual:textView.text]) textView.text = phrase;
             

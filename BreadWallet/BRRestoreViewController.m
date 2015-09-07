@@ -139,7 +139,7 @@
         if ([textView.text rangeOfString:@"\n"].location == NSNotFound) return; // not done entering phrase
     
         BRWalletManager *m = [BRWalletManager sharedInstance];
-        NSString *phrase = [m cleanupPhrase:textView.text], *incorrect = nil;
+        NSString *phrase = [m.mnemonic cleanupPhrase:textView.text], *incorrect = nil;
         BOOL isLocal = YES;
         
         if (! [phrase isEqual:textView.text]) textView.text = phrase;
