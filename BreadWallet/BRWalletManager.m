@@ -38,8 +38,9 @@
 #import "Reachability.h"
 #import <LocalAuthentication/LocalAuthentication.h>
 
-#define CIRCLE @"\xE2\x97\x8C" // dotted circle (utf-8)
-#define DOT    @"\xE2\x97\x8F" // black circle (utf-8)
+#define CIRCLE  @"\xE2\x97\x8C" // dotted circle (utf-8)
+#define DOT     @"\xE2\x97\x8F" // black circle (utf-8)
+#define IDEO_SP @"\xE3\x80\x80" // ideographic space (utf-8)
 
 #define UNSPENT_URL    @"https://api.chain.com/v2/%@/addresses/%@/unspents?api-key-id=eed0d7697a880144bb854676f88d123f"
 #define TICKER_URL     @"https://bitpay.com/rates"
@@ -1029,6 +1030,69 @@ completion:(void (^)(BRTransaction *tx, uint64_t fee, NSError *error))completion
 
 #pragma mark - string helpers
 
+// cleans up seed phrase input from a user, suitable for display/editing
+- (NSString *)cleanupPhrase:(NSString *)phrase
+{
+    static NSCharacterSet *invalid = nil;
+    static dispatch_once_t onceToken = 0;
+    
+    dispatch_once(&onceToken, ^{
+        NSMutableCharacterSet *set = [NSMutableCharacterSet letterCharacterSet];
+        
+        [set formUnionWithCharacterSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        invalid = set.invertedSet;
+    });
+
+    NSMutableString *s = CFBridgingRelease(CFStringCreateMutableCopy(SecureAllocator(), 0,
+                                                                     (CFStringRef)phrase));
+        
+    while ([s rangeOfCharacterFromSet:invalid].location != NSNotFound) {
+        [s deleteCharactersInRange:[s rangeOfCharacterFromSet:invalid]]; // remove invalid chars
+    }
+
+    [s replaceOccurrencesOfString:@"\n" withString:@" " options:0 range:NSMakeRange(0, s.length)];
+    
+    while ([s rangeOfString:@"  "].location != NSNotFound) {
+        [s replaceOccurrencesOfString:@"  " withString:@" " options:0 range:NSMakeRange(0, s.length)];
+    }
+    
+    while ([s rangeOfCharacterFromSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].location == 0) {
+        [s deleteCharactersInRange:NSMakeRange(0, 1)]; // trim leading whitespace
+    }
+
+    phrase = [self.mnemonic normalizePhrase:s];
+    
+    if (! [self.mnemonic phraseIsValid:phrase]) {
+        NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(),
+                                                                              (CFStringRef)phrase, CFSTR(" ")));
+        
+        for (NSString *word in a) { // add spaces between words for ideographic langauges
+            if (word.length < 1 || [word characterAtIndex:0] < 0x3000 || [self.mnemonic wordIsValid:word]) continue;
+            
+            for (NSUInteger i = 0; i < word.length; i++) {
+                for (NSUInteger j = (word.length - i > 8) ? 8 : word.length - i; j; j--) {
+                    NSString *w  = [word substringWithRange:NSMakeRange(i, j)];
+                    
+                    if (! [self.mnemonic wordIsValid:w]) continue;
+                    [s replaceOccurrencesOfString:w withString:[NSString stringWithFormat:IDEO_SP @"%@" IDEO_SP, w]
+                     options:0 range:NSMakeRange(0, s.length)];
+                    
+                    while ([s rangeOfString:IDEO_SP IDEO_SP].location != NSNotFound) {
+                        [s replaceOccurrencesOfString:IDEO_SP IDEO_SP withString:IDEO_SP options:0
+                         range:NSMakeRange(0, s.length)];
+                    }
+
+                    CFStringTrimWhitespace((CFMutableStringRef)s);
+                    i += j - 1;
+                    break;
+                }
+            }
+        }
+    }
+    
+    return s;
+}
+
 - (int64_t)amountForString:(NSString *)string
 {
     if (! string.length) return 0;
@@ -1112,10 +1176,10 @@ replacementString:(NSString *)string
 {
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
         if ([textView.text rangeOfString:@"\n"].location != NSNotFound) {
-            NSString *phrase = [self.mnemonic normalizePhrase:textView.text];
+            textView.text = [self cleanupPhrase:textView.text];
             
-            if (! [[self.sequence masterPublicKeyFromSeed:[self.mnemonic deriveKeyFromPhrase:phrase
-                                                           withPassphrase:nil]] isEqual:self.masterPublicKey]) {
+            if (! [[self.sequence masterPublicKeyFromSeed:[self.mnemonic deriveKeyFromPhrase:[self.mnemonic
+                   normalizePhrase:textView.text] withPassphrase:nil]] isEqual:self.masterPublicKey]) {
                 self.alertView.title = NSLocalizedString(@"recovery phrase doesn't match", nil);
                 [self.alertView performSelector:@selector(setTitle:)
                  withObject:NSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];

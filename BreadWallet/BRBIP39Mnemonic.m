@@ -32,14 +32,45 @@
 // BIP39 is method for generating a deterministic wallet seed from a mnemonic phrase
 // https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 
+@interface BRBIP39Mnemonic ()
+
+@property (nonatomic, strong) NSArray *words;
+@property (nonatomic, strong) NSSet *allWords;
+
+@end
+
 @implementation BRBIP39Mnemonic
+
+- (NSArray *)words
+{
+    if (! _words) {
+        _words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:WORDS ofType:@"plist"]];
+    }
+    
+    return _words;
+}
+
+- (NSSet *)allWords
+{
+    if (! _allWords) {
+        NSMutableSet *allWords = [NSMutableSet set];
+        
+        for (NSString *lang in [NSBundle mainBundle].localizations) {
+            [allWords addObjectsFromArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
+             pathForResource:WORDS ofType:@"plist" inDirectory:nil forLocalization:lang]]];
+        }
+
+        _allWords = allWords;
+    }
+    
+    return _allWords;
+}
 
 - (NSString *)encodePhrase:(NSData *)data
 {
     if (! data || (data.length % 4) != 0) return nil; // data length must be a multiple of 32 bits
 
-    NSArray *words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:WORDS ofType:@"plist"]];
-    uint32_t n = (uint32_t)words.count, x;
+    uint32_t n = (uint32_t)self.words.count, x;
     NSMutableArray *a =
         CFBridgingRelease(CFArrayCreateMutable(SecureAllocator(), data.length*3/4, &kCFTypeArrayCallBacks));
     NSMutableData *d = [NSMutableData secureDataWithData:data];
@@ -49,7 +80,7 @@
 
     for (int i = 0; i < data.length*3/4; i++) {
         x = CFSwapInt32BigToHost(*(const uint32_t *)((const uint8_t *)d.bytes + i*11/8));
-        [a addObject:words[(x >> (sizeof(x)*8 - (11 + ((i*11) % 8)))) % n]];
+        [a addObject:self.words[(x >> (sizeof(x)*8 - (11 + ((i*11) % 8)))) % n]];
     }
 
     memset(&x, 0, sizeof(x));
@@ -58,11 +89,10 @@
 
 - (NSData *)decodePhrase:(NSString *)phrase
 {
-    NSArray *words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:WORDS ofType:@"plist"]];
     NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(),
                                    (CFStringRef)[self normalizePhrase:phrase], CFSTR(" ")));
     NSMutableData *d = [NSMutableData secureDataWithCapacity:(a.count*11 + 7)/8];
-    uint32_t n = (uint32_t)words.count, x, y;
+    uint32_t n = (uint32_t)self.words.count, x, y;
     uint8_t b;
 
     if ((a.count % 3) != 0 || a.count > 24) {
@@ -71,8 +101,8 @@
     }
 
     for (int i = 0; i < (a.count*11 + 7)/8; i++) {
-        x = (uint32_t)[words indexOfObject:a[i*8/11]];
-        y = (i*8/11 + 1 < a.count) ? (uint32_t)[words indexOfObject:a[i*8/11 + 1]] : 0;
+        x = (uint32_t)[self.words indexOfObject:a[i*8/11]];
+        y = (i*8/11 + 1 < a.count) ? (uint32_t)[self.words indexOfObject:a[i*8/11 + 1]] : 0;
 
         if (x == (uint32_t)NSNotFound || y == (uint32_t)NSNotFound) {
             NSLog(@"phrase contained unknown word: %@", a[i*8/11 + (x == (uint32_t)NSNotFound ? 0 : 1)]);
@@ -95,6 +125,18 @@
     memset(&y, 0, sizeof(y));
     memset(&b, 0, sizeof(b));
     return d;
+}
+
+// true if word is a member of any known word list
+- (BOOL)wordIsValid:(NSString *)word
+{
+    return [self.allWords containsObject:word];
+}
+
+// true if word is a member of the word list for the current locale
+- (BOOL)wordIsLocal:(NSString *)word
+{
+    return [self.words containsObject:word];
 }
 
 - (BOOL)phraseIsValid:(NSString *)phrase

@@ -29,15 +29,11 @@
 #import "NSMutableData+Bitcoin.h"
 
 #define PHRASE_LENGTH 12
-#define WORDS         @"BIP39Words"
-#define IDEO_SP       @"\xE3\x80\x80" // ideographic space (utf-8)
 
 @interface BRRestoreViewController ()
 
 @property (nonatomic, strong) IBOutlet UITextView *textView;
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *textViewYBottom;
-@property (nonatomic, strong) NSArray *words;
-@property (nonatomic, strong) NSMutableSet *allWords;
 @property (nonatomic, strong) id keyboardObserver, resignActiveObserver;
 
 @end
@@ -48,14 +44,6 @@
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-
-    self.words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:WORDS ofType:@"plist"]];
-    self.allWords = [NSMutableSet set];
-    
-    for (NSString *lang in [NSBundle mainBundle].localizations) {
-        [self.allWords addObjectsFromArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
-         pathForResource:WORDS ofType:@"plist" inDirectory:nil forLocalization:lang]]];
-    }
     
     // TODO: create secure versions of keyboard and UILabel and use in place of UITextView
     // TODO: autocomplete based on 4 letter prefixes of mnemonic words
@@ -148,56 +136,21 @@
     });
 
     @autoreleasepool {  // @autoreleasepool ensures sensitive data will be dealocated immediately
-        BRWalletManager *m = [BRWalletManager sharedInstance];
-        NSMutableString *s = CFBridgingRelease(CFStringCreateMutableCopy(SecureAllocator(), 0,
-                                                                         (CFStringRef)textView.text));
-        BOOL done = ([s rangeOfString:@"\n"].location != NSNotFound) ? YES : NO;
+        if ([textView.text rangeOfString:@"\n"].location == NSNotFound) return; // not done entering phrase
     
-        while ([s rangeOfCharacterFromSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].location == 0) {
-            [s deleteCharactersInRange:NSMakeRange(0, 1)]; // trim leading whitespace
-        }
-        
-        while ([s rangeOfCharacterFromSet:invalid].location != NSNotFound) {
-            [s deleteCharactersInRange:[s rangeOfCharacterFromSet:invalid]]; // remove invalid chars
-        }
-        
-        [s replaceOccurrencesOfString:@"\n" withString:@" " options:0 range:NSMakeRange(0, s.length)];
-        
-        if (! [s isEqual:textView.text]) textView.text = s;
-        if (! done) return; // not done entering phrase
-
+        BRWalletManager *m = [BRWalletManager sharedInstance];
+        NSString *phrase = [m cleanupPhrase:textView.text], *incorrect = nil;
         BOOL isLocal = YES;
-        NSString *phrase = [m.mnemonic normalizePhrase:s], *incorrect = nil;
+        
+        if (! [phrase isEqual:textView.text]) textView.text = phrase;
+        phrase = [m.mnemonic normalizePhrase:phrase];
+        
         NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)phrase,
                                                                               CFSTR(" ")));
 
-        for (NSString *word in a) { // add spaces between words for ideographic langauges
-            if (word.length < 1 || [word characterAtIndex:0] < 0x3000 || [self.allWords containsObject:word]) continue;
-            
-            for (NSUInteger i = 0; i < word.length; i++) {
-                for (NSUInteger j = (word.length - i > 8) ? 8 : word.length - i; j; j--) {
-                    NSString *w  = [word substringWithRange:NSMakeRange(i, j)];
-
-                    if (! [self.allWords containsObject:w]) continue;
-                    [s replaceOccurrencesOfString:w withString:[NSString stringWithFormat:IDEO_SP @"%@" IDEO_SP, w]
-                     options:0 range:NSMakeRange(0, s.length)];
-                    while ([s replaceOccurrencesOfString:IDEO_SP IDEO_SP withString:IDEO_SP options:0
-                            range:NSMakeRange(0, s.length)] > 0);
-                    CFStringTrimWhitespace((CFMutableStringRef)s);
-                    i += j - 1;
-                    break;
-                }
-            }
-        }
-
-        if (! [s isEqual:textView.text]) textView.text = s;
-        phrase = [m.mnemonic normalizePhrase:s];
-        a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)phrase,
-                                                                     CFSTR(" ")));
-        
         for (NSString *word in a) {
-            if (! [self.words containsObject:word]) isLocal = NO;
-            if ([self.allWords containsObject:word]) continue;
+            if (! [m.mnemonic wordIsLocal:word]) isLocal = NO;
+            if ([m.mnemonic wordIsValid:word]) continue;
             incorrect = word;
             break;
         }

@@ -80,6 +80,7 @@ completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError
 - (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
 completion:(void (^)(BRTransaction *tx, uint64_t fee, NSError *error))completion;
 
+- (NSString *)cleanupPhrase:(NSString *)phrase; // cleans up seed phrase input from a user, suitable for display/editing
 - (int64_t)amountForString:(NSString *)string;
 - (NSString *)stringForAmount:(int64_t)amount;
 - (int64_t)amountForLocalCurrencyString:(NSString *)string;

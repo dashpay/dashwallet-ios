@@ -35,6 +35,8 @@
 
 - (NSString *)encodePhrase:(NSData *)data;
 - (NSData *)decodePhrase:(NSString *)phrase;
+- (BOOL)wordIsValid:(NSString *)word; // true if word is a member of any known word list
+- (BOOL)wordIsLocal:(NSString *)word; // true if word is a member of the word list for the current locale
 - (BOOL)phraseIsValid:(NSString *)phrase;
 - (NSString *)normalizePhrase:(NSString *)phrase;
 - (NSData *)deriveKeyFromPhrase:(NSString *)phrase withPassphrase:(NSString *)passphrase;
