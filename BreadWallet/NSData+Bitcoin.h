@@ -94,14 +94,14 @@ typedef union _UInt128 {
 #define OP_HASH160     0xa9
 #define OP_CHECKSIG    0xac
 
-void SHA1(const void *data, size_t len, void *md);
-void SHA256(const void *data, size_t len, void *md);
-void SHA512(const void *data, size_t len, void *md);
-void RMD160(const void *data, size_t len, void *md);
-void HMAC(void (*hash)(const void *, size_t, void *), int hlen, const void *key, size_t klen,
-          const void *data, size_t dlen, void *md);
-void PBKDF2(void (*hash)(const void *, size_t, void *), int hlen, const void *pw, size_t pwlen,
-            const void *salt, size_t slen, unsigned rounds, void *dk, size_t dklen);
+void SHA1(void *md, const void *data, size_t len);
+void SHA256(void *md, const void *data, size_t len);
+void SHA512(void *md, const void *data, size_t len);
+void RMD160(void *md, const void *data, size_t len);
+void HMAC(void *md, void (*hash)(void *, const void *, size_t), size_t hlen, const void *key, size_t klen,
+          const void *data, size_t dlen);
+void PBKDF2(void *dk, size_t dklen, void (*hash)(void *, const void *, size_t), size_t hlen,
+            const void *pw, size_t pwlen, const void *salt, size_t slen, unsigned rounds);
 
 @interface NSData (Bitcoin)
 

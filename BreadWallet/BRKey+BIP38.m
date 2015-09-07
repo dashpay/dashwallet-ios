@@ -197,7 +197,7 @@ static void scrypt(const void *pw, size_t pwlen, const void *salt, size_t slen, 
     unsigned long long x[16*r], y[16*r], z[8], *v = malloc(128*r*n), m;
     unsigned b[32*r*p];
 
-    PBKDF2(SHA256, 32, pw, pwlen, salt, slen, 1, b, sizeof(b));
+    PBKDF2(b, sizeof(b), SHA256, 32, pw, pwlen, salt, slen, 1);
 
     for (int i = 0; i < p; i++) {
         for (int j = 0; j < 32*r; j++) {
@@ -225,7 +225,7 @@ static void scrypt(const void *pw, size_t pwlen, const void *salt, size_t slen, 
         }
     }
 
-    PBKDF2(SHA256, 32, pw, pwlen, b, sizeof(b), 1, dk, dklen);
+    PBKDF2(dk, dklen, SHA256, 32, pw, pwlen, b, sizeof(b), 1);
 
     memset(b, 0, sizeof(b));
     memset(x, 0, sizeof(x));
