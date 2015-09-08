@@ -106,7 +106,7 @@ CFAllocatorRef SecureAllocator()
 
 + (NSMutableData *)secureDataWithData:(NSData *)data
 {
-    return CFBridgingRelease(CFDataCreateMutableCopy(SecureAllocator(), 0, (__bridge CFDataRef)data));
+    return CFBridgingRelease(CFDataCreateMutableCopy(SecureAllocator(), 0, (CFDataRef)data));
 }
 
 + (size_t)sizeOfVarInt:(uint64_t)i

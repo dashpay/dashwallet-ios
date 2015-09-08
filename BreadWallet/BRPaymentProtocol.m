@@ -389,16 +389,16 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
         SecTrustResultType trustResult = kSecTrustResultInvalid;
 
         for (NSData *d in self.certs) {
-            SecCertificateRef cert = SecCertificateCreateWithData(NULL, (__bridge CFDataRef)d);
+            SecCertificateRef cert = SecCertificateCreateWithData(NULL, (CFDataRef)d);
             
             if (cert) [certs addObject:CFBridgingRelease(cert)];
         }
 
         if (certs.count > 0) {
-            _commonName = CFBridgingRelease(SecCertificateCopySubjectSummary((__bridge SecCertificateRef)certs[0]));
+            _commonName = CFBridgingRelease(SecCertificateCopySubjectSummary((SecCertificateRef)certs[0]));
         }
 
-        SecTrustCreateWithCertificates((__bridge CFArrayRef)certs, (__bridge CFArrayRef)policies, &trust);
+        SecTrustCreateWithCertificates((CFArrayRef)certs, (CFArrayRef)policies, &trust);
         SecTrustEvaluate(trust, &trustResult); // verify certificate chain
 
         // kSecTrustResultUnspecified indicates a positive result that wasn't decided by the user
@@ -407,7 +407,7 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
                             NSLocalizedString(@"missing certificate", nil);
 
             for (NSDictionary *property in CFBridgingRelease(SecTrustCopyProperties(trust))) {
-                if (! [property[@"type"] isEqual:(__bridge id)kSecPropertyTypeError]) continue;
+                if (! [property[@"type"] isEqual:(id)kSecPropertyTypeError]) continue;
                 _errorMessage = [_errorMessage stringByAppendingFormat:@" - %@", property[@"value"]];
                 break;
             }
