@@ -28,6 +28,9 @@
 // persists an event to storage to later be sent to the server in a batch
 - (void)saveEvent:(NSString *)eventName;
 
+// same as saveEvent but allows you to save some arbitrary key->value data (must be string->string)
+- (void)saveEvent:(NSString *)eventName withAttributes:(NSDictionary *)attributes;
+
 // returns whether or not this instance of BREventManager has been selected to be in a sample group
 - (BOOL)isInSampleGroup;
 
