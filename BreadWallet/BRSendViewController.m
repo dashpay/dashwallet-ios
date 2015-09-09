@@ -457,7 +457,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     BOOL didAuth = manager.didAuthenticate;
 
-    if (! tx) {
+    if (! tx) { // tx is nil if there were insufficient wallet funds
         if (! manager.didAuthenticate) [manager seedWithPrompt:prompt forAmount:amount];
         
         if (manager.didAuthenticate) {
