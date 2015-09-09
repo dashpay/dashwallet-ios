@@ -34,6 +34,7 @@
 #import "BRWalletManager.h"
 #import "BRPaymentRequest.h"
 #import "UIImage+Utils.h"
+#import "BREventManager.h"
 #import "Reachability.h"
 #import <LocalAuthentication/LocalAuthentication.h>
 #import <sys/stat.h>
@@ -403,6 +404,11 @@
     }
 
     if ([UIApplication sharedApplication].protectedDataAvailable) [self protectedViewDidAppear:animated];
+    
+    // XXX:
+    [[BREventManager sharedEventManager] acquireUserPermissionInViewController:self.navigationController withCallback:^(BOOL didGetPermission) {
+        // nil
+    }];
 
     [super viewDidAppear:animated];
 }

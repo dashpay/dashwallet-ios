@@ -8,6 +8,8 @@
 
 #import "BREventManager.h"
 #import "BRPeerManager.h"
+#import "BREventConfirmView.h"
+#import "UIImage+Utils.h"
 
 
 @interface BREventManager ()
@@ -113,7 +115,23 @@
 - (void)acquireUserPermissionInViewController:(UIViewController *)viewController
                                  withCallback:(void (^)(BOOL))completionCallback
 {
-    // do stuff
+    UIGraphicsBeginImageContext(viewController.view.bounds.size);
+    [viewController.view drawViewHierarchyInRect:viewController.view.bounds afterScreenUpdates:NO];
+    UIImage *bgImg = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    UIImage *blurredBgImg = [bgImg blurWithRadius:1.5];
+    
+    BREventConfirmView *eventConfirmView = [[[NSBundle mainBundle]
+                                             loadNibNamed:@"BREventConfirmView" owner:nil options:nil] objectAtIndex:0];
+    eventConfirmView.image = blurredBgImg;
+    eventConfirmView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    eventConfirmView.frame = viewController.view.bounds;
+    eventConfirmView.alpha = 0;
+    [viewController.view addSubview:eventConfirmView];
+    
+    [UIView animateWithDuration:.5 animations:^{
+        eventConfirmView.alpha = 1;
+    }];
 }
 
 # pragma mark -
