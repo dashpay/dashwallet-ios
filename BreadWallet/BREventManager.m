@@ -20,6 +20,9 @@
 
 @property NSMutableArray *_buffer;
 
+- (BOOL)shouldAskForPermission;
+- (BOOL)hasAskedForPermission;
+
 @end
 
 #define HAS_DETERMINED_SAMPLE_GROUP @"has_determined_sample_group"
@@ -112,16 +115,33 @@
     return [[NSUserDefaults standardUserDefaults] boolForKey:HAS_ACQUIRED_PERMISSION];
 }
 
+- (BOOL)hasAskedForPermission
+{
+    return [[NSUserDefaults standardUserDefaults] boolForKey:HAS_PROMPTED_FOR_PERMISSION];
+}
+
+- (BOOL)shouldAskForPermission
+{
+    NSLog(@"---Sampling Metadata---)");
+    NSLog(@"User is in sample group: %d", [self isInSampleGroup]);
+    NSLog(@"User is been asked for permission: %d", [self hasAskedForPermission]);
+    NSLog(@"User has approved event collection: %d", [self hasAcquiredPermission]);
+    return [self isInSampleGroup] && ![self hasAskedForPermission];
+}
+
 - (void)acquireUserPermissionInViewController:(UIViewController *)viewController
                                  withCallback:(void (^)(BOOL))completionCallback
 {
+    if (![self shouldAskForPermission]) {
+        return; // no need to run if the user isn't in sample group or has already been asked for permission
+    }
     UIGraphicsBeginImageContext(viewController.view.bounds.size);
     [viewController.view drawViewHierarchyInRect:viewController.view.bounds afterScreenUpdates:NO];
     UIImage *bgImg = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     UIImage *blurredBgImg = [bgImg blurWithRadius:1.5];
     
-    BREventConfirmView *eventConfirmView = [[[NSBundle mainBundle]
+    __weak BREventConfirmView *eventConfirmView = [[[NSBundle mainBundle]
                                              loadNibNamed:@"BREventConfirmView" owner:nil options:nil] objectAtIndex:0];
     eventConfirmView.image = blurredBgImg;
     eventConfirmView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
@@ -132,6 +152,20 @@
     [UIView animateWithDuration:.5 animations:^{
         eventConfirmView.alpha = 1;
     }];
+    
+    eventConfirmView.completionHandler = ^(BOOL didApprove) {
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:HAS_PROMPTED_FOR_PERMISSION];
+        [[NSUserDefaults standardUserDefaults] setBool:didApprove forKey:HAS_ACQUIRED_PERMISSION];
+        if (didApprove) {
+            [self saveEvent:@"did_approve_data_collection"];
+        }
+        
+        [UIView animateWithDuration:.5 animations:^{
+            eventConfirmView.alpha = 0;
+        } completion:^(BOOL finished) {
+            [eventConfirmView removeFromSuperview];
+        }];
+    };
 }
 
 # pragma mark -

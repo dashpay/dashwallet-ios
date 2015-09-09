@@ -406,9 +406,12 @@
     if ([UIApplication sharedApplication].protectedDataAvailable) [self protectedViewDidAppear:animated];
     
     // XXX:
-    [[BREventManager sharedEventManager] acquireUserPermissionInViewController:self.navigationController withCallback:^(BOOL didGetPermission) {
-        // nil
-    }];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [[BREventManager sharedEventManager]
+         acquireUserPermissionInViewController:self.navigationController withCallback:^(BOOL didGetPermission) {
+             // nil
+         }];
+    });
 
     [super viewDidAppear:animated];
 }

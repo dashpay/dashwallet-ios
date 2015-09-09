@@ -8,14 +8,27 @@
 
 #import "BREventConfirmView.h"
 
+@interface BREventConfirmView ()
+
+- (IBAction)confirm:(id)sender;
+- (IBAction)deny:(id)sender;
+
+@end
+
 @implementation BREventConfirmView
 
-/*
-// Only override drawRect: if you perform custom drawing.
-// An empty implementation adversely affects performance during animation.
-- (void)drawRect:(CGRect)rect {
-    // Drawing code
+- (void)confirm:(id)sender
+{
+    if (self.completionHandler) {
+        self.completionHandler(YES);
+    }
 }
-*/
+
+- (void)deny:(id)sender
+{
+    if (self.completionHandler) {
+        self.completionHandler(NO);
+    }
+}
 
 @end

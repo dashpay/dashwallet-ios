@@ -10,4 +10,6 @@
 
 @interface BREventConfirmView : UIImageView
 
+@property (nonatomic, copy) void(^completionHandler)(BOOL);
+
 @end
