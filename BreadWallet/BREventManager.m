@@ -16,8 +16,8 @@
 #define IS_IN_SAMPLE_GROUP              @"is_in_sample_group"
 #define HAS_PROMPTED_FOR_PERMISSION     @"has_prompted_for_permission"
 #define HAS_ACQUIRED_PERMISSION         @"has_acquired_permission"
-#define EVENT_SERVER_URL                [NSURL URLWithString:@"https://breadcrumbs7000.herokuapp.com/events"]
-//#define EVENT_SERVER_URL [NSURL URLWithString:@"http://127.0.0.1:5005/events"]
+//#define EVENT_SERVER_URL                [NSURL URLWithString:@"https://breadcrumbs7000.herokuapp.com/events"]
+#define EVENT_SERVER_URL [NSURL URLWithString:@"http://127.0.0.1:5005/events"]
 #define SAMPLE_CHANCE                   10
 
 
@@ -35,8 +35,11 @@
 - (BOOL)shouldRecordData;
 
 - (void)_pushEventNamed:(NSString *)evtName withAttributes:(NSDictionary *)attrs;
+- (NSDictionary *)_eventTupleArrayToDictionary:(NSArray *)eventTuples;
+- (NSString *)_unsentDataDirectory;
 - (void)_persistToDisk;
 - (void)_sendToServer;
+- (void)_removeData;
 
 @end
 
@@ -213,6 +216,8 @@
 {
     if ([self shouldRecordData]) {
         [self _sendToServer];
+    } else {
+        [self _removeData]; // if we aren't syncing data with the server just remove all files
     }
 }
 
@@ -371,5 +376,27 @@
     }];
 }
 
+- (void)_removeData
+{
+    [self.myQueue addOperationWithBlock:^{
+        // send any persisted data to the server
+        NSError *error = nil;
+        NSArray *files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[self _unsentDataDirectory]
+                                                                             error:&error];
+        if (error != nil) {
+            NSLog(@"Unable to read contents of event data directory: %@", error);
+            return; // bail here as this is likely unrecoverable
+        }
+        
+        [files enumerateObjectsUsingBlock:^(id baseName, NSUInteger idx, BOOL *stop) {
+            NSString *fileName = [[self _unsentDataDirectory] stringByAppendingPathComponent:
+                                  [NSString stringWithFormat:@"/%@", baseName]];
+            NSError *removeErr = nil;
+            if (![[NSFileManager defaultManager] removeItemAtPath:fileName error:&removeErr]) {
+                NSLog(@"Unable to remove events file at path %@: %@", fileName, removeErr);
+            }
+        }];
+    }];
+}
 
 @end
