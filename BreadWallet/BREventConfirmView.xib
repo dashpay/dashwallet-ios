@@ -39,7 +39,7 @@
                                 </label>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="10" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kqc-0F-49V">
                                     <rect key="frame" x="15" y="110" width="570" height="102"/>
-                                    <string key="text">We would like to record some information about your usage of breadwallet.
+                                    <string key="text">We would like to collect some information about your usage of breadwallet.
 
 This information is completely anonymomized and includes absolutely no financial information.</string>
                                     <fontDescription key="fontDescription" type="system" weight="light" pointSize="16"/>
@@ -52,12 +52,18 @@ This information is completely anonymomized and includes absolutely no financial
                                         <color key="titleColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                         <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                     </state>
+                                    <connections>
+                                        <action selector="deny:" destination="iN0-l3-epB" eventType="touchUpInside" id="hbh-04-4pw"/>
+                                    </connections>
                                 </button>
                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fzO-vI-zum">
                                     <rect key="frame" x="300" y="222" width="285" height="30"/>
                                     <state key="normal" title="Ok Great!">
                                         <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                     </state>
+                                    <connections>
+                                        <action selector="confirm:" destination="iN0-l3-epB" eventType="touchUpInside" id="cU5-cx-fjC"/>
+                                    </connections>
                                 </button>
                             </subviews>
                             <constraints>
@@ -182,6 +188,10 @@ This information is completely anonymomized and includes absolutely no financial
                     <include reference="khJ-BZ-6Oy"/>
                 </mask>
             </variation>
+            <connections>
+                <outlet property="nahBtn" destination="Tw0-s4-w0k" id="RsA-7A-3OT"/>
+                <outlet property="okBtn" destination="fzO-vI-zum" id="Oju-fs-xzg"/>
+            </connections>
             <point key="canvasLocation" x="968" y="608"/>
         </view>
     </objects>

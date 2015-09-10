@@ -17,6 +17,10 @@
 // convenience method for [[BREventManager sharedEventManager] saveEvent:(NSString*)]
 + (void)saveEvent:(NSString *)eventName;
 
+// convenience method for
+// [[BReventManager sharedEventManager] saveEvent:(NSString *) withAttributes:(NSDictionary *)attributes
++ (void)saveEvent:(NSString *)eventName withAttributes:(NSDictionary *)attributes;
+
 // starts the event manager and begins listening to app lifecycle events if the user has both:
 //   1: is in the sample group
 //   2: has agreed to be in the sample group
