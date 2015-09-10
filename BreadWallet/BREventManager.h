@@ -29,6 +29,9 @@
 // quits the event manager, unhooking from all app lifecycle events
 - (void)down;
 
+// begins a sync of event data to the server
+- (void)sync;
+
 // persists an event to storage to later be sent to the server in a batch
 - (void)saveEvent:(NSString *)eventName;
 

@@ -25,6 +25,7 @@
 @property NSString *sessionId;
 @property NSOperationQueue *myQueue;
 @property NSDictionary *eventToNotifications;
+@property BOOL isConnected;
 
 @property NSMutableArray *_buffer;
 
@@ -50,8 +51,10 @@
         self.myQueue = [[NSOperationQueue alloc] init];
         self.eventToNotifications = @{@"foreground": UIApplicationDidBecomeActiveNotification,
                                       @"background": UIApplicationDidEnterBackgroundNotification,
+                                      @"sync_started": BRPeerManagerSyncStartedNotification,
                                       @"sync_finished": BRPeerManagerSyncFinishedNotification,
                                       @"sync_failed": BRPeerManagerSyncFailedNotification};
+        self.isConnected = NO;
         self._buffer = [NSMutableArray array];
     }
     return self;
@@ -67,7 +70,9 @@
         // exactly once per startup
         NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
         if (![defs boolForKey:HAS_DETERMINED_SAMPLE_GROUP]) {
-            bool isInSample = (arc4random_uniform(100)+1) < SAMPLE_CHANCE;
+            u_int32_t chosenNumber = arc4random_uniform(100)+1;
+            NSLog(@"BREventManager chosen number %d < %d", chosenNumber, SAMPLE_CHANCE);
+            bool isInSample = chosenNumber < SAMPLE_CHANCE;
             [defs setBool:isInSample forKey:IS_IN_SAMPLE_GROUP];
             [defs setBool:YES forKey:HAS_DETERMINED_SAMPLE_GROUP];
         }
@@ -91,18 +96,29 @@
 
 - (void)up
 {
+    if (self.isConnected) {
+        return;
+    }
     // map NSNotifications to events
     [self.eventToNotifications enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         [[NSNotificationCenter defaultCenter]
          addObserverForName:obj object:nil queue:self.myQueue
          usingBlock:^(NSNotification *note) {
              [self saveEvent:key];
+             NSLog(@"BREventManager received notification %@", note.name);
+             if ([note.name isEqualToString:UIApplicationDidEnterBackgroundNotification]) {
+                 [self _persistToDisk];
+             }
          }];
     }];
+    self.isConnected = YES;
 }
 
 - (void)down
 {
+    if (!self.isConnected) {
+        return;
+    }
     // remove listeners for NSNotifications
     [self.eventToNotifications.allValues enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         [[NSNotificationCenter defaultCenter] removeObserver:self name:obj object:nil];
@@ -154,12 +170,15 @@
     if (![self shouldAskForPermission]) {
         return; // no need to run if the user isn't in sample group or has already been asked for permission
     }
+    
+    // grab a blurred image for the background
     UIGraphicsBeginImageContext(viewController.view.bounds.size);
     [viewController.view drawViewHierarchyInRect:viewController.view.bounds afterScreenUpdates:NO];
     UIImage *bgImg = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     UIImage *blurredBgImg = [bgImg blurWithRadius:1.5];
     
+    // display the popup
     __weak BREventConfirmView *eventConfirmView = [[[NSBundle mainBundle]
                                              loadNibNamed:@"BREventConfirmView" owner:nil options:nil] objectAtIndex:0];
     eventConfirmView.image = blurredBgImg;
@@ -175,6 +194,7 @@
     eventConfirmView.completionHandler = ^(BOOL didApprove) {
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:HAS_PROMPTED_FOR_PERMISSION];
         [[NSUserDefaults standardUserDefaults] setBool:didApprove forKey:HAS_ACQUIRED_PERMISSION];
+        
         if (didApprove) {
             [self saveEvent:@"did_approve_data_collection"];
         }
@@ -187,14 +207,17 @@
     };
 }
 
+- (void)sync
+{
+    if ([self shouldRecordData]) {
+        [self _sendToServer];
+    }
+}
+
 # pragma mark -
 
 - (void)_pushEventNamed:(NSString *)evtName withAttributes:(NSDictionary *)attrs
 {
-    if (![self shouldRecordData]) {
-        return;
-    }
-    
     [self.myQueue addOperationWithBlock:^{
 #if BITCOIN_TESTNET
         // notify when in test mode
@@ -214,7 +237,7 @@
         NSArray *tuple = @[self.sessionId, [NSNumber numberWithDouble:[NSDate timeIntervalSinceReferenceDate]*1000],
                            evtName, attrs];
         [self._buffer addObject:tuple];
-        NSLog(@"Saved event %@ with attributes %@", evtName, attrs);
+        NSLog(@"BREventManager Saved event %@ with attributes %@", evtName, attrs);
     }];
 }
 
@@ -316,22 +339,30 @@
                 req.HTTPBody = body;
                 [req setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
                 
-                [NSURLConnection
-                 sendAsynchronousRequest:req queue:self.myQueue
-                 completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-                     // 4. remove the file from disk since we no longer need it
-                     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-                     if (httpResponse.statusCode != 201) { // we should expect to receive a 201
-                         NSLog(@"Error uploading event data to server: STATUS=%ld, connErr=%@",
-                               httpResponse.statusCode, connectionError);
-                     } else {
-                         NSLog(@"Successfully sent event data to server %@ => %ld", fileName, httpResponse.statusCode);
-                     }
-                     NSError *removeErr = nil;
-                     if (![[NSFileManager defaultManager] removeItemAtPath:fileName error:&removeErr]) {
-                         NSLog(@"Unable to remove events file at path %@: %@", fileName, removeErr);
-                     }
-                 }];
+                NSURLSessionConfiguration *seshConf = [NSURLSessionConfiguration defaultSessionConfiguration];
+                NSURLSession *urlSesh = [NSURLSession sessionWithConfiguration:seshConf];
+                NSURLSessionUploadTask *uploadTask =
+                    [urlSesh uploadTaskWithRequest:req fromData:body completionHandler:
+                     ^(NSData *data, NSURLResponse *response, NSError *connectionError) {
+                         
+                         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+                         if (httpResponse.statusCode != 201) { // we should expect to receive a 201
+                             NSLog(@"Error uploading event data to server: STATUS=%ld, connErr=%@",
+                                   httpResponse.statusCode, connectionError);
+                         } else {
+                             NSLog(@"Successfully sent event data to server %@ => %ld",
+                                   fileName, httpResponse.statusCode);
+                         }
+                         
+                         // 4. remove the file from disk since we no longer need it
+                         [self.myQueue addOperationWithBlock:^{
+                             NSError *removeErr = nil;
+                             if (![[NSFileManager defaultManager] removeItemAtPath:fileName error:&removeErr]) {
+                                 NSLog(@"Unable to remove events file at path %@: %@", fileName, removeErr);
+                             }
+                         }];
+                     }];
+                [uploadTask resume];
             }];
         }];
     }];

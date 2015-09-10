@@ -26,6 +26,7 @@
 #import "BRAppDelegate.h"
 #import "BRPeerManager.h"
 #import "BRWalletManager.h"
+#import "BREventManager.h"
 
 #if BITCOIN_TESTNET
 #pragma message "testnet build"
@@ -59,6 +60,9 @@
              userInfo:@{@"file":file}];
         }
     }
+    
+    // start the event manager
+    [[BREventManager sharedEventManager] up];
     
     //TODO: bitcoin protocol/payment protocol over multipeer connectivity
 
@@ -170,6 +174,16 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     
     NSLog(@"background fetch starting");
     [[BRPeerManager sharedInstance] connect];
+    
+    // sync events to the server
+    [[BREventManager sharedEventManager] sync];
+}
+
+- (void)application:(UIApplication *)application
+handleEventsForBackgroundURLSession:(NSString *)identifier
+  completionHandler:(void (^)())completionHandler
+{
+    NSLog(@"Handle events for background url session; identifier=%@", identifier);
 }
 
 @end
