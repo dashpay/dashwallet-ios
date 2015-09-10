@@ -17,6 +17,7 @@
 #define HAS_PROMPTED_FOR_PERMISSION     @"has_prompted_for_permission"
 #define HAS_ACQUIRED_PERMISSION         @"has_acquired_permission"
 #define EVENT_SERVER_URL                [NSURL URLWithString:@"https://breadcrumbs7000.herokuapp.com/events"]
+//#define EVENT_SERVER_URL [NSURL URLWithString:@"http://127.0.0.1:5005/events"]
 #define SAMPLE_CHANCE                   10
 
 
@@ -108,6 +109,7 @@
              NSLog(@"BREventManager received notification %@", note.name);
              if ([note.name isEqualToString:UIApplicationDidEnterBackgroundNotification]) {
                  [self _persistToDisk];
+                 [self _sendToServer];
              }
          }];
     }];
@@ -234,8 +236,8 @@
         }];
         
         // we push a 4-tuple into the buffer consisting of (current_time, event_name, event_attributes)
-        NSArray *tuple = @[self.sessionId, [NSNumber numberWithDouble:[NSDate timeIntervalSinceReferenceDate]*1000],
-                           evtName, attrs];
+        long long currentTimeMillis = (long long)([[NSDate date] timeIntervalSince1970] * 1000.0);
+        NSArray *tuple = @[self.sessionId, [NSNumber numberWithLongLong:currentTimeMillis], evtName, attrs];
         [self._buffer addObject:tuple];
         NSLog(@"BREventManager Saved event %@ with attributes %@", evtName, attrs);
     }];
@@ -250,7 +252,7 @@
 
 - (NSDictionary *)_eventTupleArrayToDictionary:(NSArray *)eventTuples
 {
-    NSString *ver = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
+    NSString *ver = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
     NSMutableArray *evts = [NSMutableArray array];
     NSDictionary *retDict = @{@"deviceType": @(0),
                               @"appVersion": ver,
@@ -311,16 +313,18 @@
             return; // bail here as this is likely unrecoverable
         }
         
-        [files enumerateObjectsUsingBlock:^(id fileName, NSUInteger idx, BOOL *stop) {
+        [files enumerateObjectsUsingBlock:^(id baseName, NSUInteger idx, BOOL *stop) {
             // perform upload
             [self.myQueue addOperationWithBlock:^{
                 // 1: read the json in
                 NSError *readError = nil;
+                NSString *fileName = [[self _unsentDataDirectory] stringByAppendingPathComponent:
+                                      [NSString stringWithFormat:@"/%@", baseName]];
                 NSInputStream *ins = [[NSInputStream alloc] initWithFileAtPath:fileName];
                 [ins open];
                 NSArray *inArray = [NSJSONSerialization JSONObjectWithStream:ins options:0 error:&readError];
                 if (readError != nil) {
-                    NSLog(@"Unable to read json event file: %@", readError);
+                    NSLog(@"Unable to read json event file %@: %@", fileName, readError);
                     return; // bail out here as we likely cant recover from this error
                 }
                 
@@ -336,7 +340,6 @@
                 // 3. send off the request and await response
                 NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:EVENT_SERVER_URL];
                 req.HTTPMethod = @"POST";
-                req.HTTPBody = body;
                 [req setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
                 
                 NSURLSessionConfiguration *seshConf = [NSURLSessionConfiguration defaultSessionConfiguration];
@@ -344,14 +347,14 @@
                 NSURLSessionUploadTask *uploadTask =
                     [urlSesh uploadTaskWithRequest:req fromData:body completionHandler:
                      ^(NSData *data, NSURLResponse *response, NSError *connectionError) {
-                         
+                         NSString *dataStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
                          NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
                          if (httpResponse.statusCode != 201) { // we should expect to receive a 201
-                             NSLog(@"Error uploading event data to server: STATUS=%ld, connErr=%@",
-                                   httpResponse.statusCode, connectionError);
+                             NSLog(@"Error uploading event data to server: STATUS=%ld, connErr=%@ data=%@",
+                                   httpResponse.statusCode, connectionError, dataStr);
                          } else {
-                             NSLog(@"Successfully sent event data to server %@ => %ld",
-                                   fileName, httpResponse.statusCode);
+                             NSLog(@"Successfully sent event data to server %@ => %ld data=%@",
+                                   fileName, httpResponse.statusCode, dataStr);
                          }
                          
                          // 4. remove the file from disk since we no longer need it
