@@ -31,7 +31,7 @@
 // BIP38 is a method for encrypting private keys with a passphrase
 // https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki
 
-const unsigned char sbox[256] = {
+const uint8_t sbox[256] = {
     0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
     0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
     0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15,
@@ -50,7 +50,7 @@ const unsigned char sbox[256] = {
     0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16
 };
 
-const unsigned char sboxi[256] = {
+const uint8_t sboxi[256] = {
     0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb,
     0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87, 0x34, 0x8e, 0x43, 0x44, 0xc4, 0xde, 0xe9, 0xcb,
     0x54, 0x7b, 0x94, 0x32, 0xa6, 0xc2, 0x23, 0x3d, 0xee, 0x4c, 0x95, 0x0b, 0x42, 0xfa, 0xc3, 0x4e,
@@ -73,12 +73,13 @@ const unsigned char sboxi[256] = {
 
 static void AES256ECBEncrypt(const void *key, void *buf)
 {
-    unsigned char *x = buf, k[32], r = 1, a, b, c, d, e, i, j;
+    size_t i, j;
+    uint8_t *x = buf, k[32], r = 1, a, b, c, d, e;
     
     memcpy(k, key, sizeof(k));
 
     for (i = 0; i < 14; i++) {
-        for (j = 0; j < 4; j++) ((unsigned *)x)[j] ^= ((unsigned *)k)[j + (i & 1)*4]; // add round key
+        for (j = 0; j < 4; j++) ((uint32_t *)x)[j] ^= ((uint32_t *)k)[j + (i & 1)*4]; // add round key
 
         for (j = 0; j < 16; j++) x[j] = sbox[x[j]]; // sub bytes
         
@@ -99,12 +100,13 @@ static void AES256ECBEncrypt(const void *key, void *buf)
         }
     }
     
-    for (i = 0; i < 4; i++) ((unsigned *)x)[i] ^= ((unsigned *)k)[i]; // final add round key
+    for (i = 0; i < 4; i++) ((uint32_t *)x)[i] ^= ((uint32_t *)k)[i]; // final add round key
 }
 
 static void AES256ECBDecrypt(const void *key, void *buf)
 {
-    unsigned char *x = buf, k[32], r = 1, a, b, c, d, e, f, g, h, i, j;
+    size_t i, j;
+    uint8_t *x = buf, k[32], r = 1, a, b, c, d, e, f, g, h;
     
     memcpy(k, key, sizeof(k));
 
@@ -116,7 +118,7 @@ static void AES256ECBDecrypt(const void *key, void *buf)
     }
     
     for (i = 0; i < 14; i++) {
-        for (j = 0; j < 4; j++) ((unsigned *)x)[j] ^= ((unsigned *)k)[j + (i & 1)*4]; // add round key
+        for (j = 0; j < 4; j++) ((uint32_t *)x)[j] ^= ((uint32_t *)k)[j + (i & 1)*4]; // add round key
 
         for (j = 0; i > 0 && j < 16; j += 4) { // unmix columns
             a = x[j], b = x[j+1], c = x[j+2], d = x[j+3], e = a ^ b ^ c ^ d;
@@ -139,7 +141,7 @@ static void AES256ECBDecrypt(const void *key, void *buf)
         }
     }
     
-    for (i = 0; i < 4; i++) ((unsigned *)x)[i] ^= ((unsigned *)k)[i]; // final add round key
+    for (i = 0; i < 4; i++) ((uint32_t *)x)[i] ^= ((uint32_t *)k)[i]; // final add round key
 }
 
 #define BIP38_SCRYPT_N    16384
@@ -153,9 +155,9 @@ static void AES256ECBDecrypt(const void *key, void *buf)
 #define rotl(a, b) (((a) << (b)) | ((a) >> (32 - (b))))
 
 // salsa20/8 stream cypher: http://cr.yp.to/snuffle.html
-static void salsa20_8(unsigned b[16])
+static void salsa20_8(uint32_t b[16])
 {
-    unsigned x00 = b[0], x01 = b[1], x02 = b[2], x03 = b[3], x04 = b[4], x05 = b[5], x06 = b[6], x07 = b[7],
+    uint32_t x00 = b[0], x01 = b[1], x02 = b[2], x03 = b[3], x04 = b[4], x05 = b[5], x06 = b[6], x07 = b[7],
              x08 = b[8], x09 = b[9], x10 = b[10], x11 = b[11], x12 = b[12], x13 = b[13], x14 = b[14], x15 = b[15];
 
     for (int i = 0; i < 8; i += 2) {
@@ -176,16 +178,16 @@ static void salsa20_8(unsigned b[16])
     b[8] += x08, b[9] += x09, b[10] += x10, b[11] += x11, b[12] += x12, b[13] += x13, b[14] += x14, b[15] += x15;
 }
 
-static void blockmix_salsa8(unsigned long long *dest, const unsigned long long *src, unsigned long long *b, int r)
+static void blockmix_salsa8(uint64_t *dest, const uint64_t *src, uint64_t *b, int r)
 {
     memcpy(b, &src[(2*r - 1)*8], 64);
 
     for (int i = 0; i < 2*r; i += 2) {
         for (int j = 0; j < 8; j++) b[j] ^= src[i*8 + j];
-        salsa20_8((unsigned *)b);
+        salsa20_8((uint32_t *)b);
         memcpy(&dest[i*4], b, 64);
         for (int j = 0; j < 8; j++) b[j] ^= src[i*8 + 8 + j];
-        salsa20_8((unsigned *)b);
+        salsa20_8((uint32_t *)b);
         memcpy(&dest[i*4 + r*8], b, 64);
     }
 }
@@ -194,14 +196,14 @@ static void blockmix_salsa8(unsigned long long *dest, const unsigned long long *
 static void scrypt(const void *pw, size_t pwlen, const void *salt, size_t slen, long n, int r, int p,
                    void *dk, size_t dklen)
 {
-    unsigned long long x[16*r], y[16*r], z[8], *v = malloc(128*r*n), m;
-    unsigned b[32*r*p];
+    uint64_t x[16*r], y[16*r], z[8], *v = malloc(128*r*n), m;
+    uint32_t b[32*r*p];
 
     PBKDF2(b, sizeof(b), SHA256, 32, pw, pwlen, salt, slen, 1);
 
     for (int i = 0; i < p; i++) {
-        for (int j = 0; j < 32*r; j++) {
-            ((unsigned *)x)[j] = CFSwapInt32LittleToHost(b[i*32*r + j]);
+        for (long j = 0; j < 32*r; j++) {
+            ((uint32_t *)x)[j] = CFSwapInt32LittleToHost(b[i*32*r + j]);
         }
 
         for (long j = 0; j < n; j += 2) {
@@ -213,15 +215,15 @@ static void scrypt(const void *pw, size_t pwlen, const void *salt, size_t slen, 
 
         for (long j = 0; j < n; j += 2) {
             m = CFSwapInt64LittleToHost(x[(2*r - 1)*8]) & (n - 1);
-            for (int k = 0; k < 16*r; k++) x[k] ^= v[m*(16*r) + k];
+            for (long k = 0; k < 16*r; k++) x[k] ^= v[m*(16*r) + k];
             blockmix_salsa8(y, x, z, r);
             m = CFSwapInt64LittleToHost(y[(2*r - 1)*8]) & (n - 1);
-            for (int k = 0; k < 16*r; k++) y[k] ^= v[m*(16*r) + k];
+            for (long k = 0; k < 16*r; k++) y[k] ^= v[m*(16*r) + k];
             blockmix_salsa8(x, y, z, r);
         }
 
-        for (int j = 0; j < 32*r; j++) {
-            b[i*32*r + j] = CFSwapInt32HostToLittle(((unsigned *)x)[j]);
+        for (long j = 0; j < 32*r; j++) {
+            b[i*32*r + j] = CFSwapInt32HostToLittle(((uint32_t *)x)[j]);
         }
     }
 
