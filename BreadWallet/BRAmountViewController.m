@@ -28,6 +28,7 @@
 #import "BRWalletManager.h"
 #import "BRPeerManager.h"
 #import "BRTransaction.h"
+#import "BREventManager.h"
 
 @interface BRAmountViewController ()
 
@@ -147,8 +148,10 @@
 - (IBAction)unlock:(id)sender
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
+    [BREventManager saveEvent:@"amount:unlock"];
     
     if (sender && ! manager.didAuthenticate && ! [manager authenticateWithPrompt:nil andTouchId:YES]) return;
+    [BREventManager saveEvent:@"amount:successful_unlock"];
     
     self.navigationItem.titleView = nil;
     [self.navigationItem setRightBarButtonItem:self.payButton animated:(sender) ? YES : NO];
@@ -179,19 +182,25 @@
     self.amount = (self.swapped) ? [manager amountForLocalCurrencyString:self.amountField.text] :
                   [manager amountForString:self.amountField.text];
 
-    if (self.amount == 0) return;
+    if (self.amount == 0){
+        [BREventManager saveEvent:@"amount:pay_zero"];
+        return;
+    }
+    [BREventManager saveEvent:@"amount:pay"];
     
     [self.delegate amountViewController:self selectedAmount:self.amount];
 }
 
 - (IBAction)done:(id)sender
 {
+    [BREventManager saveEvent:@"amount:dismiss"];
     [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (IBAction)swapCurrency:(id)sender
 {
     self.swapped = ! self.swapped;
+    [BREventManager saveEvent:@"amount:swap_currency"];
 
     if (self.swapLeftLabel.hidden) {
         self.swapLeftLabel.text = self.localCurrencyLabel.text;
@@ -272,6 +281,7 @@
 
 - (IBAction)pressSwapButton:(id)sender
 {
+    [BREventManager saveEvent:@"amount:press_swap"];
     if (self.swapLeftLabel.hidden) {
         self.swapLeftLabel.text = self.localCurrencyLabel.text;
         self.swapLeftLabel.frame = self.localCurrencyLabel.frame;
@@ -305,6 +315,7 @@
 
 - (IBAction)releaseSwapButton:(id)sender
 {
+    [BREventManager saveEvent:@"amount:release_swap"];
     [UIView animateWithDuration:0.1 animations:^{
         //self.swapLeftLabel.transform = CGAffineTransformIdentity;
         self.swapLeftLabel.textColor = self.localCurrencyLabel.textColor;
