@@ -27,7 +27,9 @@
 #import "BRSeedViewController.h"
 #import "BRWalletManager.h"
 #import "BRBubbleView.h"
+#import "BREventManager.h"
 #include <asl.h>
+
 
 @interface BRSettingsViewController ()
 
@@ -40,6 +42,7 @@
 @property (nonatomic, strong) id balanceObserver;
 
 @end
+
 
 @implementation BRSettingsViewController
 
@@ -116,6 +119,7 @@
 #if DEBUG
 - (IBAction)copyLogs:(id)sender
 {
+    [BREventManager saveEvent:@"settings:copy_logs"];
     aslmsg q = asl_new(ASL_TYPE_QUERY), m;
     aslresponse r = asl_search(NULL, q);
     NSMutableString *s = [NSMutableString string];
@@ -141,6 +145,7 @@
 
 - (IBAction)touchIdLimit:(id)sender
 {
+    [BREventManager saveEvent:@"settings:touch_id_limit"];
     BRWalletManager *manager = [BRWalletManager sharedInstance];
 
     if ([manager authenticateWithPrompt:nil andTouchId:NO]) {
@@ -166,6 +171,7 @@
 
 - (IBAction)navBarSwipe:(id)sender
 {
+    [BREventManager saveEvent:@"settings:nav_bar_swipe"];
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSUInteger digits = (((manager.format.maximumFractionDigits - 2)/3 + 1) % 3)*3 + 2;
     
@@ -331,6 +337,7 @@
 - (void)showAbout
 {
     //TODO: XXXX add a link to support
+    [BREventManager saveEvent:@"settings:show_about"];
     UIViewController *c;
     UILabel *l;
     NSMutableAttributedString *s;
@@ -359,6 +366,7 @@
 
 - (void)showRecoveryPhrase
 {
+    [BREventManager saveEvent:@"settings:show_recovery_phrase"];
     [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
                                 message:[NSString stringWithFormat:@"\n%@\n\n%@\n\n%@\n",
                                          [NSLocalizedString(@"\nDO NOT let anyone see your recovery\n"
@@ -378,6 +386,7 @@
 
 - (void)showCurrencySelector
 {
+    [BREventManager saveEvent:@"settings:show_currency_selector"];
     NSUInteger currencyCodeIndex = 0;
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     double localPrice = manager.localCurrencyPrice;
@@ -476,11 +485,13 @@
         case 2:
             switch (indexPath.row) {
                 case 0: // change passcode
+                    [BREventManager saveEvent:@"settings:change_pin"];
                     [tableView deselectRowAtIndexPath:indexPath animated:YES];
                     [manager performSelector:@selector(setPin) withObject:nil afterDelay:0.0];
                     break;
 
                 case 1: // start/recover another wallet (handled by storyboard)
+                    [BREventManager saveEvent:@"settings:recover"];
                     break;
             }
             
