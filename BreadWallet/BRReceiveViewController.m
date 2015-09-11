@@ -31,6 +31,7 @@
 #import "BRBubbleView.h"
 #import "BRAppGroupConstants.h"
 #import "UIImage+Utils.h"
+#import "BREventManager.h"
 #import <MobileCoreServices/UTCoreTypes.h>
 
 #define QR_TIP      NSLocalizedString(@"Let others scan this QR code to get your bitcoin address. Anyone can send "\
@@ -166,6 +167,7 @@
 - (IBAction)address:(id)sender
 {
     if ([self nextTip]) return;
+    [BREventManager saveEvent:@"receive:address"];
 
     BOOL req = (_paymentRequest) ? YES : NO;
     UIActionSheet *actionSheet = [UIActionSheet new];
@@ -211,6 +213,7 @@
         [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"copied", nil)
          center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0 - 130.0)] popIn]
          popOutAfterDelay:2.0]];
+        [BREventManager saveEvent:@"receive:copy_address"];
     }
     else if ([title isEqual:NSLocalizedString(@"send address as email", nil)] ||
              [title isEqual:NSLocalizedString(@"send request as email", nil)]) {
@@ -227,8 +230,10 @@
             [self.navigationController presentViewController:composeController animated:YES completion:nil];
             composeController.view.backgroundColor
                 = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default"]];
+            [BREventManager saveEvent:@"receive:send_email"];
         }
         else {
+            [BREventManager saveEvent:@"receive:email_not_configured"];
             [[[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"email not configured", nil) delegate:nil
               cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
@@ -253,8 +258,10 @@
             [self.navigationController presentViewController:composeController animated:YES completion:nil];
             composeController.view.backgroundColor = [UIColor colorWithPatternImage:
                                                       [UIImage imageNamed:@"wallpaper-default"]];
+            [BREventManager saveEvent:@"receive:send_message"];
         }
         else {
+            [BREventManager saveEvent:@"receive:message_not_configured"];
             [[[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"sms not currently available", nil)
               delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
@@ -265,6 +272,7 @@
         
         ((BRAmountViewController *)amountNavController.topViewController).delegate = self;
         [self.navigationController presentViewController:amountNavController animated:YES completion:nil];
+        [BREventManager saveEvent:@"receive:request_amount"];
     }
 }
 
@@ -295,9 +303,11 @@ error:(NSError *)error
           message:[NSString stringWithFormat:NSLocalizedString(@"bitcoin payments can't be less than %@", nil),
                    [manager stringForAmount:TX_MIN_OUTPUT_AMOUNT]] delegate:nil
           cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+        [BREventManager saveEvent:@"receive:amount_too_small"];
         return;
     }
 
+    [BREventManager saveEvent:@"receive:show_request"];
     BRReceiveViewController *receiveController
         = [self.storyboard instantiateViewControllerWithIdentifier:@"RequestViewController"];
     
