@@ -27,11 +27,14 @@
 #import "BRWalletManager.h"
 #import "BRPeerManager.h"
 #import "NSMutableData+Bitcoin.h"
+#import "BREventManager.h"
+
 
 #define LABEL_MARGIN       20.0
 #define WRITE_TOGGLE_DELAY 15.0
 
 #define IDEO_SP   @"\xE3\x80\x80" // ideographic space (utf-8)
+
 
 @interface BRSeedViewController ()
 
@@ -46,6 +49,7 @@
 @property (nonatomic, strong) id resignActiveObserver, screenshotObserver;
 
 @end
+
 
 @implementation BRSeedViewController
 
@@ -225,6 +229,7 @@
 
 - (IBAction)done:(id)sender
 {
+    [BREventManager saveEvent:@"seed:dismiss"];
     if (self.navigationController.viewControllers.firstObject != self) return;
     
     self.navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
@@ -234,6 +239,7 @@
 
 - (IBAction)toggleWrite:(id)sender
 {
+    [BREventManager saveEvent:@"seed:toggle_write"];
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
 
     if ([defs boolForKey:WALLET_NEEDS_BACKUP_KEY]) {
