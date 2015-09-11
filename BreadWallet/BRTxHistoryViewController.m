@@ -33,6 +33,7 @@
 #import "BRTransaction.h"
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
+#import "BREventManager.h"
 
 #define TRANSACTION_CELL_HEIGHT 75
 
@@ -316,6 +317,7 @@ static NSString *dateFormat(NSString *template)
 
 - (IBAction)done:(id)sender
 {
+    [BREventManager saveEvent:@"tx_history:dismiss"];
     [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
@@ -323,7 +325,9 @@ static NSString *dateFormat(NSString *template)
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
 
+    [BREventManager saveEvent:@"tx_history:unlock"];
     if (! manager.didAuthenticate && ! [manager authenticateWithPrompt:nil andTouchId:YES]) return;
+    [BREventManager saveEvent:@"tx_history:unlock_success"];
     
     self.navigationItem.titleView = nil;
     [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
@@ -339,6 +343,7 @@ static NSString *dateFormat(NSString *template)
 - (IBAction)scanQR:(id)sender
 {
     //TODO: show scanner in settings rather than dismissing
+    [BREventManager saveEvent:@"tx_history:scan_qr"];
     UINavigationController *nav = (id)self.navigationController.presentingViewController;
 
     nav.view.alpha = 0.0;
@@ -351,6 +356,7 @@ static NSString *dateFormat(NSString *template)
 
 - (IBAction)showTx:(id)sender
 {
+    [BREventManager saveEvent:@"tx_history:show_tx"];
     BRTxDetailViewController *detailController
         = [self.storyboard instantiateViewControllerWithIdentifier:@"TxDetailViewController"];
     detailController.transaction = sender;
@@ -360,6 +366,7 @@ static NSString *dateFormat(NSString *template)
 
 - (IBAction)more:(id)sender
 {
+    [BREventManager saveEvent:@"tx_history:more"];
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSUInteger txCount = self.transactions.count;
     
@@ -642,11 +649,13 @@ static NSString *dateFormat(NSString *template)
         case 1:
             switch (indexPath.row) {
                 case 0: // import private key
+                    [BREventManager saveEvent:@"tx_history:import_priv_key"];
                     [self scanQR:nil];
                     break;
 
                 case 1: // rescan blockchain
                     [[BRPeerManager sharedInstance] rescan];
+                    [BREventManager saveEvent:@"tx_history:rescan"];
                     [self done:nil];
                     break;
             }
@@ -654,6 +663,7 @@ static NSString *dateFormat(NSString *template)
             break;
 
         case 2: // settings
+            [BREventManager saveEvent:@"tx_history:settings"];
             destinationController = [self.storyboard instantiateViewControllerWithIdentifier:@"SettingsViewController"];
             [self.navigationController pushViewController:destinationController animated:YES];
             break;
