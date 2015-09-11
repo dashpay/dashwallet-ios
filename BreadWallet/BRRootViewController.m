@@ -798,9 +798,11 @@
 
 - (IBAction)unlock:(id)sender
 {
+    [BREventManager saveEvent:@"root:unlock"];
     BRWalletManager *m = [BRWalletManager sharedInstance];
     
     if (sender && ! m.didAuthenticate && ! [m authenticateWithPrompt:nil andTouchId:YES]) return;
+    [BREventManager saveEvent:@"root:unlock_success"];
     
     self.navigationItem.titleView = nil;
     [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
@@ -808,9 +810,11 @@
 
 - (IBAction)connect:(id)sender
 {
+    [BREventManager saveEvent:@"root:connect"];
     if (! sender && [self.reachability currentReachabilityStatus] == NotReachable) return;
 
     [[BRPeerManager sharedInstance] connect];
+    [BREventManager saveEvent:@"root:connect_success"];
 }
 
 - (IBAction)navBarTap:(id)sender
