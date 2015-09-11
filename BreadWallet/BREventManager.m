@@ -74,7 +74,7 @@
         // exactly once per startup
         NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
         if (![defs boolForKey:HAS_DETERMINED_SAMPLE_GROUP]) {
-            u_int32_t chosenNumber = arc4random_uniform(100)+1;
+            u_int32_t chosenNumber = arc4random_uniform(100);
             NSLog(@"BREventManager chosen number %d < %d", chosenNumber, SAMPLE_CHANCE);
             bool isInSample = chosenNumber < SAMPLE_CHANCE;
             [defs setBool:isInSample forKey:IS_IN_SAMPLE_GROUP];
