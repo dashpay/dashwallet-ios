@@ -30,6 +30,7 @@
 #import "BRCopyLabel.h"
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
+#import "BREventManager.h"
 
 #define TRANSACTION_CELL_HEIGHT 75
 
@@ -351,6 +352,7 @@
     NSUInteger i = [self.tableView.indexPathsForVisibleRows indexOfObject:indexPath];
     UITableViewCell *cell = (i < self.tableView.visibleCells.count) ? self.tableView.visibleCells[i] : nil;
     BRCopyLabel *copyLabel = (id)[cell viewWithTag:2];
+    [BREventManager saveEvent:@"tx_detail:copy_label"];
     
     copyLabel.selectedColor = [UIColor clearColor];
     if (cell.selectionStyle != UITableViewCellSelectionStyleNone) [copyLabel toggleCopyMenu];
