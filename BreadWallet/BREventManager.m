@@ -53,6 +53,7 @@
         self.sessionId = (__bridge_transfer NSString *)CFUUIDCreateString(NULL, uuid);
         CFRelease(uuid);
         self.myQueue = [[NSOperationQueue alloc] init];
+        self.myQueue.maxConcurrentOperationCount = 1;
         self.eventToNotifications = @{@"foreground": UIApplicationDidBecomeActiveNotification,
                                       @"background": UIApplicationDidEnterBackgroundNotification,
                                       @"sync_started": BRPeerManagerSyncStartedNotification,
