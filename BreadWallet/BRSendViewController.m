@@ -945,7 +945,9 @@ fromConnection:(AVCaptureConnection *)connection
 {
     for (AVMetadataMachineReadableCodeObject *codeObject in metadataObjects) {
         if (! [codeObject.type isEqual:AVMetadataObjectTypeQRCode]) continue;
-
+        
+        [BREventManager saveEvent:@"send:scanned_qr"];
+        
         NSString *addr = [codeObject.stringValue stringByTrimmingCharactersInSet:
                           [NSCharacterSet whitespaceAndNewlineCharacterSet]];
         BRPaymentRequest *request = [BRPaymentRequest requestWithString:addr];
@@ -954,6 +956,7 @@ fromConnection:(AVCaptureConnection *)connection
             (request.r.length > 0 && [request.scheme isEqual:@"bitcoin"])) {
             self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide-green"];
             [self.scanController stop];
+            [BREventManager saveEvent:@"send:valid_qr_scan"];
 
             if (request.r.length > 0) { // start fetching payment protocol request right away
                 [BRPaymentRequest fetch:request.r timeout:5.0
@@ -965,6 +968,7 @@ fromConnection:(AVCaptureConnection *)connection
                             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
                               message:error.localizedDescription delegate:nil
                               cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+                            [BREventManager saveEvent:@"send:unsuccessful_qr_payment"];
                             [self cancel:nil];
                         }
 
@@ -976,6 +980,7 @@ fromConnection:(AVCaptureConnection *)connection
                             [self confirmRequest:request];
                         }
                         else [self confirmProtocolRequest:req];
+                        [BREventManager saveEvent:@"send:successful_qr_payment"];
                     });
                 }];
             }

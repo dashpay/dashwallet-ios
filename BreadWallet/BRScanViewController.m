@@ -24,6 +24,8 @@
 //  THE SOFTWARE.
 
 #import "BRScanViewController.h"
+#import "BREventManager.h"
+
 
 @interface BRScanViewController ()
 
@@ -35,6 +37,7 @@
 @property (nonatomic, assign) UIStatusBarStyle barStyle;
 
 @end
+
 
 @implementation BRScanViewController
 
@@ -59,6 +62,7 @@
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:animated];
 
     if ([AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo] == AVAuthorizationStatusDenied) {
+        [BREventManager saveEvent:@"scan:camera_denied"];
         [[[UIAlertView alloc]
           initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"%@ is not allowed to access the camera", nil),
                          NSBundle.mainBundle.infoDictionary[@"CFBundleDisplayName"]]
@@ -144,6 +148,7 @@
 
 - (IBAction)done:(id)sender
 {
+    [BREventManager saveEvent:@"scan:dismiss"];
     [self.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
