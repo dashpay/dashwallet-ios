@@ -195,13 +195,14 @@
     [UIView animateWithDuration:.5 animations:^{
         eventConfirmView.alpha = 1;
     }];
+    [self saveEvent:@"ask_for_data_collection"];
     
     eventConfirmView.completionHandler = ^(BOOL didApprove) {
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:HAS_PROMPTED_FOR_PERMISSION];
         [[NSUserDefaults standardUserDefaults] setBool:didApprove forKey:HAS_ACQUIRED_PERMISSION];
         
         if (didApprove) {
-            [self saveEvent:@"did_approve_data_collection"];
+            [self saveEvent:@"approve_data_collection"];
         }
         
         [UIView animateWithDuration:.5 animations:^{

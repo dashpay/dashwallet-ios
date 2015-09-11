@@ -38,6 +38,7 @@
 #import "NSString+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSData+Bitcoin.h"
+#import "BREventManager.h"
 
 #define SCAN_TIP      NSLocalizedString(@"Scan someone else's QR code to get their bitcoin address. "\
                                          "You can send a payment to anyone with an address.", nil)
@@ -132,9 +133,11 @@ static NSString *sanitizeString(NSString *s)
 
 - (void)handleURL:(NSURL *)url
 {
+    [BREventManager saveEvent:@"send:handle_url"
+               withAttributes:@{@"scheme": url.scheme, @"host": url.host, @"path": url.path}];
+    
     //TODO: XXX custom url splash image per: "Providing Launch Images for Custom URL Schemes."
     BRWalletManager *manager = [BRWalletManager sharedInstance];
-    
     if ([url.scheme isEqual:@"bread"]) { // x-callback-url handling: http://x-callback-url.com/specifications/
         NSString *xsource = nil, *xsuccess = nil, *xerror = nil, *uri = nil;
         NSURL *callback = nil;
@@ -865,6 +868,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 - (IBAction)scanQR:(id)sender
 {
     if ([self nextTip]) return;
+    [BREventManager saveEvent:@"send:scan_qr"];
     if (! [sender isEqual:self.scanButton]) self.showBalance = YES;
     [sender setEnabled:NO];
     self.scanController.delegate = self;
@@ -875,6 +879,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 - (IBAction)payToClipboard:(id)sender
 {
     if ([self nextTip]) return;
+    [BREventManager saveEvent:@"send:pay_clipboard"];
 
     NSString *p = [[UIPasteboard generalPasteboard].string
                    stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
@@ -905,6 +910,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     if (self.navigationController.topViewController != self.parentViewController.parentViewController) {
         [self.navigationController popToRootViewControllerAnimated:YES];
     }
+    [BREventManager saveEvent:@"send:reset"];
 
     if (self.clearClipboard) [UIPasteboard generalPasteboard].string = @"";
     self.request = nil;
@@ -913,6 +919,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
 - (IBAction)cancel:(id)sender
 {
+    [BREventManager saveEvent:@"send:cancel"];
     self.url = self.callback = nil;
     self.sweepTx = nil;
     self.amount = 0;
