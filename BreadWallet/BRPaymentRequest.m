@@ -69,6 +69,7 @@
 
 - (void)setString:(NSString *)string
 {
+    self.scheme = nil;
     self.paymentAddress = nil;
     self.label = nil;
     self.message = nil;
@@ -87,6 +88,8 @@
     else if (! url.host && url.resourceSpecifier) {
         url = [NSURL URLWithString:[NSString stringWithFormat:@"%@://%@", url.scheme, url.resourceSpecifier]];
     }
+    
+    self.scheme = url.scheme;
     
     if ([url.scheme isEqual:@"bitcoin"]) {
         self.paymentAddress = url.host;
@@ -119,10 +122,12 @@
 
 - (NSString *)string
 {
-    if (! self.paymentAddress) return nil;
+    if (! [self.scheme isEqual:@"bitcoin"]) return self.r;
 
-    NSMutableString *s = [NSMutableString stringWithFormat:@"bitcoin:%@", self.paymentAddress];
+    NSMutableString *s = [NSMutableString stringWithString:@"bitcoin:"];
     NSMutableArray *q = [NSMutableArray array];
+
+    if (self.paymentAddress) [s appendString:self.paymentAddress];
     
     if (self.amount > 0) {
         [q addObject:[@"amount=" stringByAppendingString:[(id)[NSDecimalNumber numberWithUnsignedLongLong:self.amount]

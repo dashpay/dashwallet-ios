@@ -30,6 +30,7 @@
 // BIP21 bitcoin payment request URI https://github.com/bitcoin/bips/blob/master/bip-0021.mediawiki
 @interface BRPaymentRequest : NSObject
 
+@property (nonatomic, strong) NSString *scheme;
 @property (nonatomic, strong) NSString *paymentAddress;
 @property (nonatomic, strong) NSString *label;
 @property (nonatomic, strong) NSString *message;

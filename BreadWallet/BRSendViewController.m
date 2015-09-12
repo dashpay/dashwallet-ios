@@ -259,6 +259,7 @@ static NSString *sanitizeString(NSString *s)
       delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
 }
 
+// generate a description of a transaction so the user can review and decide whether to confirm or cancel
 - (NSString *)promptForAmount:(uint64_t)amount fee:(uint64_t)fee address:(NSString *)address name:(NSString *)name
 memo:(NSString *)memo isSecure:(BOOL)isSecure
 {
@@ -815,11 +816,11 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         
         if ([req.paymentAddress isValidBitcoinAddress] || [paymentRequestStr isValidBitcoinPrivateKey] ||
             [paymentRequestStr isValidBitcoinBIP38Key] ||
-            (req.r.length > 0 && [paymentRequestStr hasPrefix:@"bitcoin:"])) {
+            (req.r.length > 0 && [req.scheme isEqual:@"bitcoin"])) {
             [self performSelector:@selector(confirmRequest:) withObject:req afterDelay:0.1];// delayed to show highlight
             return;
         }
-        else if (req.r.length > 0) {
+        else if (req.r.length > 0) { // may be BIP73 url: https://github.com/bitcoin/bips/blob/master/bip-0073.mediawiki
             [BRPaymentRequest fetch:req.r timeout:5.0 completion:^(BRPaymentProtocolRequest *req, NSError *error) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (error) { // don't try any more BIP73 urls
@@ -942,40 +943,8 @@ fromConnection:(AVCaptureConnection *)connection
                           [NSCharacterSet whitespaceAndNewlineCharacterSet]];
         BRPaymentRequest *request = [BRPaymentRequest requestWithString:addr];
 
-        if ((! request.isValid && ! [addr isValidBitcoinPrivateKey] && ! [addr isValidBitcoinBIP38Key]) ||
-            (request.r.length > 0 && ! [addr hasPrefix:@"bitcoin:"])) {
-            [BRPaymentRequest fetch:request.r timeout:5.0
-            completion:^(BRPaymentProtocolRequest *req, NSError *error) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(resetQRGuide) object:nil];
-                    
-                    if (req) {
-                        self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide-green"];
-                        [self.scanController stop];
-
-                        [self.navigationController dismissViewControllerAnimated:YES completion:^{
-                            [self resetQRGuide];
-                        }];
-
-                        [self confirmProtocolRequest:req];
-                    }
-                    else {
-                        self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide-red"];
-
-                        if (([addr hasPrefix:@"bitcoin:"] && request.paymentAddress.length > 1) ||
-                            [request.paymentAddress hasPrefix:@"1"] || [request.paymentAddress hasPrefix:@"3"]) {
-                            self.scanController.message.text = [NSString stringWithFormat:@"%@\n%@",
-                                                                NSLocalizedString(@"not a valid bitcoin address", nil),
-                                                                request.paymentAddress];
-                        }
-                        else self.scanController.message.text = NSLocalizedString(@"not a bitcoin QR code", nil);
-
-                        [self performSelector:@selector(resetQRGuide) withObject:nil afterDelay:0.35];
-                    }
-                });
-            }];
-        }
-        else {
+        if (request.isValid || [addr isValidBitcoinPrivateKey] || [addr isValidBitcoinBIP38Key] ||
+            (request.r.length > 0 && [request.scheme isEqual:@"bitcoin"])) {
             self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide-green"];
             [self.scanController stop];
 
@@ -1003,7 +972,7 @@ fromConnection:(AVCaptureConnection *)connection
                     });
                 }];
             }
-            else {
+            else { // non payment protocol request
                 [self.navigationController dismissViewControllerAnimated:YES completion:^{
                     [self resetQRGuide];
                     if (request.amount > 0) self.canChangeAmount = YES;
@@ -1015,6 +984,38 @@ fromConnection:(AVCaptureConnection *)connection
                 }
                 else [self confirmRequest:request];
             }
+        }
+        else if (request.r.length > 0) { // check to see if it's a BIP73 url
+            [BRPaymentRequest fetch:request.r timeout:5.0
+            completion:^(BRPaymentProtocolRequest *req, NSError *error) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(resetQRGuide) object:nil];
+                    
+                    if (req) {
+                        self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide-green"];
+                        [self.scanController stop];
+                        
+                        [self.navigationController dismissViewControllerAnimated:YES completion:^{
+                            [self resetQRGuide];
+                        }];
+                        
+                        [self confirmProtocolRequest:req];
+                    }
+                    else {
+                        self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide-red"];
+                        
+                        if (([request.scheme isEqual:@"bitcoin"] && request.paymentAddress.length > 1) ||
+                            [request.paymentAddress hasPrefix:@"1"] || [request.paymentAddress hasPrefix:@"3"]) {
+                            self.scanController.message.text = [NSString stringWithFormat:@"%@\n%@",
+                                                                NSLocalizedString(@"not a valid bitcoin address", nil),
+                                                                request.paymentAddress];
+                        }
+                        else self.scanController.message.text = NSLocalizedString(@"not a bitcoin QR code", nil);
+                        
+                        [self performSelector:@selector(resetQRGuide) withObject:nil afterDelay:0.35];
+                    }
+                });
+            }];
         }
 
         break;
