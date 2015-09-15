@@ -1010,6 +1010,7 @@ fromConnection:(AVCaptureConnection *)connection
                         [self.navigationController dismissViewControllerAnimated:YES completion:^{
                             [self resetQRGuide];
                         }];
+                        [BREventManager saveEvent:@"send:successful_bip73"];
                         
                         [self confirmProtocolRequest:req];
                     }
@@ -1022,7 +1023,10 @@ fromConnection:(AVCaptureConnection *)connection
                                                                 NSLocalizedString(@"not a valid bitcoin address", nil),
                                                                 request.paymentAddress];
                         }
-                        else self.scanController.message.text = NSLocalizedString(@"not a bitcoin QR code", nil);
+                        else {
+                            [BREventManager saveEvent:@"send:unsuccessful_bip73"];
+                            self.scanController.message.text = NSLocalizedString(@"not a bitcoin QR code", nil);
+                        }
                         
                         [self performSelector:@selector(resetQRGuide) withObject:nil afterDelay:0.35];
                     }
