@@ -31,6 +31,7 @@
 #import "BRTransaction.h"
 #import "BRTransactionEntity.h"
 #import "BRAddressEntity.h"
+#import "BREventManager.h"
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
@@ -454,6 +455,8 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         NSError *error = nil;
         __block NSInteger authcode = 0;
         
+        [BREventManager saveEvent:@"wallet_manager:touchid_auth"];
+        
         if ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error] &&
             getKeychainInt(PIN_FAIL_COUNT_KEY, nil) == 0 && getKeychainInt(SPEND_LIMIT_KEY, nil) > 0) {
             context.localizedFallbackTitle = NSLocalizedString(@"passcode", nil);
@@ -511,6 +514,8 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 
     uint64_t total = self.wallet.totalSent, limit = self.spendingLimit,
              failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, nil);
+    
+    [BREventManager saveEvent:@"wallet_manager:pin_auth"];
     
     if (failCount >= 3) {
         uint64_t failHeight = getKeychainInt(PIN_FAIL_HEIGHT_KEY, nil);
@@ -633,6 +638,8 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 
     if (error) return NO; // error reading existing pin from keychain
 
+    [BREventManager saveEvent:@"wallet_manager:set_pin"];
+    
     if (pin.length == 4) {
         if (! [self authenticatePinWithTitle:NSLocalizedString(@"enter old passcode", nil) message:nil]) return NO;
 

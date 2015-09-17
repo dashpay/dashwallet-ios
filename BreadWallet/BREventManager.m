@@ -362,10 +362,10 @@
                          NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
                          if (httpResponse.statusCode != 201) { // we should expect to receive a 201
                              NSLog(@"Error uploading event data to server: STATUS=%ld, connErr=%@ data=%@",
-                                   httpResponse.statusCode, connectionError, dataStr);
+                                   (long)httpResponse.statusCode, connectionError, dataStr);
                          } else {
                              NSLog(@"Successfully sent event data to server %@ => %ld data=%@",
-                                   fileName, httpResponse.statusCode, dataStr);
+                                   fileName, (long)httpResponse.statusCode, dataStr);
                          }
                          
                          // 4. remove the file from disk since we no longer need it

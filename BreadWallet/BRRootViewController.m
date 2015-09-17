@@ -173,12 +173,15 @@
                 [[BRPeerManager sharedInstance] connect];
                 [self.sendViewController updateClipboardText];
 
-                if ([UIUserNotificationSettings class] && // if iOS 8
-                    ! ([[UIApplication sharedApplication] currentUserNotificationSettings].types &
-                       UIUserNotificationTypeBadge)) {
-                    [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings
-                     settingsForTypes:UIUserNotificationTypeBadge categories:nil]]; // register for badge notifications
-                }
+                [[BREventManager sharedEventManager] acquireUserPermissionInViewController:self.navigationController
+                withCallback:^(BOOL didGetPermission) {
+                    if ([UIUserNotificationSettings class] && // if iOS 8
+                        ! ([[UIApplication sharedApplication] currentUserNotificationSettings].types &
+                           UIUserNotificationTypeBadge)) { // register for badge notifications
+                        [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings
+                         settingsForTypes:UIUserNotificationTypeBadge categories:nil]];
+                    }
+                }];
             }
 
             if (jailbroken && manager.wallet.balance > 0) {
@@ -405,14 +408,6 @@
 
     if ([UIApplication sharedApplication].protectedDataAvailable) [self protectedViewDidAppear:animated];
     
-    // XXX:
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [[BREventManager sharedEventManager]
-         acquireUserPermissionInViewController:self.navigationController withCallback:^(BOOL didGetPermission) {
-             // nil
-         }];
-    });
-
     [super viewDidAppear:animated];
 }
 
