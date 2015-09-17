@@ -173,6 +173,10 @@
                                  withCallback:(void (^)(BOOL))completionCallback
 {
     if (![self shouldAskForPermission]) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0),
+                       dispatch_get_main_queue(), ^{
+                           completionCallback([self shouldRecordData]);
+                       });
         return; // no need to run if the user isn't in sample group or has already been asked for permission
     }
     
@@ -208,6 +212,7 @@
         [UIView animateWithDuration:.5 animations:^{
             eventConfirmView.alpha = 0;
         } completion:^(BOOL finished) {
+            completionCallback(didApprove);
             [eventConfirmView removeFromSuperview];
         }];
     };
