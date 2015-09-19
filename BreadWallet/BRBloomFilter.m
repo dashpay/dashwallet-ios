@@ -30,32 +30,38 @@
 
 #define BLOOM_MAX_HASH_FUNCS 50
 
-// murmurHash3 (x86_32): http://code.google.com/p/smhasher/source/browse/trunk/MurmurHash3.cpp
-static uint32_t murmurHash3(const uint8_t *b, size_t len, uint32_t seed)
+#define C1 0xcc9e2d51
+#define C2 0x1b873593
+
+// bitwise left rotation
+#define rol32(a, b) (((a) << (b)) | ((a) >> (32 - (b))))
+
+#define fmix32(h) (h ^= h >> 16, h *= 0x85ebca6b, h ^= h >> 13, h *= 0xc2b2ae35, h ^= h >> 16)
+
+// murmurHash3 (x86_32): https://code.google.com/p/smhasher/
+static uint32_t murmur3_32(const void *data, size_t len, uint32_t seed)
 {
-    static const uint32_t c1 = 0xcc9e2d51u, c2 = 0x1b873593u;
-    uint32_t h1 = seed, k1 = 0, k2 = 0, blocks = ((uint32_t)len/4)*4;
+    uint32_t h = seed, k = 0;
+    size_t i, count = len/4;
     
-    for (uint32_t i = 0; i < blocks; i += 4) {
-        k1 = ((uint32_t)b[i] | ((uint32_t)b[i + 1] << 8) | ((uint32_t)b[i + 2] << 16) | ((uint32_t)b[i + 3] << 24))*c1;
-        k1 = ((k1 << 15) | (k1 >> 17))*c2;
-        h1 ^= k1;
-        h1 = ((h1 << 13) | (h1 >> 19))*5 + 0xe6546b64u;
+    for (i = 0; i < count; i++) {
+        k = CFSwapInt32LittleToHost(((uint32_t *)data)[i])*C1;
+        k = rol32(k, 15)*C2;
+        h ^= k;
+        h = rol32(h, 13)*5 + 0xe6546b64;
     }
+    
+    k = 0;
     
     switch (len & 3) {
-        case 3: k2 ^= b[blocks + 2] << 16; // fall through
-        case 2: k2 ^= b[blocks + 1] << 8; // fall through
-        case 1:
-            k2 = (k2 ^ b[blocks])*c1;
-            h1 ^= ((k2 << 15) | (k2 >> 17))*c2;
+        case 3: k ^= ((uint8_t *)data)[i*4 + 2] << 16; // fall through
+        case 2: k ^= ((uint8_t *)data)[i*4 + 1] << 8; // fall through
+        case 1: k ^= ((uint8_t *)data)[i*4], k *= C1, h ^= rol32(k, 15)*C2;
     }
     
-    h1 ^= len;
-    h1 = (h1 ^ (h1 >> 16))*0x85ebca6bu;
-    h1 = (h1 ^ (h1 >> 13))*0xc2b2ae35u;
-    h1 ^= h1 >> 16;
-    return h1;
+    h ^= len;
+    fmix32(h);
+    return h;
 }
 
 // bloom filters are explained in BIP37: https://github.com/bitcoin/bips/blob/master/bip-0037.mediawiki
@@ -125,7 +131,7 @@ flags:(uint8_t)flags
 
 - (uint32_t)hash:(NSData *)data hashNum:(uint32_t)hashNum
 {
-    return murmurHash3(data.bytes, data.length, hashNum*0xfba4c795u + self.tweak) % (self.filter.length*8);
+    return murmur3_32(data.bytes, data.length, hashNum*0xfba4c795 + self.tweak) % (self.filter.length*8);
 }
 
 - (BOOL)containsData:(NSData *)data
