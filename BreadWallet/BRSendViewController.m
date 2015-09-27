@@ -968,8 +968,8 @@ fromConnection:(AVCaptureConnection *)connection
                             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
                               message:error.localizedDescription delegate:nil
                               cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-                            [BREventManager saveEvent:@"send:unsuccessful_qr_payment"];
                             [self cancel:nil];
+                            // continue here and handle the invalid request inside confirmRequest:
                         }
 
                         [self.navigationController dismissViewControllerAnimated:YES completion:^{
@@ -977,14 +977,17 @@ fromConnection:(AVCaptureConnection *)connection
                         }];
                         
                         if (error) {
-                            [self confirmRequest:request];
+                            [BREventManager saveEvent:@"send:unsuccessful_qr_payment_protocol_fetch"];
+                            [self confirmRequest:request]; // payment protocol fetch failed, so use standard request
                         }
-                        else [self confirmProtocolRequest:req];
-                        [BREventManager saveEvent:@"send:successful_qr_payment"];
+                        else {
+                            [BREventManager saveEvent:@"send:successful_qr_payment_protocol_fetch"];
+                            [self confirmProtocolRequest:req];
+                        }
                     });
                 }];
             }
-            else { // non payment protocol request
+            else { // standard non payment protocol request
                 [self.navigationController dismissViewControllerAnimated:YES completion:^{
                     [self resetQRGuide];
                     if (request.amount > 0) self.canChangeAmount = YES;
@@ -1010,8 +1013,8 @@ fromConnection:(AVCaptureConnection *)connection
                         [self.navigationController dismissViewControllerAnimated:YES completion:^{
                             [self resetQRGuide];
                         }];
-                        [BREventManager saveEvent:@"send:successful_bip73"];
                         
+                        [BREventManager saveEvent:@"send:successful_bip73"];
                         [self confirmProtocolRequest:req];
                     }
                     else {
@@ -1024,11 +1027,11 @@ fromConnection:(AVCaptureConnection *)connection
                                                                 request.paymentAddress];
                         }
                         else {
-                            [BREventManager saveEvent:@"send:unsuccessful_bip73"];
                             self.scanController.message.text = NSLocalizedString(@"not a bitcoin QR code", nil);
                         }
                         
                         [self performSelector:@selector(resetQRGuide) withObject:nil afterDelay:0.35];
+                        [BREventManager saveEvent:@"send:unsuccessful_bip73"];
                     }
                 });
             }];
