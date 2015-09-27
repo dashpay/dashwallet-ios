@@ -336,7 +336,6 @@ passphrase:(NSString *)passphrase
 // compressed indicates if compressed pubKey format should be used for the bitcoin address, confcode (optional) will
 // be set to the "confirmation code"
 + (NSString *)BIP38KeyWithIntermediateCode:(NSString *)code seedb:(NSData *)seedb compressed:(BOOL)compressed
-confirmationCode:(NSString **)confcode;
 {
     NSData *d = code.base58checkToData; // d = 0x2C 0xE9 0xB3 0xE1 0xFF 0x39 0xE2 0x51|0x53 + entropy + passpoint
 
@@ -373,10 +372,31 @@ confirmationCode:(NSString **)confcode;
     [key appendBytes:&entropy length:sizeof(entropy)];
     [key appendBytes:&encrypted1 length:8];
     [key appendBytes:&encrypted2 length:sizeof(encrypted2)];
+    return [NSString base58checkWithData:key];
+}
 
+// generates a BIP38 key from an "intermediate code" and 24 bytes of cryptographically random data (seedb),
+// compressed indicates if compressed pubKey format should be used for the bitcoin address, confcode (optional) will
+// be set to the "confirmation code"
++ (NSString *)BIP38KeyWithIntermediateCode:(NSString *)code seedb:(NSData *)seedb compressed:(BOOL)compressed
+confirmationCode:(NSString **)confcode
+{
     if (confcode) {
+        NSData *d = code.base58checkToData; // d = 0x2C 0xE9 0xB3 0xE1 0xFF 0x39 0xE2 0x51|0x53 + entropy + passpoint
+        
+        if (d.length != 49 || seedb.length != 24) return nil;
+
+        NSData *passpoint = [NSData dataWithBytesNoCopy:(uint8_t *)d.bytes + 16 length:33 freeWhenDone:NO];
+        UInt256 factorb = seedb.SHA256_2; // factorb = SHA256(SHA256(seedb))
+        NSData *pubKey = point_multiply(passpoint, factorb, compressed), // pubKey = passpoint*factorb
+               *address = [[BRKey keyWithPublicKey:pubKey].address dataUsingEncoding:NSUTF8StringEncoding];
         NSData *pointb = point_multiply(nil, factorb, YES); // pointb = G*factorb
         NSMutableData *c = [NSMutableData secureData];
+        uint8_t flag = (compressed) ? BIP38_COMPRESSED_FLAG : 0;
+        uint32_t addresshash = (address) ? address.SHA256_2.u32[0] : 0;
+        uint64_t entropy = *(const uint64_t *)((const uint8_t *)d.bytes + 8);
+        UInt512 derived = derive_key(passpoint, addresshash, entropy);
+        UInt256 derived1 = *(UInt256 *)&derived, derived2 = *(UInt256 *)&derived.u64[4];
         UInt128 pointbx1, pointbx2;
         uint8_t pointbprefix = ((const uint8_t *)pointb.bytes)[0] ^ (derived2.u8[31] & 0x01);
 
@@ -400,7 +420,7 @@ confirmationCode:(NSString **)confcode;
         *confcode = [NSString base58checkWithData:c];
     }
 
-    return [NSString base58checkWithData:key];
+    return [self BIP38KeyWithIntermediateCode:code seedb:seedb compressed:compressed];
 }
 
 // returns true if the "confirmation code" confirms that the given bitcoin address depends on the specified passphrase

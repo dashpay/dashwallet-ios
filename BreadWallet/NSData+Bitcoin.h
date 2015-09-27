@@ -111,7 +111,6 @@ void PBKDF2(void *dk, size_t dklen, void (*hash)(void *, const void *, size_t), 
 - (UInt512)SHA512;
 - (UInt160)RMD160;
 - (UInt160)hash160;
-- (uint32_t)murmur3_32;
 - (NSData *)reverse;
 
 - (uint8_t)UInt8AtOffset:(NSUInteger)offset;
