@@ -467,7 +467,8 @@ static NSString *getKeychainString(NSString *key, NSError **error)
             }];
             
             while (authcode == 0) {
-                [[NSRunLoop mainRunLoop] limitDateForMode:NSDefaultRunLoopMode];
+                [[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode
+                 beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
             }
             
             if (authcode == LAErrorAuthenticationFailed) {
@@ -563,11 +564,11 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     self.pinField = nil; // reset pinField so a new one is created
     [self.alertView setValue:self.pinField forKey:@"accessoryView"];
     [self.alertView show];
-    //[self.pinField becomeFirstResponder]; // this causes pin dialog to jump around in iOS 9 beta
+    //[self.pinField becomeFirstResponder]; // this causes pin dialog to jump around in iOS 9
     
     for (;;) {
         while ((! self.didPresent || self.alertView.visible) && self.currentPin.length < 4) {
-            [[NSRunLoop mainRunLoop] limitDateForMode:NSDefaultRunLoopMode];
+            [[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
         }
         
         if (! self.alertView.visible) break; // user canceled
@@ -668,7 +669,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     
     for (;;) {
         while ((! self.didPresent || self.alertView.visible) && self.currentPin.length < 4) {
-            [[NSRunLoop mainRunLoop] limitDateForMode:NSDefaultRunLoopMode];
+            [[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
         }
     
         if (! self.alertView.visible) break;
@@ -690,7 +691,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         }];
 
         while (self.alertView.visible && self.currentPin.length < 4) {
-            [[NSRunLoop mainRunLoop] limitDateForMode:NSDefaultRunLoopMode];
+            [[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
         }
 
         if (! self.alertView.visible) break;
