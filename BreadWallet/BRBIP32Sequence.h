@@ -26,15 +26,20 @@
 #import <Foundation/Foundation.h>
 #import "BRKeySequence.h"
 
+#define BIP32_HARD 0x80000000u
+
 // BIP32 is a scheme for deriving chains of addresses from a seed value
 // https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 
 @interface BRBIP32Sequence : NSObject<BRKeySequence>
 
 - (NSData *)masterPublicKeyFromSeed:(NSData *)seed;
-- (NSData *)publicKey:(unsigned)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey;
-- (NSString *)privateKey:(unsigned)n internal:(BOOL)internal fromSeed:(NSData *)seed;
+- (NSData *)publicKey:(uint32_t)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey;
+- (NSString *)privateKey:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData *)seed;
 - (NSArray *)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed;
+
+- (NSData *)authPublicKeyFromSeed:(NSData *)seed;
+- (NSString *)authPrivateKeyFromSeed:(NSData *)seed;
 
 - (NSString *)serializedPrivateMasterFromSeed:(NSData *)seed;
 - (NSString *)serializedMasterPublicKey:(NSData *)masterPublicKey;

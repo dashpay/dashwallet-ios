@@ -29,7 +29,6 @@
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 
-#define BIP32_HARD     0x80000000u
 #define BIP32_SEED_KEY "Bitcoin seed"
 #define BIP32_XPRV     "\x04\x88\xAD\xE4"
 #define BIP32_XPUB     "\x04\x88\xB2\x1E"
@@ -51,9 +50,9 @@
 // - In case parse256(IL) >= n or ki = 0, the resulting key is invalid, and one should proceed with the next value for i
 //   (Note: this has probability lower than 1 in 2^127.)
 //
-static void CKDpriv(UInt256 *k, UInt256 *c, unsigned i)
+static void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i)
 {
-    unsigned char buf[sizeof(BRPubKey) + sizeof(i)];
+    uint8_t buf[sizeof(BRPubKey) + sizeof(i)];
     UInt512 I;
     
     if (i & BIP32_HARD) {
@@ -62,7 +61,7 @@ static void CKDpriv(UInt256 *k, UInt256 *c, unsigned i)
     }
     else secp256k1_point_mul(buf, NULL, *k, 1);
 
-    *(unsigned *)&buf[sizeof(BRPubKey)] = CFSwapInt32HostToBig(i);
+    *(uint32_t *)&buf[sizeof(BRPubKey)] = CFSwapInt32HostToBig(i);
 
     HMAC(&I, SHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, k|P(k) || i)
     
@@ -91,12 +90,12 @@ static void CKDpub(BRPubKey *K, UInt256 *c, uint32_t i)
 {
     if (i & BIP32_HARD) return; // can't derive private child key from public parent key
 
-    unsigned char buf[sizeof(*K) + sizeof(i)];
+    uint8_t buf[sizeof(*K) + sizeof(i)];
     UInt512 I;
     BRPubKey pIL;
     
     *(BRPubKey *)buf = *K;
-    *(unsigned *)&buf[sizeof(*K)] = CFSwapInt32HostToBig(i);
+    *(uint32_t *)&buf[sizeof(*K)] = CFSwapInt32HostToBig(i);
 
     HMAC(&I, SHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, P(K) || i)
     
@@ -156,7 +155,7 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     return mpk;
 }
 
-- (NSData *)publicKey:(unsigned)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
+- (NSData *)publicKey:(uint32_t)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey
 {
     if (masterPublicKey.length < 4 + sizeof(UInt256) + sizeof(BRPubKey)) return nil;
 
@@ -169,7 +168,7 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     return [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
 }
 
-- (NSString *)privateKey:(unsigned)n internal:(BOOL)internal fromSeed:(NSData *)seed
+- (NSString *)privateKey:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData *)seed
 {
     return seed ? [self privateKeys:@[@(n)] internal:internal fromSeed:seed].lastObject : nil;
 }
@@ -195,18 +194,52 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     CKDpriv(&secret, &chain, internal ? 1 : 0); // internal or external chain
 
     for (NSNumber *i in n) {
-        NSMutableData *prvKey = [NSMutableData secureDataWithCapacity:34];
+        NSMutableData *privKey = [NSMutableData secureDataWithCapacity:34];
         UInt256 s = secret, c = chain;
         
         CKDpriv(&s, &c, i.unsignedIntValue); // nth key in chain
 
-        [prvKey appendBytes:&version length:1];
-        [prvKey appendBytes:&s length:sizeof(s)];
-        [prvKey appendBytes:"\x01" length:1]; // specifies compressed pubkey format
-        [a addObject:[NSString base58checkWithData:prvKey]];
+        [privKey appendBytes:&version length:1];
+        [privKey appendBytes:&s length:sizeof(s)];
+        [privKey appendBytes:"\x01" length:1]; // specifies compressed pubkey format
+        [a addObject:[NSString base58checkWithData:privKey]];
     }
 
     return a;
+}
+
+#pragma mark - authentication keys
+
+- (NSData *)authPublicKeyFromSeed:(NSData *)seed
+{
+    return [BRKey keyWithPrivateKey:[self authPrivateKeyFromSeed:seed]].publicKey;
+}
+
+- (NSString *)authPrivateKeyFromSeed:(NSData *)seed
+{
+    if (! seed) return nil;
+    
+    UInt512 I;
+    
+    HMAC(&I, SHA512, 64, BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
+    
+    UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
+    uint8_t version = BITCOIN_PRIVKEY;
+    
+#if BITCOIN_TESTNET
+    version = BITCOIN_PRIVKEY_TEST;
+#endif
+    
+    // BIP32 path m/1H/0 (same as copay uses for bitauth)
+    CKDpriv(&secret, &chain, 1 | BIP32_HARD);
+    CKDpriv(&secret, &chain, 0);
+    
+    NSMutableData *privKey = [NSMutableData secureDataWithCapacity:34];
+
+    [privKey appendBytes:&version length:1];
+    [privKey appendBytes:&secret length:sizeof(secret)];
+    [privKey appendBytes:"\x01" length:1]; // specifies compressed pubkey format
+    return [NSString base58checkWithData:privKey];
 }
 
 #pragma mark - serializations
