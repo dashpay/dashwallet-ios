@@ -230,7 +230,7 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     version = BITCOIN_PRIVKEY_TEST;
 #endif
     
-    // BIP32 path m/1H/0 (same as copay uses for bitauth)
+    // path m/1H/0 (same as copay uses for bitauth)
     CKDpriv(&secret, &chain, 1 | BIP32_HARD);
     CKDpriv(&secret, &chain, 0);
     

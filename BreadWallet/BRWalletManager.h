@@ -53,6 +53,7 @@
 @property (nonatomic, readonly) NSTimeInterval seedCreationTime; // interval since refrence date, 00:00:00 01/01/01 GMT
 @property (nonatomic, readonly) NSTimeInterval secureTime; // last known time from an ssl server connection
 @property (nonatomic, assign) uint64_t spendingLimit; // amount that can be spent using touch id without pin entry
+@property (nonatomic, readonly) NSString *authPrivateKey; // private key for signing authenticated api calls
 @property (nonatomic, readonly, getter=isTouchIdEnabled) BOOL touchIdEnabled; // true if touch id is enabled
 @property (nonatomic, readonly, getter=isPasscodeEnabled) BOOL passcodeEnabled; // true if device passcode is enabled
 @property (nonatomic, assign) BOOL didAuthenticate; // true if the user authenticated after this was last set to false

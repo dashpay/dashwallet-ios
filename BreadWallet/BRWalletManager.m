@@ -68,6 +68,7 @@
 #define PIN_KEY             @"pin"
 #define PIN_FAIL_COUNT_KEY  @"pinfailcount"
 #define PIN_FAIL_HEIGHT_KEY @"pinfailheight"
+#define AUTH_PRIVKEY_KEY    @"authprivkey"
 #define SEED_KEY            @"seed" // depreceated
 
 static BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
@@ -358,6 +359,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         setKeychainData(nil, PIN_KEY, NO);
         setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
         setKeychainData(nil, PIN_FAIL_HEIGHT_KEY, NO);
+        setKeychainData(nil, AUTH_PRIVKEY_KEY, NO);
         
         if (! setKeychainString(seedPhrase, MNEMONIC_KEY, YES)) {
             NSLog(@"error setting wallet seed");
@@ -390,6 +392,21 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     NSData *d = getKeychainData(CREATION_TIME_KEY, nil);
 
     return (d.length < sizeof(NSTimeInterval)) ? BIP39_CREATION_TIME : *(const NSTimeInterval *)d.bytes;
+}
+
+// private key for signing authenticated api calls
+- (NSString *)authPrivateKey
+{
+    NSString *privKey = getKeychainString(AUTH_PRIVKEY_KEY, nil);
+    
+    if (! privKey) {
+        NSData *seed = [self.mnemonic deriveKeyFromPhrase:getKeychainString(MNEMONIC_KEY, nil) withPassphrase:nil];
+
+        privKey = [[BRBIP32Sequence new] authPrivateKeyFromSeed:seed];
+        setKeychainString(privKey, AUTH_PRIVKEY_KEY, nil);
+    }
+    
+    return privKey;
 }
 
 // true if touch id is enabled
