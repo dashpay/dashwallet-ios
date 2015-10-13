@@ -578,7 +578,8 @@ static NSString *getKeychainString(NSString *key, NSError **error)
                       initWithTitle:[NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
                                      (title) ? title : @""] message:message delegate:self
                       cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-                      otherButtonTitles:NSLocalizedString(@"panic", nil), nil];
+                      otherButtonTitles://NSLocalizedString(@"panic", nil),
+                      nil];
     self.pinField = nil; // reset pinField so a new one is created
     [self.alertView setValue:self.pinField forKey:@"accessoryView"];
     [self.alertView show];
@@ -1219,7 +1220,7 @@ replacementString:(NSString *)string
     else if (buttonIndex >= 0 && [[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"panic",nil)]) {
         UIAlertView *v = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"panic lock", nil)
                           message:NSLocalizedString(@"Disable wallet for 48 hours? You can re-enable at any time using "
-                                                    "your recovery phrase", nil) delegate:self
+                                                    "your recovery phrase.", nil) delegate:self
                           cancelButtonTitle:NSLocalizedString(@"cancel", nil)
                           otherButtonTitles:NSLocalizedString(@"lock", nil), nil];
         [v show];
