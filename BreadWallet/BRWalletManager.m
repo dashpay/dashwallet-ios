@@ -577,7 +577,8 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     self.alertView = [[UIAlertView alloc]
                       initWithTitle:[NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
                                      (title) ? title : @""] message:message delegate:self
-                      cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:nil];
+                      cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+                      otherButtonTitles:NSLocalizedString(@"panic", nil), nil];
     self.pinField = nil; // reset pinField so a new one is created
     [self.alertView setValue:self.pinField forKey:@"accessoryView"];
     [self.alertView show];
@@ -1214,6 +1215,29 @@ replacementString:(NSString *)string
                 self.sweepCompletion = nil;
             }
         });
+    }
+    else if (buttonIndex >= 0 && [[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"panic",nil)]) {
+        UIAlertView *v = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"panic lock", nil)
+                          message:NSLocalizedString(@"Disable wallet for 48 hours? You can re-enable at any time using "
+                                                    "your recovery phrase", nil) delegate:self
+                          cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+                          otherButtonTitles:NSLocalizedString(@"lock", nil), nil];
+        [v show];
+    }
+    else if (buttonIndex >= 0 && [[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"lock",nil)]) {
+        if (self.secureTime + NSTimeIntervalSince1970 + 48*60*60 > getKeychainInt(PIN_FAIL_HEIGHT_KEY, nil)) {
+            setKeychainInt(self.secureTime + NSTimeIntervalSince1970 + 48*60*60, PIN_FAIL_HEIGHT_KEY, NO);
+        }
+        
+        if (3 > getKeychainInt(PIN_FAIL_COUNT_KEY, nil)) setKeychainInt(3, PIN_FAIL_COUNT_KEY, NO);
+
+        UIAlertView *v = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"wallet disabled", nil)
+                          message:[NSString stringWithFormat:NSLocalizedString(@"\ntry again in %d %@", nil), 48,
+                                   NSLocalizedString(@"hours", nil)] delegate:self
+                          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil];
+        [v show];
+    
+        [BREventManager saveEvent:@"wallet_manager:panic_lock"];
     }
     else if (buttonIndex >= 0 && [[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"reset",nil)]) {
         UITextView *t = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, 260, 180)];
