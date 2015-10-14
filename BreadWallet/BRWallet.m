@@ -386,7 +386,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         if (tx.blockHeight == TX_UNCONFIRMED && [self amountSentByTransaction:tx] == 0) cpfpSize += tx.size;
         
         if (fee) feeAmount = [self feeForTxSize:transaction.size + 34 + cpfpSize]; // assume we will add a change output
-        if (balance == amount + feeAmount || balance >= amount + feeAmount + TX_MIN_OUTPUT_AMOUNT) break;
+        if (balance == amount + feeAmount || balance >= amount + feeAmount + self.minOutputAmount) break;
     }
     
     if (balance < amount + feeAmount) { // insufficient funds
@@ -394,7 +394,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         return nil;
     }
     
-    if (balance - (amount + feeAmount) >= TX_MIN_OUTPUT_AMOUNT) {
+    if (balance - (amount + feeAmount) >= self.minOutputAmount) {
         [transaction addOutputAddress:self.changeAddress amount:balance - (amount + feeAmount)];
         [transaction shuffleOutputOrder];
     }
@@ -686,6 +686,12 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
              fee = (((size*self.feePerKb/1000) + 99)/100)*100; // fee using feePerKb, rounded up to nearest 100 satoshi
     
     return (fee > standardFee) ? fee : standardFee;
+}
+
+// outputs below this amount are uneconomical due to fees
+- (uint64_t)minOutputAmount
+{
+    return self.feePerKb*3*(34 + 148)/1000;
 }
 
 @end

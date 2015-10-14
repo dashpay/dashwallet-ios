@@ -377,10 +377,10 @@ replacementString:(NSString *)string
 //    l = [t rangeOfCharacterFromSet:self.charset options:NSBackwardsSearch].location;
 //    l = (l < t.length) ? l + 1 : t.length;
 //
-//    // don't allow values below TX_MIN_OUTPUT_AMOUNT
+//    // don't allow values below minOutputAmount
 //    if (t.length > 0 && [t rangeOfString:f.currencyDecimalSeparator].location != NSNotFound &&
 //        [m amountForString:[t stringByReplacingCharactersInRange:NSMakeRange(l, 0) withString:@"9"]] <
-//        TX_MIN_OUTPUT_AMOUNT) {
+//        manager.wallet.minOutputAmount) {
 //        return NO;
 //    }
     numberFormatter.minimumFractionDigits = mindigits;
