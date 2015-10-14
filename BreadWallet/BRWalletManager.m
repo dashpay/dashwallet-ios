@@ -50,8 +50,8 @@
 #define SEC_ATTR_SERVICE       @"org.voisine.breadwallet"
 #define DEFAULT_CURRENCY_CODE  @"USD"
 #define DEFAULT_SPENT_LIMIT    SATOSHIS
-#define DEFAULT_FEE_PER_KB     (4096*1000/225) // fee required by eligius pool, which supports child-pays-for-parent
-#define MAX_FEE_PER_KB         (100100*1000/225) // slightly higher than a 1000bit fee on a typical 225byte transaction
+#define DEFAULT_FEE_PER_KB     (5000*1000 + 190/191) // default fee-per-kb to match min-relay-fee on 191 byte tx
+#define MAX_FEE_PER_KB         (100100*1000 + 190/191) // slightly higher than a 1000bit fee on 191 byte tx
 
 #define LOCAL_CURRENCY_CODE_KEY @"LOCAL_CURRENCY_CODE"
 #define CURRENCY_CODES_KEY      @"CURRENCY_CODES"
