@@ -46,12 +46,12 @@
 #define TICKER_URL     @"https://bitpay.com/rates"
 #define FEE_PER_KB_URL @"https://api.breadwallet.com/v1/fee-per-kb"
 
-#define SEED_ENTROPY_LENGTH    (128/8)
-#define SEC_ATTR_SERVICE       @"org.voisine.breadwallet"
-#define DEFAULT_CURRENCY_CODE  @"USD"
-#define DEFAULT_SPENT_LIMIT    SATOSHIS
-#define DEFAULT_FEE_PER_KB     (TX_FEE_PER_KB*1000 + 190/191) // default fee-per-kb to match standard fee on 191 byte tx
-#define MAX_FEE_PER_KB         (100100*1000 + 190/191) // slightly higher than a 1000bit fee on 191 byte tx
+#define SEED_ENTROPY_LENGTH   (128/8)
+#define SEC_ATTR_SERVICE      @"org.voisine.breadwallet"
+#define DEFAULT_CURRENCY_CODE @"USD"
+#define DEFAULT_SPENT_LIMIT   SATOSHIS
+#define DEFAULT_FEE_PER_KB    ((TX_FEE_PER_KB*1000 + 190)/191) // default fee-per-kb to match standard fee on 191byte tx
+#define MAX_FEE_PER_KB        ((100100*1000 + 190)/191) // slightly higher than a 1000bit fee on 191byte tx
 
 #define LOCAL_CURRENCY_CODE_KEY @"LOCAL_CURRENCY_CODE"
 #define CURRENCY_CODES_KEY      @"CURRENCY_CODES"
