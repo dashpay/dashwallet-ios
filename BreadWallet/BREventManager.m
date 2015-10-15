@@ -16,7 +16,7 @@
 #define IS_IN_SAMPLE_GROUP              @"is_in_sample_group"
 #define HAS_PROMPTED_FOR_PERMISSION     @"has_prompted_for_permission"
 #define HAS_ACQUIRED_PERMISSION         @"has_acquired_permission"
-#define EVENT_SERVER_URL                [NSURL URLWithString:@"http://bread-events.elasticbeanstalk.com/events"]
+#define EVENT_SERVER_URL                [NSURL URLWithString:@"https://api.breadwallet.com/events"]
 #define SAMPLE_CHANCE                   10
 
 
