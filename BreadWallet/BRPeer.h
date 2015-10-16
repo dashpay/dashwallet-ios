@@ -81,6 +81,7 @@ typedef union _UInt128 UInt128;
 // called when the peer relays either a merkleblock or a block header, headers will have 0 totalTransactions
 - (void)peer:(BRPeer *)peer relayedBlock:(BRMerkleBlock *)block;
 
+- (void)peer:(BRPeer *)peer notfoundTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockhashes;
 - (BRTransaction *)peer:(BRPeer *)peer requestedTransaction:(UInt256)txHash;
 
 @end

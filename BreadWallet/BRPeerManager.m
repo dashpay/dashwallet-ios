@@ -1295,6 +1295,11 @@ static const char *dns_seeds[] = {
     }
 }
 
+- (void)peer:(BRPeer *)peer notfoundTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockhashes
+{
+    
+}
+
 - (BRTransaction *)peer:(BRPeer *)peer requestedTransaction:(UInt256)txHash
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];
@@ -1319,13 +1324,12 @@ static const char *dns_seeds[] = {
         if (callback) callback(error);
     });
 
-    [peer sendPingMessageWithPongHandler:^(BOOL success) {
-        if (success) { // check if peer will relay the transaction back
-            if (! [self.txRelays[hash] containsObject:peer] && ! [self.txRequests[hash] containsObject:peer]) {
-                if (! self.txRequests[hash]) self.txRequests[hash] = [NSMutableSet set];
-                [self.txRequests[hash] addObject:peer];
-                [peer sendGetdataMessageWithTxHashes:@[hash] andBlockHashes:nil];
-            }
+    [peer sendPingMessageWithPongHandler:^(BOOL success) { // check if peer will relay the transaction back
+        if (! success) return;
+        if (! [self.txRelays[hash] containsObject:peer] && ! [self.txRequests[hash] containsObject:peer]) {
+            if (! self.txRequests[hash]) self.txRequests[hash] = [NSMutableSet set];
+            [self.txRequests[hash] addObject:peer];
+            [peer sendGetdataMessageWithTxHashes:@[hash] andBlockHashes:nil];
         }
     }];
 

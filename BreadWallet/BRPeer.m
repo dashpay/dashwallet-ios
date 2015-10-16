@@ -843,6 +843,7 @@ services:(uint64_t)services
 
 - (void)acceptNotfoundMessage:(NSData *)message
 {
+    NSMutableArray *txHashes = [NSMutableArray array], *blockHashes = [NSMutableArray array];
     NSUInteger l, count = (NSUInteger)[message varIntAtOffset:0 length:&l];
 
     if (l == 0 || message.length < l + count*36) {
@@ -852,6 +853,19 @@ services:(uint64_t)services
     }
 
     NSLog(@"%@:%u got notfound with %u items", self.host, self.port, (int)count);
+
+    for (NSUInteger off = l; off < l + 36*count; off += 36) {
+        if ([message UInt32AtOffset:off] == tx) {
+            [txHashes addObject:uint256_obj([message hashAtOffset:off + sizeof(uint32_t)])];
+        }
+        else if ([message UInt32AtOffset:off] == merkleblock) {
+            [blockHashes addObject:uint256_obj([message hashAtOffset:off + sizeof(uint32_t)])];
+        }
+    }
+
+    dispatch_async(self.delegateQueue, ^{
+        [self.delegate peer:self notfoundTxHashes:txHashes andBlockHashes:blockHashes];
+    });
 }
 
 - (void)acceptPingMessage:(NSData *)message
