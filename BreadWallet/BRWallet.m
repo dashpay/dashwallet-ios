@@ -241,6 +241,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         if (tx.blockHeight == TX_UNCONFIRMED &&
             ([spent intersectsSet:spentOutputs] || [[NSSet setWithArray:tx.inputHashes] intersectsSet:invalidTx])) {
             [invalidTx addObject:uint256_obj(tx.txHash)];
+            [balanceHistory insertObject:@(balance) atIndex:0];
             continue;
         }
 

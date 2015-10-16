@@ -121,19 +121,19 @@
 
 - (void)appendProtoBufString:(NSString *)s withKey:(NSUInteger)key
 {
-    [self appendProtoBufVarInt:(key << 3) + PROTOBUF_LENDELIM];
+    [self appendProtoBufVarInt:(key << 3) | PROTOBUF_LENDELIM];
     [self appendProtoBufLenDelim:[s dataUsingEncoding:NSUTF8StringEncoding]];
 }
 
 - (void)appendProtoBufData:(NSData *)d withKey:(NSUInteger)key
 {
-    [self appendProtoBufVarInt:(key << 3) + PROTOBUF_LENDELIM];
+    [self appendProtoBufVarInt:(key << 3) | PROTOBUF_LENDELIM];
     [self appendProtoBufLenDelim:d];
 }
 
 - (void)appendProtoBufInt:(uint64_t)i withKey:(NSUInteger)key
 {
-    [self appendProtoBufVarInt:(key << 3) + PROTOBUF_VARINT];
+    [self appendProtoBufVarInt:(key << 3) | PROTOBUF_VARINT];
     [self appendProtoBufVarInt:i];
 }
 
