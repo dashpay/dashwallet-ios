@@ -958,7 +958,7 @@ services:(uint64_t)services
           (uint256_is_zero(txHash) ? @"" : @" txid: "), (uint256_is_zero(txHash) ? @"" : uint256_obj(txHash)));
     reason = nil; // fixes an unused variable warning for non-debug builds
 
-    if (! uint256_is_zero(txHash)) { // most likely a double spend due to tx missing from wallet
+    if (! uint256_is_zero(txHash)) {
         dispatch_async(self.delegateQueue, ^{
             [self.delegate peer:self rejectedTransaction:txHash withCode:code];
         });

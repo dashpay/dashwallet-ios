@@ -1015,7 +1015,6 @@ static const char *dns_seeds[] = {
     if (! [m.wallet registerTransaction:transaction]) return;
     if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
     self.publishedTx[hash] = transaction;
-    [self.txRequests[hash] removeObject:peer];
     
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
     if (callback || ! [self.txRelays[hash] containsObject:peer]) {
@@ -1036,6 +1035,7 @@ static const char *dns_seeds[] = {
         });
     }
     
+    [self.txRequests[hash] removeObject:peer];
     if (! _bloomFilter) return; // bloom filter is aready being updated
 
     // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
@@ -1063,7 +1063,6 @@ static const char *dns_seeds[] = {
     NSLog(@"%@:%d has transaction %@", peer.host, peer.port, hash);
     if ((! tx || ! [m.wallet registerTransaction:tx]) && ! [m.wallet.txHashes containsObject:hash]) return;
     if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
-    [self.txRequests[hash] removeObject:peer];
     
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
     if (callback || ! [self.txRelays[hash] containsObject:peer]) {
@@ -1083,14 +1082,14 @@ static const char *dns_seeds[] = {
             if (callback) callback(nil);
         });
     }
+    
+    [self.txRequests[hash] removeObject:peer];
 }
 
 - (void)peer:(BRPeer *)peer rejectedTransaction:(UInt256)txHash withCode:(uint8_t)code
 {
     BRWalletManager *m = [BRWalletManager sharedInstance];
     NSValue *hash = uint256_obj(txHash);
-    
-    [self.txRequests[hash] removeObject:peer];
     
     if ([self.txRelays[hash] containsObject:peer]) {
         [self.txRelays[hash] removeObject:peer];
@@ -1103,6 +1102,9 @@ static const char *dns_seeds[] = {
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
         });
     }
+    
+    // if we get rejected for any reason other than double-spend, the peer is likely misconfigured
+    if (code != REJECT_SPENT) [self peerMisbehavin:peer];
 }
 
 - (void)peer:(BRPeer *)peer relayedBlock:(BRMerkleBlock *)block
@@ -1297,7 +1299,9 @@ static const char *dns_seeds[] = {
 
 - (void)peer:(BRPeer *)peer notfoundTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockhashes
 {
-    
+    for (NSValue *hash in txHashes) {
+        [self.txRelays[hash] removeObject:peer];
+    }
 }
 
 - (BRTransaction *)peer:(BRPeer *)peer requestedTransaction:(UInt256)txHash
