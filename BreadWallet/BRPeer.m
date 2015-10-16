@@ -847,7 +847,7 @@ services:(uint64_t)services
     NSUInteger l, count = (NSUInteger)[message varIntAtOffset:0 length:&l];
 
     if (l == 0 || message.length < l + count*36) {
-        [self error:@"malformed notfount message, length is %u, should be %u for %u items", (int)message.length,
+        [self error:@"malformed notfound message, length is %u, should be %u for %u items", (int)message.length,
          (int)(((l == 0) ? 1 : l) + count*36), (int)count];
         return;
     }

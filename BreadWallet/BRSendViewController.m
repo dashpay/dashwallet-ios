@@ -756,28 +756,28 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
 - (void)updateClipboardText
 {
-    NSString *p = [[UIPasteboard generalPasteboard].string
+    NSString *str = [[UIPasteboard generalPasteboard].string
                    stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     UIImage *img = [UIPasteboard generalPasteboard].image;
-    NSMutableArray *a = [NSMutableArray array];
-    NSCharacterSet *c = [NSCharacterSet alphanumericCharacterSet].invertedSet;
+    NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+    NSCharacterSet *separators = [NSCharacterSet alphanumericCharacterSet].invertedSet;
     
-    if (p) {
-        [a addObject:p];
-        [a addObjectsFromArray:[p componentsSeparatedByCharactersInSet:c]];
+    if (str) {
+        [set addObject:str];
+        [set addObjectsFromArray:[str componentsSeparatedByCharactersInSet:separators]];
     }
     
     if (img && &CIDetectorTypeQRCode) {
         for (CIQRCodeFeature *qr in [[CIDetector detectorOfType:CIDetectorTypeQRCode context:nil options:nil]
                                      featuresInImage:[CIImage imageWithCGImage:img.CGImage]]) {
-            [a addObject:[qr.messageString
-                          stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+            [set addObject:[qr.messageString
+                            stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
         }
     }
 
     self.clipboardText.text = @"";
     
-    for (NSString *s in a) {
+    for (NSString *s in set) {
         BRPaymentRequest *req = [BRPaymentRequest requestWithString:s];
         
         if ([req.paymentAddress isValidBitcoinAddress]) {
@@ -881,28 +881,28 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     if ([self nextTip]) return;
     [BREventManager saveEvent:@"send:pay_clipboard"];
 
-    NSString *p = [[UIPasteboard generalPasteboard].string
+    NSString *str = [[UIPasteboard generalPasteboard].string
                    stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     UIImage *img = [UIPasteboard generalPasteboard].image;
-    NSMutableOrderedSet *s = [NSMutableOrderedSet orderedSet];
-    NSCharacterSet *c = [NSCharacterSet alphanumericCharacterSet].invertedSet;
+    NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+    NSCharacterSet *separators = [NSCharacterSet alphanumericCharacterSet].invertedSet;
 
-    if (p) {
-        [s addObject:p];
-        [s addObjectsFromArray:[p componentsSeparatedByCharactersInSet:c]];
+    if (str) {
+        [set addObject:str];
+        [set addObjectsFromArray:[str componentsSeparatedByCharactersInSet:separators]];
     }
     
     if (img && &CIDetectorTypeQRCode) {
         for (CIQRCodeFeature *qr in [[CIDetector detectorOfType:CIDetectorTypeQRCode context:nil options:nil]
                                      featuresInImage:[CIImage imageWithCGImage:img.CGImage]]) {
-            [s addObject:[qr.messageString
+            [set addObject:[qr.messageString
              stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
         }
     }
     
     [sender setEnabled:NO];
     self.clearClipboard = YES;
-    [self payFirstFromArray:s.array];
+    [self payFirstFromArray:set.array];
 }
 
 - (IBAction)reset:(id)sender
