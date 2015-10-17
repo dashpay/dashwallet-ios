@@ -395,8 +395,7 @@ static const char *dns_seeds[] = {
     [self.orphans removeAllObjects]; // clear out orphans that may have been received on an old filter
     self.lastOrphan = nil;
     self.filterUpdateHeight = self.lastBlockHeight;
-    self.fpRate = BLOOM_DEFAULT_FALSEPOSITIVE_RATE;
-    if (self.lastBlockHeight + 500 < self.estimatedBlockHeight) self.fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
+    self.fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
 
     NSUInteger elemCount = m.wallet.addresses.count + m.wallet.unspentOutputs.count;
     BRBloomFilter *filter = [[BRBloomFilter alloc] initWithFalsePositiveRate:self.fpRate

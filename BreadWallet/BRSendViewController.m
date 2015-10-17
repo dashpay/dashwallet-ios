@@ -799,24 +799,22 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     [self.clipboardText scrollRangeToVisible:NSMakeRange(0, 0)];
 }
 
-- (void)payFirstFromArray:(NSArray *)paymentRequestArray
+- (void)payFirstFromArray:(NSArray *)array
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSUInteger i = 0;
 
-    for (NSString *paymentRequestStr in paymentRequestArray) {
-        BRPaymentRequest *req = [BRPaymentRequest requestWithString:paymentRequestStr];
-        NSData *paymentRequestData = paymentRequestStr.hexToData.reverse;
+    for (NSString *str in array) {
+        BRPaymentRequest *req = [BRPaymentRequest requestWithString:str];
+        NSData *data = str.hexToData.reverse;
         
         i++;
         
         // if the clipboard contains a known txHash, we know it's not a hex encoded private key
-        if (paymentRequestData.length == sizeof(UInt256) &&
-            [manager.wallet.txHashes containsObject:uint256_obj(*(UInt256 *)paymentRequestData.bytes)]) continue;
+        if (data.length == sizeof(UInt256) && ! [manager.wallet transactionForHash: *(UInt256 *)data.bytes]) continue;
         
-        if ([req.paymentAddress isValidBitcoinAddress] || [paymentRequestStr isValidBitcoinPrivateKey] ||
-            [paymentRequestStr isValidBitcoinBIP38Key] ||
-            (req.r.length > 0 && [req.scheme isEqual:@"bitcoin"])) {
+        if ([req.paymentAddress isValidBitcoinAddress] || [str isValidBitcoinPrivateKey] ||
+            [str isValidBitcoinBIP38Key] || (req.r.length > 0 && [req.scheme isEqual:@"bitcoin"])) {
             [self performSelector:@selector(confirmRequest:) withObject:req afterDelay:0.1];// delayed to show highlight
             return;
         }
@@ -824,7 +822,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
             [BRPaymentRequest fetch:req.r timeout:5.0 completion:^(BRPaymentProtocolRequest *req, NSError *error) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (error) { // don't try any more BIP73 urls
-                        [self payFirstFromArray:[paymentRequestArray objectsAtIndexes:[paymentRequestArray
+                        [self payFirstFromArray:[array objectsAtIndexes:[array
                         indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
                             return (idx >= i && ([obj hasPrefix:@"bitcoin:"] || ! [NSURL URLWithString:obj]));
                         }]]];

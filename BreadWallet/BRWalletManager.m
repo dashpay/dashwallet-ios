@@ -957,12 +957,13 @@ completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError
                 ! [utxo[@"value"] isKindOfClass:[NSNumber class]]) {
                 completion(nil, nil, nil,
                            [NSError errorWithDomain:@"BreadWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                            [NSString stringWithFormat:NSLocalizedString(@"unexpected response from %@",nil),u.host]}]);
+                            [NSString stringWithFormat:NSLocalizedString(@"unexpected response from %@", nil),
+                             u.host]}]);
                 return;
             }
             
             if (! [utxo[@"script_type"] isEqual:@"pubkeyhash"] && ! [utxo[@"script_type"] isEqual:@"pubkey"]) continue;
-            o.hash = *(const UInt256 *)[[utxo[@"transaction_hash"] hexToData] reverse].bytes;
+            o.hash = *(const UInt256 *)[utxo[@"transaction_hash"] hexToData].reverse.bytes;
             o.n = [utxo[@"output_index"] unsignedIntValue];
             [utxos addObject:brutxo_obj(o)];
             [amounts addObject:utxo[@"value"]];
