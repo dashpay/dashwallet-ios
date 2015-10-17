@@ -61,7 +61,8 @@ static const struct { uint32_t height; char *hash; uint32_t timestamp; uint32_t 
 };
 
 static const char *dns_seeds[] = {
-    "testnet-seed.bitcoin.petertodd.org.", "testnet-seed.bluematt.me.", "testnet-seed.alexykot.me."
+    "testnet-seed.breadwallet.com", "testnet-seed.bitcoin.petertodd.org.", "testnet-seed.bluematt.me.",
+    "testnet-seed.alexykot.me."
 };
 
 #else // main net
@@ -87,12 +88,12 @@ static const struct { uint32_t height; char *hash; uint32_t timestamp; uint32_t 
     { 302400, "0000000000000000472132c4daaf358acaf461ff1c3e96577a74e5ebf91bb170", 1400928750, 0x18692842u },
     { 322560, "000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1", 1411680080, 0x181fb893u },
     { 342720, "00000000000000000f9cfece8494800d3dcbf9583232825da640c8703bcd27e7", 1423496415, 0x1818bb87u },
-    { 362880, "000000000000000014898b8e6538392702ffb9450f904c80ebf9d82b519a77d5", 1435475246, 0x1816418eu }
+    { 362880, "000000000000000014898b8e6538392702ffb9450f904c80ebf9d82b519a77d5", 1435475246, 0x1816418eu },
 };
 
 static const char *dns_seeds[] = {
-    "seed.bitcoin.sipa.be.", "dnsseed.bluematt.me.", "dnsseed.bitcoin.dashjr.org.", "seed.bitcoinstats.com.",
-    "seed.bitnodes.io."
+    "seed.breadwallet.com", "seed.bitcoin.sipa.be.", "dnsseed.bluematt.me.", "dnsseed.bitcoin.dashjr.org.",
+    "seed.bitcoinstats.com.", "seed.bitnodes.io."
 };
 
 #endif
@@ -239,7 +240,8 @@ static const char *dns_seeds[] = {
                     
                         // give dns peers a timestamp between 3 and 7 days ago
                         [peers[i] addObject:[[BRPeer alloc] initWithAddress:addr port:port
-                         timestamp:now - (3*24*60*60 + arc4random_uniform(4*24*60*60)) services:SERVICES_NODE_NETWORK]];
+                                             timestamp:now - (3*24*60*60 + arc4random_uniform(4*24*60*60))
+                                             services:SERVICES_NODE_NETWORK]];
                     }
 
                     freeaddrinfo(servinfo);
@@ -993,10 +995,10 @@ static const char *dns_seeds[] = {
     // limit total to 2500 peers
     if (self.peers.count > 2500) [self.peers removeObjectsInRange:NSMakeRange(2500, self.peers.count - 2500)];
 
-    NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate] - 3*60*60;
+    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
 
     // remove peers more than 3 hours old, or until there are only 1000 left
-    while (self.peers.count > 1000 && ((BRPeer *)self.peers.lastObject).timestamp < t) {
+    while (self.peers.count > 1000 && ((BRPeer *)self.peers.lastObject).timestamp + 3*60*60 < now) {
         [self.peers removeObject:self.peers.lastObject];
     }
 
@@ -1117,9 +1119,9 @@ static const char *dns_seeds[] = {
     if (peer == self.downloadPeer && block.totalTransactions > 0) {
         NSMutableSet *fp = [NSMutableSet setWithArray:block.txHashes];
     
-        // 1% low pass filter, also weights each block by total transactions, using 600 tx per block as typical
+        // 1% low pass filter, also weights each block by total transactions, using 800 tx per block as typical
         [fp minusSet:[BRWalletManager sharedInstance].wallet.txHashes];
-        self.fpRate = self.fpRate*(1.0 - 0.01*block.totalTransactions/600) + 0.01*fp.count/600;
+        self.fpRate = self.fpRate*(1.0 - 0.01*block.totalTransactions/800) + 0.01*fp.count/800;
 
         // false positive rate sanity check
         if (self.downloadPeer.status == BRPeerStatusConnected && self.fpRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) {
