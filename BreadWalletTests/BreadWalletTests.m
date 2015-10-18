@@ -304,7 +304,7 @@
 #if ! BITCOIN_TESTNET && ! SKIP_BIP38
 - (void)testKeyWithBIP38Key
 {
-    NSString *intercode, *confcode, *privkey;
+    NSString *intercode, *privkey;
     BRKey *key;
 
     // non EC multiplied, uncompressed
@@ -354,13 +354,9 @@
     intercode = [BRKey BIP38IntermediateCodeWithSalt:0xa50dba6772cb9383ULL andPassphrase:@"TestingOneTwoThree"];
     NSLog(@"intercode = %@", intercode);
     privkey = [BRKey BIP38KeyWithIntermediateCode:intercode
-               seedb:@"99241d58245c883896f80843d2846672d7312e6195ca1a6c".hexToData compressed:NO
-               confirmationCode:&confcode];
-    NSLog(@"confcode = %@", confcode);
+               seedb:@"99241d58245c883896f80843d2846672d7312e6195ca1a6c".hexToData compressed:NO];
     XCTAssertEqualObjects(@"6PfQu77ygVyJLZjfvMLyhLMQbYnu5uguoJJ4kMCLqWwPEdfpwANVS76gTX", privkey,
                           @"[BRKey BIP38KeyWithIntermediateCode:]");
-    XCTAssertTrue([BRKey confirmWithBIP38ConfirmationCode:confcode address:@"1PE6TQi6HTVNz5DLwB1LcpMBALubfuN2z2"
-                   passphrase:@"TestingOneTwoThree"], @"[BRKey confirmWithBIP38ConfirmationCode:]");
 
     key = [BRKey keyWithBIP38Key:@"6PfLGnQs6VZnrNpmVKfjotbnQuaJK4KZoPFrAjx1JMJUa1Ft8gnf5WxfKd"
            andPassphrase:@"Satoshi"];
@@ -370,13 +366,9 @@
     intercode = [BRKey BIP38IntermediateCodeWithSalt:0x67010a9573418906ULL andPassphrase:@"Satoshi"];
     NSLog(@"intercode = %@", intercode);
     privkey = [BRKey BIP38KeyWithIntermediateCode:intercode
-               seedb:@"49111e301d94eab339ff9f6822ee99d9f49606db3b47a497".hexToData compressed:NO
-               confirmationCode:&confcode];
-    NSLog(@"confcode = %@", confcode);
+               seedb:@"49111e301d94eab339ff9f6822ee99d9f49606db3b47a497".hexToData compressed:NO];
     XCTAssertEqualObjects(@"6PfLGnQs6VZnrNpmVKfjotbnQuaJK4KZoPFrAjx1JMJUa1Ft8gnf5WxfKd", privkey,
                           @"[BRKey BIP38KeyWithIntermediateCode:]");
-    XCTAssertTrue([BRKey confirmWithBIP38ConfirmationCode:confcode address:@"1CqzrtZC6mXSAhoxtFwVjz8LtwLJjDYU3V"
-                   passphrase:@"Satoshi"], @"[BRKey confirmWithBIP38ConfirmationCode:]");
 
     // EC multiplied, uncompressed, with lot/sequence number
     key = [BRKey keyWithBIP38Key:@"6PgNBNNzDkKdhkT6uJntUXwwzQV8Rr2tZcbkDcuC9DZRsS6AtHts4Ypo1j"
@@ -387,13 +379,9 @@
     intercode = [BRKey BIP38IntermediateCodeWithLot:263183 sequence:1 salt:0x4fca5a97u passphrase:@"MOLON LABE"];
     NSLog(@"intercode = %@", intercode);
     privkey = [BRKey BIP38KeyWithIntermediateCode:intercode
-               seedb:@"87a13b07858fa753cd3ab3f1c5eafb5f12579b6c33c9a53f".hexToData compressed:NO
-               confirmationCode:&confcode];
-    NSLog(@"confcode = %@", confcode);
+               seedb:@"87a13b07858fa753cd3ab3f1c5eafb5f12579b6c33c9a53f".hexToData compressed:NO];
     XCTAssertEqualObjects(@"6PgNBNNzDkKdhkT6uJntUXwwzQV8Rr2tZcbkDcuC9DZRsS6AtHts4Ypo1j", privkey,
                           @"[BRKey BIP38KeyWithIntermediateCode:]");
-    XCTAssertTrue([BRKey confirmWithBIP38ConfirmationCode:confcode address:@"1Jscj8ALrYu2y9TD8NrpvDBugPedmbj4Yh"
-                   passphrase:@"MOLON LABE"], @"[BRKey confirmWithBIP38ConfirmationCode:]");
 
     key = [BRKey keyWithBIP38Key:@"6PgGWtx25kUg8QWvwuJAgorN6k9FbE25rv5dMRwu5SKMnfpfVe5mar2ngH"
            andPassphrase:@"\u039c\u039f\u039b\u03a9\u039d \u039b\u0391\u0392\u0395"];
@@ -404,14 +392,9 @@
                  passphrase:@"\u039c\u039f\u039b\u03a9\u039d \u039b\u0391\u0392\u0395"];
     NSLog(@"intercode = %@", intercode);
     privkey = [BRKey BIP38KeyWithIntermediateCode:intercode
-               seedb:@"03b06a1ea7f9219ae364560d7b985ab1fa27025aaa7e427a".hexToData compressed:NO
-               confirmationCode:&confcode];
-    NSLog(@"confcode = %@", confcode);
+               seedb:@"03b06a1ea7f9219ae364560d7b985ab1fa27025aaa7e427a".hexToData compressed:NO];
     XCTAssertEqualObjects(@"6PgGWtx25kUg8QWvwuJAgorN6k9FbE25rv5dMRwu5SKMnfpfVe5mar2ngH", privkey,
                           @"[BRKey BIP38KeyWithIntermediateCode:]");
-    XCTAssertTrue([BRKey confirmWithBIP38ConfirmationCode:confcode address:@"1Lurmih3KruL4xDB5FmHof38yawNtP9oGf"
-                   passphrase:@"\u039c\u039f\u039b\u03a9\u039d \u039b\u0391\u0392\u0395"],
-                  @"[BRKey confirmWithBIP38ConfirmationCode:]");
 
     // password NFC unicode normalization test
     key = [BRKey keyWithBIP38Key:@"6PRW5o9FLp4gJDDVqJQKJFTpMvdsSGJxMYHtHaQBF3ooa8mwD69bapcDQn"

@@ -662,7 +662,10 @@ static const char *dns_seeds[] = {
             NSArray *txHashes = self.publishedTx.allKeys;
 
             for (BRPeer *p in self.connectedPeers) { // after syncing, load filters and get mempools from other peers
-                if (p != self.downloadPeer) [p sendFilterloadMessage:self.bloomFilter.data];
+                if (p != self.downloadPeer || self.fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*5.0) {
+                    [p sendFilterloadMessage:self.bloomFilter.data];
+                }
+                
                 [p sendInvMessageWithTxHashes:txHashes]; // publish unconfirmed tx
                 [p sendPingMessageWithPongHandler:^(BOOL success) {
                     if (! success) return;
