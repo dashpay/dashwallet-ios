@@ -237,11 +237,10 @@ static const char *dns_seeds[] = {
                         else continue;
                         
                         uint16_t port = CFSwapInt16BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_port);
+                        NSTimeInterval age = 3*24*60*60 + arc4random_uniform(4*24*60*60); // add between 3 and 7 days
                     
-                        // give dns peers a timestamp between 3 and 7 days ago
                         [peers[i] addObject:[[BRPeer alloc] initWithAddress:addr port:port
-                                             timestamp:now - (3*24*60*60 + arc4random_uniform(4*24*60*60))
-                                             services:SERVICES_NODE_NETWORK]];
+                                             timestamp:(i > 0 ? now - age : now) services:SERVICES_NODE_NETWORK]];
                     }
 
                     freeaddrinfo(servinfo);

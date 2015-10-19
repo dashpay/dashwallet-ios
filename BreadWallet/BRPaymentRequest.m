@@ -105,8 +105,14 @@
                                stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
 
             if ([pair[0] isEqual:@"amount"]) {
-                self.amount = [[NSDecimalNumber decimalNumberWithString:value]
-                               decimalNumberByMultiplyingByPowerOf10:8].unsignedLongLongValue;
+                NSNumberFormatter *format = [NSNumberFormatter new];
+                
+                format.numberStyle = NSNumberFormatterNoStyle;
+                format.generatesDecimalNumbers = YES;
+                format.lenient = YES;
+                format.partialStringValidationEnabled = YES;
+                self.amount =  [[NSDecimalNumber decimalNumberWithDecimal:[format numberFromString:value].decimalValue]
+                                decimalNumberByMultiplyingByPowerOf10:8].unsignedLongLongValue;
             }
             else if ([pair[0] isEqual:@"label"]) {
                 self.label = value;

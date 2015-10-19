@@ -811,7 +811,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         i++;
         
         // if the clipboard contains a known txHash, we know it's not a hex encoded private key
-        if (data.length == sizeof(UInt256) && ! [manager.wallet transactionForHash: *(UInt256 *)data.bytes]) continue;
+        if (data.length == sizeof(UInt256) && [manager.wallet transactionForHash:*(UInt256 *)data.bytes]) continue;
         
         if ([req.paymentAddress isValidBitcoinAddress] || [str isValidBitcoinPrivateKey] ||
             [str isValidBitcoinBIP38Key] || (req.r.length > 0 && [req.scheme isEqual:@"bitcoin"])) {
