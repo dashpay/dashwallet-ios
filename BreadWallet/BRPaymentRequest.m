@@ -106,11 +106,8 @@
 
             if ([pair[0] isEqual:@"amount"]) {
                 NSNumberFormatter *format = [NSNumberFormatter new];
-                
-                format.numberStyle = NSNumberFormatterNoStyle;
+
                 format.generatesDecimalNumbers = YES;
-                format.lenient = YES;
-                format.partialStringValidationEnabled = YES;
                 self.amount =  [[NSDecimalNumber decimalNumberWithDecimal:[format numberFromString:value].decimalValue]
                                 decimalNumberByMultiplyingByPowerOf10:8].unsignedLongLongValue;
             }
@@ -137,7 +134,7 @@
     
     if (self.amount > 0) {
         [q addObject:[@"amount=" stringByAppendingString:[(id)[NSDecimalNumber numberWithUnsignedLongLong:self.amount]
-                                                           decimalNumberByMultiplyingByPowerOf10:-8].stringValue]];
+                                                          decimalNumberByMultiplyingByPowerOf10:-8].stringValue]];
     }
 
     if (self.label.length > 0) {
