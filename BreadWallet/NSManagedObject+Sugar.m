@@ -25,6 +25,9 @@
 #import "NSManagedObject+Sugar.h"
 #import <objc/runtime.h>
 
+static const char *_contextKey = "contextKey";
+static const char *_storeURLKey = "storeURLKey";
+
 static NSManagedObjectContextConcurrencyType _concurrencyType = NSMainQueueConcurrencyType;
 static NSUInteger _fetchBatchSize = 100;
 
@@ -108,8 +111,16 @@ static NSUInteger _fetchBatchSize = 100;
     __block NSError *error = nil;
 
     [self.context performBlockAndWait:^{
-        a = [self.context executeFetchRequest:request error:&error];
-        if (error) NSLog(@"%s: %@", __func__, error);
+        @try {
+            a = [self.context executeFetchRequest:request error:&error];
+            if (error) NSLog(@"%s: %@", __func__, error);
+        }
+        @catch (NSException *exception) {
+#if ! DEBUG // if this is a not a debug build, delete the persisent data store before crashing
+            [[NSFileManager defaultManager] removeItemAtURL:objc_getAssociatedObject(self, &_storeURLKey) error:nil];
+#endif
+            @throw;
+        }
     }];
      
     return a;
@@ -147,8 +158,16 @@ static NSUInteger _fetchBatchSize = 100;
     __block NSError *error = nil;
 
     [self.context performBlockAndWait:^{
-        count = [self.context countForFetchRequest:request error:&error];
-        if (error) NSLog(@"%s: %@", __func__, error);
+        @try {
+            count = [self.context countForFetchRequest:request error:&error];
+            if (error) NSLog(@"%s: %@", __func__, error);
+        }
+        @catch (NSException *exception) {
+#if ! DEBUG // if this is a not a debug build, delete the persisent data store before crashing
+            [[NSFileManager defaultManager] removeItemAtURL:objc_getAssociatedObject(self, &_storeURLKey) error:nil];
+#endif
+            @throw;
+        }
     }];
     
     return count;
@@ -228,6 +247,7 @@ static NSUInteger _fetchBatchSize = 100;
             mainmoc = [[NSManagedObjectContext alloc] initWithConcurrencyType:_concurrencyType];
             mainmoc.parentContext = writermoc;
 
+            objc_setAssociatedObject(self, &_storeURLKey, storeURL, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
             [NSManagedObject setContext:mainmoc];
 
             // this will save changes to the persistent store before the application terminates
@@ -238,7 +258,7 @@ static NSUInteger _fetchBatchSize = 100;
         }
     });
 
-    NSManagedObjectContext *context = objc_getAssociatedObject(self, @selector(context));
+    NSManagedObjectContext *context = objc_getAssociatedObject(self, &_contextKey);
 
     if (! context && self != [NSManagedObject class]) {
         context = [NSManagedObject context];
@@ -251,7 +271,7 @@ static NSUInteger _fetchBatchSize = 100;
 // sets a different context for NSManagedObject+Sugar methods to use for this type of entity
 + (void)setContext:(NSManagedObjectContext *)context
 {
-    objc_setAssociatedObject(self, @selector(context), (context ? context : [NSNull null]),
+    objc_setAssociatedObject(self, &_contextKey, (context ? context : [NSNull null]),
                              OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
