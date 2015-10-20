@@ -385,7 +385,7 @@ static NSString *dateFormat(NSString *template)
     [self.tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:txCount inSection:0]]
      withRowAnimation:UITableViewRowAnimationFade];
     self.moreTx = NO;
-//    self.transactions = manager.wallet.recentTransactions;
+    self.transactions = manager.wallet.recentTransactions;
     
     NSMutableArray *transactions = [NSMutableArray arrayWithCapacity:self.transactions.count];
     

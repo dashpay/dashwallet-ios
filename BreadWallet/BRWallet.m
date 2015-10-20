@@ -28,6 +28,8 @@
 #import "BRAddressEntity.h"
 #import "BRTransaction.h"
 #import "BRTransactionEntity.h"
+#import "BRTxInputEntity.h"
+#import "BRTxOutputEntity.h"
 #import "BRKeySequence.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
@@ -91,6 +93,10 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             [self.allAddresses addObject:e.address];
         }
 
+        // pre-fetch transaction inputs and outputs
+        [BRTxInputEntity allObjects];
+        [BRTxOutputEntity allObjects];
+        
         for (BRTransactionEntity *e in [BRTransactionEntity allObjects]) {
             BRTransaction *tx = e.transaction;
             NSValue *hash = (tx) ? uint256_obj(tx.txHash) : nil;
