@@ -76,7 +76,7 @@
     self.amount = 0;
     self.r = nil;
 
-    if (! string.length) return;
+    if (string.length == 0) return;
 
     NSString *s = [[string stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]
                    stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
@@ -199,7 +199,7 @@
     NSMutableData *script = [NSMutableData data];
     
     [script appendScriptPubKeyForAddress:self.paymentAddress];
-    if (! script.length) return nil;
+    if (script.length == 0) return nil;
     
     BRPaymentProtocolDetails *details =
         [[BRPaymentProtocolDetails alloc] initWithNetwork:network outputAmounts:@[@(self.amount)]

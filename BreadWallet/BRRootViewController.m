@@ -337,13 +337,26 @@
 
     label.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:13.0];
     label.textColor = [UIColor redColor];
-    label.textAlignment = NSTextAlignmentCenter;
+    label.textAlignment = NSTextAlignmentRight;
     label.text = @"testnet";
     [label sizeToFit];
     label.center = CGPointMake(self.view.frame.size.width - label.frame.size.width,
                                self.view.frame.size.height - label.frame.size.height - 5);
     [self.view addSubview:label];
 #endif
+
+    if (manager.watchOnly) { // watch only wallet
+        UILabel *label = [UILabel new];
+        
+        label.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:13.0];
+        label.textColor = [UIColor redColor];
+        label.textAlignment = NSTextAlignmentRight;
+        label.text = @"watch only";
+        [label sizeToFit];
+        label.center = CGPointMake(self.view.frame.size.width - label.frame.size.width,
+                                   self.view.frame.size.height - (label.frame.size.height - 5)*2);
+        [self.view addSubview:label];
+    }
 
 #if SNAPSHOT
     [self.navigationController

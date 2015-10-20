@@ -344,7 +344,7 @@ replacementString:(NSString *)string
     loc = [textField.text rangeOfCharacterFromSet:self.charset options:NSBackwardsSearch].location;
     loc = (loc < textField.text.length) ? loc + 1 : textField.text.length;
 
-    if (! string.length && point != NSNotFound) { // delete trailing char
+    if (string.length == 0 && point != NSNotFound) { // delete trailing char
         textVal = [textField.text stringByReplacingCharactersInRange:range withString:string];
         if ([textVal isEqual:[numberFormatter stringFromNumber:@0]]) textVal = @"";
     }
@@ -354,16 +354,15 @@ replacementString:(NSString *)string
         return NO; // too many digits
     }
     else if ([string isEqual:numberFormatter.currencyDecimalSeparator]
-             && (! textField.text.length || point == NSNotFound)) {
-        if (! textField.text.length) {
-            textVal = [numberFormatter stringFromNumber:@0]; // if first char is '.', prepend a zero
-        }
+             && (textField.text.length == 0 || point == NSNotFound)) {
+        // if first char is '.', prepend a zero
+        if (textField.text.length == 0) textVal = [numberFormatter stringFromNumber:@0];
         loc = [textVal rangeOfCharacterFromSet:self.charset options:NSBackwardsSearch].location;
         loc = (loc < textVal.length) ? loc + 1 : textVal.length;
         textVal = [textVal stringByReplacingCharactersInRange:NSMakeRange(loc, 0) withString:numberFormatter.currencyDecimalSeparator];
     }
     else if ([string isEqual:@"0"]) {
-        if (! textField.text.length) { // if first digit is zero, append a '.'
+        if (textField.text.length == 0) { // if first digit is zero, append a '.'
             textVal = [numberFormatter stringFromNumber:@0];
             loc = [textVal rangeOfCharacterFromSet:self.charset options:NSBackwardsSearch].location;
             loc = (loc < textVal.length) ? loc + 1 : textVal.length;

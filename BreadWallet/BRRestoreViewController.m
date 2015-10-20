@@ -26,7 +26,10 @@
 #import "BRRestoreViewController.h"
 #import "BRWalletManager.h"
 #import "BRMnemonic.h"
+#import "BRAddressEntity.h"
 #import "NSMutableData+Bitcoin.h"
+#import "NSString+Bitcoin.h"
+#import "NSManagedObject+Sugar.h"
 #import "BREventManager.h"
 
 #define PHRASE_LENGTH 12
@@ -147,9 +150,9 @@
     
         BRWalletManager *m = [BRWalletManager sharedInstance];
         NSString *phrase = [m.mnemonic cleanupPhrase:textView.text], *incorrect = nil;
-        BOOL isLocal = YES;
+        BOOL isLocal = YES, noWallet = m.noWallet;
         
-        if (! [phrase isEqual:textView.text]) textView.text = phrase;
+        if (! [textView.text isValidBitcoinAddress] && ! [phrase isEqual:textView.text]) textView.text = phrase;
         phrase = [m.mnemonic normalizePhrase:phrase];
         
         NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)phrase,
@@ -165,6 +168,32 @@
         if ([phrase isEqual:@"wipe"]) { // shortcut word to force the wipe option to appear
             [self.textView resignFirstResponder];
             [self performSelector:@selector(wipeWithPhrase:) withObject:phrase afterDelay:0.0];
+        }
+        else if (incorrect && noWallet && [textView.text isValidBitcoinAddress]) { // address list watch only wallet
+            m.seedPhrase = @"wipe";
+
+            [[NSManagedObject context] performBlockAndWait:^{
+                int32_t n = 0;
+                
+                for (NSString *s in [textView.text componentsSeparatedByCharactersInSet:[NSCharacterSet
+                                     alphanumericCharacterSet].invertedSet]) {
+                    if (! [s isValidBitcoinAddress]) continue;
+                    
+                    BRAddressEntity *e = [BRAddressEntity managedObject];
+                    
+                    e.address = s;
+                    e.index = n++;
+                    e.internal = NO;
+                }
+            }];
+            
+            [NSManagedObject saveContext];
+            textView.text = nil;
+            [BREventManager saveEvent:@"restore:set_pin"];
+            
+            [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:^{
+                [m performSelector:@selector(setPin) withObject:nil afterDelay:0.3];
+            }];
         }
         else if (incorrect) {
             [BREventManager saveEvent:@"restore:invalid_word"];
@@ -187,7 +216,7 @@
             [[[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"bad recovery phrase", nil) delegate:nil
               cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         }
-        else if (! m.noWallet) {
+        else if (! noWallet) {
             [self.textView resignFirstResponder];
             [self performSelector:@selector(wipeWithPhrase:) withObject:phrase afterDelay:0.0];
         }

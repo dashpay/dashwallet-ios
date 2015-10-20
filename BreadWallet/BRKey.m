@@ -173,6 +173,7 @@ int secp256k1_point_mul(void *r, const void *p, UInt256 i, int compressed)
 
 - (instancetype)initWithPrivateKey:(NSString *)privateKey
 {
+    if (privateKey.length == 0) return nil;
     if (! (self = [self init])) return nil;
     
     // mini private key format
@@ -206,6 +207,7 @@ int secp256k1_point_mul(void *r, const void *p, UInt256 i, int compressed)
 
 - (instancetype)initWithPublicKey:(NSData *)publicKey
 {
+    if (publicKey.length == 0) return nil;
     if (! (self = [self init])) return nil;
     
     self.pubkey = publicKey;
@@ -232,7 +234,7 @@ int secp256k1_point_mul(void *r, const void *p, UInt256 i, int compressed)
 
 - (NSData *)publicKey
 {
-    if (! self.pubkey.length && ! uint256_is_zero(_seckey)) {
+    if (self.pubkey.length == 0 && ! uint256_is_zero(_seckey)) {
         NSMutableData *d = [NSMutableData secureDataWithLength:self.compressed ? 33 : 65];
         int len = 0;
 

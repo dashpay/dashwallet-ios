@@ -298,8 +298,10 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 // returns the first unused external address
 - (NSString *)receiveAddress
 {
+    NSString *addr = [self addressesWithGapLimit:1 internal:NO].lastObject;
+
     //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
-    return [self addressesWithGapLimit:1 internal:NO].lastObject;
+    return (addr) ? addr : self.externalAddresses.lastObject;
 }
 
 // returns the first unused internal address
@@ -367,7 +369,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     BRUTXO o;
 
     for (NSData *script in scripts) {
-        if (! script.length) return nil;
+        if (script.length == 0) return nil;
         [transaction addOutputScript:script amount:[amounts[i] unsignedLongLongValue]];
         amount += [amounts[i++] unsignedLongLongValue];
     }

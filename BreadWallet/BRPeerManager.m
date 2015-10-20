@@ -146,13 +146,6 @@ static const char *dns_seeds[] = {
     self.publishedTx = [NSMutableDictionary dictionary];
     self.publishedCallback = [NSMutableDictionary dictionary];
 
-    dispatch_async(self.q, ^{
-        for (BRTransaction *tx in [BRWalletManager sharedInstance].wallet.recentTransactions) {
-            if (tx.blockHeight != TX_UNCONFIRMED) break;
-            self.publishedTx[uint256_obj(tx.txHash)] = tx; // add unconfirmed tx to mempool
-        }
-    });
-
     self.backgroundObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
@@ -880,6 +873,11 @@ static const char *dns_seeds[] = {
     if (! (peer.services & SERVICES_NODE_NETWORK) || peer.lastblock + 10 < self.lastBlockHeight) {
         [peer disconnect];
         return;
+    }
+
+    for (BRTransaction *tx in [BRWalletManager sharedInstance].wallet.recentTransactions) {
+        if (tx.blockHeight != TX_UNCONFIRMED) break;
+        self.publishedTx[uint256_obj(tx.txHash)] = tx; // add unconfirmed tx to mempool
     }
 
     if (self.connected && (self.downloadPeer.lastblock >= peer.lastblock || self.lastBlockHeight >= peer.lastblock)) {

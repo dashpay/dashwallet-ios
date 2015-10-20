@@ -292,8 +292,8 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         // verify that keychain matches core data, with different access and backup policies it's possible to diverge
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             BRKey *k = [BRKey keyWithPublicKey:[self.sequence publicKey:0 internal:NO masterPublicKey:mpk]];
-                    
-            if (_wallet.addresses.count > 0 && ! [_wallet containsAddress:k.address]) {
+            
+            if (_wallet.addresses.count > 0 && k && ! [_wallet containsAddress:k.address]) {
                 NSLog(@"wallet doesn't contain address: %@", k.address);
 #if DEBUG
                 abort(); // don't wipe core data for debug builds
@@ -328,6 +328,12 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     if (getKeychainData(MASTER_PUBKEY_KEY, &error) || error) return NO;
     if (getKeychainData(SEED_KEY, &error) || error) return NO; // check for old keychain scheme
     return YES;
+}
+
+// true if this is a "watch only" wallet with no signing ability
+- (BOOL)watchOnly
+{
+    return (self.masterPublicKey.length == 0) ? YES : NO;
 }
 
 // master public key used to generate wallet addresses
@@ -376,6 +382,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         NSData *masterPubKey = (seedPhrase) ? [self.sequence masterPublicKeyFromSeed:[self.mnemonic
                                                deriveKeyFromPhrase:seedPhrase withPassphrase:nil]] : nil;
         
+        if ([seedPhrase isEqual:@"wipe"]) masterPubKey = [NSData data]; // watch only wallet
         setKeychainData(masterPubKey, MASTER_PUBKEY_KEY, NO);
         _wallet = nil;
     }
@@ -530,8 +537,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     if (error) return NO; // error reading pin from keychain
     if (pin.length != 4) return [self setPin]; // no pin set
 
-    uint64_t total = self.wallet.totalSent, limit = self.spendingLimit,
-             failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, nil);
+    uint64_t limit = self.spendingLimit, failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, nil);
     
     [BREventManager saveEvent:@"wallet_manager:pin_auth"];
     
@@ -603,7 +609,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
                 setKeychainInt(0, PIN_FAIL_COUNT_KEY, NO);
                 setKeychainInt(0, PIN_FAIL_HEIGHT_KEY, NO);
-                if (limit > 0) setKeychainInt(total + limit, SPEND_LIMIT_KEY, NO);
+                if (limit > 0) setKeychainInt(self.wallet.totalSent + limit, SPEND_LIMIT_KEY, NO);
             });
 
             return YES;
@@ -1061,7 +1067,7 @@ completion:(void (^)(BRTransaction *tx, uint64_t fee, NSError *error))completion
 
 - (int64_t)amountForString:(NSString *)string
 {
-    if (! string.length) return 0;
+    if (string.length == 0) return 0;
     return [[NSDecimalNumber decimalNumberWithDecimal:[self.format numberFromString:string].decimalValue]
              decimalNumberByMultiplyingByPowerOf10:self.format.maximumFractionDigits].longLongValue;
 }
