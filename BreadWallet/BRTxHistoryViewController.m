@@ -90,9 +90,6 @@ static NSString *dateFormat(NSString *template)
     
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     
-    if (manager.didAuthenticate) [self unlock:nil];
-    self.transactions = manager.wallet.recentTransactions;
-    
 #if SNAPSHOT
     BRTransaction *tx = [[BRTransaction alloc] initWithInputHashes:@[uint256_obj(UINT256_ZERO)] inputIndexes:@[@(0)]
                          inputScripts:@[[NSData data]] outputAddresses:@[@""] outputAmounts:@[@(0)]];
@@ -112,6 +109,17 @@ static NSString *dateFormat(NSString *template)
 
     return;
 #endif
+
+    if (! manager.didAuthenticate) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            self.transactions = manager.wallet.recentTransactions;
+           
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self.tableView reloadData];
+            });
+        });
+    }
+    else [self unlock:nil];
 
     if (! self.backgroundObserver) {
         self.backgroundObserver =
@@ -325,14 +333,14 @@ static NSString *dateFormat(NSString *template)
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
 
-    [BREventManager saveEvent:@"tx_history:unlock"];
+    if (sender) [BREventManager saveEvent:@"tx_history:unlock"];
     if (! manager.didAuthenticate && ! [manager authenticateWithPrompt:nil andTouchId:YES]) return;
-    [BREventManager saveEvent:@"tx_history:unlock_success"];
+    if (sender) [BREventManager saveEvent:@"tx_history:unlock_success"];
     
     self.navigationItem.titleView = nil;
     [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
     if (self.transactions.count > 0) [self.tableView reloadData];
-    if (sender) self.transactions = manager.wallet.recentTransactions;
+    self.transactions = manager.wallet.recentTransactions;
     
     if (sender && self.transactions.count > 0) {
         [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
@@ -377,7 +385,7 @@ static NSString *dateFormat(NSString *template)
     [self.tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:txCount inSection:0]]
      withRowAnimation:UITableViewRowAnimationFade];
     self.moreTx = NO;
-    self.transactions = manager.wallet.recentTransactions;
+//    self.transactions = manager.wallet.recentTransactions;
     
     NSMutableArray *transactions = [NSMutableArray arrayWithCapacity:self.transactions.count];
     

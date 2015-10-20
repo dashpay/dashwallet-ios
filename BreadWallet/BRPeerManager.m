@@ -414,30 +414,31 @@ static const char *dns_seeds[] = {
 
 - (void)connect
 {
-    if ([BRWalletManager sharedInstance].noWallet) return; // check to make sure the wallet has been created
-    if (self.connectFailures >= MAX_CONNECT_FAILURES) self.connectFailures = 0; // this attempt is a manual retry
+    dispatch_async(self.q, ^{
+        if ([BRWalletManager sharedInstance].noWallet) return; // check to make sure the wallet has been created
+        if (self.connectFailures >= MAX_CONNECT_FAILURES) self.connectFailures = 0; // this attempt is a manual retry
     
-    if (self.syncProgress < 1.0) {
-        if (self.syncStartHeight == 0) self.syncStartHeight = self.lastBlockHeight;
+        if (self.syncProgress < 1.0) {
+            if (self.syncStartHeight == 0) self.syncStartHeight = self.lastBlockHeight;
 
-        if (self.taskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
-            self.taskId =
-                [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
-                    dispatch_async(self.q, ^{
-                        [self saveBlocks];
-                        [BRMerkleBlockEntity saveContext];
-                    });
+            if (self.taskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
+                self.taskId =
+                    [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+                        dispatch_async(self.q, ^{
+                            [self saveBlocks];
+                            [BRMerkleBlockEntity saveContext];
+                        });
 
-                    [self syncStopped];
-                }];
+                        [self syncStopped];
+                    }];
+            }
+
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerSyncStartedNotification
+                 object:nil];
+            });
         }
 
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerSyncStartedNotification object:nil];
-        });
-    }
-
-    dispatch_async(self.q, ^{
         [self.connectedPeers minusSet:[self.connectedPeers objectsPassingTest:^BOOL(id obj, BOOL *stop) {
             return ([obj status] == BRPeerStatusDisconnected) ? YES : NO;
         }]];
