@@ -151,7 +151,6 @@ static const char *dns_seeds[] = {
         queue:nil usingBlock:^(NSNotification *note) {
             [self savePeers];
             [self saveBlocks];
-            [BRMerkleBlockEntity saveContext];
 
             if (self.taskId == UIBackgroundTaskInvalid) {
                 self.misbehavinCount = 0;
@@ -426,7 +425,6 @@ static const char *dns_seeds[] = {
                     [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
                         dispatch_async(self.q, ^{
                             [self saveBlocks];
-                            [BRMerkleBlockEntity saveContext];
                         });
 
                         [self syncStopped];
@@ -839,6 +837,8 @@ static const char *dns_seeds[] = {
     NSMutableDictionary *blocks = [NSMutableDictionary dictionary];
     BRMerkleBlock *b = self.lastBlock;
 
+    [BRTransactionEntity saveContext];
+
     while (b) {
         blocks[[NSData dataWithBytes:b.blockHash.u8 length:sizeof(UInt256)]] = b;
         b = self.blocks[uint256_obj(b.prevBlock)];
@@ -857,6 +857,8 @@ static const char *dns_seeds[] = {
             [[BRMerkleBlockEntity managedObject] setAttributesFromBlock:b];
         }
     }];
+    
+    [BRMerkleBlockEntity saveContext];
 }
 
 #pragma mark - BRPeerDelegate
@@ -1197,17 +1199,13 @@ static const char *dns_seeds[] = {
     [self.checkpoints[@(block.height)] getValue:&checkpoint];
     
     // verify block chain checkpoints
-    if (! uint256_is_zero(checkpoint)) {
-        if (! uint256_eq(block.blockHash, checkpoint)) {
-            NSLog(@"%@:%d relayed a block that differs from the checkpoint at height %d, blockHash: %@, expected: %@",
-                  peer.host, peer.port, block.height, blockHash, self.checkpoints[@(block.height)]);
-            [self peerMisbehavin:peer];
-            return;
-        }
-        
-        [BRTransactionEntity saveContext]; // persist transactions to core data
+    if (! uint256_is_zero(checkpoint) && ! uint256_eq(block.blockHash, checkpoint)) {
+        NSLog(@"%@:%d relayed a block that differs from the checkpoint at height %d, blockHash: %@, expected: %@",
+              peer.host, peer.port, block.height, blockHash, self.checkpoints[@(block.height)]);
+        [self peerMisbehavin:peer];
+        return;
     }
-
+    
     if (uint256_eq(block.prevBlock, self.lastBlock.blockHash)) { // new block extends main chain
         if ((block.height % 500) == 0 || block.txHashes.count > 0 || block.height > peer.lastblock) {
             NSLog(@"adding block at height: %d, false positive rate: %f", block.height, self.fpRate);
@@ -1284,7 +1282,6 @@ static const char *dns_seeds[] = {
     
     if (block.height == peer.lastblock && block == self.lastBlock) { // chain download is complete
         [self saveBlocks];
-        [BRMerkleBlockEntity saveContext];
         [self syncStopped];
 
         dispatch_async(dispatch_get_main_queue(), ^{

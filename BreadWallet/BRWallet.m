@@ -485,7 +485,8 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             [[BRTransactionEntity managedObject] setAttributesFromTx:transaction];
         }
     }];
-
+    
+    if ((self.allTx.count % 100) == 0) [BRTransactionEntity saveContext];
     return YES;
 }
 
