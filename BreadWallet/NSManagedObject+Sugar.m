@@ -117,7 +117,8 @@ static NSUInteger _fetchBatchSize = 100;
         }
         @catch (NSException *exception) {
 #if ! DEBUG // if this is a not a debug build, delete the persisent data store before crashing
-            [[NSFileManager defaultManager] removeItemAtURL:objc_getAssociatedObject(self, &_storeURLKey) error:nil];
+            [[NSFileManager defaultManager]
+             removeItemAtURL:objc_getAssociatedObject([NSManagedObject class], &_storeURLKey) error:nil];
 #endif
             @throw;
         }
@@ -164,7 +165,8 @@ static NSUInteger _fetchBatchSize = 100;
         }
         @catch (NSException *exception) {
 #if ! DEBUG // if this is a not a debug build, delete the persisent data store before crashing
-            [[NSFileManager defaultManager] removeItemAtURL:objc_getAssociatedObject(self, &_storeURLKey) error:nil];
+            [[NSFileManager defaultManager]
+             removeItemAtURL:objc_getAssociatedObject([NSManagedObject class], &_storeURLKey) error:nil];
 #endif
             @throw;
         }
@@ -247,7 +249,8 @@ static NSUInteger _fetchBatchSize = 100;
             mainmoc = [[NSManagedObjectContext alloc] initWithConcurrencyType:_concurrencyType];
             mainmoc.parentContext = writermoc;
 
-            objc_setAssociatedObject(self, &_storeURLKey, storeURL, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+            objc_setAssociatedObject([NSManagedObject class], &_storeURLKey, storeURL,
+                                     OBJC_ASSOCIATION_RETAIN_NONATOMIC);
             [NSManagedObject setContext:mainmoc];
 
             // this will save changes to the persistent store before the application terminates

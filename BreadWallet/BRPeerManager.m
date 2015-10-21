@@ -1180,7 +1180,7 @@ static const char *dns_seeds[] = {
             b = self.blocks[uint256_obj(b.prevBlock)];
         }
 
-        [[BRMerkleBlockEntity context] performBlock:^{
+        [[BRMerkleBlockEntity context] performBlock:^{ // save transition blocks to core data immediately
             BRMerkleBlockEntity *e = [BRMerkleBlockEntity objectsMatching:@"blockHash == %@",
                                       [NSData dataWithBytes:b.blockHash.u8 length:sizeof(UInt256)]].lastObject;
         
@@ -1195,7 +1195,7 @@ static const char *dns_seeds[] = {
             if (b) [self.blocks removeObjectForKey:uint256_obj(b.blockHash)];
         }
         
-        [BRMerkleBlockEntity saveContext];
+        [BRMerkleBlockEntity saveContext]; // persist core data to disk
     }
 
     // verify block difficulty
