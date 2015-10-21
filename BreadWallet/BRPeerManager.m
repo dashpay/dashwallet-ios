@@ -1180,12 +1180,22 @@ static const char *dns_seeds[] = {
             b = self.blocks[uint256_obj(b.prevBlock)];
         }
 
-        transitionTime = b.timestamp;
+        [[BRMerkleBlockEntity context] performBlock:^{
+            BRMerkleBlockEntity *e = [BRMerkleBlockEntity objectsMatching:@"blockHash == %@",
+                                      [NSData dataWithBytes:b.blockHash.u8 length:sizeof(UInt256)]].lastObject;
+        
+            if (! e) e = [BRMerkleBlockEntity managedObject];
+            [e setAttributesFromBlock:b];
+        }];
 
+        transitionTime = b.timestamp;
+        
         while (b) { // free up some memory
             b = self.blocks[uint256_obj(b.prevBlock)];
             if (b) [self.blocks removeObjectForKey:uint256_obj(b.blockHash)];
         }
+        
+        [BRMerkleBlockEntity saveContext];
     }
 
     // verify block difficulty
