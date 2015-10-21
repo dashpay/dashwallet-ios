@@ -1102,6 +1102,11 @@ static const char *dns_seeds[] = {
 
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
+#if DEBUG
+            [[[UIAlertView alloc] initWithTitle:@"transaction rejected"
+              message:[NSString stringWithFormat:@"rejected by %@:%d with code %x", peer.host, peer.port, code]
+              delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+#endif
         });
     }
     
@@ -1192,11 +1197,15 @@ static const char *dns_seeds[] = {
     [self.checkpoints[@(block.height)] getValue:&checkpoint];
     
     // verify block chain checkpoints
-    if (! uint256_is_zero(checkpoint) && ! uint256_eq(block.blockHash, checkpoint)) {
-        NSLog(@"%@:%d relayed a block that differs from the checkpoint at height %d, blockHash: %@, expected: %@",
-              peer.host, peer.port, block.height, blockHash, self.checkpoints[@(block.height)]);
-        [self peerMisbehavin:peer];
-        return;
+    if (! uint256_is_zero(checkpoint)) {
+        if (! uint256_eq(block.blockHash, checkpoint)) {
+            NSLog(@"%@:%d relayed a block that differs from the checkpoint at height %d, blockHash: %@, expected: %@",
+                  peer.host, peer.port, block.height, blockHash, self.checkpoints[@(block.height)]);
+            [self peerMisbehavin:peer];
+            return;
+        }
+        
+        [BRTransactionEntity saveContext]; // persist transactions to core data
     }
 
     if (uint256_eq(block.prevBlock, self.lastBlock.blockHash)) { // new block extends main chain
