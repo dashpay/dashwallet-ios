@@ -37,11 +37,10 @@
 
 - (instancetype)setAttributesFromTx:(BRTransaction *)tx
 {
-    NSMutableData *data = [NSMutableData data];
+    NSMutableData *data = [NSMutableData dataWithData:tx.data];
 
     [data appendUInt32:tx.blockHeight];
     [data appendUInt32:tx.timestamp];
-    [data appendData:tx.data];
 
     [self.managedObjectContext performBlockAndWait:^{
         self.blob = data;
@@ -59,10 +58,11 @@
     [self.managedObjectContext performBlockAndWait:^{
         NSData *data = self.blob;
     
-        tx = [BRTransaction transactionWithMessage:[data
-              subdataWithRange:NSMakeRange(sizeof(uint32_t)*2, data.length - sizeof(uint32_t)*2)]];
-        tx.timestamp = [data UInt32AtOffset:sizeof(uint32_t)];
-        tx.blockHeight = [data UInt32AtOffset:0];
+        if (data.length > sizeof(uint32_t)*2) {
+            tx = [BRTransaction transactionWithMessage:data];
+            tx.blockHeight = [data UInt32AtOffset:data.length - sizeof(uint32_t)*2];
+            tx.timestamp = [data UInt32AtOffset:data.length - sizeof(uint32_t)];
+        }
     }];
     
     return tx;

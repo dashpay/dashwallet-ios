@@ -70,7 +70,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 {
     if (! (self = [super init])) return nil;
 
-    NSMutableSet *updateHashes = [NSMutableSet set];
+    NSMutableSet *updateTx = [NSMutableSet set];
 
     self.moc = context;
     self.sequence = sequence;
@@ -83,7 +83,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     self.externalAddresses = [NSMutableArray array];
     self.allAddresses = [NSMutableSet set];
     self.usedAddresses = [NSMutableSet set];
-
+    
     [self.moc performBlockAndWait:^{
         [BRAddressEntity setContext:self.moc];
         [BRTransactionEntity setContext:self.moc];
@@ -97,7 +97,9 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             [self.allAddresses addObject:e.address];
         }
 
-        for (BRTxMetadataEntity *e in [BRTxMetadataEntity objectsMatching:@"type == %d", TX_MDTYPE_MSG]) {
+        for (BRTxMetadataEntity *e in [BRTxMetadataEntity allObjects]) {
+            if (e.type != TX_MDTYPE_MSG) continue;
+        
             BRTransaction *tx = e.transaction;
             NSValue *hash = (tx) ? uint256_obj(tx.txHash) : nil;
             
@@ -119,7 +121,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
                 NSValue *hash = (tx) ? uint256_obj(tx.txHash) : nil;
 
                 if (! tx || [self.allTxHashes containsObject:hash]) continue;
-                [updateHashes addObject:hash];
+                [updateTx addObject:tx];
                 self.allTx[hash] = tx;
                 [self.allTxHashes addObject:hash];
                 [self.transactions addObject:tx];
@@ -133,13 +135,10 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     _balance = UINT64_MAX; // trigger balance changed notification even if balance is zero
     [self updateBalance];
 
-    if (updateHashes.count > 0) {
+    if (updateTx.count > 0) {
         [self.moc performBlock:^{
-            for (NSValue *hash in updateHashes) {
-                BRTransaction *tx = self.allTx[hash];
-                BRTransactionEntity *e = [BRTransactionEntity managedObject];
-                
-                [e setAttributesFromTx:tx];
+            for (BRTransaction *tx in updateTx) {
+                [[BRTxMetadataEntity managedObject] setAttributesFromTx:tx];
             }
         }];
     }
@@ -640,7 +639,8 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
                 e.timestamp = timestamp;
             }
             
-            for (BRTxMetadataEntity *e in [BRTxMetadataEntity objectsMatching:@"txHash in %@", hashes]) {
+            for (BRTxMetadataEntity *e in [BRTxMetadataEntity objectsMatching:@"txHash in %@ && type == %d", hashes,
+                                           TX_MDTYPE_MSG]) {
                 BRTransaction *tx = e.transaction;
                 
                 tx.blockHeight = height;
