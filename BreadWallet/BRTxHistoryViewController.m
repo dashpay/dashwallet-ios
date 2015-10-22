@@ -285,8 +285,8 @@ static NSString *dateFormat(NSString *template)
     static NSDateFormatter *f2 = nil;
     static NSDateFormatter *monthDayFormatter = nil;
     static NSDateFormatter *yearMonthDayFormatter = nil;
-    
     static dispatch_once_t onceToken;
+    
     dispatch_once(&onceToken, ^{ //BUG: need to watch for NSCurrentLocaleDidChangeNotification
         f1 = [NSDateFormatter new]; // TODO (sam): fix these variable names
         f1.dateFormat = dateFormat(@"Mdja");
@@ -340,12 +340,19 @@ static NSString *dateFormat(NSString *template)
     self.navigationItem.titleView = nil;
     [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
     if (self.transactions.count > 0) [self.tableView reloadData];
-    self.transactions = manager.wallet.recentTransactions;
     
-    if (sender && self.transactions.count > 0) {
-        [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
-         withRowAnimation:UITableViewRowAnimationAutomatic];
-    }
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        self.transactions = manager.wallet.recentTransactions;
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (sender && self.transactions.count > 0) {
+                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
+                 withRowAnimation:UITableViewRowAnimationAutomatic];
+            }
+            else [self.tableView reloadData];
+        });
+    });
 }
 
 - (IBAction)scanQR:(id)sender
