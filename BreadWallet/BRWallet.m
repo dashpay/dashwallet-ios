@@ -30,6 +30,7 @@
 #import "BRTransactionEntity.h"
 #import "BRTxInputEntity.h"
 #import "BRTxOutputEntity.h"
+#import "BRTxMetadataEntity.h"
 #import "BRKeySequence.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
@@ -69,6 +70,8 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 {
     if (! (self = [super init])) return nil;
 
+    NSMutableSet *updateHashes = [NSMutableSet set];
+
     self.moc = context;
     self.sequence = sequence;
     self.masterPublicKey = masterPublicKey;
@@ -84,6 +87,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     [self.moc performBlockAndWait:^{
         [BRAddressEntity setContext:self.moc];
         [BRTransactionEntity setContext:self.moc];
+        [BRTxMetadataEntity setContext:self.moc];
 
         for (BRAddressEntity *e in [BRAddressEntity allObjects]) {
             NSMutableArray *a = (e.internal) ? self.internalAddresses : self.externalAddresses;
@@ -93,14 +97,10 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             [self.allAddresses addObject:e.address];
         }
 
-        // pre-fetch transaction inputs and outputs
-        [BRTxInputEntity allObjects];
-        [BRTxOutputEntity allObjects];
-        
-        for (BRTransactionEntity *e in [BRTransactionEntity allObjects]) {
+        for (BRTxMetadataEntity *e in [BRTxMetadataEntity objectsMatching:@"type == %d", TX_MDTYPE_MSG]) {
             BRTransaction *tx = e.transaction;
             NSValue *hash = (tx) ? uint256_obj(tx.txHash) : nil;
-
+            
             if (! tx) continue;
             self.allTx[hash] = tx;
             [self.allTxHashes addObject:hash];
@@ -108,11 +108,41 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             [self.usedAddresses addObjectsFromArray:tx.inputAddresses];
             [self.usedAddresses addObjectsFromArray:tx.outputAddresses];
         }
+        
+        if ([BRTransactionEntity countAllObjects] > self.allTx.count) {
+            // pre-fetch transaction inputs and outputs
+            [BRTxInputEntity allObjects];
+            [BRTxOutputEntity allObjects];
+            
+            for (BRTransactionEntity *e in [BRTransactionEntity allObjects]) {
+                BRTransaction *tx = e.transaction;
+                NSValue *hash = (tx) ? uint256_obj(tx.txHash) : nil;
+
+                if (! tx || [self.allTxHashes containsObject:hash]) continue;
+                [updateHashes addObject:hash];
+                self.allTx[hash] = tx;
+                [self.allTxHashes addObject:hash];
+                [self.transactions addObject:tx];
+                [self.usedAddresses addObjectsFromArray:tx.inputAddresses];
+                [self.usedAddresses addObjectsFromArray:tx.outputAddresses];
+            }
+        }
     }];
 
     [self sortTransactions];
     _balance = UINT64_MAX; // trigger balance changed notification even if balance is zero
     [self updateBalance];
+
+    if (updateHashes.count > 0) {
+        [self.moc performBlock:^{
+            for (NSValue *hash in updateHashes) {
+                BRTransaction *tx = self.allTx[hash];
+                BRTransactionEntity *e = [BRTransactionEntity managedObject];
+                
+                [e setAttributesFromTx:tx];
+            }
+        }];
+    }
 
     return self;
 }
@@ -484,6 +514,11 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
              [NSData dataWithBytes:&txHash length:sizeof(txHash)]] == 0) {
             [[BRTransactionEntity managedObject] setAttributesFromTx:transaction];
         }
+        
+        if ([BRTxMetadataEntity countObjectsMatching:@"txHash == %@ && type == %d",
+             [NSData dataWithBytes:&txHash length:sizeof(txHash)], TX_MDTYPE_MSG] == 0) {
+            [[BRTransactionEntity managedObject] setAttributesFromTx:transaction];
+        }
     }];
     
     if ((self.allTx.count % 100) == 0) [BRTransactionEntity saveContext];
@@ -519,6 +554,8 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     [self.moc performBlock:^{ // remove transaction from core data
         [BRTransactionEntity deleteObjects:[BRTransactionEntity objectsMatching:@"txHash == %@",
                                             [NSData dataWithBytes:&txHash length:sizeof(txHash)]]];
+        [BRTxMetadataEntity deleteObjects:[BRTxMetadataEntity objectsMatching:@"txHash == %@",
+                                           [NSData dataWithBytes:&txHash length:sizeof(txHash)]]];
     }];
 }
 
@@ -601,6 +638,14 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             for (BRTransactionEntity *e in [BRTransactionEntity objectsMatching:@"txHash in %@", hashes]) {
                 e.blockHeight = height;
                 e.timestamp = timestamp;
+            }
+            
+            for (BRTxMetadataEntity *e in [BRTxMetadataEntity objectsMatching:@"txHash in %@", hashes]) {
+                BRTransaction *tx = e.transaction;
+                
+                tx.blockHeight = height;
+                tx.timestamp = timestamp;
+                [e setAttributesFromTx:tx];
             }
         }];
     }

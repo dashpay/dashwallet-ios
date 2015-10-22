@@ -26,12 +26,17 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
+#define TX_MDTYPE_MSG 0x01
+
+@class BRTransaction;
+
 @interface BRTxMetadataEntity : NSManagedObject
 
 @property (nonatomic, retain) NSData *blob;
 @property (nonatomic, retain) NSData *txHash;
 @property (nonatomic) int32_t type;
 
-// Insert code here to declare functionality of your managed object subclass
+- (instancetype)setAttributesFromTx:(BRTransaction *)tx;
+- (BRTransaction *)transaction;
 
 @end

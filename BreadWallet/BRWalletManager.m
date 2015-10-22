@@ -30,6 +30,7 @@
 #import "BRBIP32Sequence.h"
 #import "BRTransaction.h"
 #import "BRTransactionEntity.h"
+#import "BRTxMetadataEntity.h"
 #import "BRAddressEntity.h"
 #import "BREventManager.h"
 #import "NSString+Bitcoin.h"
@@ -301,6 +302,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
                 [[NSManagedObject context] performBlockAndWait:^{
                     [BRAddressEntity deleteObjects:[BRAddressEntity allObjects]];
                     [BRTransactionEntity deleteObjects:[BRTransactionEntity allObjects]];
+                    [BRTxMetadataEntity deleteObjects:[BRTxMetadataEntity allObjects]];
                     [NSManagedObject saveContext];
                 }];
                 
@@ -356,6 +358,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         [[NSManagedObject context] performBlockAndWait:^{
             [BRAddressEntity deleteObjects:[BRAddressEntity allObjects]];
             [BRTransactionEntity deleteObjects:[BRTransactionEntity allObjects]];
+            [BRTxMetadataEntity deleteObjects:[BRTxMetadataEntity allObjects]];
             [NSManagedObject saveContext];
         }];
         

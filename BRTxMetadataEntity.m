@@ -24,6 +24,10 @@
 //  THE SOFTWARE.
 
 #import "BRTxMetadataEntity.h"
+#import "BRTransaction.h"
+#import "NSManagedObject+Sugar.h"
+#import "NSData+Bitcoin.h"
+#import "NSMutableData+Bitcoin.h"
 
 @implementation BRTxMetadataEntity
 
@@ -31,6 +35,37 @@
 @dynamic txHash;
 @dynamic type;
 
-// Insert code here to add functionality to your managed object subclass
+- (instancetype)setAttributesFromTx:(BRTransaction *)tx
+{
+    NSMutableData *data = [NSMutableData data];
+
+    [data appendUInt32:tx.blockHeight];
+    [data appendUInt32:tx.timestamp];
+    [data appendData:tx.data];
+
+    [self.managedObjectContext performBlockAndWait:^{
+        self.blob = data;
+        self.type = TX_MDTYPE_MSG;
+        self.txHash = [NSData dataWithBytes:tx.txHash.u8 length:sizeof(UInt256)];
+    }];
+    
+    return self;
+}
+
+- (BRTransaction *)transaction
+{
+    __block BRTransaction *tx = nil;
+    
+    [self.managedObjectContext performBlockAndWait:^{
+        NSData *data = self.blob;
+    
+        tx = [BRTransaction transactionWithMessage:[data
+              subdataWithRange:NSMakeRange(sizeof(uint32_t)*2, data.length - sizeof(uint32_t)*2)]];
+        tx.timestamp = [data UInt32AtOffset:sizeof(uint32_t)];
+        tx.blockHeight = [data UInt32AtOffset:0];
+    }];
+    
+    return tx;
+}
 
 @end
