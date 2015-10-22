@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="8191" systemVersion="14F27" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9059" systemVersion="15B42" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="8154"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9049"/>
         <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
     </dependencies>
     <objects>
@@ -20,6 +20,7 @@
                             <subviews>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Help us improve breadwallet!" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="280" translatesAutoresizingMaskIntoConstraints="NO" id="Mgm-wb-UlM">
                                     <rect key="frame" x="0.0" y="0.0" width="600" height="100"/>
+                                    <animations/>
                                     <constraints>
                                         <constraint firstAttribute="height" constant="100" id="Ll4-7W-kIz"/>
                                     </constraints>
@@ -39,6 +40,7 @@
                                 </label>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="10" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="280" translatesAutoresizingMaskIntoConstraints="NO" id="kqc-0F-49V">
                                     <rect key="frame" x="15" y="110" width="570" height="102"/>
+                                    <animations/>
                                     <string key="text">We would like to collect some information about your usage of breadwallet.
 
 This information is completely anonymomized and includes absolutely no financial information.</string>
@@ -48,6 +50,7 @@ This information is completely anonymomized and includes absolutely no financial
                                 </label>
                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Tw0-s4-w0k">
                                     <rect key="frame" x="15" y="222" width="285" height="30"/>
+                                    <animations/>
                                     <state key="normal" title="No Thanks">
                                         <color key="titleColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                         <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
@@ -58,6 +61,7 @@ This information is completely anonymomized and includes absolutely no financial
                                 </button>
                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fzO-vI-zum">
                                     <rect key="frame" x="300" y="222" width="285" height="30"/>
+                                    <animations/>
                                     <state key="normal" title="Ok Great!">
                                         <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                     </state>
@@ -66,6 +70,7 @@ This information is completely anonymomized and includes absolutely no financial
                                     </connections>
                                 </button>
                             </subviews>
+                            <animations/>
                             <constraints>
                                 <constraint firstAttribute="trailing" secondItem="Mgm-wb-UlM" secondAttribute="trailing" id="7nV-QH-jnO"/>
                                 <constraint firstAttribute="bottom" secondItem="fzO-vI-zum" secondAttribute="bottom" constant="75" id="Bhd-0W-SOq"/>
@@ -129,6 +134,7 @@ This information is completely anonymomized and includes absolutely no financial
                             </variation>
                         </view>
                     </subviews>
+                    <animations/>
                     <color key="backgroundColor" white="1" alpha="0.5" colorSpace="calibratedWhite"/>
                     <constraints>
                         <constraint firstAttribute="trailing" secondItem="JxX-Qg-GdP" secondAttribute="trailing" id="0ZF-mG-1UX"/>
@@ -160,6 +166,7 @@ This information is completely anonymomized and includes absolutely no financial
                     </variation>
                 </view>
             </subviews>
+            <animations/>
             <constraints>
                 <constraint firstAttribute="trailing" secondItem="Mds-V9-mIX" secondAttribute="trailing" id="cQU-xw-Etz"/>
                 <constraint firstAttribute="bottom" secondItem="Mds-V9-mIX" secondAttribute="bottom" id="dh1-72-I1K"/>

@@ -40,6 +40,7 @@
 		752E28F119234E8100DB5A3C /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E28F019234E8100DB5A3C /* Reachability.m */; settings = {COMPILER_FLAGS = "-w"; }; };
 		752E28F719235B3000DB5A3C /* FixedPeers.plist in Resources */ = {isa = PBXBuildFile; fileRef = 752E28F519235B3000DB5A3C /* FixedPeers.plist */; };
 		7548CF3719556FD700EF827F /* BRCopyLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 7548CF3619556FD700EF827F /* BRCopyLabel.m */; };
+		7549DBEF1BD91445004DF09E /* BRTxMetadataEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 7549DBED1BD91445004DF09E /* BRTxMetadataEntity.m */; };
 		7568FB5A1B5B5EC10000B652 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 75D5F3DF191EC270004AB296 /* Images.xcassets */; };
 		757BE7E3192C0E9D0061CB20 /* BRRestoreViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BE7E2192C0E9D0061CB20 /* BRRestoreViewController.m */; };
 		757BE7E6192C1FF70061CB20 /* BRWelcomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BE7E5192C1FF70061CB20 /* BRWelcomeViewController.m */; };
@@ -197,6 +198,8 @@
 		752E28F519235B3000DB5A3C /* FixedPeers.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = FixedPeers.plist; sourceTree = "<group>"; };
 		7548CF3519556FD700EF827F /* BRCopyLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCopyLabel.h; sourceTree = "<group>"; };
 		7548CF3619556FD700EF827F /* BRCopyLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCopyLabel.m; sourceTree = "<group>"; };
+		7549DBEC1BD91445004DF09E /* BRTxMetadataEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BRTxMetadataEntity.h; path = ../BRTxMetadataEntity.h; sourceTree = "<group>"; };
+		7549DBED1BD91445004DF09E /* BRTxMetadataEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = BRTxMetadataEntity.m; path = ../BRTxMetadataEntity.m; sourceTree = "<group>"; };
 		757BE7E1192C0E9D0061CB20 /* BRRestoreViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRRestoreViewController.h; sourceTree = "<group>"; };
 		757BE7E2192C0E9D0061CB20 /* BRRestoreViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = BRRestoreViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		757BE7E4192C1FF70061CB20 /* BRWelcomeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRWelcomeViewController.h; sourceTree = "<group>"; };
@@ -409,6 +412,8 @@
 				752E28A719234AE300DB5A3C /* BRTxInputEntity.m */,
 				752E28A819234AE300DB5A3C /* BRTxOutputEntity.h */,
 				752E28A919234AE300DB5A3C /* BRTxOutputEntity.m */,
+				7549DBEC1BD91445004DF09E /* BRTxMetadataEntity.h */,
+				7549DBED1BD91445004DF09E /* BRTxMetadataEntity.m */,
 			);
 			name = Entities;
 			sourceTree = "<group>";
@@ -845,6 +850,7 @@
 				759816E719357D6F005060EA /* BRBubbleView.m in Sources */,
 				757BE7E3192C0E9D0061CB20 /* BRRestoreViewController.m in Sources */,
 				757BE7E6192C1FF70061CB20 /* BRWelcomeViewController.m in Sources */,
+				7549DBEF1BD91445004DF09E /* BRTxMetadataEntity.m in Sources */,
 				757BE7E9192D4E880061CB20 /* BRSeedViewController.m in Sources */,
 				752E28E719234DA200DB5A3C /* NSData+Bitcoin.m in Sources */,
 				752E28E919234DA200DB5A3C /* NSManagedObject+Sugar.m in Sources */,

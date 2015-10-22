@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="7549" systemVersion="14D136" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="9057" systemVersion="15B42" minimumToolsVersion="Automatic">
     <entity name="BRAddressEntity" representedClassName="BRAddressEntity" syncable="YES">
         <attribute name="address" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="index" attributeType="Integer 32" defaultValueString="0" indexed="YES" syncable="YES"/>
@@ -14,7 +14,7 @@
         <attribute name="nonce" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <attribute name="prevBlock" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
         <attribute name="target" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
-        <attribute name="timestamp" optional="YES" attributeType="Date" defaultDateTimeInterval="0" defaultValueString="2001-01-01 00:00:00 +0000" syncable="YES"/>
+        <attribute name="timestamp" optional="YES" attributeType="Date" defaultDateTimeInterval="0" syncable="YES"/>
         <attribute name="totalTransactions" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <attribute name="version" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
     </entity>
@@ -23,12 +23,12 @@
         <attribute name="misbehavin" optional="YES" attributeType="Integer 16" defaultValueString="0" indexed="YES" syncable="YES"/>
         <attribute name="port" optional="YES" attributeType="Integer 16" defaultValueString="0" indexed="YES" syncable="YES"/>
         <attribute name="services" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
-        <attribute name="timestamp" optional="YES" attributeType="Date" defaultDateTimeInterval="0" defaultValueString="2001-01-01 00:00:00 +0000" indexed="YES" syncable="YES"/>
+        <attribute name="timestamp" optional="YES" attributeType="Date" defaultDateTimeInterval="0" indexed="YES" syncable="YES"/>
     </entity>
     <entity name="BRTransactionEntity" representedClassName="BRTransactionEntity" syncable="YES">
         <attribute name="blockHeight" optional="YES" attributeType="Integer 32" defaultValueString="2147483647" indexed="YES" syncable="YES"/>
         <attribute name="lockTime" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
-        <attribute name="timestamp" optional="YES" attributeType="Date" defaultDateTimeInterval="0" defaultValueString="01-01-01 00:00:00 GMT" syncable="YES"/>
+        <attribute name="timestamp" optional="YES" attributeType="Date" defaultDateTimeInterval="0" syncable="YES"/>
         <attribute name="txHash" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
         <relationship name="inputs" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="BRTxInputEntity" inverseName="transaction" inverseEntity="BRTxInputEntity" syncable="YES"/>
         <relationship name="outputs" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="BRTxOutputEntity" inverseName="transaction" inverseEntity="BRTxOutputEntity" syncable="YES"/>
@@ -40,7 +40,7 @@
         <attribute name="txHash" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
         <relationship name="transaction" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="BRTransactionEntity" inverseName="inputs" inverseEntity="BRTransactionEntity" syncable="YES"/>
     </entity>
-    <entity name="BRTxMetadataEntity" syncable="YES">
+    <entity name="BRTxMetadataEntity" representedClassName="BRTxMetadataEntity" syncable="YES">
         <attribute name="blob" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="txHash" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
         <attribute name="type" optional="YES" attributeType="Integer 32" defaultValueString="0" indexed="YES" syncable="YES"/>
