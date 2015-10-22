@@ -43,6 +43,7 @@
 
 @property (nonatomic, strong) BRBubbleView *tipView;
 @property (nonatomic, assign) BOOL showTips;
+@property (nonatomic, strong) NSUserDefaults *groupDefs;
 
 @property (nonatomic, strong) IBOutlet UILabel *label;
 @property (nonatomic, strong) IBOutlet UIButton *addressButton;
@@ -54,9 +55,20 @@
 
 - (void)viewDidLoad
 {
+    BRPaymentRequest *req;
+    
     [super viewDidLoad];
 
-    [self.addressButton setTitle:nil forState:UIControlStateNormal];
+    self.groupDefs = [[NSUserDefaults alloc] initWithSuiteName:APP_GROUP_ID];
+    req = [BRPaymentRequest requestWithString:[self.groupDefs stringForKey:APP_GROUP_RECEIVE_ADDRESS_KEY]];
+
+    if (req.isValid) {
+        self.qrView.image = [UIImage imageWithQRCodeData:req.data size:self.qrView.bounds.size
+                             color:[CIColor colorWithRed:0.0 green:0.0 blue:0.0]];
+        [self.addressButton setTitle:req.paymentAddress forState:UIControlStateNormal];
+    }
+    else [self.addressButton setTitle:nil forState:UIControlStateNormal];
+    
     self.addressButton.titleLabel.adjustsFontSizeToFitWidth = YES;
     [self updateAddress];
 }
@@ -71,30 +83,28 @@
 - (void)updateAddress
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        static NSUserDefaults *groupDefs = nil;
         BRWalletManager *manager = [BRWalletManager sharedInstance];
         BRPaymentRequest *req = self.paymentRequest;
-
+        
         dispatch_async(dispatch_get_main_queue(), ^{
             if ([self.paymentAddress isEqual:self.addressButton.currentTitle]) return;
             self.qrView.image = [UIImage imageWithQRCodeData:req.data size:self.qrView.bounds.size
-                                 color:[CIColor colorWithRed:0.0 green:0.0 blue:0.0]];
+                                                       color:[CIColor colorWithRed:0.0 green:0.0 blue:0.0]];
             [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
-            if (! groupDefs) groupDefs = [[NSUserDefaults alloc] initWithSuiteName:APP_GROUP_ID];
             
             if (req.amount > 0) {
                 self.label.text = [NSString stringWithFormat:@"%@ (%@)", [manager stringForAmount:req.amount],
                                    [manager localCurrencyStringForAmount:req.amount]];
             }
             else if (req.isValid) {
-                [groupDefs setObject:req.data forKey:APP_GROUP_REQUEST_DATA_KEY];
-                [groupDefs setObject:self.paymentAddress forKey:APP_GROUP_RECEIVE_ADDRESS_KEY];
-                [groupDefs synchronize];
+                [self.groupDefs setObject:req.data forKey:APP_GROUP_REQUEST_DATA_KEY];
+                [self.groupDefs setObject:self.paymentAddress forKey:APP_GROUP_RECEIVE_ADDRESS_KEY];
+                [self.groupDefs synchronize];
             }
             else {
-                [groupDefs removeObjectForKey:APP_GROUP_REQUEST_DATA_KEY];
-                [groupDefs removeObjectForKey:APP_GROUP_RECEIVE_ADDRESS_KEY];
-                [groupDefs synchronize];
+                [self.groupDefs removeObjectForKey:APP_GROUP_REQUEST_DATA_KEY];
+                [self.groupDefs removeObjectForKey:APP_GROUP_RECEIVE_ADDRESS_KEY];
+                [self.groupDefs synchronize];
             }
         });
     });
