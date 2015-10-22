@@ -45,6 +45,7 @@
 #define BITS_TIP    NSLocalizedString(@"%@ is for 'bits'. %@ = 1 bitcoin.", nil)
 
 #define BACKUP_DIALOG_TIME_KEY @"BACKUP_DIALOG_TIME"
+#define BALANCE_KEY            @"BALANCE"
 
 @interface BRRootViewController ()
 
@@ -418,6 +419,7 @@
 
 - (void)protectedViewDidAppear:(BOOL)animated
 {
+    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     BRWalletManager *manager = [BRWalletManager sharedInstance];
 
     if (self.protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.protectedObserver];
@@ -446,12 +448,19 @@
         }
     }
     else {
+        if ([defs objectForKey:BALANCE_KEY]) {
+            uint64_t balance = [[NSUserDefaults standardUserDefaults] doubleForKey:BALANCE_KEY];
+            
+            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [manager stringForAmount:balance],
+                                         [manager localCurrencyStringForAmount:balance]];
+        }
+        
         self.splash.hidden = YES;
         self.navigationController.navigationBar.hidden = NO;
         self.pageViewController.view.alpha = 1.0;
         [self.receiveViewController updateAddress];
         if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
-    
+
         if (self.navigationController.visibleViewController == self) {
             [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
             [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
@@ -539,6 +548,9 @@
     }
 
     _balance = balance;
+
+    // use setDouble since setInteger won't hold a uint64_t
+    [[NSUserDefaults standardUserDefaults] setDouble:balance forKey:BALANCE_KEY];
 
     if (self.percent.hidden) {
         self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [manager stringForAmount:balance],
