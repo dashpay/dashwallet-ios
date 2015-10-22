@@ -333,7 +333,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 // true if this is a "watch only" wallet with no signing ability
 - (BOOL)watchOnly
 {
-    return (self.masterPublicKey.length == 0) ? YES : NO;
+    return (self.masterPublicKey && self.masterPublicKey.length == 0) ? YES : NO;
 }
 
 // master public key used to generate wallet addresses

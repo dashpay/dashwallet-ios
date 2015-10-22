@@ -266,8 +266,9 @@
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if (_balance != UINT64_MAX && [BRPeerManager sharedInstance].syncProgress < 1.0 &&
-                [BRPeerManager sharedInstance].syncProgress > DBL_EPSILON) { // wait for sync
+            double progress = [BRPeerManager sharedInstance].syncProgress;
+        
+            if (_balance != UINT64_MAX && progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0) { // wait for sync
                 self.balance = _balance; // this updates the local currency value with the latest exchange rate
                 return;
             }
@@ -295,15 +296,6 @@
             if (self.reachability.currentReachabilityStatus == NotReachable) return;
             [self hideErrorBar];
             [self startActivityWithTimeout:0];
-
-            if ([[BRPeerManager sharedInstance]
-                 timestampForBlockHeight:[BRPeerManager sharedInstance].lastBlockHeight] + 60*60*24*7 <
-                [NSDate timeIntervalSinceReferenceDate] &&
-                manager.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
-                self.percent.hidden = NO;
-                self.navigationItem.titleView = nil;
-                self.navigationItem.title = NSLocalizedString(@"syncing...", nil);
-            }
         }];
     
     self.syncFinishedObserver =
@@ -341,7 +333,7 @@
     label.text = @"testnet";
     [label sizeToFit];
     label.center = CGPointMake(self.view.frame.size.width - label.frame.size.width,
-                               self.view.frame.size.height - label.frame.size.height - 5);
+                               self.view.frame.size.height - (label.frame.size.height + 5));
     [self.view addSubview:label];
 #endif
 
@@ -354,7 +346,7 @@
         label.text = @"watch only";
         [label sizeToFit];
         label.center = CGPointMake(self.view.frame.size.width - label.frame.size.width,
-                                   self.view.frame.size.height - (label.frame.size.height - 5)*2);
+                                   self.view.frame.size.height - (label.frame.size.height + 5)*2);
         [self.view addSubview:label];
     }
 
@@ -554,13 +546,34 @@
     }
 }
 
+- (void)showSyncing
+{
+    double progress = [BRPeerManager sharedInstance].syncProgress;
+
+    if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0) {
+        self.percent.hidden = NO;
+        self.navigationItem.titleView = nil;
+        self.navigationItem.title = NSLocalizedString(@"syncing...", nil);
+    }
+}
+
 - (void)startActivityWithTimeout:(NSTimeInterval)timeout
 {
     NSTimeInterval start = [NSDate timeIntervalSinceReferenceDate];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
 
     if (timeout > 1 && start + timeout > self.start + self.timeout) {
         self.timeout = timeout;
         self.start = start;
+    }
+
+    if (timeout <= DBL_EPSILON) {
+        if ([[BRPeerManager sharedInstance] timestampForBlockHeight:[BRPeerManager sharedInstance].lastBlockHeight] +
+            60*60*24*7 < [NSDate timeIntervalSinceReferenceDate] &&
+            manager.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
+            [self showSyncing];
+        }
+        else [self performSelector:@selector(showSyncing) withObject:nil afterDelay:5.0];
     }
 
     [UIApplication sharedApplication].idleTimerDisabled = YES;
@@ -575,7 +588,7 @@
     double progress = [BRPeerManager sharedInstance].syncProgress;
 
     self.start = self.timeout = 0.0;
-    if (progress > DBL_EPSILON && progress < 1.0) return; // not done syncing
+    if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0) return; // not done syncing
     [UIApplication sharedApplication].idleTimerDisabled = NO;
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
     if (self.progress.alpha < 0.5) return;
@@ -642,7 +655,7 @@
 
     counter++;
     self.percent.text = [NSString stringWithFormat:@"%0.1f%%", (progress > 0.1 ? progress - 0.1 : 0.0)*111.0];
-    if (progress < 1.0) [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
+    if (progress + DBL_EPSILON < 1.0) [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
 }
 
 - (void)ping
