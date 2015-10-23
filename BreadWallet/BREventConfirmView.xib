@@ -41,9 +41,9 @@
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="10" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="280" translatesAutoresizingMaskIntoConstraints="NO" id="kqc-0F-49V">
                                     <rect key="frame" x="15" y="110" width="570" height="102"/>
                                     <animations/>
-                                    <string key="text">We would like to collect some information about your usage of breadwallet.
+                                    <string key="text">Would you like to share anonymous app usage information with us?
 
-This information is completely anonymomized and includes absolutely no financial information.</string>
+This information is completely anonymous and includes no financial information. We respect your financial privacy!</string>
                                     <fontDescription key="fontDescription" type="system" weight="light" pointSize="16"/>
                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                     <nil key="highlightedColor"/>

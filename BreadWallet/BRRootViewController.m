@@ -171,18 +171,22 @@
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillEnterForegroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             if (! manager.noWallet) {
+                BREventManager *eventMan = [BREventManager sharedEventManager];
+                UIUserNotificationType types = UIUserNotificationTypeBadge;
+                                               //| UIUserNotificationTypeSound | UIUserNotificationTypeAlert;
+            
                 [[BRPeerManager sharedInstance] connect];
                 [self.sendViewController updateClipboardText];
 
-                [[BREventManager sharedEventManager] acquireUserPermissionInViewController:self.navigationController
-                withCallback:^(BOOL didGetPermission) {
-                    if ([UIUserNotificationSettings class] && // if iOS 8
-                        ! ([[UIApplication sharedApplication] currentUserNotificationSettings].types &
-                           UIUserNotificationTypeBadge)) { // register for badge notifications
-                        [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings
-                         settingsForTypes:UIUserNotificationTypeBadge categories:nil]];
-                    }
-                }];
+                if (eventMan.isInSampleGroup && ! eventMan.hasAskedForPermission) {
+                    [eventMan acquireUserPermissionInViewController:self.navigationController withCallback:nil];
+                }
+                else if ([UIUserNotificationSettings class] && // if iOS 8
+                         ([[UIApplication sharedApplication] currentUserNotificationSettings].types & types) != types) {
+                    // register for notifications
+                    [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings
+                     settingsForTypes:types categories:nil]];
+                }
             }
 
             if (jailbroken && manager.wallet.balance > 0) {
