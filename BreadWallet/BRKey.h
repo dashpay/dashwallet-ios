@@ -49,12 +49,16 @@ int secp256k1_point_mul(void *r, const void *p, UInt256 i, int compressed);// mu
 + (instancetype)keyWithPrivateKey:(NSString *)privateKey;
 + (instancetype)keyWithSecret:(UInt256)secret compressed:(BOOL)compressed;
 + (instancetype)keyWithPublicKey:(NSData *)publicKey;
++ (instancetype)keyRecoveredFromCompactSig:(NSData *)compactSig andMessageDigest:(UInt256)md;
 
 - (instancetype)initWithPrivateKey:(NSString *)privateKey;
 - (instancetype)initWithSecret:(UInt256)secret compressed:(BOOL)compressed;
 - (instancetype)initWithPublicKey:(NSData *)publicKey;
+- (instancetype)initWithCompactSig:(NSData *)compactSig andMessageDigest:(UInt256)md;
 
 - (NSData *)sign:(UInt256)md;
 - (BOOL)verify:(UInt256)md signature:(NSData *)sig;
+
+- (NSData *)compactSign:(UInt256)md; // Pieter Wuille's compact signature encoding used for bitcoin message signing
 
 @end

@@ -45,8 +45,8 @@ UInt256 secp256k1_mod_add(UInt256 a, UInt256 b)
     secp256k1_scalar_t as, bs, rs;
     UInt256 r;
     
-    secp256k1_scalar_set_b32(&as, (const unsigned char *)&a, NULL);
-    secp256k1_scalar_set_b32(&bs, (const unsigned char *)&b, NULL);
+    secp256k1_scalar_set_b32(&as, a.u8, NULL);
+    secp256k1_scalar_set_b32(&bs, b.u8, NULL);
     secp256k1_scalar_add(&rs, &as, &bs);
     secp256k1_scalar_clear(&bs);
     secp256k1_scalar_clear(&as);
@@ -61,12 +61,12 @@ UInt256 secp256k1_mod_mul(UInt256 a, UInt256 b)
     secp256k1_scalar_t as, bs, rs;
     UInt256 r;
     
-    secp256k1_scalar_set_b32(&as, (const unsigned char *)&a, NULL);
-    secp256k1_scalar_set_b32(&bs, (const unsigned char *)&b, NULL);
+    secp256k1_scalar_set_b32(&as, a.u8, NULL);
+    secp256k1_scalar_set_b32(&bs, b.u8, NULL);
     secp256k1_scalar_mul(&rs, &as, &bs);
     secp256k1_scalar_clear(&bs);
     secp256k1_scalar_clear(&as);
-    secp256k1_scalar_get_b32((unsigned char *)&r, &rs);
+    secp256k1_scalar_get_b32(r.u8, &rs);
     secp256k1_scalar_clear(&rs);
     return r;
 }
@@ -106,7 +106,7 @@ int secp256k1_point_mul(void *r, const void *p, UInt256 i, int compressed)
     secp256k1_ge_t rp, pp;
     int size = 0;
 
-    secp256k1_scalar_set_b32(&is, (const unsigned char *)&i, NULL);
+    secp256k1_scalar_set_b32(&is, i.u8, NULL);
 
     if (p) {
         if (! secp256k1_eckey_pubkey_parse(&pp, p, 33)) return 0;
@@ -151,6 +151,11 @@ int secp256k1_point_mul(void *r, const void *p, UInt256 i, int compressed)
     return [[self alloc] initWithPublicKey:publicKey];
 }
 
++ (instancetype)keyRecoveredFromCompactSig:(NSData *)compactSig andMessageDigest:(UInt256)md
+{
+    return [[self alloc] initWithCompactSig:compactSig andMessageDigest:md];
+}
+
 - (instancetype)init
 {
     static dispatch_once_t onceToken = 0;
@@ -168,7 +173,7 @@ int secp256k1_point_mul(void *r, const void *p, UInt256 i, int compressed)
 
     _seckey = secret;
     _compressed = compressed;
-    return (secp256k1_ec_seckey_verify(_ctx, (const unsigned char *)&_seckey)) ? self : nil;
+    return (secp256k1_ec_seckey_verify(_ctx, _seckey.u8)) ? self : nil;
 }
 
 - (instancetype)initWithPrivateKey:(NSString *)privateKey
@@ -202,7 +207,7 @@ int secp256k1_point_mul(void *r, const void *p, UInt256 i, int compressed)
     }
     else if (d.length == sizeof(UInt256)) _seckey = *(const UInt256 *)d.bytes;
     
-    return (secp256k1_ec_seckey_verify(_ctx, (const unsigned char *)&_seckey)) ? self : nil;
+    return (secp256k1_ec_seckey_verify(_ctx, _seckey.u8)) ? self : nil;
 }
 
 - (instancetype)initWithPublicKey:(NSData *)publicKey
@@ -213,6 +218,25 @@ int secp256k1_point_mul(void *r, const void *p, UInt256 i, int compressed)
     self.pubkey = publicKey;
     self.compressed = (self.pubkey.length == 33) ? YES : NO;
     return (secp256k1_ec_pubkey_verify(_ctx, self.publicKey.bytes, (int)self.publicKey.length)) ? self : nil;
+}
+
+- (instancetype)initWithCompactSig:(NSData *)compactSig andMessageDigest:(UInt256)md
+{
+    if (compactSig.length != 65) return nil;
+    if (! (self = [self init])) return nil;
+    
+    self.compressed = (((uint8_t *)compactSig.bytes)[0] - 27 >= 4) ? YES : NO;
+
+    int len = (self.compressed ? 33 : 65), recid = (((uint8_t *)compactSig.bytes)[0] - 27) % 4;
+    NSMutableData *pubkey = [NSMutableData dataWithLength:len];
+
+    if (secp256k1_ecdsa_recover_compact(_ctx, md.u8, (const uint8_t *)compactSig.bytes + 1, pubkey.mutableBytes, &len,
+                                        self.compressed, recid)) {
+        _pubkey = pubkey;
+        return self;
+    }
+    
+    return nil;
 }
 
 - (NSString *)privateKey
@@ -238,7 +262,7 @@ int secp256k1_point_mul(void *r, const void *p, UInt256 i, int compressed)
         NSMutableData *d = [NSMutableData secureDataWithLength:self.compressed ? 33 : 65];
         int len = 0;
 
-        if (secp256k1_ec_pubkey_create(_ctx, d.mutableBytes, &len, (const unsigned char *)&_seckey, _compressed)) {
+        if (secp256k1_ec_pubkey_create(_ctx, d.mutableBytes, &len, _seckey.u8, _compressed)) {
             self.pubkey = d;
         }
     }
@@ -276,8 +300,7 @@ int secp256k1_point_mul(void *r, const void *p, UInt256 i, int compressed)
     NSMutableData *s = [NSMutableData dataWithLength:72];
     int len = (int)s.length;
     
-    if (secp256k1_ecdsa_sign(_ctx, md.u8, s.mutableBytes, &len, (const unsigned char *)&_seckey,
-                             secp256k1_nonce_function_rfc6979, NULL)) {
+    if (secp256k1_ecdsa_sign(_ctx, md.u8, s.mutableBytes, &len, _seckey.u8, secp256k1_nonce_function_rfc6979, NULL)) {
         s.length = len;
         return s;
     }
@@ -289,6 +312,26 @@ int secp256k1_point_mul(void *r, const void *p, UInt256 i, int compressed)
     // success is 1, all other values are fail
     return (secp256k1_ecdsa_verify(_ctx, md.u8, sig.bytes, (int)sig.length, self.publicKey.bytes,
                                    (int)self.publicKey.length) == 1) ? YES : NO;
+}
+
+// Pieter Wuille's custom compact signature format used for bitcoin message signing
+- (NSData *)compactSign:(UInt256)md
+{
+    if (uint256_is_zero(_seckey)) {
+        NSLog(@"%s: can't sign with a public key", __func__);
+        return nil;
+    }
+    
+    NSMutableData *s = [NSMutableData dataWithLength:65];
+    int recid = 0;
+    
+    if (secp256k1_ecdsa_sign_compact(_ctx, md.u8, (uint8_t *)s.mutableBytes + 1, _seckey.u8,
+                                     secp256k1_nonce_function_rfc6979, NULL, &recid)) {
+        ((uint8_t *)s.mutableBytes)[0] = 27 + recid + (self.compressed ? 4 : 0);
+        return s;
+    }
+    else return nil;
+    
 }
 
 @end
