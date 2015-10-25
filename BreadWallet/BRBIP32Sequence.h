@@ -38,6 +38,7 @@
 - (NSString *)privateKey:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData *)seed;
 - (NSArray *)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed;
 
+// keys used for authenticated API calls, i.e. bitauth: https://github.com/bitpay/bitauth
 - (NSData *)authPublicKeyFromSeed:(NSData *)seed;
 - (NSString *)authPrivateKeyFromSeed:(NSData *)seed;
 

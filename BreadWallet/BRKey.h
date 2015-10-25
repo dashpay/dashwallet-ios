@@ -59,6 +59,8 @@ int secp256k1_point_mul(void *r, const void *p, UInt256 i, int compressed);// mu
 - (NSData *)sign:(UInt256)md;
 - (BOOL)verify:(UInt256)md signature:(NSData *)sig;
 
-- (NSData *)compactSign:(UInt256)md; // Pieter Wuille's compact signature encoding used for bitcoin message signing
+// Pieter Wuille's compact signature encoding used for bitcoin message signing
+// to verify a compact signature, recover a public key from the signature and verify that it matches the signer's pubkey
+- (NSData *)compactSign:(UInt256)md;
 
 @end
