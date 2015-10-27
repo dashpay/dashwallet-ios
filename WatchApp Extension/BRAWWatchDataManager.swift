@@ -64,7 +64,6 @@ class BRAWWatchDataManager: NSObject, WCSessionDelegate {
             //handle and present the message on screen
                 if let data = replyMessage[AW_SESSION_RESPONSE_KEY] as? NSData {
                     if let appleWatchData = NSKeyedUnarchiver.unarchiveObjectWithData(data) as? BRAppleWatchData {
-                        print(appleWatchData);
                         let previousWalletStatus = self.walletStatus
                         self.balance = appleWatchData.balance
                         self.balanceInLocalCurrency = appleWatchData.balanceInLocalCurrency
@@ -95,7 +94,6 @@ class BRAWWatchDataManager: NSObject, WCSessionDelegate {
         let messageToSend = [AW_SESSION_REQUEST_TYPE: NSNumber(unsignedInt:AWSessionRquestTypeFetchData.rawValue),
             AW_SESSION_REQUEST_DATA_TYPE_KEY: NSNumber(unsignedInt:AWSessionRquestDataTypeGlanceData.rawValue)]
         session.sendMessage(messageToSend, replyHandler: { [unowned self] replyMessage in
-            print("\(replyMessage)")
             if let data = replyMessage[AW_SESSION_RESPONSE_KEY] as? NSData {
                 if let appleWatchData = NSKeyedUnarchiver.unarchiveObjectWithData(data) as? BRAppleWatchData {
                     let previousWalletStatus = self.walletStatus
@@ -122,7 +120,6 @@ class BRAWWatchDataManager: NSObject, WCSessionDelegate {
     }
     
     func session(session: WCSession, didReceiveMessage message: [String : AnyObject]) {
-        print(message)
         if let requestType = message[AW_SESSION_REQUEST_TYPE] as? NSNumber {
             if requestType.unsignedIntValue == AWSessionRquestTypeDataUpdateNotification.rawValue {
                 requestAllData()
