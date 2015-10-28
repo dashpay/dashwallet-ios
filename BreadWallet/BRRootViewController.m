@@ -46,6 +46,7 @@
 
 #define BACKUP_DIALOG_TIME_KEY @"BACKUP_DIALOG_TIME"
 #define BALANCE_KEY            @"BALANCE"
+#define HAS_AUTHENTICATED_KEY  @"HAS_AUTHENTICATED"
 
 @interface BRRootViewController ()
 
@@ -412,16 +413,18 @@
         self.protectedObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationProtectedDataDidBecomeAvailable
             object:nil queue:nil usingBlock:^(NSNotification *note) {
-                [self protectedViewDidAppear:animated];
+                [self performSelector:@selector(protectedViewDidAppear) withObject:nil afterDelay:0.0];
             }];
     }
 
-    if ([UIApplication sharedApplication].protectedDataAvailable) [self protectedViewDidAppear:animated];
+    if ([UIApplication sharedApplication].protectedDataAvailable) {
+        [self performSelector:@selector(protectedViewDidAppear) withObject:nil afterDelay:0.0];
+    }
     
     [super viewDidAppear:animated];
 }
 
-- (void)protectedViewDidAppear:(BOOL)animated
+- (void)protectedViewDidAppear
 {
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     BRWalletManager *manager = [BRWalletManager sharedInstance];
@@ -453,7 +456,7 @@
     }
     else {
         if ([defs objectForKey:BALANCE_KEY]) {
-            uint64_t balance = [[NSUserDefaults standardUserDefaults] doubleForKey:BALANCE_KEY];
+            uint64_t balance = [defs doubleForKey:BALANCE_KEY];
             
             self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [manager stringForAmount:balance],
                                          [manager localCurrencyStringForAmount:balance]];
@@ -464,6 +467,10 @@
         self.pageViewController.view.alpha = 1.0;
         [self.receiveViewController updateAddress];
         if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
+
+        if (! [defs boolForKey:HAS_AUTHENTICATED_KEY] && [manager authenticateWithPrompt:nil andTouchId:NO]) {
+            [defs setBool:YES forKey:HAS_AUTHENTICATED_KEY];
+        }
 
         if (self.navigationController.visibleViewController == self) {
             [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
@@ -746,7 +753,7 @@
 
 - (BOOL)nextTip
 {
-    if (self.tipView.alpha < 0.5) { // XXX(sam): what is the intention of this code?
+    if (self.tipView.alpha < 0.5) { // if the tip view is dismissed, cycle through child view controller tips
         BOOL ret;
 
         if (self.inNextTip) return NO; // break out of recursive loop
@@ -796,41 +803,33 @@
         BRSendViewController *sendController = self.sendViewController;
 
         [(id)self.pageViewController setViewControllers:@[sendController]
-                                              direction:UIPageViewControllerNavigationDirectionReverse
-                                               animated:YES
-                                             completion:^(BOOL finished) { [sendController tip:sender]; }];
-        return;
+         direction:UIPageViewControllerNavigationDirectionReverse animated:YES
+         completion:^(BOOL finished) { [sendController tip:sender]; }];
     }
     else if (sender == self.sendViewController) {
         self.scrollView.scrollEnabled = YES;
-
         [(id)self.pageViewController setViewControllers:@[self.receiveViewController]
-        direction:UIPageViewControllerNavigationDirectionForward animated:YES completion:^(BOOL finished) {
-            //BUG: XXXX this doesn't get called after wiping a wallet and starting a new one without killing the app
-            [manager performSelector:@selector(setPin) withObject:nil afterDelay:0.0];
-        }];
-
-        return;
+         direction:UIPageViewControllerNavigationDirectionForward animated:YES completion:nil];
     }
     else if (self.showTips && manager.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
         self.showTips = NO;
-        return;
     }
+    else {
+        UINavigationBar *bar = self.navigationController.navigationBar;
+        NSString *tip = (self.percent.hidden) ? BALANCE_TIP :
+                        [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
+                        [BRPeerManager sharedInstance].lastBlockHeight,
+                        [BRPeerManager sharedInstance].estimatedBlockHeight];
 
-    UINavigationBar *bar = self.navigationController.navigationBar;
-    NSString *tip = (self.percent.hidden) ? BALANCE_TIP :
-                    [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
-                     [BRPeerManager sharedInstance].lastBlockHeight,
-                     [BRPeerManager sharedInstance].estimatedBlockHeight];
-
-    self.tipView = [BRBubbleView viewWithText:tip
-                    tipPoint:CGPointMake(bar.center.x, bar.frame.origin.y + bar.frame.size.height - 10)
-                    tipDirection:BRBubbleTipDirectionUp];
-    self.tipView.backgroundColor = [UIColor orangeColor];
-    self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
-    self.tipView.userInteractionEnabled = NO;
-    [self.view addSubview:[self.tipView popIn]];
-    if (self.showTips) self.scrollView.scrollEnabled = NO;
+        self.tipView = [BRBubbleView viewWithText:tip
+                        tipPoint:CGPointMake(bar.center.x, bar.frame.origin.y + bar.frame.size.height - 10)
+                        tipDirection:BRBubbleTipDirectionUp];
+        self.tipView.backgroundColor = [UIColor orangeColor];
+        self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+        self.tipView.userInteractionEnabled = NO;
+        [self.view addSubview:[self.tipView popIn]];
+        if (self.showTips) self.scrollView.scrollEnabled = NO;
+    }
 }
 
 - (IBAction)unlock:(id)sender

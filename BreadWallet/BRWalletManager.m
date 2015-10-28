@@ -597,6 +597,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     for (;;) {
         while ((! self.didPresent || self.alertView.visible) && self.currentPin.length < 4) {
             [[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+            if (! self.pinField.isFirstResponder) [self.pinField becomeFirstResponder];
         }
         
         if (! self.alertView.visible) break; // user canceled
@@ -698,6 +699,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     for (;;) {
         while ((! self.didPresent || self.alertView.visible) && self.currentPin.length < 4) {
             [[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+            if (! self.pinField.isFirstResponder) [self.pinField becomeFirstResponder];
         }
     
         if (! self.alertView.visible) break;
@@ -718,8 +720,9 @@ static NSString *getKeychainString(NSString *key, NSError **error)
              animations:^{ v.center = p; } completion:nil];
         }];
 
-        while (self.alertView.visible && self.currentPin.length < 4) {
+        while ((! self.didPresent || self.alertView.visible) && self.currentPin.length < 4) {
             [[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+            if (! self.pinField.isFirstResponder) [self.pinField becomeFirstResponder];
         }
 
         if (! self.alertView.visible) break;

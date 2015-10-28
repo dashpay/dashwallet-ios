@@ -57,7 +57,7 @@
         varInt += (uint64_t)(b & 0x7f) << 7*i++;
     }
 
-    return varInt;
+    return (b & 0x80) ? 0 : varInt;
 }
 
 - (NSData *)protoBufLenDelimAtOffset:(NSUInteger *)off

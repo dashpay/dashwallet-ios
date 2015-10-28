@@ -212,7 +212,7 @@ int secp256k1_point_mul(void *r, const void *p, UInt256 i, int compressed)
 
 - (instancetype)initWithPublicKey:(NSData *)publicKey
 {
-    if (publicKey.length == 0) return nil;
+    if (publicKey.length != 33 && publicKey.length != 65) return nil;
     if (! (self = [self init])) return nil;
     
     self.pubkey = publicKey;

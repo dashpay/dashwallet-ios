@@ -281,17 +281,17 @@ static NSString *dateFormat(NSString *template)
 
 - (NSString *)dateForTx:(BRTransaction *)tx
 {
-    static NSDateFormatter *f1 = nil;
-    static NSDateFormatter *f2 = nil;
+    static NSDateFormatter *monthDayHourFormatter = nil;
+    static NSDateFormatter *yearMonthDayHourFormatter = nil;
     static NSDateFormatter *monthDayFormatter = nil;
     static NSDateFormatter *yearMonthDayFormatter = nil;
     static dispatch_once_t onceToken;
     
     dispatch_once(&onceToken, ^{ //BUG: need to watch for NSCurrentLocaleDidChangeNotification
-        f1 = [NSDateFormatter new]; // TODO (sam): fix these variable names
-        f1.dateFormat = dateFormat(@"Mdja");
-        f2 = [NSDateFormatter new];
-        f2.dateFormat = dateFormat(@"yyMdja");
+        monthDayHourFormatter = [NSDateFormatter new];
+        monthDayHourFormatter.dateFormat = dateFormat(@"Mdja");
+        yearMonthDayHourFormatter = [NSDateFormatter new];
+        yearMonthDayHourFormatter.dateFormat = dateFormat(@"yyMdja");
         monthDayFormatter = [NSDateFormatter new];
         monthDayFormatter.dateFormat = dateFormat(@"Md");
         yearMonthDayFormatter = [NSDateFormatter new];
@@ -305,16 +305,15 @@ static NSString *dateFormat(NSString *template)
 
     if (date) return date;
     
-    // TODO: (sam) what does "t" mean? I'm assuming "${X}timestamp" where $X is something specific
-    NSTimeInterval t = (tx.timestamp > 1) ? tx.timestamp :
-                       [[BRPeerManager sharedInstance] timestampForBlockHeight:tx.blockHeight] - 5*60;
-    NSDateFormatter *desiredFormatter = (t > year) ? f1 : f2;
+    NSTimeInterval txTime = (tx.timestamp > 1) ? tx.timestamp :
+                            [[BRPeerManager sharedInstance] timestampForBlockHeight:tx.blockHeight] - 5*60;
+    NSDateFormatter *desiredFormatter = (txTime > year) ? monthDayHourFormatter : yearMonthDayHourFormatter;
     
-    if (tx.timestamp <= 1 && t <= week) {
-        desiredFormatter = (t > year) ? monthDayFormatter : yearMonthDayFormatter;
+    if (tx.timestamp <= 1 && txTime <= week) {
+        desiredFormatter = (txTime > year) ? monthDayFormatter : yearMonthDayFormatter;
     }
 
-    date = [[[desiredFormatter stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:t]].lowercaseString
+    date = [[[desiredFormatter stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:txTime]].lowercaseString
              stringByReplacingOccurrencesOfString:@"am" withString:@"a"]
             stringByReplacingOccurrencesOfString:@"pm" withString:@"p"];
     if (tx.blockHeight != TX_UNCONFIRMED) self.txDates[uint256_obj(tx.txHash)] = date;
