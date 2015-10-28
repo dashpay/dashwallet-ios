@@ -37,4 +37,5 @@ typedef enum : NSInteger {
 - (NSString*)amountText;
 - (NSString*)localCurrencyTextForAmount;
 - (NSString*)dateText;
+- (NSDate*)transactionDate;
 @end

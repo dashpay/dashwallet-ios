@@ -31,6 +31,7 @@
 #import "UIImage+Utils.h"
 #import "BRAppleWatchTransactionData+Factory.h"
 #import "BRPeerManager.h"
+#import "BRTransaction+Utils.h"
 
 @interface BRPhoneWCSessionManager()<WCSessionDelegate>
 @property WCSession *session;
@@ -106,8 +107,51 @@
     appleWatchData.transactions = [[self recentTransactionListFromTransactions:transactions] copy];
     appleWatchData.receiveMoneyQRCodeImage = qrCodeImage;
     appleWatchData.hasWallet = !manager.noWallet;
-    appleWatchData.lastestTransction = @"receive ƀ102,000 ($10.00) 5 days ago";
+    appleWatchData.lastestTransction = [self lastTransactionStringFromTransaction:transactions[0]];
     return appleWatchData;
+}
+
+- (NSString*)lastTransactionStringFromTransaction:(BRTransaction*)transaction {
+    if (transaction) {
+        NSString *timeDescriptionString = [self timeDescriptionStringFrom:transaction.transactionDate];
+        if (timeDescriptionString == nil) {
+            timeDescriptionString = transaction.dateText;
+        }
+        NSString *transactionTypeString;
+        switch (transaction.transactionType) {
+            case BRAWTransactionTypeSent:
+                transactionTypeString = @"sent";
+                break;
+            case BRAWTransactionTypeReceive:
+                transactionTypeString = @"receive";
+                break;
+            case BRAWTransactionTypeMove:
+                transactionTypeString = @"move";
+                break;
+            case BRAWTransactionTypeInvalid:
+                transactionTypeString = @"invalid transaction";
+                break;
+        }
+        
+        
+        return [NSString stringWithFormat:@"%@ %@ %@ , %@",transactionTypeString ,transaction.amountText, transaction.localCurrencyTextForAmount, timeDescriptionString];
+    }
+    return @"no transaction";
+}
+
+- (NSString*)timeDescriptionStringFrom:(NSDate*) date{
+    if (date) {
+        NSDate *now = [NSDate date];
+        NSTimeInterval secondsSinceTransaction = [now timeIntervalSinceDate:date];
+        if (secondsSinceTransaction < 60) {
+            return @"just now";
+        } else if ( secondsSinceTransaction / 60 < 60) {
+            return [NSString stringWithFormat:@"%@ minutes agao", @((NSInteger) (secondsSinceTransaction / 60))];
+        } else if ( secondsSinceTransaction / 60 / 60 < 24 ) {
+            return [NSString stringWithFormat:@"%@ hours agao", @((NSInteger) (secondsSinceTransaction / 60 / 60))];
+        }
+    }
+    return nil;
 }
 
 - (UIImage*)qrCode {

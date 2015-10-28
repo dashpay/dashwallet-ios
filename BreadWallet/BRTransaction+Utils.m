@@ -101,6 +101,10 @@
     
 }
 
+- (NSDate*)transactionDate {
+    return [NSDate dateWithTimeIntervalSinceReferenceDate:self.timestamp];
+}
+
 static NSString *dateFormat(NSString *template) {
     NSString *format = [NSDateFormatter dateFormatFromTemplate:template options:0 locale:[NSLocale currentLocale]];
     format = [format stringByReplacingOccurrencesOfString:@", " withString:@" "];
