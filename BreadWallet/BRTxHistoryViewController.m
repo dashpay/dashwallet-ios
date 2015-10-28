@@ -283,36 +283,24 @@ static NSString *dateFormat(NSString *template)
 {
     static NSDateFormatter *monthDayHourFormatter = nil;
     static NSDateFormatter *yearMonthDayHourFormatter = nil;
-    static NSDateFormatter *monthDayFormatter = nil;
-    static NSDateFormatter *yearMonthDayFormatter = nil;
     static dispatch_once_t onceToken;
     
-    dispatch_once(&onceToken, ^{ //BUG: need to watch for NSCurrentLocaleDidChangeNotification
+    dispatch_once(&onceToken, ^{ // BUG: need to watch for NSCurrentLocaleDidChangeNotification
         monthDayHourFormatter = [NSDateFormatter new];
         monthDayHourFormatter.dateFormat = dateFormat(@"Mdja");
         yearMonthDayHourFormatter = [NSDateFormatter new];
         yearMonthDayHourFormatter.dateFormat = dateFormat(@"yyMdja");
-        monthDayFormatter = [NSDateFormatter new];
-        monthDayFormatter.dateFormat = dateFormat(@"Md");
-        yearMonthDayFormatter = [NSDateFormatter new];
-        yearMonthDayFormatter.dateFormat = dateFormat(@"yyMd");
     });
     
     NSString *date = self.txDates[uint256_obj(tx.txHash)];
     NSTimeInterval now = [[BRPeerManager sharedInstance] timestampForBlockHeight:TX_UNCONFIRMED];
-    NSTimeInterval week = now - 6*24*60*60;
     NSTimeInterval year = now - 364*24*60*60;
 
     if (date) return date;
-    
-    NSTimeInterval txTime = (tx.timestamp > 1) ? tx.timestamp :
-                            [[BRPeerManager sharedInstance] timestampForBlockHeight:tx.blockHeight] - 5*60;
+
+    NSTimeInterval txTime = (tx.timestamp > 1) ? tx.timestamp : now;
     NSDateFormatter *desiredFormatter = (txTime > year) ? monthDayHourFormatter : yearMonthDayHourFormatter;
     
-    if (tx.timestamp <= 1 && txTime <= week) {
-        desiredFormatter = (txTime > year) ? monthDayFormatter : yearMonthDayFormatter;
-    }
-
     date = [[[desiredFormatter stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:txTime]].lowercaseString
              stringByReplacingOccurrencesOfString:@"am" withString:@"a"]
             stringByReplacingOccurrencesOfString:@"pm" withString:@"p"];

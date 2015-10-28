@@ -294,6 +294,7 @@
         queue:nil usingBlock:^(NSNotification *note) {
             [self.receiveViewController updateAddress];
             self.balance = manager.wallet.balance;
+            [defs removeObjectForKey:HAS_AUTHENTICATED_KEY];
         }];
 
     self.syncStartedObserver =
@@ -470,6 +471,7 @@
 
         if (! [defs boolForKey:HAS_AUTHENTICATED_KEY] && [manager authenticateWithPrompt:nil andTouchId:NO]) {
             [defs setBool:YES forKey:HAS_AUTHENTICATED_KEY];
+            [self unlock:nil];
         }
 
         if (self.navigationController.visibleViewController == self) {
@@ -573,7 +575,8 @@
 {
     double progress = [BRPeerManager sharedInstance].syncProgress;
 
-    if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0) {
+    if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0 &&
+        [BRWalletManager sharedInstance].seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
         self.percent.hidden = NO;
         self.navigationItem.titleView = nil;
         self.navigationItem.title = NSLocalizedString(@"syncing...", nil);
@@ -583,7 +586,6 @@
 - (void)startActivityWithTimeout:(NSTimeInterval)timeout
 {
     NSTimeInterval start = [NSDate timeIntervalSinceReferenceDate];
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
 
     if (timeout > 1 && start + timeout > self.start + self.timeout) {
         self.timeout = timeout;
@@ -592,8 +594,7 @@
 
     if (timeout <= DBL_EPSILON) {
         if ([[BRPeerManager sharedInstance] timestampForBlockHeight:[BRPeerManager sharedInstance].lastBlockHeight] +
-            60*60*24*7 < [NSDate timeIntervalSinceReferenceDate] &&
-            manager.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
+            60*60*24*7 < [NSDate timeIntervalSinceReferenceDate]) {
             [self showSyncing];
         }
         else [self performSelector:@selector(showSyncing) withObject:nil afterDelay:5.0];
