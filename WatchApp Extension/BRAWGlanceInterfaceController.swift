@@ -33,7 +33,6 @@ class BRAWGlanceInterfaceController: WKInterfaceController {
     @IBOutlet var lastTransactionLabel: WKInterfaceLabel!
     @IBOutlet var balanceInfoContainer: WKInterfaceGroup!
     @IBOutlet var loadingIndicator: WKInterfaceGroup!
-    @IBOutlet var cannotConnectIPhoneMessageContainer: WKInterfaceGroup!
     override func awakeWithContext(context: AnyObject?) {
         super.awakeWithContext(context)
         // Configure interface objects here.
@@ -43,14 +42,15 @@ class BRAWGlanceInterfaceController: WKInterfaceController {
     override func willActivate() {
         // This method is called when watch view controller is about to be visible to user
         super.willActivate()
+        BRAWWatchDataManager.sharedInstance.setupTimer()
         updateUI()
-        BRAWWatchDataManager.sharedInstance
         NSNotificationCenter.defaultCenter().addObserver(self, selector: "updateUI", name: BRAWWatchDataManager.ApplicationDataDidUpdateNotification, object: nil)
     }
     
     override func didDeactivate() {
         // This method is called when watch view controller is no longer visible
         super.didDeactivate()
+        BRAWWatchDataManager.sharedInstance.destoryTimer()
         NSNotificationCenter.defaultCenter().removeObserver(self)
     }
     
@@ -71,22 +71,14 @@ class BRAWGlanceInterfaceController: WKInterfaceController {
                 loadingIndicator.setHidden(false)
                 balanceInfoContainer.setHidden(true)
                 setupWalletContainer.setHidden(true)
-                cannotConnectIPhoneMessageContainer.setHidden(true)
             case .NotSetup:
                 loadingIndicator.setHidden(true)
                 balanceInfoContainer.setHidden(true)
-                cannotConnectIPhoneMessageContainer.setHidden(true)
                 setupWalletContainer.setHidden(false)
             case .HasSetup:
                 loadingIndicator.setHidden(true)
                 balanceInfoContainer.setHidden(false)
                 setupWalletContainer.setHidden(true)
-                cannotConnectIPhoneMessageContainer.setHidden(true)
-            case .CannotConnectToPhone:
-                loadingIndicator.setHidden(true)
-                balanceInfoContainer.setHidden(true)
-                setupWalletContainer.setHidden(true)
-                cannotConnectIPhoneMessageContainer.setHidden(false)
         }
     }
 }

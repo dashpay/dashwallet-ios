@@ -12,10 +12,8 @@
                     <items>
                         <group width="30" height="30" alignment="center" verticalAlignment="center" backgroundImage="LoadingIndicator" id="wKY-qb-B8a" userLabel="Loading indicator"/>
                         <label alignment="center" verticalAlignment="center" text="Open Breadwallet iPhone app to setup your wallet" textAlignment="left" numberOfLines="0" id="VXj-KF-nqM"/>
-                        <label alignment="center" verticalAlignment="center" text="Connection to iPhone is lost. Please try again later" textAlignment="left" numberOfLines="0" id="4GK-B1-ZWa"/>
                     </items>
                     <connections>
-                        <outlet property="connectionLostMessageLabel" destination="4GK-B1-ZWa" id="gvq-ej-AmZ"/>
                         <outlet property="loadingIndicator" destination="wKY-qb-B8a" id="38C-SN-66a"/>
                         <outlet property="setupWalletMessageLabel" destination="VXj-KF-nqM" id="Tnv-ma-LAe"/>
                     </connections>
@@ -39,11 +37,6 @@
                                 <group width="1" alignment="left" id="7AP-2v-fcP" userLabel="Setup wallet message container">
                                     <items>
                                         <label alignment="center" verticalAlignment="center" text="Open Breadwallet iPhone app to setup your wallet" textAlignment="left" numberOfLines="0" id="Gat-bm-t3w"/>
-                                    </items>
-                                </group>
-                                <group width="1" alignment="left" id="LeG-mg-bUy" userLabel="Cannot connect iPhone message container">
-                                    <items>
-                                        <label alignment="center" verticalAlignment="center" text="Connection to iPhone is lost. Please try again later" textAlignment="left" numberOfLines="0" id="f3B-Fb-Auw"/>
                                     </items>
                                 </group>
                                 <group width="1" alignment="left" layout="vertical" id="z73-6R-jav" userLabel="Balance info container">
@@ -74,7 +67,6 @@
                         <outlet property="balanceAmountLabel" destination="oAt-M3-LfO" id="KJX-NY-fKT"/>
                         <outlet property="balanceInLocalCurrencyLabel" destination="6Qe-WS-tck" id="KVb-6e-hDL"/>
                         <outlet property="balanceInfoContainer" destination="z73-6R-jav" id="VHP-7n-ewE"/>
-                        <outlet property="cannotConnectIPhoneMessageContainer" destination="LeG-mg-bUy" id="8in-ie-QXM"/>
                         <outlet property="lastTransactionLabel" destination="jqM-V4-RYz" id="cHi-4e-bIN"/>
                         <outlet property="loadingIndicator" destination="9vJ-Sn-Eit" id="Mhk-ud-QM2"/>
                         <outlet property="setupWalletContainer" destination="7AP-2v-fcP" id="sk5-hX-hUI"/>

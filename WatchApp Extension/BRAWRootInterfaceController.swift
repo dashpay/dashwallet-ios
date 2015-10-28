@@ -31,11 +31,6 @@ class BRAWRootInterfaceController: WKInterfaceController {
             setupWalletMessageLabel.setHidden(true)
         }
     }
-    @IBOutlet var connectionLostMessageLabel: WKInterfaceLabel!{
-        didSet{
-            connectionLostMessageLabel.setHidden(true)
-        }
-    }
     @IBOutlet var loadingIndicator: WKInterfaceGroup!
 
     override func awakeWithContext(context: AnyObject?) {
@@ -60,17 +55,11 @@ class BRAWRootInterfaceController: WKInterfaceController {
         case .Unknown:
             loadingIndicator.setHidden(false)
             setupWalletMessageLabel.setHidden(true)
-            connectionLostMessageLabel.setHidden(true)
         case .NotSetup:
             loadingIndicator.setHidden(true)
             setupWalletMessageLabel.setHidden(false)
-            connectionLostMessageLabel.setHidden(true)
         case .HasSetup:
             WKInterfaceController.reloadRootControllersWithNames(["BRAWBalanceInterfaceController","BRAWReceiveMoneyInterfaceController"], contexts: [])
-        case .CannotConnectToPhone:
-            loadingIndicator.setHidden(true)
-            setupWalletMessageLabel.setHidden(true)
-            connectionLostMessageLabel.setHidden(false)
         }
     }
 }

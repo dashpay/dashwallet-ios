@@ -1,5 +1,5 @@
 //
-//  BRAppleWatchSharedConstants.h
+//  BRAWWeakTimerTarget.swift
 //  BreadWallet
 //
 //  Created by Henry on 10/27/15.
@@ -23,22 +23,21 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRAppleWatchData.h"
+import WatchKit
 
-#define AW_SESSION_RESPONSE_KEY                 @"AW_SESSION_RESPONSE_KEY"
-#define AW_SESSION_REQUEST_TYPE                 @"AW_SESSION_REQUEST_TYPE"
-
-#define AW_SESSION_REQUEST_DATA_TYPE_KEY        @"AW_SESSION_REQUEST_DATA_TYPE_KEY"
-
-#define AW_APPLICATION_CONTEXT_KEY              @"AW_APPLICATION_CONTEXT_KEY"
-
-
-typedef enum {
-    AWSessionRquestDataTypeApplicationContextData,
-} AWSessionRquestDataType;
-
-typedef enum {
-    AWSessionRquestTypeDataUpdateNotification,
-    AWSessionRquestTypeFetchData,
-} AWSessionRquestType;
-
+class BRAWWeakTimerTarget: NSObject {
+    weak var target : AnyObject? = nil
+    var selector : Selector? = nil
+    
+    init(initTarget: AnyObject , initSelector : Selector) {
+        super.init()
+        target = initTarget
+        selector = initSelector
+    }
+    
+    func timerDidFire() {
+        if target != nil && selector != nil && target!.respondsToSelector(selector!) {
+            target!.performSelector(selector!)
+        }
+    }
+}

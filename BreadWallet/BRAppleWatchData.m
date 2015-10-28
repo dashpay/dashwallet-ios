@@ -60,4 +60,18 @@
 - (NSString*)description {
     return [NSString stringWithFormat:@"%@,%@,%@,%@,%@,image size:%@",_balance,_balanceInLocalCurrency,_receiveMoneyAddress,@([_transactions count]),_lastestTransction,@(_receiveMoneyQRCodeImage.size.height)];
 }
+
+- (BOOL)isEqual:(id)object {
+    if ([object isKindOfClass:[self class]]) {
+        BRAppleWatchData *otherAppleWatchData = object;
+        return [self.balance isEqual:otherAppleWatchData.balance] &&
+        [self.balanceInLocalCurrency isEqual:otherAppleWatchData.balanceInLocalCurrency] &&
+        [self.receiveMoneyAddress isEqual:otherAppleWatchData.receiveMoneyAddress] &&
+        [self.lastestTransction isEqual:otherAppleWatchData.lastestTransction] &&
+        [self.transactions isEqual:otherAppleWatchData.transactions] &&
+        self.hasWallet == otherAppleWatchData.hasWallet;
+    } else {
+        return NO;
+    }
+}
 @end

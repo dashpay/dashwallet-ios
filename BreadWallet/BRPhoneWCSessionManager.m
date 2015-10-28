@@ -30,6 +30,7 @@
 #import "BRPaymentRequest.h"
 #import "UIImage+Utils.h"
 #import "BRAppleWatchTransactionData+Factory.h"
+#import "BRPeerManager.h"
 
 @interface BRPhoneWCSessionManager()<WCSessionDelegate>
 @property WCSession *session;
@@ -53,8 +54,8 @@
             self.session = [WCSession defaultSession];
             self.session.delegate = self;
             [self.session activateSession];
-            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sendDataUpdateNotificationToWatch) name:BRWalletBalanceChangedNotification object:nil];
             [self sendApplicationContext];
+            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sendDataUpdateNotificationToWatch) name:BRWalletBalanceChangedNotification object:nil];
         }
     }
     return self;
@@ -64,8 +65,8 @@
 - (void)session:(WCSession *)session didReceiveMessage:(NSDictionary<NSString *, id> *)message replyHandler:(void(^)(NSDictionary<NSString *, id> *replyMessage))replyHandler {
     if ([message[AW_SESSION_REQUEST_TYPE] integerValue] == AWSessionRquestTypeFetchData) {
         switch ([message[AW_SESSION_REQUEST_DATA_TYPE_KEY] integerValue]) {
-            case AWSessionRquestDataTypeAllData:
-                [self handleAllDataRequest:message replyHandler:replyHandler];
+            case AWSessionRquestDataTypeApplicationContextData:
+                [self handleApplicationContextDataRequest:message replyHandler:replyHandler];
                 break;
             default:
                 replyHandler(@{});
@@ -77,23 +78,21 @@
 
 #pragma mark - request handlers
 
-- (void)handleAllDataRequest:(NSDictionary*)request replyHandler:(void(^)(NSDictionary<NSString *, id> *replyMessage))replyHandler {
-    NSDictionary *replay = @{AW_SESSION_RESPONSE_KEY: [NSKeyedArchiver archivedDataWithRootObject:[self appleWatchAppData]]};
+- (void)handleApplicationContextDataRequest:(NSDictionary*)request replyHandler:(void(^)(NSDictionary<NSString *, id> *replyMessage))replyHandler {
+    NSDictionary *replay = @{AW_SESSION_RESPONSE_KEY: [NSKeyedArchiver archivedDataWithRootObject:[self applicationContextData]]};
     replyHandler(replay);
 }
 
 - (void)sendApplicationContext {
-    BRAppleWatchData *appleWatchData = [self appleWatchAppData];
+    BRAppleWatchData *appleWatchData = [self applicationContextData];
     [self.session updateApplicationContext:@{AW_APPLICATION_CONTEXT_KEY: [NSKeyedArchiver archivedDataWithRootObject:appleWatchData]} error:nil];
 }
 
 - (void)sendDataUpdateNotificationToWatch {
-    NSLog(@"sendDataUpdateNotificationToWatch:%@",self.session);
-    [self.session sendMessage:@{AW_SESSION_REQUEST_TYPE:@(AWSessionRquestTypeDataUpdateNotification)} replyHandler:nil errorHandler:nil];
     [self sendApplicationContext];
 }
 
-- (BRAppleWatchData*)appleWatchAppData {
+- (BRAppleWatchData*)applicationContextData {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSArray *transactions = manager.wallet.recentTransactions;
     UIImage *qrCodeImage = self.qrCode;

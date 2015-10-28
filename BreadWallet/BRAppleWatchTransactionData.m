@@ -47,4 +47,17 @@
     if (_dateText)                     [encoder encodeObject:_dateText                      forKey:AW_TRANSACTION_DATA_DATE_KEY];
     if (_type)                         [encoder encodeObject:@(_type)                       forKey:AW_TRANSACTION_DATA_TYPE_KEY];
 }
+
+- (BOOL)isEqual:(id)object {
+    if ([object isKindOfClass:[self class]]) {
+        BRAppleWatchTransactionData *otherTransaction = object;
+        return [self.amountText isEqual:otherTransaction.amountText] &&
+        [self.amountTextInLocalCurrency isEqual:otherTransaction.amountTextInLocalCurrency] &&
+        [self.dateText isEqual:otherTransaction.dateText] &&
+        self.type == otherTransaction.type;
+    } else {
+        return NO;
+    }
+}
+
 @end
