@@ -39,7 +39,7 @@ class BRAWWatchDataManager: NSObject, WCSessionDelegate {
     static let applicationContextDataFileName = "applicationContextData.txt"
     
     let session : WCSession =  WCSession.defaultSession()
-    let timerFireInterval : NSTimeInterval = 5; // in seconds
+    let timerFireInterval : NSTimeInterval = 7; // have iphone app sync with peer every 7 seconds
     
     var timer : NSTimer?
     
@@ -86,6 +86,7 @@ class BRAWWatchDataManager: NSObject, WCSessionDelegate {
     
     func requestAllData() {
         if self.session.reachable {
+            WKInterfaceDevice.currentDevice().playHaptic(WKHapticType.Click)
             let messageToSend = [AW_SESSION_REQUEST_TYPE: NSNumber(unsignedInt:AWSessionRquestTypeFetchData.rawValue),
                 AW_SESSION_REQUEST_DATA_TYPE_KEY:NSNumber(unsignedInt:AWSessionRquestDataTypeApplicationContextData.rawValue)]
             session.sendMessage(messageToSend, replyHandler: { [unowned self] replyMessage in
@@ -96,7 +97,7 @@ class BRAWWatchDataManager: NSObject, WCSessionDelegate {
                             self.appleWatchData = unwrappedAppleWatchData
                             if previousAppleWatchData != self.appleWatchData {
                                 self.archiveData(unwrappedAppleWatchData)
-                                WKInterfaceDevice.currentDevice().playHaptic(WKHapticType.Success)
+                                WKInterfaceDevice.currentDevice().playHaptic(WKHapticType.Click)
                                 NSNotificationCenter.defaultCenter().postNotificationName(BRAWWatchDataManager.ApplicationDataDidUpdateNotification, object: nil)
                             }
                             if self.walletStatus != previousWalletStatus {

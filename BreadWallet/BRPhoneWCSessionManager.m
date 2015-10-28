@@ -67,6 +67,9 @@
         switch ([message[AW_SESSION_REQUEST_DATA_TYPE_KEY] integerValue]) {
             case AWSessionRquestDataTypeApplicationContextData:
                 [self handleApplicationContextDataRequest:message replyHandler:replyHandler];
+                // sync with peer whenever there is a request coming, so we can update watch side. 
+                [(id<UIApplicationDelegate>)[UIApplication sharedApplication].delegate application:[UIApplication sharedApplication] performFetchWithCompletionHandler:^(UIBackgroundFetchResult result) {
+                }];
                 break;
             default:
                 replyHandler(@{});
