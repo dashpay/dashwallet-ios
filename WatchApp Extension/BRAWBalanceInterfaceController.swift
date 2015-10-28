@@ -58,8 +58,7 @@ class BRAWBalanceInterfaceController: WKInterfaceController {
         super.willActivate()
         updateBalance()
         updateTransactionList()
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "updateBalance", name: BRAWWatchDataManager.BalanceDidUpdateNotification, object: nil)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "updateTransactionList", name: BRAWWatchDataManager.TransactionDidUpdateNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "updateUI", name: BRAWWatchDataManager.ApplicationDataDidUpdateNotification, object: nil)
     }
     
     override func didDeactivate() {
@@ -69,6 +68,10 @@ class BRAWBalanceInterfaceController: WKInterfaceController {
     }
     
     // MARK: UI update
+    func updateUI() {
+        updateBalance()
+        updateTransactionList()
+    }
     
     func updateBalance() {
         if let balanceInLocalizationString = BRAWWatchDataManager.sharedInstance.balanceInLocalCurrency as String? {

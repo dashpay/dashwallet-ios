@@ -40,7 +40,7 @@ class BRAWReceiveMoneyInterfaceController: WKInterfaceController, WCSessionDeleg
         // This method is called when watch view controller is about to be visible to user
         super.willActivate()
         updateReceiveUI()
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "updateReceiveUI", name: BRAWWatchDataManager.ReceiveMoneyAddressDidUpdateNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "updateReceiveUI", name: BRAWWatchDataManager.ApplicationDataDidUpdateNotification, object: nil)
     }
 
     override func didDeactivate() {

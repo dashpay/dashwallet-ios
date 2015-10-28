@@ -30,6 +30,9 @@
 
 #define AW_SESSION_REQUEST_DATA_TYPE_KEY        @"AW_SESSION_REQUEST_DATA_TYPE_KEY"
 
+#define AW_APPLICATION_CONTEXT_KEY              @"AW_APPLICATION_CONTEXT_KEY"
+
+
 typedef enum {
     AWSessionRquestDataTypeAllData,
     AWSessionRquestDataTypeGlanceData,

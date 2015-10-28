@@ -54,6 +54,7 @@
             self.session.delegate = self;
             [self.session activateSession];
             [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sendDataUpdateNotificationToWatch) name:BRWalletBalanceChangedNotification object:nil];
+            [self sendApplicationContext];
         }
     }
     return self;
@@ -65,9 +66,6 @@
         switch ([message[AW_SESSION_REQUEST_DATA_TYPE_KEY] integerValue]) {
             case AWSessionRquestDataTypeAllData:
                 [self handleAllDataRequest:message replyHandler:replyHandler];
-                break;
-            case AWSessionRquestDataTypeGlanceData:
-                [self handleGlanceDataRequest:message replyHandler:replyHandler];
                 break;
             default:
                 replyHandler(@{});
@@ -84,20 +82,15 @@
     replyHandler(replay);
 }
 
-- (void)handleGlanceDataRequest:(NSDictionary*)request replyHandler:(void(^)(NSDictionary<NSString *, id> *replyMessage))replyHandler {
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
-    BRAppleWatchData *appleWatchData = [[BRAppleWatchData alloc] init];
-    appleWatchData.balance = [manager stringForAmount:manager.wallet.balance];
-    appleWatchData.balanceInLocalCurrency = [manager localCurrencyStringForAmount:manager.wallet.balance];
-    //TODO get latest transaction formatting
-    appleWatchData.lastestTransction = @"receive ƀ102,000 ($10.00) 5 days ago";
-    appleWatchData.hasWallet = !manager.noWallet;
-    NSDictionary *replay = @{AW_SESSION_RESPONSE_KEY: [NSKeyedArchiver archivedDataWithRootObject:appleWatchData]};
-    replyHandler(replay);
+- (void)sendApplicationContext {
+    BRAppleWatchData *appleWatchData = [self appleWatchAppData];
+    [self.session updateApplicationContext:@{AW_APPLICATION_CONTEXT_KEY: [NSKeyedArchiver archivedDataWithRootObject:appleWatchData]} error:nil];
 }
 
 - (void)sendDataUpdateNotificationToWatch {
+    NSLog(@"sendDataUpdateNotificationToWatch:%@",self.session);
     [self.session sendMessage:@{AW_SESSION_REQUEST_TYPE:@(AWSessionRquestTypeDataUpdateNotification)} replyHandler:nil errorHandler:nil];
+    [self sendApplicationContext];
 }
 
 - (BRAppleWatchData*)appleWatchAppData {
@@ -111,6 +104,7 @@
     appleWatchData.transactions = [[self recentTransactionListFromTransactions:transactions] copy];
     appleWatchData.receiveMoneyQRCodeImage = qrCodeImage;
     appleWatchData.hasWallet = !manager.noWallet;
+    appleWatchData.lastestTransction = @"receive ƀ102,000 ($10.00) 5 days ago";
     return appleWatchData;
 }
 
