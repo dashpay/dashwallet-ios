@@ -56,10 +56,15 @@ class BRAWGlanceInterfaceController: WKInterfaceController {
     
     func updateUI() {
         // when local currency rate is no avaliable, use empty string
-        let localCurrencyAmount = (BRAWWatchDataManager.sharedInstance.balanceInLocalCurrency?.characters.count <= 2) ? BRAWWatchDataManager.sharedInstance.balanceInLocalCurrency  :  " "
         updateContainerVisibility()
+        
+        if (BRAWWatchDataManager.sharedInstance.balanceInLocalCurrency?.characters.count <= 2) {
+            balanceInLocalCurrencyLabel.setHidden(true)
+        } else {
+            balanceInLocalCurrencyLabel.setHidden(false)
+        }
         balanceAmountLabel.setAttributedText(BRAWWatchDataManager.sharedInstance.balanceAttributedString())
-        balanceInLocalCurrencyLabel.setText(localCurrencyAmount)
+        balanceInLocalCurrencyLabel.setText(BRAWWatchDataManager.sharedInstance.balanceInLocalCurrency)
         lastTransactionLabel.setText(BRAWWatchDataManager.sharedInstance.lastestTransction)
     }
     
