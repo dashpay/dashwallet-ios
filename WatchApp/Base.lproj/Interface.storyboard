@@ -56,6 +56,9 @@
                                         <label alignment="left" text="receive ƀ100, 5 days ago" numberOfLines="0" id="jqM-V4-RYz" userLabel="Last transaction label">
                                             <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                                             <fontDescription key="font" type="system" pointSize="14"/>
+                                            <variation key="device=watch38mm">
+                                                <fontDescription key="font" type="system" pointSize="12"/>
+                                            </variation>
                                         </label>
                                     </items>
                                 </group>

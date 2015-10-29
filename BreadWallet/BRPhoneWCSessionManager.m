@@ -123,18 +123,17 @@
                 transactionTypeString = @"sent";
                 break;
             case BRAWTransactionTypeReceive:
-                transactionTypeString = @"receive";
+                transactionTypeString = @"received";
                 break;
             case BRAWTransactionTypeMove:
-                transactionTypeString = @"move";
+                transactionTypeString = @"moved";
                 break;
             case BRAWTransactionTypeInvalid:
                 transactionTypeString = @"invalid transaction";
                 break;
         }
         
-        
-        return [NSString stringWithFormat:@"%@ %@ %@ , %@",transactionTypeString ,transaction.amountText, transaction.localCurrencyTextForAmount, timeDescriptionString];
+        return [NSString stringWithFormat:@"%@ %@ %@ , %@",transactionTypeString ,[transaction.amountText stringByReplacingOccurrencesOfString:@"-" withString:@""], (transaction.localCurrencyTextForAmount.length > 2) ? transaction.localCurrencyTextForAmount: @"" , timeDescriptionString];
     }
     return @"no transaction";
 }

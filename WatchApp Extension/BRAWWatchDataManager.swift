@@ -27,9 +27,9 @@ import WatchKit
 import WatchConnectivity
 
 enum WalletStatus {
+    case Unknown
     case HasSetup
     case NotSetup
-    case Unknown
 }
 
 class BRAWWatchDataManager: NSObject, WCSessionDelegate {
@@ -92,8 +92,8 @@ class BRAWWatchDataManager: NSObject, WCSessionDelegate {
             session.sendMessage(messageToSend, replyHandler: { [unowned self] replyMessage in
                     if let data = replyMessage[AW_SESSION_RESPONSE_KEY] as? NSData {
                         if let unwrappedAppleWatchData = NSKeyedUnarchiver.unarchiveObjectWithData(data) as? BRAppleWatchData {
-                            let previousWalletStatus = self.walletStatus
                             let previousAppleWatchData = self.appleWatchData
+                            let previousWalletStatus = self.walletStatus
                             self.appleWatchData = unwrappedAppleWatchData
                             if previousAppleWatchData != self.appleWatchData {
                                 self.archiveData(unwrappedAppleWatchData)
@@ -115,8 +115,12 @@ class BRAWWatchDataManager: NSObject, WCSessionDelegate {
     func session(session: WCSession, didReceiveApplicationContext applicationContext: [String : AnyObject]) {
         if let applicationContextData = applicationContext[AW_APPLICATION_CONTEXT_KEY] as? NSData {
             if let transferedAppleWatchData = NSKeyedUnarchiver.unarchiveObjectWithData(applicationContextData) as? BRAppleWatchData {
+                let previousWalletStatus = self.walletStatus
                 appleWatchData = transferedAppleWatchData
                 archiveData(transferedAppleWatchData)
+                if self.walletStatus != previousWalletStatus {
+                    NSNotificationCenter.defaultCenter().postNotificationName(BRAWWatchDataManager.WalletStatusDidChangeNotification, object: nil)
+                }
                 NSNotificationCenter.defaultCenter().postNotificationName(BRAWWatchDataManager.ApplicationDataDidUpdateNotification, object: nil)
             }
         }
