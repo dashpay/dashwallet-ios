@@ -192,8 +192,6 @@ static const char *dns_seeds[] = {
         if (_peers.count >= PEER_MAX_CONNECTIONS) return _peers;
         _peers = [NSMutableOrderedSet orderedSet];
 
-        NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
-
         [[BRPeerEntity context] performBlockAndWait:^{
             for (BRPeerEntity *e in [BRPeerEntity allObjects]) {
                 if (e.misbehavin == 0) [_peers addObject:[e peer]];
@@ -203,12 +201,16 @@ static const char *dns_seeds[] = {
 
         [self sortPeers];
 
+        // DNS peer discovery
+        NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+        NSMutableArray *peers = [NSMutableArray arrayWithObject:[NSMutableArray array]];
+
         if (_peers.count < PEER_MAX_CONNECTIONS ||
-            ((BRPeer *)_peers[PEER_MAX_CONNECTIONS - 1]).timestamp + 3*24*60*60 < now) { // DNS peer discovery
-            NSMutableArray *peers = [NSMutableArray array];
-            
-            for (size_t i = 0; i < sizeof(dns_seeds)/sizeof(*dns_seeds); i++) [peers addObject:[NSMutableArray array]];
-            
+            ((BRPeer *)_peers[PEER_MAX_CONNECTIONS - 1]).timestamp + 3*24*60*60 < now) {
+            while (peers.count < sizeof(dns_seeds)/sizeof(*dns_seeds)) [peers addObject:[NSMutableArray array]];
+        }
+        
+        if (peers.count > 0) {
             dispatch_apply(peers.count, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(size_t i) {
                 NSString *servname = @(BITCOIN_STANDARD_PORT).stringValue;
                 struct addrinfo hints = { 0, AF_UNSPEC, SOCK_STREAM, 0, 0, 0, NULL, NULL }, *servinfo, *p;

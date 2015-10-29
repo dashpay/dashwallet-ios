@@ -59,6 +59,8 @@
 #define CURRENCY_NAMES_KEY      @"CURRENCY_NAMES"
 #define CURRENCY_PRICES_KEY     @"CURRENCY_PRICES"
 #define SPEND_LIMIT_AMOUNT_KEY  @"SPEND_LIMIT_AMOUNT"
+#define TOUCH_UNLOCK_COUNT_KEY  @"TOUCH_UNLOCK_COUNT"
+#define PIN_UNLOCK_TIME_KEY     @"PIN_UNLOCK_TIME"
 #define SECURE_TIME_KEY         @"SECURE_TIME"
 #define FEE_PER_KB_KEY          @"FEE_PER_KB"
 
@@ -461,7 +463,8 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     BOOL touchid = (self.wallet.totalSent + amount < getKeychainInt(SPEND_LIMIT_KEY, nil)) ? YES : NO;
 
     if (! [self authenticateWithPrompt:authprompt andTouchId:touchid]) return nil;
-    // BUG: if user manually chooses to enter pin, spending limit is reset without including the tx being authorized
+    // BUG: if user manually chooses to enter pin, the touch id spending limit is reset, but the tx being authorized
+    // still counts towards the next touch id spending limit
     if (! touchid) setKeychainInt(self.wallet.totalSent + amount + self.spendingLimit, SPEND_LIMIT_KEY, NO);
     return [self.mnemonic deriveKeyFromPhrase:getKeychainString(MNEMONIC_KEY, nil) withPassphrase:nil];
 }
@@ -478,6 +481,9 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 - (BOOL)authenticateWithPrompt:(NSString *)authprompt andTouchId:(BOOL)touchId
 {
     if (touchId && [LAContext class]) { // check if touch id framework is available
+        NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+        NSUInteger touchUnlockCount = [defs integerForKey:TOUCH_UNLOCK_COUNT_KEY];
+        NSTimeInterval pinUnlockTime = [defs doubleForKey:PIN_UNLOCK_TIME_KEY];
         LAContext *context = [LAContext new];
         NSError *error = nil;
         __block NSInteger authcode = 0;
@@ -485,6 +491,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         [BREventManager saveEvent:@"wallet_manager:touchid_auth"];
         
         if ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error] &&
+            touchUnlockCount < 15 && pinUnlockTime + 30*24*60*60 > [NSDate timeIntervalSinceReferenceDate] &&
             getKeychainInt(PIN_FAIL_COUNT_KEY, nil) == 0 && getKeychainInt(SPEND_LIMIT_KEY, nil) > 0) {
             context.localizedFallbackTitle = NSLocalizedString(@"passcode", nil);
             
@@ -503,6 +510,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
             }
             else if (authcode == 1) {
                 self.didAuthenticate = YES;
+                [defs setInteger:touchUnlockCount + 1 forKey:TOUCH_UNLOCK_COUNT_KEY];
                 return YES;
             }
             else if (authcode == LAErrorUserCancel || authcode == LAErrorSystemCancel) return NO;
@@ -510,6 +518,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         else if (error) NSLog(@"[LAContext canEvaluatePolicy:] %@", error.localizedDescription);
     }
     
+    // TODO explain reason when touch id is disabled after the 15 touch unlocks, or after 30 days
     if ([self authenticatePinWithTitle:[NSString stringWithFormat:NSLocalizedString(@"passcode for %@", nil),
                                         DISPLAY_NAME] message:authprompt]) {
         [self.alertView dismissWithClickedButtonIndex:self.alertView.cancelButtonIndex animated:YES];
@@ -611,9 +620,13 @@ static NSString *getKeychainString(NSString *key, NSError **error)
             self.didAuthenticate = YES;
 
             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+                
                 setKeychainInt(0, PIN_FAIL_COUNT_KEY, NO);
                 setKeychainInt(0, PIN_FAIL_HEIGHT_KEY, NO);
                 if (limit > 0) setKeychainInt(self.wallet.totalSent + limit, SPEND_LIMIT_KEY, NO);
+                [defs setInteger:0 forKey:TOUCH_UNLOCK_COUNT_KEY];
+                [defs setDouble:[NSDate timeIntervalSinceReferenceDate] forKey:PIN_UNLOCK_TIME_KEY];
             });
 
             return YES;
