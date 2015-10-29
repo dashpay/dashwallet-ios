@@ -995,9 +995,9 @@ fromConnection:(AVCaptureConnection *)connection
                 else [self confirmRequest:request];
             }
         }
-        else if (request.r.length > 0) { // check to see if it's a BIP73 url
+        else {
             [BRPaymentRequest fetch:request.r timeout:5.0
-            completion:^(BRPaymentProtocolRequest *req, NSError *error) {
+            completion:^(BRPaymentProtocolRequest *req, NSError *error) { // check to see if it's a BIP73 url
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(resetQRGuide) object:nil];
                     
@@ -1017,13 +1017,11 @@ fromConnection:(AVCaptureConnection *)connection
                         
                         if (([request.scheme isEqual:@"bitcoin"] && request.paymentAddress.length > 1) ||
                             [request.paymentAddress hasPrefix:@"1"] || [request.paymentAddress hasPrefix:@"3"]) {
-                            self.scanController.message.text = [NSString stringWithFormat:@"%@\n%@",
+                            self.scanController.message.text = [NSString stringWithFormat:@"%@:\n%@",
                                                                 NSLocalizedString(@"not a valid bitcoin address", nil),
                                                                 request.paymentAddress];
                         }
-                        else {
-                            self.scanController.message.text = NSLocalizedString(@"not a bitcoin QR code", nil);
-                        }
+                        else self.scanController.message.text = NSLocalizedString(@"not a bitcoin QR code", nil);
                         
                         [self performSelector:@selector(resetQRGuide) withObject:nil afterDelay:0.35];
                         [BREventManager saveEvent:@"send:unsuccessful_bip73"];
