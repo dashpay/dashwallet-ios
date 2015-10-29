@@ -374,14 +374,15 @@
                 NSURLSessionUploadTask *uploadTask =
                     [urlSesh uploadTaskWithRequest:req fromData:body completionHandler:
                      ^(NSData *data, NSURLResponse *response, NSError *connectionError) {
-                         NSString *dataStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
                          NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
                          if (httpResponse.statusCode != 201) { // we should expect to receive a 201
                              NSLog(@"Error uploading event data to server: STATUS=%ld, connErr=%@ data=%@",
-                                   (long)httpResponse.statusCode, connectionError, dataStr);
+                                   (long)httpResponse.statusCode, connectionError,
+                                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
                          } else {
                              NSLog(@"Successfully sent event data to server %@ => %ld data=%@",
-                                   fileName, (long)httpResponse.statusCode, dataStr);
+                                   fileName, (long)httpResponse.statusCode,
+                                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
                          }
                          
                          // 4. remove the file from disk since we no longer need it
