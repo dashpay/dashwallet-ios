@@ -48,6 +48,9 @@
 #define BALANCE_KEY            @"BALANCE"
 #define HAS_AUTHENTICATED_KEY  @"HAS_AUTHENTICATED"
 
+#warning app started syncing after send, balance also showed after
+#warning don't rebroadcast invalid tx
+
 @interface BRRootViewController ()
 
 @property (nonatomic, strong) IBOutlet UIProgressView *progress, *pulse;

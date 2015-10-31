@@ -245,7 +245,6 @@
 		759816E519357D6F005060EA /* BRBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBubbleView.h; sourceTree = "<group>"; };
 		759816E619357D6F005060EA /* BRBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBubbleView.m; sourceTree = "<group>"; };
 		759AB7F71AB8F45900303AAB /* BreadWallet 2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "BreadWallet 2.xcdatamodel"; sourceTree = "<group>"; };
-		759F2C221AAAD42D0029A5AB /* libsecp256k1-config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "libsecp256k1-config.h"; sourceTree = SOURCE_ROOT; };
 		759FBB31193290F600AB4465 /* BRReceiveViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRReceiveViewController.h; sourceTree = "<group>"; };
 		759FBB32193290F600AB4465 /* BRRootViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRRootViewController.h; sourceTree = "<group>"; };
 		759FBB33193290F600AB4465 /* BRRootViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = BRRootViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
@@ -304,6 +303,17 @@
 		75DE02511B0EB8030027FF08 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75E83CF51B5F997A0038FB70 /* coinflip.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = coinflip.aiff; sourceTree = "<group>"; };
 		75F2E0B61BE2D5F000EAE861 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
+		75F2E0B81BE5596200EAE861 /* secp256k1_ecdh.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = secp256k1_ecdh.h; sourceTree = "<group>"; };
+		75F2E0B91BE5596200EAE861 /* secp256k1_recovery.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = secp256k1_recovery.h; sourceTree = "<group>"; };
+		75F2E0BA1BE5596200EAE861 /* secp256k1_schnorr.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = secp256k1_schnorr.h; sourceTree = "<group>"; };
+		75F2E0BB1BE5599100EAE861 /* basic-config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "basic-config.h"; sourceTree = "<group>"; };
+		75F2E0BC1BE559AE00EAE861 /* ecmult_const_impl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ecmult_const_impl.h; sourceTree = "<group>"; };
+		75F2E0BD1BE559AE00EAE861 /* ecmult_const.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ecmult_const.h; sourceTree = "<group>"; };
+		75F2E0C01BE559F200EAE861 /* main_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main_impl.h; sourceTree = "<group>"; };
+		75F2E0C41BE559F200EAE861 /* main_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main_impl.h; sourceTree = "<group>"; };
+		75F2E0C81BE559F200EAE861 /* main_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main_impl.h; sourceTree = "<group>"; };
+		75F2E0CA1BE559F200EAE861 /* schnorr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = schnorr.h; sourceTree = "<group>"; };
+		75F2E0CB1BE559F200EAE861 /* schnorr_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = schnorr_impl.h; sourceTree = "<group>"; };
 		84F68C881975E9E2002FC300 /* BRScanViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRScanViewController.h; sourceTree = "<group>"; };
 		84F68C891975E9E2002FC300 /* BRScanViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRScanViewController.m; sourceTree = "<group>"; };
 		BA4EECDF1B351AE200D443A3 /* BRAppGroupConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAppGroupConstants.h; sourceTree = "<group>"; };
@@ -444,7 +454,6 @@
 				752E28EF19234E8100DB5A3C /* Reachability.h */,
 				752E28F019234E8100DB5A3C /* Reachability.m */,
 				758B161A1AA9ADC4002C65DD /* secp256k1 */,
-				759F2C221AAAD42D0029A5AB /* libsecp256k1-config.h */,
 			);
 			name = ThirdParty;
 			sourceTree = "<group>";
@@ -462,6 +471,9 @@
 			isa = PBXGroup;
 			children = (
 				758B16241AA9ADC4002C65DD /* secp256k1.h */,
+				75F2E0B81BE5596200EAE861 /* secp256k1_ecdh.h */,
+				75F2E0B91BE5596200EAE861 /* secp256k1_recovery.h */,
+				75F2E0BA1BE5596200EAE861 /* secp256k1_schnorr.h */,
 			);
 			path = include;
 			sourceTree = "<group>";
@@ -469,11 +481,14 @@
 		758B162A1AA9ADC4002C65DD /* src */ = {
 			isa = PBXGroup;
 			children = (
+				75F2E0BB1BE5599100EAE861 /* basic-config.h */,
 				758B16301AA9ADC4002C65DD /* ecdsa.h */,
 				758B16311AA9ADC4002C65DD /* ecdsa_impl.h */,
 				758B16321AA9ADC4002C65DD /* eckey.h */,
 				758B16331AA9ADC4002C65DD /* eckey_impl.h */,
 				758B16341AA9ADC4002C65DD /* ecmult.h */,
+				75F2E0BD1BE559AE00EAE861 /* ecmult_const.h */,
+				75F2E0BC1BE559AE00EAE861 /* ecmult_const_impl.h */,
 				758B16351AA9ADC4002C65DD /* ecmult_gen.h */,
 				758B16361AA9ADC4002C65DD /* ecmult_gen_impl.h */,
 				758B16371AA9ADC4002C65DD /* ecmult_impl.h */,
@@ -485,6 +500,7 @@
 				758B16411AA9ADC4002C65DD /* group_impl.h */,
 				758B16421AA9ADC4002C65DD /* hash.h */,
 				758B16431AA9ADC4002C65DD /* hash_impl.h */,
+				75F2E0BE1BE559F200EAE861 /* modules */,
 				758B164A1AA9ADC4002C65DD /* num.h */,
 				758B164D1AA9ADC4002C65DD /* num_impl.h */,
 				758B164E1AA9ADC4002C65DD /* scalar.h */,
@@ -605,6 +621,42 @@
 				75CE50B51B5216F100DBC18C /* Info.plist */,
 			);
 			path = BreadWalletTests;
+			sourceTree = "<group>";
+		};
+		75F2E0BE1BE559F200EAE861 /* modules */ = {
+			isa = PBXGroup;
+			children = (
+				75F2E0BF1BE559F200EAE861 /* ecdh */,
+				75F2E0C31BE559F200EAE861 /* recovery */,
+				75F2E0C71BE559F200EAE861 /* schnorr */,
+			);
+			path = modules;
+			sourceTree = "<group>";
+		};
+		75F2E0BF1BE559F200EAE861 /* ecdh */ = {
+			isa = PBXGroup;
+			children = (
+				75F2E0C01BE559F200EAE861 /* main_impl.h */,
+			);
+			path = ecdh;
+			sourceTree = "<group>";
+		};
+		75F2E0C31BE559F200EAE861 /* recovery */ = {
+			isa = PBXGroup;
+			children = (
+				75F2E0C41BE559F200EAE861 /* main_impl.h */,
+			);
+			path = recovery;
+			sourceTree = "<group>";
+		};
+		75F2E0C71BE559F200EAE861 /* schnorr */ = {
+			isa = PBXGroup;
+			children = (
+				75F2E0C81BE559F200EAE861 /* main_impl.h */,
+				75F2E0CA1BE559F200EAE861 /* schnorr.h */,
+				75F2E0CB1BE559F200EAE861 /* schnorr_impl.h */,
+			);
+			path = schnorr;
 			sourceTree = "<group>";
 		};
 		BAE12BE81B2DEE7F00895CC5 /* TodayExtension */ = {
