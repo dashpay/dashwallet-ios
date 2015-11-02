@@ -377,30 +377,30 @@ static const char *dns_seeds[] = {
 {
     if (_bloomFilter) return _bloomFilter;
 
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
     
     // every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used for
     // one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
     // transaction is encountered during the blockchain download
-    [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL + 100 internal:NO];
-    [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL + 100 internal:YES];
+    [manager.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL + 100 internal:NO];
+    [manager.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL + 100 internal:YES];
 
     [self.orphans removeAllObjects]; // clear out orphans that may have been received on an old filter
     self.lastOrphan = nil;
     self.filterUpdateHeight = self.lastBlockHeight;
     self.fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
 
-    NSUInteger elemCount = m.wallet.addresses.count + m.wallet.unspentOutputs.count;
+    NSUInteger elemCount = manager.wallet.addresses.count + manager.wallet.unspentOutputs.count;
     BRBloomFilter *filter = [[BRBloomFilter alloc] initWithFalsePositiveRate:self.fpRate
                              forElementCount:elemCount + 100 tweak:self.tweak flags:BLOOM_UPDATE_ALL];
 
-    for (NSString *address in m.wallet.addresses) { // add addresses to watch for any tx receiveing money to the wallet
+    for (NSString *address in manager.wallet.addresses) {// add addresses to watch for tx receiveing money to the wallet
         NSData *hash = address.addressToHash160;
 
         if (hash && ! [filter containsData:hash]) [filter insertData:hash];
     }
 
-    for (NSValue *utxo in m.wallet.unspentOutputs) {// add unspent outputs to watch for tx sending money from the wallet
+    for (NSValue *utxo in manager.wallet.unspentOutputs) { // add UTXOs to watch for tx sending money from the wallet
         BRUTXO o;
         NSData *d;
         
@@ -695,7 +695,7 @@ static const char *dns_seeds[] = {
 // unconfirmed transactions that aren't in the mempools of any of connected peers have likely dropped off the network
 - (void)removeUnrelayedTransactions
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
     BOOL rescan = NO;
     UInt256 h;
 
@@ -706,28 +706,28 @@ static const char *dns_seeds[] = {
         if (! p.synced) return;
     }
 
-    for (BRTransaction *tx in m.wallet.recentTransactions) {
+    for (BRTransaction *tx in manager.wallet.recentTransactions) {
         if (tx.blockHeight != TX_UNCONFIRMED) break;
 
         if ([self.txRelays[uint256_obj(tx.txHash)] count] == 0) {
             // if this is for a transaction we sent, and inputs were all confirmed, and it wasn't already known to be
             // invalid, then recommend a rescan
-            if (! rescan && [m.wallet amountSentByTransaction:tx] > 0 && [m.wallet transactionIsValid:tx]) {
+            if (! rescan && [manager.wallet amountSentByTransaction:tx] > 0 && [manager.wallet transactionIsValid:tx]) {
                 rescan = YES;
                 
                 for (NSValue *hash in tx.inputHashes) {
                     [hash getValue:&h];
-                    if ([m.wallet transactionForHash:h].blockHeight != TX_UNCONFIRMED) continue;
+                    if ([manager.wallet transactionForHash:h].blockHeight != TX_UNCONFIRMED) continue;
                     rescan = NO;
                     break;
                 }
             }
             
-            [m.wallet removeTransaction:tx.txHash];
+            [manager.wallet removeTransaction:tx.txHash];
         }
         else if ([self.txRelays[uint256_obj(tx.txHash)] count] < PEER_MAX_CONNECTIONS) {
             // set timestamp 0 to mark as unverified
-            [m.wallet setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:@[uint256_obj(tx.txHash)]];
+            [manager.wallet setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:@[uint256_obj(tx.txHash)]];
         }
     }
     
@@ -867,6 +867,7 @@ static const char *dns_seeds[] = {
 
 - (void)peerConnected:(BRPeer *)peer
 {
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
     
     if (peer.timestamp > now + 2*60*60 || peer.timestamp < now - 2*60*60) peer.timestamp = now; //timestamp sanity check
@@ -880,8 +881,9 @@ static const char *dns_seeds[] = {
         return;
     }
 
-    for (BRTransaction *tx in [BRWalletManager sharedInstance].wallet.recentTransactions) {
+    for (BRTransaction *tx in manager.wallet.recentTransactions) {
         if (tx.blockHeight != TX_UNCONFIRMED) break;
+        if (! [manager.wallet transactionIsValid:tx]) continue; // don't broadcast invalid tx
         self.publishedTx[uint256_obj(tx.txHash)] = tx; // add unconfirmed tx to mempool
     }
 
@@ -1011,16 +1013,16 @@ static const char *dns_seeds[] = {
 
 - (void)peer:(BRPeer *)peer relayedTransaction:(BRTransaction *)transaction
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSValue *hash = uint256_obj(transaction.txHash);
     void (^callback)(NSError *error) = self.publishedCallback[hash];
 
     NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, hash);
 
     transaction.timestamp = [NSDate timeIntervalSinceReferenceDate];
-    if (! [m.wallet registerTransaction:transaction]) return;
+    if (! [manager.wallet registerTransaction:transaction]) return;
     if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
-    self.publishedTx[hash] = transaction;
+    if ([manager.wallet transactionIsValid:transaction]) self.publishedTx[hash] = transaction;
     
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
     if (callback || ! [self.txRelays[hash] containsObject:peer]) {
@@ -1029,8 +1031,8 @@ static const char *dns_seeds[] = {
         if (callback) [self.publishedCallback removeObjectForKey:hash];
 
         if ([self.txRelays[hash] count] >= PEER_MAX_CONNECTIONS &&
-            [m.wallet transactionForHash:transaction.txHash].blockHeight == TX_UNCONFIRMED) {
-            [m.wallet setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSinceReferenceDate]
+            [manager.wallet transactionForHash:transaction.txHash].blockHeight == TX_UNCONFIRMED) {
+            [manager.wallet setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSinceReferenceDate]
              forTxHashes:@[hash]]; // set timestamp when tx is verified
         }
 
@@ -1046,8 +1048,8 @@ static const char *dns_seeds[] = {
 
     // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
     // unused addresses are still matched by the bloom filter
-    NSArray *external = [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO],
-            *internal = [m.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
+    NSArray *external = [manager.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO],
+            *internal = [manager.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
         
     for (NSString *address in [external arrayByAddingObjectsFromArray:internal]) {
         NSData *hash = address.addressToHash160;
@@ -1061,13 +1063,13 @@ static const char *dns_seeds[] = {
 
 - (void)peer:(BRPeer *)peer hasTransaction:(UInt256)txHash
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSValue *hash = uint256_obj(txHash);
     BRTransaction *tx = self.publishedTx[hash];
     void (^callback)(NSError *error) = self.publishedCallback[hash];
     
     NSLog(@"%@:%d has transaction %@", peer.host, peer.port, hash);
-    if ((! tx || ! [m.wallet registerTransaction:tx]) && ! [m.wallet.txHashes containsObject:hash]) return;
+    if ((! tx || ! [manager.wallet registerTransaction:tx]) && ! [manager.wallet.txHashes containsObject:hash]) return;
     if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
     
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
@@ -1077,9 +1079,9 @@ static const char *dns_seeds[] = {
         if (callback) [self.publishedCallback removeObjectForKey:hash];
 
         if ([self.txRelays[hash] count] >= PEER_MAX_CONNECTIONS &&
-            [m.wallet transactionForHash:txHash].blockHeight == TX_UNCONFIRMED) { // set timestamp when tx is verified
-            [m.wallet setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSinceReferenceDate]
-             forTxHashes:@[hash]];
+            [manager.wallet transactionForHash:txHash].blockHeight == TX_UNCONFIRMED) {
+            [manager.wallet setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSinceReferenceDate]
+             forTxHashes:@[hash]]; // set timestamp when tx is verified
         }
         
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -1094,14 +1096,14 @@ static const char *dns_seeds[] = {
 
 - (void)peer:(BRPeer *)peer rejectedTransaction:(UInt256)txHash withCode:(uint8_t)code
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSValue *hash = uint256_obj(txHash);
     
     if ([self.txRelays[hash] containsObject:peer]) {
         [self.txRelays[hash] removeObject:peer];
 
-        if ([m.wallet transactionForHash:txHash].blockHeight == TX_UNCONFIRMED) { // set timestamp to 0 for unverified
-            [m.wallet setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:@[hash]];
+        if ([manager.wallet transactionForHash:txHash].blockHeight == TX_UNCONFIRMED) {// set timestamp 0 for unverified
+            [manager.wallet setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:@[hash]];
         }
 
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -1326,7 +1328,7 @@ static const char *dns_seeds[] = {
 
 - (BRTransaction *)peer:(BRPeer *)peer requestedTransaction:(UInt256)txHash
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSValue *hash = uint256_obj(txHash);
     BRTransaction *tx = self.publishedTx[hash];
     void (^callback)(NSError *error) = self.publishedCallback[hash];
@@ -1334,12 +1336,12 @@ static const char *dns_seeds[] = {
     
     [self.publishedCallback removeObjectForKey:hash];
     
-    if (callback && ! [m.wallet transactionIsValid:tx]) {
+    if (callback && ! [manager.wallet transactionIsValid:tx]) {
         [self.publishedTx removeObjectForKey:hash];
         error = [NSError errorWithDomain:@"BreadWallet" code:401
                  userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"double spend", nil)}];
     }
-    else if (tx && ! [m.wallet.txHashes containsObject:hash] && [m.wallet registerTransaction:tx]) {
+    else if (tx && ! [manager.wallet.txHashes containsObject:hash] && [manager.wallet registerTransaction:tx]) {
         [BRTransactionEntity saveContext]; // persist transactions to core data
     }
     

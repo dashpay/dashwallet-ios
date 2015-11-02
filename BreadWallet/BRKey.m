@@ -31,6 +31,9 @@
 #define USE_BASIC_CONFIG       1
 #define ENABLE_MODULE_RECOVERY 1
 #define DETERMINISTIC          1
+#if __BIG_ENDIAN__
+#define WORDS_BIGENDIAN        1
+#endif
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wconversion"
