@@ -456,13 +456,7 @@
         }
     }
     else {
-        if ([defs objectForKey:BALANCE_KEY]) {
-            uint64_t balance = [defs doubleForKey:BALANCE_KEY];
-            
-            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [manager stringForAmount:balance],
-                                         [manager localCurrencyStringForAmount:balance]];
-        }
-        
+        if (_balance == UINT64_MAX && [defs objectForKey:BALANCE_KEY]) self.balance = [defs doubleForKey:BALANCE_KEY];
         self.splash.hidden = YES;
         self.navigationController.navigationBar.hidden = NO;
         self.pageViewController.view.alpha = 1.0;
