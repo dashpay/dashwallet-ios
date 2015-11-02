@@ -106,8 +106,8 @@ annotation:(id)annotation
 performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler
 {
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-    BRWalletManager *m = [BRWalletManager sharedInstance];
-    __block uint64_t balance = m.wallet.balance;
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    __block uint64_t balance = manager.wallet.balance;
     __block id protectedObserver = nil, balanceObserver = nil, syncFinishedObserver = nil, syncFailedObserver = nil;
     __block void (^completion)(UIBackgroundFetchResult) = completionHandler;
     void (^cleanup)() = ^() {
@@ -146,12 +146,12 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
-            if (m.wallet.balance > balance) {
+            if (manager.wallet.balance > balance) {
                 [UIApplication sharedApplication].applicationIconBadgeNumber =
                     [UIApplication sharedApplication].applicationIconBadgeNumber + 1;
-                [defs setDouble:[defs doubleForKey:SETTINGS_RECEIVED_AMOUNT_KEY] + (m.wallet.balance - balance)
+                [defs setDouble:[defs doubleForKey:SETTINGS_RECEIVED_AMOUNT_KEY] + (manager.wallet.balance - balance)
                  forKey:SETTINGS_RECEIVED_AMOUNT_KEY]; // have to use setDouble here, setInteger isn't big enough
-                balance = m.wallet.balance;
+                balance = manager.wallet.balance;
                 [defs synchronize];
             }
         }];

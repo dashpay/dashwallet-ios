@@ -54,16 +54,16 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
 
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSMutableCharacterSet *charset = [NSMutableCharacterSet decimalDigitCharacterSet];
 
-    [charset addCharactersInString:m.format.currencyDecimalSeparator];
+    [charset addCharactersInString:manager.format.currencyDecimalSeparator];
     self.charset = charset;
 
     self.payButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"pay", nil)
                       style:UIBarButtonItemStyleBordered target:self action:@selector(pay:)];
-    self.amountField.placeholder = [m stringForAmount:0];
-    [self.decimalButton setTitle:m.format.currencyDecimalSeparator forState:UIControlStateNormal];
+    self.amountField.placeholder = [manager stringForAmount:0];
+    [self.decimalButton setTitle:manager.format.currencyDecimalSeparator forState:UIControlStateNormal];
 
     self.swapLeftLabel = [UILabel new];
     self.swapLeftLabel.font = self.localCurrencyLabel.font;
@@ -84,8 +84,9 @@
         usingBlock:^(NSNotification *note) {
             if ([BRPeerManager sharedInstance].syncProgress < 1.0) return; // wait for sync before updating balance
 
-            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [m stringForAmount:m.wallet.balance],
-                                         [m localCurrencyStringForAmount:m.wallet.balance]];
+            self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
+                                         [manager stringForAmount:manager.wallet.balance],
+                                         [manager localCurrencyStringForAmount:manager.wallet.balance]];
         }];
     
     self.backgroundObserver =
@@ -132,14 +133,15 @@
 
 - (void)updateLocalCurrencyLabel
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
-    uint64_t amount = (self.swapped) ? [m amountForLocalCurrencyString:self.amountField.text] :
-                      [m amountForString:self.amountField.text];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    uint64_t amount = (self.swapped) ? [manager amountForLocalCurrencyString:self.amountField.text] :
+                      [manager amountForString:self.amountField.text];
 
     self.swapLeftLabel.hidden = YES;
     self.localCurrencyLabel.hidden = NO;
-    self.localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)", (self.swapped) ? [m stringForAmount:amount] :
-                                                                       [m localCurrencyStringForAmount:amount]];
+    self.localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
+                                    (self.swapped) ? [manager stringForAmount:amount] :
+                                    [manager localCurrencyStringForAmount:amount]];
     self.localCurrencyLabel.textColor = (amount > 0) ? [UIColor grayColor] : [UIColor colorWithWhite:0.75 alpha:1.0];
 }
 
@@ -224,14 +226,16 @@
     }
 
     CGFloat scale = self.swapRightLabel.font.pointSize/self.swapLeftLabel.font.pointSize;
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSString *s = (self.swapped) ? self.localCurrencyLabel.text : self.amountField.text;
     uint64_t amount =
-        [m amountForLocalCurrencyString:(self.swapped) ? [s substringWithRange:NSMakeRange(1, s.length - 2)] : s];
+        [manager amountForLocalCurrencyString:(self.swapped) ? [s substringWithRange:NSMakeRange(1, s.length - 2)] : s];
 
-    self.localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)", (self.swapped) ? [m stringForAmount:amount] :
-                                                                       [m localCurrencyStringForAmount:amount]];
-    self.amountField.text = (self.swapped) ? [m localCurrencyStringForAmount:amount] : [m stringForAmount:amount];
+    self.localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
+                                    (self.swapped) ? [manager stringForAmount:amount] :
+                                    [manager localCurrencyStringForAmount:amount]];
+    self.amountField.text = (self.swapped) ? [manager localCurrencyStringForAmount:amount] :
+                            [manager stringForAmount:amount];
 
     if (amount == 0) {
         self.amountField.placeholder = self.amountField.text;

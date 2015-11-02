@@ -103,12 +103,12 @@
 {
     [BREventManager saveEvent:@"restore:wipe"];
     @autoreleasepool {
-        BRWalletManager *m = [BRWalletManager sharedInstance];
+        BRWalletManager *manager = [BRWalletManager sharedInstance];
         
-        if ([phrase isEqual:@"wipe"]) phrase = m.seedPhrase; // this triggers authentication request
+        if ([phrase isEqual:@"wipe"]) phrase = manager.seedPhrase; // this triggers authentication request
         
-        if ([[m.sequence masterPublicKeyFromSeed:[m.mnemonic deriveKeyFromPhrase:phrase withPassphrase:nil]]
-             isEqual:m.masterPublicKey]) {
+        if ([[manager.sequence masterPublicKeyFromSeed:[manager.mnemonic deriveKeyFromPhrase:phrase withPassphrase:nil]]
+             isEqual:manager.masterPublicKey]) {
             [BREventManager saveEvent:@"restore:wipe_good_recovery_phrase"];
             [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
               destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
@@ -148,19 +148,19 @@
     @autoreleasepool {  // @autoreleasepool ensures sensitive data will be deallocated immediately
         if ([textView.text rangeOfString:@"\n"].location == NSNotFound) return; // not done entering phrase
     
-        BRWalletManager *m = [BRWalletManager sharedInstance];
-        NSString *phrase = [m.mnemonic cleanupPhrase:textView.text], *incorrect = nil;
-        BOOL isLocal = YES, noWallet = m.noWallet;
+        BRWalletManager *manager = [BRWalletManager sharedInstance];
+        NSString *phrase = [manager.mnemonic cleanupPhrase:textView.text], *incorrect = nil;
+        BOOL isLocal = YES, noWallet = manager.noWallet;
         
         if (! [textView.text isValidBitcoinAddress] && ! [phrase isEqual:textView.text]) textView.text = phrase;
-        phrase = [m.mnemonic normalizePhrase:phrase];
+        phrase = [manager.mnemonic normalizePhrase:phrase];
         
         NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)phrase,
                                                                               CFSTR(" ")));
 
         for (NSString *word in a) {
-            if (! [m.mnemonic wordIsLocal:word]) isLocal = NO;
-            if ([m.mnemonic wordIsValid:word]) continue;
+            if (! [manager.mnemonic wordIsLocal:word]) isLocal = NO;
+            if ([manager.mnemonic wordIsValid:word]) continue;
             incorrect = word;
             break;
         }
@@ -170,7 +170,7 @@
             [self performSelector:@selector(wipeWithPhrase:) withObject:phrase afterDelay:0.0];
         }
         else if (incorrect && noWallet && [textView.text isValidBitcoinAddress]) { // address list watch only wallet
-            m.seedPhrase = @"wipe";
+            manager.seedPhrase = @"wipe";
 
             [[NSManagedObject context] performBlockAndWait:^{
                 int32_t n = 0;
@@ -192,7 +192,7 @@
             [BREventManager saveEvent:@"restore:set_pin"];
             
             [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:^{
-                [m performSelector:@selector(setPin) withObject:nil afterDelay:0.3];
+                [manager performSelector:@selector(setPin) withObject:nil afterDelay:0.3];
             }];
         }
         else if (incorrect) {
@@ -211,7 +211,7 @@
                        PHRASE_LENGTH] delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
               otherButtonTitles:nil] show];
         }
-        else if (isLocal && ! [m.mnemonic phraseIsValid:phrase]) {
+        else if (isLocal && ! [manager.mnemonic phraseIsValid:phrase]) {
             [BREventManager saveEvent:@"restore:bad_phrase"];
             [[[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"bad recovery phrase", nil) delegate:nil
               cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
@@ -222,12 +222,12 @@
         }
         else {
             //TODO: offer the user an option to move funds to a new seed if their wallet device was lost or stolen
-            m.seedPhrase = phrase;
+            manager.seedPhrase = phrase;
             textView.text = nil;
             [BREventManager saveEvent:@"restore:set_pin"];
             
             [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:^{
-                [m performSelector:@selector(setPin) withObject:nil afterDelay:0.3];
+                [manager performSelector:@selector(setPin) withObject:nil afterDelay:0.3];
             }];
         }
     }

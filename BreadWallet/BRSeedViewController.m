@@ -55,15 +55,15 @@
 
 - (instancetype)customInit
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
 
-    if (m.noWallet) {
-        self.seedPhrase = [m generateRandomSeed];
+    if (manager.noWallet) {
+        self.seedPhrase = [manager generateRandomSeed];
         [[BRPeerManager sharedInstance] connect];
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:WALLET_NEEDS_BACKUP_KEY];
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
-    else self.seedPhrase = m.seedPhrase; // this triggers authentication request
+    else self.seedPhrase = manager.seedPhrase; // this triggers authentication request
 
     if (self.seedPhrase.length > 0) _authSuccess = YES;
 

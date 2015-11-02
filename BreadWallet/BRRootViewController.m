@@ -836,9 +836,9 @@
 - (IBAction)unlock:(id)sender
 {
     [BREventManager saveEvent:@"root:unlock"];
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
     
-    if (sender && ! m.didAuthenticate && ! [m authenticateWithPrompt:nil andTouchId:YES]) return;
+    if (sender && ! manager.didAuthenticate && ! [manager authenticateWithPrompt:nil andTouchId:YES]) return;
     [BREventManager saveEvent:@"root:unlock_success"];
     
     self.navigationItem.titleView = nil;
@@ -870,13 +870,13 @@
 #if SNAPSHOT
 - (IBAction)nextScreen:(id)sender
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
     
     if (self.navigationController.presentedViewController) {
-        if (m.noWallet) [m generateRandomSeed];
+        if (manager.noWallet) [manager generateRandomSeed];
         self.showTips = NO;
         [self.navigationController dismissViewControllerAnimated:NO completion:^{
-            m.didAuthenticate = NO;
+            manager.didAuthenticate = NO;
             self.navigationItem.titleView = self.logo;
             self.navigationItem.rightBarButtonItem = self.lock;
             self.pageViewController.view.alpha = 1.0;

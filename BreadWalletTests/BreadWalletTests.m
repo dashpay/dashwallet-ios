@@ -1116,33 +1116,33 @@
 
 - (void)testWalletManager
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSString *s;
     
-    XCTAssertEqual([m amountForString:nil], 0LL, @"[BRWalletManager amountForString:]");
+    XCTAssertEqual([manager amountForString:nil], 0LL, @"[BRWalletManager amountForString:]");
     
-    XCTAssertEqual([m amountForString:@""], 0LL, @"[BRWalletManager amountForString:]");
+    XCTAssertEqual([manager amountForString:@""], 0LL, @"[BRWalletManager amountForString:]");
 
-    s = [m stringForAmount:0ULL];
-    XCTAssertEqual([m amountForString:s], 0ULL, @"[BRWalletManager amountForString:]");
+    s = [manager stringForAmount:0ULL];
+    XCTAssertEqual([manager amountForString:s], 0ULL, @"[BRWalletManager amountForString:]");
     
-    s = [m stringForAmount:100000000ULL];
-    XCTAssertEqual([m amountForString:s], 100000000ULL, @"[BRWalletManager amountForString:]");
+    s = [manager stringForAmount:100000000ULL];
+    XCTAssertEqual([manager amountForString:s], 100000000ULL, @"[BRWalletManager amountForString:]");
 
-    s = [m stringForAmount:1ULL];
-    XCTAssertEqual([m amountForString:s], 1ULL, @"[BRWalletManager amountForString:]");
+    s = [manager stringForAmount:1ULL];
+    XCTAssertEqual([manager amountForString:s], 1ULL, @"[BRWalletManager amountForString:]");
     
-    s = [m stringForAmount:2100000000000000ULL];
-    XCTAssertEqual([m amountForString:s], 2100000000000000ULL, @"[BRWalletManager amountForString:]");
+    s = [manager stringForAmount:2100000000000000ULL];
+    XCTAssertEqual([manager amountForString:s], 2100000000000000ULL, @"[BRWalletManager amountForString:]");
     
-    s = [m stringForAmount:2099999999999999ULL];
-    XCTAssertEqual([m amountForString:s], 2099999999999999ULL, @"[BRWalletManager amountForString:]");
+    s = [manager stringForAmount:2099999999999999ULL];
+    XCTAssertEqual([manager amountForString:s], 2099999999999999ULL, @"[BRWalletManager amountForString:]");
     
-    s = [m stringForAmount:2099999999999995ULL];
-    XCTAssertEqual([m amountForString:s], 2099999999999995ULL, @"[BRWalletManager amountForString:]");
+    s = [manager stringForAmount:2099999999999995ULL];
+    XCTAssertEqual([manager amountForString:s], 2099999999999995ULL, @"[BRWalletManager amountForString:]");
     
-    s = [m stringForAmount:2099999999999990ULL];
-    XCTAssertEqual([m amountForString:s], 2099999999999990ULL, @"[BRWalletManager amountForString:]");
+    s = [manager stringForAmount:2099999999999990ULL];
+    XCTAssertEqual([manager amountForString:s], 2099999999999990ULL, @"[BRWalletManager amountForString:]");
 }
 
 #pragma mark - testBloomFilter
