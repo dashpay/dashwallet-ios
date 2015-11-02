@@ -54,7 +54,8 @@ typedef enum : uint32_t {
 @property (nonatomic, strong) NSInputStream *inputStream;
 @property (nonatomic, strong) NSOutputStream *outputStream;
 @property (nonatomic, strong) NSMutableData *msgHeader, *msgPayload, *outputBuffer;
-@property (nonatomic, assign) BOOL sentVerack, gotVerack, sentFilter, sentGetAddr;
+@property (nonatomic, assign) BOOL sentVerack, gotVerack;
+@property (nonatomic, assign) BOOL sentGetaddr, sentFilter, sentGetdata, sentMempool, sentGetblocks;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) id reachabilityObserver;
 @property (nonatomic, assign) uint64_t localNonce;
@@ -155,7 +156,9 @@ services:(uint64_t)services
     self.msgHeader = [NSMutableData data];
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
-    self.gotVerack = self.sentVerack = self.sentFilter = self.sentGetAddr = self.needsFilterUpdate = NO;
+    self.gotVerack = self.sentVerack = NO;
+    self.sentFilter = self.sentGetaddr = self.sentGetdata = self.sentMempool = self.sentGetblocks = NO;
+    self.needsFilterUpdate = NO;
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
     self.knownBlockHashes = [NSMutableOrderedSet orderedSet];
     self.currentBlock = nil;
@@ -319,6 +322,7 @@ services:(uint64_t)services
 
 - (void)sendMempoolMessage
 {
+    self.sentMempool = YES;
     [self sendMessage:[NSData data] type:MSG_MEMPOOL];
 }
 
@@ -392,6 +396,7 @@ services:(uint64_t)services
     }
     
     [msg appendBytes:&hashStop length:sizeof(hashStop)];
+    self.sentGetblocks = YES;
     [self sendMessage:msg type:MSG_GETBLOCKS];
 }
 
@@ -441,12 +446,13 @@ services:(uint64_t)services
         [msg appendBytes:&h length:sizeof(h)];
     }
 
+    self.sentGetdata = YES;
     [self sendMessage:msg type:MSG_GETDATA];
 }
 
 - (void)sendGetaddrMessage
 {
-    self.sentGetAddr = YES;
+    self.sentGetaddr = YES;
     [self sendMessage:[NSData data] type:MSG_GETADDR];
 }
 
@@ -562,7 +568,7 @@ services:(uint64_t)services
         [self error:@"malformed addr message, length %u is too short", (int)message.length];
         return;
     }
-    else if (! self.sentGetAddr) return; // simple anti-tarpitting tactic, don't accept unsolicited addresses
+    else if (! self.sentGetaddr) return; // simple anti-tarpitting tactic, don't accept unsolicited addresses
 
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
     NSUInteger l, count = (NSUInteger)[message varIntAtOffset:0 length:&l];
@@ -635,7 +641,7 @@ services:(uint64_t)services
         }
     }
 
-    if (! self.sentFilter) {
+    if (! self.sentFilter && ! self.sentMempool && ! self.sentGetblocks) {
         if (txHashes.count > 0) [self error:@"got inv message before loading a filter"];
         return;
     }
@@ -701,7 +707,7 @@ services:(uint64_t)services
         [self error:@"malformed tx message: %@", message];
         return;
     }
-    else if (! self.sentFilter) {
+    else if (! self.sentFilter && ! self.sentGetdata) {
         [self error:@"got tx message before loading a filter"];
         return;
     }
@@ -924,7 +930,7 @@ services:(uint64_t)services
         [self error:@"invalid merkleblock: %@", uint256_obj(block.blockHash)];
         return;
     }
-    else if (! self.sentFilter) {
+    else if (! self.sentFilter && ! self.sentGetdata) {
         [self error:@"got merkleblock message before loading a filter"];
         return;
     }

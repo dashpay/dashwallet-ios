@@ -524,10 +524,12 @@ static const char *dns_seeds[] = {
         return;
     }
 
-    self.publishedTx[uint256_obj(transaction.txHash)] = transaction;
-    if (completion) self.publishedCallback[uint256_obj(transaction.txHash)] = completion;
-
     NSMutableSet *peers = [NSMutableSet setWithSet:self.connectedPeers];
+    NSValue *hash = uint256_obj(transaction.txHash);
+    
+    self.publishedTx[hash] = transaction;
+    if (completion) self.publishedCallback[hash] = completion;
+
     NSArray *txHashes = self.publishedTx.allKeys;
 
     // instead of publishing to all peers, leave out the download peer to see if the tx propogates and gets relayed back
@@ -535,19 +537,18 @@ static const char *dns_seeds[] = {
     if (self.peerCount > 1) [peers removeObject:self.downloadPeer];
 
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self performSelector:@selector(txTimeout:) withObject:uint256_obj(transaction.txHash)
-         afterDelay:PROTOCOL_TIMEOUT];
+        [self performSelector:@selector(txTimeout:) withObject:hash afterDelay:PROTOCOL_TIMEOUT];
 
         for (BRPeer *p in peers) {
             [p sendInvMessageWithTxHashes:txHashes];
             [p sendPingMessageWithPongHandler:^(BOOL success) {
                 if (! success) return;
 
-                for (NSValue *hash in txHashes) {
-                    if ([self.txRelays[hash] containsObject:p] || [self.txRequests[hash] containsObject:p]) continue;
-                    if (! self.txRequests[hash]) self.txRequests[hash] = [NSMutableSet set];
-                    [self.txRequests[hash] addObject:p];
-                    [p sendGetdataMessageWithTxHashes:@[hash] andBlockHashes:nil];
+                for (NSValue *h in txHashes) {
+                    if ([self.txRelays[h] containsObject:p] || [self.txRequests[h] containsObject:p]) continue;
+                    if (! self.txRequests[h]) self.txRequests[h] = [NSMutableSet set];
+                    [self.txRequests[h] addObject:p];
+                    [p sendGetdataMessageWithTxHashes:@[h] andBlockHashes:nil];
                 }
             }];
         }
