@@ -434,8 +434,16 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
         CFRelease(pubKey);
 
         if (status != errSecSuccess) {
-            _errorMessage = (status == errSecUnimplemented) ? NSLocalizedString(@"unsupported signature type", nil) :
-                            NSLocalizedString(@"bad signature", nil);
+            if (status == errSecUnimplemented) {
+                _errorMessage = NSLocalizedString(@"unsupported signature type", nil);
+                NSLog(@"%@", _errorMessage);
+            }
+            else {
+                _errorMessage = [[NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil]
+                                 localizedDescription];
+                NSLog(@"SecKeyRawVerify error: %@", _errorMessage);
+            }
+            
             return NO;
         }
     }

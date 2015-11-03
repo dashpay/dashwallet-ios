@@ -94,7 +94,8 @@ static BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
         OSStatus status = SecItemAdd((__bridge CFDictionaryRef)item, NULL);
         
         if (status == noErr) return YES;
-        NSLog(@"SecItemAdd error status %d", (int)status);
+        NSLog(@"SecItemAdd error: %@",
+              [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
         return NO;
     }
     
@@ -102,7 +103,8 @@ static BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
         OSStatus status = SecItemDelete((__bridge CFDictionaryRef)query);
 
         if (status == noErr) return YES;
-        NSLog(@"SecItemDelete error status %d", (int)status);
+        NSLog(@"SecItemDelete error: %@",
+              [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
         return NO;
     }
 
@@ -111,7 +113,8 @@ static BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
     OSStatus status = SecItemUpdate((__bridge CFDictionaryRef)query, (__bridge CFDictionaryRef)update);
     
     if (status == noErr) return YES;
-    NSLog(@"SecItemUpdate error status %d", (int)status);
+    NSLog(@"SecItemUpdate error: %@",
+          [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
     return NO;
 }
 
@@ -126,8 +129,9 @@ static NSData *getKeychainData(NSString *key, NSError **error)
 
     if (status == errSecItemNotFound) return nil;
     if (status == noErr) return CFBridgingRelease(result);
-    if (error) *error = [NSError errorWithDomain:@"BreadWallet" code:status
-                         userInfo:@{NSLocalizedDescriptionKey:@"SecItemCopyMatching error"}];
+    NSLog(@"SecItemCopyMatching error: %@",
+          [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
+    if (error) *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
     return nil;
 }
 

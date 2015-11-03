@@ -271,7 +271,7 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <view tag="100" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="N57-EQ-xth">
-                                            <rect key="frame" x="0.0" y="0.0" width="322" height="1"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="332" height="1"/>
                                             <animations/>
                                             <color key="backgroundColor" white="0.80000000000000004" alpha="1" colorSpace="calibratedWhite"/>
                                             <constraints>
@@ -288,7 +288,7 @@
                                             <size key="shadowOffset" width="0.0" height="0.0"/>
                                         </label>
                                         <view tag="101" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3aV-Es-Zmi">
-                                            <rect key="frame" x="0.0" y="44" width="322" height="1"/>
+                                            <rect key="frame" x="0.0" y="44" width="332" height="1"/>
                                             <animations/>
                                             <color key="backgroundColor" white="0.80000000000000004" alpha="1" colorSpace="calibratedWhite"/>
                                             <constraints>
@@ -301,8 +301,8 @@
                                         <constraint firstItem="3aV-Es-Zmi" firstAttribute="top" secondItem="N57-EQ-xth" secondAttribute="top" constant="44" id="0iH-ht-4a4"/>
                                         <constraint firstItem="N57-EQ-xth" firstAttribute="left" secondItem="I8K-Tt-SBv" secondAttribute="left" id="Hjb-Um-Rdy"/>
                                         <constraint firstItem="N57-EQ-xth" firstAttribute="top" secondItem="I8K-Tt-SBv" secondAttribute="top" id="RVo-g2-s0G"/>
-                                        <constraint firstAttribute="right" secondItem="N57-EQ-xth" secondAttribute="right" constant="-35" id="f5a-HD-4ia"/>
-                                        <constraint firstAttribute="right" secondItem="3aV-Es-Zmi" secondAttribute="right" constant="-35" id="oGI-2H-qUK"/>
+                                        <constraint firstAttribute="right" secondItem="N57-EQ-xth" secondAttribute="right" constant="-45" id="f5a-HD-4ia"/>
+                                        <constraint firstAttribute="right" secondItem="3aV-Es-Zmi" secondAttribute="right" constant="-45" id="oGI-2H-qUK"/>
                                         <constraint firstItem="3aV-Es-Zmi" firstAttribute="left" secondItem="I8K-Tt-SBv" secondAttribute="left" id="viR-hk-NxV"/>
                                     </constraints>
                                 </tableViewCellContentView>
@@ -711,6 +711,7 @@
                             </toolbar>
                         </subviews>
                         <animations/>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstAttribute="centerY" secondItem="uEW-dq-bFQ" secondAttribute="centerY" constant="22" id="2Cz-mU-x3b"/>
                             <constraint firstItem="1VG-Fh-Hjg" firstAttribute="centerX" secondItem="C6f-EJ-S6p" secondAttribute="centerX" id="LwS-JR-bbp"/>
@@ -2097,7 +2098,7 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <view tag="100" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MFE-cX-KKq">
-                                            <rect key="frame" x="0.0" y="0.0" width="322" height="1"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="332" height="1"/>
                                             <animations/>
                                             <color key="backgroundColor" white="0.80000000000000004" alpha="1" colorSpace="calibratedWhite"/>
                                             <constraints>
@@ -2114,7 +2115,7 @@
                                             <size key="shadowOffset" width="0.0" height="0.0"/>
                                         </label>
                                         <view tag="101" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9rS-gH-CRy">
-                                            <rect key="frame" x="0.0" y="44" width="322" height="1"/>
+                                            <rect key="frame" x="0.0" y="44" width="332" height="1"/>
                                             <animations/>
                                             <color key="backgroundColor" white="0.80000000000000004" alpha="1" colorSpace="calibratedWhite"/>
                                             <constraints>
@@ -2126,9 +2127,9 @@
                                     <constraints>
                                         <constraint firstItem="9rS-gH-CRy" firstAttribute="left" secondItem="RJ0-cK-NXa" secondAttribute="left" id="3qi-RZ-OVb"/>
                                         <constraint firstItem="MFE-cX-KKq" firstAttribute="left" secondItem="RJ0-cK-NXa" secondAttribute="left" id="Dc3-Cc-eLh"/>
-                                        <constraint firstAttribute="right" secondItem="MFE-cX-KKq" secondAttribute="right" constant="-35" id="OoS-b6-ewS"/>
+                                        <constraint firstAttribute="right" secondItem="MFE-cX-KKq" secondAttribute="right" constant="-45" id="OoS-b6-ewS"/>
                                         <constraint firstItem="MFE-cX-KKq" firstAttribute="top" secondItem="RJ0-cK-NXa" secondAttribute="top" id="isA-vP-jkA"/>
-                                        <constraint firstAttribute="right" secondItem="9rS-gH-CRy" secondAttribute="right" constant="-35" id="u68-fG-9vA"/>
+                                        <constraint firstAttribute="right" secondItem="9rS-gH-CRy" secondAttribute="right" constant="-45" id="u68-fG-9vA"/>
                                         <constraint firstItem="9rS-gH-CRy" firstAttribute="top" secondItem="MFE-cX-KKq" secondAttribute="top" constant="44" id="uCR-Nu-jY8"/>
                                     </constraints>
                                 </tableViewCellContentView>
@@ -2144,7 +2145,7 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <view tag="100" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dwS-Lz-eYQ">
-                                            <rect key="frame" x="0.0" y="0.0" width="322" height="1"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="332" height="1"/>
                                             <animations/>
                                             <color key="backgroundColor" white="0.80000000000000004" alpha="1" colorSpace="calibratedWhite"/>
                                             <constraints>
@@ -2170,7 +2171,7 @@
                                             <size key="shadowOffset" width="0.0" height="0.0"/>
                                         </label>
                                         <view tag="101" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="eAz-LJ-iJD">
-                                            <rect key="frame" x="0.0" y="43.5" width="322" height="1"/>
+                                            <rect key="frame" x="0.0" y="43.5" width="332" height="1"/>
                                             <animations/>
                                             <color key="backgroundColor" white="0.80000000000000004" alpha="1" colorSpace="calibratedWhite"/>
                                             <constraints>
@@ -2180,12 +2181,12 @@
                                     </subviews>
                                     <animations/>
                                     <constraints>
-                                        <constraint firstAttribute="right" secondItem="dwS-Lz-eYQ" secondAttribute="right" constant="-35" id="49x-Pg-4Vr"/>
+                                        <constraint firstAttribute="right" secondItem="dwS-Lz-eYQ" secondAttribute="right" constant="-45" id="49x-Pg-4Vr"/>
                                         <constraint firstItem="dwS-Lz-eYQ" firstAttribute="left" secondItem="hI1-IL-AK5" secondAttribute="left" id="Mvg-0Q-RM1"/>
                                         <constraint firstItem="eAz-LJ-iJD" firstAttribute="left" secondItem="hI1-IL-AK5" secondAttribute="left" id="PR8-Pn-WUp"/>
                                         <constraint firstItem="dwS-Lz-eYQ" firstAttribute="top" secondItem="CsQ-fq-mfQ" secondAttribute="top" constant="-12" id="hGW-fe-WJh"/>
                                         <constraint firstItem="eAz-LJ-iJD" firstAttribute="top" secondItem="8e2-ar-Ehc" secondAttribute="bottom" constant="11" id="o7r-o9-3XR"/>
-                                        <constraint firstAttribute="right" secondItem="eAz-LJ-iJD" secondAttribute="right" constant="-35" id="zhZ-gQ-qfC"/>
+                                        <constraint firstAttribute="right" secondItem="eAz-LJ-iJD" secondAttribute="right" constant="-45" id="zhZ-gQ-qfC"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <animations/>
