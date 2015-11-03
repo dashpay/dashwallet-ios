@@ -425,7 +425,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         
         if (fee) {
             feeAmount = [self feeForTxSize:transaction.size + 34 + cpfpSize]; // assume we will add a change output
-            if (self.balance > amount) feeAmount += (self.balance - amount) % 100; // round down balance to 100 satoshi
+            if (self.balance > amount) feeAmount += (self.balance - amount) % 100; // round off balance to 100 satoshi
         }
         
         if (balance == amount + feeAmount || balance >= amount + feeAmount + self.minOutputAmount) break;

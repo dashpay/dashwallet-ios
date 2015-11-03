@@ -332,7 +332,7 @@ static NSString *dateFormat(NSString *template)
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         self.transactions = manager.wallet.recentTransactions;
         
-        dispatch_async(dispatch_get_main_queue(), ^{
+        dispatch_async(dispatch_get_main_queue(), ^{ // BUG: XXXX row animation is broken
             if (sender && self.transactions.count > 0) {
                 [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
                  withRowAnimation:UITableViewRowAnimationAutomatic];
