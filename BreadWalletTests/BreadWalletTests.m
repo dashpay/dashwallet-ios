@@ -351,7 +351,7 @@
     NSLog(@"privKey = %@", key.privateKey);
     XCTAssertEqualObjects(@"5K4caxezwjGCGfnoPTZ8tMcJBLB7Jvyjv4xxeacadhq8nLisLR2", key.privateKey,
                           @"[BRKey keyWithBIP38Key:andPassphrase:]");
-    intercode = [BRKey BIP38IntermediateCodeWithSalt:0xa50dba6772cb9383ULL andPassphrase:@"TestingOneTwoThree"];
+    intercode = [BRKey BIP38IntermediateCodeWithSalt:0xa50dba6772cb9383 andPassphrase:@"TestingOneTwoThree"];
     NSLog(@"intercode = %@", intercode);
     privkey = [BRKey BIP38KeyWithIntermediateCode:intercode
                seedb:@"99241d58245c883896f80843d2846672d7312e6195ca1a6c".hexToData compressed:NO];
@@ -363,7 +363,7 @@
     NSLog(@"privKey = %@", key.privateKey);
     XCTAssertEqualObjects(@"5KJ51SgxWaAYR13zd9ReMhJpwrcX47xTJh2D3fGPG9CM8vkv5sH", key.privateKey,
                           @"[BRKey keyWithBIP38Key:andPassphrase:]");
-    intercode = [BRKey BIP38IntermediateCodeWithSalt:0x67010a9573418906ULL andPassphrase:@"Satoshi"];
+    intercode = [BRKey BIP38IntermediateCodeWithSalt:0x67010a9573418906 andPassphrase:@"Satoshi"];
     NSLog(@"intercode = %@", intercode);
     privkey = [BRKey BIP38KeyWithIntermediateCode:intercode
                seedb:@"49111e301d94eab339ff9f6822ee99d9f49606db3b47a497".hexToData compressed:NO];
@@ -1103,10 +1103,14 @@
      "f54c389c19673ba8488ac00000000".hexToData]];
 
     // larger than 1k transaction
-    tx = [w transactionFor:25000000ULL to:@"16c7nyuu2D99LqJ8TQ8GSsWSyrCYDS5qBA" withFee:YES];
+    tx = [w transactionFor:25000000 to:@"16c7nyuu2D99LqJ8TQ8GSsWSyrCYDS5qBA" withFee:YES];
     NSLog(@"fee: %llu, should be %llu", [w feeForTransaction:tx], [w feeForTxSize:tx.size + 1965]);
 
-    XCTAssertEqual([w feeForTransaction:tx], [w feeForTxSize:tx.size + 1965], @"[BRWallet transactionFor:to:withFee:]");
+    int64_t amount = [w amountReceivedFromTransaction:tx] - [w amountSentByTransaction:tx],
+            fee = [w feeForTxSize:tx.size + 1965] + ((w.balance - 25000000) % 100);
+
+    XCTAssertEqual([w feeForTransaction:tx], fee, @"[BRWallet transactionFor:to:withFee:]");
+    XCTAssertEqual(amount, -25000000 - fee);
 #endif
 
     XCTAssertEqual([w feeForTxSize:tx.size], tx.standardFee, @"[BRWallet feeForTxSize:]");
@@ -1119,30 +1123,30 @@
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSString *s;
     
-    XCTAssertEqual([manager amountForString:nil], 0LL, @"[BRWalletManager amountForString:]");
+    XCTAssertEqual([manager amountForString:nil], 0, @"[BRWalletManager amountForString:]");
     
-    XCTAssertEqual([manager amountForString:@""], 0LL, @"[BRWalletManager amountForString:]");
+    XCTAssertEqual([manager amountForString:@""], 0, @"[BRWalletManager amountForString:]");
 
-    s = [manager stringForAmount:0ULL];
-    XCTAssertEqual([manager amountForString:s], 0ULL, @"[BRWalletManager amountForString:]");
+    s = [manager stringForAmount:0];
+    XCTAssertEqual([manager amountForString:s], 0, @"[BRWalletManager amountForString:]");
     
-    s = [manager stringForAmount:100000000ULL];
-    XCTAssertEqual([manager amountForString:s], 100000000ULL, @"[BRWalletManager amountForString:]");
+    s = [manager stringForAmount:100000000];
+    XCTAssertEqual([manager amountForString:s], 100000000, @"[BRWalletManager amountForString:]");
 
-    s = [manager stringForAmount:1ULL];
-    XCTAssertEqual([manager amountForString:s], 1ULL, @"[BRWalletManager amountForString:]");
+    s = [manager stringForAmount:1];
+    XCTAssertEqual([manager amountForString:s], 1, @"[BRWalletManager amountForString:]");
     
-    s = [manager stringForAmount:2100000000000000ULL];
-    XCTAssertEqual([manager amountForString:s], 2100000000000000ULL, @"[BRWalletManager amountForString:]");
+    s = [manager stringForAmount:2100000000000000];
+    XCTAssertEqual([manager amountForString:s], 2100000000000000, @"[BRWalletManager amountForString:]");
     
-    s = [manager stringForAmount:2099999999999999ULL];
-    XCTAssertEqual([manager amountForString:s], 2099999999999999ULL, @"[BRWalletManager amountForString:]");
+    s = [manager stringForAmount:2099999999999999];
+    XCTAssertEqual([manager amountForString:s], 2099999999999999, @"[BRWalletManager amountForString:]");
     
-    s = [manager stringForAmount:2099999999999995ULL];
-    XCTAssertEqual([manager amountForString:s], 2099999999999995ULL, @"[BRWalletManager amountForString:]");
+    s = [manager stringForAmount:2099999999999995];
+    XCTAssertEqual([manager amountForString:s], 2099999999999995, @"[BRWalletManager amountForString:]");
     
-    s = [manager stringForAmount:2099999999999990ULL];
-    XCTAssertEqual([manager amountForString:s], 2099999999999990ULL, @"[BRWalletManager amountForString:]");
+    s = [manager stringForAmount:2099999999999990];
+    XCTAssertEqual([manager amountForString:s], 2099999999999990, @"[BRWalletManager amountForString:]");
 }
 
 #pragma mark - testBloomFilter

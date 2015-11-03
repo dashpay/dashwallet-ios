@@ -423,7 +423,11 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         // add up size of unconfirmed, non-change inputs for child-pays-for-parent fee calculation
         if (tx.blockHeight == TX_UNCONFIRMED && [self amountSentByTransaction:tx] == 0) cpfpSize += tx.size;
         
-        if (fee) feeAmount = [self feeForTxSize:transaction.size + 34 + cpfpSize]; // assume we will add a change output
+        if (fee) {
+            feeAmount = [self feeForTxSize:transaction.size + 34 + cpfpSize]; // assume we will add a change output
+            if (self.balance > amount) feeAmount += (self.balance - amount) % 100; // round down balance to 100 satoshi
+        }
+        
         if (balance == amount + feeAmount || balance >= amount + feeAmount + self.minOutputAmount) break;
     }
     

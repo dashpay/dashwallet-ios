@@ -432,7 +432,8 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     }
     else {
         fee = [manager.wallet feeForTxSize:[manager.wallet transactionFor:manager.wallet.balance
-                                                                       to:address withFee:NO].size];
+                                            to:address withFee:NO].size];
+        fee += (manager.wallet.balance - amount) % 100;
         amount += fee;
     }
 
@@ -482,7 +483,8 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
                     }
                 }
                 
-                int64_t amount = manager.wallet.balance - [manager.wallet feeForTxSize:txSize + 34 + cpfpSize];
+                int64_t amount = (manager.wallet.balance/100)*100 -
+                                 [manager.wallet feeForTxSize:txSize + 34 + cpfpSize];
             
                 [[[UIAlertView alloc]
                   initWithTitle:NSLocalizedString(@"insufficient funds for bitcoin network fee", nil)
