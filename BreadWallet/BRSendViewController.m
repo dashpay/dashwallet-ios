@@ -197,9 +197,7 @@ static NSString *sanitizeString(NSString *s)
             [self handleURL:[NSURL URLWithString:uri]];
         }
         
-        if (callback && [[UIApplication sharedApplication] canOpenURL:callback]) {
-            [[UIApplication sharedApplication] openURL:callback];
-        }
+        if (callback) [[UIApplication sharedApplication] openURL:callback];
     }
     else if ([url.scheme isEqual:@"bitcoin"]) {
         [self confirmRequest:[BRPaymentRequest requestWithURL:url]];
@@ -547,10 +545,11 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
             [(id)self.parentViewController.parentViewController stopActivityWithSuccess:YES];
             [(id)self.parentViewController.parentViewController ping];
 
-            if (self.callback && [[UIApplication sharedApplication] canOpenURL:self.callback]) {
+            if (self.callback) {
                 self.callback = [NSURL URLWithString:[self.callback.absoluteString stringByAppendingFormat:@"%@txid=%@",
-                                 (self.callback.query.length > 0) ? @"&" : @"?",
-                                 [NSString hexWithData:[NSData dataWithBytes:tx.txHash.u8 length:sizeof(UInt256)]]]];
+                                                      (self.callback.query.length > 0) ? @"&" : @"?",
+                                                      [NSString hexWithData:[NSData dataWithBytes:tx.txHash.u8
+                                                                             length:sizeof(UInt256)]]]];
                 [[UIApplication sharedApplication] openURL:self.callback];
             }
             
@@ -602,11 +601,12 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
                     [(id)self.parentViewController.parentViewController stopActivityWithSuccess:YES];
                     [(id)self.parentViewController.parentViewController ping];
 
-                    if (self.callback && [[UIApplication sharedApplication] canOpenURL:self.callback]) {
-                        self.callback =
-                            [NSURL URLWithString:[self.callback.absoluteString stringByAppendingFormat:@"%@txid=%@",
-                             (self.callback.query.length > 0) ? @"&" : @"?",
-                             [NSString hexWithData:[NSData dataWithBytes:tx.txHash.u8 length:sizeof(UInt256)]]]];
+                    if (self.callback) {
+                        self.callback = [NSURL URLWithString:[self.callback.absoluteString
+                                                              stringByAppendingFormat:@"%@txid=%@",
+                                                              (self.callback.query.length > 0) ? @"&" : @"?",
+                                                              [NSString hexWithData:[NSData dataWithBytes:tx.txHash.u8
+                                                                                     length:sizeof(UInt256)]]]];
                         [[UIApplication sharedApplication] openURL:self.callback];
                     }
                     
