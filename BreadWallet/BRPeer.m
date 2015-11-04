@@ -31,6 +31,10 @@
 #import "Reachability.h"
 #import <arpa/inet.h>
 
+#if ! PEER_LOGGING
+#define NSLog(...)
+#endif
+
 #define HEADER_LENGTH      24
 #define MAX_MSG_LENGTH     0x02000000u
 #define MAX_GETDATA_HASHES 50000

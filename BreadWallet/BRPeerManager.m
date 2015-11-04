@@ -38,6 +38,10 @@
 #import "NSManagedObject+Sugar.h"
 #import <netdb.h>
 
+#if ! PEER_LOGGING
+#define NSLog(...)
+#endif
+
 #define FIXED_PEERS          @"FixedPeers"
 #define PROTOCOL_TIMEOUT     20.0
 #define MAX_CONNECT_FAILURES 20 // notify user of network problems after this many connect failures in a row
