@@ -32,8 +32,8 @@
 
 @interface BRAmountViewController ()
 
-@property (nonatomic, strong) IBOutlet UITextField *amountField;
-@property (nonatomic, strong) IBOutlet UILabel *localCurrencyLabel, *addressLabel;
+@property (nonatomic, strong) IBOutlet UITextField *amountField, *memoField;
+@property (nonatomic, strong) IBOutlet UILabel *localCurrencyLabel;
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *payButton, *lock;
 @property (nonatomic, strong) IBOutlet UIButton *delButton, *decimalButton;
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
@@ -106,8 +106,8 @@
 {
     [super viewWillAppear:animated];
     
-    self.addressLabel.text = (self.to.length > 0) ?
-                             [NSString stringWithFormat:NSLocalizedString(@"to: %@", nil), self.to] : nil;
+    self.memoField.text = (self.to.length > 0) ?
+                          [NSString stringWithFormat:NSLocalizedString(@"to: %@", nil), self.to] : nil;
     self.wallpaper.hidden = NO;
 
     if (self.navigationController.viewControllers.firstObject != self) {
@@ -115,6 +115,8 @@
         if ([BRWalletManager sharedInstance].didAuthenticate) [self unlock:nil];
     }
     else {
+//        self.memoField.userInteractionEnabled = YES;
+//        self.memoField.placeholder = NSLocalizedString(@"memo:", nil);
         self.payButton.title = NSLocalizedString(@"request", nil);
         self.navigationItem.rightBarButtonItem = self.payButton;
     }

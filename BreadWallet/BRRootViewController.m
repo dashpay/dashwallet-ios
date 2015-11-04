@@ -52,10 +52,11 @@
 
 @property (nonatomic, strong) IBOutlet UIProgressView *progress, *pulse;
 @property (nonatomic, strong) IBOutlet UILabel *percent;
-@property (nonatomic, strong) IBOutlet UIView *errorBar, *wallpaper, *splash, *logo, *blur;
+@property (nonatomic, strong) IBOutlet UIView *errorBar, *splash, *logo, *blur;
 @property (nonatomic, strong) IBOutlet UIGestureRecognizer *navBarTap;
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *lock;
 @property (nonatomic, strong) IBOutlet BRBouncyBurgerButton *burger;
+@property (nonatomic, strong) IBOutlet NSLayoutConstraint *wallpaperXLeft;
 
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) BRBubbleView *tipView;
@@ -516,7 +517,6 @@
 
 - (void)viewDidLayoutSubviews
 {
-    self.wallpaper.center = CGPointMake(self.wallpaper.center.x, self.wallpaper.superview.frame.size.height/2);
     [self scrollViewDidScroll:self.scrollView];
 }
 
@@ -927,7 +927,8 @@ viewControllerAfterViewController:(UIViewController *)viewController
 {
     CGFloat off = scrollView.contentOffset.x + (scrollView.contentInset.left < 0 ? scrollView.contentInset.left : 0);
     
-    self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 - PARALAX_RATIO*off, self.wallpaper.center.y);
+//    self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 - PARALAX_RATIO*off, self.wallpaper.center.y);
+    self.wallpaperXLeft.constant = -PARALAX_RATIO*off;
 }
 
 #pragma mark - UIAlertViewDelegate
@@ -985,12 +986,6 @@ viewControllerAfterViewController:(UIViewController *)viewController
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
 
     if (to == self || from == self) { // nav stack push/pop
-        if (self.wallpaper.superview != containerView) {
-            containerView.backgroundColor = self.view.backgroundColor;
-            self.view.backgroundColor = [UIColor clearColor];
-            [containerView insertSubview:self.wallpaper belowSubview:from.view];
-        }
-
         self.progress.hidden = self.pulse.hidden = YES;
         [containerView addSubview:to.view];
         to.view.center = CGPointMake(containerView.frame.size.width*(to == self ? -1 : 3)/2, to.view.center.y);
@@ -999,9 +994,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
         initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
             to.view.center = from.view.center;
             from.view.center = CGPointMake(containerView.frame.size.width*(to == self ? 3 : -1)/2, from.view.center.y);
-            self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 -
-                                                containerView.frame.size.width*(to == self ? 0 : 1)*PARALAX_RATIO,
-                                                self.wallpaper.center.y);
+            self.wallpaperXLeft.constant = containerView.frame.size.width*(to == self ? 0 : -1)*PARALAX_RATIO;
         } completion:^(BOOL finished) {
             if (to == self) {
                 [from.view removeFromSuperview];

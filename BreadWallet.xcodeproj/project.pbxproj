@@ -65,6 +65,7 @@
 		75E2503F1B7691C900A2BB2B /* BRBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 759816E619357D6F005060EA /* BRBubbleView.m */; };
 		75E83CF61B5F997A0038FB70 /* coinflip.aiff in Resources */ = {isa = PBXBuildFile; fileRef = 75E83CF51B5F997A0038FB70 /* coinflip.aiff */; };
 		75F2E0B71BE2D5F100EAE861 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75F2E0B61BE2D5F000EAE861 /* Accelerate.framework */; };
+		75F2E0D31BE9803900EAE861 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75F2E0D21BE9803900EAE861 /* Launch Screen.storyboard */; };
 		84F68C8A1975E9E2002FC300 /* BRScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 84F68C891975E9E2002FC300 /* BRScanViewController.m */; };
 		BA54D3CE1B2EA74000C9CB28 /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BA54D3CD1B2EA74000C9CB28 /* Media.xcassets */; };
 		BAA4843C1B3EFFAF0075C749 /* UIImage+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = BAA4843B1B3EFFAF0075C749 /* UIImage+Utils.m */; };
@@ -314,6 +315,7 @@
 		75F2E0C81BE559F200EAE861 /* main_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main_impl.h; sourceTree = "<group>"; };
 		75F2E0CA1BE559F200EAE861 /* schnorr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = schnorr.h; sourceTree = "<group>"; };
 		75F2E0CB1BE559F200EAE861 /* schnorr_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = schnorr_impl.h; sourceTree = "<group>"; };
+		75F2E0D21BE9803900EAE861 /* Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		84F68C881975E9E2002FC300 /* BRScanViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRScanViewController.h; sourceTree = "<group>"; };
 		84F68C891975E9E2002FC300 /* BRScanViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRScanViewController.m; sourceTree = "<group>"; };
 		BA4EECDF1B351AE200D443A3 /* BRAppGroupConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAppGroupConstants.h; sourceTree = "<group>"; };
@@ -584,6 +586,7 @@
 				BA4EECDF1B351AE200D443A3 /* BRAppGroupConstants.h */,
 				75D5F3DF191EC270004AB296 /* Images.xcassets */,
 				75D5F3DC191EC270004AB296 /* Main.storyboard */,
+				75F2E0D21BE9803900EAE861 /* Launch Screen.storyboard */,
 				752E2898192349CE00DB5A3C /* BreadWallet.xcdatamodeld */,
 				75C0E3C11B1BA294007BC531 /* BIP39Words.plist */,
 				752E28F519235B3000DB5A3C /* FixedPeers.plist */,
@@ -842,6 +845,7 @@
 			files = (
 				75D5F3E0191EC270004AB296 /* Images.xcassets in Resources */,
 				757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */,
+				75F2E0D31BE9803900EAE861 /* Launch Screen.storyboard in Resources */,
 				75C0E3BF1B1BA294007BC531 /* BIP39Words.plist in Resources */,
 				75E83CF61B5F997A0038FB70 /* coinflip.aiff in Resources */,
 				220460521BA0B93200D07B61 /* BREventConfirmView.xib in Resources */,

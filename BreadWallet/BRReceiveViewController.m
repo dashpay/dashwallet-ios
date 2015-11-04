@@ -219,10 +219,11 @@
 
     //TODO: allow user to create a payment protocol request object, and use merge avoidance techniques:
     // https://medium.com/@octskyward/merge-avoidance-7f95a386692f
+    
     if ([title isEqual:NSLocalizedString(@"copy address to clipboard", nil)] ||
         [title isEqual:NSLocalizedString(@"copy request to clipboard", nil)]) {
-        [UIPasteboard generalPasteboard].string =
-            (self.paymentRequest.amount > 0) ? self.paymentRequest.string : self.paymentAddress;
+        [UIPasteboard generalPasteboard].string = (self.paymentRequest.amount > 0) ? self.paymentRequest.string :
+                                                  self.paymentAddress;
 
         [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"copied", nil)
          center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0 - 130.0)] popIn]
@@ -239,11 +240,12 @@
             
             composeController.subject = NSLocalizedString(@"Bitcoin address", nil);
             [composeController setMessageBody:self.paymentRequest.string isHTML:NO];
-            [composeController addAttachmentData:UIImagePNGRepresentation(self.qrView.image) mimeType:@"image/png" fileName:@"qr.png"];
+            [composeController addAttachmentData:UIImagePNGRepresentation(self.qrView.image) mimeType:@"image/png"
+             fileName:@"qr.png"];
             composeController.mailComposeDelegate = self;
             [self.navigationController presentViewController:composeController animated:YES completion:nil];
-            composeController.view.backgroundColor
-                = [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default"]];
+            composeController.view.backgroundColor =
+                [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default"]];
             [BREventManager saveEvent:@"receive:send_email"];
         }
         else {
@@ -260,12 +262,12 @@
             if ([MFMessageComposeViewController canSendSubject]) {
                 composeController.subject = NSLocalizedString(@"Bitcoin address", nil);
             }
+            
             composeController.body = self.paymentRequest.string;
             
             if ([MFMessageComposeViewController canSendAttachments]) {
                 [composeController addAttachmentData:UIImagePNGRepresentation(self.qrView.image)
-                                      typeIdentifier:(NSString *)kUTTypePNG
-                 filename:@"qr.png"];
+                 typeIdentifier:(NSString *)kUTTypePNG filename:@"qr.png"];
             }
             
             composeController.messageComposeDelegate = self;
@@ -281,8 +283,8 @@
         }
     }
     else if ([title isEqual:NSLocalizedString(@"request an amount", nil)]) {
-        UINavigationController *amountNavController
-            = [self.storyboard instantiateViewControllerWithIdentifier:@"AmountNav"];
+        UINavigationController *amountNavController = [self.storyboard
+                                                       instantiateViewControllerWithIdentifier:@"AmountNav"];
         
         ((BRAmountViewController *)amountNavController.topViewController).delegate = self;
         [self.navigationController presentViewController:amountNavController animated:YES completion:nil];
@@ -322,14 +324,14 @@ error:(NSError *)error
     }
 
     [BREventManager saveEvent:@"receive:show_request"];
-    BRReceiveViewController *receiveController
-        = [self.storyboard instantiateViewControllerWithIdentifier:@"RequestViewController"];
+    UINavigationController *navController = (UINavigationController *)self.navigationController.presentedViewController;
+    BRReceiveViewController *receiveController = [self.storyboard
+                                                  instantiateViewControllerWithIdentifier:@"RequestViewController"];
     
     receiveController.paymentRequest = self.paymentRequest;
     receiveController.paymentRequest.amount = amount;
-    ((UINavigationController *)self.navigationController.presentedViewController).delegate = receiveController;
-    [(UINavigationController *)self.navigationController.presentedViewController pushViewController:receiveController
-                                                                                           animated:YES];
+    navController.delegate = receiveController;
+    [navController pushViewController:receiveController animated:YES];
 }
 
 #pragma mark - UIViewControllerAnimatedTransitioning

@@ -127,9 +127,9 @@
             [self.view.superview insertSubview:self.paralax belowSubview:self.view];
             [self.view.superview addConstraint:self.paralaxXLeft];
             [self.view.superview addConstraint:[NSLayoutConstraint constraintWithItem:self.view.superview
-             attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:self.paralax
-             attribute:NSLayoutAttributeCenterY multiplier:1.0 constant:0.0]];
-            [self.view.superview insertSubview:self.paralax belowSubview:self.view];
+             attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.paralax
+             attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0.0]];
+            self.view.superview.backgroundColor = self.paralax.backgroundColor;
             [self.view.superview layoutIfNeeded];
             self.logoXCenter.constant = self.view.frame.size.width;
             self.walletXCenter.constant = 0.0;
@@ -201,15 +201,15 @@
 {
     if (self.animating) return;
     self.animating = YES;
-    self.wallpaperXLeft.constant = -240.0;
-
-    [UIView animateWithDuration:30.0 delay:0.0
-    options:UIViewAnimationOptionCurveLinear | UIViewAnimationOptionRepeat | UIViewAnimationOptionAutoreverse
-    animations:^{
-        [self.wallpaper.superview layoutIfNeeded];
-    } completion:^(BOOL finished) {
-        self.animating = NO;
-    }];
+//    self.wallpaperXLeft.constant = -240.0;
+//
+//    [UIView animateWithDuration:30.0 delay:0.0
+//    options:UIViewAnimationOptionCurveLinear | UIViewAnimationOptionRepeat | UIViewAnimationOptionAutoreverse
+//    animations:^{
+//        [self.wallpaper.superview layoutIfNeeded];
+//    } completion:^(BOOL finished) {
+//        self.animating = NO;
+//    }];
 }
 
 #pragma mark IBAction

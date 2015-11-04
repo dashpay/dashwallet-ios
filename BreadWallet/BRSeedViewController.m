@@ -93,7 +93,11 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    self.wallpaper.hidden = (self.navigationController.viewControllers.firstObject != self) ? YES : NO;
+    if (self.navigationController.viewControllers.firstObject != self) {
+        self.wallpaper.hidden = YES;
+        self.view.backgroundColor = [UIColor clearColor];
+    }
+    
     self.doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"done", nil)
                        style:UIBarButtonItemStylePlain target:self action:@selector(done:)];
     
