@@ -27,6 +27,7 @@
 #import "BRPeerManager.h"
 #import "BRWalletManager.h"
 #import "BREventManager.h"
+#import "breadwallet-Swift.h"
 
 #if BITCOIN_TESTNET
 #pragma message "testnet build"
@@ -74,8 +75,13 @@
 
     //TODO: figure out deterministic builds/removing app sigs: http://www.afp548.com/2012/06/05/re-signining-ios-apps/
     
+<<<<<<< 47da1bdc954690ab21ffe58dc819f64106f81674
     //TODO: implement importing of private keys split with shamir's secret sharing:
     //      https://github.com/cetuscetus/btctool/blob/bip/bip-xxxx.mediawiki
+=======
+    BRAPIClient *cli = [[BRAPIClient alloc] init];
+    [cli me];
+>>>>>>> first brush at api client in swift
 
     return YES;
 }
