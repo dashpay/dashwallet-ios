@@ -190,6 +190,7 @@
         [BREventManager saveEvent:@"amount:pay_zero"];
         return;
     }
+    
     [BREventManager saveEvent:@"amount:pay"];
     
     [self.delegate amountViewController:self selectedAmount:self.amount];

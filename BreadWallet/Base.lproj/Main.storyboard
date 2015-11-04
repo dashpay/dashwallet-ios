@@ -178,7 +178,7 @@
                                             <size key="shadowOffset" width="0.0" height="0.0"/>
                                         </label>
                                         <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="left" text="ƀ 1,000,000" lineBreakMode="clip" baselineAdjustment="alignBaselines" minimumFontSize="13" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="PSx-oa-hSL">
-                                            <rect key="frame" x="190" y="20" width="87.5" height="20"/>
+                                            <rect key="frame" x="245" y="20" width="87.5" height="20"/>
                                             <animations/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="20" id="Cxs-gZ-gbu"/>
@@ -187,7 +187,7 @@
                                             <size key="shadowOffset" width="0.0" height="0.0"/>
                                         </label>
                                         <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="5" contentMode="left" horizontalCompressionResistancePriority="749" text="($1,000.00)" textAlignment="right" lineBreakMode="clip" baselineAdjustment="alignBaselines" minimumFontSize="13" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qNV-Ka-14n">
-                                            <rect key="frame" x="111" y="20" width="74" height="20"/>
+                                            <rect key="frame" x="166" y="20" width="74" height="20"/>
                                             <animations/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="20" id="0sD-qz-01x"/>
@@ -206,14 +206,14 @@
                                             <size key="shadowOffset" width="0.0" height="0.0"/>
                                         </label>
                                         <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="7" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="ƀ 1,000,000" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ue1-2S-fEr">
-                                            <rect key="frame" x="190" y="45" width="67" height="15.5"/>
+                                            <rect key="frame" x="245" y="45" width="67" height="15.5"/>
                                             <animations/>
                                             <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="13"/>
                                             <color key="textColor" white="0.5" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="8" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="($1,000.00)" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="O7K-cF-GAA">
-                                            <rect key="frame" x="120" y="45" width="64.5" height="15.5"/>
+                                            <rect key="frame" x="175" y="45" width="64.5" height="15.5"/>
                                             <animations/>
                                             <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="13"/>
                                             <color key="textColor" white="0.5" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
@@ -242,6 +242,7 @@
                                         <constraint firstItem="eJ2-5h-DO2" firstAttribute="top" secondItem="PSx-oa-hSL" secondAttribute="top" id="6yQ-fp-xao"/>
                                         <constraint firstItem="mUj-av-ePC" firstAttribute="leading" secondItem="6S0-4K-BGB" secondAttribute="leading" id="768-OW-ZQP"/>
                                         <constraint firstItem="pXc-8D-8Gh" firstAttribute="top" secondItem="PSx-oa-hSL" secondAttribute="bottom" constant="5" id="836-R4-FBl"/>
+                                        <constraint firstAttribute="trailing" secondItem="PSx-oa-hSL" secondAttribute="leading" constant="130" id="9Af-rg-OKI"/>
                                         <constraint firstAttribute="centerY" secondItem="PSx-oa-hSL" secondAttribute="centerY" constant="7" id="D6O-5T-u8E"/>
                                         <constraint firstItem="ue1-2S-fEr" firstAttribute="leading" secondItem="O7K-cF-GAA" secondAttribute="trailing" constant="5" id="DPX-pq-2EA"/>
                                         <constraint firstItem="pXc-8D-8Gh" firstAttribute="leading" secondItem="6S0-4K-BGB" secondAttribute="leading" constant="15" id="LFK-gt-ZnC"/>
@@ -259,6 +260,11 @@
                                         <constraint firstItem="qNV-Ka-14n" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="eJ2-5h-DO2" secondAttribute="trailing" id="vjs-0v-tPc"/>
                                         <constraint firstItem="FjB-H2-BnK" firstAttribute="leading" secondItem="6S0-4K-BGB" secondAttribute="leading" constant="15" id="wSt-ji-yrE"/>
                                     </constraints>
+                                    <variation key="default">
+                                        <mask key="constraints">
+                                            <exclude reference="tNl-1A-dLS"/>
+                                        </mask>
+                                    </variation>
                                 </tableViewCellContentView>
                                 <animations/>
                                 <color key="backgroundColor" white="1" alpha="0.67000000000000004" colorSpace="calibratedWhite"/>
@@ -502,7 +508,7 @@
                                         </constraints>
                                     </view>
                                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="not connected" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UyF-OV-QVY">
-                                        <rect key="frame" x="145.5" y="5" width="84.5" height="16.5"/>
+                                        <rect key="frame" x="145" y="5" width="84.5" height="16.5"/>
                                         <animations/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="13"/>
                                         <color key="textColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>

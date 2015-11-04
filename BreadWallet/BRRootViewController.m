@@ -927,7 +927,6 @@ viewControllerAfterViewController:(UIViewController *)viewController
 {
     CGFloat off = scrollView.contentOffset.x + (scrollView.contentInset.left < 0 ? scrollView.contentInset.left : 0);
     
-//    self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 - PARALAX_RATIO*off, self.wallpaper.center.y);
     self.wallpaperXLeft.constant = -PARALAX_RATIO*off;
 }
 

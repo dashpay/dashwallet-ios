@@ -328,6 +328,7 @@ error:(NSError *)error
     BRReceiveViewController *receiveController = [self.storyboard
                                                   instantiateViewControllerWithIdentifier:@"RequestViewController"];
     
+    receiveController.view.backgroundColor = self.parentViewController.parentViewController.view.backgroundColor;
     receiveController.paymentRequest = self.paymentRequest;
     receiveController.paymentRequest.amount = amount;
     navController.delegate = receiveController;
