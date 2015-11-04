@@ -255,16 +255,10 @@
                                         <constraint firstAttribute="trailing" secondItem="Pw4-pn-Yqv" secondAttribute="trailing" id="a4c-hG-RGr"/>
                                         <constraint firstItem="Pw4-pn-Yqv" firstAttribute="top" secondItem="6S0-4K-BGB" secondAttribute="top" id="gUa-YN-YgI"/>
                                         <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="pXc-8D-8Gh" secondAttribute="trailing" constant="10" id="pFm-ZB-Wet"/>
-                                        <constraint firstItem="PSx-oa-hSL" firstAttribute="leading" secondItem="6S0-4K-BGB" secondAttribute="leading" constant="190" id="tNl-1A-dLS"/>
                                         <constraint firstItem="eJ2-5h-DO2" firstAttribute="leading" secondItem="6S0-4K-BGB" secondAttribute="leading" constant="15" id="uZo-6y-ygR"/>
                                         <constraint firstItem="qNV-Ka-14n" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="eJ2-5h-DO2" secondAttribute="trailing" id="vjs-0v-tPc"/>
                                         <constraint firstItem="FjB-H2-BnK" firstAttribute="leading" secondItem="6S0-4K-BGB" secondAttribute="leading" constant="15" id="wSt-ji-yrE"/>
                                     </constraints>
-                                    <variation key="default">
-                                        <mask key="constraints">
-                                            <exclude reference="tNl-1A-dLS"/>
-                                        </mask>
-                                    </variation>
                                 </tableViewCellContentView>
                                 <animations/>
                                 <color key="backgroundColor" white="1" alpha="0.67000000000000004" colorSpace="calibratedWhite"/>
