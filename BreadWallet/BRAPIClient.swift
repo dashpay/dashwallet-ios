@@ -15,7 +15,7 @@ extension String {
         return cset
     }
     
-    func urlEscapedString() -> String {
+    var urlEscapedString: String {
         return self.stringByAddingPercentEncodingWithAllowedCharacters(
             String.urlQuoteCharacterSet)!
     }
@@ -55,7 +55,7 @@ extension String {
         
         if let args = args {
             return joinPath(path + "?" + args.map({ (elem) -> String in
-                return "\(elem.0.urlEscapedString())=\(elem.1.urlEscapedString())"
+                return "\(elem.0.urlEscapedString)=\(elem.1.urlEscapedString)"
             }).joinWithSeparator("&"))
         } else {
             return joinPath(path)
