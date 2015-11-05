@@ -57,7 +57,6 @@
 {
     [super viewWillAppear:animated];
  
-    // BUG: XXXX wallpaper doesn't cover right side of 6s
     BRWalletManager *manager = [BRWalletManager sharedInstance];
 
     if (self.navBarSwipe) [self.navigationController.navigationBar removeGestureRecognizer:self.navBarSwipe];

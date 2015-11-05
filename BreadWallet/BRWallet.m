@@ -498,7 +498,6 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     if (self.allTx[hash] != nil) return YES;
     if (! [self containsTransaction:transaction]) return NO;
 
-    //TODO: verify signatures when possible
     //TODO: handle tx replacement with input sequence numbers (now replacements appear invalid until confirmation)
     
     self.allTx[hash] = transaction;
@@ -572,7 +571,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 - (BOOL)transactionIsValid:(BRTransaction *)transaction
 {
     //TODO: XXX attempted double spends should cause conflicted tx to remain unverified until they're confirmed
-    //TODO: XXX conflicted tx with the same wallet outputs should be presented as the same tx to the user
+    //TODO: XXX verify signatures for spends
     if (transaction.blockHeight != TX_UNCONFIRMED) return YES;
 
     if (self.allTx[uint256_obj(transaction.txHash)] != nil) {

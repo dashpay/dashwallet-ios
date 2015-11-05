@@ -888,8 +888,10 @@ static const char *dns_seeds[] = {
 
     for (BRTransaction *tx in manager.wallet.recentTransactions) {
         if (tx.blockHeight != TX_UNCONFIRMED) break;
-        if ([manager.wallet amountSentByTransaction:tx] == 0 || ! [manager.wallet transactionIsValid:tx]) continue;
-        self.publishedTx[uint256_obj(tx.txHash)] = tx; // add unconfirmed valid send tx to mempool
+
+        if ([manager.wallet amountSentByTransaction:tx] > 0 && [manager.wallet transactionIsValid:tx]) {
+            self.publishedTx[uint256_obj(tx.txHash)] = tx; // add unconfirmed valid send tx to mempool
+        }
     }
 
     if (self.connected && (self.downloadPeer.lastblock >= peer.lastblock || self.lastBlockHeight >= peer.lastblock)) {
@@ -1027,7 +1029,10 @@ static const char *dns_seeds[] = {
     transaction.timestamp = [NSDate timeIntervalSinceReferenceDate];
     if (! [manager.wallet registerTransaction:transaction]) return;
     if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
-    if ([manager.wallet transactionIsValid:transaction]) self.publishedTx[hash] = transaction;
+
+    if ([manager.wallet amountSentByTransaction:transaction] > 0 && [manager.wallet transactionIsValid:transaction]) {
+        self.publishedTx[hash] = transaction;
+    }
     
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
     if (callback || ! [self.txRelays[hash] containsObject:peer]) {

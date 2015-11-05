@@ -201,6 +201,7 @@
 {
     if (self.animating) return;
     self.animating = YES;
+    // BUG: XXXX fix wallpaper animation
 //    self.wallpaperXLeft.constant = -240.0;
 //
 //    [UIView animateWithDuration:30.0 delay:0.0
