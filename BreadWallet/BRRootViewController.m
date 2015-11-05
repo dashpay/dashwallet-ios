@@ -683,7 +683,7 @@
 
 - (void)showErrorBar
 {
-    if (self.navigationItem.prompt != nil) return;
+    if (self.navigationItem.prompt != nil || self.navigationController.presentedViewController != nil) return;
     self.navigationItem.prompt = @"";
     self.errorBar.hidden = NO;
     self.errorBar.alpha = 0.0;
