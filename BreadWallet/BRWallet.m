@@ -749,7 +749,9 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 // outputs below this amount are uneconomical due to fees
 - (uint64_t)minOutputAmount
 {
-    return self.feePerKb*3*(34 + 148)/1000;
+    uint64_t amount = self.feePerKb*148/1000;
+    
+    return (amount > TX_MIN_OUTPUT_AMOUNT) ? amount : TX_MIN_OUTPUT_AMOUNT;
 }
 
 @end
