@@ -189,11 +189,7 @@
             
             [NSManagedObject saveContext];
             textView.text = nil;
-            [BREventManager saveEvent:@"restore:set_pin"];
-            
-            [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:^{
-                [manager performSelector:@selector(setPin) withObject:nil afterDelay:0.3];
-            }];
+            [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
         }
         else if (incorrect) {
             [BREventManager saveEvent:@"restore:invalid_word"];
@@ -224,11 +220,7 @@
             //TODO: offer the user an option to move funds to a new seed if their wallet device was lost or stolen
             manager.seedPhrase = phrase;
             textView.text = nil;
-            [BREventManager saveEvent:@"restore:set_pin"];
-            
-            [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:^{
-                [manager performSelector:@selector(setPin) withObject:nil afterDelay:0.3];
-            }];
+            [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
         }
     }
 }

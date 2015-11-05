@@ -464,7 +464,6 @@
         [self.receiveViewController updateAddress];
         if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
 
-        // BUG: XXXX double passcode dialog after recover on iOS 7 (9?)
         if (! [defs boolForKey:HAS_AUTHENTICATED_KEY] && [manager authenticateWithPrompt:nil andTouchId:NO]) {
             [defs setBool:YES forKey:HAS_AUTHENTICATED_KEY];
             [self unlock:nil];
