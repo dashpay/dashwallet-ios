@@ -9,11 +9,9 @@
 import Foundation
 
 extension String {
-    func stringByAddingPercentEncodingForURLQueryValue() -> String? {
-        let characterSet = NSMutableCharacterSet.alphanumericCharacterSet()
-        characterSet.addCharactersInString("-._~")
-        
-        return stringByAddingPercentEncodingWithAllowedCharacters(characterSet)
+    func urlEscapedString() -> String {
+        return self.stringByAddingPercentEncodingWithAllowedCharacters(
+            NSCharacterSet.URLQueryAllowedCharacterSet())!
     }
 }
 
@@ -21,13 +19,18 @@ extension String {
     var session: NSURLSession!
     var queue: NSOperationQueue!
     var logEnabled = true
-    var baseUrl = "https://api.breadwallet.com"
+    var host = "api.breadwallet.com"
+    var baseUrl: String!
+    
+    // the singleton
+    static let sharedClient = BRAPIClient()
     
     override init() {
         super.init()
         queue = NSOperationQueue()
         let config = NSURLSessionConfiguration.defaultSessionConfiguration()
         session = NSURLSession(configuration: config, delegate: self, delegateQueue: queue)
+        baseUrl = "https://\(host)"
     }
     
     func log(format: String, args: CVarArgType...) {
@@ -46,9 +49,7 @@ extension String {
         
         if let args = args {
             return joinPath(path + "?" + args.map({ (elem) -> String in
-                let k = elem.0.stringByAddingPercentEncodingForURLQueryValue()
-                let v = elem.1.stringByAddingPercentEncodingForURLQueryValue()
-                return "\(k)=\(v)"
+                return "\(elem.0.urlEscapedString())=\(elem.1.urlEscapedString())"
             }).joinWithSeparator("&"))
         } else {
             return joinPath(path)
@@ -59,8 +60,49 @@ extension String {
         log("URLSession didBecomeInvalidWithError: \(error)")
     }
     
-    func URLSession(session: NSURLSession, didReceiveChallenge challenge: NSURLAuthenticationChallenge, completionHandler: (NSURLSessionAuthChallengeDisposition, NSURLCredential?) -> Void) {
-        log("URLSession didReceiveChallenge \(challenge)")
+    func URLSession(
+        session: NSURLSession,
+        didReceiveChallenge challenge: NSURLAuthenticationChallenge,
+        completionHandler: (NSURLSessionAuthChallengeDisposition, NSURLCredential?) -> Void) {
+            // handle HTTPS authentication
+            if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
+                if challenge.protectionSpace.host == host && challenge.protectionSpace.serverTrust != nil {
+                    completionHandler(.UseCredential,
+                        NSURLCredential(forTrust: challenge.protectionSpace.serverTrust!))
+                } else {
+                    completionHandler(.RejectProtectionSpace, nil)
+                }
+            }
+    }
+    
+    // Fetches the /v1/fee-per-kb endpoint
+    func feePerKb(handler: (feePerKb: uint_fast64_t, error: String?) -> Void) {
+        let req = NSURLRequest(URL: url("/v1/fee-per-kb"))
+        let task = session.dataTaskWithRequest(req) { (data, response, err) -> Void in
+            var feePerKb: uint_fast64_t = 0
+            var errStr: String? = nil
+            if err == nil {
+                do {
+                    let parsedObject: AnyObject? = try NSJSONSerialization.JSONObjectWithData(
+                        data!, options: NSJSONReadingOptions.AllowFragments)
+                    if let top = parsedObject as? NSDictionary {
+                        if let n = top["fee_per_kb"] as? NSNumber {
+                            feePerKb = n.unsignedLongLongValue
+                        }
+                    }
+                } catch (let e) {
+                    self.log("fee-per-kb: error parsing json \(e)")
+                }
+                if feePerKb == 0 {
+                    errStr = "invalid json"
+                }
+            } else {
+                self.log("fee-per-kb network error: \(err)")
+                errStr = "bad network connection"
+            }
+            handler(feePerKb: feePerKb, error: errStr)
+        }
+        task.resume()
     }
     
     func me() {

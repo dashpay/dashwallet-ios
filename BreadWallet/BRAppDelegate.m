@@ -61,10 +61,10 @@
              userInfo:@{@"file":file}];
         }
     }
-    
+
     // start the event manager
     [[BREventManager sharedEventManager] up];
-    
+
     //TODO: bitcoin protocol/payment protocol over multipeer connectivity
 
     //TODO: accessibility for the visually impaired
@@ -74,14 +74,9 @@
     //TODO: ask user if they need to sweep to a new wallet when restoring because it was compromised
 
     //TODO: figure out deterministic builds/removing app sigs: http://www.afp548.com/2012/06/05/re-signining-ios-apps/
-    
-<<<<<<< 47da1bdc954690ab21ffe58dc819f64106f81674
+
     //TODO: implement importing of private keys split with shamir's secret sharing:
     //      https://github.com/cetuscetus/btctool/blob/bip/bip-xxxx.mediawiki
-=======
-    BRAPIClient *cli = [[BRAPIClient alloc] init];
-    [cli me];
->>>>>>> first brush at api client in swift
 
     return YES;
 }
@@ -107,7 +102,7 @@ annotation:(id)annotation
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC/10), dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:BRURLNotification object:nil userInfo:@{@"url":url}];
     });
-    
+
     return YES;
 }
 
@@ -126,7 +121,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         if (syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFailedObserver];
         protectedObserver = balanceObserver = syncFinishedObserver = syncFailedObserver = nil;
     };
-    
+
     if ([BRPeerManager sharedInstance].syncProgress >= 1.0) {
         NSLog(@"background fetch already synced");
         if (completion) completion(UIBackgroundFetchResultNoData);
@@ -150,7 +145,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
             NSLog(@"background fetch protected data available");
             [[BRPeerManager sharedInstance] connect];
         }];
-    
+
     balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification *note) {
@@ -158,7 +153,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
                 [UIApplication sharedApplication].applicationIconBadgeNumber =
                     [UIApplication sharedApplication].applicationIconBadgeNumber + 1;
             }
-            
+
             balance = manager.wallet.balance;
         }];
 
@@ -177,11 +172,11 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
             if (completion) completion(UIBackgroundFetchResultFailed);
             cleanup();
         }];
-    
+
     NSLog(@"background fetch starting");
     [[BRPeerManager sharedInstance] connect];
     balance = manager.wallet.balance;
-    
+
     // sync events to the server
     [[BREventManager sharedEventManager] sync];
 }
