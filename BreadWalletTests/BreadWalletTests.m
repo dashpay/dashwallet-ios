@@ -567,6 +567,10 @@
     r = [BRPaymentRequest requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=20999999.9999999"];
     XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=20999999.9999999", r.string,
                           @"[BRPaymentRequest requestWithString:]");
+
+    r = [BRPaymentRequest requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?label=foo%26bar"];
+    XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?label=foo%26bar", r.string,
+                          @"[BRPaymentRequest requestWithString:]");
 }
 
 #pragma mark - testTransaction

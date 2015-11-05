@@ -127,9 +127,11 @@
 {
     if (! [self.scheme isEqual:@"bitcoin"]) return self.r;
 
+    NSMutableCharacterSet *charset = [[NSCharacterSet URLQueryAllowedCharacterSet] mutableCopy];
     NSMutableString *s = [NSMutableString stringWithString:@"bitcoin:"];
     NSMutableArray *q = [NSMutableArray array];
 
+    [charset removeCharactersInString:@"&="];
     if (self.paymentAddress) [s appendString:self.paymentAddress];
     
     if (self.amount > 0) {
@@ -138,21 +140,18 @@
     }
 
     if (self.label.length > 0) {
-        [q addObject:[NSString stringWithFormat:@"label=%@",
-         CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(NULL, (CFStringRef)self.label, NULL, CFSTR("&="),
-                                                                   kCFStringEncodingUTF8))]];
+        [q addObject:[@"label=" stringByAppendingString:[self.label
+         stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
     }
     
     if (self.message.length > 0) {
-        [q addObject:[NSString stringWithFormat:@"message=%@",
-         CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(NULL, (CFStringRef)self.message, NULL, CFSTR("&="),
-                                                                   kCFStringEncodingUTF8))]];
+        [q addObject:[@"message=" stringByAppendingString:[self.message
+         stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
     }
 
     if (self.r.length > 0) {
-        [q addObject:[NSString stringWithFormat:@"r=%@",
-         CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(NULL, (CFStringRef)self.r, NULL, CFSTR("&="),
-                                                                   kCFStringEncodingUTF8))]];
+        [q addObject:[@"r=" stringByAppendingString:[self.r
+         stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
     }
     
     if (q.count > 0) {
