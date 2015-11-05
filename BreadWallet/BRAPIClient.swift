@@ -9,9 +9,15 @@
 import Foundation
 
 extension String {
+    static var urlQuoteCharacterSet: NSCharacterSet {
+        let cset = NSMutableCharacterSet.URLQueryAllowedCharacterSet().mutableCopy() as! NSMutableCharacterSet
+        cset.removeCharactersInString("?=&")
+        return cset
+    }
+    
     func urlEscapedString() -> String {
         return self.stringByAddingPercentEncodingWithAllowedCharacters(
-            NSCharacterSet.URLQueryAllowedCharacterSet())!
+            String.urlQuoteCharacterSet)!
     }
 }
 
