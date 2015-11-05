@@ -116,10 +116,12 @@ static NSUInteger _fetchBatchSize = 100;
             if (error) NSLog(@"%s: %@", __func__, error);
         }
         @catch (NSException *exception) {
-#if ! DEBUG // if this is a not a debug build, delete the persisent data store before crashing
+#if DEBUG
+            @throw;
+#endif
+            // if this is a not a debug build, delete the persisent data store before crashing
             [[NSFileManager defaultManager]
              removeItemAtURL:objc_getAssociatedObject([NSManagedObject class], &_storeURLKey) error:nil];
-#endif
             @throw;
         }
     }];
@@ -164,10 +166,12 @@ static NSUInteger _fetchBatchSize = 100;
             if (error) NSLog(@"%s: %@", __func__, error);
         }
         @catch (NSException *exception) {
-#if ! DEBUG // if this is a not a debug build, delete the persisent data store before crashing
+#if DEBUG
+            @throw;
+#endif
+            // if this is a not a debug build, delete the persisent data store before crashing
             [[NSFileManager defaultManager]
              removeItemAtURL:objc_getAssociatedObject([NSManagedObject class], &_storeURLKey) error:nil];
-#endif
             @throw;
         }
     }];

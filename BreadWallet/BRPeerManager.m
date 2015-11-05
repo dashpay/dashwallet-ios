@@ -888,8 +888,8 @@ static const char *dns_seeds[] = {
 
     for (BRTransaction *tx in manager.wallet.recentTransactions) {
         if (tx.blockHeight != TX_UNCONFIRMED) break;
-        if (! [manager.wallet transactionIsValid:tx]) continue; // don't broadcast invalid tx
-        self.publishedTx[uint256_obj(tx.txHash)] = tx; // add unconfirmed tx to mempool
+        if ([manager.wallet amountSentByTransaction:tx] == 0 || ! [manager.wallet transactionIsValid:tx]) continue;
+        self.publishedTx[uint256_obj(tx.txHash)] = tx; // add unconfirmed valid send tx to mempool
     }
 
     if (self.connected && (self.downloadPeer.lastblock >= peer.lastblock || self.lastBlockHeight >= peer.lastblock)) {
