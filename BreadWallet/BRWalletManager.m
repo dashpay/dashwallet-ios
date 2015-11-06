@@ -1272,8 +1272,8 @@ replacementString:(NSString *)string
     }
     else if (buttonIndex >= 0 && [[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"reset",nil)]) {
         UITextView *t = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, 260, 180)];
-            
-        t.keyboardType = UIKeyboardTypeASCIICapable;
+        
+        t.autocapitalizationType = UITextAutocapitalizationTypeNone;
         t.returnKeyType = UIReturnKeyDone;
         t.delegate = self;
         t.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
