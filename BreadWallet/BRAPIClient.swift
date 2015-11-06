@@ -5,6 +5,24 @@
 //  Created by Samuel Sutch on 11/4/15.
 //  Copyright © 2015 Aaron Voisine. All rights reserved.
 //
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+//
+//  The above copyright notice and this permission notice shall be included in
+//  all copies or substantial portions of the Software.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//  THE SOFTWARE.
+
 
 import Foundation
 
@@ -41,9 +59,19 @@ func getHeaderValue(k: String, d: Dictionary<NSObject, AnyObject>) -> String? {
     return nil
 }
 
-func getPublicKey() -> NSData? {
-    let man = BRWalletManager.sharedInstance()
-    return nil
+func getAuthKey() -> BRKey {
+    return BRKey.init(privateKey: BRWalletManager.sharedInstance().authPrivateKey)
+}
+
+func getDeviceId() -> String {
+    let ud = NSUserDefaults.standardUserDefaults()
+    if let s = ud.stringForKey("BR_DEVICE_ID") {
+        return s
+    }
+    let s = CFUUIDCreateString(nil, CFUUIDCreate(nil)) as String
+    ud.setValue(s, forKey: "BR_DEVICE_ID")
+    print("new device id \(s)")
+    return s
 }
 
 func isBreadChallenge(r: NSHTTPURLResponse) -> Bool {
@@ -121,8 +149,8 @@ func isBreadChallenge(r: NSHTTPURLResponse) -> Bool {
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.setValue("application/json", forHTTPHeaderField: "Accept")
         let reqJson = [
-            "pubKey": "",
-            "deviceID": ""
+            "pubKey": getAuthKey().publicKey.base58String(),
+            "deviceID": getDeviceId()
         ]
         do {
             let dat = try NSJSONSerialization.dataWithJSONObject(reqJson, options: .PrettyPrinted)
@@ -143,7 +171,7 @@ func isBreadChallenge(r: NSHTTPURLResponse) -> Bool {
                         code: httpResp.statusCode,
                         userInfo: [
                             NSLocalizedDescriptionKey:
-                            NSLocalizedString("Unable to retrieve API token", comment: "")]))
+                                NSLocalizedString("Unable to retrieve API token", comment: "")]))
                 }
             }
             if let data = data {

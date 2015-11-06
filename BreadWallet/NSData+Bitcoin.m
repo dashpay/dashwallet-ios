@@ -24,6 +24,7 @@
 //  THE SOFTWARE.
 
 #import "NSData+Bitcoin.h"
+#import "NSString+Bitcoin.h"
 
 // bitwise left rotation
 #define rol32(a, b) (((a) << (b)) | ((a) >> (32 - (b))))
@@ -529,6 +530,11 @@ void PBKDF2(void *dk, size_t dklen, void (*hash)(void *, const void *, size_t), 
     else if (self.length <= UINT8_MAX) return OP_PUSHDATA1;
     else if (self.length <= UINT16_MAX) return OP_PUSHDATA2;
     else return OP_PUSHDATA4;
+}
+
+- (NSString *)base58String
+{
+    return [NSString base58WithData:self];
 }
 
 @end

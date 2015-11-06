@@ -125,4 +125,6 @@ void PBKDF2(void *dk, size_t dklen, void (*hash)(void *, const void *, size_t), 
 - (NSArray *)scriptElements; // an array of NSNumber and NSData objects representing each script element
 - (int)intValue; // returns the opcode used to store the receiver in a script (i.e. OP_PUSHDATA1)
 
+- (NSString *)base58String;
+
 @end
