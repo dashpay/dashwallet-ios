@@ -699,7 +699,7 @@
     if (! self.percent.hidden) [self hideTips];
     self.percent.hidden = YES;
     if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
-    self.balance = manager.wallet.balance;
+    self.balance = _balance; // reset navbar title
     self.progress.hidden = self.pulse.hidden = YES;
 }
 
