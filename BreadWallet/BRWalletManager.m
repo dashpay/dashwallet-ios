@@ -412,16 +412,18 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 // private key for signing authenticated api calls
 - (NSString *)authPrivateKey
 {
-    NSString *privKey = getKeychainString(AUTH_PRIVKEY_KEY, nil);
+    @autoreleasepool {
+        NSString *privKey = getKeychainString(AUTH_PRIVKEY_KEY, nil);
     
-    if (! privKey) {
-        NSData *seed = [self.mnemonic deriveKeyFromPhrase:getKeychainString(MNEMONIC_KEY, nil) withPassphrase:nil];
-
-        privKey = [[BRBIP32Sequence new] authPrivateKeyFromSeed:seed];
-        setKeychainString(privKey, AUTH_PRIVKEY_KEY, NO);
+        if (! privKey) {
+            NSData *seed = [self.mnemonic deriveKeyFromPhrase:getKeychainString(MNEMONIC_KEY, nil) withPassphrase:nil];
+            
+            privKey = [[BRBIP32Sequence new] authPrivateKeyFromSeed:seed];
+            setKeychainString(privKey, AUTH_PRIVKEY_KEY, NO);
+        }
+    
+        return privKey;
     }
-    
-    return privKey;
 }
 
 // true if touch id is enabled
@@ -463,19 +465,23 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 // authenticates user and returns seed
 - (NSData *)seedWithPrompt:(NSString *)authprompt forAmount:(uint64_t)amount
 {
-    BOOL touchid = (self.wallet.totalSent + amount < getKeychainInt(SPEND_LIMIT_KEY, nil)) ? YES : NO;
-
-    if (! [self authenticateWithPrompt:authprompt andTouchId:touchid]) return nil;
-    // BUG: if user manually chooses to enter pin, the touch id spending limit is reset, but the tx being authorized
-    // still counts towards the next touch id spending limit
-    if (! touchid) setKeychainInt(self.wallet.totalSent + amount + self.spendingLimit, SPEND_LIMIT_KEY, NO);
-    return [self.mnemonic deriveKeyFromPhrase:getKeychainString(MNEMONIC_KEY, nil) withPassphrase:nil];
+    @autoreleasepool {
+        BOOL touchid = (self.wallet.totalSent + amount < getKeychainInt(SPEND_LIMIT_KEY, nil)) ? YES : NO;
+        
+        if (! [self authenticateWithPrompt:authprompt andTouchId:touchid]) return nil;
+        // BUG: if user manually chooses to enter pin, the touch id spending limit is reset, but the tx being authorized
+        // still counts towards the next touch id spending limit
+        if (! touchid) setKeychainInt(self.wallet.totalSent + amount + self.spendingLimit, SPEND_LIMIT_KEY, NO);
+        return [self.mnemonic deriveKeyFromPhrase:getKeychainString(MNEMONIC_KEY, nil) withPassphrase:nil];
+    }
 }
 
 // authenticates user and returns seedPhrase
 - (NSString *)seedPhraseWithPrompt:(NSString *)authprompt
 {
-    return ([self authenticateWithPrompt:authprompt andTouchId:NO]) ? getKeychainString(MNEMONIC_KEY, nil) : nil;
+    @autoreleasepool {
+        return ([self authenticateWithPrompt:authprompt andTouchId:NO]) ? getKeychainString(MNEMONIC_KEY, nil) : nil;
+    }
 }
 
 #pragma mark - authentication

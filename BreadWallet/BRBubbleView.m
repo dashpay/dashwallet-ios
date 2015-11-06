@@ -25,10 +25,11 @@
 
 #import "BRBubbleView.h"
 
-#define RADIUS    8.0
-#define MARGIN_X  16.0
-#define MARGIN_Y  9.0
-#define MAX_WIDTH 300.0
+#define RADIUS       8.0
+#define MARGIN_X    16.0
+#define MARGIN_Y     9.0
+#define MARGIN_EDGE 10.0
+#define MAX_WIDTH  300.0
 
 @interface BRBubbleView ()
 
@@ -186,8 +187,13 @@
 
     if (self.tipPoint.x > 1) { // position bubble to point to tipPoint
         center.x = self.tipPoint.x;
-        if (center.x + rect.size.width/2 > MAX_WIDTH) center.x = MAX_WIDTH - rect.size.width/2;
-        else if (center.x - rect.size.width/2 < MARGIN_X*2) center.x = MARGIN_X*2 + rect.size.width/2;
+
+        if (center.x + rect.size.width/2 > self.superview.frame.size.width - MARGIN_EDGE) {
+            center.x = (self.superview.frame.size.width - MARGIN_EDGE) - rect.size.width/2;
+        }
+        else if (center.x - rect.size.width/2 < MARGIN_EDGE + MARGIN_X) {
+            center.x = MARGIN_EDGE + MARGIN_X + rect.size.width/2;
+        }
 
         center.y = self.tipPoint.y;
         center.y += (self.tipDirection == BRBubbleTipDirectionUp ? 1 : -1)*((rect.size.height + MARGIN_Y*2)/2 + RADIUS);
