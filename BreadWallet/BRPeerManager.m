@@ -510,6 +510,21 @@ static const char *dns_seeds[] = {
     });
 }
 
+// adds transaction to list of tx to be published, along with any unconfirmed inputs
+- (void)addTransactionToPublishList:(BRTransaction *)transaction
+{
+    if (transaction.blockHeight == TX_UNCONFIRMED) {
+        self.publishedTx[uint256_obj(transaction.txHash)] = transaction;
+    
+        for (NSValue *hash in transaction.inputHashes) {
+            UInt256 h = UINT256_ZERO;
+            
+            [hash getValue:&h];
+            [self addTransactionToPublishList:[[[BRWalletManager sharedInstance] wallet] transactionForHash:h]];
+        }
+    }
+}
+
 - (void)publishTransaction:(BRTransaction *)transaction completion:(void (^)(NSError *error))completion
 {
     if (! transaction.isSigned) {
@@ -532,8 +547,8 @@ static const char *dns_seeds[] = {
     NSMutableSet *peers = [NSMutableSet setWithSet:self.connectedPeers];
     NSValue *hash = uint256_obj(transaction.txHash);
     
-    self.publishedTx[hash] = transaction;
-    if (completion) self.publishedCallback[hash] = completion;
+    [self addTransactionToPublishList:transaction];
+    if (completion) self.publishedCallback[uint256_obj(transaction.txHash)] = completion;
 
     NSArray *txHashes = self.publishedTx.allKeys;
 
@@ -891,8 +906,7 @@ static const char *dns_seeds[] = {
         if (tx.blockHeight != TX_UNCONFIRMED) break;
 
         if ([manager.wallet amountSentByTransaction:tx] > 0 && [manager.wallet transactionIsValid:tx]) {
-            //XXX: BUG also add any unconfirmed inputs
-            self.publishedTx[uint256_obj(tx.txHash)] = tx; // add unconfirmed valid send tx to mempool
+            [self addTransactionToPublishList:tx]; // add unconfirmed valid send tx to mempool
         }
     }
 
@@ -1033,8 +1047,7 @@ static const char *dns_seeds[] = {
     if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
 
     if ([manager.wallet amountSentByTransaction:transaction] > 0 && [manager.wallet transactionIsValid:transaction]) {
-        //BUG: XXXX also add any unconfirmed inputs
-        self.publishedTx[hash] = transaction;
+        [self addTransactionToPublishList:transaction]; // add valid send tx to mempool
     }
     
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
@@ -1110,12 +1123,13 @@ static const char *dns_seeds[] = {
 - (void)peer:(BRPeer *)peer rejectedTransaction:(UInt256)txHash withCode:(uint8_t)code
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
+    BRTransaction *tx = [manager.wallet transactionForHash:txHash];
     NSValue *hash = uint256_obj(txHash);
     
     if ([self.txRelays[hash] containsObject:peer]) {
         [self.txRelays[hash] removeObject:peer];
 
-        if ([manager.wallet transactionForHash:txHash].blockHeight == TX_UNCONFIRMED) {// set timestamp 0 for unverified
+        if (tx.blockHeight == TX_UNCONFIRMED) { // set timestamp 0 for unverified
             [manager.wallet setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:@[hash]];
         }
 
@@ -1130,8 +1144,7 @@ static const char *dns_seeds[] = {
     }
     
     // if we get rejected for any reason other than double-spend, the peer is likely misconfigured
-    // BUG: XXXX recieves that get rejected need to be treated differently
-    if (code != REJECT_SPENT) [self peerMisbehavin:peer];
+    if (code != REJECT_SPENT && [manager.wallet amountSentByTransaction:tx] > 0) [self peerMisbehavin:peer];
 }
 
 - (void)peer:(BRPeer *)peer relayedBlock:(BRMerkleBlock *)block

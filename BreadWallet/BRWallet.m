@@ -568,9 +568,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 // returns the transaction with the given hash if it's been registered in the wallet
 - (BRTransaction *)transactionForHash:(UInt256)txHash
 {
-    NSValue *hash = uint256_obj(txHash);
-    
-    return ([self.allTxHashes containsObject:hash]) ? self.allTx[hash] : nil;
+    return self.allTx[uint256_obj(txHash)];
 }
 
 // true if no previous wallet transactions spend any of the given transaction's inputs, and no input tx is invalid
