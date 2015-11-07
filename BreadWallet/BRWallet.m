@@ -496,7 +496,11 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     
     if (uint256_is_zero(txHash)) return NO;
     if (self.allTx[hash] != nil) return YES;
-    if (! [self containsTransaction:transaction]) return NO;
+
+    if (! [self containsTransaction:transaction]) {
+        if (transaction.blockHeight == TX_UNCONFIRMED) self.allTx[hash] = transaction;
+        return NO;
+    }
 
     //TODO: handle tx replacement with input sequence numbers (now replacements appear invalid until confirmation)
     
@@ -523,7 +527,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         }
     }];
     
-    if ((self.allTx.count % 100) == 0) [BRTransactionEntity saveContext];
+    if ((self.allTxHashes.count % 100) == 0) [BRTransactionEntity saveContext];
     return YES;
 }
 
@@ -564,7 +568,9 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 // returns the transaction with the given hash if it's been registered in the wallet
 - (BRTransaction *)transactionForHash:(UInt256)txHash
 {
-    return self.allTx[uint256_obj(txHash)];
+    NSValue *hash = uint256_obj(txHash);
+    
+    return ([self.allTxHashes containsObject:hash]) ? self.allTx[hash] : nil;
 }
 
 // true if no previous wallet transactions spend any of the given transaction's inputs, and no input tx is invalid
@@ -628,8 +634,12 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         if (! tx || (tx.blockHeight == height && tx.timestamp == timestamp)) continue;
         tx.blockHeight = height;
         tx.timestamp = timestamp;
-        [hash getValue:&h];
-        [hashes addObject:[NSData dataWithBytes:&h length:sizeof(h)]];
+
+        if ([self containsTransaction:tx]) {
+            [hash getValue:&h];
+            [hashes addObject:[NSData dataWithBytes:&h length:sizeof(h)]];
+        }
+        else if (height != TX_UNCONFIRMED) [self.allTx removeObjectForKey:hash]; // remove confirmed non-wallet tx
     }
 
     if (hashes.count > 0) {

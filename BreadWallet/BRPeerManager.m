@@ -413,6 +413,7 @@ static const char *dns_seeds[] = {
         if (! [filter containsData:d]) [filter insertData:d];
     }
 
+    // TODO: XXXX if already synced, recursively add inputs of unconfirmed receives
     _bloomFilter = filter;
     return _bloomFilter;
 }
@@ -890,6 +891,7 @@ static const char *dns_seeds[] = {
         if (tx.blockHeight != TX_UNCONFIRMED) break;
 
         if ([manager.wallet amountSentByTransaction:tx] > 0 && [manager.wallet transactionIsValid:tx]) {
+            //XXX: BUG also add any unconfirmed inputs
             self.publishedTx[uint256_obj(tx.txHash)] = tx; // add unconfirmed valid send tx to mempool
         }
     }
@@ -1031,6 +1033,7 @@ static const char *dns_seeds[] = {
     if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
 
     if ([manager.wallet amountSentByTransaction:transaction] > 0 && [manager.wallet transactionIsValid:transaction]) {
+        //BUG: XXXX also add any unconfirmed inputs
         self.publishedTx[hash] = transaction;
     }
     
@@ -1127,6 +1130,7 @@ static const char *dns_seeds[] = {
     }
     
     // if we get rejected for any reason other than double-spend, the peer is likely misconfigured
+    // BUG: XXXX recieves that get rejected need to be treated differently
     if (code != REJECT_SPENT) [self peerMisbehavin:peer];
 }
 
