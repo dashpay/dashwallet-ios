@@ -48,7 +48,6 @@ typedef struct _BRUTXO {
 @property (nonatomic, readonly) NSSet *addresses; // all previously generated internal and external addresses
 @property (nonatomic, readonly) NSArray *unspentOutputs; // NSValue objects containing UTXO structs
 @property (nonatomic, readonly) NSArray *recentTransactions; // BRTransaction objects sorted by date, most recent first
-@property (nonatomic, readonly) NSSet *txHashes; // hashes of all wallet transactions
 @property (nonatomic, readonly) uint64_t totalSent; // the total amount spent from the wallet (excluding change)
 @property (nonatomic, readonly) uint64_t totalReceived; // the total amount received by the wallet (excluding change)
 @property (nonatomic, assign) uint64_t feePerKb; // fee per kb of transaction size to use when including tx fee
@@ -87,7 +86,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 // removes a transaction from the wallet along with any transactions that depend on its outputs
 - (void)removeTransaction:(UInt256)txHash;
 
-// returns the transaction with the given hash if it's been registered in the wallet
+// returns the transaction with the given hash if it's been registered in the wallet (might also return non-registered)
 - (BRTransaction *)transactionForHash:(UInt256)txHash;
 
 // true if no previous wallet transaction spends any of the given transaction's inputs, and no input tx is invalid

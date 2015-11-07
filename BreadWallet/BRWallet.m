@@ -52,7 +52,7 @@ static NSUInteger txAddressIndex(BRTransaction *tx, NSArray *chain) {
 @property (nonatomic, strong) id<BRKeySequence> sequence;
 @property (nonatomic, strong) NSData *masterPublicKey;
 @property (nonatomic, strong) NSMutableArray *internalAddresses, *externalAddresses;
-@property (nonatomic, strong) NSMutableSet *allAddresses, *usedAddresses, *allTxHashes;
+@property (nonatomic, strong) NSMutableSet *allAddresses, *usedAddresses;
 @property (nonatomic, strong) NSSet *spentOutputs, *invalidTx;
 @property (nonatomic, strong) NSMutableOrderedSet *transactions;
 @property (nonatomic, strong) NSOrderedSet *utxos;
@@ -78,7 +78,6 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     self.seed = seed;
     self.allTx = [NSMutableDictionary dictionary];
     self.transactions = [NSMutableOrderedSet orderedSet];
-    self.allTxHashes = [NSMutableSet set];
     self.internalAddresses = [NSMutableArray array];
     self.externalAddresses = [NSMutableArray array];
     self.allAddresses = [NSMutableSet set];
@@ -105,7 +104,6 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             
             if (! tx) continue;
             self.allTx[hash] = tx;
-            [self.allTxHashes addObject:hash];
             [self.transactions addObject:tx];
             [self.usedAddresses addObjectsFromArray:tx.inputAddresses];
             [self.usedAddresses addObjectsFromArray:tx.outputAddresses];
@@ -120,10 +118,9 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
                 BRTransaction *tx = e.transaction;
                 NSValue *hash = (tx) ? uint256_obj(tx.txHash) : nil;
 
-                if (! tx || [self.allTxHashes containsObject:hash]) continue;
+                if (! tx || self.allTx[hash] != nil) continue;
                 [updateTx addObject:tx];
                 self.allTx[hash] = tx;
-                [self.allTxHashes addObject:hash];
                 [self.transactions addObject:tx];
                 [self.usedAddresses addObjectsFromArray:tx.inputAddresses];
                 [self.usedAddresses addObjectsFromArray:tx.outputAddresses];
@@ -365,12 +362,6 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     return self.transactions.array;
 }
 
-// hashes of all wallet transactions
-- (NSSet *)txHashes
-{
-    return self.allTxHashes;
-}
-
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address
 {
@@ -495,17 +486,17 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     NSValue *hash = uint256_obj(txHash);
     
     if (uint256_is_zero(txHash)) return NO;
-    if (self.allTx[hash] != nil) return YES;
 
     if (! [self containsTransaction:transaction]) {
         if (transaction.blockHeight == TX_UNCONFIRMED) self.allTx[hash] = transaction;
         return NO;
     }
 
+    if (self.allTx[hash] != nil) return YES;
+
     //TODO: handle tx replacement with input sequence numbers (now replacements appear invalid until confirmation)
     
     self.allTx[hash] = transaction;
-    [self.allTxHashes addObject:hash];
     [self.transactions insertObject:transaction atIndex:0];
     [self.usedAddresses addObjectsFromArray:transaction.inputAddresses];
     [self.usedAddresses addObjectsFromArray:transaction.outputAddresses];
@@ -527,7 +518,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         }
     }];
     
-    if ((self.allTxHashes.count % 100) == 0) [BRTransactionEntity saveContext];
+    if ((self.transactions.count % 100) == 0) [BRTransactionEntity saveContext];
     return YES;
 }
 
@@ -553,7 +544,6 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     }
 
     [self.allTx removeObjectForKey:uint256_obj(txHash)];
-    [self.allTxHashes removeObject:uint256_obj(txHash)];
     if (transaction) [self.transactions removeObject:transaction];
     [self updateBalance];
 
@@ -565,7 +555,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     }];
 }
 
-// returns the transaction with the given hash if it's been registered in the wallet
+// returns the transaction with the given hash if it's been registered in the wallet (might also return non-registered)
 - (BRTransaction *)transactionForHash:(UInt256)txHash
 {
     return self.allTx[uint256_obj(txHash)];

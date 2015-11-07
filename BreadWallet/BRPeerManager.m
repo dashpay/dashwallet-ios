@@ -520,7 +520,7 @@ static const char *dns_seeds[] = {
             UInt256 h = UINT256_ZERO;
             
             [hash getValue:&h];
-            [self addTransactionToPublishList:[[[BRWalletManager sharedInstance] wallet] transactionForHash:h]];
+            [self addTransactionToPublishList:[[BRWalletManager sharedInstance].wallet transactionForHash:h]];
         }
     }
 }
@@ -548,7 +548,7 @@ static const char *dns_seeds[] = {
     NSValue *hash = uint256_obj(transaction.txHash);
     
     [self addTransactionToPublishList:transaction];
-    if (completion) self.publishedCallback[uint256_obj(transaction.txHash)] = completion;
+    if (completion) self.publishedCallback[hash] = completion;
 
     NSArray *txHashes = self.publishedTx.allKeys;
 
@@ -1095,7 +1095,7 @@ static const char *dns_seeds[] = {
     void (^callback)(NSError *error) = self.publishedCallback[hash];
     
     NSLog(@"%@:%d has transaction %@", peer.host, peer.port, hash);
-    if ((! tx || ! [manager.wallet registerTransaction:tx]) && ! [manager.wallet.txHashes containsObject:hash]) return;
+    if (! tx || ! [manager.wallet registerTransaction:tx]) return;
     if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
     
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
@@ -1158,7 +1158,7 @@ static const char *dns_seeds[] = {
         NSMutableSet *fp = [NSMutableSet setWithArray:block.txHashes];
     
         // 1% low pass filter, also weights each block by total transactions, using 800 tx per block as typical
-        [fp minusSet:[BRWalletManager sharedInstance].wallet.txHashes];
+        for (NSValue *hash in self.txRelays.allKeys) [fp removeObject:hash]; // registered tx are not false-positives
         self.fpRate = self.fpRate*(1.0 - 0.01*block.totalTransactions/800) + 0.01*fp.count/800;
 
         // false positive rate sanity check
@@ -1368,7 +1368,7 @@ static const char *dns_seeds[] = {
         error = [NSError errorWithDomain:@"BreadWallet" code:401
                  userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"double spend", nil)}];
     }
-    else if (tx && ! [manager.wallet.txHashes containsObject:hash] && [manager.wallet registerTransaction:tx]) {
+    else if (tx && ! [manager.wallet transactionForHash:txHash] && [manager.wallet registerTransaction:tx]) {
         [BRTransactionEntity saveContext]; // persist transactions to core data
     }
     
