@@ -52,7 +52,7 @@ func getHeaderValue(k: String, d: Dictionary<NSObject, AnyObject>) -> String? {
     for (lk, lv) in d {
         if lk is String {
             let lks = lk as! String
-            if lks == lkKey {
+            if lks.lowercaseString == lkKey {
                 if let lvs = lv as? String {
                     return lvs
                 }
@@ -90,9 +90,14 @@ func isBreadChallenge(r: NSHTTPURLResponse) -> Bool {
 }
 
 func buildSigningString(r: NSMutableURLRequest) -> String {
-    var url = "\(r.URL?.path)"
-    if r.URL?.query?.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0 {
-        url = "\(url)?\(r.URL?.query)"
+    var urlStr = ""
+    if let url = r.URL, path = url.path {
+        urlStr = "\(path)"
+        if let query = url.query {
+            if query.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0 {
+                urlStr = "\(url)?\(query)"
+            }
+        }
     }
     let headers = r.allHTTPHeaderFields ?? Dictionary<String, String>()
     var parts = [
@@ -100,7 +105,7 @@ func buildSigningString(r: NSMutableURLRequest) -> String {
         "",
         getHeaderValue("content-type", d: headers) ?? "",
         getHeaderValue("date", d: headers) ?? "",
-        url
+        urlStr
     ]
     switch r.HTTPMethod {
     case "POST", "PUT", "PATCH":
@@ -175,13 +180,13 @@ func httpDateNow() -> String {
     
     func signRequest(request: NSURLRequest) -> NSURLRequest {
         let mutableRequest = request.mutableCopy() as! NSMutableURLRequest
-        if getHeaderValue("date", d: mutableRequest.allHTTPHeaderFields ?? Dictionary<String, String>()) == nil {
+        let dateHeader = getHeaderValue("date", d: mutableRequest.allHTTPHeaderFields ?? Dictionary<String, String>())
+        if dateHeader == nil {
             // add Date header if necessary
             mutableRequest.setValue(httpDateNow(), forHTTPHeaderField: "Date")
         }
         do {
             if let tokenData = try BRKeychain.loadDataForUserAccount(userAccountKey), token = tokenData["token"], authKey = getAuthKey() {
-                self.log("token data \(tokenData)")
                 let sha = buildSigningString(mutableRequest).dataUsingEncoding(NSUTF8StringEncoding)!.SHA256_2()
                 let sig = authKey.compactSign(sha).base58String()
                 mutableRequest.setValue("bread \(token):\(sig)", forHTTPHeaderField: "Authorization")
