@@ -1095,6 +1095,7 @@ static const char *dns_seeds[] = {
     void (^callback)(NSError *error) = self.publishedCallback[hash];
     
     NSLog(@"%@:%d has transaction %@", peer.host, peer.port, hash);
+    if (! tx) tx = [manager.wallet transactionForHash:txHash];
     if (! tx || ! [manager.wallet registerTransaction:tx]) return;
     if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
     

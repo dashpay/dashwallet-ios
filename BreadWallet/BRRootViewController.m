@@ -183,7 +183,7 @@
                 if (eventMan.isInSampleGroup && ! eventMan.hasAskedForPermission) {
                     [eventMan acquireUserPermissionInViewController:self.navigationController withCallback:nil];
                 }
-                else if ([UIUserNotificationSettings class] && // if iOS 8
+                else if ([UIUserNotificationSettings class] && // if iOS 8 or above
                          ([[UIApplication sharedApplication] currentUserNotificationSettings].types & types) != types) {
                     // register for notifications
                     [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings

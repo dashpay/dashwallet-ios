@@ -1594,7 +1594,7 @@
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                                 <subviews>
                                     <imageView userInteractionEnabled="NO" contentMode="bottomLeft" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="wallpaper-welcome" translatesAutoresizingMaskIntoConstraints="NO" id="pb2-E7-2ep">
-                                        <rect key="frame" x="0.0" y="99" width="757" height="568"/>
+                                        <rect key="frame" x="0.0" y="-69" width="964" height="736"/>
                                         <animations/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                     </imageView>
@@ -1636,7 +1636,7 @@
                                     <color key="titleShadowColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
                                 </state>
                                 <connections>
-                                    <segue destination="gE8-de-XET" kind="show" id="hkn-cW-R9i"/>
+                                    <action selector="start:" destination="jSI-EH-TU3" eventType="touchUpInside" id="NCk-RG-cGT"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4w7-k8-9wY">
@@ -1657,7 +1657,7 @@
                                     <color key="titleShadowColor" white="1" alpha="0.14999999999999999" colorSpace="calibratedWhite"/>
                                 </state>
                                 <connections>
-                                    <segue destination="meW-Ti-6kp" kind="show" id="DFn-J2-DKb"/>
+                                    <action selector="recover:" destination="jSI-EH-TU3" eventType="touchUpInside" id="3LA-Wu-m6t"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -2497,7 +2497,7 @@ bitpay.com/rates</string>
         <!--View Controller-->
         <scene sceneID="r00-Cf-6PH">
             <objects>
-                <viewController modalTransitionStyle="crossDissolve" id="gE8-de-XET" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="GenerateViewController" modalTransitionStyle="crossDissolve" id="gE8-de-XET" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="Zcy-Bh-VFH"/>
                         <viewControllerLayoutGuide type="bottom" id="zSf-HG-qwr"/>
@@ -2507,7 +2507,7 @@ bitpay.com/rates</string>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="4" contentMode="left" text="start a new wallet by generating a wallet recovery phrase" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="300" translatesAutoresizingMaskIntoConstraints="NO" id="wDZ-DN-szv">
-                                <rect key="frame" x="48" y="182" width="278.5" height="42"/>
+                                <rect key="frame" x="48.5" y="182.5" width="278.5" height="42"/>
                                 <animations/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="17"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
@@ -2632,6 +2632,7 @@ Other devices may be infected.
                         </view>
                     </navigationItem>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
+                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina47"/>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="lwV-64-ncq" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
@@ -2640,7 +2641,7 @@ Other devices may be infected.
         <!--recovery phrase:-->
         <scene sceneID="MGQ-cg-FBt">
             <objects>
-                <viewController automaticallyAdjustsScrollViewInsets="NO" modalTransitionStyle="crossDissolve" id="meW-Ti-6kp" customClass="BRRestoreViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="RecoverViewController" automaticallyAdjustsScrollViewInsets="NO" modalTransitionStyle="crossDissolve" id="meW-Ti-6kp" customClass="BRRestoreViewController" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="eXK-Av-YPP"/>
                         <viewControllerLayoutGuide type="bottom" id="rS9-Eb-omV"/>
@@ -2672,6 +2673,7 @@ Other devices may be infected.
                     </view>
                     <navigationItem key="navigationItem" title="recovery phrase:" id="ooJ-EA-DFl"/>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
+                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina47"/>
                     <connections>
                         <outlet property="textView" destination="CsT-dR-Qwt" id="xA1-20-sSU"/>
                         <outlet property="textViewYBottom" destination="bS4-GF-j7U" id="048-5h-sk5"/>
@@ -2892,7 +2894,7 @@ Other devices may be infected.
         <image name="lock" width="12" height="16"/>
         <image name="refresh" width="9" height="11"/>
         <image name="wallpaper-default" width="517" height="736"/>
-        <image name="wallpaper-welcome" width="757" height="568"/>
+        <image name="wallpaper-welcome" width="964" height="736"/>
         <image name="x" width="20" height="16"/>
     </resources>
 </document>

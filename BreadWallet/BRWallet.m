@@ -387,7 +387,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 }
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
-- (BRTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee;
+- (BRTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee
 {
     uint64_t amount = 0, balance = 0, feeAmount = 0;
     BRTransaction *transaction = [BRTransaction new], *tx;
