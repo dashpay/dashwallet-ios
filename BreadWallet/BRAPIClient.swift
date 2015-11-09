@@ -438,7 +438,11 @@ class BRKeychain {
             return NSKeyedUnarchiver.unarchiveObjectWithData(res) as? [String: AnyObject]
         }
         print("Unable to unarchive keychain data... deleting data")
-        try deleteDataForUserAccount(account, inService: service)
+        do {
+            try deleteDataForUserAccount(account, inService: service)
+        } catch let e as BRKeychainError {
+            print("Unable to delete from keychain: \(e)")
+        }
         return nil
     }
     
