@@ -28,8 +28,8 @@ import Foundation
 
 let BRAPIClientErrorDomain = "BRApiClientErrorDomain"
 
-typealias URLSessionTaskHandler = (NSData?, NSHTTPURLResponse?, NSError?) -> Void
-typealias URLSessionChallengeHandler = (NSURLSessionAuthChallengeDisposition, NSURLCredential?) -> Void
+public typealias URLSessionTaskHandler = (NSData?, NSHTTPURLResponse?, NSError?) -> Void
+public typealias URLSessionChallengeHandler = (NSURLSessionAuthChallengeDisposition, NSURLCredential?) -> Void
 
 extension String {
     static var urlQuoteCharacterSet: NSCharacterSet {
@@ -125,7 +125,7 @@ func httpDateNow() -> String {
     return rfc1123DateFormatter.stringFromDate(NSDate())
 }
 
-@objc class BRAPIClient: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate {
+@objc public class BRAPIClient: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate {
     var session: NSURLSession!
     var queue: NSOperationQueue!
     var logEnabled = true
@@ -306,16 +306,16 @@ func httpDateNow() -> String {
     
     // MARK: URLSession Delegate
     
-    func URLSession(session: NSURLSession, didBecomeInvalidWithError error: NSError?) {
+    public func URLSession(session: NSURLSession, didBecomeInvalidWithError error: NSError?) {
         log("URLSession didBecomeInvalidWithError: \(error)")
     }
     
-    func URLSession(session: NSURLSession, task: NSURLSessionTask, didReceiveChallenge: NSURLAuthenticationChallenge, completionHandler: URLSessionChallengeHandler) {
+    public func URLSession(session: NSURLSession, task: NSURLSessionTask, didReceiveChallenge: NSURLAuthenticationChallenge, completionHandler: URLSessionChallengeHandler) {
             log("URLSession task \(task) didReceivechallenge \(didReceiveChallenge.protectionSpace)")
             
     }
     
-    func URLSession(session: NSURLSession, didReceiveChallenge: NSURLAuthenticationChallenge, completionHandler: URLSessionChallengeHandler) {
+    public func URLSession(session: NSURLSession, didReceiveChallenge: NSURLAuthenticationChallenge, completionHandler: URLSessionChallengeHandler) {
         log("URLSession didReceiveChallenge \(didReceiveChallenge)")
         // handle HTTPS authentication
         if didReceiveChallenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
@@ -331,7 +331,7 @@ func httpDateNow() -> String {
     // MARK: API Functions
     
     // Fetches the /v1/fee-per-kb endpoint
-    func feePerKb(handler: (feePerKb: uint_fast64_t, error: String?) -> Void) {
+    public func feePerKb(handler: (feePerKb: uint_fast64_t, error: String?) -> Void) {
         let req = NSURLRequest(URL: url("/v1/fee-per-kb"))
         let task = session.dataTaskWithRequest(req) { (data, response, err) -> Void in
             var feePerKb: uint_fast64_t = 0
@@ -358,7 +358,7 @@ func httpDateNow() -> String {
         task.resume()
     }
     
-    func me() {
+    public func me() {
         let req = NSURLRequest(URL: url("/me"))
         let task = dataTaskWithRequest(req, authenticated: true) { (data, resp, err) -> Void in
             if let data = data {
