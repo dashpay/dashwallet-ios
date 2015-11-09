@@ -105,6 +105,8 @@ void PBKDF2(void *dk, size_t dklen, void (*hash)(void *, const void *, size_t), 
 
 @interface NSData (Bitcoin)
 
++ (instancetype)dataWithUInt256:(UInt256)n;
+
 - (UInt160)SHA1;
 - (UInt256)SHA256;
 - (UInt256)SHA256_2;

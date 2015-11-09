@@ -28,6 +28,9 @@ import Foundation
 
 let BRAPIClientErrorDomain = "BRApiClientErrorDomain"
 
+typealias URLSessionTaskHandler = (NSData?, NSHTTPURLResponse?, NSError?) -> Void
+typealias URLSessionChallengeHandler = (NSURLSessionAuthChallengeDisposition, NSURLCredential?) -> Void
+
 extension String {
     static var urlQuoteCharacterSet: NSCharacterSet {
         let cset = NSMutableCharacterSet.URLQueryAllowedCharacterSet().mutableCopy() as! NSMutableCharacterSet
@@ -83,6 +86,42 @@ func isBreadChallenge(r: NSHTTPURLResponse) -> Bool {
     return false
 }
 
+func buildSigningString(r: NSMutableURLRequest) -> String {
+    var url = "\(r.URL?.path)"
+    if r.URL?.query?.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0 {
+        url = "\(url)?\(r.URL?.query)"
+    }
+    let headers = r.allHTTPHeaderFields ?? Dictionary<String, String>()
+    var parts = [
+        r.HTTPMethod,
+        "",
+        getHeaderValue("content-type", d: headers) ?? "",
+        getHeaderValue("date", d: headers) ?? "",
+        url
+    ]
+    switch r.HTTPMethod {
+    case "POST", "PUT", "PATCH":
+        if let d = r.HTTPBody {
+            let sha = d.SHA256()
+            parts[1] = NSData(UInt256: sha).base58String()
+        }
+    default: break
+    }
+    return parts.joinWithSeparator("\n")
+}
+
+var rfc1123DateFormatter: NSDateFormatter {
+    let fmt = NSDateFormatter()
+    fmt.timeZone = NSTimeZone(abbreviation: "GMT")
+    fmt.dateFormat = "EEE',' dd MMM yyyy HH':'mm':'ss 'GMT'";
+    fmt.locale = NSLocale(localeIdentifier: "en_US")
+    return fmt
+}
+
+func httpDateNow() -> String {
+    return rfc1123DateFormatter.stringFromDate(NSDate())
+}
+
 @objc class BRAPIClient: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate {
     var session: NSURLSession!
     var queue: NSOperationQueue!
@@ -90,6 +129,10 @@ func isBreadChallenge(r: NSHTTPURLResponse) -> Bool {
     var proto = "http"
     var host = "localhost:8009"
     var baseUrl: String!
+    
+    var userAccountKey: String {
+        return "\(proto)://\(host)"
+    }
     
     // the singleton
     static let sharedClient = BRAPIClient()
@@ -127,22 +170,79 @@ func isBreadChallenge(r: NSHTTPURLResponse) -> Bool {
         }
     }
     
-    func dataTaskWithRequest(
-        request: NSURLRequest,
-        handler: (NSData?, NSHTTPURLResponse?, NSError?) -> Void) -> NSURLSessionDataTask {
-            return session.dataTaskWithRequest(request) { (data, resp, err) -> Void in
-                if let httpResp = resp as? NSHTTPURLResponse {
-                    if isBreadChallenge(httpResp) {
-                        self.getToken({ (err) -> Void in
-                            handler(data, httpResp, err)
-                        })
-                    } else {
-                        handler(data, httpResp, err)
-                    }
-                }
+    func signRequest(request: NSURLRequest) -> NSURLRequest {
+        let mutableRequest = request.mutableCopy() as! NSMutableURLRequest
+        if getHeaderValue("date", d: mutableRequest.allHTTPHeaderFields ?? Dictionary<String, String>()) == nil {
+            // add Date header if necessary
+            mutableRequest.setValue(httpDateNow(), forHTTPHeaderField: "Date")
+        }
+        do {
+            if let tokenData = try BRKeychain.loadDataForUserAccount(userAccountKey), token = tokenData["token"] {
+                self.log("token data \(tokenData)")
+                let sha = buildSigningString(mutableRequest).dataUsingEncoding(NSUTF8StringEncoding)!.SHA256_2()
+                let sig = getAuthKey().compactSign(sha).base58String()
+                mutableRequest.setValue("bread \(token):\(sig)", forHTTPHeaderField: "Authorization")
             }
+        } catch let e as BRKeychainError {
+            log("keychain error fetching tokoen \(e)")
+        } catch let e {
+            log("unexpected error fetching keychain data \(e)")
+        }
+        return mutableRequest.copy() as! NSURLRequest
     }
     
+    func dataTaskWithRequest(request: NSURLRequest, authenticated: Bool, retryCount: Int = 0, handler: URLSessionTaskHandler) -> NSURLSessionDataTask {
+        let start = NSDate()
+        var logLine = ""
+        if let meth = request.HTTPMethod, u = request.URL {
+            logLine = "\(meth) \(u) auth=\(authenticated) retry=\(retryCount)"
+        }
+        let origRequest = request.mutableCopy() as! NSURLRequest
+        var actualRequest = request
+        if authenticated {
+            actualRequest = signRequest(request)
+        }
+        return session.dataTaskWithRequest(actualRequest) { (data, resp, err) -> Void in
+            let end = NSDate()
+            let dur = Int(end.timeIntervalSinceDate(start) * 1000)
+            if let httpResp = resp as? NSHTTPURLResponse {
+                var errStr = ""
+                if httpResp.statusCode >= 400 {
+                    if let data = data, s = NSString(data: data, encoding: NSUTF8StringEncoding) {
+                        errStr = s as String
+                    }
+                }
+                self.log("\(logLine) -> status=\(httpResp.statusCode) duration=\(dur)ms errStr=\(errStr)")
+                if authenticated && isBreadChallenge(httpResp) {
+                    self.log("got authentication challenge from API - will attempt to get token")
+                    self.getToken({ (err) -> Void in
+                        if err != nil && retryCount < 1 { // retry once
+                            self.log("error retrieving token: \(err) - will retry")
+                            dispatch_after(1, dispatch_get_main_queue(), { () -> Void in
+                                self.dataTaskWithRequest(origRequest, authenticated: authenticated, retryCount: retryCount + 1, handler: handler).resume()
+                            })
+                        } else if err != nil && retryCount > 0 { // fail if we already retried
+                            self.log("error retrieving token: \(err) - will no longer retry")
+                            handler(nil, nil, err)
+                        } else if retryCount < 1 { // no error, so attempt the request again
+                            self.log("retrieved token, so retrying the original request")
+                            self.dataTaskWithRequest(origRequest, authenticated: authenticated, retryCount: retryCount + 1, handler: handler).resume()
+                        } else {
+                            self.log("retried token multiple times, will not retry again")
+                            handler(data, httpResp, err)
+                        }
+                    })
+                } else {
+                    handler(data, httpResp, err)
+                }
+            } else {
+                self.log("\(logLine) encountered connection error \(err)")
+                handler(data, nil, err)
+            }
+        }
+    }
+    
+    // retrieve a token and save it in the keychain data for this account
     func getToken(handler: (NSError?) -> Void) -> Void {
         let req = NSMutableURLRequest(URL: url("/token"))
         req.HTTPMethod = "POST"
@@ -157,28 +257,38 @@ func isBreadChallenge(r: NSHTTPURLResponse) -> Bool {
             req.HTTPBody = dat
         } catch (let e) {
             log("JSON Serialization error \(e)")
+            return handler(NSError(domain: BRAPIClientErrorDomain, code: 500, userInfo: [
+                NSLocalizedDescriptionKey: NSLocalizedString("JSON Serialization Error", comment: "")]))
         }
         let task = session.dataTaskWithRequest(req) { (data, resp, err) -> Void in
             if let httpResp = resp as? NSHTTPURLResponse {
+                // unsuccessful response from the server
                 if httpResp.statusCode != 200 {
                     if let data = data {
                         if let s = String(data: data, encoding: NSUTF8StringEncoding) {
                             self.log("Token error: \(s)")
                         }
                     }
-                    return handler(NSError(
-                        domain: BRAPIClientErrorDomain,
-                        code: httpResp.statusCode,
-                        userInfo: [
-                            NSLocalizedDescriptionKey:
-                                NSLocalizedString("Unable to retrieve API token", comment: "")]))
+                    return handler(NSError(domain: BRAPIClientErrorDomain, code: httpResp.statusCode, userInfo: [
+                            NSLocalizedDescriptionKey: NSLocalizedString("Unable to retrieve API token", comment: "")]))
                 }
             }
             if let data = data {
                 do {
                     let json = try NSJSONSerialization.JSONObjectWithData(data, options: .AllowFragments)
                     self.log("POST /token: \(json)")
-                } catch (let e) {
+                    if let topObj = json as? NSDictionary, tok = topObj["token"] as? NSString, uid = topObj["userID"] as? NSString {
+                        // success! store it in the keychain
+                        let kcData = ["token": tok, "userID": uid]
+                        do {
+                            try BRKeychain.saveData(kcData, forUserAccount: self.userAccountKey)
+                        } catch let e {
+                            self.log("Error saving token in keychain \(e)")
+                            return handler(NSError(domain: BRAPIClientErrorDomain, code: 500, userInfo: [
+                                NSLocalizedDescriptionKey: NSLocalizedString("Unable to save API token", comment: "")]))
+                        }
+                    }
+                } catch let e {
                     self.log("JSON Deserialization error \(e)")
                 }
             }
@@ -193,29 +303,22 @@ func isBreadChallenge(r: NSHTTPURLResponse) -> Bool {
         log("URLSession didBecomeInvalidWithError: \(error)")
     }
     
-    func URLSession(
-        session: NSURLSession,
-        task: NSURLSessionTask,
-        didReceiveChallenge challenge: NSURLAuthenticationChallenge,
-        completionHandler: (NSURLSessionAuthChallengeDisposition, NSURLCredential?) -> Void) {
-            log("URLSession task \(task) didReceivechallenge \(challenge.protectionSpace)")
+    func URLSession(session: NSURLSession, task: NSURLSessionTask, didReceiveChallenge: NSURLAuthenticationChallenge, completionHandler: URLSessionChallengeHandler) {
+            log("URLSession task \(task) didReceivechallenge \(didReceiveChallenge.protectionSpace)")
             
     }
     
-    func URLSession(
-        session: NSURLSession,
-        didReceiveChallenge challenge: NSURLAuthenticationChallenge,
-        completionHandler: (NSURLSessionAuthChallengeDisposition, NSURLCredential?) -> Void) {
-            log("URLSession didReceiveChallenge \(challenge)")
-            // handle HTTPS authentication
-            if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
-                if challenge.protectionSpace.host == host && challenge.protectionSpace.serverTrust != nil {
-                    completionHandler(.UseCredential,
-                        NSURLCredential(forTrust: challenge.protectionSpace.serverTrust!))
-                } else {
-                    completionHandler(.RejectProtectionSpace, nil)
-                }
+    func URLSession(session: NSURLSession, didReceiveChallenge: NSURLAuthenticationChallenge, completionHandler: URLSessionChallengeHandler) {
+        log("URLSession didReceiveChallenge \(didReceiveChallenge)")
+        // handle HTTPS authentication
+        if didReceiveChallenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
+            if didReceiveChallenge.protectionSpace.host == host && didReceiveChallenge.protectionSpace.serverTrust != nil {
+                completionHandler(.UseCredential,
+                    NSURLCredential(forTrust: didReceiveChallenge.protectionSpace.serverTrust!))
+            } else {
+                completionHandler(.RejectProtectionSpace, nil)
             }
+        }
     }
     
     // MARK: API Functions
@@ -230,10 +333,8 @@ func isBreadChallenge(r: NSHTTPURLResponse) -> Bool {
                 do {
                     let parsedObject: AnyObject? = try NSJSONSerialization.JSONObjectWithData(
                         data!, options: NSJSONReadingOptions.AllowFragments)
-                    if let top = parsedObject as? NSDictionary {
-                        if let n = top["fee_per_kb"] as? NSNumber {
-                            feePerKb = n.unsignedLongLongValue
-                        }
+                    if let top = parsedObject as? NSDictionary, n = top["fee_per_kb"] as? NSNumber {
+                        feePerKb = n.unsignedLongLongValue
                     }
                 } catch (let e) {
                     self.log("fee-per-kb: error parsing json \(e)")
@@ -252,7 +353,7 @@ func isBreadChallenge(r: NSHTTPURLResponse) -> Bool {
     
     func me() {
         let req = NSURLRequest(URL: url("/me"))
-        let task = dataTaskWithRequest(req) { (data, resp, err) -> Void in
+        let task = dataTaskWithRequest(req, authenticated: true) { (data, resp, err) -> Void in
             if let data = data {
                 if let s = String(data: data, encoding: NSUTF8StringEncoding) {
                     self.log("GET /me: \(s)")
@@ -260,5 +361,109 @@ func isBreadChallenge(r: NSHTTPURLResponse) -> Bool {
             }
         }
         task.resume()
+    }
+}
+
+let BreadDefaultService = "org.voisine.breadwallet"
+
+enum BRKeychainError: String, ErrorType {
+    // this is borrowed from the "Locksmith" library: https://github.com/matthewpalmer/Locksmith
+    case Allocate = "Failed to allocate memory."
+    case AuthFailed = "Authorization/Authentication failed."
+    case Decode = "Unable to decode the provided data."
+    case Duplicate = "The item already exists."
+    case InteractionNotAllowed = "Interaction with the Security Server is not allowed."
+    case NoError = "No error."
+    case NotAvailable = "No trust results are available."
+    case NotFound = "The item cannot be found."
+    case Param = "One or more parameters passed to the function were not valid."
+    case RequestNotSet = "The request was not set"
+    case TypeNotFound = "The type was not found"
+    case UnableToClear = "Unable to clear the keychain"
+    case Undefined = "An undefined error occurred"
+    case Unimplemented = "Function or operation not implemented."
+    
+    init?(fromStatusCode code: Int) {
+        switch code {
+        case Int(errSecAllocate):
+            self = Allocate
+        case Int(errSecAuthFailed):
+            self = AuthFailed
+        case Int(errSecDecode):
+            self = Decode
+        case Int(errSecDuplicateItem):
+            self = Duplicate
+        case Int(errSecInteractionNotAllowed):
+            self = InteractionNotAllowed
+        case Int(errSecItemNotFound):
+            self = NotFound
+        case Int(errSecNotAvailable):
+            self = NotAvailable
+        case Int(errSecParam):
+            self = Param
+        case Int(errSecUnimplemented):
+            self = Unimplemented
+        default:
+            return nil
+        }
+    }
+}
+
+class BRKeychain {
+    // this API is inspired by the aforementioned Locksmith library
+    static func loadDataForUserAccount(account: String, inService service: String = BreadDefaultService) throws -> [String: AnyObject]? {
+        var q = getBaseQuery(account, service: service)
+        q[String(kSecReturnData)] = kCFBooleanTrue
+        q[String(kSecMatchLimit)] = kSecMatchLimitOne
+        var res: AnyObject?
+        let status: OSStatus = withUnsafeMutablePointer(&res) {
+            SecItemCopyMatching(q, UnsafeMutablePointer($0))
+        }
+        if let err = BRKeychainError(fromStatusCode: Int(status)) {
+            switch err {
+            case .NotFound, .NotAvailable:
+                return nil
+            default:
+                throw err
+            }
+        }
+        if let res = res as? NSData {
+            return NSKeyedUnarchiver.unarchiveObjectWithData(res) as? [String: AnyObject]
+        }
+        print("Unable to unarchive keychain data... deleting data")
+        try deleteDataForUserAccount(account, inService: service)
+        return nil
+    }
+    
+    static func saveData(data: [String: AnyObject], forUserAccount account: String, inService service: String = BreadDefaultService) throws {
+        do {
+            try deleteDataForUserAccount(account, inService: service)
+        } catch let e as BRKeychainError {
+            print("Unable to delete from keychain: \(e)")
+        }
+        var q = getBaseQuery(account, service: service)
+        q[String(kSecValueData)] = NSKeyedArchiver.archivedDataWithRootObject(data)
+        let status: OSStatus = SecItemAdd(q, nil)
+        if let err = BRKeychainError(fromStatusCode: Int(status)) {
+            throw err
+        }
+    }
+    
+    static func deleteDataForUserAccount(account: String, inService service: String = BreadDefaultService) throws {
+        let q = getBaseQuery(account, service: service)
+        let status: OSStatus = SecItemDelete(q)
+        if let err = BRKeychainError(fromStatusCode: Int(status)) {
+            throw err
+        }
+    }
+    
+    private static func getBaseQuery(account: String, service: String) -> [String: AnyObject] {
+        let query = [
+            String(kSecClass): String(kSecClassGenericPassword),
+            String(kSecAttrAccount): account,
+            String(kSecAttrService): service,
+            String(kSecAttrAccessible): String(kSecAttrAccessibleAlwaysThisDeviceOnly)
+        ]
+        return query
     }
 }

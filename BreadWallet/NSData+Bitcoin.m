@@ -332,6 +332,11 @@ void PBKDF2(void *dk, size_t dklen, void (*hash)(void *, const void *, size_t), 
 
 @implementation NSData (Bitcoin)
 
++ (instancetype)dataWithUInt256:(UInt256)n
+{
+    return [NSData dataWithBytes:&n length:sizeof(n)];
+}
+
 - (UInt160)SHA1
 {
     UInt160 sha1;
