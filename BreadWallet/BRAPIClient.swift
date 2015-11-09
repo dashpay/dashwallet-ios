@@ -62,8 +62,11 @@ func getHeaderValue(k: String, d: Dictionary<NSObject, AnyObject>) -> String? {
     return nil
 }
 
-func getAuthKey() -> BRKey {
-    return BRKey.init(privateKey: BRWalletManager.sharedInstance().authPrivateKey)
+func getAuthKey() -> BRKey? {
+    if let manager = BRWalletManager.sharedInstance(), authKey = manager.authPrivateKey {
+        return BRKey(privateKey: authKey)
+    }
+    return nil
 }
 
 func getDeviceId() -> String {
@@ -177,10 +180,10 @@ func httpDateNow() -> String {
             mutableRequest.setValue(httpDateNow(), forHTTPHeaderField: "Date")
         }
         do {
-            if let tokenData = try BRKeychain.loadDataForUserAccount(userAccountKey), token = tokenData["token"] {
+            if let tokenData = try BRKeychain.loadDataForUserAccount(userAccountKey), token = tokenData["token"], authKey = getAuthKey() {
                 self.log("token data \(tokenData)")
                 let sha = buildSigningString(mutableRequest).dataUsingEncoding(NSUTF8StringEncoding)!.SHA256_2()
-                let sig = getAuthKey().compactSign(sha).base58String()
+                let sig = authKey.compactSign(sha).base58String()
                 mutableRequest.setValue("bread \(token):\(sig)", forHTTPHeaderField: "Authorization")
             }
         } catch let e as BRKeychainError {
@@ -199,7 +202,7 @@ func httpDateNow() -> String {
         }
         let origRequest = request.mutableCopy() as! NSURLRequest
         var actualRequest = request
-        if authenticated {
+        if authenticated && getAuthKey() != nil {
             actualRequest = signRequest(request)
         }
         return session.dataTaskWithRequest(actualRequest) { (data, resp, err) -> Void in
@@ -244,12 +247,16 @@ func httpDateNow() -> String {
     
     // retrieve a token and save it in the keychain data for this account
     func getToken(handler: (NSError?) -> Void) -> Void {
+        if getAuthKey() == nil {
+            return handler(NSError(domain: BRAPIClientErrorDomain, code: 500, userInfo: [
+                NSLocalizedDescriptionKey: NSLocalizedString("Wallet not ready", comment: "")]))
+        }
         let req = NSMutableURLRequest(URL: url("/token"))
         req.HTTPMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.setValue("application/json", forHTTPHeaderField: "Accept")
         let reqJson = [
-            "pubKey": getAuthKey().publicKey.base58String(),
+            "pubKey": getAuthKey()!.publicKey.base58String(),
             "deviceID": getDeviceId()
         ]
         do {
