@@ -329,9 +329,8 @@ static NSString *dateFormat(NSString *template)
     
     self.navigationItem.titleView = nil;
     [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
-    if (self.transactions.count > 0) [self.tableView reloadData];
-    
-    
+    if (! sender && self.transactions.count > 0) [self.tableView reloadData];
+
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         self.transactions = manager.wallet.recentTransactions;
         
@@ -375,7 +374,7 @@ static NSString *dateFormat(NSString *template)
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSUInteger txCount = self.transactions.count;
     
-    [self unlock:nil];
+    [self unlock:sender];
     if (! manager.didAuthenticate) return;
     
     [self.tableView beginUpdates];
@@ -644,7 +643,7 @@ static NSString *dateFormat(NSString *template)
     switch (indexPath.section) {
         case 0: // transaction
             if (self.moreTx && indexPath.row >= self.transactions.count) { // more...
-                [self performSelector:@selector(more:) withObject:nil afterDelay:0.0];
+                [self performSelector:@selector(more:) withObject:tableView afterDelay:0.0];
             }
             else if (self.transactions.count > 0) [self showTx:self.transactions[indexPath.row]]; // transaction details
 
