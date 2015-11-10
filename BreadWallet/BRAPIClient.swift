@@ -89,9 +89,9 @@ func isBreadChallenge(r: NSHTTPURLResponse) -> Bool {
     return false
 }
 
-func buildSigningString(r: NSMutableURLRequest) -> String {
+func buildURLResourceString(url: NSURL?) -> String {
     var urlStr = ""
-    if let url = r.URL, path = url.path {
+    if let url = url, path = url.path {
         urlStr = "\(path)"
         if let query = url.query {
             if query.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0 {
@@ -99,13 +99,17 @@ func buildSigningString(r: NSMutableURLRequest) -> String {
             }
         }
     }
+    return urlStr
+}
+
+func buildRequestSigningString(r: NSMutableURLRequest) -> String {
     let headers = r.allHTTPHeaderFields ?? Dictionary<String, String>()
     var parts = [
         r.HTTPMethod,
         "",
         getHeaderValue("content-type", d: headers) ?? "",
         getHeaderValue("date", d: headers) ?? "",
-        urlStr
+        buildURLResourceString(r.URL)
     ]
     switch r.HTTPMethod {
     case "POST", "PUT", "PATCH":
@@ -115,6 +119,19 @@ func buildSigningString(r: NSMutableURLRequest) -> String {
         }
     default: break
     }
+    return parts.joinWithSeparator("\n")
+}
+
+func buildResponseSigningString(req: NSMutableURLRequest, res: NSHTTPURLResponse, data: NSData? = nil) -> String {
+    let parts: [String] = [
+        req.HTTPMethod,
+        "\(res.statusCode)",
+        data != nil ? NSData(UInt256: data!.SHA256()).base58String() : "",
+        getHeaderValue("content-type", d: res.allHeaderFields) ?? "",
+        getHeaderValue("date", d: res.allHeaderFields) ?? "",
+        buildURLResourceString(res.URL)
+    ]
+    
     return parts.joinWithSeparator("\n")
 }
 
@@ -136,10 +153,16 @@ func httpDateNow() -> String {
     var logEnabled = true
     var proto = "http"
     var host = "localhost:8009"
+    
     var baseUrl: String!
     
     var userAccountKey: String {
         return "\(proto)://\(host)"
+    }
+    
+    var serverPubKey: BRKey {
+        let encoded = "24jsCR3itNGbbmYbZnG6jW8gjguhqybCXsoUAgfqdjprz"
+        return BRKey(publicKey: NSData(base58String: encoded))!
     }
     
     // the singleton
@@ -153,12 +176,13 @@ func httpDateNow() -> String {
         baseUrl = "\(proto)://\(host)"
     }
     
-    func log(format: String, args: CVarArgType...) {
+    func log(format: String, args: CVarArgType...) -> Int? {
         if !logEnabled {
-            return
+            return 1
         }
         let s = String(format: format, arguments: args)
         print("[BRAPIClient] \(s)")
+        return 2
     }
     
     // MARK: Networking functions
@@ -187,8 +211,8 @@ func httpDateNow() -> String {
         }
         do {
             if let tokenData = try BRKeychain.loadDataForUserAccount(userAccountKey), token = tokenData["token"], authKey = getAuthKey() {
-                let sha = buildSigningString(mutableRequest).dataUsingEncoding(NSUTF8StringEncoding)!.SHA256_2()
-                let sig = authKey.compactSign(sha).base58String()
+                let sha = buildRequestSigningString(mutableRequest).dataUsingEncoding(NSUTF8StringEncoding)!.SHA256_2()
+                let sig = authKey.compactSign(sha)!.base58String()
                 mutableRequest.setValue("bread \(token):\(sig)", forHTTPHeaderField: "Authorization")
             }
         } catch let e as BRKeychainError {
@@ -199,7 +223,29 @@ func httpDateNow() -> String {
         return mutableRequest.copy() as! NSURLRequest
     }
     
-    func dataTaskWithRequest(request: NSURLRequest, authenticated: Bool, retryCount: Int = 0, handler: URLSessionTaskHandler) -> NSURLSessionDataTask {
+    func verifyResponse(request: NSMutableURLRequest, response: NSHTTPURLResponse, data: NSData?) -> Bool {
+        // ensure the signature header is present and in the correct format
+        guard let sigHeader = getHeaderValue("signature", d: response.allHeaderFields),
+            sigRange = sigHeader.rangeOfString("bread ")
+            where sigHeader.startIndex.distanceTo(sigRange.startIndex) == 0 else { return false }
+        
+        // extract signing signature bytes and signing string
+        let sigStr = sigHeader[sigRange.endIndex..<sigHeader.endIndex],
+            sig = NSData(base58String: sigStr),
+            signingString = buildResponseSigningString(request, res: response, data: data)
+        
+        // extract the public key and ensure it equals the one we have configured
+        if let sha = signingString.dataUsingEncoding(NSUTF8StringEncoding)?.SHA256_2(),
+            pk = BRKey(recoveredFromCompactSig: sig, andMessageDigest: sha),
+            pkDatA = pk.publicKey, pkDatB = serverPubKey.publicKey
+            where pkDatA.isEqualToData(pkDatB) {
+
+            return true
+        }
+        return false
+    }
+    
+    func dataTaskWithRequest(request: NSURLRequest, authenticated: Bool = false, verify: Bool = true, retryCount: Int = 0, handler: URLSessionTaskHandler) -> NSURLSessionDataTask {
         let start = NSDate()
         var logLine = ""
         if let meth = request.HTTPMethod, u = request.URL {
@@ -220,7 +266,14 @@ func httpDateNow() -> String {
                         errStr = s as String
                     }
                 }
-                self.log("\(logLine) -> status=\(httpResp.statusCode) duration=\(dur)ms errStr=\(errStr)")
+                let verified = verify ? self.verifyResponse(actualRequest.mutableCopy() as! NSMutableURLRequest, response: httpResp, data: data) : true
+                
+                self.log("\(logLine) -> status=\(httpResp.statusCode) duration=\(dur)ms verified=\(verified) errStr=\(errStr)")
+                
+                if !verified {
+                    return handler(nil, nil, NSError(domain: BRAPIClientErrorDomain, code: 500, userInfo: [
+                        NSLocalizedDescriptionKey: NSLocalizedString("Unable to verify server identity", comment: "")]))
+                }
                 if authenticated && isBreadChallenge(httpResp) {
                     self.log("got authentication challenge from API - will attempt to get token")
                     self.getToken({ (err) -> Void in
@@ -261,7 +314,7 @@ func httpDateNow() -> String {
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.setValue("application/json", forHTTPHeaderField: "Accept")
         let reqJson = [
-            "pubKey": getAuthKey()!.publicKey.base58String(),
+            "pubKey": getAuthKey()!.publicKey!.base58String(),
             "deviceID": getDeviceId()
         ]
         do {
