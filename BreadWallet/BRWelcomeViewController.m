@@ -293,10 +293,10 @@
 //    self.paralaxXLeft.constant = self.view.frame.size.width*(to == self ? 1 : 2)*PARALAX_RATIO;
     
     [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
-    initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut | UIViewAnimationOptionOverrideInheritedOptions animations:^{
+    initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
         to.view.center = from.view.center;
         from.view.center = CGPointMake(v.frame.size.width*(to == self ? 3 : -1)/2.0, from.view.center.y);
-//        [self.paralax.superview layoutIfNeeded];
+//        [self.navigationController.view layoutIfNeeded];
     } completion:^(BOOL finished) {
         if (to == self) [from.view removeFromSuperview];
         [transitionContext completeTransition:YES];
