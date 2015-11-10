@@ -391,7 +391,7 @@ func httpDateNow() -> String {
     // Fetches the /v1/fee-per-kb endpoint
     public func feePerKb(handler: (feePerKb: uint_fast64_t, error: String?) -> Void) {
         let req = NSURLRequest(URL: url("/v1/fee-per-kb"))
-        let task = session.dataTaskWithRequest(req) { (data, response, err) -> Void in
+        let task = self.dataTaskWithRequest(req) { (data, response, err) -> Void in
             var feePerKb: uint_fast64_t = 0
             var errStr: String? = nil
             if err == nil {
