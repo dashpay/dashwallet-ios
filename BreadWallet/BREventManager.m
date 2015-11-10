@@ -28,14 +28,12 @@
 #import "BREventConfirmView.h"
 #import "UIImage+Utils.h"
 
-
 #define HAS_DETERMINED_SAMPLE_GROUP     @"has_determined_sample_group"
 #define IS_IN_SAMPLE_GROUP              @"is_in_sample_group"
 #define HAS_PROMPTED_FOR_PERMISSION     @"has_prompted_for_permission"
 #define HAS_ACQUIRED_PERMISSION         @"has_acquired_permission"
 #define EVENT_SERVER_URL                [NSURL URLWithString:@"https://api.breadwallet.com/events"]
-#define SAMPLE_CHANCE                   100
-
+#define SAMPLE_CHANCE                   10
 
 @interface BREventManager ()
 
@@ -58,7 +56,6 @@
 - (void)_removeData;
 
 @end
-
 
 @implementation BREventManager
 
@@ -202,7 +199,7 @@
     [viewController.view drawViewHierarchyInRect:viewController.view.bounds afterScreenUpdates:NO];
     UIImage *bgImg = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
-    UIImage *blurredBgImg = [bgImg blurWithRadius:1.5];
+    UIImage *blurredBgImg = [bgImg blurWithRadius:3];
     
     // display the popup
     __weak BREventConfirmView *eventConfirmView =
