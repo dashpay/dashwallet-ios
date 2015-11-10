@@ -47,6 +47,7 @@ This information is completely anonymous and includes no financial information. 
                                     <fontDescription key="fontDescription" type="system" weight="light" pointSize="16"/>
                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                     <nil key="highlightedColor"/>
+                                    <string key="userLabel">Would you like to share anonymous app usage information with us?  This information is completely anonymous and includes no financial information. We respect your financial privacy!</string>
                                 </label>
                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Tw0-s4-w0k">
                                     <rect key="frame" x="15" y="222" width="285" height="30"/>
@@ -135,7 +136,7 @@ This information is completely anonymous and includes no financial information. 
                         </view>
                     </subviews>
                     <animations/>
-                    <color key="backgroundColor" white="1" alpha="0.5" colorSpace="calibratedWhite"/>
+                    <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.5" colorSpace="calibratedRGB"/>
                     <constraints>
                         <constraint firstAttribute="trailing" secondItem="JxX-Qg-GdP" secondAttribute="trailing" id="0ZF-mG-1UX"/>
                         <constraint firstItem="JxX-Qg-GdP" firstAttribute="top" secondItem="Mds-V9-mIX" secondAttribute="centerY" multiplier="0.3" id="77N-da-sDO"/>
@@ -167,6 +168,7 @@ This information is completely anonymous and includes no financial information. 
                 </view>
             </subviews>
             <animations/>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.75" colorSpace="calibratedRGB"/>
             <constraints>
                 <constraint firstAttribute="trailing" secondItem="Mds-V9-mIX" secondAttribute="trailing" id="cQU-xw-Etz"/>
                 <constraint firstAttribute="bottom" secondItem="Mds-V9-mIX" secondAttribute="bottom" id="dh1-72-I1K"/>

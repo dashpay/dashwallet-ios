@@ -1145,7 +1145,16 @@ static const char *dns_seeds[] = {
     }
     
     // if we get rejected for any reason other than double-spend, the peer is likely misconfigured
-    if (code != REJECT_SPENT && [manager.wallet amountSentByTransaction:tx] > 0) [self peerMisbehavin:peer];
+    if (code != REJECT_SPENT && [manager.wallet amountSentByTransaction:tx] > 0) {
+        for (hash in tx.inputHashes) { // check that all inputs are confirmed before dropping peer
+            UInt256 h = UINT256_ZERO;
+            
+            [hash getValue:&h];
+            if ([manager.wallet transactionForHash:h].blockHeight == TX_UNCONFIRMED) return;
+        }
+
+        [self peerMisbehavin:peer];
+    }
 }
 
 - (void)peer:(BRPeer *)peer relayedBlock:(BRMerkleBlock *)block
@@ -1159,7 +1168,7 @@ static const char *dns_seeds[] = {
         NSMutableSet *fp = [NSMutableSet setWithArray:block.txHashes];
     
         // 1% low pass filter, also weights each block by total transactions, using 800 tx per block as typical
-        for (NSValue *hash in self.txRelays.allKeys) [fp removeObject:hash]; // registered tx are not false-positives
+        for (NSValue *hash in self.txRelays.allKeys) [fp removeObject:hash]; // wallet tx are not false-positives
         self.fpRate = self.fpRate*(1.0 - 0.01*block.totalTransactions/800) + 0.01*fp.count/800;
 
         // false positive rate sanity check

@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		2204604E1B9F61E600D07B61 /* BREventManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2204604D1B9F61E600D07B61 /* BREventManager.m */; };
 		2204604F1B9F61E600D07B61 /* BREventManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2204604D1B9F61E600D07B61 /* BREventManager.m */; };
-		220460521BA0B93200D07B61 /* BREventConfirmView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 220460511BA0B93200D07B61 /* BREventConfirmView.xib */; };
 		220460551BA0BEEE00D07B61 /* BREventConfirmView.m in Sources */ = {isa = PBXBuildFile; fileRef = 220460541BA0BEEE00D07B61 /* BREventConfirmView.m */; };
 		751B2B5C1B68911700EA87FB /* BRTxHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 751B2B5B1B68911700EA87FB /* BRTxHistoryViewController.m */; };
 		7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7525B618192453840041C0F2 /* BRNavigationBar.m */; };
@@ -40,6 +39,7 @@
 		752E28F119234E8100DB5A3C /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E28F019234E8100DB5A3C /* Reachability.m */; settings = {COMPILER_FLAGS = "-w"; }; };
 		752E28F719235B3000DB5A3C /* FixedPeers.plist in Resources */ = {isa = PBXBuildFile; fileRef = 752E28F519235B3000DB5A3C /* FixedPeers.plist */; };
 		7548CF3719556FD700EF827F /* BRCopyLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 7548CF3619556FD700EF827F /* BRCopyLabel.m */; };
+		755FC9ED1BF1DF1B00164ABB /* BREventConfirmView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 755FC9EF1BF1DF1B00164ABB /* BREventConfirmView.xib */; };
 		7568FB5A1B5B5EC10000B652 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 75D5F3DF191EC270004AB296 /* Images.xcassets */; };
 		757BE7E3192C0E9D0061CB20 /* BRRestoreViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BE7E2192C0E9D0061CB20 /* BRRestoreViewController.m */; };
 		757BE7E6192C1FF70061CB20 /* BRWelcomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BE7E5192C1FF70061CB20 /* BRWelcomeViewController.m */; };
@@ -115,7 +115,6 @@
 /* Begin PBXFileReference section */
 		2204604C1B9F61E600D07B61 /* BREventManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BREventManager.h; sourceTree = "<group>"; };
 		2204604D1B9F61E600D07B61 /* BREventManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BREventManager.m; sourceTree = "<group>"; };
-		220460511BA0B93200D07B61 /* BREventConfirmView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BREventConfirmView.xib; sourceTree = "<group>"; };
 		220460531BA0BEEE00D07B61 /* BREventConfirmView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BREventConfirmView.h; sourceTree = "<group>"; };
 		220460541BA0BEEE00D07B61 /* BREventConfirmView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BREventConfirmView.m; sourceTree = "<group>"; };
 		7509C10C1AF3076000D03FD5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
@@ -200,6 +199,7 @@
 		752E28F519235B3000DB5A3C /* FixedPeers.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = FixedPeers.plist; sourceTree = "<group>"; };
 		7548CF3519556FD700EF827F /* BRCopyLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCopyLabel.h; sourceTree = "<group>"; };
 		7548CF3619556FD700EF827F /* BRCopyLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCopyLabel.m; sourceTree = "<group>"; };
+		755FC9EE1BF1DF1B00164ABB /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/BREventConfirmView.xib; sourceTree = "<group>"; };
 		757BE7E1192C0E9D0061CB20 /* BRRestoreViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRRestoreViewController.h; sourceTree = "<group>"; };
 		757BE7E2192C0E9D0061CB20 /* BRRestoreViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = BRRestoreViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		757BE7E4192C1FF70061CB20 /* BRWelcomeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRWelcomeViewController.h; sourceTree = "<group>"; };
@@ -367,7 +367,7 @@
 				75AA5F54194143D5003F23BD /* BRBouncyBurgerButton.m */,
 				7548CF3519556FD700EF827F /* BRCopyLabel.h */,
 				7548CF3619556FD700EF827F /* BRCopyLabel.m */,
-				220460511BA0B93200D07B61 /* BREventConfirmView.xib */,
+				755FC9EF1BF1DF1B00164ABB /* BREventConfirmView.xib */,
 				220460531BA0BEEE00D07B61 /* BREventConfirmView.h */,
 				220460541BA0BEEE00D07B61 /* BREventConfirmView.m */,
 			);
@@ -848,7 +848,7 @@
 				75F2E0D31BE9803900EAE861 /* Launch Screen.storyboard in Resources */,
 				75C0E3BF1B1BA294007BC531 /* BIP39Words.plist in Resources */,
 				75E83CF61B5F997A0038FB70 /* coinflip.aiff in Resources */,
-				220460521BA0B93200D07B61 /* BREventConfirmView.xib in Resources */,
+				755FC9ED1BF1DF1B00164ABB /* BREventConfirmView.xib in Resources */,
 				752E28F719235B3000DB5A3C /* FixedPeers.plist in Resources */,
 				75D5F3DE191EC270004AB296 /* Main.storyboard in Resources */,
 			);
@@ -967,6 +967,14 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
+		755FC9EF1BF1DF1B00164ABB /* BREventConfirmView.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				755FC9EE1BF1DF1B00164ABB /* en */,
+			);
+			name = BREventConfirmView.xib;
+			sourceTree = "<group>";
+		};
 		757E09971ADB8EEB006FD352 /* Localizable.strings */ = {
 			isa = PBXVariantGroup;
 			children = (

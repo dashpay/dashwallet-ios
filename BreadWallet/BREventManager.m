@@ -34,7 +34,7 @@
 #define HAS_PROMPTED_FOR_PERMISSION     @"has_prompted_for_permission"
 #define HAS_ACQUIRED_PERMISSION         @"has_acquired_permission"
 #define EVENT_SERVER_URL                [NSURL URLWithString:@"https://api.breadwallet.com/events"]
-#define SAMPLE_CHANCE                   10
+#define SAMPLE_CHANCE                   100
 
 
 @interface BREventManager ()

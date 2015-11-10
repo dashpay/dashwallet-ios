@@ -1600,7 +1600,6 @@
                                     </imageView>
                                 </subviews>
                                 <animations/>
-                                <color key="backgroundColor" red="1" green="0.75294117647058822" blue="0.50196078431372548" alpha="1" colorSpace="calibratedRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" secondItem="pb2-E7-2ep" secondAttribute="height" id="ODQ-cn-ENg"/>
                                     <constraint firstItem="pb2-E7-2ep" firstAttribute="leading" secondItem="1xc-b5-vde" secondAttribute="leading" id="RQ1-IE-ZcV"/>

@@ -130,7 +130,9 @@
              addConstraint:[NSLayoutConstraint constraintWithItem:self.navigationController.view
                             attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.paralax
                             attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0.0]];
-            self.navigationController.view.backgroundColor = self.paralax.backgroundColor;
+//            self.navigationController.view.backgroundColor = self.paralax.backgroundColor;
+            self.navigationController.view.clipsToBounds = YES;
+            self.navigationController.view.backgroundColor = [UIColor blackColor];
             [self.navigationController.view layoutIfNeeded];
             self.logoXCenter.constant = self.view.frame.size.width;
             self.walletXCenter.constant = 0.0;
@@ -216,7 +218,8 @@
      withString:NSLocalizedString(@"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\n"
                                   "Other devices may be infected.\n", nil)];
     self.warningLabel.attributedText = s;
-
+    self.generateButton.superview.backgroundColor = [UIColor clearColor];
+    
     [self.navigationController pushViewController:c animated:YES];
 }
 
@@ -267,6 +270,7 @@
         self.generateButton.alpha = 1.0;
         self.generateButton.enabled = YES;
         self.navigationController.navigationBar.topItem.hidesBackButton = NO;
+        self.generateButton.superview.backgroundColor = [UIColor whiteColor];
     }];
 }
 

@@ -236,7 +236,7 @@
     [BREventManager saveEvent:@"seed:dismiss"];
     if (self.navigationController.viewControllers.firstObject != self) return;
     
-    self.navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+    self.navigationController.presentingViewController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
     [self.navigationController.presentingViewController.presentingViewController dismissViewControllerAnimated:YES
      completion:nil];
 }
