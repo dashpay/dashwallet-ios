@@ -106,7 +106,7 @@ annotation:(id)annotation
 performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
-    __block uint64_t balance = manager.wallet.balance;
+    __block uint64_t balance = UINT64_MAX;
     __block id protectedObserver = nil, balanceObserver = nil, syncFinishedObserver = nil, syncFailedObserver = nil;
     __block void (^completion)(UIBackgroundFetchResult) = completionHandler;
     void (^cleanup)() = ^() {
@@ -149,6 +149,8 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
                 [UIApplication sharedApplication].applicationIconBadgeNumber =
                     [UIApplication sharedApplication].applicationIconBadgeNumber + 1;
             }
+            
+            balance = manager.wallet.balance;
         }];
 
     syncFinishedObserver =
@@ -169,6 +171,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     
     NSLog(@"background fetch starting");
     [[BRPeerManager sharedInstance] connect];
+    balance = manager.wallet.balance;
     
     // sync events to the server
     [[BREventManager sharedEventManager] sync];
