@@ -105,7 +105,6 @@ annotation:(id)annotation
 - (void)application:(UIApplication *)application
 performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler
 {
-    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     __block uint64_t balance = manager.wallet.balance;
     __block id protectedObserver = nil, balanceObserver = nil, syncFinishedObserver = nil, syncFailedObserver = nil;
@@ -149,10 +148,6 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
             if (manager.wallet.balance > balance) {
                 [UIApplication sharedApplication].applicationIconBadgeNumber =
                     [UIApplication sharedApplication].applicationIconBadgeNumber + 1;
-                [defs setDouble:[defs doubleForKey:SETTINGS_RECEIVED_AMOUNT_KEY] + (manager.wallet.balance - balance)
-                 forKey:SETTINGS_RECEIVED_AMOUNT_KEY]; // have to use setDouble here, setInteger isn't big enough
-                balance = manager.wallet.balance;
-                [defs synchronize];
             }
         }];
 

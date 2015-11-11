@@ -219,6 +219,7 @@
                 self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"burger"];
                 self.navigationItem.rightBarButtonItem = self.lock;
                 self.pageViewController.view.alpha = 1.0;
+                [UIApplication sharedApplication].applicationIconBadgeNumber = 0; // reset app badge number
             }
         }];
     
@@ -227,16 +228,6 @@
         queue:nil usingBlock:^(NSNotification *note) {
             [self.blur removeFromSuperview];
             self.blur = nil;
-            [UIApplication sharedApplication].applicationIconBadgeNumber = 0; // reset app badge number
-
-            uint64_t amount = [defs doubleForKey:SETTINGS_RECEIVED_AMOUNT_KEY];
-            
-            if (amount > 0) {
-                _balance = manager.wallet.balance - amount;
-                self.balance = manager.wallet.balance; // show received message bubble
-                [defs setDouble:0.0 forKey:SETTINGS_RECEIVED_AMOUNT_KEY];
-                [defs synchronize];
-            }
         }];
 
     self.resignActiveObserver =
@@ -283,11 +274,6 @@
             [self showBackupDialogIfNeeded];
             [self.receiveViewController updateAddress];
             self.balance = manager.wallet.balance;
-
-            if (self.reachability.currentReachabilityStatus != NotReachable &&
-                [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
-                [[BRPeerManager sharedInstance] connect];
-            }
         }];
 
     self.seedObserver =
@@ -396,10 +382,6 @@
     self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"burger"];
     self.pageViewController.view.alpha = 1.0;
     if ([BRWalletManager sharedInstance].didAuthenticate) [self unlock:nil];
-
-    if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
-        [[BRPeerManager sharedInstance] connect];
-    }
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -475,8 +457,13 @@
             if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
         }
         
-        if (self.url) [self.sendViewController handleURL:self.url], self.url = nil;
-        if (self.file) [self.sendViewController handleFile:self.file], self.file = nil;
+        if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
+            [[BRPeerManager sharedInstance] connect];
+            [UIApplication sharedApplication].applicationIconBadgeNumber = 0; // reset app badge number
+            
+            if (self.url) [self.sendViewController handleURL:self.url], self.url = nil;
+            if (self.file) [self.sendViewController handleFile:self.file], self.file = nil;
+        }
     }
 }
 

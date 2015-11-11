@@ -27,7 +27,6 @@
 
 #define BRURLNotification            @"BRURLNotification"
 #define BRFileNotification           @"BRFileNotification"
-#define SETTINGS_RECEIVED_AMOUNT_KEY @"SETTINGS_RECEIVED_AMOUNT"
 
 @interface BRAppDelegate : UIResponder <UIApplicationDelegate>
 
