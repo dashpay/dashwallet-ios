@@ -686,20 +686,9 @@ static const char *dns_seeds[] = {
                     [p sendMempoolMessage];
                     [p sendPingMessageWithPongHandler:^(BOOL success) {
                         if (! success) return;
-
-                        if (txHashes.count > 0) {
-                            [p sendPingMessageWithPongHandler:^(BOOL success) {
-                                if (! success) return;
-                                p.synced = YES;
-                                [p sendGetaddrMessage]; // request a list of other bitcoin peers
-                                [self removeUnrelayedTransactions];
-                            }];
-                        }
-                        else {
-                            p.synced = YES;
-                            [p sendGetaddrMessage]; // request a list of other bitcoin peers
-                            [self removeUnrelayedTransactions];
-                        }
+                        p.synced = YES;
+                        [p sendGetaddrMessage]; // request a list of other bitcoin peers
+                        [self removeUnrelayedTransactions];
                     }];
                 }];
             }
@@ -718,6 +707,7 @@ static const char *dns_seeds[] = {
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     BOOL rescan = NO;
+    NSValue *hash;
     UInt256 h;
 
     // don't remove transactions until we're connected to PEER_MAX_CONNECTION peers
@@ -729,8 +719,9 @@ static const char *dns_seeds[] = {
 
     for (BRTransaction *tx in manager.wallet.recentTransactions) {
         if (tx.blockHeight != TX_UNCONFIRMED) break;
+        hash = uint256_obj(tx.txHash);
 
-        if ([self.txRelays[uint256_obj(tx.txHash)] count] == 0) {
+        if ([self.txRelays[hash] count] == 0 && [self.txRequests[hash] count] == 0) {
             // if this is for a transaction we sent, and inputs were all confirmed, and it wasn't already known to be
             // invalid, then recommend a rescan
             if (! rescan && [manager.wallet amountSentByTransaction:tx] > 0 && [manager.wallet transactionIsValid:tx]) {
@@ -746,9 +737,9 @@ static const char *dns_seeds[] = {
             
             [manager.wallet removeTransaction:tx.txHash];
         }
-        else if ([self.txRelays[uint256_obj(tx.txHash)] count] < PEER_MAX_CONNECTIONS) {
+        else if ([self.txRelays[hash] count] < PEER_MAX_CONNECTIONS) {
             // set timestamp 0 to mark as unverified
-            [manager.wallet setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:@[uint256_obj(tx.txHash)]];
+            [manager.wallet setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:@[hash]];
         }
     }
     
@@ -1144,6 +1135,8 @@ static const char *dns_seeds[] = {
         });
     }
     
+    [self.txRequests[hash] removeObject:peer];
+    
     // if we get rejected for any reason other than double-spend, the peer is likely misconfigured
     if (code != REJECT_SPENT && [manager.wallet amountSentByTransaction:tx] > 0) {
         for (hash in tx.inputHashes) { // check that all inputs are confirmed before dropping peer
@@ -1360,6 +1353,7 @@ static const char *dns_seeds[] = {
 {
     for (NSValue *hash in txHashes) {
         [self.txRelays[hash] removeObject:peer];
+        [self.txRequests[hash] removeObject:peer];
     }
 }
 
@@ -1370,7 +1364,9 @@ static const char *dns_seeds[] = {
     BRTransaction *tx = self.publishedTx[hash];
     void (^callback)(NSError *error) = self.publishedCallback[hash];
     NSError *error = nil;
-    
+
+    if (! self.txRelays[hash]) self.txRelays[hash] = [NSMutableSet set];
+    self.txRelays[hash] = peer;
     [self.publishedCallback removeObjectForKey:hash];
     
     if (callback && ! [manager.wallet transactionIsValid:tx]) {
@@ -1389,7 +1385,8 @@ static const char *dns_seeds[] = {
 
     [peer sendPingMessageWithPongHandler:^(BOOL success) { // check if peer will relay the transaction back
         if (! success) return;
-        if (! [self.txRelays[hash] containsObject:peer] && ! [self.txRequests[hash] containsObject:peer]) {
+        
+        if (! [self.txRequests[hash] containsObject:peer]) {
             if (! self.txRequests[hash]) self.txRequests[hash] = [NSMutableSet set];
             [self.txRequests[hash] addObject:peer];
             [peer sendGetdataMessageWithTxHashes:@[hash] andBlockHashes:nil];
