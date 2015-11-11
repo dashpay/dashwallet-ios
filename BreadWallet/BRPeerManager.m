@@ -1366,7 +1366,7 @@ static const char *dns_seeds[] = {
     NSError *error = nil;
 
     if (! self.txRelays[hash]) self.txRelays[hash] = [NSMutableSet set];
-    self.txRelays[hash] = peer;
+    [self.txRelays[hash] addObject:peer];
     [self.publishedCallback removeObjectForKey:hash];
     
     if (callback && ! [manager.wallet transactionIsValid:tx]) {
