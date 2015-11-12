@@ -122,6 +122,9 @@
 "change payment amount?" = "change payment amount?";
 
 /* No comment provided by engineer. */
+"change wallet passcode" = "change wallet passcode";
+
+/* No comment provided by engineer. */
 "checking address balance..." = "checking address balance...";
 
 /* No comment provided by engineer. */
@@ -129,6 +132,9 @@
 
 /* No comment provided by engineer. */
 "choose passcode for %@" = "choose passcode for %@";
+
+/* No comment provided by engineer. */
+"choose wallet passcode" = "choose wallet passcode";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid bitcoin address" = "clipboard doesn't contain a valid bitcoin address";
@@ -171,6 +177,9 @@
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to bitcoin network" = "couldn't transmit payment to bitcoin network";
+
+/* No comment provided by engineer. */
+"current wallet passcode" = "current wallet passcode";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins).";
@@ -482,10 +491,16 @@
 "verify passcode" = "verify passcode";
 
 /* No comment provided by engineer. */
+"verify wallet passcode" = "verify wallet passcode";
+
+/* No comment provided by engineer. */
 "wallet address" = "wallet address";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "wallet disabled";
+
+/* No comment provided by engineer. */
+"wallet passcode" = "wallet pascode";
 
 /* No comment provided by engineer. */
 "WARNING" = "WARNING";
