@@ -46,8 +46,9 @@ static NSString *dateFormat(NSString *template)
     format = [format stringByReplacingOccurrencesOfString:@"hh" withString:@"h"];
     format = [format stringByReplacingOccurrencesOfString:@" ha" withString:@"@ha"];
     format = [format stringByReplacingOccurrencesOfString:@"HH" withString:@"H"];
-    format = [format stringByReplacingOccurrencesOfString:@"H 'h'" withString:@"H'h'"];
+    format = [format stringByReplacingOccurrencesOfString:@"H '" withString:@"H'"];
     format = [format stringByReplacingOccurrencesOfString:@"H " withString:@"H'h' "];
+    //BUG: XXXX handle d.M. H'h' 'Uhr'
     format = [format stringByReplacingOccurrencesOfString:@"H" withString:@"H'h'"
               options:NSBackwardsSearch|NSAnchoredSearch range:NSMakeRange(0, format.length)];
     return format;
@@ -304,9 +305,16 @@ static NSString *dateFormat(NSString *template)
     NSTimeInterval txTime = (tx.timestamp > 1) ? tx.timestamp : now;
     NSDateFormatter *desiredFormatter = (txTime > year) ? monthDayHourFormatter : yearMonthDayHourFormatter;
     
-    date = [[[desiredFormatter stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:txTime]].lowercaseString
-             stringByReplacingOccurrencesOfString:@"am" withString:@"a"]
-            stringByReplacingOccurrencesOfString:@"pm" withString:@"p"];
+    date = [[[[[[[[[desiredFormatter stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:txTime]]
+                   stringByReplacingOccurrencesOfString:@"am" withString:@"a"]
+                  stringByReplacingOccurrencesOfString:@"pm" withString:@"p"]
+                 stringByReplacingOccurrencesOfString:@"AM" withString:@"a"]
+                stringByReplacingOccurrencesOfString:@"PM" withString:@"p"]
+               stringByReplacingOccurrencesOfString:@"a.m." withString:@"a"]
+              stringByReplacingOccurrencesOfString:@"p.m." withString:@"p"]
+             stringByReplacingOccurrencesOfString:@"A.M." withString:@"a"]
+            stringByReplacingOccurrencesOfString:@"P.M." withString:@"p"];
+
     if (tx.blockHeight != TX_UNCONFIRMED) self.txDates[uint256_obj(tx.txHash)] = date;
     return date;
 }

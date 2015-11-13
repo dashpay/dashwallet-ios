@@ -45,11 +45,11 @@
 #define CONNECT_TIMEOUT    3.0
 
 typedef enum : uint32_t {
-    error = 0,
-    tx,
-    block,
-    merkleblock
-} inv;
+    inv_error = 0,
+    inv_tx,
+    inv_block,
+    inv_merkleblock
+} inv_type;
 
 @interface BRPeer ()
 
@@ -185,8 +185,9 @@ services:(uint64_t)services
         [self.outputStream scheduleInRunLoop:self.runLoop forMode:NSRunLoopCommonModes];
         
         // after the reachablity check, the radios should be warmed up and we can set a short socket connect timeout
-        [self performSelector:@selector(disconnectWithError:) withObject:[NSError errorWithDomain:@"BreadWallet"
-         code:BITCOIN_TIMEOUT_CODE userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"connect timeout", nil)}]
+        [self performSelector:@selector(disconnectWithError:)
+         withObject:[NSError errorWithDomain:@"BreadWallet" code:BITCOIN_TIMEOUT_CODE
+                     userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"connect timeout", nil)}]
          afterDelay:CONNECT_TIMEOUT];
         
         [self.inputStream open];
@@ -415,7 +416,7 @@ services:(uint64_t)services
     [msg appendVarInt:hashes.count];
 
     for (NSValue *hash in hashes) {
-        [msg appendUInt32:tx];
+        [msg appendUInt32:inv_tx];
         [hash getValue:&h];
         [msg appendBytes:&h length:sizeof(h)];
     }
@@ -439,13 +440,13 @@ services:(uint64_t)services
     [msg appendVarInt:txHashes.count + blockHashes.count];
     
     for (NSValue *hash in txHashes) {
-        [msg appendUInt32:tx];
+        [msg appendUInt32:inv_tx];
         [hash getValue:&h];
         [msg appendBytes:&h length:sizeof(h)];
     }
     
     for (NSValue *hash in blockHashes) {
-        [msg appendUInt32:merkleblock];
+        [msg appendUInt32:inv_merkleblock];
         [hash getValue:&h];
         [msg appendBytes:&h length:sizeof(h)];
     }
@@ -632,15 +633,15 @@ services:(uint64_t)services
     NSLog(@"%@:%u got inv with %u items", self.host, self.port, (int)count);
     
     for (NSUInteger off = l; off < l + 36*count; off += 36) {
-        inv type = [message UInt32AtOffset:off];
+        inv_type type = [message UInt32AtOffset:off];
         UInt256 hash = [message hashAtOffset:off + sizeof(uint32_t)];
         
         if (uint256_is_zero(hash)) continue;
         
         switch (type) {
-            case tx: [txHashes addObject:uint256_obj(hash)]; break;
-            case block: [blockHashes addObject:uint256_obj(hash)]; break;
-            case merkleblock: [blockHashes addObject:uint256_obj(hash)]; break;
+            case inv_tx: [txHashes addObject:uint256_obj(hash)]; break;
+            case inv_block: [blockHashes addObject:uint256_obj(hash)]; break;
+            case inv_merkleblock: [blockHashes addObject:uint256_obj(hash)]; break;
             default: break;
         }
     }
@@ -667,9 +668,8 @@ services:(uint64_t)services
         dispatch_async(self.delegateQueue, ^{
             [self.knownBlockHashes unionOrderedSet:blockHashes];
         
-            if (self.knownBlockHashes.count > MAX_GETDATA_HASHES) {
-                [self.knownBlockHashes
-                 removeObjectsInRange:NSMakeRange(0, self.knownBlockHashes.count - MAX_GETDATA_HASHES/2)];
+            while (self.knownBlockHashes.count > MAX_GETDATA_HASHES) {
+                [self.knownBlockHashes removeObjectsInRange:NSMakeRange(0, self.knownBlockHashes.count/3)];
             }
         });
     }
@@ -818,14 +818,14 @@ services:(uint64_t)services
         NSMutableData *notfound = [NSMutableData data];
     
         for (NSUInteger off = l; off < l + count*36; off += 36) {
-            inv type = [message UInt32AtOffset:off];
+            inv_type type = [message UInt32AtOffset:off];
             UInt256 hash = [message hashAtOffset:off + sizeof(uint32_t)];
             BRTransaction *transaction = nil;
         
             if (uint256_is_zero(hash)) continue;
         
             switch (type) {
-                case tx:
+                case inv_tx:
                     transaction = [self.delegate peer:self requestedTransaction:hash];
                 
                     if (transaction) {
@@ -865,10 +865,10 @@ services:(uint64_t)services
     NSLog(@"%@:%u got notfound with %u items", self.host, self.port, (int)count);
 
     for (NSUInteger off = l; off < l + 36*count; off += 36) {
-        if ([message UInt32AtOffset:off] == tx) {
+        if ([message UInt32AtOffset:off] == inv_tx) {
             [txHashes addObject:uint256_obj([message hashAtOffset:off + sizeof(uint32_t)])];
         }
-        else if ([message UInt32AtOffset:off] == merkleblock) {
+        else if ([message UInt32AtOffset:off] == inv_merkleblock) {
             [blockHashes addObject:uint256_obj([message hashAtOffset:off + sizeof(uint32_t)])];
         }
     }

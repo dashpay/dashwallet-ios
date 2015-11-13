@@ -11,7 +11,6 @@
 #endif
 
 #define BITCOIN_TESTNET 1
-#define PEER_LOGGING    1
 
 #if ! DEBUG
 #define NSLog(...)
