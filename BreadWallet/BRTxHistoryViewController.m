@@ -48,7 +48,6 @@ static NSString *dateFormat(NSString *template)
     format = [format stringByReplacingOccurrencesOfString:@"HH" withString:@"H"];
     format = [format stringByReplacingOccurrencesOfString:@"H '" withString:@"H'"];
     format = [format stringByReplacingOccurrencesOfString:@"H " withString:@"H'h' "];
-    //BUG: XXXX handle d.M. H'h' 'Uhr'
     format = [format stringByReplacingOccurrencesOfString:@"H" withString:@"H'h'"
               options:NSBackwardsSearch|NSAnchoredSearch range:NSMakeRange(0, format.length)];
     return format;
@@ -305,16 +304,15 @@ static NSString *dateFormat(NSString *template)
     NSTimeInterval txTime = (tx.timestamp > 1) ? tx.timestamp : now;
     NSDateFormatter *desiredFormatter = (txTime > year) ? monthDayHourFormatter : yearMonthDayHourFormatter;
     
-    date = [[[[[[[[[desiredFormatter stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:txTime]]
-                   stringByReplacingOccurrencesOfString:@"am" withString:@"a"]
-                  stringByReplacingOccurrencesOfString:@"pm" withString:@"p"]
-                 stringByReplacingOccurrencesOfString:@"AM" withString:@"a"]
-                stringByReplacingOccurrencesOfString:@"PM" withString:@"p"]
-               stringByReplacingOccurrencesOfString:@"a.m." withString:@"a"]
-              stringByReplacingOccurrencesOfString:@"p.m." withString:@"p"]
-             stringByReplacingOccurrencesOfString:@"A.M." withString:@"a"]
-            stringByReplacingOccurrencesOfString:@"P.M." withString:@"p"];
-
+    date = [desiredFormatter stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:txTime]];
+    date = [date stringByReplacingOccurrencesOfString:@"am" withString:@"a"];
+    date = [date stringByReplacingOccurrencesOfString:@"pm" withString:@"p"];
+    date = [date stringByReplacingOccurrencesOfString:@"AM" withString:@"a"];
+    date = [date stringByReplacingOccurrencesOfString:@"PM" withString:@"p"];
+    date = [date stringByReplacingOccurrencesOfString:@"a.m." withString:@"a"];
+    date = [date stringByReplacingOccurrencesOfString:@"p.m." withString:@"p"];
+    date = [date stringByReplacingOccurrencesOfString:@"A.M." withString:@"a"];
+    date = [date stringByReplacingOccurrencesOfString:@"P.M." withString:@"p"];
     if (tx.blockHeight != TX_UNCONFIRMED) self.txDates[uint256_obj(tx.txHash)] = date;
     return date;
 }
