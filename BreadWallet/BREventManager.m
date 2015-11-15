@@ -282,10 +282,12 @@
                               @"appVersion": ver,
                               @"events": evts};
     [eventTuples enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        [evts addObject:@{@"sessionId": obj[0],
-                          @"time": obj[1],
-                          @"eventName": obj[2],
-                          @"metadata": obj[3]}];
+        if ([obj isKindOfClass:[NSArray class]] && [obj count] >= 4) {
+            [evts addObject:@{@"sessionId": obj[0],
+                              @"time": obj[1],
+                              @"eventName": obj[2],
+                              @"metadata": obj[3]}];
+        }
     }];
     return retDict;
 }

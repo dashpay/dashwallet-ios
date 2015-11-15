@@ -134,7 +134,9 @@ static NSString *sanitizeString(NSString *s)
 - (void)handleURL:(NSURL *)url
 {
     [BREventManager saveEvent:@"send:handle_url"
-               withAttributes:@{@"scheme": url.scheme, @"host": url.host, @"path": url.path}];
+               withAttributes:@{@"scheme": (url.scheme ? url.scheme : @"(null)"),
+                                @"host": (url.host ? url.host : @"(null)"),
+                                @"path": (url.path ? url.path : @"(null)")}];
     
     //TODO: XXX custom url splash image per: "Providing Launch Images for Custom URL Schemes."
     BRWalletManager *manager = [BRWalletManager sharedInstance];
