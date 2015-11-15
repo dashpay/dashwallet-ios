@@ -93,7 +93,7 @@ static const struct { uint32_t height; char *hash; uint32_t timestamp; uint32_t 
     { 322560, "000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1", 1411680080, 0x181fb893 },
     { 342720, "00000000000000000f9cfece8494800d3dcbf9583232825da640c8703bcd27e7", 1423496415, 0x1818bb87 },
     { 362880, "000000000000000014898b8e6538392702ffb9450f904c80ebf9d82b519a77d5", 1435475246, 0x1816418e },
-    { 383040, "00000000000000000a974fa1a3f84055ad5ef0b2f96328bc96310ce83da801c9", 1447236692, 0x1810B289 }
+    { 383040, "00000000000000000a974fa1a3f84055ad5ef0b2f96328bc96310ce83da801c9", 1447236692, 0x1810b289 }
 };
 
 static const char *dns_seeds[] = {
@@ -707,7 +707,7 @@ static const char *dns_seeds[] = {
 - (void)removeUnrelayedTransactions
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
-    BOOL rescan = NO;
+    BOOL rescan = NO, notify = NO;
     NSValue *hash;
     UInt256 h;
 
@@ -723,12 +723,11 @@ static const char *dns_seeds[] = {
         hash = uint256_obj(tx.txHash);
 
         if ([self.txRelays[hash] count] == 0 && [self.txRequests[hash] count] == 0) {
-            // if this is for a transaction we sent, and inputs were all confirmed, and it wasn't already known to be
-            // invalid, then recommend a rescan
+            // if this is for a transaction we sent, and it wasn't already known to be invalid, notify user of failure
             if (! rescan && [manager.wallet amountSentByTransaction:tx] > 0 && [manager.wallet transactionIsValid:tx]) {
-                rescan = YES;
+                rescan = notify = YES;
                 
-                for (NSValue *hash in tx.inputHashes) {
+                for (NSValue *hash in tx.inputHashes) { // only recommend a rescan if all inputs are confirmed
                     [hash getValue:&h];
                     if ([manager.wallet transactionForHash:h].blockHeight != TX_UNCONFIRMED) continue;
                     rescan = NO;
@@ -744,13 +743,19 @@ static const char *dns_seeds[] = {
         }
     }
     
-    if (rescan) {
+    if (notify) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"transaction rejected", nil)
-              message:NSLocalizedString(@"Your wallet may be out of sync.\n"
-                                        "This can often be fixed by rescanning the blockchain.", nil) delegate:self
-              cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-              otherButtonTitles:NSLocalizedString(@"rescan", nil), nil] show];
+            if (rescan) {
+                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"transaction rejected", nil)
+                  message:NSLocalizedString(@"Your wallet may be out of sync.\n"
+                                            "This can often be fixed by rescanning the blockchain.", nil) delegate:self
+                  cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+                  otherButtonTitles:NSLocalizedString(@"rescan", nil), nil] show];
+            }
+            else {
+                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"transaction rejected", nil)
+                  message:nil delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+            }
         });
     }
 }
