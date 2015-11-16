@@ -612,8 +612,8 @@ static NSString *dateFormat(NSString *template)
 {
     UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, self.view.frame.size.width,
                                                          [self tableView:tableView heightForHeaderInSection:section])];
-    UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(15.0, 0.0, v.frame.size.width - 20.0,
-                                                           v.frame.size.height - 22.0)];
+    UILabel *l = [UILabel new];
+    CGRect r = CGRectMake(15.0, 0.0, v.frame.size.width - 20.0, v.frame.size.height - 22.0);
     
     l.text = [self tableView:tableView titleForHeaderInSection:section];
     l.backgroundColor = [UIColor clearColor];
@@ -622,6 +622,10 @@ static NSString *dateFormat(NSString *template)
     l.shadowColor = [UIColor whiteColor];
     l.shadowOffset = CGSizeMake(0.0, 1.0);
     l.numberOfLines = 0;
+    r.size.width = [l sizeThatFits:r.size].width;
+    r.origin.x = (self.view.frame.size.width - r.size.width)/2;
+    if (r.origin.x < 15.0) r.origin.x = 15.0;
+    l.frame = r;
     v.backgroundColor = [UIColor clearColor];
     [v addSubview:l];
 
