@@ -317,6 +317,10 @@
 		75F2E0D51BEAA6A400EAE861 /* BRTxMetadataEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTxMetadataEntity.m; sourceTree = "<group>"; };
 		75F747501BF41A9F006A6BE8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/BREventConfirmView.xib; sourceTree = "<group>"; };
 		75F747521BF41AD0006A6BE8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
+		75FD2FAF1BFAB97000D56BBA /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
+		75FD2FB11BFAB97200D56BBA /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
+		75FD2FB31BFAB97500D56BBA /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
+		75FD2FB51BFAB97A00D56BBA /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
 		84F68C881975E9E2002FC300 /* BRScanViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRScanViewController.h; sourceTree = "<group>"; };
 		84F68C891975E9E2002FC300 /* BRScanViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRScanViewController.m; sourceTree = "<group>"; };
 		BA4EECDF1B351AE200D443A3 /* BRAppGroupConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAppGroupConstants.h; sourceTree = "<group>"; };
@@ -973,6 +977,10 @@
 			children = (
 				75F747501BF41A9F006A6BE8 /* Base */,
 				75F747521BF41AD0006A6BE8 /* en */,
+				75FD2FAF1BFAB97000D56BBA /* fr */,
+				75FD2FB11BFAB97200D56BBA /* ja */,
+				75FD2FB31BFAB97500D56BBA /* de */,
+				75FD2FB51BFAB97A00D56BBA /* ru */,
 			);
 			name = BREventConfirmView.xib;
 			sourceTree = "<group>";

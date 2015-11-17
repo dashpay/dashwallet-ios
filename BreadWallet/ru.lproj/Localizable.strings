@@ -1,104 +1,113 @@
 /* No comment provided by engineer. */
-"%@ is for 'bits'. %@ = 1 bitcoin." = "%1$@ предназначен для 'bits'. %2$@ = 1 bitcoin.";
+"%@ is for 'bits'. %@ = 1 bitcoin." = "%1$@ означает «бит». %2$@ составляет 1 bitcoin.";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access the camera" = "%@ не разрешается доступ к камере";
+"%@ is not allowed to access the camera" = "%@ необходим доступ к камере";
 
 /* No comment provided by engineer. */
-"%d confirmations" = "%d подтверждения";
+"%@\n\nbalance: %@ (%@)" = "%1$@\n\nбаланс: %2$@ (%3$@)";
+
+/* No comment provided by engineer. */
+"%d confirmations" = "подтверждений: %d";
+
+/* No comment provided by engineer. */
+"0 confirmations" = "0 подтверждений";
 
 /* No comment provided by engineer. */
 "1 confirmation" = "1 подтверждение";
 
 /* No comment provided by engineer. */
-"\"%@\" is not a recovery phrase word" = "«%@» это не слово фразы восстановления";
+"\"%@\" is not a recovery phrase word" = "«%@» не является словом из фразы восстановления";
 
 /* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\nвсего %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@ \n\nесли вы когда либо потеряете свой телефон, вам это понадобится что бы восстановить ваш кошелек";
+"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@ \n\nесли Вы потеряете свой телефон, вам понадобится эта фраза, чтобы восстановить Ваш кошелек";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d попыток осталось\n";
+"\n%d attempts remaining\n" = "\nОсталось попыток: %d\n";
 
 /* No comment provided by engineer. */
 "\n1 attempt remaining\n" = "\nосталась 1 попытка\n";
 
 /* No comment provided by engineer. */
-"\n\n     amount %@ (%@)" = "\n\n       сумма %1$@ (%2$@)";
+"\n\n     amount %@ (%@)" = "\n\n сумма: %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nПароль устройство необходим для защиты вашего бумажника. Перейдите в настройки и включите код доступа что бы продолжить.";
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nКод доступа необходим для защиты вашего кошелька. Перейдите в настройки и включите код доступа, чтобы продолжить.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nАДРЕС уже используется \n\nbitcoin адреса предназначены для одного использования только \n\nповторное использование уменьшает приватность для вас и получателя и может привести к потере, если получатель не контролирует адрес напрямую";
+"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nЭТОТ АДРЕС УЖЕ ИСПОЛЬЗОВАН\n\nbitcoin-адреса предназначены только для одного использования\n\nповторное использование уменьшает Вашу приватность и приватность получателя и может привести к потере денег, если получатель не контролирует адрес";
 
 /* No comment provided by engineer. */
-"\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nразрешить доступ к камере в \nнастройки-> конфиденциальность-> камера->%@";
+"\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nразрешите доступ к камере:\nНастройки -> Конфиденциальность -> Камера -> %@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nНЕ позволяйте никому видеть вашу фразу восстановления или они могут потратить ваши bitcoins.  \n\nНикогда не вводите фразу восстановления в менеджеры паролей или других местах. Другие устройства могут быть инфицированы.\n";
+"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nНЕ ПОКАЗЫВАЙТЕ никому вашу фразу восстановления, иначе вы можете лишиться своих биткойнов.\n\nНикогда не вводите фразу восстановления в менеджеры паролей или другие программы. Другие устройства могут быть инфицированы.\n";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nНЕ позволяйте никому видеть ваши фразы\nвосстановления или они могут потратить\nваши bitcoins.\n";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nНЕ позволяйте никому видеть вашу фразу восстановления, иначе они смогут потратить ваши bitcoin.\n";
 
 /* No comment provided by engineer. */
-"\nnetwork fee +%@ (%@)" = "\nсетевой платеж +%1$@ (%2$@)";
+"\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "НЕ ДЕЛАЙТЕ скриншот.\nСкриншоты видны другим приложениям и устройствам.";
 
 /* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nНикогда не вводите вашу фразу\nвосстановления в менеджеры паролей\nили других местах. Другие устройства\nмогут быть инфицированы.";
+"\nnetwork fee +%@ (%@)" = "\nкомиссия сети: +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nНИКОГДА не вводите вашу фразу восстановления в менеджеры паролей или другие приложения. Другие устройства могут быть инфицированы.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %d %@" = "\nпопробуйте еще раз через %1$d %2$@";
 
 /* No comment provided by engineer. */
-"about" = " об этом устройстве";
+"about" = "о программе";
 
 /* No comment provided by engineer. */
-"always require passcode" = "всегда требуйте пароль";
+"always require passcode" = "всегда требовать пароль";
 
 /* No comment provided by engineer. */
 "amount too small" = "сумма слишком мала";
 
 /* No comment provided by engineer. */
-"bad password, try again" = "плохой пароль, попробуйте еще раз";
+"bad password, try again" = "некорректный пароль, попробуйте еще раз";
 
 /* No comment provided by engineer. */
-"bad payment request" = "плохой платежный запрос";
+"bad payment request" = "некорректный платежный запрос";
 
 /* No comment provided by engineer. */
-"bad payment request URL" = "плохой платежный запрос URL";
+"bad payment request URL" = "некорректный платежный URL-запрос";
 
 /* No comment provided by engineer. */
-"bad payment URL" = "плохой платежный URL";
+"bad payment URL" = "некорректный платежный URL";
 
 /* No comment provided by engineer. */
-"bad recovery phrase" = "плохая восстановительная фраза";
+"bad recovery phrase" = "некорректная фраза восстановления";
 
 /* No comment provided by engineer. */
-"bad signature" = "плохая сигнатура";
+"bad signature" = "некорректная подпись";
 
 /* No comment provided by engineer. */
-"Bitcoin address" = "Биткойн адрес";
+"Bitcoin address" = "Биткойн-адрес";
 
 /* No comment provided by engineer. */
-"Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1' or '3'." = "Bitcoin адреса также могут быть скопированы в буфер обмена. Bitcoin адрес всегда начинается с «1» или «3».";
+"Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1' or '3'." = "Адреса Bitcoin также могут быть скопированы в буфер обмена. Bitcoin-адрес всегда начинается с «1» или «3».";
 
 /* No comment provided by engineer. */
-"bitcoin network fee" = "сетевая плата bitcoin";
+"bitcoin network fee" = "комиссия сети bitcoin";
 
 /* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "bitcoin-платежи не могут быть меньше чем %@";
+"bitcoin payments can't be less than %@" = "bitcoin-платежи не могут быть меньше, чем %@";
 
 /* No comment provided by engineer. */
-"bitcoin transaction not signed" = "bitcoin транзакция не подписана";
+"bitcoin transaction not signed" = "bitcoin-транзакция не подписана";
 
 /* No comment provided by engineer. */
-"bitcoin transaction outputs can't be less than %@" = "выходы bitcoin транзакций не могут быть меньше чем %@";
+"bitcoin transaction outputs can't be less than %@" = "выходы bitcoin-транзакций не могут быть меньше, чем %@";
 
 /* No comment provided by engineer. */
-"block #%d of %d" = "блок #%1$d %2$d";
+"block #%d of %d" = "блок #%1$d в %2$d";
 
 /* No comment provided by engineer. */
 "cancel" = "отменить";
@@ -113,13 +122,22 @@
 "change payment amount?" = "изменить сумму платежа?";
 
 /* No comment provided by engineer. */
-"checking private key balance..." = "проверка баланса частного ключа ...";
+"change wallet passcode" = "сменить пароль к кошельку";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "выберите пароль для %@";
+"checking address balance..." = "проверка баланса...";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid bitcoin address" = "буфер обмена не содержит действительный bitcoin адрес";
+"checking private key balance..." = "проверка баланса по закрытому ключу...";
+
+/* No comment provided by engineer. */
+"choose passcode for %@" = "введите новый пароль для %@";
+
+/* No comment provided by engineer. */
+"choose wallet passcode" = "придумайте пароль к кошельку";
+
+/* No comment provided by engineer. */
+"clipboard doesn't contain a valid bitcoin address" = "в буфере обмена нет корректного bitcoin-адреса";
 
 /* No comment provided by engineer. */
 "close app" = "закрыть программу";
@@ -137,34 +155,46 @@
 "copied" = "копирован(а)";
 
 /* No comment provided by engineer. */
+"copy" = "скопировать";
+
+/* No comment provided by engineer. */
 "copy address to clipboard" = "скопировать адрес в буфер обмена";
 
 /* No comment provided by engineer. */
 "copy request to clipboard" = "скопировать запрос в буфер обмена";
 
 /* No comment provided by engineer. */
-"couldn't make payment" = "платеж не сработал";
+"copy wallet addresses to clipboard?" = "скопировать адреса кошельков?";
 
 /* No comment provided by engineer. */
-"couldn't sweep balance" = "не получилось ? баланс";
+"couldn't check address balance" = "не удалось проверить баланс";
 
 /* No comment provided by engineer. */
-"couldn't transmit payment to bitcoin network" = "не получилось передать платеж сети bitcoin";
+"couldn't make payment" = "не удалось совершить платёж";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "УСТРОЙСТВА безопасности ОСЛАБЛЕНН\nЛюбое 'jailbreak' приложение может получить доступ к любому другому брелку  данных приложения (и украсть ваши bitcoins).";
+"couldn't sweep balance" = "не получилось перенести баланс";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "УСТРОЙСТВА безопасности ОСЛАБЛЕНН\nЛюбое 'jailbreak' приложение может получить доступ к любому другому брелку  данных приложения (и украсть ваши bitcoins).Немедленно сотрите этот кошелек и восстановите  его на безопасном устройстве.";
+"couldn't transmit payment to bitcoin network" = "не удалось передать платёж в сеть bitcoin";
+
+/* No comment provided by engineer. */
+"current wallet passcode" = "текущий пароль";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "БЕЗОПАСНОСТЬ УСТРОЙСТВА ПОД УГРОЗОЙ\nЛюбое «jailbreak» приложение может получить доступ к вашим приватным ключам (и украсть ваши bitcoins).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "БЕЗОПАСНОСТЬ УСТРОЙСТВА ПОД УГРОЗОЙ\nЛюбое «jailbreak» приложение может получить доступ к вашим приватным ключам (и украсть ваши bitcoins). Немедленно удалите этот кошелёк и восстановите его в безопасном месте.";
 
 /* No comment provided by engineer. */
 "do it later" = "отложить на потом";
 
 /* No comment provided by engineer. */
-"done" = "сделанно";
+"done" = "готово";
 
 /* No comment provided by engineer. */
-"double spend" = "двойная затрата";
+"double spend" = "двойное расходование";
 
 /* No comment provided by engineer. */
 "email not configured" = "почта не настроена";
@@ -173,7 +203,7 @@
 "enter old passcode" = "введите старый пароль";
 
 /* No comment provided by engineer. */
-"error signing bitcoin transaction" = "ошибка подписания bitcoin транзакций";
+"error signing bitcoin transaction" = "ошибка подписания bitcoin-транзакции";
 
 /* No comment provided by engineer. */
 "error signing transaction" = "ошибка подписания транзакции";
@@ -203,13 +233,13 @@
 "insufficient funds" = "недостаточно средств";
 
 /* No comment provided by engineer. */
-"insufficient funds for bitcoin network fee" = "недостаток средств для bitcoin сетевой платы";
+"insufficient funds for bitcoin network fee" = "недостаточно средств для комиссии сети bitcoin";
 
 /* No comment provided by engineer. */
-"INVALID" = "НЕВЕРНО";
+"INVALID" = "НЕКОРРЕКТНО";
 
 /* No comment provided by engineer. */
-"Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Другие могут сканировать этот QR код чтобы получить ваш bitcoin адрес. Каждый может отправить bitcoins на ваш кошелек путем передачи их на ваш адрес.";
+"Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Другие пользователи могут сканировать этот QR код, чтобы получить ваш bitcoin-адрес. Кто угодно сможет отправить биткойны на ваш кошелек путём передачи их на ваш адрес.";
 
 /* No comment provided by engineer. */
 "minute" = "минут";
@@ -221,46 +251,55 @@
 "missing certificate" = "отсутствует сертификат";
 
 /* No comment provided by engineer. */
-"more..." = "больше...";
+"more..." = "ещё...";
 
 /* No comment provided by engineer. */
 "moved" = "перемещено";
 
 /* No comment provided by engineer. */
-"next, write down your recovery phrase" = "далее запишите вашу фразу восстановления";
+"new wallet passcode" = "новый пароль";
+
+/* No comment provided by engineer. */
+"next, write down your recovery phrase" = "теперь запишите вашу фразу восстановления";
+
+/* No comment provided by engineer. */
+"no exchange rate data" = "не удалось получить курсы обмена";
 
 /* No comment provided by engineer. */
 "no peers found" = "узлы не найдены";
 
 /* No comment provided by engineer. */
-"not a bitcoin QR code" = "не bitcoin QR код";
+"not a bitcoin QR code" = "не bitcoin QR-код";
 
 /* No comment provided by engineer. */
-"not a valid bitcoin address" = "не допустимым bitcoin адрес";
+"not a valid bitcoin address" = "некорректный bitcoin-адрес";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "не действительный приватный ключ ";
+"not a valid private key" = "некорректный закрытый ключ";
 
 /* No comment provided by engineer. */
-"not connected to the bitcoin network" = "не подключен к сети bitcoin";
+"not connected to the bitcoin network" = "не подключено к сети bitcoin";
 
 /* No comment provided by engineer. */
 "ok" = "ok";
 
 /* No comment provided by engineer. */
-"passcode" = "кодовое слово";
+"passcode" = "код доступа";
 
 /* No comment provided by engineer. */
-"passcode for %@" = "кодовое слово для %@";
+"passcode for %@" = "код доступа для %@";
 
 /* No comment provided by engineer. */
 "password" = "пароль";
 
 /* No comment provided by engineer. */
-"password protected key" = "пароль охраняемый ключ";
+"password protected key" = "защищённый паролем ключ";
 
 /* No comment provided by engineer. */
 "pay" = "оплатить";
+
+/* No comment provided by engineer. */
+"payee identity isn't certified" = "сертификат личности получателя некорректен";
 
 /* No comment provided by engineer. */
 "payment address" = "адрес оплаты";
@@ -272,22 +311,22 @@
 "post-dated" = "чек с будущей датой";
 
 /* No comment provided by engineer. */
-"Receive bitcoins at this address: %@" = "Получить bitcoins на этот адрес: %@";
+"Receive bitcoins at this address: %@" = "Получить биткойны на этот адрес: %@";
 
 /* No comment provided by engineer. */
-"received" = "полученно";
+"received" = "получено";
 
 /* No comment provided by engineer. */
-"received %@ (%@)" = "полученно %1$@ (%2$@)";
+"received %@ (%@)" = "получено %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "recovery phrase" = "фраза восстановления";
 
 /* No comment provided by engineer. */
-"recovery phrase doesn't match" = "восстановление фраза не соответствует";
+"recovery phrase doesn't match" = "фразы восстановления не совпадают";
 
 /* No comment provided by engineer. */
-"recovery phrase must have %d words" = "восстановление фраза должна иметь %d слов";
+"recovery phrase must have %d words" = "фраза восстановления должна состоять из %d слов";
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "уменьшить сумму платежа на %1$@ (%2$@)?";
@@ -311,37 +350,37 @@
 "rescan blockchain" = "пересканировать blockchain";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "пересканировать blockchain если вы думаете что могли пропустить транзакцию или возникли проблемы отправки (повторное сканирование может занять несколько минут)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "пересканировать blockchain, если вы считаете, что могли пропустить транзакцию или возникли проблемы отправки (повторное сканирование может занять несколько минут)";
 
 /* No comment provided by engineer. */
 "reset" = "сброс";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Сканируйте QR код ваших друзей чтобы получить их bitcoin адреса. Вы можете отправить платеж кому угодно имея адрес.";
+"Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Отсканируйте чей-нибудь QR-код, чтобы получить bitcoin-адрес. Вы можете отправить платеж кому угодно, имея адрес.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Скриншоты видимы другими приложениями и устройствами. Создайте новую фразу восстановления и держите ее в секрете.";
 
 /* No comment provided by engineer. */
-"Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Скриншоты видимы другими приложениями и устройствами. Ваши средства находятся под угрозой. Перевести ваш баланс на другой счет.";
+"Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Скриншоты видимы другими приложениями и устройствами. Ваши средства находятся под угрозой. Переведите ваш баланс на другой кошелёк.";
 
 /* No comment provided by engineer. */
-"seen by %d of %d peers" = "видели %1$d %2$d сверстников";
+"seen by %d of %d peers" = "видели %1$d из %2$d узлов";
 
 /* No comment provided by engineer. */
-"Send %@ (%@) from this private key into your wallet? The bitcoin network will receive a fee of %@ (%@)." = "Отправить %1$@ (%2$@) из этого закрытого ключа в ваш кошелек? Сети bitcoin получат оплату %3$@ (%4$@).";
+"Send %@ (%@) from this private key into your wallet? The bitcoin network will receive a fee of %@ (%@)." = "Отправить %1$@ (%2$@) из этого закрытого ключа в ваш кошелёк? Сеть bitcoin получит комиссию в %3$@ (%4$@).";
 
 /* No comment provided by engineer. */
-"send address as email" = "отправить адрес в виде электронной почты";
+"send address as email" = "отправить адрес по почте";
 
 /* No comment provided by engineer. */
-"send address as message" = "отправить адрес в виде сообщения";
+"send address as message" = "отправить адрес в сообщении";
 
 /* No comment provided by engineer. */
-"send request as email" = "отправить запрос в виде электронной почте";
+"send request as email" = "отправить запрос по почте";
 
 /* No comment provided by engineer. */
-"send request as message" = "отправить запросы в виде сообщения";
+"send request as message" = "отправить запросы в сообщении";
 
 /* No comment provided by engineer. */
 "sent" = "отправлено";
@@ -371,22 +410,22 @@
 "status:" = "статус:";
 
 /* No comment provided by engineer. */
-"swept!" = "удалено (not sure what context)";
+"swept!" = "переведено!";
 
 /* No comment provided by engineer. */
 "syncing..." = "синхронизирую...";
 
 /* No comment provided by engineer. */
-"the app will now close" = "приложение сейчас будет закрыта";
+"the app will now close" = "приложение сейчас закроется";
 
 /* No comment provided by engineer. */
-"This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Это ваш адрес bitcoin. Нажмите, чтобы скопировать его или отправить его по электронной почте или sms. Адрес будет меняться каждый раз когда вы получаете средства, но старые адреса всегда работают.";
+"This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Это ваш bitcoin-адрес. Нажмите, чтобы скопировать его или отправить его по электронной почте или SMS. Адрес будет меняться каждый раз, когда вы получаете средства, но старые адреса останутся работоспособными.";
 
 /* No comment provided by engineer. */
-"This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market." = "Это ваш баланс bitcoin. Bitcoin является валютой. Валютный курс меняется в соответствие с  рынком.";
+"This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market." = "Это ваш баланс bitcoin. Bitcoin является валютой. Валютный курс меняется в соответствие с рынком.";
 
 /* No comment provided by engineer. */
-"this payment address is already in your wallet" = "этот адрес оплаты уже находится в вашем бумажнике";
+"this payment address is already in your wallet" = "этот адрес уже находится в вашем бумажнике";
 
 /* No comment provided by engineer. */
 "this private key is already in your wallet" = "этот закрытый ключ уже находится в вашем бумажнике";
@@ -401,16 +440,16 @@
 "to: %@" = "кому: %@";
 
 /* No comment provided by engineer. */
-"touch id limit" = "лимит id касания";
+"touch id limit" = "лимит Touch ID";
 
 /* No comment provided by engineer. */
-"touch id spending limit" = "id касания расходного лимита";
+"touch id spending limit" = "лимит расходов по Touch ID";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "транзакция отменена, время ожидания сети истекло";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "комиссионные за транзакцию будет стоить больше чем средства имеющиеся на этом приватном ключе (из-за маленьких депозитов)";
+"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "комиссия за эту транзакцию будет стоить больше, чем сейчас есть на этом приватном ключе (из-за маленьких депозитов)";
 
 /* No comment provided by engineer. */
 "transaction history" = "история транзакций";
@@ -422,7 +461,7 @@
 "transaction rejected" = "транзакция отклонена";
 
 /* No comment provided by engineer. */
-"turn device passcode on" = "включите код устройства";
+"turn device passcode on" = "включить код доступа";
 
 /* No comment provided by engineer. */
 "unexpected response from %@" = "неожиданный ответ от %@";
@@ -443,16 +482,19 @@
 "unsupported url" = "неподдерживаемый URL-адрес";
 
 /* No comment provided by engineer. */
-"untrusted certificate" = "ненадежный сертификат";
+"untrusted certificate" = "ненадёжный сертификат";
 
 /* No comment provided by engineer. */
-"unverified" = "неподтвержденный";
+"unverified" = "неподтверждённый";
 
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "проверено, ожидание подтверждения";
 
 /* No comment provided by engineer. */
-"verify passcode" = "проверить код";
+"verify passcode" = "подтвердите код";
+
+/* No comment provided by engineer. */
+"verify wallet passcode" = "подтвердите пароль";
 
 /* No comment provided by engineer. */
 "wallet address" = "адрес кошелька";
@@ -461,7 +503,10 @@
 "wallet disabled" = "кошелек отключен";
 
 /* No comment provided by engineer. */
-"WARNING" = "ПРЕДУПРЕЖДЕНИЕ";
+"wallet passcode" = "пароль к кошельку";
+
+/* No comment provided by engineer. */
+"WARNING" = "ВНИМАНИЕ";
 
 /* No comment provided by engineer. */
 "wipe" = "стереть";
@@ -470,7 +515,7 @@
 "WRITE DOWN YOUR RECOVERY PHRASE" = "ЗАПИШИТЕ ВАШУ ФРАЗУ ВОССТАНОВЛЕНИЯ";
 
 /* No comment provided by engineer. */
-"you received bitcoin!" = "вы получили bitcoin!";
+"you received bitcoin!" = "вы получили биткойны!";
 
 /* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Ваш кошелек может быть несинхронизированным.\nЭто часто может быть исправлено путем повторного сканирования blockchain.";
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Кажется, ваш кошелек рассинхронизирован.\nЭто может быть исправлено путём повторного сканирования blockchain.";

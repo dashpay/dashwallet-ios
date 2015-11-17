@@ -14,7 +14,7 @@
 "D4H-hd-LsX.text" = "Wechselkurse von bitpay.com/rates";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
-"EQG-Km-ZKY.text" = "Sollten Sie ihr Handy verlieren, werden Sie diese Wortfolge zur Wiederherstellung ihrer Brieftasche benötigen";
+"EQG-Km-ZKY.text" = "Sollten Sie Ihr Telefon verlieren, werden Sie diese Wortfolge zur Wiederherstellung Ihres Wallets benötigen";
 
 /* Class = "UILabel"; text = "sent"; ObjectID = "FjB-H2-BnK"; */
 "FjB-H2-BnK.text" = "gesendet";
@@ -47,7 +47,7 @@
 "cyp-mV-Bhd.text" = "Ich habe es aufgeschrieben:";
 
 /* Class = "UIButton"; normalTitle = "new wallet"; ObjectID = "dOa-zm-TDG"; */
-"dOa-zm-TDG.normalTitle" = "Neue Brieftasche";
+"dOa-zm-TDG.normalTitle" = "Neues Wallet";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "dX6-jg-5IA"; */
 "dX6-jg-5IA.text" = "Sollten Sie ihr Handy verlieren, werden Sie diese Wortfolge zur Wiederherstellung ihrer Brieftasche benötigen";

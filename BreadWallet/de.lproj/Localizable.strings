@@ -23,7 +23,7 @@
 "\n         total %@ (%@)" = "\n         insgesamt %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nFalls Sie ihr Telefon verlieren, benötigen Sie diesen Satz, um ihre Brieftasche wiederherzustellen.";
+"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nFalls Sie ihr Telefon verlieren, benötigen Sie diesen Satz, um Ihr Wallet wiederherzustellen.";
 
 /* No comment provided by engineer. */
 "\n%d attempts remaining\n" = "\n%d Versuche übrig\n";
@@ -35,7 +35,7 @@
 "\n\n     amount %@ (%@)" = "\n\n     Betrag %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEin Gerätecode wird benötigt um ihre Brieftasche zu schützen. Stellen Sie in ihren Einstellungen ihren Code ein um fortzufahren.";
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEin Gerätecode wird benötigt um Ihr Wallet zu schützen. Stellen Sie in Ihren Einstellungen Ihren Code ein um fortzufahren.";
 
 /* No comment provided by engineer. */
 "\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRESSE BEREITS VERWENDET\n\nBitcoin-Adressen sind für einmalige Nutzung gedacht.\n\nWiederverwendung reduziert die Privatsphäre für Sie und den Empfänger und kann einen Verlust mit sich bringen, falls der Empfänger keine direkte Kontrolle über die Adresse hat";
@@ -44,10 +44,10 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nZugriff auf Kamera erlauben in\nEinstellungen->Datenschutz->Kamera->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nLassen Sie NIEMANDEN ihre Wiederherstellungs-Wortfolge sehen, wer diese kennt kann ihre bitcoins ausgeben.\n\nGeben Sie NIEMALS ihre Wiederherstellungs-Wortfolge in einen Passwort-Manager oder ähnliches ein. Andere Geräte könnten infiziert sein.\n";
+"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nLassen Sie NIEMANDEN Ihre Wiederherstellungs-Wortfolge sehen, wer diese kennt kann Ihre Bitcoins ausgeben.\n\nGeben Sie NIEMALS ihre Wiederherstellungs-Wortfolge in einen Passwort-Manager oder ähnliches ein. Andere Geräte könnten infiziert sein.\n";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nLassen Sie NIEMANDEN ihre\nWiederherstellungs-Wortfolge sehen, wer\ndiese kennt kann ihre bitcoins ausgeben.\n";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nLassen Sie NIEMANDEN Ihre\nWiederherstellungs-Wortfolge sehen, wer\ndiese kennt kann Ihre Bitcoins ausgeben.\n";
 
 /* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nKEINEN Screenshots erstellen.\nScreenshots sind sichtbar für andere Apps und Geräte.\n";
@@ -56,7 +56,7 @@
 "\nnetwork fee +%@ (%@)" = "\nNetzwerkgebühr +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nGeben Sie NIEMALS ihre\nWiederherstellungs-Wortfolge in einen\nPasswort-Manager oder ähnliches ein.\nAndere Geräte könnten infiziert sein.";
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nGeben Sie NIEMALS Ihre\nWiederherstellungs-Wortfolge in einen\nPasswort-Manager oder ähnliches ein.\nAndere Geräte könnten infiziert sein.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %d %@" = "\nVersuchen Sie es erneut in %1$d %2$@";
@@ -98,13 +98,13 @@
 "bitcoin network fee" = "Transaktionsgebühr";
 
 /* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "Bitcoin-Zahlungen können nicht niedriger sein als %@";
+"bitcoin payments can't be less than %@" = "Bitcoin-Zahlungen können nicht kleiner als %@ sein";
 
 /* No comment provided by engineer. */
 "bitcoin transaction not signed" = "Bitcoin-Transaktion nicht signiert";
 
 /* No comment provided by engineer. */
-"bitcoin transaction outputs can't be less than %@" = "Bitcoin-Transaktions-Ausgänge können nicht niedriger als %@ sein";
+"bitcoin transaction outputs can't be less than %@" = "Bitcoin-Transaktions-Ausgänge können nicht kleiner als %@ sein";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "Block #%1$d von %2$d";
@@ -122,6 +122,9 @@
 "change payment amount?" = "Zahlungsbetrag ändern?";
 
 /* No comment provided by engineer. */
+"change wallet passcode" = "Wallet Zugangscode ändern";
+
+/* No comment provided by engineer. */
 "checking address balance..." = "Guthaben der Adresse wird geprüft...";
 
 /* No comment provided by engineer. */
@@ -129,6 +132,9 @@
 
 /* No comment provided by engineer. */
 "choose passcode for %@" = "Wähle Zugangscode für %@";
+
+/* No comment provided by engineer. */
+"choose wallet passcode" = "Wallet Zugangscode eingeben";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid bitcoin address" = "Zwischenablage enthält keine gültige Bitcoin-Adresse";
@@ -158,7 +164,7 @@
 "copy request to clipboard" = "Anfrage in Zwischenablage kopieren";
 
 /* No comment provided by engineer. */
-"copy wallet addresses to clipboard?" = "Brieftaschen-Adressen in Zwischenablage kopieren?";
+"copy wallet addresses to clipboard?" = "Wallet-Adressen in Zwischenablage kopieren?";
 
 /* No comment provided by engineer. */
 "couldn't check address balance" = "Guthaben der Adresse konnte nicht geprüft werden";
@@ -170,13 +176,16 @@
 "couldn't sweep balance" = "Guthaben konnte nicht übertragen werden";
 
 /* No comment provided by engineer. */
-"couldn't transmit payment to bitcoin network" = "Zahlung konnte nicht an Bitcoin-Netzwerk übermittelt werden";
+"couldn't transmit payment to bitcoin network" = "Zahlung konnte nicht an das Bitcoin-Netzwerk übermittelt werden";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "GERÄTESICHERHEIT KOMPROMITTIERT\nJede 'jailbreak'-App kann auf die Schlüsselbund-Daten jeder anderen App zugreifen (und so Deine Bitcoins stehlen).";
+"current wallet passcode" = "Aktueller Wallet Zugangscode";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "GERÄTESICHERHEIT KOMPROMITTIERT\nJede 'jailbreak'-App kann auf die Schlüsselbund-Daten anderer Apps zugreifen (und so Ihre Bitcoins stehlen). Löschen Sie diese Wallet umgehend und stellen Sie sie auf einem sicheren Gerät wieder her.";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "GERÄTESICHERHEIT KOMPROMITTIERT\nJede 'Jailbreak'-App kann auf die Schlüsselbund-Daten jeder anderen App zugreifen (und so Ihre Bitcoins stehlen).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "GERÄTESICHERHEIT KOMPROMITTIERT\nJede 'Jailbreak'-App kann auf die Schlüsselbund-Daten anderer Apps zugreifen (und so Ihre Bitcoins stehlen). Löschen Sie dieses Wallet umgehend und stellen Sie dieses auf einem sicheren Gerät wieder her.";
 
 /* No comment provided by engineer. */
 "do it later" = "später";
@@ -188,7 +197,7 @@
 "double spend" = "doppelt ausgegeben";
 
 /* No comment provided by engineer. */
-"email not configured" = "Email nicht konfiguriert";
+"email not configured" = "E-Mail ist nicht konfiguriert";
 
 /* No comment provided by engineer. */
 "enter old passcode" = "alten Zugangscode eingeben";
@@ -197,7 +206,7 @@
 "error signing bitcoin transaction" = "Fehler beim Signieren der Bitcoin-Transaktion";
 
 /* No comment provided by engineer. */
-"error signing transaction" = "Fehler beim signieren der Transaktion";
+"error signing transaction" = "Fehler beim Signieren der Transaktion";
 
 /* No comment provided by engineer. */
 "from:" = "von:";
@@ -230,7 +239,7 @@
 "INVALID" = "UNGÜLTIG";
 
 /* No comment provided by engineer. */
-"Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Andere können diesen QR-Code scannen, um Ihre Bitcoin-Adresse zu erhalten. Bitcoins werden so an diese Wallet geschickt.";
+"Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Andere können diesen QR-Code scannen, um Ihre Bitcoin-Adresse zu erhalten. Bitcoins werden so an dieses Wallet geschickt.";
 
 /* No comment provided by engineer. */
 "minute" = "Minute";
@@ -246,6 +255,9 @@
 
 /* No comment provided by engineer. */
 "moved" = "verschoben";
+
+/* No comment provided by engineer. */
+"new wallet passcode" = "Neuer Wallet Zugangscode";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "Als nächstes schreiben Sie bitte Ihre Wiederherstellungs-Wortfolge auf";
@@ -281,7 +293,7 @@
 "password" = "Kennwort";
 
 /* No comment provided by engineer. */
-"password protected key" = "Kennwort-geschützter Schlüssel";
+"password protected key" = "Passwort-geschützter Schlüssel";
 
 /* No comment provided by engineer. */
 "pay" = "zahlen";
@@ -311,7 +323,7 @@
 "recovery phrase" = "Wiederherstellungs-Wortfolge";
 
 /* No comment provided by engineer. */
-"recovery phrase doesn't match" = "Wiederherstellungssatz stimmt nicht";
+"recovery phrase doesn't match" = "Wiederherstellungs-Wortfolge stimmt nicht überein";
 
 /* No comment provided by engineer. */
 "recovery phrase must have %d words" = "Wiederherstellungs-Wortfolge muss %d Wörter haben";
@@ -338,7 +350,7 @@
 "rescan blockchain" = "Blockchain erneut scannen";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "Scannen Sie die Blockchain erneut wenn Sie denken dass eingehende Transaktionen fehlen, oder Sie Probleme beim senden haben (Dies kann einige Minuten dauern)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "Scannen Sie die Blockchain erneut wenn Sie denken dass eingehende Transaktionen fehlen, oder Sie Probleme beim Senden haben (Dies kann einige Minuten dauern)";
 
 /* No comment provided by engineer. */
 "reset" = "Zurücksetzen";
@@ -347,16 +359,16 @@
 "Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Scannen Sie jemandes QR-Code um eine Zahlungs-Adresse zu erhalten. Sie können eine Zahlung an jeden mit einer Adresse senden.";
 
 /* No comment provided by engineer. */
-"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Screenshots sind sichtbar für andere Apps und Geräte. Generieren Sie eine neue Wiederherstellungs-Wortfolge und halten Sie sie geheim.";
+"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Screenshots sind sichtbar für andere Apps und Geräte. Generieren Sie eine neue Wiederherstellungs-Wortfolge und halten Sie diese geheim.";
 
 /* No comment provided by engineer. */
-"Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Screenshots sind sichtbar für andere Apps und Geräte. Ihr Guthaben ist gefährdet. Übertragen Sie Ihr Guthaben auf eine andere Brieftasche.";
+"Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Screenshots sind sichtbar für andere Apps und Geräte. Ihr Guthaben ist gefährdet. Übertragen Sie Ihr Guthaben auf ein anderes Wallet.";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "von %1$d aus %2$d anderen gesehen";
 
 /* No comment provided by engineer. */
-"Send %@ (%@) from this private key into your wallet? The bitcoin network will receive a fee of %@ (%@)." = "%1$@ (%2$@) von diesem privaten Schlüssel in Ihre Wallet senden? Das Bitcoin-Netzwerk wird eine Gebühr von %3$@ (%4$@) erhalten.";
+"Send %@ (%@) from this private key into your wallet? The bitcoin network will receive a fee of %@ (%@)." = "%1$@ (%2$@) von diesem privaten Schlüssel an Ihr Wallet senden? Das Bitcoin-Netzwerk wird eine Gebühr von %3$@ (%4$@) erhalten.";
 
 /* No comment provided by engineer. */
 "send address as email" = "Adresse per e-Mail senden";
@@ -383,7 +395,7 @@
 "show" = "anzeigen";
 
 /* No comment provided by engineer. */
-"show phrase" = "Wortfolge anzeigen";
+"show phrase" = "Wiederherstellungs-Wortfolge anzeigen";
 
 /* No comment provided by engineer. */
 "sms not currently available" = "SMS aktuell nicht verfügbar";
@@ -413,10 +425,10 @@
 "This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market." = "Dies ist Ihr Bitcoin-Guthaben. Bitcoin ist eine Währung. Der Wechselkurs ändert sich mit dem Markt.";
 
 /* No comment provided by engineer. */
-"this payment address is already in your wallet" = "Diese Zahlungsadresse ist bereits in Ihrer Brieftasche";
+"this payment address is already in your wallet" = "Diese Zahlungsadresse ist bereits in Ihrem Wallet";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "Dieser private Schlüssel ist bereits in Ihrer Brieftasche";
+"this private key is already in your wallet" = "Dieser private Schlüssel ist bereits in Ihrem Wallet";
 
 /* No comment provided by engineer. */
 "this private key is empty" = "Dieser private Schlüssel ist ohne Guthaben";
@@ -482,10 +494,16 @@
 "verify passcode" = "Sicherheitscode verifizieren";
 
 /* No comment provided by engineer. */
+"verify wallet passcode" = "Wallet Zugangscode verifzieren";
+
+/* No comment provided by engineer. */
 "wallet address" = "Brieftaschen-Adresse";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "Brieftasche deaktiviert";
+
+/* No comment provided by engineer. */
+"wallet passcode" = "Wallet Zugangscode";
 
 /* No comment provided by engineer. */
 "WARNING" = "WARNUNG";

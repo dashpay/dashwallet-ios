@@ -125,7 +125,7 @@
 "checking address balance..." = "adres bakiyesi denetleniyor...";
 
 /* No comment provided by engineer. */
-"checking private key balance..." = "özel şifre ayarı kontrol ediliyor...";
+"checking private key balance..." = "özel anahtar bakiyesi kontrol ediliyor...";
 
 /* No comment provided by engineer. */
 "choose passcode for %@" = "%@ için şifre seçin";
@@ -146,7 +146,7 @@
 "connect timeout" = "bağlantı zaman aşımı";
 
 /* No comment provided by engineer. */
-"copied" = "koyalandı";
+"copied" = "kopyalandı";
 
 /* No comment provided by engineer. */
 "copy" = "kopyala";
@@ -230,7 +230,7 @@
 "INVALID" = "GEÇERSİZ";
 
 /* No comment provided by engineer. */
-"Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Bitcoin adresinizi edinmek için diğer QR kodlarını tarayın. Başkaları bitcoinleri adresinize transfer yoluyla cüzdanınıza gönderebilir.";
+"Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Bitcoin adresinizi edinmek için diğer QR kodlarını tarayın. İsteyen herkes, bitcoinleri cüzdanınıza adresinize transfer yoluyla gönderebilir.";
 
 /* No comment provided by engineer. */
 "minute" = "dakika";
@@ -254,7 +254,7 @@
 "no exchange rate data" = "döviz kuru verisi yok";
 
 /* No comment provided by engineer. */
-"no peers found" = "eşleşme bulunamadı";
+"no peers found" = "eşler bulunamadı";
 
 /* No comment provided by engineer. */
 "not a bitcoin QR code" = "bir bitcoin QR kodu değildir";
@@ -296,7 +296,7 @@
 "payment output" = "ödeme çıktısı";
 
 /* No comment provided by engineer. */
-"post-dated" = "son tarihler";
+"post-dated" = "ileri tarihli";
 
 /* No comment provided by engineer. */
 "Receive bitcoins at this address: %@" = "Bitcoinleri şu adresten al: %@";
@@ -326,7 +326,7 @@
 "request an amount" = "bir miktar isteyin";
 
 /* No comment provided by engineer. */
-"request expired" = "istek süresi itti";
+"request expired" = "istek süresi bitti";
 
 /* No comment provided by engineer. */
 "requested network \"%@\" instead of \"%@\"" = "\"%2$@\" yerine \"%1$@\" ağı istendi";
@@ -347,7 +347,7 @@
 "Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Başkalarının bitcoin adreslerini öğrenmek için QR kodlarını taratın. Adresi olan herkese ödeme gönderebilirsiniz.";
 
 /* No comment provided by engineer. */
-"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Ekran görüntüleri diğer uygulamalar ve cihazlar tarafından görünebilir. Yeni bir kurtarma metni oluşturun ve gizli tutun.";
+"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Ekran görüntüleri diğer uygulamalar ve cihazlar tarafından görülebilir. Yeni bir kurtarma metni oluşturun ve gizli tutun.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Ekran görüntüleri diğer uygulamalar ve cihazlar tarafından görülebilir. Paralarınız risk altında. Bakiyenizi başka bir cüzdana aktarın.";
@@ -371,7 +371,7 @@
 "send request as message" = "isteği mesaj olarak gönder";
 
 /* No comment provided by engineer. */
-"sent" = "gönderilen";
+"sent" = "gönderildi";
 
 /* No comment provided by engineer. */
 "sent!" = "gönderildi!";
@@ -407,7 +407,7 @@
 "the app will now close" = "uygulama şimdi kapatılacak";
 
 /* No comment provided by engineer. */
-"This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Bu sizin bitcoin adresiniz. Kopyalamak veya ister kısa mesaj ister e-posta yoluyla göndermek için dokunun. Her para alışınızda adres değişecek fakat eski adres her zaman çalışacaktır.";
+"This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Bu sizin bitcoin adresiniz. Kopyalamak veya ister kısa mesaj ister e-posta yoluyla göndermek için dokunun. Her para alışınızda adres değişecek fakat eski adresler her zaman çalışacaktır.";
 
 /* No comment provided by engineer. */
 "This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market." = "Bu sizin bitcoin bakiyeniz. Bitcoin bir para birimidir. Döviz kurları piyasa ile değişir.";
@@ -434,7 +434,7 @@
 "touch id spending limit" = "kimlik gönderme sınırına dokunun";
 
 /* No comment provided by engineer. */
-"transaction canceled, network timeout" = "işlem iptal edildi, ağ zaman aşımı";
+"transaction canceled, network timeout" = "işlem iptal edildi, ağ zaman aşımına uğradı";
 
 /* No comment provided by engineer. */
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "işlem ücretleri bu anahtarda kullanılabilir olan paradan daha pahalıya mal olabilir(küçük \"para\" deposu nedeniyle)";

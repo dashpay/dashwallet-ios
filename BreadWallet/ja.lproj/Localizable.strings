@@ -122,6 +122,9 @@
 "change payment amount?" = "送金額だけ変更しますか？";
 
 /* No comment provided by engineer. */
+"change wallet passcode" = "ウォレットのパスコードを変更";
+
+/* No comment provided by engineer. */
 "checking address balance..." = "アドレスの残高を確認しています…";
 
 /* No comment provided by engineer. */
@@ -129,6 +132,9 @@
 
 /* No comment provided by engineer. */
 "choose passcode for %@" = "%@ のパスコードを\nご指定下さい";
+
+/* No comment provided by engineer. */
+"choose wallet passcode" = "パスコードをご指定下さい";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid bitcoin address" = "クリップボードには有効な\nビットコインアドレスが\n含まれていません。";
@@ -171,6 +177,9 @@
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to bitcoin network" = "取引をビットコインネットワークへ送信できませんでした";
+
+/* No comment provided by engineer. */
+"current wallet passcode" = "現在のパスコードをご入力下さい";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "端末が危険な状態です！！！\n端末を脱獄してしまうと、どの脱獄アプリでもキーチェーンへのアクセスできます。(つまり、あなたのビットコインを簡単に盗めます。)";
@@ -246,6 +255,9 @@
 
 /* No comment provided by engineer. */
 "moved" = "移動されました";
+
+/* No comment provided by engineer. */
+"new wallet passcode" = "新規のパスコードをご入力下さい";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "復元フレーズを紙に書き留めて下さい！";
@@ -482,10 +494,16 @@
 "verify passcode" = "もう一度パスコードを\nご入力下さい";
 
 /* No comment provided by engineer. */
+"verify wallet passcode" = "もう一度パスコードをご入力下さい";
+
+/* No comment provided by engineer. */
 "wallet address" = "自分のアドレス";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "ウォレット無効";
+
+/* No comment provided by engineer. */
+"wallet passcode" = "ウォレットのパスコード";
 
 /* No comment provided by engineer. */
 "WARNING" = "警告";

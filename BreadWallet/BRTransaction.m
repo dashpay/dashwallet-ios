@@ -85,7 +85,7 @@
         off += sizeof(UInt256);
         [self.indexes addObject:@([message UInt32AtOffset:off])]; // input index
         off += sizeof(uint32_t);
-        [self.inScripts addObject:[NSNull null]]; // placeholder for input script (comes from previous transaction)
+        [self.inScripts addObject:[NSNull null]]; // placeholder for input script (comes from input transaction)
         d = [message dataAtOffset:off length:&l];
         [self.signatures addObject:(d.length > 0) ? d : [NSNull null]]; // input signature
         off += l;

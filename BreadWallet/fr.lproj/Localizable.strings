@@ -50,7 +50,7 @@
 "\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nNE LAISSEZ PERSONNE voir votre phrase\nde récupération sinon n'importe qui\npourra dépenser vos bitcoins.";
 
 /* No comment provided by engineer. */
-"\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nNE PRENEZ pas une capture d'écran. \nLes captures d'écran sont visibles par les autres \napplications et appareils.\n";
+"\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nNE PRENEZ PAS une capture d'écran. \nLes captures d'écran sont visibles par les autres \napplications et appareils.\n";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nfrais de réseau +%1$@ (%2$@)";
@@ -122,6 +122,9 @@
 "change payment amount?" = "modifier le montant du paiement ?";
 
 /* No comment provided by engineer. */
+"change wallet passcode" = "modifier le code d'accès du portefeuille";
+
+/* No comment provided by engineer. */
 "checking address balance..." = "vérification du solde de l'adresse...";
 
 /* No comment provided by engineer. */
@@ -129,6 +132,9 @@
 
 /* No comment provided by engineer. */
 "choose passcode for %@" = "choisissez un code d'accès pour %@";
+
+/* No comment provided by engineer. */
+"choose wallet passcode" = "choisir le code d'accès du portefeuille";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid bitcoin address" = "le presse-papier ne contient pas une adresse bitcoin valide";
@@ -171,6 +177,9 @@
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to bitcoin network" = "impossible de transmettre le paiement au réseau bitcoin";
+
+/* No comment provided by engineer. */
+"current wallet passcode" = "code d'accès actuel du portefeuille";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "SÉCURITÉ DE L'APPAREIL COMPROMISE\nN'importe quelle appli jailbreakée [débridée] peut accéder aux données du keychain [trousseau] des autres applis (et voler vos bitcoins).";
@@ -246,6 +255,9 @@
 
 /* No comment provided by engineer. */
 "moved" = "déplacée";
+
+/* No comment provided by engineer. */
+"new wallet passcode" = "nouveau code d'accès du portefeuille";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "ensuite, écrivez sur papier votre phrase de récupération";
@@ -482,10 +494,16 @@
 "verify passcode" = "vérifiez le code d'accès";
 
 /* No comment provided by engineer. */
+"verify wallet passcode" = "vérifier le code d'accès du portefeuille";
+
+/* No comment provided by engineer. */
 "wallet address" = "adresse de portefeuille";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "portefeuille désactivé";
+
+/* No comment provided by engineer. */
+"wallet passcode" = "code d'accès du portefeuille";
 
 /* No comment provided by engineer. */
 "WARNING" = "AVERTISSEMENT";
