@@ -44,6 +44,7 @@
 @property (nonatomic, strong) BRBubbleView *tipView;
 @property (nonatomic, assign) BOOL showTips;
 @property (nonatomic, strong) NSUserDefaults *groupDefs;
+@property (nonatomic, strong) id balanceObserver;
 
 @property (nonatomic, strong) IBOutlet UILabel *label;
 @property (nonatomic, strong) IBOutlet UIButton *addressButton;
@@ -80,6 +81,11 @@
     [super viewWillDisappear:animated];
 }
 
+- (void)dealloc
+{
+    if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
+}
+
 - (void)updateAddress
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -95,6 +101,14 @@
             if (req.amount > 0) {
                 self.label.text = [NSString stringWithFormat:@"%@ (%@)", [manager stringForAmount:req.amount],
                                    [manager localCurrencyStringForAmount:req.amount]];
+                
+                if (! self.balanceObserver) {
+                    self.balanceObserver =
+                        [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification
+                        object:nil queue:nil usingBlock:^(NSNotification *note) {
+                            if ([manager.wallet addressIsUsed:self.paymentAddress]) [self done:nil];
+                        }];
+                }
             }
             else if (req.isValid) {
                 [self.groupDefs setObject:req.data forKey:APP_GROUP_REQUEST_DATA_KEY];

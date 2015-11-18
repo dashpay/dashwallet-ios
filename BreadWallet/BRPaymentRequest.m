@@ -127,10 +127,10 @@
 {
     if (! [self.scheme isEqual:@"bitcoin"]) return self.r;
 
-    NSMutableCharacterSet *charset = [[NSCharacterSet URLQueryAllowedCharacterSet] mutableCopy];
     NSMutableString *s = [NSMutableString stringWithString:@"bitcoin:"];
     NSMutableArray *q = [NSMutableArray array];
-
+    NSMutableCharacterSet *charset = [[NSCharacterSet URLQueryAllowedCharacterSet] mutableCopy];
+    
     [charset removeCharactersInString:@"&="];
     if (self.paymentAddress) [s appendString:self.paymentAddress];
     
