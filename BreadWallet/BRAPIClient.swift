@@ -148,16 +148,24 @@ func httpDateNow() -> String {
 }
 
 @objc public class BRAPIClient: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate {
-    var session: NSURLSession!
-    var queue: NSOperationQueue!
     var logEnabled = true
-    var proto = "http"
-    var host = "localhost:8009"
+    var proto = "https"
+    var host = "api.breadwallet.com"
     
-    var baseUrl: String!
+    var session: NSURLSession {
+        let config = NSURLSessionConfiguration.defaultSessionConfiguration()
+        return NSURLSession(configuration: config, delegate: self, delegateQueue: queue)
+    }
+    var queue: NSOperationQueue {
+        return NSOperationQueue()
+    }
+    
+    var baseUrl: String {
+        return "\(proto)://\(host)"
+    }
     
     var userAccountKey: String {
-        return "\(proto)://\(host)"
+        return baseUrl
     }
     
     var serverPubKey: BRKey {
@@ -168,13 +176,6 @@ func httpDateNow() -> String {
     // the singleton
     static let sharedClient = BRAPIClient()
     
-    override init() {
-        super.init()
-        queue = NSOperationQueue()
-        let config = NSURLSessionConfiguration.defaultSessionConfiguration()
-        session = NSURLSession(configuration: config, delegate: self, delegateQueue: queue)
-        baseUrl = "\(proto)://\(host)"
-    }
     
     func log(format: String, args: CVarArgType...) -> Int? {
         if !logEnabled {
@@ -210,7 +211,8 @@ func httpDateNow() -> String {
             mutableRequest.setValue(httpDateNow(), forHTTPHeaderField: "Date")
         }
         do {
-            if let tokenData = try BRKeychain.loadDataForUserAccount(userAccountKey), token = tokenData["token"], authKey = getAuthKey() {
+            if let tokenData = try BRKeychain.loadDataForUserAccount(userAccountKey),
+                token = tokenData["token"], authKey = getAuthKey() {
                 let sha = buildRequestSigningString(mutableRequest).dataUsingEncoding(NSUTF8StringEncoding)!.SHA256_2()
                 let sig = authKey.compactSign(sha)!.base58String()
                 mutableRequest.setValue("bread \(token):\(sig)", forHTTPHeaderField: "Authorization")
@@ -238,14 +240,12 @@ func httpDateNow() -> String {
         if let sha = signingString.dataUsingEncoding(NSUTF8StringEncoding)?.SHA256_2(),
             pk = BRKey(recoveredFromCompactSig: sig, andMessageDigest: sha),
             pkDatA = pk.publicKey, pkDatB = serverPubKey.publicKey
-            where pkDatA.isEqualToData(pkDatB) {
-
-            return true
-        }
+            where pkDatA.isEqualToData(pkDatB) { return true }
         return false
     }
     
-    func dataTaskWithRequest(request: NSURLRequest, authenticated: Bool = false, verify: Bool = true, retryCount: Int = 0, handler: URLSessionTaskHandler) -> NSURLSessionDataTask {
+    func dataTaskWithRequest(request: NSURLRequest, authenticated: Bool = false, verify: Bool = true,
+                             retryCount: Int = 0, handler: URLSessionTaskHandler) -> NSURLSessionDataTask {
         let start = NSDate()
         var logLine = ""
         if let meth = request.HTTPMethod, u = request.URL {
@@ -266,9 +266,14 @@ func httpDateNow() -> String {
                         errStr = s as String
                     }
                 }
-                let verified = verify ? self.verifyResponse(actualRequest.mutableCopy() as! NSMutableURLRequest, response: httpResp, data: data) : true
+                var verified = true
+                if verify {
+                    let mreq = actualRequest.mutableCopy() as! NSMutableURLRequest
+                    verified = self.verifyResponse(mreq, response: httpResp, data: data)
+                }
                 
-                self.log("\(logLine) -> status=\(httpResp.statusCode) duration=\(dur)ms verified=\(verified) errStr=\(errStr)")
+                self.log("\(logLine) -> status=\(httpResp.statusCode) duration=\(dur)ms " +
+                         "verified=\(verified) errStr=\(errStr)")
                 
                 if !verified {
                     return handler(nil, nil, NSError(domain: BRAPIClientErrorDomain, code: 500, userInfo: [
@@ -280,14 +285,18 @@ func httpDateNow() -> String {
                         if err != nil && retryCount < 1 { // retry once
                             self.log("error retrieving token: \(err) - will retry")
                             dispatch_after(1, dispatch_get_main_queue(), { () -> Void in
-                                self.dataTaskWithRequest(origRequest, authenticated: authenticated, retryCount: retryCount + 1, handler: handler).resume()
+                                self.dataTaskWithRequest(
+                                    origRequest, authenticated: authenticated,
+                                    retryCount: retryCount + 1, handler: handler).resume()
                             })
                         } else if err != nil && retryCount > 0 { // fail if we already retried
                             self.log("error retrieving token: \(err) - will no longer retry")
                             handler(nil, nil, err)
                         } else if retryCount < 1 { // no error, so attempt the request again
                             self.log("retrieved token, so retrying the original request")
-                            self.dataTaskWithRequest(origRequest, authenticated: authenticated, retryCount: retryCount + 1, handler: handler).resume()
+                            self.dataTaskWithRequest(
+                                origRequest, authenticated: authenticated,
+                                retryCount: retryCount + 1, handler: handler).resume()
                         } else {
                             self.log("retried token multiple times, will not retry again")
                             handler(data, httpResp, err)
@@ -342,7 +351,9 @@ func httpDateNow() -> String {
                 do {
                     let json = try NSJSONSerialization.JSONObjectWithData(data, options: .AllowFragments)
                     self.log("POST /token: \(json)")
-                    if let topObj = json as? NSDictionary, tok = topObj["token"] as? NSString, uid = topObj["userID"] as? NSString {
+                    if let topObj = json as? NSDictionary,
+                        tok = topObj["token"] as? NSString,
+                        uid = topObj["userID"] as? NSString {
                         // success! store it in the keychain
                         let kcData = ["token": tok, "userID": uid]
                         do {
@@ -368,19 +379,25 @@ func httpDateNow() -> String {
         log("URLSession didBecomeInvalidWithError: \(error)")
     }
     
-    public func URLSession(session: NSURLSession, task: NSURLSessionTask, didReceiveChallenge: NSURLAuthenticationChallenge, completionHandler: URLSessionChallengeHandler) {
+    public func URLSession(session: NSURLSession, task: NSURLSessionTask,
+                           didReceiveChallenge: NSURLAuthenticationChallenge,
+                           completionHandler: URLSessionChallengeHandler) {
             log("URLSession task \(task) didReceivechallenge \(didReceiveChallenge.protectionSpace)")
             
     }
     
-    public func URLSession(session: NSURLSession, didReceiveChallenge: NSURLAuthenticationChallenge, completionHandler: URLSessionChallengeHandler) {
-        log("URLSession didReceiveChallenge \(didReceiveChallenge)")
+    public func URLSession(session: NSURLSession, didReceiveChallenge: NSURLAuthenticationChallenge,
+                           completionHandler: URLSessionChallengeHandler) {
+        log("URLSession didReceiveChallenge \(didReceiveChallenge) \(didReceiveChallenge.protectionSpace)")
         // handle HTTPS authentication
         if didReceiveChallenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
-            if didReceiveChallenge.protectionSpace.host == host && didReceiveChallenge.protectionSpace.serverTrust != nil {
+            if (didReceiveChallenge.protectionSpace.host == host
+                && didReceiveChallenge.protectionSpace.serverTrust != nil) {
+                log("URLSession challenge accepted!")
                 completionHandler(.UseCredential,
                     NSURLCredential(forTrust: didReceiveChallenge.protectionSpace.serverTrust!))
             } else {
+                log("URLSession challenge rejected")
                 completionHandler(.RejectProtectionSpace, nil)
             }
         }
@@ -476,7 +493,8 @@ enum BRKeychainError: String, ErrorType {
 
 class BRKeychain {
     // this API is inspired by the aforementioned Locksmith library
-    static func loadDataForUserAccount(account: String, inService service: String = BreadDefaultService) throws -> [String: AnyObject]? {
+    static func loadDataForUserAccount(account: String,
+                                       inService service: String = BreadDefaultService) throws -> [String: AnyObject]? {
         var q = getBaseQuery(account, service: service)
         q[String(kSecReturnData)] = kCFBooleanTrue
         q[String(kSecMatchLimit)] = kSecMatchLimitOne
@@ -504,7 +522,8 @@ class BRKeychain {
         return nil
     }
     
-    static func saveData(data: [String: AnyObject], forUserAccount account: String, inService service: String = BreadDefaultService) throws {
+    static func saveData(data: [String: AnyObject], forUserAccount account: String,
+                         inService service: String = BreadDefaultService) throws {
         do {
             try deleteDataForUserAccount(account, inService: service)
         } catch let e as BRKeychainError {
