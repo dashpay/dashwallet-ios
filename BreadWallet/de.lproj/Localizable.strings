@@ -131,7 +131,7 @@
 "checking private key balance..." = "Guthaben des privaten Schlüssels wird geprüft...";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "Wähle Zugangscode für %@";
+"choose passcode for %@" = "Wählen Sie den Zugangscode für %@";
 
 /* No comment provided by engineer. */
 "choose wallet passcode" = "Wallet Zugangscode eingeben";
@@ -497,10 +497,10 @@
 "verify wallet passcode" = "Wallet Zugangscode verifzieren";
 
 /* No comment provided by engineer. */
-"wallet address" = "Brieftaschen-Adresse";
+"wallet address" = "Wallet-Adresse";
 
 /* No comment provided by engineer. */
-"wallet disabled" = "Brieftasche deaktiviert";
+"wallet disabled" = "Wallet deaktiviert";
 
 /* No comment provided by engineer. */
 "wallet passcode" = "Wallet Zugangscode";
@@ -515,7 +515,7 @@
 "WRITE DOWN YOUR RECOVERY PHRASE" = "NOTIEREN SIE IHRE WIEDERHERSTELLUNGS-WORTFOLGE";
 
 /* No comment provided by engineer. */
-"you received bitcoin!" = "Sie haben bitcoin erhalten!";
+"you received bitcoin!" = "Sie haben Bitcoin erhalten!";
 
 /* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Brieftasche möglicherweise nicht synchron.\nDies kann oft durch erneutes Scannen der Blockchain behoben werden.";
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Ihr Wallet ist möglicherweise nicht synchron.\nDies kann oft durch erneutes Scannen der Blockchain behoben werden.";
