@@ -544,30 +544,47 @@
                           @"[BRPaymentRequest requestWithString:]");
     
     r = [BRPaymentRequest requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=1"];
+    XCTAssertEqual(100000000, r.amount, @"[BRPaymentRequest requestWithString:]");
     XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=1", r.string,
                           @"[BRPaymentRequest requestWithString:]");
     
     r = [BRPaymentRequest requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=0.00000001"];
+    XCTAssertEqual(1, r.amount, @"[BRPaymentRequest requestWithString:]");
     XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=0.00000001", r.string,
                           @"[BRPaymentRequest requestWithString:]");
     
     r = [BRPaymentRequest requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=21000000"];
+    XCTAssertEqual(2100000000000000, r.amount, @"[BRPaymentRequest requestWithString:]");
     XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=21000000", r.string,
                           @"[BRPaymentRequest requestWithString:]");
 
     // test for floating point rounding issues, these values cannot be exactly represented with an IEEE 754 double
     r = [BRPaymentRequest requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=20999999.99999999"];
+    XCTAssertEqual(2099999999999999, r.amount, @"[BRPaymentRequest requestWithString:]");
     XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=20999999.99999999", r.string,
                           @"[BRPaymentRequest requestWithString:]");
 
     r = [BRPaymentRequest requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=20999999.99999995"];
+    XCTAssertEqual(2099999999999995, r.amount, @"[BRPaymentRequest requestWithString:]");
     XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=20999999.99999995", r.string,
                           @"[BRPaymentRequest requestWithString:]");
 
     r = [BRPaymentRequest requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=20999999.9999999"];
+    XCTAssertEqual(2099999999999990, r.amount, @"[BRPaymentRequest requestWithString:]");
     XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=20999999.9999999", r.string,
                           @"[BRPaymentRequest requestWithString:]");
 
+    r = [BRPaymentRequest requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=0.07433"];
+    XCTAssertEqual(7433000, r.amount, @"[BRPaymentRequest requestWithString:]");
+    XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=0.07433", r.string,
+                          @"[BRPaymentRequest requestWithString:]");
+
+    // invalid amount string
+    r = [BRPaymentRequest requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?amount=foobar"];
+    XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW", r.string,
+                          @"[BRPaymentRequest requestWithString:]");
+
+    // test correct encoding of '&' in argument value
     r = [BRPaymentRequest requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?label=foo%26bar"];
     XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?label=foo%26bar", r.string,
                           @"[BRPaymentRequest requestWithString:]");

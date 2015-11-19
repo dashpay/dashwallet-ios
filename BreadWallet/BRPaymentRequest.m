@@ -105,11 +105,12 @@
                                stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
 
             if ([pair[0] isEqual:@"amount"]) {
-                NSNumberFormatter *format = [NSNumberFormatter new];
+                NSDecimal dec, amount;
 
-                format.generatesDecimalNumbers = YES;
-                self.amount =  [[NSDecimalNumber decimalNumberWithDecimal:[format numberFromString:value].decimalValue]
-                                decimalNumberByMultiplyingByPowerOf10:8].unsignedLongLongValue;
+                if ([[NSScanner scannerWithString:value] scanDecimal:&dec]) {
+                    NSDecimalMultiplyByPowerOf10(&amount, &dec, 8, NSRoundBankers);
+                    self.amount = [NSDecimalNumber decimalNumberWithDecimal:amount].unsignedLongLongValue;
+                }
             }
             else if ([pair[0] isEqual:@"label"]) {
                 self.label = value;
