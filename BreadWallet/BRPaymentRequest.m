@@ -108,7 +108,7 @@
                 NSDecimal dec, amount;
 
                 if ([[NSScanner scannerWithString:value] scanDecimal:&dec]) {
-                    NSDecimalMultiplyByPowerOf10(&amount, &dec, 8, NSRoundBankers);
+                    NSDecimalMultiplyByPowerOf10(&amount, &dec, 8, NSRoundUp);
                     self.amount = [NSDecimalNumber decimalNumberWithDecimal:amount].unsignedLongLongValue;
                 }
             }
