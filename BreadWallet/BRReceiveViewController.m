@@ -56,12 +56,14 @@
 
 - (void)viewDidLoad
 {
-    BRPaymentRequest *req;
-    
     [super viewDidLoad];
 
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    BRPaymentRequest *req;
+
     self.groupDefs = [[NSUserDefaults alloc] initWithSuiteName:APP_GROUP_ID];
-    req = [BRPaymentRequest requestWithString:[self.groupDefs stringForKey:APP_GROUP_RECEIVE_ADDRESS_KEY]];
+    req = (_paymentRequest) ? _paymentRequest :
+          [BRPaymentRequest requestWithString:[self.groupDefs stringForKey:APP_GROUP_RECEIVE_ADDRESS_KEY]];
 
     if (req.isValid) {
         self.qrView.image = [UIImage imageWithQRCodeData:req.data size:self.qrView.bounds.size
@@ -70,6 +72,11 @@
     }
     else [self.addressButton setTitle:nil forState:UIControlStateNormal];
     
+    if (req.amount > 0) {
+        self.label.text = [NSString stringWithFormat:@"%@ (%@)", [manager stringForAmount:req.amount],
+                           [manager localCurrencyStringForAmount:req.amount]];
+    }
+
     self.addressButton.titleLabel.adjustsFontSizeToFitWidth = YES;
     [self updateAddress];
 }
@@ -342,9 +349,9 @@ error:(NSError *)error
     BRReceiveViewController *receiveController = [self.storyboard
                                                   instantiateViewControllerWithIdentifier:@"RequestViewController"];
     
-    receiveController.view.backgroundColor = self.parentViewController.parentViewController.view.backgroundColor;
     receiveController.paymentRequest = self.paymentRequest;
     receiveController.paymentRequest.amount = amount;
+    receiveController.view.backgroundColor = self.parentViewController.parentViewController.view.backgroundColor;
     navController.delegate = receiveController;
     [navController pushViewController:receiveController animated:YES];
 }
