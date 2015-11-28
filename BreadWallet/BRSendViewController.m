@@ -377,8 +377,8 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         return;
     }
     else if (amount == 0 || amount == UINT64_MAX) {
-        BRAmountViewController *amountController
-            = [self.storyboard instantiateViewControllerWithIdentifier:@"AmountViewController"];
+        BRAmountViewController *amountController = [self.storyboard
+                                                    instantiateViewControllerWithIdentifier:@"AmountViewController"];
         
         amountController.delegate = self;
         self.request = protoReq;

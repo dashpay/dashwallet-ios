@@ -27,6 +27,7 @@
 #import "BRRootViewController.h"
 #import "BRPaymentRequest.h"
 #import "BRWalletManager.h"
+#import "BRPeerManager.h"
 #import "BRTransaction.h"
 #import "BRBubbleView.h"
 #import "BRAppGroupConstants.h"
@@ -44,7 +45,7 @@
 @property (nonatomic, strong) BRBubbleView *tipView;
 @property (nonatomic, assign) BOOL showTips;
 @property (nonatomic, strong) NSUserDefaults *groupDefs;
-@property (nonatomic, strong) id balanceObserver;
+@property (nonatomic, strong) id balanceObserver, txStatusObserver;
 
 @property (nonatomic, strong) IBOutlet UILabel *label;
 @property (nonatomic, strong) IBOutlet UIButton *addressButton;
@@ -100,7 +101,6 @@
         BRPaymentRequest *req = self.paymentRequest;
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            if ([self.paymentAddress isEqual:self.addressButton.currentTitle]) return;
             self.qrView.image = [UIImage imageWithQRCodeData:req.data size:self.qrView.bounds.size
                                  color:[CIColor colorWithRed:0.0 green:0.0 blue:0.0]];
             [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
@@ -113,7 +113,15 @@
                     self.balanceObserver =
                         [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification
                         object:nil queue:nil usingBlock:^(NSNotification *note) {
-                            if ([manager.wallet addressIsUsed:self.paymentAddress]) [self done:nil];
+                            [self checkRequestStatus];
+                        }];
+                }
+                
+                if (! self.txStatusObserver) {
+                    self.txStatusObserver =
+                        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification
+                        object:nil queue:nil usingBlock:^(NSNotification *note) {
+                            [self checkRequestStatus];
                         }];
                 }
             }
@@ -129,6 +137,33 @@
             }
         });
     });
+}
+
+- (void)checkRequestStatus
+{
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    BRPaymentRequest *req = self.paymentRequest;
+    uint64_t total = 0;
+    
+    if (! [manager.wallet addressIsUsed:self.paymentAddress]) return;
+
+    for (BRTransaction *tx in manager.wallet.recentTransactions) {
+        if ([tx.outputAddresses containsObject:self.paymentAddress]) continue;
+        if (tx.blockHeight == TX_UNCONFIRMED &&
+            [[BRPeerManager sharedInstance] relayCountForTransaction:tx.txHash] < PEER_MAX_CONNECTIONS) continue;
+        total += [manager.wallet amountReceivedFromTransaction:tx];
+                 
+        if (total + [manager amountForLocalCurrencyString:[manager localCurrencyStringForAmount:1]]*2 >= req.amount) {
+            UIView *view = self.navigationController.presentingViewController.view;
+
+            [self done:nil];
+            [view addSubview:[[[BRBubbleView viewWithText:[NSString
+             stringWithFormat:NSLocalizedString(@"received %@ (%@)", nil), [manager stringForAmount:total],
+             [manager localCurrencyStringForAmount:total]]
+             center:CGPointMake(view.bounds.size.width/2, view.bounds.size.height/2)] popIn] popOutAfterDelay:3.0]];
+            break;
+        }
+    }
 }
 
 - (BRPaymentRequest *)paymentRequest
