@@ -739,7 +739,7 @@ static const char *dns_seeds[] = {
         }
         else if ([self.txRelays[hash] count] < PEER_MAX_CONNECTIONS) {
             // set timestamp 0 to mark as unverified
-            [manager.wallet setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:@[hash]];
+            [self setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:@[hash]];
         }
     }
     
@@ -1055,7 +1055,7 @@ static const char *dns_seeds[] = {
 
         if ([self.txRelays[hash] count] >= PEER_MAX_CONNECTIONS &&
             [manager.wallet transactionForHash:transaction.txHash].blockHeight == TX_UNCONFIRMED) {
-            [manager.wallet setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSinceReferenceDate]
+            [self setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSinceReferenceDate]
              forTxHashes:@[hash]]; // set timestamp when tx is verified
         }
 
@@ -1104,7 +1104,7 @@ static const char *dns_seeds[] = {
 
         if ([self.txRelays[hash] count] >= PEER_MAX_CONNECTIONS &&
             [manager.wallet transactionForHash:txHash].blockHeight == TX_UNCONFIRMED) {
-            [manager.wallet setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSinceReferenceDate]
+            [self setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSinceReferenceDate]
              forTxHashes:@[hash]]; // set timestamp when tx is verified
         }
         
@@ -1128,7 +1128,7 @@ static const char *dns_seeds[] = {
         [self.txRelays[hash] removeObject:peer];
 
         if (tx.blockHeight == TX_UNCONFIRMED) { // set timestamp 0 for unverified
-            [manager.wallet setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:@[hash]];
+            [self setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:@[hash]];
         }
 
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -1300,7 +1300,7 @@ static const char *dns_seeds[] = {
 
         NSLog(@"chain fork to height %d", block.height);
         self.blocks[blockHash] = block;
-        if (block.height <= self.lastBlockHeight) return; // if fork is shorter than main chain, ingore it for now
+        if (block.height <= self.lastBlockHeight) return; // if fork is shorter than main chain, ignore it for now
 
         NSMutableArray *txHashes = [NSMutableArray array];
         BRMerkleBlock *b = block, *b2 = self.lastBlock;

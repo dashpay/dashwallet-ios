@@ -92,10 +92,15 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 // true if no previous wallet transaction spends any of the given transaction's inputs, and no input tx is invalid
 - (BOOL)transactionIsValid:(BRTransaction *)transaction;
 
+// returns true if all sequence numbers are final (otherwise transaction can be replaced-by-fee), if no outputs are
+// dust, transaction size is not over TX_MAX_SIZE, timestamp is greater than 0, and no inputs are known to be unverfied
+- (BOOL)transactionIsVerified:(BRTransaction *)transaction;
+
 // returns true if transaction won't be valid by blockHeight + 1 or within the next 10 minutes
 - (BOOL)transactionIsPostdated:(BRTransaction *)transaction atBlockHeight:(uint32_t)blockHeight;
 
-// set the block heights and timestamps for the given transactions
+// set the block heights and timestamps for the given transactions, use a height of TX_UNCONFIRMED and timestamp of 0 to
+// indicate a transaction and it's dependents should remain marked as unverified (not 0-conf safe)
 - (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes;
 
 // returns the amount received by the wallet from the transaction (total outputs to change and/or receive addresses)

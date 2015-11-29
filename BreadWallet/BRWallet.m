@@ -587,13 +587,37 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     return YES;
 }
 
+// returns true if all sequence numbers are final (otherwise transaction can be replaced-by-fee), if no outputs are
+// dust, transaction size is not over TX_MAX_SIZE, timestamp is greater than 0, and no inputs are known to be unverfied
+- (BOOL)transactionIsVerified:(BRTransaction *)transaction
+{
+    if (transaction.blockHeight != TX_UNCONFIRMED) return YES; // confirmed transactions are always verified
+
+    if (transaction.timestamp == 0) return NO; // a timestamp of 0 indicates transaction is to remain unverified
+
+    if (transaction.size > TX_MAX_SIZE) return NO; // check transaction size is under TX_MAX_SIZE
+    
+    for (NSNumber *sequence in transaction.inputSequences) { // check that all sequence numbers are final
+        if (sequence.unsignedIntValue < UINT32_MAX) return NO;
+    }
+
+    for (NSNumber *amount in transaction.outputAmounts) { // check that no outputs are dust
+        if (amount.unsignedLongLongValue < TX_MIN_OUTPUT_AMOUNT) return NO;
+    }
+
+    for (NSValue *txHash in transaction.inputHashes) { // check if any inputs are known to be unverfied
+        if (! self.allTx[txHash]) continue;
+        if (! [self transactionIsVerified:self.allTx[txHash]]) return NO;
+    }
+
+    return YES;
+}
+
 // returns true if transaction won't be valid by blockHeight + 1 or within the next 10 minutes
 - (BOOL)transactionIsPostdated:(BRTransaction *)transaction atBlockHeight:(uint32_t)blockHeight
 {
     if (transaction.blockHeight != TX_UNCONFIRMED) return NO; // confirmed transactions are not postdated
 
-    // TODO: XXX consider marking any unconfirmed transaction with a non-final sequence number as postdated
-    // TODO: XXX notify that transactions with dust outputs are unlikely to confirm
     for (NSValue *txHash in transaction.inputHashes) { // check if any inputs are known to be postdated
         if ([self transactionIsPostdated:self.allTx[txHash] atBlockHeight:blockHeight]) return YES;
     }
@@ -610,7 +634,8 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     return NO;
 }
 
-// set the block heights and timestamps for the given transactions
+// set the block heights and timestamps for the given transactions, use a height of TX_UNCONFIRMED and timestamp of 0 to
+// indicate a transaction and it's dependents should remain marked as unverified (not 0-conf safe)
 - (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes
 {
     NSMutableArray *hashes = [NSMutableArray array];

@@ -482,7 +482,7 @@ static NSString *dateFormat(NSString *template)
                     unconfirmedLabel.text = NSLocalizedString(@"post-dated", nil);
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                 }
-                else if (confirms == 0 && tx.timestamp < 1) { // timestamp gets set when tx is first verified
+                else if (confirms == 0 && ! [manager.wallet transactionIsVerified:tx]) {
                     unconfirmedLabel.text = NSLocalizedString(@"unverified", nil);
                 }
                 else if (confirms < 6) {

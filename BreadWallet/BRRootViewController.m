@@ -446,7 +446,8 @@
         [self.receiveViewController updateAddress];
         if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
 
-        if (! [defs boolForKey:HAS_AUTHENTICATED_KEY] && [manager authenticateWithPrompt:nil andTouchId:NO]) {
+        if (! [defs boolForKey:HAS_AUTHENTICATED_KEY]) {
+            while (! [manager authenticateWithPrompt:nil andTouchId:NO]) { }
             [defs setBool:YES forKey:HAS_AUTHENTICATED_KEY];
             [self unlock:nil];
         }

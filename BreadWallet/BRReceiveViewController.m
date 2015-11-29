@@ -92,6 +92,7 @@
 - (void)dealloc
 {
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
+    if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
 }
 
 - (void)updateAddress
@@ -143,7 +144,7 @@
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     BRPaymentRequest *req = self.paymentRequest;
-    uint64_t total = 0;
+    uint64_t total = 0, fuzz = [manager amountForLocalCurrencyString:[manager localCurrencyStringForAmount:1]]*2;
     
     if (! [manager.wallet addressIsUsed:self.paymentAddress]) return;
 
@@ -153,7 +154,7 @@
             [[BRPeerManager sharedInstance] relayCountForTransaction:tx.txHash] < PEER_MAX_CONNECTIONS) continue;
         total += [manager.wallet amountReceivedFromTransaction:tx];
                  
-        if (total + [manager amountForLocalCurrencyString:[manager localCurrencyStringForAmount:1]]*2 >= req.amount) {
+        if (total + fuzz >= req.amount) {
             UIView *view = self.navigationController.presentingViewController.view;
 
             [self done:nil];
