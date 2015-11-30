@@ -510,6 +510,8 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         return;
     }
     
+    
+    
     if (! [manager.wallet signTransaction:tx withPrompt:prompt]) {
         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
           message:NSLocalizedString(@"error signing bitcoin transaction", nil) delegate:nil
@@ -630,7 +632,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     BRBubbleView *statusView = [BRBubbleView viewWithText:NSLocalizedString(@"checking private key balance...", nil)
-                       center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
+                                center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
 
     statusView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
     statusView.customView = [[UIActivityIndicatorView alloc]
@@ -699,11 +701,9 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
                 NSString *alertMsg = [NSString stringWithFormat:NSLocalizedString(@"%@\n\nbalance: %@ (%@)", nil),
                                       address, [manager stringForAmount:balance],
                                       [manager localCurrencyStringForAmount:balance]];
-                [[[UIAlertView alloc] initWithTitle:@""
-                                            message:alertMsg
-                                           delegate:nil
-                                  cancelButtonTitle:NSLocalizedString(@"ok", nil)
-                                  otherButtonTitles:nil] show];
+
+                [[[UIAlertView alloc] initWithTitle:@"" message:alertMsg delegate:nil
+                  cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
             }
         });
     }];

@@ -394,13 +394,14 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     NSUInteger i = 0, cpfpSize = 0;
     BRUTXO o;
 
+    if (amounts.count != scripts.count || amounts.count < 1) return nil; // sanity check
+
     for (NSData *script in scripts) {
         if (script.length == 0) return nil;
         [transaction addOutputScript:script amount:[amounts[i] unsignedLongLongValue]];
         amount += [amounts[i++] unsignedLongLongValue];
     }
 
-    //TODO: make sure transaction is less than TX_MAX_SIZE
     //TODO: use up all UTXOs for all used addresses to avoid leaving funds in addresses whose public key is revealed
     //TODO: avoid combining addresses in a single transaction when possible to reduce information leakage
     //TODO: use any UTXOs received from output addresses to mitigate an attacker double spending and requesting a refund
@@ -408,7 +409,22 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         [output getValue:&o];
         tx = self.allTx[uint256_obj(o.hash)];
         if (! tx) continue;
+        
         [transaction addInputHash:tx.txHash index:o.n script:tx.outputScripts[o.n]];
+        
+        if (transaction.size + 34 > TX_MAX_SIZE) { // transaction size-in-bytes too large
+            uint64_t lastAmount = [amounts.lastObject unsignedLongLongValue];
+            NSArray *newAmounts = [amounts subarrayWithRange:NSMakeRange(0, amounts.count - 1)],
+                    *newScripts = [scripts subarrayWithRange:NSMakeRange(0, scripts.count - 1)];
+        
+            if (lastAmount > amount + feeAmount + self.minOutputAmount - balance) { // reduce final output amount
+                newAmounts = [newAmounts arrayByAddingObject:@(lastAmount - (amount + feeAmount - balance))];
+                newScripts = [newScripts arrayByAddingObject:scripts.lastObject];
+            }
+            
+            return [self transactionForAmounts:newAmounts toOutputScripts:newScripts withFee:fee];
+        }
+        
         balance += [tx.outputAmounts[o.n] unsignedLongLongValue];
         
         // add up size of unconfirmed, non-change inputs for child-pays-for-parent fee calculation
@@ -592,9 +608,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 - (BOOL)transactionIsVerified:(BRTransaction *)transaction
 {
     if (transaction.blockHeight != TX_UNCONFIRMED) return YES; // confirmed transactions are always verified
-
     if (transaction.timestamp == 0) return NO; // a timestamp of 0 indicates transaction is to remain unverified
-
     if (transaction.size > TX_MAX_SIZE) return NO; // check transaction size is under TX_MAX_SIZE
     
     for (NSNumber *sequence in transaction.inputSequences) { // check that all sequence numbers are final
