@@ -60,6 +60,10 @@
         self.txStatusObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
+                BRTransaction *tx = [[BRWalletManager sharedInstance].wallet
+                                     transactionForHash:self.transaction.txHash];
+                
+                if (tx) self.transaction = tx;
                 [self.tableView reloadData];
             }];
     }
@@ -198,7 +202,7 @@
                               atBlockHeight:[BRPeerManager sharedInstance].lastBlockHeight]) {
                         detailLabel.text = NSLocalizedString(@"transaction is post-dated", nil);
                     }
-                    else if (peerCount == 0 || relayCount < peerCount) {
+                    else if (! [manager.wallet transactionIsVerified:self.transaction]) {
                         detailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"seen by %d of %d peers", nil),
                                             relayCount, peerCount];
                     }

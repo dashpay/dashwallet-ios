@@ -163,6 +163,7 @@ static NSString *dateFormat(NSString *template)
         self.txStatusObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
+                self.transactions = manager.wallet.recentTransactions;
                 [self.tableView reloadData];
             }];
     }
