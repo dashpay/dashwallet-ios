@@ -12,6 +12,7 @@
 		220460551BA0BEEE00D07B61 /* BREventConfirmView.m in Sources */ = {isa = PBXBuildFile; fileRef = 220460541BA0BEEE00D07B61 /* BREventConfirmView.m */; };
 		31D68B531C23B6C10030FAAA /* BreadWalletUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D68B521C23B6C10030FAAA /* BreadWalletUITests.swift */; };
 		31D68B5B1C23B6FD0030FAAA /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D68B5A1C23B6FD0030FAAA /* SnapshotHelper.swift */; };
+		22FCD22C1C0E68C80066D798 /* BRTarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FCD22B1C0E68C80066D798 /* BRTarTests.swift */; };
 		22FF2C381BED381400B36384 /* BRAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FF2C371BED381400B36384 /* BRAPIClient.swift */; };
 		751B2B5C1B68911700EA87FB /* BRTxHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 751B2B5B1B68911700EA87FB /* BRTxHistoryViewController.m */; };
 		7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7525B618192453840041C0F2 /* BRNavigationBar.m */; };
@@ -134,6 +135,8 @@
 		2210DE6E1BEA97840088551E /* breadwallet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "breadwallet-Bridging-Header.h"; sourceTree = "<group>"; };
 		2210DE6F1BEA97840088551E /* TodayExtension-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TodayExtension-Bridging-Header.h"; sourceTree = "<group>"; };
 		2210DE701BEA97840088551E /* BreadWalletTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BreadWalletTests-Bridging-Header.h"; sourceTree = "<group>"; };
+		22FCD22B1C0E68C80066D798 /* BRTarTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRTarTests.swift; sourceTree = "<group>"; };
+		22FCD22D1C0E6BA30066D798 /* BreadWalletTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "BreadWalletTests-Bridging-Header.h"; path = "BreadWallet/BreadWalletTests-Bridging-Header.h"; sourceTree = SOURCE_ROOT; };
 		22FF2C361BED381400B36384 /* breadwallet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "breadwallet-Bridging-Header.h"; sourceTree = "<group>"; };
 		22FF2C371BED381400B36384 /* BRAPIClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRAPIClient.swift; sourceTree = "<group>"; };
 		7509C10C1AF3076000D03FD5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
@@ -658,6 +661,16 @@
 			isa = PBXGroup;
 			children = (
 				75D5F3F2191EC270004AB296 /* BreadWalletTests.m */,
+				75D5F3ED191EC270004AB296 /* BreadWalletTests */,
+				22FCD22B1C0E68C80066D798 /* BRTarTests.swift */,
+				22FCD22D1C0E6BA30066D798 /* BreadWalletTests-Bridging-Header.h */,
+			);
+			path = BreadWalletTests;
+			sourceTree = "<group>";
+		};
+		75D5F3ED191EC270004AB296 /* BreadWalletTests */ = {
+			isa = PBXGroup;
+			children = (
 				75CE50B51B5216F100DBC18C /* Info.plist */,
 			);
 			path = BreadWalletTests;
@@ -1011,6 +1024,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				75D5F3F3191EC270004AB296 /* BreadWalletTests.m in Sources */,
+				22FCD22C1C0E68C80066D798 /* BRTarTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
