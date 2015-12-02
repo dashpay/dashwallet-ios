@@ -491,28 +491,28 @@ services:(uint64_t)services
 - (void)acceptMessage:(NSData *)message type:(NSString *)type
 {
     CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
-        if (self.currentBlock && ! [MSG_TX isEqual:type]) { // if we receive a non-tx message, the merkleblock is done
-            [self error:@"incomplete merkleblock %@, expected %u more tx, got %@",
-             uint256_obj(self.currentBlock.blockHash), (int)self.currentBlockTxHashes.count, type];
-            self.currentBlock = nil;
-            self.currentBlockTxHashes = nil;
-            return;
+        @autoreleasepool {
+            if (self.currentBlock && ! [MSG_TX isEqual:type]) { // if we receive a non-tx message, merkleblock is done
+                [self error:@"incomplete merkleblock %@, expected %u more tx, got %@",
+                 uint256_obj(self.currentBlock.blockHash), (int)self.currentBlockTxHashes.count, type];
+                self.currentBlock = nil;
+                self.currentBlockTxHashes = nil;
+            }
+            else if ([MSG_VERSION isEqual:type]) [self acceptVersionMessage:message];
+            else if ([MSG_VERACK isEqual:type]) [self acceptVerackMessage:message];
+            else if ([MSG_ADDR isEqual:type]) [self acceptAddrMessage:message];
+            else if ([MSG_INV isEqual:type]) [self acceptInvMessage:message];
+            else if ([MSG_TX isEqual:type]) [self acceptTxMessage:message];
+            else if ([MSG_HEADERS isEqual:type]) [self acceptHeadersMessage:message];
+            else if ([MSG_GETADDR isEqual:type]) [self acceptGetaddrMessage:message];
+            else if ([MSG_GETDATA isEqual:type]) [self acceptGetdataMessage:message];
+            else if ([MSG_NOTFOUND isEqual:type]) [self acceptNotfoundMessage:message];
+            else if ([MSG_PING isEqual:type]) [self acceptPingMessage:message];
+            else if ([MSG_PONG isEqual:type]) [self acceptPongMessage:message];
+            else if ([MSG_MERKLEBLOCK isEqual:type]) [self acceptMerkleblockMessage:message];
+            else if ([MSG_REJECT isEqual:type]) [self acceptRejectMessage:message];
+            else NSLog(@"%@:%u dropping %@, length %u, not implemented", self.host, self.port, type, message.length);
         }
-
-        if ([MSG_VERSION isEqual:type]) [self acceptVersionMessage:message];
-        else if ([MSG_VERACK isEqual:type]) [self acceptVerackMessage:message];
-        else if ([MSG_ADDR isEqual:type]) [self acceptAddrMessage:message];
-        else if ([MSG_INV isEqual:type]) [self acceptInvMessage:message];
-        else if ([MSG_TX isEqual:type]) [self acceptTxMessage:message];
-        else if ([MSG_HEADERS isEqual:type]) [self acceptHeadersMessage:message];
-        else if ([MSG_GETADDR isEqual:type]) [self acceptGetaddrMessage:message];
-        else if ([MSG_GETDATA isEqual:type]) [self acceptGetdataMessage:message];
-        else if ([MSG_NOTFOUND isEqual:type]) [self acceptNotfoundMessage:message];
-        else if ([MSG_PING isEqual:type]) [self acceptPingMessage:message];
-        else if ([MSG_PONG isEqual:type]) [self acceptPongMessage:message];
-        else if ([MSG_MERKLEBLOCK isEqual:type]) [self acceptMerkleblockMessage:message];
-        else if ([MSG_REJECT isEqual:type]) [self acceptRejectMessage:message];
-        else NSLog(@"%@:%u dropping %@, length %u, not implemented", self.host, self.port, type, (int)message.length);
     });
     CFRunLoopWakeUp([self.runLoop getCFRunLoop]);
 }
@@ -1036,76 +1036,78 @@ services:(uint64_t)services
             if (aStream != self.inputStream) return;
 
             while (self.inputStream.hasBytesAvailable) {
-                NSData *message = nil;
-                NSString *type = nil;
-                NSInteger headerLen = self.msgHeader.length, payloadLen = self.msgPayload.length, l = 0;
-                uint32_t length = 0, checksum = 0;
-
-                if (headerLen < HEADER_LENGTH) { // read message header
-                    self.msgHeader.length = HEADER_LENGTH;
-                    l = [self.inputStream read:(uint8_t *)self.msgHeader.mutableBytes + headerLen
-                         maxLength:self.msgHeader.length - headerLen];
-                            
-                    if (l < 0) {
-                        NSLog(@"%@:%u error reading message", self.host, self.port);
-                        goto reset;
-                    }
+                @autoreleasepool {
+                    NSData *message = nil;
+                    NSString *type = nil;
+                    NSInteger headerLen = self.msgHeader.length, payloadLen = self.msgPayload.length, l = 0;
+                    uint32_t length = 0, checksum = 0;
                     
-                    self.msgHeader.length = headerLen + l;
-                    
-                    // consume one byte at a time, up to the magic number that starts a new message header
-                    while (self.msgHeader.length >= sizeof(uint32_t) &&
-                           [self.msgHeader UInt32AtOffset:0] != BITCOIN_MAGIC_NUMBER) {
-#if DEBUG
-                        printf("%c", *(const char *)self.msgHeader.bytes);
-#endif
-                        [self.msgHeader replaceBytesInRange:NSMakeRange(0, 1) withBytes:NULL length:0];
-                    }
-                    
-                    if (self.msgHeader.length < HEADER_LENGTH) continue; // wait for more stream input
-                }
-                
-                if ([self.msgHeader UInt8AtOffset:15] != 0) { // verify msg type field is null terminated
-                    [self error:@"malformed message header: %@", self.msgHeader];
-                    goto reset;
-                }
-                
-                type = @((const char *)self.msgHeader.bytes + 4);
-                length = [self.msgHeader UInt32AtOffset:16];
-                checksum = [self.msgHeader UInt32AtOffset:20];
+                    if (headerLen < HEADER_LENGTH) { // read message header
+                        self.msgHeader.length = HEADER_LENGTH;
+                        l = [self.inputStream read:(uint8_t *)self.msgHeader.mutableBytes + headerLen
+                             maxLength:self.msgHeader.length - headerLen];
                         
-                if (length > MAX_MSG_LENGTH) { // check message length
-                    [self error:@"error reading %@, message length %u is too long", type, length];
-                    goto reset;
-                }
-                
-                if (payloadLen < length) { // read message payload
-                    self.msgPayload.length = length;
-                    l = [self.inputStream read:(uint8_t *)self.msgPayload.mutableBytes + payloadLen
-                         maxLength:self.msgPayload.length - payloadLen];
+                        if (l < 0) {
+                            NSLog(@"%@:%u error reading message", self.host, self.port);
+                            goto reset;
+                        }
+                        
+                        self.msgHeader.length = headerLen + l;
+                        
+                        // consume one byte at a time, up to the magic number that starts a new message header
+                        while (self.msgHeader.length >= sizeof(uint32_t) &&
+                               [self.msgHeader UInt32AtOffset:0] != BITCOIN_MAGIC_NUMBER) {
+#if DEBUG
+                            printf("%c", *(const char *)self.msgHeader.bytes);
+#endif
+                            [self.msgHeader replaceBytesInRange:NSMakeRange(0, 1) withBytes:NULL length:0];
+                        }
+                        
+                        if (self.msgHeader.length < HEADER_LENGTH) continue; // wait for more stream input
+                    }
                     
-                    if (l < 0) {
-                        NSLog(@"%@:%u error reading %@", self.host, self.port, type);
+                    if ([self.msgHeader UInt8AtOffset:15] != 0) { // verify msg type field is null terminated
+                        [self error:@"malformed message header: %@", self.msgHeader];
                         goto reset;
                     }
                     
-                    self.msgPayload.length = payloadLen + l;
-                    if (self.msgPayload.length < length) continue; // wait for more stream input
+                    type = @((const char *)self.msgHeader.bytes + 4);
+                    length = [self.msgHeader UInt32AtOffset:16];
+                    checksum = [self.msgHeader UInt32AtOffset:20];
+                    
+                    if (length > MAX_MSG_LENGTH) { // check message length
+                        [self error:@"error reading %@, message length %u is too long", type, length];
+                        goto reset;
+                    }
+                    
+                    if (payloadLen < length) { // read message payload
+                        self.msgPayload.length = length;
+                        l = [self.inputStream read:(uint8_t *)self.msgPayload.mutableBytes + payloadLen
+                             maxLength:self.msgPayload.length - payloadLen];
+                        
+                        if (l < 0) {
+                            NSLog(@"%@:%u error reading %@", self.host, self.port, type);
+                            goto reset;
+                        }
+                        
+                        self.msgPayload.length = payloadLen + l;
+                        if (self.msgPayload.length < length) continue; // wait for more stream input
+                    }
+                    
+                    if (self.msgPayload.SHA256_2.u32[0] != checksum) { // verify checksum
+                        [self error:@"error reading %@, invalid checksum %x, expected %x, payload length:%u, expected "
+                         "length:%u, SHA256_2:%@", type, self.msgPayload.SHA256_2.u32[0], checksum,
+                         (int)self.msgPayload.length, length, uint256_obj(self.msgPayload.SHA256_2)];
+                        goto reset;
+                    }
+                    
+                    message = self.msgPayload;
+                    self.msgPayload = [NSMutableData data];
+                    [self acceptMessage:message type:type]; // process message
+                    
+reset:              // reset for next message
+                    self.msgHeader.length = self.msgPayload.length = 0;
                 }
-                
-                if (self.msgPayload.SHA256_2.u32[0] != checksum) { // verify checksum
-                    [self error:@"error reading %@, invalid checksum %x, expected %x, payload length:%u, expected "
-                     "length:%u, SHA256_2:%@", type, self.msgPayload.SHA256_2.u32[0], checksum,
-                     (int)self.msgPayload.length, length, uint256_obj(self.msgPayload.SHA256_2)];
-                     goto reset;
-                }
-
-                message = self.msgPayload;
-                self.msgPayload = [NSMutableData data];
-                [self acceptMessage:message type:type]; // process message
-                
-reset:          // reset for next message
-                self.msgHeader.length = self.msgPayload.length = 0;
             }
 
             break;

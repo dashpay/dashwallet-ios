@@ -118,18 +118,10 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             [BRTxInputEntity allObjects];
             [BRTxOutputEntity allObjects];
             
-            NSMutableSet *hashSet = [NSMutableSet set];
-            
             for (BRTransactionEntity *e in [BRTransactionEntity allObjects]) {
                 @autoreleasepool {
                     BRTransaction *tx = e.transaction;
                     NSValue *hash = (tx) ? uint256_obj(tx.txHash) : nil;
-                    
-                    if ([hashSet containsObject:hash]) {
-                        [e deleteObject]; // delete duplicates
-                        continue;
-                    }
-                    else [hashSet addObject:hash];
                     
                     if (! tx || self.allTx[hash] != nil) continue;
                     
@@ -140,8 +132,6 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
                     [self.usedAddresses addObjectsFromArray:tx.outputAddresses];
                 }
             }
-            
-            if (updateTx.count == 0) [BRTransactionEntity saveContext];
         }
     }];
     
