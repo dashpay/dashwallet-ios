@@ -89,24 +89,28 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         [BRTxMetadataEntity setContext:self.moc];
 
         for (BRAddressEntity *e in [BRAddressEntity allObjects]) {
-            NSMutableArray *a = (e.internal) ? self.internalAddresses : self.externalAddresses;
-
-            while (e.index >= a.count) [a addObject:[NSNull null]];
-            a[e.index] = e.address;
-            [self.allAddresses addObject:e.address];
+            @autoreleasepool {
+                NSMutableArray *a = (e.internal) ? self.internalAddresses : self.externalAddresses;
+                
+                while (e.index >= a.count) [a addObject:[NSNull null]];
+                a[e.index] = e.address;
+                [self.allAddresses addObject:e.address];
+            }
         }
 
         for (BRTxMetadataEntity *e in [BRTxMetadataEntity allObjects]) {
-            if (e.type != TX_MDTYPE_MSG) continue;
-        
-            BRTransaction *tx = e.transaction;
-            NSValue *hash = (tx) ? uint256_obj(tx.txHash) : nil;
-            
-            if (! tx) continue;
-            self.allTx[hash] = tx;
-            [self.transactions addObject:tx];
-            [self.usedAddresses addObjectsFromArray:tx.inputAddresses];
-            [self.usedAddresses addObjectsFromArray:tx.outputAddresses];
+            @autoreleasepool {
+                if (e.type != TX_MDTYPE_MSG) continue;
+                
+                BRTransaction *tx = e.transaction;
+                NSValue *hash = (tx) ? uint256_obj(tx.txHash) : nil;
+                
+                if (! tx) continue;
+                self.allTx[hash] = tx;
+                [self.transactions addObject:tx];
+                [self.usedAddresses addObjectsFromArray:tx.inputAddresses];
+                [self.usedAddresses addObjectsFromArray:tx.outputAddresses];
+            }
         }
         
         if ([BRTransactionEntity countAllObjects] > self.allTx.count) {
@@ -114,17 +118,30 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             [BRTxInputEntity allObjects];
             [BRTxOutputEntity allObjects];
             
+            NSMutableSet *hashSet = [NSMutableSet set];
+            
             for (BRTransactionEntity *e in [BRTransactionEntity allObjects]) {
-                BRTransaction *tx = e.transaction;
-                NSValue *hash = (tx) ? uint256_obj(tx.txHash) : nil;
-
-                if (! tx || self.allTx[hash] != nil) continue;
-                [updateTx addObject:tx];
-                self.allTx[hash] = tx;
-                [self.transactions addObject:tx];
-                [self.usedAddresses addObjectsFromArray:tx.inputAddresses];
-                [self.usedAddresses addObjectsFromArray:tx.outputAddresses];
+                @autoreleasepool {
+                    BRTransaction *tx = e.transaction;
+                    NSValue *hash = (tx) ? uint256_obj(tx.txHash) : nil;
+                    
+                    if ([hashSet containsObject:hash]) {
+                        [e deleteObject]; // delete duplicates
+                        continue;
+                    }
+                    else [hashSet addObject:hash];
+                    
+                    if (! tx || self.allTx[hash] != nil) continue;
+                    
+                    [updateTx addObject:tx];
+                    self.allTx[hash] = tx;
+                    [self.transactions addObject:tx];
+                    [self.usedAddresses addObjectsFromArray:tx.inputAddresses];
+                    [self.usedAddresses addObjectsFromArray:tx.outputAddresses];
+                }
             }
+            
+            [BRTransactionEntity saveContext];
         }
     }];
 
@@ -135,8 +152,12 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     if (updateTx.count > 0) {
         [self.moc performBlock:^{
             for (BRTransaction *tx in updateTx) {
-                [[BRTxMetadataEntity managedObject] setAttributesFromTx:tx];
+                @autoreleasepool {
+                    [[BRTxMetadataEntity managedObject] setAttributesFromTx:tx];
+                }
             }
+            
+            [BRTxMetadataEntity saveContext];
         }];
     }
 
@@ -409,7 +430,6 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         [output getValue:&o];
         tx = self.allTx[uint256_obj(o.hash)];
         if (! tx) continue;
-        
         [transaction addInputHash:tx.txHash index:o.n script:tx.outputScripts[o.n]];
         
         if (transaction.size + 34 > TX_MAX_SIZE) { // transaction size-in-bytes too large

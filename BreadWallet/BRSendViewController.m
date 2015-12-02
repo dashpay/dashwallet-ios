@@ -509,15 +509,13 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         if (! didAuth) manager.didAuthenticate = NO;
         return;
     }
-    
-    
-    
+
     if (! [manager.wallet signTransaction:tx withPrompt:prompt]) {
         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
           message:NSLocalizedString(@"error signing bitcoin transaction", nil) delegate:nil
           cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
     }
-    
+
     if (! didAuth) manager.didAuthenticate = NO;
 
     if (! tx.isSigned) { // user canceled authentication
@@ -545,6 +543,8 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         }
         else if (! sent) { //TODO: show full screen sent dialog with tx info, "you sent b10,000 to bob"
             sent = YES;
+            tx.timestamp = [NSDate timeIntervalSinceReferenceDate];
+            [manager.wallet registerTransaction:tx];
             [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
              center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
              popOutAfterDelay:2.0]];

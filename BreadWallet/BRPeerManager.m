@@ -837,18 +837,24 @@ static const char *dns_seeds[] = {
         [BRPeerEntity deleteObjects:[BRPeerEntity objectsMatching:@"! (address in %@)", addrs]]; // remove deleted peers
 
         for (BRPeerEntity *e in [BRPeerEntity objectsMatching:@"address in %@", addrs]) { // update existing peers
-            BRPeer *p = [peers member:[e peer]];
-
-            if (p) {
-                e.timestamp = p.timestamp;
-                e.services = p.services;
-                e.misbehavin = p.misbehavin;
-                [peers removeObject:p];
+            @autoreleasepool {
+                BRPeer *p = [peers member:[e peer]];
+                
+                if (p) {
+                    e.timestamp = p.timestamp;
+                    e.services = p.services;
+                    e.misbehavin = p.misbehavin;
+                    [peers removeObject:p];
+                }
+                else [e deleteObject];
             }
-            else [e deleteObject];
         }
 
-        for (BRPeer *p in peers) [[BRPeerEntity managedObject] setAttributesFromPeer:p]; // add new peers
+        for (BRPeer *p in peers) {
+            @autoreleasepool {
+                [[BRPeerEntity managedObject] setAttributesFromPeer:p]; // add new peers
+            }
+        }
     }];
 }
 
@@ -869,12 +875,16 @@ static const char *dns_seeds[] = {
                                             blocks.allKeys]];
 
         for (BRMerkleBlockEntity *e in [BRMerkleBlockEntity objectsMatching:@"blockHash in %@", blocks.allKeys]) {
-            [e setAttributesFromBlock:blocks[e.blockHash]];
-            [blocks removeObjectForKey:e.blockHash];
+            @autoreleasepool {
+                [e setAttributesFromBlock:blocks[e.blockHash]];
+                [blocks removeObjectForKey:e.blockHash];
+            }
         }
 
         for (BRMerkleBlock *b in blocks.allValues) {
-            [[BRMerkleBlockEntity managedObject] setAttributesFromBlock:b];
+            @autoreleasepool {
+                [[BRMerkleBlockEntity managedObject] setAttributesFromBlock:b];
+            }
         }
     }];
     
@@ -1162,9 +1172,11 @@ static const char *dns_seeds[] = {
     if (block.totalTransactions == 0 &&
         block.timestamp + 7*24*60*60 > self.earliestKeyTime + NSTimeIntervalSince1970 + 2*60*60) return;
 
+    NSArray *txHashes = block.txHashes;
+
     // track the observed bloom filter false positive rate using a low pass filter to smooth out variance
     if (peer == self.downloadPeer && block.totalTransactions > 0) {
-        NSMutableSet *fp = [NSMutableSet setWithArray:block.txHashes];
+        NSMutableSet *fp = [NSMutableSet setWithArray:txHashes];
     
         // 1% low pass filter, also weights each block by total transactions, using 800 tx per block as typical
         for (NSValue *hash in self.txRelays.allKeys) [fp removeObject:hash]; // wallet tx are not false-positives
@@ -1257,18 +1269,18 @@ static const char *dns_seeds[] = {
     }
     
     if (uint256_eq(block.prevBlock, self.lastBlock.blockHash)) { // new block extends main chain
-        if ((block.height % 500) == 0 || block.txHashes.count > 0 || block.height > peer.lastblock) {
+        if ((block.height % 500) == 0 || txHashes.count > 0 || block.height > peer.lastblock) {
             NSLog(@"adding block at height: %d, false positive rate: %f", block.height, self.fpRate);
         }
 
         self.blocks[blockHash] = block;
         self.lastBlock = block;
-        [self setBlockHeight:block.height andTimestamp:txTime - NSTimeIntervalSince1970 forTxHashes:block.txHashes];
+        [self setBlockHeight:block.height andTimestamp:txTime - NSTimeIntervalSince1970 forTxHashes:txHashes];
         if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
         self.downloadPeer.currentBlockHeight = block.height;
     }
     else if (self.blocks[blockHash] != nil) { // we already have the block (or at least the header)
-        if ((block.height % 500) == 0 || block.txHashes.count > 0 || block.height > peer.lastblock) {
+        if ((block.height % 500) == 0 || txHashes.count > 0 || block.height > peer.lastblock) {
             NSLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, block.height);
         }
 
@@ -1279,7 +1291,7 @@ static const char *dns_seeds[] = {
         while (b && b.height > block.height) b = self.blocks[uint256_obj(b.prevBlock)]; // is block in main chain?
 
         if (uint256_eq(b.blockHash, block.blockHash)) { // if it's not on a fork, set block heights for its transactions
-            [self setBlockHeight:block.height andTimestamp:txTime - NSTimeIntervalSince1970 forTxHashes:block.txHashes];
+            [self setBlockHeight:block.height andTimestamp:txTime - NSTimeIntervalSince1970 forTxHashes:txHashes];
             if (block.height == self.lastBlockHeight) self.lastBlock = block;
         }
     }
