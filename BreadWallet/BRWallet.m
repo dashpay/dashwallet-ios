@@ -554,11 +554,11 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         
         if ([BRTxMetadataEntity countObjectsMatching:@"txHash == %@ && type == %d",
              [NSData dataWithBytes:&txHash length:sizeof(txHash)], TX_MDTYPE_MSG] == 0) {
-            [[BRTransactionEntity managedObject] setAttributesFromTx:transaction];
+            [[BRTxMetadataEntity managedObject] setAttributesFromTx:transaction];
         }
     }];
     
-    if ((self.transactions.count % 100) == 0) [BRTransactionEntity saveContext];
+    if ((self.transactions.count % 100) == 0) [BRTxMetadataEntity saveContext];
     return YES;
 }
 
