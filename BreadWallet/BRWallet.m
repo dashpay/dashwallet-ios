@@ -279,8 +279,8 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     NSMutableSet *spentOutputs = [NSMutableSet set], *invalidTx = [NSMutableSet set];
     NSMutableArray *balanceHistory = [NSMutableArray array];
 
-    @autoreleasepool {
-        for (BRTransaction *tx in [self.transactions reverseObjectEnumerator]) {
+    for (BRTransaction *tx in [self.transactions reverseObjectEnumerator]) {
+        @autoreleasepool {
             NSMutableSet *spent = [NSMutableSet set];
             uint32_t i = 0, n = 0;
             BRTransaction *transaction;
