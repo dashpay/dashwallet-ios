@@ -286,31 +286,49 @@ static NSUInteger _fetchBatchSize = 100;
 + (void)saveContext
 {
     if (! self.context.hasChanges) return;
-
+    
     [self.context performBlock:^{
         NSError *error = nil;
 
-        if (self.context.hasChanges && ! [self.context save:&error]) { // save changes to writer context
-            NSLog(@"%s: %@", __func__, error);
-#if DEBUG
-            abort();
-#endif
-        }
-
-        [self.context.parentContext performBlock:^{
-            NSError *error = nil;
-            NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
-
-            // write changes to persistent store
-            if (self.context.parentContext.hasChanges && ! [self.context.parentContext save:&error]) {
+        if (self.context.hasChanges) {
+            if (! [self.context save:&error]) { // save changes to writer context
                 NSLog(@"%s: %@", __func__, error);
 #if DEBUG
                 abort();
 #endif
             }
+            
+            [self.context.parentContext performBlock:^{
+                // write changes to persistent store
+                if (self.context.parentContext.hasChanges) {
+                    NSError *error = nil;
+                    NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
+                
+                    // this seems to fix unreleased temporary object IDs
+                    [self.context.parentContext
+                     obtainPermanentIDsForObjects:self.context.parentContext.registeredObjects.allObjects error:nil];
 
-            [[UIApplication sharedApplication] endBackgroundTask:taskId];
-        }];
+                    if (! [self.context.parentContext save:&error]) {
+                        NSLog(@"%s: %@", __func__, error);
+#if DEBUG
+                        abort();
+#endif
+                    }
+
+                    [[UIApplication sharedApplication] endBackgroundTask:taskId];
+                }
+            }];
+            
+            [self.context.parentContext performBlock:^{
+                [self.context.parentContext reset];
+                [self.context.parentContext registeredObjects];
+            }];
+        }
+    }];
+    
+    [self.context performBlock:^{
+        [self.context reset];
+        [self.context registeredObjects]; 
     }];
 }
 

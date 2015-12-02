@@ -1145,7 +1145,7 @@ static const char *dns_seeds[] = {
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
 #if DEBUG
             [[[UIAlertView alloc] initWithTitle:@"transaction rejected"
-              message:[NSString stringWithFormat:@"rejected by %@:%d with code %x", peer.host, peer.port, code]
+              message:[NSString stringWithFormat:@"rejected by %@:%d with code 0x%x", peer.host, peer.port, code]
               delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
 #endif
         });

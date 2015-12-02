@@ -141,25 +141,27 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
                 }
             }
             
-            [BRTransactionEntity saveContext];
+            if (updateTx.count == 0) [BRTransactionEntity saveContext];
         }
     }];
-
-    [self sortTransactions];
-    _balance = UINT64_MAX; // trigger balance changed notification even if balance is zero
-    [self updateBalance];
-
-    if (updateTx.count > 0) {
-        [self.moc performBlock:^{
+    
+    [self.moc performBlock:^{
+        if (updateTx.count > 0) {
             for (BRTransaction *tx in updateTx) {
-                @autoreleasepool {
-                    [[BRTxMetadataEntity managedObject] setAttributesFromTx:tx];
-                }
+                [[BRTxMetadataEntity managedObject] setAttributesFromTx:tx];
             }
             
             [BRTxMetadataEntity saveContext];
-        }];
-    }
+        }
+        else {
+            [self.moc reset]; // reduces memory footprint
+            [self.moc registeredObjects]; // causes reset to take effect immediately
+        }
+    }];
+    
+    [self sortTransactions];
+    _balance = UINT64_MAX; // trigger balance changed notification even if balance is zero
+    [self updateBalance];
 
     return self;
 }
