@@ -279,57 +279,59 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     NSMutableSet *spentOutputs = [NSMutableSet set], *invalidTx = [NSMutableSet set];
     NSMutableArray *balanceHistory = [NSMutableArray array];
 
-    for (BRTransaction *tx in [self.transactions reverseObjectEnumerator]) {
-        NSMutableSet *spent = [NSMutableSet set];
-        uint32_t i = 0, n = 0;
-        BRTransaction *transaction;
-        UInt256 h;
-        BRUTXO o;
-
-        for (NSValue *hash in tx.inputHashes) {
-            n = [tx.inputIndexes[i++] unsignedIntValue];
-            [hash getValue:&h];
-            [spent addObject:brutxo_obj(((BRUTXO) { h, n }))];
-        }
-
-        // check if any inputs are invalid or already spent
-        if (tx.blockHeight == TX_UNCONFIRMED &&
-            ([spent intersectsSet:spentOutputs] || [[NSSet setWithArray:tx.inputHashes] intersectsSet:invalidTx])) {
-            [invalidTx addObject:uint256_obj(tx.txHash)];
-            [balanceHistory insertObject:@(balance) atIndex:0];
-            continue;
-        }
-
-        [spentOutputs unionSet:spent]; // add inputs to spent output set
-        n = 0;
-
-        //TODO: don't add outputs below TX_MIN_OUTPUT_AMOUNT
-        //TODO: don't add coin generation outputs < 100 blocks deep, or non-final lockTime > 1 block/10min in future
-        //NOTE: balance/UTXOs will then need to be recalculated when last block changes
-        for (NSString *address in tx.outputAddresses) { // add outputs to UTXO set
-            if ([self containsAddress:address]) {
-                [utxos addObject:brutxo_obj(((BRUTXO) { tx.txHash, n }))];
-                balance += [tx.outputAmounts[n] unsignedLongLongValue];
+    @autoreleasepool {
+        for (BRTransaction *tx in [self.transactions reverseObjectEnumerator]) {
+            NSMutableSet *spent = [NSMutableSet set];
+            uint32_t i = 0, n = 0;
+            BRTransaction *transaction;
+            UInt256 h;
+            BRUTXO o;
+            
+            for (NSValue *hash in tx.inputHashes) {
+                n = [tx.inputIndexes[i++] unsignedIntValue];
+                [hash getValue:&h];
+                [spent addObject:brutxo_obj(((BRUTXO) { h, n }))];
             }
             
-            n++;
+            // check if any inputs are invalid or already spent
+            if (tx.blockHeight == TX_UNCONFIRMED &&
+                ([spent intersectsSet:spentOutputs] || [[NSSet setWithArray:tx.inputHashes] intersectsSet:invalidTx])) {
+                [invalidTx addObject:uint256_obj(tx.txHash)];
+                [balanceHistory insertObject:@(balance) atIndex:0];
+                continue;
+            }
+            
+            [spentOutputs unionSet:spent]; // add inputs to spent output set
+            n = 0;
+            
+            //TODO: don't add outputs below TX_MIN_OUTPUT_AMOUNT
+            //TODO: don't add coin generation outputs < 100 blocks deep, or non-final lockTime > 1 block/10min in future
+            //NOTE: balance/UTXOs will then need to be recalculated when last block changes
+            for (NSString *address in tx.outputAddresses) { // add outputs to UTXO set
+                if ([self containsAddress:address]) {
+                    [utxos addObject:brutxo_obj(((BRUTXO) { tx.txHash, n }))];
+                    balance += [tx.outputAmounts[n] unsignedLongLongValue];
+                }
+                
+                n++;
+            }
+            
+            // transaction ordering is not guaranteed, so check the entire UTXO set against the entire spent output set
+            [spent setSet:utxos.set];
+            [spent intersectSet:spentOutputs];
+            
+            for (NSValue *output in spent) { // remove any spent outputs from UTXO set
+                [output getValue:&o];
+                transaction = self.allTx[uint256_obj(o.hash)];
+                [utxos removeObject:output];
+                balance -= [transaction.outputAmounts[o.n] unsignedLongLongValue];
+            }
+            
+            if (prevBalance < balance) totalReceived += balance - prevBalance;
+            if (balance < prevBalance) totalSent += prevBalance - balance;
+            [balanceHistory insertObject:@(balance) atIndex:0];
+            prevBalance = balance;
         }
-
-        // transaction ordering is not guaranteed, so check the entire UTXO set against the entire spent output set
-        [spent setSet:utxos.set];
-        [spent intersectSet:spentOutputs];
-        
-        for (NSValue *output in spent) { // remove any spent outputs from UTXO set
-            [output getValue:&o];
-            transaction = self.allTx[uint256_obj(o.hash)];
-            [utxos removeObject:output];
-            balance -= [transaction.outputAmounts[o.n] unsignedLongLongValue];
-        }
-        
-        if (prevBalance < balance) totalReceived += balance - prevBalance;
-        if (balance < prevBalance) totalSent += prevBalance - balance;
-        [balanceHistory insertObject:@(balance) atIndex:0];
-        prevBalance = balance;
     }
 
     self.invalidTx = invalidTx;
