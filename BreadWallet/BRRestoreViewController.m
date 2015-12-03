@@ -102,13 +102,14 @@
 - (void)wipeWithPhrase:(NSString *)phrase
 {
     [BREventManager saveEvent:@"restore:wipe"];
+    
     @autoreleasepool {
         BRWalletManager *manager = [BRWalletManager sharedInstance];
         
         if ([phrase isEqual:@"wipe"]) phrase = manager.seedPhrase; // this triggers authentication request
         
         if ([[manager.sequence masterPublicKeyFromSeed:[manager.mnemonic deriveKeyFromPhrase:phrase withPassphrase:nil]]
-             isEqual:manager.masterPublicKey]) {
+             isEqual:manager.masterPublicKey] || [phrase isEqual:@"wipe"]) {
             [BREventManager saveEvent:@"restore:wipe_good_recovery_phrase"];
             [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
               destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
@@ -133,7 +134,7 @@
 
 #pragma mark - UITextViewDelegate
 
-- (void)textViewDidChange:(UITextView *)textView
+- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
 {
     static NSCharacterSet *invalid = nil;
     static dispatch_once_t onceToken = 0;
@@ -145,9 +146,9 @@
         invalid = set.invertedSet;
     });
 
-    @autoreleasepool {  // @autoreleasepool ensures sensitive data will be deallocated immediately
-        if ([textView.text rangeOfString:@"\n"].location == NSNotFound) return; // not done entering phrase
+    if (! [text isEqual:@"\n"]) return YES; // not done entering phrase
     
+    @autoreleasepool {  // @autoreleasepool ensures sensitive data will be deallocated immediately
         BRWalletManager *manager = [BRWalletManager sharedInstance];
         NSString *phrase = [manager.mnemonic cleanupPhrase:textView.text], *incorrect = nil;
         BOOL isLocal = YES, noWallet = manager.noWallet;
@@ -223,6 +224,8 @@
             [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
         }
     }
+    
+    return NO;
 }
 
 #pragma mark - UIActionSheetDelegate
