@@ -511,7 +511,7 @@ services:(uint64_t)services
             else if ([MSG_PONG isEqual:type]) [self acceptPongMessage:message];
             else if ([MSG_MERKLEBLOCK isEqual:type]) [self acceptMerkleblockMessage:message];
             else if ([MSG_REJECT isEqual:type]) [self acceptRejectMessage:message];
-            else NSLog(@"%@:%u dropping %@, length %u, not implemented", self.host, self.port, type, message.length);
+            else NSLog(@"%@:%u dropping %@, len:%u, not implemented", self.host, self.port, type, (int)message.length);
         }
     });
     CFRunLoopWakeUp([self.runLoop getCFRunLoop]);
