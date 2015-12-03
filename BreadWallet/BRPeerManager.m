@@ -344,10 +344,6 @@ static const char *dns_seeds[] = {
             }
         }
     }
-
-    if (! _lastBlock || uint256_is_zero(_lastBlock.blockHash)) {
-        abort(); // WTF, this should never happen
-    }
     
     return _lastBlock;
 }

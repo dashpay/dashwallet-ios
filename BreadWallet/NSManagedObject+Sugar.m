@@ -345,6 +345,7 @@ static NSUInteger _fetchBatchSize = 100;
     NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:self.entityName];
 
     request.fetchBatchSize = _fetchBatchSize;
+    request.returnsObjectsAsFaults = NO;
     return request;
 }
 
