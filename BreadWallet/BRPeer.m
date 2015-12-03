@@ -491,28 +491,26 @@ services:(uint64_t)services
 - (void)acceptMessage:(NSData *)message type:(NSString *)type
 {
     CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
-        @autoreleasepool {
-            if (self.currentBlock && ! [MSG_TX isEqual:type]) { // if we receive a non-tx message, merkleblock is done
-                [self error:@"incomplete merkleblock %@, expected %u more tx, got %@",
-                 uint256_obj(self.currentBlock.blockHash), (int)self.currentBlockTxHashes.count, type];
-                self.currentBlock = nil;
-                self.currentBlockTxHashes = nil;
-            }
-            else if ([MSG_VERSION isEqual:type]) [self acceptVersionMessage:message];
-            else if ([MSG_VERACK isEqual:type]) [self acceptVerackMessage:message];
-            else if ([MSG_ADDR isEqual:type]) [self acceptAddrMessage:message];
-            else if ([MSG_INV isEqual:type]) [self acceptInvMessage:message];
-            else if ([MSG_TX isEqual:type]) [self acceptTxMessage:message];
-            else if ([MSG_HEADERS isEqual:type]) [self acceptHeadersMessage:message];
-            else if ([MSG_GETADDR isEqual:type]) [self acceptGetaddrMessage:message];
-            else if ([MSG_GETDATA isEqual:type]) [self acceptGetdataMessage:message];
-            else if ([MSG_NOTFOUND isEqual:type]) [self acceptNotfoundMessage:message];
-            else if ([MSG_PING isEqual:type]) [self acceptPingMessage:message];
-            else if ([MSG_PONG isEqual:type]) [self acceptPongMessage:message];
-            else if ([MSG_MERKLEBLOCK isEqual:type]) [self acceptMerkleblockMessage:message];
-            else if ([MSG_REJECT isEqual:type]) [self acceptRejectMessage:message];
-            else NSLog(@"%@:%u dropping %@, len:%u, not implemented", self.host, self.port, type, (int)message.length);
+        if (self.currentBlock && ! [MSG_TX isEqual:type]) { // if we receive a non-tx message, merkleblock is done
+            [self error:@"incomplete merkleblock %@, expected %u more tx, got %@",
+             uint256_obj(self.currentBlock.blockHash), (int)self.currentBlockTxHashes.count, type];
+            self.currentBlock = nil;
+            self.currentBlockTxHashes = nil;
         }
+        else if ([MSG_VERSION isEqual:type]) [self acceptVersionMessage:message];
+        else if ([MSG_VERACK isEqual:type]) [self acceptVerackMessage:message];
+        else if ([MSG_ADDR isEqual:type]) [self acceptAddrMessage:message];
+        else if ([MSG_INV isEqual:type]) [self acceptInvMessage:message];
+        else if ([MSG_TX isEqual:type]) [self acceptTxMessage:message];
+        else if ([MSG_HEADERS isEqual:type]) [self acceptHeadersMessage:message];
+        else if ([MSG_GETADDR isEqual:type]) [self acceptGetaddrMessage:message];
+        else if ([MSG_GETDATA isEqual:type]) [self acceptGetdataMessage:message];
+        else if ([MSG_NOTFOUND isEqual:type]) [self acceptNotfoundMessage:message];
+        else if ([MSG_PING isEqual:type]) [self acceptPingMessage:message];
+        else if ([MSG_PONG isEqual:type]) [self acceptPongMessage:message];
+        else if ([MSG_MERKLEBLOCK isEqual:type]) [self acceptMerkleblockMessage:message];
+        else if ([MSG_REJECT isEqual:type]) [self acceptRejectMessage:message];
+        else NSLog(@"%@:%u dropping %@, len:%u, not implemented", self.host, self.port, type, (int)message.length);
     });
     CFRunLoopWakeUp([self.runLoop getCFRunLoop]);
 }

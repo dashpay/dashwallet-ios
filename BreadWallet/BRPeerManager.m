@@ -325,26 +325,30 @@ static const char *dns_seeds[] = {
 
 - (BRMerkleBlock *)lastBlock
 {
-    if (_lastBlock) return _lastBlock;
+    if (! _lastBlock) {
+        NSFetchRequest *req = [BRMerkleBlockEntity fetchRequest];
 
-    NSFetchRequest *req = [BRMerkleBlockEntity fetchRequest];
-
-    req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"height" ascending:NO]];
-    req.predicate = [NSPredicate predicateWithFormat:@"height >= 0 && height != %d", BLOCK_UNKNOWN_HEIGHT];
-    req.fetchLimit = 1;
-    _lastBlock = [[BRMerkleBlockEntity fetchObjects:req].lastObject merkleBlock];
-
-    // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
-    for (int i = CHECKPOINT_COUNT - 1; ! _lastBlock && i >= 0; i--) {
-        if (i == 0 || checkpoint_array[i].timestamp + 7*24*60*60 < self.earliestKeyTime + NSTimeIntervalSince1970) {
-            _lastBlock = [[BRMerkleBlock alloc]
-                          initWithBlockHash:*(UInt256 *)@(checkpoint_array[i].hash).hexToData.reverse.bytes version:1
-                          prevBlock:UINT256_ZERO merkleRoot:UINT256_ZERO timestamp:checkpoint_array[i].timestamp
-                          target:checkpoint_array[i].target nonce:0 totalTransactions:0 hashes:nil flags:nil
-                          height:checkpoint_array[i].height];
+        req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"height" ascending:NO]];
+        req.predicate = [NSPredicate predicateWithFormat:@"height >= 0 && height != %d", BLOCK_UNKNOWN_HEIGHT];
+        req.fetchLimit = 1;
+        _lastBlock = [[BRMerkleBlockEntity fetchObjects:req].lastObject merkleBlock];
+        
+        // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
+        for (int i = CHECKPOINT_COUNT - 1; ! _lastBlock && i >= 0; i--) {
+            if (i == 0 || checkpoint_array[i].timestamp + 7*24*60*60 < self.earliestKeyTime + NSTimeIntervalSince1970) {
+                _lastBlock = [[BRMerkleBlock alloc]
+                              initWithBlockHash:*(UInt256 *)@(checkpoint_array[i].hash).hexToData.reverse.bytes
+                              version:1 prevBlock:UINT256_ZERO merkleRoot:UINT256_ZERO
+                              timestamp:checkpoint_array[i].timestamp target:checkpoint_array[i].target nonce:0
+                              totalTransactions:0 hashes:nil flags:nil height:checkpoint_array[i].height];
+            }
         }
     }
 
+    if (! _lastBlock || uint256_is_zero(_lastBlock.blockHash)) {
+        abort(); // WTF, this should never happen
+    }
+    
     return _lastBlock;
 }
 
@@ -1045,11 +1049,13 @@ static const char *dns_seeds[] = {
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSValue *hash = uint256_obj(transaction.txHash);
+    BOOL syncing = (self.lastBlockHeight < self.downloadPeer.lastblock);
     void (^callback)(NSError *error) = self.publishedCallback[hash];
 
     NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, hash);
 
     transaction.timestamp = [NSDate timeIntervalSinceReferenceDate];
+    if (syncing && ! [manager.wallet containsTransaction:transaction]) return;
     if (! [manager.wallet registerTransaction:transaction]) return;
     if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
 
@@ -1058,7 +1064,7 @@ static const char *dns_seeds[] = {
     }
     
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
-    if (callback || ! [self.txRelays[hash] containsObject:peer]) {
+    if (callback || (! syncing && ! [self.txRelays[hash] containsObject:peer])) {
         if (! self.txRelays[hash]) self.txRelays[hash] = [NSMutableSet set];
         [self.txRelays[hash] addObject:peer];
         if (callback) [self.publishedCallback removeObjectForKey:hash];
@@ -1098,16 +1104,18 @@ static const char *dns_seeds[] = {
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSValue *hash = uint256_obj(txHash);
+    BOOL syncing = (self.lastBlockHeight < self.downloadPeer.lastblock);
     BRTransaction *tx = self.publishedTx[hash];
     void (^callback)(NSError *error) = self.publishedCallback[hash];
     
     NSLog(@"%@:%d has transaction %@", peer.host, peer.port, hash);
     if (! tx) tx = [manager.wallet transactionForHash:txHash];
-    if (! tx || ! [manager.wallet registerTransaction:tx]) return;
+    if (! tx || (syncing && ! [manager.wallet containsTransaction:tx])) return;
+    if (! [manager.wallet registerTransaction:tx]) return;
     if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
     
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
-    if (callback || ! [self.txRelays[hash] containsObject:peer]) {
+    if (callback || (! syncing && ! [self.txRelays[hash] containsObject:peer])) {
         if (! self.txRelays[hash]) self.txRelays[hash] = [NSMutableSet set];
         [self.txRelays[hash] addObject:peer];
         if (callback) [self.publishedCallback removeObjectForKey:hash];
