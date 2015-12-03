@@ -406,7 +406,8 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 {
     NSData *d = getKeychainData(CREATION_TIME_KEY, nil);
 
-    return (d.length < sizeof(NSTimeInterval)) ? BIP39_CREATION_TIME : *(const NSTimeInterval *)d.bytes;
+    if (d.length == sizeof(NSTimeInterval)) return *(const NSTimeInterval *)d.bytes;
+    return (self.watchOnly) ? 0 : BIP39_CREATION_TIME;
 }
 
 // private key for signing authenticated api calls

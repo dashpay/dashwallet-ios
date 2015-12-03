@@ -325,10 +325,6 @@ static const char *dns_seeds[] = {
 
 - (BRMerkleBlock *)lastBlock
 {
-    if (_lastBlock && _lastBlock.height == 0) {
-        abort();
-    }
-    
     if (_lastBlock) return _lastBlock;
 
     NSFetchRequest *req = [BRMerkleBlockEntity fetchRequest];
@@ -347,10 +343,6 @@ static const char *dns_seeds[] = {
                           target:checkpoint_array[i].target nonce:0 totalTransactions:0 hashes:nil flags:nil
                           height:checkpoint_array[i].height];
         }
-    }
-
-    if (_lastBlock.height == 0) {
-        abort();
     }
 
     return _lastBlock;
