@@ -70,10 +70,6 @@
         UInt256 hash = (blockHash.length == sizeof(UInt256)) ? *(const UInt256 *)blockHash.bytes : UINT256_ZERO,
                 prev = (prevBlock.length == sizeof(UInt256)) ? *(const UInt256 *)prevBlock.bytes : UINT256_ZERO,
                 root = (merkleRoot.length == sizeof(UInt256)) ? *(const UInt256 *)merkleRoot.bytes : UINT256_ZERO;
-
-        if (uint256_is_zero(hash)) {
-            abort(); // WTF this shouldn't happen
-        }
         
         block = [[BRMerkleBlock alloc] initWithBlockHash:hash version:self.version prevBlock:prev merkleRoot:root
                  timestamp:self.timestamp + NSTimeIntervalSince1970 target:self.target nonce:self.nonce

@@ -216,28 +216,21 @@ services:(uint64_t)services
     }
 
     if (! self.runLoop) return;
-    
-    // can't use dispatch_async here because the runloop blocks the queue, so schedule on the runloop instead
-    CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
-        [self.inputStream close];
-        [self.outputStream close];
-
-        [self.inputStream removeFromRunLoop:self.runLoop forMode:NSRunLoopCommonModes];
-        [self.outputStream removeFromRunLoop:self.runLoop forMode:NSRunLoopCommonModes];
+    [self.inputStream close];
+    [self.outputStream close];
+    [self.inputStream removeFromRunLoop:self.runLoop forMode:NSRunLoopCommonModes];
+    [self.outputStream removeFromRunLoop:self.runLoop forMode:NSRunLoopCommonModes];
+    CFRunLoopStop([self.runLoop getCFRunLoop]);
         
-        CFRunLoopStop([self.runLoop getCFRunLoop]);
+    _status = BRPeerStatusDisconnected;
+    dispatch_async(self.delegateQueue, ^{
+        while (self.pongHandlers.count) {
+            ((void (^)(BOOL))self.pongHandlers[0])(NO);
+            [self.pongHandlers removeObjectAtIndex:0];
+        }
         
-        _status = BRPeerStatusDisconnected;
-        dispatch_async(self.delegateQueue, ^{
-            while (self.pongHandlers.count) {
-                ((void (^)(BOOL))self.pongHandlers[0])(NO);
-                [self.pongHandlers removeObjectAtIndex:0];
-            }
-            
-            [self.delegate peer:self disconnectedWithError:error];
-        });
+        [self.delegate peer:self disconnectedWithError:error];
     });
-    CFRunLoopWakeUp([self.runLoop getCFRunLoop]);
 }
 
 - (void)error:(NSString *)message, ... NS_FORMAT_FUNCTION(1,2)
@@ -490,29 +483,26 @@ services:(uint64_t)services
 
 - (void)acceptMessage:(NSData *)message type:(NSString *)type
 {
-    CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
-        if (self.currentBlock && ! [MSG_TX isEqual:type]) { // if we receive a non-tx message, merkleblock is done
-            [self error:@"incomplete merkleblock %@, expected %u more tx, got %@",
-             uint256_obj(self.currentBlock.blockHash), (int)self.currentBlockTxHashes.count, type];
-            self.currentBlock = nil;
-            self.currentBlockTxHashes = nil;
-        }
-        else if ([MSG_VERSION isEqual:type]) [self acceptVersionMessage:message];
-        else if ([MSG_VERACK isEqual:type]) [self acceptVerackMessage:message];
-        else if ([MSG_ADDR isEqual:type]) [self acceptAddrMessage:message];
-        else if ([MSG_INV isEqual:type]) [self acceptInvMessage:message];
-        else if ([MSG_TX isEqual:type]) [self acceptTxMessage:message];
-        else if ([MSG_HEADERS isEqual:type]) [self acceptHeadersMessage:message];
-        else if ([MSG_GETADDR isEqual:type]) [self acceptGetaddrMessage:message];
-        else if ([MSG_GETDATA isEqual:type]) [self acceptGetdataMessage:message];
-        else if ([MSG_NOTFOUND isEqual:type]) [self acceptNotfoundMessage:message];
-        else if ([MSG_PING isEqual:type]) [self acceptPingMessage:message];
-        else if ([MSG_PONG isEqual:type]) [self acceptPongMessage:message];
-        else if ([MSG_MERKLEBLOCK isEqual:type]) [self acceptMerkleblockMessage:message];
-        else if ([MSG_REJECT isEqual:type]) [self acceptRejectMessage:message];
-        else NSLog(@"%@:%u dropping %@, len:%u, not implemented", self.host, self.port, type, (int)message.length);
-    });
-    CFRunLoopWakeUp([self.runLoop getCFRunLoop]);
+    if (self.currentBlock && ! [MSG_TX isEqual:type]) { // if we receive a non-tx message, merkleblock is done
+        [self error:@"incomplete merkleblock %@, expected %u more tx, got %@",
+         uint256_obj(self.currentBlock.blockHash), (int)self.currentBlockTxHashes.count, type];
+        self.currentBlock = nil;
+        self.currentBlockTxHashes = nil;
+    }
+    else if ([MSG_VERSION isEqual:type]) [self acceptVersionMessage:message];
+    else if ([MSG_VERACK isEqual:type]) [self acceptVerackMessage:message];
+    else if ([MSG_ADDR isEqual:type]) [self acceptAddrMessage:message];
+    else if ([MSG_INV isEqual:type]) [self acceptInvMessage:message];
+    else if ([MSG_TX isEqual:type]) [self acceptTxMessage:message];
+    else if ([MSG_HEADERS isEqual:type]) [self acceptHeadersMessage:message];
+    else if ([MSG_GETADDR isEqual:type]) [self acceptGetaddrMessage:message];
+    else if ([MSG_GETDATA isEqual:type]) [self acceptGetdataMessage:message];
+    else if ([MSG_NOTFOUND isEqual:type]) [self acceptNotfoundMessage:message];
+    else if ([MSG_PING isEqual:type]) [self acceptPingMessage:message];
+    else if ([MSG_PONG isEqual:type]) [self acceptPongMessage:message];
+    else if ([MSG_MERKLEBLOCK isEqual:type]) [self acceptMerkleblockMessage:message];
+    else if ([MSG_REJECT isEqual:type]) [self acceptRejectMessage:message];
+    else NSLog(@"%@:%u dropping %@, len:%u, not implemented", self.host, self.port, type, (int)message.length);
 }
 
 - (void)acceptVersionMessage:(NSData *)message
@@ -729,7 +719,7 @@ services:(uint64_t)services
             self.currentBlock = nil;
             self.currentBlockTxHashes = nil;
 
-            dispatch_async(self.delegateQueue, ^{
+            dispatch_sync(self.delegateQueue, ^{ // syncronous dispatch so we don't get too many queued up tx
                 [self.delegate peer:self relayedBlock:block];
             });
         }

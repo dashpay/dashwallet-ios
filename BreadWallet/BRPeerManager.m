@@ -199,8 +199,10 @@ static const char *dns_seeds[] = {
 
         [[BRPeerEntity context] performBlockAndWait:^{
             for (BRPeerEntity *e in [BRPeerEntity allObjects]) {
-                if (e.misbehavin == 0) [_peers addObject:[e peer]];
-                else [self.misbehavinPeers addObject:[e peer]];
+                @autoreleasepool {
+                    if (e.misbehavin == 0) [_peers addObject:[e peer]];
+                    else [self.misbehavinPeers addObject:[e peer]];
+                }
             }
         }];
 
@@ -292,9 +294,11 @@ static const char *dns_seeds[] = {
         }
 
         for (BRMerkleBlockEntity *e in [BRMerkleBlockEntity allObjects]) {
-            BRMerkleBlock *b = e.merkleBlock;
+            @autoreleasepool {
+                BRMerkleBlock *b = e.merkleBlock;
 
-            if (b) _blocks[uint256_obj(b.blockHash)] = b;
+                if (b) _blocks[uint256_obj(b.blockHash)] = b;
+            }
         };
     }];
 
@@ -863,8 +867,6 @@ static const char *dns_seeds[] = {
     NSMutableDictionary *blocks = [NSMutableDictionary dictionary];
     BRMerkleBlock *b = self.lastBlock;
 
-    [BRTransactionEntity saveContext];
-
     while (b) {
         blocks[[NSData dataWithBytes:b.blockHash.u8 length:sizeof(UInt256)]] = b;
         b = self.blocks[uint256_obj(b.prevBlock)];
@@ -886,9 +888,9 @@ static const char *dns_seeds[] = {
                 [[BRMerkleBlockEntity managedObject] setAttributesFromBlock:b];
             }
         }
+        
+        [BRMerkleBlockEntity saveContext];
     }];
-    
-    [BRMerkleBlockEntity saveContext];
 }
 
 #pragma mark - BRPeerDelegate
@@ -1237,11 +1239,15 @@ static const char *dns_seeds[] = {
         }
 
         [[BRMerkleBlockEntity context] performBlock:^{ // save transition blocks to core data immediately
-            BRMerkleBlockEntity *e = [BRMerkleBlockEntity objectsMatching:@"blockHash == %@",
-                                      [NSData dataWithBytes:b.blockHash.u8 length:sizeof(UInt256)]].lastObject;
+            @autoreleasepool {
+                BRMerkleBlockEntity *e = [BRMerkleBlockEntity objectsMatching:@"blockHash == %@",
+                                          [NSData dataWithBytes:b.blockHash.u8 length:sizeof(UInt256)]].lastObject;
         
-            if (! e) e = [BRMerkleBlockEntity managedObject];
-            [e setAttributesFromBlock:b];
+                if (! e) e = [BRMerkleBlockEntity managedObject];
+                [e setAttributesFromBlock:b];
+            }
+            
+            [BRMerkleBlockEntity saveContext]; // persist core data to disk
         }];
 
         transitionTime = b.timestamp;
@@ -1250,8 +1256,6 @@ static const char *dns_seeds[] = {
             b = self.blocks[uint256_obj(b.prevBlock)];
             if (b) [self.blocks removeObjectForKey:uint256_obj(b.blockHash)];
         }
-        
-        [BRMerkleBlockEntity saveContext]; // persist core data to disk
     }
 
     // verify block difficulty
@@ -1397,7 +1401,9 @@ static const char *dns_seeds[] = {
                  userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"double spend", nil)}];
     }
     else if (tx && ! [manager.wallet transactionForHash:txHash] && [manager.wallet registerTransaction:tx]) {
-        [BRTransactionEntity saveContext]; // persist transactions to core data
+        [[BRTransactionEntity context] performBlock:^{
+            [BRTransactionEntity saveContext]; // persist transactions to core data
+        }];
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{

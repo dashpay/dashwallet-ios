@@ -244,18 +244,15 @@ static NSUInteger _fetchBatchSize = 100;
         }
 
         if (coordinator) {
-            NSManagedObjectContext *writermoc = nil, *mainmoc = nil;
+            NSManagedObjectContext *moc = nil;
 
             // create a separate context for writing to the persistent store asynchronously
-            writermoc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
-            writermoc.persistentStoreCoordinator = coordinator;
-
-            mainmoc = [[NSManagedObjectContext alloc] initWithConcurrencyType:_concurrencyType];
-            mainmoc.parentContext = writermoc;
+            moc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+            moc.persistentStoreCoordinator = coordinator;
 
             objc_setAssociatedObject([NSManagedObject class], &_storeURLKey, storeURL,
                                      OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-            [NSManagedObject setContext:mainmoc];
+            [NSManagedObject setContext:moc];
 
             // this will save changes to the persistent store before the application terminates
             [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillTerminateNotification object:nil
@@ -287,48 +284,25 @@ static NSUInteger _fetchBatchSize = 100;
 {
     if (! self.context.hasChanges) return;
     
-    [self.context performBlock:^{
-        NSError *error = nil;
-
+    [self.context performBlockAndWait:^{
         if (self.context.hasChanges) {
-            if (! [self.context save:&error]) { // save changes to writer context
-                NSLog(@"%s: %@", __func__, error);
-#if DEBUG
-                abort();
-#endif
-            }
-            
-            [self.context.parentContext performBlock:^{
-                // write changes to persistent store
-                if (self.context.parentContext.hasChanges) {
-                    NSError *error = nil;
-                    NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
-                
-                    // this seems to fix unreleased temporary object IDs
-                    [self.context.parentContext
-                     obtainPermanentIDsForObjects:self.context.parentContext.registeredObjects.allObjects error:nil];
+            @autoreleasepool {
+                NSError *error = nil;
+                NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
 
-                    if (! [self.context.parentContext save:&error]) {
-                        NSLog(@"%s: %@", __func__, error);
-#if DEBUG
-                        abort();
-#endif
-                    }
+                // this seems to fix unreleased temporary object IDs
+                [self.context obtainPermanentIDsForObjects:self.context.registeredObjects.allObjects error:nil];
 
-                    [[UIApplication sharedApplication] endBackgroundTask:taskId];
+                if (! [self.context save:&error]) { // save changes to writer context
+                    NSLog(@"%s: %@", __func__, error);
+#if DEBUG
+                    abort();
+#endif
                 }
-            }];
-            
-            [self.context.parentContext performBlock:^{
-                [self.context.parentContext reset];
-                [self.context.parentContext registeredObjects];
-            }];
+                
+                [[UIApplication sharedApplication] endBackgroundTask:taskId];
+            }
         }
-    }];
-    
-    [self.context performBlock:^{
-        [self.context reset];
-        [self.context registeredObjects]; 
     }];
 }
 

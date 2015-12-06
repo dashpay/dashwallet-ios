@@ -135,19 +135,15 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         }
     }];
     
-    [self.moc performBlock:^{
-        if (updateTx.count > 0) {
+    if (updateTx.count > 0) {
+        [self.moc performBlock:^{
             for (BRTransaction *tx in updateTx) {
                 [[BRTxMetadataEntity managedObject] setAttributesFromTx:tx];
             }
             
             [BRTxMetadataEntity saveContext];
-        }
-        else {
-            [self.moc reset]; // reduces memory footprint
-            [self.moc registeredObjects]; // causes reset to take effect immediately
-        }
-    }];
+        }];
+    }
     
     [self sortTransactions];
     _balance = UINT64_MAX; // trigger balance changed notification even if balance is zero
@@ -452,7 +448,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         if (balance == amount + feeAmount || balance >= amount + feeAmount + self.minOutputAmount) break;
     }
     
-    if (self.balance < amount + feeAmount) { // insufficient funds
+    if (balance < amount + feeAmount) { // insufficient funds
         NSLog(@"Insufficient funds. %llu is less than transaction amount:%llu", balance, amount + feeAmount);
         return nil;
     }
@@ -548,7 +544,6 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         }
     }];
     
-    if ((self.transactions.count % 100) == 0) [BRTxMetadataEntity saveContext];
     return YES;
 }
 
@@ -687,19 +682,35 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         [self sortTransactions];
         [self updateBalance];
 
-        [self.moc performBlock:^{
-            for (BRTransactionEntity *e in [BRTransactionEntity objectsMatching:@"txHash in %@", hashes]) {
-                e.blockHeight = height;
-                e.timestamp = timestamp;
-            }
-            
-            for (BRTxMetadataEntity *e in [BRTxMetadataEntity objectsMatching:@"txHash in %@ && type == %d", hashes,
-                                           TX_MDTYPE_MSG]) {
-                BRTransaction *tx = e.transaction;
+        [self.moc performBlockAndWait:^{
+            @autoreleasepool {
+                NSMutableSet *entities = [NSMutableSet set];
                 
-                tx.blockHeight = height;
-                tx.timestamp = timestamp;
-                [e setAttributesFromTx:tx];
+                for (BRTransactionEntity *e in [BRTransactionEntity objectsMatching:@"txHash in %@", hashes]) {
+                    e.blockHeight = height;
+                    e.timestamp = timestamp;
+                    [entities addObject:e];
+                }
+            
+                for (BRTxMetadataEntity *e in [BRTxMetadataEntity objectsMatching:@"txHash in %@ && type == %d", hashes,
+                                               TX_MDTYPE_MSG]) {
+                    @autoreleasepool {
+                        BRTransaction *tx = e.transaction;
+                        
+                        tx.blockHeight = height;
+                        tx.timestamp = timestamp;
+                        [e setAttributesFromTx:tx];
+                        [entities addObject:e];
+                    }
+                }
+            
+                if (height != TX_UNCONFIRMED) {
+                    [BRTxMetadataEntity saveContext];
+
+                    for (NSManagedObject *e in entities) {
+                        [self.moc refreshObject:e mergeChanges:NO];
+                    }
+                }
             }
         }];
     }

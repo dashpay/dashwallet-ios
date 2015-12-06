@@ -446,6 +446,11 @@
         [self.receiveViewController updateAddress];
         if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
 
+        if (self.navigationController.visibleViewController == self) {
+            [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
+            [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
+        }
+
         if (! [defs boolForKey:HAS_AUTHENTICATED_KEY]) {
             while (! [manager authenticateWithPrompt:nil andTouchId:NO]) { }
             [defs setBool:YES forKey:HAS_AUTHENTICATED_KEY];
@@ -453,8 +458,6 @@
         }
 
         if (self.navigationController.visibleViewController == self) {
-            [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
-            [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
             if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
         }
         
@@ -577,7 +580,11 @@
     if (timeout <= DBL_EPSILON) {
         if ([[BRPeerManager sharedInstance] timestampForBlockHeight:[BRPeerManager sharedInstance].lastBlockHeight] +
             60*60*24*7 < [NSDate timeIntervalSinceReferenceDate]) {
-            [self showSyncing];
+            if ([BRWalletManager sharedInstance].seedCreationTime + 60*60*24 < start) {
+                self.percent.hidden = NO;
+                self.navigationItem.titleView = nil;
+                self.navigationItem.title = NSLocalizedString(@"syncing...", nil);
+            }
         }
         else [self performSelector:@selector(showSyncing) withObject:nil afterDelay:5.0];
     }
