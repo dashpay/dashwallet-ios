@@ -528,7 +528,7 @@ func httpDateNow() -> String {
                                                 try fm.removeItemAtPath(diffPath)
                                             }
                                             if fm.fileExistsAtPath(oldBundlePath) {
-                                                try fm.removeItemAtPath(diffPath)
+                                                try fm.removeItemAtPath(oldBundlePath)
                                             }
                                             try diffDat.writeToFile(diffPath, options: .DataWritingAtomic)
                                             try fm.moveItemAtPath(bundlePath, toPath: oldBundlePath)
@@ -539,6 +539,10 @@ func httpDateNow() -> String {
                                             try extract()
                                             return handler(error: nil)
                                         } catch let e {
+                                            // something failed, clean up whatever we can, next attempt will download fresh
+                                            _ = try? fm.removeItemAtPath(diffPath)
+                                            _ = try? fm.removeItemAtPath(oldBundlePath)
+                                            _ = try? fm.removeItemAtPath(bundlePath)
                                             return handler(error:
                                                 NSLocalizedString("error downloading diff: " + "\(e)", comment: ""))
                                         }
