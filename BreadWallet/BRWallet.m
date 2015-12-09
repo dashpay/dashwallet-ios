@@ -415,7 +415,8 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 
     //TODO: use up all UTXOs for all used addresses to avoid leaving funds in addresses whose public key is revealed
     //TODO: avoid combining addresses in a single transaction when possible to reduce information leakage
-    //TODO: use any UTXOs received from output addresses to mitigate an attacker double spending and requesting a refund
+    //TODO: use up UTXOs received from any of the output scripts that this transaction sends funds to, to mitigate an
+    //      attacker double spending and requesting a refund
     for (NSValue *output in self.utxos) {
         [output getValue:&o];
         tx = self.allTx[uint256_obj(o.hash)];
@@ -423,6 +424,15 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         [transaction addInputHash:tx.txHash index:o.n script:tx.outputScripts[o.n]];
         
         if (transaction.size + 34 > TX_MAX_SIZE) { // transaction size-in-bytes too large
+            NSUInteger txSize = 10 + self.utxos.count*148 + (scripts.count + 1)*34;
+        
+            // check for sufficient total funds before building a smaller transaction
+            if (self.balance < amount + [self feeForTxSize:txSize + cpfpSize]) {
+                NSLog(@"Insufficient funds. %llu is less than transaction amount:%llu", self.balance,
+                      amount + [self feeForTxSize:txSize + cpfpSize]);
+                return nil;
+            }
+        
             uint64_t lastAmount = [amounts.lastObject unsignedLongLongValue];
             NSArray *newAmounts = [amounts subarrayWithRange:NSMakeRange(0, amounts.count - 1)],
                     *newScripts = [scripts subarrayWithRange:NSMakeRange(0, scripts.count - 1)];

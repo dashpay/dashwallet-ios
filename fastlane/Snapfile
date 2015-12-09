@@ -2,8 +2,8 @@
 
 # A list of devices you want to take the screenshots from
 devices([
-#  "iPhone 6",
-#  "iPhone 6 Plus",
+  "iPhone 6",
+  "iPhone 6 Plus",
   "iPhone 5",
 ])
 
@@ -21,6 +21,7 @@ languages([
   'nb-NO',
   'nl-NL',
   'pl-PL',
+  'pt-PT',
   'ru-RU',
   'sq-AL',
   'sv-SE',
@@ -29,7 +30,7 @@ languages([
 ])
 
 # Where should the resulting screenshots be stored?
-screenshots_path "./screenshots"
+output_directory "./screenshots"
 
 clear_previous_screenshots # remove the '#'' to clear all previously generated screenshots before creating new ones
 
@@ -40,14 +41,14 @@ clear_previous_screenshots # remove the '#'' to clear all previously generated s
 scheme 'breadwallet'
 
 # Where is your project (or workspace)? Provide the full path here
-# project_path './YourProject.xcworkspace'
+project_path '../BreadWallet.xcodeproj'
 
 # By default, the latest version should be used automatically. If you want to change it, do it here
 # ios_version '8.1'
 
 # Comment out the line below to add a `SNAPSHOT` preprocessor macro
 # More information available: https://github.com/krausefx/snapshot#custom-args-for-the-build-command
-custom_build_args "GCC_PREPROCESSOR_DEFINITIONS='$(inherited) SNAPSHOT=1'"
+#custom_build_args "GCC_PREPROCESSOR_DEFINITIONS='$(inherited) SNAPSHOT=1'"
 
 
 # Custom Callbacks

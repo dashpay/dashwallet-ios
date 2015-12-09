@@ -345,6 +345,7 @@
     }
 
 #if SNAPSHOT
+    [defs setBool:YES forKey:HAS_AUTHENTICATED_KEY];
     [self.navigationController
      presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"] animated:NO
      completion:^{

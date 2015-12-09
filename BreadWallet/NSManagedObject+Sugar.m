@@ -246,7 +246,6 @@ static NSUInteger _fetchBatchSize = 100;
         if (coordinator) {
             NSManagedObjectContext *moc = nil;
 
-            // create a separate context for writing to the persistent store asynchronously
             moc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
             moc.persistentStoreCoordinator = coordinator;
 
@@ -293,7 +292,7 @@ static NSUInteger _fetchBatchSize = 100;
                 // this seems to fix unreleased temporary object IDs
                 [self.context obtainPermanentIDsForObjects:self.context.registeredObjects.allObjects error:nil];
 
-                if (! [self.context save:&error]) { // save changes to writer context
+                if (! [self.context save:&error]) { // persist changes
                     NSLog(@"%s: %@", __func__, error);
 #if DEBUG
                     abort();
