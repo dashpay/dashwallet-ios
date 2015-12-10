@@ -103,9 +103,10 @@ static NSString *dateFormat(NSString *template)
     manager.didAuthenticate = YES;
     [self unlock:nil];
     tx.txHash = UINT256_ZERO;
-    self.transactions = @[tx, tx, tx, tx, tx, tx];
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+        self.transactions = @[tx, tx, tx, tx, tx, tx];
+        [self.tableView reloadData];
         self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [manager stringForAmount:42980000],
                                      [manager localCurrencyStringForAmount:42980000]];
     });
