@@ -404,10 +404,6 @@
     if (self.protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.protectedObserver];
     self.protectedObserver = nil;
 
-#if SNAPSHOT
-    [defs setBool:YES forKey:HAS_AUTHENTICATED_KEY];
-#endif
-
     if ([defs integerForKey:SETTINGS_MAX_DIGITS_KEY] == 5) {
         manager.format.currencySymbol = @"m" BTC NARROW_NBSP;
         manager.format.maximumFractionDigits = 5;
@@ -453,6 +449,10 @@
             [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
             [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
         }
+
+#if SNAPSHOT
+        return;
+#endif
 
         if (! [defs boolForKey:HAS_AUTHENTICATED_KEY]) {
             while (! [manager authenticateWithPrompt:nil andTouchId:NO]) { }
