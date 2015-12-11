@@ -583,10 +583,13 @@ func httpDateNow() -> String {
         }
     }
     
-    public func serveBundle(bundleName: String) -> BRHTTPServer? {
+    public func serveBundle(bundleName: String, debugURL: String? = nil) -> BRHTTPServer? {
         let ret = BRHTTPServer(baseDirectory: BRAPIClient.bundleURL(bundleName))
         do {
             try ret.start()
+            if debugURL != nil {
+                ret.debugURL = NSURL(string: debugURL!)
+            }
             return ret
         } catch let e {
             log("Error starting http server: \(e)")
@@ -1115,10 +1118,18 @@ enum BRHTTPServerError: ErrorType {
     var fd: Int32 = -1
     var clients: Set<Int32> = []
     var path: NSURL
+    var debugURL: NSURL?
     
     init(baseDirectory: NSURL) {
         path = baseDirectory
         super.init()
+    }
+    
+    // call debugFrom(NSURL(string: "BASE_URL")) to proxy assets from a debug server, instead of serving them from a 
+    // local directory. use this when developing by starting a local server pointing to your dev assets that would
+    // normally be in the bundle
+    func debugFrom(URL: NSURL?) {
+        debugURL = URL
     }
     
     func start(port: in_port_t = 8888, maxPendingConnections: Int32 = SOMAXCONN) throws {
@@ -1214,24 +1225,28 @@ enum BRHTTPServerError: ErrorType {
     }
     
     private func dispatch(req: HTTPRequest) throws {
-        NSLog("dispatching path: \(req.path)")
-        NSLog("dispatching method: \(req.method)")
-        NSLog("dispatching headers: \(req.headers)")
-        
-        var reqPath = req.path.stringByTrimmingCharactersInSet(NSCharacterSet(charactersInString: "/"))
-        if reqPath.rangeOfString("?") != nil {
-            reqPath = reqPath.componentsSeparatedByString("?")[0]
+        var fileURL: NSURL!
+        if debugURL == nil {
+            var reqPath = req.path.stringByTrimmingCharactersInSet(NSCharacterSet(charactersInString: "/"))
+            if reqPath.rangeOfString("?") != nil {
+                reqPath = reqPath.componentsSeparatedByString("?")[0]
+            }
+            
+            fileURL = path.URLByAppendingPathComponent(reqPath)
+        } else {
+            var reqPath = req.path
+            if (debugURL!.path!.hasSuffix("/")) {
+                reqPath = reqPath.substringFromIndex(reqPath.startIndex.advancedBy(1))
+            }
+            fileURL = debugURL!.URLByAppendingPathComponent(reqPath)
         }
         
-        let fileURL = path.URLByAppendingPathComponent(reqPath)
-        let filePath = fileURL.path!
-        
-        guard let body = NSData(contentsOfFile: filePath) else {
-            NSLog("NOT FOUND: \(filePath)")
+        guard let body = NSData(contentsOfURL: fileURL) else {
             try HTTPResponse(request: req, statusCode: 404, statusReason: "Not Found", headers: nil, body: nil).send()
             return
         }
-        NSLog("GET \(filePath)")
+        NSLog("GET \(fileURL)")
+        NSLog("Detected content type: \(BRHTTPServer.detectContentType(URL: fileURL))")
         
         do {
             let rangeHeader = try req.rangeHeader()

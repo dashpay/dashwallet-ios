@@ -55,7 +55,7 @@ import WebKit
             config.requiresUserActionForMediaPlayback = true
             config.allowsPictureInPictureMediaPlayback = false
             
-            BRAPIClient.sharedClient.serveBundle(bundleName)
+            BRAPIClient.sharedClient.serveBundle("bread-buy", debugURL: "http://localhost:5050")
             let indexUrl = NSURL(string: "http://localhost:8888/index.html")!
             let request = NSURLRequest(URL: indexUrl)
             
