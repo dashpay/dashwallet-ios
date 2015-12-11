@@ -34,6 +34,7 @@
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
 #import "BREventManager.h"
+#import "breadwallet-Swift.h"
 
 #define TRANSACTION_CELL_HEIGHT 75
 
@@ -401,6 +402,12 @@ static NSString *dateFormat(NSString *template)
     [self.tableView endUpdates];
 }
 
+- (void)showBuy
+{
+    BRWebViewController *wvc = [[BRWebViewController alloc] initWithBundleName:@"bread-buy"];
+    [self presentViewController:wvc animated:YES completion:nil];
+}
+
 #pragma mark - UITableViewDataSource
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
@@ -416,7 +423,7 @@ static NSString *dateFormat(NSString *template)
             return (self.moreTx) ? self.transactions.count + 1 : self.transactions.count;
 
         case 1:
-            return 2;
+            return 3;
 
         case 2:
             return 1;
@@ -543,13 +550,19 @@ static NSString *dateFormat(NSString *template)
 
             switch (indexPath.row) {
                 case 0:
-                    cell.textLabel.text = NSLocalizedString(@"import private key", nil);
+                    cell.textLabel.text = NSLocalizedString(@"Buy Bitcoin", nil);
+                    cell.imageView.image = [UIImage imageNamed:@"bitcoin-buy-blue-small"];
+                    cell.imageView.alpha = 1.0;
+                    break;
+                    
+                case 1:
+                    cell.textLabel.text = NSLocalizedString(@"Import Private Key", nil);
                     cell.imageView.image = [UIImage imageNamed:@"cameraguide-blue-small"];
                     cell.imageView.alpha = 1.0;
                     break;
 
-                case 1:
-                    cell.textLabel.text = NSLocalizedString(@"rescan blockchain", nil);
+                case 2:
+                    cell.textLabel.text = NSLocalizedString(@"Rescan Blockchain", nil);
                     cell.imageView.image = [UIImage imageNamed:@"rescan"];
                     cell.imageView.alpha = 0.75;
                     break;
@@ -559,7 +572,7 @@ static NSString *dateFormat(NSString *template)
 
         case 2:
             cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
-            cell.textLabel.text = NSLocalizedString(@"settings", nil);
+            cell.textLabel.text = NSLocalizedString(@"Settings", nil);
             break;
     }
     
@@ -577,7 +590,7 @@ static NSString *dateFormat(NSString *template)
             return nil;
             
         case 2:
-            return NSLocalizedString(@"rescan blockchain if you think you may have missing transactions, "
+            return NSLocalizedString(@"Rescan blockchain if you think you may have missing transactions, "
                                      "or are having trouble sending (rescanning can take several minutes)", nil);
     }
     
@@ -664,12 +677,18 @@ static NSString *dateFormat(NSString *template)
 
         case 1:
             switch (indexPath.row) {
-                case 0: // import private key
+                case 0: // buy bitcoin
+                    [BREventManager saveEvent:@"tx_history:buy_btc"];
+                    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+                    [self showBuy];
+                    break;
+                    
+                case 1: // import private key
                     [BREventManager saveEvent:@"tx_history:import_priv_key"];
                     [self scanQR:nil];
                     break;
 
-                case 1: // rescan blockchain
+                case 2: // rescan blockchain
                     [[BRPeerManager sharedInstance] rescan];
                     [BREventManager saveEvent:@"tx_history:rescan"];
                     [self done:nil];

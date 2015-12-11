@@ -9,3 +9,4 @@
 #import "NSString+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 #import <bzlib.h>
+@import WebKit;
