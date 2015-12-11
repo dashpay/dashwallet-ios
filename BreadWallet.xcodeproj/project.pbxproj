@@ -137,6 +137,7 @@
 		2210DE6E1BEA97840088551E /* breadwallet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "breadwallet-Bridging-Header.h"; sourceTree = "<group>"; };
 		2210DE6F1BEA97840088551E /* TodayExtension-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TodayExtension-Bridging-Header.h"; sourceTree = "<group>"; };
 		2210DE701BEA97840088551E /* BreadWalletTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BreadWalletTests-Bridging-Header.h"; sourceTree = "<group>"; };
+		222040C71C1A3803005CE1C3 /* BRHTTPServerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRHTTPServerTests.swift; sourceTree = "<group>"; };
 		22B6A4471C0E963900673913 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
 		22B6A4491C0ECB7800673913 /* BRBSPatchTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRBSPatchTests.swift; sourceTree = "<group>"; };
 		22FCD22B1C0E68C80066D798 /* BRTarTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRTarTests.swift; sourceTree = "<group>"; };
@@ -670,6 +671,7 @@
 				75D5F3ED191EC270004AB296 /* BreadWalletTests */,
 				22FCD22B1C0E68C80066D798 /* BRTarTests.swift */,
 				22B6A4491C0ECB7800673913 /* BRBSPatchTests.swift */,
+				222040C71C1A3803005CE1C3 /* BRHTTPServerTests.swift */,
 				22FCD22D1C0E6BA30066D798 /* BreadWalletTests-Bridging-Header.h */,
 			);
 			path = BreadWalletTests;
@@ -1030,6 +1032,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				222040C81C1A3803005CE1C3 /* BRHTTPServerTests.swift in Sources */,
 				75D5F3F3191EC270004AB296 /* BreadWalletTests.m in Sources */,
 				22FCD22C1C0E68C80066D798 /* BRTarTests.swift in Sources */,
 				22B6A44A1C0ECB7800673913 /* BRBSPatchTests.swift in Sources */,

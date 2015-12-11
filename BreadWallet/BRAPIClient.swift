@@ -447,6 +447,14 @@ func httpDateNow() -> String {
     
     // MARK: Assets API
     
+    public class func bundleURL(bundleName: String) -> NSURL {
+        let fm = NSFileManager.defaultManager()
+        let docsUrl = fm.URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).first!
+        let bundleDirUrl = docsUrl.URLByAppendingPathComponent("bundles", isDirectory: true)
+        let bundleUrl = bundleDirUrl.URLByAppendingPathComponent("\(bundleName)-extracted", isDirectory: true)
+        return bundleUrl
+    }
+    
     public func updateBundle(bundleName: String, handler: (error: String?) -> Void) {
         // 1. check if we already have a bundle given the name
         // 2. if we already have it:
@@ -573,6 +581,17 @@ func httpDateNow() -> String {
                 }
             }.resume()
         }
+    }
+    
+    public func serveBundle(bundleName: String) -> BRHTTPServer? {
+        let ret = BRHTTPServer(baseDirectory: BRAPIClient.bundleURL(bundleName))
+        do {
+            try ret.start()
+            return ret
+        } catch let e {
+            log("Error starting http server: \(e)")
+        }
+        return nil
     }
 }
 
@@ -749,7 +768,7 @@ class BRTar {
     static let tarSizePosition: UInt64 = 124
     static let tarSizeSize: UInt64 = 12
     static let tarMaxBlockLoadInMemory: UInt64 = 100
-    static let tarLogEnabled: Bool = true
+    static let tarLogEnabled: Bool = false
     
     static func createFilesAndDirectoriesAtPath(path: String, withTarPath tarPath: String) throws {
         let fm = NSFileManager.defaultManager()
@@ -1078,6 +1097,296 @@ class BRBSPatch {
     static private func log(string: String) {
         if patchLogEnabled {
             print("[BRBSPatch] \(string)")
+        }
+    }
+}
+
+enum BRHTTPServerError: ErrorType {
+    case SocketCreationFailed
+    case SocketBindFailed
+    case SocketListenFailed
+    case SocketRecvFailed
+    case SocketWriteFailed
+    case InvalidHttpRequest
+    case InvalidRangeHeader
+}
+
+@objc public class BRHTTPServer: NSObject {
+    var fd: Int32 = -1
+    var clients: Set<Int32> = []
+    var path: NSURL
+    
+    init(baseDirectory: NSURL) {
+        path = baseDirectory
+        super.init()
+    }
+    
+    func start(port: in_port_t = 8888, maxPendingConnections: Int32 = SOMAXCONN) throws {
+        stop()
+        
+        let sfd = socket(AF_INET, SOCK_STREAM, 0)
+        if sfd == -1 {
+            throw BRHTTPServerError.SocketCreationFailed
+        }
+        var v: Int32 = 1
+        if setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &v, socklen_t(sizeof(Int32))) == -1 {
+            Darwin.shutdown(sfd, SHUT_RDWR)
+            close(sfd)
+            throw BRHTTPServerError.SocketCreationFailed
+        }
+        v = 1
+        setsockopt(sfd, SOL_SOCKET, SO_NOSIGPIPE, &v, socklen_t(sizeof(Int32)))
+        var addr = sockaddr_in()
+        addr.sin_len = __uint8_t(sizeof(sockaddr_in))
+        addr.sin_family = sa_family_t(AF_INET)
+        addr.sin_port = Int(OSHostByteOrder()) == OSLittleEndian ? _OSSwapInt16(port) : port
+        addr.sin_addr = in_addr(s_addr: inet_addr("0.0.0.0"))
+        addr.sin_zero = (0, 0, 0, 0, 0, 0, 0 ,0)
+        
+        var bind_addr = sockaddr()
+        memcpy(&bind_addr, &addr, Int(sizeof(sockaddr_in)))
+        
+        if bind(sfd, &bind_addr, socklen_t(sizeof(sockaddr_in))) == -1 {
+            Darwin.shutdown(sfd, SHUT_RDWR)
+            close(sfd)
+            throw BRHTTPServerError.SocketBindFailed
+        }
+        
+        if listen(sfd, maxPendingConnections) == -1 {
+            Darwin.shutdown(sfd, SHUT_RDWR)
+            close(sfd)
+            throw BRHTTPServerError.SocketListenFailed
+        }
+        
+        fd = sfd
+        acceptClients()
+    }
+    
+    func stop() {
+        Darwin.shutdown(fd, SHUT_RDWR)
+        close(fd)
+        fd = -1
+        objc_sync_enter(self)
+        defer { objc_sync_exit(self) }
+        for cli_fd in self.clients {
+            Darwin.shutdown(cli_fd, SHUT_RDWR)
+        }
+        self.clients.removeAll(keepCapacity: true)
+    }
+    
+    func addClient(cli_fd: Int32) {
+        objc_sync_enter(self)
+        defer { objc_sync_exit(self) }
+        clients.insert(cli_fd)
+    }
+    
+    func rmClient(cli_fd: Int32) {
+        objc_sync_enter(self)
+        defer { objc_sync_exit(self) }
+        clients.remove(cli_fd)
+    }
+    
+    private func acceptClients() {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) { () -> Void in
+            while true {
+                var addr = sockaddr(sa_len: 0, sa_family: 0, sa_data: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+                var len: socklen_t = 0
+                let cli_fd = accept(self.fd, &addr, &len)
+                if cli_fd == -1 {
+                    break
+                }
+                var v: Int32 = 1
+                setsockopt(cli_fd, SOL_SOCKET, SO_NOSIGPIPE, &v, socklen_t(sizeof(Int32)))
+                self.addClient(cli_fd)
+                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) { () -> Void in
+                    while let req = try? HTTPRequest(readFromFd: cli_fd) {
+                        do { try self.dispatch(req) } catch { break }
+                        if !req.isKeepAlive { break }
+                    }
+                    Darwin.shutdown(cli_fd, SHUT_RDWR)
+                    close(cli_fd)
+                    self.rmClient(cli_fd)
+                }
+            }
+            self.stop()
+        }
+    }
+    
+    private func dispatch(req: HTTPRequest) throws {
+        NSLog("dispatching path: \(req.path)")
+        NSLog("dispatching method: \(req.method)")
+        NSLog("dispatching headers: \(req.headers)")
+        
+        let filePath = path.URLByAppendingPathComponent(req.path).path!
+        
+        guard let body = NSData(contentsOfFile: filePath) else {
+            NSLog("NOT FOUND: \(filePath)")
+            try HTTPResponse(request: req, statusCode: 404, statusReason: "Not Found", headers: nil, body: nil).send()
+            return
+        }
+        NSLog("GET \(filePath)")
+        
+        do {
+            let rangeHeader = try req.rangeHeader()
+            if rangeHeader != nil {
+                let (end, start) = rangeHeader!
+                let length = end - start
+                let range = NSRange(location: start, length: length + 1)
+                guard range.location + range.length <= body.length else {
+                    try HTTPResponse(
+                        request: req, statusCode: 418, statusReason: "Request Range Not Satisfiable",
+                        headers: nil, body: nil).send()
+                    return
+                }
+                let subDat = body.subdataWithRange(range)
+                let headers = [
+                    "Content-Range": ["bytes \(start)-\(end)/\(body.length)"]
+                ]
+                var ary = [UInt8](count: subDat.length, repeatedValue: 0)
+                subDat.getBytes(&ary, length: subDat.length)
+                try HTTPResponse(request: req, statusCode: 200, statusReason: "OK", headers: headers, body: ary).send()
+                return
+            }
+        } catch {
+            try HTTPResponse(
+                request: req, statusCode: 500, statusReason: "Bad Request", headers: nil,
+                body: [UInt8]("Invalid Range Header".utf8)).send()
+            return
+        }
+        
+        var ary = [UInt8](count: body.length, repeatedValue: 0)
+        body.getBytes(&ary, length: body.length)
+        try HTTPResponse(request: req, statusCode: 200, statusReason: "OK", headers: nil, body: ary).send()
+        return
+    }
+    
+    struct HTTPRequest {
+        var fd: Int32
+        var method: String = "GET"
+        var path: String = "/"
+        var headers: [String: [String]] = [String: [String]]()
+        
+        var isKeepAlive: Bool {
+            return (headers["connection"] != nil
+                    && headers["connection"]?.count > 0
+                    && headers["connection"]![0] == "keep-alive")
+        }
+        
+        static let rangeRe = try! NSRegularExpression(pattern: "bytes=(\\d*)-(\\d*)", options: .CaseInsensitive)
+        
+        init(readFromFd: Int32) throws {
+            fd = readFromFd
+            let status = try readLine()
+            let statusParts = status.componentsSeparatedByString(" ")
+            if statusParts.count < 3 {
+                throw BRHTTPServerError.InvalidHttpRequest
+            }
+            method = statusParts[0]
+            path = statusParts[1]
+            while true {
+                let hdr = try readLine()
+                if hdr.isEmpty { break }
+                let hdrParts = hdr.componentsSeparatedByString(":")
+                if hdrParts.count >= 2 {
+                    let name = hdrParts[0].lowercaseString
+                    let hdrVal = hdrParts[1..<hdrParts.count].joinWithSeparator(":").stringByTrimmingCharactersInSet(
+                        NSCharacterSet.whitespaceCharacterSet())
+                    if headers[name] != nil {
+                        headers[name]?.append(hdrVal)
+                    } else {
+                        headers[name] = [hdrVal]
+                    }
+                }
+            }
+        }
+        
+        func readLine() throws -> String {
+            var chars: String = ""
+            var n = 0
+            repeat {
+                n = self.read()
+                if (n > 13 /* CR */) { chars.append(Character(UnicodeScalar(n))) }
+            } while n > 0 && n != 10 /* NL */
+            if n == -1 {
+                throw BRHTTPServerError.SocketRecvFailed
+            }
+            return chars
+        }
+        
+        func read() -> Int {
+            var buf = [UInt8](count: 1, repeatedValue: 0)
+            let n = recv(fd, &buf, 1, 0)
+            if n <= 0 {
+                return n
+            }
+            return Int(buf[0])
+        }
+        
+        func rangeHeader() throws -> (Int, Int)? {
+            if headers["range"] == nil {
+                return nil
+            }
+            guard let rngHeader = headers["range"]?[0],
+                match = HTTPRequest.rangeRe.matchesInString(rngHeader, options: .Anchored, range:
+                    NSRange(location: 0, length: rngHeader.characters.count)).first
+            where match.numberOfRanges == 3 else {
+                throw BRHTTPServerError.InvalidRangeHeader
+            }
+            let startStr = (rngHeader as NSString).substringWithRange(match.rangeAtIndex(1))
+            let endStr = (rngHeader as NSString).substringWithRange(match.rangeAtIndex(2))
+            guard let start = Int(startStr), end = Int(endStr) else {
+                throw BRHTTPServerError.InvalidRangeHeader
+            }
+            return (start, end)
+        }
+    }
+    
+    struct HTTPResponse {
+        var request: HTTPRequest
+        var statusCode: Int?
+        var statusReason: String?
+        var headers: [String: [String]]?
+        var body: [UInt8]?
+        
+        func send() throws {
+            let status = statusCode ?? 200
+            let reason = statusReason ?? "OK"
+            try writeUTF8("HTTP/1.1 \(status) \(reason)\r\n")
+            
+            let length = body?.count ?? 0
+            try writeUTF8("Content-Length: \(length)\r\n")
+            if request.isKeepAlive {
+                try writeUTF8("Connection: keep-alive\r\n")
+            }
+            let hdrs = headers ?? [String: [String]]()
+            for (n, v) in hdrs {
+                for yv in v {
+                    try writeUTF8("\(n): \(yv)\r\n")
+                }
+            }
+            
+            try writeUTF8("\r\n")
+            
+            if let b = body {
+                try writeUInt8(b)
+            }
+        }
+        
+        private func writeUTF8(s: String) throws {
+            try writeUInt8([UInt8](s.utf8))
+        }
+        
+        private func writeUInt8(data: [UInt8]) throws {
+            try data.withUnsafeBufferPointer { pointer in
+                var sent = 0
+                while sent < data.count {
+                    let s = write(request.fd, pointer.baseAddress + sent, Int(data.count - sent))
+                    if s <= 0 {
+                        throw BRHTTPServerError.SocketWriteFailed
+                    }
+                    sent += s
+                }
+            }
         }
     }
 }
