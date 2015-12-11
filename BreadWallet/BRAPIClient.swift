@@ -1160,6 +1160,7 @@ enum BRHTTPServerError: ErrorType {
         
         fd = sfd
         acceptClients()
+        NSLog("Serving \(path) on \(port)")
     }
     
     func stop() {
@@ -1217,7 +1218,12 @@ enum BRHTTPServerError: ErrorType {
         NSLog("dispatching method: \(req.method)")
         NSLog("dispatching headers: \(req.headers)")
         
-        let filePath = path.URLByAppendingPathComponent(req.path).path!
+        var reqPath = req.path.stringByTrimmingCharactersInSet(NSCharacterSet(charactersInString: "/"))
+        if reqPath.rangeOfString("?") != nil {
+            reqPath = reqPath.componentsSeparatedByString("?")[0]
+        }
+        
+        let filePath = path.URLByAppendingPathComponent(reqPath).path!
         
         guard let body = NSData(contentsOfFile: filePath) else {
             NSLog("NOT FOUND: \(filePath)")
@@ -1249,7 +1255,7 @@ enum BRHTTPServerError: ErrorType {
             }
         } catch {
             try HTTPResponse(
-                request: req, statusCode: 500, statusReason: "Bad Request", headers: nil,
+                request: req, statusCode: 400, statusReason: "Bad Request", headers: nil,
                 body: [UInt8]("Invalid Range Header".utf8)).send()
             return
         }
