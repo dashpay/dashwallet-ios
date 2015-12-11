@@ -43,7 +43,7 @@
 #define CIRCLE  @"\xE2\x97\x8C" // dotted circle (utf-8)
 #define DOT     @"\xE2\x97\x8F" // black circle (utf-8)
 
-#define UNSPENT_URL    @"https://api.blockcypher.com/v1/btc/%@/addrs/%@?unspentOnly=1&includeScript=1&limit=200"
+#define UNSPENT_URL    @"https://api.breadwallet.com/q/addr/%@/utxo"
 #define TICKER_URL     @"https://bitpay.com/rates"
 #define FEE_PER_KB_URL @"https://api.breadwallet.com/v1/fee-per-kb"
 
@@ -945,10 +945,10 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 - (void)utxosForAddress:(NSString *)address
 completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error))completion
 {
-    NSURL *u = [NSURL URLWithString:[NSString stringWithFormat:UNSPENT_URL, @"main", address]];
-#if BITCOIN_TESTNET
-    u = [NSURL URLWithString:[NSString stringWithFormat:UNSPENT_URL, @"test3", address]];
-#endif
+    NSURL *u = [NSURL URLWithString:[NSString stringWithFormat:UNSPENT_URL, address]];
+//#if BITCOIN_TESTNET
+//    u = [NSURL URLWithString:[NSString stringWithFormat:UNSPENT_URL, @"test3", address]];
+//#endif
     NSURLRequest *req = [NSURLRequest requestWithURL:u cachePolicy:NSURLRequestReloadIgnoringCacheData
                          timeoutInterval:20.0];
     
@@ -969,21 +969,21 @@ completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError
             return;
         }
         
-        if (! [json isKindOfClass:[NSDictionary class]] || ! [json[@"txrefs"] isKindOfClass:[NSArray class]]) {
+        if (! [json isKindOfClass:[NSArray class]]) {
             completion(nil, nil, nil,
                        [NSError errorWithDomain:@"BreadWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
                         [NSString stringWithFormat:NSLocalizedString(@"unexpected response from %@", nil), u.host]}]);
             return;
         }
         
-        for (NSDictionary *txref in json[@"txrefs"]) {
-            if (! [txref isKindOfClass:[NSDictionary class]] ||
-                ! [txref[@"tx_hash"] isKindOfClass:[NSString class]] ||
-                [txref[@"tx_hash"] hexToData].length != sizeof(UInt256) ||
-                ! [txref[@"tx_output_n"] isKindOfClass:[NSNumber class]] ||
-                ! [txref[@"script"] isKindOfClass:[NSString class]] ||
-                ! [txref[@"script"] hexToData] ||
-                ! [txref[@"value"] isKindOfClass:[NSNumber class]]) {
+        for (NSDictionary *utxo in json) {
+            if (! [utxo isKindOfClass:[NSDictionary class]] ||
+                ! [utxo[@"txid"] isKindOfClass:[NSString class]] ||
+                [utxo[@"txid"] hexToData].length != sizeof(UInt256) ||
+                ! [utxo[@"vout"] isKindOfClass:[NSNumber class]] ||
+                ! [utxo[@"scriptPubKey"] isKindOfClass:[NSString class]] ||
+                ! [utxo[@"scriptPubKey"] hexToData] ||
+                ! [utxo[@"amount"] isKindOfClass:[NSNumber class]]) {
                 completion(nil, nil, nil,
                            [NSError errorWithDomain:@"BreadWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
                             [NSString stringWithFormat:NSLocalizedString(@"unexpected response from %@", nil),
@@ -991,11 +991,11 @@ completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError
                 return;
             }
             
-            o.hash = *(const UInt256 *)[txref[@"tx_hash"] hexToData].reverse.bytes;
-            o.n = [txref[@"tx_output_n"] unsignedIntValue];
+            o.hash = *(const UInt256 *)[utxo[@"txid"] hexToData].reverse.bytes;
+            o.n = [utxo[@"vout"] unsignedIntValue];
             [utxos addObject:brutxo_obj(o)];
-            [amounts addObject:txref[@"value"]];
-            [scripts addObject:[txref[@"script"] hexToData]];
+            [amounts addObject:utxo[@"amount"]];
+            [scripts addObject:[utxo[@"scriptPubKey"] hexToData]];
         }
         
         completion(utxos, amounts, scripts, nil);
