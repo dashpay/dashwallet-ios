@@ -1223,7 +1223,8 @@ enum BRHTTPServerError: ErrorType {
             reqPath = reqPath.componentsSeparatedByString("?")[0]
         }
         
-        let filePath = path.URLByAppendingPathComponent(reqPath).path!
+        let fileURL = path.URLByAppendingPathComponent(reqPath)
+        let filePath = fileURL.path!
         
         guard let body = NSData(contentsOfFile: filePath) else {
             NSLog("NOT FOUND: \(filePath)")
@@ -1246,7 +1247,8 @@ enum BRHTTPServerError: ErrorType {
                 }
                 let subDat = body.subdataWithRange(range)
                 let headers = [
-                    "Content-Range": ["bytes \(start)-\(end)/\(body.length)"]
+                    "Content-Range": ["bytes \(start)-\(end)/\(body.length)"],
+                    "Content-Type": [BRHTTPServer.detectContentType(URL: fileURL)]
                 ]
                 var ary = [UInt8](count: subDat.length, repeatedValue: 0)
                 subDat.getBytes(&ary, length: subDat.length)
@@ -1262,8 +1264,38 @@ enum BRHTTPServerError: ErrorType {
         
         var ary = [UInt8](count: body.length, repeatedValue: 0)
         body.getBytes(&ary, length: body.length)
-        try HTTPResponse(request: req, statusCode: 200, statusReason: "OK", headers: nil, body: ary).send()
+        try HTTPResponse(request: req, statusCode: 200, statusReason: "OK",
+                         headers: ["Content-Type": [BRHTTPServer.detectContentType(URL: fileURL)]], body: ary).send()
         return
+    }
+    
+    private static func detectContentType(URL url: NSURL) -> String {
+        if let ext = url.pathExtension {
+            switch ext {
+                case "ttf":
+                    return "application/font-truetype"
+                case "woff":
+                    return "application/font-woff"
+                case "otf":
+                    return "application/font-opentype"
+                case "svg":
+                    return "image/svg+xml"
+                case "html":
+                    return "text/html"
+                case "png":
+                    return "image/png"
+                case "jpeg", "jpg":
+                    return "image/jpeg"
+                case "css":
+                    return "text/css"
+                case "js":
+                    return "application/javascript"
+                case "json":
+                    return "application/json"
+                default: break
+            }
+        }
+        return "application/octet-stream"
     }
     
     struct HTTPRequest {
