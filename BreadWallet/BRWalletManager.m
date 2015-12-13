@@ -871,13 +871,13 @@ static NSString *getKeychainString(NSString *key, NSError **error)
             if (now > self.secureTime) [defs setDouble:now forKey:SECURE_TIME_KEY];
         }
 
-        if (error || ! [json isKindOfClass:[NSDictionary class]] || ! [json[@"data"] isKindOfClass:[NSArray class]]) {
+        if (error || ! [json isKindOfClass:[NSDictionary class]] || ! [json[@"body"] isKindOfClass:[NSArray class]]) {
             NSLog(@"unexpected response from %@:\n%@", req.URL.host,
                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             return;
         }
         
-        for (NSDictionary *d in json[@"data"]) {
+        for (NSDictionary *d in json[@"body"]) {
             if (! [d isKindOfClass:[NSDictionary class]] || ! [d[@"code"] isKindOfClass:[NSString class]] ||
                 ! [d[@"name"] isKindOfClass:[NSString class]] || ! [d[@"rate"] isKindOfClass:[NSNumber class]]) {
                 NSLog(@"unexpected response from %@:\n%@", req.URL.host,
