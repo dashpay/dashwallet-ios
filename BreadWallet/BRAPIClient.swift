@@ -1238,6 +1238,9 @@ enum BRHTTPServerError: ErrorType {
             if (debugURL!.path!.hasSuffix("/")) {
                 reqPath = reqPath.substringFromIndex(reqPath.startIndex.advancedBy(1))
             }
+            if reqPath.rangeOfString("?") != nil {
+                reqPath = reqPath.componentsSeparatedByString("?")[0]
+            }
             fileURL = debugURL!.URLByAppendingPathComponent(reqPath)
         }
         
