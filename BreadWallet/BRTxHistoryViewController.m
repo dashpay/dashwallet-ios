@@ -65,6 +65,7 @@ static NSString *dateFormat(NSString *template)
 @property (nonatomic, strong) id backgroundObserver, balanceObserver, txStatusObserver;
 @property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 @property (nonatomic, strong) UIImageView *wallpaper;
+@property (nonatomic, strong) BRWebViewController *buyController;
 
 @end
 
@@ -85,6 +86,9 @@ static NSString *dateFormat(NSString *template)
     [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
     self.navigationController.delegate = self;
     self.moreTx = YES;
+    
+    self.buyController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy"];
+    [self.buyController preload];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -404,8 +408,7 @@ static NSString *dateFormat(NSString *template)
 
 - (void)showBuy
 {
-    BRWebViewController *wvc = [[BRWebViewController alloc] initWithBundleName:@"bread-buy"];
-    [self presentViewController:wvc animated:YES completion:nil];
+    [self presentViewController:self.buyController animated:YES completion:nil];
 }
 
 #pragma mark - UITableViewDataSource

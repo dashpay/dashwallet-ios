@@ -68,6 +68,10 @@ import WebKit
         dismissViewControllerAnimated(true, completion: nil)
     }
     
+    public func preload() {
+        _ = self.view // force webview loading
+    }
+    
     // MARK: WKScriptMessageHandler
     
     public func userContentController(userContentController: WKUserContentController, didReceiveScriptMessage message: WKScriptMessage) {
