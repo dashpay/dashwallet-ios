@@ -31,6 +31,8 @@ import WebKit
     override public func loadView() {
         wkContentController = WKUserContentController()
         
+        wkContentController?.addScriptMessageHandler(self, name: "close")
+        
         let config = WKWebViewConfiguration()
         config.processPool = wkProcessPool
         config.userContentController = wkContentController!
@@ -62,10 +64,20 @@ import WebKit
         edgesForExtendedLayout = .All
     }
     
+    private func closeNow() {
+        dismissViewControllerAnimated(true, completion: nil)
+    }
+    
     // MARK: WKScriptMessageHandler
     
     public func userContentController(userContentController: WKUserContentController, didReceiveScriptMessage message: WKScriptMessage) {
-        
+        switch message.name {
+        case "close":
+            closeNow()
+            break
+        default:
+            break
+        }
     }
     
     // MARK: WKNavigationDelegate
