@@ -56,8 +56,6 @@ import WebKit
         webView?.loadRequest(request)
         webView?.autoresizingMask = [UIViewAutoresizing.FlexibleHeight, UIViewAutoresizing.FlexibleWidth]
         view.addSubview(webView!)
-        
-        self.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .Cancel, target: self, action: "done:")
     }
     
     override public func viewWillAppear(animated: Bool) {
