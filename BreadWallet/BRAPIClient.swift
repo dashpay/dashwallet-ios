@@ -524,6 +524,7 @@ func httpDateNow() -> String {
                                         NSLocalizedString("error extracting bundle: " + "\(e)", comment: ""))
                                 }
                             } else { // don't have the most recent version, download diff
+                                self.log("Fetching most recent version of bundle \(bundleName)")
                                 let req = NSURLRequest(URL:
                                     self.url("/assets/bundles/\(bundleName)/diff/\(curBundleSha)"))
                                 self.dataTaskWithRequest(req, handler: { (diffDat, diffResp, diffErr) -> Void in
@@ -923,12 +924,8 @@ class BRBSPatch {
             }
             return y
         }
-        guard let patchFilePathData = patchFilePath.dataUsingEncoding(NSUTF8StringEncoding) else {
-            log("unable to convert patch file path into data")
-            throw BRBSPatchError.Unknown
-        }
-        let patchFilePathBytes = UnsafePointer<Int8>(patchFilePathData.bytes)
-        let r = UnsafePointer<Int8>("r".dataUsingEncoding(NSASCIIStringEncoding)!.bytes)
+        let patchFilePathBytes = UnsafePointer<Int8>((patchFilePath as NSString).UTF8String)
+        let r = UnsafePointer<Int8>(("r" as NSString).UTF8String)
         
         // open patch file
         guard let f = NSFileHandle(forReadingAtPath: patchFilePath) else {
@@ -967,7 +964,9 @@ class BRBSPatch {
         
         let cpf = fopen(patchFilePathBytes, r)
         if cpf == nil {
-            log("unable to open patch file c")
+            let s = String.fromCString(strerror(errno))
+            let ff = String.fromCString(patchFilePathBytes)
+            log("unable to open patch file c: \(s) \(ff)")
             throw BRBSPatchError.Unknown
         }
         let cpfseek = fseeko(cpf, 32, SEEK_SET)
@@ -1048,10 +1047,12 @@ class BRBSPatch {
             }
             
             // add old data to diff string
-            for i in 0...(Int(crtl[0]) - 1) {
-                if (oldPos + i >= 0) && (oldPos + i < oldSize) {
-                    let np = Int(newPos) + i, op = Int(oldPos) + i
-                    new[np] = new[np] &+ old[op]
+            if crtl[0] > 0 {
+                for i in 0...(Int(crtl[0]) - 1) {
+                    if (oldPos + i >= 0) && (oldPos + i < oldSize) {
+                        let np = Int(newPos) + i, op = Int(oldPos) + i
+                        new[np] = new[np] &+ old[op]
+                    }
                 }
             }
             
