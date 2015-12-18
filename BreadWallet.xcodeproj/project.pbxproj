@@ -10,6 +10,8 @@
 		2204604E1B9F61E600D07B61 /* BREventManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2204604D1B9F61E600D07B61 /* BREventManager.m */; };
 		2204604F1B9F61E600D07B61 /* BREventManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2204604D1B9F61E600D07B61 /* BREventManager.m */; };
 		220460551BA0BEEE00D07B61 /* BREventConfirmView.m in Sources */ = {isa = PBXBuildFile; fileRef = 220460541BA0BEEE00D07B61 /* BREventConfirmView.m */; };
+		31D68B531C23B6C10030FAAA /* breadwalletUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D68B521C23B6C10030FAAA /* breadwalletUITests.swift */; };
+		31D68B5B1C23B6FD0030FAAA /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D68B5A1C23B6FD0030FAAA /* SnapshotHelper.swift */; };
 		751B2B5C1B68911700EA87FB /* BRTxHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 751B2B5B1B68911700EA87FB /* BRTxHistoryViewController.m */; };
 		7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7525B618192453840041C0F2 /* BRNavigationBar.m */; };
 		752E289A192349CE00DB5A3C /* BreadWallet.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 752E2898192349CE00DB5A3C /* BreadWallet.xcdatamodeld */; };
@@ -75,6 +77,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		31D68B551C23B6C10030FAAA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 75D5F3B6191EC270004AB296 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 75D5F3BD191EC270004AB296;
+			remoteInfo = breadwallet;
+		};
 		757FC2521ADA30D100A1FDF7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 75D5F3B6191EC270004AB296 /* Project object */;
@@ -117,6 +126,10 @@
 		2204604D1B9F61E600D07B61 /* BREventManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BREventManager.m; sourceTree = "<group>"; };
 		220460531BA0BEEE00D07B61 /* BREventConfirmView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BREventConfirmView.h; sourceTree = "<group>"; };
 		220460541BA0BEEE00D07B61 /* BREventConfirmView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BREventConfirmView.m; sourceTree = "<group>"; };
+		31D68B501C23B6C10030FAAA /* breadwalletUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = breadwalletUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		31D68B521C23B6C10030FAAA /* breadwalletUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = breadwalletUITests.swift; sourceTree = "<group>"; };
+		31D68B541C23B6C10030FAAA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		31D68B5A1C23B6FD0030FAAA /* SnapshotHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SnapshotHelper.swift; path = fastlane/SnapshotHelper.swift; sourceTree = SOURCE_ROOT; };
 		7509C10C1AF3076000D03FD5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
 		7509C10E1AF3076100D03FD5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		7509C1101AF3720100D03FD5 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Main.strings; sourceTree = "<group>"; };
@@ -335,6 +348,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		31D68B4D1C23B6C10030FAAA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		75D5F3BB191EC270004AB296 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -361,6 +381,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		31D68B511C23B6C10030FAAA /* breadwalletUITests */ = {
+			isa = PBXGroup;
+			children = (
+				31D68B5A1C23B6FD0030FAAA /* SnapshotHelper.swift */,
+				31D68B521C23B6C10030FAAA /* breadwalletUITests.swift */,
+				31D68B541C23B6C10030FAAA /* Info.plist */,
+			);
+			path = breadwalletUITests;
+			sourceTree = "<group>";
+		};
 		752E289B19234A3F00DB5A3C /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -555,6 +585,7 @@
 				75D5F3C7191EC270004AB296 /* BreadWallet */,
 				75D5F3EC191EC270004AB296 /* BreadWalletTests */,
 				BAE12BE81B2DEE7F00895CC5 /* TodayExtension */,
+				31D68B511C23B6C10030FAAA /* breadwalletUITests */,
 				75D5F3C0191EC270004AB296 /* Frameworks */,
 				75D5F3BF191EC270004AB296 /* Products */,
 			);
@@ -566,6 +597,7 @@
 				75D5F3BE191EC270004AB296 /* breadwallet.app */,
 				75D5F3E5191EC270004AB296 /* BreadWalletTests.xctest */,
 				BAE12BE51B2DEE7F00895CC5 /* TodayExtension.appex */,
+				31D68B501C23B6C10030FAAA /* breadwalletUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -708,6 +740,24 @@
 /* End PBXLegacyTarget section */
 
 /* Begin PBXNativeTarget section */
+		31D68B4F1C23B6C10030FAAA /* breadwalletUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 31D68B591C23B6C10030FAAA /* Build configuration list for PBXNativeTarget "breadwalletUITests" */;
+			buildPhases = (
+				31D68B4C1C23B6C10030FAAA /* Sources */,
+				31D68B4D1C23B6C10030FAAA /* Frameworks */,
+				31D68B4E1C23B6C10030FAAA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				31D68B561C23B6C10030FAAA /* PBXTargetDependency */,
+			);
+			name = breadwalletUITests;
+			productName = breadwalletUITests;
+			productReference = 31D68B501C23B6C10030FAAA /* breadwalletUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		75D5F3BD191EC270004AB296 /* breadwallet */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 75D5F3F6191EC270004AB296 /* Build configuration list for PBXNativeTarget "breadwallet" */;
@@ -770,9 +820,15 @@
 			isa = PBXProject;
 			attributes = {
 				CLASSPREFIX = BR;
+				LastSwiftUpdateCheck = 0720;
 				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = "Aaron Voisine";
 				TargetAttributes = {
+					31D68B4F1C23B6C10030FAAA = {
+						CreatedOnToolsVersion = 7.2;
+						DevelopmentTeam = H4T3K787ZT;
+						TestTargetID = 75D5F3BD191EC270004AB296;
+					};
 					75001D3D1A1EE89500585F55 = {
 						CreatedOnToolsVersion = 6.1;
 					};
@@ -839,11 +895,19 @@
 				BAE12BE41B2DEE7F00895CC5 /* TodayExtension */,
 				75D5F3E4191EC270004AB296 /* BreadWalletTests */,
 				75001D3D1A1EE89500585F55 /* submodules */,
+				31D68B4F1C23B6C10030FAAA /* breadwalletUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		31D68B4E1C23B6C10030FAAA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		75D5F3BC191EC270004AB296 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -879,6 +943,15 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		31D68B4C1C23B6C10030FAAA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				31D68B531C23B6C10030FAAA /* breadwalletUITests.swift in Sources */,
+				31D68B5B1C23B6FD0030FAAA /* SnapshotHelper.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		75D5F3BA191EC270004AB296 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -954,6 +1027,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		31D68B561C23B6C10030FAAA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 75D5F3BD191EC270004AB296 /* breadwallet */;
+			targetProxy = 31D68B551C23B6C10030FAAA /* PBXContainerItemProxy */;
+		};
 		757FC2531ADA30D100A1FDF7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 75001D3D1A1EE89500585F55 /* submodules */;
@@ -1080,6 +1158,36 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		31D68B571C23B6C10030FAAA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				INFOPLIST_FILE = breadwalletUITests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.breadwallet.breadwalletUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TEST_TARGET_NAME = breadwallet;
+				USES_XCTRUNNER = YES;
+			};
+			name = Debug;
+		};
+		31D68B581C23B6C10030FAAA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				INFOPLIST_FILE = breadwalletUITests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.breadwallet.breadwalletUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_TARGET_NAME = breadwallet;
+				USES_XCTRUNNER = YES;
+			};
+			name = Release;
+		};
 		75001D3F1A1EE89500585F55 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1310,6 +1418,14 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		31D68B591C23B6C10030FAAA /* Build configuration list for PBXNativeTarget "breadwalletUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				31D68B571C23B6C10030FAAA /* Debug */,
+				31D68B581C23B6C10030FAAA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
 		75001D3E1A1EE89500585F55 /* Build configuration list for PBXLegacyTarget "submodules" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

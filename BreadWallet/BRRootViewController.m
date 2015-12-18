@@ -317,7 +317,7 @@
     
     self.navigationController.delegate = self;
 
-#if BITCOIN_TESTNET
+#if BITCOIN_TESTNET && !SNAPSHOT
     UILabel *label = [UILabel new];
 
     label.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:13.0];
