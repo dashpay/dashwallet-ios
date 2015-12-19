@@ -901,6 +901,13 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         [defs synchronize];
         NSLog(@"exchange rate updated to %@/%@", [self localCurrencyStringForAmount:SATOSHIS],
               [self stringForAmount:SATOSHIS]);
+
+//        dispatch_async(dispatch_get_main_queue(), ^{
+//            if (_wallet) {
+//                [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletBalanceChangedNotification
+//                 object:nil];
+//            }
+//        });
         
         [self updateFeePerKb];
     }] resume];
