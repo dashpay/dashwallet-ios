@@ -10,7 +10,7 @@
 		2204604E1B9F61E600D07B61 /* BREventManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2204604D1B9F61E600D07B61 /* BREventManager.m */; };
 		2204604F1B9F61E600D07B61 /* BREventManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2204604D1B9F61E600D07B61 /* BREventManager.m */; };
 		220460551BA0BEEE00D07B61 /* BREventConfirmView.m in Sources */ = {isa = PBXBuildFile; fileRef = 220460541BA0BEEE00D07B61 /* BREventConfirmView.m */; };
-		31D68B531C23B6C10030FAAA /* breadwalletUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D68B521C23B6C10030FAAA /* breadwalletUITests.swift */; };
+		31D68B531C23B6C10030FAAA /* BreadWalletUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D68B521C23B6C10030FAAA /* BreadWalletUITests.swift */; };
 		31D68B5B1C23B6FD0030FAAA /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D68B5A1C23B6FD0030FAAA /* SnapshotHelper.swift */; };
 		751B2B5C1B68911700EA87FB /* BRTxHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 751B2B5B1B68911700EA87FB /* BRTxHistoryViewController.m */; };
 		7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7525B618192453840041C0F2 /* BRNavigationBar.m */; };
@@ -126,8 +126,8 @@
 		2204604D1B9F61E600D07B61 /* BREventManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BREventManager.m; sourceTree = "<group>"; };
 		220460531BA0BEEE00D07B61 /* BREventConfirmView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BREventConfirmView.h; sourceTree = "<group>"; };
 		220460541BA0BEEE00D07B61 /* BREventConfirmView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BREventConfirmView.m; sourceTree = "<group>"; };
-		31D68B501C23B6C10030FAAA /* breadwalletUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = breadwalletUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		31D68B521C23B6C10030FAAA /* breadwalletUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = breadwalletUITests.swift; sourceTree = "<group>"; };
+		31D68B501C23B6C10030FAAA /* BreadWalletUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BreadWalletUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		31D68B521C23B6C10030FAAA /* BreadWalletUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreadWalletUITests.swift; sourceTree = "<group>"; };
 		31D68B541C23B6C10030FAAA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		31D68B5A1C23B6FD0030FAAA /* SnapshotHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SnapshotHelper.swift; path = fastlane/SnapshotHelper.swift; sourceTree = SOURCE_ROOT; };
 		7509C10C1AF3076000D03FD5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
@@ -381,13 +381,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		31D68B511C23B6C10030FAAA /* breadwalletUITests */ = {
+		31D68B511C23B6C10030FAAA /* BreadWalletUITests */ = {
 			isa = PBXGroup;
 			children = (
 				31D68B5A1C23B6FD0030FAAA /* SnapshotHelper.swift */,
-				31D68B521C23B6C10030FAAA /* breadwalletUITests.swift */,
+				31D68B521C23B6C10030FAAA /* BreadWalletUITests.swift */,
 				31D68B541C23B6C10030FAAA /* Info.plist */,
 			);
+			name = BreadWalletUITests;
 			path = breadwalletUITests;
 			sourceTree = "<group>";
 		};
@@ -583,9 +584,9 @@
 			isa = PBXGroup;
 			children = (
 				75D5F3C7191EC270004AB296 /* BreadWallet */,
-				75D5F3EC191EC270004AB296 /* BreadWalletTests */,
 				BAE12BE81B2DEE7F00895CC5 /* TodayExtension */,
-				31D68B511C23B6C10030FAAA /* breadwalletUITests */,
+				75D5F3EC191EC270004AB296 /* BreadWalletTests */,
+				31D68B511C23B6C10030FAAA /* BreadWalletUITests */,
 				75D5F3C0191EC270004AB296 /* Frameworks */,
 				75D5F3BF191EC270004AB296 /* Products */,
 			);
@@ -597,7 +598,7 @@
 				75D5F3BE191EC270004AB296 /* breadwallet.app */,
 				75D5F3E5191EC270004AB296 /* BreadWalletTests.xctest */,
 				BAE12BE51B2DEE7F00895CC5 /* TodayExtension.appex */,
-				31D68B501C23B6C10030FAAA /* breadwalletUITests.xctest */,
+				31D68B501C23B6C10030FAAA /* BreadWalletUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -650,14 +651,6 @@
 			isa = PBXGroup;
 			children = (
 				75D5F3F2191EC270004AB296 /* BreadWalletTests.m */,
-				75D5F3ED191EC270004AB296 /* BreadWalletTests */,
-			);
-			path = BreadWalletTests;
-			sourceTree = "<group>";
-		};
-		75D5F3ED191EC270004AB296 /* BreadWalletTests */ = {
-			isa = PBXGroup;
-			children = (
 				75CE50B51B5216F100DBC18C /* Info.plist */,
 			);
 			path = BreadWalletTests;
@@ -740,9 +733,9 @@
 /* End PBXLegacyTarget section */
 
 /* Begin PBXNativeTarget section */
-		31D68B4F1C23B6C10030FAAA /* breadwalletUITests */ = {
+		31D68B4F1C23B6C10030FAAA /* BreadWalletUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 31D68B591C23B6C10030FAAA /* Build configuration list for PBXNativeTarget "breadwalletUITests" */;
+			buildConfigurationList = 31D68B591C23B6C10030FAAA /* Build configuration list for PBXNativeTarget "BreadWalletUITests" */;
 			buildPhases = (
 				31D68B4C1C23B6C10030FAAA /* Sources */,
 				31D68B4D1C23B6C10030FAAA /* Frameworks */,
@@ -753,9 +746,9 @@
 			dependencies = (
 				31D68B561C23B6C10030FAAA /* PBXTargetDependency */,
 			);
-			name = breadwalletUITests;
+			name = BreadWalletUITests;
 			productName = breadwalletUITests;
-			productReference = 31D68B501C23B6C10030FAAA /* breadwalletUITests.xctest */;
+			productReference = 31D68B501C23B6C10030FAAA /* BreadWalletUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 		75D5F3BD191EC270004AB296 /* breadwallet */ = {
@@ -894,8 +887,8 @@
 				75D5F3BD191EC270004AB296 /* breadwallet */,
 				BAE12BE41B2DEE7F00895CC5 /* TodayExtension */,
 				75D5F3E4191EC270004AB296 /* BreadWalletTests */,
+				31D68B4F1C23B6C10030FAAA /* BreadWalletUITests */,
 				75001D3D1A1EE89500585F55 /* submodules */,
-				31D68B4F1C23B6C10030FAAA /* breadwalletUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -947,7 +940,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				31D68B531C23B6C10030FAAA /* breadwalletUITests.swift in Sources */,
+				31D68B531C23B6C10030FAAA /* BreadWalletUITests.swift in Sources */,
 				31D68B5B1C23B6FD0030FAAA /* SnapshotHelper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1418,13 +1411,14 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		31D68B591C23B6C10030FAAA /* Build configuration list for PBXNativeTarget "breadwalletUITests" */ = {
+		31D68B591C23B6C10030FAAA /* Build configuration list for PBXNativeTarget "BreadWalletUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				31D68B571C23B6C10030FAAA /* Debug */,
 				31D68B581C23B6C10030FAAA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		75001D3E1A1EE89500585F55 /* Build configuration list for PBXLegacyTarget "submodules" */ = {
 			isa = XCConfigurationList;
