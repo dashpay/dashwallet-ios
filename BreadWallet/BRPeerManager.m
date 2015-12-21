@@ -66,7 +66,7 @@ static const struct { uint32_t height; char *hash; uint32_t timestamp; uint32_t 
 
 static const char *dns_seeds[] = {
     "testnet-seed.breadwallet.com", "testnet-seed.bitcoin.petertodd.org.", "testnet-seed.bluematt.me.",
-    "testnet-seed.alexykot.me."
+    "testnet-seed.bitcoin.schildbach.de"
 };
 
 #else // main net
@@ -98,7 +98,7 @@ static const struct { uint32_t height; char *hash; uint32_t timestamp; uint32_t 
 
 static const char *dns_seeds[] = {
     "seed.breadwallet.com", "seed.bitcoin.sipa.be.", "dnsseed.bluematt.me.", "dnsseed.bitcoin.dashjr.org.",
-    "seed.bitcoinstats.com.", "seed.bitnodes.io."
+    "seed.bitcoinstats.com.", "bitseed.xf2.org.", "seed.bitcoin.jonasschnelli.ch."
 };
 
 #endif
