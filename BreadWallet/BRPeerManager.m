@@ -65,8 +65,8 @@ static const struct { uint32_t height; char *hash; uint32_t timestamp; uint32_t 
 };
 
 static const char *dns_seeds[] = {
-    "testnet-seed.breadwallet.com", "testnet-seed.bitcoin.petertodd.org.", "testnet-seed.bluematt.me.",
-    "testnet-seed.bitcoin.schildbach.de"
+    "testnet-seed.breadwallet.com.", "testnet-seed.bitcoin.petertodd.org.", "testnet-seed.bluematt.me.",
+    "testnet-seed.bitcoin.schildbach.de."
 };
 
 #else // main net
@@ -97,7 +97,7 @@ static const struct { uint32_t height; char *hash; uint32_t timestamp; uint32_t 
 };
 
 static const char *dns_seeds[] = {
-    "seed.breadwallet.com", "seed.bitcoin.sipa.be.", "dnsseed.bluematt.me.", "dnsseed.bitcoin.dashjr.org.",
+    "seed.breadwallet.com.", "seed.bitcoin.sipa.be.", "dnsseed.bluematt.me.", "dnsseed.bitcoin.dashjr.org.",
     "seed.bitcoinstats.com.", "bitseed.xf2.org.", "seed.bitcoin.jonasschnelli.ch."
 };
 
@@ -834,7 +834,7 @@ static const char *dns_seeds[] = {
     NSMutableSet *addrs = [NSMutableSet set];
 
     for (BRPeer *p in peers) {
-        if (p.address.u64[0] != 0 || p.address.u32[2] != CFSwapInt32HostToBig(0xffff)) continue; //skip IPv6 for now
+        if (p.address.u64[0] != 0 || p.address.u32[2] != CFSwapInt32HostToBig(0xffff)) continue; // skip IPv6 for now
         [addrs addObject:@(CFSwapInt32BigToHost(p.address.u32[3]))];
     }
 

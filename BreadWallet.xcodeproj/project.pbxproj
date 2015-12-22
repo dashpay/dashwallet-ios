@@ -389,7 +389,7 @@
 				31D68B541C23B6C10030FAAA /* Info.plist */,
 			);
 			name = BreadWalletUITests;
-			path = breadwalletUITests;
+			path = BreadWalletUITests;
 			sourceTree = "<group>";
 		};
 		752E289B19234A3F00DB5A3C /* Views */ = {
@@ -747,7 +747,7 @@
 				31D68B561C23B6C10030FAAA /* PBXTargetDependency */,
 			);
 			name = BreadWalletUITests;
-			productName = breadwalletUITests;
+			productName = BreadWalletUITests;
 			productReference = 31D68B501C23B6C10030FAAA /* BreadWalletUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
@@ -1155,10 +1155,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_WARN_UNREACHABLE_CODE = YES;
-				INFOPLIST_FILE = breadwalletUITests/Info.plist;
+				INFOPLIST_FILE = BreadWalletUITests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.breadwallet.breadwalletUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.breadwallet.BreadWalletUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TEST_TARGET_NAME = breadwallet;
@@ -1171,10 +1171,10 @@
 			buildSettings = {
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				INFOPLIST_FILE = breadwalletUITests/Info.plist;
+				INFOPLIST_FILE = BreadWalletUITests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.breadwallet.breadwalletUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.breadwallet.BreadWalletUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_TARGET_NAME = breadwallet;
 				USES_XCTRUNNER = YES;

@@ -250,6 +250,7 @@ services:(uint64_t)services
     NSLog(@"%@:%u handshake completed", self.host, self.port);
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending handshake timeout
     _status = BRPeerStatusConnected;
+
     dispatch_async(self.delegateQueue, ^{
         if (_status == BRPeerStatusConnected) [self.delegate peerConnected:self];
     });
@@ -1082,7 +1083,7 @@ services:(uint64_t)services
                         if (self.msgPayload.length < length) continue; // wait for more stream input
                     }
                     
-                    if (self.msgPayload.SHA256_2.u32[0] != checksum) { // verify checksum
+                    if (CFSwapInt32LittleToHost(self.msgPayload.SHA256_2.u32[0]) != checksum) { // verify checksum
                         [self error:@"error reading %@, invalid checksum %x, expected %x, payload length:%u, expected "
                          "length:%u, SHA256_2:%@", type, self.msgPayload.SHA256_2.u32[0], checksum,
                          (int)self.msgPayload.length, length, uint256_obj(self.msgPayload.SHA256_2)];
