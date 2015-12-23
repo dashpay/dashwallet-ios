@@ -341,11 +341,12 @@ static const char *dns_seeds[] = {
         // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
         for (int i = CHECKPOINT_COUNT - 1; ! _lastBlock && i >= 0; i--) {
             if (i == 0 || checkpoint_array[i].timestamp + 7*24*60*60 < self.earliestKeyTime + NSTimeIntervalSince1970) {
-                _lastBlock = [[BRMerkleBlock alloc]
-                              initWithBlockHash:*(UInt256 *)@(checkpoint_array[i].hash).hexToData.reverse.bytes
-                              version:1 prevBlock:UINT256_ZERO merkleRoot:UINT256_ZERO
-                              timestamp:checkpoint_array[i].timestamp target:checkpoint_array[i].target nonce:0
-                              totalTransactions:0 hashes:nil flags:nil height:checkpoint_array[i].height];
+                UInt256 hash = *(UInt256 *)@(checkpoint_array[i].hash).hexToData.reverse.bytes;
+                
+                _lastBlock = [[BRMerkleBlock alloc] initWithBlockHash:hash version:1 prevBlock:UINT256_ZERO
+                              merkleRoot:UINT256_ZERO timestamp:checkpoint_array[i].timestamp
+                              target:checkpoint_array[i].target nonce:0 totalTransactions:0 hashes:nil flags:nil
+                              height:checkpoint_array[i].height];
             }
         }
     }
@@ -502,7 +503,9 @@ static const char *dns_seeds[] = {
         // start the chain download from the most recent checkpoint that's at least a week older than earliestKeyTime
         for (int i = CHECKPOINT_COUNT - 1; ! _lastBlock && i >= 0; i--) {
             if (i == 0 || checkpoint_array[i].timestamp + 7*24*60*60 < self.earliestKeyTime + NSTimeIntervalSince1970) {
-                _lastBlock = self.blocks[@(checkpoint_array[i].hash).hexToData.reverse];
+                UInt256 hash = *(UInt256 *)@(checkpoint_array[i].hash).hexToData.reverse.bytes;
+
+                _lastBlock = self.blocks[uint256_obj(hash)];
             }
         }
 

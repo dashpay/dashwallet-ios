@@ -388,7 +388,6 @@
 				31D68B521C23B6C10030FAAA /* BreadWalletUITests.swift */,
 				31D68B541C23B6C10030FAAA /* Info.plist */,
 			);
-			name = BreadWalletUITests;
 			path = BreadWalletUITests;
 			sourceTree = "<group>";
 		};
