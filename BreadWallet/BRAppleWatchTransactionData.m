@@ -42,10 +42,11 @@
 }
 
 - (void)encodeWithCoder:(NSCoder *)encoder {
-    if (_amountText)                   [encoder encodeObject:_amountText                    forKey:AW_TRANSACTION_DATA_AMOUNT_KEY];
-    if (_amountTextInLocalCurrency)    [encoder encodeObject:_amountTextInLocalCurrency     forKey:AW_TRANSACTION_DATA_AMOUNT_IN_LOCAL_CURRENCY_KEY];
-    if (_dateText)                     [encoder encodeObject:_dateText                      forKey:AW_TRANSACTION_DATA_DATE_KEY];
-    if (_type)                         [encoder encodeObject:@(_type)                       forKey:AW_TRANSACTION_DATA_TYPE_KEY];
+    if (_amountText) [encoder encodeObject:_amountText forKey:AW_TRANSACTION_DATA_AMOUNT_KEY];
+    if (_amountTextInLocalCurrency) [encoder encodeObject:_amountTextInLocalCurrency
+                                                   forKey:AW_TRANSACTION_DATA_AMOUNT_IN_LOCAL_CURRENCY_KEY];
+    if (_dateText) [encoder encodeObject:_dateText forKey:AW_TRANSACTION_DATA_DATE_KEY];
+    if (_type) [encoder encodeObject:@(_type) forKey:AW_TRANSACTION_DATA_TYPE_KEY];
 }
 
 - (BOOL)isEqual:(id)object {

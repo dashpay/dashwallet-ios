@@ -48,17 +48,19 @@
 }
 
 - (void)encodeWithCoder:(NSCoder *)encoder {
-    if (_balance)                   [encoder encodeObject:_balance                      forKey:AW_DATA_BALANCE_KEY];
-    if (_balanceInLocalCurrency)    [encoder encodeObject:_balanceInLocalCurrency       forKey:AW_DATA_BALANCE_LOCAL_KEY];
-    if (_receiveMoneyAddress)       [encoder encodeObject:_receiveMoneyAddress          forKey:AW_DATA_RECEIVE_MONEY_ADDRESS];
-    if (_receiveMoneyQRCodeImage)   [encoder encodeObject:_receiveMoneyQRCodeImage      forKey:AW_DATA_RECEIVE_MONEY_QR_CODE];
-    if (_lastestTransction)         [encoder encodeObject:_lastestTransction            forKey:AW_DATA_LATEST_TRANSACTION];
-    if (_transactions)              [encoder encodeObject:_transactions                 forKey:AW_DATA_TRANSACTIONS];
-    if (_hasWallet)                 [encoder encodeObject:@(_hasWallet)                 forKey:AW_DATA_HAS_WALLET];
+    if (_balance) [encoder encodeObject:_balance forKey:AW_DATA_BALANCE_KEY];
+    if (_balanceInLocalCurrency) [encoder encodeObject:_balanceInLocalCurrency forKey:AW_DATA_BALANCE_LOCAL_KEY];
+    if (_receiveMoneyAddress) [encoder encodeObject:_receiveMoneyAddress forKey:AW_DATA_RECEIVE_MONEY_ADDRESS];
+    if (_receiveMoneyQRCodeImage) [encoder encodeObject:_receiveMoneyQRCodeImage forKey:AW_DATA_RECEIVE_MONEY_QR_CODE];
+    if (_lastestTransction) [encoder encodeObject:_lastestTransction forKey:AW_DATA_LATEST_TRANSACTION];
+    if (_transactions) [encoder encodeObject:_transactions forKey:AW_DATA_TRANSACTIONS];
+    if (_hasWallet) [encoder encodeObject:@(_hasWallet) forKey:AW_DATA_HAS_WALLET];
 }
 
 - (NSString*)description {
-    return [NSString stringWithFormat:@"%@,%@,%@,%@,%@,image size:%@",_balance,_balanceInLocalCurrency,_receiveMoneyAddress,@([_transactions count]),_lastestTransction,@(_receiveMoneyQRCodeImage.size.height)];
+    return [NSString stringWithFormat:@"%@,%@,%@,%@,%@,image size:%@",
+            _balance, _balanceInLocalCurrency, _receiveMoneyAddress, @([_transactions count]), _lastestTransction,
+            @(_receiveMoneyQRCodeImage.size.height)];
 }
 
 - (BOOL)isEqual:(id)object {

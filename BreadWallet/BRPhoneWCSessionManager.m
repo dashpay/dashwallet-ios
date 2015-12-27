@@ -58,20 +58,29 @@
             self.session.delegate = self;
             [self.session activateSession];
             [self sendApplicationContext];
-            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sendDataUpdateNotificationToWatch) name:BRWalletBalanceChangedNotification object:nil];
+            [[NSNotificationCenter defaultCenter]
+             addObserver:self selector:@selector(sendDataUpdateNotificationToWatch)
+             name:BRWalletBalanceChangedNotification object:nil];
         }
     }
     return self;
 }
 
 #pragma mark - WKSession delegate
-- (void)session:(WCSession *)session didReceiveMessage:(NSDictionary<NSString *, id> *)message replyHandler:(void(^)(NSDictionary<NSString *, id> *replyMessage))replyHandler {
+- (void)session:(WCSession *)session
+didReceiveMessage:(NSDictionary<NSString *, id> *)message
+   replyHandler:(void(^)(NSDictionary<NSString *, id> *replyMessage))replyHandler {
+    
+    NSLog(@"BRPhoneWCSessionManager didReceiveMessage %@", message);
+    
     if ([message[AW_SESSION_REQUEST_TYPE] integerValue] == AWSessionRquestTypeFetchData) {
         switch ([message[AW_SESSION_REQUEST_DATA_TYPE_KEY] integerValue]) {
             case AWSessionRquestDataTypeApplicationContextData:
                 [self handleApplicationContextDataRequest:message replyHandler:replyHandler];
                 // sync with peer whenever there is a request coming, so we can update watch side. 
-                [(id<UIApplicationDelegate>)[UIApplication sharedApplication].delegate application:[UIApplication sharedApplication] performFetchWithCompletionHandler:^(UIBackgroundFetchResult result) {
+                [(id<UIApplicationDelegate>)[UIApplication sharedApplication].delegate
+                    application:[UIApplication sharedApplication]
+                 performFetchWithCompletionHandler:^(UIBackgroundFetchResult result) {
                 }];
                 break;
             default:
@@ -84,14 +93,18 @@
 
 #pragma mark - request handlers
 
-- (void)handleApplicationContextDataRequest:(NSDictionary*)request replyHandler:(void(^)(NSDictionary<NSString *, id> *replyMessage))replyHandler {
-    NSDictionary *replay = @{AW_SESSION_RESPONSE_KEY: [NSKeyedArchiver archivedDataWithRootObject:[self applicationContextData]]};
+- (void)handleApplicationContextDataRequest:(NSDictionary*)request
+                               replyHandler:(void(^)(NSDictionary<NSString *, id> *replyMessage))replyHandler {
+    NSDictionary *replay = @{AW_SESSION_RESPONSE_KEY:
+                                 [NSKeyedArchiver archivedDataWithRootObject:[self applicationContextData]]};
     replyHandler(replay);
 }
 
 - (void)sendApplicationContext {
     BRAppleWatchData *appleWatchData = [self applicationContextData];
-    [self.session updateApplicationContext:@{AW_APPLICATION_CONTEXT_KEY: [NSKeyedArchiver archivedDataWithRootObject:appleWatchData]} error:nil];
+    [self.session updateApplicationContext:@{AW_APPLICATION_CONTEXT_KEY:
+                                                 [NSKeyedArchiver archivedDataWithRootObject:appleWatchData]}
+                                     error:nil];
 }
 
 - (void)sendDataUpdateNotificationToWatch {
@@ -137,7 +150,11 @@
                 break;
         }
         
-        return [NSString stringWithFormat:@"%@ %@ %@ , %@",transactionTypeString ,[transaction.amountText stringByReplacingOccurrencesOfString:@"-" withString:@""], (transaction.localCurrencyTextForAmount.length > 2) ? transaction.localCurrencyTextForAmount: @"" , timeDescriptionString];
+        return [NSString stringWithFormat:@"%@ %@ %@ , %@",
+                transactionTypeString,
+                [transaction.amountText stringByReplacingOccurrencesOfString:@"-" withString:@""],
+                (transaction.localCurrencyTextForAmount.length > 2) ? transaction.localCurrencyTextForAmount: @"",
+                timeDescriptionString];
     }
     return @"no transaction";
 }
@@ -159,8 +176,10 @@
 
 - (UIImage*)qrCode {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
-    return [UIImage imageWithQRCodeData:[BRPaymentRequest requestWithString:manager.wallet.receiveAddress].data size:CGSizeMake(150, 150)
-                           color:[CIColor colorWithRed:0.0 green:0.0 blue:0.0]];
+    NSData *req = [BRPaymentRequest requestWithString:manager.wallet.receiveAddress].data;
+    return [UIImage imageWithQRCodeData:req
+                                   size:CGSizeMake(150, 150)
+                                  color:[CIColor colorWithRed:0.0 green:0.0 blue:0.0]];
 }
 
 #pragma mark - data helper methods
