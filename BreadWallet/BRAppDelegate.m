@@ -165,7 +165,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
                 [UIApplication sharedApplication].applicationIconBadgeNumber =
                     [UIApplication sharedApplication].applicationIconBadgeNumber + 1;
             }
-
+            NSLog(@"background got new balance notification %@ %llu -> %llu", note, balance, manager.wallet.balance);
             balance = manager.wallet.balance;
         }];
 
