@@ -33,16 +33,18 @@
 #import "BRPeerManager.h"
 #import "BRTransaction+Utils.h"
 
+
 @interface BRPhoneWCSessionManager()<WCSessionDelegate>
 @property WCSession *session;
 @end
+
 
 @implementation BRPhoneWCSessionManager
 
 + (instancetype)sharedInstance {
     static BRPhoneWCSessionManager *sharedInstance = nil;
-    static dispatch_once_t predicate;
-    dispatch_once(&predicate, ^{
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
         sharedInstance = [[self alloc] init];
     });
     return sharedInstance;
@@ -107,7 +109,9 @@
     appleWatchData.transactions = [[self recentTransactionListFromTransactions:transactions] copy];
     appleWatchData.receiveMoneyQRCodeImage = qrCodeImage;
     appleWatchData.hasWallet = !manager.noWallet;
-    appleWatchData.lastestTransction = [self lastTransactionStringFromTransaction:transactions[0]];
+    if (transactions.count > 0) {
+        appleWatchData.lastestTransction = [self lastTransactionStringFromTransaction:transactions[0]];
+    }
     return appleWatchData;
 }
 
