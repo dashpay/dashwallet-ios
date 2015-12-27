@@ -199,6 +199,16 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     return self.outScripts;
 }
 
+- (NSString *)description
+{
+    return [NSString stringWithFormat:
+            @"%@(inputHashes=%@, inputIndexes=%@, inputScripts=%@, inputSignatures=%@, inputSequences=%@, "
+                           "outputAmounts=%@, outputAddresses=%@, outputScripts=%@)",
+            [[self class] description],
+            self.inputHashes, self.inputIndexes, self.inputScripts, self.inputSignatures, self.inputSequences,
+            self.outputAmounts, self.outputAddresses, self.outputScripts];
+}
+
 // size in bytes if signed, or estimated size assuming compact pubkey sigs
 - (size_t)size
 {
