@@ -58,7 +58,8 @@ class BRAWBalanceInterfaceController: WKInterfaceController {
         super.willActivate()
         updateBalance()
         updateTransactionList()
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "updateUI", name: BRAWWatchDataManager.ApplicationDataDidUpdateNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(
+            self, selector: "updateUI", name: BRAWWatchDataManager.ApplicationDataDidUpdateNotification, object: nil)
     }
     
     override func didDeactivate() {
@@ -93,9 +94,11 @@ class BRAWBalanceInterfaceController: WKInterfaceController {
         self.transactionHeaderContainer.setHidden(newTransactionCount == 0)
         // insert or delete rows to match number of transactions
         if (numberRowsToInsertOrDelete > 0) {
-            table.insertRowsAtIndexes(NSIndexSet(indexesInRange: NSMakeRange(currentTableRowCount, numberRowsToInsertOrDelete)), withRowType: "BRAWTransactionRowControl")
+            let ixs = NSIndexSet(indexesInRange: NSMakeRange(currentTableRowCount, numberRowsToInsertOrDelete))
+            table.insertRowsAtIndexes(ixs, withRowType: "BRAWTransactionRowControl")
         } else {
-            table.removeRowsAtIndexes(NSIndexSet(indexesInRange: NSMakeRange(newTransactionCount, abs(numberRowsToInsertOrDelete))))
+            let ixs = NSIndexSet(indexesInRange: NSMakeRange(newTransactionCount, abs(numberRowsToInsertOrDelete)))
+            table.removeRowsAtIndexes(ixs)
         }
         // update row content
         for var index = 0; index < newTransactionCount; index++  {
@@ -106,12 +109,12 @@ class BRAWBalanceInterfaceController: WKInterfaceController {
     }
     
     func updateRow(rowControl: BRAWTransactionRowControl, transaction: BRAppleWatchTransactionData) {
-        let localCurrencyAmount = (transaction.amountTextInLocalCurrency.characters.count > 2) ? transaction.amountTextInLocalCurrency  :  " "
+        let localCurrencyAmount
+            = (transaction.amountTextInLocalCurrency.characters.count > 2) ? transaction.amountTextInLocalCurrency : " "
         rowControl.amountLabel.setText(transaction.amountText)
         rowControl.localCurrencyAmount.setText(localCurrencyAmount)
         rowControl.dateLabel.setText(transaction.dateText)
         rowControl.type = transaction.type
         rowControl.seperatorGroup.setHeight(0.5)
     }
-    
 }

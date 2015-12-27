@@ -87,21 +87,27 @@ class BRAWWatchDataManager: NSObject, WCSessionDelegate {
     func requestAllData() {
         if self.session.reachable {
             WKInterfaceDevice.currentDevice().playHaptic(WKHapticType.Click)
-            let messageToSend = [AW_SESSION_REQUEST_TYPE: NSNumber(unsignedInt:AWSessionRquestTypeFetchData.rawValue),
-                AW_SESSION_REQUEST_DATA_TYPE_KEY:NSNumber(unsignedInt:AWSessionRquestDataTypeApplicationContextData.rawValue)]
+            let messageToSend = [
+                AW_SESSION_REQUEST_TYPE: NSNumber(unsignedInt:AWSessionRquestTypeFetchData.rawValue),
+                AW_SESSION_REQUEST_DATA_TYPE_KEY:
+                        NSNumber(unsignedInt:AWSessionRquestDataTypeApplicationContextData.rawValue)
+            ]
             session.sendMessage(messageToSend, replyHandler: { [unowned self] replyMessage in
                     if let data = replyMessage[AW_SESSION_RESPONSE_KEY] as? NSData {
-                        if let unwrappedAppleWatchData = NSKeyedUnarchiver.unarchiveObjectWithData(data) as? BRAppleWatchData {
+                        if let unwrappedAppleWatchData
+                                = NSKeyedUnarchiver.unarchiveObjectWithData(data) as? BRAppleWatchData {
                             let previousAppleWatchData = self.appleWatchData
                             let previousWalletStatus = self.walletStatus
                             self.appleWatchData = unwrappedAppleWatchData
                             if previousAppleWatchData != self.appleWatchData {
                                 self.archiveData(unwrappedAppleWatchData)
                                 WKInterfaceDevice.currentDevice().playHaptic(WKHapticType.Click)
-                                NSNotificationCenter.defaultCenter().postNotificationName(BRAWWatchDataManager.ApplicationDataDidUpdateNotification, object: nil)
+                                NSNotificationCenter.defaultCenter().postNotificationName(
+                                    BRAWWatchDataManager.ApplicationDataDidUpdateNotification, object: nil)
                             }
                             if self.walletStatus != previousWalletStatus {
-                                NSNotificationCenter.defaultCenter().postNotificationName(BRAWWatchDataManager.WalletStatusDidChangeNotification, object: nil)
+                                NSNotificationCenter.defaultCenter().postNotificationName(
+                                    BRAWWatchDataManager.WalletStatusDidChangeNotification, object: nil)
                             }
                         }
                     }
@@ -114,14 +120,18 @@ class BRAWWatchDataManager: NSObject, WCSessionDelegate {
     
     func session(session: WCSession, didReceiveApplicationContext applicationContext: [String : AnyObject]) {
         if let applicationContextData = applicationContext[AW_APPLICATION_CONTEXT_KEY] as? NSData {
-            if let transferedAppleWatchData = NSKeyedUnarchiver.unarchiveObjectWithData(applicationContextData) as? BRAppleWatchData {
+            if let transferedAppleWatchData
+                    = NSKeyedUnarchiver.unarchiveObjectWithData(applicationContextData) as? BRAppleWatchData {
                 let previousWalletStatus = self.walletStatus
                 appleWatchData = transferedAppleWatchData
                 archiveData(transferedAppleWatchData)
                 if self.walletStatus != previousWalletStatus {
-                    NSNotificationCenter.defaultCenter().postNotificationName(BRAWWatchDataManager.WalletStatusDidChangeNotification, object: nil)
+                    NSNotificationCenter.defaultCenter().postNotificationName(
+                        BRAWWatchDataManager.WalletStatusDidChangeNotification, object: nil)
                 }
-                NSNotificationCenter.defaultCenter().postNotificationName(BRAWWatchDataManager.ApplicationDataDidUpdateNotification, object: nil)
+                NSNotificationCenter.defaultCenter().postNotificationName(
+                    BRAWWatchDataManager.ApplicationDataDidUpdateNotification, object: nil)
+                
             }
         }
     }
@@ -137,8 +147,14 @@ class BRAWWatchDataManager: NSObject, WCSessionDelegate {
     
     private func attributedStringForBalance(balance: String?)-> NSAttributedString {
         let attributedString = NSMutableAttributedString()
-        attributedString.appendAttributedString(NSAttributedString(string: "ƀ", attributes: [NSForegroundColorAttributeName : UIColor.grayColor()]))
-        attributedString.appendAttributedString(NSAttributedString(string: balance ?? "0", attributes: [NSForegroundColorAttributeName : UIColor.whiteColor()]))
+        
+        attributedString.appendAttributedString(
+            NSAttributedString(string: "ƀ", attributes: [NSForegroundColorAttributeName : UIColor.grayColor()]))
+        
+        attributedString.appendAttributedString(
+            NSAttributedString(string: balance ?? "0", attributes:
+                [NSForegroundColorAttributeName : UIColor.whiteColor()]))
+        
         return attributedString
     }
     
@@ -155,7 +171,8 @@ class BRAWWatchDataManager: NSObject, WCSessionDelegate {
     func setupTimer() {
         destoryTimer()
         let weakTimerTarget = BRAWWeakTimerTarget(initTarget: self, initSelector: "requestAllData")
-        timer = NSTimer.scheduledTimerWithTimeInterval(timerFireInterval, target: weakTimerTarget, selector: "timerDidFire", userInfo: nil, repeats: true)
+        timer = NSTimer.scheduledTimerWithTimeInterval(
+            timerFireInterval, target: weakTimerTarget, selector: "timerDidFire", userInfo: nil, repeats: true)
     }
     
     func destoryTimer() {
