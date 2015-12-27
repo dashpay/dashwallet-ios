@@ -1115,14 +1115,30 @@ enum BRHTTPServerError: ErrorType {
     case InvalidRangeHeader
 }
 
+@objc public protocol BRHTTPMiddleware {
+    func handle(request: BRHTTPRequest) -> BRHTTPMiddlewareResponse
+}
+
+@objc public class BRHTTPMiddlewareResponse: NSObject {
+    var request: BRHTTPRequest
+    var response: BRHTTPResponse?
+    
+    init(request: BRHTTPRequest, response: BRHTTPResponse?) {
+        self.request = request
+        self.response = response
+    }
+}
+
 @objc public class BRHTTPServer: NSObject {
     var fd: Int32 = -1
     var clients: Set<Int32> = []
     var path: NSURL
     var debugURL: NSURL?
+    var middleware: [BRHTTPMiddleware] = [BRHTTPMiddleware]()
     
     init(baseDirectory: NSURL) {
         path = baseDirectory
+        middleware.append(BRHTTPFileMiddleware(baseURL: baseDirectory))
         super.init()
     }
     
@@ -1131,6 +1147,11 @@ enum BRHTTPServerError: ErrorType {
     // normally be in the bundle
     func debugFrom(URL: NSURL?) {
         debugURL = URL
+        for mw in middleware {
+            if let fmw = mw as? BRHTTPFileMiddleware {
+                fmw.debugURL = URL
+            }
+        }
     }
     
     func start(port: in_port_t = 8888, maxPendingConnections: Int32 = SOMAXCONN) throws {
@@ -1212,7 +1233,7 @@ enum BRHTTPServerError: ErrorType {
                 setsockopt(cli_fd, SOL_SOCKET, SO_NOSIGPIPE, &v, socklen_t(sizeof(Int32)))
                 self.addClient(cli_fd)
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) { () -> Void in
-                    while let req = try? HTTPRequest(readFromFd: cli_fd) {
+                    while let req = try? BRHTTPRequest(readFromFd: cli_fd) {
                         do { try self.dispatch(req) } catch { break }
                         if !req.isKeepAlive { break }
                     }
@@ -1225,67 +1246,27 @@ enum BRHTTPServerError: ErrorType {
         }
     }
     
-    private func dispatch(req: HTTPRequest) throws {
-        var fileURL: NSURL!
-        if debugURL == nil {
-            var reqPath = req.path.stringByTrimmingCharactersInSet(NSCharacterSet(charactersInString: "/"))
-            if reqPath.rangeOfString("?") != nil {
-                reqPath = reqPath.componentsSeparatedByString("?")[0]
-            }
-            
-            fileURL = path.URLByAppendingPathComponent(reqPath)
-        } else {
-            var reqPath = req.path
-            if (debugURL!.path!.hasSuffix("/")) {
-                reqPath = reqPath.substringFromIndex(reqPath.startIndex.advancedBy(1))
-            }
-            if reqPath.rangeOfString("?") != nil {
-                reqPath = reqPath.componentsSeparatedByString("?")[0]
-            }
-            fileURL = debugURL!.URLByAppendingPathComponent(reqPath)
-        }
-        
-        guard let body = NSData(contentsOfURL: fileURL) else {
-            try HTTPResponse(request: req, statusCode: 404, statusReason: "Not Found", headers: nil, body: nil).send()
-            return
-        }
-        NSLog("GET \(fileURL)")
-        NSLog("Detected content type: \(BRHTTPServer.detectContentType(URL: fileURL))")
-        
-        do {
-            let rangeHeader = try req.rangeHeader()
-            if rangeHeader != nil {
-                let (end, start) = rangeHeader!
-                let length = end - start
-                let range = NSRange(location: start, length: length + 1)
-                guard range.location + range.length <= body.length else {
-                    try HTTPResponse(
-                        request: req, statusCode: 418, statusReason: "Request Range Not Satisfiable",
-                        headers: nil, body: nil).send()
-                    return
+    private func dispatch(req: BRHTTPRequest) throws {
+        var responseSent = false
+        var request = req
+        for m in middleware {
+            let resp = m.handle(request)
+            if let httpResp = resp.response {
+                do {
+                    try httpResp.send()
+                } catch let e {
+                    print("[BRHTTPServer] error sending response. request: \(req) error: \(e)")
                 }
-                let subDat = body.subdataWithRange(range)
-                let headers = [
-                    "Content-Range": ["bytes \(start)-\(end)/\(body.length)"],
-                    "Content-Type": [BRHTTPServer.detectContentType(URL: fileURL)]
-                ]
-                var ary = [UInt8](count: subDat.length, repeatedValue: 0)
-                subDat.getBytes(&ary, length: subDat.length)
-                try HTTPResponse(request: req, statusCode: 200, statusReason: "OK", headers: headers, body: ary).send()
-                return
+                responseSent = true
+                break
+            } else {
+                request = resp.request // allow middleware to mutate request
             }
-        } catch {
-            try HTTPResponse(
-                request: req, statusCode: 400, statusReason: "Bad Request", headers: nil,
-                body: [UInt8]("Invalid Range Header".utf8)).send()
-            return
         }
-        
-        var ary = [UInt8](count: body.length, repeatedValue: 0)
-        body.getBytes(&ary, length: body.length)
-        try HTTPResponse(request: req, statusCode: 200, statusReason: "OK",
-                         headers: ["Content-Type": [BRHTTPServer.detectContentType(URL: fileURL)]], body: ary).send()
-        return
+        if !responseSent {
+            // send a 404 or something
+            print("[BRHTTPServer] did not send a response")
+        }
     }
     
     private static func detectContentType(URL url: NSURL) -> String {
@@ -1316,134 +1297,219 @@ enum BRHTTPServerError: ErrorType {
         }
         return "application/octet-stream"
     }
+}
+
+@objc public class BRHTTPRequest: NSObject {
+    var fd: Int32
+    var method: String = "GET"
+    var path: String = "/"
+    var headers: [String: [String]] = [String: [String]]()
     
-    struct HTTPRequest {
-        var fd: Int32
-        var method: String = "GET"
-        var path: String = "/"
-        var headers: [String: [String]] = [String: [String]]()
-        
-        var isKeepAlive: Bool {
-            return (headers["connection"] != nil
-                    && headers["connection"]?.count > 0
-                    && headers["connection"]![0] == "keep-alive")
+    var isKeepAlive: Bool {
+        return (headers["connection"] != nil
+            && headers["connection"]?.count > 0
+            && headers["connection"]![0] == "keep-alive")
+    }
+    
+    static let rangeRe = try! NSRegularExpression(pattern: "bytes=(\\d*)-(\\d*)", options: .CaseInsensitive)
+    
+    init(readFromFd: Int32) throws {
+        fd = readFromFd
+        super.init()
+        let status = try readLine()
+        let statusParts = status.componentsSeparatedByString(" ")
+        if statusParts.count < 3 {
+            throw BRHTTPServerError.InvalidHttpRequest
         }
-        
-        static let rangeRe = try! NSRegularExpression(pattern: "bytes=(\\d*)-(\\d*)", options: .CaseInsensitive)
-        
-        init(readFromFd: Int32) throws {
-            fd = readFromFd
-            let status = try readLine()
-            let statusParts = status.componentsSeparatedByString(" ")
-            if statusParts.count < 3 {
-                throw BRHTTPServerError.InvalidHttpRequest
-            }
-            method = statusParts[0]
-            path = statusParts[1]
-            while true {
-                let hdr = try readLine()
-                if hdr.isEmpty { break }
-                let hdrParts = hdr.componentsSeparatedByString(":")
-                if hdrParts.count >= 2 {
-                    let name = hdrParts[0].lowercaseString
-                    let hdrVal = hdrParts[1..<hdrParts.count].joinWithSeparator(":").stringByTrimmingCharactersInSet(
-                        NSCharacterSet.whitespaceCharacterSet())
-                    if headers[name] != nil {
-                        headers[name]?.append(hdrVal)
-                    } else {
-                        headers[name] = [hdrVal]
-                    }
+        method = statusParts[0]
+        path = statusParts[1]
+        while true {
+            let hdr = try readLine()
+            if hdr.isEmpty { break }
+            let hdrParts = hdr.componentsSeparatedByString(":")
+            if hdrParts.count >= 2 {
+                let name = hdrParts[0].lowercaseString
+                let hdrVal = hdrParts[1..<hdrParts.count].joinWithSeparator(":").stringByTrimmingCharactersInSet(
+                    NSCharacterSet.whitespaceCharacterSet())
+                if headers[name] != nil {
+                    headers[name]?.append(hdrVal)
+                } else {
+                    headers[name] = [hdrVal]
                 }
             }
-        }
-        
-        func readLine() throws -> String {
-            var chars: String = ""
-            var n = 0
-            repeat {
-                n = self.read()
-                if (n > 13 /* CR */) { chars.append(Character(UnicodeScalar(n))) }
-            } while n > 0 && n != 10 /* NL */
-            if n == -1 {
-                throw BRHTTPServerError.SocketRecvFailed
-            }
-            return chars
-        }
-        
-        func read() -> Int {
-            var buf = [UInt8](count: 1, repeatedValue: 0)
-            let n = recv(fd, &buf, 1, 0)
-            if n <= 0 {
-                return n
-            }
-            return Int(buf[0])
-        }
-        
-        func rangeHeader() throws -> (Int, Int)? {
-            if headers["range"] == nil {
-                return nil
-            }
-            guard let rngHeader = headers["range"]?[0],
-                match = HTTPRequest.rangeRe.matchesInString(rngHeader, options: .Anchored, range:
-                    NSRange(location: 0, length: rngHeader.characters.count)).first
-            where match.numberOfRanges == 3 else {
-                throw BRHTTPServerError.InvalidRangeHeader
-            }
-            let startStr = (rngHeader as NSString).substringWithRange(match.rangeAtIndex(1))
-            let endStr = (rngHeader as NSString).substringWithRange(match.rangeAtIndex(2))
-            guard let start = Int(startStr), end = Int(endStr) else {
-                throw BRHTTPServerError.InvalidRangeHeader
-            }
-            return (start, end)
         }
     }
     
-    struct HTTPResponse {
-        var request: HTTPRequest
-        var statusCode: Int?
-        var statusReason: String?
-        var headers: [String: [String]]?
-        var body: [UInt8]?
+    func readLine() throws -> String {
+        var chars: String = ""
+        var n = 0
+        repeat {
+            n = self.read()
+            if (n > 13 /* CR */) { chars.append(Character(UnicodeScalar(n))) }
+        } while n > 0 && n != 10 /* NL */
+        if n == -1 {
+            throw BRHTTPServerError.SocketRecvFailed
+        }
+        return chars
+    }
+    
+    func read() -> Int {
+        var buf = [UInt8](count: 1, repeatedValue: 0)
+        let n = recv(fd, &buf, 1, 0)
+        if n <= 0 {
+            return n
+        }
+        return Int(buf[0])
+    }
+    
+    func rangeHeader() throws -> (Int, Int)? {
+        if headers["range"] == nil {
+            return nil
+        }
+        guard let rngHeader = headers["range"]?[0],
+            match = BRHTTPRequest.rangeRe.matchesInString(rngHeader, options: .Anchored, range:
+                NSRange(location: 0, length: rngHeader.characters.count)).first
+            where match.numberOfRanges == 3 else {
+                throw BRHTTPServerError.InvalidRangeHeader
+        }
+        let startStr = (rngHeader as NSString).substringWithRange(match.rangeAtIndex(1))
+        let endStr = (rngHeader as NSString).substringWithRange(match.rangeAtIndex(2))
+        guard let start = Int(startStr), end = Int(endStr) else {
+            throw BRHTTPServerError.InvalidRangeHeader
+        }
+        return (start, end)
+    }
+}
+
+@objc public class BRHTTPResponse: NSObject {
+    var request: BRHTTPRequest
+    var statusCode: Int?
+    var statusReason: String?
+    var headers: [String: [String]]?
+    var body: [UInt8]?
+    
+    init(request: BRHTTPRequest, statusCode: Int?, statusReason: String?, headers: [String: [String]]?, body: [UInt8]?) {
+        self.request = request
+        self.statusCode = statusCode
+        self.statusReason = statusReason
+        self.headers = headers
+        self.body = body
+        super.init()
+    }
+    
+    func send() throws {
+        let status = statusCode ?? 200
+        let reason = statusReason ?? "OK"
+        try writeUTF8("HTTP/1.1 \(status) \(reason)\r\n")
         
-        func send() throws {
-            let status = statusCode ?? 200
-            let reason = statusReason ?? "OK"
-            try writeUTF8("HTTP/1.1 \(status) \(reason)\r\n")
-            
-            let length = body?.count ?? 0
-            try writeUTF8("Content-Length: \(length)\r\n")
-            if request.isKeepAlive {
-                try writeUTF8("Connection: keep-alive\r\n")
+        let length = body?.count ?? 0
+        try writeUTF8("Content-Length: \(length)\r\n")
+        if request.isKeepAlive {
+            try writeUTF8("Connection: keep-alive\r\n")
+        }
+        let hdrs = headers ?? [String: [String]]()
+        for (n, v) in hdrs {
+            for yv in v {
+                try writeUTF8("\(n): \(yv)\r\n")
             }
-            let hdrs = headers ?? [String: [String]]()
-            for (n, v) in hdrs {
-                for yv in v {
-                    try writeUTF8("\(n): \(yv)\r\n")
+        }
+        
+        try writeUTF8("\r\n")
+        
+        if let b = body {
+            try writeUInt8(b)
+        }
+    }
+    
+    private func writeUTF8(s: String) throws {
+        try writeUInt8([UInt8](s.utf8))
+    }
+    
+    private func writeUInt8(data: [UInt8]) throws {
+        try data.withUnsafeBufferPointer { pointer in
+            var sent = 0
+            while sent < data.count {
+                let s = write(request.fd, pointer.baseAddress + sent, Int(data.count - sent))
+                if s <= 0 {
+                    throw BRHTTPServerError.SocketWriteFailed
                 }
-            }
-            
-            try writeUTF8("\r\n")
-            
-            if let b = body {
-                try writeUInt8(b)
+                sent += s
             }
         }
-        
-        private func writeUTF8(s: String) throws {
-            try writeUInt8([UInt8](s.utf8))
+    }
+}
+
+@objc public class BRHTTPFileMiddleware: NSObject, BRHTTPMiddleware {
+    var baseURL: NSURL!
+    var debugURL: NSURL?
+    
+    init(baseURL: NSURL, debugURL: NSURL? = nil) {
+        super.init()
+        self.baseURL = baseURL
+        self.debugURL = debugURL
+    }
+    
+    public func handle(request: BRHTTPRequest) -> BRHTTPMiddlewareResponse {
+        var fileURL: NSURL!
+        if debugURL == nil {
+            var reqPath = request.path.stringByTrimmingCharactersInSet(NSCharacterSet(charactersInString: "/"))
+            if reqPath.rangeOfString("?") != nil {
+                reqPath = reqPath.componentsSeparatedByString("?")[0]
+            }
+            
+            fileURL = baseURL.URLByAppendingPathComponent(reqPath)
+        } else {
+            var reqPath = request.path
+            if (debugURL!.path!.hasSuffix("/")) {
+                reqPath = reqPath.substringFromIndex(reqPath.startIndex.advancedBy(1))
+            }
+            if reqPath.rangeOfString("?") != nil {
+                reqPath = reqPath.componentsSeparatedByString("?")[0]
+            }
+            fileURL = debugURL!.URLByAppendingPathComponent(reqPath)
         }
         
-        private func writeUInt8(data: [UInt8]) throws {
-            try data.withUnsafeBufferPointer { pointer in
-                var sent = 0
-                while sent < data.count {
-                    let s = write(request.fd, pointer.baseAddress + sent, Int(data.count - sent))
-                    if s <= 0 {
-                        throw BRHTTPServerError.SocketWriteFailed
-                    }
-                    sent += s
+        guard let body = NSData(contentsOfURL: fileURL) else {
+            return BRHTTPMiddlewareResponse(
+                request: request,
+                response: BRHTTPResponse(request: request, statusCode: 404, statusReason: "Not Found", headers: nil, body: nil))
+        }
+        NSLog("GET \(fileURL)")
+        NSLog("Detected content type: \(BRHTTPServer.detectContentType(URL: fileURL))")
+        
+        do {
+            let rangeHeader = try request.rangeHeader()
+            if rangeHeader != nil {
+                let (end, start) = rangeHeader!
+                let length = end - start
+                let range = NSRange(location: start, length: length + 1)
+                guard range.location + range.length <= body.length else {
+                    let r =  BRHTTPResponse(
+                        request: request, statusCode: 418, statusReason: "Request Range Not Satisfiable",
+                        headers: nil, body: nil)
+                    return BRHTTPMiddlewareResponse(request: request, response: r)
                 }
+                let subDat = body.subdataWithRange(range)
+                let headers = [
+                    "Content-Range": ["bytes \(start)-\(end)/\(body.length)"],
+                    "Content-Type": [BRHTTPServer.detectContentType(URL: fileURL)]
+                ]
+                var ary = [UInt8](count: subDat.length, repeatedValue: 0)
+                subDat.getBytes(&ary, length: subDat.length)
+                let r =  BRHTTPResponse(request: request, statusCode: 200, statusReason: "OK", headers: headers, body: ary)
+                return BRHTTPMiddlewareResponse(request: request, response: r)
             }
+        } catch {
+            let r = BRHTTPResponse(
+                request: request, statusCode: 400, statusReason: "Bad Request", headers: nil,
+                body: [UInt8]("Invalid Range Header".utf8))
+            return BRHTTPMiddlewareResponse(request: request, response: r)
         }
+        
+        var ary = [UInt8](count: body.length, repeatedValue: 0)
+        body.getBytes(&ary, length: body.length)
+        let r = BRHTTPResponse(request: request, statusCode: 200, statusReason: "OK",
+            headers: ["Content-Type": [BRHTTPServer.detectContentType(URL: fileURL)]], body: ary)
+        return BRHTTPMiddlewareResponse(request: request, response: r)
     }
 }
