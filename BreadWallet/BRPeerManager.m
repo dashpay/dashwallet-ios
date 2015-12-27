@@ -36,6 +36,7 @@
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
+#import "BREventManager.h"
 #import <netdb.h>
 
 #if ! PEER_LOGGING
@@ -546,6 +547,7 @@ static const char *dns_seeds[] = {
 {
     if (! transaction.isSigned) {
         if (completion) {
+            [[BREventManager sharedEventManager] saveEvent:@"peer_manager:not_signed"];
             completion([NSError errorWithDomain:@"BreadWallet" code:401 userInfo:@{NSLocalizedDescriptionKey:
                         NSLocalizedString(@"bitcoin transaction not signed", nil)}]);
         }
@@ -554,6 +556,7 @@ static const char *dns_seeds[] = {
     }
     else if (! self.connected && self.connectFailures >= MAX_CONNECT_FAILURES) {
         if (completion) {
+            [[BREventManager sharedEventManager] saveEvent:@"peer_manager:not_connected"];
             completion([NSError errorWithDomain:@"BreadWallet" code:-1009 userInfo:@{NSLocalizedDescriptionKey:
                         NSLocalizedString(@"not connected to the bitcoin network", nil)}]);
         }
@@ -654,6 +657,7 @@ static const char *dns_seeds[] = {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:txHash];
 
     if (callback) {
+        [[BREventManager sharedEventManager] saveEvent:@"peer_manager:transaction_canceled_timeout"];
         callback([NSError errorWithDomain:@"BreadWallet" code:BITCOIN_TIMEOUT_CODE userInfo:@{NSLocalizedDescriptionKey:
                   NSLocalizedString(@"transaction canceled, network timeout", nil)}]);
     }
@@ -775,6 +779,7 @@ static const char *dns_seeds[] = {
     if (notify) {
         dispatch_async(dispatch_get_main_queue(), ^{
             if (rescan) {
+                [[BREventManager sharedEventManager] saveEvent:@"peer_manager:tx_rejected_rescan"];
                 [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"transaction rejected", nil)
                   message:NSLocalizedString(@"Your wallet may be out of sync.\n"
                                             "This can often be fixed by rescanning the blockchain.", nil) delegate:self
@@ -782,6 +787,7 @@ static const char *dns_seeds[] = {
                   otherButtonTitles:NSLocalizedString(@"rescan", nil), nil] show];
             }
             else {
+                [[BREventManager sharedEventManager] saveEvent:@"peer_manager_tx_rejected"];
                 [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"transaction rejected", nil)
                   message:nil delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
             }
