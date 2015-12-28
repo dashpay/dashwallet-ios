@@ -81,6 +81,7 @@ didReceiveMessage:(NSDictionary<NSString *, id> *)message
                 [(id<UIApplicationDelegate>)[UIApplication sharedApplication].delegate
                     application:[UIApplication sharedApplication]
                  performFetchWithCompletionHandler:^(UIBackgroundFetchResult result) {
+                     NSLog(@"watch triggered background fetch completed with result %lu", (unsigned long)result);
                 }];
                 break;
             default:

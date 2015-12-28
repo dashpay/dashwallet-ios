@@ -201,10 +201,17 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 
 - (NSString *)description
 {
+    NSString *txid = [NSString hexWithData:[NSData dataWithBytes:self.txHash.u8 length:sizeof(UInt256)].reverse];
+    return [NSString stringWithFormat:@"%@(id=%@)", [self class], txid];
+}
+
+- (NSString *)longDescription
+{
+    NSString *txid = [NSString hexWithData:[NSData dataWithBytes:self.txHash.u8 length:sizeof(UInt256)].reverse];
     return [NSString stringWithFormat:
-            @"%@(inputHashes=%@, inputIndexes=%@, inputScripts=%@, inputSignatures=%@, inputSequences=%@, "
+            @"%@(id=%@, inputHashes=%@, inputIndexes=%@, inputScripts=%@, inputSignatures=%@, inputSequences=%@, "
                            "outputAmounts=%@, outputAddresses=%@, outputScripts=%@)",
-            [[self class] description],
+            [[self class] description], txid,
             self.inputHashes, self.inputIndexes, self.inputScripts, self.inputSignatures, self.inputSequences,
             self.outputAmounts, self.outputAddresses, self.outputScripts];
 }
