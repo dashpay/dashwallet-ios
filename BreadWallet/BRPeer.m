@@ -485,10 +485,12 @@ services:(uint64_t)services
 - (void)acceptMessage:(NSData *)message type:(NSString *)type
 {
     if (self.currentBlock && ! [MSG_TX isEqual:type]) { // if we receive a non-tx message, merkleblock is done
-        [self error:@"incomplete merkleblock %@, expected %u more tx, got %@",
-         uint256_obj(self.currentBlock.blockHash), (int)self.currentBlockTxHashes.count, type];
+        UInt256 hash = self.currentBlock.blockHash;
+        
         self.currentBlock = nil;
         self.currentBlockTxHashes = nil;
+        [self error:@"incomplete merkleblock %@, expected %u more tx, got %@",
+         uint256_obj(hash), (int)self.currentBlockTxHashes.count, type];
     }
     else if ([MSG_VERSION isEqual:type]) [self acceptVersionMessage:message];
     else if ([MSG_VERACK isEqual:type]) [self acceptVerackMessage:message];
@@ -546,7 +548,6 @@ services:(uint64_t)services
     _pingTime = [NSDate timeIntervalSinceReferenceDate] - self.startTime; // use verack time as initial ping time
     self.startTime = 0;
     NSLog(@"%@:%u got verack in %fs", self.host, self.port, self.pingTime);
-    [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending verack timeout
     self.gotVerack = YES;
     [self didConnect];
 }

@@ -673,7 +673,14 @@
 
     counter++;
     self.percent.text = [NSString stringWithFormat:@"%0.1f%%", (progress > 0.1 ? progress - 0.1 : 0.0)*111.0];
-    if (progress + DBL_EPSILON < 1.0) [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
+
+    if (progress + DBL_EPSILON >= 1.0) {
+        if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
+        if (! self.percent.hidden) [self hideTips];
+        self.percent.hidden = YES;
+        if (! [BRWalletManager sharedInstance].didAuthenticate) self.navigationItem.titleView = self.logo;
+    }
+    else [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
 }
 
 - (void)ping

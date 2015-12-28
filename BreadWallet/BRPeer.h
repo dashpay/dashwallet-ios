@@ -118,7 +118,7 @@ typedef enum : NSInteger {
 @property (nonatomic, readonly) NSString *useragent;
 @property (nonatomic, readonly) uint32_t lastblock;
 @property (nonatomic, readonly) NSTimeInterval pingTime;
-@property (nonatomic, assign) NSTimeInterval timestamp; // last seen time (interval since refrence date)
+@property (nonatomic, assign) NSTimeInterval timestamp; // timestamp reported by peer (interval since refrence date)
 @property (nonatomic, assign) int16_t misbehavin;
 
 @property (nonatomic, assign) BOOL needsFilterUpdate; // set this when wallet addresses need to be added to bloom filter

@@ -50,7 +50,7 @@
 
 #if BITCOIN_TESTNET
 
-static const struct { uint32_t height; char *hash; uint32_t timestamp; uint32_t target; } checkpoint_array[] = {
+static const struct { uint32_t height; const char *hash; uint32_t timestamp; uint32_t target; } checkpoint_array[] = {
     {      0, "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943", 1296688602, 0x1d00ffff },
     {  20160, "000000001cf5440e7c9ae69f655759b17a32aad141896defd55bb895b7cfc44e", 1345001466, 0x1c4d1756 },
     {  40320, "000000008011f56b8c92ff27fb502df5723171c5374673670ef0eee3696aee6d", 1355980158, 0x1d00ffff },
@@ -73,7 +73,7 @@ static const char *dns_seeds[] = {
 
 // blockchain checkpoints - these are also used as starting points for partial chain downloads, so they need to be at
 // difficulty transition boundaries in order to verify the block difficulty at the immediately following transition
-static const struct { uint32_t height; char *hash; uint32_t timestamp; uint32_t target; } checkpoint_array[] = {
+static const struct { uint32_t height; const char *hash; uint32_t timestamp; uint32_t target; } checkpoint_array[] = {
     {      0, "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f", 1231006505, 0x1d00ffff },
     {  20160, "000000000f1aef56190aee63d33a373e6487132d522ff4cd98ccfc96566d461e", 1248481816, 0x1d00ffff },
     {  40320, "0000000045861e169b5a961b7034f8de9e98022e7a39100dde3ae3ea240d7245", 1266191579, 0x1c654657 },
@@ -672,43 +672,58 @@ static const char *dns_seeds[] = {
 
 - (void)syncStopped
 {
-    if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
-        [self.connectedPeers makeObjectsPerformSelector:@selector(disconnect)];
-        [self.connectedPeers removeAllObjects];
-    }
-
-    if (self.taskId != UIBackgroundTaskInvalid) {
-        [[UIApplication sharedApplication] endBackgroundTask:self.taskId];
-        self.taskId = UIBackgroundTaskInvalid;
-        
-        if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
-            NSArray *txHashes = self.publishedTx.allKeys;
-
-            for (BRPeer *p in self.connectedPeers) { // after syncing, load filters and get mempools from other peers
-                if (p != self.downloadPeer || self.fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*5.0) {
-                    [p sendFilterloadMessage:self.bloomFilter.data];
-                }
-                
-                [p sendInvMessageWithTxHashes:txHashes]; // publish unconfirmed tx
-                [p sendPingMessageWithPongHandler:^(BOOL success) {
-                    if (! success) return;
-                    [p sendMempoolMessage];
-                    [p sendPingMessageWithPongHandler:^(BOOL success) {
-                        if (! success) return;
-                        p.synced = YES;
-                        [p sendGetaddrMessage]; // request a list of other bitcoin peers
-                        [self removeUnrelayedTransactions];
-                    }];
-                }];
-            }
-        }
-    }
-
     self.syncStartHeight = 0;
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
+
+        if (self.taskId != UIBackgroundTaskInvalid) {
+            [[UIApplication sharedApplication] endBackgroundTask:self.taskId];
+            self.taskId = UIBackgroundTaskInvalid;
+        }
     });
+}
+
+- (void)loadMempools
+{
+    NSArray *txHashes = self.publishedTx.allKeys;
+    
+    for (BRPeer *p in self.connectedPeers) { // after syncing, load filters and get mempools from other peers
+        if (p != self.downloadPeer || self.fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*5.0) {
+            [p sendFilterloadMessage:self.bloomFilter.data];
+        }
+        
+        [p sendInvMessageWithTxHashes:txHashes]; // publish unconfirmed tx
+        [p sendPingMessageWithPongHandler:^(BOOL success) {
+            if (success) {
+                [p sendMempoolMessage];
+                [p sendPingMessageWithPongHandler:^(BOOL success) {
+                    if (success) {
+                        p.synced = YES;
+                        [p sendGetaddrMessage]; // request a list of other bitcoin peers
+                        [self removeUnrelayedTransactions];
+                    }
+                    
+                    if (p == self.downloadPeer) {
+                        [self syncStopped];
+
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [[NSNotificationCenter defaultCenter]
+                             postNotificationName:BRPeerManagerSyncFinishedNotification object:nil];
+                        });
+                    }
+                }];
+            }
+            else if (p == self.downloadPeer) {
+                [self syncStopped];
+                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter]
+                     postNotificationName:BRPeerManagerSyncFinishedNotification object:nil];
+                });
+            }
+        }];
+    }
 }
 
 // unconfirmed transactions that aren't in the mempools of any of connected peers have likely dropped off the network
@@ -972,14 +987,7 @@ static const char *dns_seeds[] = {
             });
         });
     }
-    else { // we're already synced
-        [self syncStopped];
-
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerSyncFinishedNotification
-             object:nil];
-        });
-    }
+    else [self loadMempools]; // we're already synced
 }
 
 - (void)peer:(BRPeer *)peer disconnectedWithError:(NSError *)error
@@ -1359,12 +1367,7 @@ static const char *dns_seeds[] = {
     
     if (block.height == peer.lastblock && block == self.lastBlock) { // chain download is complete
         [self saveBlocks];
-        [self syncStopped];
-
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerSyncFinishedNotification
-             object:nil];
-        });
+        [self loadMempools];
     }
 
     // check if the next block was received as an orphan
