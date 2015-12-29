@@ -136,6 +136,29 @@ class BRAWWatchDataManager: NSObject, WCSessionDelegate {
         }
     }
     
+    func requestQRCodeForBalance(bits: String, responseHandler: (qrImage: UIImage?, error: NSError?) -> Void) {
+        if self.session.reachable {
+            let msg = [
+                AW_SESSION_REQUEST_TYPE: NSNumber(unsignedInt: AWSessionRquestTypeFetchData.rawValue),
+                AW_SESSION_REQUEST_DATA_TYPE_KEY: NSNumber(unsignedInt: AWSessionRquestDataTypeQRCodeBits.rawValue),
+                AW_SESSION_QR_CODE_BITS_KEY: bits
+            ]
+            session.sendMessage(msg,
+                replyHandler: { (ctx) -> Void in
+                    if let dat = ctx[AW_QR_CODE_BITS_KEY],
+                        datDat = dat as? NSData,
+                        img = UIImage(data: datDat) {
+                            responseHandler(qrImage: img, error: nil)
+                            return
+                    }
+                    responseHandler(qrImage: nil, error: NSError(domain: "", code: 500,
+                        userInfo: [NSLocalizedDescriptionKey: "Unable to get new qr code"]))
+                }, errorHandler: { (err) -> Void in
+                    responseHandler(qrImage: nil, error: err)
+            })
+        }
+    }
+    
     func balanceAttributedString() -> NSAttributedString? {
        if let originalBalanceString = BRAWWatchDataManager.sharedInstance.balance {
             var balanceString = originalBalanceString.stringByReplacingOccurrencesOfString("ƀ", withString: "")

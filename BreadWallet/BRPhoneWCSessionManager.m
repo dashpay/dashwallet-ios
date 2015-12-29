@@ -84,6 +84,19 @@ didReceiveMessage:(NSDictionary<NSString *, id> *)message
                      NSLog(@"watch triggered background fetch completed with result %lu", (unsigned long)result);
                 }];
                 break;
+            case AWSessionRquestDataTypeQRCodeBits:
+            {
+                BRWalletManager *manager = [BRWalletManager sharedInstance];
+                BRPaymentRequest *req = [BRPaymentRequest requestWithString:manager.wallet.receiveAddress];
+                req.amount = [message[AW_SESSION_QR_CODE_BITS_KEY] integerValue];
+                NSLog(@"watch requested a qr code amount %lld", req.amount);
+                UIImage *img = [UIImage imageWithQRCodeData:req.data
+                                               size:CGSizeMake(150, 150)
+                                              color:[CIColor colorWithRed:0.0 green:0.0 blue:0.0]];
+                NSData *dat = UIImagePNGRepresentation(img);
+                replyHandler(@{AW_QR_CODE_BITS_KEY: dat});
+                break;
+            }
             default:
                 replyHandler(@{});
         }

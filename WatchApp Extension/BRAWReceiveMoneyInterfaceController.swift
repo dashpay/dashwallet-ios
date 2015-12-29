@@ -26,19 +26,21 @@
 import WatchKit
 import WatchConnectivity
 
-class BRAWReceiveMoneyInterfaceController: WKInterfaceController, WCSessionDelegate {
+class BRAWReceiveMoneyInterfaceController: WKInterfaceController, WCSessionDelegate, BRAWKeypadDelegate {
 
     @IBOutlet var loadingIndicator: WKInterfaceGroup!
     @IBOutlet var imageContainer: WKInterfaceGroup!
     @IBOutlet var qrCodeImage: WKInterfaceImage!
+    @IBOutlet var qrCodeButton: WKInterfaceButton!
+    var customQR: UIImage?
+    
     override func awakeWithContext(context: AnyObject?) {
         super.awakeWithContext(context)
-        // Configure interface objects here.
     }
 
     override func willActivate() {
-        // This method is called when watch view controller is about to be visible to user
         super.willActivate()
+        customQR = nil
         updateReceiveUI()
         NSNotificationCenter.defaultCenter().addObserver(
             self, selector: "updateReceiveUI",
@@ -46,7 +48,6 @@ class BRAWReceiveMoneyInterfaceController: WKInterfaceController, WCSessionDeleg
     }
 
     override func didDeactivate() {
-        // This method is called when watch view controller is no longer visible
         super.didDeactivate()
         NSNotificationCenter.defaultCenter().removeObserver(self)
     }
@@ -54,12 +55,36 @@ class BRAWReceiveMoneyInterfaceController: WKInterfaceController, WCSessionDeleg
     func updateReceiveUI() {
         if BRAWWatchDataManager.sharedInstance.receiveMoneyQRCodeImage == nil {
             loadingIndicator.setHidden(false)
-            imageContainer.setHidden(true)
+            qrCodeButton.setHidden(true)
         } else {
             loadingIndicator.setHidden(true)
-            imageContainer.setHidden(false)
-            qrCodeImage.setImage(BRAWWatchDataManager.sharedInstance.receiveMoneyQRCodeImage)
+            qrCodeButton.setHidden(false)
+            var qrImg = BRAWWatchDataManager.sharedInstance.receiveMoneyQRCodeImage
+            if customQR != nil {
+                print("Using custom qr image")
+                qrImg = customQR
+            }
+            qrCodeButton.setBackgroundImage(qrImg)
         }
     }
-
+    
+    @IBAction func qrCodeTap(sender: AnyObject?) {
+        let ctx = BRAWKeypadModel(delegate: self)
+        self.presentControllerWithName("Keypad", context: ctx)
+    }
+    
+    // - MARK: Keypad delegate
+    
+    func keypadDidFinish(stringValueBits: String) {
+        qrCodeButton.setHidden(true)
+        loadingIndicator.setHidden(false)
+        BRAWWatchDataManager.sharedInstance.requestQRCodeForBalance(stringValueBits) { (qrImage, error) -> Void in
+            if let qrImage = qrImage {
+                self.customQR = qrImage
+            }
+            self.updateReceiveUI()
+            print("Got new qr image: \(qrImage) error: \(error)")
+        }
+        self.dismissController()
+    }
 }

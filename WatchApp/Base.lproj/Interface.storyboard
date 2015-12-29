@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder.WatchKit.Storyboard" version="3.0" toolsVersion="9059" systemVersion="15A284" targetRuntime="watchKit" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="AgC-eL-Hgc">
+<document type="com.apple.InterfaceBuilder.WatchKit.Storyboard" version="3.0" toolsVersion="9531" systemVersion="15C50" targetRuntime="watchKit" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="AgC-eL-Hgc">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9049"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBWatchKitPlugin" version="9019"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9529"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBWatchKitPlugin" version="9515"/>
     </dependencies>
     <scenes>
         <!--ƀreadwallet-->
@@ -200,24 +200,131 @@
                 <controller identifier="BRAWReceiveMoneyInterfaceController" title="Receive Money" hidesWhenLoading="NO" id="3Fr-v5-6pR" customClass="BRAWReceiveMoneyInterfaceController" customModule="WatchApp_Extension">
                     <items>
                         <group width="30" height="30" alignment="center" verticalAlignment="center" backgroundImage="LoadingIndicator" id="aGe-pD-wDv" userLabel="Loading indicator"/>
-                        <group width="136" height="136" alignment="center" verticalAlignment="center" spacing="0.0" id="bb9-3d-Jxv" userLabel="Image container">
+                        <group width="1" alignment="left" id="GeU-5S-nti">
                             <items>
-                                <imageView width="130" height="130" alignment="center" verticalAlignment="center" id="zcl-13-Lom">
-                                    <variation key="device=watch42mm" height="150" width="150"/>
-                                </imageView>
+                                <button width="1" alignment="left" id="DPm-5o-p0S">
+                                    <accessibilityTraits key="accessibilityTraits" button="YES" image="YES"/>
+                                    <connections>
+                                        <action selector="qrCodeTap:" destination="3Fr-v5-6pR" id="SoC-M9-Shf"/>
+                                    </connections>
+                                </button>
                             </items>
                             <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                            <variation key="device=watch42mm" height="156" width="156"/>
                         </group>
                     </items>
                     <connections>
-                        <outlet property="imageContainer" destination="bb9-3d-Jxv" id="omG-C3-LeL"/>
                         <outlet property="loadingIndicator" destination="aGe-pD-wDv" id="wQX-Fb-QF0"/>
-                        <outlet property="qrCodeImage" destination="zcl-13-Lom" id="ZBn-z4-mZ8"/>
+                        <outlet property="qrCodeButton" destination="DPm-5o-p0S" id="Jy3-NJ-Gc5"/>
                     </connections>
                 </controller>
             </objects>
             <point key="canvasLocation" x="369" y="562.5"/>
+        </scene>
+        <!--Cancel-->
+        <scene sceneID="Tcy-NT-aI2">
+            <objects>
+                <controller identifier="Keypad" title="Cancel" id="4rD-ne-4oP" customClass="BRAWKeypad" customModule="WatchApp_Extension">
+                    <items>
+                        <group width="1" height="0.20000000000000001" alignment="left" id="7tF-UO-81W">
+                            <items>
+                                <label width="1" widthAdjustment="-30" height="1" alignment="left" text="ƀ0.00" textAlignment="right" baselineAdjustment="alignCenters" minimumScaleFactor="0.5" id="dp3-9o-r55">
+                                    <color key="textColor" red="0.99088680744171143" green="0.53554928302764893" blue="0.28542831540107727" alpha="1" colorSpace="calibratedRGB"/>
+                                    <fontDescription key="font" type="system" weight="semibold" pointSize="20"/>
+                                </label>
+                                <button alignment="left" id="1ql-DW-905">
+                                    <group key="contentGroup" width="30" height="1" alignment="left" id="8XI-eI-FQG">
+                                        <items>
+                                            <label width="1" height="1" alignment="left" alpha="0.59999999999999998" text="⌫" textAlignment="center" baselineAdjustment="alignCenters" id="DcN-TW-QTh">
+                                                <fontDescription key="font" type="system" weight="medium" pointSize="12"/>
+                                            </label>
+                                        </items>
+                                    </group>
+                                    <connections>
+                                        <action selector="del:" destination="4rD-ne-4oP" id="jNE-4x-VlX"/>
+                                    </connections>
+                                </button>
+                            </items>
+                        </group>
+                        <group width="1" height="0.20000000000000001" alignment="left" id="Pch-Pk-3BM">
+                            <items>
+                                <button width="0.33000000000000002" height="1" alignment="left" title="1" id="JJr-7L-vPm">
+                                    <connections>
+                                        <action selector="one:" destination="4rD-ne-4oP" id="ylw-p0-GNN"/>
+                                    </connections>
+                                </button>
+                                <button width="0.33000000000000002" height="1" alignment="left" title="2" id="R30-qD-rDV">
+                                    <connections>
+                                        <action selector="two:" destination="4rD-ne-4oP" id="too-Ez-Mry"/>
+                                    </connections>
+                                </button>
+                                <button width="0.33000000000000002" height="1" alignment="left" title="3" id="UOC-wT-Oz1">
+                                    <connections>
+                                        <action selector="three:" destination="4rD-ne-4oP" id="NnM-O7-VFg"/>
+                                    </connections>
+                                </button>
+                            </items>
+                        </group>
+                        <group width="1" height="0.20000000000000001" alignment="left" id="Luq-v0-Wat">
+                            <items>
+                                <button width="0.33000000000000002" height="1" alignment="left" title="4" id="xFZ-Zc-8wy">
+                                    <connections>
+                                        <action selector="four:" destination="4rD-ne-4oP" id="IEt-dU-Y3v"/>
+                                    </connections>
+                                </button>
+                                <button width="0.33000000000000002" height="1" alignment="left" title="5" id="WXs-5Q-Jgb">
+                                    <connections>
+                                        <action selector="five:" destination="4rD-ne-4oP" id="GDI-Zg-fmA"/>
+                                    </connections>
+                                </button>
+                                <button width="0.33000000000000002" height="1" alignment="left" title="6" id="jHE-o4-fZF">
+                                    <connections>
+                                        <action selector="six:" destination="4rD-ne-4oP" id="e1b-Fg-s7O"/>
+                                    </connections>
+                                </button>
+                            </items>
+                        </group>
+                        <group width="1" height="0.20000000000000001" alignment="left" id="c2j-AP-3ek">
+                            <items>
+                                <button width="0.33000000000000002" height="1" alignment="left" title="7" id="iLE-Pv-XdV">
+                                    <connections>
+                                        <action selector="seven:" destination="4rD-ne-4oP" id="j6q-NA-3b8"/>
+                                    </connections>
+                                </button>
+                                <button width="0.33000000000000002" height="1" alignment="left" title="8" id="73A-Xa-Cxk">
+                                    <connections>
+                                        <action selector="eight:" destination="4rD-ne-4oP" id="G7i-h9-yay"/>
+                                    </connections>
+                                </button>
+                                <button width="0.33000000000000002" height="1" alignment="left" title="9" id="kpX-gK-aLE">
+                                    <connections>
+                                        <action selector="nine:" destination="4rD-ne-4oP" id="co4-lH-UhE"/>
+                                    </connections>
+                                </button>
+                            </items>
+                        </group>
+                        <group width="1" height="0.20000000000000001" alignment="left" id="TXi-Jy-aEo">
+                            <items>
+                                <group width="0.33000000000000002" alignment="left" id="qdv-ia-CDJ"/>
+                                <button width="0.33000000000000002" height="1" alignment="left" title="0" id="4mi-Wz-WHA">
+                                    <connections>
+                                        <action selector="zero:" destination="4rD-ne-4oP" id="Tkg-Cj-mBx"/>
+                                    </connections>
+                                </button>
+                                <button width="0.33000000000000002" height="1" alignment="left" title="OK" id="R3B-Zx-omu">
+                                    <color key="titleColor" red="0.14390175044536591" green="1" blue="0.12458749115467072" alpha="1" colorSpace="calibratedRGB"/>
+                                    <connections>
+                                        <action selector="ok:" destination="4rD-ne-4oP" id="mPL-47-Pc4"/>
+                                    </connections>
+                                </button>
+                            </items>
+                        </group>
+                    </items>
+                    <connections>
+                        <outlet property="display" destination="dp3-9o-r55" id="eW2-jo-5S2"/>
+                    </connections>
+                </controller>
+            </objects>
+            <point key="canvasLocation" x="605" y="562"/>
         </scene>
     </scenes>
 </document>
