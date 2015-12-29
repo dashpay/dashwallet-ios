@@ -33,6 +33,7 @@
 #define AW_DATA_LATEST_TRANSACTION              @"AW_DATA_LATEST_TRANSACTION"
 #define AW_DATA_HAS_WALLET                      @"AW_DATA_HAS_WALLET"
 
+
 @implementation BRAppleWatchData
 - (id)initWithCoder:(NSCoder *)decoder {
     if ((self = [super init])) {

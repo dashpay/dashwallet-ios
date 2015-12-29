@@ -66,6 +66,11 @@
     return self;
 }
 
+- (BOOL)reachable
+{
+    return self.session.reachable;
+}
+
 #pragma mark - WKSession delegate
 - (void)session:(WCSession *)session
 didReceiveMessage:(NSDictionary<NSString *, id> *)message

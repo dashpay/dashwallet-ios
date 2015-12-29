@@ -27,4 +27,5 @@
 
 @interface BRPhoneWCSessionManager : NSObject
 + (instancetype)sharedInstance;
+@property (nonatomic, readonly) BOOL reachable;
 @end

@@ -38,6 +38,16 @@
 #pragma message "snapshot build"
 #endif
 
+
+@interface BRAppDelegate ()
+// balance notification properties -
+// the nsnotificationcenter observer for wallet balance
+@property id balanceNotificationObserver;
+// the most recent balance as received by notification
+@property uint64_t balanceNotificationBalance;
+@end
+
+
 @implementation BRAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
@@ -90,6 +100,7 @@
 
     // start WCSession manager
     [BRPhoneWCSessionManager sharedInstance];
+
     return YES;
 }
 
@@ -191,6 +202,38 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 
     // sync events to the server
     [[BREventManager sharedEventManager] sync];
+}
+
+- (void)applicationWillEnterForeground:(UIApplication *)application
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self.balanceNotificationObserver];
+}
+
+- (void)applicationWillResignActive:(UIApplication *)application
+{
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    void (^balanceUpdate)(NSNotification * _Nonnull) = ^(NSNotification *_Nonnull _) {
+        if (self.balanceNotificationBalance < manager.wallet.balance) {
+            NSString *noteText = [NSString stringWithFormat:
+                                  NSLocalizedString(@"received %@ (%@)", nil),
+                                  [manager stringForAmount:manager.wallet.balance - self.balanceNotificationBalance],
+                                  [manager localCurrencyStringForAmount:
+                                   manager.wallet.balance - self.balanceNotificationBalance]];
+            UILocalNotification *note = [[UILocalNotification alloc] init];
+            note.alertBody = noteText;
+            note.soundName = @"coinflip";
+            [[UIApplication sharedApplication] presentLocalNotificationNow:note];
+            NSLog(@"sent local notification %@", note);
+        }
+        self.balanceNotificationBalance = manager.wallet.balance;
+    };
+    
+    self.balanceNotificationObserver = [[NSNotificationCenter defaultCenter]
+                                        addObserverForName:BRWalletBalanceChangedNotification
+                                        object:nil
+                                        queue:nil
+                                        usingBlock:balanceUpdate];
+    self.balanceNotificationBalance = manager.wallet.balance;
 }
 
 - (void)application:(UIApplication *)application
