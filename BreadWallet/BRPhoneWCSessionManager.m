@@ -71,6 +71,23 @@
     return self.session.reachable;
 }
 
+- (void)notifyTransactionString:(NSString *)notification
+{
+    if (self.reachable) {
+        NSDictionary *msg = @{
+            AW_PHONE_NOTIFICATION_KEY: notification,
+            AW_PHONE_NOTIFICATION_TYPE_KEY: @(AWPhoneNotificationTypeTxReceive)
+        };
+    
+        [self.session sendMessage:msg replyHandler:^(NSDictionary<NSString *,id> * _Nonnull replyMessage) {
+            NSLog(@"received response from balance update notification to watch: %@", replyMessage);
+        } errorHandler:^(NSError * _Nonnull error) {
+            NSLog(@"got an error sending a balance update notification to watch");
+        }];
+        NSLog(@"sent a balance update notification to watch: %@", msg);
+    }
+}
+
 #pragma mark - WKSession delegate
 - (void)session:(WCSession *)session
 didReceiveMessage:(NSDictionary<NSString *, id> *)message
@@ -130,7 +147,7 @@ didReceiveMessage:(NSDictionary<NSString *, id> *)message
     [self sendApplicationContext];
 }
 
-- (BRAppleWatchData*)applicationContextData {
+- (BRAppleWatchData *)applicationContextData {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSArray *transactions = manager.wallet.recentTransactions;
     UIImage *qrCodeImage = self.qrCode;
@@ -147,7 +164,7 @@ didReceiveMessage:(NSDictionary<NSString *, id> *)message
     return appleWatchData;
 }
 
-- (NSString*)lastTransactionStringFromTransaction:(BRTransaction*)transaction {
+- (NSString *)lastTransactionStringFromTransaction:(BRTransaction*)transaction {
     if (transaction) {
         NSString *timeDescriptionString = [self timeDescriptionStringFrom:transaction.transactionDate];
         if (timeDescriptionString == nil) {
@@ -178,7 +195,7 @@ didReceiveMessage:(NSDictionary<NSString *, id> *)message
     return @"no transaction";
 }
 
-- (NSString*)timeDescriptionStringFrom:(NSDate*) date{
+- (NSString *)timeDescriptionStringFrom:(NSDate*) date{
     if (date) {
         NSDate *now = [NSDate date];
         NSTimeInterval secondsSinceTransaction = [now timeIntervalSinceDate:date];
@@ -193,7 +210,7 @@ didReceiveMessage:(NSDictionary<NSString *, id> *)message
     return nil;
 }
 
-- (UIImage*)qrCode {
+- (UIImage *)qrCode {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSData *req = [BRPaymentRequest requestWithString:manager.wallet.receiveAddress].data;
     return [UIImage imageWithQRCodeData:req
@@ -203,7 +220,7 @@ didReceiveMessage:(NSDictionary<NSString *, id> *)message
 
 #pragma mark - data helper methods
 
-- (NSArray*)recentTransactionListFromTransactions:(NSArray*)transactions {
+- (NSArray *)recentTransactionListFromTransactions:(NSArray*)transactions {
     NSMutableArray *transactionListData = [[NSMutableArray alloc] init];
     for ( BRTransaction *transaction in transactions) {
         [transactionListData addObject:[BRAppleWatchTransactionData appleWatchTransactionDataFrom:transaction]];

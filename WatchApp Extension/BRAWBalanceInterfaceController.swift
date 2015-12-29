@@ -60,12 +60,25 @@ class BRAWBalanceInterfaceController: WKInterfaceController {
         updateTransactionList()
         NSNotificationCenter.defaultCenter().addObserver(
             self, selector: "updateUI", name: BRAWWatchDataManager.ApplicationDataDidUpdateNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(
+            self, selector: "txReceive:", name: BRAWWatchDataManager.WalletTxReceiveNotification, object: nil)
     }
     
     override func didDeactivate() {
         // This method is called when watch view controller is no longer visible
         super.didDeactivate()
         NSNotificationCenter.defaultCenter().removeObserver(self)
+    }
+    
+    @objc func txReceive(notification: NSNotification?) {
+        print("balance view controller received notification: \(notification)")
+        if let userData = notification?.userInfo,
+            noteString = userData[NSLocalizedDescriptionKey] as? String {
+                self.presentAlertControllerWithTitle(
+                    noteString, message: nil, preferredStyle: .Alert, actions: [
+                        WKAlertAction(title: NSLocalizedString("OK", comment: ""),
+                            style: .Cancel, handler: { self.dismissController() })])
+        }
     }
     
     // MARK: UI update

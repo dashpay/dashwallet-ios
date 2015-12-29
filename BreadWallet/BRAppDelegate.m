@@ -100,6 +100,9 @@
 
     // start WCSession manager
     [BRPhoneWCSessionManager sharedInstance];
+    
+    // observe balance and create notifications
+    [self setupBalanceNotification:application];
 
     return YES;
 }
@@ -204,12 +207,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     [[BREventManager sharedEventManager] sync];
 }
 
-- (void)applicationWillEnterForeground:(UIApplication *)application
-{
-    [[NSNotificationCenter defaultCenter] removeObserver:self.balanceNotificationObserver];
-}
-
-- (void)applicationWillResignActive:(UIApplication *)application
+- (void)setupBalanceNotification:(UIApplication *)application
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     void (^balanceUpdate)(NSNotification * _Nonnull) = ^(NSNotification *_Nonnull _) {
@@ -219,11 +217,18 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
                                   [manager stringForAmount:manager.wallet.balance - self.balanceNotificationBalance],
                                   [manager localCurrencyStringForAmount:
                                    manager.wallet.balance - self.balanceNotificationBalance]];
-            UILocalNotification *note = [[UILocalNotification alloc] init];
-            note.alertBody = noteText;
-            note.soundName = @"coinflip";
-            [[UIApplication sharedApplication] presentLocalNotificationNow:note];
-            NSLog(@"sent local notification %@", note);
+            
+            // send a local notification if in the background
+            if (application.applicationState == UIApplicationStateBackground
+                    || application.applicationState == UIApplicationStateInactive) {
+                UILocalNotification *note = [[UILocalNotification alloc] init];
+                note.alertBody = noteText;
+                note.soundName = @"coinflip";
+                [[UIApplication sharedApplication] presentLocalNotificationNow:note];
+                NSLog(@"sent local notification %@", note);
+            }
+            // send a custom notification to the watch if the watch app is up
+            [[BRPhoneWCSessionManager sharedInstance] notifyTransactionString:noteText];
         }
         self.balanceNotificationBalance = manager.wallet.balance;
     };

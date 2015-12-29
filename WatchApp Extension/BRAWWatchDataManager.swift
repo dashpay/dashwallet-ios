@@ -36,6 +36,7 @@ class BRAWWatchDataManager: NSObject, WCSessionDelegate {
     static let sharedInstance = BRAWWatchDataManager()
     static let ApplicationDataDidUpdateNotification = "ApplicationDataDidUpdateNotification"
     static let WalletStatusDidChangeNotification = "WalletStatusDidChangeNotification"
+    static let WalletTxReceiveNotification = "WalletTxReceiveNotification"
     static let applicationContextDataFileName = "applicationContextData.txt"
     
     let session : WCSession =  WCSession.defaultSession()
@@ -134,6 +135,22 @@ class BRAWWatchDataManager: NSObject, WCSessionDelegate {
                 
             }
         }
+    }
+    
+    func session(
+        session: WCSession, didReceiveMessage message: [String : AnyObject],
+        replyHandler: ([String : AnyObject]) -> Void) {
+            print("Handle message from phone \(message)")
+            if let noteV = message[AW_PHONE_NOTIFICATION_KEY],
+                noteStr = noteV as? String,
+                noteTypeV = message[AW_PHONE_NOTIFICATION_TYPE_KEY],
+                noteTypeN = noteTypeV as? NSNumber
+                where noteTypeN.unsignedIntValue == AWPhoneNotificationTypeTxReceive.rawValue {
+                    let note = NSNotification(
+                        name: BRAWWatchDataManager.WalletTxReceiveNotification, object: nil, userInfo: [
+                            NSLocalizedDescriptionKey: noteStr]);
+                    NSNotificationCenter.defaultCenter().postNotification(note)
+            }
     }
     
     func requestQRCodeForBalance(bits: String, responseHandler: (qrImage: UIImage?, error: NSError?) -> Void) {

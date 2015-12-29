@@ -45,11 +45,24 @@ class BRAWReceiveMoneyInterfaceController: WKInterfaceController, WCSessionDeleg
         NSNotificationCenter.defaultCenter().addObserver(
             self, selector: "updateReceiveUI",
             name: BRAWWatchDataManager.ApplicationDataDidUpdateNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(
+            self, selector: "txReceive:", name: BRAWWatchDataManager.WalletTxReceiveNotification, object: nil)
     }
 
     override func didDeactivate() {
         super.didDeactivate()
         NSNotificationCenter.defaultCenter().removeObserver(self)
+    }
+    
+    @objc func txReceive(notification: NSNotification?) {
+        print("receive view controller received notification: \(notification)")
+        if let userData = notification?.userInfo,
+            noteString = userData[NSLocalizedDescriptionKey] as? String {
+                self.presentAlertControllerWithTitle(
+                    noteString, message: nil, preferredStyle: .Alert, actions: [
+                        WKAlertAction(title: NSLocalizedString("OK", comment: ""),
+                            style: .Cancel, handler: { self.dismissController() })])
+        }
     }
     
     func updateReceiveUI() {
@@ -87,4 +100,6 @@ class BRAWReceiveMoneyInterfaceController: WKInterfaceController, WCSessionDeleg
         }
         self.dismissController()
     }
+    
+    
 }

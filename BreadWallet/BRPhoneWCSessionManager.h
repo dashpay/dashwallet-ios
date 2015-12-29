@@ -26,6 +26,10 @@
 #import <Foundation/Foundation.h>
 
 @interface BRPhoneWCSessionManager : NSObject
-+ (instancetype)sharedInstance;
+
 @property (nonatomic, readonly) BOOL reachable;
+
++ (instancetype)sharedInstance;
+- (void)notifyTransactionString:(NSString *)notification;
+
 @end

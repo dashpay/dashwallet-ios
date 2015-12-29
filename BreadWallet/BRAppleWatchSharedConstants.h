@@ -34,6 +34,9 @@
 #define AW_APPLICATION_CONTEXT_KEY              @"AW_APPLICATION_CONTEXT_KEY"
 #define AW_QR_CODE_BITS_KEY                     @"AW_QR_CODE_BITS_KEY"
 
+#define AW_PHONE_NOTIFICATION_KEY               @"AW_PHONE_NOTIFICATION_KEY"
+#define AW_PHONE_NOTIFICATION_TYPE_KEY          @"AW_PHONE_NOTIFICATION_TYPE_KEY"
+
 
 typedef enum {
     AWSessionRquestDataTypeApplicationContextData,
@@ -46,3 +49,6 @@ typedef enum {
     AWSessionRquestTypeQRCodeBits
 } AWSessionRquestType;
 
+typedef enum {
+    AWPhoneNotificationTypeTxReceive
+} AWPhoneNotificationType;
