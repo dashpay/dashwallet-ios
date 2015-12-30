@@ -103,6 +103,8 @@
     
     // observe balance and create notifications
     [self setupBalanceNotification:application];
+    
+    [self setupPreferenceDefaults];
 
     return YES;
 }
@@ -219,8 +221,10 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
                                    manager.wallet.balance - self.balanceNotificationBalance]];
             
             // send a local notification if in the background
-            if (application.applicationState == UIApplicationStateBackground
-                    || application.applicationState == UIApplicationStateInactive) {
+            BOOL send = [[NSUserDefaults standardUserDefaults] boolForKey:USER_DEFAULTS_LOCAL_NOTIFICATIONS_KEY];
+            NSLog(@"local notifications enabled=%d", send);
+            if ((application.applicationState == UIApplicationStateBackground
+                    || application.applicationState == UIApplicationStateInactive) && send) {
                 UILocalNotification *note = [[UILocalNotification alloc] init];
                 note.alertBody = noteText;
                 note.soundName = @"coinflip";
@@ -239,6 +243,17 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
                                         queue:nil
                                         usingBlock:balanceUpdate];
     self.balanceNotificationBalance = manager.wallet.balance;
+}
+
+- (void)setupPreferenceDefaults {
+    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+    
+    // turn on local notifications by default
+    if (![defs boolForKey:USER_DEFAULTS_LOCAL_NOTIFICATIONS_SWITCH_KEY]) {
+        NSLog(@"enabling local notifications by default");
+        [defs setBool:true forKey:USER_DEFAULTS_LOCAL_NOTIFICATIONS_SWITCH_KEY];
+        [defs setBool:true forKey:USER_DEFAULTS_LOCAL_NOTIFICATIONS_KEY];
+    }
 }
 
 - (void)application:(UIApplication *)application
