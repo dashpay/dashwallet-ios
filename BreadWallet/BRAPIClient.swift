@@ -589,7 +589,7 @@ func httpDateNow() -> String {
         do {
             try ret.start()
             if debugURL != nil {
-                ret.debugURL = NSURL(string: debugURL!)
+                ret.debugFrom(NSURL(string: debugURL!))
             }
             return ret
         } catch let e {
@@ -1266,36 +1266,9 @@ enum BRHTTPServerError: ErrorType {
         if !responseSent {
             // send a 404 or something
             print("[BRHTTPServer] did not send a response")
+            _ = try? BRHTTPResponse(
+                request: req, statusCode: 404, statusReason: "Not Found", headers: nil, body: nil).send()
         }
-    }
-    
-    private static func detectContentType(URL url: NSURL) -> String {
-        if let ext = url.pathExtension {
-            switch ext {
-                case "ttf":
-                    return "application/font-truetype"
-                case "woff":
-                    return "application/font-woff"
-                case "otf":
-                    return "application/font-opentype"
-                case "svg":
-                    return "image/svg+xml"
-                case "html":
-                    return "text/html"
-                case "png":
-                    return "image/png"
-                case "jpeg", "jpg":
-                    return "image/jpeg"
-                case "css":
-                    return "text/css"
-                case "js":
-                    return "application/javascript"
-                case "json":
-                    return "application/json"
-                default: break
-            }
-        }
-        return "application/octet-stream"
     }
 }
 
@@ -1303,6 +1276,8 @@ enum BRHTTPServerError: ErrorType {
     var fd: Int32
     var method: String = "GET"
     var path: String = "/"
+    var queryString: String = ""
+    var query: [String: [String]] = [String: [String]]()
     var headers: [String: [String]] = [String: [String]]()
     
     var isKeepAlive: Bool {
@@ -1323,6 +1298,22 @@ enum BRHTTPServerError: ErrorType {
         }
         method = statusParts[0]
         path = statusParts[1]
+        if path.rangeOfString("?") != nil {
+            let parts = path.componentsSeparatedByString("?")
+            path = parts[0]
+            queryString = parts[1..<parts.count].joinWithSeparator("?")
+            let pairs = queryString.componentsSeparatedByString("&")
+            for pair in pairs {
+                let pairSides = pair.componentsSeparatedByString("=")
+                if pairSides.count == 2 {
+                    if query[pairSides[0]] != nil {
+                        query[pairSides[0]]?.append(pairSides[1])
+                    } else {
+                        query[pairSides[0]] = [pairSides[1]]
+                    }
+                }
+            }
+        }
         while true {
             let hdr = try readLine()
             if hdr.isEmpty { break }
@@ -1452,30 +1443,21 @@ enum BRHTTPServerError: ErrorType {
     public func handle(request: BRHTTPRequest) -> BRHTTPMiddlewareResponse {
         var fileURL: NSURL!
         if debugURL == nil {
-            var reqPath = request.path.stringByTrimmingCharactersInSet(NSCharacterSet(charactersInString: "/"))
-            if reqPath.rangeOfString("?") != nil {
-                reqPath = reqPath.componentsSeparatedByString("?")[0]
-            }
-            
+            let reqPath = request.path.stringByTrimmingCharactersInSet(NSCharacterSet(charactersInString: "/"))
             fileURL = baseURL.URLByAppendingPathComponent(reqPath)
         } else {
             var reqPath = request.path
             if (debugURL!.path!.hasSuffix("/")) {
                 reqPath = reqPath.substringFromIndex(reqPath.startIndex.advancedBy(1))
             }
-            if reqPath.rangeOfString("?") != nil {
-                reqPath = reqPath.componentsSeparatedByString("?")[0]
-            }
             fileURL = debugURL!.URLByAppendingPathComponent(reqPath)
         }
         
         guard let body = NSData(contentsOfURL: fileURL) else {
-            return BRHTTPMiddlewareResponse(
-                request: request,
-                response: BRHTTPResponse(request: request, statusCode: 404, statusReason: "Not Found", headers: nil, body: nil))
+            return BRHTTPMiddlewareResponse(request: request, response: nil)
         }
         NSLog("GET \(fileURL)")
-        NSLog("Detected content type: \(BRHTTPServer.detectContentType(URL: fileURL))")
+        NSLog("Detected content type: \(detectContentType(URL: fileURL))")
         
         do {
             let rangeHeader = try request.rangeHeader()
@@ -1492,7 +1474,7 @@ enum BRHTTPServerError: ErrorType {
                 let subDat = body.subdataWithRange(range)
                 let headers = [
                     "Content-Range": ["bytes \(start)-\(end)/\(body.length)"],
-                    "Content-Type": [BRHTTPServer.detectContentType(URL: fileURL)]
+                    "Content-Type": [detectContentType(URL: fileURL)]
                 ]
                 var ary = [UInt8](count: subDat.length, repeatedValue: 0)
                 subDat.getBytes(&ary, length: subDat.length)
@@ -1509,7 +1491,42 @@ enum BRHTTPServerError: ErrorType {
         var ary = [UInt8](count: body.length, repeatedValue: 0)
         body.getBytes(&ary, length: body.length)
         let r = BRHTTPResponse(request: request, statusCode: 200, statusReason: "OK",
-            headers: ["Content-Type": [BRHTTPServer.detectContentType(URL: fileURL)]], body: ary)
+            headers: ["Content-Type": [detectContentType(URL: fileURL)]], body: ary)
         return BRHTTPMiddlewareResponse(request: request, response: r)
+    }
+    
+    private func detectContentType(URL url: NSURL) -> String {
+        if let ext = url.pathExtension {
+            switch ext {
+            case "ttf":
+                return "application/font-truetype"
+            case "woff":
+                return "application/font-woff"
+            case "otf":
+                return "application/font-opentype"
+            case "svg":
+                return "image/svg+xml"
+            case "html":
+                return "text/html"
+            case "png":
+                return "image/png"
+            case "jpeg", "jpg":
+                return "image/jpeg"
+            case "css":
+                return "text/css"
+            case "js":
+                return "application/javascript"
+            case "json":
+                return "application/json"
+            default: break
+            }
+        }
+        return "application/octet-stream"
+    }
+}
+
+@objc public class BRHTTPRouterMiddleware: NSObject, BRHTTPMiddleware {
+    public func handle(request: BRHTTPRequest) -> BRHTTPMiddlewareResponse {
+        return BRHTTPMiddlewareResponse(request: request, response: nil)
     }
 }
