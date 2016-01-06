@@ -62,15 +62,19 @@ import WebKit
     }
     
     private func setupIntegrations() {
+        // proxy api for signing and verification
+        let apiProxy = BRAPIProxy(mountAt: "/_api", client: BRAPIClient.sharedClient)
+        server?.prependMiddleware(middleware: apiProxy)
+        
+        // http router for native functionality
         let router = BRHTTPRouter()
+        server?.prependMiddleware(middleware: router)
         
         // GET /_close closes the browser modal
         router.get("/_close") { (request, match) -> BRHTTPResponse in
             self.closeNow()
             return BRHTTPResponse(request: request, code: 201)
         }
-        
-        server?.prependMiddleware(middleware: router)
     }
     
     public func preload() {
