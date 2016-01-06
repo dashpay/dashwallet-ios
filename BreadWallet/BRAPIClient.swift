@@ -1398,6 +1398,7 @@ enum BRHTTPServerError: ErrorType {
     var body: [UInt8]?
     
     static var reasonMap: [Int: String] = [
+        201: "No Content",
         404: "Not Found",
         500: "Internal Server Error"
     ]

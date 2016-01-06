@@ -12,11 +12,11 @@ import WebKit
 
     
 @available(iOS 9.0, *)
-@objc public class BRWebViewController : UIViewController, WKScriptMessageHandler, WKNavigationDelegate {
+@objc public class BRWebViewController : UIViewController {
     var wkProcessPool: WKProcessPool
     var webView: WKWebView?
     var bundleName: String
-    var wkContentController: WKUserContentController?
+    var server: BRHTTPServer?
     
     init(bundleName name: String) {
         wkProcessPool = WKProcessPool()
@@ -29,21 +29,17 @@ import WebKit
     }
     
     override public func loadView() {
-        wkContentController = WKUserContentController()
-        
-        wkContentController?.addScriptMessageHandler(self, name: "close")
-        
         let config = WKWebViewConfiguration()
         config.processPool = wkProcessPool
-        config.userContentController = wkContentController!
         config.websiteDataStore = WKWebsiteDataStore.nonPersistentDataStore()
         config.allowsInlineMediaPlayback = false
         config.allowsAirPlayForMediaPlayback = false
         config.requiresUserActionForMediaPlayback = true
         config.allowsPictureInPictureMediaPlayback = false
         
-//        BRAPIClient.sharedClient.serveBundle("bread-buy", debugURL: "http://localhost:4200")
-        BRAPIClient.sharedClient.serveBundle("bread-buy")
+        server = BRAPIClient.sharedClient.serveBundle("bread-buy", debugURL: "http://localhost:4200")
+        setupIntegrations()
+//        server = BRAPIClient.sharedClient.serveBundle("bread-buy")
         let indexUrl = NSURL(string: "http://localhost:8888/index.html")!
         let request = NSURLRequest(URL: indexUrl)
         
@@ -52,7 +48,6 @@ import WebKit
         
         webView = WKWebView(frame: CGRectZero, configuration: config)
         webView?.backgroundColor = UIColor(red:0.98, green:0.98, blue:0.98, alpha:1.0)
-        webView?.navigationDelegate = self
         webView?.loadRequest(request)
         webView?.autoresizingMask = [UIViewAutoresizing.FlexibleHeight, UIViewAutoresizing.FlexibleWidth]
         view.addSubview(webView!)
@@ -66,30 +61,20 @@ import WebKit
         dismissViewControllerAnimated(true, completion: nil)
     }
     
+    private func setupIntegrations() {
+        let router = BRHTTPRouter()
+        
+        // GET /_close closes the browser modal
+        router.get("/_close") { (request, match) -> BRHTTPResponse in
+            self.closeNow()
+            return BRHTTPResponse(request: request, code: 201)
+        }
+        
+        server?.prependMiddleware(middleware: router)
+    }
+    
     public func preload() {
         _ = self.view // force webview loading
-    }
-    
-    // MARK: WKScriptMessageHandler
-    
-    public func userContentController(userContentController: WKUserContentController, didReceiveScriptMessage message: WKScriptMessage) {
-        switch message.name {
-        case "close":
-            closeNow()
-            break
-        default:
-            break
-        }
-    }
-    
-    // MARK: WKNavigationDelegate
-    
-    public func webView(webView: WKWebView, didFailNavigation navigation: WKNavigation!, withError error: NSError) {
-        NSLog("did fail navigation \(error)")
-    }
-    
-    public func webView(webView: WKWebView, didFinishNavigation navigation: WKNavigation!) {
-        NSLog("did finish navigation \(navigation)")
     }
 }
 
