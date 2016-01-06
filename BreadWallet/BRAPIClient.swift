@@ -1116,7 +1116,7 @@ enum BRHTTPServerError: ErrorType {
 }
 
 @objc public protocol BRHTTPMiddleware {
-    func handle(request: BRHTTPRequest) -> BRHTTPMiddlewareResponse
+    func handle(request: BRHTTPRequest, next: (BRHTTPMiddlewareResponse) -> Void)
 }
 
 @objc public class BRHTTPMiddlewareResponse: NSObject {
@@ -1242,7 +1242,7 @@ enum BRHTTPServerError: ErrorType {
                 self.addClient(cli_fd)
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) { () -> Void in
                     while let req = try? BRHTTPRequestImpl(readFromFd: cli_fd) {
-                        do { try self.dispatch(req) } catch { break }
+                        self.dispatch(middleware: self.middleware, req: req)
                         if !req.isKeepAlive { break }
                     }
                     Darwin.shutdown(cli_fd, SHUT_RDWR)
@@ -1254,25 +1254,20 @@ enum BRHTTPServerError: ErrorType {
         }
     }
     
-    private func dispatch(req: BRHTTPRequest) throws {
-        var responseSent = false
-        var request = req
-        for m in middleware {
-            let resp = m.handle(request)
-            if let httpResp = resp.response {
-                do {
-                    try httpResp.send()
-                } catch let e {
-                    print("[BRHTTPServer] error sending response. request: \(req) error: \(e)")
+    private func dispatch(var middleware mw: [BRHTTPMiddleware], req: BRHTTPRequest) {
+        if let curMw = mw.popLast() {
+            curMw.handle(req, next: { (mwResp) -> Void in
+                if let httpResp = mwResp.response {
+                    do {
+                        try httpResp.send()
+                    } catch let e {
+                        print("[BRHTTPServer] error sending response. request: \(req) error: \(e)")
+                    }
+                } else {
+                    self.dispatch(middleware: mw, req: mwResp.request)
                 }
-                responseSent = true
-                break
-            } else {
-                request = resp.request // allow middleware to mutate request
-            }
-        }
-        if !responseSent {
-            // send a 404 or something
+            })
+        } else {
             print("[BRHTTPServer] did not send a response")
             _ = try? BRHTTPResponse(
                 request: req, statusCode: 404, statusReason: "Not Found", headers: nil, body: nil).send()
@@ -1468,7 +1463,7 @@ enum BRHTTPServerError: ErrorType {
         self.debugURL = debugURL
     }
     
-    public func handle(request: BRHTTPRequest) -> BRHTTPMiddlewareResponse {
+    public func handle(request: BRHTTPRequest, next: (BRHTTPMiddlewareResponse) -> Void) {
         var fileURL: NSURL!
         if debugURL == nil {
             let reqPath = request.path.stringByTrimmingCharactersInSet(NSCharacterSet(charactersInString: "/"))
@@ -1482,7 +1477,7 @@ enum BRHTTPServerError: ErrorType {
         }
         
         guard let body = NSData(contentsOfURL: fileURL) else {
-            return BRHTTPMiddlewareResponse(request: request, response: nil)
+            return next(BRHTTPMiddlewareResponse(request: request, response: nil))
         }
         NSLog("GET \(fileURL)")
         NSLog("Detected content type: \(detectContentType(URL: fileURL))")
@@ -1498,7 +1493,7 @@ enum BRHTTPServerError: ErrorType {
                     let r =  BRHTTPResponse(
                         request: request, statusCode: 418, statusReason: "Request Range Not Satisfiable",
                         headers: nil, body: nil)
-                    return BRHTTPMiddlewareResponse(request: request, response: r)
+                    return next(BRHTTPMiddlewareResponse(request: request, response: r))
                 }
                 let subDat = body.subdataWithRange(range)
                 let headers = [
@@ -1509,20 +1504,20 @@ enum BRHTTPServerError: ErrorType {
                 subDat.getBytes(&ary, length: subDat.length)
                 let r =  BRHTTPResponse(
                     request: request, statusCode: 200, statusReason: "OK", headers: headers, body: ary)
-                return BRHTTPMiddlewareResponse(request: request, response: r)
+                return next(BRHTTPMiddlewareResponse(request: request, response: r))
             }
         } catch {
             let r = BRHTTPResponse(
                 request: request, statusCode: 400, statusReason: "Bad Request", headers: nil,
                 body: [UInt8]("Invalid Range Header".utf8))
-            return BRHTTPMiddlewareResponse(request: request, response: r)
+            return next(BRHTTPMiddlewareResponse(request: request, response: r))
         }
         
         var ary = [UInt8](count: body.length, repeatedValue: 0)
         body.getBytes(&ary, length: body.length)
         let r = BRHTTPResponse(request: request, statusCode: 200, statusReason: "OK",
             headers: ["Content-Type": [detectContentType(URL: fileURL)]], body: ary)
-        return BRHTTPMiddlewareResponse(request: request, response: r)
+        return next(BRHTTPMiddlewareResponse(request: request, response: r))
     }
     
     private func detectContentType(URL url: NSURL) -> String {
@@ -1570,7 +1565,7 @@ public typealias BRHTTPRoute = (request: BRHTTPRequest, match: BRHTTPRouteMatch)
     }
     
     init(method m: String, path p: String) {
-        method = m
+        method = m.uppercaseString
         path = p
         super.init()
         parse()
@@ -1606,7 +1601,7 @@ public typealias BRHTTPRoute = (request: BRHTTPRequest, match: BRHTTPRouteMatch)
         }
 
         let re = "^" + reParts.joinWithSeparator("/") + "$"
-        print("\n\nroute: \n\n method: \(method)\n path: \(path)\n regex: \(re)\n captures: \(captureGroups)\n\n")
+        //print("\n\nroute: \n\n method: \(method)\n path: \(path)\n regex: \(re)\n captures: \(captureGroups)\n\n")
         regex = try! NSRegularExpression(pattern: re, options: [])
     }
     
@@ -1627,7 +1622,7 @@ public typealias BRHTTPRoute = (request: BRHTTPRequest, match: BRHTTPRouteMatch)
                 } else {
                     match[key]?.append(captured)
                 }
-                print("capture range: '\(key)' = '\(captured)'\n\n")
+                //print("capture range: '\(key)' = '\(captured)'\n\n")
             }
             return match
         }
@@ -1638,7 +1633,7 @@ public typealias BRHTTPRoute = (request: BRHTTPRequest, match: BRHTTPRouteMatch)
 @objc public class BRHTTPRouter: NSObject, BRHTTPMiddleware {
     var routes: [BRHTTPRoutePair: BRHTTPRoute] = [BRHTTPRoutePair: BRHTTPRoute]()
     
-    public func handle(request: BRHTTPRequest) -> BRHTTPMiddlewareResponse {
+    public func handle(request: BRHTTPRequest, next: (BRHTTPMiddlewareResponse) -> Void) {
         var response: BRHTTPResponse? = nil
         
         for (routePair, route) in routes {
@@ -1648,7 +1643,7 @@ public typealias BRHTTPRoute = (request: BRHTTPRequest, match: BRHTTPRouteMatch)
             }
         }
         
-        return BRHTTPMiddlewareResponse(request: request, response: response)
+        return next(BRHTTPMiddlewareResponse(request: request, response: response))
     }
     
     public func get(pattern: String, route: BRHTTPRoute) {
