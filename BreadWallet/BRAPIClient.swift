@@ -1716,3 +1716,85 @@ public typealias BRHTTPRoute = (request: BRHTTPRequest, match: BRHTTPRouteMatch)
         }
     }
 }
+
+@objc public class BRAPIProxy: NSObject, BRHTTPMiddleware {
+    var mountPoint: String
+    var apiInstance: BRAPIClient
+    var shouldVerifyHeader: String = "x-should-verify"
+    var shouldAuthHeader: String = "x-should-authenticate"
+    
+    var bannedSendHeaders: [String] {
+        return [
+            shouldVerifyHeader,
+            shouldAuthHeader,
+            "connection",
+            "authorization"
+        ]
+    }
+    
+    var bannedReceiveHeaders: [String] = ["content-length", "connection"]
+    
+    init(mountAt: String, client: BRAPIClient) {
+        mountPoint = mountAt
+        if mountPoint.hasSuffix("/") {
+            mountPoint = mountPoint.substringToIndex(mountPoint.endIndex.advancedBy(-1))
+        }
+        apiInstance = client
+        super.init()
+    }
+    
+    public func handle(request: BRHTTPRequest, next: (BRHTTPMiddlewareResponse) -> Void) {
+        if request.path.hasPrefix(mountPoint) {
+            let path = request.path.substringFromIndex(request.path.startIndex.advancedBy(mountPoint.characters.count))
+            let nsReq = NSMutableURLRequest(URL: apiInstance.url(path))
+            // copy body
+            if request.hasBody {
+                nsReq.HTTPBody = request.body()
+            }
+            // copy headers
+            for (hdrName, hdrs) in request.headers {
+                if bannedSendHeaders.contains(hdrName) { continue }
+                for hdr in hdrs {
+                    nsReq.setValue(hdr, forHTTPHeaderField: hdrName)
+                }
+            }
+            
+            var verify = false, auth = false
+            if let verifyHeader = request.headers[shouldVerifyHeader] where verifyHeader.count > 0 {
+                if verifyHeader[0].lowercaseString == "yes" {
+                    verify = true
+                }
+            }
+            if let authHeader = request.headers[shouldAuthHeader] where authHeader.count > 0 {
+                if authHeader[0].lowercaseString == "yes" {
+                    auth = true
+                }
+            }
+            apiInstance.dataTaskWithRequest(nsReq, authenticated: auth, verify: verify, retryCount: 0, handler:
+                { (nsData, nsHttpResponse, nsError) -> Void in
+                    if let httpResp = nsHttpResponse {
+                        var hdrs = [String: [String]]()
+                        for (k, v) in httpResp.allHeaderFields {
+                            if self.bannedReceiveHeaders.contains((k as! String).lowercaseString) { continue }
+                            hdrs[k as! String] = [v as! String]
+                        }
+                        var body: [UInt8]? = nil
+                        if let bod = nsData {
+                            let b = UnsafeBufferPointer<UInt8>(start: UnsafePointer(bod.bytes), count: bod.length)
+                            body = Array(b)
+                        }
+                        let resp = BRHTTPResponse(
+                            request: request, statusCode: httpResp.statusCode,
+                            statusReason: NSHTTPURLResponse.localizedStringForStatusCode(httpResp.statusCode),
+                            headers: hdrs, body: body)
+                        return next(BRHTTPMiddlewareResponse(request: request, response: resp))
+                    } else {
+                        print("[BRAPIProxy] error getting response from backend: \(nsError)")
+                        return next(BRHTTPMiddlewareResponse(request: request, response: nil))
+                    }
+                }).resume()
+        } else {
+            return next(BRHTTPMiddlewareResponse(request: request, response: nil))
+        }
+    }
+}
