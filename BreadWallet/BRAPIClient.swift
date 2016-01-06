@@ -1283,6 +1283,10 @@ enum BRHTTPServerError: ErrorType {
     var query: [String: [String]] { get }
     var headers: [String: [String]] { get }
     var isKeepAlive: Bool { get }
+    func body() -> NSData?
+    var hasBody: Bool { get }
+    var contentType: String { get }
+    var contentLength: Int { get }
 }
 
 @objc public class BRHTTPRequestImpl: NSObject, BRHTTPRequest {
@@ -1311,6 +1315,7 @@ enum BRHTTPServerError: ErrorType {
         }
         method = statusParts[0]
         path = statusParts[1]
+        // parse query string
         if path.rangeOfString("?") != nil {
             let parts = path.componentsSeparatedByString("?")
             path = parts[0]
@@ -1327,6 +1332,7 @@ enum BRHTTPServerError: ErrorType {
                 }
             }
         }
+        // parse headers
         while true {
             let hdr = try readLine()
             if hdr.isEmpty { break }
@@ -1364,6 +1370,44 @@ enum BRHTTPServerError: ErrorType {
             return n
         }
         return Int(buf[0])
+    }
+    
+    public var hasBody: Bool {
+        return method == "POST" || method == "PATCH" || method == "PUT"
+    }
+    
+    public var contentLength: Int {
+        if let hdrs = headers["content-length"] where hasBody && hdrs.count > 0 {
+            if let i = Int(hdrs[0]) {
+                return i
+            }
+        }
+        return 0
+    }
+    
+    public var contentType: String {
+        if let hdrs = headers["content-type"] where hdrs.count > 0 { return hdrs[0] }
+        return "application/octet-stream"
+    }
+    
+    private var _body: [UInt8]?
+    private var _bodyRead: Bool = false
+    
+    public func body() -> NSData? {
+        if _bodyRead && _body != nil {
+            return NSData(bytesNoCopy: UnsafeMutablePointer(_body!), length: contentLength)
+        }
+        if _bodyRead {
+            return nil
+        }
+        var buf = [UInt8](count: contentLength, repeatedValue: 0)
+        let n = recv(fd, &buf, contentLength, 0)
+        if n <= 0 {
+            _bodyRead = true
+            return nil
+        }
+        _body = buf
+        return NSData(bytesNoCopy: UnsafeMutablePointer(_body!), length: contentLength)
     }
     
     func rangeHeader() throws -> (Int, Int)? {
