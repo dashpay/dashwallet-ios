@@ -1154,6 +1154,14 @@ enum BRHTTPServerError: ErrorType {
         }
     }
     
+    func prependMiddleware(middleware mw: BRHTTPMiddleware) {
+        middleware.insert(mw, atIndex: 0)
+    }
+    
+    func appendMiddleware(middle mw: BRHTTPMiddleware) {
+        middleware.append(mw)
+    }
+    
     func start(port: in_port_t = 8888, maxPendingConnections: Int32 = SOMAXCONN) throws {
         stop()
         
@@ -1233,7 +1241,7 @@ enum BRHTTPServerError: ErrorType {
                 setsockopt(cli_fd, SOL_SOCKET, SO_NOSIGPIPE, &v, socklen_t(sizeof(Int32)))
                 self.addClient(cli_fd)
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) { () -> Void in
-                    while let req = try? BRHTTPRequest(readFromFd: cli_fd) {
+                    while let req = try? BRHTTPRequestImpl(readFromFd: cli_fd) {
                         do { try self.dispatch(req) } catch { break }
                         if !req.isKeepAlive { break }
                     }
@@ -1272,15 +1280,25 @@ enum BRHTTPServerError: ErrorType {
     }
 }
 
-@objc public class BRHTTPRequest: NSObject {
-    var fd: Int32
-    var method: String = "GET"
-    var path: String = "/"
-    var queryString: String = ""
-    var query: [String: [String]] = [String: [String]]()
-    var headers: [String: [String]] = [String: [String]]()
+@objc public protocol BRHTTPRequest {
+    var fd: Int32 { get }
+    var method: String { get }
+    var path: String { get }
+    var queryString: String { get }
+    var query: [String: [String]] { get }
+    var headers: [String: [String]] { get }
+    var isKeepAlive: Bool { get }
+}
+
+@objc public class BRHTTPRequestImpl: NSObject, BRHTTPRequest {
+    public var fd: Int32
+    public var method: String = "GET"
+    public var path: String = "/"
+    public var queryString: String = ""
+    public var query: [String: [String]] = [String: [String]]()
+    public var headers: [String: [String]] = [String: [String]]()
     
-    var isKeepAlive: Bool {
+    public var isKeepAlive: Bool {
         return (headers["connection"] != nil
             && headers["connection"]?.count > 0
             && headers["connection"]![0] == "keep-alive")
@@ -1358,7 +1376,7 @@ enum BRHTTPServerError: ErrorType {
             return nil
         }
         guard let rngHeader = headers["range"]?[0],
-            match = BRHTTPRequest.rangeRe.matchesInString(rngHeader, options: .Anchored, range:
+            match = BRHTTPRequestImpl.rangeRe.matchesInString(rngHeader, options: .Anchored, range:
                 NSRange(location: 0, length: rngHeader.characters.count)).first
             where match.numberOfRanges == 3 else {
                 throw BRHTTPServerError.InvalidRangeHeader
@@ -1379,6 +1397,11 @@ enum BRHTTPServerError: ErrorType {
     var headers: [String: [String]]?
     var body: [UInt8]?
     
+    static var reasonMap: [Int: String] = [
+        404: "Not Found",
+        500: "Internal Server Error"
+    ]
+    
     init(request: BRHTTPRequest, statusCode: Int?, statusReason: String?, headers: [String: [String]]?, body: [UInt8]?) {
         self.request = request
         self.statusCode = statusCode
@@ -1386,6 +1409,10 @@ enum BRHTTPServerError: ErrorType {
         self.headers = headers
         self.body = body
         super.init()
+    }
+    
+    convenience init(request: BRHTTPRequest, code: Int) {
+        self.init(request: request, statusCode: code, statusReason: BRHTTPResponse.reasonMap[code], headers: nil, body: nil)
     }
     
     func send() throws {
@@ -1460,7 +1487,8 @@ enum BRHTTPServerError: ErrorType {
         NSLog("Detected content type: \(detectContentType(URL: fileURL))")
         
         do {
-            let rangeHeader = try request.rangeHeader()
+            let privReq = request as! BRHTTPRequestImpl
+            let rangeHeader = try privReq.rangeHeader()
             if rangeHeader != nil {
                 let (end, start) = rangeHeader!
                 let length = end - start
@@ -1478,7 +1506,8 @@ enum BRHTTPServerError: ErrorType {
                 ]
                 var ary = [UInt8](count: subDat.length, repeatedValue: 0)
                 subDat.getBytes(&ary, length: subDat.length)
-                let r =  BRHTTPResponse(request: request, statusCode: 200, statusReason: "OK", headers: headers, body: ary)
+                let r =  BRHTTPResponse(
+                    request: request, statusCode: 200, statusReason: "OK", headers: headers, body: ary)
                 return BRHTTPMiddlewareResponse(request: request, response: r)
             }
         } catch {
@@ -1525,8 +1554,125 @@ enum BRHTTPServerError: ErrorType {
     }
 }
 
-@objc public class BRHTTPRouterMiddleware: NSObject, BRHTTPMiddleware {
+public typealias BRHTTPRouteMatch = [String: [String]]
+
+public typealias BRHTTPRoute = (request: BRHTTPRequest, match: BRHTTPRouteMatch) -> BRHTTPResponse
+
+@objc public class BRHTTPRoutePair: NSObject {
+    public var method: String = "GET"
+    public var path: String = "/"
+    public var regex: NSRegularExpression!
+    var captureGroups: [Int: String]!
+    
+    override public var hashValue: Int {
+        return method.hashValue ^ path.hashValue
+    }
+    
+    init(method m: String, path p: String) {
+        method = m
+        path = p
+        super.init()
+        parse()
+    }
+    
+    private func parse() {
+        if !path.hasPrefix("/") {
+            path = "/" + path
+        }
+        if path.hasSuffix("/") {
+            path = path.substringToIndex(path.endIndex.advancedBy(-1))
+        }
+        let parts = path.componentsSeparatedByString("/")
+        captureGroups = [Int: String]()
+        var reParts = [String]()
+        var i = 0
+        for part in parts {
+            if part.hasPrefix("(") && part.hasSuffix(")") {
+                let wcRange = Range(start: part.endIndex.advancedBy(-2), end: part.endIndex.advancedBy(-1))
+                if part.substringWithRange(wcRange) == "*" { // a wild card capture (part*)
+                    captureGroups[i] = part.substringWithRange(
+                        Range(start: part.startIndex.advancedBy(1), end: part.endIndex.advancedBy((-2))))
+                    reParts.append("(.*)")
+                } else {
+                    captureGroups[i] = part.substringWithRange(
+                        Range(start: part.startIndex.advancedBy(1), end: part.endIndex.advancedBy(-1)))
+                    reParts.append("([^/]+)") // a capture (part)
+                }
+                i++
+            } else {
+                reParts.append(part) // a non-captured component
+            }
+        }
+
+        let re = "^" + reParts.joinWithSeparator("/") + "$"
+        print("\n\nroute: \n\n method: \(method)\n path: \(path)\n regex: \(re)\n captures: \(captureGroups)\n\n")
+        regex = try! NSRegularExpression(pattern: re, options: [])
+    }
+    
+    public func match(request: BRHTTPRequest) -> BRHTTPRouteMatch? {
+        if request.method.uppercaseString != method {
+            return nil
+        }
+        var p = request.path as NSString // strip trailing slash
+        if p.hasSuffix("/") { p = request.path.substringToIndex(request.path.endIndex.advancedBy(-1)) }
+        if let m = regex.firstMatchInString(request.path, options: [], range: NSMakeRange(0, p.length))
+        where m.numberOfRanges - 1 == captureGroups.count {
+            var match = BRHTTPRouteMatch()
+            for i in 1..<m.numberOfRanges {
+                let key = captureGroups[i-1]!
+                let captured = p.substringWithRange(m.rangeAtIndex(i))
+                if match[key] == nil {
+                    match[key] = [captured]
+                } else {
+                    match[key]?.append(captured)
+                }
+                print("capture range: '\(key)' = '\(captured)'\n\n")
+            }
+            return match
+        }
+        return nil
+    }
+}
+
+@objc public class BRHTTPRouter: NSObject, BRHTTPMiddleware {
+    var routes: [BRHTTPRoutePair: BRHTTPRoute] = [BRHTTPRoutePair: BRHTTPRoute]()
+    
     public func handle(request: BRHTTPRequest) -> BRHTTPMiddlewareResponse {
-        return BRHTTPMiddlewareResponse(request: request, response: nil)
+        var response: BRHTTPResponse? = nil
+        
+        for (routePair, route) in routes {
+            if let match = routePair.match(request) {
+                response = route(request: request, match: match)
+                break
+            }
+        }
+        
+        return BRHTTPMiddlewareResponse(request: request, response: response)
+    }
+    
+    public func get(pattern: String, route: BRHTTPRoute) {
+        routes[BRHTTPRoutePair(method: "GET", path: pattern)] = route
+    }
+    
+    public func post(pattern: String, route: BRHTTPRoute) {
+        routes[BRHTTPRoutePair(method: "POST", path: pattern)] = route
+    }
+    
+    public func put(pattern: String, route: BRHTTPRoute) {
+        routes[BRHTTPRoutePair(method: "PUT", path: pattern)] = route
+    }
+    
+    public func patch(pattern: String, route: BRHTTPRoute) {
+        routes[BRHTTPRoutePair(method: "PATCH", path: pattern)] = route
+    }
+    
+    public func delete(pattern: String, route: BRHTTPRoute) {
+        routes[BRHTTPRoutePair(method: "DELETE", path: pattern)] = route
+    }
+    
+    public func any(pattern: String, route: BRHTTPRoute) {
+        for m in ["GET", "POST", "PUT", "PATCH", "DELETE"] {
+            routes[BRHTTPRoutePair(method: m, path: pattern)] = route
+        }
     }
 }

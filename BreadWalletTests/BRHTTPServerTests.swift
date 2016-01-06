@@ -78,3 +78,81 @@ class BRHTTPServerTests: XCTestCase {
         }
     }
 }
+
+@objc class BRTestHTTPRequest: NSObject, BRHTTPRequest {
+    var fd: Int32 = 0
+    var method: String = "GET"
+    var path: String = "/"
+    var queryString: String = ""
+    var query: [String: [String]] = [String: [String]]()
+    var headers: [String: [String]] = [String: [String]]()
+    var isKeepAlive: Bool = false
+    
+    init(m: String, p: String) {
+        method = m
+        path = p
+    }
+}
+
+class BRHTTPRouteTests: XCTestCase {
+    func testRouteMatching() {
+        var m: BRHTTPRouteMatch!
+        // simple
+        var x = BRHTTPRoutePair(method: "GET", path: "/hello")
+        if (x.match(BRTestHTTPRequest(m: "GET", p: "/hello")) == nil) { XCTFail() }
+        // trailing strash stripping
+        if (x.match(BRTestHTTPRequest(m: "GET", p: "/hello/")) == nil) { XCTFail() }
+        
+        
+        // simple multi-component
+        x = BRHTTPRoutePair(method: "GET", path: "/hello/foo")
+        if (x.match(BRTestHTTPRequest(m: "GET", p: "/hello/foo")) == nil) { XCTFail() }
+        
+        // should fail
+        x = BRHTTPRoutePair(method: "GET", path: "/hello/soo")
+        if (x.match(BRTestHTTPRequest(m: "GET", p: "/hello")) != nil) { XCTFail() }
+        if (x.match(BRTestHTTPRequest(m: "GET", p: "/hello/loo")) != nil) { XCTFail() }
+        if (x.match(BRTestHTTPRequest(m: "GET", p: "/hello/loo")) != nil) { XCTFail() }
+        
+        // single capture
+        x = BRHTTPRoutePair(method: "GET", path: "/(omg)")
+        m = x.match(BRTestHTTPRequest(m: "GET", p: "/lol"))
+        if m == nil { XCTFail() }
+        if m["omg"]![0] != "lol" { XCTFail() }
+        
+        // single capture multi-component
+        x = BRHTTPRoutePair(method: "GET", path: "/omg/(omg)/omg/")
+        m = x.match(BRTestHTTPRequest(m: "GET", p: "/omg/lol/omg/"))
+        if m == nil { XCTFail() }
+        if m["omg"]![0] != "lol" { XCTFail() }
+        
+        // multi-same-capture multi-component
+        x = BRHTTPRoutePair(method: "GET", path: "/(omg)/(omg)/omg")
+        m = x.match(BRTestHTTPRequest(m: "GET", p: "/omg/lol/omg/"))
+        if m == nil { XCTFail() }
+        if m["omg"]![0] != "omg" { XCTFail() }
+        if m["omg"]![1] != "lol" { XCTFail() }
+        
+        // multi-capture multi-component
+        x = BRHTTPRoutePair(method: "GET", path: "/(lol)/(omg)")
+        m = x.match(BRTestHTTPRequest(m: "GET", p: "/lol/omg"))
+        if m == nil { return XCTFail() }
+        if m["lol"]![0] != "lol" { XCTFail() }
+        if m["omg"]![0] != "omg" { XCTFail() }
+        
+        // wildcard
+        x = BRHTTPRoutePair(method: "GET", path: "/api/(rest*)")
+        m = x.match(BRTestHTTPRequest(m: "GET", p: "/api/p1/p2/p3"))
+        if m == nil { XCTFail() }
+        if m["rest"]![0] != "p1/p2/p3" { XCTFail() }
+    }
+    
+    func testRouter() {
+        let router = BRHTTPRouter()
+        router.get("/hello") { (request, match) -> BRHTTPResponse in
+            return BRHTTPResponse(request: request, code: 500)
+        }
+        let r = router.handle(BRTestHTTPRequest(m: "GET", p: "/hello"))
+        if r.response?.statusCode != 500 { XCTFail() }
+    }
+}
