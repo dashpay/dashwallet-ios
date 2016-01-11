@@ -23,43 +23,57 @@ public class AsyncResult<T> {
     private var didCallback: Bool = false
     
     func success(cb: AsyncCallback<T>) -> AsyncResult<T> {
+        objc_sync_enter(self)
         successCallbacks.append(cb)
+        objc_sync_exit(self)
         return self
     }
     
     func failure(cb: AsyncCallback<AsyncError>) -> AsyncResult<T> {
+        objc_sync_enter(self)
         failureCallbacks.append(cb)
+        objc_sync_exit(self)
         return self
     }
     
     func succeed(result: T) {
+        objc_sync_enter(self)
         guard !didCallback else {
             print("AsyncResult.succeed() error: callbacks already called. Result: \(result)")
+            objc_sync_exit(self)
             return
         }
         didCallback = true
-        var prevResult = result
-        for cb in successCallbacks {
-            if let newResult = cb.fn(prevResult) {
-                prevResult = newResult
-            } else {
-                break // returning nil terminates the callback chain
+        objc_sync_exit(self)
+        dispatch_async(dispatch_get_main_queue()) { () -> Void in
+            var prevResult = result
+            for cb in self.successCallbacks {
+                if let newResult = cb.fn(prevResult) {
+                    prevResult = newResult
+                } else {
+                    break // returning nil terminates the callback chain
+                }
             }
         }
     }
     
     func error(code: Int, message: String) {
+        objc_sync_enter(self)
         guard !didCallback else {
             print("AsyncResult.error() error: callbacks already called. Error: \(code), \(message)")
+            objc_sync_exit(self)
             return
         }
         didCallback = true
-        var prevResult = AsyncError(code: code, message: message)
-        for cb in failureCallbacks {
-            if let newResult = cb.fn(prevResult) {
-                prevResult = newResult
-            } else {
-                break // returning nil terminates the callback chain
+        objc_sync_exit(self)
+        dispatch_async(dispatch_get_main_queue()) { () -> Void in
+            var prevResult = AsyncError(code: code, message: message)
+            for cb in self.failureCallbacks {
+                if let newResult = cb.fn(prevResult) {
+                    prevResult = newResult
+                } else {
+                    break // returning nil terminates the callback chain
+                }
             }
         }
     }
@@ -303,8 +317,7 @@ public class RemoteCouchDB: ReplicationClient {
                         result.error(-1001, message: "Error loading put response \(e)")
                     }
                 } else {
-                    let s = NSString(data: data!, encoding: NSUTF8StringEncoding)
-                    print("[RemoteCouchDB] put error resp: \(resp) returned: \(s)")
+                    print("[RemoteCouchDB] put error resp: \(resp)")
                     result.error(
                         resp.statusCode, message: NSHTTPURLResponse.localizedStringForStatusCode(resp.statusCode))
                 }
