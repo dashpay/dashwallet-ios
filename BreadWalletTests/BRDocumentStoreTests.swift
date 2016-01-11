@@ -11,15 +11,17 @@ import XCTest
 
 class BRDocumentStoreTests: XCTestCase {
     var cli: ReplicationClient!
+    var dbName: String!
     
     override func setUp() {
-        let uuid = "yyz" + NSUUID().UUIDString.lowercaseString
-        cli = RemoteCouchDB(url: "http://localhost:5984/" + uuid)
+        dbName = "yyz" + NSUUID().UUIDString.lowercaseString
+        cli = RemoteCouchDB(url: "http://localhost:5984/" + dbName)
         super.setUp()
     }
     
     override func tearDown() {
         cli = nil
+        dbName = nil
         super.tearDown()
     }
     
@@ -67,5 +69,17 @@ class BRDocumentStoreTests: XCTestCase {
         waitForExpectationsWithTimeout(5, handler: nil)
     }
     
-    
+    func testCreateThenInfo() {
+        let exp = expectationWithDescription("create then info")
+        cli.create().success(AsyncCallback<Bool> { didSucceed in
+            XCTAssert(didSucceed)
+            self.cli.info().success(AsyncCallback<DatabaseInfo> { dbInfo in
+                XCTAssert(dbInfo.dbName == self.dbName)
+                exp.fulfill()
+                return dbInfo
+            })
+            return didSucceed
+        })
+        waitForExpectationsWithTimeout(5, handler: nil)
+    }
 }

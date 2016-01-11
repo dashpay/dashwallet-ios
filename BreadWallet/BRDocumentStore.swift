@@ -65,15 +65,36 @@ public class AsyncResult<T> {
     }
 }
 
-public struct DatabaseInfo {
+public protocol Document {
+    init(json: AnyObject?) throws
+}
+
+public struct DatabaseInfo: Document {
+    let dbName: String
+    let docCount: Int
+    let diskSize: Int
+    let dataSize: Int
+    let docDelCount: Int
+    let purgeSeq: Int
+    let updateSeq: Int
+    let compactRunning: Bool
+    let committedUpdateSeq: Int
     
+    public init(json: AnyObject?) throws {
+        let doc = json as! NSDictionary
+        dbName = doc["db_name"] as! String
+        docCount = (doc["doc_count"] as! NSNumber).integerValue
+        diskSize = (doc["disk_size"] as! NSNumber).integerValue
+        dataSize = (doc["data_size"] as! NSNumber).integerValue
+        docDelCount = (doc["doc_del_count"] as! NSNumber).integerValue
+        purgeSeq = (doc["purge_seq"] as! NSNumber).integerValue
+        updateSeq = (doc["update_seq"] as! NSNumber).integerValue
+        compactRunning = (doc["update_seq"] as! NSNumber).boolValue
+        committedUpdateSeq = (doc["committed_update_seq"] as! NSNumber).integerValue
+    }
 }
 
 public struct RevisionInfo<T: Document> {
-    
-}
-
-public protocol Document {
     
 }
 
@@ -171,6 +192,29 @@ public class RemoteCouchDB: ReplicationClient {
     
     public func info() -> AsyncResult<DatabaseInfo> {
         let result = AsyncResult<DatabaseInfo>()
+        
+        let req = NSURLRequest(URL: NSURL(string: url)!)
+        NSURLSession.sharedSession().dataTaskWithRequest(req) { (data, resp, err) -> Void in
+            if let resp = resp as? NSHTTPURLResponse {
+                if let data = data where resp.statusCode == 200 {
+                    do {
+                        let j = try NSJSONSerialization.JSONObjectWithData(data, options: [])
+                        let i = try DatabaseInfo(json: j)
+                        result.succeed(i)
+                    } catch let e {
+                        print("[RemoteCouchDB] error loading object: \(e)")
+                        result.error(-1001, message: "Error loading remote response: \(e)")
+                    }
+                } else {
+                    result.error(
+                        resp.statusCode, message: NSHTTPURLResponse.localizedStringForStatusCode(resp.statusCode))
+                }
+            } else {
+                print("[RemoteCouchDB] error getting database info \(err?.debugDescription)")
+                result.error(-1001, message: "Error loading database info")
+            }
+        }.resume()
+        
         return result
     }
     
