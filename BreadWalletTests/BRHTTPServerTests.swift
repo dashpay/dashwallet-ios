@@ -87,10 +87,17 @@ class BRHTTPServerTests: XCTestCase {
     var query: [String: [String]] = [String: [String]]()
     var headers: [String: [String]] = [String: [String]]()
     var isKeepAlive: Bool = false
+    var hasBody: Bool = false
+    var contentType: String = "application/octet-stream"
+    var contentLength: Int = 0
     
     init(m: String, p: String) {
         method = m
         path = p
+    }
+    
+    func body() -> NSData? {
+        return nil
     }
 }
 
@@ -152,7 +159,12 @@ class BRHTTPRouteTests: XCTestCase {
         router.get("/hello") { (request, match) -> BRHTTPResponse in
             return BRHTTPResponse(request: request, code: 500)
         }
-        let r = router.handle(BRTestHTTPRequest(m: "GET", p: "/hello"))
-        if r.response?.statusCode != 500 { XCTFail() }
+        let exp = expectationWithDescription("handle func")
+        router.handle(BRTestHTTPRequest(m: "GET", p: "/hello")) { (resp) -> Void in
+            if resp.response?.statusCode != 500 { XCTFail() }
+            exp.fulfill()
+        }
+        
+        waitForExpectationsWithTimeout(5, handler: nil)
     }
 }
