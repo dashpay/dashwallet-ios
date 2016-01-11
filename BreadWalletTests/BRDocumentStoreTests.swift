@@ -174,3 +174,48 @@ class BRDocumentStoreTests: XCTestCase {
         waitForExpectationsWithTimeout(5, handler: nil)
     }
 }
+
+class BRDocumentStoreReplicationTests: XCTestCase {
+    var cliA: ReplicationClient!
+    var cliB: ReplicationClient!
+    
+    override func setUp() {
+        cliA = RemoteCouchDB(url: "http://localhost:5984/" + "yyz" + NSUUID().UUIDString.lowercaseString)
+        cliB = RemoteCouchDB(url: "http://localhost:5984/" + "aab" + NSUUID().UUIDString.lowercaseString)
+        let expA = expectationWithDescription("dba")
+        let expB = expectationWithDescription("dbb")
+        cliA.create().success(AsyncCallback<Bool>(fn: { (didSucceed) -> Bool? in
+            XCTAssert(didSucceed)
+            expA.fulfill()
+            return didSucceed
+        }))
+        cliB.create().success(AsyncCallback<Bool>(fn: { (didSucceed) -> Bool? in
+            XCTAssert(didSucceed)
+            expB.fulfill()
+            return didSucceed
+        }))
+        waitForExpectationsWithTimeout(5, handler: nil)
+        super.setUp()
+    }
+    
+    override func tearDown() {
+        cliA = nil
+        cliB = nil
+        super.tearDown()
+    }
+    
+    func testVerifyPeersSuccess() {
+        let exp = expectationWithDescription("verify exists state")
+        let repl = Replicator(source: cliA, destination: cliB)
+        let state = Replicator.ReplicationState()
+        repl.verifyPeers.fn(state).success(AsyncCallback<Replicator.ReplicationState> { state in
+            exp.fulfill()
+            return state
+        }).failure(AsyncCallback<AsyncError> { error in
+            XCTFail()
+            exp.fulfill()
+            return error
+        })
+        waitForExpectationsWithTimeout(5, handler: nil)
+    }
+}

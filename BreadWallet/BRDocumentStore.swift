@@ -363,3 +363,70 @@ public class RemoteCouchDB: ReplicationClient {
     }
 }
 
+public struct ReplicationStep<T> {
+    let fn: (T) -> AsyncResult<T>
+}
+
+public class Replicator {
+    let source: ReplicationClient
+    let destination: ReplicationClient
+    public var running: Bool = false
+    
+    public struct ReplicationState {
+        let sessionId: String = NSUUID().UUIDString
+        let startTime: NSDate = NSDate()
+        let missingChecked: Int = 0
+        let missingFound: Int = 0
+        let docsRead: Int = 0
+        let docsWritten: Int = 0
+        let docsWriteFailures: Int = 0
+    }
+    
+    // Ensure that both source and destination databases exist via parallel .exists() requests
+    public var verifyPeers: ReplicationStep<ReplicationState> {
+        return ReplicationStep<ReplicationState> { replState in
+            let result = AsyncResult<ReplicationState>()
+            
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), { () -> Void in
+                let dgroup = dispatch_group_create()
+                var exists = ["source": false, "destination": false]
+                
+                dispatch_group_enter(dgroup); dispatch_group_enter(dgroup)
+                
+                dispatch_apply(2, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), { (i) -> Void in
+                    let c = i == 0 ? self.source : self.destination
+                    let n = (i == 0 ? "source" : "destination")
+                    c.exists().success(AsyncCallback<Bool> { doesExist in
+                        if doesExist {
+                            exists[n] = true
+                        }
+                        dispatch_group_leave(dgroup)
+                        return doesExist
+                    }).failure(AsyncCallback<AsyncError> { existsError in
+                        dispatch_group_leave(dgroup)
+                        return existsError
+                    })
+                })
+                
+                dispatch_group_notify(dgroup, dispatch_get_main_queue(), { () -> Void in
+                    if exists["source"]! && exists["destination"]! {
+                        result.succeed(replState)
+                    } else {
+                        result.error(404, message: "both source and destination must exist")
+                    }
+                })
+            })
+
+            return result
+        }
+    }
+    
+    public init(source s: ReplicationClient, destination d: ReplicationClient) {
+        source = s
+        destination = d
+    }
+    
+    public func start() {
+        
+    }
+}
