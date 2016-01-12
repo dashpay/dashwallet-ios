@@ -218,4 +218,22 @@ class BRDocumentStoreReplicationTests: XCTestCase {
         })
         waitForExpectationsWithTimeout(5, handler: nil)
     }
+    
+    func testPeersInformationSuccess() {
+        let exp = expectationWithDescription("peers info")
+        let repl = Replicator(source: cliA, destination: cliB)
+        let state = Replicator.ReplicationState()
+        repl.getPeersInformation.fn(state).success(AsyncCallback<Replicator.ReplicationState> { state in
+            exp.fulfill()
+            if state.sourceInfo == nil || state.destinationInfo == nil {
+                XCTFail()
+            }
+            return state
+        }).failure(AsyncCallback<AsyncError> { err in
+            XCTFail()
+            exp.fulfill()
+            return err
+        })
+        waitForExpectationsWithTimeout(5, handler: nil)
+    }
 }

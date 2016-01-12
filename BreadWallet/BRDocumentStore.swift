@@ -380,6 +380,9 @@ public class Replicator {
         let docsRead: Int = 0
         let docsWritten: Int = 0
         let docsWriteFailures: Int = 0
+        
+        var sourceInfo: DatabaseInfo? = nil
+        var destinationInfo: DatabaseInfo? = nil
     }
     
     // Ensure that both source and destination databases exist via parallel .exists() requests
@@ -417,6 +420,43 @@ public class Replicator {
                 })
             })
 
+            return result
+        }
+    }
+    
+    // Loads the .info() results (DatabaseInfo object) into the ReplicationState for source and destination
+    public var getPeersInformation: ReplicationStep<ReplicationState> {
+        return ReplicationStep<ReplicationState> { replState in
+            let result = AsyncResult<ReplicationState>()
+            var retReplState = replState
+            
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), { () -> Void in
+                let dgroup = dispatch_group_create()
+                dispatch_group_enter(dgroup); dispatch_group_enter(dgroup)
+                dispatch_apply(2, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), { (i) -> Void in
+                    let c = i == 0 ? self.source : self.destination
+                    c.info().success(AsyncCallback<DatabaseInfo> { dbInfo in
+                        if i == 0 {
+                            retReplState.sourceInfo = dbInfo
+                        } else {
+                            retReplState.destinationInfo = dbInfo
+                        }
+                        dispatch_group_leave(dgroup)
+                        return dbInfo
+                    }).failure(AsyncCallback<AsyncError> { infoFailure in
+                        dispatch_group_leave(dgroup)
+                        return infoFailure
+                    })
+                })
+                dispatch_group_notify(dgroup, dispatch_get_main_queue(), { () -> Void in
+                    if retReplState.sourceInfo == nil || retReplState.destinationInfo == nil {
+                        result.error(-1001, message: "could not retrieve both source and destination info()")
+                    } else {
+                        result.succeed(retReplState)
+                    }
+                })
+            })
+            
             return result
         }
     }
