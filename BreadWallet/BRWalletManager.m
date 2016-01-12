@@ -569,6 +569,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
                                    (self.secureTime + NSTimeIntervalSince1970))/60.0;
             NSString *unit = NSLocalizedString(@"minutes", nil);
             
+            if (wait > pow(6, failCount - 3)) wait = pow(6, failCount - 3); // we don't have secureTime yet
             if (wait < 2.0) wait = 1.0, unit = NSLocalizedString(@"minute", nil);
 
             if (wait >= 60.0) {
