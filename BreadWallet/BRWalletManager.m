@@ -590,6 +590,12 @@ static NSString *getKeychainString(NSString *key, NSError **error)
                                       (int)wait, unit];
             self.alertView.delegate = self;
             if (! self.alertView.isVisible) [self.alertView show];
+            
+            while (! self.didPresent || self.alertView.visible) {
+                [[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode
+                 beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+            }
+
             return NO;
         }
         
