@@ -9,4 +9,5 @@
 #import "NSString+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 #import <bzlib.h>
+#import <CommonCrypto/CommonCrypto.h>
 @import WebKit;

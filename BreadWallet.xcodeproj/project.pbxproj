@@ -17,6 +17,8 @@
 		222040C81C1A3803005CE1C3 /* BRHTTPServerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 222040C71C1A3803005CE1C3 /* BRHTTPServerTests.swift */; };
 		222E7F501C43193E009AB45D /* BRDocumentStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 222E7F4F1C43193E009AB45D /* BRDocumentStore.swift */; };
 		222E7F521C43291C009AB45D /* BRDocumentStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 222E7F511C43291C009AB45D /* BRDocumentStoreTests.swift */; };
+		222E7F561C46E9B8009AB45D /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222E7F551C46E9B8009AB45D /* Security.framework */; };
+		222E7F581C46E9BE009AB45D /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222E7F571C46E9BE009AB45D /* SystemConfiguration.framework */; };
 		22B6A4481C0E963900673913 /* libbz2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 22B6A4471C0E963900673913 /* libbz2.tbd */; };
 		22B6A44A1C0ECB7800673913 /* BRBSPatchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22B6A4491C0ECB7800673913 /* BRBSPatchTests.swift */; };
 		22FCD22C1C0E68C80066D798 /* BRTarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FCD22B1C0E68C80066D798 /* BRTarTests.swift */; };
@@ -147,6 +149,9 @@
 		222040C71C1A3803005CE1C3 /* BRHTTPServerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRHTTPServerTests.swift; sourceTree = "<group>"; };
 		222E7F4F1C43193E009AB45D /* BRDocumentStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRDocumentStore.swift; sourceTree = "<group>"; };
 		222E7F511C43291C009AB45D /* BRDocumentStoreTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRDocumentStoreTests.swift; sourceTree = "<group>"; };
+		222E7F531C46E62A009AB45D /* libcommonCrypto.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcommonCrypto.tbd; path = usr/lib/system/libcommonCrypto.tbd; sourceTree = SDKROOT; };
+		222E7F551C46E9B8009AB45D /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		222E7F571C46E9BE009AB45D /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		22B6A4471C0E963900673913 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
 		22B6A4491C0ECB7800673913 /* BRBSPatchTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRBSPatchTests.swift; sourceTree = "<group>"; };
 		22FCD22B1C0E68C80066D798 /* BRTarTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRTarTests.swift; sourceTree = "<group>"; };
@@ -382,6 +387,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				222E7F581C46E9BE009AB45D /* SystemConfiguration.framework in Frameworks */,
+				222E7F561C46E9B8009AB45D /* Security.framework in Frameworks */,
 				222040C61C1A1940005CE1C3 /* WebKit.framework in Frameworks */,
 				22B6A4481C0E963900673913 /* libbz2.tbd in Frameworks */,
 			);
@@ -634,6 +641,9 @@
 		75D5F3C0191EC270004AB296 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				222E7F571C46E9BE009AB45D /* SystemConfiguration.framework */,
+				222E7F551C46E9B8009AB45D /* Security.framework */,
+				222E7F531C46E62A009AB45D /* libcommonCrypto.tbd */,
 				222040C51C1A1940005CE1C3 /* WebKit.framework */,
 				22B6A4471C0E963900673913 /* libbz2.tbd */,
 				75F2E0B61BE2D5F000EAE861 /* Accelerate.framework */,
@@ -1348,6 +1358,10 @@
 				);
 				INFOPLIST_FILE = BreadWallet/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/usr/lib/system",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.voisine.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1377,6 +1391,10 @@
 				);
 				INFOPLIST_FILE = BreadWallet/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/usr/lib/system",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.voisine.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";

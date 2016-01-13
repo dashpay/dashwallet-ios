@@ -224,15 +224,29 @@ class BRDocumentStoreReplicationTests: XCTestCase {
         let repl = Replicator(source: cliA, destination: cliB)
         let state = Replicator.ReplicationState()
         repl.getPeersInformation.fn(state).success(AsyncCallback<Replicator.ReplicationState> { state in
-            exp.fulfill()
             if state.sourceInfo == nil || state.destinationInfo == nil {
                 XCTFail()
             }
+            exp.fulfill()
             return state
         }).failure(AsyncCallback<AsyncError> { err in
             XCTFail()
             exp.fulfill()
             return err
+        })
+        waitForExpectationsWithTimeout(5, handler: nil)
+    }
+    
+    func testGenerateReplicationId() {
+        let exp = expectationWithDescription("gen repl id")
+        let repl = Replicator(source: cliA, destination: cliB)
+        let state = Replicator.ReplicationState()
+        repl.generateReplicationId.fn(state).success(AsyncCallback<Replicator.ReplicationState> { state in
+            if state.id == "" {
+                XCTFail()
+            }
+            exp.fulfill()
+            return state
         })
         waitForExpectationsWithTimeout(5, handler: nil)
     }

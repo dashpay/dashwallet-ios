@@ -149,6 +149,32 @@ public struct DatabaseInfo: DocumentLoading {
     }
 }
 
+public struct DesignDocument: Document {
+    public var _id: String
+    public var _rev: String
+    
+    // these fields are incomplete - they only implement what is currently needed internally
+    let language: String? // "javascript" - usually
+    let filters: [String: String]? // {"filter_name": "js_function"}
+    
+    public init(json: AnyObject?) throws {
+        let doc = json as! NSDictionary
+        _id = doc["_id"] as! String
+        _rev = doc["_rev"] as! String
+        language = doc["language"] as? String
+        filters = doc["filters"] as? [String: String]
+    }
+    
+    public func dump() throws -> NSData {
+        var d = [String: AnyObject]()
+        d["_id"] = _id
+        d["_rev"] = _rev
+        d["language"] = language
+        d["filters"] = filters
+        return try NSJSONSerialization.dataWithJSONObject(d as NSDictionary, options: [])
+    }
+}
+
 public struct RevisionInfo<T: Document> {
     
 }
@@ -476,6 +502,65 @@ public class Replicator {
                         result.succeed(retReplState)
                     }
                 })
+            })
+            
+            return result
+        }
+    }
+    
+    // Generate a unique identifier for this replication session
+    public var generateReplicationId: ReplicationStep<ReplicationState> {
+        return ReplicationStep<ReplicationState> { replState in
+            let result = AsyncResult<ReplicationState>()
+            var retReplState = replState
+            var idParts = [replState.config.id, self.source.id, self.destination.id]
+            
+            // retrieves the javascript function body for a given filter name
+            let getFilter = ReplicationStep<String?>(fn: { (filterSpec) -> AsyncResult<String?> in
+                let result = AsyncResult<String?>()
+                if let filterSpec = filterSpec {
+                    let designDocNameParts = filterSpec.componentsSeparatedByString("/")
+                    if designDocNameParts.count < 2 { // invalid filter spec
+                        result.succeed(nil)
+                        return result
+                    }
+                    let designDocName = designDocNameParts[0]
+                    let filterName = designDocNameParts[1]
+                    self.source.get("_design/" + designDocName, options: nil, returning: DesignDocument.self)
+                        .success(AsyncCallback<DesignDocument?> { designDoc in
+                            if let designDoc = designDoc, filters = designDoc.filters, filter = filters[filterName] {
+                                result.succeed(filter)
+                            } else {
+                                result.succeed(nil)
+                            }
+                            
+                            return designDoc
+                        })
+                        .failure(AsyncCallback<AsyncError> { designDocError in
+                            // dont care about an error here
+                            result.succeed(nil)
+                            return designDocError
+                        })
+                } else {
+                    result.succeed(nil)
+                }
+                
+                return result
+            })
+            
+            getFilter.fn(replState.config.filter).success(AsyncCallback<String?> { filterValue in
+                if let filterValue = filterValue {
+                    idParts.append(filterValue)
+                }
+                if replState.config.queryParams.count > 0 {
+                    idParts.append(replState.config.queryParams.description)
+                }
+                if replState.config.docIds.count > 0 {
+                    idParts.append(replState.config.docIds.description)
+                }
+                retReplState.id = idParts.joinWithSeparator("").MD5()
+                result.succeed(retReplState)
+                return filterValue
             })
             
             return result
