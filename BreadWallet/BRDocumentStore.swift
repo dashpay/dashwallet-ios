@@ -22,9 +22,19 @@ public class AsyncResult<T> {
     private var failureCallbacks: [AsyncCallback<AsyncError>] = [AsyncCallback<AsyncError>]()
     private var didCallback: Bool = false
     
+    private var successResult: T!
+    private var errorResult: AsyncError!
+    
     func success(cb: AsyncCallback<T>) -> AsyncResult<T> {
         objc_sync_enter(self)
         successCallbacks.append(cb)
+        if didCallback { // immediately call the callback if a result was already produced
+            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                objc_sync_enter(self)
+                self.successResult = cb.fn(self.successResult)
+                objc_sync_exit(self)
+            })
+        }
         objc_sync_exit(self)
         return self
     }
@@ -32,6 +42,13 @@ public class AsyncResult<T> {
     func failure(cb: AsyncCallback<AsyncError>) -> AsyncResult<T> {
         objc_sync_enter(self)
         failureCallbacks.append(cb)
+        if didCallback {
+            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                objc_sync_enter(self)
+                self.errorResult = cb.fn(self.errorResult)
+                objc_sync_exit(self)
+            })
+        }
         objc_sync_exit(self)
         return self
     }
@@ -46,14 +63,16 @@ public class AsyncResult<T> {
         didCallback = true
         objc_sync_exit(self)
         dispatch_async(dispatch_get_main_queue()) { () -> Void in
-            var prevResult = result
+            objc_sync_enter(self)
+            self.successResult = result
             for cb in self.successCallbacks {
-                if let newResult = cb.fn(prevResult) {
-                    prevResult = newResult
+                if let newResult = cb.fn(self.successResult) {
+                    self.successResult = newResult
                 } else {
                     break // returning nil terminates the callback chain
                 }
             }
+            objc_sync_exit(self)
         }
     }
     
@@ -67,14 +86,16 @@ public class AsyncResult<T> {
         didCallback = true
         objc_sync_exit(self)
         dispatch_async(dispatch_get_main_queue()) { () -> Void in
-            var prevResult = AsyncError(code: code, message: message)
+            objc_sync_enter(self)
+            self.errorResult = AsyncError(code: code, message: message)
             for cb in self.failureCallbacks {
-                if let newResult = cb.fn(prevResult) {
-                    prevResult = newResult
+                if let newResult = cb.fn(self.errorResult) {
+                    self.errorResult = newResult
                 } else {
                     break // returning nil terminates the callback chain
                 }
             }
+            objc_sync_exit(self)
         }
     }
 }
