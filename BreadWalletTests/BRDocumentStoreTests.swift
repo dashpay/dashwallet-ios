@@ -250,4 +250,16 @@ class BRDocumentStoreReplicationTests: XCTestCase {
         })
         waitForExpectationsWithTimeout(5, handler: nil)
     }
+    
+    func testFindCommonAncestryWithNoPreviousAnscestor() {
+        let exp = expectationWithDescription("common ancestor")
+        let repl = Replicator(source: cliA, destination: cliB)
+        let state = Replicator.ReplicationState()
+        repl.findCommonAncestry.fn(state).success(AsyncCallback<Replicator.ReplicationState> { state in
+            XCTAssert(state.startLastSeq == -1)
+            exp.fulfill()
+            return state
+        })
+        waitForExpectationsWithTimeout(5, handler: nil)
+    }
 }

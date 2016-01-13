@@ -419,7 +419,22 @@ public class Replicator {
     let destination: ReplicationClient
     public var running: Bool = false
     
+    public struct ReplicationConfig {
+        let id: String = NSUUID().UUIDString
+        let batchSize: Int = 100
+        let maxRequests: Int = 4
+        let heartbeat: Int = 10 // sec
+        let docIds: [String] = [String]()
+        let queryParams: [String: [String]] = [String: [String]]()
+        let filter: String? = nil
+    }
+    
     public struct ReplicationState {
+        let config: ReplicationConfig = ReplicationConfig()
+        
+        var id: String = ""
+        var idVersion: Int = 3
+        
         let sessionId: String = NSUUID().UUIDString
         let startTime: NSDate = NSDate()
         let missingChecked: Int = 0
@@ -427,9 +442,102 @@ public class Replicator {
         let docsRead: Int = 0
         let docsWritten: Int = 0
         let docsWriteFailures: Int = 0
+        var startLastSeq: Int = -1 // -1 == no previous start
         
         var sourceInfo: DatabaseInfo? = nil
         var destinationInfo: DatabaseInfo? = nil
+        
+        var sourceReplicationLog: ReplicationLog? = nil
+        var destinationReplicationLog: ReplicationLog? = nil
+    }
+    
+    public struct ReplicationItem: Document {
+        public var _id: String
+        public var _rev: String
+        
+        let sessionId: String
+        let startTime: String // iso-8601 date
+        let endTime: String // iso-8601 date
+        let missingChecked: Int
+        let missingFound: Int
+        let docsRead: Int
+        let docsWritten: Int
+        let docWriteFailures: Int
+        let startLastSeq: Int
+        let recordedSeq: Int
+        let endLastSeq: Int
+        
+        public init(json: AnyObject?) throws {
+            let doc = json as! NSDictionary
+            _id = doc["_id"] as! String
+            _rev = doc["_rev"] as! String
+            sessionId = doc["session_id"] as! String
+            startTime = doc["start_time"] as! String
+            endTime = doc["end_time"] as! String
+            missingChecked = (doc["missing_checked"] as! NSNumber).integerValue
+            missingFound = (doc["missing_found"] as! NSNumber).integerValue
+            docsRead = (doc["docs_read"] as! NSNumber).integerValue
+            docsWritten = (doc["docs_written"] as! NSNumber).integerValue
+            docWriteFailures = (doc["doc_write_failures"] as! NSNumber).integerValue
+            startLastSeq = (doc["start_last_seq"] as! NSNumber).integerValue
+            recordedSeq = (doc["recorded_seq"] as! NSNumber).integerValue
+            endLastSeq = (doc["end_last_seq"] as! NSNumber).integerValue
+        }
+        
+        public func dict() -> NSDictionary {
+            var d = [String: AnyObject]()
+            d["_id"] = _id
+            d["_rev"] = _rev
+            d["session_id"] = sessionId
+            d["start_time"] = startTime
+            d["end_time"] = endTime
+            d["missing_checked"] = NSNumber(integer: missingChecked)
+            d["missing_found"] = NSNumber(integer: missingFound)
+            d["docs_read"] = NSNumber(integer: docsRead)
+            d["docs_written"] = NSNumber(integer: docsWritten)
+            d["doc_write_failures"] = NSNumber(integer: docWriteFailures)
+            d["start_last_seq"] = NSNumber(integer: startLastSeq)
+            d["recorded_seq"] = NSNumber(integer: recordedSeq)
+            d["end_last_seq"] = NSNumber(integer: endLastSeq)
+            return d as NSDictionary
+        }
+        
+        public func dump() throws -> NSData {
+            return try NSJSONSerialization.dataWithJSONObject(dict(), options: [])
+        }
+    }
+    
+    public struct ReplicationLog: Document {
+        public var _id: String
+        public var _rev: String
+        
+        let sessionId: String
+        let replicationIdVersion: Int
+        let sourceLastSeq: Int
+        let history: [ReplicationItem]
+        
+        public init(json: AnyObject?) throws {
+            let doc = json as! NSDictionary
+            _id = doc["_id"] as! String
+            _rev = doc["_rev"] as! String
+            sessionId = doc["session_id"] as! String
+            replicationIdVersion = (doc["replication_id_version"] as! NSNumber).integerValue
+            sourceLastSeq = (doc["source_last_seq"] as! NSNumber).integerValue
+            history = (doc["history"] as! [AnyObject]).map({ (historyJson) -> ReplicationItem in
+                return try! ReplicationItem(json: historyJson)
+            })
+        }
+        
+        public func dump() throws -> NSData {
+            var d = [String: AnyObject]()
+            d["_id"] = _id
+            d["_rev"] = _rev
+            d["history"] = history.map({ (historyItem) -> NSDictionary in return historyItem.dict() })
+            d["session_id"] = sessionId
+            d["replication_id_version"] = replicationIdVersion
+            d["source_last_seq"] = NSNumber(integer: sourceLastSeq)
+            return try NSJSONSerialization.dataWithJSONObject(d as NSDictionary, options: [])
+        }
     }
     
     // Ensure that both source and destination databases exist via parallel .exists() requests
@@ -567,6 +675,68 @@ public class Replicator {
         }
     }
     
+    // Determines the startup checkpoint if the replication state is being reused
+    public var findCommonAncestry: ReplicationStep<ReplicationState> {
+        return ReplicationStep<ReplicationState> { replState in
+            let result = AsyncResult<ReplicationState>()
+            var retReplState = replState
+            
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
+                let dgroup = dispatch_group_create()
+                var docs: [String: ReplicationLog?] = ["source": nil, "destination": nil]
+                dispatch_group_enter(dgroup); dispatch_group_enter(dgroup)
+                
+                // fetch replication logs
+                dispatch_apply(2, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) { i in
+                    let c = i == 0 ? self.source : self.destination
+                    let n = i == 0 ? "source" : "destination"
+                    c.get("_local/" + replState.id, options: nil, returning: ReplicationLog.self)
+                        .success(AsyncCallback<ReplicationLog?> { log in
+                            docs[n] = log // it's ok for this to be nil
+                            dispatch_group_leave(dgroup)
+                            return log
+                        })
+                        .failure(AsyncCallback<AsyncError> { logErr in
+                            dispatch_group_leave(dgroup)
+                            return logErr
+                        })
+                }
+                
+                dispatch_group_notify(dgroup, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
+                    retReplState.destinationReplicationLog = docs["destination"]!
+                    retReplState.sourceReplicationLog = docs["source"]!
+                    guard let destLog = retReplState.destinationReplicationLog,
+                        sourceLog = retReplState.sourceReplicationLog else {
+                        // there is no common history - force full replication
+                        result.succeed(retReplState)
+                        return
+                    }
+                    // we are already at the most recent seq
+                    if destLog.sessionId == sourceLog.sessionId {
+                        retReplState.startLastSeq = sourceLog.sourceLastSeq
+                        result.succeed(retReplState)
+                        return
+                    }
+                    // find the most recent common seq
+                    let histories = sourceLog.history.filter({ (histItem) -> Bool in
+                        let destHistories = destLog.history.filter({ (destHistItem) -> Bool in
+                            return destHistItem.sessionId == histItem.sessionId
+                        })
+                        return destHistories.count > 0
+                    })
+                    guard histories.count > 0 else { // there is no common history - force full replication
+                        result.succeed(retReplState)
+                        return
+                    }
+                    retReplState.startLastSeq = histories[0].recordedSeq
+                    result.succeed(retReplState)
+                }
+            }
+            
+            return result
+        }
+    }
+    
     public init(source s: ReplicationClient, destination d: ReplicationClient) {
         source = s
         destination = d
@@ -574,5 +744,23 @@ public class Replicator {
     
     public func start() {
         
+    }
+}
+
+extension String {
+    func MD5() -> String {
+        let data = (self as NSString).dataUsingEncoding(NSUTF8StringEncoding)!
+        let result = NSMutableData(length: Int(CC_MD5_DIGEST_LENGTH))!
+        let resultBytes = UnsafeMutablePointer<CUnsignedChar>(result.mutableBytes)
+        CC_MD5(data.bytes, CC_LONG(data.length), resultBytes)
+        
+        let a = UnsafeBufferPointer<CUnsignedChar>(start: resultBytes, count: result.length)
+        let hash = NSMutableString()
+        
+        for i in a {
+            hash.appendFormat("%02x", i)
+        }
+        
+        return hash as String
     }
 }
