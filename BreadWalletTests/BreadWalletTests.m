@@ -993,7 +993,8 @@
 
     NSLog(@"000102030405060708090a0b0c0d0e0f/0'/0/0 pub = %@", [NSString hexWithData:pub]);
     
-    //TODO: verify the value of pub using the output of some other implementation
+    XCTAssertEqualObjects(pub, @"027b6a7dd645507d775215a9035be06700e1ed8c541da9351b4bd14bd50ab61428".hexToData,
+                          @"[BRBIP32Sequence publicKey:internal:masterPublicKey:]");
 }
 
 - (void)testBIP32SequenceSerializedPrivateMasterFromSeed
