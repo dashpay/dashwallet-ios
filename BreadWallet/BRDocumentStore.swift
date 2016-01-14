@@ -179,6 +179,44 @@ public struct RevisionInfo<T: Document> {
     
 }
 
+public struct Change: DocumentLoading {
+    let changes: [[String: String]]
+    let id: String
+    let deleted: Bool? = nil
+    let seq: Int
+    
+    public init(json: AnyObject?) throws {
+        let doc = json as! NSDictionary
+        changes = doc["changes"] as! [[String: String]]
+        id = doc["id"] as! String
+        if let deld = doc["deleted"] as? Bool {
+            deleted = deld
+        }
+        seq = (doc["seq"] as! NSNumber).integerValue
+    }
+    
+    public func dump() throws -> NSData {
+        return NSData() // this is a fetch-only document
+    }
+}
+
+public struct Changes: DocumentLoading {
+    let lastSeq: Int
+    let results: [Change]
+    
+    public init(json: AnyObject?) throws {
+        let doc = json as! NSDictionary
+        lastSeq = (doc["last_seq"] as! NSNumber).integerValue
+        results = (doc["results"] as! [NSDictionary]).map({ (resD) -> Change in
+            return try! Change(json: resD)
+        })
+    }
+    
+    public func dump() throws -> NSData {
+        return NSData() // this is a fetch-only document
+    }
+}
+
 // A replication client is responsible for talking to a database (remote or local regardless) which can replicate
 // its state to another database following the same protocol.
 public protocol ReplicationClient {
@@ -212,7 +250,8 @@ public protocol ReplicationClient {
     // compare document revisions
     func revsDiff<T: Document>(revs: [RevisionInfo<T>], options: [String: [String]]?) -> AsyncResult<[RevisionInfo<T>]>
     
-    //func changes<T: Document>(options: [String: [String]]?) -> AsyncResult<
+    // fetch changes feed from the database
+    func changes(options: [String: [String]]?) -> AsyncResult<Changes>
 }
 
 public class RemoteCouchDB: ReplicationClient {
@@ -345,7 +384,7 @@ public class RemoteCouchDB: ReplicationClient {
             return result
         }
         
-        let req = NSMutableURLRequest(URL: NSURL(string: url + "/" + doc._id + buildQueryString(options))!)
+        let req = NSMutableURLRequest(URL: NSURL(string: url + "/" + doc._id + String.buildQueryString(options, includeQ: true))!)
         req.HTTPMethod = "PUT"
         req.HTTPBody = docJson
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -391,22 +430,50 @@ public class RemoteCouchDB: ReplicationClient {
         return result
     }
     
-    private func buildQueryString(options: [String: [String]]?) -> String {
-        var s = ""
-        if let options = options where options.count > 0 {
-            s = "?"
-            var i = 0
-            for (k, vals) in options {
-                for v in vals {
-                    if i != 0 {
-                        s += "&"
-                    }
-                    i++
-                    s += "\(k.urlEscapedString)=\(v.urlEscapedString)"
-                }
-            }
+    public func changes(options: [String : [String]]?) -> AsyncResult<Changes> {
+        let result = AsyncResult<Changes>()
+        var req: NSURLRequest!
+        
+        // requesting changes for specific doc ids looks different (it's a POST with a specific "filter" value)
+        if let options = options,
+            docIds = options["doc_ids"],
+            docIdJson = try? NSJSONSerialization.dataWithJSONObject(docIds, options: []) {
+            var mutOpts = options
+            mutOpts["filter"] = ["_doc_ids"]
+            mutOpts.removeValueForKey("doc_ids")
+            let mreq = NSMutableURLRequest(
+                URL: NSURL(string: url + "/_changes" + String.buildQueryString(mutOpts, includeQ: true))!)
+            mreq.HTTPMethod = "POST"
+            mreq.HTTPBody = docIdJson
+            mreq.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            mreq.setValue("application/json", forKey: "Accept")
+            req = mreq
+        } else {
+            req = NSURLRequest(
+                URL: NSURL(string: url + "/_changes" + String.buildQueryString(options, includeQ: true))!)
         }
-        return s
+        NSURLSession.sharedSession().dataTaskWithRequest(req) { (data, resp, err) -> Void in
+            if let resp = resp as? NSHTTPURLResponse {
+                if let data = data where resp.statusCode == 200 {
+                    do {
+                        let j = try NSJSONSerialization.JSONObjectWithData(data, options: [])
+                        let doc = try Changes(json: j)
+                        result.succeed(doc)
+                    } catch let e {
+                        print("[RemoteCouchDB] error loading _changes response: \(e)")
+                        result.error(-1001, message: "error loading _changes response: \(e)")
+                    }
+                } else {
+                    print("[RemoteCouchDB] _changes response error: \(resp)")
+                    result.error(
+                        resp.statusCode, message: NSHTTPURLResponse.localizedStringForStatusCode(resp.statusCode))
+                }
+            } else {
+                result.error(-1001, message: "Error sending _changes request: \(err?.debugDescription)")
+            }
+        }.resume()
+        
+        return result
     }
 }
 
@@ -800,5 +867,23 @@ extension String {
         }
         
         return hash as String
+    }
+    
+    static func buildQueryString(options: [String: [String]]?, includeQ: Bool = false) -> String {
+        var s = ""
+        if let options = options where options.count > 0 {
+            s = includeQ ? "?" : ""
+            var i = 0
+            for (k, vals) in options {
+                for v in vals {
+                    if i != 0 {
+                        s += "&"
+                    }
+                    i++
+                    s += "\(k.urlEscapedString)=\(v.urlEscapedString)"
+                }
+            }
+        }
+        return s
     }
 }
