@@ -175,14 +175,16 @@ public struct DesignDocument: Document {
     }
 }
 
-public struct RevisionInfo<T: Document> {
-    
+public struct RevisionDiff {
+    let id: String
+    let misssing: [String]
+    let possibleAncestors: [String]
 }
 
 public struct Change: DocumentLoading {
     let changes: [[String: String]]
     let id: String
-    let deleted: Bool? = nil
+    var deleted: Bool? = nil
     let seq: Int
     
     public init(json: AnyObject?) throws {
@@ -248,7 +250,7 @@ public protocol ReplicationClient {
     func bulkDocs<T: Document>(docs: [T], options: [String: [String]]?) -> AsyncResult<[Bool]>
     
     // compare document revisions
-    func revsDiff<T: Document>(revs: [RevisionInfo<T>], options: [String: [String]]?) -> AsyncResult<[RevisionInfo<T>]>
+    func revsDiff(revs: [String: [String]], options: [String: [String]]?) -> AsyncResult<[RevisionDiff]>
     
     // fetch changes feed from the database
     func changes(options: [String: [String]]?) -> AsyncResult<Changes>
@@ -346,7 +348,7 @@ public class RemoteCouchDB: ReplicationClient {
     public func get<T: Document>(id: String, options: [String : [String]]?, returning: T.Type) -> AsyncResult<T?> {
         let result = AsyncResult<T?>()
         
-        let req = NSMutableURLRequest(URL: NSURL(string: url + "/" + id + buildQueryString(options))!)
+        let req = NSMutableURLRequest(URL: NSURL(string: url + "/" + id + String.buildQueryString(options, includeQ: true))!)
         req.setValue("application/json", forHTTPHeaderField: "Accept")
         NSURLSession.sharedSession().dataTaskWithRequest(req) { (data, resp, err) -> Void in
             if let resp = resp as? NSHTTPURLResponse {
@@ -425,8 +427,42 @@ public class RemoteCouchDB: ReplicationClient {
         return result
     }
     
-    public func revsDiff<T : Document>(revs: [RevisionInfo<T>], options: [String : [String]]?) -> AsyncResult<[RevisionInfo<T>]> {
-        let result = AsyncResult<[RevisionInfo<T>]>()
+    public func revsDiff(revs: [String: [String]], options: [String : [String]]?) -> AsyncResult<[RevisionDiff]> {
+        let result = AsyncResult<[RevisionDiff]>()
+        
+        let req = NSMutableURLRequest(
+            URL: NSURL(string: url + "/_revs_diff" + String.buildQueryString(options, includeQ: true))!)
+        req.HTTPMethod = "POST"
+        req.HTTPBody = try? NSJSONSerialization.dataWithJSONObject(revs, options: []) ?? NSData()
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("application/json", forHTTPHeaderField: "Accept")
+        NSURLSession.sharedSession().dataTaskWithRequest(req) { (data, resp, err) -> Void in
+            if let resp = resp as? NSHTTPURLResponse {
+                if let data = data where resp.statusCode == 201 {
+                    do {
+                        let j = try NSJSONSerialization.JSONObjectWithData(data, options: [])
+                        let doc = j as! [String: [String: [String]]]
+                        var revs = [RevisionDiff]()
+                        for (id, r) in doc {
+                            revs.append(RevisionDiff(
+                                id: id, misssing: r["missing"] ?? [], possibleAncestors: r["possible_ancestors"] ?? []))
+                        }
+                        result.succeed(revs)
+                    } catch let e {
+                        print("[RemoteCouchDB] error loading revs diff response \(e)")
+                        result.error(-1001, message: "error loading _revs_diff response \(e)")
+                    }
+                } else {
+                    print("[RemoteCouchDB] revs diff response error: \(resp)")
+                    result.error(
+                        resp.statusCode, message: NSHTTPURLResponse.localizedStringForStatusCode(resp.statusCode))
+                }
+            } else {
+                print("[RemoteCouchDB] error sending revs diff: \(err?.debugDescription)")
+                result.error(-1001, message: "error sending revs diff")
+            }
+        }.resume()
+        
         return result
     }
     
@@ -494,6 +530,7 @@ public class Replicator {
         let docIds: [String] = [String]()
         let queryParams: [String: [String]] = [String: [String]]()
         let filter: String? = nil
+        let continuous: Bool = false
     }
     
     public struct ReplicationState {
@@ -504,18 +541,21 @@ public class Replicator {
         
         let sessionId: String = NSUUID().UUIDString
         let startTime: NSDate = NSDate()
-        let missingChecked: Int = 0
-        let missingFound: Int = 0
+        var missingChecked: Int = 0
+        var missingFound: Int = 0
         let docsRead: Int = 0
         let docsWritten: Int = 0
         let docsWriteFailures: Int = 0
         var startLastSeq: Int = -1 // -1 == no previous start
+        var endLastSeq: Int = -1
         
         var sourceInfo: DatabaseInfo? = nil
         var destinationInfo: DatabaseInfo? = nil
         
         var sourceReplicationLog: ReplicationLog? = nil
         var destinationReplicationLog: ReplicationLog? = nil
+        
+        var changedDocs: [RevisionDiff] = [RevisionDiff]()
     }
     
     public struct ReplicationItem: Document {
@@ -803,6 +843,74 @@ public class Replicator {
             return result
         }
     }
+    
+    public var locateChangedDocs: ReplicationStep<ReplicationState> {
+        return ReplicationStep<ReplicationState> { replState in
+            let result = AsyncResult<ReplicationState>()
+            var retReplState = replState
+            
+            // get the options object together
+            var changeOptions: [String: [String]] = [
+                "style": ["all_docs"],
+                "limit": [String(replState.config.batchSize)]
+            ]
+            if replState.startLastSeq != -1 { changeOptions["since"] = [String(replState.startLastSeq)] }
+            if replState.endLastSeq != -1 { changeOptions["since"] = [String(replState.endLastSeq)] }
+            if replState.config.continuous {
+                changeOptions["feed"] = ["continuous"]
+                changeOptions["heartbeat"] = [String(replState.config.heartbeat)]
+            }
+            if let f = replState.config.filter { changeOptions["filter"] = [f] }
+            if replState.config.queryParams.count > 0 {
+                changeOptions["query_params"] = [String(replState.config.queryParams)]
+            }
+            if replState.config.docIds.count > 0 {
+                changeOptions["doc_ids"] = replState.config.docIds
+            }
+            
+            // fetch changes from source database
+            self.source.changes(changeOptions).success(AsyncCallback<Changes> { changes in
+                retReplState.endLastSeq = changes.lastSeq
+                
+                guard changes.results.count > 0 else {
+                    result.succeed(retReplState)
+                    return changes
+                }
+                // amount of checked revisions on source
+                retReplState.missingChecked = changes.results.reduce(0, combine: { (i, chng) -> Int in
+                    return i + chng.changes.count
+                })
+                
+                var revs = [String: [String]]()
+                for chng in changes.results {
+                    revs[chng.id] = chng.changes.map({ (changeBit) -> String in
+                        return changeBit["rev"]!
+                    })
+                }
+                // find revisions the source is missing
+                self.destination.revsDiff(revs, options: nil).success(AsyncCallback<[RevisionDiff]> { diffs in
+                    retReplState.changedDocs = diffs
+                    // amount of checked revisions on source
+                    retReplState.missingFound = diffs.reduce(0, combine: { (i, d) -> Int in
+                        return i + d.misssing.count
+                    })
+                    result.succeed(retReplState)
+                    return diffs
+                }).failure(AsyncCallback<AsyncError> { revsError in
+                    result.error(revsError.code, message: revsError.message)
+                    return revsError
+                })
+                
+                return changes
+            }).failure(AsyncCallback<AsyncError> { changeError in
+                result.error(changeError.code, message: changeError.message)
+                return changeError
+            })
+            
+            return result
+        }
+    }
+    
     
     public init(source s: ReplicationClient, destination d: ReplicationClient) {
         source = s
