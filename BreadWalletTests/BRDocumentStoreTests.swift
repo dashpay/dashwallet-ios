@@ -262,4 +262,15 @@ class BRDocumentStoreReplicationTests: XCTestCase {
         })
         waitForExpectationsWithTimeout(5, handler: nil)
     }
+    
+    func testPrepareWithTwoEmptyDatabases() {
+        let exp = expectationWithDescription("prepare empty")
+        let repl = Replicator(source: cliA, destination: cliB)
+        repl.prepare().success(AsyncCallback<Replicator.ReplicationState> { state in
+            XCTAssert(state.startLastSeq == -1)
+            exp.fulfill()
+            return state
+        })
+        waitForExpectationsWithTimeout(5, handler: nil)
+    }
 }

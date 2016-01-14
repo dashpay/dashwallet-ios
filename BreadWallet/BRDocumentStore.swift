@@ -742,6 +742,44 @@ public class Replicator {
         destination = d
     }
     
+    public func performSteps<T>(arg: T, steps: [ReplicationStep<T>]) -> AsyncResult<T> {
+        let result = AsyncResult<T>()
+        
+        var steps = Array(steps.reverse())
+        var prevResult: T = arg
+        func doStep() {
+            if let step = steps.popLast() {
+                step.fn(prevResult).success(AsyncCallback<T> { newResult in
+                    prevResult = newResult
+                    dispatch_async(dispatch_get_main_queue()) {
+                        doStep()
+                    }
+                    return newResult
+                }).failure(AsyncCallback<AsyncError> { newError in
+                    // send error directly without calling doStep() again
+                    result.error(newError.code, message: newError.message)
+                    return newError
+                })
+            } else {
+                result.succeed(prevResult)
+            }
+        }
+        doStep()
+        
+        return result
+    }
+    
+    public func prepare() -> AsyncResult<ReplicationState> {
+        let replState = ReplicationState()
+        let steps = [
+            verifyPeers,
+            getPeersInformation,
+            generateReplicationId,
+            findCommonAncestry
+        ]
+        return performSteps(replState, steps: steps)
+    }
+    
     public func start() {
         
     }
