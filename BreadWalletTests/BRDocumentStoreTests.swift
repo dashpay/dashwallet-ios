@@ -298,6 +298,28 @@ class BRDocumentStoreReplicationTests: XCTestCase {
         return res
     }
     
+    func mutateDocs(aDocs: [TestDocument], bDocs: [TestDocument]) -> AsyncResult<([TestDocument], [TestDocument])> {
+        let res = AsyncResult<([TestDocument], [TestDocument])>()
+        
+        for (i, d) in aDocs.enumerate() {
+            d.aString = "document modified a/\(i)"
+        }
+        for (i, d) in bDocs.enumerate() {
+            d.aString = "document modified b/\(i)"
+        }
+        cliA.bulkDocs(aDocs, options: nil).success(AsyncCallback<[Bool]> { ads in
+            for ass in ads { XCTAssert(ass) }
+            self.cliB.bulkDocs(bDocs, options: nil).success(AsyncCallback<[Bool]> { bds in
+                for bss in bds { XCTAssert(bss) }
+                res.succeed((aDocs, bDocs))
+                return bds
+            })
+            return ads
+        })
+        
+        return res
+    }
+    
     func testReplicationWithTwoEmptyDatabases() {
         let exp = expectationWithDescription("full replicate empty")
         let repl = Replicator(source: cliA, destination: cliB)
@@ -360,5 +382,37 @@ class BRDocumentStoreReplicationTests: XCTestCase {
             return docs
         })
         waitForExpectationsWithTimeout(5, handler: nil)
+    }
+    
+    func testReplicationAfterMutation() {
+        let exp = expectationWithDescription("mutated doc replication")
+        let repl = Replicator(source: cliA, destination: cliB)
+        // create some docs on A
+        createDocs(1, numB: 0).success(AsyncCallback<([TestDocument], [TestDocument])> { docs in
+            // replicate them to B
+            repl.start().success(AsyncCallback<Replicator.ReplicationState> { state in
+                // modify docs on A
+                self.mutateDocs(docs.0, bDocs: docs.1).success(AsyncCallback<([TestDocument], [TestDocument])> { newDocs in
+                    // now replicate to B again
+                    repl.start().success(AsyncCallback<Replicator.ReplicationState> { newState in
+                        // and check that B was updated properly
+                        self.cliB.get(docs.0[0]._id, options: nil, returning: TestDocument.self)
+                            .success(AsyncCallback<TestDocument?> { testDoc in
+                                print("\(self.cliA.id)/\(docs.0[0]._id)")
+                                print("\(self.cliB.id)/\(docs.0[0]._id)")
+                                XCTAssertNotNil(testDoc)
+                                XCTAssertEqual(newDocs.0[0].aString, testDoc!.aString)
+                                exp.fulfill()
+                                return testDoc
+                            })
+                        return newState
+                    })
+                    return newDocs
+                })
+                return state
+            })
+            return docs
+        })
+        waitForExpectationsWithTimeout(5*60, handler: nil)
     }
 }

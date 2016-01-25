@@ -566,7 +566,7 @@ public class RemoteCouchDB: ReplicationClient {
         return result
     }
     
-    public func bulkDocs<T : Document>(docs: [T], options: [String: AnyObject]?) -> AsyncResult<[Bool]> {
+    public func bulkDocs<T : Document>(var docs: [T], options: [String: AnyObject]?) -> AsyncResult<[Bool]> {
         let result = AsyncResult<[Bool]>()
         var mopts = options
         var docsJson: [String: AnyObject] = ["docs": docs.map() { (doc) -> [String: AnyObject] in return doc.dict() }]
@@ -590,16 +590,22 @@ public class RemoteCouchDB: ReplicationClient {
         NSURLSession.sharedSession().dataTaskWithRequest(req) { (data, urlResp, urlErr) -> Void in
             if let resp = urlResp as? NSHTTPURLResponse {
                 if let data = data where resp.statusCode == 201 {
+                    print("hello " + (NSString(data: data, encoding: NSUTF8StringEncoding)! as String))
                     do {
                         let j = try NSJSONSerialization.JSONObjectWithData(data, options: [])
                         let doc = j as! [[String: AnyObject]]
-                        let br = doc.map({ (d) -> Bool in
+                        var ret = [Bool]()
+                        for (i, d) in doc.enumerate() {
                             if let ok = d["ok"] as? Bool {
-                                return ok
+                                ret.append(ok)
+                            } else {
+                                ret.append(false)
                             }
-                            return false
-                        })
-                        result.succeed(br)
+                            if let newRev = d["rev"] as? String {
+                                docs[i]._rev = newRev
+                            }
+                        }
+                        result.succeed(ret)
                     } catch let e {
                         print("[RemoteCouchDB] error loading bulk json \(e)", e)
                         result.error(-1001, message: "error loading _bulk_json \(e)")
@@ -1111,7 +1117,7 @@ public class Replicator {
                         self.log("changed doc id=\(id) rev=\(r)")
                     }
                 }
-                // find revisions the source is missing
+                // find revisions the destination is missing
                 self.destination.revsDiff(revs, options: nil).success(AsyncCallback<[RevisionDiff]> { diffs in
                     retReplState.changedDocs = diffs
                     // amount of missing revisions on source
