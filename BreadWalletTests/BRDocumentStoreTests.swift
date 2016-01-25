@@ -84,32 +84,17 @@ class BRDocumentStoreStartTests: XCTestCase {
     }
 }
 
-class TestDocument: Document {
-    var _id: String
-    var _rev: String
-    var aString: String
+class TestDocument: DefaultDocument {
+    var aString: String = ""
     
-    required init(json: AnyObject?) throws {
-        let d = json as! NSDictionary
-        _id = d["_id"] as! String
-        _rev = d["_rev"] as! String
-        aString = d["a_string"] as! String
+    override func load(json: NSDictionary) {
+        aString = (json["a_string"] as? String) ?? ""
     }
     
-    init(name: String, value: String) {
-        _id = name
-        aString = value
-        _rev = ""
-    }
-    
-    func dump() throws -> NSData {
-        var d = [String: AnyObject]()
-        d["_id"] = _id
-        if _rev != "" {
-            d["_rev"] = _rev
-        }
+    override func dump(json: [String : AnyObject]) -> [String : AnyObject] {
+        var d = json
         d["a_string"] = aString
-        return try NSJSONSerialization.dataWithJSONObject(d as NSDictionary, options: [])
+        return d
     }
 }
 
@@ -146,10 +131,16 @@ class BRDocumentStoreTests: XCTestCase {
         waitForExpectationsWithTimeout(5, handler: nil)
     }
     
+    func getDoc() -> TestDocument {
+        let doc = try! TestDocument(json: nil)
+        doc._id = NSUUID().UUIDString
+        doc.aString = "hello omg"
+        return doc
+    }
+    
     func testPutSuccess() {
         let exp = expectationWithDescription("put success")
-        let doc = TestDocument(name: "helloPut", value: "a value")
-        cli.put(doc, options: nil, returning: TestDocument.self).success(AsyncCallback<TestDocument> { d in
+        cli.put(getDoc(), options: nil, returning: TestDocument.self).success(AsyncCallback<TestDocument> { d in
             XCTAssert(d._rev != "")
             exp.fulfill()
             return d
@@ -159,13 +150,13 @@ class BRDocumentStoreTests: XCTestCase {
     
     func testPutThenGet() {
         let exp = expectationWithDescription("put then get")
-        let doc = TestDocument(name: "helloPut", value: "a value")
+        let doc = getDoc()
         cli.put(doc, options: nil, returning: TestDocument.self).success(AsyncCallback<TestDocument> { d in
             XCTAssert(d._rev != "")
             let rev = d._rev
-            self.cli.get("helloPut", options: nil, returning: TestDocument.self).success(AsyncCallback<TestDocument?> { d in
+            self.cli.get(doc._id, options: nil, returning: TestDocument.self).success(AsyncCallback<TestDocument?> { d in
                 XCTAssert(d!._rev == rev)
-                XCTAssert(d!.aString == "a value")
+                XCTAssert(d!.aString == doc.aString)
                 exp.fulfill()
                 return d
             })
@@ -180,8 +171,9 @@ class BRDocumentStoreReplicationTests: XCTestCase {
     var cliB: ReplicationClient!
     
     override func setUp() {
-        cliA = RemoteCouchDB(url: "http://localhost:5984/" + "yyz" + NSUUID().UUIDString.lowercaseString)
-        cliB = RemoteCouchDB(url: "http://localhost:5984/" + "aab" + NSUUID().UUIDString.lowercaseString)
+        let uid = NSUUID().UUIDString.lowercaseString
+        cliA = RemoteCouchDB(url: "http://localhost:5984/" + "clia" + uid)
+        cliB = RemoteCouchDB(url: "http://localhost:5984/" + "clib" + uid)
         let expA = expectationWithDescription("dba")
         let expB = expectationWithDescription("dbb")
         cliA.create().success(AsyncCallback<Bool>(fn: { (didSucceed) -> Bool? in
@@ -271,6 +263,76 @@ class BRDocumentStoreReplicationTests: XCTestCase {
             exp.fulfill()
             return state
         })
+        waitForExpectationsWithTimeout(5, handler: nil)
+    }
+    
+    func createDocs(numA: Int, numB: Int) -> AsyncResult<([TestDocument], [TestDocument])> {
+        let res = AsyncResult<([TestDocument], [TestDocument])>()
+        var aDocs = [TestDocument]()
+        if numA > 0 {
+            for i in 1...numA {
+                let d = try! TestDocument(json: nil)
+                d._id = NSUUID().UUIDString
+                print("test doc \(cliA.id)/\(d._id)")
+                d.aString = "document a/\(i)"
+                aDocs.append(d)
+            }
+        }
+        var bDocs = [TestDocument]()
+        if numB > 0 {
+            for i in 1...numB {
+                let d = try! TestDocument(json: nil)
+                d._id = NSUUID().UUIDString
+                print("test doc \(cliB.id)/\(d._id)")
+                d.aString = "document b/\(i)"
+                bDocs.append(d)
+            }
+        }
+        cliA.bulkDocs(aDocs, options: nil).success(AsyncCallback<[Bool]> { ads in
+            self.cliB.bulkDocs(bDocs, options: nil).success(AsyncCallback<[Bool]> { bds in
+                res.succeed((aDocs, bDocs))
+                return bds
+            })
+            return ads
+        })
+        return res
+    }
+    
+    func testReplicationWithTwoEmptyDatabases() {
+        let exp = expectationWithDescription("full replicate empty")
+        let repl = Replicator(source: cliA, destination: cliB)
+        repl.start().success(AsyncCallback<Replicator.ReplicationState> { state in
+            XCTAssert(state.missingChecked == 0)
+            XCTAssert(state.missingFound == 0)
+            XCTAssert(state.recordedSeq == 0)
+            exp.fulfill()
+            return state
+        }).failure(AsyncCallback<AsyncError> { err in
+            XCTFail(err.message)
+            exp.fulfill()
+            return err
+        })
+        waitForExpectationsWithTimeout(5, handler: nil)
+    }
+    
+    func testReplicationOfSingleDoc() {
+        let exp = expectationWithDescription("single doc replication test")
+        let repl = Replicator(source: cliA, destination: cliB)
+        createDocs(1, numB: 0).success(AsyncCallback<([TestDocument], [TestDocument])> { docs in
+            repl.start().success(AsyncCallback<Replicator.ReplicationState> { state in
+                self.cliB.get(docs.0[0]._id, options: nil, returning: TestDocument.self)
+                    .success(AsyncCallback<TestDocument?> { testDoc in
+                        XCTAssertNotNil(testDoc)
+                        XCTAssertEqual(docs.0[0].aString, testDoc!.aString)
+                        exp.fulfill()
+                        return testDoc
+                    })
+                
+                return state
+            })
+            return docs
+        })
+        
         waitForExpectationsWithTimeout(5, handler: nil)
     }
 }

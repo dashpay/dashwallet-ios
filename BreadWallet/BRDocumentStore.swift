@@ -20,20 +20,28 @@ public struct AsyncCallback<T> {
 public class AsyncResult<T> {
     private var successCallbacks: [AsyncCallback<T>] = [AsyncCallback<T>]()
     private var failureCallbacks: [AsyncCallback<AsyncError>] = [AsyncCallback<AsyncError>]()
-    private var didCallback: Bool = false
+    private var didCallbackSuccess: Bool = false
+    private var didCallbackFailure: Bool = false
     
     private var successResult: T!
     private var errorResult: AsyncError!
     
+    public var ID: String
+    
+    init() {
+        ID = NSUUID().UUIDString
+    }
+    
     func success(cb: AsyncCallback<T>) -> AsyncResult<T> {
         objc_sync_enter(self)
-        successCallbacks.append(cb)
-        if didCallback { // immediately call the callback if a result was already produced
+        if didCallbackSuccess { // immediately call the callback if a result was already produced
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
                 objc_sync_enter(self)
                 self.successResult = cb.fn(self.successResult)
                 objc_sync_exit(self)
             })
+        } else {
+            successCallbacks.append(cb)
         }
         objc_sync_exit(self)
         return self
@@ -41,13 +49,14 @@ public class AsyncResult<T> {
     
     func failure(cb: AsyncCallback<AsyncError>) -> AsyncResult<T> {
         objc_sync_enter(self)
-        failureCallbacks.append(cb)
-        if didCallback {
+        if didCallbackFailure {
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
                 objc_sync_enter(self)
                 self.errorResult = cb.fn(self.errorResult)
                 objc_sync_exit(self)
             })
+        } else {
+            failureCallbacks.append(cb)
         }
         objc_sync_exit(self)
         return self
@@ -55,12 +64,12 @@ public class AsyncResult<T> {
     
     func succeed(result: T) {
         objc_sync_enter(self)
-        guard !didCallback else {
+        guard !didCallbackSuccess && !didCallbackFailure else {
             print("AsyncResult.succeed() error: callbacks already called. Result: \(result)")
             objc_sync_exit(self)
             return
         }
-        didCallback = true
+        didCallbackSuccess = true
         objc_sync_exit(self)
         dispatch_async(dispatch_get_main_queue()) { () -> Void in
             objc_sync_enter(self)
@@ -78,12 +87,12 @@ public class AsyncResult<T> {
     
     func error(code: Int, message: String) {
         objc_sync_enter(self)
-        guard !didCallback else {
+        guard !didCallbackSuccess && !didCallbackFailure else {
             print("AsyncResult.error() error: callbacks already called. Error: \(code), \(message)")
             objc_sync_exit(self)
             return
         }
-        didCallback = true
+        didCallbackFailure = true
         objc_sync_exit(self)
         dispatch_async(dispatch_get_main_queue()) { () -> Void in
             objc_sync_enter(self)
@@ -98,6 +107,10 @@ public class AsyncResult<T> {
             objc_sync_exit(self)
         }
     }
+}
+
+enum DocumentLoadingError: ErrorType {
+    case InvalidDocument
 }
 
 public protocol DocumentLoading {
@@ -115,34 +128,59 @@ public protocol Document: DocumentLoading {
 public class DefaultDocument: Document {
     public var _id: String = ""
     public var _rev: String = ""
-    public var _revisions: [RevisionDiff]
-    public var _doc: [String: AnyObject]
+    public var _revisions: [RevisionDiff] = [RevisionDiff]()
+    public var _doc: [String: AnyObject] = [String: AnyObject]()
+    public var isMany: Bool = false
+    public var manyCount: Int = -1
+    private var _manyDocs: NSArray!
     
     public required init(json: AnyObject?) throws {
         if let json = json {
-            let doc = json as! NSDictionary
-            if let __id = doc["_id"] as? String {
-                _id = __id
-            } else {
-                _id = ""
-            }
-            if let __rev = doc["_rev"] as? String {
-                _rev = __rev
-            } else {
-                _rev = ""
-            }
-            var __revs = [RevisionDiff]()
-            if let __revisions = doc["_revisions"] as? [String: [String: [String]]] {
-                for (id, r) in __revisions {
-                    __revs.append(RevisionDiff(
-                        id: id, misssing: r["missing"] ?? [], possibleAncestors: r["possible_ancestors"] ?? []))
+            if let doc = json as? NSDictionary {
+                if let __id = doc["_id"] as? String {
+                    _id = __id
                 }
-                
+                if let __rev = doc["_rev"] as? String {
+                    _rev = __rev
+                }
+                if let __revisions = doc["_revisions"] as? [String: [String: [String]]] {
+                    for (id, r) in __revisions {
+                        _revisions.append(RevisionDiff(
+                            id: id, misssing: r["missing"] ?? [], possibleAncestors: r["possible_ancestors"] ?? []))
+                    }
+                    
+                }
+                _doc = doc as! [String: AnyObject]
+                self.load(doc)
+            } else if let docs = json as? NSArray {
+                isMany = true
+                let col = NSMutableArray(capacity: docs.count)
+                for doc in docs {
+                    var addDoc: NSDictionary? = nil
+                    if let doc = doc as? NSDictionary {
+                        if let docOk = doc["ok"] as? NSDictionary {
+                            addDoc = docOk
+                        } else {
+                            addDoc = doc
+                        }
+                    }
+                    if let addDoc = addDoc {
+                        col.addObject(try self.dynamicType.init(json: addDoc))
+                    }
+                }
+                manyCount = col.count
+                _manyDocs = col
+            } else {
+                throw DocumentLoadingError.InvalidDocument
             }
-            _doc = doc as! [String: AnyObject]
-            _revisions = __revs
-            self.load(doc)
         }
+    }
+    
+    public func objectAtIndex(index: Int) -> AnyObject? {
+        if isMany && index < _manyDocs.count {
+            return _manyDocs.objectAtIndex(index)
+        }
+        return nil
     }
     
     public func dump() throws -> NSData {
@@ -154,6 +192,9 @@ public class DefaultDocument: Document {
         if _id != "" {
             d["_id"] = _id
         }
+        if _rev != "" {
+            d["_rev"] = _rev
+        }
         return self.dump(d)
     }
     
@@ -162,8 +203,12 @@ public class DefaultDocument: Document {
     }
     
     public func dump(json: [String: AnyObject]) -> [String: AnyObject] {
-        // override this in descendant structs
-        return json
+        var d = _doc
+        for (k, v) in json { d[k] = v }
+        if d["_revisions"] != nil {
+            d.removeValueForKey("_revisions")
+        }
+        return d
     }
 }
 
@@ -321,7 +366,7 @@ public protocol ReplicationClient {
     func allDocs<T: Document>(options: [String: [String]]?) -> AsyncResult<[T]>
     
     // update documents in bulk
-    func bulkDocs<T: Document>(docs: [T], options: [String: [String]]?) -> AsyncResult<[Bool]>
+    func bulkDocs<T: Document>(docs: [T], options: [String: AnyObject]?) -> AsyncResult<[Bool]>
     
     // compare document revisions
     func revsDiff(revs: [String: [String]], options: [String: [String]]?) -> AsyncResult<[RevisionDiff]>
@@ -484,6 +529,8 @@ public class RemoteCouchDB: ReplicationClient {
             result.error(-1001, message: "JSON Dumping Error: \(e)")
             return result
         }
+        let docstring = NSString(data: docJson!, encoding: NSUTF8StringEncoding)
+        print("Putting \(docstring)")
         
         let req = NSMutableURLRequest(URL: NSURL(string: url + "/" + doc._id + String.buildQueryString(options, includeQ: true))!)
         req.HTTPMethod = "PUT"
@@ -504,7 +551,8 @@ public class RemoteCouchDB: ReplicationClient {
                         result.error(-1001, message: "Error loading put response \(e)")
                     }
                 } else {
-                    print("[RemoteCouchDB] put error resp: \(resp)")
+                    let errStr = NSString(data: data!, encoding: NSUTF8StringEncoding)
+                    print("[RemoteCouchDB] put error resp: \(resp) msg=\(errStr)")
                     result.error(
                         resp.statusCode, message: NSHTTPURLResponse.localizedStringForStatusCode(resp.statusCode))
                 }
@@ -516,15 +564,21 @@ public class RemoteCouchDB: ReplicationClient {
         return result
     }
     
-    public func allDocs<T : Document>(options: [String : [String]]?) -> AsyncResult<[T]> {
+    public func allDocs<T : Document>(options: [String: [String]]?) -> AsyncResult<[T]> {
         let result = AsyncResult<[T]>()
         return result
     }
     
-    public func bulkDocs<T : Document>(docs: [T], options: [String : [String]]?) -> AsyncResult<[Bool]> {
+    public func bulkDocs<T : Document>(docs: [T], options: [String: AnyObject]?) -> AsyncResult<[Bool]> {
         let result = AsyncResult<[Bool]>()
         var mopts = options
-        let docsJson = docs.map() { (doc) -> [String: AnyObject] in return doc.dict() }
+        var docsJson: [String: AnyObject] = ["docs": docs.map() { (doc) -> [String: AnyObject] in return doc.dict() }]
+        if let options = options {
+            for (k, v) in options {
+                docsJson[k] = v
+            }
+        }
+        print("bulk docs json: " + (NSString(data: try! NSJSONSerialization.dataWithJSONObject(docsJson, options: []), encoding: NSUTF8StringEncoding)! as String))
         let req = NSMutableURLRequest(URL: NSURL(string: url + "/_bulk_docs")!)
         req.HTTPMethod = "POST"
         req.HTTPBody = try? NSJSONSerialization.dataWithJSONObject(docsJson, options: [])
@@ -554,7 +608,8 @@ public class RemoteCouchDB: ReplicationClient {
                         result.error(-1001, message: "error loading _bulk_json \(e)")
                     }
                 } else {
-                    print("[RemoteCouchDB] bulk json response error \(resp)")
+                    let errStr = NSString(data: data!, encoding: NSUTF8StringEncoding)
+                    print("[RemoteCouchDB] bulk json response error \(resp) err: \(errStr)")
                     result.error(
                         resp.statusCode, message: NSHTTPURLResponse.localizedStringForStatusCode(resp.statusCode))
                 }
@@ -577,7 +632,7 @@ public class RemoteCouchDB: ReplicationClient {
         req.setValue("application/json", forHTTPHeaderField: "Accept")
         NSURLSession.sharedSession().dataTaskWithRequest(req) { (data, resp, err) -> Void in
             if let resp = resp as? NSHTTPURLResponse {
-                if let data = data where resp.statusCode == 201 {
+                if let data = data where resp.statusCode == 200 {
                     do {
                         let j = try NSJSONSerialization.JSONObjectWithData(data, options: [])
                         let doc = j as! [String: [String: [String]]]
@@ -738,7 +793,9 @@ public class Replicator {
         public override func dict() -> [String: AnyObject] {
             var d = [String: AnyObject]()
             d["_id"] = _id
-            d["_rev"] = _rev
+            if _rev != "" {
+                d["_rev"] = _rev
+            }
             d["session_id"] = sessionId
             d["start_time"] = startTime
             d["end_time"] = endTime
@@ -786,6 +843,7 @@ public class Replicator {
     // Ensure that both source and destination databases exist via parallel .exists() requests
     public var verifyPeers: ReplicationStep<ReplicationState> {
         return ReplicationStep<ReplicationState> { replState in
+            self.log("begin verify peers")
             let result = AsyncResult<ReplicationState>()
             
             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), { () -> Void in
@@ -798,12 +856,14 @@ public class Replicator {
                     let c = i == 0 ? self.source : self.destination
                     let n = (i == 0 ? "source" : "destination")
                     c.exists().success(AsyncCallback<Bool> { doesExist in
+                        self.log("verify peers - \(n) exists=\(doesExist)")
                         if doesExist {
                             exists[n] = true
                         }
                         dispatch_group_leave(dgroup)
                         return doesExist
                     }).failure(AsyncCallback<AsyncError> { existsError in
+                        self.log("verify peers - exists error = \(existsError)")
                         dispatch_group_leave(dgroup)
                         return existsError
                     })
@@ -825,6 +885,7 @@ public class Replicator {
     // Loads the .info() results (DatabaseInfo object) into the ReplicationState for source and destination
     public var getPeersInformation: ReplicationStep<ReplicationState> {
         return ReplicationStep<ReplicationState> { replState in
+            self.log("getting peers information")
             let result = AsyncResult<ReplicationState>()
             var retReplState = replState
             
@@ -835,13 +896,16 @@ public class Replicator {
                     let c = i == 0 ? self.source : self.destination
                     c.info().success(AsyncCallback<DatabaseInfo> { dbInfo in
                         if i == 0 {
+                            self.log("got source info")
                             retReplState.sourceInfo = dbInfo
                         } else {
+                            self.log("got destination info")
                             retReplState.destinationInfo = dbInfo
                         }
                         dispatch_group_leave(dgroup)
                         return dbInfo
                     }).failure(AsyncCallback<AsyncError> { infoFailure in
+                        self.log("error getting database info \(infoFailure)")
                         dispatch_group_leave(dgroup)
                         return infoFailure
                     })
@@ -862,44 +926,48 @@ public class Replicator {
     // Generate a unique identifier for this replication session
     public var generateReplicationId: ReplicationStep<ReplicationState> {
         return ReplicationStep<ReplicationState> { replState in
+            self.log("generating replication id")
             let result = AsyncResult<ReplicationState>()
             var retReplState = replState
             var idParts = [replState.config.id, self.source.id, self.destination.id]
             
             // retrieves the javascript function body for a given filter name
-            let getFilter = ReplicationStep<String?>(fn: { (filterSpec) -> AsyncResult<String?> in
-                let result = AsyncResult<String?>()
+            func getFilter(filterSpec: String?) -> AsyncResult<String?> {
+                self.log("getting filter \(filterSpec)")
+                let gfresult = AsyncResult<String?>()
                 if let filterSpec = filterSpec {
                     let designDocNameParts = filterSpec.componentsSeparatedByString("/")
                     if designDocNameParts.count < 2 { // invalid filter spec
-                        result.succeed(nil)
-                        return result
+                        gfresult.succeed(nil)
+                        return gfresult
                     }
                     let designDocName = designDocNameParts[0]
                     let filterName = designDocNameParts[1]
                     self.source.get("_design/" + designDocName, options: nil, returning: DesignDocument.self)
                         .success(AsyncCallback<DesignDocument?> { designDoc in
+                            self.log("got design doc for \(designDocName)")
                             if let designDoc = designDoc, filters = designDoc.filters, filter = filters[filterName] {
-                                result.succeed(filter)
+                                gfresult.succeed(filter)
                             } else {
-                                result.succeed(nil)
+                                gfresult.succeed(nil)
                             }
                             
                             return designDoc
                         })
                         .failure(AsyncCallback<AsyncError> { designDocError in
                             // dont care about an error here
-                            result.succeed(nil)
+                            self.log("failed to get design doc for \(designDocName)")
+                            gfresult.succeed(nil)
                             return designDocError
                         })
                 } else {
-                    result.succeed(nil)
+                    gfresult.succeed(nil)
                 }
                 
-                return result
-            })
+                return gfresult
+            }
             
-            getFilter.fn(replState.config.filter).success(AsyncCallback<String?> { filterValue in
+            getFilter(replState.config.filter).success(AsyncCallback<String?> { filterValue in
                 if let filterValue = filterValue {
                     idParts.append(filterValue)
                 }
@@ -909,7 +977,9 @@ public class Replicator {
                 if replState.config.docIds.count > 0 {
                     idParts.append(replState.config.docIds.description)
                 }
+                self.log("replication id parts = \(idParts)")
                 retReplState.id = idParts.joinWithSeparator("").MD5()
+                self.log("replication id = \(retReplState.id)")
                 result.succeed(retReplState)
                 return filterValue
             })
@@ -921,6 +991,7 @@ public class Replicator {
     // Determines the startup checkpoint if the replication state is being reused
     public var findCommonAncestry: ReplicationStep<ReplicationState> {
         return ReplicationStep<ReplicationState> { replState in
+            self.log("begin find common ancestry")
             let result = AsyncResult<ReplicationState>()
             var retReplState = replState
             
@@ -935,11 +1006,17 @@ public class Replicator {
                     let n = i == 0 ? "source" : "destination"
                     c.get("_local/" + replState.id, options: nil, returning: ReplicationLog.self)
                         .success(AsyncCallback<ReplicationLog?> { log in
+                            if let l = log {
+                                self.log("repl log for \(n) found, sourceLastSeq=\(l.sourceLastSeq)")
+                            } else {
+                                self.log("repl log for \(n) not found")
+                            }
                             docs[n] = log // it's ok for this to be nil
                             dispatch_group_leave(dgroup)
                             return log
                         })
                         .failure(AsyncCallback<AsyncError> { logErr in
+                            self.log("error retrieving repl log for \(n)")
                             dispatch_group_leave(dgroup)
                             return logErr
                         })
@@ -951,11 +1028,13 @@ public class Replicator {
                     guard let destLog = retReplState.destinationReplicationLog,
                         sourceLog = retReplState.sourceReplicationLog else {
                         // there is no common history - force full replication
+                        self.log("no common history found - missing repl doc - forcing full replication")
                         result.succeed(retReplState)
                         return
                     }
                     // we are already at the most recent seq
                     if destLog.sessionId == sourceLog.sessionId {
+                        self.log("find common ancestry - already at most recent seq \(sourceLog.sourceLastSeq)")
                         retReplState.startLastSeq = sourceLog.sourceLastSeq
                         result.succeed(retReplState)
                         return
@@ -968,9 +1047,11 @@ public class Replicator {
                         return destHistories.count > 0
                     })
                     guard histories.count > 0 else { // there is no common history - force full replication
+                        self.log("no common history found - forcing full replication")
                         result.succeed(retReplState)
                         return
                     }
+                    self.log("common history found - startSeq = \(retReplState.startLastSeq)")
                     retReplState.startLastSeq = histories[0].recordedSeq
                     result.succeed(retReplState)
                 }
@@ -980,8 +1061,10 @@ public class Replicator {
         }
     }
     
+    // Get all documents since the last checkpoint
     public var locateChangedDocs: ReplicationStep<ReplicationState> {
         return ReplicationStep<ReplicationState> { replState in
+            self.log("begin locate changed docs")
             let result = AsyncResult<ReplicationState>()
             var retReplState = replState
             
@@ -1006,9 +1089,11 @@ public class Replicator {
             
             // fetch changes from source database
             self.source.changes(changeOptions).success(AsyncCallback<Changes> { changes in
+                self.log("successfully got changes lastSeq = \(changes.lastSeq)")
                 retReplState.endLastSeq = changes.lastSeq
                 
                 guard changes.results.count > 0 else {
+                    self.log("no changes found")
                     result.succeed(retReplState)
                     return changes
                 }
@@ -1016,12 +1101,18 @@ public class Replicator {
                 retReplState.missingChecked = changes.results.reduce(0, combine: { (i, chng) -> Int in
                     return i + chng.changes.count
                 })
+                self.log("there are \(retReplState.missingChecked) docs")
                 
                 var revs = [String: [String]]()
                 for chng in changes.results {
                     revs[chng.id] = chng.changes.map({ (changeBit) -> String in
                         return changeBit["rev"]!
                     })
+                }
+                for (id, rev) in revs {
+                    for r in rev {
+                        self.log("changed doc id=\(id) rev=\(r)")
+                    }
                 }
                 // find revisions the source is missing
                 self.destination.revsDiff(revs, options: nil).success(AsyncCallback<[RevisionDiff]> { diffs in
@@ -1030,15 +1121,18 @@ public class Replicator {
                     retReplState.missingFound = diffs.reduce(0, combine: { (i, d) -> Int in
                         return i + d.misssing.count
                     })
+                    self.log("found missing \(retReplState.missingFound) docs")
                     result.succeed(retReplState)
                     return diffs
                 }).failure(AsyncCallback<AsyncError> { revsError in
+                    self.log("error fetching rev diffs \(revsError)")
                     result.error(revsError.code, message: revsError.message)
                     return revsError
                 })
                 
                 return changes
             }).failure(AsyncCallback<AsyncError> { changeError in
+                self.log("error fetching changes \(changeError)")
                 result.error(changeError.code, message: changeError.message)
                 return changeError
             })
@@ -1047,19 +1141,23 @@ public class Replicator {
         }
     }
     
+    // retrieve documents that have changed from the source
     public var fetchChangedDocs: ReplicationStep<ReplicationState> {
         return ReplicationStep<ReplicationState> { replState in
+            self.log("begin fetch changed docs")
             let result = AsyncResult<ReplicationState>()
             var retReplState = replState
             retReplState.docs = [DefaultDocument]()
-            guard retReplState.changedDocs.count < 1 else {
+            guard retReplState.changedDocs.count > 0 else {
+                self.log("changed docs count is 0, nothing to do...")
                 result.succeed(retReplState) // nothing to do if there are no changed docs
                 return result
             }
             let missingIds = retReplState.changedDocs.map({ (rev) -> String in
                 return rev.id
             })
-            guard missingIds.count < 1 else {
+            guard missingIds.count > 0 else {
+                self.log("missing ids is 0, nothing to do...")
                 result.succeed(retReplState) // nothing to do if there are no missing ids
                 return result
             }
@@ -1081,19 +1179,29 @@ public class Replicator {
                 let grp = dispatch_group_create()
                 
                 for did in ids {
+                    self.log("fetch chnaged docs - fetching doc id=\(did)")
                     dispatch_group_enter(grp)
                     fetchOpQ.addOperationWithBlock() {
                         fetch(did).success(AsyncCallback<DefaultDocument?> { doc in
                             if let doc = doc {
                                 objc_sync_enter(docs)
-                                docs.append(doc)
+                                self.log("fetch changed docs - doc found id=\(did)")
+                                if doc.isMany {
+                                    for i in 0..<doc.manyCount {
+                                        docs.append(doc.objectAtIndex(i) as! DefaultDocument)
+                                    }
+                                } else {
+                                    docs.append(doc)
+                                }
                                 objc_sync_exit(docs)
+                            } else {
+                                self.log("fetch changed docs - doc not found id=\(did)")
                             }
                             dispatch_group_leave(grp)
                             return doc
                         }).failure(AsyncCallback<AsyncError> { docErr in
                             // uhhh... try to figure out what to do here
-                            print("[Replicator] fetchChangedDocs - individual doc fetch error \(docErr)")
+                            self.log("fetch changed docs - individual doc fetch error \(docErr)")
                             dispatch_group_leave(grp)
                             return docErr
                         })
@@ -1123,16 +1231,20 @@ public class Replicator {
         }
     }
     
+    // upload changed documents to destination
     public var uploadDocuments: ReplicationStep<ReplicationState> {
         return ReplicationStep<ReplicationState> { replState in
+            self.log("begin upload documents")
             let result = AsyncResult<ReplicationState>()
             guard replState.docs.count > 0 else {
+                self.log("no documents to upload")
                 result.succeed(replState)
                 return result
             }
             
-            self.destination.bulkDocs(replState.docs, options: ["new_edits": ["true"]])
+            self.destination.bulkDocs(replState.docs, options: ["new_edits": false])
                 .success(AsyncCallback<[Bool]> { bulkResults in
+                    self.log("finished upload documents results=\(bulkResults)")
                     var retReplState = replState
                     // TODO: update doc write failures
                     retReplState.docsWritten += bulkResults.count
@@ -1140,6 +1252,7 @@ public class Replicator {
                     result.succeed(retReplState)
                     return bulkResults
                 }).failure(AsyncCallback<AsyncError> { bulkErr in
+                    self.log("upload documents error \(bulkErr)")
                     result.error(bulkErr.code, message: bulkErr.message)
                     return bulkErr
                 })
@@ -1148,16 +1261,21 @@ public class Replicator {
         }
     }
     
+    // ensure the destination has fully committed its state
     public var ensureFullCommit: ReplicationStep<ReplicationState> {
         return ReplicationStep<ReplicationState> { replState in
+            self.log("begin ensure full commit")
             let result = AsyncResult<ReplicationState>()
             self.destination.ensureFullCommit().success(AsyncCallback<Bool> { ok in
+                self.log("full commit ok=\(ok)")
                 if ok {
                     result.succeed(replState)
                 } else {
                     result.error(-1001, message: "database did not report an ok result for full commit")
                 }
+                return ok
             }).failure(AsyncCallback<AsyncError> { okErr in
+                self.log("ensure full commit error \(okErr)")
                 result.error(okErr.code, message: okErr.message)
                 return okErr
             })
@@ -1165,8 +1283,10 @@ public class Replicator {
         }
     }
     
+    // save the replication state document to _local to both destination and source
     public var recordReplicationCheckpoint: ReplicationStep<ReplicationState> {
         return ReplicationStep<ReplicationState> { replState in
+            self.log("begin record replication checkpoint")
             let result = AsyncResult<ReplicationState>()
             var retReplState = replState
             
@@ -1195,6 +1315,7 @@ public class Replicator {
                 d.replicationIdVersion = replState.idVersion
                 d.sessionId = newReplItem.sessionId
                 d.sourceLastSeq = newReplItem.recordedSeq
+                d.history = [ReplicationItem]()
                 d.history.insert(newReplItem, atIndex: 0)
                 return db.put(d, options: nil, returning: ReplicationLog.self)
             }
@@ -1210,6 +1331,7 @@ public class Replicator {
                 saveReplDoc(db, d: d)
                     .success(AsyncCallback<ReplicationLog> { replLog in
                         dispatch_group_leave(dgrp)
+                        self.log("saved \(loc) replication log")
                         if loc == "source" {
                             retReplState.sourceReplicationLog!._rev = replLog._rev
                         } else {
@@ -1219,6 +1341,7 @@ public class Replicator {
                     })
                     .failure(AsyncCallback<AsyncError> { replErr in
                         dispatch_group_leave(dgrp)
+                        self.log("save replication doc error \(replErr)")
                         return replErr
                     })
             }
@@ -1231,7 +1354,6 @@ public class Replicator {
             return result
         }
     }
-    
     
     public init(source s: ReplicationClient, destination d: ReplicationClient) {
         source = s
@@ -1267,44 +1389,88 @@ public class Replicator {
     
     public func prepare() -> AsyncResult<ReplicationState> {
         let replState = ReplicationState()
+        let result = AsyncResult<ReplicationState>()
         let steps = [
             verifyPeers,
             getPeersInformation,
             generateReplicationId,
             findCommonAncestry
         ]
-        return performSteps(replState, steps: steps)
+        self.log("begin prepare")
+        performSteps(replState, steps: steps).success(AsyncCallback<ReplicationState> { replState in
+            result.succeed(replState)
+            self.log("end prepare")
+            return replState
+        }).failure(AsyncCallback<AsyncError> { replErr in
+            self.log("end prepare failure = \(replErr)")
+            return replErr
+        })
+        return result
     }
     
     public func replicate(state: ReplicationState) -> AsyncResult<ReplicationState> {
-        let steps = [
-            locateChangedDocs,
-            fetchChangedDocs,
-            uploadDocuments,
-            ensureFullCommit,
-            recordReplicationCheckpoint
-        ]
+        let result = AsyncResult<ReplicationState>()
         var replicatedOnce = false
         var lastMissingChecked = state.missingChecked
-        let ret = performSteps(state, steps: steps).success(AsyncCallback<ReplicationState> { replState in
-            if replicatedOnce && replState.missingChecked < 1 {
-                // no changes
+        
+        func _replicate() {
+            let replResult = AsyncResult<ReplicationState>()
+            let steps = [
+                locateChangedDocs,
+                fetchChangedDocs,
+                uploadDocuments,
+                ensureFullCommit,
+                recordReplicationCheckpoint
+            ]
+            self.log("begin replicate lastMissingChecked = \(lastMissingChecked)")
+            performSteps(state, steps: steps).success(AsyncCallback<ReplicationState> { replState in
+                if replicatedOnce && replState.missingChecked < 1 {
+                    // no changes
+                    self.log("replicated once with no changes detected")
+                    result.succeed(replState)
+                    return replState
+                }
+                if replicatedOnce && lastMissingChecked == replState.missingChecked {
+                    // something else happend... but whaat?
+                    // TODO: what to do here?
+                    self.log("replicaed once with lastMissingChecked==replState.missingChecked \(lastMissingChecked)")
+                    result.succeed(replState)
+                    return replState
+                }
+                replicatedOnce = true
+                lastMissingChecked = replState.missingChecked
+                self.log("replicated with lastMissingChecked = \(lastMissingChecked) continuing...")
+                _replicate()
                 return replState
-            }
-            if replicatedOnce && lastMissingChecked == replState.missingChecked {
-                // something else happend... but whaat?
-                return replState
-            }
-            replicatedOnce = true
-            lastMissingChecked = replState.missingChecked
-            self.replicate(state)
-            return replState
-        })
-        return ret
+            }).failure(AsyncCallback<AsyncError> { stepsErr in
+                self.log("replicate error \(stepsErr)")
+                replResult.error(stepsErr.code, message: stepsErr.message)
+                return stepsErr
+            })
+        }
+        _replicate()
+        return result
     }
     
-    public func start() {
-        
+    public func start() -> AsyncResult<ReplicationState> {
+        self.log("starting replication")
+        let result = AsyncResult<ReplicationState>()
+        prepare().success(AsyncCallback<ReplicationState> { replState in
+            self.replicate(replState).success(AsyncCallback<ReplicationState> { doneReplState in
+                result.succeed(doneReplState)
+                self.log("replication finished")
+                return doneReplState
+            }).failure(AsyncCallback<AsyncError> { doneReplStateErr in
+                result.error(doneReplStateErr.code, message: doneReplStateErr.message)
+                return doneReplStateErr
+            })
+            return replState
+        })
+        return result
+    }
+    
+    private func log(s: String) {
+        print("[Replicator] \(s)")
     }
 }
 
