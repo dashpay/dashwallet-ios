@@ -529,9 +529,6 @@ public class RemoteCouchDB: ReplicationClient {
             result.error(-1001, message: "JSON Dumping Error: \(e)")
             return result
         }
-        let docstring = NSString(data: docJson!, encoding: NSUTF8StringEncoding)
-        print("Putting \(docstring)")
-        
         let req = NSMutableURLRequest(URL: NSURL(string: url + "/" + doc._id + String.buildQueryString(options, includeQ: true))!)
         req.HTTPMethod = "PUT"
         req.HTTPBody = docJson

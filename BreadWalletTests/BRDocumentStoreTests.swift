@@ -332,7 +332,33 @@ class BRDocumentStoreReplicationTests: XCTestCase {
             })
             return docs
         })
-        
+        waitForExpectationsWithTimeout(5, handler: nil)
+    }
+    
+    func testReplicationOfMultipleDocs() {
+        let exp = expectationWithDescription("multiple doc replication")
+        let repl = Replicator(source: cliA, destination: cliB)
+        createDocs(20, numB: 0).success(AsyncCallback<([TestDocument], [TestDocument])> { docs in
+            repl.start().success(AsyncCallback<Replicator.ReplicationState> { state in
+                let g = dispatch_group_create()
+                
+                for i in 0...19 {
+                    dispatch_group_enter(g)
+                    self.cliB.get(docs.0[i]._id, options: nil, returning: TestDocument.self)
+                        .success(AsyncCallback<TestDocument?> { testDoc in
+                            XCTAssertNotNil(testDoc)
+                            XCTAssertEqual(docs.0[i].aString, testDoc!.aString)
+                            dispatch_group_leave(g)
+                            return testDoc
+                        })
+                }
+                dispatch_group_notify(g, dispatch_get_main_queue()) {
+                    exp.fulfill()
+                }
+                return state
+            })
+            return docs
+        })
         waitForExpectationsWithTimeout(5, handler: nil)
     }
 }
