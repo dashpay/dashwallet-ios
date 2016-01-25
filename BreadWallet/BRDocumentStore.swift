@@ -1413,7 +1413,7 @@ public class Replicator {
         var replicatedOnce = false
         var lastMissingChecked = state.missingChecked
         
-        func _replicate() {
+        func _replicate(replState: ReplicationState) {
             let replResult = AsyncResult<ReplicationState>()
             let steps = [
                 locateChangedDocs,
@@ -1423,32 +1423,32 @@ public class Replicator {
                 recordReplicationCheckpoint
             ]
             self.log("begin replicate lastMissingChecked = \(lastMissingChecked)")
-            performSteps(state, steps: steps).success(AsyncCallback<ReplicationState> { replState in
-                if replicatedOnce && replState.missingChecked < 1 {
+            performSteps(replState, steps: steps).success(AsyncCallback<ReplicationState> { updatedReplState in
+                if replicatedOnce && updatedReplState.missingChecked < 1 {
                     // no changes
                     self.log("replicated once with no changes detected")
-                    result.succeed(replState)
-                    return replState
+                    result.succeed(updatedReplState)
+                    return updatedReplState
                 }
-                if replicatedOnce && lastMissingChecked == replState.missingChecked {
+                if replicatedOnce && lastMissingChecked == updatedReplState.missingChecked {
                     // something else happend... but whaat?
                     // TODO: what to do here?
                     self.log("replicaed once with lastMissingChecked==replState.missingChecked \(lastMissingChecked)")
-                    result.succeed(replState)
-                    return replState
+                    result.succeed(updatedReplState)
+                    return updatedReplState
                 }
                 replicatedOnce = true
-                lastMissingChecked = replState.missingChecked
+                lastMissingChecked = updatedReplState.missingChecked
                 self.log("replicated with lastMissingChecked = \(lastMissingChecked) continuing...")
-                _replicate()
-                return replState
+                _replicate(updatedReplState)
+                return updatedReplState
             }).failure(AsyncCallback<AsyncError> { stepsErr in
                 self.log("replicate error \(stepsErr)")
                 replResult.error(stepsErr.code, message: stepsErr.message)
                 return stepsErr
             })
         }
-        _replicate()
+        _replicate(state)
         return result
     }
     
