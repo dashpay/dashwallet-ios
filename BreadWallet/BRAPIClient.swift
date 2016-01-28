@@ -1802,6 +1802,7 @@ public typealias BRHTTPRoute = (request: BRHTTPRequest, match: BRHTTPRouteMatch)
         if request.path.hasPrefix(mountPoint) {
             let path = request.path.substringFromIndex(request.path.startIndex.advancedBy(mountPoint.characters.count))
             let nsReq = NSMutableURLRequest(URL: apiInstance.url(path))
+            nsReq.HTTPMethod = request.method
             // copy body
             if request.hasBody {
                 nsReq.HTTPBody = request.body()
