@@ -1800,7 +1800,10 @@ public typealias BRHTTPRoute = (request: BRHTTPRequest, match: BRHTTPRouteMatch)
     
     public func handle(request: BRHTTPRequest, next: (BRHTTPMiddlewareResponse) -> Void) {
         if request.path.hasPrefix(mountPoint) {
-            let path = request.path.substringFromIndex(request.path.startIndex.advancedBy(mountPoint.characters.count))
+            var path = request.path.substringFromIndex(request.path.startIndex.advancedBy(mountPoint.characters.count))
+            if request.queryString.utf8.count > 0 {
+                path += "?\(request.queryString)"
+            }
             let nsReq = NSMutableURLRequest(URL: apiInstance.url(path))
             nsReq.HTTPMethod = request.method
             // copy body
