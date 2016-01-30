@@ -95,7 +95,7 @@ func buildURLResourceString(url: NSURL?) -> String {
         urlStr = "\(path)"
         if let query = url.query {
             if query.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0 {
-                urlStr = "\(url)?\(query)"
+                urlStr = "\(urlStr)?\(query)"
             }
         }
     }
