@@ -10,4 +10,5 @@
 #import "NSMutableData+Bitcoin.h"
 #import <bzlib.h>
 #import <CommonCrypto/CommonCrypto.h>
+#import <sqlite3.h>
 @import WebKit;

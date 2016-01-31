@@ -416,3 +416,42 @@ class BRDocumentStoreReplicationTests: XCTestCase {
         waitForExpectationsWithTimeout(5*60, handler: nil)
     }
 }
+
+class BRSQLiteTests: XCTestCase {
+    var pathA: String!
+    var pathB: String!
+    
+    override func setUp() {
+        let fm = NSFileManager.defaultManager()
+        let documentsUrl =  fm.URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).first!
+        pathA = documentsUrl.URLByAppendingPathComponent("aaa-test-database").path!
+        pathB = documentsUrl.URLByAppendingPathComponent("bbb-test-database").path!
+        if fm.fileExistsAtPath(pathA) {
+            try! fm.removeItemAtPath(pathA)
+            print("sqlite test set up removed path \(pathA)")
+        }
+        if fm.fileExistsAtPath(pathB) {
+            try! fm.removeItemAtPath(pathB)
+        }
+        super.setUp()
+    }
+    
+    override func tearDown() {
+        super.tearDown()
+    }
+    
+    func testCreate() {
+        let exp = expectationWithDescription("create database")
+        let sq = LocalSQLiteDB(path: pathA)
+        sq.create().success(AsyncCallback<Bool> { didCreate in
+            XCTAssert(didCreate)
+            exp.fulfill()
+            return didCreate
+        }).failure(AsyncCallback<AsyncError> { createErr in
+            XCTFail()
+            exp.fulfill()
+            return createErr
+        })
+        waitForExpectationsWithTimeout(5, handler: nil)
+    }
+}

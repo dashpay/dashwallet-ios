@@ -15,12 +15,19 @@
 		222040C41C1A0903005CE1C3 /* BRWebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 222040C31C1A0903005CE1C3 /* BRWebViewController.swift */; };
 		222040C61C1A1940005CE1C3 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222040C51C1A1940005CE1C3 /* WebKit.framework */; };
 		222040C81C1A3803005CE1C3 /* BRHTTPServerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 222040C71C1A3803005CE1C3 /* BRHTTPServerTests.swift */; };
-		222E7F501C43193E009AB45D /* BRDocumentStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 222E7F4F1C43193E009AB45D /* BRDocumentStore.swift */; };
 		222E7F521C43291C009AB45D /* BRDocumentStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 222E7F511C43291C009AB45D /* BRDocumentStoreTests.swift */; };
 		222E7F561C46E9B8009AB45D /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222E7F551C46E9B8009AB45D /* Security.framework */; };
 		222E7F581C46E9BE009AB45D /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222E7F571C46E9BE009AB45D /* SystemConfiguration.framework */; };
+		2253D28F1C5D705C009CA741 /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2253D28E1C5D705C009CA741 /* Async.swift */; };
+		2253D2911C5D707E009CA741 /* Document.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2253D2901C5D707E009CA741 /* Document.swift */; };
+		2253D2931C5D70D1009CA741 /* ReplicationClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2253D2921C5D70D1009CA741 /* ReplicationClient.swift */; };
+		2253D2951C5D710D009CA741 /* CouchDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2253D2941C5D710D009CA741 /* CouchDB.swift */; };
+		2253D2971C5D7155009CA741 /* Replicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2253D2961C5D7155009CA741 /* Replicator.swift */; };
+		2253D2991C5D71B4009CA741 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2253D2981C5D71B4009CA741 /* Extensions.swift */; };
+		2253D29B1C5D71E3009CA741 /* SQLiteDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2253D29A1C5D71E3009CA741 /* SQLiteDB.swift */; };
 		22B6A4481C0E963900673913 /* libbz2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 22B6A4471C0E963900673913 /* libbz2.tbd */; };
 		22B6A44A1C0ECB7800673913 /* BRBSPatchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22B6A4491C0ECB7800673913 /* BRBSPatchTests.swift */; };
+		22D3613D1C56F2CD0057CF76 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 22D3613C1C56F2CD0057CF76 /* libsqlite3.tbd */; };
 		22FCD22C1C0E68C80066D798 /* BRTarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FCD22B1C0E68C80066D798 /* BRTarTests.swift */; };
 		22FF2C381BED381400B36384 /* BRAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FF2C371BED381400B36384 /* BRAPIClient.swift */; };
 		751B2B5C1B68911700EA87FB /* BRTxHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 751B2B5B1B68911700EA87FB /* BRTxHistoryViewController.m */; };
@@ -147,13 +154,20 @@
 		222040C31C1A0903005CE1C3 /* BRWebViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRWebViewController.swift; sourceTree = "<group>"; };
 		222040C51C1A1940005CE1C3 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		222040C71C1A3803005CE1C3 /* BRHTTPServerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRHTTPServerTests.swift; sourceTree = "<group>"; };
-		222E7F4F1C43193E009AB45D /* BRDocumentStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRDocumentStore.swift; sourceTree = "<group>"; };
 		222E7F511C43291C009AB45D /* BRDocumentStoreTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRDocumentStoreTests.swift; sourceTree = "<group>"; };
 		222E7F531C46E62A009AB45D /* libcommonCrypto.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcommonCrypto.tbd; path = usr/lib/system/libcommonCrypto.tbd; sourceTree = SDKROOT; };
 		222E7F551C46E9B8009AB45D /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		222E7F571C46E9BE009AB45D /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		2253D28E1C5D705C009CA741 /* Async.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Async.swift; sourceTree = "<group>"; };
+		2253D2901C5D707E009CA741 /* Document.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Document.swift; sourceTree = "<group>"; };
+		2253D2921C5D70D1009CA741 /* ReplicationClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReplicationClient.swift; sourceTree = "<group>"; };
+		2253D2941C5D710D009CA741 /* CouchDB.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CouchDB.swift; sourceTree = "<group>"; };
+		2253D2961C5D7155009CA741 /* Replicator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Replicator.swift; sourceTree = "<group>"; };
+		2253D2981C5D71B4009CA741 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		2253D29A1C5D71E3009CA741 /* SQLiteDB.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SQLiteDB.swift; sourceTree = "<group>"; };
 		22B6A4471C0E963900673913 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
 		22B6A4491C0ECB7800673913 /* BRBSPatchTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRBSPatchTests.swift; sourceTree = "<group>"; };
+		22D3613C1C56F2CD0057CF76 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		22FCD22B1C0E68C80066D798 /* BRTarTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRTarTests.swift; sourceTree = "<group>"; };
 		22FCD22D1C0E6BA30066D798 /* BreadWalletTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "BreadWalletTests-Bridging-Header.h"; path = "BreadWallet/BreadWalletTests-Bridging-Header.h"; sourceTree = SOURCE_ROOT; };
 		22FF2C361BED381400B36384 /* breadwallet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "breadwallet-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -387,6 +401,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				22D3613D1C56F2CD0057CF76 /* libsqlite3.tbd in Frameworks */,
 				222E7F581C46E9BE009AB45D /* SystemConfiguration.framework in Frameworks */,
 				222E7F561C46E9B8009AB45D /* Security.framework in Frameworks */,
 				222040C61C1A1940005CE1C3 /* WebKit.framework in Frameworks */,
@@ -413,6 +428,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2253D28D1C5D700A009CA741 /* DocumentStore */ = {
+			isa = PBXGroup;
+			children = (
+				2253D28E1C5D705C009CA741 /* Async.swift */,
+				2253D2901C5D707E009CA741 /* Document.swift */,
+				2253D2921C5D70D1009CA741 /* ReplicationClient.swift */,
+				2253D2941C5D710D009CA741 /* CouchDB.swift */,
+				2253D29A1C5D71E3009CA741 /* SQLiteDB.swift */,
+				2253D2961C5D7155009CA741 /* Replicator.swift */,
+				2253D2981C5D71B4009CA741 /* Extensions.swift */,
+			);
+			name = DocumentStore;
+			sourceTree = "<group>";
+		};
 		31D68B511C23B6C10030FAAA /* BreadWalletUITests */ = {
 			isa = PBXGroup;
 			children = (
@@ -475,8 +504,8 @@
 				752E28C119234C3600DB5A3C /* BRPaymentRequest.m */,
 				2204604C1B9F61E600D07B61 /* BREventManager.h */,
 				2204604D1B9F61E600D07B61 /* BREventManager.m */,
+				2253D28D1C5D700A009CA741 /* DocumentStore */,
 				22FF2C371BED381400B36384 /* BRAPIClient.swift */,
-				222E7F4F1C43193E009AB45D /* BRDocumentStore.swift */,
 				222040C31C1A0903005CE1C3 /* BRWebViewController.swift */,
 				22FF2C361BED381400B36384 /* breadwallet-Bridging-Header.h */,
 			);
@@ -641,6 +670,7 @@
 		75D5F3C0191EC270004AB296 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				22D3613C1C56F2CD0057CF76 /* libsqlite3.tbd */,
 				222E7F571C46E9BE009AB45D /* SystemConfiguration.framework */,
 				222E7F551C46E9B8009AB45D /* Security.framework */,
 				222E7F531C46E62A009AB45D /* libcommonCrypto.tbd */,
@@ -1010,6 +1040,7 @@
 				752E28AE19234AE300DB5A3C /* BRTxInputEntity.m in Sources */,
 				752E28AF19234AE300DB5A3C /* BRTxOutputEntity.m in Sources */,
 				BAA4843C1B3EFFAF0075C749 /* UIImage+Utils.m in Sources */,
+				2253D28F1C5D705C009CA741 /* Async.swift in Sources */,
 				758DBD0E1980634900389E2A /* BRTxDetailViewController.m in Sources */,
 				7548CF3719556FD700EF827F /* BRCopyLabel.m in Sources */,
 				752E28D119234C3600DB5A3C /* BRKey.m in Sources */,
@@ -1021,10 +1052,12 @@
 				752E28CE19234C3600DB5A3C /* BRBIP32Sequence.m in Sources */,
 				752E28CF19234C3600DB5A3C /* BRBIP39Mnemonic.m in Sources */,
 				752E28DA19234C3600DB5A3C /* BRWallet.m in Sources */,
+				2253D2991C5D71B4009CA741 /* Extensions.swift in Sources */,
 				752E28DB19234C3600DB5A3C /* BRWalletManager.m in Sources */,
 				752E28D319234C3600DB5A3C /* BRMerkleBlock.m in Sources */,
 				222040C41C1A0903005CE1C3 /* BRWebViewController.swift in Sources */,
 				752E28D019234C3600DB5A3C /* BRBloomFilter.m in Sources */,
+				2253D2971C5D7155009CA741 /* Replicator.swift in Sources */,
 				752E28D619234C3600DB5A3C /* BRPeer.m in Sources */,
 				752E28D819234C3600DB5A3C /* BRPeerManager.m in Sources */,
 				752E28D419234C3600DB5A3C /* BRPaymentProtocol.m in Sources */,
@@ -1035,11 +1068,12 @@
 				75878BBF192ACD46002505AB /* BRAmountViewController.m in Sources */,
 				759816E719357D6F005060EA /* BRBubbleView.m in Sources */,
 				757BE7E3192C0E9D0061CB20 /* BRRestoreViewController.m in Sources */,
-				222E7F501C43193E009AB45D /* BRDocumentStore.swift in Sources */,
 				757BE7E6192C1FF70061CB20 /* BRWelcomeViewController.m in Sources */,
 				757BE7E9192D4E880061CB20 /* BRSeedViewController.m in Sources */,
 				752E28E719234DA200DB5A3C /* NSData+Bitcoin.m in Sources */,
 				752E28E919234DA200DB5A3C /* NSManagedObject+Sugar.m in Sources */,
+				2253D29B1C5D71E3009CA741 /* SQLiteDB.swift in Sources */,
+				2253D2931C5D70D1009CA741 /* ReplicationClient.swift in Sources */,
 				751B2B5C1B68911700EA87FB /* BRTxHistoryViewController.m in Sources */,
 				752E28EA19234DA200DB5A3C /* NSMutableData+Bitcoin.m in Sources */,
 				752E28EB19234DA200DB5A3C /* NSString+Bitcoin.m in Sources */,
@@ -1048,8 +1082,10 @@
 				759FBB36193290F600AB4465 /* BRRootViewController.m in Sources */,
 				752E289A192349CE00DB5A3C /* BreadWallet.xcdatamodeld in Sources */,
 				759FBB37193290F600AB4465 /* BRSendViewController.m in Sources */,
+				2253D2911C5D707E009CA741 /* Document.swift in Sources */,
 				752E28F119234E8100DB5A3C /* Reachability.m in Sources */,
 				22FF2C381BED381400B36384 /* BRAPIClient.swift in Sources */,
+				2253D2951C5D710D009CA741 /* CouchDB.swift in Sources */,
 				75D5F3CE191EC270004AB296 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
