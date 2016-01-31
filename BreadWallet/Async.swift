@@ -109,4 +109,8 @@ public class AsyncResult<T> {
         }
         return self
     }
+    
+    func error(e: AsyncError) -> AsyncResult<T> {
+        return error(e.code, message: e.message)
+    }
 }

@@ -50,18 +50,18 @@ public class LocalSQLiteDB: ReplicationClient {
     }
     
     private var createDatabaseStatements: [String] = [
-        "CREATE TABLE 'attach-store' (digest UNIQUE, escaped TINYINT(1), body BLOB)",
-        "CREATE TABLE 'local-store' (id UNIQUE, rev, json)",
-        "CREATE TABLE 'attach-seq-store' (digest, seq INTEGER)",
-        "CREATE TABLE 'document-store' (id unique, json, winningseq, max_seq INTEGER UNIQUE)",
-        "CREATE TABLE 'by-sequence' (seq INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, json, deleted TINYINT(1), doc_id, rev)",
-        "CREATE TABLE 'metadata-store' (dbid, db_version INTEGER)",
+        "CREATE TABLE 'attach_store' (digest UNIQUE, escaped TINYINT(1), body BLOB)",
+        "CREATE TABLE 'local_store' (id UNIQUE, rev, json)",
+        "CREATE TABLE 'attach_seq_store' (digest, seq INTEGER)",
+        "CREATE TABLE 'document_store' (id unique, json, winningseq, max_seq INTEGER UNIQUE)",
+        "CREATE TABLE 'by_sequence' (seq INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, json, deleted TINYINT(1), doc_id, rev)",
+        "CREATE TABLE 'metadata_store' (dbid, db_version INTEGER)",
         "DELETE FROM sqlite_sequence",
-        "CREATE INDEX 'attach-seq-seq-idx' ON 'attach-seq-store' (seq)",
-        "CREATE UNIQUE INDEX 'attach-seq-digest-idx' ON 'attach-seq-store' (digest, seq)",
-        "CREATE INDEX 'doc-winningseq-idx' ON 'document-store' (winningseq)",
-        "CREATE INDEX 'by-seq-deleted-idx' ON 'by-sequence' (seq, deleted)",
-        "CREATE UNIQUE INDEX 'by-seq-doc-id-rev' ON 'by-sequence' (doc_id, rev)"
+        "CREATE INDEX 'attach_seq_seq_idx' ON 'attach_seq_store' (seq)",
+        "CREATE UNIQUE INDEX 'attach_seq_digest_idx' ON 'attach_seq_store' (digest, seq)",
+        "CREATE INDEX 'doc_winningseq_idx' ON 'document_store' (winningseq)",
+        "CREATE INDEX 'by_seq_deleted_idx' ON 'by_sequence' (seq, deleted)",
+        "CREATE UNIQUE INDEX 'by_seq_doc_id_rev' ON 'by_sequence' (doc_id, rev)"
     ]
     
     init(path p: String) {
@@ -156,13 +156,68 @@ public class LocalSQLiteDB: ReplicationClient {
         return result
     }
     
+    private func prepare(query: String, inout handle: COpaquePointer) throws {
+        log("prepare: \(query)")
+        try check(sqlite3_prepare_v2(self._handle, query, -1, &handle, nil))
+    }
+    
     private func execute(query: String) throws {
         log("execute: \(query)")
-        try self.check(sqlite3_exec(self._handle, query, nil, nil, nil))
+        try check(sqlite3_exec(self._handle, query, nil, nil, nil))
+    }
+    
+    private func reset(query: COpaquePointer) throws {
+        log("reset: " + String.fromCString(sqlite3_sql(query))!)
+        try check(sqlite3_reset(query))
+    }
+    
+    private func step(query: COpaquePointer) throws -> Int32 {
+        log("step: " + String.fromCString(sqlite3_sql(query))!)
+        return try check(sqlite3_step(query))
+    }
+    
+    private func finalize(query: COpaquePointer) throws {
+        log("finalize: " + String.fromCString(sqlite3_sql(query))!)
+        try check(sqlite3_finalize(query))
     }
     
     private func log(s: String) {
         print("[LocalSQLiteDB] \(s)")
+    }
+    
+    // PRAGMA MARK - API helper functions
+    
+    private var _countHandle: COpaquePointer = nil // counts all documents in storage
+    
+    func countDocs() -> AsyncResult<Int> {
+        let result = AsyncResult<Int>()
+        transaction({
+            if self._countHandle == nil {
+                let sql =
+                    "SELECT COUNT(document_store.id) AS num " +
+                    "FROM document_store " +
+                    "JOIN by_sequence " +
+                    "ON by_sequence.seq = document_store.winningseq " +
+                    "WHERE by_sequence.deleted = 0"
+                try self.prepare(sql, handle: &self._countHandle)
+            }
+            defer {
+                _ = try? self.finalize(self._countHandle)
+            }
+            try self.reset(self._countHandle)
+            if try self.step(self._countHandle) == SQLITE_ROW {
+                let res = sqlite3_column_int(self._countHandle, 0)
+                result.succeed(Int(res))
+            } else {
+                self.log("countDocs: invalid result")
+                result.error(-1001, message: "unknown count error occurred (result was not SQLITE_ROW)")
+            }
+        }).failure(AsyncCallback<AsyncError> { txErr in
+            self.log("countDocs: tx error: \(txErr)")
+            result.error(txErr)
+            return txErr
+        })
+        return result
     }
     
     public func exists() -> AsyncResult<Bool> {

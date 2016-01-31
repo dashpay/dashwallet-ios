@@ -420,6 +420,8 @@ class BRDocumentStoreReplicationTests: XCTestCase {
 class BRSQLiteTests: XCTestCase {
     var pathA: String!
     var pathB: String!
+    var sqA: LocalSQLiteDB!
+    var sqB: LocalSQLiteDB!
     
     override func setUp() {
         let fm = NSFileManager.defaultManager()
@@ -428,11 +430,27 @@ class BRSQLiteTests: XCTestCase {
         pathB = documentsUrl.URLByAppendingPathComponent("bbb-test-database").path!
         if fm.fileExistsAtPath(pathA) {
             try! fm.removeItemAtPath(pathA)
-            print("sqlite test set up removed path \(pathA)")
         }
         if fm.fileExistsAtPath(pathB) {
             try! fm.removeItemAtPath(pathB)
         }
+        
+        let exp = expectationWithDescription("create database")
+        
+        sqA = LocalSQLiteDB(path: pathA)
+        sqB = LocalSQLiteDB(path: pathB)
+        sqA.create().success(AsyncCallback<Bool> { succeeded in
+            XCTAssert(succeeded)
+            self.sqB.create().success(AsyncCallback<Bool> { succeeded_also in
+                XCTAssert(succeeded_also)
+                exp.fulfill()
+                return succeeded_also
+            })
+            return succeeded
+        })
+        
+        waitForExpectationsWithTimeout(5, handler: nil)
+        
         super.setUp()
     }
     
@@ -442,7 +460,7 @@ class BRSQLiteTests: XCTestCase {
     
     func testCreate() {
         let exp = expectationWithDescription("create database")
-        let sq = LocalSQLiteDB(path: pathA)
+        let sq = LocalSQLiteDB(path: pathA + "testCreate")
         sq.create().success(AsyncCallback<Bool> { didCreate in
             XCTAssert(didCreate)
             exp.fulfill()
@@ -451,6 +469,18 @@ class BRSQLiteTests: XCTestCase {
             XCTFail()
             exp.fulfill()
             return createErr
+        })
+        waitForExpectationsWithTimeout(5) { (err) -> Void in
+            _ = try? NSFileManager.defaultManager().removeItemAtPath(self.pathA + "testCreate")
+        }
+    }
+    
+    func testCountEmptyDB() {
+        let exp = expectationWithDescription("count no docs")
+        sqA.countDocs().success(AsyncCallback<Int> { ndocs in
+            XCTAssertEqual(ndocs, 0)
+            exp.fulfill()
+            return ndocs
         })
         waitForExpectationsWithTimeout(5, handler: nil)
     }
