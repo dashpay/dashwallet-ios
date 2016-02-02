@@ -152,13 +152,15 @@ func httpDateNow() -> String {
     var proto = "https"
     var host = "api.breadwallet.com"
     
+    private var _session: NSURLSession? = nil
     var session: NSURLSession {
-        let config = NSURLSessionConfiguration.defaultSessionConfiguration()
-        return NSURLSession(configuration: config, delegate: self, delegateQueue: queue)
+        if _session == nil {
+            let config = NSURLSessionConfiguration.defaultSessionConfiguration()
+            _session = NSURLSession(configuration: config, delegate: self, delegateQueue: queue)
+        }
+        return _session!
     }
-    var queue: NSOperationQueue {
-        return NSOperationQueue()
-    }
+    var queue = NSOperationQueue()
     
     var baseUrl: String {
         return "\(proto)://\(host)"
@@ -168,9 +170,13 @@ func httpDateNow() -> String {
         return baseUrl
     }
     
+    private var _serverPubKey: BRKey? = nil
     var serverPubKey: BRKey {
-        let encoded = "24jsCR3itNGbbmYbZnG6jW8gjguhqybCXsoUAgfqdjprz"
-        return BRKey(publicKey: NSData(base58String: encoded))!
+        if _serverPubKey == nil {
+            let encoded = "24jsCR3itNGbbmYbZnG6jW8gjguhqybCXsoUAgfqdjprz"
+            _serverPubKey = BRKey(publicKey: NSData(base58String: encoded))!
+        }
+        return _serverPubKey!
     }
     
     // the singleton
