@@ -66,7 +66,7 @@ public struct DatabaseInfo: DocumentLoading {
         docDelCount = (doc["doc_del_count"] as! NSNumber).integerValue
         purgeSeq = (doc["purge_seq"] as! NSNumber).integerValue
         updateSeq = (doc["update_seq"] as! NSNumber).integerValue
-        compactRunning = (doc["update_seq"] as! NSNumber).boolValue
+        compactRunning = (doc["compact_running"] as! NSNumber).boolValue
         committedUpdateSeq = (doc["committed_update_seq"] as! NSNumber).integerValue
     }
     
@@ -91,6 +91,7 @@ public struct DatabaseInfo: DocumentLoading {
 
 public struct DesignDocument: Document {
     public var _id: String
+    public var _deleted = false
     public var _rev: String
     public var _revisions: [RevisionDiff] = [RevisionDiff]()
     

@@ -15,6 +15,7 @@
 		222040C41C1A0903005CE1C3 /* BRWebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 222040C31C1A0903005CE1C3 /* BRWebViewController.swift */; };
 		222040C61C1A1940005CE1C3 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222040C51C1A1940005CE1C3 /* WebKit.framework */; };
 		222040C81C1A3803005CE1C3 /* BRHTTPServerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 222040C71C1A3803005CE1C3 /* BRHTTPServerTests.swift */; };
+		222C44411C5E75C80002FE7B /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 222C44401C5E75C80002FE7B /* Utils.swift */; };
 		222E7F521C43291C009AB45D /* BRDocumentStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 222E7F511C43291C009AB45D /* BRDocumentStoreTests.swift */; };
 		222E7F561C46E9B8009AB45D /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222E7F551C46E9B8009AB45D /* Security.framework */; };
 		222E7F581C46E9BE009AB45D /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222E7F571C46E9BE009AB45D /* SystemConfiguration.framework */; };
@@ -154,6 +155,7 @@
 		222040C31C1A0903005CE1C3 /* BRWebViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRWebViewController.swift; sourceTree = "<group>"; };
 		222040C51C1A1940005CE1C3 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		222040C71C1A3803005CE1C3 /* BRHTTPServerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRHTTPServerTests.swift; sourceTree = "<group>"; };
+		222C44401C5E75C80002FE7B /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		222E7F511C43291C009AB45D /* BRDocumentStoreTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRDocumentStoreTests.swift; sourceTree = "<group>"; };
 		222E7F531C46E62A009AB45D /* libcommonCrypto.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcommonCrypto.tbd; path = usr/lib/system/libcommonCrypto.tbd; sourceTree = SDKROOT; };
 		222E7F551C46E9B8009AB45D /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
@@ -438,6 +440,7 @@
 				2253D29A1C5D71E3009CA741 /* SQLiteDB.swift */,
 				2253D2961C5D7155009CA741 /* Replicator.swift */,
 				2253D2981C5D71B4009CA741 /* Extensions.swift */,
+				222C44401C5E75C80002FE7B /* Utils.swift */,
 			);
 			name = DocumentStore;
 			sourceTree = "<group>";
@@ -1063,6 +1066,7 @@
 				752E28D419234C3600DB5A3C /* BRPaymentProtocol.m in Sources */,
 				752E28D519234C3600DB5A3C /* BRPaymentRequest.m in Sources */,
 				7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */,
+				222C44411C5E75C80002FE7B /* Utils.swift in Sources */,
 				75F2E0D61BEAA6A400EAE861 /* BRTxMetadataEntity.m in Sources */,
 				75878BC1192AEC3F002505AB /* BRReceiveViewController.m in Sources */,
 				75878BBF192ACD46002505AB /* BRAmountViewController.m in Sources */,

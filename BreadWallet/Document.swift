@@ -22,11 +22,13 @@ public protocol Document: DocumentLoading {
     var _id: String { get set }
     var _rev: String { get set }
     var _revisions: [RevisionDiff] { get set }
+    var _deleted: Bool { get set }
 }
 
 public class DefaultDocument: Document {
     public var _id: String = ""
     public var _rev: String = ""
+    public var _deleted: Bool = false
     public var _revisions: [RevisionDiff] = [RevisionDiff]()
     public var _doc: [String: AnyObject] = [String: AnyObject]()
     public var isMany: Bool = false
