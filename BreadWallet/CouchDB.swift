@@ -36,7 +36,7 @@ public class RemoteCouchDB: ReplicationClient {
             } else {
                 result.error(-1001, message: "\(err?.debugDescription)")
             }
-            }.resume()
+        }.resume()
         
         return result
     }
@@ -59,7 +59,7 @@ public class RemoteCouchDB: ReplicationClient {
             } else {
                 result.error(-1001, message: "\(err?.debugDescription)")
             }
-            }.resume()
+        }.resume()
         
         return result
     }
@@ -87,7 +87,7 @@ public class RemoteCouchDB: ReplicationClient {
                 print("[RemoteCouchDB] error getting database info \(err?.debugDescription)")
                 result.error(-1001, message: "Error loading database info")
             }
-            }.resume()
+        }.resume()
         
         return result
     }
@@ -118,14 +118,15 @@ public class RemoteCouchDB: ReplicationClient {
                 print("[RemoteCouchDB] error sending ensure full commit \(urlErr?.debugDescription)")
                 result.error(-1001, message: "error sending full commit \(urlErr?.debugDescription)")
             }
-            }.resume()
+        }.resume()
         return result
     }
     
     public func get<T: Document>(id: String, options: [String : [String]]?, returning: T.Type) -> AsyncResult<T?> {
         let result = AsyncResult<T?>()
         
-        let req = NSMutableURLRequest(URL: NSURL(string: url + "/" + id + String.buildQueryString(options, includeQ: true))!)
+        let req = NSMutableURLRequest(
+            URL: NSURL(string: url + "/" + id + String.buildQueryString(options, includeQ: true))!)
         req.setValue("application/json", forHTTPHeaderField: "Accept")
         NSURLSession.sharedSession().dataTaskWithRequest(req) { (data, resp, err) -> Void in
             if let resp = resp as? NSHTTPURLResponse {
@@ -147,7 +148,7 @@ public class RemoteCouchDB: ReplicationClient {
             } else {
                 result.error(-1001, message: "Error running get request \(err?.debugDescription)")
             }
-            }.resume()
+        }.resume()
         
         return result
     }
@@ -162,7 +163,8 @@ public class RemoteCouchDB: ReplicationClient {
             result.error(-1001, message: "JSON Dumping Error: \(e)")
             return result
         }
-        let req = NSMutableURLRequest(URL: NSURL(string: url + "/" + doc._id + String.buildQueryString(options, includeQ: true))!)
+        let req = NSMutableURLRequest(
+            URL: NSURL(string: url + "/" + doc._id + String.buildQueryString(options, includeQ: true))!)
         req.HTTPMethod = "PUT"
         req.HTTPBody = docJson
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -189,7 +191,7 @@ public class RemoteCouchDB: ReplicationClient {
             } else {
                 result.error(-1001, message: "Error sending put \(err?.debugDescription)")
             }
-            }.resume()
+        }.resume()
         
         return result
     }
@@ -253,7 +255,7 @@ public class RemoteCouchDB: ReplicationClient {
                 print("[RemoteCouchDB] error sending bulk json \(urlErr?.debugDescription)")
                 result.error(-1001, message: "error sending bulk json \(urlErr?.debugDescription)")
             }
-            }.resume()
+        }.resume()
         return result
     }
     
@@ -291,7 +293,7 @@ public class RemoteCouchDB: ReplicationClient {
                 print("[RemoteCouchDB] error sending revs diff: \(err?.debugDescription)")
                 result.error(-1001, message: "error sending revs diff")
             }
-            }.resume()
+        }.resume()
         return result
     }
     
@@ -336,7 +338,7 @@ public class RemoteCouchDB: ReplicationClient {
             } else {
                 result.error(-1001, message: "Error sending _changes request: \(err?.debugDescription)")
             }
-            }.resume()
+        }.resume()
         
         return result
     }

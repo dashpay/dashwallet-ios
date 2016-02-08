@@ -8,27 +8,24 @@
 
 import Foundation
 
-// Basically an implementation of CouchDB on top of SQLite. There are a lot of features missing.
-// 
-// TODO options: revs_limit
-// TODO features:
-//   - local docs
-public class LocalSQLiteDB: ReplicationClient {
+class SQLite {
     var path: String
-    public var id: String {
+    var id: String {
         return path
     }
+    var dbIsOpen = false
+    
     // this holds the sqlite3* pointer
     private var _handle: COpaquePointer = nil
     
     // used to convert an sqlite result code into a useful error
-    private enum SqliteResult: ErrorType, CustomStringConvertible {
+    private enum Result: ErrorType, CustomStringConvertible {
         private static let successCodes: Set = [SQLITE_OK, SQLITE_ROW, SQLITE_DONE]
         
         case Error(message: String, code: Int32)
         
         init?(errorCode: Int32, connection: COpaquePointer) {
-            guard !SqliteResult.successCodes.contains(errorCode) else { return nil }
+            guard !Result.successCodes.contains(errorCode) else { return nil }
             
             let message = String.fromCString(sqlite3_errmsg(connection))!
             self = Error(message: message, code: errorCode)
@@ -53,23 +50,30 @@ public class LocalSQLiteDB: ReplicationClient {
         return _Q
     }
     
-    private var createDatabaseStatements: [String] = [
-        "CREATE TABLE 'attach_store' (digest UNIQUE, escaped TINYINT(1), body BLOB)",
-        "CREATE TABLE 'local_store' (id UNIQUE, rev, json)",
-        "CREATE TABLE 'attach_seq_store' (digest, seq INTEGER)",
-        "CREATE TABLE 'document_store' (id unique, json, winningseq, max_seq INTEGER UNIQUE)",
-        "CREATE TABLE 'by_sequence' (seq INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, json, deleted TINYINT(1), doc_id, rev)",
-        "CREATE TABLE 'metadata_store' (dbid, db_version INTEGER)",
-        "DELETE FROM sqlite_sequence",
-        "CREATE INDEX 'attach_seq_seq_idx' ON 'attach_seq_store' (seq)",
-        "CREATE UNIQUE INDEX 'attach_seq_digest_idx' ON 'attach_seq_store' (digest, seq)",
-        "CREATE INDEX 'doc_winningseq_idx' ON 'document_store' (winningseq)",
-        "CREATE INDEX 'by_seq_deleted_idx' ON 'by_sequence' (seq, deleted)",
-        "CREATE UNIQUE INDEX 'by_seq_doc_id_rev' ON 'by_sequence' (doc_id, rev)"
-    ]
-    
     init(path p: String) {
         path = p
+    }
+    
+    private func open() -> AsyncResult<Bool> {
+        let result = AsyncResult<Bool>()
+        if dbIsOpen {
+            result.succeed(dbIsOpen)
+        }
+        dispatch_async(Q) {
+            do {
+                let flags = SQLITE_OPEN_FULLMUTEX | SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE
+                try self.check(sqlite3_open_v2(self.path, &self._handle, flags, nil))
+                self.dbIsOpen = true
+                result.succeed(self.dbIsOpen)
+            } catch Result.Error(let e) {
+                self.log("Error opening sqlite database \(e)")
+                result.error(Int(e.code), message: e.message)
+            } catch let e {
+                self.log("Unknown error opening sqlite database \(e)")
+                result.error(-1001, message: "\(e)")
+            }
+        }
+        return result
     }
     
     deinit {
@@ -78,7 +82,7 @@ public class LocalSQLiteDB: ReplicationClient {
     
     // check the result of an sqlite3 liberary call and throw if it is an error
     private func check(resultCode: Int32) throws -> Int32 {
-        guard let error = SqliteResult(errorCode: resultCode, connection: _handle) else {
+        guard let error = Result(errorCode: resultCode, connection: _handle) else {
             return resultCode
         }
         throw error
@@ -92,82 +96,89 @@ public class LocalSQLiteDB: ReplicationClient {
     // asynchronously executes a transaction on the database
     private func transaction(block: () throws -> Void) -> AsyncResult<Bool> {
         let result = AsyncResult<Bool>()
-        dispatch_async(Q) {
-            self._txNesting += 1
-            defer {
-                self._txNesting -= 1
-            }
-            var didBegin = false
-            do {
-                if self._beginHandle == nil {
-                    try self.prepare("BEGIN DEFERRED TRANSACTION", handle: &self._beginHandle)
-                    try self.prepare("COMMIT TRANSACTION", handle: &self._commitHandle)
-                    try self.prepare("ROLLBACK TRANSACTION", handle: &self._rollbackHandle)
-                } else {
-                    try self.check(sqlite3_reset(self._beginHandle))
-                    try self.check(sqlite3_reset(self._commitHandle))
-                    try self.check(sqlite3_reset(self._rollbackHandle))
+        open().success(AsyncCallback<Bool> { _ in
+            dispatch_async(self.Q) {
+                self._txNesting += 1
+                defer {
+                    self._txNesting -= 1
                 }
-                // BEGIN
-                if self._txNesting == 1 {
-                    self.log("transaction: BEGIN DEFERRED TRANSACTION")
-                    try self.check(sqlite3_step(self._beginHandle))
-                }
-                didBegin = true
-                // EXECUTE
-                try block()
-            } catch SqliteResult.Error(let txErr) {
-                if didBegin {
-                    var didRollback = false
-                    // ROLLBACK
-                    do {
-                        if self._txNesting == 1 {
-                            self.log("transaction: ROLLBACK TRANSACTION")
-                            try self.check(sqlite3_step(self._rollbackHandle))
-                            self.log("transaction: rollback success")
+                var didBegin = false
+                do {
+                    if self._beginHandle == nil {
+                        try self.prepare("BEGIN DEFERRED TRANSACTION", handle: &self._beginHandle)
+                        try self.prepare("COMMIT TRANSACTION", handle: &self._commitHandle)
+                        try self.prepare("ROLLBACK TRANSACTION", handle: &self._rollbackHandle)
+                    } else {
+                        try self.reset(self._beginHandle)
+                        try self.reset(self._commitHandle)
+                        try self.reset(self._rollbackHandle)
+                    }
+                    // BEGIN
+                    if self._txNesting == 1 {
+                        self.log("transaction: BEGIN DEFERRED TRANSACTION")
+                        try self.step(self._beginHandle)
+                    }
+                    didBegin = true
+                    // EXECUTE
+                    try block()
+                } catch Result.Error(let txErr) {
+                    if didBegin {
+                        var didRollback = false
+                        // ROLLBACK
+                        do {
+                            if self._txNesting == 1 {
+                                self.log("transaction: ROLLBACK TRANSACTION")
+                                try self.step(self._rollbackHandle)
+                                self.log("transaction: rollback success")
+                            }
+                            didRollback = true
+                        } catch Result.Error(let e) {
+                            // send rollback error
+                            self.log("transaction: rollback error \(e)")
+                            result.error(Int(e.code), message: e.message)
+                            return
+                        } catch {
+                            // this should never happen
+                            self.log("transaction: unknown rollback error")
+                            result.error(-1011, message: "unknown error occurred during rollback")
+                            return
                         }
-                        didRollback = true
-                    } catch SqliteResult.Error(let e) {
-                        // send rollback error
-                        self.log("transaction: rollback error \(e)")
-                        result.error(Int(e.code), message: e.message)
-                        return
-                    } catch {
-                        // this should never happen
-                        self.log("transaction: unknown rollback error")
-                        result.error(-1011, message: "unknown error occurred during rollback")
-                        return
+                        if didRollback {
+                            // send original tx error
+                            self.log("transaction: error \(txErr)")
+                            result.error(Int(txErr.code), message: txErr.message)
+                            return
+                        }
                     }
-                    if didRollback {
-                        // send original tx error
-                        self.log("transaction: error \(txErr)")
-                        result.error(Int(txErr.code), message: txErr.message)
-                        return
+                } catch {
+                    self.log("transaction: unknown transaction error")
+                    result.error(-1001, message: "unknown error occurred during transaction")
+                    return
+                }
+                // COMMIT
+                do {
+                    if self._txNesting == 1 {
+                        self.log("transaction: COMMIT TRANSACTION")
+                        try self.step(self._commitHandle)
+                        self.log("transaction: commit success")
                     }
+                } catch Result.Error(let commitErr) {
+                    self.log("transaction: commit error \(commitErr)")
+                    result.error(Int(commitErr.code), message: commitErr.message)
+                    return
+                } catch {
+                    self.log("transaction: unknown error during commit")
+                    result.error(-1001, message: "unknown error during commit")
+                    return
                 }
-            } catch {
-                self.log("transaction: unknown transaction error")
-                result.error(-1001, message: "unknown error occurred during transaction")
-                return
+                result.succeed(true)
             }
-            // COMMIT
-            do {
-                if self._txNesting == 1 {
-                    self.log("transaction: COMMIT TRANSACTION")
-                    try self.check(sqlite3_step(self._commitHandle))
-                    self.log("transaction: commit success")
-                }
-            } catch SqliteResult.Error(let commitErr) {
-                self.log("transaction: commit error \(commitErr)")
-                result.error(Int(commitErr.code), message: commitErr.message)
-                return
-            } catch {
-                self.log("transaction: unknown error during commit")
-                result.error(-1001, message: "unknown error during commit")
-                return
-            }
-            result.succeed(true)
-        }
+            return true
+        }).failure(AsyncCallback<AsyncError> { e in
+            result.error(e)
+            return e
+        })
+        
         return result
     }
     
@@ -231,7 +242,40 @@ public class LocalSQLiteDB: ReplicationClient {
     }
     
     private func log(s: String) {
-        print("[LocalSQLiteDB] \(s)")
+        print("[Sqlite] \(s)")
+    }
+}
+
+// Basically an implementation of CouchDB on top of SQLite. There are a lot of features missing.
+// 
+// TODO options: revs_limit
+// TODO features:
+//   - local docs
+public class LocalSQLiteDB: ReplicationClient {
+    private var db: SQLite
+    public var id: String { return db.id }
+    
+    public init(path: String) {
+        db = SQLite(path: path)
+    }
+    
+    private var createDatabaseStatements: [String] = [
+        "CREATE TABLE 'attach_store' (digest UNIQUE, escaped TINYINT(1), body BLOB)",
+        "CREATE TABLE 'local_store' (id UNIQUE, rev, json)",
+        "CREATE TABLE 'attach_seq_store' (digest, seq INTEGER)",
+        "CREATE TABLE 'document_store' (id unique, json, winningseq, max_seq INTEGER UNIQUE)",
+        "CREATE TABLE 'by_sequence' (seq INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, json, deleted TINYINT(1), doc_id, rev)",
+        "CREATE TABLE 'metadata_store' (dbid, db_version INTEGER)",
+        "DELETE FROM sqlite_sequence",
+        "CREATE INDEX 'attach_seq_seq_idx' ON 'attach_seq_store' (seq)",
+        "CREATE UNIQUE INDEX 'attach_seq_digest_idx' ON 'attach_seq_store' (digest, seq)",
+        "CREATE INDEX 'doc_winningseq_idx' ON 'document_store' (winningseq)",
+        "CREATE INDEX 'by_seq_deleted_idx' ON 'by_sequence' (seq, deleted)",
+        "CREATE UNIQUE INDEX 'by_seq_doc_id_rev' ON 'by_sequence' (doc_id, rev)"
+    ]
+    
+    private func log(s: String) {
+        print("[SQLiteDB] \(s)")
     }
     
     // PRAGMA MARK - API helper functions
@@ -240,7 +284,7 @@ public class LocalSQLiteDB: ReplicationClient {
     
     func countDocs() -> AsyncResult<Int> {
         let result = AsyncResult<Int>()
-        transaction({
+        db.transaction({
             if self._countHandle == nil {
                 let sql =
                     "SELECT COUNT(document_store.id) AS num " +
@@ -248,13 +292,13 @@ public class LocalSQLiteDB: ReplicationClient {
                     "JOIN by_sequence " +
                     "ON by_sequence.seq = document_store.winningseq " +
                     "WHERE by_sequence.deleted = 0"
-                try self.prepare(sql, handle: &self._countHandle)
+                try self.db.prepare(sql, handle: &self._countHandle)
             }
             defer {
-                _ = try? self.finalize(self._countHandle)
+                _ = try? self.db.finalize(self._countHandle)
             }
-            try self.reset(self._countHandle)
-            if try self.step(self._countHandle) == SQLITE_ROW {
+            try self.db.reset(self._countHandle)
+            if try self.db.step(self._countHandle) == SQLITE_ROW {
                 let res = sqlite3_column_int(self._countHandle, 0)
                 result.succeed(Int(res))
             } else {
@@ -276,47 +320,31 @@ public class LocalSQLiteDB: ReplicationClient {
     
     public func create() -> AsyncResult<Bool> {
         let result = AsyncResult<Bool>()
-        
-        dispatch_async(Q) {
-            do {
-                let flags = SQLITE_OPEN_FULLMUTEX | SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE
-                try self.check(sqlite3_open_v2(self.path, &self._handle, flags, nil))
-            } catch SqliteResult.Error(let e) {
-                self.log("Error opening sqlite database \(e)")
-                result.error(Int(e.code), message: e.message)
-                return
-            } catch let e {
-                self.log("Unknown error opening sqlite database \(e)")
-                result.error(-1001, message: "\(e)")
-                return
+        db.transaction({
+            for stmt in self.createDatabaseStatements {
+                try self.db.execute(stmt)
             }
-            self.transaction({
-                for stmt in self.createDatabaseStatements {
-                    try self.execute(stmt)
-                }
-            }).success(AsyncCallback<Bool> { res in
-                result.succeed(res)
-                return res
-            }).failure(AsyncCallback<AsyncError> { txErr in
-                result.error(txErr.code, message: txErr.message)
-                return txErr
-            })
-        }
-        
+        }).success(AsyncCallback<Bool> { res in
+            result.succeed(res)
+            return res
+        }).failure(AsyncCallback<AsyncError> { txErr in
+            result.error(txErr.code, message: txErr.message)
+            return txErr
+        })
         return result
     }
     
     public func info() -> AsyncResult<DatabaseInfo> {
         let result = AsyncResult<DatabaseInfo>()
         countDocs().success(AsyncCallback<Int> { docCount in
-            self.transaction({
-                let maxSeqQ = try self.prepare("SELECT MAX(seq) AS seq FROM by_sequence")
-                if try self.step(maxSeqQ) == SQLITE_ROW {
+            self.db.transaction({
+                let maxSeqQ = try self.db.prepare("SELECT MAX(seq) AS seq FROM by_sequence")
+                if try self.db.step(maxSeqQ) == SQLITE_ROW {
                     let updateSeq = sqlite3_column_int(maxSeqQ, 0)
                     let fm = NSFileManager.defaultManager()
-                    let attrs: NSDictionary = try fm.attributesOfItemAtPath(self.path)
+                    let attrs: NSDictionary = try fm.attributesOfItemAtPath(self.db.path)
                     var d = [String: AnyObject]()
-                    d["db_name"] = NSURL(string: self.path)!.pathComponents!.last
+                    d["db_name"] = NSURL(string: self.db.path)!.pathComponents!.last
                     d["doc_count"] = NSNumber(integer: docCount)
                     d["disk_size"] = NSNumber(integer: Int(attrs.fileSize()))
                     d["data_size"] = NSNumber(integer: Int(attrs.fileSize()))
@@ -354,8 +382,8 @@ public class LocalSQLiteDB: ReplicationClient {
     // struct used internally to represent the result of a _get() request
     private struct _GetResult {
         var id: String? = nil
-        var metadata: JSON? = nil
-        var doc: JSON? = nil
+        var metadata: SQLite.JSON? = nil
+        var doc: SQLite.JSON? = nil
         var rev: String? = nil
         var missing: Bool = false
         var deleted: Bool = false
@@ -381,7 +409,7 @@ public class LocalSQLiteDB: ReplicationClient {
     
     private func _get(id: String, options: [String: [String]]?) -> AsyncResult<_GetResult> {
         let result = AsyncResult<_GetResult>()
-        transaction({
+        db.transaction({
             // setup prepared statements
             if self._getDocHandle == nil {
                 let selectSql = "SELECT by_sequence.seq AS seq, " +         // seq = 0
@@ -397,13 +425,13 @@ public class LocalSQLiteDB: ReplicationClient {
                 let revDocSql = selectSql + "JOIN ON document_store.id = by_sequence.doc_id " +
                                             "WHERE by_sequence.doc_id=? AND by_sequence.rev=?"
                 
-                self._getDocHandle = try self.prepare(docSql)
-                self._getDocRevHandle = try self.prepare(revDocSql)
+                self._getDocHandle = try self.db.prepare(docSql)
+                self._getDocRevHandle = try self.db.prepare(revDocSql)
             }
             
             // reset prepared statements
-            try self.reset(self._getDocHandle)
-            try self.reset(self._getDocRevHandle)
+            try self.db.reset(self._getDocHandle)
+            try self.db.reset(self._getDocRevHandle)
             
             // logic is slightly different if caller is looking for a speicifc revision: when searching for a revision
             // a deleted document can be returned, not but if searching by id
@@ -413,11 +441,11 @@ public class LocalSQLiteDB: ReplicationClient {
                 getRev = true
                 // caller is asking for a specific revision
                 defer {
-                    _ = try? self.finalize(self._getDocRevHandle)
+                    _ = try? self.db.finalize(self._getDocRevHandle)
                 }
-                try self.bind(id, query: self._getDocRevHandle, index: 0)
-                try self.bind(revO[0], query: self._getDocRevHandle, index: 1)
-                let step = try self.step(self._getDocRevHandle)
+                try self.db.bind(id, query: self._getDocRevHandle, index: 0)
+                try self.db.bind(revO[0], query: self._getDocRevHandle, index: 1)
+                let step = try self.db.step(self._getDocRevHandle)
                 if step == SQLITE_ROW {
                     selectResult = self._getDocRevHandle
                 } else if step != SQLITE_DONE {
@@ -427,10 +455,10 @@ public class LocalSQLiteDB: ReplicationClient {
             } else {
                 // caller is asking for document by id
                 defer {
-                    _ = try? self.finalize(self._getDocHandle)
+                    _ = try? self.db.finalize(self._getDocHandle)
                 }
-                try self.bind(id, query: self._getDocHandle, index: 0)
-                let step = try self.step(self._getDocHandle)
+                try self.db.bind(id, query: self._getDocHandle, index: 0)
+                let step = try self.db.step(self._getDocHandle)
                 if step == SQLITE_ROW {
                     selectResult = self._getDocHandle
                 } else if step != SQLITE_DONE {
@@ -441,10 +469,10 @@ public class LocalSQLiteDB: ReplicationClient {
             var getResult = _GetResult()
             getResult.id = id
             if selectResult != nil {
-                let deleted: Int = self.column(selectResult, index: 1)
-                let metadata: JSON = self.column(selectResult, index: 4)
-                let data: JSON = self.column(selectResult, index: 2)
-                let rev: String = self.column(selectResult, index: 3)
+                let deleted: Int = self.db.column(selectResult, index: 1)
+                let metadata: SQLite.JSON = self.db.column(selectResult, index: 4)
+                let data: SQLite.JSON = self.db.column(selectResult, index: 2)
+                let rev: String = self.db.column(selectResult, index: 3)
                 if deleted > 0 && !getRev {
                     getResult.deleted = true
                     result.succeed(getResult)

@@ -447,6 +447,8 @@ class BRSQLiteTests: XCTestCase {
                 return succeeded_also
             })
             return succeeded
+        }).failure(AsyncCallback<AsyncError> { e in
+            return e
         })
         
         waitForExpectationsWithTimeout(5, handler: nil)
