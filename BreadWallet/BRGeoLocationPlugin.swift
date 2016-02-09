@@ -10,15 +10,27 @@ import Foundation
 import CoreLocation
 
 
+@available(iOS 9.0, *)
 class BRGeoLocationDelegate: NSObject, CLLocationManagerDelegate {
-    lazy var manager = CLLocationManager()
+    var manager: CLLocationManager? = nil
     var response: BRHTTPResponse
     var remove: (() -> Void)? = nil
     
     init(response: BRHTTPResponse) {
         self.response = response
         super.init()
-        self.manager.delegate = self
+        // location managers MUST operate on the main queue, but requests are not handled there
+        dispatch_sync(dispatch_get_main_queue()) { () -> Void in
+            self.manager = CLLocationManager()
+            self.manager?.delegate = self
+        }
+    }
+    
+    func getOne() {
+        dispatch_sync(dispatch_get_main_queue()) { () -> Void in
+            self.manager?.desiredAccuracy = kCLLocationAccuracyHundredMeters
+            self.manager?.requestLocation()
+        }
     }
     
     func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
@@ -29,15 +41,19 @@ class BRGeoLocationDelegate: NSObject, CLLocationManagerDelegate {
         j["altitude"] = l.altitude
         j["horizontal_accuracy"] = l.horizontalAccuracy
         j["description"] = l.description
-        self.response.provide(200, json: j)
-        self.remove?()
+        dispatch_async(response.request.queue) {
+            self.response.provide(200, json: j)
+            self.remove?()
+        }
     }
     
     func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
         var j = [String: AnyObject]()
         j["error"] = error.localizedDescription
-        self.response.provide(500, json: j)
-        self.remove?()
+        dispatch_async(response.request.queue) {
+            self.response.provide(500, json: j)
+            self.remove?()
+        }
     }
 }
 
@@ -45,6 +61,15 @@ class BRGeoLocationDelegate: NSObject, CLLocationManagerDelegate {
 @objc public class BRGeoLocationPlugin: NSObject, BRHTTPRouterPlugin, CLLocationManagerDelegate {
     lazy var manager = CLLocationManager()
     var outstanding = [BRGeoLocationDelegate]()
+    
+    override init() {
+        super.init()
+        self.manager.delegate = self
+    }
+    
+    public func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
+        print("new authorization status: \(status)")
+    }
     
     public func hook(router: BRHTTPRouter) {
         // GET /_permissions/geo
@@ -57,6 +82,9 @@ class BRGeoLocationDelegate: NSObject, CLLocationManagerDelegate {
         // "location_enabled" = true | false
         //
         // The status correspond to those found in the apple CLLocation documentation: http://apple.co/1O0lHFv
+        //
+        // "user_queried" indicates whether or not the user has already been asked for geolocation
+        // "location_enabled" indicates whether or not the user has geo location enabled on their phone
         router.get("/_permissions/geo") { (request, match) -> BRHTTPResponse in
             let userDefaults = NSUserDefaults.standardUserDefaults()
             let authzStatus = CLLocationManager.authorizationStatus()
@@ -93,12 +121,25 @@ class BRGeoLocationDelegate: NSObject, CLLocationManagerDelegate {
                 case "always": self.manager.requestAlwaysAuthorization()
                 default: return BRHTTPResponse(request: request, code: 400)
                 }
+                NSUserDefaults.standardUserDefaults().setBool(true, forKey: "geo_permission_was_queried")
                 return BRHTTPResponse(request: request, code: 204)
             }
             return BRHTTPResponse(request: request, code: 400)
         }
         
         // GET /_geo
+        //
+        // Calling this method will query CoreLocation for a location object. The returned value may not be returned
+        // very quick (sometimes getting a geo lock takes some time) so be sure to display to the user some status
+        // while waiting for a response.
+        //
+        // Response Object:
+        //
+        // "coordinates" = { "latitude": double, "longitude": double }
+        // "altitude" = double
+        // "description" = "a string representation of this object"
+        // "timestamp" = "ISO-8601 timestamp of when this location was generated"
+        // "horizontal_accuracy" = double
         router.get("/_geo") { (request, match) -> BRHTTPResponse in
             var retJson = [String: AnyObject]()
             if !CLLocationManager.locationServicesEnabled() {
@@ -112,8 +153,6 @@ class BRGeoLocationDelegate: NSObject, CLLocationManagerDelegate {
             }
             let resp = BRHTTPResponse(async: request)
             let del = BRGeoLocationDelegate(response: resp)
-            del.manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
-            del.manager.requestLocation()
             del.remove = {
                 objc_sync_enter(self)
                 self.outstanding.removeAtIndex(self.outstanding.indexOf({ (d) -> Bool in return d == del })!)
@@ -122,6 +161,12 @@ class BRGeoLocationDelegate: NSObject, CLLocationManagerDelegate {
             objc_sync_enter(self)
             self.outstanding.append(del)
             objc_sync_exit(self)
+            
+            print("outstanding delegates: \(self.outstanding)")
+            
+            // get location only once
+            del.getOne()
+            
             return resp
         }
     }

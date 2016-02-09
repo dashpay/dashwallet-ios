@@ -474,6 +474,7 @@
 				229279991C695CAE00C98E78 /* BRHTTPFileMiddleware.swift */,
 				2292799B1C695CD600C98E78 /* BRHTTPRouter.swift */,
 				229279A61C6960B200C98E78 /* HTTP Plugins */,
+				222040C31C1A0903005CE1C3 /* BRWebViewController.swift */,
 			);
 			name = AppRuntime;
 			sourceTree = "<group>";
@@ -560,7 +561,6 @@
 				2204604D1B9F61E600D07B61 /* BREventManager.m */,
 				2253D28D1C5D700A009CA741 /* DocumentStore */,
 				229279961C695C1100C98E78 /* AppRuntime */,
-				222040C31C1A0903005CE1C3 /* BRWebViewController.swift */,
 				22FF2C361BED381400B36384 /* breadwallet-Bridging-Header.h */,
 			);
 			name = Models;

@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 import WebKit
 
-    
+
 @available(iOS 9.0, *)
 @objc public class BRWebViewController : UIViewController {
     var wkProcessPool: WKProcessPool
@@ -70,10 +70,13 @@ import WebKit
         let router = BRHTTPRouter()
         server?.prependMiddleware(middleware: router)
         
+        // geo plugin
+        router.plugin(BRGeoLocationPlugin())
+        
         // GET /_close closes the browser modal
         router.get("/_close") { (request, match) -> BRHTTPResponse in
             self.closeNow()
-            return BRHTTPResponse(request: request, code: 201)
+            return BRHTTPResponse(request: request, code: 204)
         }
     }
     
