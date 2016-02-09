@@ -40,6 +40,14 @@ enum BRHTTPServerError: ErrorType {
     var debugURL: NSURL?
     var middleware: [BRHTTPMiddleware] = [BRHTTPMiddleware]()
     
+    var _Q: dispatch_queue_t? = nil
+    var Q: dispatch_queue_t {
+        if _Q == nil {
+            _Q = dispatch_queue_create("br_http_server", DISPATCH_QUEUE_CONCURRENT)
+        }
+        return _Q!
+    }
+    
     init(baseDirectory: NSURL) {
         path = baseDirectory
         middleware.append(BRHTTPFileMiddleware(baseURL: baseDirectory))
@@ -133,7 +141,7 @@ enum BRHTTPServerError: ErrorType {
     }
     
     private func acceptClients() {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) { () -> Void in
+        dispatch_async(Q) { () -> Void in
             while true {
                 var addr = sockaddr(sa_len: 0, sa_family: 0, sa_data: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
                 var len: socklen_t = 0
@@ -144,8 +152,8 @@ enum BRHTTPServerError: ErrorType {
                 var v: Int32 = 1
                 setsockopt(cli_fd, SOL_SOCKET, SO_NOSIGPIPE, &v, socklen_t(sizeof(Int32)))
                 self.addClient(cli_fd)
-                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) { () -> Void in
-                    while let req = try? BRHTTPRequestImpl(readFromFd: cli_fd) {
+                dispatch_async(self.Q) { () -> Void in
+                    while let req = try? BRHTTPRequestImpl(readFromFd: cli_fd, queue: self.Q) {
                         self.dispatch(middleware: self.middleware, req: req)
                         if !req.isKeepAlive { break }
                     }
@@ -183,6 +191,7 @@ enum BRHTTPServerError: ErrorType {
 
 @objc public protocol BRHTTPRequest {
     var fd: Int32 { get }
+    var queue: dispatch_queue_t { get }
     var method: String { get }
     var path: String { get }
     var queryString: String { get }
@@ -198,6 +207,7 @@ enum BRHTTPServerError: ErrorType {
 
 @objc public class BRHTTPRequestImpl: NSObject, BRHTTPRequest {
     public var fd: Int32
+    public var queue: dispatch_queue_t
     public var method: String = "GET"
     public var path: String = "/"
     public var queryString: String = ""
@@ -212,8 +222,9 @@ enum BRHTTPServerError: ErrorType {
     
     static let rangeRe = try! NSRegularExpression(pattern: "bytes=(\\d*)-(\\d*)", options: .CaseInsensitive)
     
-    init(readFromFd: Int32) throws {
+    init(readFromFd: Int32, queue: dispatch_queue_t) throws {
         fd = readFromFd
+        self.queue = queue
         super.init()
         let status = try readLine()
         let statusParts = status.componentsSeparatedByString(" ")
