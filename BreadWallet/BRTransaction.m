@@ -296,7 +296,7 @@ sequence:(uint32_t)sequence
 }
 
 // Returns the binary transaction data that needs to be hashed and signed with the private key for the tx input at
-// subscriptIndex. A subscriptIndex of NSNotFound will return the entire signed transaction
+// subscriptIndex. A subscriptIndex of NSNotFound will return the entire signed transaction.
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex
 {
     NSMutableData *d = [NSMutableData dataWithCapacity:10 + 149*self.hashes.count + 34*self.addresses.count];

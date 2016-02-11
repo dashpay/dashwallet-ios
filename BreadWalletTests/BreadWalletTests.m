@@ -258,18 +258,19 @@
     XCTAssertFalse([@"S6c56bnXQiBjk9mqSYE7ykVQ7NzrRz" isValidBitcoinPrivateKey],
                   @"[NSString+Base58 isValidBitcoinPrivateKey]");
 
-    XCTAssertTrue([@"S6c56bnXQiBjk9mqSYE7ykVQ7NzrRy" isValidBitcoinPrivateKey],
-                 @"[NSString+Base58 isValidBitcoinPrivateKey]");
-
     // mini private key format
+    XCTAssertTrue([@"S6c56bnXQiBjk9mqSYE7ykVQ7NzrRy" isValidBitcoinPrivateKey],
+                  @"[NSString+Base58 isValidBitcoinPrivateKey]");
+
     BRKey *key = [BRKey keyWithPrivateKey:@"S6c56bnXQiBjk9mqSYE7ykVQ7NzrRy"];
     
     NSLog(@"privKey:S6c56bnXQiBjk9mqSYE7ykVQ7NzrRy = %@", key.address);
     XCTAssertEqualObjects(@"1CciesT23BNionJeXrbxmjc7ywfiyM4oLW", key.address, @"[BRKey keyWithPrivateKey:]");
-    XCTAssertTrue([@"SzavMBLoXU6kDrqtUVmffv" isValidBitcoinPrivateKey],
-                 @"[NSString+Base58 isValidBitcoinPrivateKey]");
 
     // old mini private key format
+    XCTAssertTrue([@"SzavMBLoXU6kDrqtUVmffv" isValidBitcoinPrivateKey],
+                  @"[NSString+Base58 isValidBitcoinPrivateKey]");
+
     key = [BRKey keyWithPrivateKey:@"SzavMBLoXU6kDrqtUVmffv"];
     
     NSLog(@"privKey:SzavMBLoXU6kDrqtUVmffv = %@", key.address);

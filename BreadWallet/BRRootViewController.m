@@ -648,7 +648,6 @@
     }
 
     if (self.timeout > 1.0 && 0.1 + 0.9*elapsed/self.timeout < progress) progress = 0.1 + 0.9*elapsed/self.timeout;
-    if (progress <= DBL_EPSILON) progress = self.progress.progress;
 
     if ((counter % 13) == 0) {
         self.pulse.alpha = 1.0;
