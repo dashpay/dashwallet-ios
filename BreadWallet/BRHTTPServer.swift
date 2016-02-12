@@ -172,6 +172,7 @@ enum BRHTTPServerError: ErrorType {
                 if let httpResp = mwResp.response {
                     httpResp.done {
                         do {
+                            self.logline(req, response: httpResp)
                             try httpResp.send()
                         } catch let e {
                             print("[BRHTTPServer] error sending response. request: \(req) error: \(e)")
@@ -182,10 +183,20 @@ enum BRHTTPServerError: ErrorType {
                 }
             })
         } else {
-            print("[BRHTTPServer] did not send a response")
-            _ = try? BRHTTPResponse(
-                request: req, statusCode: 404, statusReason: "Not Found", headers: nil, body: nil).send()
+//            print("[BRHTTPServer] did not send a response")
+            let resp = BRHTTPResponse(
+                request: req, statusCode: 404, statusReason: "Not Found", headers: nil, body: nil)
+            logline(req, response: resp)
+            _ = try? resp.send()
         }
+    }
+    
+    private func logline(request: BRHTTPRequest, response: BRHTTPResponse) {
+        let ms = Double(round((request.start.timeIntervalSinceNow * -1000.0)*1000)/1000)
+        let b = response.body?.count ?? 0
+        let c = response.statusCode ?? -1
+        let s = response.statusReason ?? "Unknown"
+        print("[BRHTTPServer] \(request.method) \(request.path) -> \(c) \(s) \(b)b in \(ms)ms")
     }
 }
 
@@ -202,17 +213,19 @@ enum BRHTTPServerError: ErrorType {
     var hasBody: Bool { get }
     var contentType: String { get }
     var contentLength: Int { get }
+    var start: NSDate { get }
     optional func json() -> AnyObject?
 }
 
 @objc public class BRHTTPRequestImpl: NSObject, BRHTTPRequest {
     public var fd: Int32
     public var queue: dispatch_queue_t
-    public var method: String = "GET"
-    public var path: String = "/"
-    public var queryString: String = ""
-    public var query: [String: [String]] = [String: [String]]()
-    public var headers: [String: [String]] = [String: [String]]()
+    public var method = "GET"
+    public var path = "/"
+    public var queryString = ""
+    public var query = [String: [String]]()
+    public var headers = [String: [String]]()
+    public var start = NSDate()
     
     public var isKeepAlive: Bool {
         return (headers["connection"] != nil

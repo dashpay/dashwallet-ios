@@ -35,8 +35,8 @@ import Foundation
         guard let body = NSData(contentsOfURL: fileURL) else {
             return next(BRHTTPMiddlewareResponse(request: request, response: nil))
         }
-        NSLog("GET \(fileURL)")
-        NSLog("Detected content type: \(detectContentType(URL: fileURL))")
+//        NSLog("GET \(fileURL)")
+//        NSLog("Detected content type: \(detectContentType(URL: fileURL))")
         
         do {
             let privReq = request as! BRHTTPRequestImpl
