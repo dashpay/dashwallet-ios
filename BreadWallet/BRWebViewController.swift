@@ -78,6 +78,7 @@ import WebKit
         
         // geo plugin
         router.plugin(BRGeoLocationPlugin())
+        router.plugin(BRWebSocketPlugin(endpoint: "/_ws"));
         
         // GET /_close closes the browser modal
         router.get("/_close") { (request, match) -> BRHTTPResponse in

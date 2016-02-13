@@ -474,11 +474,11 @@ enum BRHTTPServerError: ErrorType {
         }
     }
     
-    private func writeUTF8(s: String) throws {
+    func writeUTF8(s: String) throws {
         try writeUInt8([UInt8](s.utf8))
     }
     
-    private func writeUInt8(data: [UInt8]) throws {
+    func writeUInt8(data: [UInt8]) throws {
         try data.withUnsafeBufferPointer { pointer in
             var sent = 0
             while sent < data.count {
