@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		220128D31C753C670001CAC1 /* BRSocketHelpers.c in Sources */ = {isa = PBXBuildFile; fileRef = 220128D11C753C670001CAC1 /* BRSocketHelpers.c */; };
 		2204604E1B9F61E600D07B61 /* BREventManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2204604D1B9F61E600D07B61 /* BREventManager.m */; };
 		2204604F1B9F61E600D07B61 /* BREventManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2204604D1B9F61E600D07B61 /* BREventManager.m */; };
 		220460551BA0BEEE00D07B61 /* BREventConfirmView.m in Sources */ = {isa = PBXBuildFile; fileRef = 220460541BA0BEEE00D07B61 /* BREventConfirmView.m */; };
@@ -27,6 +28,7 @@
 		2253D2971C5D7155009CA741 /* Replicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2253D2961C5D7155009CA741 /* Replicator.swift */; };
 		2253D2991C5D71B4009CA741 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2253D2981C5D71B4009CA741 /* Extensions.swift */; };
 		2253D29B1C5D71E3009CA741 /* SQLiteDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2253D29A1C5D71E3009CA741 /* SQLiteDB.swift */; };
+		227BB6891C6FA01A0023E3E9 /* BRWebSocketPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 227BB6881C6FA01A0023E3E9 /* BRWebSocketPlugin.swift */; };
 		229279981C695C4200C98E78 /* BRHTTPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 229279971C695C4200C98E78 /* BRHTTPServer.swift */; };
 		2292799A1C695CAE00C98E78 /* BRHTTPFileMiddleware.swift in Sources */ = {isa = PBXBuildFile; fileRef = 229279991C695CAE00C98E78 /* BRHTTPFileMiddleware.swift */; };
 		2292799C1C695CD600C98E78 /* BRHTTPRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2292799B1C695CD600C98E78 /* BRHTTPRouter.swift */; };
@@ -150,6 +152,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		220128D11C753C670001CAC1 /* BRSocketHelpers.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = BRSocketHelpers.c; sourceTree = "<group>"; };
+		220128D21C753C670001CAC1 /* BRSocketHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRSocketHelpers.h; sourceTree = "<group>"; };
 		2204604C1B9F61E600D07B61 /* BREventManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BREventManager.h; sourceTree = "<group>"; };
 		2204604D1B9F61E600D07B61 /* BREventManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BREventManager.m; sourceTree = "<group>"; };
 		220460531BA0BEEE00D07B61 /* BREventConfirmView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BREventConfirmView.h; sourceTree = "<group>"; };
@@ -177,6 +181,7 @@
 		2253D2961C5D7155009CA741 /* Replicator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Replicator.swift; sourceTree = "<group>"; };
 		2253D2981C5D71B4009CA741 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		2253D29A1C5D71E3009CA741 /* SQLiteDB.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SQLiteDB.swift; sourceTree = "<group>"; };
+		227BB6881C6FA01A0023E3E9 /* BRWebSocketPlugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRWebSocketPlugin.swift; sourceTree = "<group>"; };
 		229279971C695C4200C98E78 /* BRHTTPServer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRHTTPServer.swift; sourceTree = "<group>"; };
 		229279991C695CAE00C98E78 /* BRHTTPFileMiddleware.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRHTTPFileMiddleware.swift; sourceTree = "<group>"; };
 		2292799B1C695CD600C98E78 /* BRHTTPRouter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRHTTPRouter.swift; sourceTree = "<group>"; };
@@ -493,6 +498,7 @@
 			isa = PBXGroup;
 			children = (
 				229279A71C6960FC00C98E78 /* BRGeoLocationPlugin.swift */,
+				227BB6881C6FA01A0023E3E9 /* BRWebSocketPlugin.swift */,
 			);
 			name = "HTTP Plugins";
 			sourceTree = "<group>";
@@ -562,6 +568,8 @@
 				2253D28D1C5D700A009CA741 /* DocumentStore */,
 				229279961C695C1100C98E78 /* AppRuntime */,
 				22FF2C361BED381400B36384 /* breadwallet-Bridging-Header.h */,
+				220128D11C753C670001CAC1 /* BRSocketHelpers.c */,
+				220128D21C753C670001CAC1 /* BRSocketHelpers.h */,
 			);
 			name = Models;
 			sourceTree = "<group>";

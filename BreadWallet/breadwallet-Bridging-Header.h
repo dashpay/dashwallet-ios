@@ -12,3 +12,4 @@
 #import <CommonCrypto/CommonCrypto.h>
 #import <sqlite3.h>
 @import WebKit;
+#include "BRSocketHelpers.h"
