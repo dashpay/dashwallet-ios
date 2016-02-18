@@ -28,19 +28,20 @@ struct bw_select_result bw_select(struct bw_select_request request) {
     int max_fd = 0;
     // copy requested file descriptors from request to fd_sets
     for (int i = 0; i < request.read_fd_len; i++) {
-        if (request.read_fds[i] > max_fd) {
-            max_fd = request.read_fds[i];
-        }
-        FD_SET(request.read_fds[i], &read_fds);
+        int fd = request.read_fds[i];
+        if (fd > max_fd) max_fd = fd;
+        printf("bw_select: read fd=%i open=%i\n", fd, fcntl(fd, F_GETFD));
+        FD_SET(fd, &read_fds);
     }
     for (int i = 0; i < request.write_fd_len; i++) {
-        if (request.write_fds[i] > max_fd) {
-            max_fd = request.write_fds[i];
-        }
-        FD_SET(request.write_fds[i], &write_fds);
+        int fd = request.write_fds[i];
+        if (fd > max_fd) max_fd = fd;
+        printf("bw_select: write fd=%i open=%i\n", fd, fcntl(fd, F_GETFD));
+        FD_SET(fd, &write_fds);
     }
     
-    struct bw_select_result result;
+    struct bw_select_result result = { 0, 0, 0, 0, NULL, NULL, NULL };
+    printf("bw_select max_fd=%i\n", max_fd);
     
     // initiate a select
     int activity = select(max_fd + 1, &read_fds, &write_fds, &err_fds, NULL);
@@ -51,10 +52,12 @@ struct bw_select_result bw_select(struct bw_select_request request) {
     }
     // indicate to the caller which file descriptors are ready for reading
     for (int i = 0; i < request.read_fd_len; i++) {
-        if (FD_ISSET(request.read_fds[i], &read_fds)) {
+        int fd = request.read_fds[i];
+        printf("bw_select: i=%i read_ready_fd=%i\n", i, fd);
+        if (FD_ISSET(fd, &read_fds)) {
             result.read_fd_len += 1;
             result.read_fds = (int *)realloc(result.read_fds, result.read_fd_len * sizeof(int));
-            result.read_fds[result.read_fd_len - 1] = request.read_fds[i];
+            result.read_fds[result.read_fd_len - 1] = fd;
         }
         // ... which ones are erroring
         if (FD_ISSET(request.read_fds[i], &err_fds)) {

@@ -152,21 +152,24 @@ enum BRHTTPServerError: ErrorType {
                 var v: Int32 = 1
                 setsockopt(cli_fd, SOL_SOCKET, SO_NOSIGPIPE, &v, socklen_t(sizeof(Int32)))
                 self.addClient(cli_fd)
+                print("startup: \(cli_fd)")
                 dispatch_async(self.Q) { () -> Void in
                     while let req = try? BRHTTPRequestImpl(readFromFd: cli_fd, queue: self.Q) {
-                        self.dispatch(middleware: self.middleware, req: req)
+                        self.dispatch(middleware: self.middleware, req: req) { resp in
+                            Darwin.shutdown(cli_fd, SHUT_RDWR)
+                            print("shutdown: \(cli_fd)")
+                            close(cli_fd)
+                            self.rmClient(cli_fd)
+                        }
                         if !req.isKeepAlive { break }
                     }
-                    Darwin.shutdown(cli_fd, SHUT_RDWR)
-                    close(cli_fd)
-                    self.rmClient(cli_fd)
                 }
             }
             self.stop()
         }
     }
     
-    private func dispatch(var middleware mw: [BRHTTPMiddleware], req: BRHTTPRequest) {
+    private func dispatch(var middleware mw: [BRHTTPMiddleware], req: BRHTTPRequest, finish: (BRHTTPResponse) -> Void) {
         if let curMw = mw.popLast() {
             curMw.handle(req, next: { (mwResp) -> Void in
                 if let httpResp = mwResp.response {
@@ -177,17 +180,18 @@ enum BRHTTPServerError: ErrorType {
                         } catch let e {
                             print("[BRHTTPServer] error sending response. request: \(req) error: \(e)")
                         }
+                        finish(httpResp)
                     }
                 } else {
-                    self.dispatch(middleware: mw, req: mwResp.request)
+                    self.dispatch(middleware: mw, req: mwResp.request, finish: finish)
                 }
             })
         } else {
-//            print("[BRHTTPServer] did not send a response")
             let resp = BRHTTPResponse(
                 request: req, statusCode: 404, statusReason: "Not Found", headers: nil, body: nil)
             logline(req, response: resp)
             _ = try? resp.send()
+            finish(resp)
         }
     }
     

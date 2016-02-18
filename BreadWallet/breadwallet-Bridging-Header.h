@@ -13,3 +13,4 @@
 #import <sqlite3.h>
 @import WebKit;
 #include "BRSocketHelpers.h"
+#include <pthread.h>
