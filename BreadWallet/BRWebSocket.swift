@@ -1,15 +1,18 @@
 //
-//  BRWebSocketPlugin.swift
+//  BRWebSocket.swift
 //  BreadWallet
 //
-//  Created by Samuel Sutch on 2/13/16.
+//  Created by Samuel Sutch on 2/18/16.
 //  Copyright © 2016 Aaron Voisine. All rights reserved.
 //
 
 import Foundation
 
+
 @objc public protocol BRWebSocket {
     var id: String { get }
+    var request: BRHTTPRequest { get }
+    var match: BRHTTPRouteMatch { get }
     func send(text: String)
 }
 
@@ -18,59 +21,6 @@ import Foundation
     optional func socket(socket: BRWebSocket, didReceiveData data: NSData)
     optional func socket(socket: BRWebSocket, didReceiveText text: String)
     optional func socketDidDisconnect(socket: BRWebSocket)
-}
-
-// this just plugs into a Router and registers an asynchronous GET request for the given endpoint
-@objc public class BRWebSocketPlugin: NSObject, BRHTTPRouterPlugin, BRWebSocketClient {
-    var endpoint: String
-    var host: BRWebSocketHost
-    var thread: pthread_t
-    
-    public init(endpoint: String) {
-        self.endpoint = endpoint
-        host = BRWebSocketHost()
-        thread = nil
-        super.init()
-    }
-    
-    public func hook(router: BRHTTPRouter) {
-        // start the server
-        log("hook")
-        let selfPointer = UnsafeMutablePointer<Void>(Unmanaged.passUnretained(self).toOpaque())
-        pthread_create(&thread, nil, { (sillySelf: UnsafeMutablePointer<Void>) in
-            let localSelf = Unmanaged<BRWebSocketPlugin>.fromOpaque(COpaquePointer(sillySelf)).takeUnretainedValue()
-            localSelf.log("in server thread")
-            localSelf.host.serveForever()
-            return nil
-        }, selfPointer)
-        
-        router.get(self.endpoint) { (request, match) -> BRHTTPResponse in
-            // initiate handshake
-            let resp = BRHTTPResponse(async: request)
-            let ws = BRWebSocketImpl(request: request, response: resp, client: self)
-            if !ws.handshake() {
-                self.log("invalid handshake")
-                resp.provide(400, json: ["error": "invalid handshake"])
-            } else {
-                self.host.add(ws)
-            }
-            return resp
-        }
-    }
-    
-    public func socket(socket: BRWebSocket, didReceiveText text: String) {
-        log("got text: \(text)")
-        socket.send("HELLO YOU!")
-    }
-    
-    
-    public func socket(socket: BRWebSocket, didReceiveData data: NSData) {
-        log("got binary: \(data)")
-    }
-    
-    func log(s: String) {
-        print("[BRWebSocketPlugin] \(s)")
-    }
 }
 
 let GID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
@@ -123,8 +73,9 @@ enum SocketCloseEventCode: UInt16 {
     case TLSHandshake = 1015
 }
 
-class BRWebSocketHost {
+class BRWebSocketServer {
     var sockets = [Int32: BRWebSocketImpl]()
+    var thread: pthread_t = nil
     var waiter: UnsafeMutablePointer<pthread_cond_t>
     var mutex: UnsafeMutablePointer<pthread_mutex_t>
     
@@ -145,6 +96,22 @@ class BRWebSocketHost {
     }
     
     func serveForever() {
+        objc_sync_enter(self)
+        if thread == nil {
+            objc_sync_exit(self)
+            return
+        }
+        let selfPointer = UnsafeMutablePointer<Void>(Unmanaged.passUnretained(self).toOpaque())
+        pthread_create(&thread, nil, { (sillySelf: UnsafeMutablePointer<Void>) in
+            let localSelf = Unmanaged<BRWebSocketServer>.fromOpaque(COpaquePointer(sillySelf)).takeUnretainedValue()
+            localSelf.log("in server thread")
+            localSelf._serveForever()
+            return nil
+        }, selfPointer)
+        objc_sync_exit(self)
+    }
+    
+    func _serveForever() {
         log("starting websocket poller")
         while true {
             while sockets.count < 1 {
@@ -247,19 +214,21 @@ class BRWebSocketHost {
         }
         return sent
     }
-
+    
     func log(s: String) {
         print("[BRWebSocketHost] \(s)")
     }
 }
 
 class BRWebSocketImpl: BRWebSocket {
-    var request: BRHTTPRequest
+    @objc var request: BRHTTPRequest
     var response: BRHTTPResponse
+    @objc var match: BRHTTPRouteMatch
     var client: BRWebSocketClient
     var fd: Int32
     var key: String!
     var version: String!
+    @objc var id: String = NSUUID().UUIDString
     
     var state = SocketState.HEADERB1
     var fin: UInt8 = 0
@@ -281,8 +250,9 @@ class BRWebSocketImpl: BRWebSocket {
     
     var sendq = [(SocketOpcode, [UInt8])]()
     
-    init(request: BRHTTPRequest, response: BRHTTPResponse, client: BRWebSocketClient) {
+    init(request: BRHTTPRequest, response: BRHTTPResponse, match: BRHTTPRouteMatch, client: BRWebSocketClient) {
         self.request = request
+        self.match = match
         self.fd = request.fd
         self.response = response
         self.client = client
@@ -302,30 +272,30 @@ class BRWebSocketImpl: BRWebSocket {
             let upgrade = upgrades[0]
             if upgrade.lowercaseString == "websocket" {
                 if let ks = request.headers["sec-websocket-key"], vs = request.headers["sec-websocket-version"]
-                where ks.count > 0 && vs.count > 0 {
-                    key = ks[0]
-                    version = vs[0]
-                    do {
-                        let acceptStr = "\(key)\(GID)" as NSString;
-                        let acceptData = NSData(bytes: acceptStr.UTF8String,
-                            length: acceptStr.lengthOfBytesUsingEncoding(NSUTF8StringEncoding));
-                        let acceptEncodedStr = NSData(UInt160: acceptData.SHA1()).base64EncodedStringWithOptions([])
+                    where ks.count > 0 && vs.count > 0 {
+                        key = ks[0]
+                        version = vs[0]
+                        do {
+                            let acceptStr = "\(key)\(GID)" as NSString;
+                            let acceptData = NSData(bytes: acceptStr.UTF8String,
+                                length: acceptStr.lengthOfBytesUsingEncoding(NSUTF8StringEncoding));
+                            let acceptEncodedStr = NSData(UInt160: acceptData.SHA1()).base64EncodedStringWithOptions([])
+                            
+                            try response.writeUTF8("HTTP/1.1 101 Switching Protocols\r\n")
+                            try response.writeUTF8("Upgrade: WebSocket\r\n")
+                            try response.writeUTF8("Connection: Upgrade\r\n")
+                            try response.writeUTF8("Sec-WebSocket-Accept: \(acceptEncodedStr)\r\n\r\n")
+                        } catch let e {
+                            log("error writing handshake: \(e)")
+                            return false
+                        }
+                        log("handshake written to socket")
+                        // enter non-blocking mode
+                        if !setNonBlocking() {
+                            return false
+                        }
                         
-                        try response.writeUTF8("HTTP/1.1 101 Switching Protocols\r\n")
-                        try response.writeUTF8("Upgrade: WebSocket\r\n")
-                        try response.writeUTF8("Connection: Upgrade\r\n")
-                        try response.writeUTF8("Sec-WebSocket-Accept: \(acceptEncodedStr)\r\n\r\n")
-                    } catch let e {
-                        log("error writing handshake: \(e)")
-                        return false
-                    }
-                    log("handshake written to socket")
-                    // enter non-blocking mode
-                    if !setNonBlocking() {
-                        return false
-                    }
-                    
-                    return true
+                        return true
                 }
                 log("invalid handshake - missing sec-websocket-key or sec-websocket-version")
             }

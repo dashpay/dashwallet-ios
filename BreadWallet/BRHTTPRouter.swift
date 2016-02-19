@@ -96,6 +96,7 @@ public typealias BRHTTPRoute = (request: BRHTTPRequest, match: BRHTTPRouteMatch)
 @objc public class BRHTTPRouter: NSObject, BRHTTPMiddleware {
     var routes = [(BRHTTPRoutePair, BRHTTPRoute)]()
     var plugins = [BRHTTPRouterPlugin]()
+    var wsServer = BRWebSocketServer()
     
     public func handle(request: BRHTTPRequest, next: (BRHTTPMiddlewareResponse) -> Void) {
         var response: BRHTTPResponse? = nil
@@ -138,6 +139,21 @@ public typealias BRHTTPRoute = (request: BRHTTPRequest, match: BRHTTPRouteMatch)
     public func any(pattern: String, route: BRHTTPRoute) {
         for m in ["GET", "POST", "PUT", "PATCH", "DELETE"] {
             routes.append((BRHTTPRoutePair(method: m, path: pattern), route))
+        }
+    }
+    
+    public func websocket(pattern: String, client: BRWebSocketClient) {
+        self.get(pattern) { (request, match) -> BRHTTPResponse in
+            self.wsServer.serveForever()
+            let resp = BRHTTPResponse(async: request)
+            let ws = BRWebSocketImpl(request: request, response: resp, match: match, client: client)
+            if !ws.handshake() {
+                print("[BRHTTPRouter] websocket - invalid handshake")
+                resp.provide(400, json: ["error": "invalid handshake"])
+            } else {
+                self.wsServer.add(ws)
+            }
+            return resp
         }
     }
     
