@@ -30,13 +30,13 @@ struct bw_select_result bw_select(struct bw_select_request request) {
     for (int i = 0; i < request.read_fd_len; i++) {
         int fd = request.read_fds[i];
         if (fd > max_fd) max_fd = fd;
-        printf("bw_select: read fd=%i open=%i\n", fd, fcntl(fd, F_GETFD));
+        // printf("bw_select: read fd=%i open=%i\n", fd, fcntl(fd, F_GETFD));
         FD_SET(fd, &read_fds);
     }
     for (int i = 0; i < request.write_fd_len; i++) {
         int fd = request.write_fds[i];
         if (fd > max_fd) max_fd = fd;
-        printf("bw_select: write fd=%i open=%i\n", fd, fcntl(fd, F_GETFD));
+        // printf("bw_select: write fd=%i open=%i\n", fd, fcntl(fd, F_GETFD));
         FD_SET(fd, &write_fds);
     }
     
@@ -53,7 +53,7 @@ struct bw_select_result bw_select(struct bw_select_request request) {
     // indicate to the caller which file descriptors are ready for reading
     for (int i = 0; i < request.read_fd_len; i++) {
         int fd = request.read_fds[i];
-        printf("bw_select: i=%i read_ready_fd=%i\n", i, fd);
+        // printf("bw_select: i=%i read_ready_fd=%i\n", i, fd);
         if (FD_ISSET(fd, &read_fds)) {
             result.read_fd_len += 1;
             result.read_fds = (int *)realloc(result.read_fds, result.read_fd_len * sizeof(int));
@@ -69,7 +69,7 @@ struct bw_select_result bw_select(struct bw_select_request request) {
     // ... and which ones are ready for writing
     for (int i = 0; i < request.write_fd_len; i++) {
         int fd = request.write_fds[i];
-        printf("bw_select: write_ready_fd=%i\n", fd);
+        // printf("bw_select: write_ready_fd=%i\n", fd);
         if (FD_ISSET(fd, &write_fds)) {
             result.write_fd_len += 1;
             result.write_fds = (int *)realloc(result.write_fds, result.write_fd_len * sizeof(int));

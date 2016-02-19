@@ -8,9 +8,13 @@
 
 import Foundation
 
+@objc public protocol BRWebSocketClient {
+    optional func handleBinary(data: NSData)
+    optional func handleText(message: String)
+}
 
 // this just plugs into a Router and registers an asynchronous GET request for the given endpoint
-@objc public class BRWebSocketPlugin: NSObject, BRHTTPRouterPlugin {
+@objc public class BRWebSocketPlugin: NSObject, BRHTTPRouterPlugin, BRWebSocketClient {
     var endpoint: String
     var host: BRWebSocketHost
     var thread: pthread_t
@@ -36,7 +40,7 @@ import Foundation
         router.get(self.endpoint) { (request, match) -> BRHTTPResponse in
             // initiate handshake
             let resp = BRHTTPResponse(async: request)
-            let ws = BRWebSocket(request: request, response: resp)
+            let ws = BRWebSocket(request: request, response: resp, client: self)
             if !ws.handshake() {
                 self.log("invalid handshake")
                 resp.provide(400, json: ["error": "invalid handshake"])
@@ -45,6 +49,14 @@ import Foundation
             }
             return resp
         }
+    }
+    
+    public func handleText(message: String) {
+        log("got text: \(message)")
+    }
+    
+    public func handleBinary(data: NSData) {
+        log("got binary: \(data)")
     }
     
     func log(s: String) {
@@ -138,7 +150,6 @@ class BRWebSocketHost {
             let writeFds = sockets.map({
                 (ws) -> Int32 in return ws.1.sendq.count > 0 ? ws.0 : -1
             }).filter({ i in return i != -1 })
-            print("writefds = \(writeFds)")
             
             // build the select request and execute it, checking the result for an error
             let req = bw_select_request(
@@ -194,7 +205,7 @@ class BRWebSocketHost {
             for i in 0..<resp.error_fd_len {
                 if let errSock = sockets[resp.error_fds[Int(i)]] {
                     errSock.response.kill()
-                    sockets.removeValueForKey(i)
+                    sockets.removeValueForKey(errSock.fd)
                 }
             }
         }
@@ -232,14 +243,15 @@ class BRWebSocketHost {
 class BRWebSocket {
     var request: BRHTTPRequest
     var response: BRHTTPResponse
+    var client: BRWebSocketClient
     var fd: Int32
     var key: String!
     var version: String!
     
-    var state: SocketState = .HEADERB1
+    var state = SocketState.HEADERB1
     var fin: UInt8 = 0
     var hasMask = false
-    var opcode: SocketOpcode = .STREAM
+    var opcode = SocketOpcode.STREAM
     var closed = false
     var index = 0
     var length = 0
@@ -250,12 +262,17 @@ class BRWebSocket {
     var maskarray = [UInt8]()
     var maskarrayWritten = 0
     
+    var fragStart = false
+    var fragType = SocketOpcode.BINARY
+    var fragBuffer = [UInt8]()
+    
     var sendq = [(SocketOpcode, [UInt8])]()
     
-    init(request: BRHTTPRequest, response: BRHTTPResponse) {
+    init(request: BRHTTPRequest, response: BRHTTPResponse, client: BRWebSocketClient) {
         self.request = request
         self.fd = request.fd
         self.response = response
+        self.client = client
     }
     
     func handshake() -> Bool {
@@ -507,7 +524,13 @@ class BRWebSocket {
                 }
                 let lr = Array(data.suffixFrom(2))
                 if lr.count > 0 {
-                    reason = String(lr)
+                    if let rr = String(bytes: lr, encoding: NSUTF8StringEncoding) {
+                        reason = rr
+                    } else {
+                        log("bad utf8 data in close reason string...")
+                        status = .CLOSE_PROTOCOL_ERROR
+                        reason = "bad UTF8 data"
+                    }
                 }
             } else {
                 status = .CLOSE_PROTOCOL_ERROR
@@ -520,7 +543,51 @@ class BRWebSocket {
                     log("error: control messages can not be fragmented")
                     return
                 }
-                
+                // start of fragments
+                fragType = opcode
+                fragStart = true
+                fragBuffer = fragBuffer + data
+            } else {
+                if !fragStart {
+                    log("error: fragmentation protocol error y")
+                    return
+                }
+                fragBuffer = fragBuffer + data
+            }
+        } else {
+            if opcode == .STREAM {
+                if !fragStart {
+                    log("error: fragmentation protocol error x")
+                    return
+                }
+                if self.fragType == .TEXT {
+                    if let str = String(bytes: data, encoding: NSUTF8StringEncoding) {
+                        self.client.handleText?(str)
+                    } else {
+                        log("error decoding utf8 data")
+                    }
+                } else {
+                    self.client.handleBinary?(NSData(bytes: UnsafePointer(data), length: data.count))
+                }
+                fragType = .BINARY
+                fragStart = false
+                fragBuffer = [UInt8]()
+            } else if opcode == .PING {
+                sendMessage(false, opcode: .PONG, data: data)
+            } else if opcode == .PONG {
+                // nothing to do
+            } else {
+                if fragStart {
+                    log("error: fragment protocol error z")
+                    return
+                }
+                if opcode == .TEXT {
+                    if let str = String(bytes: data, encoding: NSUTF8StringEncoding) {
+                        self.client.handleText?(str)
+                    } else {
+                        log("error decoding uft8 data")
+                    }
+                }
             }
         }
     }
