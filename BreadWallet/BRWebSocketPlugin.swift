@@ -8,9 +8,16 @@
 
 import Foundation
 
+@objc public protocol BRWebSocket {
+    var id: String { get }
+    func send(text: String)
+}
+
 @objc public protocol BRWebSocketClient {
-    optional func handleBinary(data: NSData)
-    optional func handleText(message: String)
+    optional func socketDidConnect(socket: BRWebSocket)
+    optional func socket(socket: BRWebSocket, didReceiveData data: NSData)
+    optional func socket(socket: BRWebSocket, didReceiveText text: String)
+    optional func socketDidDisconnect(socket: BRWebSocket)
 }
 
 // this just plugs into a Router and registers an asynchronous GET request for the given endpoint
@@ -40,7 +47,7 @@ import Foundation
         router.get(self.endpoint) { (request, match) -> BRHTTPResponse in
             // initiate handshake
             let resp = BRHTTPResponse(async: request)
-            let ws = BRWebSocket(request: request, response: resp, client: self)
+            let ws = BRWebSocketImpl(request: request, response: resp, client: self)
             if !ws.handshake() {
                 self.log("invalid handshake")
                 resp.provide(400, json: ["error": "invalid handshake"])
@@ -51,11 +58,13 @@ import Foundation
         }
     }
     
-    public func handleText(message: String) {
-        log("got text: \(message)")
+    public func socket(socket: BRWebSocket, didReceiveText text: String) {
+        log("got text: \(text)")
+        socket.send("HELLO YOU!")
     }
     
-    public func handleBinary(data: NSData) {
+    
+    public func socket(socket: BRWebSocket, didReceiveData data: NSData) {
         log("got binary: \(data)")
     }
     
@@ -115,7 +124,7 @@ enum SocketCloseEventCode: UInt16 {
 }
 
 class BRWebSocketHost {
-    var sockets = [Int32: BRWebSocket]()
+    var sockets = [Int32: BRWebSocketImpl]()
     var waiter: UnsafeMutablePointer<pthread_cond_t>
     var mutex: UnsafeMutablePointer<pthread_mutex_t>
     
@@ -126,10 +135,11 @@ class BRWebSocketHost {
         pthread_cond_init(waiter, nil)
     }
     
-    func add(socket: BRWebSocket) {
+    func add(socket: BRWebSocketImpl) {
         log("adding socket \(socket.fd)")
         pthread_mutex_lock(mutex)
         sockets[socket.fd] = socket
+        socket.client.socketDidConnect?(socket)
         pthread_cond_signal(waiter)
         pthread_mutex_unlock(mutex)
     }
@@ -189,6 +199,7 @@ class BRWebSocketHost {
                             if opcode == .CLOSE {
                                 log("KILLING fd=\(writeSock.fd)")
                                 writeSock.response.kill()
+                                writeSock.client.socketDidDisconnect?(writeSock)
                                 sockets.removeValueForKey(writeSock.fd)
                                 continue // go to the next select client
                             }
@@ -196,6 +207,7 @@ class BRWebSocketHost {
                     } catch {
                         // close...
                         writeSock.response.kill()
+                        writeSock.client.socketDidDisconnect?(writeSock)
                         sockets.removeValueForKey(writeSock.fd)
                     }
                 }
@@ -205,6 +217,7 @@ class BRWebSocketHost {
             for i in 0..<resp.error_fd_len {
                 if let errSock = sockets[resp.error_fds[Int(i)]] {
                     errSock.response.kill()
+                    errSock.client.socketDidDisconnect?(errSock)
                     sockets.removeValueForKey(errSock.fd)
                 }
             }
@@ -240,7 +253,7 @@ class BRWebSocketHost {
     }
 }
 
-class BRWebSocket {
+class BRWebSocketImpl: BRWebSocket {
     var request: BRHTTPRequest
     var response: BRHTTPResponse
     var client: BRWebSocketClient
@@ -274,6 +287,14 @@ class BRWebSocket {
         self.response = response
         self.client = client
     }
+    
+    // MARK: - public interface impl
+    
+    @objc func send(text: String) {
+        sendMessage(false, opcode: .TEXT, data: [UInt8](text.utf8))
+    }
+    
+    // MARK: - private interface
     
     func handshake() -> Bool {
         log("handshake initiated")
@@ -562,12 +583,13 @@ class BRWebSocket {
                 }
                 if self.fragType == .TEXT {
                     if let str = String(bytes: data, encoding: NSUTF8StringEncoding) {
-                        self.client.handleText?(str)
+                        self.client.socket?(self, didReceiveText: str)
                     } else {
                         log("error decoding utf8 data")
                     }
                 } else {
-                    self.client.handleBinary?(NSData(bytes: UnsafePointer(data), length: data.count))
+                    let bin = NSData(bytes: UnsafePointer(data), length: data.count)
+                    self.client.socket?(self, didReceiveData: bin)
                 }
                 fragType = .BINARY
                 fragStart = false
@@ -583,7 +605,7 @@ class BRWebSocket {
                 }
                 if opcode == .TEXT {
                     if let str = String(bytes: data, encoding: NSUTF8StringEncoding) {
-                        self.client.handleText?(str)
+                        self.client.socket?(self, didReceiveText: str)
                     } else {
                         log("error decoding uft8 data")
                     }
