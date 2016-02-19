@@ -76,8 +76,11 @@ import WebKit
         let router = BRHTTPRouter()
         server?.prependMiddleware(middleware: router)
         
-        // geo plugin
+        // geo plugin provides access to onboard geo location functionality
         router.plugin(BRGeoLocationPlugin())
+        
+        // wallet plugin provides access to the wallet
+        router.plugin(BRWalletPlugin())
         
         // GET /_close closes the browser modal
         router.get("/_close") { (request, match) -> BRHTTPResponse in

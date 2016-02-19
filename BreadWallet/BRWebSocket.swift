@@ -97,7 +97,7 @@ class BRWebSocketServer {
     
     func serveForever() {
         objc_sync_enter(self)
-        if thread == nil {
+        if thread != nil {
             objc_sync_exit(self)
             return
         }

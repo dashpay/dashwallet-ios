@@ -96,7 +96,7 @@ public typealias BRHTTPRoute = (request: BRHTTPRequest, match: BRHTTPRouteMatch)
 @objc public class BRHTTPRouter: NSObject, BRHTTPMiddleware {
     var routes = [(BRHTTPRoutePair, BRHTTPRoute)]()
     var plugins = [BRHTTPRouterPlugin]()
-    var wsServer = BRWebSocketServer()
+    private var wsServer = BRWebSocketServer()
     
     public func handle(request: BRHTTPRequest, next: (BRHTTPMiddlewareResponse) -> Void) {
         var response: BRHTTPResponse? = nil
