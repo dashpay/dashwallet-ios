@@ -41,7 +41,7 @@ struct bw_select_result bw_select(struct bw_select_request request) {
     }
     
     struct bw_select_result result = { 0, 0, 0, 0, NULL, NULL, NULL };
-    printf("bw_select max_fd=%i\n", max_fd);
+    // printf("bw_select max_fd=%i\n", max_fd);
     
     // initiate a select
     int activity = select(max_fd + 1, &read_fds, &write_fds, &err_fds, NULL);
@@ -60,23 +60,25 @@ struct bw_select_result bw_select(struct bw_select_request request) {
             result.read_fds[result.read_fd_len - 1] = fd;
         }
         // ... which ones are erroring
-        if (FD_ISSET(request.read_fds[i], &err_fds)) {
+        if (FD_ISSET(fd, &err_fds)) {
             result.error_fd_len += 1;
             result.error_fds = (int *)realloc(result.error_fds, result.error_fd_len * sizeof(int));
-            result.error_fds[result.error_fd_len - 1] = request.read_fds[i];
+            result.error_fds[result.error_fd_len - 1] = fd;
         }
     }
     // ... and which ones are ready for writing
     for (int i = 0; i < request.write_fd_len; i++) {
-        if (FD_ISSET(request.write_fds[i], &read_fds)) {
+        int fd = request.write_fds[i];
+        printf("bw_select: write_ready_fd=%i\n", fd);
+        if (FD_ISSET(fd, &write_fds)) {
             result.write_fd_len += 1;
             result.write_fds = (int *)realloc(result.write_fds, result.write_fd_len * sizeof(int));
-            result.write_fds[result.write_fd_len - 1] = request.write_fds[i];
+            result.write_fds[result.write_fd_len - 1] = fd;
         }
-        if (FD_ISSET(request.write_fds[i], &err_fds)) {
+        if (FD_ISSET(fd, &err_fds)) {
             result.error_fd_len += 1;
             result.error_fds = (int *)realloc(result.error_fds, result.error_fd_len * sizeof(int));
-            result.error_fds[result.error_fd_len - 1] = request.write_fds[i];
+            result.error_fds[result.error_fd_len - 1] = fd;
         }
     }
     return result;

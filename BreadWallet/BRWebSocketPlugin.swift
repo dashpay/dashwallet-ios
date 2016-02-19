@@ -63,16 +63,44 @@ enum SocketState {
     case PAYLOAD
 }
 
-enum SocketOpcode: UInt8 {
+enum SocketOpcode: UInt8, CustomStringConvertible {
     case STREAM = 0x0
     case TEXT = 0x1
     case BINARY = 0x2
     case CLOSE = 0x8
     case PING = 0x9
     case PONG = 0xA
+    
+    var description: String {
+        switch (self) {
+        case .STREAM: return "STREAM"
+        case .TEXT: return "TEXT"
+        case .BINARY: return "BINARY"
+        case .CLOSE: return "CLOSE"
+        case .PING: return "PING"
+        case .PONG: return "PONG"
+        }
+    }
 }
 
 let (MAXHEADER, MAXPAYLOAD) = (65536, 33554432)
+
+enum SocketCloseEventCode: UInt16 {
+    case CLOSE_NORMAL = 1000
+    case CLOSE_GOING_AWAY = 1001
+    case CLOSE_PROTOCOL_ERROR = 1002
+    case CLOSE_UNSUPPORTED = 1003
+    case CLOSE_NO_STATUS = 1005
+    case CLOSE_ABNORMAL = 1004
+    case UnsupportedData = 1006
+    case PolicyViolation = 1007
+    case CLOSE_TOO_LARGE = 1008
+    case MissingExtension = 1009
+    case InternalError = 1010
+    case ServiceRestart = 1011
+    case TryAgainLater = 1012
+    case TLSHandshake = 1015
+}
 
 class BRWebSocketHost {
     var sockets = [Int32: BRWebSocket]()
@@ -97,20 +125,30 @@ class BRWebSocketHost {
     func serveForever() {
         log("starting websocket poller")
         while true {
-            log("awaiting clients")
             while sockets.count < 1 {
+                log("awaiting clients")
                 pthread_cond_wait(waiter, mutex)
             }
             log("awaiting select")
-            let readFds = sockets.map({ (ws) -> Int32 in
-                return ws.0;
-            });
+            
+            // all fds should be available for a read
+            let readFds = sockets.map({ (ws) -> Int32 in return ws.0 });
+            
+            // only fds which have items in the send queue are available for a write
+            let writeFds = sockets.map({
+                (ws) -> Int32 in return ws.1.sendq.count > 0 ? ws.0 : -1
+            }).filter({ i in return i != -1 })
+            print("writefds = \(writeFds)")
+            
+            // build the select request and execute it, checking the result for an error
             let req = bw_select_request(
-                write_fd_len: 0,
-                read_fd_len: Int32(sockets.count),
-                write_fds: nil,
+                write_fd_len: Int32(writeFds.count),
+                read_fd_len: Int32(readFds.count),
+                write_fds: UnsafeMutablePointer(writeFds),
                 read_fds: UnsafeMutablePointer(readFds));
+            
             let resp = bw_select(req)
+            
             if resp.error > 0 {
                 let errstr = strerror(resp.error)
                 log("error doing a select \(errstr) - removing all clients")
@@ -118,14 +156,74 @@ class BRWebSocketHost {
                 continue
             }
             
+            // read for all readers that have data waiting
             for i in 0..<resp.read_fd_len {
                 if let readSock = sockets[resp.read_fds[Int(i)]] {
                     readSock.handleRead()
                 }
             }
+            
+            // write for all writers
+            for i in 0..<resp.write_fd_len {
+                log("handle write fd=\(sockets[resp.write_fds[Int(i)]]!.fd)")
+                if let writeSock = sockets[resp.write_fds[Int(i)]] {
+                    let (opcode, payload) = writeSock.sendq.removeFirst()
+                    do {
+                        let sentBytes = try sendBuffer(writeSock.fd, buffer: payload)
+                        if sentBytes != payload.count {
+                            let remaining = Array(payload.suffixFrom(sentBytes - 1))
+                            writeSock.sendq.insert((opcode, remaining), atIndex: 0)
+                            break // terminate sends and continue sending on the next select
+                        } else {
+                            if opcode == .CLOSE {
+                                log("KILLING fd=\(writeSock.fd)")
+                                writeSock.response.kill()
+                                sockets.removeValueForKey(writeSock.fd)
+                                continue // go to the next select client
+                            }
+                        }
+                    } catch {
+                        // close...
+                        writeSock.response.kill()
+                        sockets.removeValueForKey(writeSock.fd)
+                    }
+                }
+            }
+            
+            // kill sockets that wrote out of bound data
+            for i in 0..<resp.error_fd_len {
+                if let errSock = sockets[resp.error_fds[Int(i)]] {
+                    errSock.response.kill()
+                    sockets.removeValueForKey(i)
+                }
+            }
         }
     }
     
+    // attempt to send a buffer, returning the number of sent bytes
+    func sendBuffer(fd: Int32, buffer: [UInt8]) throws -> Int {
+        log("send buffer fd=\(fd) buffer=\(buffer)")
+        var sent = 0
+        try buffer.withUnsafeBufferPointer { pointer in
+            while sent < buffer.count {
+                let s = send(fd, pointer.baseAddress + sent, Int(buffer.count - sent), 0)
+                log("write result \(s)")
+                if s <= 0 {
+                    let serr = Int32(s)
+                    // full buffer, should try again next iteration
+                    if Int32(serr) == EWOULDBLOCK || Int32(serr) == EAGAIN {
+                        return
+                    } else {
+                        self.log("socket write failed fd=\(fd) err=\(strerror(serr))")
+                        throw BRHTTPServerError.SocketWriteFailed
+                    }
+                }
+                sent += s
+            }
+        }
+        return sent
+    }
+
     func log(s: String) {
         print("[BRWebSocketHost] \(s)")
     }
@@ -138,19 +236,21 @@ class BRWebSocket {
     var key: String!
     var version: String!
     
-    
     var state: SocketState = .HEADERB1
     var fin: UInt8 = 0
-    var hasMask: Bool = false
+    var hasMask = false
     var opcode: SocketOpcode = .STREAM
-    var index: Int = 0
-    var length: Int = 0
-    var lengtharray: [UInt8]!
-    var lengtharrayWritten: Int = 0
-    var data: [UInt8]!
-    var dataWritten: Int = 0
-    var maskarray: [UInt8]!
-    var maskarrayWritten: Int = 0
+    var closed = false
+    var index = 0
+    var length = 0
+    var lengtharray = [UInt8]()
+    var lengtharrayWritten = 0
+    var data = [UInt8]()
+    var dataWritten = 0
+    var maskarray = [UInt8]()
+    var maskarrayWritten = 0
+    
+    var sendq = [(SocketOpcode, [UInt8])]()
     
     init(request: BRHTTPRequest, response: BRHTTPResponse) {
         self.request = request
@@ -223,6 +323,7 @@ class BRWebSocket {
                 return
             }
             opcode = opc
+            log("parse HEADERB1 fin=\(fin) opcode=\(opcode)")
             state = .HEADERB2
             index = 0
             length = 0
@@ -250,7 +351,8 @@ class BRWebSocket {
                     // there is no mask and no payload then we're done
                     if length <= 0 {
                         handlePacket()
-                        data = nil
+                        data = [UInt8]()
+                        dataWritten = 0
                         state = .HEADERB1
                     } else {
                         // there is no mask and some payload
@@ -268,6 +370,7 @@ class BRWebSocket {
                 lengtharrayWritten = 0
                 state = .LENGTHLONG
             }
+            log("parse HEADERB2 hasMask=\(hasMask) opcode=\(opcode)")
         } else if state == .LENGTHSHORT {
             lengtharrayWritten += 1
             if lengtharrayWritten > 2 {
@@ -288,7 +391,8 @@ class BRWebSocket {
                 } else {
                     if length <= 0 {
                         handlePacket()
-                        data = nil
+                        data = [UInt8]()
+                        dataWritten = 0
                         state = .HEADERB1
                     } else {
                         data = [UInt8](count: length, repeatedValue: 0)
@@ -297,6 +401,7 @@ class BRWebSocket {
                     }
                 }
             }
+            log("parse LENGTHSHORT lengtharrayWritten=\(lengtharrayWritten) length=\(length) state=\(state) opcode=\(opcode)")
         } else if state == .LENGTHLONG {
             lengtharrayWritten += 1
             if lengtharrayWritten > 8 {
@@ -317,7 +422,8 @@ class BRWebSocket {
                 } else {
                     if length <= 0 {
                         handlePacket()
-                        data = nil
+                        data = [UInt8]()
+                        dataWritten = 0
                         state = .HEADERB1
                     } else {
                         data = [UInt8](count: length, repeatedValue: 0)
@@ -326,6 +432,7 @@ class BRWebSocket {
                     }
                 }
             }
+            log("parse LENGTHLONG lengtharrayWritten=\(lengtharrayWritten) length=\(length) state=\(state) opcode=\(opcode)")
         } else if state == .MASK {
             maskarrayWritten += 1
             if lengtharrayWritten > 4 {
@@ -336,7 +443,8 @@ class BRWebSocket {
             if maskarrayWritten == 4 {
                 if length <= 0 {
                     handlePacket()
-                    data = nil
+                    data = [UInt8]()
+                    dataWritten = 0
                     state = .HEADERB1
                 } else {
                     data = [UInt8](count: length, repeatedValue: 0)
@@ -344,6 +452,7 @@ class BRWebSocket {
                     state = .PAYLOAD
                 }
             }
+            log("parse MASK maskarrayWritten=\(maskarrayWritten) state=\(state)")
         } else if state == .PAYLOAD {
             dataWritten += 1
             if dataWritten >= MAXPAYLOAD {
@@ -351,13 +460,17 @@ class BRWebSocket {
                 return
             }
             if hasMask {
+                log("payload byte length=\(length) mask=\(maskarray[index%4]) byte=\(byte)")
                 data[dataWritten - 1] = byte ^ maskarray[index % 4]
             } else {
+                log("payload byte length=\(length) \(byte)")
                 data[dataWritten - 1] = byte
             }
             if index + 1 == length {
+                log("payload done")
                 handlePacket()
-                data = nil
+                data = [UInt8]()
+                dataWritten = 0
                 state = .HEADERB1
             } else {
                 index += 1
@@ -369,7 +482,7 @@ class BRWebSocket {
         log("handle packet state=\(state) opcode=\(opcode)")
         // validate opcode
         if opcode == .CLOSE || opcode == .STREAM || opcode == .TEXT || opcode == .BINARY {
-            // er
+            // valid
         } else if opcode == .PONG || opcode == .PING {
             if dataWritten >  125 {
                 log("control frame length can not be > 125")
@@ -380,10 +493,93 @@ class BRWebSocket {
             return
         }
         
-        
+        if opcode == .CLOSE {
+            log("CLOSE")
+            var status = SocketCloseEventCode.CLOSE_NORMAL
+            var reason = ""
+            if dataWritten >= 2 {
+                let lt = Array(data.prefix(2))
+                let ll = CFSwapInt16BigToHost(UnsafePointer<UInt16>(lt).memory)
+                if let ss = SocketCloseEventCode(rawValue: ll) {
+                    status = ss
+                } else {
+                    status = .CLOSE_PROTOCOL_ERROR
+                }
+                let lr = Array(data.suffixFrom(2))
+                if lr.count > 0 {
+                    reason = String(lr)
+                }
+            } else {
+                status = .CLOSE_PROTOCOL_ERROR
+            }
+            close(status, reason: reason)
+        } else if fin == 0 {
+            log("getting fragment \(fin)")
+            if opcode != .STREAM {
+                if opcode == .PING || opcode == .PONG {
+                    log("error: control messages can not be fragmented")
+                    return
+                }
+                
+            }
+        }
+    }
+    
+    func close(status: SocketCloseEventCode = .CLOSE_NORMAL, reason: String = "") {
+        if !closed {
+            log("sending close")
+            sendMessage(false, opcode: .CLOSE, data: status.rawValue.toNetwork() + [UInt8](reason.utf8))
+        } else {
+            log("socket is already closed")
+        }
+        closed = true
+    }
+    
+    func sendMessage(fin: Bool, opcode: SocketOpcode, data: [UInt8]) {
+        log("send message opcode=\(opcode)")
+        var b1: UInt8 = 0
+        var b2: UInt8 = 0
+        if !fin { b1 |= 0x80 }
+        var payload = [UInt8]() // todo: pick the right size for this
+        b1 |= opcode.rawValue
+        payload.append(b1)
+        if data.count <= 125 {
+            b2 |= UInt8(data.count)
+            payload.append(b2)
+        } else if data.count >= 126 && data.count <= 65535 {
+            b2 |= 126
+            payload.append(b2)
+            payload.appendContentsOf(UInt16(data.count).toNetwork())
+        } else {
+            b2 |= 127
+            payload.append(b2)
+            payload.appendContentsOf(UInt64(data.count).toNetwork())
+        }
+        payload.appendContentsOf(data)
+        sendq.append((opcode, payload))
     }
     
     func log(s: String) {
         print("[BRWebSocket \(fd)] \(s)")
+    }
+}
+
+extension UInt16 {
+    func toNetwork() -> [UInt8] {
+        var selfBig = CFSwapInt16HostToBig(self)
+        let size = sizeof(UInt16)
+        let dat = UnsafePointer<UInt8>(NSData(bytes: &selfBig, length: size).bytes)
+        let buf = UnsafeBufferPointer(start: dat, count: size)
+        return Array(buf)
+    }
+}
+
+extension UInt64 {
+    func toNetwork() -> [UInt8] {
+        var selfBig = CFSwapInt64HostToBig(self)
+        let size = sizeof(UInt64)
+        let dat = UnsafePointer<UInt8>(NSData(bytes: &selfBig, length: size).bytes)
+        let buf = UnsafeBufferPointer(start: dat, count: size)
+        return Array(buf)
     }
 }

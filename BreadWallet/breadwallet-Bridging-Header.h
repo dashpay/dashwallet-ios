@@ -14,3 +14,4 @@
 @import WebKit;
 #include "BRSocketHelpers.h"
 #include <pthread.h>
+#include <errno.h>

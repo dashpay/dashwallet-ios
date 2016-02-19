@@ -381,6 +381,7 @@ enum BRHTTPServerError: ErrorType {
     var async = false
     var onDone: (() -> Void)?
     var isDone = false
+    var isKilled = false
     
     static var reasonMap: [Int: String] = [
         100: "Continue",
@@ -455,6 +456,9 @@ enum BRHTTPServerError: ErrorType {
     }
     
     func send() throws {
+        if isKilled {
+            return // do nothing... the connection should just be closed
+        }
         let status = statusCode ?? 200
         let reason = statusReason ?? "OK"
         try writeUTF8("HTTP/1.1 \(status) \(reason)\r\n")
@@ -517,6 +521,20 @@ enum BRHTTPServerError: ErrorType {
         }
         objc_sync_enter(self)
         isDone = true
+        if self.onDone != nil {
+            self.onDone!()
+        }
+        objc_sync_exit(self)
+    }
+    
+    func kill() {
+        objc_sync_enter(self)
+        if isDone {
+            print("ERROR: can not call kill() on async HTTP response more than once!")
+            return
+        }
+        isDone = true
+        isKilled = true
         if self.onDone != nil {
             self.onDone!()
         }
