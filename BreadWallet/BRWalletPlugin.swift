@@ -26,6 +26,7 @@ import Foundation
     func walletInfo() -> [String: AnyObject] {
         var d = [String: AnyObject]()
         d["no_wallet"] = manager.noWallet
+        d["watch_only"] = manager.watchOnly
         return d
     }
     

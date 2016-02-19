@@ -16,7 +16,7 @@ import WebKit
     var wkProcessPool: WKProcessPool
     var webView: WKWebView?
     var bundleName: String
-    var server: BRHTTPServer?
+    var server = BRHTTPServer()
     var debugEndpoint: String?
     
     init(bundleName name: String) {
@@ -38,15 +38,14 @@ import WebKit
         config.requiresUserActionForMediaPlayback = true
         config.allowsPictureInPictureMediaPlayback = false
         
-        if debugEndpoint != nil {
-            server = BRAPIClient.sharedClient.serveBundle(bundleName, debugURL: debugEndpoint)
-        } else {
-            server = BRAPIClient.sharedClient.serveBundle(bundleName)
+        do {
+            try server.start()
+        } catch let e {
+            print("\n\n\nSERVER ERROR! \(e)\n\n\n")
         }
-        
         setupIntegrations()
 
-        let indexUrl = NSURL(string: "http://localhost:8888/index.html")!
+        let indexUrl = NSURL(string: "http://localhost:8888/")!
         let request = NSURLRequest(URL: indexUrl)
         
         view = UIView(frame: CGRectZero)
@@ -70,11 +69,19 @@ import WebKit
     private func setupIntegrations() {
         // proxy api for signing and verification
         let apiProxy = BRAPIProxy(mountAt: "/_api", client: BRAPIClient.sharedClient)
-        server?.prependMiddleware(middleware: apiProxy)
+        server.prependMiddleware(middleware: apiProxy)
         
         // http router for native functionality
         let router = BRHTTPRouter()
-        server?.prependMiddleware(middleware: router)
+        server.prependMiddleware(middleware: router)
+        
+        // basic file server for static assets
+        let fileMw = BRHTTPFileMiddleware(baseURL: BRAPIClient.bundleURL(bundleName))
+        server.prependMiddleware(middleware: fileMw)
+        
+        // middleware to always return index.html for any unknown GET request (facilitates window.history style SPAs)
+        let indexMw = BRHTTPIndexMiddleware(baseURL: NSURL(string: "")!)
+        server.prependMiddleware(middleware: indexMw)
         
         // geo plugin provides access to onboard geo location functionality
         router.plugin(BRGeoLocationPlugin())
@@ -86,6 +93,13 @@ import WebKit
         router.get("/_close") { (request, match) -> BRHTTPResponse in
             self.closeNow()
             return BRHTTPResponse(request: request, code: 204)
+        }
+        
+        // enable debug if it is turned on
+        if let debugUrl = debugEndpoint {
+            let url = NSURL(string: debugUrl)
+            fileMw.debugURL = url
+            indexMw.debugURL = url
         }
     }
     
