@@ -10,6 +10,7 @@
 		220128D31C753C670001CAC1 /* BRSocketHelpers.c in Sources */ = {isa = PBXBuildFile; fileRef = 220128D11C753C670001CAC1 /* BRSocketHelpers.c */; };
 		220128D51C76E1550001CAC1 /* BRWebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 220128D41C76E1550001CAC1 /* BRWebSocket.swift */; };
 		220128D71C76E4F30001CAC1 /* BRWalletPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 220128D61C76E4F30001CAC1 /* BRWalletPlugin.swift */; };
+		220128D91C77B3100001CAC1 /* BRHTTPIndexMiddleware.swift in Sources */ = {isa = PBXBuildFile; fileRef = 220128D81C77B3100001CAC1 /* BRHTTPIndexMiddleware.swift */; };
 		2204604E1B9F61E600D07B61 /* BREventManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2204604D1B9F61E600D07B61 /* BREventManager.m */; };
 		2204604F1B9F61E600D07B61 /* BREventManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2204604D1B9F61E600D07B61 /* BREventManager.m */; };
 		220460551BA0BEEE00D07B61 /* BREventConfirmView.m in Sources */ = {isa = PBXBuildFile; fileRef = 220460541BA0BEEE00D07B61 /* BREventConfirmView.m */; };
@@ -157,6 +158,7 @@
 		220128D21C753C670001CAC1 /* BRSocketHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRSocketHelpers.h; sourceTree = "<group>"; };
 		220128D41C76E1550001CAC1 /* BRWebSocket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRWebSocket.swift; sourceTree = "<group>"; };
 		220128D61C76E4F30001CAC1 /* BRWalletPlugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRWalletPlugin.swift; sourceTree = "<group>"; };
+		220128D81C77B3100001CAC1 /* BRHTTPIndexMiddleware.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRHTTPIndexMiddleware.swift; sourceTree = "<group>"; };
 		2204604C1B9F61E600D07B61 /* BREventManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BREventManager.h; sourceTree = "<group>"; };
 		2204604D1B9F61E600D07B61 /* BREventManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BREventManager.m; sourceTree = "<group>"; };
 		220460531BA0BEEE00D07B61 /* BREventConfirmView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BREventConfirmView.h; sourceTree = "<group>"; };
@@ -479,6 +481,7 @@
 				229279A41C695DE700C98E78 /* BRAPIProxy.swift */,
 				229279971C695C4200C98E78 /* BRHTTPServer.swift */,
 				229279991C695CAE00C98E78 /* BRHTTPFileMiddleware.swift */,
+				220128D81C77B3100001CAC1 /* BRHTTPIndexMiddleware.swift */,
 				2292799B1C695CD600C98E78 /* BRHTTPRouter.swift */,
 				220128D41C76E1550001CAC1 /* BRWebSocket.swift */,
 				229279A61C6960B200C98E78 /* HTTP Plugins */,
@@ -1117,6 +1120,7 @@
 				84F68C8A1975E9E2002FC300 /* BRScanViewController.m in Sources */,
 				2204604E1B9F61E600D07B61 /* BREventManager.m in Sources */,
 				752E28D219234C3600DB5A3C /* BRKey+BIP38.m in Sources */,
+				220128D71C76E4F30001CAC1 /* BRWalletPlugin.swift in Sources */,
 				220460551BA0BEEE00D07B61 /* BREventConfirmView.m in Sources */,
 				752E28D919234C3600DB5A3C /* BRTransaction.m in Sources */,
 				752E28CE19234C3600DB5A3C /* BRBIP32Sequence.m in Sources */,
@@ -1125,6 +1129,7 @@
 				752E28DA19234C3600DB5A3C /* BRWallet.m in Sources */,
 				229279A31C695DB300C98E78 /* BRKeychain.swift in Sources */,
 				229279981C695C4200C98E78 /* BRHTTPServer.swift in Sources */,
+				220128D91C77B3100001CAC1 /* BRHTTPIndexMiddleware.swift in Sources */,
 				2253D2991C5D71B4009CA741 /* Extensions.swift in Sources */,
 				752E28DB19234C3600DB5A3C /* BRWalletManager.m in Sources */,
 				752E28D319234C3600DB5A3C /* BRMerkleBlock.m in Sources */,
@@ -1146,6 +1151,7 @@
 				757BE7E6192C1FF70061CB20 /* BRWelcomeViewController.m in Sources */,
 				757BE7E9192D4E880061CB20 /* BRSeedViewController.m in Sources */,
 				752E28E719234DA200DB5A3C /* NSData+Bitcoin.m in Sources */,
+				220128D31C753C670001CAC1 /* BRSocketHelpers.c in Sources */,
 				752E28E919234DA200DB5A3C /* NSManagedObject+Sugar.m in Sources */,
 				2253D29B1C5D71E3009CA741 /* SQLiteDB.swift in Sources */,
 				2253D2931C5D70D1009CA741 /* ReplicationClient.swift in Sources */,
@@ -1153,6 +1159,7 @@
 				752E28EA19234DA200DB5A3C /* NSMutableData+Bitcoin.m in Sources */,
 				752E28EB19234DA200DB5A3C /* NSString+Bitcoin.m in Sources */,
 				757C89521A2FCE420076B373 /* BRSettingsViewController.m in Sources */,
+				220128D51C76E1550001CAC1 /* BRWebSocket.swift in Sources */,
 				75D5F3D2191EC270004AB296 /* BRAppDelegate.m in Sources */,
 				759FBB36193290F600AB4465 /* BRRootViewController.m in Sources */,
 				752E289A192349CE00DB5A3C /* BreadWallet.xcdatamodeld in Sources */,

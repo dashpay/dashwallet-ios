@@ -36,8 +36,6 @@ enum BRHTTPServerError: ErrorType {
 @objc public class BRHTTPServer: NSObject {
     var fd: Int32 = -1
     var clients: Set<Int32> = []
-    var path: NSURL
-    var debugURL: NSURL?
     var middleware: [BRHTTPMiddleware] = [BRHTTPMiddleware]()
     
     var _Q: dispatch_queue_t? = nil
@@ -46,24 +44,6 @@ enum BRHTTPServerError: ErrorType {
             _Q = dispatch_queue_create("br_http_server", DISPATCH_QUEUE_CONCURRENT)
         }
         return _Q!
-    }
-    
-    init(baseDirectory: NSURL) {
-        path = baseDirectory
-        middleware.append(BRHTTPFileMiddleware(baseURL: baseDirectory))
-        super.init()
-    }
-    
-    // call debugFrom(NSURL(string: "BASE_URL")) to proxy assets from a debug server, instead of serving them from a
-    // local directory. use this when developing by starting a local server pointing to your dev assets that would
-    // normally be in the bundle
-    func debugFrom(URL: NSURL?) {
-        debugURL = URL
-        for mw in middleware {
-            if let fmw = mw as? BRHTTPFileMiddleware {
-                fmw.debugURL = URL
-            }
-        }
     }
     
     func prependMiddleware(middleware mw: BRHTTPMiddleware) {
@@ -113,7 +93,7 @@ enum BRHTTPServerError: ErrorType {
         
         fd = sfd
         acceptClients()
-        NSLog("Serving \(path) on \(port)")
+        NSLog("Serving on \(port)")
     }
     
     func stop() {
@@ -172,6 +152,7 @@ enum BRHTTPServerError: ErrorType {
     private func dispatch(var middleware mw: [BRHTTPMiddleware], req: BRHTTPRequest, finish: (BRHTTPResponse) -> Void) {
         if let curMw = mw.popLast() {
             curMw.handle(req, next: { (mwResp) -> Void in
+                print("[BRHTTPServer] trying \(req.path) \(curMw)")
                 if let httpResp = mwResp.response {
                     httpResp.done {
                         do {
@@ -239,7 +220,21 @@ enum BRHTTPServerError: ErrorType {
     
     static let rangeRe = try! NSRegularExpression(pattern: "bytes=(\\d*)-(\\d*)", options: .CaseInsensitive)
     
-    init(readFromFd: Int32, queue: dispatch_queue_t) throws {
+    public required init(fromRequest r: BRHTTPRequest) {
+        fd = r.fd
+        queue = r.queue
+        method = r.method
+        path = r.path
+        queryString = r.queryString
+        query = r.query
+        headers = r.headers
+        if let ri = r as? BRHTTPRequestImpl {
+            _bodyRead = ri._bodyRead
+            _body = ri._body
+        }
+    }
+    
+    public required init(readFromFd: Int32, queue: dispatch_queue_t) throws {
         fd = readFromFd
         self.queue = queue
         super.init()

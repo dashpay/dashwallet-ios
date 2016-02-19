@@ -21,22 +21,40 @@ import Foundation
     
     public func handle(request: BRHTTPRequest, next: (BRHTTPMiddlewareResponse) -> Void) {
         var fileURL: NSURL!
+        var body: NSData!
+        var contentTypeHint: String? = nil
         if debugURL == nil {
-            let reqPath = request.path.stringByTrimmingCharactersInSet(NSCharacterSet(charactersInString: "/"))
-            fileURL = baseURL.URLByAppendingPathComponent(reqPath)
-        } else {
-            var reqPath = request.path
-            if (debugURL!.path!.hasSuffix("/")) {
-                reqPath = reqPath.substringFromIndex(reqPath.startIndex.advancedBy(1))
+            // fetch the file locally
+            fileURL = baseURL.URLByAppendingPathComponent(request.path)
+            guard let bb = NSData(contentsOfURL: fileURL) else {
+                return next(BRHTTPMiddlewareResponse(request: request, response: nil))
             }
-            fileURL = debugURL!.URLByAppendingPathComponent(reqPath)
+            body = bb
+        } else {
+            // download the file from the debug endpoint
+            fileURL = debugURL!.URLByAppendingPathComponent(request.path)
+            let req = NSURLRequest(URL: fileURL)
+            let grp = dispatch_group_create()
+            dispatch_group_enter(grp)
+            NSURLSession.sharedSession().dataTaskWithRequest(req, completionHandler: { (dat, resp, err) -> Void in
+                defer {
+                    dispatch_group_leave(grp)
+                }
+                if err != nil {
+                    return
+                }
+                if let dat = dat, resp = resp as? NSHTTPURLResponse {
+                    body = dat
+                    contentTypeHint = resp.allHeaderFields["content-type"] as? String
+                } else {
+                    
+                }
+            }).resume()
+            dispatch_group_wait(grp, dispatch_time(DISPATCH_TIME_NOW, Int64(30) * Int64(NSEC_PER_SEC)))
+            if body == nil {
+                return next(BRHTTPMiddlewareResponse(request: request, response: nil))
+            }
         }
-        
-        guard let body = NSData(contentsOfURL: fileURL) else {
-            return next(BRHTTPMiddlewareResponse(request: request, response: nil))
-        }
-//        NSLog("GET \(fileURL)")
-//        NSLog("Detected content type: \(detectContentType(URL: fileURL))")
         
         do {
             let privReq = request as! BRHTTPRequestImpl
@@ -71,8 +89,12 @@ import Foundation
         
         var ary = [UInt8](count: body.length, repeatedValue: 0)
         body.getBytes(&ary, length: body.length)
-        let r = BRHTTPResponse(request: request, statusCode: 200, statusReason: "OK",
-            headers: ["Content-Type": [detectContentType(URL: fileURL)]], body: ary)
+        let r = BRHTTPResponse(
+            request: request,
+            statusCode: 200,
+            statusReason: "OK",
+            headers: ["Content-Type": [contentTypeHint ?? detectContentType(URL: fileURL)]],
+            body: ary)
         return next(BRHTTPMiddlewareResponse(request: request, response: r))
     }
     

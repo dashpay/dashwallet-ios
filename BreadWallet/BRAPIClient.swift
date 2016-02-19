@@ -589,20 +589,6 @@ func httpDateNow() -> String {
             }.resume()
         }
     }
-    
-    public func serveBundle(bundleName: String, debugURL: String? = nil) -> BRHTTPServer? {
-        let ret = BRHTTPServer(baseDirectory: BRAPIClient.bundleURL(bundleName))
-        do {
-            try ret.start()
-            if debugURL != nil {
-                ret.debugFrom(NSURL(string: debugURL!))
-            }
-            return ret
-        } catch let e {
-            log("Error starting http server: \(e)")
-        }
-        return nil
-    }
 }
 
 extension NSData {
