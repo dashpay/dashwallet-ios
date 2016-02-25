@@ -1073,6 +1073,20 @@ static const char *dns_seeds[] = {
 
     transaction.timestamp = [NSDate timeIntervalSinceReferenceDate];
     if (syncing && ! [manager.wallet containsTransaction:transaction]) return;
+    
+//    if (! syncing) {
+//        NSMutableArray *txHashes = [NSMutableArray arrayWithCapacity:transaction.inputHashes.count];
+//        
+//        for (NSValue *hash in transaction.inputHashes) {
+//            UInt256 h = UINT256_ZERO;
+//            
+//            [hash getValue:&h];
+//            if (! [manager.wallet transactionForHash:h]) [txHashes addObject:hash];
+//        }
+//        
+//        if (txHashes.count > 0) [peer sendGetdataMessageWithTxHashes:txHashes andBlockHashes:nil];
+//    }
+    
     if (! [manager.wallet registerTransaction:transaction]) return;
     if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
 
