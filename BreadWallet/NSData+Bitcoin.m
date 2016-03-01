@@ -337,6 +337,11 @@ void PBKDF2(void *dk, size_t dklen, void (*hash)(void *, const void *, size_t), 
     return [NSData dataWithBytes:&n length:sizeof(n)];
 }
 
++ (instancetype)dataWithUInt160:(UInt160)n
+{
+    return [NSData dataWithBytes:&n length:sizeof(n)];
+}
+
 + (instancetype)dataWithBase58String:(NSString *)b58str
 {
     return b58str.base58ToData;

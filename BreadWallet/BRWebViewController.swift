@@ -80,7 +80,7 @@ import WebKit
         server.prependMiddleware(middleware: fileMw)
         
         // middleware to always return index.html for any unknown GET request (facilitates window.history style SPAs)
-        let indexMw = BRHTTPIndexMiddleware(baseURL: NSURL(string: "")!)
+        let indexMw = BRHTTPIndexMiddleware(baseURL: fileMw.baseURL)
         server.prependMiddleware(middleware: indexMw)
         
         // geo plugin provides access to onboard geo location functionality

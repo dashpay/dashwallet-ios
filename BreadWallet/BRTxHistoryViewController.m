@@ -88,6 +88,9 @@ static NSString *dateFormat(NSString *template)
     self.moreTx = YES;
     
     self.buyController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy"];
+#if DEBUG
+    self.buyController.debugEndpoint = @"http://localhost:4200";
+#endif
     [self.buyController preload];
 }
 
