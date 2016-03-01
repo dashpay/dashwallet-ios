@@ -17,6 +17,7 @@ import WebKit
     var webView: WKWebView?
     var bundleName: String
     var server: BRHTTPServer?
+    var debugEndpoint: String?
     
     init(bundleName name: String) {
         wkProcessPool = WKProcessPool()
@@ -37,9 +38,14 @@ import WebKit
         config.requiresUserActionForMediaPlayback = true
         config.allowsPictureInPictureMediaPlayback = false
         
-        server = BRAPIClient.sharedClient.serveBundle("bread-buy", debugURL: "http://localhost:4200")
+        if debugEndpoint != nil {
+            server = BRAPIClient.sharedClient.serveBundle(bundleName, debugURL: debugEndpoint)
+        } else {
+            server = BRAPIClient.sharedClient.serveBundle(bundleName)
+        }
+        
         setupIntegrations()
-//        server = BRAPIClient.sharedClient.serveBundle("bread-buy")
+
         let indexUrl = NSURL(string: "http://localhost:8888/index.html")!
         let request = NSURLRequest(URL: indexUrl)
         
@@ -83,5 +89,8 @@ import WebKit
     public func preload() {
         _ = self.view // force webview loading
     }
+    
+    public func refresh() {
+        webView?.reload()
+    }
 }
-
