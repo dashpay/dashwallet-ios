@@ -361,8 +361,6 @@ size_t secp256k1_point_mul(void *r, const void *p, UInt256 i, int compressed)
     }
     else sig = nil;
     
-    ((uint8_t *)sig.mutableBytes)[0] = 27 + recid + (self.compressed ? 4 : 0);
-    
     return sig;
 }
 

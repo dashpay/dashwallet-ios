@@ -994,7 +994,11 @@ static const char *dns_seeds[] = {
             });
         });
     }
-    else [self loadMempools]; // we're already synced
+    else { // we're already synced
+        self.syncStartHeight = 0;
+        [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:SYNC_STARTHEIGHT_KEY];
+        [self loadMempools];
+    }
 }
 
 - (void)peer:(BRPeer *)peer disconnectedWithError:(NSError *)error
