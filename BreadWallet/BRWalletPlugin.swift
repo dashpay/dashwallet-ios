@@ -27,6 +27,7 @@ import Foundation
         var d = [String: AnyObject]()
         d["no_wallet"] = manager.noWallet
         d["watch_only"] = manager.watchOnly
+        d["receive_address"] = manager.wallet?.receiveAddress
         return d
     }
     

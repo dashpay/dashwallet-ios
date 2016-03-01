@@ -76,7 +76,6 @@
     //TODO: figure out deterministic builds/removing app sigs: http://www.afp548.com/2012/06/05/re-signining-ios-apps/
     
     BRAPIClient *c = [BRAPIClient sharedClient];
-//    [c me];
     [c updateBundle:@"bread-buy" handler:^(NSString * _Nullable error) {
         if (error != nil) {
             NSLog(@"got update bundle error: %@", error);
