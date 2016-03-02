@@ -132,12 +132,12 @@ enum BRHTTPServerError: ErrorType {
                 var v: Int32 = 1
                 setsockopt(cli_fd, SOL_SOCKET, SO_NOSIGPIPE, &v, socklen_t(sizeof(Int32)))
                 self.addClient(cli_fd)
-                print("startup: \(cli_fd)")
+                // print("startup: \(cli_fd)")
                 dispatch_async(self.Q) { () -> Void in
                     while let req = try? BRHTTPRequestImpl(readFromFd: cli_fd, queue: self.Q) {
                         self.dispatch(middleware: self.middleware, req: req) { resp in
                             Darwin.shutdown(cli_fd, SHUT_RDWR)
-                            print("shutdown: \(cli_fd)")
+                            // print("shutdown: \(cli_fd)")
                             close(cli_fd)
                             self.rmClient(cli_fd)
                         }
@@ -149,10 +149,11 @@ enum BRHTTPServerError: ErrorType {
         }
     }
     
-    private func dispatch(var middleware mw: [BRHTTPMiddleware], req: BRHTTPRequest, finish: (BRHTTPResponse) -> Void) {
-        if let curMw = mw.popLast() {
+    private func dispatch(middleware mw: [BRHTTPMiddleware], req: BRHTTPRequest, finish: (BRHTTPResponse) -> Void) {
+        var newMw = mw
+        if let curMw = newMw.popLast() {
             curMw.handle(req, next: { (mwResp) -> Void in
-                print("[BRHTTPServer] trying \(req.path) \(curMw)")
+                // print("[BRHTTPServer] trying \(req.path) \(curMw)")
                 if let httpResp = mwResp.response {
                     httpResp.done {
                         do {
@@ -164,7 +165,7 @@ enum BRHTTPServerError: ErrorType {
                         finish(httpResp)
                     }
                 } else {
-                    self.dispatch(middleware: mw, req: mwResp.request, finish: finish)
+                    self.dispatch(middleware: newMw, req: mwResp.request, finish: finish)
                 }
             })
         } else {
