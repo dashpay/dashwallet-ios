@@ -107,8 +107,8 @@ size_t secp256k1_point_mul(void *r, const void *p, UInt256 i, int compressed)
         if (! _ctx) _ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
     });
 
-    secp256k1_scalar is, zs;
-    secp256k1_gej rj, pj;
+    secp256k1_scalar is;
+    secp256k1_gej rj;
     secp256k1_ge rp, pp;
     size_t size = 0;
 
@@ -116,11 +116,8 @@ size_t secp256k1_point_mul(void *r, const void *p, UInt256 i, int compressed)
 
     if (p) {
         if (! secp256k1_eckey_pubkey_parse(&pp, p, 33)) return 0;
-        secp256k1_gej_set_ge(&pj, &pp);
+        secp256k1_ecmult_const(&rj, &pp, &is);
         secp256k1_ge_clear(&pp);
-        secp256k1_scalar_clear(&zs);
-        secp256k1_ecmult(&_ctx->ecmult_ctx, &rj, &pj, &is, &zs);
-        secp256k1_gej_clear(&pj);
     }
     else secp256k1_ecmult_gen(&_ctx->ecmult_gen_ctx, &rj, &is);
 
