@@ -89,6 +89,9 @@ import WebKit
         // wallet plugin provides access to the wallet
         router.plugin(BRWalletPlugin())
         
+        // link plugin which allows opening links to other apps
+        router.plugin(BRLinkPlugin())
+        
         // GET /_close closes the browser modal
         router.get("/_close") { (request, match) -> BRHTTPResponse in
             self.closeNow()
