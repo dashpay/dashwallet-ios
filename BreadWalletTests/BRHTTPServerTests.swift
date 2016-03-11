@@ -42,7 +42,8 @@ class BRHTTPServerTests: XCTestCase {
         download("https://s3.amazonaws.com/breadwallet-assets/bread-buy/bundle.tar",
                  resultingUrl: &bundle1Url, resultingData: &bundle1Data)
         
-        server = BRHTTPServer(baseDirectory: documentsUrl)
+        server = BRHTTPServer()
+        server.prependMiddleware(middleware: BRHTTPFileMiddleware(baseURL: documentsUrl))
         do {
             try server.start()
         } catch let e {
@@ -90,6 +91,8 @@ class BRHTTPServerTests: XCTestCase {
     var hasBody: Bool = false
     var contentType: String = "application/octet-stream"
     var contentLength: Int = 0
+    var queue: dispatch_queue_t = dispatch_get_main_queue()
+    var start = NSDate()
     
     init(m: String, p: String) {
         method = m
