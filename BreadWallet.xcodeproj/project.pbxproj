@@ -15,9 +15,6 @@
 		2204604E1B9F61E600D07B61 /* BREventManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2204604D1B9F61E600D07B61 /* BREventManager.m */; };
 		2204604F1B9F61E600D07B61 /* BREventManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2204604D1B9F61E600D07B61 /* BREventManager.m */; };
 		220460551BA0BEEE00D07B61 /* BREventConfirmView.m in Sources */ = {isa = PBXBuildFile; fileRef = 220460541BA0BEEE00D07B61 /* BREventConfirmView.m */; };
-		2284B63F1C7BD28F0012ECDF /* BRAWKeypad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22F45A0A1C30EAB700B07A15 /* BRAWKeypad.swift */; };
-		31D68B531C23B6C10030FAAA /* BreadWalletUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D68B521C23B6C10030FAAA /* BreadWalletUITests.swift */; };
-		31D68B5B1C23B6FD0030FAAA /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D68B5A1C23B6FD0030FAAA /* SnapshotHelper.swift */; };
 		222040C41C1A0903005CE1C3 /* BRWebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 222040C31C1A0903005CE1C3 /* BRWebViewController.swift */; };
 		222040C61C1A1940005CE1C3 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222040C51C1A1940005CE1C3 /* WebKit.framework */; };
 		222040C81C1A3803005CE1C3 /* BRHTTPServerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 222040C71C1A3803005CE1C3 /* BRHTTPServerTests.swift */; };
@@ -33,6 +30,7 @@
 		2253D2971C5D7155009CA741 /* Replicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2253D2961C5D7155009CA741 /* Replicator.swift */; };
 		2253D2991C5D71B4009CA741 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2253D2981C5D71B4009CA741 /* Extensions.swift */; };
 		2253D29B1C5D71E3009CA741 /* SQLiteDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2253D29A1C5D71E3009CA741 /* SQLiteDB.swift */; };
+		2284B63F1C7BD28F0012ECDF /* BRAWKeypad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22F45A0A1C30EAB700B07A15 /* BRAWKeypad.swift */; };
 		229279981C695C4200C98E78 /* BRHTTPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 229279971C695C4200C98E78 /* BRHTTPServer.swift */; };
 		2292799A1C695CAE00C98E78 /* BRHTTPFileMiddleware.swift in Sources */ = {isa = PBXBuildFile; fileRef = 229279991C695CAE00C98E78 /* BRHTTPFileMiddleware.swift */; };
 		2292799C1C695CD600C98E78 /* BRHTTPRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2292799B1C695CD600C98E78 /* BRHTTPRouter.swift */; };
@@ -46,6 +44,8 @@
 		22D3613D1C56F2CD0057CF76 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 22D3613C1C56F2CD0057CF76 /* libsqlite3.tbd */; };
 		22FCD22C1C0E68C80066D798 /* BRTarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FCD22B1C0E68C80066D798 /* BRTarTests.swift */; };
 		22FF2C381BED381400B36384 /* BRAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FF2C371BED381400B36384 /* BRAPIClient.swift */; };
+		31D68B531C23B6C10030FAAA /* BreadWalletUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D68B521C23B6C10030FAAA /* BreadWalletUITests.swift */; };
+		31D68B5B1C23B6FD0030FAAA /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D68B5A1C23B6FD0030FAAA /* SnapshotHelper.swift */; };
 		751B2B5C1B68911700EA87FB /* BRTxHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 751B2B5B1B68911700EA87FB /* BRTxHistoryViewController.m */; };
 		7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7525B618192453840041C0F2 /* BRNavigationBar.m */; };
 		752E289A192349CE00DB5A3C /* BreadWallet.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 752E2898192349CE00DB5A3C /* BreadWallet.xcdatamodeld */; };
@@ -222,17 +222,6 @@
 		2204604D1B9F61E600D07B61 /* BREventManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BREventManager.m; sourceTree = "<group>"; };
 		220460531BA0BEEE00D07B61 /* BREventConfirmView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BREventConfirmView.h; sourceTree = "<group>"; };
 		220460541BA0BEEE00D07B61 /* BREventConfirmView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BREventConfirmView.m; sourceTree = "<group>"; };
-		22F45A0A1C30EAB700B07A15 /* BRAWKeypad.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRAWKeypad.swift; sourceTree = "<group>"; };
-		22F45A0C1C3326CC00B07A15 /* BRUserDefaultsSwitchCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRUserDefaultsSwitchCell.h; sourceTree = "<group>"; };
-		22F45A0D1C3326CC00B07A15 /* BRUserDefaultsSwitchCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRUserDefaultsSwitchCell.m; sourceTree = "<group>"; };
-		22F45A0F1C3329EB00B07A15 /* BRUserDefaultsConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRUserDefaultsConstants.h; sourceTree = "<group>"; };
-		31D68B501C23B6C10030FAAA /* BreadWalletUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BreadWalletUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		31D68B521C23B6C10030FAAA /* BreadWalletUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreadWalletUITests.swift; sourceTree = "<group>"; };
-		31D68B541C23B6C10030FAAA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		31D68B5A1C23B6FD0030FAAA /* SnapshotHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SnapshotHelper.swift; path = fastlane/SnapshotHelper.swift; sourceTree = SOURCE_ROOT; };
-		2210DE6E1BEA97840088551E /* breadwallet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "breadwallet-Bridging-Header.h"; sourceTree = "<group>"; };
-		2210DE6F1BEA97840088551E /* TodayExtension-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TodayExtension-Bridging-Header.h"; sourceTree = "<group>"; };
-		2210DE701BEA97840088551E /* BreadWalletTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BreadWalletTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		222040C31C1A0903005CE1C3 /* BRWebViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRWebViewController.swift; sourceTree = "<group>"; };
 		222040C51C1A1940005CE1C3 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		222040C71C1A3803005CE1C3 /* BRHTTPServerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRHTTPServerTests.swift; sourceTree = "<group>"; };
@@ -260,10 +249,18 @@
 		22B6A4471C0E963900673913 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
 		22B6A4491C0ECB7800673913 /* BRBSPatchTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRBSPatchTests.swift; sourceTree = "<group>"; };
 		22D3613C1C56F2CD0057CF76 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		22F45A0A1C30EAB700B07A15 /* BRAWKeypad.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRAWKeypad.swift; sourceTree = "<group>"; };
+		22F45A0C1C3326CC00B07A15 /* BRUserDefaultsSwitchCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRUserDefaultsSwitchCell.h; sourceTree = "<group>"; };
+		22F45A0D1C3326CC00B07A15 /* BRUserDefaultsSwitchCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRUserDefaultsSwitchCell.m; sourceTree = "<group>"; };
+		22F45A0F1C3329EB00B07A15 /* BRUserDefaultsConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRUserDefaultsConstants.h; sourceTree = "<group>"; };
 		22FCD22B1C0E68C80066D798 /* BRTarTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRTarTests.swift; sourceTree = "<group>"; };
 		22FCD22D1C0E6BA30066D798 /* BreadWalletTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "BreadWalletTests-Bridging-Header.h"; path = "BreadWallet/BreadWalletTests-Bridging-Header.h"; sourceTree = SOURCE_ROOT; };
 		22FF2C361BED381400B36384 /* breadwallet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "breadwallet-Bridging-Header.h"; sourceTree = "<group>"; };
 		22FF2C371BED381400B36384 /* BRAPIClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRAPIClient.swift; sourceTree = "<group>"; };
+		31D68B501C23B6C10030FAAA /* BreadWalletUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BreadWalletUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		31D68B521C23B6C10030FAAA /* BreadWalletUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreadWalletUITests.swift; sourceTree = "<group>"; };
+		31D68B541C23B6C10030FAAA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		31D68B5A1C23B6FD0030FAAA /* SnapshotHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SnapshotHelper.swift; path = fastlane/SnapshotHelper.swift; sourceTree = SOURCE_ROOT; };
 		7509C10C1AF3076000D03FD5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
 		7509C10E1AF3076100D03FD5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		7509C1101AF3720100D03FD5 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Main.strings; sourceTree = "<group>"; };
@@ -956,6 +953,7 @@
 				75F2E0CB1BE559F200EAE861 /* schnorr_impl.h */,
 			);
 			path = schnorr;
+			sourceTree = "<unknown>";
 		};
 		BA913BDF1BD57E4D005A7C0E /* WatchApp */ = {
 			isa = PBXGroup;
@@ -1194,6 +1192,7 @@
 					};
 					BA913BE91BD57E4D005A7C0E = {
 						CreatedOnToolsVersion = 7.0.1;
+						DevelopmentTeam = 4R7S6N88W9;
 					};
 					BAE12BE41B2DEE7F00895CC5 = {
 						CreatedOnToolsVersion = 6.3.2;
@@ -1862,10 +1861,13 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "iPhone Developer";
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = org.voisine.breadwallet.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
+				PROVISIONING_PROFILE = "";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "WatchApp Extension/WatchApp Extension-Bridging-Header.h";
@@ -1880,10 +1882,13 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "iPhone Developer";
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = org.voisine.breadwallet.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
+				PROVISIONING_PROFILE = "";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "WatchApp Extension/WatchApp Extension-Bridging-Header.h";
