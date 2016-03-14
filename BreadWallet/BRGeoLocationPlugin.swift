@@ -20,10 +20,22 @@ class BRGeoLocationDelegate: NSObject, CLLocationManagerDelegate {
         self.response = response
         super.init()
         // location managers MUST operate on the main queue, but requests are not handled there
-        dispatch_sync(dispatch_get_main_queue()) { () -> Void in
-            self.manager = CLLocationManager()
-            self.manager?.delegate = self
+        
+        dispatch_async(self.response.request.queue) {
+            let j: [String: AnyObject] = [
+                "timestamp": 1,
+                "coordinate": ["latitude": 37.7797570, "longitude": -122.4401800],
+                "altitude": 0.0,
+                "horizontal_accuracy": 0.0,
+                "description": "test"
+            ]
+            self.response.provide(200, json: j)
         }
+        
+//        dispatch_sync(dispatch_get_main_queue()) { () -> Void in
+//            self.manager = CLLocationManager()
+//            self.manager?.delegate = self
+//        }
     }
     
     func getOne() {
