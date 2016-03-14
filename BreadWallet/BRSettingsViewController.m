@@ -263,7 +263,8 @@
                 case 2:
                 {
 _switch_cell:
-                    cell = [tableView dequeueReusableCellWithIdentifier:@"SwitchCell"];
+                    cell = [tableView dequeueReusableCellWithIdentifier:@"SwitchCell" forIndexPath:indexPath];
+//                    return cell;
                     BRUserDefaultsSwitchCell *switchCell = (BRUserDefaultsSwitchCell *)cell;
                     switchCell.titleLabel.text = NSLocalizedString(@"enable receive notifications", nil);
                     [switchCell setUserDefaultsKey:USER_DEFAULTS_LOCAL_NOTIFICATIONS_KEY];
