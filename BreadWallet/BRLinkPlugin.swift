@@ -11,8 +11,9 @@ import Foundation
 @objc class BRLinkPlugin: NSObject, BRHTTPRouterPlugin {
     func hook(router: BRHTTPRouter) {
         router.get("/_open_url") { (request, match) -> BRHTTPResponse in
-            if let us = request.query["url"] where us.count == 1 {
-                if let url = NSURL(string: us[0]) {
+            if let encodedUrls = request.query["url"] where encodedUrls.count == 1 {
+                if let decodedUrl = encodedUrls[0].stringByRemovingPercentEncoding, url = NSURL(string: decodedUrl) {
+                    print("[BRLinkPlugin] openURL \(decodedUrl)")
                     UIApplication.sharedApplication().openURL(url)
                     return BRHTTPResponse(request: request, code: 204)
                 }
