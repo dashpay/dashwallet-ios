@@ -15,30 +15,33 @@ class BRGeoLocationDelegate: NSObject, CLLocationManagerDelegate {
     var manager: CLLocationManager? = nil
     var response: BRHTTPResponse
     var remove: (() -> Void)? = nil
+    var one = false
+    var nResponses = 0
     
     init(response: BRHTTPResponse) {
         self.response = response
         super.init()
         // location managers MUST operate on the main queue, but requests are not handled there
         
-        dispatch_async(self.response.request.queue) {
-            let j: [String: AnyObject] = [
-                "timestamp": 1,
-                "coordinate": ["latitude": 37.7797570, "longitude": -122.4401800],
-                "altitude": 0.0,
-                "horizontal_accuracy": 0.0,
-                "description": "test"
-            ]
-            self.response.provide(200, json: j)
-        }
-        
-//        dispatch_sync(dispatch_get_main_queue()) { () -> Void in
-//            self.manager = CLLocationManager()
-//            self.manager?.delegate = self
+//        dispatch_async(self.response.request.queue) {
+//            let j: [String: AnyObject] = [
+//                "timestamp": 1,
+//                "coordinate": ["latitude": 37.7797570, "longitude": -122.4401800],
+//                "altitude": 0.0,
+//                "horizontal_accuracy": 0.0,
+//                "description": "test"
+//            ]
+//            self.response.provide(200, json: j)
 //        }
+        
+        dispatch_sync(dispatch_get_main_queue()) { () -> Void in
+            self.manager = CLLocationManager()
+            self.manager?.delegate = self
+        }
     }
     
     func getOne() {
+        one = true
         dispatch_sync(dispatch_get_main_queue()) { () -> Void in
             self.manager?.desiredAccuracy = kCLLocationAccuracyHundredMeters
             self.manager?.requestLocation()
@@ -46,6 +49,8 @@ class BRGeoLocationDelegate: NSObject, CLLocationManagerDelegate {
     }
     
     func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        nResponses += 1
+        if one && nResponses > 1 { return }
         var j = [String: AnyObject]()
         let l = locations.last!
         j["timestamp"] = l.timestamp.description
@@ -167,7 +172,9 @@ class BRGeoLocationDelegate: NSObject, CLLocationManagerDelegate {
             let del = BRGeoLocationDelegate(response: resp)
             del.remove = {
                 objc_sync_enter(self)
-                self.outstanding.removeAtIndex(self.outstanding.indexOf({ (d) -> Bool in return d == del })!)
+                if let idx = self.outstanding.indexOf({ (d) -> Bool in return d == del }) {
+                    self.outstanding.removeAtIndex(idx)
+                }
                 objc_sync_exit(self)
             }
             objc_sync_enter(self)
