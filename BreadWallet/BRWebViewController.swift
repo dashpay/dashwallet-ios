@@ -94,7 +94,9 @@ import WebKit
         
         // GET /_close closes the browser modal
         router.get("/_close") { (request, match) -> BRHTTPResponse in
-            self.closeNow()
+            dispatch_async(dispatch_get_main_queue()) {
+                self.closeNow()
+            }
             return BRHTTPResponse(request: request, code: 204)
         }
         
