@@ -36,7 +36,6 @@ import WebKit
     override public func loadView() {
         let config = WKWebViewConfiguration()
         config.processPool = wkProcessPool
-        config.websiteDataStore = WKWebsiteDataStore.nonPersistentDataStore()
         config.allowsInlineMediaPlayback = false
         config.allowsAirPlayForMediaPlayback = false
         config.requiresUserActionForMediaPlayback = true

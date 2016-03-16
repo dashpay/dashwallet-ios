@@ -23,13 +23,37 @@ import Foundation
         var fileURL: NSURL!
         var body: NSData!
         var contentTypeHint: String? = nil
+        var headers = [String: [String]]()
         if debugURL == nil {
             // fetch the file locally
             fileURL = baseURL.URLByAppendingPathComponent(request.path)
-            guard let bb = NSData(contentsOfURL: fileURL) else {
+            let fm = NSFileManager.defaultManager()
+            // read the file attributes
+            guard let attrs = try? fm.attributesOfItemAtPath(fileURL.path!) else {
                 return next(BRHTTPMiddlewareResponse(request: request, response: nil))
             }
-            body = bb
+            let etag = ((attrs[NSFileModificationDate] as? NSDate ?? NSDate()) ).description.MD5()
+            headers["ETag"] = [etag]
+            var modified = true
+            if let etagHeaders = request.headers["if-none-match"] where etagHeaders.count > 0 {
+                let etagHeader = etagHeaders[0]
+                if etag == etagHeader {
+                    modified = false
+                }
+            } else {
+                print("missing if-none-match header")
+            }
+            if modified {
+                guard let bb = NSData(contentsOfURL: fileURL) else {
+                    return next(BRHTTPMiddlewareResponse(request: request, response: nil))
+                }
+                body = bb
+            } else {
+                return next(BRHTTPMiddlewareResponse(
+                    request: request, response: BRHTTPResponse(request: request, code: 304)))
+            }
+            
+
         } else {
             // download the file from the debug endpoint
             fileURL = debugURL!.URLByAppendingPathComponent(request.path)
@@ -55,6 +79,8 @@ import Foundation
                 return next(BRHTTPMiddlewareResponse(request: request, response: nil))
             }
         }
+        
+        headers["Content-Type"] = [contentTypeHint ?? detectContentType(URL: fileURL)]
         
         do {
             let privReq = request as! BRHTTPRequestImpl
@@ -93,7 +119,7 @@ import Foundation
             request: request,
             statusCode: 200,
             statusReason: "OK",
-            headers: ["Content-Type": [contentTypeHint ?? detectContentType(URL: fileURL)]],
+            headers: headers,
             body: ary)
         return next(BRHTTPMiddlewareResponse(request: request, response: r))
     }
