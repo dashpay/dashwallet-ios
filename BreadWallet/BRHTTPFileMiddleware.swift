@@ -32,16 +32,16 @@ import Foundation
             guard let attrs = try? fm.attributesOfItemAtPath(fileURL.path!) else {
                 return next(BRHTTPMiddlewareResponse(request: request, response: nil))
             }
-            let etag = ((attrs[NSFileModificationDate] as? NSDate ?? NSDate()) ).description.MD5()
+            // generate an etag
+            let etag = (attrs[NSFileModificationDate] as? NSDate ?? NSDate()).description.MD5()
             headers["ETag"] = [etag]
             var modified = true
+            // if the client sends an if-none-match header, determine if we have a newer version of the file
             if let etagHeaders = request.headers["if-none-match"] where etagHeaders.count > 0 {
                 let etagHeader = etagHeaders[0]
                 if etag == etagHeader {
                     modified = false
                 }
-            } else {
-                print("missing if-none-match header")
             }
             if modified {
                 guard let bb = NSData(contentsOfURL: fileURL) else {
