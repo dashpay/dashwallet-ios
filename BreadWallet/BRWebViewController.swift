@@ -29,6 +29,10 @@ import WebKit
         fatalError("init(coder:) has not been implemented")
     }
     
+    deinit {
+        stopServer()
+    }
+    
     override public func loadView() {
         let config = WKWebViewConfiguration()
         config.processPool = wkProcessPool
@@ -37,13 +41,6 @@ import WebKit
         config.allowsAirPlayForMediaPlayback = false
         config.requiresUserActionForMediaPlayback = true
         config.allowsPictureInPictureMediaPlayback = false
-        
-        do {
-            try server.start()
-        } catch let e {
-            print("\n\n\nSERVER ERROR! \(e)\n\n\n")
-        }
-        setupIntegrations()
 
         let indexUrl = NSURL(string: "http://localhost:8888/")!
         let request = NSURLRequest(URL: indexUrl)
@@ -64,6 +61,24 @@ import WebKit
     
     private func closeNow() {
         dismissViewControllerAnimated(true, completion: nil)
+    }
+    
+    public func startServer() {
+        do {
+            if !server.isStarted {
+                try server.start()
+                setupIntegrations()
+            }
+        } catch let e {
+            print("\n\n\nSERVER ERROR! \(e)\n\n\n")
+        }
+    }
+    
+    public func stopServer() {
+        if server.isStarted {
+            server.stop()
+            server.resetMiddleware()
+        }
     }
     
     private func setupIntegrations() {

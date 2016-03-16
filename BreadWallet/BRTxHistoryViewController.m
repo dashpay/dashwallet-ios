@@ -91,6 +91,7 @@ static NSString *dateFormat(NSString *template)
 #if DEBUG
 //     self.buyController.debugEndpoint = @"http://localhost:4200";
 #endif
+    [self.buyController startServer];
     [self.buyController preload];
 }
 
@@ -231,6 +232,7 @@ static NSString *dateFormat(NSString *template)
         if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
         self.syncFailedObserver = nil;
         self.wallpaper.clipsToBounds = YES;
+        if (self.buyController) { [self.buyController stopServer]; }
     }
 
     [super viewWillDisappear:animated];

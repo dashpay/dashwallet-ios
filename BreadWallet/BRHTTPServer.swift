@@ -37,6 +37,7 @@ enum BRHTTPServerError: ErrorType {
     var fd: Int32 = -1
     var clients: Set<Int32> = []
     var middleware: [BRHTTPMiddleware] = [BRHTTPMiddleware]()
+    var isStarted: Bool { return fd != -1 }
     
     var _Q: dispatch_queue_t? = nil
     var Q: dispatch_queue_t {
@@ -52,6 +53,10 @@ enum BRHTTPServerError: ErrorType {
     
     func appendMiddleware(middle mw: BRHTTPMiddleware) {
         middleware.append(mw)
+    }
+    
+    func resetMiddleware() {
+        middleware.removeAll()
     }
     
     func start(port: in_port_t = 8888, maxPendingConnections: Int32 = SOMAXCONN) throws {
@@ -73,19 +78,21 @@ enum BRHTTPServerError: ErrorType {
         addr.sin_len = __uint8_t(sizeof(sockaddr_in))
         addr.sin_family = sa_family_t(AF_INET)
         addr.sin_port = Int(OSHostByteOrder()) == OSLittleEndian ? _OSSwapInt16(port) : port
-        addr.sin_addr = in_addr(s_addr: inet_addr("0.0.0.0"))
+        addr.sin_addr = in_addr(s_addr: inet_addr("127.0.0.1"))
         addr.sin_zero = (0, 0, 0, 0, 0, 0, 0 ,0)
         
         var bind_addr = sockaddr()
         memcpy(&bind_addr, &addr, Int(sizeof(sockaddr_in)))
         
         if bind(sfd, &bind_addr, socklen_t(sizeof(sockaddr_in))) == -1 {
+            perror("bind error");
             Darwin.shutdown(sfd, SHUT_RDWR)
             close(sfd)
             throw BRHTTPServerError.SocketBindFailed
         }
         
         if listen(sfd, maxPendingConnections) == -1 {
+            perror("listen error");
             Darwin.shutdown(sfd, SHUT_RDWR)
             close(sfd)
             throw BRHTTPServerError.SocketListenFailed
@@ -93,7 +100,7 @@ enum BRHTTPServerError: ErrorType {
         
         fd = sfd
         acceptClients()
-        NSLog("Serving on \(port)")
+        print("[BRHTTPServer] Serving on \(port)")
     }
     
     func stop() {
@@ -106,6 +113,7 @@ enum BRHTTPServerError: ErrorType {
             Darwin.shutdown(cli_fd, SHUT_RDWR)
         }
         self.clients.removeAll(keepCapacity: true)
+        print("[BRHTTPServer] no longer serving")
     }
     
     func addClient(cli_fd: Int32) {
@@ -157,8 +165,8 @@ enum BRHTTPServerError: ErrorType {
                 if let httpResp = mwResp.response {
                     httpResp.done {
                         do {
-                            self.logline(req, response: httpResp)
                             try httpResp.send()
+                            self.logline(req, response: httpResp)
                         } catch let e {
                             print("[BRHTTPServer] error sending response. request: \(req) error: \(e)")
                         }
