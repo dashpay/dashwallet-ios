@@ -37,7 +37,7 @@ typedef union _UInt160 UInt160;
 UInt256 secp256k1_mod_add(UInt256 a, UInt256 b); // add 256bit big endian ints (mod secp256k1 order)
 UInt256 secp256k1_mod_mul(UInt256 a, UInt256 b); // multiply 256bit big endian ints (mod secp256k1 order)
 size_t secp256k1_point_add(void * _Nonnull r, const void * _Nonnull a, const void * _Nonnull b, int compressed); // add secp256k1 ec-points
-size_t secp256k1_point_mul(void * _Nonnull r, const void * _Nonnull p, UInt256 i, int compressed); // multiply ec-point by 256bit BE int
+size_t secp256k1_point_mul(void * _Nonnull r, const void * _Nullable p, UInt256 i, int compressed); // multiply ec-point by 256bit BE int
 
 @interface BRKey : NSObject
 

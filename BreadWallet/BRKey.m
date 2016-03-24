@@ -99,7 +99,7 @@ size_t secp256k1_point_add(void *r, const void *a, const void *b, int compressed
 }
 
 // multiply ec-point by 256bit BE int
-size_t secp256k1_point_mul(void *r, const void *p, UInt256 i, int compressed)
+size_t secp256k1_point_mul(void *r, const  void *p, UInt256 i, int compressed)
 {
     static dispatch_once_t onceToken = 0;
     
