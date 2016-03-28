@@ -43,10 +43,10 @@ class BRAWReceiveMoneyInterfaceController: WKInterfaceController, WCSessionDeleg
         customQR = nil
         updateReceiveUI()
         NSNotificationCenter.defaultCenter().addObserver(
-            self, selector: "updateReceiveUI",
+            self, selector: #selector(BRAWReceiveMoneyInterfaceController.updateReceiveUI),
             name: BRAWWatchDataManager.ApplicationDataDidUpdateNotification, object: nil)
         NSNotificationCenter.defaultCenter().addObserver(
-            self, selector: "txReceive:", name: BRAWWatchDataManager.WalletTxReceiveNotification, object: nil)
+            self, selector: #selector(BRAWReceiveMoneyInterfaceController.txReceive(_:)), name: BRAWWatchDataManager.WalletTxReceiveNotification, object: nil)
     }
 
     override func didDeactivate() {

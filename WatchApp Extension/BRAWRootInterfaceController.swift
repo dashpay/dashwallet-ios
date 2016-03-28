@@ -42,9 +42,9 @@ class BRAWRootInterfaceController: WKInterfaceController {
         super.willActivate()
         updateUI()
         NSNotificationCenter.defaultCenter().addObserver(
-            self, selector: "updateUI", name: BRAWWatchDataManager.WalletStatusDidChangeNotification, object: nil)
+            self, selector: #selector(BRAWRootInterfaceController.updateUI), name: BRAWWatchDataManager.WalletStatusDidChangeNotification, object: nil)
         NSNotificationCenter.defaultCenter().addObserver(
-            self, selector: "txReceive:", name: BRAWWatchDataManager.WalletTxReceiveNotification, object: nil)
+            self, selector: #selector(BRAWRootInterfaceController.txReceive(_:)), name: BRAWWatchDataManager.WalletTxReceiveNotification, object: nil)
     }
 
     override func didDeactivate() {

@@ -59,9 +59,9 @@ class BRAWBalanceInterfaceController: WKInterfaceController {
         updateBalance()
         updateTransactionList()
         NSNotificationCenter.defaultCenter().addObserver(
-            self, selector: "updateUI", name: BRAWWatchDataManager.ApplicationDataDidUpdateNotification, object: nil)
+            self, selector: #selector(BRAWBalanceInterfaceController.updateUI), name: BRAWWatchDataManager.ApplicationDataDidUpdateNotification, object: nil)
         NSNotificationCenter.defaultCenter().addObserver(
-            self, selector: "txReceive:", name: BRAWWatchDataManager.WalletTxReceiveNotification, object: nil)
+            self, selector: #selector(BRAWBalanceInterfaceController.txReceive(_:)), name: BRAWWatchDataManager.WalletTxReceiveNotification, object: nil)
     }
     
     override func didDeactivate() {
@@ -114,7 +114,7 @@ class BRAWBalanceInterfaceController: WKInterfaceController {
             table.removeRowsAtIndexes(ixs)
         }
         // update row content
-        for var index = 0; index < newTransactionCount; index++  {
+        for index in 0 ..< newTransactionCount  {
             if let rowControl = table.rowControllerAtIndex(index) as? BRAWTransactionRowControl {
                 updateRow(rowControl, transaction: self.transactionList[index])
             }

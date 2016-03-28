@@ -52,8 +52,6 @@ import Foundation
                 return next(BRHTTPMiddlewareResponse(
                     request: request, response: BRHTTPResponse(request: request, code: 304)))
             }
-            
-
         } else {
             // download the file from the debug endpoint
             fileURL = debugURL!.URLByAppendingPathComponent(request.path)

@@ -126,7 +126,7 @@ class BRTar {
             case .NullBlock:
                 break
             case .HeaderBlock:
-                blockCount++
+                blockCount += 1
                 break
             case .Unsupported:
                 let size = readSizeAtLocation(loc, fromHandle: tarFh)

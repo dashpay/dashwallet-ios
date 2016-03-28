@@ -45,7 +45,7 @@ class BRAWGlanceInterfaceController: WKInterfaceController {
         BRAWWatchDataManager.sharedInstance.setupTimer()
         updateUI()
         NSNotificationCenter.defaultCenter().addObserver(
-            self, selector: "updateUI", name: BRAWWatchDataManager.ApplicationDataDidUpdateNotification, object: nil)
+            self, selector: #selector(BRAWGlanceInterfaceController.updateUI), name: BRAWWatchDataManager.ApplicationDataDidUpdateNotification, object: nil)
     }
     
     override func didDeactivate() {

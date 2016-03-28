@@ -210,9 +210,9 @@ class BRAWWatchDataManager: NSObject, WCSessionDelegate {
     
     func setupTimer() {
         destoryTimer()
-        let weakTimerTarget = BRAWWeakTimerTarget(initTarget: self, initSelector: "requestAllData")
+        let weakTimerTarget = BRAWWeakTimerTarget(initTarget: self, initSelector: #selector(BRAWWatchDataManager.requestAllData))
         timer = NSTimer.scheduledTimerWithTimeInterval(
-            timerFireInterval, target: weakTimerTarget, selector: "timerDidFire", userInfo: nil, repeats: true)
+            timerFireInterval, target: weakTimerTarget, selector: Selector("timerDidFire"), userInfo: nil, repeats: true)
     }
     
     func destoryTimer() {

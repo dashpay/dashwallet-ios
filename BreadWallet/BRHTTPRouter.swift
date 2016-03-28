@@ -57,7 +57,7 @@ public typealias BRHTTPRoute = (request: BRHTTPRequest, match: BRHTTPRouteMatch)
                         Range(start: part.startIndex.advancedBy(1), end: part.endIndex.advancedBy(-1)))
                     reParts.append("([^/]+)") // a capture (part)
                 }
-                i++
+                i += 1
             } else {
                 reParts.append(part) // a non-captured component
             }
