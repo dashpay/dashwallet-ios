@@ -1260,6 +1260,7 @@ static const char *dns_seeds[] = {
     BRMerkleBlock *prev = self.blocks[prevBlock];
     uint32_t transitionTime = 0, txTime = 0;
     UInt256 checkpoint = UINT256_ZERO;
+    BOOL syncDone = NO;
     
     if (! prev) { // block is an orphan
         NSLog(@"%@:%d relayed orphan block %@, previous %@, last block is %@, height %d", peer.host, peer.port,
@@ -1305,7 +1306,10 @@ static const char *dns_seeds[] = {
         
         while (b) { // free up some memory
             b = self.blocks[uint256_obj(b.prevBlock)];
-            if (b) [self.blocks removeObjectForKey:uint256_obj(b.blockHash)];
+
+            if (b && (b.height % BLOCK_DIFFICULTY_INTERVAL) != 0) {
+                [self.blocks removeObjectForKey:uint256_obj(b.blockHash)];
+            }
         }
     }
 
@@ -1337,6 +1341,7 @@ static const char *dns_seeds[] = {
         [self setBlockHeight:block.height andTimestamp:txTime - NSTimeIntervalSince1970 forTxHashes:txHashes];
         if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
         self.downloadPeer.currentBlockHeight = block.height;
+        if (block.height == _estimatedBlockHeight) syncDone = YES;
     }
     else if (self.blocks[blockHash] != nil) { // we already have the block (or at least the header)
         if ((block.height % 500) == 0 || txHashes.count > 0 || block.height > peer.lastblock) {
@@ -1399,29 +1404,31 @@ static const char *dns_seeds[] = {
         }
 
         self.lastBlock = block;
+        if (block.height == _estimatedBlockHeight) syncDone = YES;
     }
-    
-    if (block.height == peer.lastblock && block == self.lastBlock) { // chain download is complete
+
+    if (syncDone) { // chain download is complete
         self.syncStartHeight = 0;
         [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:SYNC_STARTHEIGHT_KEY];
         [self saveBlocks];
         [self loadMempools];
     }
-
-    // check if the next block was received as an orphan
-    if (block == self.lastBlock && self.orphans[blockHash]) {
-        BRMerkleBlock *b = self.orphans[blockHash];
-
-        [self.orphans removeObjectForKey:blockHash];
-        [self peer:peer relayedBlock:b];
-    }
-
-    if (block.height > _estimatedBlockHeight) _estimatedBlockHeight = block.height;
     
-    if (block.height > peer.lastblock) { // notify that transaction confirmations may have changed
+    if (block.height > _estimatedBlockHeight) {
+        _estimatedBlockHeight = block.height;
+    
+        // notify that transaction confirmations may have changed
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
         });
+    }
+    
+    // check if the next block was received as an orphan
+    if (block == self.lastBlock && self.orphans[blockHash]) {
+        BRMerkleBlock *b = self.orphans[blockHash];
+        
+        [self.orphans removeObjectForKey:blockHash];
+        [self peer:peer relayedBlock:b];
     }
 }
 
