@@ -471,33 +471,25 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
             if ((self.amount <= [manager amountForLocalCurrencyString:
                                  [manager localCurrencyStringForAmount:manager.wallet.balance]] ||
                  self.amount <= manager.wallet.balance) && self.amount > 0) {
-                NSArray *txScripts = @[self.request.details.outputScripts.firstObject];
-                NSUInteger txSize = [manager.wallet transactionForAmounts:@[@(manager.wallet.balance)]
-                                                          toOutputScripts:txScripts
-                                                                  withFee:NO].size;
-                NSUInteger cpfpSize = 0;
-                
-                // add up size of unconfirmed inputs for child-pays-for-parent
-                for (tx in manager.wallet.recentTransactions) {
-                    if (tx.blockHeight != TX_UNCONFIRMED) break;
-                    if ([manager.wallet amountSentByTransaction:tx] == 0) {
-                        cpfpSize += tx.size; // only non-change inputs count
-                    }
+                int64_t amount = manager.wallet.maxOutputAmount;
+
+                if (amount > 0 && amount < self.amount) {
+                    [[[UIAlertView alloc]
+                      initWithTitle:NSLocalizedString(@"insufficient funds for bitcoin network fee", nil)
+                      message:[NSString stringWithFormat:NSLocalizedString(@"reduce payment amount by\n%@ (%@)?", nil),
+                               [manager stringForAmount:self.amount - amount],
+                               [manager localCurrencyStringForAmount:self.amount - amount]] delegate:self
+                      cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+                      otherButtonTitles:[NSString stringWithFormat:@"%@ (%@)",
+                                         [manager stringForAmount:amount - self.amount],
+                                         [manager localCurrencyStringForAmount:amount - self.amount]], nil] show];
+                    self.amount = amount;
                 }
-                
-                int64_t amount = (manager.wallet.balance/100)*100 -
-                                 [manager.wallet feeForTxSize:txSize + 34 + cpfpSize];
-            
-                [[[UIAlertView alloc]
-                  initWithTitle:NSLocalizedString(@"insufficient funds for bitcoin network fee", nil)
-                  message:[NSString stringWithFormat:NSLocalizedString(@"reduce payment amount by\n%@ (%@)?", nil),
-                           [manager stringForAmount:self.amount - amount],
-                           [manager localCurrencyStringForAmount:self.amount - amount]] delegate:self
-                  cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-                  otherButtonTitles:[NSString stringWithFormat:@"%@ (%@)",
-                                     [manager stringForAmount:amount - self.amount],
-                                     [manager localCurrencyStringForAmount:amount - self.amount]], nil] show];
-                self.amount = amount;
+                else {
+                    [[[UIAlertView alloc]
+                      initWithTitle:NSLocalizedString(@"insufficient funds for bitcoin network fee", nil) message:nil
+                      delegate:self cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+                }
             }
             else {
                 [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"insufficient funds", nil) message:nil

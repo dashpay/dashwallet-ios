@@ -552,19 +552,23 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 
 - (BOOL)authenticatePinWithTitle:(NSString *)title message:(NSString *)message
 {
+    [BREventManager saveEvent:@"wallet_manager:pin_auth"];
+    
     NSError *error = nil;
     NSString *pin = getKeychainString(PIN_KEY, &error);
 
     if (error) return NO; // error reading pin from keychain
     if (pin.length != 4) return [self setPin]; // no pin set
 
-    uint64_t limit = self.spendingLimit, failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, nil);
+    uint64_t limit = self.spendingLimit, failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, &error);
 
-    [BREventManager saveEvent:@"wallet_manager:pin_auth"];
+    if (error) return NO; // error reading failCount from keychain
 
     if (failCount >= 3) {
-        uint64_t failHeight = getKeychainInt(PIN_FAIL_HEIGHT_KEY, nil);
+        uint64_t failHeight = getKeychainInt(PIN_FAIL_HEIGHT_KEY, &error);
 
+        if (error) return NO; // error reading failHeight from keychain
+        
         if (self.secureTime + NSTimeIntervalSince1970 < failHeight + pow(6, failCount - 3)*60.0) { // locked out
             NSTimeInterval wait = (failHeight + pow(6, failCount - 3)*60.0 -
                                    (self.secureTime + NSTimeIntervalSince1970))/60.0;

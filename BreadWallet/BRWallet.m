@@ -830,4 +830,30 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     return (amount > TX_MIN_OUTPUT_AMOUNT) ? amount : TX_MIN_OUTPUT_AMOUNT;
 }
 
+- (uint64_t)maxOutputAmount
+{
+    BRUTXO o;
+    BRTransaction *tx;
+    NSUInteger inputCount;
+    uint64_t amount = 0, fee;
+    size_t cpfpSize = 0, txSize;
+
+    for (NSValue *output in self.utxos) {
+        [output getValue:&o];
+        tx = self.allTx[uint256_obj(o.hash)];
+        if (o.n >= tx.outputAmounts.count) continue;
+        inputCount++;
+        amount += [tx.outputAmounts[o.n] unsignedLongLongValue];
+        
+        // size of unconfirmed, non-change inputs for child-pays-for-parent fee
+        if (tx.blockHeight == TX_UNCONFIRMED && [self amountSentByTransaction:tx] == 0) cpfpSize += tx.size;
+    }
+    
+    
+    txSize = 8 + [NSMutableData sizeOfVarInt:inputCount] + TX_INPUT_SIZE*inputCount +
+             [NSMutableData sizeOfVarInt:2] + TX_OUTPUT_SIZE*2;
+    fee = [self feeForTxSize:txSize + cpfpSize];
+    return (amount > fee) ? amount - fee : 0;
+}
+
 @end

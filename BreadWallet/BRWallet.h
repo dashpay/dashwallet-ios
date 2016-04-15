@@ -52,6 +52,7 @@ typedef struct _BRUTXO {
 @property (nonatomic, readonly) uint64_t totalReceived; // the total amount received by the wallet (excluding change)
 @property (nonatomic, assign) uint64_t feePerKb; // fee per kb of transaction size to use when including tx fee
 @property (nonatomic, readonly) uint64_t minOutputAmount; // outputs below this amount are uneconomical due to fees
+@property (nonatomic, readonly) uint64_t maxOutputAmount; // largest amount that can be sent from the wallet after fees
 
 - (instancetype)initWithContext:(NSManagedObjectContext *)context sequence:(id<BRKeySequence>)sequence
 masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt, uint64_t amount))seed;
