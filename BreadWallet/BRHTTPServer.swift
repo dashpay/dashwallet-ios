@@ -38,6 +38,7 @@ enum BRHTTPServerError: ErrorType {
     var clients: Set<Int32> = []
     var middleware: [BRHTTPMiddleware] = [BRHTTPMiddleware]()
     var isStarted: Bool { return fd != -1 }
+    var port: in_port_t = 0
     
     var _Q: dispatch_queue_t? = nil
     var Q: dispatch_queue_t {
@@ -59,7 +60,22 @@ enum BRHTTPServerError: ErrorType {
         middleware.removeAll()
     }
     
-    func start(port: in_port_t = 8888, maxPendingConnections: Int32 = SOMAXCONN) throws {
+    func start() throws {
+        for _ in 0 ..< 100 {
+            // get a random port
+            let port = in_port_t(arc4random() % (49152 - 1024) + 1024)
+            do {
+                try start(port)
+                self.port = port
+                return
+            } catch {
+                continue
+            }
+        }
+        throw BRHTTPServerError.SocketBindFailed
+    }
+    
+    func start(port: in_port_t, maxPendingConnections: Int32 = SOMAXCONN) throws {
         stop()
         
         let sfd = socket(AF_INET, SOCK_STREAM, 0)
