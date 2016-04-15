@@ -87,9 +87,9 @@ static NSString *dateFormat(NSString *template)
     self.navigationController.delegate = self;
     self.moreTx = YES;
     
-    self.buyController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy"];
+    self.buyController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy" mountPoint:@"/buy"];
 #if DEBUG
-//     self.buyController.debugEndpoint = @"http://localhost:4200";
+//    self.buyController.debugEndpoint = @"http://localhost:8080";
 #endif
     [self.buyController startServer];
     [self.buyController preload];

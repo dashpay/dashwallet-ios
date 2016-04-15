@@ -30,6 +30,7 @@
 #import "BREventManager.h"
 #include <asl.h>
 #import "BRUserDefaultsSwitchCell.h"
+#import "breadwallet-Swift.h"
 
 
 @interface BRSettingsViewController ()
@@ -41,6 +42,8 @@
 @property (nonatomic, assign) NSUInteger selectorType;
 @property (nonatomic, strong) UISwipeGestureRecognizer *navBarSwipe;
 @property (nonatomic, strong) id balanceObserver;
+@property (nonatomic, strong) BRWebViewController *eaController;
+
 
 @end
 
@@ -52,6 +55,13 @@
     [super viewDidLoad];
     
     self.touchId = [BRWalletManager sharedInstance].touchIdEnabled;
+    
+    self.eaController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy" mountPoint:@"/ea"];
+#if DEBUG
+//    self.eaController.debugEndpoint = @"http://localhost:8080";
+#endif
+    [self.eaController startServer];
+    [self.eaController preload];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -193,7 +203,7 @@
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     if (tableView == self.selectorController.tableView) return 1;
-    return 3;
+    return 4;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -204,6 +214,7 @@
         case 0: return 2;
         case 1: return (self.touchId) ? 3 : 2;
         case 2: return 2;
+        case 3: return 1;
     }
     
     return 0;
@@ -260,11 +271,11 @@
                     } else {
                         goto _switch_cell;
                     }
+                    break;
                 case 2:
                 {
 _switch_cell:
                     cell = [tableView dequeueReusableCellWithIdentifier:@"SwitchCell" forIndexPath:indexPath];
-//                    return cell;
                     BRUserDefaultsSwitchCell *switchCell = (BRUserDefaultsSwitchCell *)cell;
                     switchCell.titleLabel.text = NSLocalizedString(@"enable receive notifications", nil);
                     [switchCell setUserDefaultsKey:USER_DEFAULTS_LOCAL_NOTIFICATIONS_KEY];
@@ -286,6 +297,11 @@ _switch_cell:
                     cell = [tableView dequeueReusableCellWithIdentifier:restoreIdent];
                     break;
             }
+            break;
+        case 3:
+            cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
+            cell.textLabel.text = @"early access";
+            break;
     }
 
     [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
@@ -437,6 +453,11 @@ _switch_cell:
     }
 }
 
+- (void)showEarlyAccess
+{
+    [self presentViewController:self.eaController animated:YES completion:nil];
+}
+
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
@@ -491,11 +512,13 @@ _switch_cell:
                     } else {
                         goto _deselect_switch;
                     }
+                    break;
                 case 2:
 _deselect_switch:
-                {
-                    [tableView deselectRowAtIndexPath:indexPath animated:YES];
-                }
+                    {
+                        [tableView deselectRowAtIndexPath:indexPath animated:YES];
+                    }
+                    break;
             }
             
             break;
@@ -513,6 +536,9 @@ _deselect_switch:
                     break;
             }
             
+            break;
+        case 3:
+            [self showEarlyAccess];
             break;
     }
 }

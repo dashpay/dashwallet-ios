@@ -18,10 +18,12 @@ import WebKit
     var bundleName: String
     var server = BRHTTPServer()
     var debugEndpoint: String?
+    var mountPoint: String
     
-    init(bundleName name: String) {
+    init(bundleName name: String, mountPoint mp: String = "/") {
         wkProcessPool = WKProcessPool()
         bundleName = name
+        mountPoint = mp
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -41,7 +43,7 @@ import WebKit
         config.requiresUserActionForMediaPlayback = true
         config.allowsPictureInPictureMediaPlayback = false
 
-        let indexUrl = NSURL(string: "http://localhost:8888/")!
+        let indexUrl = NSURL(string: "http://localhost:\(server.port)\(mountPoint)")!
         let request = NSURLRequest(URL: indexUrl)
         
         view = UIView(frame: CGRectZero)
