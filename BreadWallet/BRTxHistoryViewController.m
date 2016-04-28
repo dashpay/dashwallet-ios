@@ -425,13 +425,14 @@ static NSString *dateFormat(NSString *template)
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
+    bool buyEnabled = [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyWithCash];
     switch (section) {
         case 0:
             if (self.transactions.count == 0) return 1;
             return (self.moreTx) ? self.transactions.count + 1 : self.transactions.count;
 
         case 1:
-            return 3;
+            return (buyEnabled ? 3 : 2);
 
         case 2:
             return 1;
@@ -555,8 +556,9 @@ static NSString *dateFormat(NSString *template)
 
         case 1:
             cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
-
-            switch (indexPath.row) {
+            bool buyEnabled = [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyWithCash];
+            long adjustedRow = !buyEnabled ? indexPath.row + 1 : indexPath.row;
+            switch (adjustedRow) {
                 case 0:
                     cell.textLabel.text = NSLocalizedString(@"Buy Bitcoin", nil);
                     cell.imageView.image = [UIImage imageNamed:@"bitcoin-buy-blue-small"];
@@ -684,7 +686,10 @@ static NSString *dateFormat(NSString *template)
             break;
 
         case 1:
-            switch (indexPath.row) {
+        {
+            bool buyEnabled = [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyWithCash];
+            long adjustedRow = !buyEnabled ? indexPath.row + 1 : indexPath.row;
+            switch (adjustedRow) {
                 case 0: // buy bitcoin
                     [BREventManager saveEvent:@"tx_history:buy_btc"];
                     [tableView deselectRowAtIndexPath:indexPath animated:YES];
@@ -704,6 +709,7 @@ static NSString *dateFormat(NSString *template)
             }
 
             break;
+        }
 
         case 2: // settings
             [BREventManager saveEvent:@"tx_history:settings"];

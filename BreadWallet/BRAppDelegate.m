@@ -94,6 +94,8 @@
             NSLog(@"successfully updated bundle!");
         }
     }];
+    // update feature flags
+    [c updateFeatureFlags];
 
     //TODO: implement importing of private keys split with shamir's secret sharing:
     //      https://github.com/cetuscetus/btctool/blob/bip/bip-xxxx.mediawiki

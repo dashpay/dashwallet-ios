@@ -28,6 +28,18 @@ import Foundation
 
 let BRAPIClientErrorDomain = "BRApiClientErrorDomain"
 
+// these flags map to api feature flag name values
+// eg "buy-bitcoin-with-cash" is a persistent name in the /me/features list
+@objc public enum BRFeatureFlags: Int, CustomStringConvertible {
+    case BuyWithCash
+    
+    public var description: String {
+        switch self {
+        case .BuyWithCash: return "buy-bitcoin-with-cash";
+        }
+    }
+}
+
 public typealias URLSessionTaskHandler = (NSData?, NSHTTPURLResponse?, NSError?) -> Void
 public typealias URLSessionChallengeHandler = (NSURLSessionAuthChallengeDisposition, NSURLCredential?) -> Void
 
@@ -449,6 +461,44 @@ func httpDateNow() -> String {
             }
         }
         task.resume()
+    }
+    
+    // MARK: feature flags API
+    
+    public func defaultsKeyForFeatureFlag(name: String) -> String {
+        return "ff:\(name)"
+    }
+    
+    public func updateFeatureFlags() {
+        let req = NSURLRequest(URL: url("/me/features"))
+        dataTaskWithRequest(req, authenticated: true) { (data, resp, err) in
+            if let resp = resp, data = data {
+                if resp.statusCode == 200 {
+                    let defaults = NSUserDefaults.standardUserDefaults()
+                    do {
+                        let j = try NSJSONSerialization.JSONObjectWithData(data, options: [])
+                        let features = j as! [[String: AnyObject]]
+                        for feat in features {
+                            if let fn = feat["name"], fname = fn as? String, fe = feat["enabled"], fenabled = fe as? Bool {
+                                self.log("feature \(fname) enabled: \(fenabled)")
+                                defaults.setBool(fenabled, forKey: self.defaultsKeyForFeatureFlag(fname))
+                            } else {
+                                self.log("malformed feature: \(feat)")
+                            }
+                        }
+                    } catch let e {
+                        self.log("error loading features json: \(e)")
+                    }
+                }
+            } else {
+                self.log("error fetching features: \(err)")
+            }
+        }.resume()
+    }
+    
+    public func featureEnabled(flag: BRFeatureFlags) -> Bool {
+        let defaults = NSUserDefaults.standardUserDefaults()
+        return true //defaults.boolForKey(defaultsKeyForFeatureFlag(flag.description))
     }
     
     // MARK: Assets API
