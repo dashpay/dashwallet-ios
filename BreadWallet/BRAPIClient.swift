@@ -498,7 +498,7 @@ func httpDateNow() -> String {
     
     public func featureEnabled(flag: BRFeatureFlags) -> Bool {
         let defaults = NSUserDefaults.standardUserDefaults()
-        return true //defaults.boolForKey(defaultsKeyForFeatureFlag(flag.description))
+        return defaults.boolForKey(defaultsKeyForFeatureFlag(flag.description))
     }
     
     // MARK: Assets API
