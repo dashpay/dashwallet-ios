@@ -540,7 +540,16 @@
 
 - (void)testPaymentRequest
 {
-    BRPaymentRequest *r = [BRPaymentRequest requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW"];
+    BRPaymentRequest *r = [BRPaymentRequest requestWithString:@"1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW"];
+    XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW", r.string,
+                          @"[BRPaymentRequest requestWithString:]");
+
+    r = [BRPaymentRequest requestWithString:@"1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQ"];
+    XCTAssertFalse(r.isValid);
+    XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQ", r.string,
+                          @"[BRPaymentRequest requestWithString:]");
+
+    r = [BRPaymentRequest requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW"];
     XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW", r.string,
                           @"[BRPaymentRequest requestWithString:]");
     
@@ -589,6 +598,21 @@
     r = [BRPaymentRequest requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?label=foo%26bar"];
     XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?label=foo%26bar", r.string,
                           @"[BRPaymentRequest requestWithString:]");
+    
+    // test handling of ' ' in label or message
+    r = [BRPaymentRequest
+         requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?label=foo bar&message=bar foo"];
+    XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?label=foo%20bar&message=bar%20foo", r.string,
+                          @"[BRPaymentRequest requestWithString:]");
+    
+    // test bip73
+    r = [BRPaymentRequest requestWithString:@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?r=https://foobar.com"];
+    XCTAssertEqualObjects(@"bitcoin:1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW?r=https://foobar.com", r.string,
+                          @"[BRPaymentRequest requestWithString:]");
+
+    r = [BRPaymentRequest requestWithString:@"bitcoin:?r=https://foobar.com"];
+    XCTAssertTrue(r.isValid);
+    XCTAssertEqualObjects(@"bitcoin:?r=https://foobar.com", r.string, @"[BRPaymentRequest requestWithString:]");
 }
 
 #pragma mark - testTransaction

@@ -98,7 +98,6 @@
         off += l;
 
         for (NSUInteger i = 0; i < count; i++) { // outputs
-
             [self.amounts addObject:@([message UInt64AtOffset:off])]; // output amount
             off += sizeof(uint64_t);
             d = [message dataAtOffset:off length:&l];

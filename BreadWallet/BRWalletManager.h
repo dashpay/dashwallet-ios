@@ -49,7 +49,7 @@
 @property (nonatomic, readonly) BOOL watchOnly; // true if this is a "watch only" wallet with no signing ability
 @property (nonatomic, strong) id<BRKeySequence> _Nullable sequence;
 @property (nonatomic, strong) id<BRMnemonic> _Nullable mnemonic;
-@property (nonatomic, readonly) NSData * _Nullable masterPublicKey; // master public key used to generate wallet addresses
+@property (nonatomic, readonly) NSData * _Nullable masterPublicKey;//master public key used to generate wallet addresses
 @property (nonatomic, copy) NSString * _Nullable seedPhrase; // requesting seedPhrase will trigger authentication
 @property (nonatomic, readonly) NSTimeInterval seedCreationTime; // interval since refrence date, 00:00:00 01/01/01 GMT
 @property (nonatomic, readonly) NSTimeInterval secureTime; // last known time from an ssl server connection
@@ -67,22 +67,23 @@
 
 + (instancetype _Nullable)sharedInstance;
 
-- (NSString * _Nullable)generateRandomSeed; // generates a random seed, saves to keychain and returns the associated seedPhrase
-- (NSData * _Nullable)seedWithPrompt:(NSString * _Nullable)authprompt forAmount:(uint64_t)amount; // authenticates user and returns seed
-- (NSString * _Nullable)seedPhraseWithPrompt:(NSString * _Nullable)authprompt; // authenticates user and returns seedPhrase
-- (BOOL)authenticateWithPrompt:(NSString * _Nullable)authprompt andTouchId:(BOOL)touchId; // prompts user to authenticate
+- (NSString * _Nullable)generateRandomSeed; // generates a random seed, saves to keychain and returns the seedPhrase
+- (NSData * _Nullable)seedWithPrompt:(NSString * _Nullable)authprompt forAmount:(uint64_t)amount;//auth user,return seed
+- (NSString * _Nullable)seedPhraseWithPrompt:(NSString * _Nullable)authprompt; // authenticates user, returns seedPhrase
+- (BOOL)authenticateWithPrompt:(NSString * _Nullable)authprompt andTouchId:(BOOL)touchId; // prompt user to authenticate
 - (BOOL)setPin; // prompts the user to set or change wallet pin and returns true if the pin was successfully set
 
 // queries chain.com and calls the completion block with unspent outputs for the given address
 - (void)utxosForAddress:(NSString * _Nonnull)address
-completion:(void (^ _Nonnull)(NSArray * _Nonnull utxos, NSArray * _Nonnull amounts, NSArray * _Nonnull scripts, NSError * _Null_unspecified error))completion;
+completion:(void (^ _Nonnull)(NSArray * _Nonnull utxos, NSArray * _Nonnull amounts, NSArray * _Nonnull scripts,
+                              NSError * _Null_unspecified error))completion;
 
 // given a private key, queries chain.com for unspent outputs and calls the completion block with a signed transaction
 // that will sweep the balance into wallet (doesn't publish the tx)
 - (void)sweepPrivateKey:(NSString * _Nonnull)privKey withFee:(BOOL)fee
 completion:(void (^ _Nonnull)(BRTransaction * _Nonnull tx, uint64_t fee, NSError * _Null_unspecified error))completion;
 
-- (int64_t)amountForString:(NSString * _Nonnull)string;
+- (int64_t)amountForString:(NSString * _Nullable)string;
 - (NSString * _Nonnull)stringForAmount:(int64_t)amount;
 - (int64_t)amountForLocalCurrencyString:(NSString * _Nonnull)string;
 - (NSString * _Nonnull)localCurrencyStringForAmount:(int64_t)amount;
