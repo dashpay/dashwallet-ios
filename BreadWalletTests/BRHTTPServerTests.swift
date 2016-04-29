@@ -60,7 +60,7 @@ class BRHTTPServerTests: XCTestCase {
     func testDownloadFile() {
         let exp = expectationWithDescription("load")
         
-        let url = NSURL(string: "http://localhost:8888/bundle.tar")!
+        let url = NSURL(string: "http://localhost:\(server.port)/bundle.tar")!
         let req = NSURLRequest(URL: url)
         NSURLSession.sharedSession().dataTaskWithRequest(req) { (data, resp, error) -> Void in
             NSLog("error: \(error)")
