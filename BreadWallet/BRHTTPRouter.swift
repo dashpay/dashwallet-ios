@@ -47,14 +47,12 @@ public typealias BRHTTPRoute = (request: BRHTTPRequest, match: BRHTTPRouteMatch)
         var i = 0
         for part in parts {
             if part.hasPrefix("(") && part.hasSuffix(")") {
-                let wcRange = Range(start: part.endIndex.advancedBy(-2), end: part.endIndex.advancedBy(-1))
+                let wcRange = part.endIndex.advancedBy(-2)..<part.endIndex.advancedBy(-1)
                 if part.substringWithRange(wcRange) == "*" { // a wild card capture (part*)
-                    captureGroups[i] = part.substringWithRange(
-                        Range(start: part.startIndex.advancedBy(1), end: part.endIndex.advancedBy((-2))))
+                    captureGroups[i] = part.substringWithRange(part.startIndex.advancedBy(1)..<part.endIndex.advancedBy(-2))
                     reParts.append("(.*)")
                 } else {
-                    captureGroups[i] = part.substringWithRange(
-                        Range(start: part.startIndex.advancedBy(1), end: part.endIndex.advancedBy(-1)))
+                    captureGroups[i] = part.substringWithRange(part.startIndex.advancedBy(1)..<part.endIndex.advancedBy(-1))
                     reParts.append("([^/]+)") // a capture (part)
                 }
                 i += 1
