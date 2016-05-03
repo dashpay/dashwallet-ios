@@ -31,9 +31,11 @@ class BreadWalletUISnapshot: XCTestCase {
         
         continueAfterFailure = false
         
-        let app = XCUIApplication()
-        setupSnapshot(app)
-        app.launch()
+        if (_SNAPSHOT) {
+            let app = XCUIApplication()
+            setupSnapshot(app)
+            app.launch()
+        }
     }
     
     override func tearDown() {

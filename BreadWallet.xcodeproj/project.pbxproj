@@ -253,7 +253,6 @@
 		22F45A0D1C3326CC00B07A15 /* BRUserDefaultsSwitchCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRUserDefaultsSwitchCell.m; sourceTree = "<group>"; };
 		22F45A0F1C3329EB00B07A15 /* BRUserDefaultsConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRUserDefaultsConstants.h; sourceTree = "<group>"; };
 		22FCD22B1C0E68C80066D798 /* BRTarTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRTarTests.swift; sourceTree = "<group>"; };
-		22FCD22D1C0E6BA30066D798 /* BreadWalletTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "BreadWalletTests-Bridging-Header.h"; path = "BreadWallet/BreadWalletTests-Bridging-Header.h"; sourceTree = SOURCE_ROOT; };
 		22FF2C361BED381400B36384 /* breadwallet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "breadwallet-Bridging-Header.h"; sourceTree = "<group>"; };
 		22FF2C371BED381400B36384 /* BRAPIClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRAPIClient.swift; sourceTree = "<group>"; };
 		31D68B501C23B6C10030FAAA /* BreadWalletUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BreadWalletUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -443,6 +442,8 @@
 		75DE024F1B0EB8030027FF08 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Main.strings; sourceTree = "<group>"; };
 		75DE02511B0EB8030027FF08 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75E83CF51B5F997A0038FB70 /* coinflip.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = coinflip.aiff; sourceTree = "<group>"; };
+		75EDC0E61CD92CE00090B838 /* BreadWalletUITests-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BreadWalletUITests-Bridging-Header.h"; sourceTree = "<group>"; };
+		75EDC0E71CD92EA90090B838 /* BreadWalletTests-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BreadWalletTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		75F2E0B61BE2D5F000EAE861 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		75F2E0B81BE5596200EAE861 /* secp256k1_ecdh.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = secp256k1_ecdh.h; sourceTree = "<group>"; };
 		75F2E0B91BE5596200EAE861 /* secp256k1_recovery.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = secp256k1_recovery.h; sourceTree = "<group>"; };
@@ -610,6 +611,7 @@
 				31D68B5A1C23B6FD0030FAAA /* SnapshotHelper.swift */,
 				31D68B521C23B6C10030FAAA /* BreadWalletUITests.swift */,
 				31D68B541C23B6C10030FAAA /* Info.plist */,
+				75EDC0E61CD92CE00090B838 /* BreadWalletUITests-Bridging-Header.h */,
 			);
 			path = BreadWalletUITests;
 			sourceTree = "<group>";
@@ -903,7 +905,7 @@
 				22B6A4491C0ECB7800673913 /* BRBSPatchTests.swift */,
 				222040C71C1A3803005CE1C3 /* BRHTTPServerTests.swift */,
 				222E7F511C43291C009AB45D /* BRDocumentStoreTests.swift */,
-				22FCD22D1C0E6BA30066D798 /* BreadWalletTests-Bridging-Header.h */,
+				75EDC0E71CD92EA90090B838 /* BreadWalletTests-Bridging-Header.h */,
 			);
 			path = BreadWalletTests;
 			sourceTree = "<group>";
@@ -1598,6 +1600,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.breadwallet.BreadWalletUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "BreadWalletUITests/BreadWalletUITests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TEST_TARGET_NAME = breadwallet;
 				USES_XCTRUNNER = YES;
@@ -1614,6 +1617,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.breadwallet.BreadWalletUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "BreadWalletUITests/BreadWalletUITests-Bridging-Header.h";
 				TEST_TARGET_NAME = breadwallet;
 				USES_XCTRUNNER = YES;
 			};
@@ -1790,7 +1794,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "org.voisine.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "BreadWallet/BreadWalletTests-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "BreadWalletTests/BreadWalletTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TEST_HOST = "$(BUNDLE_LOADER)";
 			};
@@ -1808,7 +1812,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "org.voisine.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "BreadWallet/BreadWalletTests-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "BreadWalletTests/BreadWalletTests-Bridging-Header.h";
 				TEST_HOST = "$(BUNDLE_LOADER)";
 			};
 			name = Release;

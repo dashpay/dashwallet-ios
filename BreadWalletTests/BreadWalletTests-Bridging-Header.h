@@ -9,5 +9,4 @@
 #ifndef BreadWalletTests_Bridging_Header_h
 #define BreadWalletTests_Bridging_Header_h
 
-
 #endif /* BreadWalletTests_Bridging_Header_h */
