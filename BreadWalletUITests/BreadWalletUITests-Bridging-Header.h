@@ -12,9 +12,9 @@
 #include "BreadWallet-Prefix.pch"
 
 #if SNAPSHOT
-static const bool _SNAPSHOT = TRUE;
+static const bool _SNAPSHOT = 1;
 #else
-static const bool _SNAPSHOT = FALSE;
+static const bool _SNAPSHOT = 0;
 #endif
 
 #endif /* BreadWalletUITests_Bridging_Header_h */
