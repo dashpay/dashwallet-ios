@@ -36,7 +36,7 @@ extension String {
                     if i != 0 {
                         s += "&"
                     }
-                    i++
+                    i += 1
                     s += "\(k.urlEscapedString)=\(v.urlEscapedString)"
                 }
             }

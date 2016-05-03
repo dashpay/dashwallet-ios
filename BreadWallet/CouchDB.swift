@@ -201,7 +201,8 @@ public class RemoteCouchDB: ReplicationClient {
         return result
     }
     
-    public func bulkDocs<T : Document>(var docs: [T], options: [String: AnyObject]?) -> AsyncResult<[Bool]> {
+    public func bulkDocs<T : Document>(docs: [T], options: [String: AnyObject]?) -> AsyncResult<[Bool]> {
+        var docs = docs;
         let result = AsyncResult<[Bool]>()
         var mopts = options
         var docsJson: [String: AnyObject] = ["docs": docs.map() { (doc) -> [String: AnyObject] in return doc.dict() }]
