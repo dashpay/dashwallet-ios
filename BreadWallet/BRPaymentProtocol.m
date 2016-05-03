@@ -432,6 +432,7 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
         
         _signature = sig;
         CFRelease(pubKey);
+        CFRelease(trust);
 
         if (status != errSecSuccess) {
             if (status == errSecUnimplemented) {
