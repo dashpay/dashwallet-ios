@@ -75,6 +75,7 @@
 		752E28EB19234DA200DB5A3C /* NSString+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E28E619234DA200DB5A3C /* NSString+Bitcoin.m */; };
 		752E28F119234E8100DB5A3C /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E28F019234E8100DB5A3C /* Reachability.m */; settings = {COMPILER_FLAGS = "-w"; }; };
 		752E28F719235B3000DB5A3C /* FixedPeers.plist in Resources */ = {isa = PBXBuildFile; fileRef = 752E28F519235B3000DB5A3C /* FixedPeers.plist */; };
+		754119E01CDA93FF0042DC51 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */; };
 		7548CF3719556FD700EF827F /* BRCopyLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 7548CF3619556FD700EF827F /* BRCopyLabel.m */; };
 		755FC9ED1BF1DF1B00164ABB /* BREventConfirmView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 755FC9EF1BF1DF1B00164ABB /* BREventConfirmView.xib */; };
 		7568FB5A1B5B5EC10000B652 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 75D5F3DF191EC270004AB296 /* Images.xcassets */; };
@@ -226,7 +227,6 @@
 		222040C71C1A3803005CE1C3 /* BRHTTPServerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRHTTPServerTests.swift; sourceTree = "<group>"; };
 		222C44401C5E75C80002FE7B /* DocumentMetadata.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DocumentMetadata.swift; sourceTree = "<group>"; };
 		222E7F511C43291C009AB45D /* BRDocumentStoreTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRDocumentStoreTests.swift; sourceTree = "<group>"; };
-		222E7F531C46E62A009AB45D /* libcommonCrypto.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcommonCrypto.tbd; path = usr/lib/system/libcommonCrypto.tbd; sourceTree = SDKROOT; };
 		222E7F551C46E9B8009AB45D /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		222E7F571C46E9BE009AB45D /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		225383001C694D7400968BEE /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
@@ -339,6 +339,9 @@
 		752E28EF19234E8100DB5A3C /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = SOURCE_ROOT; };
 		752E28F019234E8100DB5A3C /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = SOURCE_ROOT; };
 		752E28F519235B3000DB5A3C /* FixedPeers.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = FixedPeers.plist; sourceTree = "<group>"; };
+		754119E21CDA97820042DC51 /* main_impl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main_impl.h; sourceTree = "<group>"; };
+		754119E41CDA97820042DC51 /* schnorr.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = schnorr.h; sourceTree = "<group>"; };
+		754119E51CDA97820042DC51 /* schnorr_impl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = schnorr_impl.h; sourceTree = "<group>"; };
 		7548CF3519556FD700EF827F /* BRCopyLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCopyLabel.h; sourceTree = "<group>"; };
 		7548CF3619556FD700EF827F /* BRCopyLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCopyLabel.m; sourceTree = "<group>"; };
 		757BE7E1192C0E9D0061CB20 /* BRRestoreViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRRestoreViewController.h; sourceTree = "<group>"; };
@@ -452,9 +455,6 @@
 		75F2E0BD1BE559AE00EAE861 /* ecmult_const.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ecmult_const.h; sourceTree = "<group>"; };
 		75F2E0C01BE559F200EAE861 /* main_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main_impl.h; sourceTree = "<group>"; };
 		75F2E0C41BE559F200EAE861 /* main_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main_impl.h; sourceTree = "<group>"; };
-		75F2E0C81BE559F200EAE861 /* main_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main_impl.h; sourceTree = "<group>"; };
-		75F2E0CA1BE559F200EAE861 /* schnorr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = schnorr.h; sourceTree = "<group>"; };
-		75F2E0CB1BE559F200EAE861 /* schnorr_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = schnorr_impl.h; sourceTree = "<group>"; };
 		75F2E0D21BE9803900EAE861 /* Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		75F2E0D41BEAA6A400EAE861 /* BRTxMetadataEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRTxMetadataEntity.h; sourceTree = "<group>"; };
 		75F2E0D51BEAA6A400EAE861 /* BRTxMetadataEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTxMetadataEntity.m; sourceTree = "<group>"; };
@@ -546,6 +546,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				754119E01CDA93FF0042DC51 /* NotificationCenter.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -718,6 +719,16 @@
 			name = Categories;
 			sourceTree = "<group>";
 		};
+		754119E11CDA97820042DC51 /* schnorr */ = {
+			isa = PBXGroup;
+			children = (
+				754119E21CDA97820042DC51 /* main_impl.h */,
+				754119E41CDA97820042DC51 /* schnorr.h */,
+				754119E51CDA97820042DC51 /* schnorr_impl.h */,
+			);
+			path = schnorr;
+			sourceTree = "<group>";
+		};
 		7579F7FE19231D4600CA56F4 /* ThirdParty */ = {
 			isa = PBXGroup;
 			children = (
@@ -846,7 +857,6 @@
 				22D3613C1C56F2CD0057CF76 /* libsqlite3.tbd */,
 				222E7F571C46E9BE009AB45D /* SystemConfiguration.framework */,
 				222E7F551C46E9B8009AB45D /* Security.framework */,
-				222E7F531C46E62A009AB45D /* libcommonCrypto.tbd */,
 				222040C51C1A1940005CE1C3 /* WebKit.framework */,
 				22B6A4471C0E963900673913 /* libbz2.tbd */,
 				75F2E0B61BE2D5F000EAE861 /* Accelerate.framework */,
@@ -899,20 +909,12 @@
 			isa = PBXGroup;
 			children = (
 				75D5F3F2191EC270004AB296 /* BreadWalletTests.m */,
-				75D5F3ED191EC270004AB296 /* BreadWalletTests */,
 				22FCD22B1C0E68C80066D798 /* BRTarTests.swift */,
 				22B6A4491C0ECB7800673913 /* BRBSPatchTests.swift */,
 				222040C71C1A3803005CE1C3 /* BRHTTPServerTests.swift */,
 				222E7F511C43291C009AB45D /* BRDocumentStoreTests.swift */,
-				75EDC0E71CD92EA90090B838 /* BreadWalletTests-Bridging-Header.h */,
-			);
-			path = BreadWalletTests;
-			sourceTree = "<group>";
-		};
-		75D5F3ED191EC270004AB296 /* BreadWalletTests */ = {
-			isa = PBXGroup;
-			children = (
 				75CE50B51B5216F100DBC18C /* Info.plist */,
+				75EDC0E71CD92EA90090B838 /* BreadWalletTests-Bridging-Header.h */,
 			);
 			path = BreadWalletTests;
 			sourceTree = "<group>";
@@ -922,7 +924,7 @@
 			children = (
 				75F2E0BF1BE559F200EAE861 /* ecdh */,
 				75F2E0C31BE559F200EAE861 /* recovery */,
-				75F2E0C71BE559F200EAE861 /* schnorr */,
+				754119E11CDA97820042DC51 /* schnorr */,
 			);
 			path = modules;
 			sourceTree = "<group>";
@@ -942,16 +944,6 @@
 			);
 			path = recovery;
 			sourceTree = "<group>";
-		};
-		75F2E0C71BE559F200EAE861 /* schnorr */ = {
-			isa = PBXGroup;
-			children = (
-				75F2E0C81BE559F200EAE861 /* main_impl.h */,
-				75F2E0CA1BE559F200EAE861 /* schnorr.h */,
-				75F2E0CB1BE559F200EAE861 /* schnorr_impl.h */,
-			);
-			path = schnorr;
-			sourceTree = "<unknown>";
 		};
 		BA913BDF1BD57E4D005A7C0E /* WatchApp */ = {
 			isa = PBXGroup;
@@ -1737,10 +1729,6 @@
 				);
 				INFOPLIST_FILE = BreadWallet/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SDKROOT)/usr/lib/system",
-				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.voisine.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "BreadWallet/breadwallet-Bridging-Header.h";
@@ -1767,10 +1755,6 @@
 				);
 				INFOPLIST_FILE = BreadWallet/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SDKROOT)/usr/lib/system",
-				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.voisine.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "BreadWallet/breadwallet-Bridging-Header.h";
