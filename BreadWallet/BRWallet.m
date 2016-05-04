@@ -834,7 +834,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 {
     BRUTXO o;
     BRTransaction *tx;
-    NSUInteger inputCount;
+    NSUInteger inputCount = 0;
     uint64_t amount = 0, fee;
     size_t cpfpSize = 0, txSize;
 
