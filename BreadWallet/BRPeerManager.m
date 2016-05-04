@@ -428,7 +428,9 @@ static const char *dns_seeds[] = {
             [hash getValue:&o.hash];
             o.n = [tx.inputIndexes[i++] unsignedIntValue];
             
-            if ([manager.wallet transactionForHash:o.hash]) {
+            BRTransaction *t = [manager.wallet transactionForHash:o.hash];
+
+            if (o.n < t.outputAddresses.count && [manager.wallet containsAddress:t.outputAddresses[o.n]]) {
                 d = brutxo_data(o);
                 if (! [filter containsData:d]) [filter insertData:d];
             }
