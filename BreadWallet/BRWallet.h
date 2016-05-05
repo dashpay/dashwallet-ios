@@ -32,7 +32,7 @@
 
 typedef struct _BRUTXO {
     UInt256 hash;
-    unsigned long n;
+    unsigned long n; // use unsigned long instead of uint32_t to avoid trailing struct padding (for NSValue comparisons)
 } BRUTXO;
 
 #define brutxo_obj(o) [NSValue value:&(o) withObjCType:@encode(BRUTXO)]
