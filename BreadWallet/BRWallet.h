@@ -39,7 +39,7 @@ typedef struct _BRUTXO {
 #define brutxo_data(o) [NSData dataWithBytes:&((struct { uint32_t u[256/32 + 1]; }) {\
     o.hash.u32[0], o.hash.u32[1], o.hash.u32[2], o.hash.u32[3],\
     o.hash.u32[4], o.hash.u32[5], o.hash.u32[6], o.hash.u32[7],\
-    CFSwapInt32HostToLittle(o.n) }) length:sizeof(UInt256) + sizeof(uint32_t)]
+    CFSwapInt32HostToLittle((uint32_t)o.n) }) length:sizeof(UInt256) + sizeof(uint32_t)]
 
 @class BRTransaction;
 @protocol BRKeySequence;
