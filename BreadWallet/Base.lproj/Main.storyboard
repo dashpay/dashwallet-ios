@@ -2055,7 +2055,7 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <view tag="100" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="oiA-qx-HTw">
-                                            <rect key="frame" x="0.0" y="0.0" width="0.0" height="1"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="355" height="1"/>
                                             <color key="backgroundColor" white="0.80000000000000004" alpha="1" colorSpace="calibratedWhite"/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="0.5" id="mL5-oy-Mfm"/>
@@ -2070,7 +2070,7 @@
                                             <size key="shadowOffset" width="0.0" height="0.0"/>
                                         </label>
                                         <view tag="101" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="NAS-Si-KoG">
-                                            <rect key="frame" x="0.0" y="44" width="323" height="1"/>
+                                            <rect key="frame" x="0.0" y="44" width="378" height="1"/>
                                             <color key="backgroundColor" white="0.80000000000000004" alpha="1" colorSpace="calibratedWhite"/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="0.5" id="kjQ-bE-S7m"/>
@@ -2079,7 +2079,7 @@
                                     </subviews>
                                     <constraints>
                                         <constraint firstItem="oiA-qx-HTw" firstAttribute="left" secondItem="GVi-Om-op4" secondAttribute="left" id="2IV-OK-bsf"/>
-                                        <constraint firstAttribute="trailing" secondItem="oiA-qx-HTw" secondAttribute="trailing" constant="320" id="AiU-22-Fbs"/>
+                                        <constraint firstAttribute="trailing" secondItem="oiA-qx-HTw" secondAttribute="trailing" constant="20" symbolic="YES" id="AiU-22-Fbs"/>
                                         <constraint firstItem="D1b-HB-lKH" firstAttribute="right" secondItem="NAS-Si-KoG" secondAttribute="right" constant="-18" id="PCn-lI-mun"/>
                                         <constraint firstItem="oiA-qx-HTw" firstAttribute="top" secondItem="GVi-Om-op4" secondAttribute="top" id="RKI-4k-eFv"/>
                                         <constraint firstItem="NAS-Si-KoG" firstAttribute="left" secondItem="GVi-Om-op4" secondAttribute="left" id="nCW-Oa-L7K"/>
@@ -2179,6 +2179,13 @@
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
+                                        <view tag="100" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Os3-ju-5lb">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="1"/>
+                                            <color key="backgroundColor" white="0.80000000000000004" alpha="1" colorSpace="calibratedWhite"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="0.5" id="I1r-8d-OI8"/>
+                                            </constraints>
+                                        </view>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="1100" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="349" translatesAutoresizingMaskIntoConstraints="NO" id="mxS-i4-y1n">
                                             <rect key="frame" x="18" y="8" width="349" height="27.5"/>
                                             <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
@@ -2191,13 +2198,26 @@
                                                 <action selector="didUpdateSwitch:" destination="Pe6-Hf-Vsq" eventType="valueChanged" id="kim-Vz-Wk2"/>
                                             </connections>
                                         </switch>
+                                        <view tag="101" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1ff-qS-BbM">
+                                            <rect key="frame" x="0.0" y="44" width="375" height="1"/>
+                                            <color key="backgroundColor" white="0.80000000000000004" alpha="1" colorSpace="calibratedWhite"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="0.5" id="nV4-dH-Si8"/>
+                                            </constraints>
+                                        </view>
                                     </subviews>
                                     <constraints>
+                                        <constraint firstItem="Os3-ju-5lb" firstAttribute="left" secondItem="anH-PG-rgl" secondAttribute="left" id="DQI-LQ-M0i"/>
                                         <constraint firstItem="mxS-i4-y1n" firstAttribute="leading" secondItem="anH-PG-rgl" secondAttribute="leadingMargin" constant="10" id="DcE-om-Ph7"/>
                                         <constraint firstAttribute="trailingMargin" secondItem="mxS-i4-y1n" secondAttribute="trailing" id="MWo-tl-gPd"/>
                                         <constraint firstItem="4SS-5m-RoG" firstAttribute="centerY" secondItem="anH-PG-rgl" secondAttribute="centerY" id="Qk9-Zx-Ztk"/>
+                                        <constraint firstItem="1ff-qS-BbM" firstAttribute="top" secondItem="Os3-ju-5lb" secondAttribute="bottom" constant="43" id="SIf-a3-pcv"/>
+                                        <constraint firstItem="1ff-qS-BbM" firstAttribute="left" secondItem="anH-PG-rgl" secondAttribute="left" id="djo-DI-Obu"/>
                                         <constraint firstItem="4SS-5m-RoG" firstAttribute="trailing" secondItem="anH-PG-rgl" secondAttribute="trailingMargin" constant="-10" id="pbQ-EL-hvu"/>
+                                        <constraint firstItem="Os3-ju-5lb" firstAttribute="top" secondItem="anH-PG-rgl" secondAttribute="top" id="qCK-Jh-7h8"/>
                                         <constraint firstItem="mxS-i4-y1n" firstAttribute="top" secondItem="anH-PG-rgl" secondAttribute="topMargin" id="sK8-te-S1j"/>
+                                        <constraint firstAttribute="right" secondItem="Os3-ju-5lb" secondAttribute="right" id="ud5-tW-M03"/>
+                                        <constraint firstAttribute="right" secondItem="1ff-qS-BbM" secondAttribute="right" id="w8k-rF-3Pg"/>
                                         <constraint firstAttribute="bottomMargin" secondItem="mxS-i4-y1n" secondAttribute="bottom" id="wdn-ww-LII"/>
                                     </constraints>
                                 </tableViewCellContentView>
