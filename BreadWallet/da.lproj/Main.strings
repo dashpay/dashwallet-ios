@@ -77,7 +77,7 @@
 "t1j-JZ-FW0.text" = "ingen overførsler";
 
 /* Class = "UILabel"; text = "breadwallet v%ver%%net%\ncopyright © 2016 breadwallet LLC\n\nthis app is open source"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "breadwallet v%ver%%net%\nophavsret © 2015 Aaron Voisine\n\ndenne app er open source";
+"uvz-hk-Nr4.text" = "breadwallet v%ver%%net%\nophavsret © 2016 breadwallet LLC\n\ndenne app er open source";
 
 /* Class = "UILabel"; text = "start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
 "wDZ-DN-szv.text" = "start en ny tegnebog ved at generere en gendannelsessætning";

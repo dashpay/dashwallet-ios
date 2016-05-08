@@ -77,7 +77,7 @@
 "t1j-JZ-FW0.text" = "keine Transaktionen";
 
 /* Class = "UILabel"; text = "breadwallet v%ver%%net%\ncopyright © 2016 breadwallet LLC\n\nthis app is open source"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "breadwallet  v%ver%%net%\nCopyright © 2015 Aaron Voisine\n\nDiese App ist Open-Source";
+"uvz-hk-Nr4.text" = "breadwallet  v%ver%%net%\nCopyright © 2016 breadwallet LLC\n\nDiese App ist Open-Source";
 
 /* Class = "UILabel"; text = "start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
 "wDZ-DN-szv.text" = "Beginnen Sie ein neues Wallet, indem Sie eine Wiederherstellungs-Wortfolge generieren";
