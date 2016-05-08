@@ -27,6 +27,7 @@
 #import "BRSeedViewController.h"
 #import "BRWalletManager.h"
 #import "BRBubbleView.h"
+#import "BRPeerManager.h"
 #import "BREventManager.h"
 #include <asl.h>
 #import "BRUserDefaultsSwitchCell.h"
@@ -122,6 +123,12 @@
 
 #pragma mark - IBAction
 
+- (IBAction)done:(id)sender
+{
+    [BREventManager saveEvent:@"settings:dismiss"];
+    [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+}
+
 - (IBAction)about:(id)sender
 {
     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://breadwallet.com"]];
@@ -213,7 +220,7 @@
     switch (section) {
         case 0: return 2;
         case 1: return (self.touchId) ? 3 : 2;
-        case 2: return 2;
+        case 2: return 3;
         case 3: return 1;
     }
     
@@ -296,6 +303,12 @@ _switch_cell:
                 case 1:
                     cell = [tableView dequeueReusableCellWithIdentifier:restoreIdent];
                     break;
+                    
+                case 2:
+                    cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
+                    cell.textLabel.text = NSLocalizedString(@"rescan blockchain", nil);
+                    break;
+
             }
             break;
         case 3:
@@ -311,6 +324,22 @@ _switch_cell:
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
     if (tableView == self.selectorController.tableView && self.selectorOptions.count == 0) return self.noOptionsText;
+    
+    switch (section) {
+        case 0:
+            return nil;
+            
+        case 1:
+            return nil;
+            
+        case 2:
+            return nil;
+            
+        case 3:
+            return NSLocalizedString(@"rescan blockchain if you think you may have missing transactions, "
+                                     "or are having trouble sending (rescanning can take several minutes)", nil);
+    }
+    
     return nil;
 }
 
@@ -533,6 +562,12 @@ _deselect_switch:
 
                 case 1: // start/recover another wallet (handled by storyboard)
                     [BREventManager saveEvent:@"settings:recover"];
+                    break;
+                    
+                case 2: // rescan blockchain
+                    [[BRPeerManager sharedInstance] rescan];
+                    [BREventManager saveEvent:@"settings:rescan"];
+                    [self done:nil];
                     break;
             }
             

@@ -432,7 +432,7 @@ static NSString *dateFormat(NSString *template)
             return (self.moreTx) ? self.transactions.count + 1 : self.transactions.count;
 
         case 1:
-            return (buyEnabled ? 3 : 2);
+            return (buyEnabled ? 2 : 1);
 
         case 2:
             return 1;
@@ -590,22 +590,22 @@ static NSString *dateFormat(NSString *template)
     return cell;
 }
 
-- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
-{
-    switch (section) {
-        case 0:
-            return nil;
-
-        case 1:
-            return nil;
-            
-        case 2:
-            return NSLocalizedString(@"rescan blockchain if you think you may have missing transactions, "
-                                     "or are having trouble sending (rescanning can take several minutes)", nil);
-    }
-    
-    return nil;
-}
+//- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
+//{
+//    switch (section) {
+//        case 0:
+//            return nil;
+//
+//        case 1:
+//            return nil;
+//            
+//        case 2:
+//            return NSLocalizedString(@"rescan blockchain if you think you may have missing transactions, "
+//                                     "or are having trouble sending (rescanning can take several minutes)", nil);
+//    }
+//    
+//    return nil;
+//}
 
 #pragma mark - UITableViewDelegate
 
