@@ -77,18 +77,13 @@ import Foundation
                 }
             }
             
-            var verify = false, auth = false
-            if let verifyHeader = request.headers[shouldVerifyHeader] where verifyHeader.count > 0 {
-                if verifyHeader[0].lowercaseString == "yes" {
-                    verify = true
-                }
-            }
+            var auth = false
             if let authHeader = request.headers[shouldAuthHeader] where authHeader.count > 0 {
                 if authHeader[0].lowercaseString == "yes" {
                     auth = true
                 }
             }
-            apiInstance.dataTaskWithRequest(nsReq, authenticated: auth, verify: verify, retryCount: 0, handler:
+            apiInstance.dataTaskWithRequest(nsReq, authenticated: auth, retryCount: 0, handler:
                 { (nsData, nsHttpResponse, nsError) -> Void in
                     if let httpResp = nsHttpResponse {
                         var hdrs = [String: [String]]()

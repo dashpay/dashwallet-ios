@@ -32,6 +32,7 @@
 		229279A81C6960FC00C98E78 /* BRGeoLocationPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 229279A71C6960FC00C98E78 /* BRGeoLocationPlugin.swift */; };
 		22B6A4481C0E963900673913 /* libbz2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 22B6A4471C0E963900673913 /* libbz2.tbd */; };
 		22B6A44A1C0ECB7800673913 /* BRBSPatchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22B6A4491C0ECB7800673913 /* BRBSPatchTests.swift */; };
+		22BF17471CDF831800AA41C6 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22BF17461CDF831800AA41C6 /* Extensions.swift */; };
 		22D3613D1C56F2CD0057CF76 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 22D3613C1C56F2CD0057CF76 /* libsqlite3.tbd */; };
 		22F04A001C9714EF00F137D8 /* BRUserDefaultsSwitchCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 22F45A0D1C3326CC00B07A15 /* BRUserDefaultsSwitchCell.m */; };
 		22FCD22C1C0E68C80066D798 /* BRTarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FCD22B1C0E68C80066D798 /* BRTarTests.swift */; };
@@ -229,6 +230,7 @@
 		229279A71C6960FC00C98E78 /* BRGeoLocationPlugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRGeoLocationPlugin.swift; sourceTree = "<group>"; };
 		22B6A4471C0E963900673913 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
 		22B6A4491C0ECB7800673913 /* BRBSPatchTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRBSPatchTests.swift; sourceTree = "<group>"; };
+		22BF17461CDF831800AA41C6 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		22D3613C1C56F2CD0057CF76 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		22F45A0A1C30EAB700B07A15 /* BRAWKeypad.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRAWKeypad.swift; sourceTree = "<group>"; };
 		22F45A0C1C3326CC00B07A15 /* BRUserDefaultsSwitchCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRUserDefaultsSwitchCell.h; sourceTree = "<group>"; };
@@ -558,6 +560,7 @@
 				2292799E1C695D2800C98E78 /* BRTar.swift */,
 				229279A01C695D7900C98E78 /* BRBSPatch.swift */,
 				229279A21C695DB300C98E78 /* BRKeychain.swift */,
+				22BF17461CDF831800AA41C6 /* Extensions.swift */,
 			);
 			name = Utils;
 			sourceTree = "<group>";
@@ -1305,6 +1308,7 @@
 				752E28DA19234C3600DB5A3C /* BRWallet.m in Sources */,
 				229279A31C695DB300C98E78 /* BRKeychain.swift in Sources */,
 				229279981C695C4200C98E78 /* BRHTTPServer.swift in Sources */,
+				22BF17471CDF831800AA41C6 /* Extensions.swift in Sources */,
 				220128D91C77B3100001CAC1 /* BRHTTPIndexMiddleware.swift in Sources */,
 				752E28DB19234C3600DB5A3C /* BRWalletManager.m in Sources */,
 				752E28D319234C3600DB5A3C /* BRMerkleBlock.m in Sources */,

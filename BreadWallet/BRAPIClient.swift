@@ -134,19 +134,6 @@ func buildRequestSigningString(r: NSMutableURLRequest) -> String {
     return parts.joinWithSeparator("\n")
 }
 
-func buildResponseSigningString(req: NSMutableURLRequest, res: NSHTTPURLResponse, data: NSData? = nil) -> String {
-    let parts: [String] = [
-        req.HTTPMethod,
-        "\(res.statusCode)",
-        data != nil ? NSData(UInt256: data!.SHA256()).base58String() : "",
-        getHeaderValue("content-type", d: res.allHeaderFields) ?? "",
-        getHeaderValue("date", d: res.allHeaderFields) ?? "",
-        buildURLResourceString(res.URL)
-    ]
-    
-    return parts.joinWithSeparator("\n")
-}
-
 var rfc1123DateFormatter: NSDateFormatter {
     let fmt = NSDateFormatter()
     fmt.timeZone = NSTimeZone(abbreviation: "GMT")
@@ -243,26 +230,7 @@ func httpDateNow() -> String {
         return mutableRequest.copy() as! NSURLRequest
     }
     
-    func verifyResponse(request: NSMutableURLRequest, response: NSHTTPURLResponse, data: NSData?) -> Bool {
-        // ensure the signature header is present and in the correct format
-        guard let sigHeader = getHeaderValue("signature", d: response.allHeaderFields),
-            sigRange = sigHeader.rangeOfString("bread ")
-            where sigHeader.startIndex.distanceTo(sigRange.startIndex) == 0 else { return false }
-        
-        // extract signing signature bytes and signing string
-        let sigStr = sigHeader[sigRange.endIndex..<sigHeader.endIndex],
-            sig = NSData(base58String: sigStr),
-            signingString = buildResponseSigningString(request, res: response, data: data)
-        
-        // extract the public key and ensure it equals the one we have configured
-        if let sha = signingString.dataUsingEncoding(NSUTF8StringEncoding)?.SHA256_2(),
-            pk = BRKey(recoveredFromCompactSig: sig, andMessageDigest: sha),
-            pkDatA = pk.publicKey, pkDatB = serverPubKey.publicKey
-            where pkDatA.isEqualToData(pkDatB) { return true }
-        return false
-    }
-    
-    func dataTaskWithRequest(request: NSURLRequest, authenticated: Bool = false, verify: Bool = true,
+    func dataTaskWithRequest(request: NSURLRequest, authenticated: Bool = false,
                              retryCount: Int = 0, handler: URLSessionTaskHandler) -> NSURLSessionDataTask {
         let start = NSDate()
         var logLine = ""
@@ -284,19 +252,9 @@ func httpDateNow() -> String {
                         errStr = s as String
                     }
                 }
-                var verified = true
-                if verify {
-                    let mreq = actualRequest.mutableCopy() as! NSMutableURLRequest
-                    verified = self.verifyResponse(mreq, response: httpResp, data: data)
-                }
                 
-                self.log("\(logLine) -> status=\(httpResp.statusCode) duration=\(dur)ms " +
-                         "verified=\(verified) errStr=\(errStr)")
+                self.log("\(logLine) -> status=\(httpResp.statusCode) duration=\(dur)ms errStr=\(errStr)")
                 
-                if !verified {
-                    return handler(nil, nil, NSError(domain: BRAPIClientErrorDomain, code: 500, userInfo: [
-                        NSLocalizedDescriptionKey: NSLocalizedString("Unable to verify server identity", comment: "")]))
-                }
                 if authenticated && isBreadChallenge(httpResp) {
                     self.log("got authentication challenge from API - will attempt to get token")
                     self.getToken({ (err) -> Void in
