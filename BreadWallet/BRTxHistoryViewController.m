@@ -566,13 +566,13 @@ static NSString *dateFormat(NSString *template)
                     break;
                     
                 case 1:
-                    cell.textLabel.text = NSLocalizedString(@"Import Private Key", nil);
+                    cell.textLabel.text = NSLocalizedString(@"import private key", nil);
                     cell.imageView.image = [UIImage imageNamed:@"cameraguide-blue-small"];
                     cell.imageView.alpha = 1.0;
                     break;
 
                 case 2:
-                    cell.textLabel.text = NSLocalizedString(@"Rescan Blockchain", nil);
+                    cell.textLabel.text = NSLocalizedString(@"rescan blockchain", nil);
                     cell.imageView.image = [UIImage imageNamed:@"rescan"];
                     cell.imageView.alpha = 0.75;
                     break;
@@ -582,7 +582,7 @@ static NSString *dateFormat(NSString *template)
 
         case 2:
             cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
-            cell.textLabel.text = NSLocalizedString(@"Settings", nil);
+            cell.textLabel.text = NSLocalizedString(@"settings", nil);
             break;
     }
     
@@ -600,7 +600,7 @@ static NSString *dateFormat(NSString *template)
             return nil;
             
         case 2:
-            return NSLocalizedString(@"Rescan blockchain if you think you may have missing transactions, "
+            return NSLocalizedString(@"rescan blockchain if you think you may have missing transactions, "
                                      "or are having trouble sending (rescanning can take several minutes)", nil);
     }
     
