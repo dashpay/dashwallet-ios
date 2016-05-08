@@ -1608,7 +1608,7 @@
         <!--confirm:-->
         <scene sceneID="2Hc-ez-bvO">
             <objects>
-                <viewController modalTransitionStyle="crossDissolve" id="5j4-Re-grj" customClass="BRRestoreViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="WipeViewController" modalTransitionStyle="crossDissolve" id="5j4-Re-grj" customClass="BRRestoreViewController" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="you-3b-Ulg"/>
                         <viewControllerLayoutGuide type="bottom" id="BcR-mZ-OBQ"/>

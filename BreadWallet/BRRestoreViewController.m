@@ -129,7 +129,11 @@
 - (IBAction)cancel:(id)sender
 {
     [BREventManager saveEvent:@"restore:cancel"];
-    [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+    
+    if (self.navigationController.presentingViewController) {
+        [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+    }
+    else [self.navigationController popViewControllerAnimated:NO];
 }
 
 #pragma mark - UITextViewDelegate
@@ -228,6 +232,15 @@
     return NO;
 }
 
+#pragma mark - UIAlertViewDelegate
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == alertView.cancelButtonIndex) return;
+    
+    if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"close app", nil)]) abort();
+}
+
 #pragma mark - UIActionSheetDelegate
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
@@ -243,6 +256,12 @@
     [[NSUserDefaults standardUserDefaults] synchronize];
 
     UIViewController *p = self.navigationController.presentingViewController.presentingViewController;
+    
+    if (! p) {
+        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"the app will now close", nil) message:nil delegate:self
+          cancelButtonTitle:nil otherButtonTitles:NSLocalizedString(@"close app", nil), nil] show];
+        return;
+    }
     
     [p dismissViewControllerAnimated:NO completion:^{
         [p presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"] animated:NO

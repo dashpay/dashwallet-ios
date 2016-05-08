@@ -728,12 +728,12 @@ static NSString *dateFormat(NSString *template)
         return;
     }
 
-    BRSeedViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
+    if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"show", nil)]) {
+        BRSeedViewController *seedController =
+            [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
     
-    if (c.authSuccess) {
-        [self.navigationController pushViewController:c animated:YES];
-    }
-    else [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
+        if (seedController.authSuccess) [self.navigationController pushViewController:seedController animated:YES];
+    }    
 }
 
 #pragma mark - UIViewControllerAnimatedTransitioning

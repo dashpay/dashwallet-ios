@@ -25,6 +25,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface BRRestoreViewController : UIViewController <UITextViewDelegate, UIActionSheetDelegate>
+@interface BRRestoreViewController : UIViewController <UITextViewDelegate, UIActionSheetDelegate, UIAlertViewDelegate>
 
 @end

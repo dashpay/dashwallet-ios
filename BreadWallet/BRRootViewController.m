@@ -27,6 +27,7 @@
 #import "BRReceiveViewController.h"
 #import "BRSendViewController.h"
 #import "BRSettingsViewController.h"
+#import "BRRestoreViewController.h"
 #import "BRAppDelegate.h"
 #import "BRBubbleView.h"
 #import "BRBouncyBurgerButton.h"
@@ -65,9 +66,9 @@
 @property (nonatomic, strong) NSURL *url;
 @property (nonatomic, strong) NSData *file;
 @property (nonatomic, strong) Reachability *reachability;
-@property (nonatomic, strong) id urlObserver, fileObserver, foregroundObserver, backgroundObserver, balanceObserver;
+@property (nonatomic, strong) id urlObserver, fileObserver, protectedObserver, balanceObserver, seedObserver;
 @property (nonatomic, strong) id reachabilityObserver, syncStartedObserver, syncFinishedObserver, syncFailedObserver;
-@property (nonatomic, strong) id activeObserver, resignActiveObserver, protectedObserver, seedObserver;
+@property (nonatomic, strong) id activeObserver, resignActiveObserver, foregroundObserver, backgroundObserver;
 @property (nonatomic, assign) NSTimeInterval timeout, start;
 @property (nonatomic, assign) SystemSoundID pingsound;
 
@@ -167,7 +168,7 @@
                 }];
             }
         }];
-
+    
     self.foregroundObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillEnterForegroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
@@ -190,7 +191,7 @@
                 }
             }
 
-            if (jailbroken && manager.wallet.balance > 0) {
+            if (jailbroken && manager.wallet.totalReceived + manager.wallet.totalSent > 0) {
                 [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
                   message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
                                             "Any 'jailbreak' app can access any other app's keychain data "
@@ -363,6 +364,24 @@
         self.navigationController.navigationBar.hidden = NO;
         [[UIApplication sharedApplication] setStatusBarHidden:NO];
     }
+    
+    if (jailbroken && manager.wallet.totalReceived + manager.wallet.totalSent > 0) {
+        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
+          message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
+                                    "Any 'jailbreak' app can access any other app's keychain data "
+                                    "(and steal your bitcoins). "
+                                    "Wipe this wallet immediately and restore on a secure device.", nil)
+          delegate:self cancelButtonTitle:NSLocalizedString(@"ignore", nil)
+          otherButtonTitles:NSLocalizedString(@"wipe", nil), nil] show];
+    }
+    else if (jailbroken) {
+        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
+          message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
+                                    "Any 'jailbreak' app can access any other app's keychain data "
+                                    "(and steal your bitcoins).", nil)
+          delegate:self cancelButtonTitle:NSLocalizedString(@"ignore", nil)
+          otherButtonTitles:NSLocalizedString(@"close app", nil), nil] show];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -500,13 +519,22 @@
     [segue.destinationViewController setModalPresentationStyle:UIModalPresentationCustom];
     [self hideErrorBar];
     
-    if (sender == self) { // show recovery phrase
+    if ([sender isEqual:NSLocalizedString(@"show phrase", nil)]) { // show recovery phrase
         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
-          message:NSLocalizedString(@"\nDO NOT let anyone see your recovery phrase or they can spend your bitcoins.\n\n"
-                                    "NEVER type your recovery phrase into password managers or elsewhere. Other "
-                                    "devices may be infected.\n", nil)
-          delegate:[(id)segue.destinationViewController viewControllers].firstObject
-          cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:NSLocalizedString(@"show", nil), nil]
+          message:[NSString stringWithFormat:@"\n%@\n\n%@\n\n%@\n",
+                   [NSLocalizedString(@"\nDO NOT let anyone see your recovery\n"
+                                      "phrase or they can spend your bitcoins.\n", nil)
+                    stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]],
+                   [NSLocalizedString(@"\nNEVER type your recovery phrase into\n"
+                                      "password managers or elsewhere.\n"
+                                      "Other devices may be infected.\n", nil)
+                    stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]],
+                   [NSLocalizedString(@"\nDO NOT take a screenshot.\n"
+                                      "Screenshots are visible to other apps\n"
+                                      "and devices.\n", nil)
+                    stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]]]
+            delegate:[(id)segue.destinationViewController viewControllers].firstObject
+            cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:NSLocalizedString(@"show", nil), nil]
          show];
     }
 }
@@ -945,32 +973,14 @@ viewControllerAfterViewController:(UIViewController *)viewController
     if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"close app", nil)]) abort();
 
     if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"wipe", nil)]) {
-        [[[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"CONFIRM WIPE", nil) delegate:self
-          cancelButtonTitle:NSLocalizedString(@"cancel", nil) destructiveButtonTitle:NSLocalizedString(@"wipe", nil)
-          otherButtonTitles:nil] showInView:[UIApplication sharedApplication].keyWindow];
+        BRRestoreViewController *restoreController =
+            [self.storyboard instantiateViewControllerWithIdentifier:@"WipeViewController"];
+            
+        [self.navigationController pushViewController:restoreController animated:NO];
         return;
     }
     
-    [self performSegueWithIdentifier:@"SettingsSegue" sender:self];
-}
-
-#pragma mark - UIActionSheetDelegate
-
-- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-    if (buttonIndex != actionSheet.destructiveButtonIndex) return;
-
-    [[BRWalletManager sharedInstance] setSeedPhrase:nil];
-    [[NSUserDefaults standardUserDefaults] removeObjectForKey:WALLET_NEEDS_BACKUP_KEY];
-    [[NSUserDefaults standardUserDefaults] synchronize];
-
-    UINavigationController *newWalletNavController
-        = [self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"];
-
-    [self.navigationController presentViewController:newWalletNavController animated:NO completion:nil];
-
-    [[[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"the app will now close", nil) delegate:self
-      cancelButtonTitle:nil otherButtonTitles:NSLocalizedString(@"close app", nil), nil] show];
+    [self performSegueWithIdentifier:@"SettingsSegue" sender:[alertView buttonTitleAtIndex:buttonIndex]];
 }
 
 #pragma mark - UIViewControllerAnimatedTransitioning
