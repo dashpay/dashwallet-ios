@@ -44,10 +44,11 @@
 #define CIRCLE  @"\xE2\x97\x8C" // dotted circle (utf-8)
 #define DOT     @"\xE2\x97\x8F" // black circle (utf-8)
 
-#define BASE_URL       @"https://api.breadwallet.com"
-#define UNSPENT_URL    BASE_URL @"/q/addr/%@/utxo"
-#define TICKER_URL     BASE_URL @"/rates"
-#define FEE_PER_KB_URL BASE_URL @"/fee-per-kb"
+#define BASE_URL            @"https://api.breadwallet.com"
+#define UNSPENT_URL         BASE_URL @"/q/addr/%@/utxo"
+#define FEE_PER_KB_URL      BASE_URL @"/fee-per-kb"
+#define TICKER_URL          BASE_URL @"/rates"
+#define TICKER_FAILOVER_URL @"https://bitpay.com/rates"
 
 #define SEED_ENTROPY_LENGTH   (128/8)
 #define SEC_ATTR_SERVICE      @"org.voisine.breadwallet"
@@ -854,55 +855,56 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     });
 }
 
-- (void)updateExchangeRate
+- (void)loadTicker:(NSString *)tickerURL withJSONKey:(NSString *)jsonKey failoverHandler:(void (^)())failover
 {
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateExchangeRate) object:nil];
-    [self performSelector:@selector(updateExchangeRate) withObject:nil afterDelay:60.0];
     if (self.reachability.currentReachabilityStatus == NotReachable) return;
-
-    NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:TICKER_URL]
+    
+    NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:tickerURL]
                          cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:10.0];
-
+    
     [[[NSURLSession sharedSession] dataTaskWithRequest:req
     completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         if (error) {
             NSLog(@"%@", error);
+            failover();
             return;
         }
-
+        
         NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
         NSMutableArray *codes = [NSMutableArray array], *names = [NSMutableArray array], *rates =[NSMutableArray array];
-
+        
         if ([response isKindOfClass:[NSHTTPURLResponse class]]) { // store server timestamp
             NSString *date = ((NSHTTPURLResponse *)response).allHeaderFields[@"Date"];
             NSTimeInterval now = [[[NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeDate error:nil]
                                    matchesInString:(date ? date : @"") options:0
                                    range:NSMakeRange(0, date.length)].lastObject date].timeIntervalSinceReferenceDate;
-
+            
             if (now > self.secureTime) [defs setDouble:now forKey:SECURE_TIME_KEY];
         }
-
-        if (error || ! [json isKindOfClass:[NSDictionary class]] || ! [json[@"body"] isKindOfClass:[NSArray class]]) {
+        
+        if (error || ! [json isKindOfClass:[NSDictionary class]] || ! [json[jsonKey] isKindOfClass:[NSArray class]]) {
             NSLog(@"unexpected response from %@:\n%@", req.URL.host,
                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            failover();
             return;
         }
-
-        for (NSDictionary *d in json[@"body"]) {
+        
+        for (NSDictionary *d in json[jsonKey]) {
             if (! [d isKindOfClass:[NSDictionary class]] || ! [d[@"code"] isKindOfClass:[NSString class]] ||
                 ! [d[@"name"] isKindOfClass:[NSString class]] || ! [d[@"rate"] isKindOfClass:[NSNumber class]]) {
                 NSLog(@"unexpected response from %@:\n%@", req.URL.host,
                       [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+                failover();
                 return;
             }
-
+            
             if ([d[@"code"] isEqual:@"BTC"]) continue;
             [codes addObject:d[@"code"]];
             [names addObject:d[@"name"]];
             [rates addObject:d[@"rate"]];
         }
-
+        
         _currencyCodes = codes;
         _currencyNames = names;
         _currencyPrices = rates;
@@ -913,16 +915,26 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         [defs synchronize];
         NSLog(@"exchange rate updated to %@/%@", [self localCurrencyStringForAmount:SATOSHIS],
               [self stringForAmount:SATOSHIS]);
-
+        
         dispatch_async(dispatch_get_main_queue(), ^{
             if (_wallet) {
                 [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletBalanceChangedNotification
                  object:nil];
             }
         });
-
+        
         [self updateFeePerKb];
     }] resume];
+}
+
+- (void)updateExchangeRate
+{
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateExchangeRate) object:nil];
+    [self performSelector:@selector(updateExchangeRate) withObject:nil afterDelay:60.0];
+
+    [self loadTicker:TICKER_URL withJSONKey:@"body" failoverHandler:^{
+        [self loadTicker:TICKER_FAILOVER_URL withJSONKey:@"data" failoverHandler:nil];
+    }];
 }
 
 #pragma mark - floating fees
