@@ -86,16 +86,18 @@
 
     //TODO: figure out deterministic builds/removing app sigs: http://www.afp548.com/2012/06/05/re-signining-ios-apps/
 
-    BRAPIClient *c = [BRAPIClient sharedClient];
-    [c updateBundle:@"bread-buy" handler:^(NSString * _Nullable error) {
-        if (error != nil) {
-            NSLog(@"got update bundle error: %@", error);
-        } else {
-            NSLog(@"successfully updated bundle!");
-        }
-    }];
-    // update feature flags
-    [c updateFeatureFlags];
+    // platform features are only available on iOS 8.0+
+    if ([[UIDevice currentDevice].systemVersion compare:@"8.0" options:NSNumericSearch] != NSOrderedAscending) {
+        BRAPIClient *c = [BRAPIClient sharedClient];
+        [c updateBundle:@"bread-buy" handler:^(NSString * _Nullable error) {
+            if (error != nil) {
+                NSLog(@"got update bundle error: %@", error);
+            } else {
+                NSLog(@"successfully updated bundle!");
+            }
+        }];
+        [c updateFeatureFlags];
+    }
 
     //TODO: implement importing of private keys split with shamir's secret sharing:
     //      https://github.com/cetuscetus/btctool/blob/bip/bip-xxxx.mediawiki

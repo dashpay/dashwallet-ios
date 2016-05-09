@@ -37,6 +37,8 @@
 #import "breadwallet-Swift.h"
 
 #define TRANSACTION_CELL_HEIGHT 75
+#define AT_LEAST_IOS_8 ( \
+    [[UIDevice currentDevice].systemVersion compare:@"8.0" options:NSNumericSearch] != NSOrderedAscending)
 
 static NSString *dateFormat(NSString *template)
 {
@@ -87,12 +89,14 @@ static NSString *dateFormat(NSString *template)
     self.navigationController.delegate = self;
     self.moreTx = YES;
     
-    self.buyController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy" mountPoint:@"/buy"];
+    if (AT_LEAST_IOS_8) {
+        self.buyController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy" mountPoint:@"/buy"];
 #if DEBUG
-//    self.buyController.debugEndpoint = @"http://localhost:8080";
+        //    self.buyController.debugEndpoint = @"http://localhost:8080";
 #endif
-    [self.buyController startServer];
-    [self.buyController preload];
+        [self.buyController startServer];
+        [self.buyController preload];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated

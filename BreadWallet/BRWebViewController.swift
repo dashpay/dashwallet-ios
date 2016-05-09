@@ -28,7 +28,7 @@ import UIKit
 import WebKit
 
 
-@available(iOS 9.0, *)
+@available(iOS 8.0, *)
 @objc public class BRWebViewController : UIViewController {
     var wkProcessPool: WKProcessPool
     var webView: WKWebView?
@@ -56,9 +56,11 @@ import WebKit
         let config = WKWebViewConfiguration()
         config.processPool = wkProcessPool
         config.allowsInlineMediaPlayback = false
-        config.allowsAirPlayForMediaPlayback = false
-        config.requiresUserActionForMediaPlayback = true
-        config.allowsPictureInPictureMediaPlayback = false
+        if #available(iOS 9.0, *) {
+            config.allowsAirPlayForMediaPlayback = false
+            config.requiresUserActionForMediaPlayback = true
+            config.allowsPictureInPictureMediaPlayback = false
+        }
 
         let indexUrl = NSURL(string: "http://localhost:\(server.port)\(mountPoint)")!
         let request = NSURLRequest(URL: indexUrl)

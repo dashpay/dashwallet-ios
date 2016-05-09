@@ -33,6 +33,8 @@
 #import "BRUserDefaultsSwitchCell.h"
 #import "breadwallet-Swift.h"
 
+#define AT_LEAST_IOS_8 ( \
+    [[UIDevice currentDevice].systemVersion compare:@"8.0" options:NSNumericSearch] != NSOrderedAscending)
 
 @interface BRSettingsViewController ()
 
@@ -45,7 +47,6 @@
 @property (nonatomic, strong) id balanceObserver;
 @property (nonatomic, strong) BRWebViewController *eaController;
 
-
 @end
 
 
@@ -57,12 +58,14 @@
     
     self.touchId = [BRWalletManager sharedInstance].touchIdEnabled;
     
-    self.eaController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy" mountPoint:@"/ea"];
+    if (AT_LEAST_IOS_8) {
+        self.eaController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy" mountPoint:@"/ea"];
 #if DEBUG
-//    self.eaController.debugEndpoint = @"http://localhost:8080";
+        //    self.eaController.debugEndpoint = @"http://localhost:8080";
 #endif
-    [self.eaController startServer];
-    [self.eaController preload];
+        [self.eaController startServer];
+        [self.eaController preload];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -220,7 +223,7 @@
     switch (section) {
         case 0: return 2;
         case 1: return (self.touchId) ? 3 : 2;
-        case 2: return 3;
+        case 2: return (AT_LEAST_IOS_8) ? 3 : 2;
         case 3: return 1;
     }
     

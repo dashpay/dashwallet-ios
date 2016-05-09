@@ -27,30 +27,20 @@ import Foundation
 import CoreLocation
 
 
-@available(iOS 9.0, *)
+@available(iOS 8.0, *)
 class BRGeoLocationDelegate: NSObject, CLLocationManagerDelegate {
     var manager: CLLocationManager? = nil
     var response: BRHTTPResponse
     var remove: (() -> Void)? = nil
     var one = false
     var nResponses = 0
+    // on versions ios < 9.0 we don't have the energy-efficient/convenient requestLocation() method
+    // so after fetching a good location we should terminate location updates
+    var shouldCancelUpdatingAfterReceivingLocation = false
     
     init(response: BRHTTPResponse) {
         self.response = response
         super.init()
-        // location managers MUST operate on the main queue, but requests are not handled there
-        
-//        dispatch_async(self.response.request.queue) {
-//            let j: [String: AnyObject] = [
-//                "timestamp": 1,
-//                "coordinate": ["latitude": 37.7797570, "longitude": -122.4401800],
-//                "altitude": 0.0,
-//                "horizontal_accuracy": 0.0,
-//                "description": "test"
-//            ]
-//            self.response.provide(200, json: j)
-//        }
-        
         dispatch_sync(dispatch_get_main_queue()) { () -> Void in
             self.manager = CLLocationManager()
             self.manager?.delegate = self
@@ -61,15 +51,30 @@ class BRGeoLocationDelegate: NSObject, CLLocationManagerDelegate {
         one = true
         dispatch_sync(dispatch_get_main_queue()) { () -> Void in
             self.manager?.desiredAccuracy = kCLLocationAccuracyHundredMeters
-            self.manager?.requestLocation()
+            if #available(iOS 9.0, *) {
+                self.manager?.requestLocation()
+            } else {
+                // Fallback on earlier versions
+                self.manager?.startUpdatingLocation()
+                self.shouldCancelUpdatingAfterReceivingLocation = true
+            }
         }
     }
     
     func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        nResponses += 1
         if one && nResponses > 1 { return }
         var j = [String: AnyObject]()
         let l = locations.last!
+        if (shouldCancelUpdatingAfterReceivingLocation
+            && !(l.horizontalAccuracy <= kCLLocationAccuracyHundredMeters
+                 && l.verticalAccuracy <= kCLLocationAccuracyHundredMeters)) {
+            // return if location is not the requested accuracy of 100m
+            return
+        }
+        nResponses += 1
+        if (shouldCancelUpdatingAfterReceivingLocation) {
+            self.manager?.stopUpdatingLocation()
+        }
         j["timestamp"] = l.timestamp.description
         j["coordinate"] = ["latitude": l.coordinate.latitude, "longitude": l.coordinate.longitude]
         j["altitude"] = l.altitude
@@ -91,7 +96,7 @@ class BRGeoLocationDelegate: NSObject, CLLocationManagerDelegate {
     }
 }
 
-@available(iOS 9.0, *)
+@available(iOS 8.0, *)
 @objc public class BRGeoLocationPlugin: NSObject, BRHTTPRouterPlugin, CLLocationManagerDelegate {
     lazy var manager = CLLocationManager()
     var outstanding = [BRGeoLocationDelegate]()
