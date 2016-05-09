@@ -394,10 +394,11 @@ static NSString *dateFormat(NSString *template)
 {
     [BREventManager saveEvent:@"tx_history:more"];
     BRWalletManager *manager = [BRWalletManager sharedInstance];
-    NSUInteger txCount = self.transactions.count;
+    NSUInteger txCount;
     
     [self unlock:sender];
     if (! manager.didAuthenticate) return;
+    txCount = self.transactions.count;
     
     [self.tableView beginUpdates];
     [self.tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:txCount inSection:0]]
@@ -407,7 +408,7 @@ static NSString *dateFormat(NSString *template)
     
     NSMutableArray *transactions = [NSMutableArray arrayWithCapacity:self.transactions.count];
     
-    while (txCount < self.transactions.count) {
+    while (txCount == 0 || txCount < self.transactions.count) {
         [transactions addObject:[NSIndexPath indexPathForRow:txCount++ inSection:0]];
     }
     
