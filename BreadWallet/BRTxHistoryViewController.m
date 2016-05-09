@@ -35,10 +35,9 @@
 #import "NSData+Bitcoin.h"
 #import "BREventManager.h"
 #import "breadwallet-Swift.h"
+#import <WebKit/WebKit.h>
 
 #define TRANSACTION_CELL_HEIGHT 75
-#define AT_LEAST_IOS_8 ( \
-    [[UIDevice currentDevice].systemVersion compare:@"8.0" options:NSNumericSearch] != NSOrderedAscending)
 
 static NSString *dateFormat(NSString *template)
 {
@@ -89,7 +88,7 @@ static NSString *dateFormat(NSString *template)
     self.navigationController.delegate = self;
     self.moreTx = YES;
     
-    if (AT_LEAST_IOS_8) {
+    if ([WKWebView class]) { // only available on iOS 8 and above
         self.buyController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy" mountPoint:@"/buy"];
 #if DEBUG
         //    self.buyController.debugEndpoint = @"http://localhost:8080";

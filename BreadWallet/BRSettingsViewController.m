@@ -29,12 +29,10 @@
 #import "BRBubbleView.h"
 #import "BRPeerManager.h"
 #import "BREventManager.h"
-#include <asl.h>
 #import "BRUserDefaultsSwitchCell.h"
 #import "breadwallet-Swift.h"
-
-#define AT_LEAST_IOS_8 ( \
-    [[UIDevice currentDevice].systemVersion compare:@"8.0" options:NSNumericSearch] != NSOrderedAscending)
+#include <WebKit/WebKit.h>
+#include <asl.h>
 
 @interface BRSettingsViewController ()
 
@@ -58,7 +56,7 @@
     
     self.touchId = [BRWalletManager sharedInstance].touchIdEnabled;
     
-    if (AT_LEAST_IOS_8) {
+    if ([WKWebView class]) { // only available on iOS 8 and above
         self.eaController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy" mountPoint:@"/ea"];
 #if DEBUG
         //    self.eaController.debugEndpoint = @"http://localhost:8080";
@@ -223,7 +221,7 @@
     switch (section) {
         case 0: return 2;
         case 1: return (self.touchId) ? 3 : 2;
-        case 2: return (AT_LEAST_IOS_8) ? 3 : 2;
+        case 2: return 3;
         case 3: return 1;
     }
     
@@ -314,12 +312,20 @@ _switch_cell:
 
             }
             break;
+            
         case 3:
             cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
             cell.textLabel.text = @"early access";
+
+            if (! [WKWebView class]) { // early access is only avialable on iOS 8 and above
+                cell = [[UITableViewCell alloc] initWithFrame:CGRectZero];
+                cell.userInteractionEnabled = NO;
+                cell.hidden = YES;
+            }
+
             break;
     }
-
+    
     [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
     return cell;
 }
