@@ -250,6 +250,33 @@
                   @"[NSData RMD160]");
 }
 
+#pragma mark - testMD5
+
+- (void)testMD5
+{
+    UInt128 md = [@"Free online MD5 Calculator, type text here..." dataUsingEncoding:NSUTF8StringEncoding].MD5;
+    
+    XCTAssertTrue(uint128_eq(*(UInt128 *)@"0b3b20eaf1696462f50d1a3bbdd30cef".hexToData.bytes, md), @"[NSData MD5]");
+    
+    md = [@"this is some text to test the md5 implementation with more than 64bytes of data since it's internal "
+          "digest buffer is 64bytes in size" dataUsingEncoding:NSUTF8StringEncoding].MD5;
+    XCTAssertTrue(uint128_eq(*(UInt128 *)@"56a161f24150c62d7857b7f354927ebe".hexToData.bytes, md), @"[NSData MD5]");
+    
+    md = [@"123456789012345678901234567890123456789012345678901234567890"
+          dataUsingEncoding:NSUTF8StringEncoding].MD5;
+    XCTAssertTrue(uint128_eq(*(UInt128 *)@"c5b549377c826cc3712418b064fc417e".hexToData.bytes, md), @"[NSData MD5]");
+    
+    md = [@"1234567890123456789012345678901234567890123456789012345678901234"
+          dataUsingEncoding:NSUTF8StringEncoding].MD5; // a message exactly 64bytes long (internal buffer size)
+    XCTAssertTrue(uint128_eq(*(UInt128 *)@"eb6c4179c0a7c82cc2828c1e6338e165".hexToData.bytes, md), @"[NSData MD5]");
+    
+    md = [NSData data].MD5; // empty
+    XCTAssertTrue(uint128_eq(*(UInt128 *)@"d41d8cd98f00b204e9800998ecf8427e".hexToData.bytes, md), @"[NSData MD5]");
+    
+    md = [@"a" dataUsingEncoding:NSUTF8StringEncoding].MD5;
+    XCTAssertTrue(uint128_eq(*(UInt128 *)@"0cc175b9c0f1b6a831c399e269772661".hexToData.bytes, md), @"[NSData MD5]");
+}
+
 #pragma mark - testKey
 
 #if ! BITCOIN_TESTNET

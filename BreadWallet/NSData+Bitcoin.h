@@ -79,6 +79,7 @@ typedef union _UInt128 {
 #define UINT128_ZERO ((UInt128) { .u64 = { 0, 0 } })
 
 #define RMD160_DIGEST_LENGTH (160/8)
+#define MD5_DIGEST_LENGTH    (128/8)
 
 #define VAR_INT16_HEADER 0xfd
 #define VAR_INT32_HEADER 0xfe
@@ -98,6 +99,7 @@ void SHA1(void *md, const void *data, size_t len);
 void SHA256(void *md, const void *data, size_t len);
 void SHA512(void *md, const void *data, size_t len);
 void RMD160(void *md, const void *data, size_t len);
+void MD5(void *md, const void *data, size_t len);
 void HMAC(void *md, void (*hash)(void *, const void *, size_t), size_t hlen, const void *key, size_t klen,
           const void *data, size_t dlen);
 void PBKDF2(void *dk, size_t dklen, void (*hash)(void *, const void *, size_t), size_t hlen,
@@ -107,6 +109,7 @@ void PBKDF2(void *dk, size_t dklen, void (*hash)(void *, const void *, size_t), 
 
 + (instancetype)dataWithUInt256:(UInt256)n;
 + (instancetype)dataWithUInt160:(UInt160)n;
++ (instancetype)dataWithUInt128:(UInt128)n;
 + (instancetype)dataWithBase58String:(NSString *)b58str;
 
 - (UInt160)SHA1;
@@ -115,6 +118,7 @@ void PBKDF2(void *dk, size_t dklen, void (*hash)(void *, const void *, size_t), 
 - (UInt512)SHA512;
 - (UInt160)RMD160;
 - (UInt160)hash160;
+- (UInt128)MD5;
 - (NSData *)reverse;
 
 - (uint8_t)UInt8AtOffset:(NSUInteger)offset;

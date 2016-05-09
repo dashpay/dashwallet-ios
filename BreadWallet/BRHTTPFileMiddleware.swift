@@ -50,7 +50,7 @@ import Foundation
                 return next(BRHTTPMiddlewareResponse(request: request, response: nil))
             }
             // generate an etag
-            let etag = (attrs[NSFileModificationDate] as? NSDate ?? NSDate()).description.MD5()
+            let etag = (attrs[NSFileModificationDate] as? NSDate ?? NSDate()).description.md5()
             headers["ETag"] = [etag]
             var modified = true
             // if the client sends an if-none-match header, determine if we have a newer version of the file

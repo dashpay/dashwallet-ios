@@ -27,11 +27,11 @@ import Foundation
 
 
 extension String {
-    func MD5() -> String {
+    func md5() -> String {
         let data = (self as NSString).dataUsingEncoding(NSUTF8StringEncoding)!
-        let result = NSMutableData(length: Int(CC_MD5_DIGEST_LENGTH))!
+        let result = NSMutableData(length: Int(128/8))!
         let resultBytes = UnsafeMutablePointer<CUnsignedChar>(result.mutableBytes)
-        CC_MD5(data.bytes, CC_LONG(data.length), resultBytes)
+        MD5(resultBytes, data.bytes, data.length)
         
         let a = UnsafeBufferPointer<CUnsignedChar>(start: resultBytes, count: result.length)
         let hash = NSMutableString()
