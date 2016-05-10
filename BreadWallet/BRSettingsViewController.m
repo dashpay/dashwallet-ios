@@ -56,7 +56,7 @@
     
     self.touchId = [BRWalletManager sharedInstance].touchIdEnabled;
     
-    if ([WKWebView class]) { // only available on iOS 8 and above
+    if ([WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsEarlyAccess]) { // only available on iOS 8 and above
         self.eaController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy" mountPoint:@"/ea"];
 #if DEBUG
         //    self.eaController.debugEndpoint = @"http://localhost:8080";
@@ -317,7 +317,7 @@ _switch_cell:
             cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
             cell.textLabel.text = @"early access";
 
-            if (! [WKWebView class]) { // early access is only avialable on iOS 8 and above
+            if (![WKWebView class] || ![[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsEarlyAccess]) {
                 cell = [[UITableViewCell alloc] initWithFrame:CGRectZero];
                 cell.userInteractionEnabled = NO;
                 cell.hidden = YES;
