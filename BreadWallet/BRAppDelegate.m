@@ -91,19 +91,6 @@
     //      https://github.com/cetuscetus/btctool/blob/bip/bip-xxxx.mediawiki
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        if ([WKWebView class]) { // platform features are only available on iOS 8.0+
-            BRAPIClient *c = [BRAPIClient sharedClient];
-
-            [c updateBundle:@"bread-buy" handler:^(NSString * _Nullable error) {
-                if (error != nil) {
-                    NSLog(@"got update bundle error: %@", error);
-                } else {
-                    NSLog(@"successfully updated bundle!");
-                }
-            }];
-            [c updateFeatureFlags];
-        }
-
         [BRPhoneWCSessionManager sharedInstance];
     
         // observe balance and create notifications
@@ -113,6 +100,13 @@
     });
 
     return YES;
+}
+
+- (void)applicationDidBecomeActive:(UIApplication *)application
+{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [self updatePlatform];
+    });
 }
 
 // Applications may reject specific types of extensions based on the extension point identifier.
@@ -259,6 +253,21 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         NSLog(@"enabling local notifications by default");
         [defs setBool:true forKey:USER_DEFAULTS_LOCAL_NOTIFICATIONS_SWITCH_KEY];
         [defs setBool:true forKey:USER_DEFAULTS_LOCAL_NOTIFICATIONS_KEY];
+    }
+}
+
+- (void)updatePlatform {
+    if ([WKWebView class]) { // platform features are only available on iOS 8.0+
+        BRAPIClient *c = [BRAPIClient sharedClient];
+        
+        [c updateBundle:@"bread-buy" handler:^(NSString * _Nullable error) {
+            if (error != nil) {
+                NSLog(@"got update bundle error: %@", error);
+            } else {
+                NSLog(@"successfully updated bundle!");
+            }
+        }];
+        [c updateFeatureFlags];
     }
 }
 
