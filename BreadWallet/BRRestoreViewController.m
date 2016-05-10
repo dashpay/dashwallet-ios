@@ -157,7 +157,7 @@
         NSString *phrase = [manager.mnemonic cleanupPhrase:textView.text], *incorrect = nil;
         BOOL isLocal = YES, noWallet = manager.noWallet;
         
-        if (! [textView.text isValidBitcoinAddress] && ! [phrase isEqual:textView.text]) textView.text = phrase;
+        if (! [textView.text hasPrefix:@"watch"] && ! [phrase isEqual:textView.text]) textView.text = phrase;
         phrase = [manager.mnemonic normalizePhrase:phrase];
         
         NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)phrase,
@@ -174,7 +174,7 @@
             [self.textView resignFirstResponder];
             [self performSelector:@selector(wipeWithPhrase:) withObject:phrase afterDelay:0.0];
         }
-        else if (incorrect && noWallet && [textView.text isValidBitcoinAddress]) { // address list watch only wallet
+        else if (incorrect && noWallet && [textView.text hasPrefix:@"watch"]) { // address list watch only wallet
             manager.seedPhrase = @"wipe";
 
             [[NSManagedObject context] performBlockAndWait:^{
