@@ -196,6 +196,8 @@
     self.warningLabel = (id)[c.view viewWithTag:2];
     self.showButton = (id)[c.view viewWithTag:3];
     [self.showButton addTarget:self action:@selector(show:) forControlEvents:UIControlEventTouchUpInside];
+    self.startLabel = (id)[c.view viewWithTag:4];
+    self.recoverLabel = (id)[c.view viewWithTag:5];
     
     NSTextAttachment *noEye = [NSTextAttachment new], *noKey = [NSTextAttachment new];
     NSMutableAttributedString *s = [[NSMutableAttributedString alloc]
