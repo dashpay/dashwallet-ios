@@ -262,13 +262,15 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 {
     uint64_t balance = 0, prevBalance = 0, totalSent = 0, totalReceived = 0;
     NSMutableOrderedSet *utxos = [NSMutableOrderedSet orderedSet];
-    NSMutableSet *spentOutputs = [NSMutableSet set], *invalidTx = [NSMutableSet set];
+    NSMutableSet *spentOutputs = [NSMutableSet set], *invalidTx = [NSMutableSet set], *pendingTx = [NSMutableSet set];
     NSMutableArray *balanceHistory = [NSMutableArray array];
 
     for (BRTransaction *tx in [self.transactions reverseObjectEnumerator]) {
         @autoreleasepool {
             NSMutableSet *spent = [NSMutableSet set];
+            NSSet *inputs;
             uint32_t i = 0, n = 0;
+            BOOL pending = NO;
             BRTransaction *transaction;
             UInt256 h;
             BRUTXO o;
@@ -279,9 +281,11 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
                 [spent addObject:brutxo_obj(((BRUTXO) { h, n }))];
             }
             
+            inputs = [NSSet setWithArray:tx.inputHashes];
+            
             // check if any inputs are invalid or already spent
             if (tx.blockHeight == TX_UNCONFIRMED &&
-                ([spent intersectsSet:spentOutputs] || [[NSSet setWithArray:tx.inputHashes] intersectsSet:invalidTx])) {
+                ([spent intersectsSet:spentOutputs] || [inputs intersectsSet:invalidTx])) {
                 [invalidTx addObject:uint256_obj(tx.txHash)];
                 [balanceHistory insertObject:@(balance) atIndex:0];
                 continue;
@@ -290,6 +294,21 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             [spentOutputs unionSet:spent]; // add inputs to spent output set
             n = 0;
             
+            // check if any inputs are pending
+            if (tx.blockHeight == TX_UNCONFIRMED) {
+                for (NSNumber *sequence in tx.inputSequences) {
+                    if ([sequence unsignedIntValue] == UINT32_MAX) continue;
+                    pending = YES;
+                    break;
+                }
+                
+                if (pending || [inputs intersectsSet:pendingTx]) {
+                    [pendingTx addObject:uint256_obj(tx.txHash)];
+                    [balanceHistory insertObject:@(balance) atIndex:0];
+                    continue;
+                }
+            }
+
             //TODO: don't add outputs below TX_MIN_OUTPUT_AMOUNT
             //TODO: don't add coin generation outputs < 100 blocks deep, or non-final lockTime > 1 block/10min in future
             //NOTE: balance/UTXOs will then need to be recalculated when last block changes
@@ -661,10 +680,10 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         if ([self transactionIsPostdated:self.allTx[txHash] atBlockHeight:blockHeight]) return YES;
     }
 
-    if (transaction.lockTime <= blockHeight + 1) return NO;
-
-    if (transaction.lockTime >= TX_MAX_LOCK_HEIGHT &&
-        transaction.lockTime < [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 + 10*60) return NO;
+//    if (transaction.lockTime <= blockHeight + 1) return NO;
+//
+//    if (transaction.lockTime >= TX_MAX_LOCK_HEIGHT &&
+//        transaction.lockTime < [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 + 10*60) return NO;
 
     for (NSNumber *sequence in transaction.inputSequences) { // lockTime is ignored if all sequence numbers are final
         if (sequence.unsignedIntValue < UINT32_MAX) return YES;
