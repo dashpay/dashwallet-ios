@@ -93,12 +93,18 @@
     NSDateFormatter *df = [[NSDateFormatter alloc] init];
     df.dateFormat = dateFormat(@"Mdja");
     NSTimeInterval t = (self.timestamp > 1) ? self.timestamp :
-    [[BRPeerManager sharedInstance] timestampForBlockHeight:self.blockHeight] - 5*60;
-    return [[[df stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:t]].lowercaseString
-             stringByReplacingOccurrencesOfString:@"am" withString:@"a"]
-            stringByReplacingOccurrencesOfString:@"pm" withString:@"p"];
-    
-    
+                       [[BRPeerManager sharedInstance] timestampForBlockHeight:self.blockHeight] - 5*60;
+    NSString *date = [df stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:t]];
+
+    date = [date stringByReplacingOccurrencesOfString:@"am" withString:@"a"];
+    date = [date stringByReplacingOccurrencesOfString:@"pm" withString:@"p"];
+    date = [date stringByReplacingOccurrencesOfString:@"AM" withString:@"a"];
+    date = [date stringByReplacingOccurrencesOfString:@"PM" withString:@"p"];
+    date = [date stringByReplacingOccurrencesOfString:@"a.m." withString:@"a"];
+    date = [date stringByReplacingOccurrencesOfString:@"p.m." withString:@"p"];
+    date = [date stringByReplacingOccurrencesOfString:@"A.M." withString:@"a"];
+    date = [date stringByReplacingOccurrencesOfString:@"P.M." withString:@"p"];
+    return date;
 }
 
 - (NSDate*)transactionDate {
@@ -107,15 +113,16 @@
 
 static NSString *dateFormat(NSString *template) {
     NSString *format = [NSDateFormatter dateFormatFromTemplate:template options:0 locale:[NSLocale currentLocale]];
+    
     format = [format stringByReplacingOccurrencesOfString:@", " withString:@" "];
     format = [format stringByReplacingOccurrencesOfString:@" a" withString:@"a"];
     format = [format stringByReplacingOccurrencesOfString:@"hh" withString:@"h"];
     format = [format stringByReplacingOccurrencesOfString:@" ha" withString:@"@ha"];
     format = [format stringByReplacingOccurrencesOfString:@"HH" withString:@"H"];
-    format = [format stringByReplacingOccurrencesOfString:@"H 'h'" withString:@"H'h'"];
+    format = [format stringByReplacingOccurrencesOfString:@"H '" withString:@"H'"];
     format = [format stringByReplacingOccurrencesOfString:@"H " withString:@"H'h' "];
     format = [format stringByReplacingOccurrencesOfString:@"H" withString:@"H'h'"
-                                                  options:NSBackwardsSearch|NSAnchoredSearch range:NSMakeRange(0, format.length)];
+              options:NSBackwardsSearch|NSAnchoredSearch range:NSMakeRange(0, format.length)];
     return format;
 }
 @end

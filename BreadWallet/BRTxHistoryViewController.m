@@ -424,7 +424,7 @@ static NSString *dateFormat(NSString *template)
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    return 3;
+    return 2;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -436,10 +436,7 @@ static NSString *dateFormat(NSString *template)
             return (self.moreTx) ? self.transactions.count + 1 : self.transactions.count;
 
         case 1:
-            return (buyEnabled ? 2 : 1);
-
-        case 2:
-            return 1;
+            return (buyEnabled ? 3 : 2);
     }
 
     return 0;
@@ -566,27 +563,20 @@ static NSString *dateFormat(NSString *template)
                 case 0:
                     cell.textLabel.text = NSLocalizedString(@"Buy Bitcoin", nil);
                     cell.imageView.image = [UIImage imageNamed:@"bitcoin-buy-blue-small"];
-                    cell.imageView.alpha = 1.0;
                     break;
                     
                 case 1:
                     cell.textLabel.text = NSLocalizedString(@"import private key", nil);
                     cell.imageView.image = [UIImage imageNamed:@"cameraguide-blue-small"];
-                    cell.imageView.alpha = 1.0;
                     break;
 
                 case 2:
-                    cell.textLabel.text = NSLocalizedString(@"rescan blockchain", nil);
-                    cell.imageView.image = [UIImage imageNamed:@"rescan"];
-                    cell.imageView.alpha = 0.75;
+                    cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
+                    cell.textLabel.text = NSLocalizedString(@"settings", nil);
+                    cell.imageView.image = [UIImage imageNamed:@"settings"];
                     break;
             }
             
-            break;
-
-        case 2:
-            cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
-            cell.textLabel.text = NSLocalizedString(@"settings", nil);
             break;
     }
     
@@ -618,7 +608,6 @@ static NSString *dateFormat(NSString *template)
     switch (indexPath.section) {
         case 0: return (self.moreTx && indexPath.row >= self.transactions.count) ? 44.0 : TRANSACTION_CELL_HEIGHT;
         case 1: return 44.0;
-        case 2: return 44.0;
     }
     
     return 44.0;
@@ -705,21 +694,15 @@ static NSString *dateFormat(NSString *template)
                     [self scanQR:nil];
                     break;
 
-                case 2: // rescan blockchain
-                    [[BRPeerManager sharedInstance] rescan];
-                    [BREventManager saveEvent:@"tx_history:rescan"];
-                    [self done:nil];
+                case 2: // settings
+                    [BREventManager saveEvent:@"tx_history:settings"];
+                    destinationController = [self.storyboard instantiateViewControllerWithIdentifier:@"SettingsViewController"];
+                    [self.navigationController pushViewController:destinationController animated:YES];
                     break;
             }
 
             break;
         }
-
-        case 2: // settings
-            [BREventManager saveEvent:@"tx_history:settings"];
-            destinationController = [self.storyboard instantiateViewControllerWithIdentifier:@"SettingsViewController"];
-            [self.navigationController pushViewController:destinationController animated:YES];
-            break;
     }
 }
 
