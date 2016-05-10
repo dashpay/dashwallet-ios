@@ -312,7 +312,7 @@ static NSString *dateFormat(NSString *template)
     
     NSString *date = self.txDates[uint256_obj(tx.txHash)];
     NSTimeInterval now = [[BRPeerManager sharedInstance] timestampForBlockHeight:TX_UNCONFIRMED];
-    NSTimeInterval year = now - 364*24*60*60;
+    NSTimeInterval year = [NSDate timeIntervalSinceReferenceDate] - 364*24*60*60;
 
     if (date) return date;
 

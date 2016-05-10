@@ -29,6 +29,7 @@
 #import "BREventManager.h"
 #import "breadwallet-Swift.h"
 #import "BRPhoneWCSessionManager.h"
+#import <WebKit/WebKit.h>
 
 #if BITCOIN_TESTNET
 #pragma message "testnet build"
@@ -86,29 +87,30 @@
 
     //TODO: figure out deterministic builds/removing app sigs: http://www.afp548.com/2012/06/05/re-signining-ios-apps/
 
-    // platform features are only available on iOS 8.0+
-    if ([[UIDevice currentDevice].systemVersion compare:@"8.0" options:NSNumericSearch] != NSOrderedAscending) {
-        BRAPIClient *c = [BRAPIClient sharedClient];
-        [c updateBundle:@"bread-buy" handler:^(NSString * _Nullable error) {
-            if (error != nil) {
-                NSLog(@"got update bundle error: %@", error);
-            } else {
-                NSLog(@"successfully updated bundle!");
-            }
-        }];
-        [c updateFeatureFlags];
-    }
-
     //TODO: implement importing of private keys split with shamir's secret sharing:
     //      https://github.com/cetuscetus/btctool/blob/bip/bip-xxxx.mediawiki
 
-    // start WCSession manager
-    [BRPhoneWCSessionManager sharedInstance];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        if ([WKWebView class]) { // platform features are only available on iOS 8.0+
+            BRAPIClient *c = [BRAPIClient sharedClient];
+
+            [c updateBundle:@"bread-buy" handler:^(NSString * _Nullable error) {
+                if (error != nil) {
+                    NSLog(@"got update bundle error: %@", error);
+                } else {
+                    NSLog(@"successfully updated bundle!");
+                }
+            }];
+            [c updateFeatureFlags];
+        }
+
+        [BRPhoneWCSessionManager sharedInstance];
     
-    // observe balance and create notifications
-    [self setupBalanceNotification:application];
-    
-    [self setupPreferenceDefaults];
+        // observe balance and create notifications
+        [self setupBalanceNotification:application];
+        
+        [self setupPreferenceDefaults];
+    });
 
     return YES;
 }
