@@ -498,11 +498,13 @@ static NSString *dateFormat(NSString *template)
                 if (confirms == 0 && ! [manager.wallet transactionIsValid:tx]) {
                     unconfirmedLabel.text = NSLocalizedString(@"INVALID", nil);
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
+                    balanceLabel.text = localBalanceLabel.text = nil;
                 }
                 else if (confirms == 0 && [manager.wallet transactionIsPending:tx]) {
                     unconfirmedLabel.text = NSLocalizedString(@"pending", nil);
                     unconfirmedLabel.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.2];
                     textLabel.textColor = [UIColor grayColor];
+                    balanceLabel.text = localBalanceLabel.text = nil;
                 }
                 else if (confirms == 0 && ! [manager.wallet transactionIsVerified:tx]) {
                     unconfirmedLabel.text = NSLocalizedString(@"unverified", nil);

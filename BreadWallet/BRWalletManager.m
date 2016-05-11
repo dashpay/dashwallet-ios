@@ -502,7 +502,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         [BREventManager saveEvent:@"wallet_manager:touchid_auth"];
 
         if ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error] &&
-            pinUnlockTime + 30*24*60*60 > [NSDate timeIntervalSinceReferenceDate] &&
+            pinUnlockTime + 7*24*60*60 > [NSDate timeIntervalSinceReferenceDate] &&
             getKeychainInt(PIN_FAIL_COUNT_KEY, nil) == 0 && getKeychainInt(SPEND_LIMIT_KEY, nil) > 0) {
             context.localizedFallbackTitle = NSLocalizedString(@"passcode", nil);
 
