@@ -29,7 +29,7 @@ import WebKit
 
 
 @available(iOS 8.0, *)
-@objc public class BRWebViewController : UIViewController {
+@objc public class BRWebViewController : UIViewController, WKNavigationDelegate {
     var wkProcessPool: WKProcessPool
     var webView: WKWebView?
     var bundleName: String
@@ -62,13 +62,14 @@ import WebKit
             config.allowsPictureInPictureMediaPlayback = false
         }
 
-        let indexUrl = NSURL(string: "http://localhost:\(server.port)\(mountPoint)")!
+        let indexUrl = NSURL(string: "http://127.0.0.1:\(server.port)\(mountPoint)")!
         let request = NSURLRequest(URL: indexUrl)
         
         view = UIView(frame: CGRectZero)
         view.backgroundColor = UIColor(red:0.98, green:0.98, blue:0.98, alpha:1.0)
         
         webView = WKWebView(frame: CGRectZero, configuration: config)
+        webView?.navigationDelegate = self
         webView?.backgroundColor = UIColor(red:0.98, green:0.98, blue:0.98, alpha:1.0)
         webView?.loadRequest(request)
         webView?.autoresizingMask = [UIViewAutoresizing.FlexibleHeight, UIViewAutoresizing.FlexibleWidth]
@@ -149,5 +150,18 @@ import WebKit
     
     public func refresh() {
         webView?.reload()
+    }
+    
+    // MARK: - navigation delegate
+    
+    public func webView(webView: WKWebView, decidePolicyForNavigationAction navigationAction: WKNavigationAction,
+                        decisionHandler: (WKNavigationActionPolicy) -> Void) {
+        if let url = navigationAction.request.URL, host = url.host, port = url.port {
+            if host == server.listenAddress || port.intValue == Int32(server.port) {
+                return decisionHandler(.Allow)
+            }
+        }
+        print("[BRWebViewController disallowing navigation: \(navigationAction)")
+        decisionHandler(.Cancel)
     }
 }

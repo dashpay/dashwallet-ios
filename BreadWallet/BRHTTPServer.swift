@@ -56,6 +56,7 @@ enum BRHTTPServerError: ErrorType {
     var middleware: [BRHTTPMiddleware] = [BRHTTPMiddleware]()
     var isStarted: Bool { return fd != -1 }
     var port: in_port_t = 0
+    var listenAddress: String = "127.0.0.1"
     
     var _Q: dispatch_queue_t? = nil
     var Q: dispatch_queue_t {
@@ -127,7 +128,7 @@ enum BRHTTPServerError: ErrorType {
         addr.sin_len = __uint8_t(sizeof(sockaddr_in))
         addr.sin_family = sa_family_t(AF_INET)
         addr.sin_port = Int(OSHostByteOrder()) == OSLittleEndian ? _OSSwapInt16(port) : port
-        addr.sin_addr = in_addr(s_addr: inet_addr("127.0.0.1"))
+        addr.sin_addr = in_addr(s_addr: inet_addr(listenAddress))
         addr.sin_zero = (0, 0, 0, 0, 0, 0, 0 ,0)
         
         var bind_addr = sockaddr()
