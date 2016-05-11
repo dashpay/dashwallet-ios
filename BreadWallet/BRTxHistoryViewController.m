@@ -486,8 +486,10 @@ static NSString *dateFormat(NSString *template)
                 confirms = 6;
 #endif
 
+                textLabel.textColor = [UIColor darkTextColor];
                 sentLabel.hidden = YES;
                 unconfirmedLabel.hidden = NO;
+                unconfirmedLabel.backgroundColor = [UIColor lightGrayColor];
                 detailTextLabel.text = [self dateForTx:tx];
                 balanceLabel.text = (manager.didAuthenticate) ? [manager stringForAmount:balance] : nil;
                 localBalanceLabel.text = (manager.didAuthenticate) ?
@@ -499,7 +501,8 @@ static NSString *dateFormat(NSString *template)
                 }
                 else if (confirms == 0 && [manager.wallet transactionIsPending:tx]) {
                     unconfirmedLabel.text = NSLocalizedString(@"pending", nil);
-                    unconfirmedLabel.backgroundColor = [UIColor redColor];
+                    unconfirmedLabel.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.2];
+                    textLabel.textColor = [UIColor grayColor];
                 }
                 else if (confirms == 0 && ! [manager.wallet transactionIsVerified:tx]) {
                     unconfirmedLabel.text = NSLocalizedString(@"unverified", nil);
@@ -540,7 +543,6 @@ static NSString *dateFormat(NSString *template)
 
                 if (! unconfirmedLabel.hidden) {
                     unconfirmedLabel.layer.cornerRadius = 3.0;
-                    unconfirmedLabel.backgroundColor = [UIColor lightGrayColor];
                     unconfirmedLabel.text = [unconfirmedLabel.text stringByAppendingString:@"  "];
                 }
                 else {
