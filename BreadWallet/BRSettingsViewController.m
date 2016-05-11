@@ -138,7 +138,7 @@
         struct utsname systemInfo;
         
         uname(&systemInfo);
-        msg = [NSString stringWithFormat:@"%s / iOS %@ / breadwallet v%@%@\n\nsupport request:\n",
+        msg = [NSString stringWithFormat:@"%s / iOS %@ / breadwallet v%@%@\n\n",
                systemInfo.machine, UIDevice.currentDevice.systemVersion,
                NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"],
                ([[BRWalletManager sharedInstance] watchOnly]) ? @" (watch only)" : @""];

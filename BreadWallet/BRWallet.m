@@ -152,6 +152,11 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     return self;
 }
 
+- (void)dealloc
+{
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
+}
+
 - (NSData *)masterPublicKey
 {
     if (! _masterPublicKey) {
@@ -296,10 +301,14 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             
             // check if any inputs are pending
             if (tx.blockHeight == TX_UNCONFIRMED) {
-                for (NSNumber *sequence in tx.inputSequences) {
-                    if ([sequence unsignedIntValue] == UINT32_MAX) continue;
-                    pending = YES;
-                    break;
+                if (transaction.size > TX_MAX_SIZE) pending = YES; // check transaction size is under TX_MAX_SIZE
+                
+                for (NSNumber *sequence in tx.inputSequences) { // check that all sequence numbers are final (not RBF)
+                    if ([sequence unsignedIntValue] < UINT32_MAX) pending = YES;
+                }
+            
+                for (NSNumber *amount in tx.outputAmounts) { // check that no outputs are dust
+                    if (amount.unsignedLongLongValue < TX_MIN_OUTPUT_AMOUNT) pending = YES;
                 }
                 
                 if (pending || [inputs intersectsSet:pendingTx]) {
@@ -647,49 +656,40 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     return YES;
 }
 
-// returns true if all sequence numbers are final (otherwise transaction can be replaced-by-fee), if no outputs are
-// dust, transaction size is not over TX_MAX_SIZE, timestamp is greater than 0, and no inputs are known to be unverfied
+// true if transaction cannot be immediately spent (i.e. if it or an input tx can be replaced-by-fee)
+- (BOOL)transactionIsPending:(BRTransaction *)transaction
+{
+    if (transaction.blockHeight != TX_UNCONFIRMED) return NO; // confirmed transactions are not pending
+    if (transaction.size > TX_MAX_SIZE) return YES; // check transaction size is under TX_MAX_SIZE
+    
+    for (NSNumber *sequence in transaction.inputSequences) { // check that all sequence numbers are final (not RBF)
+        if (sequence.unsignedIntValue < UINT32_MAX) return YES;
+    }
+    
+    for (NSNumber *amount in transaction.outputAmounts) { // check that no outputs are dust
+        if (amount.unsignedLongLongValue < TX_MIN_OUTPUT_AMOUNT) return YES;
+    }
+
+    for (NSValue *txHash in transaction.inputHashes) { // check if any inputs are known to be pending
+        if ([self transactionIsPending:self.allTx[txHash]]) return YES;
+    }
+
+    return NO;
+}
+
+// true if tx is considered 0-conf safe (valid and not pending, timestamp is greater than 0, and no unverified inputs)
 - (BOOL)transactionIsVerified:(BRTransaction *)transaction
 {
     if (transaction.blockHeight != TX_UNCONFIRMED) return YES; // confirmed transactions are always verified
     if (transaction.timestamp == 0) return NO; // a timestamp of 0 indicates transaction is to remain unverified
-    if (transaction.size > TX_MAX_SIZE) return NO; // check transaction size is under TX_MAX_SIZE
+    if (! [self transactionIsValid:transaction] || [self transactionIsPending:transaction]) return NO;
     
-    for (NSNumber *sequence in transaction.inputSequences) { // check that all sequence numbers are final
-        if (sequence.unsignedIntValue < UINT32_MAX) return NO;
-    }
-
-    for (NSNumber *amount in transaction.outputAmounts) { // check that no outputs are dust
-        if (amount.unsignedLongLongValue < TX_MIN_OUTPUT_AMOUNT) return NO;
-    }
-
     for (NSValue *txHash in transaction.inputHashes) { // check if any inputs are known to be unverfied
         if (! self.allTx[txHash]) continue;
         if (! [self transactionIsVerified:self.allTx[txHash]]) return NO;
     }
-
+    
     return YES;
-}
-
-// returns true if transaction won't be valid by blockHeight + 1 or within the next 10 minutes
-- (BOOL)transactionIsPostdated:(BRTransaction *)transaction atBlockHeight:(uint32_t)blockHeight
-{
-    if (transaction.blockHeight != TX_UNCONFIRMED) return NO; // confirmed transactions are not postdated
-
-    for (NSValue *txHash in transaction.inputHashes) { // check if any inputs are known to be postdated
-        if ([self transactionIsPostdated:self.allTx[txHash] atBlockHeight:blockHeight]) return YES;
-    }
-
-//    if (transaction.lockTime <= blockHeight + 1) return NO;
-//
-//    if (transaction.lockTime >= TX_MAX_LOCK_HEIGHT &&
-//        transaction.lockTime < [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 + 10*60) return NO;
-
-    for (NSNumber *sequence in transaction.inputSequences) { // lockTime is ignored if all sequence numbers are final
-        if (sequence.unsignedIntValue < UINT32_MAX) return YES;
-    }
-
-    return NO;
 }
 
 // set the block heights and timestamps for the given transactions, use a height of TX_UNCONFIRMED and timestamp of 0 to

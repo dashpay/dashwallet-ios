@@ -497,8 +497,8 @@ static NSString *dateFormat(NSString *template)
                     unconfirmedLabel.text = NSLocalizedString(@"INVALID", nil);
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                 }
-                else if (confirms == 0 && [manager.wallet transactionIsPostdated:tx atBlockHeight:blockHeight]) {
-                    unconfirmedLabel.text = NSLocalizedString(@"post-dated", nil);
+                else if (confirms == 0 && [manager.wallet transactionIsPending:tx]) {
+                    unconfirmedLabel.text = NSLocalizedString(@"pending", nil);
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                 }
                 else if (confirms == 0 && ! [manager.wallet transactionIsVerified:tx]) {
