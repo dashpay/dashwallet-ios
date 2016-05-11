@@ -199,9 +199,8 @@
                     else if (! [manager.wallet transactionIsValid:self.transaction]) {
                         detailLabel.text = NSLocalizedString(@"double spend", nil);
                     }
-                    else if ([manager.wallet transactionIsPostdated:self.transaction
-                              atBlockHeight:[BRPeerManager sharedInstance].lastBlockHeight]) {
-                        detailLabel.text = NSLocalizedString(@"transaction is post-dated", nil);
+                    else if ([manager.wallet transactionIsPending:self.transaction]) {
+                        detailLabel.text = NSLocalizedString(@"pending", nil);
                     }
                     else if (! [manager.wallet transactionIsVerified:self.transaction]) {
                         detailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"seen by %d of %d peers", nil),
