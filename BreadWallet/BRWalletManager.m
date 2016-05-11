@@ -795,6 +795,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 - (void)setSpendingLimit:(uint64_t)spendingLimit
 {
     if (setKeychainInt((spendingLimit > 0) ? self.wallet.totalSent + spendingLimit : 0, SPEND_LIMIT_KEY, NO)) {
+        // use setDouble since setInteger won't hold a uint64_t
         [[NSUserDefaults standardUserDefaults] setDouble:spendingLimit forKey:SPEND_LIMIT_AMOUNT_KEY];
     }
 }
@@ -951,6 +952,8 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         if (newFee >= DEFAULT_FEE_PER_KB && newFee <= MAX_FEE_PER_KB) {
             NSLog(@"setting new fee-per-kb %lld", newFee);
             _wallet.feePerKb = newFee;
+
+            // use setDouble since setInteger won't hold a uint64_t
             [[NSUserDefaults standardUserDefaults] setDouble:newFee forKey:FEE_PER_KB_KEY];
         }
     }];

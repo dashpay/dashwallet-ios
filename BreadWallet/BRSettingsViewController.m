@@ -132,7 +132,31 @@
 
 - (IBAction)about:(id)sender
 {
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://breadwallet.com"]];
+    if ([MFMailComposeViewController canSendMail]) {
+        MFMailComposeViewController *composeController = [MFMailComposeViewController new];
+        NSString *msg;
+        struct utsname systemInfo;
+        
+        uname(&systemInfo);
+        msg = [NSString stringWithFormat:@"%s / iOS %@ / breadwallet v%@%@\n\nsupport request:\n",
+               systemInfo.machine, UIDevice.currentDevice.systemVersion,
+               NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"],
+               ([[BRWalletManager sharedInstance] watchOnly]) ? @" (watch only)" : @""];
+        
+        composeController.toRecipients = @[@"support@breadwallet.com"];
+        composeController.subject = @"support request";
+        [composeController setMessageBody:msg isHTML:NO];
+        composeController.mailComposeDelegate = self;
+        [self.navigationController presentViewController:composeController animated:YES completion:nil];
+        composeController.view.backgroundColor =
+            [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default"]];
+        [BREventManager saveEvent:@"about:send_email"];
+    }
+    else {
+        [BREventManager saveEvent:@"about:email_not_configured"];
+        [[[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"email not configured", nil) delegate:nil
+          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+    }
 }
 
 #if DEBUG
@@ -402,19 +426,16 @@ _switch_cell:
 
 - (void)showAbout
 {
-    //TODO: XXXX add a link to support
     [BREventManager saveEvent:@"settings:show_about"];
-    UIViewController *c;
-    UILabel *l;
-    NSMutableAttributedString *s;
-    c = [self.storyboard instantiateViewControllerWithIdentifier:@"AboutViewController"];
-    l = (id)[c.view viewWithTag:411];
-    s = [[NSMutableAttributedString alloc] initWithAttributedString:l.attributedText];
+    UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"AboutViewController"];
+    UILabel *l = (id)[c.view viewWithTag:411];
+    NSMutableAttributedString *s = [[NSMutableAttributedString alloc] initWithAttributedString:l.attributedText];
+    
 #if BITCOIN_TESTNET
     [s replaceCharactersInRange:[s.string rangeOfString:@"%net%"] withString:@"%net% (testnet)"];
 #endif
     [s replaceCharactersInRange:[s.string rangeOfString:@"%ver%"]
-                     withString:NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"]];
+     withString:NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"]];
     [s replaceCharactersInRange:[s.string rangeOfString:@"%net%"] withString:@""];
     l.attributedText = s;
     [l.superview.gestureRecognizers.firstObject addTarget:self action:@selector(about:)];
@@ -585,6 +606,14 @@ _deselect_switch:
             [self showEarlyAccess];
             break;
     }
+}
+
+#pragma mark - MFMailComposeViewControllerDelegate
+
+- (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result
+error:(NSError *)error
+{
+    [self.navigationController dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - UIAlertViewDelegate

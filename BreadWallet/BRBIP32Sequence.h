@@ -26,7 +26,7 @@
 #import <Foundation/Foundation.h>
 #import "BRKeySequence.h"
 
-#define BIP32_HARD 0x80000000u
+#define BIP32_HARD 0x80000000
 
 // BIP32 is a scheme for deriving chains of addresses from a seed value
 // https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
@@ -38,8 +38,7 @@
 - (NSString *)privateKey:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData *)seed;
 - (NSArray *)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed;
 
-// keys used for authenticated API calls, i.e. bitauth: https://github.com/bitpay/bitauth
-- (NSData *)authPublicKeyFromSeed:(NSData *)seed;
+// key used for authenticated API calls, i.e. bitauth: https://github.com/bitpay/bitauth
 - (NSString *)authPrivateKeyFromSeed:(NSData *)seed;
 
 - (NSString *)serializedPrivateMasterFromSeed:(NSData *)seed;

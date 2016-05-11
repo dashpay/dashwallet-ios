@@ -336,7 +336,6 @@
 		757BE7E8192D4E880061CB20 /* BRSeedViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRSeedViewController.m; sourceTree = "<group>"; };
 		757C89501A2FCE420076B373 /* BRSettingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRSettingsViewController.h; sourceTree = "<group>"; };
 		757C89511A2FCE420076B373 /* BRSettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRSettingsViewController.m; sourceTree = "<group>"; };
-		757E09961ADB8E16006FD352 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
 		757E09981ADB8EEB006FD352 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75878BBD192ACD46002505AB /* BRAmountViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAmountViewController.h; sourceTree = "<group>"; };
 		75878BBE192ACD46002505AB /* BRAmountViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = BRAmountViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
@@ -397,6 +396,7 @@
 		75ABFB861B55BB4C00B0B5CC /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/MainInterface.strings; sourceTree = "<group>"; };
 		75ABFB881B55BB4D00B0B5CC /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = pl.lproj/MainInterface.strings; sourceTree = "<group>"; };
 		75ABFB8A1B55BB4E00B0B5CC /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/MainInterface.strings; sourceTree = "<group>"; };
+		75BDCC381CE2FC7000AAFA22 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
 		75C0E3C21B1BA29D007BC531 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = fr; path = fr.lproj/BIP39Words.plist; sourceTree = "<group>"; };
 		75C0E3C31B1BA29F007BC531 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = ja; path = ja.lproj/BIP39Words.plist; sourceTree = "<group>"; };
 		75C0E3C41B1BA2A5007BC531 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = es; path = es.lproj/BIP39Words.plist; sourceTree = "<group>"; };
@@ -1506,7 +1506,6 @@
 			isa = PBXVariantGroup;
 			children = (
 				75D5F3DD191EC270004AB296 /* Base */,
-				757E09961ADB8E16006FD352 /* en */,
 				7511E8C91AE5FF240025F1B3 /* fr */,
 				7511E8CD1AE5FF2D0025F1B3 /* ja */,
 				7511E8D11AE5FF390025F1B3 /* ko */,
@@ -1525,6 +1524,7 @@
 				75DE024F1B0EB8030027FF08 /* ru */,
 				750C6CC11B5C8EB60038AAE9 /* el */,
 				75CE194C1B9642EB000778E4 /* pt */,
+				75BDCC381CE2FC7000AAFA22 /* en */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";

@@ -162,22 +162,23 @@
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSUInteger peerCount = [BRPeerManager sharedInstance].peerCount;
     NSUInteger relayCount = [[BRPeerManager sharedInstance] relayCountForTransaction:self.transaction.txHash];
+    NSString *s;
     
     // Configure the cell...
     switch (indexPath.section) {
         case 0:
             switch (indexPath.row) {
                 case 0:
-                    cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCell" forIndexPath:indexPath];
+                    cell = [tableView dequeueReusableCellWithIdentifier:@"IdCell" forIndexPath:indexPath];
                     cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                     textLabel = (id)[cell viewWithTag:1];
                     detailLabel = (id)[cell viewWithTag:2];
-                    subtitleLabel = (id)[cell viewWithTag:3];
                     [self setBackgroundForCell:cell indexPath:indexPath];
                     textLabel.text = NSLocalizedString(@"id:", nil);
-                    detailLabel.text = [NSString hexWithData:[NSData dataWithBytes:self.transaction.txHash.u8
-                                                              length:sizeof(UInt256)].reverse];
-                    subtitleLabel.text = nil;
+                    s = [NSString hexWithData:[NSData dataWithBytes:self.transaction.txHash.u8
+                                               length:sizeof(UInt256)].reverse];
+                    detailLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
+                                        [s substringFromIndex:s.length/2]];
                     break;
                     
                 case 1:
