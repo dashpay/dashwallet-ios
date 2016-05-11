@@ -411,18 +411,6 @@ func httpDateNow() -> String {
         task.resume()
     }
     
-    public func me() {
-        let req = NSURLRequest(URL: url("/me"))
-        let task = dataTaskWithRequest(req, authenticated: true) { (data, resp, err) -> Void in
-            if let data = data {
-                if let s = String(data: data, encoding: NSUTF8StringEncoding) {
-                    self.log("GET /me: \(s)")
-                }
-            }
-        }
-        task.resume()
-    }
-    
     // MARK: feature flags API
     
     public func defaultsKeyForFeatureFlag(name: String) -> String {
@@ -511,8 +499,21 @@ func httpDateNow() -> String {
             try BRTar.createFilesAndDirectoriesAtPath(bundleExtractedPath, withTarPath: bundlePath)
         }
         
-        guard let bundleExists = try? exists() else {
+        guard var bundleExists = try? exists() else {
             return handler(error: NSLocalizedString("error determining if bundle exists", comment: "")) }
+        
+        // attempt to use the tar file that was bundled with the binary
+        if !bundleExists {
+            if let bundledBundleUrl = NSBundle.mainBundle().URLForResource(bundleName, withExtension: "tar") {
+                do {
+                    try fm.copyItemAtURL(bundledBundleUrl, toURL: bundleUrl)
+                    bundleExists = true
+                    log("used bundled bundle for \(bundleName)")
+                } catch let e {
+                    log("unable to copy bundled bundle `\(bundleName)` \(bundledBundleUrl) -> \(bundleUrl): \(e)")
+                }
+            }
+        }
         
         if bundleExists {
             // bundle exists, download and apply the diff, then remove diff file
