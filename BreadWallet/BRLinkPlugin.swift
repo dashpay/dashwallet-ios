@@ -27,15 +27,35 @@ import Foundation
 
 @objc class BRLinkPlugin: NSObject, BRHTTPRouterPlugin {
     func hook(router: BRHTTPRouter) {
+        // opens any url that UIApplication.openURL can open
+        // arg: "url" - the url to open
         router.get("/_open_url") { (request, match) -> BRHTTPResponse in
             if let encodedUrls = request.query["url"] where encodedUrls.count == 1 {
                 if let decodedUrl = encodedUrls[0].stringByRemovingPercentEncoding, url = NSURL(string: decodedUrl) {
-                    print("[BRLinkPlugin] openURL \(decodedUrl)")
+                    print("[BRLinkPlugin] /_open_url \(decodedUrl)")
                     UIApplication.sharedApplication().openURL(url)
                     return BRHTTPResponse(request: request, code: 204)
                 }
             }
             return BRHTTPResponse(request: request, code: 400)
+        }
+        // opens the maps app for directions
+        // arg: "address" - the destination address
+        // arg: "from_point" - the origination point as a comma separated pair of floats - latitude,longitude
+        router.get("/_open_maps") { (request, match) -> BRHTTPResponse in
+            let invalidResp = BRHTTPResponse(request: request, code: 400)
+            guard let toAddress = request.query["address"] where toAddress.count == 1 else {
+                return invalidResp
+            }
+            guard let fromPoint = request.query["from_point"] where fromPoint.count == 1 else {
+                return invalidResp
+            }
+            guard let url = NSURL(string: "http://maps.apple.com/?daddr=\(toAddress[0])&spn=\(fromPoint[0])") else {
+                print("[BRLinkPlugin] /_open_maps unable to construct url")
+                return invalidResp
+            }
+            UIApplication.sharedApplication().openURL(url)
+            return BRHTTPResponse(request: request, code: 204)
         }
     }
 }
