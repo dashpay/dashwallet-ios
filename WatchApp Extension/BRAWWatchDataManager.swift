@@ -87,7 +87,7 @@ class BRAWWatchDataManager: NSObject, WCSessionDelegate {
     
     func requestAllData() {
         if self.session.reachable {
-            WKInterfaceDevice.currentDevice().playHaptic(WKHapticType.Click)
+            // WKInterfaceDevice.currentDevice().playHaptic(WKHapticType.Click)
             let messageToSend = [
                 AW_SESSION_REQUEST_TYPE: NSNumber(unsignedInt:AWSessionRquestTypeFetchData.rawValue),
                 AW_SESSION_REQUEST_DATA_TYPE_KEY:
@@ -102,7 +102,7 @@ class BRAWWatchDataManager: NSObject, WCSessionDelegate {
                             self.appleWatchData = unwrappedAppleWatchData
                             if previousAppleWatchData != self.appleWatchData {
                                 self.archiveData(unwrappedAppleWatchData)
-                                WKInterfaceDevice.currentDevice().playHaptic(WKHapticType.Click)
+//                                WKInterfaceDevice.currentDevice().playHaptic(WKHapticType.Click)
                                 NSNotificationCenter.defaultCenter().postNotificationName(
                                     BRAWWatchDataManager.ApplicationDataDidUpdateNotification, object: nil)
                             }
@@ -113,7 +113,7 @@ class BRAWWatchDataManager: NSObject, WCSessionDelegate {
                         }
                     }
                 }, errorHandler: {error in
-                    WKInterfaceDevice.currentDevice().playHaptic(WKHapticType.Failure)
+//                    WKInterfaceDevice.currentDevice().playHaptic(WKHapticType.Failure)
                     print(error)
             })
         }
