@@ -867,7 +867,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
     completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         if (error) {
             NSLog(@"%@", error);
-            failover();
+            if (failover) failover();
             return;
         }
         
@@ -887,7 +887,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         if (error || ! [json isKindOfClass:[NSDictionary class]] || ! [json[jsonKey] isKindOfClass:[NSArray class]]) {
             NSLog(@"unexpected response from %@:\n%@", req.URL.host,
                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-            failover();
+            if (failover) failover();
             return;
         }
         
@@ -896,7 +896,7 @@ static NSString *getKeychainString(NSString *key, NSError **error)
                 ! [d[@"name"] isKindOfClass:[NSString class]] || ! [d[@"rate"] isKindOfClass:[NSNumber class]]) {
                 NSLog(@"unexpected response from %@:\n%@", req.URL.host,
                       [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-                failover();
+                if (failover) failover();
                 return;
             }
             

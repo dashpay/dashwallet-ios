@@ -880,6 +880,7 @@
 
     [[BRPeerManager sharedInstance] connect];
     [BREventManager saveEvent:@"root:connect_success"];
+    if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
 }
 
 - (IBAction)navBarTap:(id)sender
@@ -887,7 +888,8 @@
     if ([self nextTip]) return;
 
     if (! self.errorBar.hidden) {
-        [self connect:sender];
+        [self hideErrorBar];
+        [self performSelector:@selector(connect:) withObject:sender afterDelay:0.1];
     }
     else if (! [BRWalletManager sharedInstance].didAuthenticate && self.percent.hidden) {
         [self unlock:sender];

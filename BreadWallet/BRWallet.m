@@ -319,7 +319,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             }
 
             //TODO: don't add outputs below TX_MIN_OUTPUT_AMOUNT
-            //TODO: don't add coin generation outputs < 100 blocks deep, or non-final lockTime > 1 block/10min in future
+            //TODO: don't add coin generation outputs < 100 blocks deep
             //NOTE: balance/UTXOs will then need to be recalculated when last block changes
             for (NSString *address in tx.outputAddresses) { // add outputs to UTXO set
                 if ([self containsAddress:address]) {

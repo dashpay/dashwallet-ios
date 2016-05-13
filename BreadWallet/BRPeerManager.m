@@ -252,7 +252,7 @@ static const char *dns_seeds[] = {
                     freeaddrinfo(servinfo);
                 }
             });
-            
+                        
             for (NSArray *a in peers) [_peers addObjectsFromArray:a];
 
 #if BITCOIN_TESTNET
@@ -368,7 +368,7 @@ static const char *dns_seeds[] = {
 - (double)syncProgress
 {
     if (! self.downloadPeer && self.syncStartHeight == 0) return 0.0;
-    if (self.lastBlockHeight == self.syncStartHeight) return 0.05;
+    if (self.downloadPeer.status != BRPeerStatusConnected) return 0.05;
     if (self.lastBlockHeight >= self.estimatedBlockHeight) return 1.0;
     return 0.1 + 0.9*(self.lastBlockHeight - self.syncStartHeight)/(self.estimatedBlockHeight - self.syncStartHeight);
 }
