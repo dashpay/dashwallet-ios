@@ -339,58 +339,52 @@ replacementString:(NSString *)string
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSNumberFormatter *numberFormatter = (self.swapped) ? manager.localFormat : manager.format;
-    NSUInteger mindigits = numberFormatter.minimumFractionDigits;
-    NSUInteger point = [textField.text rangeOfString:numberFormatter.currencyDecimalSeparator].location;
-    NSUInteger loc;
-    NSString *textVal = textField.text
-        ? [textField.text stringByReplacingCharactersInRange:range withString:string]
-        : string;
+    NSUInteger decimalLoc = [textField.text rangeOfString:numberFormatter.currencyDecimalSeparator].location;
+    NSUInteger minimumFractionDigits = numberFormatter.minimumFractionDigits;
+    NSString *textVal = textField.text, *zeroStr = nil;
 
+    if (! textVal) textVal = @"";
     numberFormatter.minimumFractionDigits = 0;
-    textVal = [numberFormatter stringFromNumber:[numberFormatter numberFromString:textVal]];
-    loc = [textField.text rangeOfCharacterFromSet:self.charset options:NSBackwardsSearch].location;
-    loc = (loc < textField.text.length) ? loc + 1 : textField.text.length;
+    zeroStr = [numberFormatter stringFromNumber:@0];
+    
+    if (string.length == 0) { // delete button
+        textVal = [textVal stringByReplacingCharactersInRange:range withString:string];
 
-    if (string.length == 0 && point != NSNotFound) { // delete trailing char
-        textVal = [textField.text stringByReplacingCharactersInRange:range withString:string];
-        if ([textVal isEqual:[numberFormatter stringFromNumber:@0]]) textVal = @"";
-    }
-    else if ((string.length > 0 && textField.text.length > 0 && textVal == nil) ||
-             (point != NSNotFound && loc - point > numberFormatter.maximumFractionDigits)) {
-        numberFormatter.minimumFractionDigits = mindigits;
-        return NO; // too many digits
-    }
-    else if ([string isEqual:numberFormatter.currencyDecimalSeparator]
-             && (textField.text.length == 0 || point == NSNotFound)) {
-        // if first char is '.', prepend a zero
-        if (textField.text.length == 0) textVal = [numberFormatter stringFromNumber:@0];
-        loc = [textVal rangeOfCharacterFromSet:self.charset options:NSBackwardsSearch].location;
-        loc = (loc < textVal.length) ? loc + 1 : textVal.length;
-        textVal = [textVal stringByReplacingCharactersInRange:NSMakeRange(loc, 0) withString:numberFormatter.currencyDecimalSeparator];
-    }
-    else if ([string isEqual:@"0"]) {
-        if (textField.text.length == 0) { // if first digit is zero, append a '.'
-            textVal = [numberFormatter stringFromNumber:@0];
-            loc = [textVal rangeOfCharacterFromSet:self.charset options:NSBackwardsSearch].location;
-            loc = (loc < textVal.length) ? loc + 1 : textVal.length;
-            textVal = [textVal stringByReplacingCharactersInRange:NSMakeRange(loc, 0) withString:numberFormatter.currencyDecimalSeparator];
+        if (range.location <= decimalLoc) { // deleting before the decimal requires reformatting
+            textVal = [numberFormatter stringFromNumber:[numberFormatter numberFromString:textVal]];
         }
-        else if (point != NSNotFound) { // handle multiple zeros after '.'
-            textVal = [textField.text stringByReplacingCharactersInRange:NSMakeRange(loc, 0) withString:@"0"];
+
+        if ([textVal isEqual:zeroStr]) textVal = @""; // check if after deleting, are we left with a zero amount
+    }
+    else if ([string isEqual:numberFormatter.currencyDecimalSeparator]) { // decimal point button
+        if (decimalLoc == NSNotFound && numberFormatter.maximumFractionDigits > 0) {
+            textVal = (textVal.length == 0) ? [zeroStr stringByAppendingString:string] :
+                      [textVal stringByReplacingCharactersInRange:range withString:string];
         }
     }
-
-//    l = [t rangeOfCharacterFromSet:self.charset options:NSBackwardsSearch].location;
-//    l = (l < t.length) ? l + 1 : t.length;
-//
-//    // don't allow values below minOutputAmount
-//    if (t.length > 0 && [t rangeOfString:f.currencyDecimalSeparator].location != NSNotFound &&
-//        [m amountForString:[t stringByReplacingCharactersInRange:NSMakeRange(l, 0) withString:@"9"]] <
-//        manager.wallet.minOutputAmount) {
-//        return NO;
-//    }
-    numberFormatter.minimumFractionDigits = mindigits;
+    else { // digit button
+        // check for too many digits after the decimal point
+        if (range.location > decimalLoc && range.location - decimalLoc > numberFormatter.maximumFractionDigits) {
+            numberFormatter.minimumFractionDigits = numberFormatter.maximumFractionDigits;
+            textVal = [numberFormatter stringFromNumber:[[[NSDecimalNumber decimalNumberWithDecimal:[numberFormatter
+                       numberFromString:textVal].decimalValue] decimalNumberByMultiplyingByPowerOf10:1]
+                       decimalNumberByAdding:[[NSDecimalNumber decimalNumberWithString:string]
+                       decimalNumberByMultiplyingByPowerOf10:-numberFormatter.maximumFractionDigits]]];
+        }
+        else if (textVal.length == 0 && [string isEqual:@"0"]) { // if first digit is zero, append decimal point
+            textVal = [zeroStr stringByAppendingString:numberFormatter.currencyDecimalSeparator];
+        }
+        else if (range.location > decimalLoc && [string isEqual:@"0"]) { // handle multiple zeros after decimal point
+            textVal = [textVal stringByReplacingCharactersInRange:range withString:string];
+        }
+        else {
+            textVal = [numberFormatter stringFromNumber:[numberFormatter numberFromString:[textVal
+                       stringByReplacingCharactersInRange:range withString:string]]];
+        }
+    }
+    
     textField.text = textVal;
+    numberFormatter.minimumFractionDigits = minimumFractionDigits;
     if (textVal.length > 0 && textField.placeholder.length > 0) textField.placeholder = nil;
 
     if (textVal.length == 0 && textField.placeholder.length == 0) {
