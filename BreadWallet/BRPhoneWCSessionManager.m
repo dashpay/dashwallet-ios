@@ -154,6 +154,10 @@ didReceiveMessage:(NSDictionary<NSString *, id> *)message
     BRAppleWatchData *appleWatchData = [[BRAppleWatchData alloc] init];
     appleWatchData.balance = [manager stringForAmount:manager.wallet.balance];
     appleWatchData.balanceInLocalCurrency = [manager localCurrencyStringForAmount:manager.wallet.balance];
+#if SNAPSHOT
+    appleWatchData.balance = [manager stringForAmount:42980000],
+    appleWatchData.balanceInLocalCurrency = [manager localCurrencyStringForAmount:42980000];
+#endif
     appleWatchData.receiveMoneyAddress = [BRWalletManager sharedInstance].wallet.receiveAddress;
     appleWatchData.transactions = [[self recentTransactionListFromTransactions:transactions] copy];
     appleWatchData.receiveMoneyQRCodeImage = qrCodeImage;
@@ -225,6 +229,26 @@ didReceiveMessage:(NSDictionary<NSString *, id> *)message
     for ( BRTransaction *transaction in transactions) {
         [transactionListData addObject:[BRAppleWatchTransactionData appleWatchTransactionDataFrom:transaction]];
     }
+
+#if SNAPSHOT
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    [transactionListData removeAllObjects];
+    
+    for (int i = 0; i < 6; i++) {
+        BRTransaction *tx = [BRTransaction new];
+        BRAppleWatchTransactionData *txData = [BRAppleWatchTransactionData new];
+        int64_t amount = [@[@(-1010000), @(-10010000), @(54000000), @(-82990000), @(-10010000), @(93000000)][i]
+                          longLongValue];
+        
+        txData.type = (amount >= 0) ? BRAWTransactionTypeReceive : BRAWTransactionTypeSent;
+        txData.amountText = [manager stringForAmount:amount];
+        txData.amountTextInLocalCurrency = [manager localCurrencyStringForAmount:amount];
+        tx.timestamp = [NSDate timeIntervalSinceReferenceDate] - i*100000;
+        txData.dateText = tx.dateText;
+        [transactionListData addObject:txData];
+    }
+#endif
+
     return transactionListData;
 }
 
