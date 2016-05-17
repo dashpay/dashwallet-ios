@@ -51,7 +51,8 @@ typedef struct _BRUTXO {
 @property (nonatomic, readonly) NSString *changeAddress; // returns the first unused internal address
 @property (nonatomic, readonly) NSSet *addresses; // all previously generated internal and external addresses
 @property (nonatomic, readonly) NSArray *unspentOutputs; // NSValue objects containing UTXO structs
-@property (nonatomic, readonly) NSArray *recentTransactions; // BRTransaction objects sorted by date, most recent first
+@property (nonatomic, readonly) NSArray *recentTransactions; // last 100 transactions sorted by date, most recent first
+@property (nonatomic, readonly) NSArray *allTransactions; // all wallet transactions sorted by date, most recent first
 @property (nonatomic, readonly) uint64_t totalSent; // the total amount spent from the wallet (excluding change)
 @property (nonatomic, readonly) uint64_t totalReceived; // the total amount received by the wallet (excluding change)
 @property (nonatomic, assign) uint64_t feePerKb; // fee per kb of transaction size to use when including tx fee

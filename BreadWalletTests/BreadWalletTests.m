@@ -1493,9 +1493,11 @@
     
     XCTAssertEqualObjects(req.data, d, @"[BRPaymentProtocolRequest toData]");
     
-    // test that the x509 certs are valid, but the payment request is expired
+    // test that the x509 certs are valid, but the payment request is expired (BUG: XXXX the cert is now expired!)
     XCTAssertFalse([req isValid], @"[BRPaymentProtocolRequest isValid]");
-    XCTAssertEqualObjects(req.errorMessage, @"request expired", @"[BRPaymentProtocolRequest isValid]");
+    XCTAssertEqualObjects(req.errorMessage,
+                          @"untrusted certificate - One or more certificates have expired or are not valid yet.",
+                          @"[BRPaymentProtocolRequest isValid]");
     
     NSLog(@"commonName:%@", req.commonName);
     XCTAssertEqualObjects(req.commonName, @"coinbase.com",  @"[BRPaymentProtocolRequest commonName]");

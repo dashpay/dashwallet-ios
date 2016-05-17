@@ -382,6 +382,8 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
 
 - (BOOL)isValid
 {
+    BOOL r = YES;
+    
     if (! [self.pkiType isEqual:@"none"]) {
         NSMutableArray *certs = [NSMutableArray array];
         NSArray *policies = @[CFBridgingRelease(SecPolicyCreateBasicX509())];
@@ -399,7 +401,7 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
         }
 
         SecTrustCreateWithCertificates((__bridge CFArrayRef)certs, (__bridge CFArrayRef)policies, &trust);
-        SecTrustEvaluate(trust, &trustResult); // verify certificate chain
+        if (trust) SecTrustEvaluate(trust, &trustResult); // verify certificate chain
 
         // kSecTrustResultUnspecified indicates a positive result that wasn't decided by the user
         if (trustResult != kSecTrustResultUnspecified && trustResult != kSecTrustResultProceed) {
@@ -412,27 +414,27 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
                 break;
             }
             
-            return NO;
+            r = NO;
         }
 
-        SecKeyRef pubKey = SecTrustCopyPublicKey(trust);
+        SecKeyRef pubKey = (trust) ? SecTrustCopyPublicKey(trust) : NULL;
         OSStatus status = errSecUnimplemented;
         NSData *sig = _signature;
 
         _signature = [NSData data]; // set signature to 0 bytes, a signature can't sign itself
 
-        if ([self.pkiType isEqual:@"x509+sha256"]) {
+        if (pubKey && [self.pkiType isEqual:@"x509+sha256"]) {
             status = SecKeyRawVerify(pubKey, kSecPaddingPKCS1SHA256, self.data.SHA256.u8, sizeof(UInt256), sig.bytes,
                                      sig.length);
         }
-        else if ([self.pkiType isEqual:@"x509+sha1"]) {
+        else if (pubKey && [self.pkiType isEqual:@"x509+sha1"]) {
             status = SecKeyRawVerify(pubKey, kSecPaddingPKCS1SHA1, self.data.SHA1.u8, sizeof(UInt160), sig.bytes,
                                      sig.length);
         }
         
         _signature = sig;
-        CFRelease(pubKey);
-        CFRelease(trust);
+        if (pubKey) CFRelease(pubKey);
+        if (trust) CFRelease(trust);
 
         if (status != errSecSuccess) {
             if (status == errSecUnimplemented) {
@@ -440,23 +442,24 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
                 NSLog(@"%@", _errorMessage);
             }
             else {
-                _errorMessage = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription;
+                _errorMessage = [NSError errorWithDomain:NSOSStatusErrorDomain code:status
+                                 userInfo:nil].localizedDescription;
                 NSLog(@"SecKeyRawVerify error: %@", _errorMessage);
             }
             
-            return NO;
+            r = NO;
         }
     }
     else if (self.certs.firstObject) { // non-standard extention to include an un-certified request name
         _commonName = [[NSString alloc] initWithData:self.certs.firstObject encoding:NSUTF8StringEncoding];
     }
 
-    if (self.details.expires >= 1 && [NSDate timeIntervalSinceReferenceDate] > self.details.expires) {
+    if (r && self.details.expires >= 1 && [NSDate timeIntervalSinceReferenceDate] > self.details.expires) {
         _errorMessage = NSLocalizedString(@"request expired", nil);
-        return NO;
+        r = NO;
     }
 
-    return YES;
+    return r;
 }
 
 @end
