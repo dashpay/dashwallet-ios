@@ -128,7 +128,7 @@ static NSString *dateFormat(NSString *template)
 
     if (! manager.didAuthenticate) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            self.transactions = manager.wallet.recentTransactions;
+            self.transactions = [manager.wallet.recentTransactions copy];
            
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self.tableView reloadData];
@@ -142,7 +142,7 @@ static NSString *dateFormat(NSString *template)
             [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification
             object:nil queue:nil usingBlock:^(NSNotification *note) {
                 self.moreTx = YES;
-                self.transactions = manager.wallet.recentTransactions;
+                self.transactions = [manager.wallet.recentTransactions copy];
                 [self.tableView reloadData];
                 self.navigationItem.titleView = self.logo;
                 self.navigationItem.rightBarButtonItem = self.lock;
@@ -155,7 +155,7 @@ static NSString *dateFormat(NSString *template)
             queue:nil usingBlock:^(NSNotification *note) {
                 BRTransaction *tx = self.transactions.firstObject;
 
-                self.transactions = manager.wallet.recentTransactions;
+                self.transactions = [manager.wallet.recentTransactions copy];
 
                 if (! [self.navigationItem.title isEqual:NSLocalizedString(@"syncing...", nil)]) {
                     if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
@@ -176,7 +176,7 @@ static NSString *dateFormat(NSString *template)
         self.txStatusObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
-                self.transactions = manager.wallet.recentTransactions;
+                self.transactions = [manager.wallet.recentTransactions copy];
                 [self.tableView reloadData];
             }];
     }
@@ -353,7 +353,7 @@ static NSString *dateFormat(NSString *template)
     if (! sender && self.transactions.count > 0) [self.tableView reloadData];
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        self.transactions = manager.wallet.recentTransactions;
+        self.transactions = [manager.wallet.recentTransactions copy];
         
         dispatch_async(dispatch_get_main_queue(), ^{ // BUG: XXXX row animation is broken
             if (sender && self.transactions.count > 0) {
@@ -403,7 +403,7 @@ static NSString *dateFormat(NSString *template)
     [self.tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:txCount inSection:0]]
      withRowAnimation:UITableViewRowAnimationFade];
     self.moreTx = NO;
-    self.transactions = manager.wallet.recentTransactions;
+    self.transactions = [manager.wallet.recentTransactions copy];
     
     NSMutableArray *transactions = [NSMutableArray arrayWithCapacity:self.transactions.count];
     

@@ -466,11 +466,11 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         if (! manager.didAuthenticate) [manager seedWithPrompt:prompt forAmount:amount];
         
         if (manager.didAuthenticate) {
+            uint64_t fuzz = [manager amountForLocalCurrencyString:[manager localCurrencyStringForAmount:1]]*2;
+            
             // if user selected an amount equal to or below wallet balance, but the fee will bring the total above the
             // balance, offer to reduce the amount to available funds minus fee
-            if ((self.amount <= [manager amountForLocalCurrencyString:
-                                 [manager localCurrencyStringForAmount:manager.wallet.balance]] ||
-                 self.amount <= manager.wallet.balance) && self.amount > 0) {
+            if (self.amount <= manager.wallet.balance + fuzz && self.amount > 0) {
                 int64_t amount = manager.wallet.maxOutputAmount;
 
                 if (amount > 0 && amount < self.amount) {
