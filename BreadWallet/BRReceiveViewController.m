@@ -148,7 +148,7 @@
     
     if (! [manager.wallet addressIsUsed:self.paymentAddress]) return;
 
-    for (BRTransaction *tx in manager.wallet.recentTransactions) {
+    for (BRTransaction *tx in manager.wallet.allTransactions) {
         if ([tx.outputAddresses containsObject:self.paymentAddress]) continue;
         if (tx.blockHeight == TX_UNCONFIRMED &&
             [[BRPeerManager sharedInstance] relayCountForTransaction:tx.txHash] < PEER_MAX_CONNECTIONS) continue;

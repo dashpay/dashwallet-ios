@@ -420,7 +420,7 @@ static const char *dns_seeds[] = {
         if (! [filter containsData:d]) [filter insertData:d];
     }
     
-    for (BRTransaction *tx in manager.wallet.recentTransactions) { // also add TXOs spent within the last 100 blocks
+    for (BRTransaction *tx in manager.wallet.allTransactions) { // also add TXOs spent within the last 100 blocks
         if (tx.blockHeight != TX_UNCONFIRMED && tx.blockHeight + 100 < self.lastBlockHeight) break;
         i = 0;
         
@@ -770,7 +770,7 @@ static const char *dns_seeds[] = {
         if (! p.synced) return;
     }
 
-    for (BRTransaction *tx in manager.wallet.recentTransactions) {
+    for (BRTransaction *tx in manager.wallet.allTransactions) {
         if (tx.blockHeight != TX_UNCONFIRMED) break;
         hash = uint256_obj(tx.txHash);
         if (self.publishedCallback[hash] != NULL) continue;
@@ -965,7 +965,7 @@ static const char *dns_seeds[] = {
         return;
     }
 
-    for (BRTransaction *tx in manager.wallet.recentTransactions) {
+    for (BRTransaction *tx in manager.wallet.allTransactions) {
         if (tx.blockHeight != TX_UNCONFIRMED) break;
 
         if ([manager.wallet amountSentByTransaction:tx] > 0 && [manager.wallet transactionIsValid:tx]) {
@@ -1392,7 +1392,7 @@ static const char *dns_seeds[] = {
         NSLog(@"reorganizing chain from height %d, new height is %d", b.height, block.height);
 
         // mark transactions after the join point as unconfirmed
-        for (BRTransaction *tx in [BRWalletManager sharedInstance].wallet.recentTransactions) {
+        for (BRTransaction *tx in [BRWalletManager sharedInstance].wallet.allTransactions) {
             if (tx.blockHeight <= b.height) break;
             [txHashes addObject:uint256_obj(tx.txHash)];
         }

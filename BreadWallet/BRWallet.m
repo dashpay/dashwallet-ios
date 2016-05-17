@@ -399,10 +399,17 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     return self.utxos.array;
 }
 
-// BRTransaction objects sorted by date, most recent first
+// last 100 transactions sorted by date, most recent first
 - (NSArray *)recentTransactions
 {
     //TODO: don't include receive transactions that don't have at least one wallet output >= TX_MIN_OUTPUT_AMOUNT
+    return [self.transactions.array subarrayWithRange:NSMakeRange(0, (self.transactions.count > 100) ? 100 :
+                                                                  self.transactions.count)];
+}
+
+// all wallet transactions sorted by date, most recent first
+- (NSArray *)allTransactions
+{
     return self.transactions.array;
 }
 

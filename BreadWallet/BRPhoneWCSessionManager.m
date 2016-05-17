@@ -149,7 +149,7 @@ didReceiveMessage:(NSDictionary<NSString *, id> *)message
 
 - (BRAppleWatchData *)applicationContextData {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
-    NSArray *transactions = [manager.wallet.recentTransactions copy];
+    NSArray *transactions = manager.wallet.recentTransactions;
     UIImage *qrCodeImage = self.qrCode;
     BRAppleWatchData *appleWatchData = [[BRAppleWatchData alloc] init];
     appleWatchData.balance = [manager stringForAmount:manager.wallet.balance];
