@@ -141,7 +141,7 @@
         msg = [NSString stringWithFormat:@"%s / iOS %@ / breadwallet v%@%@\n\n",
                systemInfo.machine, UIDevice.currentDevice.systemVersion,
                NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"],
-               ([[BRWalletManager sharedInstance] watchOnly]) ? @" (watch only)" : @""];
+               ([BRWalletManager sharedInstance].watchOnly) ? @" (watch only)" : @""];
         
         composeController.toRecipients = @[@"support@breadwallet.com"];
         composeController.subject = @"support request";

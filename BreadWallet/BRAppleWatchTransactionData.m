@@ -31,7 +31,7 @@
 #define AW_TRANSACTION_DATA_TYPE_KEY                        @"AW_TRANSACTION_DATA_TYPE_KEY"
 
 @implementation BRAppleWatchTransactionData
-- (id)initWithCoder:(NSCoder *)decoder {
+- (instancetype)initWithCoder:(NSCoder *)decoder {
     if ((self = [super init])) {
         _amountText = [decoder decodeObjectForKey:AW_TRANSACTION_DATA_AMOUNT_KEY];
         _amountTextInLocalCurrency = [decoder decodeObjectForKey:AW_TRANSACTION_DATA_AMOUNT_IN_LOCAL_CURRENCY_KEY];

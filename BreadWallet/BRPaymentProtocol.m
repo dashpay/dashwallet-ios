@@ -440,8 +440,7 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
                 NSLog(@"%@", _errorMessage);
             }
             else {
-                _errorMessage = [[NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil]
-                                 localizedDescription];
+                _errorMessage = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription;
                 NSLog(@"SecKeyRawVerify error: %@", _errorMessage);
             }
             

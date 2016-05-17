@@ -304,7 +304,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
                 if (transaction.size > TX_MAX_SIZE) pending = YES; // check transaction size is under TX_MAX_SIZE
                 
                 for (NSNumber *sequence in tx.inputSequences) { // check that all sequence numbers are final (not RBF)
-                    if ([sequence unsignedIntValue] < UINT32_MAX) pending = YES;
+                    if (sequence.unsignedIntValue < UINT32_MAX) pending = YES;
                 }
             
                 for (NSNumber *amount in tx.outputAmounts) { // check that no outputs are dust

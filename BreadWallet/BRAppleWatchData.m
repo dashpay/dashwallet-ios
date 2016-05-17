@@ -35,7 +35,7 @@
 
 
 @implementation BRAppleWatchData
-- (id)initWithCoder:(NSCoder *)decoder {
+- (instancetype)initWithCoder:(NSCoder *)decoder {
     if ((self = [super init])) {
         _balance = [decoder decodeObjectForKey:AW_DATA_BALANCE_KEY];
         _balanceInLocalCurrency = [decoder decodeObjectForKey:AW_DATA_BALANCE_LOCAL_KEY];
@@ -60,7 +60,7 @@
 
 - (NSString*)description {
     return [NSString stringWithFormat:@"%@,%@,%@,%@,%@,image size:%@",
-            _balance, _balanceInLocalCurrency, _receiveMoneyAddress, @([_transactions count]), _lastestTransction,
+            _balance, _balanceInLocalCurrency, _receiveMoneyAddress, @(_transactions.count), _lastestTransction,
             @(_receiveMoneyQRCodeImage.size.height)];
 }
 

@@ -877,9 +877,9 @@ static NSString *getKeychainString(NSString *key, NSError **error)
         
         if ([response isKindOfClass:[NSHTTPURLResponse class]]) { // store server timestamp
             NSString *date = ((NSHTTPURLResponse *)response).allHeaderFields[@"Date"];
-            NSTimeInterval now = [[[NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeDate error:nil]
+            NSTimeInterval now = ([[NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeDate error:nil]
                                    matchesInString:(date ? date : @"") options:0
-                                   range:NSMakeRange(0, date.length)].lastObject date].timeIntervalSinceReferenceDate;
+                                   range:NSMakeRange(0, date.length)].lastObject).date.timeIntervalSinceReferenceDate;
             
             if (now > self.secureTime) [defs setDouble:now forKey:SECURE_TIME_KEY];
         }

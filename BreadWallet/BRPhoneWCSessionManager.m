@@ -206,9 +206,9 @@ didReceiveMessage:(NSDictionary<NSString *, id> *)message
         if (secondsSinceTransaction < 60) {
             return @"just now";
         } else if ( secondsSinceTransaction / 60 < 60) {
-            return [NSString stringWithFormat:@"%@ minutes agao", @((NSInteger) (secondsSinceTransaction / 60))];
+            return [NSString stringWithFormat:@"%@ minutes ago", @((NSInteger) (secondsSinceTransaction / 60))];
         } else if ( secondsSinceTransaction / 60 / 60 < 24 ) {
-            return [NSString stringWithFormat:@"%@ hours agao", @((NSInteger) (secondsSinceTransaction / 60 / 60))];
+            return [NSString stringWithFormat:@"%@ hours ago", @((NSInteger) (secondsSinceTransaction / 60 / 60))];
         }
     }
     return nil;

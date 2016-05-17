@@ -208,7 +208,7 @@
     
     // display the popup
     __weak BREventConfirmView *eventConfirmView =
-        [[[NSBundle mainBundle] loadNibNamed:@"BREventConfirmView" owner:nil options:nil] objectAtIndex:0];
+        [[NSBundle mainBundle] loadNibNamed:@"BREventConfirmView" owner:nil options:nil][0];
     eventConfirmView.image = blurredBgImg;
     eventConfirmView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     eventConfirmView.frame = viewController.view.bounds;
@@ -261,12 +261,12 @@
 #endif
         NSMutableDictionary *safeDict = [NSMutableDictionary dictionary];
         [attrs enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-            [safeDict setObject:[obj description] forKey:[key description]];
+            safeDict[[key description]] = [obj description];
         }];
         
         // we push a 4-tuple into the buffer consisting of (current_time, event_name, event_attributes)
-        long long currentTimeMillis = (long long)([[NSDate date] timeIntervalSince1970] * 1000.0);
-        NSArray *tuple = @[self.sessionId, [NSNumber numberWithLongLong:currentTimeMillis], evtName, attrs];
+        long long currentTimeMillis = (long long)([NSDate date].timeIntervalSince1970 * 1000.0);
+        NSArray *tuple = @[self.sessionId, @(currentTimeMillis), evtName, attrs];
         [self._buffer addObject:tuple];
         NSLog(@"BREventManager Saved event %@ with attributes %@", evtName, attrs);
     }];
@@ -275,13 +275,13 @@
 - (NSString *)_unsentDataDirectory
 {
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString *documentsDirectory = paths[0];
     return [documentsDirectory stringByAppendingPathComponent:@"/event-data"];
 }
 
 - (NSDictionary *)_eventTupleArrayToDictionary:(NSArray *)eventTuples
 {
-    NSString *ver = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+    NSString *ver = [NSBundle mainBundle].infoDictionary[@"CFBundleShortVersionString"];
     NSMutableArray *evts = [NSMutableArray array];
     NSDictionary *retDict = @{@"deviceType": @(0),
                               @"appVersion": ver,

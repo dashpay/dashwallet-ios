@@ -515,8 +515,8 @@
 {
     [super prepareForSegue:segue sender:sender];
 
-    [segue.destinationViewController setTransitioningDelegate:self];
-    [segue.destinationViewController setModalPresentationStyle:UIModalPresentationCustom];
+    (segue.destinationViewController).transitioningDelegate = self;
+    (segue.destinationViewController).modalPresentationStyle = UIModalPresentationCustom;
     [self hideErrorBar];
     
     if ([sender isEqual:NSLocalizedString(@"show phrase", nil)]) { // show recovery phrase
