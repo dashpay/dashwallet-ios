@@ -30,6 +30,7 @@
 @property (nonatomic, readonly) BOOL reachable;
 
 + (instancetype)sharedInstance;
+
 - (void)notifyTransactionString:(NSString *)notification;
 
 @end

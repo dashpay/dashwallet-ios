@@ -34,7 +34,10 @@
 #import <WatchConnectivity/WatchConnectivity.h>
 
 @interface BRPhoneWCSessionManager () <WCSessionDelegate>
+
 @property WCSession *session;
+@property id balanceObserver, syncFinishedObserver, syncFailedObserver;
+
 @end
 
 @implementation BRPhoneWCSessionManager
@@ -56,14 +59,35 @@
             self.session.delegate = self;
             [self.session activateSession];
             [self sendApplicationContext];
-            [[NSNotificationCenter defaultCenter] addObserver:self
-                                                     selector:@selector(sendDataUpdateNotificationToWatch)
-                                                         name:BRWalletBalanceChangedNotification
-                                                       object:nil];
+            
+            self.balanceObserver =
+                [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil
+                queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+                    if ([BRPeerManager sharedInstance].syncProgress == 1.0) [self sendApplicationContext];
+                }];
+
+            self.syncFinishedObserver =
+                [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification
+                object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+                    [self sendApplicationContext];
+                }];
+
+            self.syncFailedObserver =
+                [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
+                queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+                    [self sendApplicationContext];
+                }];
         }
     }
     
     return self;
+}
+
+- (void)dealloc
+{
+    if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
+    if (self.syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFinishedObserver];
+    if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
 }
 
 - (BOOL)reachable
@@ -86,6 +110,7 @@
             errorHandler:^(NSError *_Nonnull error) {
                 NSLog(@"got an error sending a balance update notification to watch");
             }];
+        
         NSLog(@"sent a balance update notification to watch: %@", msg);
     }
 }
@@ -113,12 +138,15 @@
         case AWSessionRquestDataTypeQRCodeBits: {
             BRWalletManager *manager = [BRWalletManager sharedInstance];
             BRPaymentRequest *req = [BRPaymentRequest requestWithString:manager.wallet.receiveAddress];
+
             req.amount = [message[AW_SESSION_QR_CODE_BITS_KEY] integerValue];
             NSLog(@"watch requested a qr code amount %lld", req.amount);
+
             UIImage *img = [UIImage imageWithQRCodeData:req.data
                                                    size:CGSizeMake(150, 150)
                                                   color:[CIColor colorWithRed:0.0 green:0.0 blue:0.0]];
             NSData *dat = UIImagePNGRepresentation(img);
+
             replyHandler(@{AW_QR_CODE_BITS_KEY: dat});
             break;
         }
@@ -152,7 +180,6 @@
                                      error:nil];
 }
 
-- (void)sendDataUpdateNotificationToWatch { [self sendApplicationContext]; }
 - (BRAppleWatchData *)applicationContextData
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
