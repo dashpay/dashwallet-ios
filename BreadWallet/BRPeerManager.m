@@ -406,7 +406,8 @@ static const char *dns_seeds[] = {
     NSData *d;
     NSUInteger i, elemCount = manager.wallet.addresses.count + manager.wallet.unspentOutputs.count;
     BRBloomFilter *filter = [[BRBloomFilter alloc] initWithFalsePositiveRate:self.fpRate
-                             forElementCount:elemCount + 100 tweak:self.tweak flags:BLOOM_UPDATE_ALL];
+                             forElementCount:(elemCount < 200 ? 300 : elemCount + 100) tweak:self.tweak
+                             flags:BLOOM_UPDATE_ALL];
 
     for (NSString *address in manager.wallet.addresses) {// add addresses to watch for tx receiveing money to the wallet
         NSData *hash = address.addressToHash160;

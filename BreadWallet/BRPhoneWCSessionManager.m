@@ -25,7 +25,7 @@
 
 #import "BRPhoneWCSessionManager.h"
 #import "BRAppleWatchSharedConstants.h"
-#import "BRAppleWatchTransactionData+Factory.h"
+#import "BRAppleWatchTransactionData.h"
 #import "BRPaymentRequest.h"
 #import "BRPeerManager.h"
 #import "BRTransaction+Utils.h"

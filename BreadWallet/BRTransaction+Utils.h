@@ -33,9 +33,11 @@ typedef enum : NSInteger {
 } BRTransactionType;
 
 @interface BRTransaction (Utils)
+
 - (BRTransactionType)transactionType;
 - (NSString*)amountText;
 - (NSString*)localCurrencyTextForAmount;
 - (NSString*)dateText;
 - (NSDate*)transactionDate;
+
 @end

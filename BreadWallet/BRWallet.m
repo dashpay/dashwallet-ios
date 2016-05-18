@@ -53,7 +53,7 @@ static NSUInteger txAddressIndex(BRTransaction *tx, NSArray *chain) {
 @property (nonatomic, strong) NSData *masterPublicKey;
 @property (nonatomic, strong) NSMutableArray *internalAddresses, *externalAddresses;
 @property (nonatomic, strong) NSMutableSet *allAddresses, *usedAddresses;
-@property (nonatomic, strong) NSSet *spentOutputs, *invalidTx;
+@property (nonatomic, strong) NSSet *spentOutputs, *invalidTx, *pendingTx;
 @property (nonatomic, strong) NSMutableOrderedSet *transactions;
 @property (nonatomic, strong) NSOrderedSet *utxos;
 @property (nonatomic, strong) NSMutableDictionary *allTx;
@@ -242,18 +242,20 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         if (tx1.blockHeight < tx2.blockHeight) return NO;
         if ([tx1.inputHashes containsObject:uint256_obj(tx2.txHash)]) return YES;
         if ([tx2.inputHashes containsObject:uint256_obj(tx1.txHash)]) return NO;
+        if ([self.invalidTx containsObject:tx1] && ! [self.invalidTx containsObject:tx2]) return YES;
+        if ([self.pendingTx containsObject:tx1] && ! [self.pendingTx containsObject:tx2]) return YES;
         
         for (NSValue *hash in tx1.inputHashes) {
             if (_isAscending(self.allTx[hash], tx2)) return YES;
         }
-                
+        
         return NO;
     };
 
     [self.transactions sortWithOptions:NSSortStable usingComparator:^NSComparisonResult(id tx1, id tx2) {
         if (isAscending(tx1, tx2)) return NSOrderedAscending;
         if (isAscending(tx2, tx1)) return NSOrderedDescending;
-
+        
         NSUInteger i = txAddressIndex(tx1, self.internalAddresses),
                    j = txAddressIndex(tx2, (i == NSNotFound) ? self.externalAddresses : self.internalAddresses);
 
@@ -349,6 +351,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     }
 
     self.invalidTx = invalidTx;
+    self.pendingTx = pendingTx;
     self.spentOutputs = spentOutputs;
     self.utxos = utxos;
     self.balanceHistory = balanceHistory;
@@ -704,6 +707,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 - (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes
 {
     NSMutableArray *hashes = [NSMutableArray array];
+    BOOL needsUpdate = NO;
 
     for (NSValue *hash in txHashes) {
         BRTransaction *tx = self.allTx[hash];
@@ -716,13 +720,16 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         if ([self containsTransaction:tx]) {
             [hash getValue:&h];
             [hashes addObject:[NSData dataWithBytes:&h length:sizeof(h)]];
+            if ([self.pendingTx containsObject:tx] || [self.invalidTx containsObject:tx]) needsUpdate = YES;
         }
         else if (height != TX_UNCONFIRMED) [self.allTx removeObjectForKey:hash]; // remove confirmed non-wallet tx
     }
 
     if (hashes.count > 0) {
-        [self sortTransactions];
-        [self updateBalance];
+        if (needsUpdate) {
+            [self sortTransactions];
+            [self updateBalance];
+        }
 
         [self.moc performBlockAndWait:^{
             @autoreleasepool {
