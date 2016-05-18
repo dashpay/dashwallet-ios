@@ -27,5 +27,7 @@
 #import "BRTransaction.h"
 
 @interface BRAppleWatchTransactionData (Factory)
-+ (instancetype)appleWatchTransactionDataFrom:(BRTransaction*)transaction;
+
++ (instancetype)appleWatchTransactionDataFrom:(BRTransaction *)transaction;
+
 @end

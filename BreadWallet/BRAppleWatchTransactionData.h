@@ -32,7 +32,7 @@ typedef enum : NSInteger {
     BRAWTransactionTypeInvalid
 } BRAWTransactionType;
 
-@interface BRAppleWatchTransactionData : NSObject<NSCoding>
+@interface BRAppleWatchTransactionData : NSObject <NSCoding>
 @property (nonatomic, strong) NSString *amountText;
 @property (nonatomic, strong) NSString *amountTextInLocalCurrency;
 @property (nonatomic, strong) NSString *dateText;

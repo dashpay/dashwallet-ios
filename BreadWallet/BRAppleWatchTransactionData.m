@@ -25,13 +25,14 @@
 
 #import "BRAppleWatchTransactionData.h"
 
-#define AW_TRANSACTION_DATA_AMOUNT_KEY                      @"AW_TRANSACTION_DATA_AMOUNT_KEY"
-#define AW_TRANSACTION_DATA_AMOUNT_IN_LOCAL_CURRENCY_KEY    @"AW_TRANSACTION_DATA_AMOUNT_IN_LOCAL_CURRENCY_KEY"
-#define AW_TRANSACTION_DATA_DATE_KEY                        @"AW_TRANSACTION_DATA_DATE_KEY"
-#define AW_TRANSACTION_DATA_TYPE_KEY                        @"AW_TRANSACTION_DATA_TYPE_KEY"
+#define AW_TRANSACTION_DATA_AMOUNT_KEY @"AW_TRANSACTION_DATA_AMOUNT_KEY"
+#define AW_TRANSACTION_DATA_AMOUNT_IN_LOCAL_CURRENCY_KEY @"AW_TRANSACTION_DATA_AMOUNT_IN_LOCAL_CURRENCY_KEY"
+#define AW_TRANSACTION_DATA_DATE_KEY @"AW_TRANSACTION_DATA_DATE_KEY"
+#define AW_TRANSACTION_DATA_TYPE_KEY @"AW_TRANSACTION_DATA_TYPE_KEY"
 
 @implementation BRAppleWatchTransactionData
-- (instancetype)initWithCoder:(NSCoder *)decoder {
+- (instancetype)initWithCoder:(NSCoder *)decoder
+{
     if ((self = [super init])) {
         _amountText = [decoder decodeObjectForKey:AW_TRANSACTION_DATA_AMOUNT_KEY];
         _amountTextInLocalCurrency = [decoder decodeObjectForKey:AW_TRANSACTION_DATA_AMOUNT_IN_LOCAL_CURRENCY_KEY];
@@ -41,22 +42,24 @@
     return self;
 }
 
-- (void)encodeWithCoder:(NSCoder *)encoder {
+- (void)encodeWithCoder:(NSCoder *)encoder
+{
     if (_amountText) [encoder encodeObject:_amountText forKey:AW_TRANSACTION_DATA_AMOUNT_KEY];
-    if (_amountTextInLocalCurrency) [encoder encodeObject:_amountTextInLocalCurrency
-                                                   forKey:AW_TRANSACTION_DATA_AMOUNT_IN_LOCAL_CURRENCY_KEY];
+    if (_amountTextInLocalCurrency)
+        [encoder encodeObject:_amountTextInLocalCurrency forKey:AW_TRANSACTION_DATA_AMOUNT_IN_LOCAL_CURRENCY_KEY];
     if (_dateText) [encoder encodeObject:_dateText forKey:AW_TRANSACTION_DATA_DATE_KEY];
     if (_type) [encoder encodeObject:@(_type) forKey:AW_TRANSACTION_DATA_TYPE_KEY];
 }
 
-- (BOOL)isEqual:(id)object {
+- (BOOL)isEqual:(id)object
+{
     if ([object isKindOfClass:[self class]]) {
         BRAppleWatchTransactionData *otherTransaction = object;
         return [self.amountText isEqual:otherTransaction.amountText] &&
-        [self.amountTextInLocalCurrency isEqual:otherTransaction.amountTextInLocalCurrency] &&
-        [self.dateText isEqual:otherTransaction.dateText] &&
-        self.type == otherTransaction.type;
-    } else {
+            [self.amountTextInLocalCurrency isEqual:otherTransaction.amountTextInLocalCurrency] &&
+            [self.dateText isEqual:otherTransaction.dateText] && self.type == otherTransaction.type;
+    }
+    else {
         return NO;
     }
 }

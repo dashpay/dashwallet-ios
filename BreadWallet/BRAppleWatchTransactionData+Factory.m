@@ -27,28 +27,25 @@
 #import "BRTransaction+Utils.h"
 
 @implementation BRAppleWatchTransactionData (Factory)
-+ (instancetype)appleWatchTransactionDataFrom:(BRTransaction*)transaction {
+
++ (instancetype)appleWatchTransactionDataFrom:(BRTransaction *)transaction
+{
     BRAppleWatchTransactionData *appleWatchTransactionData;
+
     if (transaction) {
-        appleWatchTransactionData = [[BRAppleWatchTransactionData alloc] init];
+        appleWatchTransactionData = [BRAppleWatchTransactionData new];
         appleWatchTransactionData.amountText = transaction.amountText;
         appleWatchTransactionData.amountTextInLocalCurrency = transaction.localCurrencyTextForAmount;
         appleWatchTransactionData.dateText = transaction.dateText;
+
         switch (transaction.transactionType) {
-            case BRTransactionTypeSent:
-                appleWatchTransactionData.type = BRAWTransactionTypeSent;
-                break;
-            case BRTransactionTypeReceive:
-                appleWatchTransactionData.type = BRAWTransactionTypeReceive;
-                break;
-            case BRTransactionTypeMove:
-                appleWatchTransactionData.type = BRAWTransactionTypeMove;
-                break;
-            case BRTransactionTypeInvalid:
-                appleWatchTransactionData.type = BRAWTransactionTypeInvalid;
-                break;
+        case BRTransactionTypeSent: appleWatchTransactionData.type = BRAWTransactionTypeSent; break;
+        case BRTransactionTypeReceive: appleWatchTransactionData.type = BRAWTransactionTypeReceive; break;
+        case BRTransactionTypeMove: appleWatchTransactionData.type = BRAWTransactionTypeMove; break;
+        case BRTransactionTypeInvalid: appleWatchTransactionData.type = BRAWTransactionTypeInvalid; break;
         }
     }
+
     return appleWatchTransactionData;
 }
 @end

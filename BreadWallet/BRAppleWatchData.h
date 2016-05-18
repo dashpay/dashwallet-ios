@@ -23,17 +23,19 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
 #import "BRAppleWatchTransactionData.h"
+#import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
 @interface BRAppleWatchData : NSObject <NSCoding>
+
 @property (nonatomic, strong) NSString *balance;
 @property (nonatomic, strong) NSString *balanceInLocalCurrency;
 @property (nonatomic, strong) NSString *receiveMoneyAddress;
 @property (nonatomic, strong) NSString *lastestTransction;
 // There is no cifilter in watchOS 2, so we have to pass image over.
 @property (nonatomic, strong) UIImage *receiveMoneyQRCodeImage;
-@property (nonatomic, strong) NSArray<BRAppleWatchTransactionData*> *transactions;
+@property (nonatomic, strong) NSArray<BRAppleWatchTransactionData *> *transactions;
 @property (nonatomic) BOOL hasWallet;
+
 @end

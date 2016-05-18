@@ -931,7 +931,6 @@
 		BA913BEE1BD57E4D005A7C0E /* WatchApp Extension */ = {
 			isa = PBXGroup;
 			children = (
-				BAC7B6C41BD9C9B600165B84 /* WatchApp Extension-Bridging-Header.h */,
 				BA913BF11BD57E4D005A7C0E /* ExtensionDelegate.swift */,
 				BAA6E3EA1BD5C78500773205 /* BRAWRootInterfaceController.swift */,
 				BAA6E3EE1BD5CA0E00773205 /* BRAWBalanceInterfaceController.swift */,
@@ -940,8 +939,9 @@
 				BAA0E8C91BD9273700DF4236 /* BRAWGlanceInterfaceController.swift */,
 				BA7B53741BDBDB0500355E8D /* BRAWWatchDataManager.swift */,
 				BA4A72661BE11AFA00E39C01 /* BRAWWeakTimerTarget.swift */,
-				BA913BF71BD57E4D005A7C0E /* Info.plist */,
 				22F45A0A1C30EAB700B07A15 /* BRAWKeypad.swift */,
+				BA913BF71BD57E4D005A7C0E /* Info.plist */,
+				BAC7B6C41BD9C9B600165B84 /* WatchApp Extension-Bridging-Header.h */,
 			);
 			path = "WatchApp Extension";
 			sourceTree = "<group>";
@@ -969,17 +969,9 @@
 				BAE12C051B2DEEF700895CC5 /* BRTodayViewController.m */,
 				75ABFB681B55BB2300B0B5CC /* MainInterface.storyboard */,
 				BA54D3CD1B2EA74000C9CB28 /* Media.xcassets */,
-				BAE12BE91B2DEE7F00895CC5 /* Supporting Files */,
-			);
-			path = TodayExtension;
-			sourceTree = "<group>";
-		};
-		BAE12BE91B2DEE7F00895CC5 /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
 				BAE12BEA1B2DEE7F00895CC5 /* Info.plist */,
 			);
-			name = "Supporting Files";
+			path = TodayExtension;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
