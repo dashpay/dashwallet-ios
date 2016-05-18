@@ -766,8 +766,9 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         }
         
         if (img && &CIDetectorTypeQRCode) {
-            for (CIQRCodeFeature *qr in [[CIDetector detectorOfType:CIDetectorTypeQRCode context:nil options:nil]
-                                         featuresInImage:[CIImage imageWithCGImage:img.CGImage]]) {
+            for (CIQRCodeFeature *qr in [[CIDetector detectorOfType:CIDetectorTypeQRCode
+                                          context:[CIContext contextWithOptions:@{kCIContextUseSoftwareRenderer:@(YES)}]
+                                          options:nil] featuresInImage:[CIImage imageWithCGImage:img.CGImage]]) {
                 [set addObject:[qr.messageString
                                 stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
             }
@@ -887,8 +888,9 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     }
     
     if (img && &CIDetectorTypeQRCode) {
-        for (CIQRCodeFeature *qr in [[CIDetector detectorOfType:CIDetectorTypeQRCode context:nil options:nil]
-                                     featuresInImage:[CIImage imageWithCGImage:img.CGImage]]) {
+        for (CIQRCodeFeature *qr in [[CIDetector detectorOfType:CIDetectorTypeQRCode
+                                      context:[CIContext contextWithOptions:@{kCIContextUseSoftwareRenderer:@(YES)}]
+                                      options:nil] featuresInImage:[CIImage imageWithCGImage:img.CGImage]]) {
             [set addObject:[qr.messageString
              stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
         }
