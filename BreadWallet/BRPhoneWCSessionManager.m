@@ -193,10 +193,10 @@
     appleWatchData.balance = [manager stringForAmount:42980000],
     appleWatchData.balanceInLocalCurrency = [manager localCurrencyStringForAmount:42980000];
 #endif
-    appleWatchData.receiveMoneyAddress = [BRWalletManager sharedInstance].wallet.receiveAddress;
+    appleWatchData.receiveMoneyAddress = manager.wallet.receiveAddress;
     appleWatchData.transactions = [[self recentTransactionListFromTransactions:transactions] copy];
     appleWatchData.receiveMoneyQRCodeImage = qrCodeImage;
-    appleWatchData.hasWallet = !manager.noWallet;
+    appleWatchData.hasWallet = ! manager.noWallet;
     
     if (transactions.count > 0) {
         appleWatchData.lastestTransction = [self lastTransactionStringFromTransaction:transactions[0]];

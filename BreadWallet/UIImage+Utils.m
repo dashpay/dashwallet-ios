@@ -51,8 +51,10 @@
     
     UIImage *image = nil;
     CGContextRef context = UIGraphicsGetCurrentContext();
-    CGImageRef img = [[CIContext contextWithOptions:nil] createCGImage:filter.outputImage
-                      fromRect:filter.outputImage.extent];
+    
+    // force software rendering for security (GPU rendering causes image artifacts on iOS 7 and is generally crashy)
+    CGImageRef img = [[CIContext contextWithOptions:@{kCIContextUseSoftwareRenderer:@(YES)}]
+                      createCGImage:filter.outputImage fromRect:filter.outputImage.extent];
     
     if (context) {
         CGContextSetInterpolationQuality(context, kCGInterpolationNone);
