@@ -342,6 +342,7 @@ replacementString:(NSString *)string
     NSUInteger decimalLoc = [textField.text rangeOfString:numberFormatter.currencyDecimalSeparator].location;
     NSUInteger minimumFractionDigits = numberFormatter.minimumFractionDigits;
     NSString *textVal = textField.text, *zeroStr = nil;
+    NSDecimalNumber *num;
 
     if (! textVal) textVal = @"";
     numberFormatter.minimumFractionDigits = 0;
@@ -354,7 +355,7 @@ replacementString:(NSString *)string
             textVal = [numberFormatter stringFromNumber:[numberFormatter numberFromString:textVal]];
         }
 
-        if ([textVal isEqual:zeroStr]) textVal = @""; // check if after deleting, are we left with a zero amount
+        if (! textVal || [textVal isEqual:zeroStr]) textVal = @""; // check if we are left with a zero amount
     }
     else if ([string isEqual:numberFormatter.currencyDecimalSeparator]) { // decimal point button
         if (decimalLoc == NSNotFound && numberFormatter.maximumFractionDigits > 0) {
@@ -366,10 +367,12 @@ replacementString:(NSString *)string
         // check for too many digits after the decimal point
         if (range.location > decimalLoc && range.location - decimalLoc > numberFormatter.maximumFractionDigits) {
             numberFormatter.minimumFractionDigits = numberFormatter.maximumFractionDigits;
-            textVal = [numberFormatter stringFromNumber:[[[NSDecimalNumber decimalNumberWithDecimal:[numberFormatter
-                       numberFromString:textVal].decimalValue] decimalNumberByMultiplyingByPowerOf10:1]
-                       decimalNumberByAdding:[[NSDecimalNumber decimalNumberWithString:string]
-                       decimalNumberByMultiplyingByPowerOf10:-numberFormatter.maximumFractionDigits]]];
+            num = [NSDecimalNumber decimalNumberWithDecimal:[numberFormatter numberFromString:textVal].decimalValue];
+            num = [num decimalNumberByMultiplyingByPowerOf10:1];
+            num = [num decimalNumberByAdding:[[NSDecimalNumber decimalNumberWithString:string]
+                   decimalNumberByMultiplyingByPowerOf10:-numberFormatter.maximumFractionDigits]];
+            textVal = [numberFormatter stringFromNumber:num];
+            if (! [numberFormatter numberFromString:textVal]) textVal = nil;
         }
         else if (textVal.length == 0 && [string isEqual:@"0"]) { // if first digit is zero, append decimal point
             textVal = [zeroStr stringByAppendingString:numberFormatter.currencyDecimalSeparator];
@@ -383,7 +386,7 @@ replacementString:(NSString *)string
         }
     }
     
-    textField.text = textVal;
+    if (textVal) textField.text = textVal;
     numberFormatter.minimumFractionDigits = minimumFractionDigits;
     if (textVal.length > 0 && textField.placeholder.length > 0) textField.placeholder = nil;
 
