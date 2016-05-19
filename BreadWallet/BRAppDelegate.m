@@ -90,15 +90,11 @@
     //TODO: implement importing of private keys split with shamir's secret sharing:
     //      https://github.com/cetuscetus/btctool/blob/bip/bip-xxxx.mediawiki
 
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [BRPhoneWCSessionManager sharedInstance];
+    [BRPhoneWCSessionManager sharedInstance];
     
-        // observe balance and create notifications
-        [self setupBalanceNotification:application];
-        
-        [self setupPreferenceDefaults];
-    });
-
+    // observe balance and create notifications
+    [self setupBalanceNotification:application];
+    [self setupPreferenceDefaults];
     return YES;
 }
 
