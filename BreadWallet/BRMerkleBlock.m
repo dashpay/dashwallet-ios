@@ -58,6 +58,14 @@
 // flag bits (little endian): 00001011 [merkleRoot = 1, m1 = 1, tx1 = 0, tx2 = 1, m2 = 0, byte padding = 000]
 // hashes: [tx1, tx2, m2]
 
+inline static int ceil_log2(int x)
+{
+    int r = (x & (x - 1)) ? 1 : 0;
+    
+    while ((x >>= 1) != 0) r++;
+    return r;
+}
+
 @interface BRMerkleBlock ()
 
 @property (nonatomic, assign) UInt256 blockHash;
@@ -284,7 +292,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     
     (*flagIdx)++;
     
-    if (! flag || depth == (int)(ceil(log2(_totalTransactions)))) {
+    if (! flag || depth == ceil_log2(_totalTransactions)) {
         UInt256 hash = [_hashes hashAtOffset:(*hashIdx)*sizeof(UInt256)];
         
         (*hashIdx)++;

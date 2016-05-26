@@ -238,7 +238,7 @@ completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion
             return;
         }
     
-        BRPaymentProtocolRequest *req = nil;
+        BRPaymentProtocolRequest *request = nil;
         NSString *network = @"main";
         
 #if BITCOIN_TESTNET
@@ -246,30 +246,30 @@ completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion
 #endif
         
         if ([response.MIMEType.lowercaseString isEqual:@"application/bitcoin-paymentrequest"] && data.length <= 50000) {
-            req = [BRPaymentProtocolRequest requestWithData:data];
+            request = [BRPaymentProtocolRequest requestWithData:data];
         }
         else if ([response.MIMEType.lowercaseString isEqual:@"text/uri-list"] && data.length <= 50000) {
             for (NSString *url in [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]
                                    componentsSeparatedByString:@"\n"]) {
                 if ([url hasPrefix:@"#"]) continue; // skip comments
-                req = [BRPaymentRequest requestWithString:url].protocolRequest; // use first url and ignore the rest
+                request = [BRPaymentRequest requestWithString:url].protocolRequest; // use first url and ignore the rest
                 break;
             }
         }
         
-        if (! req) {
-            NSLog(@"unexpected response from %@:\n%@", u.host,
+        if (! request) {
+            NSLog(@"unexpected response from %@:\n%@", req.URL.host,
                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                             [NSString stringWithFormat:NSLocalizedString(@"unexpected response from %@", nil), u.host]
-                            }]);
+                             [NSString stringWithFormat:NSLocalizedString(@"unexpected response from %@", nil),
+                              req.URL.host]}]);
         }
-        else if (! [req.details.network isEqual:network]) {
+        else if (! [request.details.network isEqual:network]) {
             completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
                              [NSString stringWithFormat:NSLocalizedString(@"requested network \"%@\" instead of \"%@\"",
-                                                                          nil), req.details.network, network]}]);
+                                                                          nil), request.details.network, network]}]);
         }
-        else completion(req, nil);
+        else completion(request, nil);
     }] resume];
 }
 
@@ -277,8 +277,10 @@ completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion
 completion:(void (^)(BRPaymentProtocolACK *ack, NSError *error))completion
 {
     NSURL *u = [NSURL URLWithString:paymentURL];
-
-    if (! u) {
+    NSMutableURLRequest *req = (u) ? [NSMutableURLRequest requestWithURL:u
+                                      cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:timeout] : nil;
+    
+    if (! req) {
         if (completion) {
             completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417
                              userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"bad payment URL", nil)}]);
@@ -286,9 +288,6 @@ completion:(void (^)(BRPaymentProtocolACK *ack, NSError *error))completion
         
         return;
     }
-
-    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:u
-                                cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:timeout];
 
     [req setValue:USER_AGENT forHTTPHeaderField:@"User-Agent"];
     [req setValue:@"application/bitcoin-payment" forHTTPHeaderField:@"Content-Type"];
@@ -310,12 +309,12 @@ completion:(void (^)(BRPaymentProtocolACK *ack, NSError *error))completion
         }
 
         if (! ack) {
-            NSLog(@"unexpected response from %@:\n%@", u.host,
+            NSLog(@"unexpected response from %@:\n%@", req.URL.host,
                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             if (completion) {
                 completion(nil, [NSError errorWithDomain:@"BreadWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
                                  [NSString stringWithFormat:NSLocalizedString(@"unexpected response from %@", nil),
-                                  u.host]}]);
+                                  req.URL.host]}]);
             }
         }
         else if (completion) completion(ack, nil);
