@@ -43,11 +43,11 @@
 #define CIRCLE  @"\xE2\x97\x8C" // dotted circle (utf-8)
 #define DOT     @"\xE2\x97\x8F" // black circle (utf-8)
 
-#define BASE_URL            @"https://api.breadwallet.com"
-#define UNSPENT_URL         BASE_URL @"/q/addrs/utxo"
-#define FEE_PER_KB_URL      BASE_URL @"/fee-per-kb"
-#define TICKER_URL          BASE_URL @"/rates"
-#define TICKER_FAILOVER_URL @"https://bitpay.com/rates"
+#define UNSPENT_URL          @"https://api.breadwallet.com/q/addrs/utxo"
+#define UNSPENT_FAILOVER_URL @"https://insight.bitpay.com/api/addrs/utxo"
+#define FEE_PER_KB_URL       @"https://api.breadwallet.com/fee-per-kb"
+#define TICKER_URL           @"https://api.breadwallet.com/rates"
+#define TICKER_FAILOVER_URL  @"https://bitpay.com/rates"
 
 #define USER_AGENT [NSString stringWithFormat:@"/breadwallet:%@/",\
                     NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"]]
@@ -989,6 +989,22 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 - (void)utxosForAddresses:(NSArray *)addresses
 completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error))completion
 {
+    [self utxos:UNSPENT_URL forAddresses:addresses
+    completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error) {
+        if (error) {
+            [self utxos:UNSPENT_FAILOVER_URL forAddresses:addresses
+            completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *err) {
+                if (err) err = error;
+                completion(utxos, amounts, scripts, err);
+            }];
+        }
+        else completion(utxos, amounts, scripts, error);
+    }];
+}
+
+- (void)utxos:(NSString *)unspentURL forAddresses:(NSArray *)addresses
+completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error))completion
+{
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:UNSPENT_URL]
                                 cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:20.0];
     NSMutableArray *args = [NSMutableArray array];
@@ -1039,7 +1055,7 @@ completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError
                 ! [utxo[@"vout"] isKindOfClass:[NSNumber class]] ||
                 ! [utxo[@"scriptPubKey"] isKindOfClass:[NSString class]] ||
                 ! [utxo[@"scriptPubKey"] hexToData] ||
-                ! [utxo[@"amount"] isKindOfClass:[NSNumber class]]) {
+                ! [utxo[@"satoshis"] isKindOfClass:[NSNumber class]]) {
                 completion(nil, nil, nil,
                            [NSError errorWithDomain:@"BreadWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
                             [NSString stringWithFormat:NSLocalizedString(@"unexpected response from %@", nil),
@@ -1050,7 +1066,7 @@ completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError
             o.hash = *(const UInt256 *)[utxo[@"txid"] hexToData].reverse.bytes;
             o.n = [utxo[@"vout"] unsignedIntValue];
             [utxos addObject:brutxo_obj(o)];
-            [amounts addObject:utxo[@"amount"]];
+            [amounts addObject:utxo[@"satoshis"]];
             [scripts addObject:[utxo[@"scriptPubKey"] hexToData]];
         }
 
