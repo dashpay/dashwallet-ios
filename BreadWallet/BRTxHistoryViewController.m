@@ -89,9 +89,11 @@ static NSString *dateFormat(NSString *template)
     self.moreTx = YES;
     
     if ([WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyBitcoin]) { // only available on iOS 8 and above
-        self.buyController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy" mountPoint:@"/buy"];
 #if DEBUG
-        //    self.buyController.debugEndpoint = @"http://localhost:8080";
+        self.buyController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy-staging" mountPoint:@"/buy"];
+//        self.buyController.debugEndpoint = @"http://localhost:8080";
+#else
+        self.buyController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy" mountPoint:@"/buy"];
 #endif
         [self.buyController startServer];
         [self.buyController preload];

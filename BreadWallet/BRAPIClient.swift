@@ -478,6 +478,7 @@ func httpDateNow() -> String {
         let bundlePath = bundleUrl.path!
         let bundleExtractedUrl = bundleDirUrl.URLByAppendingPathComponent("\(bundleName)-extracted")
         let bundleExtractedPath = bundleExtractedUrl.path!
+        print("[BRAPIClient] bundleUrl \(bundlePath)")
         
         // determines if the bundle exists, but also creates the bundles/extracted directory if it doesn't exist
         func exists() throws -> Bool {

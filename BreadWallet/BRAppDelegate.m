@@ -245,12 +245,19 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 - (void)updatePlatform {
     if ([WKWebView class]) { // platform features are only available on iOS 8.0+
         BRAPIClient *client = [BRAPIClient sharedClient];
-        
-        [client updateBundle:@"bread-buy" handler:^(NSString * _Nullable error) {
-            if (error) {
-                NSLog(@"got update bundle error: %@", error);
-            }
-            else NSLog(@"successfully updated bundle!");
+#if DEBUG
+        NSArray *bundles = @[@"bread-buy-staging"];
+#else
+        NSArray *bundles = @[@"bread-buy"];
+#endif
+        [bundles enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            [client updateBundle:(NSString *)obj handler:^(NSString * _Nullable error) {
+                if (error != nil) {
+                    NSLog(@"error updating bundle %@: %@", obj, error);
+                } else {
+                    NSLog(@"successfully updated bundle %@", obj);
+                }
+            }];
         }];
         
         [client updateFeatureFlags];

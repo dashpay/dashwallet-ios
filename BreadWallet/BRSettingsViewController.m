@@ -57,9 +57,11 @@
     self.touchId = [BRWalletManager sharedInstance].touchIdEnabled;
     
     if ([WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsEarlyAccess]) { // only available on iOS 8 and above
-        self.eaController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy" mountPoint:@"/ea"];
 #if DEBUG
-        //    self.eaController.debugEndpoint = @"http://localhost:8080";
+        self.eaController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy-staging" mountPoint:@"/ea"];
+//        self.eaController.debugEndpoint = @"http://localhost:8080";
+#else
+        self.eaController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy" mountPoint:@"/ea"];
 #endif
         [self.eaController startServer];
         [self.eaController preload];
