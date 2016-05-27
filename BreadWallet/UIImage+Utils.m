@@ -30,6 +30,8 @@
 
 + (instancetype)imageWithQRCodeData:(NSData *)data color:(CIColor *)color
 {
+    UIImage *image;
+    CGImageRef cgImg;
     CIFilter *qrFilter = [CIFilter filterWithName:@"CIQRCodeGenerator"],
              *maskFilter = [CIFilter filterWithName:@"CIMaskToAlpha"],
              *invertFilter = [CIFilter filterWithName:@"CIColorInvert"],
@@ -48,9 +50,6 @@
     }
     else [maskFilter setValue:qrFilter.outputImage forKey:@"inputImage"], filter = maskFilter;
     
-    CGImageRef cgImg;
-    UIImage *image;
-    
     @synchronized ([CIContext class]) {
         // force software rendering for security (GPU rendering causes image artifacts on iOS 7 and is generally crashy)
         cgImg = [[CIContext contextWithOptions:@{kCIContextUseSoftwareRenderer:@(YES)}]
@@ -59,23 +58,6 @@
 
     image = [UIImage imageWithCGImage:cgImg];
     CGImageRelease(cgImg);
-
-//    if (CGSizeEqualToSize(size, CGSizeZero)) size = filter.outputImage.extent.size;
-//    UIGraphicsBeginImageContext(size);
-//    
-//    UIImage *image = nil;
-//    CGContextRef context = UIGraphicsGetCurrentContext();
-//    
-//    if (context) {
-//        CGContextSetInterpolationQuality(context, kCGInterpolationNone);
-//        CGContextRotateCTM(context, M_PI); // flip
-//        CGContextScaleCTM(context, -1.0, 1.0); // mirror
-//        CGContextDrawImage(context, CGContextGetClipBoundingBox(context), img);
-//        image = UIGraphicsGetImageFromCurrentImageContext();
-//    }
-//    
-//    UIGraphicsEndImageContext();
-//    CGImageRelease(img);
     return image;
 }
 
@@ -83,8 +65,8 @@
 {
     UIGraphicsBeginImageContext(size);
     
-    UIImage *image = nil;
     CGContextRef context = UIGraphicsGetCurrentContext();
+    UIImage *image = nil;
     
     if (context) {
         CGContextSetInterpolationQuality(context, kCGInterpolationNone);
