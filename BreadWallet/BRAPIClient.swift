@@ -184,13 +184,11 @@ func httpDateNow() -> String {
     static let sharedClient = BRAPIClient()
     
     
-    func log(format: String, args: CVarArgType...) -> Int? {
+    func log(s: String) {
         if !logEnabled {
-            return 1
+            return
         }
-        let s = String(format: format, arguments: args)
         print("[BRAPIClient] \(s)")
-        return 2
     }
     
     // MARK: Networking functions
