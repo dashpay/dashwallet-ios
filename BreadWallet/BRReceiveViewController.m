@@ -40,7 +40,8 @@
 #define ADDRESS_TIP NSLocalizedString(@"This is your bitcoin address. Tap to copy it or send it by email or sms. The "\
                     "address will change each time you receive funds, but old addresses always work.", nil)
 
-#define QR_IMAGE_KEY @"QR_IMAGE"
+#define QR_IMAGE_FILE [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).lastObject\
+                       stringByAppendingPathComponent:@"qr.png"]
 
 @interface BRReceiveViewController ()
 
@@ -70,8 +71,12 @@
           [BRPaymentRequest requestWithString:[self.groupDefs stringForKey:APP_GROUP_RECEIVE_ADDRESS_KEY]];
 
     if (req.isValid) {
-        self.qrView.image = (_qrImage) ? _qrImage :
-                            [UIImage imageWithData:[[NSUserDefaults standardUserDefaults] objectForKey:QR_IMAGE_KEY]];
+        if (! _qrImage) {
+            _qrImage = [[UIImage imageWithContentsOfFile:QR_IMAGE_FILE] resize:self.qrView.bounds.size
+                        withInterpolationQuality:kCGInterpolationNone];;
+        }
+        
+        self.qrView.image = _qrImage;
         [self.addressButton setTitle:req.paymentAddress forState:UIControlStateNormal];
     }
     else [self.addressButton setTitle:nil forState:UIControlStateNormal];
@@ -103,26 +108,24 @@
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         BRWalletManager *manager = [BRWalletManager sharedInstance];
         BRPaymentRequest *req = self.paymentRequest;
-        CGSize size = (self.qrView) ? self.qrView.bounds.size : CGSizeMake(250.0, 250.0);
-
-        self.qrImage = [UIImage imageWithQRCodeData:req.data size:size
-                        color:[CIColor colorWithRed:0.0 green:0.0 blue:0.0]];
+        UIImage *image = [UIImage imageWithQRCodeData:req.data color:[CIColor colorWithRed:0.0 green:0.0 blue:0.0]];
+        
+        self.qrImage = [image resize:(self.qrView ? self.qrView.bounds.size : CGSizeMake(250.0, 250.0))
+                        withInterpolationQuality:kCGInterpolationNone];
         
         if (req.amount == 0) {
             if (req.isValid) {
                 [self.groupDefs setObject:req.data forKey:APP_GROUP_REQUEST_DATA_KEY];
                 [self.groupDefs setObject:self.paymentAddress forKey:APP_GROUP_RECEIVE_ADDRESS_KEY];
-                [[NSUserDefaults standardUserDefaults] setObject:UIImagePNGRepresentation(self.qrImage)
-                 forKey:QR_IMAGE_KEY];
+                [UIImagePNGRepresentation(image) writeToFile:QR_IMAGE_FILE atomically:YES];
             }
             else {
                 [self.groupDefs removeObjectForKey:APP_GROUP_REQUEST_DATA_KEY];
                 [self.groupDefs removeObjectForKey:APP_GROUP_RECEIVE_ADDRESS_KEY];
-                [[NSUserDefaults standardUserDefaults] removeObjectForKey:QR_IMAGE_KEY];
+                [[NSFileManager defaultManager] removeItemAtPath:QR_IMAGE_FILE error:nil];
             }
 
             [self.groupDefs synchronize];
-            [[NSUserDefaults standardUserDefaults] synchronize];
         }
 
         dispatch_async(dispatch_get_main_queue(), ^{

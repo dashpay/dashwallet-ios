@@ -96,8 +96,8 @@
     
     if (self.qrCodeData && self.qrImage.bounds.size.width > 0) {
         self.qrImage.image = self.qrOverlay.image =
-            [UIImage imageWithQRCodeData:self.qrCodeData size:self.qrImage.bounds.size
-             color:[CIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:0.0]];
+            [[UIImage imageWithQRCodeData:self.qrCodeData color:[CIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:0.0]]
+             resize:self.qrImage.bounds.size withInterpolationQuality:kCGInterpolationNone];
     }
 
     self.addressLabel.text = [self.appGroupUserDefault objectForKey:APP_GROUP_RECEIVE_ADDRESS_KEY];
