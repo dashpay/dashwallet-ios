@@ -360,16 +360,17 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 
     if (balance != _balance) {
         _balance = balance;
-        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(balanceNotification) object:nil];
-        [self performSelector:@selector(balanceNotification) withObject:nil afterDelay:0.1];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(balanceNotification) object:nil];
+            [self performSelector:@selector(balanceNotification) withObject:nil afterDelay:0.1];
+        });
     }
 }
 
 - (void)balanceNotification
 {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletBalanceChangedNotification object:nil];
-    });
+    [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletBalanceChangedNotification object:nil];
 }
 
 #pragma mark - wallet info
