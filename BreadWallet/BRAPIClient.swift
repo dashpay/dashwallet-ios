@@ -167,10 +167,6 @@ func httpDateNow() -> String {
         return "\(proto)://\(host)"
     }
     
-    var userAccountKey: String {
-        return baseUrl
-    }
-    
     private var _serverPubKey: BRKey? = nil
     var serverPubKey: BRKey {
         if _serverPubKey == nil {
@@ -215,17 +211,11 @@ func httpDateNow() -> String {
             // add Date header if necessary
             mutableRequest.setValue(httpDateNow(), forHTTPHeaderField: "Date")
         }
-        do {
-            if let tokenData = try BRKeychain.loadDataForUserAccount(userAccountKey),
-                token = tokenData["token"], authKey = getAuthKey() {
-                let sha = buildRequestSigningString(mutableRequest).dataUsingEncoding(NSUTF8StringEncoding)!.SHA256_2()
-                let sig = authKey.compactSign(sha)!.base58String()
-                mutableRequest.setValue("bread \(token):\(sig)", forHTTPHeaderField: "Authorization")
-            }
-        } catch let e as BRKeychainError {
-            log("keychain error fetching tokoen \(e)")
-        } catch let e {
-            log("unexpected error fetching keychain data \(e)")
+        if let manager = BRWalletManager.sharedInstance(), tokenData = manager.userAccount,
+            token = tokenData["token"], authKey = getAuthKey() {
+            let sha = buildRequestSigningString(mutableRequest).dataUsingEncoding(NSUTF8StringEncoding)!.SHA256_2()
+            let sig = authKey.compactSign(sha)!.base58String()
+            mutableRequest.setValue("bread \(token):\(sig)", forHTTPHeaderField: "Authorization")
         }
         return mutableRequest.copy() as! NSURLRequest
     }
@@ -332,13 +322,7 @@ func httpDateNow() -> String {
                         uid = topObj["userID"] as? NSString {
                         // success! store it in the keychain
                         let kcData = ["token": tok, "userID": uid]
-                        do {
-                            try BRKeychain.saveData(kcData, forUserAccount: self.userAccountKey)
-                        } catch let e {
-                            self.log("Error saving token in keychain \(e)")
-                            return handler(NSError(domain: BRAPIClientErrorDomain, code: 500, userInfo: [
-                                NSLocalizedDescriptionKey: NSLocalizedString("Unable to save API token", comment: "")]))
-                        }
+                        BRWalletManager.sharedInstance()!.userAccount = kcData
                     }
                 } catch let e {
                     self.log("JSON Deserialization error \(e)")

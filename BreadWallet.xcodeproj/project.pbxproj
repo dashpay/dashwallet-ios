@@ -27,7 +27,6 @@
 		2292799C1C695CD600C98E78 /* BRHTTPRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2292799B1C695CD600C98E78 /* BRHTTPRouter.swift */; };
 		2292799F1C695D2800C98E78 /* BRTar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2292799E1C695D2800C98E78 /* BRTar.swift */; };
 		229279A11C695D7900C98E78 /* BRBSPatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 229279A01C695D7900C98E78 /* BRBSPatch.swift */; };
-		229279A31C695DB300C98E78 /* BRKeychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 229279A21C695DB300C98E78 /* BRKeychain.swift */; };
 		229279A51C695DE700C98E78 /* BRAPIProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 229279A41C695DE700C98E78 /* BRAPIProxy.swift */; };
 		229279A81C6960FC00C98E78 /* BRGeoLocationPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 229279A71C6960FC00C98E78 /* BRGeoLocationPlugin.swift */; };
 		22B6A4481C0E963900673913 /* libbz2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 22B6A4471C0E963900673913 /* libbz2.tbd */; };
@@ -225,7 +224,6 @@
 		2292799B1C695CD600C98E78 /* BRHTTPRouter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRHTTPRouter.swift; sourceTree = "<group>"; };
 		2292799E1C695D2800C98E78 /* BRTar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRTar.swift; sourceTree = "<group>"; };
 		229279A01C695D7900C98E78 /* BRBSPatch.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRBSPatch.swift; sourceTree = "<group>"; };
-		229279A21C695DB300C98E78 /* BRKeychain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRKeychain.swift; sourceTree = "<group>"; };
 		229279A41C695DE700C98E78 /* BRAPIProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRAPIProxy.swift; sourceTree = "<group>"; };
 		229279A71C6960FC00C98E78 /* BRGeoLocationPlugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRGeoLocationPlugin.swift; sourceTree = "<group>"; };
 		22B6A4471C0E963900673913 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
@@ -559,7 +557,6 @@
 			children = (
 				2292799E1C695D2800C98E78 /* BRTar.swift */,
 				229279A01C695D7900C98E78 /* BRBSPatch.swift */,
-				229279A21C695DB300C98E78 /* BRKeychain.swift */,
 				22BF17461CDF831800AA41C6 /* Extensions.swift */,
 			);
 			name = Utils;
@@ -1298,7 +1295,6 @@
 				752E28CF19234C3600DB5A3C /* BRBIP39Mnemonic.m in Sources */,
 				229279A51C695DE700C98E78 /* BRAPIProxy.swift in Sources */,
 				752E28DA19234C3600DB5A3C /* BRWallet.m in Sources */,
-				229279A31C695DB300C98E78 /* BRKeychain.swift in Sources */,
 				229279981C695C4200C98E78 /* BRHTTPServer.swift in Sources */,
 				22BF17471CDF831800AA41C6 /* Extensions.swift in Sources */,
 				220128D91C77B3100001CAC1 /* BRHTTPIndexMiddleware.swift in Sources */,

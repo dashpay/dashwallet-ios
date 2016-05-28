@@ -77,6 +77,7 @@
 #define PIN_FAIL_HEIGHT_KEY @"pinfailheight"
 #define AUTH_PRIVKEY_KEY    @"authprivkey"
 #define SEED_KEY            @"seed" // depreceated
+#define USER_ACCOUNT_KEY    @"https://api.breadwallet.com"
 
 static BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
 {
@@ -176,6 +177,24 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 
         return (d) ? CFBridgingRelease(CFStringCreateFromExternalRepresentation(SecureAllocator(), (CFDataRef)d,
                                                                                 kCFStringEncodingUTF8)) : nil;
+    }
+}
+
+static BOOL setKeychainDict(NSDictionary *dict, NSString *key, BOOL authenticated)
+{
+    @autoreleasepool {
+        NSData *d = (dict) ? [NSKeyedArchiver archivedDataWithRootObject:dict] : nil;
+        
+        return setKeychainData(d, key, authenticated);
+    }
+}
+
+static NSDictionary *getKeychainDict(NSString *key, NSError **error)
+{
+    @autoreleasepool {
+        NSData *d = getKeychainData(key, error);
+        
+        return (d) ? [NSKeyedUnarchiver unarchiveObjectWithData:d] : nil;
     }
 }
 
@@ -430,6 +449,16 @@ static NSString *getKeychainString(NSString *key, NSError **error)
 
         return privKey;
     }
+}
+
+- (NSDictionary *)userAccount
+{
+    return getKeychainDict(USER_ACCOUNT_KEY, nil);
+}
+
+- (void)setUserAccount:(NSDictionary *)userAccount
+{
+    setKeychainDict(userAccount, USER_ACCOUNT_KEY, NO);
 }
 
 // true if touch id is enabled
