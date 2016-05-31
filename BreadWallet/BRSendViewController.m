@@ -547,7 +547,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
                 self.callback = [NSURL URLWithString:[self.callback.absoluteString stringByAppendingFormat:@"%@txid=%@",
                                                       (self.callback.query.length > 0) ? @"&" : @"?",
                                                       [NSString hexWithData:[NSData dataWithBytes:tx.txHash.u8
-                                                                             length:sizeof(UInt256)]]]];
+                                                                             length:sizeof(UInt256)].reverse]]];
                 [[UIApplication sharedApplication] openURL:self.callback];
             }
             
@@ -604,7 +604,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
                                                               stringByAppendingFormat:@"%@txid=%@",
                                                               (self.callback.query.length > 0) ? @"&" : @"?",
                                                               [NSString hexWithData:[NSData dataWithBytes:tx.txHash.u8
-                                                                                     length:sizeof(UInt256)]]]];
+                                                                                     length:sizeof(UInt256)].reverse]]];
                         [[UIApplication sharedApplication] openURL:self.callback];
                     }
                     

@@ -997,7 +997,6 @@ static const char *dns_seeds[] = {
     self.downloadPeer = peer;
     _connected = YES;
     _estimatedBlockHeight = peer.lastblock;
-    _bloomFilter = nil; // make sure the bloom filter is updated with any newly generated addresses
     [peer sendFilterloadMessage:[self bloomFilterForPeer:peer].data];
     peer.currentBlockHeight = self.lastBlockHeight;
     
