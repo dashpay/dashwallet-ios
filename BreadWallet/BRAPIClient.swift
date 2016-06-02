@@ -403,7 +403,7 @@ func httpDateNow() -> String {
         var authenticated = false
         var furl = "/anybody/features"
         // only use authentication if the user has previously used authenticated services
-        if let _ = getAuthKey() {
+        if let wm = BRWalletManager.sharedInstance(), _ = wm.userAccount {
             authenticated = true
             furl = "/me/features"
         }
