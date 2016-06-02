@@ -400,8 +400,15 @@ func httpDateNow() -> String {
     }
     
     public func updateFeatureFlags() {
-        let req = NSURLRequest(URL: url("/me/features"))
-        dataTaskWithRequest(req, authenticated: true) { (data, resp, err) in
+        var authenticated = false
+        var furl = "/anybody/features"
+        // only use authentication if the user has previously used authenticated services
+        if let _ = getAuthKey() {
+            authenticated = true
+            furl = "/me/features"
+        }
+        let req = NSURLRequest(URL: url(furl))
+        dataTaskWithRequest(req, authenticated: authenticated) { (data, resp, err) in
             if let resp = resp, data = data {
                 if resp.statusCode == 200 {
                     let defaults = NSUserDefaults.standardUserDefaults()
