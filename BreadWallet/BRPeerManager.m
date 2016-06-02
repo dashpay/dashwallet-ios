@@ -245,7 +245,8 @@ static const char *dns_seeds[] = {
                         NSTimeInterval age = 3*24*60*60 + arc4random_uniform(4*24*60*60); // add between 3 and 7 days
                     
                         [peers[i] addObject:[[BRPeer alloc] initWithAddress:addr port:port
-                                             timestamp:(i > 0 ? now - age : now) services:SERVICES_NODE_NETWORK]];
+                                             timestamp:(i > 0 ? now - age : now)
+                                             services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
                     }
 
                     freeaddrinfo(servinfo);
@@ -267,7 +268,8 @@ static const char *dns_seeds[] = {
                     // give hard coded peers a timestamp between 7 and 14 days ago
                     addr.u32[3] = CFSwapInt32HostToBig(address.unsignedIntValue);
                     [_peers addObject:[[BRPeer alloc] initWithAddress:addr port:BITCOIN_STANDARD_PORT
-                     timestamp:now - (7*24*60*60 + arc4random_uniform(7*24*60*60)) services:SERVICES_NODE_NETWORK]];
+                     timestamp:now - (7*24*60*60 + arc4random_uniform(7*24*60*60))
+                     services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
                 }
             }
             
@@ -957,6 +959,12 @@ static const char *dns_seeds[] = {
     // drop peers that don't carry full blocks, or aren't synced yet
     // TODO: XXXX does this work with 0.11 pruned nodes?
     if (! (peer.services & SERVICES_NODE_NETWORK) || peer.lastblock + 10 < self.lastBlockHeight) {
+        [peer disconnect];
+        return;
+    }
+
+    // drop peers that don't support SPV filtering
+    if (peer.version >= 70011 && ! (peer.services & SERVICES_NODE_BLOOM)) {
         [peer disconnect];
         return;
     }

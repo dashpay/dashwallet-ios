@@ -36,12 +36,12 @@
 #endif
 
 #define HEADER_LENGTH      24
-#define MAX_MSG_LENGTH     0x02000000u
+#define MAX_MSG_LENGTH     0x02000000
 #define MAX_GETDATA_HASHES 50000
 #define ENABLED_SERVICES   0     // we don't provide full blocks to remote nodes
 #define PROTOCOL_VERSION   70013
 #define MIN_PROTO_VERSION  70002 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
-#define LOCAL_HOST         0x7f000001u
+#define LOCAL_HOST         0x7f000001
 #define CONNECT_TIMEOUT    3.0
 
 typedef enum : uint32_t {
@@ -519,12 +519,6 @@ services:(uint64_t)services
     }
     
     _version = [message UInt32AtOffset:0];
-    
-    if (self.version < MIN_PROTO_VERSION) {
-        [self error:@"protocol version %u not supported", self.version];
-        return;
-    }
-    
     _services = [message UInt64AtOffset:4];
     _timestamp = [message UInt64AtOffset:12] - NSTimeIntervalSince1970;
     _useragent = [message stringAtOffset:80 length:&l];
@@ -536,6 +530,12 @@ services:(uint64_t)services
     
     _lastblock = [message UInt32AtOffset:80 + l];
     NSLog(@"%@:%u got version %u, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
+    
+    if (self.version < MIN_PROTO_VERSION) {
+        [self error:@"protocol version %u not supported", self.version];
+        return;
+    }
+    
     [self sendVerackMessage];
 }
 
