@@ -28,8 +28,11 @@
 #import "BRWallet.h"
 #import "BRMnemonic.h"
 
-#define SATOSHIS     100000000
-#define MAX_MONEY    (21000000LL*SATOSHIS)
+#define SATOSHIS           100000000
+#define MAX_MONEY          (21000000LL*SATOSHIS)
+#define DEFAULT_FEE_PER_KB ((TX_FEE_PER_KB*1000 + 190)/191) // default fee-per-kb to match standard fee on 191byte tx
+#define MAX_FEE_PER_KB     ((100100*1000 + 190)/191) // slightly higher than a 1000bit fee on 191byte tx
+
 #define BTC          @"\xC9\x83"     // capital B with stroke (utf-8)
 #define BITS         @"\xC6\x80"     // lowercase b with stroke (utf-8)
 #define NARROW_NBSP  @"\xE2\x80\xAF" // narrow no-break space (utf-8)

@@ -52,9 +52,6 @@
 #define MSG_HEADERS     @"headers"
 #define MSG_GETADDR     @"getaddr"
 #define MSG_MEMPOOL     @"mempool"
-#define MSG_CHECKORDER  @"checkorder"
-#define MSG_SUBMITORDER @"submitorder"
-#define MSG_REPLY       @"reply"
 #define MSG_PING        @"ping"
 #define MSG_PONG        @"pong"
 #define MSG_FILTERLOAD  @"filterload"
@@ -62,7 +59,9 @@
 #define MSG_FILTERCLEAR @"filterclear"
 #define MSG_MERKLEBLOCK @"merkleblock"
 #define MSG_ALERT       @"alert"
-#define MSG_REJECT      @"reject" // described in BIP61: https://github.com/bitcoin/bips/blob/master/bip-0061.mediawiki
+#define MSG_REJECT      @"reject"      // BIP61: https://github.com/bitcoin/bips/blob/master/bip-0061.mediawiki
+#define MSG_SENDHEADERS @"sendheaders" // BIP130: https://github.com/bitcoin/bips/blob/master/bip-0130.mediawiki
+#define MSG_FEEFILTER   @"feefilter"   // BIP133: https://github.com/bitcoin/bips/blob/master/bip-0133.mediawiki
 
 #define REJECT_INVALID     0x10 // transaction is invalid for some reason (invalid signature, output value > input, etc)
 #define REJECT_SPENT       0x12 // an input is already spent
@@ -89,6 +88,7 @@ typedef union _UInt128 UInt128;
 - (void)peer:(BRPeer *)peer relayedBlock:(BRMerkleBlock *)block;
 
 - (void)peer:(BRPeer *)peer notfoundTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockhashes;
+- (void)peer:(BRPeer *)peer setFeePerKb:(uint64_t)feePerKb;
 - (BRTransaction *)peer:(BRPeer *)peer requestedTransaction:(UInt256)txHash;
 
 @end
@@ -116,6 +116,7 @@ typedef enum : NSInteger {
 @property (nonatomic, readonly) uint64_t nonce;
 @property (nonatomic, readonly) NSString *useragent;
 @property (nonatomic, readonly) uint32_t lastblock;
+@property (nonatomic, readonly) uint64_t feePerKb; // minimum tx fee rate peer will accept
 @property (nonatomic, readonly) NSTimeInterval pingTime;
 @property (nonatomic, assign) NSTimeInterval timestamp; // timestamp reported by peer (interval since refrence date)
 @property (nonatomic, assign) int16_t misbehavin;
