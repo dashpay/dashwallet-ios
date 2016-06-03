@@ -46,82 +46,108 @@ typedef struct _BRUTXO {
 
 @interface BRWallet : NSObject
 
-@property (nonatomic, readonly) uint64_t balance; // current wallet balance excluding transactions known to be invalid
-@property (nonatomic, readonly) NSString *receiveAddress; // returns the first unused external address
-@property (nonatomic, readonly) NSString *changeAddress; // returns the first unused internal address
-@property (nonatomic, readonly) NSSet *addresses; // all previously generated internal and external addresses
-@property (nonatomic, readonly) NSArray *unspentOutputs; // NSValue objects containing UTXO structs
-@property (nonatomic, readonly) NSArray *recentTransactions; //latest 100 transactions sorted by date, most recent first
-@property (nonatomic, readonly) NSArray *allTransactions; // all wallet transactions sorted by date, most recent first
-@property (nonatomic, readonly) uint64_t totalSent; // the total amount spent from the wallet (excluding change)
-@property (nonatomic, readonly) uint64_t totalReceived; // the total amount received by the wallet (excluding change)
-@property (nonatomic, assign) uint64_t feePerKb; // fee per kb of transaction size to use when including tx fee
-@property (nonatomic, readonly) uint64_t minOutputAmount; // outputs below this amount are uneconomical due to fees
-@property (nonatomic, readonly) uint64_t maxOutputAmount; // largest amount that can be sent from the wallet after fees
+// current wallet balance excluding transactions known to be invalid
+@property (nonatomic, readonly) uint64_t balance;
 
-- (instancetype)initWithContext:(NSManagedObjectContext *)context sequence:(id<BRKeySequence>)sequence
-masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt, uint64_t amount))seed;
+// returns the first unused external address
+@property (nonatomic, readonly) NSString * _Nullable receiveAddress;
+
+// returns the first unused internal address
+@property (nonatomic, readonly) NSString * _Nullable changeAddress;
+
+// all previously generated internal and external addresses
+@property (nonatomic, readonly) NSSet * _Nonnull addresses;
+
+// NSValue objects containing UTXO structs
+@property (nonatomic, readonly) NSArray * _Nonnull unspentOutputs;
+
+// latest 100 transactions sorted by date, most recent first
+@property (nonatomic, readonly) NSArray * _Nonnull recentTransactions;
+
+// all wallet transactions sorted by date, most recent first
+@property (nonatomic, readonly) NSArray * _Nonnull allTransactions;
+
+// the total amount spent from the wallet (excluding change)
+@property (nonatomic, readonly) uint64_t totalSent;
+
+// the total amount received by the wallet (excluding change)
+@property (nonatomic, readonly) uint64_t totalReceived;
+
+// fee per kb of transaction size to use when including tx fee
+@property (nonatomic, assign) uint64_t feePerKb;
+
+// outputs below this amount are uneconomical due to fees
+@property (nonatomic, readonly) uint64_t minOutputAmount;
+
+// largest amount that can be sent from the wallet after fees
+@property (nonatomic, readonly) uint64_t maxOutputAmount;
+
+- (instancetype _Nullable)initWithContext:(NSManagedObjectContext * _Nonnull)context
+                                 sequence:(id<BRKeySequence> _Nonnull)sequence
+                          masterPublicKey:(NSData * _Nonnull)masterPublicKey
+                              seed:(NSData * _Nonnull(^ _Nonnull)(NSString * _Nonnull authprompt, uint64_t amount))seed;
 
 // true if the address is controlled by the wallet
-- (BOOL)containsAddress:(NSString *)address;
+- (BOOL)containsAddress:(NSString * _Nonnull)address;
 
 // true if the address was previously used as an input or output in any wallet transaction
-- (BOOL)addressIsUsed:(NSString *)address;
+- (BOOL)addressIsUsed:(NSString * _Nonnull)address;
 
 // Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
 // found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
 // following the last used address in the chain. The internal chain is used for change addresses and the external chain
 // for receive addresses.
-- (NSArray *)addressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
+- (NSArray * _Nullable)addressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
 
 // returns an unsigned transaction that sends the specified amount from the wallet to the given address
-- (BRTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee;
+- (BRTransaction * _Nullable)transactionFor:(uint64_t)amount to:(NSString * _Nonnull)address withFee:(BOOL)fee;
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
-- (BRTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee;
+- (BRTransaction * _Nullable)transactionForAmounts:(NSArray * _Nonnull)amounts
+                                   toOutputScripts:(NSArray * _Nonnull)scripts withFee:(BOOL)fee;
 
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
-- (BOOL)signTransaction:(BRTransaction *)transaction withPrompt:(NSString *)authprompt;
+- (BOOL)signTransaction:(BRTransaction * _Nonnull)transaction withPrompt:(NSString * _Nonnull)authprompt;
 
 // true if the given transaction is associated with the wallet (even if it hasn't been registered), false otherwise
-- (BOOL)containsTransaction:(BRTransaction *)transaction;
+- (BOOL)containsTransaction:(BRTransaction * _Nonnull)transaction;
 
 // adds a transaction to the wallet, or returns false if it isn't associated with the wallet
-- (BOOL)registerTransaction:(BRTransaction *)transaction;
+- (BOOL)registerTransaction:(BRTransaction * _Nonnull)transaction;
 
 // removes a transaction from the wallet along with any transactions that depend on its outputs
 - (void)removeTransaction:(UInt256)txHash;
 
 // returns the transaction with the given hash if it's been registered in the wallet (might also return non-registered)
-- (BRTransaction *)transactionForHash:(UInt256)txHash;
+- (BRTransaction * _Nullable)transactionForHash:(UInt256)txHash;
 
 // true if no previous wallet transaction spends any of the given transaction's inputs, and no inputs are invalid
-- (BOOL)transactionIsValid:(BRTransaction *)transaction;
+- (BOOL)transactionIsValid:(BRTransaction * _Nonnull)transaction;
 
 // true if transaction cannot be immediately spent (i.e. if it or an input tx can be replaced-by-fee)
-- (BOOL)transactionIsPending:(BRTransaction *)transaction;
+- (BOOL)transactionIsPending:(BRTransaction * _Nonnull)transaction;
 
 // true if tx is considered 0-conf safe (valid and not pending, timestamp is greater than 0, and no unverified inputs)
-- (BOOL)transactionIsVerified:(BRTransaction *)transaction;
+- (BOOL)transactionIsVerified:(BRTransaction * _Nonnull)transaction;
 
 // set the block heights and timestamps for the given transactions, use a height of TX_UNCONFIRMED and timestamp of 0 to
 // indicate a transaction and it's dependents should remain marked as unverified (not 0-conf safe)
-- (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes;
+- (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray * _Nonnull)txHashes;
 
 // returns the amount received by the wallet from the transaction (total outputs to change and/or receive addresses)
-- (uint64_t)amountReceivedFromTransaction:(BRTransaction *)transaction;
+- (uint64_t)amountReceivedFromTransaction:(BRTransaction * _Nonnull)transaction;
 
 // retuns the amount sent from the wallet by the trasaction (total wallet outputs consumed, change and fee included)
-- (uint64_t)amountSentByTransaction:(BRTransaction *)transaction;
+- (uint64_t)amountSentByTransaction:(BRTransaction * _Nonnull)transaction;
 
 // returns the fee for the given transaction if all its inputs are from wallet transactions, UINT64_MAX otherwise
-- (uint64_t)feeForTransaction:(BRTransaction *)transaction;
+- (uint64_t)feeForTransaction:(BRTransaction * _Nonnull)transaction;
 
 // historical wallet balance after the given transaction, or current balance if transaction is not registered in wallet
-- (uint64_t)balanceAfterTransaction:(BRTransaction *)transaction;
+- (uint64_t)balanceAfterTransaction:(BRTransaction * _Nonnull)transaction;
 
 // returns the block height after which the transaction is likely to be processed without including a fee
-- (uint32_t)blockHeightUntilFree:(BRTransaction *)transaction;
+- (uint32_t)blockHeightUntilFree:(BRTransaction * _Nonnull)transaction;
 
 // fee that will be added for a transaction of the given size in bytes
 - (uint64_t)feeForTxSize:(NSUInteger)size;
