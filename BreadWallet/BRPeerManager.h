@@ -27,10 +27,10 @@
 #import <Foundation/Foundation.h>
 #import "BRPeer.h"
 
-#define BRPeerManagerSyncStartedNotification  @"BRPeerManagerSyncStartedNotification"
-#define BRPeerManagerSyncFinishedNotification @"BRPeerManagerSyncFinishedNotification"
-#define BRPeerManagerSyncFailedNotification   @"BRPeerManagerSyncFailedNotification"
-#define BRPeerManagerTxStatusNotification     @"BRPeerManagerTxStatusNotification"
+FOUNDATION_EXPORT NSString* _Nonnull const BRPeerManagerSyncStartedNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const BRPeerManagerSyncFinishedNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const BRPeerManagerSyncFailedNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const BRPeerManagerTxStatusNotification;
 
 #define PEER_MAX_CONNECTIONS 3
 

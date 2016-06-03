@@ -28,7 +28,7 @@
 #import "BRKeySequence.h"
 #import "NSData+Bitcoin.h"
 
-#define BRWalletBalanceChangedNotification @"BRWalletBalanceChangedNotification"
+FOUNDATION_EXPORT NSString* _Nonnull const BRWalletBalanceChangedNotification;
 
 typedef struct _BRUTXO {
     UInt256 hash;

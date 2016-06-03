@@ -42,7 +42,7 @@
                       NSBundle.mainBundle.infoDictionary[@"CFBundleDisplayName"]]
 
 #define WALLET_NEEDS_BACKUP_KEY                @"WALLET_NEEDS_BACKUP"
-#define BRWalletManagerSeedChangedNotification @"BRWalletManagerSeedChangedNotification"
+FOUNDATION_EXPORT NSString* _Nonnull const BRWalletManagerSeedChangedNotification;
 
 @protocol BRMnemonic;
 
