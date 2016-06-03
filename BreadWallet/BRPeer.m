@@ -975,6 +975,7 @@ services:(uint64_t)services
     }
     
     _feePerKb = [message UInt64AtOffset:0];
+    NSLog(@"%@:%u got feefilter with rate %llu", self.host, self.port, self.feePerKb);
 
     dispatch_async(self.delegateQueue, ^{
         [self.delegate peer:self setFeePerKb:self.feePerKb];

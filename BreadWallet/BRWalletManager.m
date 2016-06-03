@@ -315,7 +315,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 
         _wallet.feePerKb = DEFAULT_FEE_PER_KB;
         feePerKb = [[NSUserDefaults standardUserDefaults] doubleForKey:FEE_PER_KB_KEY];
-        if (feePerKb >= DEFAULT_FEE_PER_KB && feePerKb <= MAX_FEE_PER_KB) _wallet.feePerKb = feePerKb;
+        if (feePerKb >= MIN_FEE_PER_KB && feePerKb <= MAX_FEE_PER_KB) _wallet.feePerKb = feePerKb;
 
         // verify that keychain matches core data, with different access and backup policies it's possible to diverge
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -1001,7 +1001,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
         uint64_t newFee = [json[@"fee_per_kb"] unsignedLongLongValue];
         NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
         
-        if (newFee > DEFAULT_FEE_PER_KB && newFee <= MAX_FEE_PER_KB && newFee != [defs doubleForKey:FEE_PER_KB_KEY]) {
+        if (newFee >= MIN_FEE_PER_KB && newFee <= MAX_FEE_PER_KB && newFee != [defs doubleForKey:FEE_PER_KB_KEY]) {
             NSLog(@"setting new fee-per-kb %lld", newFee);
             [defs setDouble:newFee forKey:FEE_PER_KB_KEY]; // use setDouble since setInteger won't hold a uint64_t
             _wallet.feePerKb = newFee;

@@ -388,10 +388,10 @@ error:(NSError *)error
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     
-    if (amount < TX_MIN_OUTPUT_AMOUNT) {
+    if (amount < manager.wallet.minOutputAmount) {
         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"amount too small", nil)
           message:[NSString stringWithFormat:NSLocalizedString(@"bitcoin payments can't be less than %@", nil),
-                   [manager stringForAmount:TX_MIN_OUTPUT_AMOUNT]]
+                   [manager stringForAmount:manager.wallet.minOutputAmount]]
           delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         [BREventManager saveEvent:@"receive:amount_too_small"];
         return;
