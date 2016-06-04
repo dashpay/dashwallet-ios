@@ -4,6 +4,8 @@
 
 #import "BRAppDelegate.h"
 #import "BRWalletManager.h"
+#import "BRWallet.h"
+#import "BRPeerManager.h"
 #import "BRKey.h"
 #import "NSData+Bitcoin.h"
 #import "NSString+Bitcoin.h"

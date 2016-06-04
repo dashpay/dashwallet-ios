@@ -25,18 +25,54 @@
 
 import Foundation
 
+
 @objc class BRWalletPlugin: NSObject, BRHTTPRouterPlugin, BRWebSocketClient {
     var sockets = [String: BRWebSocket]()
-    
+ 
     let manager = BRWalletManager.sharedInstance()!
     
+    func announce(json: [String: AnyObject]) {
+        if let jsonData = try? NSJSONSerialization.dataWithJSONObject(json, options: []),
+            jsonString = NSString(data: jsonData, encoding: NSUTF8StringEncoding) {
+            for sock in sockets {
+                sock.1.send(String(jsonString))
+            }
+        } else {
+            print("[BRWalletPlugin] announce() could not encode payload: \(json)")
+        }
+    }
+ 
     func hook(router: BRHTTPRouter) {
         router.websocket("/_wallet/_socket", client: self)
         
+        let noteCenter = NSNotificationCenter.defaultCenter()
+        noteCenter.addObserverForName(BRPeerManagerSyncStartedNotification, object: nil, queue: nil) { (note) in
+            self.announce(["type": "sync_started"])
+        }
+        noteCenter.addObserverForName(BRPeerManagerSyncFailedNotification, object: nil, queue: nil) { (note) in
+            self.announce(["type": "sync_failed"])
+        }
+        noteCenter.addObserverForName(BRPeerManagerSyncFinishedNotification, object: nil, queue: nil) { (note) in
+            self.announce(["type": "sync_finished"])
+        }
+        noteCenter.addObserverForName(BRPeerManagerTxStatusNotification, object: nil, queue: nil) { (note) in
+            self.announce(["type": "tx_status"])
+        }
+        noteCenter.addObserverForName(BRWalletManagerSeedChangedNotification, object: nil, queue: nil) { (note) in
+            if let wallet = self.manager.wallet {
+                self.announce(["type": "seed_changed", "balance": NSNumber(unsignedLongLong: wallet.balance)])
+            }
+        }
+        noteCenter.addObserverForName(BRWalletBalanceChangedNotification, object: nil, queue: nil) { (note) in
+            if let wallet = self.manager.wallet {
+                self.announce(["type": "balance_changed", "balance": NSNumber(unsignedLongLong: wallet.balance)])
+            }
+        }
+ 
         router.get("/_wallet/info") { (request, match) -> BRHTTPResponse in
             return try BRHTTPResponse(request: request, code: 200, json: self.walletInfo())
         }
-        
+ 
         router.get("/_wallet/format") { (request, match) -> BRHTTPResponse in
             if let amounts = request.query["amount"] where amounts.count > 0 {
                 let amount = amounts[0]
@@ -76,9 +112,19 @@ import Foundation
     
     // MARK: - socket handlers
     
+    func sendWalletInfo(socket: BRWebSocket) {
+        var d = self.walletInfo()
+        d["type"] = "wallet"
+        if let jdata = try? NSJSONSerialization.dataWithJSONObject(d, options: []),
+            jstring = NSString(data: jdata, encoding: NSUTF8StringEncoding) {
+            socket.send(String(jstring))
+        }
+    }
+    
     func socketDidConnect(socket: BRWebSocket) {
         print("WALLET CONNECT \(socket.id)")
         sockets[socket.id] = socket
+        sendWalletInfo(socket)
     }
     
     func socketDidDisconnect(socket: BRWebSocket) {
