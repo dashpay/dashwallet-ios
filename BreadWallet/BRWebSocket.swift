@@ -108,8 +108,9 @@ class BRWebSocketServer {
         pthread_mutex_lock(mutex)
         sockets[socket.fd] = socket
         socket.client.socketDidConnect?(socket)
-        pthread_cond_signal(waiter)
+        pthread_cond_broadcast(waiter)
         pthread_mutex_unlock(mutex)
+        log("done adding socket \(socket.fd)")
     }
     
     func serveForever() {
@@ -131,11 +132,13 @@ class BRWebSocketServer {
     func _serveForever() {
         log("starting websocket poller")
         while true {
+            pthread_mutex_lock(mutex)
             while sockets.count < 1 {
                 log("awaiting clients")
                 pthread_cond_wait(waiter, mutex)
             }
-            log("awaiting select")
+            pthread_mutex_unlock(mutex)
+            // log("awaiting select")
             
             // all fds should be available for a read
             let readFds = sockets.map({ (ws) -> Int32 in return ws.0 });
@@ -163,6 +166,7 @@ class BRWebSocketServer {
             
             // read for all readers that have data waiting
             for i in 0..<resp.read_fd_len {
+                log("handle read fd \(sockets[resp.read_fds[Int(i)]]!.fd)")
                 if let readSock = sockets[resp.read_fds[Int(i)]] {
                     readSock.handleRead()
                 }
