@@ -25,16 +25,17 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import "BRTransaction.h"
 #import "BRKeySequence.h"
 #import "NSData+Bitcoin.h"
 
 FOUNDATION_EXPORT NSString* _Nonnull const BRWalletBalanceChangedNotification;
 
-#define SATOSHIS           100000000
+#define SATOSHIS           100000000LL
 #define MAX_MONEY          (21000000LL*SATOSHIS)
-#define DEFAULT_FEE_PER_KB ((5000*1000 + 190)/191) // bitcoind 0.11 minimum relay fee on a 191byte tx
+#define DEFAULT_FEE_PER_KB ((5000ULL*1000 + 190)/191) // bitcoind 0.11 minimum relay fee on a 191byte tx
 #define MIN_FEE_PER_KB     ((TX_FEE_PER_KB*1000 + 190)/191) // minimum relay fee on a 191byte tx
-#define MAX_FEE_PER_KB     ((100100*1000 + 190)/191) // slightly higher than a 1000bit fee on a 191byte tx
+#define MAX_FEE_PER_KB     ((100100ULL*1000 + 190)/191) // slightly higher than a 1000bit fee on a 191byte tx
 
 typedef struct _BRUTXO {
     UInt256 hash;
