@@ -1037,12 +1037,8 @@ completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError
     NSMutableCharacterSet *charset = [[NSCharacterSet URLQueryAllowedCharacterSet] mutableCopy];
     
     [charset removeCharactersInString:@"&="];
-
-    for (NSString *addr in addresses) {
-        [args addObject:[@"address=" stringByAppendingString:[addr
-         stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
-    }
-
+    [args addObject:[@"addrs=" stringByAppendingString:[[addresses componentsJoinedByString:@","]
+                                                        stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
     [req setValue:USER_AGENT forHTTPHeaderField:@"User-Agent"];
     req.HTTPMethod = @"POST";
     req.HTTPBody = [[args componentsJoinedByString:@"&"] dataUsingEncoding:NSUTF8StringEncoding];
