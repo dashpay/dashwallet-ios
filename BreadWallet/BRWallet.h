@@ -131,7 +131,7 @@ typedef struct _BRUTXO {
 // true if no previous wallet transaction spends any of the given transaction's inputs, and no inputs are invalid
 - (BOOL)transactionIsValid:(BRTransaction * _Nonnull)transaction;
 
-// true if transaction cannot be immediately spent (i.e. if it or an input tx can be replaced-by-fee)
+// true if transaction cannot be immediately spent (i.e. if it or an input tx can be replaced-by-fee, via BIP125)
 - (BOOL)transactionIsPending:(BRTransaction * _Nonnull)transaction;
 
 // true if tx is considered 0-conf safe (valid and not pending, timestamp is greater than 0, and no unverified inputs)
