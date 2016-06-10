@@ -1109,7 +1109,7 @@
 
     XCTAssertNotNil(tx, @"[BRWallet transactionFor:to:withFee:]");
 
-    [w signTransaction:tx withPrompt:nil];
+    [w signTransaction:tx withPrompt:@""];
 
     XCTAssertTrue(tx.isSigned, @"[BRWallet signTransaction]");
 
@@ -1299,6 +1299,8 @@
     
     hash = *(UInt256 *)@"00000000000080b66c911bd5ba14a74260057311eaeb1982802f7010f1a9f090".hexToData.reverse.bytes;
     XCTAssertTrue(uint256_eq(b.blockHash, hash), @"[BRMerkleBlock blockHash]");
+
+    XCTAssertEqualObjects(block, b.data, @"[BRMerkleBlock toData]");
 
     XCTAssertTrue(b.valid, @"[BRMerkleBlock isValid]");
 

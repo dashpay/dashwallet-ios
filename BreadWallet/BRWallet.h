@@ -89,10 +89,10 @@ typedef struct _BRUTXO {
 // largest amount that can be sent from the wallet after fees
 @property (nonatomic, readonly) uint64_t maxOutputAmount;
 
-- (instancetype _Nullable)initWithContext:(NSManagedObjectContext * _Nonnull)context
+- (instancetype _Nullable)initWithContext:(NSManagedObjectContext * _Nullable)context
                                  sequence:(id<BRKeySequence> _Nonnull)sequence
-                          masterPublicKey:(NSData * _Nonnull)masterPublicKey
-                              seed:(NSData * _Nonnull(^ _Nonnull)(NSString * _Nonnull authprompt, uint64_t amount))seed;
+                          masterPublicKey:(NSData * _Nullable)masterPublicKey
+                            seed:(NSData * _Nullable(^ _Nonnull)(NSString * _Nullable authprompt, uint64_t amount))seed;
 
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString * _Nonnull)address;
