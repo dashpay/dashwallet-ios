@@ -399,6 +399,11 @@ static NSString *dateFormat(NSString *template)
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSUInteger txCount = self.transactions.count;
     
+    if (! manager.didAuthenticate) {
+        [self unlock:sender];
+        return;
+    }
+    
     [self.tableView beginUpdates];
     [self.tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:txCount inSection:0]]
      withRowAnimation:UITableViewRowAnimationFade];
