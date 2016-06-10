@@ -687,7 +687,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                 self.seedPhrase = nil;
 
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC/10), dispatch_get_main_queue(), ^{
-                    abort();
+                    exit(0);
                 });
 
                 return NO;
@@ -1312,7 +1312,7 @@ replacementString:(NSString *)string
     _pinField = nil;
 
     if (buttonIndex == alertView.cancelButtonIndex) {
-        if (buttonIndex >= 0 && [[alertView buttonTitleAtIndex:buttonIndex] isEqual:@"abort"]) abort();
+        if (buttonIndex >= 0 && [[alertView buttonTitleAtIndex:buttonIndex] isEqual:@"abort"]) exit(0);
         if (self.sweepCompletion) self.sweepCompletion(nil, 0, nil);
         self.sweepKey = nil;
         self.sweepCompletion = nil;
