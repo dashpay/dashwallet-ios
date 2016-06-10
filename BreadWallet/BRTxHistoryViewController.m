@@ -355,12 +355,11 @@ static NSString *dateFormat(NSString *template)
     
     self.navigationItem.titleView = nil;
     [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
-    if (! sender && self.transactions.count > 0) [self.tableView reloadData];
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         self.transactions = manager.wallet.allTransactions;
         
-        dispatch_async(dispatch_get_main_queue(), ^{ // BUG: XXXX row animation is broken
+        dispatch_async(dispatch_get_main_queue(), ^{
             if (sender && self.transactions.count > 0) {
                 [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
                  withRowAnimation:UITableViewRowAnimationAutomatic];
@@ -398,11 +397,7 @@ static NSString *dateFormat(NSString *template)
 {
     [BREventManager saveEvent:@"tx_history:more"];
     BRWalletManager *manager = [BRWalletManager sharedInstance];
-    NSUInteger txCount;
-    
-    [self unlock:sender];
-    if (! manager.didAuthenticate) return;
-    txCount = self.transactions.count;
+    NSUInteger txCount = self.transactions.count;
     
     [self.tableView beginUpdates];
     [self.tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:txCount inSection:0]]

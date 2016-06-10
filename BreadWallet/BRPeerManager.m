@@ -180,7 +180,7 @@ static const char *dns_seeds[] = {
             _blocks = nil;
             _bloomFilter = nil;
             _lastBlock = nil;
-            [self.connectedPeers makeObjectsPerformSelector:@selector(disconnect)];
+            [[self.connectedPeers copy] makeObjectsPerformSelector:@selector(disconnect)];
         }];
 
     return self;
