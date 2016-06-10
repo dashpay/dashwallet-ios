@@ -591,7 +591,7 @@ static const char *dns_seeds[] = {
 
     // instead of publishing to all peers, leave out the download peer to see if the tx propogates and gets relayed back
     // TODO: XXX connect to a random peer with an empty or fake bloom filter just for publishing
-    if (self.peerCount > 1) [peers removeObject:self.downloadPeer];
+    if (self.peerCount > 1 && self.downloadPeer) [peers removeObject:self.downloadPeer];
 
     dispatch_async(dispatch_get_main_queue(), ^{
         [self performSelector:@selector(txTimeout:) withObject:hash afterDelay:PROTOCOL_TIMEOUT];
