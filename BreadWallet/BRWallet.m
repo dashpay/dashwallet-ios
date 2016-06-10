@@ -283,9 +283,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             NSSet *inputs;
             uint32_t i = 0, n = 0;
             BOOL pending = NO;
-            BRTransaction *transaction;
             UInt256 h;
-            BRUTXO o;
             
             for (NSValue *hash in tx.inputHashes) {
                 n = [tx.inputIndexes[i++] unsignedIntValue];
@@ -308,14 +306,14 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             
             // check if any inputs are pending
             if (tx.blockHeight == TX_UNCONFIRMED) {
-                if (transaction.size > TX_MAX_SIZE) pending = YES; // check transaction size is under TX_MAX_SIZE
+                if (tx.size > TX_MAX_SIZE) pending = YES; // check transaction size is under TX_MAX_SIZE
                 
                 for (NSNumber *sequence in tx.inputSequences) {
                     if (sequence.unsignedIntValue < UINT32_MAX - 1) pending = YES; // check for replace-by-fee
-                    if (sequence.unsignedIntValue < UINT32_MAX && transaction.lockTime < TX_MAX_LOCK_HEIGHT &&
-                        transaction.lockTime > self.bestBlockHeight + 1) pending = YES; // future lockTime
-                    if (sequence.unsignedIntValue < UINT32_MAX && transaction.lockTime >= TX_MAX_LOCK_HEIGHT &&
-                        transaction.lockTime > now) pending = YES; // future locktime
+                    if (sequence.unsignedIntValue < UINT32_MAX && tx.lockTime < TX_MAX_LOCK_HEIGHT &&
+                        tx.lockTime > self.bestBlockHeight + 1) pending = YES; // future lockTime
+                    if (sequence.unsignedIntValue < UINT32_MAX && tx.lockTime >= TX_MAX_LOCK_HEIGHT &&
+                        tx.lockTime > now) pending = YES; // future locktime
                 }
             
                 for (NSNumber *amount in tx.outputAmounts) { // check that no outputs are dust
@@ -346,6 +344,9 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             [spent intersectSet:spentOutputs];
             
             for (NSValue *output in spent) { // remove any spent outputs from UTXO set
+                BRTransaction *transaction;
+                BRUTXO o;
+                
                 [output getValue:&o];
                 transaction = self.allTx[uint256_obj(o.hash)];
                 [utxos removeObject:output];
