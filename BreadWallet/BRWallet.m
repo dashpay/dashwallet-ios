@@ -275,6 +275,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     NSMutableOrderedSet *utxos = [NSMutableOrderedSet orderedSet];
     NSMutableSet *spentOutputs = [NSMutableSet set], *invalidTx = [NSMutableSet set], *pendingTx = [NSMutableSet set];
     NSMutableArray *balanceHistory = [NSMutableArray array];
+    uint32_t now = [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970;
 
     for (BRTransaction *tx in [self.transactions reverseObjectEnumerator]) {
         @autoreleasepool {
@@ -314,8 +315,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
                     if (sequence.unsignedIntValue < UINT32_MAX && transaction.lockTime < TX_MAX_LOCK_HEIGHT &&
                         transaction.lockTime > self.bestBlockHeight + 1) pending = YES; // future lockTime
                     if (sequence.unsignedIntValue < UINT32_MAX && transaction.lockTime >= TX_MAX_LOCK_HEIGHT &&
-                        transaction.lockTime > [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 +
-                        10*60) pending = YES; // future locktime
+                        transaction.lockTime > now) pending = YES; // future locktime
                 }
             
                 for (NSNumber *amount in tx.outputAmounts) { // check that no outputs are dust
@@ -688,8 +688,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         if (sequence.unsignedIntValue < UINT32_MAX && transaction.lockTime < TX_MAX_LOCK_HEIGHT &&
             transaction.lockTime > self.bestBlockHeight + 1) return YES;
         if (sequence.unsignedIntValue < UINT32_MAX && transaction.lockTime >= TX_MAX_LOCK_HEIGHT &&
-            transaction.lockTime > [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 +
-            10*60) return YES;
+            transaction.lockTime > [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970) return YES;
     }
     
     for (NSNumber *amount in transaction.outputAmounts) { // check that no outputs are dust
