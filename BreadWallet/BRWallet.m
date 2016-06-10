@@ -721,7 +721,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         if ([self containsTransaction:tx]) {
             [hash getValue:&h];
             [hashes addObject:[NSData dataWithBytes:&h length:sizeof(h)]];
-            if ([self.pendingTx containsObject:tx] || [self.invalidTx containsObject:tx]) needsUpdate = YES;
+            if ([self.pendingTx containsObject:hash] || [self.invalidTx containsObject:hash]) needsUpdate = YES;
         }
         else if (height != TX_UNCONFIRMED) [self.allTx removeObjectForKey:hash]; // remove confirmed non-wallet tx
     }
