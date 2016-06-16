@@ -1049,6 +1049,21 @@
                           @"[BRBIP32Sequence publicKey:internal:masterPublicKey:]");
 }
 
+#if ! BITCOIN_TESTNET
+- (void)testBIP32SequenceBitIdPrivateKey
+{
+    BRBIP32Sequence *seq = [BRBIP32Sequence new];
+    NSData *seed = [[BRBIP39Mnemonic new]
+                    deriveKeyFromPhrase:@"inhale praise target steak garlic cricket paper better evil almost sadness "
+                    "crawl city banner amused fringe fox insect roast aunt prefer hollow basic ladder"
+                    withPassphrase:nil];
+    NSString *privKey = [seq bitIdPrivateKey:0 forURI:@"http://bitid.bitcoin.blue/callback" fromSeed:seed];
+    NSString *addr = [BRKey keyWithPrivateKey:privKey].address;
+
+    XCTAssertEqualObjects(addr, @"1J34vj4wowwPYafbeibZGht3zy3qERoUM1");
+}
+#endif
+
 - (void)testBIP32SequenceSerializedPrivateMasterFromSeed
 {
     BRBIP32Sequence *seq = [BRBIP32Sequence new];
