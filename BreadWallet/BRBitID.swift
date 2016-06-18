@@ -87,7 +87,7 @@ import Security
             return
         }
         autoreleasepool {
-            guard let phrase = manager.seedPhrase else {
+            guard let seed = manager.seedWithPrompt("", forAmount: 0) else {
                 dispatch_async(dispatch_get_main_queue()) {
                     completionHandler(nil, nil, NSError(domain: "", code: -1001, userInfo:
                         [NSLocalizedDescriptionKey: NSLocalizedString("Could not unlock", comment: "")]))
@@ -95,7 +95,6 @@ import Security
                 return
             }
             let seq = BRBIP32Sequence()
-            let seed = BRBIP39Mnemonic().deriveKeyFromPhrase(phrase, withPassphrase: nil)
             var scheme = "https"
             var nonce: String
             guard let query = url.query?.parseQueryString() else {
