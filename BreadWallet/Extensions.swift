@@ -49,6 +49,8 @@ extension String {
         if self.substringToIndex(self.startIndex.advancedBy(1)) == "?" {
             strippedString = self.substringFromIndex(self.startIndex.advancedBy(1))
         }
+        strippedString = strippedString.stringByReplacingOccurrencesOfString("+", withString: " ")
+        strippedString = strippedString.stringByRemovingPercentEncoding!
         for s in strippedString.componentsSeparatedByString("&") {
             let kp = s.componentsSeparatedByString("=")
             if kp.count == 2 {
