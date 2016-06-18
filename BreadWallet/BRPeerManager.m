@@ -379,7 +379,7 @@ static const char *dns_seeds[] = {
 {
     NSUInteger count = 0;
 
-    for (BRPeer *peer in self.connectedPeers) {
+    for (BRPeer *peer in [self.connectedPeers copy]) {
         if (peer.status == BRPeerStatusConnected) count++;
     }
 
@@ -1122,7 +1122,8 @@ static const char *dns_seeds[] = {
         if (callback) [self.publishedCallback removeObjectForKey:hash];
 
         if ([self.txRelays[hash] count] >= PEER_MAX_CONNECTIONS &&
-            [manager.wallet transactionForHash:transaction.txHash].blockHeight == TX_UNCONFIRMED) {
+            [manager.wallet transactionForHash:transaction.txHash].blockHeight == TX_UNCONFIRMED &&
+            [manager.wallet transactionForHash:transaction.txHash].timestamp == 0) {
             [self setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSinceReferenceDate]
              forTxHashes:@[hash]]; // set timestamp when tx is verified
         }
@@ -1174,7 +1175,8 @@ static const char *dns_seeds[] = {
         if (callback) [self.publishedCallback removeObjectForKey:hash];
 
         if ([self.txRelays[hash] count] >= PEER_MAX_CONNECTIONS &&
-            [manager.wallet transactionForHash:txHash].blockHeight == TX_UNCONFIRMED) {
+            [manager.wallet transactionForHash:txHash].blockHeight == TX_UNCONFIRMED &&
+            [manager.wallet transactionForHash:txHash].timestamp == 0) {
             [self setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSinceReferenceDate]
              forTxHashes:@[hash]]; // set timestamp when tx is verified
         }
