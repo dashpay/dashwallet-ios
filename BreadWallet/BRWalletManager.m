@@ -275,7 +275,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     _currencyPrices = [defs arrayForKey:CURRENCY_PRICES_KEY];
     self.localCurrencyCode = ([defs stringForKey:LOCAL_CURRENCY_CODE_KEY]) ?
         [defs stringForKey:LOCAL_CURRENCY_CODE_KEY] : [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
-    [self updateExchangeRate];
+    dispatch_async(dispatch_get_main_queue(), ^{ [self updateExchangeRate]; });
 }
 
 - (void)dealloc
