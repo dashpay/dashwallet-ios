@@ -30,6 +30,7 @@
             <string>HelveticaNeue</string>
             <string>HelveticaNeue-Medium</string>
             <string>HelveticaNeue</string>
+            <string>HelveticaNeue</string>
         </mutableArray>
         <mutableArray key="HelveticaNeueLights.ttc">
             <string>HelveticaNeue-Light</string>
@@ -2319,20 +2320,20 @@
                                         </constraints>
                                     </view>
                                     <label opaque="NO" clipsSubviews="YES" tag="411" contentMode="left" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="300" translatesAutoresizingMaskIntoConstraints="NO" id="uvz-hk-Nr4">
-                                        <rect key="frame" x="61" y="20" width="253" height="40.5"/>
+                                        <rect key="frame" x="61" y="20" width="253" height="41"/>
                                         <gestureRecognizers/>
-                                        <string key="text">breadwallet v%ver%%net%
+                                        <string key="text">breadwallet %ver%%net%
 copyright © 2016 breadwallet LLC</string>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="app support:" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lYb-eg-NfF">
-                                        <rect key="frame" x="140" y="78.5" width="94.5" height="21"/>
+                                        <rect key="frame" x="140" y="79" width="94.5" height="21"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="support@breadwallet.com" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="300" translatesAutoresizingMaskIntoConstraints="NO" id="5OA-tB-Exg">
-                                        <rect key="frame" x="92" y="100.5" width="191.5" height="20.5"/>
+                                        <rect key="frame" x="92" y="101" width="191.5" height="20.5"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
                                         <color key="textColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                         <nil key="highlightedColor"/>
@@ -2374,6 +2375,12 @@ bitpay.com/rates</string>
                                     <outletCollection property="gestureRecognizers" destination="68Y-ha-WTV" appends="YES" id="G1L-Kc-zvL"/>
                                 </connections>
                             </view>
+                            <label opaque="NO" userInteractionEnabled="NO" tag="412" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="300" translatesAutoresizingMaskIntoConstraints="NO" id="SGv-S4-hkd">
+                                <rect key="frame" x="20" y="647" width="0.0" height="0.0"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="13"/>
+                                <color key="textColor" white="0.5" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                             <button hidden="YES" opaque="NO" tag="413" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Irz-6P-zvD">
                                 <rect key="frame" x="292" y="617" width="67" height="30"/>
                                 <state key="normal" title="copy logs">
@@ -2384,6 +2391,8 @@ bitpay.com/rates</string>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstAttribute="centerY" secondItem="ePg-dk-slQ" secondAttribute="centerY" id="LbW-ch-oqm"/>
+                            <constraint firstItem="xDQ-J5-6Ey" firstAttribute="top" secondItem="SGv-S4-hkd" secondAttribute="bottom" constant="20" id="Nzi-zA-SsM"/>
+                            <constraint firstItem="SGv-S4-hkd" firstAttribute="leading" secondItem="Dle-8P-UY1" secondAttribute="leading" constant="20" id="Ttj-fO-OZm"/>
                             <constraint firstAttribute="trailing" secondItem="ePg-dk-slQ" secondAttribute="trailing" id="aUN-5v-mGr"/>
                             <constraint firstItem="ePg-dk-slQ" firstAttribute="leading" secondItem="Dle-8P-UY1" secondAttribute="leading" id="bVE-7g-IcS"/>
                             <constraint firstItem="xDQ-J5-6Ey" firstAttribute="top" secondItem="Irz-6P-zvD" secondAttribute="bottom" constant="20" id="d4a-ya-bBL"/>

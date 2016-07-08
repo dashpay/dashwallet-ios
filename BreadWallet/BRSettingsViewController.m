@@ -42,7 +42,7 @@
 @property (nonatomic, strong) NSString *selectedOption, *noOptionsText;
 @property (nonatomic, assign) NSUInteger selectorType;
 @property (nonatomic, strong) UISwipeGestureRecognizer *navBarSwipe;
-@property (nonatomic, strong) id balanceObserver;
+@property (nonatomic, strong) id balanceObserver, txStatusObserver;
 @property (nonatomic, strong) BRWebViewController *eaController;
 
 @end
@@ -84,11 +84,19 @@
             [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
                 if (self.selectorType == 0) {
-                    self.selectorController.title = [NSString stringWithFormat:@"%@ = %@",
-                                                     [manager localCurrencyStringForAmount:
-                                                      SATOSHIS/manager.localCurrencyPrice],
-                                                     [manager stringForAmount:SATOSHIS/manager.localCurrencyPrice]];
+                    self.selectorController.title =
+                        [NSString stringWithFormat:@"%@ = %@",
+                         [manager localCurrencyStringForAmount:SATOSHIS/manager.localCurrencyPrice],
+                         [manager stringForAmount:SATOSHIS/manager.localCurrencyPrice]];
                 }
+            }];
+    }
+    
+    if (! self.txStatusObserver) {
+        self.txStatusObserver =
+            [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil
+            queue:nil usingBlock:^(NSNotification *note) {
+                [(id)[self.navigationController.topViewController.view viewWithTag:412] setText:self.stats];
             }];
     }
 }
@@ -98,6 +106,8 @@
     if (self.isMovingFromParentViewController || self.navigationController.isBeingDismissed) {
         if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
         self.balanceObserver = nil;
+        if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
+        self.txStatusObserver = nil;
     }
     
     [super viewWillDisappear:animated];
@@ -106,6 +116,7 @@
 - (void)dealloc
 {
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
+    if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
 }
 
 - (UITableViewController *)selectorController
@@ -125,6 +136,27 @@
     [cell viewWithTag:101].hidden = (path.row + 1 < [self tableView:tableView numberOfRowsInSection:path.section]);
 }
 
+- (NSString *)stats
+{
+    static NSDateFormatter *fmt = nil;
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
+
+    if (! fmt) {
+        fmt = [NSDateFormatter new];
+        fmt.dateFormat = [NSDateFormatter dateFormatFromTemplate:@"Mdjma" options:0 locale:[NSLocale currentLocale]];
+    }
+
+   return [NSString stringWithFormat:NSLocalizedString(@"rate: %@ = %@\nupdated: %@\nblock #%d of %d\n"
+                                                       "connected peers: %d\ndl peer: %@", NULL),
+           [manager localCurrencyStringForAmount:SATOSHIS/manager.localCurrencyPrice],
+           [manager stringForAmount:SATOSHIS/manager.localCurrencyPrice],
+           [fmt stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:manager.secureTime]].lowercaseString,
+           [BRPeerManager sharedInstance].lastBlockHeight,
+           [BRPeerManager sharedInstance].estimatedBlockHeight,
+           [BRPeerManager sharedInstance].peerCount,
+           [BRPeerManager sharedInstance].downloadPeerName];
+}
+
 #pragma mark - IBAction
 
 - (IBAction)done:(id)sender
@@ -141,9 +173,10 @@
         struct utsname systemInfo;
         
         uname(&systemInfo);
-        msg = [NSString stringWithFormat:@"%s / iOS %@ / breadwallet v%@%@\n\n",
+        msg = [NSString stringWithFormat:@"%s / iOS %@ / breadwallet %@ - %@%@\n\n",
                systemInfo.machine, UIDevice.currentDevice.systemVersion,
                NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"],
+               NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"],
                ([BRWalletManager sharedInstance].watchOnly) ? @" (watch only)" : @""];
         
         composeController.toRecipients = @[@"support@breadwallet.com"];
@@ -438,7 +471,9 @@ _switch_cell:
     [s replaceCharactersInRange:[s.string rangeOfString:@"%net%"] withString:@"%net% (testnet)"];
 #endif
     [s replaceCharactersInRange:[s.string rangeOfString:@"%ver%"]
-     withString:NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"]];
+     withString:[NSString stringWithFormat:@"%@ - %@",
+                 NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"],
+                 NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"]]];
     [s replaceCharactersInRange:[s.string rangeOfString:@"%net%"] withString:@""];
     l.attributedText = s;
     [l.superview.gestureRecognizers.firstObject addTarget:self action:@selector(about:)];
@@ -451,6 +486,8 @@ _switch_cell:
         b.hidden = NO;
     }
 #endif
+
+    [(id)[c.view viewWithTag:412] setText:self.stats];
     [self.navigationController pushViewController:c animated:YES];
 }
 

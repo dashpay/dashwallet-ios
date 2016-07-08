@@ -76,10 +76,10 @@
 			</array>
 		</dict>
 		<dict>
-			<key>CFBundleURLName</key>
-			<string>bitid</string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>bitid</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>bitid</string>
@@ -87,7 +87,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>32</string>
+	<string>33</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
