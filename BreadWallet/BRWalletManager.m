@@ -49,9 +49,6 @@
 #define TICKER_URL           @"https://api.breadwallet.com/rates"
 #define TICKER_FAILOVER_URL  @"https://bitpay.com/rates"
 
-#define USER_AGENT [NSString stringWithFormat:@"/breadwallet:%@/",\
-                    NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"]]
-
 #define SEED_ENTROPY_LENGTH   (128/8)
 #define SEC_ATTR_SERVICE      @"org.voisine.breadwallet"
 #define DEFAULT_CURRENCY_CODE @"USD"
@@ -892,7 +889,6 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:tickerURL]
                                 cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:10.0];
 
-    [req setValue:USER_AGENT forHTTPHeaderField:@"User-Agent"];
     NSLog(@"%@", req.URL.absoluteString);
     
     [[[NSURLSession sharedSession] dataTaskWithRequest:req
@@ -979,7 +975,6 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:FEE_PER_KB_URL]
                                 cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:10.0];
     
-    [req setValue:USER_AGENT forHTTPHeaderField:@"User-Agent"];
     NSLog(@"%@", req.URL.absoluteString);
 
     [[[NSURLSession sharedSession] dataTaskWithRequest:req
@@ -1039,7 +1034,6 @@ completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError
     [charset removeCharactersInString:@"&="];
     [args addObject:[@"addrs=" stringByAppendingString:[[addresses componentsJoinedByString:@","]
                                                         stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
-    [req setValue:USER_AGENT forHTTPHeaderField:@"User-Agent"];
     req.HTTPMethod = @"POST";
     req.HTTPBody = [[args componentsJoinedByString:@"&"] dataUsingEncoding:NSUTF8StringEncoding];
     NSLog(@"%@ POST: %@", req.URL.absoluteString,
