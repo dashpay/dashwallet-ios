@@ -37,6 +37,7 @@
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 #import "BREventManager.h"
+#import "breadwallet-Swift.h"
 #import <netdb.h>
 
 #if ! PEER_LOGGING
@@ -675,6 +676,19 @@ static const char *dns_seeds[] = {
         [self.publishedCallback removeObjectsForKeys:txHashes];
         [self.txRelays removeObjectsForKeys:txHashes];
     }
+    
+    for (NSValue *hash in txHashes) {
+        BRTxMetadataObject *txm;
+        UInt256 h;
+        
+        [hash getValue:&h];
+        txm = [[BRTxMetadataObject alloc] initWithTxHash:h store:[BRAPIClient sharedClient].kv];
+
+        if (txm) {
+            txm.blockHeight = height;
+            [[BRAPIClient sharedClient].kv set:txm error:nil];
+        }
+    }
 }
 
 - (void)txTimeout:(NSValue *)txHash
@@ -1148,6 +1162,10 @@ static const char *dns_seeds[] = {
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
             if (callback) callback(nil);
+            [[BRAPIClient sharedClient].kv
+             set:[[BRTxMetadataObject alloc] initWithTransaction:transaction exchangeRate:manager.localCurrencyPrice
+                  exchangeRateCurrency:manager.localCurrencyCode feeRate:manager.wallet.feePerKb
+                  deviceId:[BRAPIClient sharedClient].deviceId] error:NULL];
         });
     }
     
@@ -1201,6 +1219,10 @@ static const char *dns_seeds[] = {
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
             if (callback) callback(nil);
+            [[BRAPIClient sharedClient].kv
+             set:[[BRTxMetadataObject alloc] initWithTransaction:tx exchangeRate:manager.localCurrencyPrice
+                  exchangeRateCurrency:manager.localCurrencyCode feeRate:manager.wallet.feePerKb
+                  deviceId:[BRAPIClient sharedClient].deviceId] error:NULL];
         });
     }
     
