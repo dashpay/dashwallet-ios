@@ -42,7 +42,9 @@ import Foundation
             shouldVerifyHeader,
             shouldAuthHeader,
             "connection",
-            "authorization"
+            "authorization",
+            "host",
+            "user-agent"
         ]
     }
     
