@@ -53,21 +53,9 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    
     self.touchId = [BRWalletManager sharedInstance].touchIdEnabled;
-    
-    // only available on iOS 8 and above
-    if ([WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsEarlyAccess]) {
-#if DEBUG
-        self.eaController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy-staging" mountPoint:@"/ea"];
-//        self.eaController.debugEndpoint = @"http://localhost:8080";
-#else
-        self.eaController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy" mountPoint:@"/ea"];
-#endif
-        [self.eaController startServer];
-        [self.eaController preload];
-    }
 }
+
 
 - (void)viewWillAppear:(BOOL)animated
 {
@@ -101,6 +89,11 @@
     }
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    [self.eaController preload];
+}
+
 - (void)viewWillDisappear:(BOOL)animated
 {
     if (self.isMovingFromParentViewController || self.navigationController.isBeingDismissed) {
@@ -108,6 +101,8 @@
         self.balanceObserver = nil;
         if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
         self.txStatusObserver = nil;
+        
+        self.eaController = nil;
     }
     
     [super viewWillDisappear:animated];
@@ -117,6 +112,23 @@
 {
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
     if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
+}
+
+- (BRWebViewController *)eaController {
+    if (_eaController) {
+        return _eaController;
+    }
+    // only available on iOS 8 and above
+    if ([WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsEarlyAccess]) {
+#if DEBUG
+        _eaController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy-staging" mountPoint:@"/ea"];
+        //        self.eaController.debugEndpoint = @"http://localhost:8080";
+#else
+        _eaController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy" mountPoint:@"/ea"];
+#endif
+        [_eaController startServer];
+    }
+    return _eaController;
 }
 
 - (UITableViewController *)selectorController
