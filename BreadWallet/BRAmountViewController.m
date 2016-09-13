@@ -147,7 +147,7 @@
     self.localCurrencyLabel.textColor = (amount > 0) ? [UIColor grayColor] : [UIColor colorWithWhite:0.75 alpha:1.0];
 }
 
-#pragma mark - IBAction
+// MARK: - IBAction
 
 - (IBAction)unlock:(id)sender
 {
@@ -332,7 +332,7 @@
     }];
 }
 
-#pragma mark - UITextFieldDelegate
+// MARK: - UITextFieldDelegate
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range
 replacementString:(NSString *)string

@@ -33,7 +33,7 @@ static NSUInteger _fetchBatchSize = 100;
 
 @implementation NSManagedObject (Sugar)
 
-#pragma mark - create objects
+// MARK: - create objects
 
 + (instancetype)managedObject
 {
@@ -64,7 +64,7 @@ static NSUInteger _fetchBatchSize = 100;
     return a;
 }
 
-#pragma mark - fetch existing objects
+// MARK: - fetch existing objects
 
 + (NSArray *)allObjects
 {
@@ -129,7 +129,7 @@ static NSUInteger _fetchBatchSize = 100;
     return a;
 }
 
-#pragma mark - count exising objects
+// MARK: - count exising objects
 
 + (NSUInteger)countAllObjects
 {
@@ -179,7 +179,7 @@ static NSUInteger _fetchBatchSize = 100;
     return count;
 }
 
-#pragma mark - delete objects
+// MARK: - delete objects
 
 + (NSUInteger)deleteObjects:(NSArray *)objects
 {
@@ -192,7 +192,7 @@ static NSUInteger _fetchBatchSize = 100;
     return objects.count;
 }
 
-#pragma mark - core data stack
+// MARK: - core data stack
 
 // call this before any NSManagedObject+Sugar methods to use a concurrency type other than NSMainQueueConcurrencyType
 + (void)setConcurrencyType:(NSManagedObjectContextConcurrencyType)type
@@ -305,7 +305,7 @@ static NSUInteger _fetchBatchSize = 100;
     }];
 }
 
-#pragma mark - entity methods
+// MARK: - entity methods
 
 // override this if entity name differs from class name
 + (NSString *)entityName

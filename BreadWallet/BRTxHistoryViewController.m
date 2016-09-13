@@ -349,7 +349,7 @@ static NSString *dateFormat(NSString *template)
     return date;
 }
 
-#pragma mark - IBAction
+// MARK: - IBAction
 
 - (IBAction)done:(id)sender
 {
@@ -437,7 +437,7 @@ static NSString *dateFormat(NSString *template)
     [self presentViewController:self.buyController animated:YES completion:nil];
 }
 
-#pragma mark - UITableViewDataSource
+// MARK: - UITableViewDataSource
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
@@ -622,7 +622,7 @@ static NSString *dateFormat(NSString *template)
 //    return nil;
 //}
 
-#pragma mark - UITableViewDelegate
+// MARK: - UITableViewDelegate
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -727,7 +727,7 @@ static NSString *dateFormat(NSString *template)
     }
 }
 
-#pragma mark - UIAlertViewDelegate
+// MARK: - UIAlertViewDelegate
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
@@ -744,7 +744,7 @@ static NSString *dateFormat(NSString *template)
     }    
 }
 
-#pragma mark - UIViewControllerAnimatedTransitioning
+// MARK: - UIViewControllerAnimatedTransitioning
 
 // This is used for percent driven interactive transitions, as well as for container controllers that have companion
 // animations that might need to synchronize with the main animation.
@@ -779,7 +779,7 @@ static NSString *dateFormat(NSString *template)
     }];
 }
 
-#pragma mark - UINavigationControllerDelegate
+// MARK: - UINavigationControllerDelegate
 
 - (id<UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController
 animationControllerForOperation:(UINavigationControllerOperation)operation fromViewController:(UIViewController *)fromVC
@@ -788,7 +788,7 @@ toViewController:(UIViewController *)toVC
     return self;
 }
 
-#pragma mark - UIViewControllerTransitioningDelegate
+// MARK: - UIViewControllerTransitioningDelegate
 
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
 presentingController:(UIViewController *)presenting sourceController:(UIViewController *)source

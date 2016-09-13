@@ -62,7 +62,7 @@
     [super tearDown];
 }
 
-#pragma mark - testBase58
+// MARK: - testBase58
 
 - (void)testBase58
 {
@@ -108,7 +108,7 @@
                           @"[NSString base58checkWithData:]");
 }
 
-#pragma mark - textSHA1
+// MARK: - textSHA1
 
 - (void)testSHA1
 {
@@ -141,7 +141,7 @@
                   @"[NSData SHA1]");
 }
 
-#pragma mark - textSHA256
+// MARK: - textSHA256
 
 - (void)testSHA256
 {
@@ -180,7 +180,7 @@
                   @"[NSData SHA256]");
 }
 
-#pragma mark - textSHA512
+// MARK: - textSHA512
 
 - (void)testSHA512
 {
@@ -219,7 +219,7 @@
                   @"[NSData SHA512]");
 }
 
-#pragma mark - testRMD160
+// MARK: - testRMD160
 
 - (void)testRMD160
 {
@@ -252,7 +252,7 @@
                   @"[NSData RMD160]");
 }
 
-#pragma mark - testMD5
+// MARK: - testMD5
 
 - (void)testMD5
 {
@@ -279,7 +279,7 @@
     XCTAssertTrue(uint128_eq(*(UInt128 *)@"0cc175b9c0f1b6a831c399e269772661".hexToData.bytes, md), @"[NSData MD5]");
 }
 
-#pragma mark - testKey
+// MARK: - testKey
 
 #if ! BITCOIN_TESTNET
 - (void)testKeyWithPrivateKey
@@ -329,7 +329,7 @@
 }
 #endif
 
-#pragma mark - testKeyWithBIP38Key
+// MARK: - testKeyWithBIP38Key
 
 #if ! BITCOIN_TESTNET && ! SKIP_BIP38
 - (void)testKeyWithBIP38Key
@@ -440,7 +440,7 @@
 }
 #endif
 
-#pragma mark - testSign
+// MARK: - testSign
 
 - (void)testSign
 {
@@ -517,7 +517,7 @@
     XCTAssertTrue([key verify:md signature:sig], @"[BRKey verify:signature:]");
 }
 
-#pragma mark - testCompactSign
+// MARK: - testCompactSign
 
 - (void)testCompactSign
 {
@@ -561,7 +561,7 @@
     XCTAssertEqualObjects(key.publicKey, pubkey);
 }
 
-#pragma mark - testPaymentRequest
+// MARK: - testPaymentRequest
 
 //TODO: test valid request with unknown arguments
 //TODO: test invalid bitcoin address
@@ -644,7 +644,7 @@
     XCTAssertEqualObjects(@"bitcoin:?r=https://foobar.com", r.string, @"[BRPaymentRequest requestWithString:]");
 }
 
-#pragma mark - testTransaction
+// MARK: - testTransaction
 
 - (void)testTransaction
 {
@@ -707,7 +707,7 @@
     XCTAssertEqualObjects(d, tx.data, @"[BRTransaction transactionWithMessage:]");
 }
 
-#pragma mark - testBIP39Mnemonic
+// MARK: - testBIP39Mnemonic
 
 - (void)testBIP39Mnemonic
 {
@@ -997,7 +997,7 @@
     XCTAssertEqualObjects(seed_nfkd, seed_nfd, @"[BRBIP39Mnemonic deriveKeyFromPhrase: withPassphrase:]");
 }
 
-#pragma mark - testBIP32Sequence
+// MARK: - testBIP32Sequence
 
 #if ! BITCOIN_TESTNET
 - (void)testBIP32SequencePrivateKey
@@ -1093,7 +1093,7 @@
                          @"[BRBIP32Sequence serializedMasterPublicKey:]");
 }
 
-#pragma mark - testWallet
+// MARK: - testWallet
 
 //TODO: test standard free transaction no change
 //TODO: test free transaction who's inputs are too new to hit min free priority
@@ -1221,7 +1221,7 @@
     XCTAssertEqual([w feeForTxSize:tx.size], tx.standardFee, @"[BRWallet feeForTxSize:]");
 }
 
-#pragma mark - testWalletManager
+// MARK: - testWalletManager
 
 - (void)testWalletManager
 {
@@ -1254,7 +1254,7 @@
     XCTAssertEqual([manager amountForString:s], 2099999999999990, @"[BRWalletManager amountForString:]");
 }
 
-#pragma mark - testBloomFilter
+// MARK: - testBloomFilter
 
 - (void)testBloomFilter
 {
@@ -1312,7 +1312,7 @@
     XCTAssertEqualObjects(@"03ce4299050000000100008002".hexToData, f.data, @"[BRBloomFilter data:]");
 }
 
-#pragma mark - testMerkleBlock
+// MARK: - testMerkleBlock
 
 - (void)testMerkleBlock
 {
@@ -1357,7 +1357,7 @@
     //TODO:XXXX test verifyDifficultyFromPreviousBlock
 }
 
-#pragma mark - testPaymentProtocol
+// MARK: - testPaymentProtocol
 
 - (void)testPaymentProtocol
 {
@@ -1636,14 +1636,14 @@
     XCTAssertEqualObjects(req.commonName, @"payments.bitonic.eu",  @"[BRPaymentProtocolRequest commonName]");
 }
 
-#pragma mark - UIImage+Utils
+// MARK: - UIImage+Utils
 
 - (void)testUIImageUtils
 {
     
 }
 
-#pragma mark - performance
+// MARK: - performance
 
 - (void)testPerformanceExample {
     // This is an example of a performance test case.

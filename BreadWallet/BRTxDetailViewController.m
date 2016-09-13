@@ -134,7 +134,7 @@
     [cell viewWithTag:101].hidden = (path.row + 1 < [self tableView:self.tableView numberOfRowsInSection:path.section]);
 }
 
-#pragma mark - Table view data source
+// MARK: - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
@@ -306,7 +306,7 @@
     return nil;
 }
 
-#pragma mark - Table view delegate
+// MARK: - Table view delegate
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {

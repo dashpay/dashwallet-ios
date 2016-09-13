@@ -969,7 +969,7 @@ static const char *dns_seeds[] = {
     }];
 }
 
-#pragma mark - BRPeerDelegate
+// MARK: - BRPeerDelegate
 
 - (void)peerConnected:(BRPeer *)peer
 {
@@ -1541,7 +1541,7 @@ static const char *dns_seeds[] = {
     return tx;
 }
 
-#pragma mark - UIAlertViewDelegate
+// MARK: - UIAlertViewDelegate
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {

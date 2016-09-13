@@ -819,7 +819,7 @@
     return YES;
 }
 
-#pragma mark - IBAction
+// MARK: - IBAction
 
 - (IBAction)tip:(id)sender
 {
@@ -930,7 +930,7 @@
 }
 #endif
 
-#pragma mark - UIPageViewControllerDataSource
+// MARK: - UIPageViewControllerDataSource
 
 - (UIViewController *)pageViewController:(UIPageViewController *)pageViewController
 viewControllerBeforeViewController:(UIViewController *)viewController
@@ -954,7 +954,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
     return (pageViewController.viewControllers.lastObject == self.receiveViewController) ? 1 : 0;
 }
 
-#pragma mark - UIScrollViewDelegate
+// MARK: - UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
@@ -963,7 +963,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
     self.wallpaperXLeft.constant = -PARALAX_RATIO*off;
 }
 
-#pragma mark - UIAlertViewDelegate
+// MARK: - UIAlertViewDelegate
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
@@ -982,7 +982,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
     [self performSegueWithIdentifier:@"SettingsSegue" sender:[alertView buttonTitleAtIndex:buttonIndex]];
 }
 
-#pragma mark - UIViewControllerAnimatedTransitioning
+// MARK: - UIViewControllerAnimatedTransitioning
 
 // This is used for percent driven interactive transitions, as well as for container controllers that have companion
 // animations that might need to synchronize with the main animation.
@@ -1111,7 +1111,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
     }
 }
 
-#pragma mark - UINavigationControllerDelegate
+// MARK: - UINavigationControllerDelegate
 
 - (id<UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController
 animationControllerForOperation:(UINavigationControllerOperation)operation fromViewController:(UIViewController *)fromVC
@@ -1120,7 +1120,7 @@ toViewController:(UIViewController *)toVC
     return self;
 }
 
-#pragma mark - UIViewControllerTransitioningDelegate
+// MARK: - UIViewControllerTransitioningDelegate
 
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
 presentingController:(UIViewController *)presenting sourceController:(UIViewController *)source

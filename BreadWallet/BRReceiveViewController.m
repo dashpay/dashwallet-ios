@@ -226,7 +226,7 @@
     if (self.tipView.alpha > 0.5) [self.tipView popOut];
 }
 
-#pragma mark - IBAction
+// MARK: - IBAction
 
 - (IBAction)done:(id)sender
 {
@@ -284,7 +284,7 @@
     [actionSheet showInView:[UIApplication sharedApplication].keyWindow];
 }
 
-#pragma mark - UIActionSheetDelegate
+// MARK: - UIActionSheetDelegate
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
 {
@@ -366,7 +366,7 @@
     }
 }
 
-#pragma mark - MFMessageComposeViewControllerDelegate
+// MARK: - MFMessageComposeViewControllerDelegate
 
 - (void)messageComposeViewController:(MFMessageComposeViewController *)controller
 didFinishWithResult:(MessageComposeResult)result
@@ -374,7 +374,7 @@ didFinishWithResult:(MessageComposeResult)result
     [self.navigationController dismissViewControllerAnimated:YES completion:nil];
 }
 
-#pragma mark - MFMailComposeViewControllerDelegate
+// MARK: - MFMailComposeViewControllerDelegate
 
 - (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result
 error:(NSError *)error
@@ -382,7 +382,7 @@ error:(NSError *)error
     [self.navigationController dismissViewControllerAnimated:YES completion:nil];
 }
 
-#pragma mark - BRAmountViewControllerDelegate
+// MARK: - BRAmountViewControllerDelegate
 
 - (void)amountViewController:(BRAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
 {
@@ -409,7 +409,7 @@ error:(NSError *)error
     [navController pushViewController:receiveController animated:YES];
 }
 
-#pragma mark - UIViewControllerAnimatedTransitioning
+// MARK: - UIViewControllerAnimatedTransitioning
 
 // This is used for percent driven interactive transitions, as well as for container controllers that have companion
 // animations that might need to synchronize with the main animation.
@@ -434,7 +434,7 @@ error:(NSError *)error
     }];
 }
 
-#pragma mark - UINavigationControllerDelegate
+// MARK: - UINavigationControllerDelegate
 
 - (id<UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController
 animationControllerForOperation:(UINavigationControllerOperation)operation fromViewController:(UIViewController *)fromVC
@@ -443,7 +443,7 @@ toViewController:(UIViewController *)toVC
     return self;
 }
 
-#pragma mark - UIViewControllerTransitioningDelegate
+// MARK: - UIViewControllerTransitioningDelegate
 
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
 presentingController:(UIViewController *)presenting sourceController:(UIViewController *)source

@@ -129,7 +129,7 @@
     if (self.menuHideObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.menuHideObserver];
 }
 
-#pragma mark - UIResponderStandardEditActions
+// MARK: - UIResponderStandardEditActions
 
 - (void)copy:(id)sender
 {

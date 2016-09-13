@@ -115,7 +115,7 @@
     }
 }
 
-#pragma mark - WKSession delegate
+// MARK: - WKSession delegate
 
 - (void)session:(WCSession *)session
     didReceiveMessage:(NSDictionary<NSString *, id> *)message
@@ -158,7 +158,7 @@
     }
 }
 
-#pragma mark - request handlers
+// MARK: - request handlers
 
 - (void)handleApplicationContextDataRequest:(NSDictionary *)request
                                replyHandler:(void (^)(NSDictionary<NSString *, id> *replyMessage))replyHandler
@@ -264,7 +264,7 @@
             resize:CGSizeMake(150, 150) withInterpolationQuality:kCGInterpolationNone];
 }
 
-#pragma mark - data helper methods
+// MARK: - data helper methods
 
 - (NSArray *)recentTransactionListFromTransactions:(NSArray *)transactions
 {
