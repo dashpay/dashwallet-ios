@@ -4,6 +4,7 @@
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11161"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
+        <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -219,6 +220,7 @@
                             <constraint firstAttribute="centerY" secondItem="jeJ-XT-nMj" secondAttribute="centerY" id="0Qu-j9-JbB"/>
                             <constraint firstAttribute="centerY" secondItem="ZgQ-IE-5k2" secondAttribute="centerY" id="2GS-R4-bkH"/>
                             <constraint firstItem="jeJ-XT-nMj" firstAttribute="width" secondItem="S3S-Oj-5AN" secondAttribute="width" id="BvG-F2-utq"/>
+                            <constraint firstItem="ZgQ-IE-5k2" firstAttribute="width" relation="greaterThanOrEqual" secondItem="S3S-Oj-5AN" secondAttribute="width" multiplier="1:2" id="IgO-Ve-SLQ"/>
                             <constraint firstItem="ZgQ-IE-5k2" firstAttribute="width" relation="lessThanOrEqual" secondItem="S3S-Oj-5AN" secondAttribute="width" id="J9z-yS-PA8"/>
                             <constraint firstItem="jeJ-XT-nMj" firstAttribute="height" secondItem="S3S-Oj-5AN" secondAttribute="height" id="Otq-wQ-se2"/>
                             <constraint firstItem="ZgQ-IE-5k2" firstAttribute="height" secondItem="S3S-Oj-5AN" secondAttribute="height" id="ZVx-ah-zl8"/>
@@ -238,6 +240,9 @@
                         <outlet property="noDataViewContainer" destination="jeJ-XT-nMj" id="LwK-TU-PnW"/>
                         <outlet property="qrImage" destination="IcB-mX-B8K" id="GX2-4h-4db"/>
                         <outlet property="qrOverlay" destination="Nrm-Gx-zIF" id="o6b-Gw-blu"/>
+                        <outlet property="receiveLabel" destination="KJN-zr-IQB" id="UkE-Pj-DLg"/>
+                        <outlet property="scanLabel" destination="JgG-Ah-UZk" id="hDJ-MB-xVd"/>
+                        <outlet property="sendLabel" destination="QMM-JV-cTG" id="cYV-ob-UPj"/>
                         <outlet property="topViewContainer" destination="ZgQ-IE-5k2" id="rpo-gq-uPP"/>
                     </connections>
                 </viewController>
