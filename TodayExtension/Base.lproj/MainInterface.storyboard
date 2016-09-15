@@ -68,7 +68,6 @@
                                                 </constraints>
                                             </view>
                                         </subviews>
-                                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
                                             <constraint firstItem="DNB-4V-cRh" firstAttribute="centerX" secondItem="A3s-aK-YRq" secondAttribute="centerX" id="94v-Zg-KCf"/>
                                             <constraint firstAttribute="centerX" secondItem="JgG-Ah-UZk" secondAttribute="centerX" id="Bd0-90-JPE"/>
@@ -119,38 +118,37 @@
                                                 <nil key="highlightedColor"/>
                                             </label>
                                         </subviews>
-                                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                         <gestureRecognizers/>
                                         <constraints>
                                             <constraint firstItem="IcB-mX-B8K" firstAttribute="top" secondItem="KJN-zr-IQB" secondAttribute="bottom" constant="8" id="19W-4t-zL6"/>
                                             <constraint firstItem="IcB-mX-B8K" firstAttribute="leading" secondItem="aus-tt-hb6" secondAttribute="leading" constant="16" id="2px-sL-Crf"/>
-                                            <constraint firstAttribute="centerY" secondItem="IcB-mX-B8K" secondAttribute="centerY" constant="8" id="4dR-IK-yxo"/>
+                                            <constraint firstAttribute="centerY" secondItem="IcB-mX-B8K" secondAttribute="centerY" id="4dR-IK-yxo"/>
                                             <constraint firstItem="IcB-mX-B8K" firstAttribute="height" secondItem="HLv-lr-Rge" secondAttribute="height" id="5my-vW-gnS"/>
                                             <constraint firstItem="gQm-B2-ZXE" firstAttribute="centerX" secondItem="IcB-mX-B8K" secondAttribute="centerX" id="FR1-OM-Yds"/>
                                             <constraint firstItem="gQm-B2-ZXE" firstAttribute="width" secondItem="IcB-mX-B8K" secondAttribute="width" id="GH6-Q2-f00"/>
-                                            <constraint firstAttribute="trailing" secondItem="IcB-mX-B8K" secondAttribute="trailing" constant="20" id="S5J-lp-U90"/>
+                                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="IcB-mX-B8K" secondAttribute="trailing" constant="20" id="S5J-lp-U90"/>
                                             <constraint firstItem="gQm-B2-ZXE" firstAttribute="top" secondItem="IcB-mX-B8K" secondAttribute="bottom" constant="8" id="gAd-79-zKx"/>
                                             <constraint firstAttribute="centerX" secondItem="KJN-zr-IQB" secondAttribute="centerX" id="i8b-yz-X5w"/>
                                             <constraint firstItem="IcB-mX-B8K" firstAttribute="width" secondItem="HLv-lr-Rge" secondAttribute="width" id="n9v-kM-F5d"/>
                                             <constraint firstItem="IcB-mX-B8K" firstAttribute="centerY" secondItem="HLv-lr-Rge" secondAttribute="centerY" id="qs8-ZM-jVt"/>
                                             <constraint firstItem="IcB-mX-B8K" firstAttribute="centerX" secondItem="HLv-lr-Rge" secondAttribute="centerX" id="uHY-Tz-gNJ"/>
+                                            <constraint firstItem="IcB-mX-B8K" firstAttribute="height" relation="lessThanOrEqual" secondItem="aus-tt-hb6" secondAttribute="height" id="zfl-Sg-ptW"/>
                                         </constraints>
                                         <connections>
                                             <outletCollection property="gestureRecognizers" destination="Qtk-rs-lkS" appends="YES" id="Sro-Jt-39J"/>
                                         </connections>
                                     </view>
                                 </subviews>
-                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.01" colorSpace="custom" customColorSpace="sRGB"/>
                                 <gestureRecognizers/>
                                 <constraints>
                                     <constraint firstItem="hqe-ao-zmT" firstAttribute="height" secondItem="ZgQ-IE-5k2" secondAttribute="height" id="4S3-Tq-eDl"/>
-                                    <constraint firstItem="A3s-aK-YRq" firstAttribute="centerY" secondItem="IcB-mX-B8K" secondAttribute="centerY" id="6AQ-EN-7eu"/>
+                                    <constraint firstItem="A3s-aK-YRq" firstAttribute="centerY" secondItem="IcB-mX-B8K" secondAttribute="centerY" constant="-8" id="6AQ-EN-7eu"/>
                                     <constraint firstItem="QMM-JV-cTG" firstAttribute="centerY" secondItem="KJN-zr-IQB" secondAttribute="centerY" id="8q0-Xz-oYf"/>
                                     <constraint firstAttribute="trailing" secondItem="aus-tt-hb6" secondAttribute="trailing" id="F55-my-VyD"/>
                                     <constraint firstItem="aus-tt-hb6" firstAttribute="top" secondItem="ZgQ-IE-5k2" secondAttribute="top" id="WgS-2h-cqL"/>
                                     <constraint firstItem="aus-tt-hb6" firstAttribute="height" secondItem="ZgQ-IE-5k2" secondAttribute="height" id="c56-fB-dY9"/>
                                     <constraint firstItem="RCb-0D-Tux" firstAttribute="bottom" secondItem="gQm-B2-ZXE" secondAttribute="bottom" id="cWD-RK-QOa"/>
-                                    <constraint firstItem="aus-tt-hb6" firstAttribute="width" secondItem="ZgQ-IE-5k2" secondAttribute="height" multiplier="4:5" constant="4" id="dPX-m6-vFK"/>
+                                    <constraint firstItem="aus-tt-hb6" firstAttribute="width" secondItem="ZgQ-IE-5k2" secondAttribute="width" multiplier="3:5" constant="4" id="dPX-m6-vFK"/>
                                     <constraint firstItem="RCb-0D-Tux" firstAttribute="top" secondItem="KJN-zr-IQB" secondAttribute="top" id="g2v-bU-fS2"/>
                                     <constraint firstItem="hqe-ao-zmT" firstAttribute="top" secondItem="ZgQ-IE-5k2" secondAttribute="top" id="gB9-KX-mVX"/>
                                     <constraint firstAttribute="width" secondItem="ZgQ-IE-5k2" secondAttribute="height" multiplier="4:3" priority="750" id="inc-5g-Qv3"/>
@@ -199,7 +197,6 @@
                                         </connections>
                                     </button>
                                 </subviews>
-                                <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="centerX" secondItem="0me-bY-8oC" secondAttribute="centerX" id="0bM-K5-ubh"/>
                                     <constraint firstAttribute="bottom" secondItem="fgE-Q8-uG8" secondAttribute="bottom" constant="56" id="1FO-n1-fIR"/>
@@ -220,7 +217,7 @@
                             <constraint firstAttribute="centerY" secondItem="jeJ-XT-nMj" secondAttribute="centerY" id="0Qu-j9-JbB"/>
                             <constraint firstAttribute="centerY" secondItem="ZgQ-IE-5k2" secondAttribute="centerY" id="2GS-R4-bkH"/>
                             <constraint firstItem="jeJ-XT-nMj" firstAttribute="width" secondItem="S3S-Oj-5AN" secondAttribute="width" id="BvG-F2-utq"/>
-                            <constraint firstItem="ZgQ-IE-5k2" firstAttribute="width" relation="greaterThanOrEqual" secondItem="S3S-Oj-5AN" secondAttribute="width" multiplier="1:2" id="IgO-Ve-SLQ"/>
+                            <constraint firstItem="ZgQ-IE-5k2" firstAttribute="width" relation="greaterThanOrEqual" secondItem="S3S-Oj-5AN" secondAttribute="width" multiplier="2:3" id="IgO-Ve-SLQ"/>
                             <constraint firstItem="ZgQ-IE-5k2" firstAttribute="width" relation="lessThanOrEqual" secondItem="S3S-Oj-5AN" secondAttribute="width" id="J9z-yS-PA8"/>
                             <constraint firstItem="jeJ-XT-nMj" firstAttribute="height" secondItem="S3S-Oj-5AN" secondAttribute="height" id="Otq-wQ-se2"/>
                             <constraint firstItem="ZgQ-IE-5k2" firstAttribute="height" secondItem="S3S-Oj-5AN" secondAttribute="height" id="ZVx-ah-zl8"/>
