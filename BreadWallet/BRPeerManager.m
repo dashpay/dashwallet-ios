@@ -679,13 +679,14 @@ static const char *dns_seeds[] = {
     }
     
     for (NSValue *hash in updatedTx) {
+        NSError *kvErr = nil;
         BRTxMetadataObject *txm;
         UInt256 h;
         
         [hash getValue:&h];
         txm = [[BRTxMetadataObject alloc] initWithTxHash:h store:[BRAPIClient sharedClient].kv];
         txm.blockHeight = height;
-        if (txm) [[BRAPIClient sharedClient].kv set:txm error:nil];
+        if (txm) [[BRAPIClient sharedClient].kv set:txm error:&kvErr];
     }
 }
 
@@ -1157,13 +1158,15 @@ static const char *dns_seeds[] = {
         }
 
         dispatch_async(dispatch_get_main_queue(), ^{
+            NSError *kvErr = nil;
+            
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
             if (callback) callback(nil);
             [[BRAPIClient sharedClient].kv
              set:[[BRTxMetadataObject alloc] initWithTransaction:transaction exchangeRate:manager.localCurrencyPrice
                   exchangeRateCurrency:manager.localCurrencyCode feeRate:manager.wallet.feePerKb
-                  deviceId:[BRAPIClient sharedClient].deviceId] error:NULL];
+                  deviceId:[BRAPIClient sharedClient].deviceId] error:&kvErr];
         });
     }
     
@@ -1214,13 +1217,16 @@ static const char *dns_seeds[] = {
         }
         
         dispatch_async(dispatch_get_main_queue(), ^{
+            NSError *kvErr = nil;
+            
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
             if (callback) callback(nil);
+
             [[BRAPIClient sharedClient].kv
              set:[[BRTxMetadataObject alloc] initWithTransaction:tx exchangeRate:manager.localCurrencyPrice
                   exchangeRateCurrency:manager.localCurrencyCode feeRate:manager.wallet.feePerKb
-                  deviceId:[BRAPIClient sharedClient].deviceId] error:NULL];
+                  deviceId:[BRAPIClient sharedClient].deviceId] error:&kvErr];
         });
     }
     
