@@ -68,7 +68,7 @@ static NSUInteger _fetchBatchSize = 100;
 
 + (NSArray *)allObjects
 {
-    return [self fetchObjects:self.fetchRequest];
+    return [self fetchObjects:self.fetchReq];
 }
 
 + (NSArray *)objectsMatching:(NSString *)predicateFormat, ...
@@ -84,7 +84,7 @@ static NSUInteger _fetchBatchSize = 100;
 
 + (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args
 {
-    NSFetchRequest *request = self.fetchRequest;
+    NSFetchRequest *request = self.fetchReq;
     
     request.predicate = [NSPredicate predicateWithFormat:predicateFormat arguments:args];
     return [self fetchObjects:request];
@@ -97,7 +97,7 @@ static NSUInteger _fetchBatchSize = 100;
 
 + (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending offset:(NSUInteger)offset limit:(NSUInteger)limit
 {
-    NSFetchRequest *request = self.fetchRequest;
+    NSFetchRequest *request = self.fetchReq;
     
     request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:key ascending:ascending]];
     request.fetchOffset = offset;
@@ -133,7 +133,7 @@ static NSUInteger _fetchBatchSize = 100;
 
 + (NSUInteger)countAllObjects
 {
-    return [self countObjects:self.fetchRequest];
+    return [self countObjects:self.fetchReq];
 }
 
 + (NSUInteger)countObjectsMatching:(NSString *)predicateFormat, ...
@@ -149,7 +149,7 @@ static NSUInteger _fetchBatchSize = 100;
 
 + (NSUInteger)countObjectsMatching:(NSString *)predicateFormat arguments:(va_list)args
 {
-    NSFetchRequest *request = self.fetchRequest;
+    NSFetchRequest *request = self.fetchReq;
     
     request.predicate = [NSPredicate predicateWithFormat:predicateFormat arguments:args];
     return [self countObjects:request];
@@ -313,7 +313,7 @@ static NSUInteger _fetchBatchSize = 100;
     return NSStringFromClass([self class]);
 }
 
-+ (NSFetchRequest *)fetchRequest
++ (NSFetchRequest *)fetchReq
 {
     NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:self.entityName];
 
