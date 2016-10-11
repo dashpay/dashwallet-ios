@@ -39,7 +39,7 @@ class BRHTTPServerTests: XCTestCase {
         // download test files
         func download(urlStr: String, inout resultingUrl: NSURL?, inout resultingData: NSData?) {
             let url = NSURL(string: urlStr)!
-            let destinationUrl = documentsUrl.URLByAppendingPathComponent(url.lastPathComponent!)
+            let destinationUrl = documentsUrl.URLByAppendingPathComponent(url.lastPathComponent!)!
             if fm.fileExistsAtPath(destinationUrl.path!) {
                 print("file already exists [\(destinationUrl.path!)]")
                 resultingData = NSData(contentsOfURL: destinationUrl)

@@ -37,7 +37,7 @@ class BRBSPatchTests: XCTestCase {
             let fm = NSFileManager.defaultManager()
             let url = NSURL(string: urlStr)!
             let documentsUrl =  fm.URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).first!
-            let destinationUrl = documentsUrl.URLByAppendingPathComponent(url.lastPathComponent!)
+            let destinationUrl = documentsUrl.URLByAppendingPathComponent(url.lastPathComponent!)!
             if fm.fileExistsAtPath(destinationUrl.path!) {
                 print("file already exists [\(destinationUrl.path!)]")
                 resultingUrl = destinationUrl
@@ -67,7 +67,7 @@ class BRBSPatchTests: XCTestCase {
             else { XCTFail("test files not downloaded successfully"); return }
         let fm = NSFileManager.defaultManager()
         let docsPath = fm.URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).first!
-        let destPath = docsPath.URLByAppendingPathComponent("bundle3.tar")
+        let destPath = docsPath.URLByAppendingPathComponent("bundle3.tar")!
         if fm.fileExistsAtPath(destPath.path!) {
             do {
                 try fm.removeItemAtPath(destPath.path!)

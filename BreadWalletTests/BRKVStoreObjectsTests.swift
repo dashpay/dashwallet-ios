@@ -31,7 +31,7 @@ class BRKVStoreObjectsTests: XCTestCase {
         let script = NSMutableData()
         let s = "0000000000000000000000000000000000000000000000000000000000000001".hexToData()
         let p = UnsafeMutablePointer<UInt256>.alloc(sizeof(UInt256))
-        s.getBytes(p)
+        s.getBytes(p, length: 32)
         let sec = p.move()
         let k = BRKey(secret: sec, compressed: true)!
         let hash = NSValue(UInt256: UInt256(u64: (0, 0, 0, 0)))

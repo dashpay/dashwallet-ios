@@ -836,7 +836,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
             [set addObjectsFromArray:[str componentsSeparatedByCharactersInSet:separators]];
         }
         
-        if (img && &CIDetectorTypeQRCode) {
+        if (img) {
             @synchronized ([CIContext class]) {
                 CIContext *context = [CIContext contextWithOptions:@{kCIContextUseSoftwareRenderer:@(YES)}];
                 
@@ -963,7 +963,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         [set addObjectsFromArray:[str componentsSeparatedByCharactersInSet:separators]];
     }
     
-    if (img && &CIDetectorTypeQRCode) {
+    if (img) {
         @synchronized ([CIContext class]) {
             CIContext *context = [CIContext contextWithOptions:@{kCIContextUseSoftwareRenderer:@(YES)}];
             

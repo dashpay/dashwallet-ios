@@ -91,7 +91,7 @@ import Foundation
                 json = try NSJSONSerialization.JSONObjectWithData(data, options: []) // ensure valid json
                 let jsonData = try NSJSONSerialization.dataWithJSONObject(json, options: [])
                 uncompressedBytes = [UInt8](count: jsonData.length, repeatedValue: 0)
-                jsonData.getBytes(&uncompressedBytes)
+                jsonData.getBytes(&uncompressedBytes, length: jsonData.length)
             } catch let e {
                 if let resp = self.transformErrorToResponse(request, err: e) {
                     return resp
@@ -150,7 +150,7 @@ import Foundation
                 return BRHTTPResponse(request: request, code: 400)
             }
             var bodyBytes = [UInt8](count: compressedBody.length, repeatedValue: 0)
-            compressedBody.getBytes(&bodyBytes)
+            compressedBody.getBytes(&bodyBytes, length: compressedBody.length)
             var ver: UInt64
             var date: NSDate
             do {

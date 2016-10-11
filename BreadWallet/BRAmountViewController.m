@@ -61,7 +61,7 @@
     self.charset = charset;
 
     self.payButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"pay", nil)
-                      style:UIBarButtonItemStyleBordered target:self action:@selector(pay:)];
+                      style:UIBarButtonItemStylePlain target:self action:@selector(pay:)];
     self.amountField.placeholder = [manager stringForAmount:0];
     [self.decimalButton setTitle:manager.format.currencyDecimalSeparator forState:UIControlStateNormal];
 

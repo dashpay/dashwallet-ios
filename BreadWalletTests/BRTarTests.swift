@@ -34,7 +34,7 @@ class BRTarTests: XCTestCase {
         let fm = NSFileManager.defaultManager()
         let url = NSURL(string: "https://s3.amazonaws.com/breadwallet-assets/bread-buy/7f5bc5c6cc005df224a6ea4567e508491acaffdc2e4769e5262a52f5b785e261.tar")!
         let documentsUrl =  fm.URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).first!
-        let destinationUrl = documentsUrl.URLByAppendingPathComponent(url.lastPathComponent!)
+        let destinationUrl = documentsUrl.URLByAppendingPathComponent(url.lastPathComponent!)!
         if fm.fileExistsAtPath(destinationUrl.path!) {
             print("file already exists [\(destinationUrl.path!)]")
             fileUrl = destinationUrl
@@ -59,7 +59,7 @@ class BRTarTests: XCTestCase {
         guard let fileUrl = fileUrl else { XCTFail("file url not defined"); return }
         let fm = NSFileManager.defaultManager()
         let docsPath = fm.URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).first!
-        let destPath = docsPath.URLByAppendingPathComponent("extracted_files")
+        let destPath = docsPath.URLByAppendingPathComponent("extracted_files")!
         do {
             try BRTar.createFilesAndDirectoriesAtPath(destPath.path!, withTarPath: fileUrl.path!)
         } catch let e {

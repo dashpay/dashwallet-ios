@@ -140,7 +140,7 @@ import Foundation
                 return BRHTTPResponse(request: request, code: 500)
             }
             var jsonBytes = [UInt8](count: jsonData.length, repeatedValue: 0)
-            jsonData.getBytes(&jsonBytes)
+            jsonData.getBytes(&jsonBytes, length: jsonData.length)
             let headers: [String: [String]] = [
                 "Content-Type": ["application/json"]
             ]
