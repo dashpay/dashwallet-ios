@@ -748,6 +748,7 @@ static const char *dns_seeds[] = {
             [p sendFilterloadMessage:[self bloomFilterForPeer:p].data];
         }
         
+        [p sendInvMessageWithTxHashes:self.publishedCallback.allKeys]; // publish pending tx
         [p sendPingMessageWithPongHandler:^(BOOL success) {
             if (success) {
                 [p sendMempoolMessage:self.publishedTx.allKeys completion:^(BOOL success) {
@@ -1003,6 +1004,7 @@ static const char *dns_seeds[] = {
     if (self.connected && (self.estimatedBlockHeight >= peer.lastblock || self.lastBlockHeight >= peer.lastblock)) {
         if (self.lastBlockHeight < self.estimatedBlockHeight) return; // don't load bloom filter yet if we're syncing
         [peer sendFilterloadMessage:[self bloomFilterForPeer:peer].data];
+        [peer sendInvMessageWithTxHashes:self.publishedCallback.allKeys]; // publish pending tx
         [peer sendPingMessageWithPongHandler:^(BOOL success) {
             if (! success) return;
             [peer sendMempoolMessage:self.publishedTx.allKeys completion:^(BOOL success) {
