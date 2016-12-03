@@ -292,38 +292,29 @@ class BRWebSocketImpl: BRWebSocket {
         if let upgrades = request.headers["upgrade"] , upgrades.count > 0 {
             let upgrade = upgrades[0]
             if upgrade.lowercased() == "websocket" {
-                if let ks = request.headers["sec-websocket-key"], let vs = request.headers["sec-websocket-version"]
-                    , ks.count > 0 && vs.count > 0 {
-                        key = ks[0]
-                        version = vs[0]
-                        do {
-                            let acceptStr = "\(key)\(GID)" as NSString
-//                            let acceptData = Data(bytes: UnsafePointer<UInt8>(acceptStr.utf8String!),
-//                            let acceptData = Data(bytes: acceptStr)
-//                                count: acceptStr.lengthOfBytes(using: String.Encoding.utf8.rawValue));
-                            if var acceptStrBytes = acceptStr.utf8String {
-                                let acceptData = NSData(
-                                    bytes: &acceptStrBytes,
-                                    length: acceptStr.lengthOfBytes(using: String.Encoding.utf8.rawValue))
-                                let acceptEncodedStr = NSData(uInt160: (acceptData as NSData).sha1()).base64EncodedString(options: [])
-                                
-                                try response.writeUTF8("HTTP/1.1 101 Switching Protocols\r\n")
-                                try response.writeUTF8("Upgrade: WebSocket\r\n")
-                                try response.writeUTF8("Connection: Upgrade\r\n")
-                                try response.writeUTF8("Sec-WebSocket-Accept: \(acceptEncodedStr)\r\n\r\n")
-                            }
-                            
-                        } catch let e {
-                            log("error writing handshake: \(e)")
-                            return false
+                if let ks = request.headers["sec-websocket-key"], let vs = request.headers["sec-websocket-version"], ks.count > 0 && vs.count > 0 {
+                    key = ks[0]
+                    version = vs[0]
+                    do {
+                        let acceptStr = "\(key!)\(GID)"
+                        if let acceptStrBytes = acceptStr.data(using: .utf8) {
+                            let acceptEncodedStr = NSData(uInt160: (acceptStrBytes as NSData).sha1()).base64EncodedString(options: [])
+                            try response.writeUTF8("HTTP/1.1 101 Switching Protocols\r\n")
+                            try response.writeUTF8("Upgrade: WebSocket\r\n")
+                            try response.writeUTF8("Connection: Upgrade\r\n")
+                            try response.writeUTF8("Sec-WebSocket-Accept: \(acceptEncodedStr)\r\n\r\n")
                         }
-                        log("handshake written to socket")
-                        // enter non-blocking mode
-                        if !setNonBlocking() {
-                            return false
-                        }
-                        
-                        return true
+                    } catch let e {
+                        log("error writing handshake: \(e)")
+                        return false
+                    }
+                    log("handshake written to socket")
+                    // enter non-blocking mode
+                    if !setNonBlocking() {
+                        return false
+                    }
+                    
+                    return true
                 }
                 log("invalid handshake - missing sec-websocket-key or sec-websocket-version")
             }
