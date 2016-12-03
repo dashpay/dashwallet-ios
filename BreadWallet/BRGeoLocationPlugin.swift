@@ -62,7 +62,7 @@ class BRGeoLocationDelegate: NSObject, CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        if one && nResponses > 1 { return }
+        if one && nResponses > 0 { return }
         var j = [String: Any]()
         let l = locations.last!
         if (shouldCancelUpdatingAfterReceivingLocation
