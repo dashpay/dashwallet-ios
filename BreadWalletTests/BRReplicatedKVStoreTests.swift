@@ -54,7 +54,7 @@ class BRReplicatedKVStoreTestAdapter: BRRemoteKVStoreAdaptor {
         print("[TestRemoteKVStore] PUT \(key) \(version)")
         DispatchQueue.main.async { 
             guard let obj = self.db[key] else {
-                if version != 0 {
+                if version != 1 {
                     return completionFunc(1, Date(), .notFound)
                 }
                 let newObj = (UInt64(1), Date(), value, false)
