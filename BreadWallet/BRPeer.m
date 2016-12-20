@@ -43,6 +43,7 @@
 #define MIN_PROTO_VERSION  70002 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
 #define LOCAL_HOST         0x7f000001
 #define CONNECT_TIMEOUT    3.0
+#define MEMPOOL_TIMEOUT    5.0
 
 typedef enum : uint32_t {
     inv_error = 0,
@@ -207,6 +208,7 @@ services:(uint64_t)services
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel connect timeout
     
+    if (_status == BRPeerStatusDisconnected) return;
     _status = BRPeerStatusDisconnected;
 
     if (self.reachabilityObserver) {
@@ -225,6 +227,8 @@ services:(uint64_t)services
         
     _status = BRPeerStatusDisconnected;
     dispatch_async(self.delegateQueue, ^{
+        [NSObject cancelPreviousPerformRequestsWithTarget:self];
+        
         while (self.pongHandlers.count) {
             ((void (^)(BOOL))self.pongHandlers[0])(NO);
             [self.pongHandlers removeObjectAtIndex:0];
@@ -322,6 +326,16 @@ services:(uint64_t)services
     [self sendMessage:filter type:MSG_FILTERLOAD];
 }
 
+- (void)mempoolTimeout
+{
+    dispatch_async(self.delegateQueue, ^{
+        [NSObject cancelPreviousPerformRequestsWithTarget:self];
+    });
+    
+    [self sendPingMessageWithPongHandler:self.mempoolCompletion];
+    self.mempoolCompletion = nil;
+}
+
 - (void)sendMempoolMessage:(NSArray *)publishedTxHashes completion:(void (^)(BOOL))completion
 {
     [self.knownTxHashes addObjectsFromArray:publishedTxHashes];
@@ -333,7 +347,12 @@ services:(uint64_t)services
                 if (_status == BRPeerStatusConnected) completion(NO);
             });
         }
-        else self.mempoolCompletion = completion;
+        else {
+            self.mempoolCompletion = completion;
+            dispatch_async(self.delegateQueue, ^{
+                [self performSelector:@selector(mempoolTimeout) withObject:nil afterDelay:MEMPOOL_TIMEOUT];
+            });
+        }
     }
         
     [self sendMessage:[NSData data] type:MSG_MEMPOOL];
@@ -709,6 +728,10 @@ services:(uint64_t)services
     }
     
     if (self.mempoolCompletion && (txHashes.count > 0 || blockHashes.count == 0)) {
+        dispatch_async(self.delegateQueue, ^{
+            [NSObject cancelPreviousPerformRequestsWithTarget:self];
+        });
+
         [self sendPingMessageWithPongHandler:self.mempoolCompletion];
         self.mempoolCompletion = nil;
     }

@@ -472,9 +472,9 @@
         return;
 #endif
 
-        if (! [defs boolForKey:HAS_AUTHENTICATED_KEY]) {
+        if ([defs doubleForKey:HAS_AUTHENTICATED_KEY] + 7*24*60*60 < [NSDate timeIntervalSinceReferenceDate]) {
             while (! [manager authenticateWithPrompt:nil andTouchId:NO]) { }
-            [defs setBool:YES forKey:HAS_AUTHENTICATED_KEY];
+            [defs setDouble:[NSDate timeIntervalSinceReferenceDate] forKey:HAS_AUTHENTICATED_KEY];
             [self unlock:nil];
         }
 

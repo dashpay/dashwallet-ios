@@ -1051,12 +1051,7 @@ completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError
                        *scripts = [NSMutableArray array];
         BRUTXO o;
 
-        if (error) {
-            completion(nil, nil, nil, error);
-            return;
-        }
-
-        if (! [json isKindOfClass:[NSArray class]]) {
+        if (error || ! [json isKindOfClass:[NSArray class]]) {
             completion(nil, nil, nil,
                        [NSError errorWithDomain:@"BreadWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
                         [NSString stringWithFormat:NSLocalizedString(@"unexpected response from %@", nil),

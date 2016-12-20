@@ -1135,7 +1135,7 @@
 			attributes = {
 				CLASSPREFIX = BR;
 				LastSwiftUpdateCheck = 0720;
-				LastUpgradeCheck = 0810;
+				LastUpgradeCheck = 0820;
 				ORGANIZATIONNAME = "Aaron Voisine";
 				TargetAttributes = {
 					31D68B4F1C23B6C10030FAAA = {
