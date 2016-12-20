@@ -36,7 +36,9 @@
 #define DISPLAY_NAME [NSString stringWithFormat:LDQUOTE @"%@" RDQUOTE,\
                       NSBundle.mainBundle.infoDictionary[@"CFBundleDisplayName"]]
 
-#define WALLET_NEEDS_BACKUP_KEY                @"WALLET_NEEDS_BACKUP"
+#define WALLET_NEEDS_BACKUP_KEY @"WALLET_NEEDS_BACKUP"
+#define PIN_UNLOCK_TIME_KEY     @"PIN_UNLOCK_TIME"
+
 FOUNDATION_EXPORT NSString* _Nonnull const BRWalletManagerSeedChangedNotification;
 
 @protocol BRMnemonic;

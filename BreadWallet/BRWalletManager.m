@@ -59,7 +59,6 @@
 #define CURRENCY_NAMES_KEY      @"CURRENCY_NAMES"
 #define CURRENCY_PRICES_KEY     @"CURRENCY_PRICES"
 #define SPEND_LIMIT_AMOUNT_KEY  @"SPEND_LIMIT_AMOUNT"
-#define PIN_UNLOCK_TIME_KEY     @"PIN_UNLOCK_TIME"
 #define SECURE_TIME_KEY         @"SECURE_TIME"
 #define FEE_PER_KB_KEY          @"FEE_PER_KB"
 
@@ -322,7 +321,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                 NSLog(@"wallet doesn't contain address: %@", k.address);
 #if DEBUG
                 abort(); // don't wipe core data for debug builds
-#endif
+#else
                 [[NSManagedObject context] performBlockAndWait:^{
                     [BRAddressEntity deleteObjects:[BRAddressEntity allObjects]];
                     [BRTransactionEntity deleteObjects:[BRTransactionEntity allObjects]];
@@ -338,6 +337,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                     [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletBalanceChangedNotification
                      object:nil];
                 });
+#endif
             }
         });
 
@@ -385,6 +385,9 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
             [BRTxMetadataEntity deleteObjects:[BRTxMetadataEntity allObjects]];
             [NSManagedObject saveContext];
         }];
+
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:PIN_UNLOCK_TIME_KEY];
+        [[NSUserDefaults standardUserDefaults] synchronize];
 
         setKeychainData(nil, CREATION_TIME_KEY, NO);
         setKeychainData(nil, MASTER_PUBKEY_KEY, NO);

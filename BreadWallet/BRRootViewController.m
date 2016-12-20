@@ -47,7 +47,6 @@
 
 #define BACKUP_DIALOG_TIME_KEY @"BACKUP_DIALOG_TIME"
 #define BALANCE_KEY            @"BALANCE"
-#define HAS_AUTHENTICATED_KEY  @"HAS_AUTHENTICATED"
 
 @interface BRRootViewController ()
 
@@ -278,7 +277,6 @@
         queue:nil usingBlock:^(NSNotification *note) {
             [self.receiveViewController updateAddress];
             self.balance = manager.wallet.balance;
-            [[NSUserDefaults standardUserDefaults] removeObjectForKey:HAS_AUTHENTICATED_KEY];
         }];
 
     self.syncStartedObserver =
@@ -472,9 +470,8 @@
         return;
 #endif
 
-        if ([defs doubleForKey:HAS_AUTHENTICATED_KEY] + 7*24*60*60 < [NSDate timeIntervalSinceReferenceDate]) {
+        if ([defs doubleForKey:PIN_UNLOCK_TIME_KEY] + 7*24*60*60 < [NSDate timeIntervalSinceReferenceDate]) {
             while (! [manager authenticateWithPrompt:nil andTouchId:NO]) { }
-            [defs setDouble:[NSDate timeIntervalSinceReferenceDate] forKey:HAS_AUTHENTICATED_KEY];
             [self unlock:nil];
         }
 
