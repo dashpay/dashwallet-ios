@@ -92,8 +92,18 @@ import Foundation
             }
             let resp = BRHTTPResponse(async: request)
             do {
-                let imgDat = try self.readImage(id)
-                resp.provide(200, data: imgDat, contentType: "image/jpeg")
+                var imgDat = try self.readImage(id)
+                var contentType = "image/jpeg"
+                if let b64opt = request.query["base64"], b64opt.count > 0 {
+                    contentType = "text/plain"
+                    let b64 = "data:image/jpeg;base64," + Data(imgDat).base64EncodedString()
+                    guard let b64encoded = b64.data(using: .utf8) else {
+                        resp.provide(500)
+                        return resp
+                    }
+                    imgDat = [UInt8](b64encoded)
+                }
+                resp.provide(200, data: imgDat, contentType: contentType)
             } catch let e {
                 print("[BRCameraPlugin] error reading image: \(e)")
                 resp.provide(500)
