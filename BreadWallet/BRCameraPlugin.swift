@@ -41,7 +41,10 @@ import Foundation
             if !UIImagePickerController.isSourceTypeAvailable(.camera)
                 || UIImagePickerController.availableCaptureModes(for: .rear) == nil {
                 print("[BRCameraPlugin] no camera available")
-                return BRHTTPResponse(request: request, code: 404)
+                guard let resp = try? BRHTTPResponse(request: request, code: 200, json: ["id": "test"]) else {
+                    return BRHTTPResponse(request: request, code: 404)
+                }
+                return resp
             }
             let response = BRHTTPResponse(async: request)
             self.response = response
