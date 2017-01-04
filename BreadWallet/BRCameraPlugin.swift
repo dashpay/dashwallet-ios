@@ -92,7 +92,12 @@ import Foundation
             }
             let resp = BRHTTPResponse(async: request)
             do {
-                var imgDat = try self.readImage(id)
+                var imgDat: [UInt8]
+                if id == "test" {
+                    imgDat = [UInt8](try! Data(contentsOf: URL(string: "http://i.imgur.com/E5duhww.jpg")!))
+                } else {
+                    imgDat = try self.readImage(id)
+                }
                 var contentType = "image/jpeg"
                 if let b64opt = request.query["base64"], b64opt.count > 0 {
                     contentType = "text/plain"
