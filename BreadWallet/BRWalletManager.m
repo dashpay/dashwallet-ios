@@ -567,6 +567,14 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     else return NO;
 }
 
+- (BOOL)isTestnet {
+#ifdef TESTNET
+    return true;
+#else 
+    return false;
+#endif
+}
+
 - (UITextField *)pinField
 {
     if (_pinField) return _pinField;

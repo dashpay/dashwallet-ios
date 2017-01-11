@@ -244,6 +244,14 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
         }
         let origRequest = (request as NSURLRequest).mutableCopy() as! URLRequest
         var actualRequest = request
+        let testnet = BRWalletManager.sharedInstance()?.isTestnet
+        #if Testflight
+            let testflight = true
+        #else
+            let testflight = false
+        #endif
+        actualRequest.addValue("\((testnet ?? false) ? 1 : 0)", forHTTPHeaderField: "X-Bitcoin-Testnet")
+        actualRequest.addValue("\(testflight ? 1 : 0)", forHTTPHeaderField: "X-Testflight")
         if authenticated {
             actualRequest = signRequest(request)
         }
@@ -480,7 +488,7 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
     }
     
     open func featureEnabled(_ flag: BRFeatureFlags) -> Bool {
-        #if Testflight
+        #if Testflight || Debug
             return true
         #else
             let defaults = UserDefaults.standard

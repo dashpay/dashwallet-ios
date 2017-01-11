@@ -66,6 +66,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const BRWalletManagerSeedChangedNotificatio
 @property (nonatomic, readonly) double localCurrencyPrice; // exchange rate in local currency units per bitcoin
 @property (nonatomic, readonly) NSArray * _Nullable currencyCodes; // list of supported local currency codes
 @property (nonatomic, readonly) NSArray * _Nullable currencyNames; // names for local currency codes
+@property (nonatomic, readonly) BOOL isTestnet;
 
 + (instancetype _Nullable)sharedInstance;
 
