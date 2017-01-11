@@ -260,7 +260,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         BRAPIClient *client = [BRAPIClient sharedClient];
         
         // set up bundles
-#if DEBUG
+#if DEBUG || TESTFLIGHT
         NSArray *bundles = @[@"bread-buy-staging"];
 #else
         NSArray *bundles = @[@"bread-buy"];
