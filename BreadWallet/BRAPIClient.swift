@@ -253,7 +253,7 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
         actualRequest.addValue("\((testnet ?? false) ? 1 : 0)", forHTTPHeaderField: "X-Bitcoin-Testnet")
         actualRequest.addValue("\(testflight ? 1 : 0)", forHTTPHeaderField: "X-Testflight")
         if authenticated {
-            actualRequest = signRequest(request)
+            actualRequest = signRequest(actualRequest)
         }
         return session.dataTask(with: actualRequest, completionHandler: { (data, resp, err) -> Void in
             DispatchQueue.main.async {
