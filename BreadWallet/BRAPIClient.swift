@@ -235,14 +235,7 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
         return mutableRequest as URLRequest
     }
     
-    open func dataTaskWithRequest(_ request: URLRequest, authenticated: Bool = false,
-                             retryCount: Int = 0, handler: @escaping URLSessionTaskHandler) -> URLSessionDataTask {
-        let start = Date()
-        var logLine = ""
-        if let meth = request.httpMethod, let u = request.url {
-            logLine = "\(meth) \(u) auth=\(authenticated) retry=\(retryCount)"
-        }
-        let origRequest = (request as NSURLRequest).mutableCopy() as! URLRequest
+    func decorateRequest(_ request: URLRequest) -> URLRequest {
         var actualRequest = request
         let testnet = BRWalletManager.sharedInstance()?.isTestnet
         #if Testflight
@@ -252,6 +245,18 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
         #endif
         actualRequest.addValue("\((testnet ?? false) ? 1 : 0)", forHTTPHeaderField: "X-Bitcoin-Testnet")
         actualRequest.addValue("\(testflight ? 1 : 0)", forHTTPHeaderField: "X-Testflight")
+        return actualRequest
+    }
+    
+    open func dataTaskWithRequest(_ request: URLRequest, authenticated: Bool = false,
+                             retryCount: Int = 0, handler: @escaping URLSessionTaskHandler) -> URLSessionDataTask {
+        let start = Date()
+        var logLine = ""
+        if let meth = request.httpMethod, let u = request.url {
+            logLine = "\(meth) \(u) auth=\(authenticated) retry=\(retryCount)"
+        }
+        let origRequest = (request as NSURLRequest).mutableCopy() as! URLRequest
+        var actualRequest = decorateRequest(request)
         if authenticated {
             actualRequest = signRequest(actualRequest)
         }
@@ -388,6 +393,28 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
                 completionHandler(.rejectProtectionSpace, nil)
             }
         }
+    }
+    
+     // disable following redirect
+    public func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
+        var actualRequest = request
+        if let currentReq = task.currentRequest, var curHost = currentReq.url?.host, let curPort = currentReq.url?.port, let curScheme = currentReq.url?.scheme {
+            if curPort != 443 && curPort != 80 {
+                curHost = "\(curHost):\(curPort)"
+            }
+            if curHost == host && curScheme == proto {
+                // follow the redirect if we're interacting with our API
+                actualRequest = decorateRequest(request)
+                log("redirecting \(currentReq.url) to \(request.url)")
+                if let curAuth = currentReq.allHTTPHeaderFields?["Authorization"], curAuth.hasPrefix("bread") {
+                    // add authentication because the previous request was authenticated
+                    log("adding authentication to redirected request")
+                    actualRequest = signRequest(actualRequest)
+                }
+                return completionHandler(actualRequest)
+            }
+        }
+        completionHandler(nil)
     }
     
     // MARK: API Functions
