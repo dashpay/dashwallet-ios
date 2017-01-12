@@ -568,7 +568,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 }
 
 - (BOOL)isTestnet {
-#ifdef TESTNET
+#ifdef BITCOIN_TESTNET
     return true;
 #else 
     return false;
