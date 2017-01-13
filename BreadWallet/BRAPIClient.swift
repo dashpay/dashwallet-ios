@@ -398,8 +398,8 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
      // disable following redirect
     public func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
         var actualRequest = request
-        if let currentReq = task.currentRequest, var curHost = currentReq.url?.host, let curPort = currentReq.url?.port, let curScheme = currentReq.url?.scheme {
-            if curPort != 443 && curPort != 80 {
+        if let currentReq = task.currentRequest, var curHost = currentReq.url?.host, let curScheme = currentReq.url?.scheme {
+            if let curPort = currentReq.url?.port, curPort != 443 && curPort != 80 {
                 curHost = "\(curHost):\(curPort)"
             }
             if curHost == host && curScheme == proto {
