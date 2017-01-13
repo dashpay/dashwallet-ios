@@ -1042,10 +1042,10 @@
 			buildPhases = (
 				75D5F3BA191EC270004AB296 /* Sources */,
 				75D5F3BB191EC270004AB296 /* Frameworks */,
-				CEE253DB1E26B3B400A25B15 /* Icon Versioning */,
 				75D5F3BC191EC270004AB296 /* Resources */,
 				BAE12BF71B2DEE7F00895CC5 /* Embed App Extensions */,
 				BA913C021BD57E4E005A7C0E /* Embed Watch Content */,
+				CEE253DB1E26B3B400A25B15 /* Icon Versioning */,
 			);
 			buildRules = (
 			);
