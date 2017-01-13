@@ -181,7 +181,9 @@ enum BRHTTPServerError: Error {
     
     func suspend(_: Notification) {
         if isStarted {
-            shutdownServer()
+            if self.clients.count == 0 {
+                shutdownServer()
+            }
             print("[BRHTTPServer] suspended")
         } else {
             print("[BRHTTPServer] already suspended")
