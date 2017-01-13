@@ -120,7 +120,7 @@
     }
     // only available on iOS 8 and above
     if ([WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsEarlyAccess]) {
-#if DEBUG
+#if DEBUG || TESTFLIGHT
         _eaController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy-staging" mountPoint:@"/ea"];
         //        self.eaController.debugEndpoint = @"http://localhost:8080";
 #else
