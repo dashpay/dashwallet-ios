@@ -58,6 +58,15 @@ import Foundation
         return "plat-\(s)"
     }
     
+    func decorateResponse(version: UInt64, date: Date, response: BRHTTPResponse) -> BRHTTPResponse {
+        let headers = [
+            "ETag": ["\(version)"],
+            "Last-Modified": [date.RFC1123String() ?? ""]
+        ]
+        return BRHTTPResponse(request: response.request, statusCode: response.statusCode,
+                              statusReason: response.statusReason, headers: headers, body: response.body)
+    }
+    
     func hook(_ router: BRHTTPRouter) {
         // GET /_kv/(key)
         //
@@ -79,8 +88,8 @@ import Foundation
                 print("[BRKVStorePlugin] kv store is not yet set up on  client")
                 return BRHTTPResponse(request: request, code: 500)
             }
-            var ver: UInt64
-            var date: Date
+            var ver: UInt64 = 1
+            var date: Date = Date()
             var del: Bool
             var bytes: [UInt8]
             var json: Any
@@ -94,7 +103,12 @@ import Foundation
                 (jsonData as NSData).getBytes(&uncompressedBytes, length: jsonData.count)
             } catch let e {
                 if let resp = self.transformErrorToResponse(request, err: e) {
-                    return resp
+                    if resp.statusCode == 500 {
+                        // the data is most probably corrupted.. just delete it and return a 404
+                        let (newVer, newDate) = (try? kv.del(self.getKey(key[0]), localVer: ver)) ?? (0, Date())
+                        return self.decorateResponse(version: newVer, date: newDate, response: BRHTTPResponse(request: request, code: 404))
+                    }
+                    return self.decorateResponse(version: ver, date: date, response: resp)
                 }
                 return BRHTTPResponse(request: request, code: 500) // no idea what happened...
             }
@@ -151,13 +165,13 @@ import Foundation
             }
             var bodyBytes = [UInt8](repeating: 0, count: compressedBody.count)
             (compressedBody as NSData).getBytes(&bodyBytes, length: compressedBody.count)
-            var ver: UInt64
-            var date: Date
+            var ver: UInt64 = 0
+            var date: Date = Date()
             do {
                 (ver, date) = try kv.set(self.getKey(key[0]), value: bodyBytes, localVer: UInt64(Int(vs[0])!))
             } catch let e {
                 if let resp = self.transformErrorToResponse(request, err: e) {
-                    return resp
+                    return self.decorateResponse(version: ver, date: date, response: resp)
                 }
                 return BRHTTPResponse(request: request, code: 500) // no idea what happened...
             }
@@ -190,13 +204,13 @@ import Foundation
                 print("[BRKVStorePlugin] missing If-None-Match header")
                 return BRHTTPResponse(request: request, code: 400)
             }
-            var ver: UInt64
-            var date: Date
+            var ver: UInt64 = 0
+            var date: Date = Date()
             do {
                 (ver, date) = try kv.del(self.getKey(key[0]), localVer: UInt64(Int(vs[0])!))
             } catch let e {
                 if let resp = self.transformErrorToResponse(request, err: e) {
-                    return resp
+                    return self.decorateResponse(version: ver, date: date, response: resp)
                 }
                 return BRHTTPResponse(request: request, code: 500) // no idea what happened...
             }

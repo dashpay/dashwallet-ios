@@ -34,7 +34,7 @@ import WebKit
     var webView: WKWebView?
     var bundleName: String
     var server = BRHTTPServer()
-    var debugEndpoint: String?
+    var debugEndpoint: String? // = "http://localhost:8080"
     var mountPoint: String
     
     init(bundleName name: String, mountPoint mp: String = "/") {
