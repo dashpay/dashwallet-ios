@@ -88,7 +88,7 @@ import Foundation
                 print("[BRKVStorePlugin] kv store is not yet set up on  client")
                 return BRHTTPResponse(request: request, code: 500)
             }
-            var ver: UInt64 = 1
+            var ver: UInt64 = 0
             var date: Date = Date()
             var del: Bool
             var bytes: [UInt8]
