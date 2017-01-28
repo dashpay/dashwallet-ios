@@ -41,7 +41,7 @@ import WebKit
     // javascript exception (or other error) that prevents the content from loading
     var didLoad = false
     var didAppear = false
-    var didLoadTimeout = 1500
+    var didLoadTimeout = 2500
     
     init(bundleName name: String, mountPoint mp: String = "/") {
         wkProcessPool = WKProcessPool()
