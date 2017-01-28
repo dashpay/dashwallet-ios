@@ -36,6 +36,12 @@ import WebKit
     var server = BRHTTPServer()
     var debugEndpoint: String? // = "http://localhost:8080"
     var mountPoint: String
+    // didLoad should be set to true within didLoadTimeout otherwise a view will be shown which
+    // indicates some error. this is to prevent the white-screen-of-death where there is some
+    // javascript exception (or other error) that prevents the content from loading
+    var didLoad = false
+    var didAppear = false
+    var didLoadTimeout = 1500
     
     init(bundleName name: String, mountPoint mp: String = "/") {
         wkProcessPool = WKProcessPool()
@@ -53,6 +59,8 @@ import WebKit
     }
     
     override open func loadView() {
+        didLoad = false
+        
         let config = WKWebViewConfiguration()
         config.processPool = wkProcessPool
         config.allowsInlineMediaPlayback = false
@@ -72,16 +80,50 @@ import WebKit
         webView?.navigationDelegate = self
         webView?.backgroundColor = UIColor(red:0.98, green:0.98, blue:0.98, alpha:1.0)
         _ = webView?.load(request)
-        webView?.autoresizingMask = [UIViewAutoresizing.flexibleHeight, UIViewAutoresizing.flexibleWidth]
+        webView?.autoresizingMask = [.flexibleHeight, .flexibleWidth]
         view.addSubview(webView!)
     }
     
     override open func viewWillAppear(_ animated: Bool) {
         edgesForExtendedLayout = .all
+        self.beginDidLoadCountdown()
+    }
+    
+    override open func viewDidAppear(_ animated: Bool) {
+        didAppear = true
+    }
+    
+    override open func viewDidDisappear(_ animated: Bool) {
+        didAppear = false
     }
     
     fileprivate func closeNow() {
         dismiss(animated: true, completion: nil)
+    }
+    
+    // this should be called when the webview is expected to load content. if the content has not signaled
+    // that is has loaded by didLoadTimeout then an alert will be shown allowing the user to back out 
+    // of the faulty webview
+    fileprivate func beginDidLoadCountdown() {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .milliseconds(didLoadTimeout)) {
+            if self.didAppear && !self.didLoad {
+                let alert = UIAlertController.init(
+                    title: NSLocalizedString("Error", comment: ""),
+                    message: NSLocalizedString("There was an error loading the content. Please try again", comment: ""),
+                    preferredStyle: .alert
+                )
+                let action = UIAlertAction(title: NSLocalizedString("Dismiss", comment: ""), style: .default) { _ in
+                    self.closeNow()
+                }
+                alert.addAction(action)
+                self.present(alert, animated: true, completion: nil)
+            }
+        }
+    }
+    
+    // signal to the presenter that the webview content successfully loaded
+    fileprivate func webviewDidLoad() {
+        didLoad = true
     }
     
     open func startServer() {
@@ -135,9 +177,17 @@ import WebKit
         router.plugin(BRKVStorePlugin(client: BRAPIClient.sharedClient))
         
         // GET /_close closes the browser modal
-        router.get("/_close") { (request, match) -> BRHTTPResponse in
+        router.get("/_close") { (request, _) -> BRHTTPResponse in
             DispatchQueue.main.async {
                 self.closeNow()
+            }
+            return BRHTTPResponse(request: request, code: 204)
+        }
+        
+        // GET /_didload signals to the presenter that the content successfully loaded
+        router.get("/_didload") { (request, _) -> BRHTTPResponse in
+            DispatchQueue.main.async {
+                self.webviewDidLoad()
             }
             return BRHTTPResponse(request: request, code: 204)
         }

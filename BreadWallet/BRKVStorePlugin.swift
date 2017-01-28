@@ -25,7 +25,7 @@
 
 import Foundation
 
-/// Provides access to the KV Store to the HTML5 platform
+/// Provides KV Store access to the HTML5 platform
 @objc class BRKVStorePlugin: NSObject, BRHTTPRouterPlugin {
     let client: BRAPIClient
     
