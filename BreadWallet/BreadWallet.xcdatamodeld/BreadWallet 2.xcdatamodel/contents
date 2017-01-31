@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="11542" systemVersion="16B2555" minimumToolsVersion="Xcode 7.3" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="11759" systemVersion="16D32" minimumToolsVersion="Xcode 7.3" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
     <entity name="BRAddressEntity" representedClassName="BRAddressEntity" syncable="YES">
         <attribute name="address" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="index" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
@@ -54,6 +54,19 @@
         <attribute name="value" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="transaction" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="BRTransactionEntity" inverseName="outputs" inverseEntity="BRTransactionEntity" syncable="YES"/>
     </entity>
+    <entity name="DSShapeshiftEntity" syncable="YES">
+        <attribute name="errorMessage" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="expiresAt" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="inputAddress" attributeType="String" syncable="YES"/>
+        <attribute name="inputCoinAmount" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="inputCoinType" attributeType="String" syncable="YES"/>
+        <attribute name="isFixedAmount" attributeType="Boolean" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="outputCoinAmount" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="outputCoinType" attributeType="String" syncable="YES"/>
+        <attribute name="outputTransactionId" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="shapeshiftStatus" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="withdrawalAddress" attributeType="String" syncable="YES"/>
+    </entity>
     <elements>
         <element name="BRAddressEntity" positionX="-137" positionY="36" width="128" height="90"/>
         <element name="BRMerkleBlockEntity" positionX="-299" positionY="36" width="128" height="208"/>
@@ -62,5 +75,6 @@
         <element name="BRTxInputEntity" positionX="189" positionY="36" width="128" height="118"/>
         <element name="BRTxMetadataEntity" positionX="-90" positionY="162" width="128" height="90"/>
         <element name="BRTxOutputEntity" positionX="189" positionY="174" width="128" height="150"/>
+        <element name="DSShapeshiftEntity" positionX="-90" positionY="162" width="128" height="210"/>
     </elements>
 </model>

@@ -31,5 +31,6 @@
 
 - (UIImage *)resize:(CGSize)size withInterpolationQuality:(CGInterpolationQuality)quality;
 - (UIImage *)blurWithRadius:(CGFloat)radius;
+- (UIImage *)imageWithTintColor:(UIColor *)tintColor;
 
 @end

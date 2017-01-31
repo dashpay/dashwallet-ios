@@ -98,7 +98,7 @@ static const UniChar base58chars[] = {
 // miss a receive transaction, only that transaction's funds are missed, however if we accept a receive transaction that
 // we are unable to correctly sign later, then the entire wallet balance after that point would become stuck with the
 // current coin selection code
-+ (NSString *)addressWithScriptPubKey:(NSData *)script
++ (NSString *)bitcoinAddressWithScriptPubKey:(NSData *)script
 {
     if (script == (id)[NSNull null]) return nil;
 
@@ -136,7 +136,7 @@ static const UniChar base58chars[] = {
     return [self base58checkWithData:d];
 }
 
-+ (NSString *)addressWithScriptSig:(NSData *)script
++ (NSString *)bitcoinAddressWithScriptSig:(NSData *)script
 {
     if (script == (id)[NSNull null]) return nil;
 
