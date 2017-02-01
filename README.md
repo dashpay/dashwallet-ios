@@ -1,68 +1,34 @@
-![ƀ](/images/icon.png) breadwallet
-----------------------------------
+![header](/images/dashheader.jpg)
 
-[![download](/images/Download_on_the_App_Store_Badge_US-UK_135x40.png)]
-(https://itunes.apple.com/app/breadwallet/id885251393)
+Dashwallet (breadwallet fork) is a real standalone Dash client. There is no server to get hacked or go down, so you can always access your money.
+Using [SPV](https://en.bitcoin.it/wiki/Thin_Client_Security#Header-Only_Clients) mode, Dashwallet connects directly to the Dash network with the fast performance you need on a mobile device.
 
-#####bitcoin done right
+Dashwallet is designed to protect you from malware, browser security holes, even physical theft. With AES hardware encryption, app sandboxing,
+keychain and code signatures, Dashwallet represents a significant security advantage over web and desktop wallets, and other mobile platforms.
+Simplicity is Dashwallet’s core design principle. A simple backup phrase is all you need to restore your wallet on another device if yours is ever lost or broken.
+Because Dashwallet is [deterministic](https://dashpay.atlassian.net/wiki/display/DOC/Whitepaper), your balance and transaction history can be recovered from just your backup phrase.
 
-the simplest and most secure bitcoin wallet on any platform 
-
-![screenshot1](/images/screenshot1.jpg)
-
-#####the first standalone iOS bitcoin wallet:
-
-Unlike other iOS bitcoin wallets, breadwallet is a real standalone bitcoin
-client. There is no server to get hacked or go down, so you can always access
-your money. Using
-[SPV](https://en.bitcoin.it/wiki/Thin_Client_Security#Header-Only_Clients)
-mode, breadwallet connects directly to the bitcoin network with the fast
-performance you need on a mobile device.
-
-#####the next step in wallet security:
-
-breadwallet is designed to protect you from malware, browser security holes,
-*even physical theft*. With AES hardware encryption, app sandboxing, keychain
-and code signatures, breadwallet represents a significant security advance over
-web and desktop wallets, and other mobile platforms.
-
-#####beautiful simplicity:
-
-Simplicity is breadwallet's core design principle. A simple backup phrase is
-all you need to restore your wallet on another device if yours is ever lost or
-broken.  Because breadwallet is  
-[deterministic](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki),
-your balance and transaction history can be recovered from just your backup
-phrase.
-
-![screenshot2](/images/screenshot2.jpg)
-
-#####features:
-
-- ["simplified payment verification"](https://github.com/bitcoin/bips/blob/master/bip-0037.mediawiki) for fast mobile performance
+#####Features:
+- [“simplified payment verification”](https://dashpay.atlassian.net/wiki/display/DOC/Official+Documentation) for fast mobile performance
 - no server to get hacked or go down
 - single backup phrase that works forever
 - private keys never leave your device
-- import [password protected](https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki) paper wallets
-- ["payment protocol"](https://github.com/bitcoin/bips/blob/master/bip-0070.mediawiki) payee identity certification
+- import [password protected](https://dashpay.atlassian.net/wiki/display/DOC/Official+Documentation) paper wallets
+- [“payment protocol”](https://dashpay.atlassian.net/wiki/display/DOC/Official+Documentation) payee identity certification
+- Shapeshift integration (Pay any BTC Address by just scanning the BTC QR Code)
 
 #####URL scheme:
-
-breadwallet supports the [x-callback-url](http://x-callback-url.com)
-specification with the following URLs:
-
+Dashwallet supports the [x-callback-url](http://x-callback-url.com/) specification with the following URLs:
 ```
-bread://x-callback-url/address?x-success=myscheme://myaction
+dash://x-callback-url/address?x-success=myscheme://myaction
+```
+this will callback with the current wallet receive address: myscheme://myaction?address=1XXXX
+the following will ask the user to authorize copying a list of their wallet addresses to the clipboard before calling back:
+```
+dash://x-callback-url/addresslist?x-success=myscheme://myaction
 ```
 
-this will callback with the current wallet receive address: `myscheme://myaction?address=1XXXX`
-
-the following will ask the user to authorize copying a list of their wallet
-addresses to the clipbaord before calling back:
-
-```
-bread://x-callback-url/addresslist?x-success=myscheme://myaction
-```
+![footer](/images/dashfooter.jpg)
 
 #####WARNING:
 
@@ -73,5 +39,6 @@ and rob you by self-signing as described [here](http://www.saurik.com/id/8)
 and including `<key>application-identifier</key><string>*</string>` in its
 .entitlements file.
 
-breadwallet is open source and available under the terms of the MIT license.
-Source code is available at https://github.com/voisine/breadwallet
+#####INSTALLATION:
+
+[Download Install Guide](https://dashpay.atlassian.net/wiki/display/DOC/Download+-+Install+-+Guide)
