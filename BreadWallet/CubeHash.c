@@ -34,7 +34,6 @@
 
 #include "sph_types.h"
 
-@implementation NSData(CubeHash)
 
 typedef struct {
 #ifndef DOXYGEN_IGNORE
@@ -51,7 +50,7 @@ typedef struct {
 #define SPH_CUBEHASH_NOCOPY   0
 #endif
 
-static const sph_u32 IV512[] = {
+static const sph_u32 cubeHashIV512[] = {
     SPH_C32(0x2AEA2A61), SPH_C32(0x50F494D4), SPH_C32(0x2D538B8B),
     SPH_C32(0x4167D83E), SPH_C32(0x3FEE2313), SPH_C32(0xC701CF8C),
     SPH_C32(0xCC39968E), SPH_C32(0x50AC5695), SPH_C32(0x4D42C787),
@@ -498,7 +497,7 @@ cubehash_close(sph_cubehash_context *sc, unsigned ub, unsigned n,
 void
 sph_cubehash512_init(void *cc)
 {
-    cubehash_init(cc, IV512);
+    cubehash_init(cc, cubeHashIV512);
 }
 
 /* see sph_cubehash.h */
@@ -507,32 +506,3 @@ sph_cubehash512(void *cc, const void *data, size_t len)
 {
     cubehash_core(cc, data, len);
 }
-
-/* see sph_cubehash.h */
-void
-sph_cubehash512_close(void *cc, void *dst)
-{
-    sph_cubehash512_addbits_and_close(cc, 0, 0, dst);
-}
-
-/* see sph_cubehash.h */
-void
-sph_cubehash512_addbits_and_close(void *cc, unsigned ub, unsigned n, void *dst)
-{
-    cubehash_close(cc, ub, n, dst, 16);
-    sph_cubehash512_init(cc);
-}
-
-
--(NSData*)cubehash512 {
-    sph_cubehash_context ctx_cubehash;
-    sph_cubehash512_init(&ctx_cubehash);
-    sph_cubehash512(&ctx_cubehash, self.bytes, self.length);
-    void * dest = malloc(64*sizeof(Byte));
-    sph_cubehash512_close(&ctx_cubehash, dest);
-    return [NSData dataWithBytes:dest length:64];
-}
-
-
-
-@end

@@ -68,7 +68,7 @@ typedef struct {
 #define AES_BIG_ENDIAN   0
 #include "aes_helper.c"
 
-static const sph_u32 IV512[] = {
+static const sph_u32 SHAVITE_IV512[] = {
     C32(0x72FCCDD8), C32(0x79CA4727), C32(0x128A077B), C32(0x40D55AEC),
     C32(0xD1901A06), C32(0x430AE307), C32(0xB29F5CD1), C32(0xDF07FBFC),
     C32(0x8E45D73D), C32(0x681AB538), C32(0xBDE86578), C32(0xDD577E47),
@@ -108,7 +108,7 @@ AES_ROUND_NOKEY_LE(t0, t1, t2, t3, x0, x1, x2, x3); \
 	C32(0xA35C016B), C32(0xDD903BA7), C32(0x8C1B09B4), C32(0x2C3E9F25)
  };
  
- static const sph_u32 IV512[] = {
+ static const sph_u32 SHAVITE_IV512[] = {
 	C32(0xD5652B63), C32(0x25F1E6EA), C32(0xB18F48FA), C32(0xA1EE3A47),
 	C32(0xC8B67B07), C32(0xBDCE48D3), C32(0xE3937B78), C32(0x05DB5186),
 	C32(0x613BE326), C32(0xA11FA303), C32(0x90C833D4), C32(0x79CEE316),
@@ -983,7 +983,7 @@ shavite_big_close(sph_shavite_big_context *sc,
 void
 sph_shavite512_init(void *cc)
 {
-    shavite_big_init(cc, IV512);
+    shavite_big_init(cc, SHAVITE_IV512);
 }
 
 /* see sph_shavite.h */
@@ -998,7 +998,7 @@ void
 sph_shavite512_close(void *cc, void *dst)
 {
     shavite_big_close(cc, 0, 0, dst, 16);
-    shavite_big_init(cc, IV512);
+    shavite_big_init(cc, SHAVITE_IV512);
 }
 
 /* see sph_shavite.h */
@@ -1006,6 +1006,6 @@ void
 sph_shavite512_addbits_and_close(void *cc, unsigned ub, unsigned n, void *dst)
 {
     shavite_big_close(cc, ub, n, dst, 16);
-    shavite_big_init(cc, IV512);
+    shavite_big_init(cc, SHAVITE_IV512);
 }
 

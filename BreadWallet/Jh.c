@@ -262,12 +262,12 @@ x ## h = x ## l; \
 x ## l = t; \
 } while (0)
 
-#define DECL_STATE \
+#define JH_DECL_STATE \
 sph_u64 h0h, h1h, h2h, h3h, h4h, h5h, h6h, h7h; \
 sph_u64 h0l, h1l, h2l, h3l, h4l, h5l, h6l, h7l; \
 sph_u64 tmp;
 
-#define READ_STATE(state)   do { \
+#define JH_READ_STATE(state)   do { \
 h0h = (state)->H.wide[ 0]; \
 h0l = (state)->H.wide[ 1]; \
 h1h = (state)->H.wide[ 2]; \
@@ -286,7 +286,7 @@ h7h = (state)->H.wide[14]; \
 h7l = (state)->H.wide[15]; \
 } while (0)
 
-#define WRITE_STATE(state)   do { \
+#define JH_WRITE_STATE(state)   do { \
 (state)->H.wide[ 0] = h0h; \
 (state)->H.wide[ 1] = h0l; \
 (state)->H.wide[ 2] = h1h; \
@@ -554,14 +554,14 @@ x ## 2 = x ## 0; \
 x ## 0 = t; \
 } while (0)
 
-#define DECL_STATE \
+#define JH_DECL_STATE \
 sph_u32 h03, h02, h01, h00, h13, h12, h11, h10; \
 sph_u32 h23, h22, h21, h20, h33, h32, h31, h30; \
 sph_u32 h43, h42, h41, h40, h53, h52, h51, h50; \
 sph_u32 h63, h62, h61, h60, h73, h72, h71, h70; \
 sph_u32 tmp;
 
-#define READ_STATE(state)   do { \
+#define JH_READ_STATE(state)   do { \
 h03 = (state)->H.narrow[ 0]; \
 h02 = (state)->H.narrow[ 1]; \
 h01 = (state)->H.narrow[ 2]; \
@@ -596,7 +596,7 @@ h71 = (state)->H.narrow[30]; \
 h70 = (state)->H.narrow[31]; \
 } while (0)
 
-#define WRITE_STATE(state)   do { \
+#define JH_WRITE_STATE(state)   do { \
 (state)->H.narrow[ 0] = h03; \
 (state)->H.narrow[ 1] = h02; \
 (state)->H.narrow[ 2] = h01; \
@@ -922,7 +922,7 @@ jh_core(sph_jh_context *sc, const void *data, size_t len)
 {
     unsigned char *buf;
     size_t ptr;
-    DECL_STATE
+    JH_DECL_STATE
     
     buf = sc->buf;
     ptr = sc->ptr;
@@ -933,7 +933,7 @@ jh_core(sph_jh_context *sc, const void *data, size_t len)
         return;
     }
     
-    READ_STATE(sc);
+    JH_READ_STATE(sc);
     while (len > 0) {
         size_t clen;
         
@@ -958,7 +958,7 @@ jh_core(sph_jh_context *sc, const void *data, size_t len)
             ptr = 0;
         }
     }
-    WRITE_STATE(sc);
+    JH_WRITE_STATE(sc);
     sc->ptr = ptr;
 }
 

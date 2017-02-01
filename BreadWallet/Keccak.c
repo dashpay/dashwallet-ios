@@ -185,9 +185,9 @@ static const sph_u64 RC[] = {
 #define a34   (kc->u.wide[23])
 #define a44   (kc->u.wide[24])
 
-#define DECL_STATE
-#define READ_STATE(sc)
-#define WRITE_STATE(sc)
+#define KECCAK_DECL_STATE
+#define KECCAK_READ_STATE(sc)
+#define KECCAK_WRITE_STATE(sc)
 
 #define INPUT_BUF(size)   do { \
 size_t j; \
@@ -203,14 +203,14 @@ kc->u.wide[j >> 3] ^= sph_dec64le_aligned(buf + j); \
 
 #else
 
-#define DECL_STATE \
+#define KECCAK_DECL_STATE \
 sph_u64 a00, a01, a02, a03, a04; \
 sph_u64 a10, a11, a12, a13, a14; \
 sph_u64 a20, a21, a22, a23, a24; \
 sph_u64 a30, a31, a32, a33, a34; \
 sph_u64 a40, a41, a42, a43, a44;
 
-#define READ_STATE(state)   do { \
+#define KECCAK_READ_STATE(state)   do { \
 a00 = (state)->u.wide[ 0]; \
 a10 = (state)->u.wide[ 1]; \
 a20 = (state)->u.wide[ 2]; \
@@ -238,7 +238,7 @@ a34 = (state)->u.wide[23]; \
 a44 = (state)->u.wide[24]; \
 } while (0)
 
-#define WRITE_STATE(state)   do { \
+#define KECCAK_WRITE_STATE(state)   do { \
 (state)->u.wide[ 0] = a00; \
 (state)->u.wide[ 1] = a10; \
 (state)->u.wide[ 2] = a20; \
@@ -525,9 +525,9 @@ t = (h ^ (h >> 1)) & SPH_C32(0x22222222); h ^= t ^ (t << 1); \
 #define a44l   (kc->u.narrow[2 * 24 + 0])
 #define a44h   (kc->u.narrow[2 * 24 + 1])
 
-#define DECL_STATE
-#define READ_STATE(state)
-#define WRITE_STATE(state)
+#define KECCAK_DECL_STATE
+#define KECCAK_READ_STATE(state)
+#define KECCAK_WRITE_STATE(state)
 
 #define INPUT_BUF(size)   do { \
 size_t j; \
@@ -548,14 +548,14 @@ kc->u.narrow[(j >> 2) + 1] ^= th; \
 
 #else
 
-#define DECL_STATE \
+#define KECCAK_DECL_STATE \
 sph_u32 a00l, a00h, a01l, a01h, a02l, a02h, a03l, a03h, a04l, a04h; \
 sph_u32 a10l, a10h, a11l, a11h, a12l, a12h, a13l, a13h, a14l, a14h; \
 sph_u32 a20l, a20h, a21l, a21h, a22l, a22h, a23l, a23h, a24l, a24h; \
 sph_u32 a30l, a30h, a31l, a31h, a32l, a32h, a33l, a33h, a34l, a34h; \
 sph_u32 a40l, a40h, a41l, a41h, a42l, a42h, a43l, a43h, a44l, a44h;
 
-#define READ_STATE(state)   do { \
+#define KECCAK_READ_STATE(state)   do { \
 a00l = (state)->u.narrow[2 *  0 + 0]; \
 a00h = (state)->u.narrow[2 *  0 + 1]; \
 a10l = (state)->u.narrow[2 *  1 + 0]; \
@@ -608,7 +608,7 @@ a44l = (state)->u.narrow[2 * 24 + 0]; \
 a44h = (state)->u.narrow[2 * 24 + 1]; \
 } while (0)
 
-#define WRITE_STATE(state)   do { \
+#define KECCAK_WRITE_STATE(state)   do { \
 (state)->u.narrow[2 *  0 + 0] = a00l; \
 (state)->u.narrow[2 *  0 + 1] = a00h; \
 (state)->u.narrow[2 *  1 + 0] = a10l; \
@@ -1579,7 +1579,7 @@ keccak_core(sph_keccak_context *kc, const void *data, size_t len, size_t lim)
 {
     unsigned char *buf;
     size_t ptr;
-    DECL_STATE
+    KECCAK_DECL_STATE
     
     buf = kc->buf;
     ptr = kc->ptr;
@@ -1590,7 +1590,7 @@ keccak_core(sph_keccak_context *kc, const void *data, size_t len, size_t lim)
         return;
     }
     
-    READ_STATE(kc);
+    KECCAK_READ_STATE(kc);
     while (len > 0) {
         size_t clen;
         
@@ -1607,7 +1607,7 @@ keccak_core(sph_keccak_context *kc, const void *data, size_t len, size_t lim)
             ptr = 0;
         }
     }
-    WRITE_STATE(kc);
+    KECCAK_WRITE_STATE(kc);
     kc->ptr = ptr;
 }
 

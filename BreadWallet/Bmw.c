@@ -45,7 +45,7 @@ typedef struct {
 #endif
 } sph_bmw_big_context;
 
-static const sph_u64 IV512[] = {
+static const sph_u64 bmwIV512[] = {
     SPH_C64(0x8081828384858687), SPH_C64(0x88898A8B8C8D8E8F),
     SPH_C64(0x9091929394959697), SPH_C64(0x98999A9B9C9D9E9F),
     SPH_C64(0xA0A1A2A3A4A5A6A7), SPH_C64(0xA8A9AAABACADAEAF),
@@ -515,7 +515,7 @@ bmw64_close(sph_bmw_big_context *sc, unsigned ub, unsigned n,
 void
 sph_bmw512_init(void *cc)
 {
-    bmw64_init(cc, IV512);
+    bmw64_init(cc, bmwIV512);
 }
 
 /* see sph_bmw.h */
@@ -523,20 +523,5 @@ void
 sph_bmw512(void *cc, const void *data, size_t len)
 {
     bmw64(cc, data, len);
-}
-
-/* see sph_bmw.h */
-void
-sph_bmw512_close(void *cc, void *dst)
-{
-    sph_bmw512_addbits_and_close(cc, 0, 0, dst);
-}
-
-/* see sph_bmw.h */
-void
-sph_bmw512_addbits_and_close(void *cc, unsigned ub, unsigned n, void *dst)
-{
-    bmw64_close(cc, ub, n, dst, 8);
-    sph_bmw512_init(cc);
 }
 

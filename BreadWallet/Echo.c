@@ -55,10 +55,10 @@ typedef struct {
 #define AES_BIG_ENDIAN   0
 #include "aes_helper.c"
 
-#define DECL_STATE_SMALL   \
+#define ECHO_DECL_STATE_SMALL   \
 sph_u64 W[16][2];
 
-#define DECL_STATE_BIG   \
+#define ECHO_DECL_STATE_BIG   \
 sph_u64 W[16][2];
 
 #define INPUT_BLOCK_SMALL(sc)   do { \
@@ -196,7 +196,7 @@ BIG_SHIFT_ROWS; \
 BIG_MIX_COLUMNS; \
 } while (0)
 
-#define FINAL_BIG   do { \
+#define ECHO_FINAL_BIG   do { \
 unsigned u; \
 sph_u64 *VV = &sc->u.Vb[0][0]; \
 sph_u64 *WW = &W[0][0]; \
@@ -206,7 +206,7 @@ VV[u] ^= sph_dec64le_aligned(sc->buf + (u * 8)) \
 } \
 } while (0)
 
-#define COMPRESS_BIG(sc)   do { \
+#define ECHO_COMPRESS_BIG(sc)   do { \
 sph_u32 K0 = sc->C0; \
 sph_u32 K1 = sc->C1; \
 sph_u32 K2 = sc->C2; \
@@ -216,7 +216,7 @@ INPUT_BLOCK_BIG(sc); \
 for (u = 0; u < 10; u ++) { \
 BIG_ROUND; \
 } \
-FINAL_BIG; \
+ECHO_FINAL_BIG; \
 } while (0)
 
 #define INCR_COUNTER(sc, val)   do { \
@@ -273,9 +273,9 @@ echo_big_init(sph_echo_big_context *sc, unsigned out_len)
 static void
 echo_big_compress(sph_echo_big_context *sc)
 {
-    DECL_STATE_BIG
+    ECHO_DECL_STATE_BIG
     
-    COMPRESS_BIG(sc);
+    ECHO_COMPRESS_BIG(sc);
 }
 
 static void

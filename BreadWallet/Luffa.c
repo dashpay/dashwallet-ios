@@ -406,7 +406,7 @@ V27 = SPH_ROTL32(V27, 2); \
 
 #if SPH_LUFFA_PARALLEL
 
-#define P3   do { \
+#define LUFFA_P3   do { \
 int r; \
 sph_u64 W0, W1, W2, W3, W4, W5, W6, W7; \
 TWEAK3; \
@@ -458,7 +458,7 @@ V24 ^= RC24[r]; \
 
 #else
 
-#define P3   do { \
+#define LUFFA_P3   do { \
 int r; \
 TWEAK3; \
 for (r = 0; r < 8; r ++) { \
@@ -625,7 +625,7 @@ V37 = SPH_ROTL32(V37, 3); \
 
 #if SPH_LUFFA_PARALLEL
 
-#define P4   do { \
+#define LUFFA_P4   do { \
 int r; \
 sph_u64 W0, W1, W2, W3, W4, W5, W6, W7; \
 TWEAK4; \
@@ -701,7 +701,7 @@ V37 = SPH_T32((sph_u32)(W7 >> 32)); \
 
 #else
 
-#define P4   do { \
+#define LUFFA_P4   do { \
 int r; \
 TWEAK4; \
 for (r = 0; r < 8; r ++) { \
@@ -915,7 +915,7 @@ V47 = SPH_ROTL32(V47, 4); \
 
 #if SPH_LUFFA_PARALLEL
 
-#define P5   do { \
+#define LUFFA_P5   do { \
 int r; \
 sph_u64 W0, W1, W2, W3, W4, W5, W6, W7; \
 TWEAK5; \
@@ -1001,7 +1001,7 @@ V44 ^= RC44[r]; \
 
 #else
 
-#define P5   do { \
+#define LUFFA_P5   do { \
 int r; \
 TWEAK5; \
 for (r = 0; r < 8; r ++) { \
@@ -1087,7 +1087,7 @@ luffa5(sph_luffa512_context *sc, const void *data, size_t len)
         len -= clen;
         if (ptr == sizeof sc->buf) {
             MI5;
-            P5;
+            LUFFA_P5;
             ptr = 0;
         }
     }
@@ -1113,7 +1113,7 @@ luffa5_close(sph_luffa512_context *sc, unsigned ub, unsigned n, void *dst)
     READ_STATE5(sc);
     for (i = 0; i < 3; i ++) {
         MI5;
-        P5;
+        LUFFA_P5;
         switch (i) {
             case 0:
                 memset(buf, 0, sizeof sc->buf);

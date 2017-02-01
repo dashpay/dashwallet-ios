@@ -47,7 +47,7 @@ typedef struct {
 #endif
 } sph_blake_big_context;
 
-static const sph_u64 IV512[8] = {
+static const sph_u64 blakeIV512[8] = {
     SPH_C64(0x6A09E667F3BCC908), SPH_C64(0xBB67AE8584CAA73B),
     SPH_C64(0x3C6EF372FE94F82B), SPH_C64(0xA54FF53A5F1D36F1),
     SPH_C64(0x510E527FADE682D1), SPH_C64(0x9B05688C2B3E6C1F),
@@ -271,11 +271,11 @@ GB(Mx(r, C), Mx(r, D), CBx(r, C), CBx(r, D), V2, V7, V8, VD); \
 GB(Mx(r, E), Mx(r, F), CBx(r, E), CBx(r, F), V3, V4, V9, VE); \
 } while (0)
 
-#define DECL_STATE64 \
+#define BLAKE_DECL_STATE64 \
 sph_u64 H0, H1, H2, H3, H4, H5, H6, H7; \
 sph_u64 S0, S1, S2, S3, T0, T1;
 
-#define READ_STATE64(state)   do { \
+#define BLAKE_READ_STATE64(state)   do { \
 H0 = (state)->H[0]; \
 H1 = (state)->H[1]; \
 H2 = (state)->H[2]; \
@@ -292,7 +292,7 @@ T0 = (state)->T0; \
 T1 = (state)->T1; \
 } while (0)
 
-#define WRITE_STATE64(state)   do { \
+#define BLAKE_WRITE_STATE64(state)   do { \
 (state)->H[0] = H0; \
 (state)->H[1] = H1; \
 (state)->H[2] = H2; \
@@ -390,7 +390,7 @@ blake64(sph_blake_big_context *sc, const void *data, size_t len)
 {
     unsigned char *buf;
     size_t ptr;
-    DECL_STATE64
+    BLAKE_DECL_STATE64
     
     buf = sc->buf;
     ptr = sc->ptr;
@@ -401,7 +401,7 @@ blake64(sph_blake_big_context *sc, const void *data, size_t len)
         return;
     }
     
-    READ_STATE64(sc);
+    BLAKE_READ_STATE64(sc);
     while (len > 0) {
         size_t clen;
         
@@ -419,7 +419,7 @@ blake64(sph_blake_big_context *sc, const void *data, size_t len)
             ptr = 0;
         }
     }
-    WRITE_STATE64(sc);
+    BLAKE_WRITE_STATE64(sc);
     sc->ptr = ptr;
 }
 
@@ -481,7 +481,7 @@ blake64_close(sph_blake_big_context *sc,
 void
 sph_blake512_init(void *cc)
 {
-    blake64_init(cc, IV512, salt_zero_big);
+    blake64_init(cc, blakeIV512, salt_zero_big);
 }
 
 /* see sph_blake.h */

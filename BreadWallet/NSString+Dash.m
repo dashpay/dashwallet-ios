@@ -112,7 +112,7 @@
     return [self base58checkWithData:d];
 }
 
-- (BOOL)isValidDigitalCashAddress
+- (BOOL)isValidDashAddress
 {
     NSData *d = self.base58checkToData;
     
@@ -127,7 +127,7 @@
     return (version == DASH_PUBKEY_ADDRESS || version == DASH_SCRIPT_ADDRESS) ? YES : NO;
 }
 
-- (BOOL)isValidDigitalCashPrivateKey
+- (BOOL)isValidDashPrivateKey
 {
     NSData *d = self.base58checkToData;
     
@@ -153,7 +153,7 @@
 }
 
 // BIP38 encrypted keys: https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki
-- (BOOL)isValidDigitalCashBIP38Key
+- (BOOL)isValidDashBIP38Key
 {
     NSData *d = self.base58checkToData;
 
