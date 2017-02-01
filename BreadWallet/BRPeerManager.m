@@ -1335,44 +1335,28 @@ static const char *dns_seeds[] = {
     block.height = prev.height + 1;
     txTime = block.timestamp/2 + prev.timestamp/2;
 
-    if ((block.height % BLOCK_DIFFICULTY_INTERVAL) == 0) { // hit a difficulty transition, find previous transition time
+    if ((block.height % 1000) == 0) { //free up some memory from time to time
+        
         BRMerkleBlock *b = block;
-
-        for (uint32_t i = 0; b && i < BLOCK_DIFFICULTY_INTERVAL; i++) {
+        
+        for (uint32_t i = 0; b && i < (DGW_PAST_BLOCKS_MAX + 50); i++) {
             b = self.blocks[uint256_obj(b.prevBlock)];
         }
-
-        [[BRMerkleBlockEntity context] performBlock:^{ // save transition blocks to core data immediately
-            @autoreleasepool {
-                BRMerkleBlockEntity *e = [BRMerkleBlockEntity objectsMatching:@"blockHash == %@",
-                                          [NSData dataWithBytes:b.blockHash.u8 length:sizeof(UInt256)]].lastObject;
-        
-                if (! e) e = [BRMerkleBlockEntity managedObject];
-                [e setAttributesFromBlock:b];
-            }
-            
-            [BRMerkleBlockEntity saveContext]; // persist core data to disk
-        }];
-
-        transitionTime = b.timestamp;
         
         while (b) { // free up some memory
             b = self.blocks[uint256_obj(b.prevBlock)];
-
-            if (b && (b.height % BLOCK_DIFFICULTY_INTERVAL) != 0) {
-                [self.blocks removeObjectForKey:uint256_obj(b.blockHash)];
-            }
+            if (b) [self.blocks removeObjectForKey:uint256_obj(b.prevBlock)];
         }
     }
 
-    // verify block difficulty
-    if (! [block verifyDifficultyFromPreviousBlock:prev andTransitionTime:transitionTime]) {
-        NSLog(@"%@:%d relayed block with invalid difficulty target %x, blockHash: %@", peer.host, peer.port,
-              block.target, blockHash);
+    // verify block difficulty if block is past last checkpoint
+    if ((block.height > (checkpoint_array[CHECKPOINT_COUNT - 1].height + DGW_PAST_BLOCKS_MAX)) &&
+        ![block verifyDifficultyWithPreviousBlocks:self.blocks]) {
+        NSLog(@"%@:%d relayed block with invalid difficulty height %d target %x, blockHash: %@", peer.host, peer.port,
+              block.height,block.target, blockHash);
         [self peerMisbehavin:peer];
         return;
     }
-
     [self.checkpoints[@(block.height)] getValue:&checkpoint];
     
     // verify block chain checkpoints

@@ -25,6 +25,8 @@
 
 #import "BRTransaction.h"
 #import "BRKey.h"
+#import "NSString+Dash.h"
+#import "NSData+Dash.h"
 #import "NSString+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSData+Bitcoin.h"
@@ -111,6 +113,25 @@
         _txHash = self.data.SHA256_2;
     }
     
+    NSString * outboundShapeshiftAddress = [self shapeshiftOutboundAddress];
+    if (outboundShapeshiftAddress) {
+        self.associatedShapeshift = [DSShapeshiftEntity shapeshiftHavingWithdrawalAddress:outboundShapeshiftAddress];
+        if (self.associatedShapeshift && [self.associatedShapeshift.shapeshiftStatus integerValue] == eShapeshiftAddressStatus_Unused) {
+            self.associatedShapeshift.shapeshiftStatus = @(eShapeshiftAddressStatus_NoDeposits);
+        }
+        if (!self.associatedShapeshift && [self.outputAddresses count]) {
+            NSString * mainOutputAddress = nil;
+            BRWalletManager *m = [BRWalletManager sharedInstance];
+            for (NSString * outputAddress in self.outputAddresses) {
+                if ([m.wallet containsAddress:outputAddress]) continue;
+                if ([outputAddress isEqual:[NSNull null]]) continue;
+                mainOutputAddress = outputAddress;
+            }
+            //NSAssert(mainOutputAddress, @"there should always be an output address");
+            self.associatedShapeshift = [DCShapeshiftEntity registerShapeshiftWithInputAddress:mainOutputAddress andWithdrawalAddress:outboundShapeshiftAddress withStatus:eShapeshiftAddressStatus_NoDeposits];
+        }
+    }
+
     return self;
 }
 
@@ -226,6 +247,11 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 - (uint64_t)standardFee
 {
     return ((self.size + 999)/1000)*TX_FEE_PER_KB;
+}
+
+- (uint64_t)standardInstantFee
+{
+    return TX_INSTANT_FEE;
 }
 
 // checks if all signatures exist, but does not verify them
@@ -440,6 +466,32 @@ sequence:(uint32_t)sequence
 - (BOOL)isEqual:(id)object
 {
     return self == object || ([object isKindOfClass:[BRTransaction class]] && uint256_eq(_txHash, [object txHash]));
+}
+
+#pragma mark - Extra shapeshift methods
+
+- (NSString*)shapeshiftOutboundAddress {
+    for (NSData * script in self.outputScripts) {
+        NSString * outboundAddress = [BRTransaction shapeshiftOutboundAddressForScript:script];
+        if (outboundAddress) return outboundAddress;
+    }
+    return nil;
+}
+
++ (NSString*)shapeshiftOutboundAddressForScript:(NSData*)script {
+    if ([script UInt8AtOffset:0] == OP_RETURN) {
+        UInt8 length = [script UInt8AtOffset:1];
+        if ([script UInt8AtOffset:2] == OP_SHAPESHIFT) {
+            NSMutableData * data = [NSMutableData data];
+            uint8_t v = BITCOIN_PUBKEY_ADDRESS;
+            [data appendBytes:&v length:1];
+            NSData * addressData = [script subdataWithRange:NSMakeRange(3, length - 1)];
+            
+            [data appendData:addressData];
+            return [NSString base58checkWithData:data];
+        }
+    }
+    return nil;
 }
 
 @end

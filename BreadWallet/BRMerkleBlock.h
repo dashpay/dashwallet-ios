@@ -25,8 +25,9 @@
 
 #import <Foundation/Foundation.h>
 
-#define BLOCK_DIFFICULTY_INTERVAL 2016      // number of blocks between difficulty target adjustments
 #define BLOCK_UNKNOWN_HEIGHT      INT32_MAX
+#define DGW_PAST_BLOCKS_MIN 24
+#define DGW_PAST_BLOCKS_MAX 24
 
 typedef union _UInt256 UInt256;
 
@@ -64,8 +65,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 // true if the given tx hash is known to be included in the block
 - (BOOL)containsTxHash:(UInt256)txHash;
 
-// Verifies the block difficulty target is correct for the block's position in the chain. Transition time may be 0 if
-// height is not a multiple of BLOCK_DIFFICULTY_INTERVAL.
-- (BOOL)verifyDifficultyFromPreviousBlock:(BRMerkleBlock*)previous andTransitionTime:(uint32_t)time;
+// Verifies the block difficulty target is correct for the block's position in the chain.
+- (BOOL)verifyDifficultyWithPreviousBlocks:(NSMutableDictionary *)previousBlocks;
 
 @end

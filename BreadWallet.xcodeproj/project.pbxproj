@@ -207,6 +207,8 @@
 		FBF268001E414AA2001A1C8B /* DSShapeshiftManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF267FC1E414AA2001A1C8B /* DSShapeshiftManager.m */; };
 		FBF268011E414AA2001A1C8B /* DSShapeshiftManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF267FC1E414AA2001A1C8B /* DSShapeshiftManager.m */; };
 		FBF268041E414B93001A1C8B /* NSData+Dash.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF268031E414B93001A1C8B /* NSData+Dash.m */; };
+		FBF2680E1E419318001A1C8B /* DSShapeshiftEntity+CoreDataClass.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF2680B1E419318001A1C8B /* DSShapeshiftEntity+CoreDataClass.m */; };
+		FBF2680F1E419318001A1C8B /* DSShapeshiftEntity+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF2680D1E419318001A1C8B /* DSShapeshiftEntity+CoreDataProperties.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -606,6 +608,10 @@
 		FBF268021E414B93001A1C8B /* NSData+Dash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Dash.h"; sourceTree = "<group>"; };
 		FBF268031E414B93001A1C8B /* NSData+Dash.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+Dash.m"; sourceTree = "<group>"; };
 		FBF268091E414C64001A1C8B /* IntTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IntTypes.h; sourceTree = "<group>"; };
+		FBF2680A1E419318001A1C8B /* DSShapeshiftEntity+CoreDataClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DSShapeshiftEntity+CoreDataClass.h"; sourceTree = "<group>"; };
+		FBF2680B1E419318001A1C8B /* DSShapeshiftEntity+CoreDataClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DSShapeshiftEntity+CoreDataClass.m"; sourceTree = "<group>"; };
+		FBF2680C1E419318001A1C8B /* DSShapeshiftEntity+CoreDataProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DSShapeshiftEntity+CoreDataProperties.h"; sourceTree = "<group>"; };
+		FBF2680D1E419318001A1C8B /* DSShapeshiftEntity+CoreDataProperties.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DSShapeshiftEntity+CoreDataProperties.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -777,6 +783,7 @@
 		752E289D19234A4E00DB5A3C /* Entities */ = {
 			isa = PBXGroup;
 			children = (
+				FBF268101E42A639001A1C8B /* Dash */,
 				752E289E19234AE300DB5A3C /* BRAddressEntity.h */,
 				752E289F19234AE300DB5A3C /* BRAddressEntity.m */,
 				752E28A019234AE300DB5A3C /* BRMerkleBlockEntity.h */,
@@ -1117,6 +1124,17 @@
 			name = x11;
 			sourceTree = "<group>";
 		};
+		FBF268101E42A639001A1C8B /* Dash */ = {
+			isa = PBXGroup;
+			children = (
+				FBF2680A1E419318001A1C8B /* DSShapeshiftEntity+CoreDataClass.h */,
+				FBF2680B1E419318001A1C8B /* DSShapeshiftEntity+CoreDataClass.m */,
+				FBF2680C1E419318001A1C8B /* DSShapeshiftEntity+CoreDataProperties.h */,
+				FBF2680D1E419318001A1C8B /* DSShapeshiftEntity+CoreDataProperties.m */,
+			);
+			name = Dash;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXLegacyTarget section */
@@ -1268,7 +1286,6 @@
 						CreatedOnToolsVersion = 6.1;
 					};
 					75D5F3BD191EC270004AB296 = {
-						DevelopmentTeam = 4R7S6N88W9;
 						LastSwiftMigration = 0800;
 						SystemCapabilities = {
 							com.apple.ApplicationGroups.iOS = {
@@ -1468,12 +1485,14 @@
 				BA7B53501BDA9A2800355E8D /* BRAppleWatchData.m in Sources */,
 				752E28AC19234AE300DB5A3C /* BRPeerEntity.m in Sources */,
 				FBF267C41E414A68001A1C8B /* Bmw.c in Sources */,
+				FBF2680E1E419318001A1C8B /* DSShapeshiftEntity+CoreDataClass.m in Sources */,
 				FBF268041E414B93001A1C8B /* NSData+Dash.m in Sources */,
 				752E28AD19234AE300DB5A3C /* BRTransactionEntity.m in Sources */,
 				752E28AE19234AE300DB5A3C /* BRTxInputEntity.m in Sources */,
 				FBF267E21E414A68001A1C8B /* Luffa.c in Sources */,
 				752E28AF19234AE300DB5A3C /* BRTxOutputEntity.m in Sources */,
 				22DE8CF11D02407F007F07F3 /* BRWalletConstants.m in Sources */,
+				FBF2680F1E419318001A1C8B /* DSShapeshiftEntity+CoreDataProperties.m in Sources */,
 				BAA4843C1B3EFFAF0075C749 /* UIImage+Utils.m in Sources */,
 				2292799F1C695D2800C98E78 /* BRTar.swift in Sources */,
 				229279A81C6960FC00C98E78 /* BRGeoLocationPlugin.swift in Sources */,
@@ -1945,6 +1964,7 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = breadwallet/breadwallet.entitlements;
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
@@ -1974,6 +1994,7 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = breadwallet/breadwallet.entitlements;
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
@@ -2207,6 +2228,7 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = breadwallet/breadwallet.entitlements;
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = "TESTFLIGHT=1";

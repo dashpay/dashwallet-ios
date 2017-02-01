@@ -34,7 +34,9 @@
 // fetch existing objects
 + (NSArray *)allObjects;
 + (NSArray *)objectsMatching:(NSString *)predicateFormat, ...;
++ (instancetype)anyObjectMatching:(NSString *)predicateFormat, ...;
 + (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args;
++ (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args;
 + (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending;
 + (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending offset:(NSUInteger)offset limit:(NSUInteger)lim;
 + (NSArray *)fetchObjects:(NSFetchRequest *)request;

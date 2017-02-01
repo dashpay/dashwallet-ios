@@ -82,12 +82,33 @@ static NSUInteger _fetchBatchSize = 100;
     return a;
 }
 
++ (instancetype)anyObjectMatching:(NSString *)predicateFormat, ...
+{
+    NSArray *a;
+    va_list args;
+    
+    va_start(args, predicateFormat);
+    a = [self objectsMatching:predicateFormat arguments:args];
+    va_end(args);
+    if ([a count]) {
+        return [a objectAtIndex:0];
+    } else return nil;
+}
+
 + (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args
 {
     NSFetchRequest *request = self.fetchReq;
     
     request.predicate = [NSPredicate predicateWithFormat:predicateFormat arguments:args];
     return [self fetchObjects:request];
+}
+
++ (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args
+{
+    NSArray * array = [self objectsMatching:predicateFormat arguments:args];
+    if ([array count]) {
+        return [array objectAtIndex:0];
+    } else return nil;
 }
 
 + (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending
