@@ -432,7 +432,7 @@ UInt256 multiplyThis32 (UInt256 a,uint32_t b)
     UInt256 darkTarget = divide(sumTargets,blockCount256);
     
     // nTargetTimespan is the time that the CountBlocks should have taken to be generated.
-    uint32_t nTargetTimespan = (blockCount - 1)* 60;
+    uint32_t nTargetTimespan = (blockCount - 1)* (60 * 2.5);
     
     // Limit the re-adjustment to 3x or 0.33x
     // We don't want to increase/decrease diff too much.
