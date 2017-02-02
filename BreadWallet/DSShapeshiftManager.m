@@ -9,7 +9,7 @@
 #import "DSShapeshiftManager.h"
 #import <CoreData/CoreData.h>
 #import "NSManagedObject+Sugar.h"
-#import "DCShapeshiftEntity.h"
+#import "DSShapeshiftEntity+CoreDataClass.h"
 #import "BRTransactionEntity.h"
 #import "BRTxOutputEntity.h"
 
@@ -90,7 +90,7 @@
     
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     // Edit the entity name as appropriate.
-    NSEntityDescription *entity = [NSEntityDescription entityForName:@"DCShapeshiftEntity" inManagedObjectContext:self.managedObjectContext];
+    NSEntityDescription *entity = [NSEntityDescription entityForName:@"DSShapeshiftEntity" inManagedObjectContext:self.managedObjectContext];
     [fetchRequest setEntity:entity];
     
     // Set the batch size to a suitable number.
@@ -144,7 +144,7 @@
        atIndexPath:(NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)changeType
       newIndexPath:(NSIndexPath *)newIndexPath {
     if (changeType == NSFetchedResultsChangeInsert) {
-        [(DCShapeshiftEntity*)anObject routinelyCheckStatusAtInterval:10];
+        [(DSShapeshiftEntity*)anObject routinelyCheckStatusAtInterval:10];
         NSLog(@"BLOP %@",anObject);
     }
 }
@@ -158,7 +158,7 @@
 #pragma mark - Shapeshift Helper calls
 
 -(void)queryInitialShapeshiftsNeedingInfo {
-    for (DCShapeshiftEntity * shapeshift in self.shapeshiftFetchedResultsController.fetchedObjects) {
+    for (DSShapeshiftEntity * shapeshift in self.shapeshiftFetchedResultsController.fetchedObjects) {
 //        for (BRTxOutputEntity * output in  shapeshift.transaction.outputs) {
 //            NSLog(@"o %@", output.shapeshiftOutboundAddress);
 //        }

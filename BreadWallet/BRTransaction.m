@@ -128,7 +128,7 @@
                 mainOutputAddress = outputAddress;
             }
             //NSAssert(mainOutputAddress, @"there should always be an output address");
-            self.associatedShapeshift = [DCShapeshiftEntity registerShapeshiftWithInputAddress:mainOutputAddress andWithdrawalAddress:outboundShapeshiftAddress withStatus:eShapeshiftAddressStatus_NoDeposits];
+            self.associatedShapeshift = [DSShapeshiftEntity registerShapeshiftWithInputAddress:mainOutputAddress andWithdrawalAddress:outboundShapeshiftAddress withStatus:eShapeshiftAddressStatus_NoDeposits];
         }
     }
 

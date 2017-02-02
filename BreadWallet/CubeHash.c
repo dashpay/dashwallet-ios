@@ -506,3 +506,21 @@ sph_cubehash512(void *cc, const void *data, size_t len)
 {
     cubehash_core(cc, data, len);
 }
+
+/* see sph_cubehash.h */
+void
+sph_cubehash512_addbits_and_close(void *cc, unsigned ub, unsigned n, void *dst)
+{
+    cubehash_close(cc, ub, n, dst, 16);
+    sph_cubehash512_init(cc);
+}
+
+/* see sph_cubehash.h */
+void
+sph_cubehash512_close(void *cc, void *dst)
+{
+    sph_cubehash512_addbits_and_close(cc, 0, 0, dst);
+}
+
+
+

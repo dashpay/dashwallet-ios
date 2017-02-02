@@ -24,6 +24,7 @@
 //  THE SOFTWARE.
 
 #import <UIKit/UIKit.h>
+@class CIColor;
 
 @interface UIImage (Utils)
 
