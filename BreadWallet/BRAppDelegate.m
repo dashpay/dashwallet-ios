@@ -215,8 +215,8 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
             if (self.balance < manager.wallet.balance) {
                 BOOL send = [[NSUserDefaults standardUserDefaults] boolForKey:USER_DEFAULTS_LOCAL_NOTIFICATIONS_KEY];
                 NSString *noteText = [NSString stringWithFormat:NSLocalizedString(@"received %@ (%@)", nil),
-                                      [manager stringForAmount:manager.wallet.balance - self.balance],
-                                      [manager localCurrencyStringForAmount:manager.wallet.balance - self.balance]];
+                                      [manager stringForDashAmount:manager.wallet.balance - self.balance],
+                                      [manager localCurrencyStringForDashAmount:manager.wallet.balance - self.balance]];
                 
                 NSLog(@"local notifications enabled=%d", send);
                 

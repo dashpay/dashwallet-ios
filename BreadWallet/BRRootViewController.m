@@ -565,8 +565,8 @@
 
     if (balance > _balance && [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
         [self.view addSubview:[[[BRBubbleView viewWithText:[NSString
-         stringWithFormat:NSLocalizedString(@"received %@ (%@)", nil), [manager stringForAmount:balance - _balance],
-                          [manager localCurrencyStringForAmount:balance - _balance]]
+         stringWithFormat:NSLocalizedString(@"received %@ (%@)", nil), [manager stringForDashAmount:balance - _balance],
+                          [manager localCurrencyStringForDashAmount:balance - _balance]]
          center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
          popOutAfterDelay:3.0]];
         [self ping];
@@ -578,8 +578,8 @@
     [[NSUserDefaults standardUserDefaults] setDouble:balance forKey:BALANCE_KEY];
 
     if (self.percent.hidden) {
-        self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [manager stringForAmount:balance],
-                                     [manager localCurrencyStringForAmount:balance]];
+        self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [manager stringForDashAmount:balance],
+                                     [manager localCurrencyStringForDashAmount:balance]];
     }
 }
 
@@ -795,7 +795,7 @@
         BRWalletManager *manager = [BRWalletManager sharedInstance];
         UINavigationBar *navBar = self.navigationController.navigationBar;
         NSString *text = [NSString stringWithFormat:BITS_TIP,
-                          manager.format.currencySymbol, [manager stringForAmount:DUFFS]];
+                          manager.format.currencySymbol, [manager stringForDashAmount:DUFFS]];
         CGRect r = [self.navigationItem.title boundingRectWithSize:navBar.bounds.size options:0
                     attributes:navBar.titleTextAttributes context:nil];
 

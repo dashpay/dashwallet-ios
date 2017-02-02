@@ -69,6 +69,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const BRWalletManagerSeedChangedNotificatio
 @property (nonatomic, copy) NSString * _Nullable localCurrencyCode; // local currency ISO code
 @property (nonatomic, readonly) NSNumber * _Nullable bitcoinDashPrice; // exchange rate in bitcoin per dash
 @property (nonatomic, readonly) NSNumber * _Nullable localCurrencyBitcoinPrice; // exchange rate in local currency units per bitcoin
+@property (nonatomic, readonly) NSNumber * _Nullable localCurrencyDashPrice;
 @property (nonatomic, readonly) NSArray * _Nullable currencyCodes; // list of supported local currency codes
 @property (nonatomic, readonly) NSArray * _Nullable currencyNames; // names for local currency codes
 @property (nonatomic, readonly) BOOL isTestnet;
@@ -104,5 +105,7 @@ completion:(void (^ _Nonnull)(BRTransaction * _Nonnull tx, uint64_t fee, NSError
 - (NSString * _Nonnull)bitcoinCurrencyStringForAmount:(int64_t)amount;
 - (NSString * _Nonnull)localCurrencyStringForDashAmount:(int64_t)amount;
 - (NSString * _Nonnull)localCurrencyStringForBitcoinAmount:(int64_t)amount;
+
+-(NSNumber* _Nonnull)localCurrencyDashPrice;
 
 @end

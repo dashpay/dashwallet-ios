@@ -201,7 +201,6 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 @property (nonatomic, strong) BRWallet *wallet;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) NSArray *currencyPrices;
-@property (nonatomic, strong) NSNumber *localPrice;
 @property (nonatomic, assign) BOOL sweepFee, didPresent;
 @property (nonatomic, strong) NSString *sweepKey;
 @property (nonatomic, strong) void (^sweepCompletion)(BRTransaction *tx, uint64_t fee, NSError *error);
@@ -213,6 +212,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 
 @property (nonatomic, strong) NSNumber * _Nullable bitcoinDashPrice; // exchange rate in bitcoin per dash
 @property (nonatomic, strong) NSNumber * _Nullable localCurrencyBitcoinPrice; // exchange rate in local currency units per bitcoin
+@property (nonatomic, strong) NSNumber * _Nullable localCurrencyDashPrice;
 
 @end
 
@@ -891,11 +891,6 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 
 // MARK: - exchange rate
 
-- (double)localCurrencyPrice
-{
-    return self.localPrice.doubleValue;
-}
-
 // local currency ISO code
 - (void)setLocalCurrencyCode:(NSString *)code
 {
@@ -906,9 +901,9 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     _localCurrencyCode = [code copy];
     
     if (i < _currencyPrices.count && self.secureTime + 3*24*60*60 > [NSDate timeIntervalSinceReferenceDate]) {
-        self.localPrice = _currencyPrices[i]; // don't use exchange rate data more than 72hrs out of date
+        self.localCurrencyDashPrice = _currencyPrices[i]; // don't use exchange rate data more than 72hrs out of date
     }
-    else self.localPrice = @(0);
+    else self.localCurrencyDashPrice = @(0);
     
     self.localFormat.currencyCode = _localCurrencyCode;
     self.localFormat.maximum =
@@ -1337,6 +1332,14 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                                               decimalNumberByMultiplyingByPowerOf10:-self.dashFormat.maximumFractionDigits]];
 }
 
+-(NSNumber* _Nonnull)localCurrencyDashPrice {
+    if (!_bitcoinDashPrice || !_localCurrencyBitcoinPrice) {
+        return _localCurrencyDashPrice;
+    } else {
+        return @(_bitcoinDashPrice.doubleValue * _localCurrencyDashPrice.doubleValue);
+    }
+}
+
 // NOTE: For now these local currency methods assume that a satoshi has a smaller value than the smallest unit of any
 // local currency. They will need to be revisited when that is no longer a safe assumption.
 - (int64_t)amountForLocalCurrencyString:(NSString *)string
@@ -1344,7 +1347,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     if ([string hasPrefix:@"<"]) string = [string substringFromIndex:1];
     
     NSNumber *n = [self.localFormat numberFromString:string];
-    int64_t price = [[NSDecimalNumber decimalNumberWithDecimal:self.localPrice.decimalValue]
+    int64_t price = [[NSDecimalNumber decimalNumberWithDecimal:self.localCurrencyDashPrice.decimalValue]
                      decimalNumberByMultiplyingByPowerOf10:self.localFormat.maximumFractionDigits].longLongValue,
     local = [[NSDecimalNumber decimalNumberWithDecimal:n.decimalValue]
              decimalNumberByMultiplyingByPowerOf10:self.localFormat.maximumFractionDigits].longLongValue,
@@ -1428,7 +1431,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 - (NSString *)localCurrencyStringForBitcoinAmount:(int64_t)amount
 {
     if (amount == 0) return [self.localFormat stringFromNumber:@(0)];
-    if (self.localPrice.doubleValue <= DBL_EPSILON) return @""; // no exchange rate data
+    if (self.localCurrencyBitcoinPrice.doubleValue <= DBL_EPSILON) return @""; // no exchange rate data
     
     NSDecimalNumber *n = [[[NSDecimalNumber decimalNumberWithDecimal:self.localCurrencyBitcoinPrice.decimalValue]
                            decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithLongLong:llabs(amount)]]

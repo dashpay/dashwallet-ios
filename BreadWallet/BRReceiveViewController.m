@@ -82,8 +82,8 @@
     else [self.addressButton setTitle:nil forState:UIControlStateNormal];
     
     if (req.amount > 0) {
-        self.label.text = [NSString stringWithFormat:@"%@ (%@)", [manager stringForAmount:req.amount],
-                           [manager localCurrencyStringForAmount:req.amount]];
+        self.label.text = [NSString stringWithFormat:@"%@ (%@)", [manager stringForDashAmount:req.amount],
+                           [manager localCurrencyStringForDashAmount:req.amount]];
     }
 
     self.addressButton.titleLabel.adjustsFontSizeToFitWidth = YES;
@@ -133,8 +133,8 @@
             [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
             
             if (req.amount > 0) {
-                self.label.text = [NSString stringWithFormat:@"%@ (%@)", [manager stringForAmount:req.amount],
-                                   [manager localCurrencyStringForAmount:req.amount]];
+                self.label.text = [NSString stringWithFormat:@"%@ (%@)", [manager stringForDashAmount:req.amount],
+                                   [manager localCurrencyStringForDashAmount:req.amount]];
                 
                 if (! self.balanceObserver) {
                     self.balanceObserver =
@@ -160,7 +160,7 @@
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     BRPaymentRequest *req = self.paymentRequest;
-    uint64_t total = 0, fuzz = [manager amountForLocalCurrencyString:[manager localCurrencyStringForAmount:1]]*2;
+    uint64_t total = 0, fuzz = [manager amountForLocalCurrencyString:[manager localCurrencyStringForDashAmount:1]]*2;
     
     if (! [manager.wallet addressIsUsed:self.paymentAddress]) return;
 
@@ -175,8 +175,8 @@
 
             [self done:nil];
             [view addSubview:[[[BRBubbleView viewWithText:[NSString
-             stringWithFormat:NSLocalizedString(@"received %@ (%@)", nil), [manager stringForAmount:total],
-             [manager localCurrencyStringForAmount:total]]
+             stringWithFormat:NSLocalizedString(@"received %@ (%@)", nil), [manager stringForDashAmount:total],
+             [manager localCurrencyStringForDashAmount:total]]
              center:CGPointMake(view.bounds.size.width/2, view.bounds.size.height/2)] popIn] popOutAfterDelay:3.0]];
             break;
         }
@@ -391,7 +391,7 @@ error:(NSError *)error
     if (amount < manager.wallet.minOutputAmount) {
         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"amount too small", nil)
           message:[NSString stringWithFormat:NSLocalizedString(@"bitcoin payments can't be less than %@", nil),
-                   [manager stringForAmount:manager.wallet.minOutputAmount]]
+                   [manager stringForDashAmount:manager.wallet.minOutputAmount]]
           delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         [BREventManager saveEvent:@"receive:amount_too_small"];
         return;

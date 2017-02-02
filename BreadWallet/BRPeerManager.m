@@ -1154,7 +1154,7 @@ static const char *dns_seeds[] = {
             if (callback) callback(nil);
             
             [[BRAPIClient sharedClient].kv
-             set:[[BRTxMetadataObject alloc] initWithTransaction:transaction exchangeRate:manager.localCurrencyPrice
+             set:[[BRTxMetadataObject alloc] initWithTransaction:transaction exchangeRate:manager.localCurrencyDashPrice.doubleValue
                   exchangeRateCurrency:manager.localCurrencyCode feeRate:manager.wallet.feePerKb
                   deviceId:[BRAPIClient sharedClient].deviceId] error:&kvErr];
         });
@@ -1214,7 +1214,7 @@ static const char *dns_seeds[] = {
             if (callback) callback(nil);
 
             [[BRAPIClient sharedClient].kv
-             set:[[BRTxMetadataObject alloc] initWithTransaction:tx exchangeRate:manager.localCurrencyPrice
+             set:[[BRTxMetadataObject alloc] initWithTransaction:tx exchangeRate:manager.localCurrencyDashPrice.doubleValue
                   exchangeRateCurrency:manager.localCurrencyCode feeRate:manager.wallet.feePerKb
                   deviceId:[BRAPIClient sharedClient].deviceId] error:&kvErr];
         });

@@ -1232,25 +1232,25 @@
     
     XCTAssertEqual([manager amountForString:@""], 0, @"[BRWalletManager amountForString:]");
 
-    s = [manager stringForAmount:0];
+    s = [manager stringForDashAmount:0];
     XCTAssertEqual([manager amountForString:s], 0, @"[BRWalletManager amountForString:]");
     
-    s = [manager stringForAmount:100000000];
+    s = [manager stringForDashAmount:100000000];
     XCTAssertEqual([manager amountForString:s], 100000000, @"[BRWalletManager amountForString:]");
 
-    s = [manager stringForAmount:1];
+    s = [manager stringForDashAmount:1];
     XCTAssertEqual([manager amountForString:s], 1, @"[BRWalletManager amountForString:]");
     
-    s = [manager stringForAmount:2100000000000000];
+    s = [manager stringForDashAmount:2100000000000000];
     XCTAssertEqual([manager amountForString:s], 2100000000000000, @"[BRWalletManager amountForString:]");
     
-    s = [manager stringForAmount:2099999999999999];
+    s = [manager stringForDashAmount:2099999999999999];
     XCTAssertEqual([manager amountForString:s], 2099999999999999, @"[BRWalletManager amountForString:]");
     
-    s = [manager stringForAmount:2099999999999995];
+    s = [manager stringForDashAmount:2099999999999995];
     XCTAssertEqual([manager amountForString:s], 2099999999999995, @"[BRWalletManager amountForString:]");
     
-    s = [manager stringForAmount:2099999999999990];
+    s = [manager stringForDashAmount:2099999999999990];
     XCTAssertEqual([manager amountForString:s], 2099999999999990, @"[BRWalletManager amountForString:]");
 }
 

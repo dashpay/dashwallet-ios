@@ -348,13 +348,13 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     if (! isSecure || prompt.length == 0) prompt = [prompt stringByAppendingString:address];
     if (memo.length > 0) prompt = [prompt stringByAppendingFormat:@"\n\n%@", sanitizeString(memo)];
     prompt = [prompt stringByAppendingFormat:NSLocalizedString(@"\n\n     amount %@ (%@)", nil),
-              [manager stringForAmount:amount - fee], [manager localCurrencyStringForAmount:amount - fee]];
+              [manager stringForDashAmount:amount - fee], [manager localCurrencyStringForDashAmount:amount - fee]];
 
     if (fee > 0) {
         prompt = [prompt stringByAppendingFormat:NSLocalizedString(@"\nnetwork fee +%@ (%@)", nil),
-                  [manager stringForAmount:fee], [manager localCurrencyStringForAmount:fee]];
+                  [manager stringForDashAmount:fee], [manager localCurrencyStringForDashAmount:fee]];
         prompt = [prompt stringByAppendingFormat:NSLocalizedString(@"\n         total %@ (%@)", nil),
-                  [manager stringForAmount:amount], [manager localCurrencyStringForAmount:amount]];
+                  [manager stringForDashAmount:amount], [manager localCurrencyStringForDashAmount:amount]];
     }
 
     return prompt;
@@ -467,15 +467,15 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         else amountController.to = address;
         
         amountController.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
-                                                 [manager stringForAmount:manager.wallet.balance],
-                                                 [manager localCurrencyStringForAmount:manager.wallet.balance]];
+                                                 [manager stringForDashAmount:manager.wallet.balance],
+                                                 [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
         [self.navigationController pushViewController:amountController animated:YES];
         return;
     }
     else if (amount < TX_MIN_OUTPUT_AMOUNT) {
         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
           message:[NSString stringWithFormat:NSLocalizedString(@"bitcoin payments can't be less than %@", nil),
-                   [manager stringForAmount:TX_MIN_OUTPUT_AMOUNT]] delegate:nil
+                   [manager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]] delegate:nil
           cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         [self cancel:nil];
         return;
@@ -483,7 +483,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
     else if (outputTooSmall) {
         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
           message:[NSString stringWithFormat:NSLocalizedString(@"bitcoin transaction outputs can't be less than %@",
-                                                               nil), [manager stringForAmount:TX_MIN_OUTPUT_AMOUNT]]
+                                                               nil), [manager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]]
           delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
         [self cancel:nil];
         return;
@@ -538,7 +538,7 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
         if (! manager.didAuthenticate) [manager seedWithPrompt:prompt forAmount:amount];
         
         if (manager.didAuthenticate) {
-            uint64_t fuzz = [manager amountForLocalCurrencyString:[manager localCurrencyStringForAmount:1]]*2;
+            uint64_t fuzz = [manager amountForLocalCurrencyString:[manager localCurrencyStringForDashAmount:1]]*2;
             
             // if user selected an amount equal to or below wallet balance, but the fee will bring the total above the
             // balance, offer to reduce the amount to available funds minus fee
@@ -549,12 +549,12 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
                     [[[UIAlertView alloc]
                       initWithTitle:NSLocalizedString(@"insufficient funds for bitcoin network fee", nil)
                       message:[NSString stringWithFormat:NSLocalizedString(@"reduce payment amount by\n%@ (%@)?", nil),
-                               [manager stringForAmount:self.amount - amount],
-                               [manager localCurrencyStringForAmount:self.amount - amount]] delegate:self
+                               [manager stringForDashAmount:self.amount - amount],
+                               [manager localCurrencyStringForDashAmount:self.amount - amount]] delegate:self
                       cancelButtonTitle:NSLocalizedString(@"cancel", nil)
                       otherButtonTitles:[NSString stringWithFormat:@"%@ (%@)",
-                                         [manager stringForAmount:amount - self.amount],
-                                         [manager localCurrencyStringForAmount:amount - self.amount]], nil] show];
+                                         [manager stringForDashAmount:amount - self.amount],
+                                         [manager localCurrencyStringForDashAmount:amount - self.amount]], nil] show];
                     self.amount = amount;
                 }
                 else {
@@ -721,13 +721,13 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
                 NSString *alertFmt = NSLocalizedString(@"Send %@ (%@) from this private key into your wallet? "
                                                        "The bitcoin network will receive a fee of %@ (%@).", nil);
-                NSString *alertMsg = [NSString stringWithFormat:alertFmt, [manager stringForAmount:amount],
-                                      [manager localCurrencyStringForAmount:amount], [manager stringForAmount:fee],
-                                      [manager localCurrencyStringForAmount:fee]];
+                NSString *alertMsg = [NSString stringWithFormat:alertFmt, [manager stringForDashAmount:amount],
+                                      [manager localCurrencyStringForDashAmount:amount], [manager stringForDashAmount:fee],
+                                      [manager localCurrencyStringForDashAmount:fee]];
                 [[[UIAlertView alloc] initWithTitle:@"" message:alertMsg delegate:self
                   cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-                  otherButtonTitles:[NSString stringWithFormat:@"%@ (%@)", [manager stringForAmount:amount],
-                                     [manager localCurrencyStringForAmount:amount]], nil] show];
+                  otherButtonTitles:[NSString stringWithFormat:@"%@ (%@)", [manager stringForDashAmount:amount],
+                                     [manager localCurrencyStringForDashAmount:amount]], nil] show];
             }
             else [self cancel:nil];
         });
@@ -764,8 +764,8 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
                 for (NSNumber *amt in amounts) balance += amt.unsignedLongLongValue;
             
                 NSString *alertMsg = [NSString stringWithFormat:NSLocalizedString(@"%@\n\nbalance: %@ (%@)", nil),
-                                      address, [manager stringForAmount:balance],
-                                      [manager localCurrencyStringForAmount:balance]];
+                                      address, [manager stringForDashAmount:balance],
+                                      [manager localCurrencyStringForDashAmount:balance]];
 
                 [[[UIAlertView alloc] initWithTitle:@"" message:alertMsg delegate:nil
                   cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];

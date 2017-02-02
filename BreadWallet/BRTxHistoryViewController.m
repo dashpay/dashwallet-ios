@@ -110,8 +110,8 @@ static NSString *dateFormat(NSString *template)
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         self.transactions = @[tx, tx, tx, tx, tx, tx];
         [self.tableView reloadData];
-        self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [manager stringForAmount:42980000],
-                                     [manager localCurrencyStringForAmount:42980000]];
+        self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [manager stringForDashAmount:42980000],
+                                     [manager localCurrencyStringForDashAmount:42980000]];
     });
 
     return;
@@ -151,8 +151,8 @@ static NSString *dateFormat(NSString *template)
                 if (! [self.navigationItem.title isEqual:NSLocalizedString(@"syncing...", nil)]) {
                     if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
                     self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
-                                                 [manager stringForAmount:manager.wallet.balance],
-                                                 [manager localCurrencyStringForAmount:manager.wallet.balance]];
+                                                 [manager stringForDashAmount:manager.wallet.balance],
+                                                 [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
                 }
 
                 if (self.transactions.firstObject != tx) {
@@ -192,8 +192,8 @@ static NSString *dateFormat(NSString *template)
             queue:nil usingBlock:^(NSNotification *note) {
                 if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
                 self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
-                                             [manager stringForAmount:manager.wallet.balance],
-                                             [manager localCurrencyStringForAmount:manager.wallet.balance]];
+                                             [manager stringForDashAmount:manager.wallet.balance],
+                                             [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
             }];
     }
     
@@ -203,8 +203,8 @@ static NSString *dateFormat(NSString *template)
             queue:nil usingBlock:^(NSNotification *note) {
                 if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
                 self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
-                                             [manager stringForAmount:manager.wallet.balance],
-                                             [manager localCurrencyStringForAmount:manager.wallet.balance]];
+                                             [manager stringForDashAmount:manager.wallet.balance],
+                                             [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
             }];
     }
 }
@@ -508,9 +508,9 @@ static NSString *dateFormat(NSString *template)
                 unconfirmedLabel.hidden = NO;
                 unconfirmedLabel.backgroundColor = [UIColor lightGrayColor];
                 detailTextLabel.text = [self dateForTx:tx];
-                balanceLabel.text = (manager.didAuthenticate) ? [manager stringForAmount:balance] : nil;
+                balanceLabel.text = (manager.didAuthenticate) ? [manager stringForDashAmount:balance] : nil;
                 localBalanceLabel.text = (manager.didAuthenticate) ?
-                    [NSString stringWithFormat:@"(%@)", [manager localCurrencyStringForAmount:balance]] : nil;
+                    [NSString stringWithFormat:@"(%@)", [manager localCurrencyStringForDashAmount:balance]] : nil;
 
                 if (confirms == 0 && ! [manager.wallet transactionIsValid:tx]) {
                     unconfirmedLabel.text = NSLocalizedString(@"INVALID", nil);
@@ -539,23 +539,23 @@ static NSString *dateFormat(NSString *template)
                 }
                 
                 if (sent > 0 && received == sent) {
-                    textLabel.text = [manager stringForAmount:sent];
+                    textLabel.text = [manager stringForDashAmount:sent];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
-                                               [manager localCurrencyStringForAmount:sent]];
+                                               [manager localCurrencyStringForDashAmount:sent]];
                     sentLabel.text = NSLocalizedString(@"moved", nil);
                     sentLabel.textColor = [UIColor blackColor];
                 }
                 else if (sent > 0) {
-                    textLabel.text = [manager stringForAmount:received - sent];
+                    textLabel.text = [manager stringForDashAmount:received - sent];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
-                                               [manager localCurrencyStringForAmount:received - sent]];
+                                               [manager localCurrencyStringForDashAmount:received - sent]];
                     sentLabel.text = NSLocalizedString(@"sent", nil);
                     sentLabel.textColor = [UIColor colorWithRed:1.0 green:0.33 blue:0.33 alpha:1.0];
                 }
                 else {
-                    textLabel.text = [manager stringForAmount:received];
+                    textLabel.text = [manager stringForDashAmount:received];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
-                                               [manager localCurrencyStringForAmount:received]];
+                                               [manager localCurrencyStringForDashAmount:received]];
                     sentLabel.text = NSLocalizedString(@"received", nil);
                     sentLabel.textColor = [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
                 }
